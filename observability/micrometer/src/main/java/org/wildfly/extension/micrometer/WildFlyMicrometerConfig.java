@@ -4,10 +4,15 @@
  */
 package org.wildfly.extension.micrometer;
 
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.time.Duration;
 import java.util.Map;
 
+import io.micrometer.registry.otlp.AggregationTemporality;
+import io.micrometer.registry.otlp.HistogramFlavor;
 import io.micrometer.registry.otlp.OtlpConfig;
+import org.wildfly.security.manager.WildFlySecurityManager;
 
 public final class WildFlyMicrometerConfig implements OtlpConfig {
     /**
@@ -45,7 +50,34 @@ public final class WildFlyMicrometerConfig implements OtlpConfig {
 
     @Override
     public Duration step() {
-        Duration duration = Duration.ofSeconds(step);
-        return duration;
+        return Duration.ofSeconds(step);
     }
+
+    @Override
+    public AggregationTemporality aggregationTemporality() {
+        if (WildFlySecurityManager.isChecking()) {
+            return AccessController.doPrivileged((PrivilegedAction<AggregationTemporality>) OtlpConfig.super::aggregationTemporality);
+        } else {
+            return OtlpConfig.super.aggregationTemporality();
+        }
+    }
+
+    @Override
+    public HistogramFlavor histogramFlavor() {
+        if (WildFlySecurityManager.isChecking()) {
+            return AccessController.doPrivileged((PrivilegedAction<HistogramFlavor>) OtlpConfig.super::histogramFlavor);
+        } else {
+            return OtlpConfig.super.histogramFlavor();
+        }
+    }
+
+    @Override
+    public Map<String, String> headers() {
+        if (WildFlySecurityManager.isChecking()) {
+            return AccessController.doPrivileged((PrivilegedAction<Map<String, String>>) OtlpConfig.super::headers);
+        } else {
+            return OtlpConfig.super.headers();
+        }
+    }
+
 }
