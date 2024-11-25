@@ -87,5 +87,11 @@ public class WeldJpaInjectionScopeTestCase {
         Assert.assertEquals("WeldJpaInjectionScopeTestCase.testproperty",bean.getAdditionalPropertyValue());
     }
 
+    // [WFLY-19973] (Weld injected) @PersistenceContext (later set) ensure that property can be added to empty property map
+    @Test
+    public void testEntityManagerPropertiesEmptyCase() throws Exception {
+        Assert.assertEquals("AddedToEmptyHashMap", bean.addPropertyToEmptyPropertyMap("AddedToEmptyHashMap"));
+    }
+
 }
 

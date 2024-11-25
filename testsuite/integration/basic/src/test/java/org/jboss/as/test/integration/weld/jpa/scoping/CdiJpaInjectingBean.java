@@ -16,6 +16,9 @@ public class CdiJpaInjectingBean {
     @PersistenceContext(unitName = "cdiPu", properties = { @PersistenceProperty(name = "CdiJpaInjectingBean", value = "true")})
     EntityManager em;
 
+    @PersistenceContext(unitName = "cdiPu")
+    EntityManager emEmptyProperties;
+
     public Employee queryEmployeeName(int id) {
         Query q = em.createQuery("SELECT e FROM Employee e where e.id=:employeeId");
         q.setParameter("employeeId", id);
@@ -27,12 +30,15 @@ public class CdiJpaInjectingBean {
     }
 
     public void setAdditionalPropertyValue(String value) {
-        System.out.println("setAdditionalPropertyValue on em=" + em);
         em.setProperty("CdiJpaInjectingBean.additional", value);
     }
 
     public String getAdditionalPropertyValue() {
-        System.out.println("getAdditionalPropertyValue on em=" + em);
         return (String) em.getProperties().get("CdiJpaInjectingBean.additional");
+    }
+
+    public String addPropertyToEmptyPropertyMap(String value) {
+        emEmptyProperties.setProperty("CdiJpaInjectingBean.addToEmptyPropertyMap", value);
+        return (String) emEmptyProperties.getProperties().get("CdiJpaInjectingBean.addToEmptyPropertyMap");
     }
 }
