@@ -400,7 +400,7 @@
             Properties for dependencies that solely relate to tests go in the test code section above.
          -->
         <version.antlr>4.13.0</version.antlr>
-        <version.com.carrotsearch.hppc>0.8.1</version.com.carrotsearch.hppc>
+        <version.com.carrotsearch.hppc>0.10.0</version.com.carrotsearch.hppc>
         <version.com.fasterxml.classmate>1.5.1</version.com.fasterxml.classmate>
         <version.com.fasterxml.jackson>2.17.3</version.com.fasterxml.jackson>
         <version.com.fasterxml.jackson.databind>${version.com.fasterxml.jackson}</version.com.fasterxml.jackson.databind>
