@@ -5,7 +5,8 @@
 
 package org.jboss.as.clustering.infinispan.subsystem;
 
-import java.util.Set;
+import java.util.Map;
+import java.util.TreeMap;
 import java.util.function.Consumer;
 
 import org.jboss.as.controller.ModelVersion;
@@ -25,9 +26,6 @@ import org.jboss.dmr.ModelNode;
  */
 public class CacheContainerResourceTransformer implements Consumer<ModelVersion> {
 
-    private static final Set<String> SERVER_MODULES = Set.of("org.wildfly.clustering.server.infinispan", "org.wildfly.clustering.singleton.server");
-    private static final String LEGACY_SERVER_MODULE = "org.wildfly.clustering.server";
-
     private final ResourceTransformationDescriptionBuilder builder;
 
     CacheContainerResourceTransformer(ResourceTransformationDescriptionBuilder parent) {
@@ -37,28 +35,39 @@ public class CacheContainerResourceTransformer implements Consumer<ModelVersion>
     @SuppressWarnings("deprecation")
     @Override
     public void accept(ModelVersion version) {
+        Map<String, String> legacyModules = new TreeMap<>();
+        if (InfinispanSubsystemModel.VERSION_18_0_0.requiresTransformation(version)) {
+            // Convert wildfly-clustering module to the appropriate module alias
+            legacyModules.put("org.wildfly.clustering.session.infinispan.embedded", "org.wildfly.clustering.web.infinispan");
+        }
         if (InfinispanSubsystemModel.VERSION_16_0_0.requiresTransformation(version)) {
-            this.builder.getAttributeBuilder()
-                    .setValueConverter(new AttributeConverter.DefaultAttributeConverter() {
-                        @Override
-                        protected void convertAttribute(PathAddress address, String name, ModelNode modules, TransformationContext context) {
-                            if (modules.isDefined()) {
-                                // Handle refactoring of org.wildfly.clustering.server module
-                                for (ModelNode module : modules.asList()) {
-                                    if (SERVER_MODULES.contains(module.asString())) {
-                                        module.set(LEGACY_SERVER_MODULE);
-                                    }
-                                }
-                            }
-                        }
-                    }, ListAttribute.MODULES.getDefinition())
-                    .end();
+            // Handle refactoring of org.wildfly.clustering.server module
+            String legacyServerModule = "org.wildfly.clustering.server";
+            legacyModules.put("org.wildfly.clustering.server.infinispan", legacyServerModule);
+            legacyModules.put("org.wildfly.clustering.singleton.server", legacyServerModule);
         }
         if (InfinispanSubsystemModel.VERSION_15_0_0.requiresTransformation(version)) {
             this.builder.getAttributeBuilder()
                     .setDiscard(DiscardAttributeChecker.DEFAULT_VALUE, Attribute.MARSHALLER.getDefinition())
                     .addRejectCheck(new RejectAttributeChecker.SimpleAcceptAttributeChecker(Attribute.MARSHALLER.getDefinition().getDefaultValue()), Attribute.MARSHALLER.getDefinition())
                     .end();
+        }
+
+        if (!legacyModules.isEmpty()) {
+            this.builder.getAttributeBuilder().setValueConverter(new AttributeConverter.DefaultAttributeConverter() {
+                @Override
+                protected void convertAttribute(PathAddress address, String name, ModelNode modules, TransformationContext context) {
+                    if (modules.isDefined()) {
+                        for (ModelNode module : modules.asList()) {
+                            String legacyModule = legacyModules.get(module.asString());
+                            if (legacyModule != null) {
+                                module.set(legacyModule);
+                            }
+                        }
+                    }
+                }
+            }, ListAttribute.MODULES.getDefinition())
+            .end();
         }
 
         new ScatteredCacheResourceTransformer(this.builder).accept(version);
