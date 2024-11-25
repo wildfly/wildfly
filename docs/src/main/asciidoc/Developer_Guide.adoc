@@ -49,6 +49,8 @@ include::_developer-guide/Jakarta_Contexts_and_Dependency_Injection_Reference.ad
 
 include::_developer-guide/EE_Concurrency_Utilities.adoc[]
 
+include::_developer-guide/Jakarta_Data_Reference.adoc[]
+
 include::_developer-guide/Jakarta_Enterprise_Beans_3_Reference_Guide.adoc[]
 
 include::_developer-guide/Jakarta_Persistence_Reference_Guide.adoc[]
