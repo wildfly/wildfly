@@ -286,7 +286,7 @@ link:#gal.naming[naming] +
 link:#gal.base-server[base-server] +
 
 |[[gal.jaxrs-core]]jakarta-data
-|Support for Jakarta Data. (xref:Admin_Guide.adoc#Feature_stability_levels[`preview` stability] in xref:WildFly_and_WildFly_Preview.adoc[WildFly Preview] only) The _link:#gal.jpa[jpa]_ dependency can be excluded and _link:#gal.jpa-distributed[jpa-distributed]_ used instead.
+|Support for Jakarta Data. (xref:Admin_Guide.adoc#Feature_stability_levels[`preview` stability]) The _link:#gal.jpa[jpa]_ dependency can be excluded and _link:#gal.jpa-distributed[jpa-distributed]_ used instead.
 |
 link:#gal.jpa[jpa] OR +
 link:#gal.jpa-distributed[jpa-distributed]
