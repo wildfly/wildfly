@@ -32,9 +32,7 @@
 
     <properties>
         <version.jakarta.annotation.jakarta-annotation-api>3.0.0</version.jakarta.annotation.jakarta-annotation-api>
-        <!-- TODO ElytronAuthConfigFactory uses removed field AuthConfigFactory.providerRegistrationSecurityPermission
-        <version.jakarta.authentication.jakarta-authentication-api>3.1.0-M1</version.jakarta.authentication.jakarta-authentication-api>
-        -->
+        <version.jakarta.authentication.jakarta-authentication-api>3.1.0</version.jakarta.authentication.jakarta-authentication-api>
         <version.jakarta.authorization.jakarta-authorization-api>3.0.0</version.jakarta.authorization.jakarta-authorization-api>
         <version.jakarta.el>6.0.1</version.jakarta.el>
         <version.jakarta.enterprise.concurrent.jakarta-enterprise.concurrent-api>3.1.0</version.jakarta.enterprise.concurrent.jakarta-enterprise.concurrent-api>
@@ -86,7 +84,6 @@
                     </exclusion>
                 </exclusions>
             </dependency>
-            <!-- TODO ElytronAuthConfigFactory uses removed field AuthConfigFactory.providerRegistrationSecurityPermission
             <dependency>
                 <groupId>jakarta.authentication</groupId>
                 <artifactId>jakarta.authentication-api</artifactId>
@@ -98,7 +95,6 @@
                     </exclusion>
                 </exclusions>
             </dependency>
-            -->
             <dependency>
                 <groupId>jakarta.authorization</groupId>
                 <artifactId>jakarta.authorization-api</artifactId>
