@@ -166,4 +166,4 @@ The `jta-data-source` value should match the value of the `jndi-name` attribute 
 
 == Configuring WildFly to Support Jakarta Data
 
-For information on how to enable Jakarta Data support in your server configuration the see xref:Admin_Guide.adoc#Jakarta_Data[Admin Guide].
+For information on how to enable Jakarta Data support in your server configuration, see the xref:Admin_Guide.adoc#Jakarta_Data[Admin Guide].

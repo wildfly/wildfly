@@ -33,7 +33,7 @@ If the WildFly configuration does not have the `jakarta-data` subsystem enabled,
 
 [source,options="nowrap"]
 ----
-[standalone@localhost:9990  /] org.wildfly.extension.jakarta.data:add
+[standalone@localhost:9990  /] /extension=org.wildfly.extension.jakarta.data:add
 {"outcome" => "success"}
 [standalone@localhost:9990  /] /subsystem=jakarta-data:add
 {

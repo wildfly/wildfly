@@ -9,6 +9,7 @@
     <layers>
         <include name="cloud-server"/>
         <include name="h2-default-datasource"/>
+        <include name="jakarta-data"/>
         <include name="microprofile-fault-tolerance"/>
         <include name="microprofile-jwt"/>
         <include name="microprofile-openapi"/>

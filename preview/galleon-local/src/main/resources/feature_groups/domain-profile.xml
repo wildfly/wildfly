@@ -12,4 +12,5 @@
     <feature-group name="infinispan-local"/>
     <feature spec="subsystem.microprofile-config-smallrye"/>
     <feature spec="subsystem.microprofile-jwt-smallrye"/>
+    <feature spec="subsystem.jakarta-data"/>
 </feature-group-spec>
