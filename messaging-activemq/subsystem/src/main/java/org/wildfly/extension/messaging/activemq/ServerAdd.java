@@ -4,6 +4,8 @@
  */
 package org.wildfly.extension.messaging.activemq;
 
+import static org.jboss.as.controller.ModuleIdentifierUtil.canonicalModuleIdentifier;
+
 import static org.wildfly.extension.messaging.activemq._private.MessagingLogger.ROOT_LOGGER;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
@@ -150,7 +152,6 @@ import org.jboss.as.network.SocketBinding;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 import org.jboss.modules.Module;
-import org.jboss.modules.ModuleIdentifier;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceController.Mode;
@@ -717,8 +718,7 @@ class ServerAdd extends AbstractAddStepHandler {
             String className = classModel.get(NAME).asString();
             String moduleName = classModel.get(MODULE).asString();
             try {
-                ModuleIdentifier moduleID = ModuleIdentifier.fromString(moduleName);
-                Module module = Module.getCallerModuleLoader().loadModule(moduleID);
+                Module module = Module.getCallerModuleLoader().loadModule(canonicalModuleIdentifier(moduleName));
                 Class<?> clazz = module.getClassLoader().loadClass(className);
                 return clazz;
             } catch (Exception e) {
