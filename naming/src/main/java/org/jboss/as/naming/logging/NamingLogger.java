@@ -30,7 +30,6 @@ import org.jboss.logging.annotations.Cause;
 import org.jboss.logging.annotations.LogMessage;
 import org.jboss.logging.annotations.Message;
 import org.jboss.logging.annotations.MessageLogger;
-import org.jboss.modules.ModuleIdentifier;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartException;
 
@@ -482,7 +481,7 @@ public interface NamingLogger extends BasicLogger {
      * @return the exception
      */
     @Message(id = 52, value = "Could not load module %s")
-    OperationFailedException couldNotLoadModule(ModuleIdentifier moduleID);
+    OperationFailedException couldNotLoadModule(String moduleID);
 
     /**
      * Creates an exception indicating that a class could not be loaded from a module.
@@ -491,7 +490,7 @@ public interface NamingLogger extends BasicLogger {
      * @return the exception
      */
     @Message(id = 53, value = "Could not load class %s from module %s")
-    OperationFailedException couldNotLoadClassFromModule(String className, ModuleIdentifier moduleID);
+    OperationFailedException couldNotLoadClassFromModule(String className, String moduleID);
 
     /**
      * Creates an exception indicating that a class instance could not be instantiate, from the specified module.
@@ -500,7 +499,7 @@ public interface NamingLogger extends BasicLogger {
      * @return the exception
      */
     @Message(id = 54, value = "Could not instantiate instance of class %s from module %s")
-    OperationFailedException couldNotInstantiateClassInstanceFromModule(String className, ModuleIdentifier moduleID);
+    OperationFailedException couldNotInstantiateClassInstanceFromModule(String className, String moduleID);
 
     /**
      * Creates an exception indicating that a class is not an {@link javax.naming.spi.ObjectFactory} instance, from the specified module.
@@ -509,7 +508,7 @@ public interface NamingLogger extends BasicLogger {
      * @return the exception
      */
     @Message(id = 55, value = "Class %s from module %s is not an instance of ObjectFactory")
-    OperationFailedException notAnInstanceOfObjectFactory(String className, ModuleIdentifier moduleID);
+    OperationFailedException notAnInstanceOfObjectFactory(String className, String moduleID);
 
 //    /**
 //     * A "simple URL" binding add operation was failed by the operation transformer.
@@ -579,7 +578,7 @@ public interface NamingLogger extends BasicLogger {
     OperationFailedException cannotRebindExternalContext();
 
     @Message(id = 65, value = "Could not load module %s - the module or one of its dependencies is missing [%s]")
-    OperationFailedException moduleNotFound(ModuleIdentifier moduleID, String missingModule);
+    OperationFailedException moduleNotFound(String moduleID, String missingModule);
 
     @Message(id = 66, value = "Failed to start remote naming service")
     StartException failedToStartRemoteNamingService(@Cause Throwable cause);
