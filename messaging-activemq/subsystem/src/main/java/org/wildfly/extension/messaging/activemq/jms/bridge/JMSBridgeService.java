@@ -12,7 +12,6 @@ import java.util.function.Supplier;
 
 import org.apache.activemq.artemis.jms.bridge.JMSBridge;
 import org.jboss.modules.Module;
-import org.jboss.modules.ModuleIdentifier;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
@@ -80,8 +79,7 @@ class JMSBridgeService implements Service<JMSBridge> {
     public void startBridge() throws Exception {
         final Module module;
         if (moduleName != null) {
-            ModuleIdentifier moduleID = ModuleIdentifier.fromString(moduleName);
-            module =  Module.getContextModuleLoader().loadModule(moduleID);
+            module =  Module.getContextModuleLoader().loadModule(moduleName);
         } else {
             module = Module.forClass(JMSBridgeService.class);
         }

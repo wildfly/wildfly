@@ -18,7 +18,6 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
-import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoadException;
 import org.jboss.modules.ModuleNotFoundException;
 import org.wildfly.extension.messaging.activemq.CommonAttributes;
@@ -66,7 +65,7 @@ public class JMSBridgeFactory {
             // if a module is specified, use it to instantiate the JMSBridge to ensure its ExecutorService
             // will use the correct class loader to execute its threads
             if (moduleName != null) {
-                org.jboss.modules.Module module = org.jboss.modules.Module.getCallerModuleLoader().loadModule(ModuleIdentifier.fromString(moduleName));
+                org.jboss.modules.Module module = org.jboss.modules.Module.getCallerModuleLoader().loadModule(moduleName);
                 WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(module.getClassLoader());
             }
             return new JMSBridgeImpl(sourceCff,
