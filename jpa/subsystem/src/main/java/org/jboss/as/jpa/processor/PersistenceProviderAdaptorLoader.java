@@ -20,7 +20,6 @@ import org.jboss.as.jpa.messages.JpaLogger;
 import org.jboss.as.jpa.transaction.JtaManagerImpl;
 import org.jboss.jandex.Index;
 import org.jboss.modules.Module;
-import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoadException;
 import org.jboss.modules.ModuleLoader;
 import org.jipijapa.plugin.spi.JtaManager;
@@ -106,7 +105,7 @@ public class PersistenceProviderAdaptorLoader {
 
         PersistenceProviderAdaptor persistenceProviderAdaptor=null;
 
-        Module module = moduleLoader.loadModule(ModuleIdentifier.fromString(adapterModule));
+        Module module = moduleLoader.loadModule(adapterModule);
         final ServiceLoader<PersistenceProviderAdaptor> serviceLoader =
             module.loadService(PersistenceProviderAdaptor.class);
         if (serviceLoader != null) {
