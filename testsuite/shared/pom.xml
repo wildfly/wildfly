@@ -233,6 +233,11 @@
             <groupId>org.wildfly</groupId>
             <artifactId>wildfly-naming-client</artifactId>
         </dependency>
+        <!-- This is required by the ReadCredentialServlet. -->
+        <dependency>
+            <groupId>org.wildfly.core</groupId>
+            <artifactId>wildfly-server</artifactId>
+        </dependency>
         <dependency>
             <groupId>org.wildfly.security</groupId>
             <artifactId>wildfly-elytron-auth-server</artifactId>
