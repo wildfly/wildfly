@@ -4,9 +4,6 @@
  */
 package org.jboss.as.jaxrs;
 
-import java.io.IOException;
-import java.util.List;
-
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.model.test.FailedOperationTransformationConfig;
@@ -19,37 +16,39 @@ import org.jboss.as.subsystem.test.LegacyKernelServicesInitializer;
 import org.jboss.dmr.ModelNode;
 import org.junit.Test;
 
+import java.io.IOException;
+import java.util.List;
+
 import static org.junit.Assert.assertTrue;
 
 /**
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
-public class JaxrsSubsystem30TestCase extends AbstractSubsystemBaseTest {
+public class JaxrsSubsystem31TestCase extends AbstractSubsystemBaseTest {
 
-    public JaxrsSubsystem30TestCase() {
+    public JaxrsSubsystem31TestCase() {
         super(JaxrsExtension.SUBSYSTEM_NAME, new JaxrsExtension());
     }
 
     @Override
     protected String getSubsystemXml() throws IOException {
-        return readResource("jaxrs-3.0.xml");
+        return readResource("jaxrs-3.1.xml");
     }
 
     @Override
     protected String getSubsystemXsdPath() throws Exception {
-        return "schema/jboss-as-jaxrs_3_0.xsd";
+        return "schema/jboss-as-jaxrs_3_1.xsd";
     }
 
     @Override
     public void testSubsystem() throws Exception {
-        standardSubsystemTest(null,false);
+        standardSubsystemTest(null);
     }
 
     @Test
     public void testExpressions() throws Exception {
-        standardSubsystemTest("jaxrs-3.0-expressions.xml",false);
+        standardSubsystemTest("jaxrs-3.1-expressions.xml",true);
     }
-
 
     @Test
     public void testRejectingTransformersEAP74() throws Exception {
@@ -57,7 +56,7 @@ public class JaxrsSubsystem30TestCase extends AbstractSubsystemBaseTest {
 
         transformationConfig.addFailedAttribute(PathAddress.pathAddress(JaxrsExtension.SUBSYSTEM_PATH),
                 new FailedOperationTransformationConfig.NewAttributesConfig(JaxrsAttribute.TRACING_THRESHOLD,
-                        JaxrsAttribute.TRACING_TYPE));
+                        JaxrsAttribute.TRACING_TYPE, JaxrsAttribute.RESTEASY_PATCHFILTER_DISABLED));
 
         testRejectingTransformers(transformationConfig, ModelTestControllerVersion.EAP_7_4_0);
     }
@@ -74,8 +73,7 @@ public class JaxrsSubsystem30TestCase extends AbstractSubsystemBaseTest {
         assertTrue(kernelServices.isSuccessfulBoot());
         assertTrue(kernelServices.getLegacyServices(subsystemModelVersion).isSuccessfulBoot());
 
-        List<ModelNode> operations = builder.parseXmlResource("jaxrs-3.0.xml");
+        List<ModelNode> operations = builder.parseXmlResource("jaxrs-3.1.xml");
         ModelTestUtils.checkFailedTransformedBootOperations(kernelServices, subsystemModelVersion, operations, transformationConfig);
     }
-
 }
