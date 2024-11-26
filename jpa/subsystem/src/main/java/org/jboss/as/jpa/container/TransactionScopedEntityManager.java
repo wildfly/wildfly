@@ -198,6 +198,11 @@ public class TransactionScopedEntityManager extends AbstractEntityManager implem
         return skipQueryDetach.booleanValue();
     }
 
+    @Override
+    public void setProperty(String propertyName, Object value) {
+        properties.put(propertyName, value);
+        super.setProperty(propertyName, value);
+    }
 
 
     /**
