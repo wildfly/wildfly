@@ -158,9 +158,10 @@
                 </executions>
                 <configuration>
                     <manifestPath>${project.build.directory}/assembly-manifest-rename/assembly/${project.artifactId}-${project.version}-manifest.yaml</manifestPath>
-                    <manifestName>WildFly preview manifest version ${project.version}</manifestName>
+                    <manifestName>WildFly Preview manifest version ${project.version}</manifestName>
                     <manifestId>${project.groupId}:${project.artifactId}</manifestId>
-                    <manifestDescription>Manifest for WildFly preview feature pack.</manifestDescription>
+                    <manifestLogicalVersion>WildFly Preview ${project.version}</manifestLogicalVersion>
+                    <manifestDescription>Manifest for WildFly Preview feature pack.</manifestDescription>
                 </configuration>
             </plugin>
         </plugins>
