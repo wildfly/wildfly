@@ -25,8 +25,6 @@ public class JaxrsExtension extends SubsystemExtension<JaxrsSubsystemSchema> {
 
     public static final String SUBSYSTEM_NAME = "jaxrs";
 
-    static final ModelVersion CURRENT_MODEL_VERSION = ModelVersion.create(4, 0, 0);
-
     private static final String RESOURCE_NAME = JaxrsExtension.class.getPackage().getName() + ".LocalDescriptions";
     static PathElement SUBSYSTEM_PATH = PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, SUBSYSTEM_NAME);
 
@@ -44,14 +42,20 @@ public class JaxrsExtension extends SubsystemExtension<JaxrsSubsystemSchema> {
     }
 
     enum JaxrsSubsystemModel implements SubsystemModel {
-        VERSION_4_0_0,
+        VERSION_4_0_0(ModelVersion.create(4, 0, 0)),
+        VERSION_5_0_0(ModelVersion.create(5, 0, 0)),
         ;
 
-        static final JaxrsSubsystemModel CURRENT = VERSION_4_0_0;
+        static final JaxrsSubsystemModel CURRENT = VERSION_5_0_0;
+        private final ModelVersion version;
+
+        JaxrsSubsystemModel(final ModelVersion version) {
+            this.version = version;
+        }
 
         @Override
         public ModelVersion getVersion() {
-            return CURRENT_MODEL_VERSION;
+            return version;
         }
 
         @Override

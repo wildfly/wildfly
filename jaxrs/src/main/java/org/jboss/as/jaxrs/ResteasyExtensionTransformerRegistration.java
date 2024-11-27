@@ -13,6 +13,7 @@ import org.jboss.as.controller.transform.description.DiscardAttributeChecker;
 import org.jboss.as.controller.transform.description.RejectAttributeChecker;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.as.controller.transform.description.TransformationDescriptionBuilder;
+import org.jboss.as.jaxrs.JaxrsExtension.JaxrsSubsystemModel;
 import org.kohsuke.MetaInfServices;
 
 /**
@@ -32,9 +33,9 @@ public class ResteasyExtensionTransformerRegistration implements ExtensionTransf
     public void registerTransformers(final SubsystemTransformerRegistration subsystemRegistration) {
         ChainedTransformationDescriptionBuilder builder = TransformationDescriptionBuilder.Factory.createChainedSubystemInstance(subsystemRegistration.getCurrentSubsystemVersion());
 
-        registerV3Transformers(builder.createBuilder(JaxrsExtension.CURRENT_MODEL_VERSION, VERSION_3_0_0));
+        registerV3Transformers(builder.createBuilder(JaxrsSubsystemModel.VERSION_4_0_0.getVersion(), VERSION_3_0_0));
 
-        builder.buildAndRegister(subsystemRegistration, new ModelVersion[] {VERSION_3_0_0, JaxrsExtension.CURRENT_MODEL_VERSION});
+        builder.buildAndRegister(subsystemRegistration, new ModelVersion[] {VERSION_3_0_0, JaxrsSubsystemModel.VERSION_4_0_0.getVersion(), JaxrsSubsystemModel.CURRENT.getVersion()});
     }
 
     private static void registerV3Transformers(ResourceTransformationDescriptionBuilder subsystem) {
