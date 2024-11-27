@@ -11,9 +11,8 @@ import org.jboss.as.controller.client.helpers.Operations;
 import org.jboss.as.test.shared.ServerReload;
 import org.jboss.as.test.shared.observability.containers.OpenTelemetryCollectorContainer;
 import org.jboss.dmr.ModelNode;
-import org.junit.AssumptionViolatedException;
 
-@DockerRequired(AssumptionViolatedException.class)
+@DockerRequired
 public class OpenTelemetrySetupTask extends AbstractSetupTask {
     private static final String SUBSYSTEM_NAME = "opentelemetry";
     private static final ModelNode extensionAddress = Operations.createAddress("extension", "org.wildfly.extension.opentelemetry");

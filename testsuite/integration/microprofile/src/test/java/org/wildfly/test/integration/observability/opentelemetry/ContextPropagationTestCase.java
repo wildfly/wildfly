@@ -25,7 +25,6 @@ import org.jboss.as.test.shared.observability.signals.jaeger.JaegerSpan;
 import org.jboss.as.test.shared.observability.signals.jaeger.JaegerTrace;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
-import org.junit.AssumptionViolatedException;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.wildfly.test.integration.observability.opentelemetry.application.OtelService2;
@@ -38,7 +37,7 @@ import org.wildfly.test.integration.observability.opentelemetry.application.Otel
 @RunWith(Arquillian.class)
 @RunAsClient
 @ServerSetup({OpenTelemetrySetupTask.class})
-@DockerRequired(AssumptionViolatedException.class)
+@DockerRequired
 public class ContextPropagationTestCase extends BaseOpenTelemetryTest {
     @Testcontainer
     private OpenTelemetryCollectorContainer otelCollector;

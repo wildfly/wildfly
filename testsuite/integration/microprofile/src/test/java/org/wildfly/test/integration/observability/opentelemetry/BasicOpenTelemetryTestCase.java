@@ -17,13 +17,12 @@ import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.test.shared.observability.setuptasks.OpenTelemetrySetupTask;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
-import org.junit.AssumptionViolatedException;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 @RunWith(Arquillian.class)
 @ServerSetup(OpenTelemetrySetupTask.class)
-@DockerRequired(AssumptionViolatedException.class)
+@DockerRequired
 public class BasicOpenTelemetryTestCase extends BaseOpenTelemetryTest {
     @Inject
     private Tracer tracer;
