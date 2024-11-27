@@ -20,14 +20,24 @@ import org.eclipse.microprofile.reactive.messaging.Incoming;
 public class TestReactiveMessagingOtelBean {
 
     private final List<String> received = Collections.synchronizedList(new ArrayList<>());
+    private final List<String> receivedDisabledTracing = Collections.synchronizedList(new ArrayList<>());
 
     @Inject
     @Channel("source")
     Emitter<String> emitter;
+    @Inject
+    @Channel("disabled-tracing-source")
+    Emitter<String> emitterDisabledTracing;
+
+    @Incoming("disabled-tracing-sink")
+    public void sinkDisabledTracing(String word) {
+        System.out.println("[disabled-tracing-sink] Received  " + word);
+        receivedDisabledTracing.add(word);
+    }
 
     @Incoming("sink")
     public void sink(String word) {
-        System.out.println("Received " + word);
+        System.out.println("[sink] Received " + word);
         received.add(word);
     }
 
@@ -47,10 +57,24 @@ public class TestReactiveMessagingOtelBean {
         } else {
             throw new IllegalStateException("Emitter was not ready in 30 seconds");
         }
+        if (emitterDisabledTracing.hasRequests()) {
+            emitterDisabledTracing.send(word);
+        } else {
+            throw new IllegalStateException("Emitter was not ready in 30 seconds");
+        }
     }
 
     public List<String> getReceived() {
         synchronized (received) {
+            // we send same messages to two channels, so we send empty list to signal they are not synced
+            if (received.size() != receivedDisabledTracing.size()) {
+                return Collections.emptyList();
+            }
+            List<String> diff = new ArrayList<>(received);
+            diff.removeAll(receivedDisabledTracing);
+            if (!diff.isEmpty()) {
+                return Collections.emptyList();
+            }
             return new ArrayList<>(received);
         }
     }
