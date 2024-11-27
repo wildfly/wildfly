@@ -16,7 +16,6 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.modules.Module;
-import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.security.ImmediatePermissionFactory;
 
 /**
@@ -26,9 +25,9 @@ import org.jboss.modules.security.ImmediatePermissionFactory;
  */
 public class SarModuleDependencyProcessor implements DeploymentUnitProcessor {
 
-    private static final ModuleIdentifier JBOSS_MODULES_ID = ModuleIdentifier.create("org.jboss.modules");
-    private static final ModuleIdentifier JBOSS_AS_SYSTEM_JMX_ID = ModuleIdentifier.create("org.jboss.as.system-jmx");
-    private static final ModuleIdentifier PROPERTIES_EDITOR_MODULE_ID = ModuleIdentifier.create("org.jboss.common-beans");
+    private static final String JBOSS_MODULES_ID = "org.jboss.modules";
+    private static final String JBOSS_AS_SYSTEM_JMX_ID = "org.jboss.as.system-jmx";
+    private static final String PROPERTIES_EDITOR_MODULE_ID = "org.jboss.common-beans";
 
     private static final ImmediatePermissionFactory REGISTER_PERMISSION_FACTORY = new ImmediatePermissionFactory(new MBeanTrustPermission("register"));
 
