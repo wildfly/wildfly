@@ -9,6 +9,7 @@ import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
+import org.jboss.arquillian.testcontainers.api.DockerRequired;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.test.integration.management.base.AbstractCliTestBase;
@@ -31,6 +32,7 @@ import java.io.File;
 @RunWith(Arquillian.class)
 @RunAsClient
 @ServerSetup({RunKafkaSetupTask.class, EnableReactiveExtensionsSetupTask.class})
+@DockerRequired
 public class ReactiveMessagingKafkaWithSnappyFailsOnWindowsAndMacTestCase extends AbstractCliTestBase {
     @ArquillianResource
     public ManagementClient managementClient;
