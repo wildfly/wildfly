@@ -23,7 +23,7 @@ import org.wildfly.test.integration.microprofile.reactive.RunKafkaSetupTask;
 @RunWith(Arquillian.class)
 @RunAsClient
 @ServerSetup({OpenTelemetryWithCollectorSetupTask.class, EnableReactiveExtensionsSetupTask.class, RunKafkaSetupTask.class})
-@DockerRequired(AssumptionViolatedException.class)
+@DockerRequired
 public class KafkaReactiveMessagingAndOtelTestCase extends BaseReactiveMessagingAndOtelTest {
     @Testcontainer
     private OpenTelemetryCollectorContainer otelCollector;

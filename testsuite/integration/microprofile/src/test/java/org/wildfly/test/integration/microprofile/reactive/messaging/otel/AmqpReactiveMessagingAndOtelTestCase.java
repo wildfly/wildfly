@@ -23,7 +23,6 @@ import org.wildfly.test.integration.microprofile.reactive.RunArtemisAmqpSetupTas
 @RunWith(Arquillian.class)
 @RunAsClient
 @ServerSetup({OpenTelemetryWithCollectorSetupTask.class, EnableReactiveExtensionsSetupTask.class, RunArtemisAmqpSetupTask.class})
-@DockerRequired(AssumptionViolatedException.class)
 public class AmqpReactiveMessagingAndOtelTestCase extends BaseReactiveMessagingAndOtelTest {
     @Testcontainer
     private OpenTelemetryCollectorContainer otelCollector;
