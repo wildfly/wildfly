@@ -49,6 +49,11 @@ public class H2DriverLayerMetaDataTestCase extends AbstractLayerMetaDataTestCase
         testWarWithClass(JakartaDataSourceDefinitionAnnotationUsage.class);
     }
 
+    @Test
+    public void testJakartaDataSourceDefinitionAnnotationURLUsage() throws Exception {
+        testWarWithClass(JakartaDataSourceDefinitionAnnotationURLUsage.class);
+    }
+
     private void testWarWithClass(Class<?> clazz) {
         Path p = createArchiveBuilder(ArchiveType.WAR)
                 .addClasses(clazz)
