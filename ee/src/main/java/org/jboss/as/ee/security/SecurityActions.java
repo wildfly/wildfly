@@ -9,9 +9,9 @@ import static java.security.AccessController.doPrivileged;
 
 import java.security.PrivilegedAction;
 
+import org.jboss.as.controller.ModuleIdentifierUtil;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleClassLoader;
-import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoadException;
 import org.jboss.modules.ModuleLoader;
 import org.wildfly.security.manager.WildFlySecurityManager;
@@ -28,7 +28,7 @@ class SecurityActions {
 
     static ModuleClassLoader getModuleClassLoader(final String moduleSpec) throws ModuleLoadException {
         ModuleLoader loader = Module.getCallerModuleLoader();
-        final Module module = loader.loadModule(ModuleIdentifier.fromString(moduleSpec));
+        final Module module = loader.loadModule(ModuleIdentifierUtil.canonicalModuleIdentifier(moduleSpec));
         GetModuleClassLoaderAction action = new GetModuleClassLoaderAction(module);
         return WildFlySecurityManager.isChecking() ? doPrivileged(action) : action.run();
     }
