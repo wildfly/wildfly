@@ -58,7 +58,6 @@ import org.jboss.as.weld.util.ServiceLoaders;
 import org.jboss.as.weld.util.Utils;
 import org.jboss.metadata.ear.spec.EarMetaData;
 import org.jboss.modules.Module;
-import org.jboss.modules.ModuleIdentifier;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
@@ -124,21 +123,21 @@ public class WeldDeploymentProcessor implements DeploymentUnitProcessor {
         final Module module = deploymentUnit.getAttachment(Attachments.MODULE);
         final ModuleSpecification moduleSpecification = deploymentUnit.getAttachment(Attachments.MODULE_SPECIFICATION);
 
-        final Set<BeanDeploymentArchiveImpl> beanDeploymentArchives = new HashSet<BeanDeploymentArchiveImpl>();
-        final Map<ModuleIdentifier, BeanDeploymentModule> bdmsByIdentifier = new HashMap<ModuleIdentifier, BeanDeploymentModule>();
-        final Map<ModuleIdentifier, ModuleSpecification> moduleSpecByIdentifier = new HashMap<ModuleIdentifier, ModuleSpecification>();
-        final Map<ModuleIdentifier, EEModuleDescriptor> eeModuleDescriptors = new HashMap<>();
+        final Set<BeanDeploymentArchiveImpl> beanDeploymentArchives = new HashSet<>();
+        final Map<String, BeanDeploymentModule> bdmsByIdentifier = new HashMap<>();
+        final Map<String, ModuleSpecification> moduleSpecByIdentifier = new HashMap<>();
+        final Map<String, EEModuleDescriptor> eeModuleDescriptors = new HashMap<>();
 
         // the root module only has access to itself. For most deployments this will be the only module
         // for ear deployments this represents the ear/lib directory.
         // war and jar deployment visibility will depend on the dependencies that
         // exist in the application, and mirror inter module dependencies
         final BeanDeploymentModule rootBeanDeploymentModule = deploymentUnit.getAttachment(WeldAttachments.BEAN_DEPLOYMENT_MODULE);
-        putIfValueNotNull(eeModuleDescriptors, module.getIdentifier(), rootBeanDeploymentModule.getModuleDescriptor());
+        putIfValueNotNull(eeModuleDescriptors, module.getName(), rootBeanDeploymentModule.getModuleDescriptor());
 
-        bdmsByIdentifier.put(module.getIdentifier(), rootBeanDeploymentModule);
+        bdmsByIdentifier.put(module.getName(), rootBeanDeploymentModule);
 
-        moduleSpecByIdentifier.put(module.getIdentifier(), moduleSpecification);
+        moduleSpecByIdentifier.put(module.getName(), moduleSpecification);
 
         beanDeploymentArchives.addAll(rootBeanDeploymentModule.getBeanDeploymentArchives());
         final List<DeploymentUnit> subDeployments = deploymentUnit.getAttachmentList(Attachments.SUB_DEPLOYMENTS);
@@ -172,9 +171,9 @@ public class WeldDeploymentProcessor implements DeploymentUnitProcessor {
             }
             // add the modules bdas to the global set of bdas
             beanDeploymentArchives.addAll(bdm.getBeanDeploymentArchives());
-            bdmsByIdentifier.put(subDeploymentModule.getIdentifier(), bdm);
-            moduleSpecByIdentifier.put(subDeploymentModule.getIdentifier(), subDeploymentModuleSpec);
-            putIfValueNotNull(eeModuleDescriptors, subDeploymentModule.getIdentifier(), bdm.getModuleDescriptor());
+            bdmsByIdentifier.put(subDeploymentModule.getName(), bdm);
+            moduleSpecByIdentifier.put(subDeploymentModule.getName(), subDeploymentModuleSpec);
+            putIfValueNotNull(eeModuleDescriptors, subDeploymentModule.getName(), bdm.getModuleDescriptor());
 
             //we have to do this here as the aggregate components are not available in earlier phases
             final ResourceRoot subDeploymentRoot = subDeployment.getAttachment(Attachments.DEPLOYMENT_ROOT);
@@ -185,7 +184,7 @@ public class WeldDeploymentProcessor implements DeploymentUnitProcessor {
             }
         }
 
-        for (Map.Entry<ModuleIdentifier, BeanDeploymentModule> entry : bdmsByIdentifier.entrySet()) {
+        for (Map.Entry<String, BeanDeploymentModule> entry : bdmsByIdentifier.entrySet()) {
             final ModuleSpecification bdmSpec = moduleSpecByIdentifier.get(entry.getKey());
             final BeanDeploymentModule bdm = entry.getValue();
             if (bdm == rootBeanDeploymentModule) {
