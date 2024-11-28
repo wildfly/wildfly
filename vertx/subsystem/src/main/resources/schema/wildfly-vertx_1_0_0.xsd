@@ -86,7 +86,6 @@
 
     <xs:complexType name="addressResolverOptionType">
         <xs:attribute name="name" use="required" type="xs:string"/>
-        <xs:attribute name="hosts-path" type="xs:string" />
         <xs:attribute name="hosts-value" type="xs:string" />
         <xs:attribute name="servers" type="xs:string" />
         <xs:attribute name="opt-resource-enabled" type="xs:boolean" />

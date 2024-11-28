@@ -46,11 +46,6 @@ class AddressResolverResourceDefinition extends SimpleResourceDefinition impleme
       .build();
 
   // AddressResolverOptions
-  public static final SimpleAttributeDefinition ATTR_HOSTS_PATH = new SimpleAttributeDefinitionBuilder(VertxConstants.ATTR_HOSTS_PATH, ModelType.STRING)
-    .setRequired(false)
-    .setAllowExpression(true)
-    .build();
-
   public static final SimpleAttributeDefinition ATTR_HOSTS_VALUE = new SimpleAttributeDefinitionBuilder(VertxConstants.ATTR_HOSTS_VALUE, ModelType.STRING)
     .setRequired(false)
     .setAllowExpression(true)
@@ -129,7 +124,6 @@ class AddressResolverResourceDefinition extends SimpleResourceDefinition impleme
 
   private static final List<AttributeDefinition> VERTX_ADDRESS_RESOLVER_OPTIONS_ATTRS = new ArrayList<>();
   static {
-    VERTX_ADDRESS_RESOLVER_OPTIONS_ATTRS.add(ATTR_HOSTS_PATH);
     VERTX_ADDRESS_RESOLVER_OPTIONS_ATTRS.add(ATTR_HOSTS_VALUE);
     VERTX_ADDRESS_RESOLVER_OPTIONS_ATTRS.add(ATTR_SERVERS);
     VERTX_ADDRESS_RESOLVER_OPTIONS_ATTRS.add(ATTR_OPT_RES_ENABLED);
@@ -218,9 +212,6 @@ class AddressResolverResourceDefinition extends SimpleResourceDefinition impleme
 
     private AddressResolverOptions parseAddressResolverOptions(ModelNode operation) throws OperationFailedException {
       AddressResolverOptions addressResolverOptions = new AddressResolverOptions();
-      if (operation.hasDefined(VertxConstants.ATTR_HOSTS_PATH)) {
-        addressResolverOptions.setHostsPath(ATTR_HOSTS_PATH.validateOperation(operation).asString());
-      }
       if (operation.hasDefined(VertxConstants.ATTR_HOSTS_VALUE)) {
         addressResolverOptions.setHostsValue(Buffer.buffer(ATTR_HOSTS_VALUE.validateOperation(operation).asString()));
       }
