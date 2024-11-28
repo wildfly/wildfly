@@ -44,10 +44,12 @@ public interface VertxConstants {
     // file system options
     String ATTR_FS_CLASS_PATH_RESOLVING_ENABLED = "classpath-resolving-enabled";
     String ATTR_FS_FILE_CACHE_ENABLED = "file-cache-enabled";
+    String ATTR_FS_FILE_CACHE_DIR = "file-cache-dir";
 
     // address resolver options
     String ATTR_HOSTS_PATH = "hosts-path";
     String ATTR_HOSTS_VALUE = "hosts-value";
+    String ATTR_HOSTS_REFRESH_PERIOD = "hosts-refresh-period";
     String ATTR_SERVERS = "servers";
     String ATTR_OPT_RES_ENABLED = "opt-resource-enabled";
     String ATTR_CACHE_MIN_TTL = "cache-min-time-to-live";

@@ -6,7 +6,19 @@
 <subsystem xmlns="urn:wildfly:vertx:preview:1.0">
   <vertx option-name="vo" />
   <vertx-options>
-    <vertx-option name="vo" address-resolver-option="aro" />
-    <address-resolver-option name="aro" max-queries="20"/>
+    <vertx-option name="vo" address-resolver-option="aro" event-loop-pool-size="10"
+                  worker-pool-size="20" internal-blocking-pool-size="50" prefer-native-transport="false"
+                  blocked-thread-check-interval="2000" blocked-thread-check-interval-unit="MILLISECONDS"
+                  max-eventloop-execute-time="3000" max-eventloop-execute-time-unit="MILLISECONDS"
+                  max-worker-execute-time="5" max-worker-execute-time-unit="SECONDS"
+                  warning-exception-time="5" warning-exception-time-unit="SECONDS"
+                  classpath-resolving-enabled="true" file-cache-enabled="true" file-cache-dir="tmp"
+    />
+    <address-resolver-option name="aro" max-queries="20" hosts-path="/etc/hosts" hosts-value="127.0.0.1 localhost"
+                             servers="192.168.1.1,8.8.8.8" opt-resource-enabled="true"
+                             cache-min-time-to-live="30" cache-max-time-to-live="600" cache-negative-time-to-live="10"
+                             query-time-out="5000" rd-flag="true" search-domains="local,remote" n-dots="-1" rotate-servers="true"
+                             round-robin-inet-address="true" hosts-refresh-period="10000"
+    />
   </vertx-options>
 </subsystem>

@@ -117,6 +117,11 @@ public abstract class VertxOptionsAttributes implements VertxConstants {
     .setAllowExpression(true)
     .build();
 
+  public static final SimpleAttributeDefinition ATTR_FS_FILE_CACHE_DIR = new SimpleAttributeDefinitionBuilder(VertxConstants.ATTR_FS_FILE_CACHE_DIR, ModelType.STRING)
+          .setRequired(false)
+          .setAllowExpression(true)
+          .build();
+
   // address-resolver-option
   public static final SimpleAttributeDefinition ATTR_VERTX_OPTION_ADDRESS_RESOLVER = new SimpleAttributeDefinitionBuilder(VertxConstants.ELEMENT_VERTX_OPTION_ADDRESS_RESOLVER, ModelType.STRING)
     .setRequired(false)
@@ -141,6 +146,7 @@ public abstract class VertxOptionsAttributes implements VertxConstants {
     // file system options
     VERTX_OPTIONS_ATTRS.add(ATTR_FS_CLASS_PATH_RESOLVING_ENABLED);
     VERTX_OPTIONS_ATTRS.add(ATTR_FS_FILE_CACHE_ENABLED);
+    VERTX_OPTIONS_ATTRS.add(ATTR_FS_FILE_CACHE_DIR);
 
     // address-resolver-option
     VERTX_OPTIONS_ATTRS.add(ATTR_VERTX_OPTION_ADDRESS_RESOLVER);
