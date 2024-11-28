@@ -5,15 +5,28 @@
 
 package org.wildfly.test.integration.microprofile.reactive.messaging.kafka.api;
 
-import io.smallrye.reactive.messaging.kafka.api.IncomingKafkaRecordMetadata;
+import static org.jboss.as.test.shared.PermissionUtils.createPermissionsXmlAsset;
+
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.PropertyPermission;
+import java.util.Set;
+import java.util.concurrent.TimeUnit;
+
 import jakarta.inject.Inject;
-import kafka.server.KafkaConfig;
+
+import io.smallrye.reactive.messaging.kafka.api.IncomingKafkaRecordMetadata;
 import org.apache.kafka.common.header.Header;
 import org.apache.kafka.common.header.Headers;
 import org.apache.kafka.common.record.TimestampType;
 import org.eclipse.microprofile.reactive.messaging.Message;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.testcontainers.api.DockerRequired;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.test.shared.CLIServerSetupTask;
 import org.jboss.as.test.shared.TimeoutUtil;
@@ -26,23 +39,12 @@ import org.junit.runner.RunWith;
 import org.wildfly.test.integration.microprofile.reactive.EnableReactiveExtensionsSetupTask;
 import org.wildfly.test.integration.microprofile.reactive.RunKafkaSetupTask;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.Properties;
-import java.util.PropertyPermission;
-import java.util.Set;
-import java.util.concurrent.TimeUnit;
-
-import static org.jboss.as.test.shared.PermissionUtils.createPermissionsXmlAsset;
-
 /**
  * @author <a href="mailto:kabir.khan@jboss.com">Kabir Khan</a>
  */
 @RunWith(Arquillian.class)
 @ServerSetup({ReactiveMessagingKafkaUserApiTestCase.CustomRunKafkaSetupTask.class, EnableReactiveExtensionsSetupTask.class})
+@DockerRequired
 public class ReactiveMessagingKafkaUserApiTestCase {
 
     private static final long TIMEOUT = TimeoutUtil.adjust(15000);
@@ -248,10 +250,9 @@ public class ReactiveMessagingKafkaUserApiTestCase {
     }
 
     public static class CustomRunKafkaSetupTask extends RunKafkaSetupTask {
-
         @Override
-        protected void addBrokerProperties(Properties brokerProperties) {
-            brokerProperties.put(KafkaConfig.NumPartitionsProp(), String.valueOf(getPartitions()));
+        protected Map<String, String> extraBrokerProperties() {
+            return Collections.singletonMap("KAFKA_NUM_PARTITIONS", String.valueOf(getPartitions()));
         }
 
         @Override
@@ -266,7 +267,6 @@ public class ReactiveMessagingKafkaUserApiTestCase {
             return map;
         }
 
-        //@Override
         protected int getPartitions() {
             // Doesn't seem to have any effect. Perhaps that will change in the future
             return 12;

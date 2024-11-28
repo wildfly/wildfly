@@ -43,7 +43,6 @@ import static org.jboss.as.jaxrs.JaxrsSubsystemDefinition.RESTEASY_VALIDATOR;
 import org.jboss.as.server.deployment.module.ResourceRoot;
 import org.jboss.as.weld.WeldCapability;
 import org.jboss.modules.Module;
-import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoader;
 import org.jboss.modules.filter.PathFilters;
 import org.jboss.vfs.VirtualFile;
@@ -56,11 +55,13 @@ import org.jboss.vfs.VirtualFile;
 public class JaxrsDependencyProcessor implements DeploymentUnitProcessor {
 
     private static final String CLIENT_BUILDER = "META-INF/services/jakarta.ws.rs.client.ClientBuilder";
+
+    @Override
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
         final ModuleSpecification moduleSpecification = deploymentUnit.getAttachment(Attachments.MODULE_SPECIFICATION);
 
-        boolean deploymentBundlesClientBuilder = isClientBuilderInDeployment(deploymentUnit);
+        final boolean deploymentBundlesClientBuilder = isClientBuilderInDeployment(deploymentUnit);
 
         final ModuleLoader moduleLoader = Module.getBootModuleLoader();
         addDependency(moduleSpecification, moduleLoader, JAXRS_API, false, false);
@@ -87,8 +88,8 @@ public class JaxrsDependencyProcessor implements DeploymentUnitProcessor {
 
         final CapabilityServiceSupport support = deploymentUnit.getAttachment(Attachments.CAPABILITY_SERVICE_SUPPORT);
         if (support.hasCapability(WELD_CAPABILITY_NAME)) {
-            final WeldCapability api = support.getOptionalCapabilityRuntimeAPI(WELD_CAPABILITY_NAME, WeldCapability.class).get();
-            if (api.isPartOfWeldDeployment(deploymentUnit)) {
+            final WeldCapability api = support.getOptionalCapabilityRuntimeAPI(WELD_CAPABILITY_NAME, WeldCapability.class).orElse(null);
+            if (api != null && api.isPartOfWeldDeployment(deploymentUnit)) {
                 addDependency(moduleSpecification, moduleLoader, RESTEASY_CDI, true, false);
             }
         }
@@ -118,14 +119,9 @@ public class JaxrsDependencyProcessor implements DeploymentUnitProcessor {
     }
 
     private void addDependency(ModuleSpecification moduleSpecification, ModuleLoader moduleLoader,
-                               ModuleIdentifier moduleIdentifier, boolean optional, boolean deploymentBundelesClientBuilder) {
-        addDependency(moduleSpecification, moduleLoader, moduleIdentifier.toString(), optional, deploymentBundelesClientBuilder);
-    }
-
-    private void addDependency(ModuleSpecification moduleSpecification, ModuleLoader moduleLoader,
-                               String moduleIdentifier, boolean optional, boolean deploymentBundelesClientBuilder) {
+                               String moduleIdentifier, boolean optional, boolean deploymentBundlesClientBuilder) {
         ModuleDependency dependency = new ModuleDependency(moduleLoader, moduleIdentifier, optional, false, true, false);
-        if(deploymentBundelesClientBuilder) {
+        if(deploymentBundlesClientBuilder) {
             dependency.addImportFilter(PathFilters.is(CLIENT_BUILDER), false);
         }
         moduleSpecification.addSystemDependency(dependency);

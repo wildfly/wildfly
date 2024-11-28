@@ -222,6 +222,12 @@
                 </exclusions>
             </dependency>
             <dependency>
+                <groupId>org.jboss.resteasy</groupId>
+                <artifactId>resteasy-client-utils</artifactId>
+                <version>${version.org.jboss.resteasy}</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
                 <groupId>org.jboss.shrinkwrap</groupId>
                 <artifactId>shrinkwrap-api</artifactId>
                 <version>${version.org.jboss.shrinkwrap.shrinkwrap}</version>
@@ -311,7 +317,12 @@
                 <version>${version.org.testcontainers}</version>
                 <scope>test</scope>
             </dependency>
-
+            <dependency>
+                <groupId>org.testcontainers</groupId>
+                <artifactId>kafka</artifactId>
+                <version>${version.org.testcontainers}</version>
+                <scope>test</scope>
+            </dependency>
             <dependency>
                 <groupId>org.testcontainers</groupId>
                 <artifactId>testcontainers</artifactId>
