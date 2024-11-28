@@ -48,8 +48,6 @@ public abstract class LayersTestBase {
             "org.apache.activemq.artemis.protocol.amqp",
             "org.apache.activemq.artemis.protocol.hornetq",
             "org.apache.activemq.artemis.protocol.stomp",
-            // Legacy client not associated with any layer
-            "org.hornetq.client",
             // TODO we need to add an xts layer
             "org.jboss.as.xts",
             // TODO should an undertow layer specify this?

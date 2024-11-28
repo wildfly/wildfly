@@ -81,6 +81,7 @@
         <module>legacy/jsr77</module>
         <module>legacy/keycloak</module>
         <module>legacy/opentracing-extension</module>
+        <module>legacy/hornetq</module>
         <module>metrics</module>
         <module>messaging-activemq</module>
         <module>microprofile</module>

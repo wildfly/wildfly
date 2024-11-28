@@ -7,9 +7,6 @@ package org.wildfly.extension.messaging.activemq.jms;
 
 import java.util.List;
 
-import jakarta.jms.Topic;
-
-import org.hornetq.api.jms.HornetQJMSClient;
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -19,6 +16,7 @@ import org.jboss.msc.service.ServiceTarget;
 import org.wildfly.extension.messaging.activemq.BinderServiceUtil;
 import org.wildfly.extension.messaging.activemq.CommonAttributes;
 import org.wildfly.extension.messaging.activemq.MessagingServices;
+import org.wildfly.extension.messaging.activemq.jms.legacy.HornetQHelper;
 
 /**
  * Update handler adding a topic to the Jakarta Messaging subsystem. The
@@ -52,10 +50,7 @@ public class JMSTopicAdd extends AbstractAddStepHandler {
 
         List<String> legacyEntries = CommonAttributes.LEGACY_ENTRIES.unwrap(context, model);
         if (!legacyEntries.isEmpty()) {
-            Topic legacyTopic = HornetQJMSClient.createTopic(name);
-            for (String legacyEntry : legacyEntries) {
-                BinderServiceUtil.installBinderService(serviceTarget, legacyEntry, legacyTopic);
-            }
+            HornetQHelper.getLegacyConnectionFactory().createTopic(serviceTarget, name, legacyEntries);
         }
     }
 }
