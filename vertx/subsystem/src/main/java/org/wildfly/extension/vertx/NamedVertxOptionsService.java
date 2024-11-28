@@ -22,6 +22,7 @@ import java.nio.file.Path;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
+import static org.wildfly.extension.vertx.AbstractVertxOptionsResourceDefinition.VERTX_OPTIONS_CAPABILITY;
 import static org.wildfly.extension.vertx.VertxConstants.ATTR_FS_FILE_CACHE_DIR;
 import static org.wildfly.extension.vertx.VertxConstants.ELEMENT_VERTX_OPTION_ADDRESS_RESOLVER;
 
@@ -35,11 +36,6 @@ public class NamedVertxOptionsService implements Service {
   private final Supplier<AddressResolverOptions> addressResolverOptionsSupplier;
   private final Supplier<ServerEnvironment> serverEnvironmentSupplier;
   private final boolean defaultFileCacheDir;
-
-  NamedVertxOptionsService(NamedVertxOptions namedVertxOptions,
-                           Consumer<NamedVertxOptions> consumer) {
-    this(namedVertxOptions, null, null, false, consumer);
-  }
 
   NamedVertxOptionsService(NamedVertxOptions namedVertxOptions,
                            Supplier<AddressResolverOptions> addressResolverOptionsSupplier,
@@ -65,7 +61,7 @@ public class NamedVertxOptionsService implements Service {
   static void installVertxOptionsService(OperationContext context, ModelNode operation) throws OperationFailedException {
     final String name = context.getCurrentAddressValue();
     VertxOptions vertxOptions = VertxOptionsResourceDefinition.parseOptions(operation);
-    ServiceName vertxServiceName = VertxOptionFileResourceDefinition.VERTX_OPTIONS_CAPABILITY.getCapabilityServiceName(name);
+    ServiceName vertxServiceName = VERTX_OPTIONS_CAPABILITY.getCapabilityServiceName(name);
     ServiceBuilder<?> vertxServiceBuilder = context.getCapabilityServiceTarget().addService();
     Supplier<AddressResolverOptions> addressResolverOptionsSupplier = null;
     if (operation.hasDefined(ELEMENT_VERTX_OPTION_ADDRESS_RESOLVER)) {

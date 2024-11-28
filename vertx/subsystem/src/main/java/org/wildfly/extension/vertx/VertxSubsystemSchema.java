@@ -49,10 +49,6 @@ enum VertxSubsystemSchema implements PersistentSubsystemSchema<VertxSubsystemSch
                 .addChild(
                         decorator(ELEMENT_VERTX_OPTIONS)
                                 .addChild(
-                                        builder(VertxOptionFileResourceDefinition.INSTANCE.getPathElement())
-                                                .addAttributes(VertxOptionsAttributes.getVertxOptionsFileAttributes().toArray(new AttributeDefinition[0]))
-                                )
-                                .addChild(
                                         builder(VertxOptionsResourceDefinition.INSTANCE.getPathElement())
                                                 .addAttributes(VertxOptionsAttributes.getVertxOptionsAttributes().toArray(new AttributeDefinition[0]))
                                 )

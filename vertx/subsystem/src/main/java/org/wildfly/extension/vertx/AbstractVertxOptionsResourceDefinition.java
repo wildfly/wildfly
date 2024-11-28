@@ -39,7 +39,7 @@ public abstract class AbstractVertxOptionsResourceDefinition extends SimpleResou
   protected static class VertxOptionRemoveHandler extends AbstractVertxOptionRemoveHandler {
     @Override
     protected void doPerform(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
-      ServiceName vertxServiceName = VertxOptionFileResourceDefinition.VERTX_OPTIONS_CAPABILITY.getCapabilityServiceName(context.getCurrentAddressValue());
+      ServiceName vertxServiceName = VERTX_OPTIONS_CAPABILITY.getCapabilityServiceName(context.getCurrentAddressValue());
       context.removeService(vertxServiceName);
     }
 

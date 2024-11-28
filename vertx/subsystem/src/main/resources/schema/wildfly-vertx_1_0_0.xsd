@@ -28,11 +28,6 @@
 
     <xs:complexType name="vertxOptionsType">
         <xs:sequence>
-            <xs:element name="vertx-option-file" type="vertxOptionFileType" maxOccurs="unbounded" minOccurs="0">
-                <xs:annotation>
-                    <xs:documentation>Define a VertxOptions from a Json file</xs:documentation>
-                </xs:annotation>
-            </xs:element>
             <xs:element name="vertx-option" type="vertxOptionType" maxOccurs="unbounded" minOccurs="0">
                 <xs:annotation>
                     <xs:documentation>Define a VertxOptions by specifying each property</xs:documentation>
@@ -46,15 +41,6 @@
                 </xs:annotation>
             </xs:element>
         </xs:sequence>
-    </xs:complexType>
-
-    <xs:complexType name="vertxOptionFileType">
-        <xs:attribute name="name" use="required" type="xs:string"/>
-        <xs:attribute name="path" type="xs:string">
-            <xs:annotation>
-                <xs:documentation>Specify the json file path where to read VertxOptions from.</xs:documentation>
-            </xs:annotation>
-        </xs:attribute>
     </xs:complexType>
 
     <xs:complexType name="vertxOptionType">
