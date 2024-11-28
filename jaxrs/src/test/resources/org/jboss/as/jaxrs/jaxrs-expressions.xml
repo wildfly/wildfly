@@ -42,4 +42,5 @@
     <resteasy-wider-request-matching>${test.wider.request.matching:true}</resteasy-wider-request-matching>
     <tracing-type>${test.tracing.type:ON_DEMAND}</tracing-type>
     <tracing-threshold>${test.tracing.threshold:TRACE}</tracing-threshold>
+    <resteasy-patchfilter-disabled>${test.patchfilter.disable:true}</resteasy-patchfilter-disabled>
 </subsystem>
