@@ -7,6 +7,7 @@ package org.wildfly.extension.vertx;
 import io.vertx.core.Vertx;
 import io.vertx.core.VertxOptions;
 import io.vertx.core.impl.VertxBuilder;
+import io.vertx.core.spi.resolver.ResolverProvider;
 import org.jboss.as.controller.CapabilityServiceBuilder;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.msc.Service;
@@ -15,6 +16,7 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.wildfly.extension.vertx.logging.VertxLogger;
+import org.wildfly.security.manager.WildFlySecurityManager;
 
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
@@ -29,6 +31,12 @@ import static org.wildfly.extension.vertx.VertxResourceDefinition.VERTX_RUNTIME_
  * @author <a href="aoingl@gmail.com">Lin Gao</a>
  */
 public class VertxProxyService implements Service, VertxConstants {
+
+    static {
+        if (WildFlySecurityManager.getPropertyPrivileged(ResolverProvider.DISABLE_DNS_RESOLVER_PROP_NAME, null) == null) {
+            WildFlySecurityManager.setPropertyPrivileged(ResolverProvider.DISABLE_DNS_RESOLVER_PROP_NAME, "true");
+        }
+    }
     private VertxProxy vertxProxy;
     private final String optionName;
     private final Supplier<NamedVertxOptions> optionsSupplier;
