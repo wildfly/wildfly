@@ -42,4 +42,5 @@
     <resteasy-wider-request-matching>true</resteasy-wider-request-matching>
     <tracing-type>ALL</tracing-type>
     <tracing-threshold>VERBOSE</tracing-threshold>
+    <resteasy-patchfilter-disabled>true</resteasy-patchfilter-disabled>
 </subsystem>

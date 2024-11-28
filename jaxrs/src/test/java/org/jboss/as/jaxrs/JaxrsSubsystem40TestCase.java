@@ -51,11 +51,21 @@ public class JaxrsSubsystem40TestCase extends AbstractSubsystemBaseTest {
     }
 
     @Test
+    public void testRejectingTransformersEAP80() throws Exception {
+        FailedOperationTransformationConfig transformationConfig = new FailedOperationTransformationConfig();
+
+        transformationConfig.addFailedAttribute(PathAddress.pathAddress(JaxrsExtension.SUBSYSTEM_PATH),
+                new FailedOperationTransformationConfig.NewAttributesConfig(JaxrsAttribute.RESTEASY_PATCHFILTER_DISABLED));
+
+        testRejectingTransformersEAP80(transformationConfig, ModelTestControllerVersion.EAP_8_0_0);
+    }
+
+    @Test
     public void testRejectingTransformersEAP74() throws Exception {
         FailedOperationTransformationConfig transformationConfig = new FailedOperationTransformationConfig();
 
         transformationConfig.addFailedAttribute(PathAddress.pathAddress(JaxrsExtension.SUBSYSTEM_PATH),
-                new FailedOperationTransformationConfig.NewAttributesConfig(JaxrsAttribute.TRACING_TYPE, JaxrsAttribute.TRACING_THRESHOLD));
+                new FailedOperationTransformationConfig.NewAttributesConfig(JaxrsAttribute.TRACING_TYPE, JaxrsAttribute.TRACING_THRESHOLD, JaxrsAttribute.RESTEASY_PATCHFILTER_DISABLED));
 
         testRejectingTransformers(transformationConfig, ModelTestControllerVersion.EAP_7_4_0);
     }
@@ -68,6 +78,22 @@ public class JaxrsSubsystem40TestCase extends AbstractSubsystemBaseTest {
                 .addMavenResourceURL("org.wildfly.core:wildfly-threads:" + controllerVersion.getCoreVersion())
                 .dontPersistXml();
         kernelServicesInitializer.addMavenResourceURL("org.wildfly:wildfly-jaxrs:26.0.0.Final");
+        KernelServices kernelServices = builder.build();
+        assertTrue(kernelServices.isSuccessfulBoot());
+        assertTrue(kernelServices.getLegacyServices(subsystemModelVersion).isSuccessfulBoot());
+
+        List<ModelNode> operations = builder.parseXmlResource("jaxrs.xml");
+        ModelTestUtils.checkFailedTransformedBootOperations(kernelServices, subsystemModelVersion, operations, transformationConfig);
+    }
+
+    private void testRejectingTransformersEAP80(FailedOperationTransformationConfig transformationConfig, ModelTestControllerVersion controllerVersion) throws Exception {
+        ModelVersion subsystemModelVersion = controllerVersion.getSubsystemModelVersion(JaxrsExtension.SUBSYSTEM_NAME);
+
+        KernelServicesBuilder builder = createKernelServicesBuilder(createAdditionalInitialization());
+        builder.createLegacyKernelServicesBuilder(createAdditionalInitialization(), controllerVersion, subsystemModelVersion)
+                .addMavenResourceURL(String.format("%s:wildfly-threads:%s", controllerVersion.getCoreMavenGroupId(), controllerVersion.getCoreVersion()))
+                .dontPersistXml()
+                .addMavenResourceURL(String.format("%s:wildfly-jaxrs:%s", controllerVersion.getMavenGroupId(), controllerVersion.getMavenGavVersion()));
         KernelServices kernelServices = builder.build();
         assertTrue(kernelServices.isSuccessfulBoot());
         assertTrue(kernelServices.getLegacyServices(subsystemModelVersion).isSuccessfulBoot());
