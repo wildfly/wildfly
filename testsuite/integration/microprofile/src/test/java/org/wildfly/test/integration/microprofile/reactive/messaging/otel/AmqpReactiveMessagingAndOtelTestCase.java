@@ -14,7 +14,6 @@ import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.test.shared.observability.containers.OpenTelemetryCollectorContainer;
 import org.jboss.as.test.shared.observability.setuptasks.OpenTelemetryWithCollectorSetupTask;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.AssumptionViolatedException;
 import org.junit.runner.RunWith;
 import org.wildfly.test.integration.microprofile.reactive.EnableReactiveExtensionsSetupTask;
 import org.wildfly.test.integration.microprofile.reactive.RunArtemisAmqpSetupTask;
@@ -23,6 +22,7 @@ import org.wildfly.test.integration.microprofile.reactive.RunArtemisAmqpSetupTas
 @RunWith(Arquillian.class)
 @RunAsClient
 @ServerSetup({OpenTelemetryWithCollectorSetupTask.class, EnableReactiveExtensionsSetupTask.class, RunArtemisAmqpSetupTask.class})
+@DockerRequired
 public class AmqpReactiveMessagingAndOtelTestCase extends BaseReactiveMessagingAndOtelTest {
     @Testcontainer
     private OpenTelemetryCollectorContainer otelCollector;
