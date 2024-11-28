@@ -180,72 +180,128 @@ public abstract class BaseReactiveMessagingAndOtelTest {
 
     @Test
     public void testOpenTelemetryTracingOffEnabledAtConnectorLevel() throws Exception {
-        testOpenTelemetryTraces(Map.of(tracingAttributeName, TracingType.OFF), Map.of(connectorTracingPropertyName, true),  (post, publish, receive) -> post && publish && receive, false);
+        testOpenTelemetryTraces(
+                Map.of(tracingAttributeName, TracingType.OFF),
+                Map.of(connectorTracingPropertyName, true),
+                (post, publish, receive) -> post && publish && receive,
+                false);
     }
 
     @Test
     public void testOpenTelemetryTracingOffEnabledAtConnectorLevelDisabledAtIncomingChannel() throws Exception {
-        testOpenTelemetryTraces(Map.of(tracingAttributeName, TracingType.OFF), Map.of(connectorTracingPropertyName, true, incomingChannelProperty, false),  (post, publish, receive) -> post && publish && !receive, false);
+        testOpenTelemetryTraces(
+                Map.of(tracingAttributeName, TracingType.OFF),
+                Map.of(connectorTracingPropertyName, true, incomingChannelProperty, false),
+                (post, publish, receive) -> post && publish && !receive,
+                false);
     }
 
     @Test
     public void testOpenTelemetryTracingOffEnabledAtConnectorLevelDisabledAtOutgoingChannel() throws Exception {
-        testOpenTelemetryTraces(Map.of(tracingAttributeName, TracingType.OFF), Map.of(connectorTracingPropertyName, true, outgoingChannelProperty, false), (post, publish, receive) -> post && !publish && receive, false);
+        testOpenTelemetryTraces(
+                Map.of(tracingAttributeName, TracingType.OFF),
+                Map.of(connectorTracingPropertyName, true, outgoingChannelProperty, false),
+                (post, publish, receive) -> post && !publish && receive,
+                false);
     }
 
     @Test
     public void testOpenTelemetryTracingOffEnabledAtIncomingChannel() throws Exception {
-        testOpenTelemetryTraces(Map.of(tracingAttributeName, TracingType.OFF), Map.of(incomingChannelProperty, true),  (post, publish, receive) -> post && !publish && receive, false);
+        testOpenTelemetryTraces(
+                Map.of(tracingAttributeName, TracingType.OFF),
+                Map.of(incomingChannelProperty, true),
+                (post, publish, receive) -> post && !publish && receive,
+                false);
     }
 
     @Test
     public void testOpenTelemetryTracingOffEnabledAtOutgoingChannel() throws Exception {
-        testOpenTelemetryTraces(Map.of(tracingAttributeName, TracingType.OFF), Map.of(outgoingChannelProperty, true),  (post, publish, receive) -> post && publish && !receive, false);
+        testOpenTelemetryTraces(
+                Map.of(tracingAttributeName, TracingType.OFF),
+                Map.of(outgoingChannelProperty, true),
+                (post, publish, receive) -> post && publish && !receive,
+                false);
     }
 
     @Test
     public void testOpenTelemetryTracingOnDisabledAtConnectorLevel() throws Exception {
-        testOpenTelemetryTraces(Map.of(tracingAttributeName, TracingType.ON), Map.of(connectorTracingPropertyName, false),  (post, publish, receive) -> post && !publish && !receive, false);
+        testOpenTelemetryTraces(
+                Map.of(tracingAttributeName, TracingType.ON),
+                Map.of(connectorTracingPropertyName, false),
+                (post, publish, receive) -> post && !publish && !receive,
+                false);
     }
     @Test
     public void testOpenTelemetryTracingOnDisabledAtConnectorLevelEnabledAtIncomingChannel() throws Exception {
-        testOpenTelemetryTraces(Map.of(tracingAttributeName, TracingType.ON), Map.of(connectorTracingPropertyName, false, incomingChannelProperty, true),  (post, publish, receive) -> post && !publish && receive, false);
+        testOpenTelemetryTraces(
+                Map.of(tracingAttributeName, TracingType.ON),
+                Map.of(connectorTracingPropertyName, false, incomingChannelProperty, true),
+                (post, publish, receive) -> post && !publish && receive,
+                false);
     }
 
     @Test
     public void testOpenTelemetryTracingOnDisabledAtConnectorLevelEnabledAtOutgoingChannel() throws Exception {
-        testOpenTelemetryTraces(Map.of(tracingAttributeName, TracingType.ON), Map.of(connectorTracingPropertyName, false, outgoingChannelProperty, true), (post, publish, receive) -> post && publish && !receive, false);
+        testOpenTelemetryTraces(
+                Map.of(tracingAttributeName, TracingType.ON),
+                Map.of(connectorTracingPropertyName, false, outgoingChannelProperty, true),
+                (post, publish, receive) -> post && publish && !receive,
+                false);
     }
 
     @Test
     public void testOpenTelemetryTracingOnDisabledAtIncomingChannel() throws Exception {
-        testOpenTelemetryTraces(Map.of(tracingAttributeName, TracingType.ON), Map.of(incomingChannelProperty, false),  (post, publish, receive) -> post && publish && !receive, false);
+        testOpenTelemetryTraces(
+                Map.of(tracingAttributeName, TracingType.ON),
+                Map.of(incomingChannelProperty, false),
+                (post, publish, receive) -> post && publish && !receive,
+                false);
     }
 
     @Test
     public void testOpenTelemetryTracingOnDisabledAtOutgoingChannel() throws Exception {
-        testOpenTelemetryTraces(Map.of(tracingAttributeName, TracingType.ON), Map.of(outgoingChannelProperty, false),  (post, publish, receive) -> post && !publish && receive, false);
+        testOpenTelemetryTraces(
+                Map.of(tracingAttributeName, TracingType.ON),
+                Map.of(outgoingChannelProperty, false),
+                (post, publish, receive) -> post && !publish && receive,
+                false);
 
     }
 
     @Test
     public void testOpenTelemetryTracingAlwaysDisabledAtConnectorLevel() throws Exception {
-        testOpenTelemetryTraces(Map.of(tracingAttributeName, TracingType.ALWAYS), Map.of(connectorTracingPropertyName, false),  (post, publish, receive) -> post && publish && receive, true);
+        testOpenTelemetryTraces(
+                Map.of(tracingAttributeName, TracingType.ALWAYS),
+                Map.of(connectorTracingPropertyName, false),
+                (post, publish, receive) -> post && publish && receive,
+                true);
     }
 
     @Test
     public void testOpenTelemetryTracingAlwaysDisabledAtChannel() throws Exception {
-        testOpenTelemetryTraces(Map.of(tracingAttributeName, TracingType.ALWAYS), Map.of(outgoingChannelProperty, false, incomingChannelProperty, false),  (post, publish, receive) -> post && publish && receive, true);
+        testOpenTelemetryTraces(
+                Map.of(tracingAttributeName, TracingType.ALWAYS),
+                Map.of(outgoingChannelProperty, false, incomingChannelProperty, false),
+                (post, publish, receive) -> post && publish && receive,
+                true);
     }
 
     @Test
     public void testOpenTelemetryTracingNeverEnabledAtConnectorLevel() throws Exception {
-        testOpenTelemetryTraces(Map.of(tracingAttributeName, TracingType.NEVER), Map.of(connectorTracingPropertyName, true),  (post, publish, receive) -> post && !publish && !receive, false);
+        testOpenTelemetryTraces(
+                Map.of(tracingAttributeName, TracingType.NEVER),
+                Map.of(connectorTracingPropertyName, true),
+                (post, publish, receive) -> post && !publish && !receive,
+                false);
     }
 
     @Test
     public void testOpenTelemetryTracingNeverEnabledAtChannel() throws Exception {
-        testOpenTelemetryTraces(Map.of(tracingAttributeName, TracingType.NEVER), Map.of(outgoingChannelProperty, true, incomingChannelProperty, true),  (post, publish, receive) -> post && !publish && !receive, false);
+        testOpenTelemetryTraces(
+                Map.of(tracingAttributeName, TracingType.NEVER),
+                Map.of(outgoingChannelProperty, true, incomingChannelProperty, true),
+                (post, publish, receive) -> post && !publish && !receive,
+                false);
     }
 
     private void postData(CloseableHttpClient client, String value) throws Exception {
