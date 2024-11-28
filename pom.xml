@@ -403,7 +403,7 @@
         <version.antlr>4.13.0</version.antlr>
         <version.com.carrotsearch.hppc>0.10.0</version.com.carrotsearch.hppc>
         <version.com.fasterxml.classmate>1.5.1</version.com.fasterxml.classmate>
-        <version.com.fasterxml.jackson>2.18.1</version.com.fasterxml.jackson>
+        <version.com.fasterxml.jackson>2.18.2</version.com.fasterxml.jackson>
         <version.com.fasterxml.jackson.databind>${version.com.fasterxml.jackson}</version.com.fasterxml.jackson.databind>
         <version.com.fasterxml.jackson.jr.jackson-jr-objects>${version.com.fasterxml.jackson}</version.com.fasterxml.jackson.jr.jackson-jr-objects>
         <version.com.github.ben-manes.caffeine>3.1.8</version.com.github.ben-manes.caffeine>
