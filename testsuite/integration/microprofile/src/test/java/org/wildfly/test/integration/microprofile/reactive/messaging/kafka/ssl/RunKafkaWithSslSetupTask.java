@@ -55,12 +55,12 @@ public class RunKafkaWithSslSetupTask implements ServerSetupTask {
                     MountableFile.forHostPath(SERVER_KEYSTORE_PATH.getParent()),
                     "/etc/kafka/secrets/");
 
-//            // Set env vars which don't seem to have any effect when only in server.properties
+            // Set env vars which don't seem to have any effect when only in server.properties
             container.addEnv("KAFKA_CONTROLLER_QUORUM_VOTERS", "1@localhost:29093");
 
             container.start();
 
-            companion = new KafkaCompanion("INTERNAL://localhost:19092");
+            companion = new KafkaCompanion("localhost:19092");
             companion.topics().createAndWait("testing", 1, Duration.of(10, ChronoUnit.SECONDS));
         } catch (Exception e) {
             cleanupKafka();

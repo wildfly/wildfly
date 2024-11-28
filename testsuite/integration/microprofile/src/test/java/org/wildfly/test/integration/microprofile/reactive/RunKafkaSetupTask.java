@@ -38,7 +38,7 @@ public class RunKafkaSetupTask implements ServerSetupTask {
 
         container.start();
 
-        companion = new KafkaCompanion("INTERNAL://localhost:9092");
+        companion = new KafkaCompanion("localhost:9092");
 
         Map<String, Integer> topicsAndPartitions = getTopicsAndPartitions();
         if (topicsAndPartitions == null || topicsAndPartitions.isEmpty()) {
