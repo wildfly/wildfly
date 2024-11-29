@@ -11,13 +11,12 @@ import java.time.Duration;
 import java.util.AbstractMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
-
-import io.github.resilience4j.retry.RetryConfig;
 
 import org.infinispan.Cache;
 import org.infinispan.configuration.cache.CacheMode;
@@ -59,6 +58,8 @@ import org.wildfly.clustering.server.infinispan.scheduler.Scheduler;
 import org.wildfly.clustering.server.infinispan.scheduler.SchedulerTopologyChangeListener;
 import org.wildfly.clustering.server.manager.IdentifierFactory;
 
+import io.github.resilience4j.retry.RetryConfig;
+
 /**
  * A timer manager backed by an Infinispan cache.
  * @author Paul Ferraro
@@ -75,9 +76,30 @@ public class InfinispanTimerManager<I, C> implements TimerManager<I> {
     private final Supplier<Batch> batchFactory;
     private final CacheContainerCommandDispatcherFactory dispatcherFactory;
     private final TimerRegistry<I> registry;
+    private final Scheduler<I, TimeoutMetaData> inactiveScheduler = new Scheduler<>() {
+        @Override
+        public void schedule(I id) {
+        }
 
-    private volatile Scheduler<I, TimeoutMetaData> scheduler;
-    private volatile ListenerRegistration schedulerListenerRegistration;
+        @Override
+        public void schedule(I id, TimeoutMetaData metaData) {
+        }
+
+        @Override
+        public boolean contains(I id) {
+            return false;
+        }
+
+        @Override
+        public void cancel(I id) {
+        }
+
+        @Override
+        public void close() {
+        }
+    };
+    private final AtomicReference<Scheduler<I, TimeoutMetaData>> scheduler = new AtomicReference<>(this.inactiveScheduler);
+    private final AtomicReference<ListenerRegistration> schedulerListenerRegistration = new AtomicReference<>();
 
     public InfinispanTimerManager(InfinispanTimerManagerConfiguration<I, C> config) {
         this.cache = config.getCache();
@@ -111,7 +133,7 @@ public class InfinispanTimerManager<I, C> implements TimerManager<I> {
         TimerScheduler<I, RemappableTimerMetaDataEntry<C>> localScheduler = new TimerScheduler<>(this.cache.getName(), this.factory, this, locality, Duration.ofMillis(this.cache.getCacheConfiguration().transaction().cacheStopTimeout()), this.registry);
 
         CacheContainerGroup group = this.dispatcherFactory.getGroup();
-        this.scheduler = group.isSingleton() ? localScheduler : new PrimaryOwnerScheduler<>(new PrimaryOwnerSchedulerConfiguration<>() {
+        this.scheduler.set(group.isSingleton() ? localScheduler : new PrimaryOwnerScheduler<>(new PrimaryOwnerSchedulerConfiguration<>() {
             @Override
             public String getName() {
                 return InfinispanTimerManager.this.cache.getName();
@@ -141,13 +163,13 @@ public class InfinispanTimerManager<I, C> implements TimerManager<I> {
             public RetryConfig getRetryConfig() {
                 return InfinispanTimerManager.this.retryConfig;
             }
-        });
+        }));
 
         Consumer<CacheStreamFilter<Map.Entry<TimerMetaDataKey<I>, RemappableTimerMetaDataEntry<C>>>> scheduleTask = new CacheEntriesTask<>(this.cache, TimerCacheEntryFilter.META_DATA_ENTRY.cast(), localScheduler::schedule);
         org.wildfly.clustering.cache.function.Consumer<I> cancel = localScheduler::cancel;
         Consumer<CacheStreamFilter<TimerMetaDataKey<I>>> cancelTask = new CacheKeysTask<>(this.cache, TimerCacheKeyFilter.META_DATA_KEY, cancel.map(Key::getId));
 
-        this.schedulerListenerRegistration = new SchedulerTopologyChangeListener<>(this.cache, scheduleTask, cancelTask).register();
+        this.schedulerListenerRegistration.set(new SchedulerTopologyChangeListener<>(this.cache, scheduleTask, cancelTask).register());
 
         scheduleTask.accept(CacheStreamFilter.local(this.cache));
 
@@ -162,14 +184,12 @@ public class InfinispanTimerManager<I, C> implements TimerManager<I> {
             this.identifierFactory.stop();
         }
 
-        ListenerRegistration registration = this.schedulerListenerRegistration;
-        if (registration != null) {
-            registration.close();
+        try (ListenerRegistration registration = this.schedulerListenerRegistration.getAndSet(null)) {
+            // auto-closed
         }
 
-        Scheduler<I, TimeoutMetaData> scheduler = this.scheduler;
-        if (scheduler != null) {
-            scheduler.close();
+        try (Scheduler<I, TimeoutMetaData> scheduler = this.scheduler.getAndSet(this.inactiveScheduler)) {
+            // auto-closed
         }
     }
 
@@ -208,7 +228,7 @@ public class InfinispanTimerManager<I, C> implements TimerManager<I> {
         if (metaDataFactory.createValue(id, new AbstractMap.SimpleImmutableEntry<>(entry, index)) == null) return null; // Timer with index already exists
 
         ImmutableTimerMetaData metaData = metaDataFactory.createImmutableTimerMetaData(entry);
-        Timer<I> timer = this.factory.createTimer(id, metaData, this, this.scheduler);
+        Timer<I> timer = this.factory.createTimer(id, metaData, this, this.scheduler.get());
         return timer;
     }
 
@@ -218,7 +238,7 @@ public class InfinispanTimerManager<I, C> implements TimerManager<I> {
         RemappableTimerMetaDataEntry<C> entry = metaDataFactory.findValue(id);
         if (entry != null) {
             ImmutableTimerMetaData metaData = metaDataFactory.createImmutableTimerMetaData(entry);
-            return this.factory.createTimer(id, metaData, this, this.scheduler);
+            return this.factory.createTimer(id, metaData, this, this.scheduler.get());
         }
         return null;
     }
