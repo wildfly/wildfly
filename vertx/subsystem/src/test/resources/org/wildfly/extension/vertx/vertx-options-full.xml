@@ -14,7 +14,7 @@
                   warning-exception-time="5" warning-exception-time-unit="SECONDS"
                   classpath-resolving-enabled="true" file-cache-enabled="true" file-cache-dir="tmp"
     />
-    <address-resolver-option name="aro" max-queries="20" hosts-path="/etc/hosts" hosts-value="127.0.0.1 localhost"
+    <address-resolver-option name="aro" max-queries="20" hosts-value="127.0.0.1 localhost"
                              servers="192.168.1.1,8.8.8.8" opt-resource-enabled="true"
                              cache-min-time-to-live="30" cache-max-time-to-live="600" cache-negative-time-to-live="10"
                              query-time-out="5000" rd-flag="true" search-domains="local,remote" n-dots="-1" rotate-servers="true"

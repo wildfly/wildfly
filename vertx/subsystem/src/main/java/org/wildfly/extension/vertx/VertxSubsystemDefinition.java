@@ -39,7 +39,6 @@ public class VertxSubsystemDefinition extends SimpleResourceDefinition {
     public void registerChildren(ManagementResourceRegistration resourceRegistration) {
         super.registerChildren(resourceRegistration);
         resourceRegistration.registerSubModel(VertxResourceDefinition.INSTANCE);
-        resourceRegistration.registerSubModel(VertxOptionFileResourceDefinition.INSTANCE);
         resourceRegistration.registerSubModel(VertxOptionsResourceDefinition.INSTANCE);
         resourceRegistration.registerSubModel(AddressResolverResourceDefinition.INSTANCE);
     }
