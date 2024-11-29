@@ -7,10 +7,14 @@ package org.jboss.as.clustering.infinispan.manager;
 
 import static org.infinispan.util.logging.Log.CONFIG;
 
+import java.lang.annotation.Annotation;
+import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.CompletionStage;
 
 import javax.security.auth.Subject;
 
@@ -25,6 +29,8 @@ import org.infinispan.factories.GlobalComponentRegistry;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.infinispan.manager.EmbeddedCacheManagerAdmin;
 import org.infinispan.manager.impl.AbstractDelegatingEmbeddedCacheManager;
+import org.infinispan.notifications.cachelistener.filter.CacheEventConverter;
+import org.infinispan.notifications.cachelistener.filter.CacheEventFilter;
 import org.infinispan.remoting.transport.Address;
 import org.infinispan.remoting.transport.LocalModeAddress;
 import org.jboss.as.clustering.infinispan.dataconversion.MediaTypeFactory;
@@ -97,7 +103,12 @@ public class DefaultCacheContainer extends AbstractDelegatingEmbeddedCacheManage
 
     @Override
     public <K, V> Cache<K, V> getCache(String cacheName, boolean createIfAbsent) {
-        Cache<K, V> cache = this.cm.getCache(cacheName, createIfAbsent);
+        Cache<K, V> cache = AccessController.doPrivileged(new PrivilegedAction<>() {
+            @Override
+            public Cache<K, V> run() {
+                return DefaultCacheContainer.this.cm.getCache(cacheName, createIfAbsent);
+            }
+        });
         if (cache == null) return null;
         Configuration configuration = cache.getCacheConfiguration();
         CacheMode mode = configuration.clustering().cacheMode();
@@ -172,6 +183,27 @@ public class DefaultCacheContainer extends AbstractDelegatingEmbeddedCacheManage
     }
 
     @Override
+    public void addListener(Object listener) {
+        AccessController.doPrivileged(new PrivilegedAction<>() {
+            @Override
+            public Void run() {
+                DefaultCacheContainer.super.addListener(listener);
+                return null;
+            }
+        });
+    }
+
+    @Override
+    public CompletionStage<Void> addListenerAsync(Object listener) {
+        return AccessController.doPrivileged(new PrivilegedAction<>() {
+            @Override
+            public CompletionStage<Void> run() {
+                return DefaultCacheContainer.super.addListenerAsync(listener);
+            }
+        });
+    }
+
+    @Override
     public EmbeddedCacheManager startCaches(String... cacheNames) {
         super.startCaches(cacheNames);
         return this;
@@ -241,6 +273,90 @@ public class DefaultCacheContainer extends AbstractDelegatingEmbeddedCacheManage
         @Override
         public AdvancedCache rewrap(AdvancedCache delegate) {
             return new DefaultCache<>(this.manager, delegate);
+        }
+
+        @Override
+        public void addListener(Object listener) {
+            AccessController.doPrivileged(new PrivilegedAction<>() {
+                @Override
+                public Void run() {
+                    DefaultCache.super.addListener(listener);
+                    return null;
+                }
+            });
+        }
+
+        @Override
+        public CompletionStage<Void> addListenerAsync(Object listener) {
+            return AccessController.doPrivileged(new PrivilegedAction<>() {
+                @Override
+                public CompletionStage<Void> run() {
+                    return DefaultCache.super.addListenerAsync(listener);
+                }
+            });
+        }
+
+        @Override
+        public <C> void addListener(Object listener, CacheEventFilter<? super K, ? super V> filter, CacheEventConverter<? super K, ? super V, C> converter) {
+            AccessController.doPrivileged(new PrivilegedAction<>() {
+                @Override
+                public Void run() {
+                    DefaultCache.super.addListener(listener, filter, converter);
+                    return null;
+                }
+            });
+        }
+
+        @Override
+        public <C> CompletionStage<Void> addListenerAsync(Object listener, CacheEventFilter<? super K, ? super V> filter, CacheEventConverter<? super K, ? super V, C> converter) {
+            return AccessController.doPrivileged(new PrivilegedAction<>() {
+                @Override
+                public CompletionStage<Void> run() {
+                    return DefaultCache.super.addListenerAsync(listener, filter, converter);
+                }
+            });
+        }
+
+        @Override
+        public <C> void addFilteredListener(Object listener, CacheEventFilter<? super K, ? super V> filter, CacheEventConverter<? super K, ? super V, C> converter, Set<Class<? extends Annotation>> filterAnnotations) {
+            AccessController.doPrivileged(new PrivilegedAction<>() {
+                @Override
+                public Void run() {
+                    DefaultCache.super.addFilteredListener(listener, filter, converter, filterAnnotations);
+                    return null;
+                }
+            });
+        }
+
+        @Override
+        public <C> CompletionStage<Void> addFilteredListenerAsync(Object listener, CacheEventFilter<? super K, ? super V> filter, CacheEventConverter<? super K, ? super V, C> converter, Set<Class<? extends Annotation>> filterAnnotations) {
+            return AccessController.doPrivileged(new PrivilegedAction<>() {
+                @Override
+                public CompletionStage<Void> run() {
+                    return DefaultCache.super.addFilteredListenerAsync(listener, filter, converter, filterAnnotations);
+                }
+            });
+        }
+
+        @Override
+        public <C> void addStorageFormatFilteredListener(Object listener, CacheEventFilter<? super K, ? super V> filter, CacheEventConverter<? super K, ? super V, C> converter, Set<Class<? extends Annotation>> filterAnnotations) {
+            AccessController.doPrivileged(new PrivilegedAction<>() {
+                @Override
+                public Void run() {
+                    DefaultCache.super.addStorageFormatFilteredListener(listener, filter, converter, filterAnnotations);
+                    return null;
+                }
+            });
+        }
+
+        @Override
+        public <C> CompletionStage<Void> addStorageFormatFilteredListenerAsync(Object listener, CacheEventFilter<? super K, ? super V> filter, CacheEventConverter<? super K, ? super V, C> converter, Set<Class<? extends Annotation>> filterAnnotations) {
+            return AccessController.doPrivileged(new PrivilegedAction<>() {
+                @Override
+                public CompletionStage<Void> run() {
+                    return DefaultCache.super.addStorageFormatFilteredListenerAsync(listener, filter, converter, filterAnnotations);
+                }
+            });
         }
     }
 }
