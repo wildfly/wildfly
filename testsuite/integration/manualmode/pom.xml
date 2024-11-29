@@ -342,7 +342,7 @@
         <dependency>
             <groupId>org.wildfly.channels</groupId>
             <artifactId>wildfly-ee</artifactId>
-            <version>35.0.0.Beta1-SNAPSHOT</version>
+            <version>${ee.maven.version}</version>
             <type>yaml</type>
             <classifier>manifest</classifier>
         </dependency>
