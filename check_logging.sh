@@ -9,14 +9,14 @@ if [ -z "$DIFF" ]; then
 fi
 
 PATTERNS=(
-  ".info("
-  ".infof("
-  ".warn("
-  ".warnf("
-  ".error("
-  ".errorf("
-  ".fatal("
-  ".fatalf("
+  ".info(\""
+  ".infof(\""
+  ".warn(\""
+  ".warnf(\""
+  ".error(\""
+  ".errorf(\""
+  ".fatal(\""
+  ".fatalf(\""
   "System.out.print"
   "System.err.print"
   ".printStackTrace"
