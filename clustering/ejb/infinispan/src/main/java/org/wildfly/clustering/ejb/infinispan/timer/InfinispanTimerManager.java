@@ -10,6 +10,7 @@ import java.lang.reflect.Method;
 import java.time.Duration;
 import java.util.AbstractMap;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
@@ -73,10 +74,26 @@ public class InfinispanTimerManager<I, C> implements TimerManager<I> {
     private final Supplier<Batch> batchFactory;
     private final CacheContainerCommandDispatcherFactory dispatcherFactory;
     private final TimerRegistry<I> registry;
+    private final Scheduler<I, ImmutableTimerMetaData> inactiveScheduler = new Scheduler<>() {
+        @Override
+        public void schedule(I id, ImmutableTimerMetaData metaData) {
+        }
 
-    private volatile Scheduler<I, ImmutableTimerMetaData> scheduledTimers;
-    private volatile Scheduler<I, ImmutableTimerMetaData> scheduler;
-    private volatile ListenerRegistration schedulerListenerRegistration;
+        @Override
+        public void cancel(I id) {
+        }
+
+        @Override
+        public Stream<I> stream() {
+            return Stream.of();
+        }
+
+        @Override
+        public void close() {
+        }
+    };
+    private final AtomicReference<Scheduler<I, ImmutableTimerMetaData>> scheduler = new AtomicReference<>(this.inactiveScheduler);
+    private final AtomicReference<ListenerRegistration> schedulerListenerRegistration = new AtomicReference<>();
 
     public InfinispanTimerManager(InfinispanTimerManagerConfiguration<I, C> config) {
         this.cache = config.getCache();
@@ -108,10 +125,9 @@ public class InfinispanTimerManager<I, C> implements TimerManager<I> {
         Supplier<Locality> locality = () -> Locality.forCurrentConsistentHash(this.cache);
 
         TimerScheduler<I, RemappableTimerMetaDataEntry<C>> localScheduler = new TimerScheduler<>(this.cache.getName(), this.factory, this, locality, Duration.ofMillis(this.cache.getCacheConfiguration().transaction().cacheStopTimeout()), this.registry);
-        this.scheduledTimers = localScheduler;
 
         CacheContainerGroup group = this.dispatcherFactory.getGroup();
-        this.scheduler = group.isSingleton() ? localScheduler : new PrimaryOwnerScheduler<>(new PrimaryOwnerSchedulerConfiguration<>() {
+        this.scheduler.set(group.isSingleton() ? localScheduler : new PrimaryOwnerScheduler<>(new PrimaryOwnerSchedulerConfiguration<>() {
             @Override
             public String getName() {
                 return InfinispanTimerManager.this.cache.getName();
@@ -141,7 +157,7 @@ public class InfinispanTimerManager<I, C> implements TimerManager<I> {
             public RetryConfig getRetryConfig() {
                 return InfinispanTimerManager.this.retryConfig;
             }
-        });
+        }));
 
         TimerRegistry<I> registry = this.registry;
         BiConsumer<Locality, Locality> scheduleTask = new ScheduleLocalKeysTask<>(this.cache, TimerMetaDataKeyFilter.INSTANCE, new Consumer<I>() {
@@ -152,7 +168,7 @@ public class InfinispanTimerManager<I, C> implements TimerManager<I> {
             }
         });
 
-        this.schedulerListenerRegistration = new SchedulerTopologyChangeListener<>(this.cache, localScheduler, scheduleTask).register();
+        this.schedulerListenerRegistration.set(new SchedulerTopologyChangeListener<>(this.cache, localScheduler, scheduleTask).register());
 
         scheduleTask.accept(Locality.of(false), Locality.forCurrentConsistentHash(this.cache));
 
@@ -167,14 +183,12 @@ public class InfinispanTimerManager<I, C> implements TimerManager<I> {
             this.identifierFactory.stop();
         }
 
-        ListenerRegistration registration = this.schedulerListenerRegistration;
-        if (registration != null) {
-            registration.close();
+        try (ListenerRegistration registration = this.schedulerListenerRegistration.getAndSet(null)) {
+            // auto-closed
         }
 
-        Scheduler<I, ImmutableTimerMetaData> scheduler = this.scheduler;
-        if (scheduler != null) {
-            scheduler.close();
+        try (Scheduler<I, ImmutableTimerMetaData> scheduler = this.scheduler.getAndSet(this.inactiveScheduler)) {
+            // auto-closed
         }
     }
 
@@ -213,7 +227,7 @@ public class InfinispanTimerManager<I, C> implements TimerManager<I> {
         if (metaDataFactory.createValue(id, new AbstractMap.SimpleImmutableEntry<>(entry, index)) == null) return null; // Timer with index already exists
 
         ImmutableTimerMetaData metaData = metaDataFactory.createImmutableTimerMetaData(entry);
-        Timer<I> timer = this.factory.createTimer(id, metaData, this, this.scheduledTimers);
+        Timer<I> timer = this.factory.createTimer(id, metaData, this, this.scheduler.get());
         return timer;
     }
 
@@ -223,15 +237,14 @@ public class InfinispanTimerManager<I, C> implements TimerManager<I> {
         RemappableTimerMetaDataEntry<C> entry = metaDataFactory.findValue(id);
         if (entry != null) {
             ImmutableTimerMetaData metaData = metaDataFactory.createImmutableTimerMetaData(entry);
-            return this.factory.createTimer(id, metaData, this, this.scheduledTimers);
+            return this.factory.createTimer(id, metaData, this, this.scheduler.get());
         }
         return null;
     }
 
     @Override
     public Stream<I> getActiveTimers() {
-        // The primary owner scheduler can miss entries, if called during a concurrent topology change event
-        return this.dispatcherFactory.getGroup().isSingleton() ? this.scheduledTimers.stream() : this.cache.keySet().stream().filter(TimerMetaDataKeyFilter.INSTANCE).map(Key::getId);
+        return this.cache.keySet().stream().filter(TimerMetaDataKeyFilter.INSTANCE).map(Key::getId);
     }
 
     @Override
