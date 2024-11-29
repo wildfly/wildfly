@@ -8,12 +8,11 @@ import java.time.Duration;
 import java.util.List;
 
 import org.jboss.arquillian.testcontainers.api.DockerRequired;
-import org.junit.AssumptionViolatedException;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.Network;
 import org.testcontainers.utility.DockerImageName;
 
-@DockerRequired(AssumptionViolatedException.class)
+@DockerRequired
 public abstract class BaseContainer<SELF extends GenericContainer<SELF>> extends GenericContainer<SELF> {
     private final String containerName;
 

@@ -5,10 +5,9 @@
 package org.jboss.as.jaxrs;
 
 import org.jboss.as.controller.AttributeDefinition;
-import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
+import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.SimpleResourceDefinition;
-
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.RuntimePackageDependency;
 /**
@@ -42,45 +41,42 @@ public class JaxrsSubsystemDefinition extends SimpleResourceDefinition {
     public static final String JAXRS_API = "jakarta.ws.rs.api";
 
     public static final String MP_REST_CLIENT = "org.eclipse.microprofile.restclient";
+    static final JaxrsSubsystemDefinition INSTANCE = new JaxrsSubsystemDefinition();
 
-    JaxrsSubsystemDefinition() {
+    private JaxrsSubsystemDefinition() {
          super(new Parameters(JaxrsExtension.SUBSYSTEM_PATH, JaxrsExtension.getResolver())
-                 .setAddHandler(new JaxrsSubsystemAdd(JaxrsAttribute.ATTRIBUTES))
-                 .setRemoveHandler(ReloadRequiredRemoveStepHandler.INSTANCE));
+                 .setAddHandler(new JaxrsSubsystemAdd())
+                 .setRemoveHandler(ReloadRequiredRemoveStepHandler.INSTANCE)
+                 .setAdditionalPackages(RuntimePackageDependency.passive(RESTEASY_CDI),
+                         RuntimePackageDependency.passive(RESTEASY_VALIDATOR),
+                         RuntimePackageDependency.passive(RESTEASY_JSON_B_PROVIDER),
+                         RuntimePackageDependency.required(JAXRS_API),
+                         RuntimePackageDependency.required(JAXB_API),
+                         RuntimePackageDependency.required(JSON_API),
+                         RuntimePackageDependency.optional(RESTEASY_ATOM),
+                         RuntimePackageDependency.required(RESTEASY_CORE),
+                         RuntimePackageDependency.required(RESTEASY_CORE_SPI),
+                         // The deprecated module should be activated if present for cases when other modules depend on this
+                         RuntimePackageDependency.optional("org.jboss.resteasy.resteasy-jaxrs"),
+                         RuntimePackageDependency.optional(RESTEASY_JAXB),
+                         RuntimePackageDependency.optional(RESTEASY_JACKSON2),
+                         RuntimePackageDependency.optional(RESTEASY_JSON_P_PROVIDER),
+                         RuntimePackageDependency.optional(RESTEASY_JSAPI),
+                         RuntimePackageDependency.optional(RESTEASY_MULTIPART),
+                         RuntimePackageDependency.optional(RESTEASY_TRACING),
+                         RuntimePackageDependency.optional(RESTEASY_CRYPTO),
+                         RuntimePackageDependency.optional(JACKSON_DATATYPE_JDK8),
+                         RuntimePackageDependency.optional(JACKSON_DATATYPE_JSR310),
+                         // The following ones are optional dependencies located in org.jboss.as.jaxrs module.xml
+                         // To be provisioned, they need to be explicitly added as optional packages.
+                         RuntimePackageDependency.optional("org.jboss.resteasy.resteasy-spring"))
+         );
     }
 
     @Override
-    public void registerAttributes(ManagementResourceRegistration registration) {
-        OperationStepHandler handler = new JaxrsParamHandler(JaxrsAttribute.ATTRIBUTES);
-        for (AttributeDefinition definition : JaxrsAttribute.ATTRIBUTES) {
-            registration.registerReadWriteAttribute(definition, null, handler);
+    public void registerAttributes(final ManagementResourceRegistration resourceRegistration) {
+        for (AttributeDefinition attributeDefinition : JaxrsAttribute.ATTRIBUTES) {
+            resourceRegistration.registerReadWriteAttribute(attributeDefinition, null, ReloadRequiredWriteAttributeHandler.INSTANCE);
         }
-    }
-
-    @Override
-    public void registerAdditionalRuntimePackages(ManagementResourceRegistration resourceRegistration) {
-        resourceRegistration.registerAdditionalRuntimePackages(RuntimePackageDependency.passive(RESTEASY_CDI),
-                    RuntimePackageDependency.passive(RESTEASY_VALIDATOR),
-                    RuntimePackageDependency.passive(RESTEASY_JSON_B_PROVIDER),
-                    RuntimePackageDependency.required(JAXRS_API),
-                    RuntimePackageDependency.required(JAXB_API),
-                    RuntimePackageDependency.required(JSON_API),
-                    RuntimePackageDependency.optional(RESTEASY_ATOM),
-                    RuntimePackageDependency.required(RESTEASY_CORE),
-                    RuntimePackageDependency.required(RESTEASY_CORE_SPI),
-                    // The deprecated module should be activated if present for cases when other modules depend on this
-                    RuntimePackageDependency.optional("org.jboss.resteasy.resteasy-jaxrs"),
-                    RuntimePackageDependency.optional(RESTEASY_JAXB),
-                    RuntimePackageDependency.optional(RESTEASY_JACKSON2),
-                    RuntimePackageDependency.optional(RESTEASY_JSON_P_PROVIDER),
-                    RuntimePackageDependency.optional(RESTEASY_JSAPI),
-                    RuntimePackageDependency.optional(RESTEASY_MULTIPART),
-                    RuntimePackageDependency.optional(RESTEASY_TRACING),
-                    RuntimePackageDependency.optional(RESTEASY_CRYPTO),
-                    RuntimePackageDependency.optional(JACKSON_DATATYPE_JDK8),
-                    RuntimePackageDependency.optional(JACKSON_DATATYPE_JSR310),
-                    // The following ones are optional dependencies located in org.jboss.as.jaxrs module.xml
-                    // To be provisioned, they need to be explicitly added as optional packages.
-                    RuntimePackageDependency.optional("org.jboss.resteasy.resteasy-spring"));
     }
 }

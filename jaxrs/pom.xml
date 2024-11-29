@@ -92,6 +92,11 @@
         </dependency>
 
         <dependency>
+            <groupId>org.wildfly.core</groupId>
+            <artifactId>wildfly-subsystem</artifactId>
+        </dependency>
+
+        <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>wildfly-web-common</artifactId>
         </dependency>

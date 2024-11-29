@@ -161,6 +161,7 @@
                     <manifestName>WildFly manifest version ${project.version}</manifestName>
                     <manifestId>${project.groupId}:${project.artifactId}</manifestId>
                     <manifestDescription>Manifest for WildFly feature pack.</manifestDescription>
+                    <manifestLogicalVersion>WildFly ${project.version}</manifestLogicalVersion>
                     <manifestRequirements>
                         <manifestRequirement>
                             <id>${project.groupId}:wildfly-ee</id>

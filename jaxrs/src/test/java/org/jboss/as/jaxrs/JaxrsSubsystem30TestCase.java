@@ -36,7 +36,7 @@ public class JaxrsSubsystem30TestCase extends AbstractSubsystemBaseTest {
     }
 
     @Override
-    protected String getSubsystemXsdPath() throws Exception {
+    protected String getSubsystemXsdPath() {
         return "schema/jboss-as-jaxrs_3_0.xsd";
     }
 

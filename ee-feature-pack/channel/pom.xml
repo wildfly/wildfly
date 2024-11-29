@@ -160,6 +160,7 @@
                     <manifestPath>${project.build.directory}/assembly-manifest-rename/assembly/${project.artifactId}-${project.version}-manifest.yaml</manifestPath>
                     <manifestName>WildFly EE manifest version ${project.version}</manifestName>
                     <manifestId>${project.groupId}:${project.artifactId}</manifestId>
+                    <manifestLogicalVersion>WildFly EE ${project.version}</manifestLogicalVersion>
                     <manifestDescription>Manifest for WildFly EE feature pack.</manifestDescription>
                 </configuration>
             </plugin>

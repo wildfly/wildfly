@@ -12,7 +12,6 @@ import static org.jboss.as.weld.Capabilities.WELD_CAPABILITY_NAME;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -718,7 +717,7 @@ public class PersistenceUnitServiceHandler {
                         binderService.getManagedObjectInjector().inject(new ValueManagedReferenceFactory(
                                         new TransactionScopedEntityManager(
                                                 pu.getScopedPersistenceUnitName(),
-                                                Collections.emptyMap(),
+                                                new HashMap(),      // WFLY-19973: pass empty HashMap that can be modified by application code.
                                                 value.getEntityManagerFactory(),
                                                 SynchronizationType.SYNCHRONIZED, transactionSynchronizationRegistry, transactionManager)));
                     }

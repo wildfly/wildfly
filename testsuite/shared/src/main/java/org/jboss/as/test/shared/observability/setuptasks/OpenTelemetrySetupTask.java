@@ -4,11 +4,13 @@
  */
 package org.jboss.as.test.shared.observability.setuptasks;
 
+import org.jboss.arquillian.testcontainers.api.DockerRequired;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.client.helpers.Operations;
 import org.jboss.as.test.shared.ServerReload;
 import org.jboss.dmr.ModelNode;
 
+@DockerRequired
 public class OpenTelemetrySetupTask extends AbstractSetupTask {
     protected static final String SUBSYSTEM_NAME = "opentelemetry";
     protected static final ModelNode extensionAddress = Operations.createAddress("extension", "org.wildfly.extension.opentelemetry");

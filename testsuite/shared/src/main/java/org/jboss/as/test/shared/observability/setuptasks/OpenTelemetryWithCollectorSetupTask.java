@@ -9,9 +9,8 @@ import org.jboss.arquillian.testcontainers.api.Testcontainer;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.test.shared.ServerReload;
 import org.jboss.as.test.shared.observability.containers.OpenTelemetryCollectorContainer;
-import org.junit.AssumptionViolatedException;
 
-@DockerRequired(AssumptionViolatedException.class)
+@DockerRequired
 public class OpenTelemetryWithCollectorSetupTask extends OpenTelemetrySetupTask {
 
     @Testcontainer
