@@ -6,7 +6,6 @@
 package org.wildfly.extension.clustering.web.session.hotrod;
 
 import java.util.Optional;
-import java.util.OptionalInt;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
@@ -27,7 +26,6 @@ import org.wildfly.clustering.server.service.BinaryServiceConfiguration;
 import org.wildfly.clustering.session.SessionManagerFactory;
 import org.wildfly.clustering.session.SessionManagerFactoryConfiguration;
 import org.wildfly.clustering.session.infinispan.remote.HotRodSessionManagerFactory;
-import org.wildfly.clustering.session.infinispan.remote.SessionManagerNearCacheFactory;
 import org.wildfly.clustering.session.spec.servlet.HttpSessionActivationListenerProvider;
 import org.wildfly.clustering.session.spec.servlet.HttpSessionProvider;
 import org.wildfly.clustering.web.service.WebDeploymentServiceDescriptor;
@@ -50,18 +48,14 @@ public class HotRodSessionManagementProvider extends AbstractSessionManagementPr
 
     @Override
     public <C> DeploymentServiceInstaller getSessionManagerFactoryServiceInstaller(SessionManagerFactoryConfiguration<C> configuration) {
-        OptionalInt maxActiveSessions = configuration.getMaxActiveSessions();
-        NearCacheMode mode = maxActiveSessions.isPresent() ? NearCacheMode.INVALIDATED : NearCacheMode.DISABLED;
         BinaryServiceConfiguration deploymentCacheConfiguration = this.getCacheConfiguration().withChildName(configuration.getDeploymentName());
         String templateName = Optional.ofNullable(this.getCacheConfiguration().getChildName()).orElse(DefaultTemplate.DIST_SYNC.getTemplateName());
 
         Consumer<RemoteCacheConfigurationBuilder> configurator = new Consumer<>() {
             @Override
             public void accept(RemoteCacheConfigurationBuilder builder) {
-                builder.forceReturnValues(false).nearCacheMode(mode).templateName(templateName).transactionMode(TransactionMode.NONE);
-                if (mode.invalidated()) {
-                    builder.nearCacheFactory(new SessionManagerNearCacheFactory(maxActiveSessions));
-                }
+                // Near caching not compatible with max-idle expiration.
+                builder.forceReturnValues(false).nearCacheMode(NearCacheMode.DISABLED).templateName(templateName).transactionMode(TransactionMode.NONE);
             }
         };
         DeploymentServiceInstaller configurationInstaller = new RemoteCacheConfigurationServiceInstallerFactory(configurator).apply(deploymentCacheConfiguration);
