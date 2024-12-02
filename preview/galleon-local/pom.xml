@@ -59,7 +59,7 @@
         </dependency>
 
         <dependency>
-            <groupId>org.wildfly</groupId>
+            <groupId>${project.groupId}</groupId>
             <artifactId>wildfly-jakarta-data</artifactId>
         </dependency>
 
