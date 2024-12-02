@@ -33,7 +33,7 @@ public class AmqpReactiveMessagingAndOtelTestCase extends BaseReactiveMessagingA
 
     @Deployment
     public static WebArchive createDeployment() {
-        return createDeployment(
+        return BaseReactiveMessagingAndOtelTest.createDeployment(
                 "mp-rm-amqp-otel.war",
                 "amqp-microprofile-config.properties");
     }

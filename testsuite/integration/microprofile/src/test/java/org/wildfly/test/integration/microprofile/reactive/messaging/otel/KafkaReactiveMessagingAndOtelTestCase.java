@@ -34,7 +34,7 @@ public class KafkaReactiveMessagingAndOtelTestCase extends BaseReactiveMessaging
 
     @Deployment
     public static WebArchive createDeployment() {
-        return createDeployment(
+        return BaseReactiveMessagingAndOtelTest.createDeployment(
                 "mp-rm-kafka-otel.war",
                 "kafka-microprofile-config.properties");
     }
