@@ -20,7 +20,7 @@ In `$WFLY/standalone/configuration/standalone.xml` file, do the following change
   <profile>
   ...
       <subsystem xmlns="urn:wildfly:microprofile-lra-coordinator:1.0" host="default-host" server="default-server"/>
-      <subsystem xmlns="urn:wildfly:microprofile-lra-participant:1.0" url="http://localhost:8080/lra-coordinator/lra-coordinator"/>
+      <subsystem xmlns="urn:wildfly:microprofile-lra-participant:1.0" url="http://localhost:8080/lra-coordinator"/>
   </profile>
   ```
 

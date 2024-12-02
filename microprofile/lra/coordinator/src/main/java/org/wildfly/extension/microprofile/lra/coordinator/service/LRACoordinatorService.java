@@ -26,7 +26,7 @@ import java.util.function.Supplier;
 
 public final class LRACoordinatorService implements Service {
 
-    public static final String CONTEXT_PATH = "/lra-coordinator";
+    public static final String CONTEXT_PATH = "";
     private static final String DEPLOYMENT_NAME = "LRA Coordinator";
 
     private final Supplier<Host> undertow;
@@ -65,7 +65,7 @@ public final class LRACoordinatorService implements Service {
         deploymentInfo.setContextPath(contextPath);
         deploymentInfo.setDeploymentName(name);
         // JAX-RS setup
-        ServletInfo restEasyServlet = new ServletInfo("RESTEasy", HttpServletDispatcher.class).addMapping("/*");
+        ServletInfo restEasyServlet = new ServletInfo("RESTEasy", HttpServletDispatcher.class).addMapping("/lra-coordinator/*");
         deploymentInfo.addServlets(restEasyServlet);
 
         for (Map.Entry<String, String> entry : initialParameters.entrySet()) {

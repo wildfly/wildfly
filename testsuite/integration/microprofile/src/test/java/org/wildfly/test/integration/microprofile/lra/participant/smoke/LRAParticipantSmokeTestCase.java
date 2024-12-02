@@ -55,7 +55,7 @@ public class LRAParticipantSmokeTestCase {
 
     @Before
     public void before() {
-        System.setProperty(LRA_COORDINATOR_URL_KEY, "http://localhost:8080/lra-coordinator/lra-coordinator");
+        System.setProperty(LRA_COORDINATOR_URL_KEY, "http://localhost:8080/lra-coordinator");
         client = HttpClientBuilder.create().build();
     }
 

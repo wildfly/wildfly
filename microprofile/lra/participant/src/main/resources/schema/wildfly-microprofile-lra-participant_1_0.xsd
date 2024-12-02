@@ -23,7 +23,7 @@
           ]]>
         </xs:documentation>
       </xs:annotation>
-      <xs:attribute name="lra-coordinator-url" type="xs:string" default="http://localhost:8080/lra-coordinator/lra-coordinator"/>
+      <xs:attribute name="lra-coordinator-url" type="xs:string" default="http://localhost:8080/lra-coordinator"/>
       <xs:attribute name="proxy-server" type="xs:string" use="optional" default="default-server"/>
       <xs:attribute name="proxy-host" type="xs:string" use="optional" default="default-host"/>
     </xs:complexType>

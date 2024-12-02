@@ -34,11 +34,11 @@
         <ts.copy-wildfly.phase>none</ts.copy-wildfly.phase>
         <ts.microprofile-tck-glow.phase>test-compile</ts.microprofile-tck-glow.phase>
         <ts.microprofile-tck-provisioning.phase>test-compile</ts.microprofile-tck-provisioning.phase>
-        <lra.coordinator.url>http://localhost:8080/lra-coordinator/lra-coordinator</lra.coordinator.url>
+        <lra.coordinator.url>http://localhost:8080/lra-coordinator</lra.coordinator.url>
         <lra.tck.base.url>http://localhost:8080</lra.tck.base.url>
         <lra.http.recovery.host>localhost</lra.http.recovery.host>
         <lra.http.recovery.port>8080</lra.http.recovery.port>
-        <lra.http.recovery.path>/lra-coordinator/lra-coordinator/recovery</lra.http.recovery.path>
+        <lra.http.recovery.path>/lra-coordinator/recovery</lra.http.recovery.path>
         <lra.tck.timeout.factor>1.5</lra.tck.timeout.factor>
         <management.address>localhost</management.address>
         <management.port>9990</management.port>
