@@ -517,11 +517,11 @@
                 <artifactId>wildfly-glow-arquillian-plugin</artifactId>
                 <configuration>
                     <feature-packs>
+                        <!-- We repeat this from the parent in order to add 'included-packages' -->
                         <feature-pack>
-                            <!-- Child modules can set properties to override what feature pack is used -->
-                            <groupId>${ts.microprofile-tck-provisioning.fp.groupId}</groupId>
-                            <artifactId>${ts.microprofile-tck-provisioning.fp.artifactId}</artifactId>
-                            <version>${ts.microprofile-tck-provisioning.fp.version}</version>
+                            <groupId>${testsuite.full.galleon.pack.groupId}</groupId>
+                            <artifactId>${testsuite.full.galleon.pack.artifactId}</artifactId>
+                            <version>${testsuite.full.galleon.pack.version}</version>
                             <included-packages>
                                 <package>org.apache.commons.lang3</package>
                             </included-packages>
