@@ -15,7 +15,7 @@ import org.wildfly.clustering.server.manager.Manager;
  * @author Paul Ferraro
  * @param <I> the timer identifier type
  */
-public interface TimerManager<I> extends Manager<I> {
+public interface TimerManager<I> extends Manager<I>, AutoCloseable {
 
     Timer<I> createTimer(I id, IntervalTimerConfiguration config, Object context);
 
@@ -26,4 +26,7 @@ public interface TimerManager<I> extends Manager<I> {
     Timer<I> getTimer(I id);
 
     Stream<I> getActiveTimers();
+
+    @Override
+    void close();
 }

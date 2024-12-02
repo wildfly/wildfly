@@ -114,6 +114,7 @@ public class DistributableTimerService<I> implements ManagedTimerService {
 
     @Override
     public void close() {
+        this.manager.close();
         this.registry.unregisterTimerService(this);
     }
 

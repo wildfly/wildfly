@@ -15,7 +15,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.ThreadFactory;
-import java.util.function.Consumer;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 
@@ -49,14 +49,15 @@ public class TimerScheduler<I, V> extends AbstractCacheEntryScheduler<I, Immutab
     private final TimerFactory<I, V> factory;
 
     public TimerScheduler(String name, TimerFactory<I, V> factory, TimerManager<I> manager, Supplier<Locality> locality, Duration closeTimeout, TimerRegistry<I> registry) {
-        this(name, factory, manager, locality, closeTimeout, registry, ScheduledEntries.sorted(), Executors.newSingleThreadExecutor(THREAD_FACTORY));
+        this(name, factory, manager, new AtomicReference<>(), locality, closeTimeout, registry, ScheduledEntries.sorted(), Executors.newSingleThreadExecutor(THREAD_FACTORY));
     }
 
-    private TimerScheduler(String name, TimerFactory<I, V> factory, TimerManager<I> manager, Supplier<Locality> locality, Duration closeTimeout, TimerRegistry<I> registry, ScheduledEntries<I, Instant> entries, ExecutorService executor) {
-        this(name, entries, new InvokeTask<>(factory, manager, locality, entries, registry, executor), closeTimeout, registry, executor, factory);
+    private TimerScheduler(String name, TimerFactory<I, V> factory, TimerManager<I> manager, AtomicReference<Scheduler<I, ImmutableTimerMetaData>> reference, Supplier<Locality> locality, Duration closeTimeout, TimerRegistry<I> registry, ScheduledEntries<I, Instant> entries, ExecutorService executor) {
+        this(name, entries, new InvokeTask<>(factory, manager, reference::getPlain, locality, entries, registry, executor), closeTimeout, registry, executor, factory);
+        reference.setPlain(this);
     }
 
-    private <T extends Predicate<I> & Consumer<Scheduler<I, ImmutableTimerMetaData>>> TimerScheduler(String name, ScheduledEntries<I, Instant> entries, T invokeTask, Duration closeTimeout, TimerRegistry<I> registry, ExecutorService executor, TimerFactory<I, V> factory) {
+    private TimerScheduler(String name, ScheduledEntries<I, Instant> entries, Predicate<I> invokeTask, Duration closeTimeout, TimerRegistry<I> registry, ExecutorService executor, TimerFactory<I, V> factory) {
         this(new LocalSchedulerConfiguration<>() {
             @Override
             public String getName() {
@@ -82,11 +83,17 @@ public class TimerScheduler<I, V> extends AbstractCacheEntryScheduler<I, Immutab
             public Duration getCloseTimeout() {
                 return closeTimeout;
             }
-        }, registry, executor, invokeTask, factory);
+        }, registry, executor, factory);
     }
 
-    private TimerScheduler(LocalSchedulerConfiguration<I> schedulerConfig, TimerRegistry<I> registry, ExecutorService executor, Consumer<Scheduler<I, ImmutableTimerMetaData>> injector, TimerFactory<I, V> factory) {
+    private TimerScheduler(LocalSchedulerConfiguration<I> schedulerConfig, TimerRegistry<I> registry, ExecutorService executor, TimerFactory<I, V> factory) {
         this(new LocalScheduler<>(schedulerConfig) {
+            @Override
+            public void schedule(I id, Instant instant) {
+                super.schedule(id, instant);
+                registry.register(id);
+            }
+
             @Override
             public void cancel(I id) {
                 registry.unregister(id);
@@ -98,13 +105,12 @@ public class TimerScheduler<I, V> extends AbstractCacheEntryScheduler<I, Immutab
                 super.close();
                 executor.shutdown();
             }
-        }, injector, factory);
+        }, factory);
     }
 
-    private TimerScheduler(Scheduler<I, Instant> scheduler, Consumer<Scheduler<I, ImmutableTimerMetaData>> injector, TimerFactory<I, V> factory) {
+    private TimerScheduler(Scheduler<I, Instant> scheduler, TimerFactory<I, V> factory) {
         super(scheduler, ImmutableTimerMetaData::getNextTimeout);
         this.factory = factory;
-        injector.accept(this);
     }
 
     @Override
@@ -117,27 +123,23 @@ public class TimerScheduler<I, V> extends AbstractCacheEntryScheduler<I, Immutab
         }
     }
 
-    private static class InvokeTask<I, V> implements Predicate<I>, Consumer<Scheduler<I, ImmutableTimerMetaData>> {
+    private static class InvokeTask<I, V> implements Predicate<I> {
         private final TimerFactory<I, V> factory;
         private final TimerManager<I> manager;
         private final Supplier<Locality> locality;
         private final ScheduledEntries<I, Instant> entries;
         private final TimerRegistry<I> registry;
         private final ExecutorService executor;
-        private Scheduler<I, ImmutableTimerMetaData> scheduler;
+        private final Supplier<Scheduler<I, ImmutableTimerMetaData>> scheduler;
 
-        InvokeTask(TimerFactory<I, V> factory, TimerManager<I> manager, Supplier<Locality> locality, ScheduledEntries<I, Instant> entries, TimerRegistry<I> registry, ExecutorService executor) {
+        InvokeTask(TimerFactory<I, V> factory, TimerManager<I> manager, Supplier<Scheduler<I, ImmutableTimerMetaData>> scheduler, Supplier<Locality> locality, ScheduledEntries<I, Instant> entries, TimerRegistry<I> registry, ExecutorService executor) {
             this.factory = factory;
             this.manager = manager;
+            this.scheduler = scheduler;
             this.locality = locality;
             this.entries = entries;
             this.registry = registry;
             this.executor = executor;
-        }
-
-        @Override
-        public void accept(Scheduler<I, ImmutableTimerMetaData> scheduler) {
-            this.scheduler = scheduler;
         }
 
         @Override
@@ -147,7 +149,7 @@ public class TimerScheduler<I, V> extends AbstractCacheEntryScheduler<I, Immutab
             Supplier<Locality> locality = this.locality;
             ScheduledEntries<I, Instant> entries = this.entries;
             TimerRegistry<I> registry = this.registry;
-            Scheduler<I, ImmutableTimerMetaData> scheduler = this.scheduler;
+            Scheduler<I, ImmutableTimerMetaData> scheduler = this.scheduler.get();
             TimerMetaDataKey<I> key = new InfinispanTimerMetaDataKey<>(id);
             // Ensure timer is owned by local member
             if (!locality.get().isLocal(key)) {
