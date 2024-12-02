@@ -19,8 +19,6 @@ import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 import org.infinispan.Cache;
-import org.infinispan.configuration.cache.CacheMode;
-import org.infinispan.configuration.cache.ClusteringConfiguration;
 import org.wildfly.clustering.cache.CacheProperties;
 import org.wildfly.clustering.cache.Key;
 import org.wildfly.clustering.cache.batch.Batch;
@@ -67,55 +65,69 @@ import io.github.resilience4j.retry.RetryConfig;
 public class InfinispanTimerManager<I, C> implements TimerManager<I> {
 
     private final Cache<TimerMetaDataKey<I>, RemappableTimerMetaDataEntry<C>> cache;
-    private final CacheProperties properties;
-    private final RetryConfig retryConfig;
     private final TimerFactory<I, RemappableTimerMetaDataEntry<C>> factory;
     private final Marshaller<Object, C> marshaller;
     private final IdentifierFactory<I> identifierFactory;
     private final AtomicBoolean identifierFactoryStarted = new AtomicBoolean(false);
     private final Supplier<Batch> batchFactory;
-    private final CacheContainerCommandDispatcherFactory dispatcherFactory;
     private final TimerRegistry<I> registry;
-    private final Scheduler<I, TimeoutMetaData> inactiveScheduler = new Scheduler<>() {
-        @Override
-        public void schedule(I id) {
-        }
-
-        @Override
-        public void schedule(I id, TimeoutMetaData metaData) {
-        }
-
-        @Override
-        public boolean contains(I id) {
-            return false;
-        }
-
-        @Override
-        public void cancel(I id) {
-        }
-
-        @Override
-        public void close() {
-        }
-    };
-    private final AtomicReference<Scheduler<I, TimeoutMetaData>> scheduler = new AtomicReference<>(this.inactiveScheduler);
+    private final Scheduler<I, TimeoutMetaData> inactiveScheduler = new InactiveScheduler<>();
+    private final Runnable affinityReset;
+    private final Scheduler<I, TimeoutMetaData> scheduler;
+    private final AtomicReference<Scheduler<I, TimeoutMetaData>> schedulerReference = new AtomicReference<>(this.inactiveScheduler);
     private final AtomicReference<ListenerRegistration> schedulerListenerRegistration = new AtomicReference<>();
 
     public InfinispanTimerManager(InfinispanTimerManagerConfiguration<I, C> config) {
         this.cache = config.getCache();
-        this.properties = config.getCacheProperties();
-        this.retryConfig = config.getRetryConfig();
         this.marshaller = config.getMarshaller();
         this.identifierFactory = new AffinityIdentifierFactory<>(config.getIdentifierFactory(), this.cache);
         this.batchFactory = config.getBatchFactory();
-        this.dispatcherFactory = config.getCommandDispatcherFactory();
         this.factory = config.getTimerFactory();
         this.registry = config.getRegistry();
-        ClusteringConfiguration clustering = this.cache.getCacheConfiguration().clustering();
-        CacheMode mode = clustering.cacheMode();
-        float capacityFactor = clustering.hash().capacityFactor();
+
+        CacheProperties properties = config.getCacheProperties();
+        RetryConfig retryConfig = config.getRetryConfig();
+        CacheContainerCommandDispatcherFactory dispatcherFactory = config.getCommandDispatcherFactory();
+        CacheContainerGroup group = dispatcherFactory.getGroup();
+        Scheduler<I, TimeoutMetaData> localScheduler = new ReferenceScheduler<>(this.schedulerReference::get);
+        AtomicReference<Function<I, CacheContainerGroupMember>> affinityReference = new AtomicReference<>();
+        // If suspend/resume restarts the cache, the member affinity will need to be reset
+        this.affinityReset = () -> affinityReference.set(new UnaryGroupMemberAffinity<>(config.getCache(), group));
+        this.affinityReset.run();
+        this.scheduler = group.isSingleton() ? localScheduler : new PrimaryOwnerScheduler<>(new PrimaryOwnerSchedulerConfiguration<>() {
+            @Override
+            public String getName() {
+                return config.getCache().getName();
+            }
+
+            @Override
+            public CacheContainerCommandDispatcherFactory getCommandDispatcherFactory() {
+                return dispatcherFactory;
+            }
+
+            @Override
+            public Scheduler<I, TimeoutMetaData> getScheduler() {
+                return localScheduler;
+            }
+
+            @Override
+            public Function<I, CacheContainerGroupMember> getAffinity() {
+                return new ReferenceFunction<>(affinityReference::get);
+            }
+
+            @Override
+            public BiFunction<I, TimeoutMetaData, ScheduleCommand<I, TimeoutMetaData>> getScheduleCommandFactory() {
+                return properties.isTransactional() ? ScheduleWithPersistentTimeoutMetaDataCommand::new : ScheduleWithTransientMetaDataCommand::new;
+            }
+
+            @Override
+            public RetryConfig getRetryConfig() {
+                return retryConfig;
+            }
+        });
+
         // If cache is not suspended, start the affinity service now so that any timers created before start() will hash locally
-        if (mode.isClustered() && (capacityFactor > 0f) && (!mode.isDistributed() || capacityFactor > Float.MIN_VALUE)) {
+        if (properties.isActive()) {
             this.identifierFactory.start();
             this.identifierFactoryStarted.set(true);
         }
@@ -128,42 +140,14 @@ public class InfinispanTimerManager<I, C> implements TimerManager<I> {
 
     @Override
     public void start() {
+        // Reset affinity, in the event that the cache was restarted
+        this.affinityReset.run();
         Supplier<Locality> locality = () -> Locality.forCurrentConsistentHash(this.cache);
 
         TimerScheduler<I, RemappableTimerMetaDataEntry<C>> localScheduler = new TimerScheduler<>(this.cache.getName(), this.factory, this, locality, Duration.ofMillis(this.cache.getCacheConfiguration().transaction().cacheStopTimeout()), this.registry);
-
-        CacheContainerGroup group = this.dispatcherFactory.getGroup();
-        this.scheduler.set(group.isSingleton() ? localScheduler : new PrimaryOwnerScheduler<>(new PrimaryOwnerSchedulerConfiguration<>() {
-            @Override
-            public String getName() {
-                return InfinispanTimerManager.this.cache.getName();
-            }
-
-            @Override
-            public CacheContainerCommandDispatcherFactory getCommandDispatcherFactory() {
-                return InfinispanTimerManager.this.dispatcherFactory;
-            }
-
-            @Override
-            public Scheduler<I, TimeoutMetaData> getScheduler() {
-                return localScheduler;
-            }
-
-            @Override
-            public Function<I, CacheContainerGroupMember> getAffinity() {
-                return new UnaryGroupMemberAffinity<>(InfinispanTimerManager.this.cache, group);
-            }
-
-            @Override
-            public BiFunction<I, TimeoutMetaData, ScheduleCommand<I, TimeoutMetaData>> getScheduleCommandFactory() {
-                return InfinispanTimerManager.this.properties.isTransactional() ? ScheduleWithPersistentTimeoutMetaDataCommand::new : ScheduleWithTransientMetaDataCommand::new;
-            }
-
-            @Override
-            public RetryConfig getRetryConfig() {
-                return InfinispanTimerManager.this.retryConfig;
-            }
-        }));
+        try (Scheduler<I, TimeoutMetaData> scheduler = this.schedulerReference.getAndSet(localScheduler)) {
+            // auto-close
+        }
 
         Consumer<CacheStreamFilter<Map.Entry<TimerMetaDataKey<I>, RemappableTimerMetaDataEntry<C>>>> scheduleTask = new CacheEntriesTask<>(this.cache, TimerCacheEntryFilter.META_DATA_ENTRY.cast(), localScheduler::schedule);
         org.wildfly.clustering.cache.function.Consumer<I> cancel = localScheduler::cancel;
@@ -188,9 +172,14 @@ public class InfinispanTimerManager<I, C> implements TimerManager<I> {
             // auto-closed
         }
 
-        try (Scheduler<I, TimeoutMetaData> scheduler = this.scheduler.getAndSet(this.inactiveScheduler)) {
-            // auto-closed
+        try (Scheduler<I, TimeoutMetaData> scheduler = this.schedulerReference.getAndSet(this.inactiveScheduler)) {
+            // Switch to inactive scheduler
         }
+    }
+
+    @Override
+    public void close() {
+        this.scheduler.close();
     }
 
     @Override
@@ -228,7 +217,7 @@ public class InfinispanTimerManager<I, C> implements TimerManager<I> {
         if (metaDataFactory.createValue(id, new AbstractMap.SimpleImmutableEntry<>(entry, index)) == null) return null; // Timer with index already exists
 
         ImmutableTimerMetaData metaData = metaDataFactory.createImmutableTimerMetaData(entry);
-        Timer<I> timer = this.factory.createTimer(id, metaData, this, this.scheduler.get());
+        Timer<I> timer = this.factory.createTimer(id, metaData, this, this.scheduler);
         return timer;
     }
 
@@ -238,7 +227,7 @@ public class InfinispanTimerManager<I, C> implements TimerManager<I> {
         RemappableTimerMetaDataEntry<C> entry = metaDataFactory.findValue(id);
         if (entry != null) {
             ImmutableTimerMetaData metaData = metaDataFactory.createImmutableTimerMetaData(entry);
-            return this.factory.createTimer(id, metaData, this, this.scheduler.get());
+            return this.factory.createTimer(id, metaData, this, this.scheduler);
         }
         return null;
     }
@@ -261,5 +250,39 @@ public class InfinispanTimerManager<I, C> implements TimerManager<I> {
     @Override
     public String toString() {
         return this.cache.getName();
+    }
+
+    private static class ReferenceFunction<T, R> implements Function<T, R> {
+        private final Supplier<Function<T, R>> reference;
+
+        ReferenceFunction(Supplier<Function<T, R>> reference) {
+            this.reference = reference;
+        }
+
+        @Override
+        public R apply(T value) {
+            return this.reference.get().apply(value);
+        }
+    }
+
+    private static class InactiveScheduler<I, V> extends org.wildfly.clustering.server.scheduler.Scheduler.InactiveScheduler<I, V> implements Scheduler<I, V> {
+
+        @Override
+        public void schedule(I id) {
+        }
+    }
+
+    private static class ReferenceScheduler<I, V> extends org.wildfly.clustering.server.scheduler.Scheduler.ReferenceScheduler<I, V> implements Scheduler<I, V> {
+        private final Supplier<? extends Scheduler<I, V>> reference;
+
+        ReferenceScheduler(Supplier<? extends Scheduler<I, V>> reference) {
+            super(reference);
+            this.reference = reference;
+        }
+
+        @Override
+        public void schedule(I id) {
+            this.reference.get().schedule(id);
+        }
     }
 }

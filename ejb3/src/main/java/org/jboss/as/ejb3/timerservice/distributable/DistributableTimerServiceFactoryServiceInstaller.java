@@ -26,7 +26,6 @@ import org.jboss.as.ejb3.timerservice.spi.TimerListener;
 import org.jboss.as.ejb3.timerservice.spi.TimerServiceRegistry;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.as.server.suspend.SuspendableActivityRegistry;
-import org.jboss.as.server.suspend.SuspensionStateProvider;
 import org.jboss.msc.service.ServiceName;
 import org.wildfly.clustering.ejb.timer.TimeoutListener;
 import org.wildfly.clustering.ejb.timer.Timer;
@@ -131,14 +130,10 @@ public class DistributableTimerServiceFactoryServiceInstaller implements Service
             @Override
             public ManagedTimerService createTimerService(EJBComponent component) {
                 TimedObjectInvoker invoker = invokerFactory.createInvoker(component);
-                SuspensionStateProvider stateProvider = activityRegistry.get();
                 Consumer<Timer<UUID>> activateTask = new Consumer<>() {
                     @Override
                     public void accept(Timer<UUID> timer) {
-                        // Do not activate timer if we are suspended
-                        if (stateProvider.getState() == SuspensionStateProvider.State.RUNNING) {
-                            timer.activate();
-                        }
+                        timer.activate();
                         timerRegistry.register(timer.getId());
                     }
                 };
