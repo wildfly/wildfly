@@ -141,7 +141,7 @@
         <ds.jdbc.driver.target.path>${basedir}/target/wildfly/standalone/deployments</ds.jdbc.driver.target.path>
 
         <!-- Common surefire properties. -->
-        <surefire.memory.args>-Xmx512m -XX:MetaspaceSize=128m</surefire.memory.args>
+        <surefire.memory.args>-Xmx512m</surefire.memory.args>
         <surefire.jpda.args></surefire.jpda.args>
         <as.debug.port>8787</as.debug.port>
         <!-- The JPMS settings needed by the client side of a portion of the testsuite.
