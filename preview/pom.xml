@@ -31,6 +31,22 @@
         <preview.dist.product.release.version>${full.dist.product.release.version}</preview.dist.product.release.version>
     </properties>
 
+    <profiles>
+        <!-- Build our child modules unless the 'quickly' profile was activated -->
+        <profile>
+            <id>not.quickly</id>
+            <activation><property><name>!quickly</name></property></activation>
+            <modules>
+                <module>build</module>
+                <module>channel</module>
+                <module>dist</module>
+                <module>feature-pack</module>
+                <module>galleon-local</module>
+                <module>product-conf</module>
+            </modules>
+        </profile>
+    </profiles>
+
     <dependencyManagement>
         <dependencies>
             <dependency>
@@ -87,25 +103,5 @@
         </dependency>
 
     </dependencies>
-
-    <profiles>
-        <profile>
-            <id>skip.preview</id>
-            <activation>
-                <property>
-                    <name>!quickly</name>
-                </property>
-            </activation>
-
-            <modules>
-                <module>build</module>
-                <module>channel</module>
-                <module>dist</module>
-                <module>feature-pack</module>
-                <module>galleon-local</module>
-                <module>product-conf</module>
-            </modules>
-        </profile>
-    </profiles>
 
 </project>

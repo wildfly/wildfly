@@ -71,9 +71,24 @@
     </build>
 
     <modules>
-        <module>client</module>
         <module>server</module>
-        <module>tools</module>
     </modules>
+
+    <profiles>
+        <profile>
+            <id>base-feature-pack-build</id>
+            <activation>
+                <property>
+                    <!-- If the caller specifies ee.maven.version, they want
+                         modules from a maven repo, not from this build -->
+                    <name>!ee.maven.version</name>
+                </property>
+            </activation>
+            <modules>
+                <module>client</module>
+                <module>tools</module>
+            </modules>
+        </profile>
+    </profiles>
 
 </project>
