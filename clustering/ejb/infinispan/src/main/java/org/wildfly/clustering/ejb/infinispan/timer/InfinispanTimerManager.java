@@ -223,8 +223,17 @@ public class InfinispanTimerManager<I, C> implements TimerManager<I> {
 
     @Override
     public Timer<I> getTimer(I id) {
+        return this.findTimer(ImmutableTimerMetaDataFactory::findValue, id);
+    }
+
+    @Override
+    public Timer<I> readTimer(I id) {
+        return this.findTimer(ImmutableTimerMetaDataFactory::tryValue, id);
+    }
+
+    private Timer<I> findTimer(BiFunction<ImmutableTimerMetaDataFactory<I, RemappableTimerMetaDataEntry<C>>, I, RemappableTimerMetaDataEntry<C>> finder, I id) {
         ImmutableTimerMetaDataFactory<I, RemappableTimerMetaDataEntry<C>> metaDataFactory = this.factory.getMetaDataFactory();
-        RemappableTimerMetaDataEntry<C> entry = metaDataFactory.findValue(id);
+        RemappableTimerMetaDataEntry<C> entry = finder.apply(metaDataFactory, id);
         if (entry != null) {
             ImmutableTimerMetaData metaData = metaDataFactory.createImmutableTimerMetaData(entry);
             return this.factory.createTimer(id, metaData, this, this.scheduler);

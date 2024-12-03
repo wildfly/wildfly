@@ -39,6 +39,7 @@ public class InfinispanTimerMetaDataFactory<I, C> implements TimerMetaDataFactor
 
     private final Cache<TimerIndexKey, I> indexCache;
     private final Cache<TimerMetaDataKey<I>, RemappableTimerMetaDataEntry<C>> readCache;
+    private final Cache<TimerMetaDataKey<I>, RemappableTimerMetaDataEntry<C>> readForUpdateCache;
     private final Cache<TimerMetaDataKey<I>, RemappableTimerMetaDataEntry<C>> writeCache;
     private final Cache<TimerMetaDataKey<I>, RemappableTimerMetaDataEntry<C>> removeCache;
     private final TimerMetaDataConfiguration<C> config;
@@ -46,7 +47,8 @@ public class InfinispanTimerMetaDataFactory<I, C> implements TimerMetaDataFactor
     public InfinispanTimerMetaDataFactory(InfinispanTimerMetaDataConfiguration<C> config) {
         this.config = config;
         this.indexCache = config.<TimerIndexKey, I>getCache().getAdvancedCache().withFlags(Flag.FORCE_WRITE_LOCK);
-        this.readCache = config.getReadForUpdateCache();
+        this.readCache = config.getCache();
+        this.readForUpdateCache = config.getReadForUpdateCache();
         this.writeCache = config.getSilentWriteCache();
         this.removeCache = config.getCache();
     }
@@ -63,6 +65,11 @@ public class InfinispanTimerMetaDataFactory<I, C> implements TimerMetaDataFactor
 
     @Override
     public CompletionStage<RemappableTimerMetaDataEntry<C>> findValueAsync(I id) {
+        return this.readForUpdateCache.getAsync(new InfinispanTimerMetaDataKey<>(id));
+    }
+
+    @Override
+    public CompletionStage<RemappableTimerMetaDataEntry<C>> tryValueAsync(I id) {
         return this.readCache.getAsync(new InfinispanTimerMetaDataKey<>(id));
     }
 
