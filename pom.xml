@@ -552,7 +552,7 @@
         <version.org.jboss.metadata>16.0.0.Final</version.org.jboss.metadata>
         <version.org.jboss.mod_cluster>2.0.4.Final</version.org.jboss.mod_cluster>
         <version.org.jboss.narayana>7.1.0.Final</version.org.jboss.narayana>
-        <version.org.jboss.narayana.lra>0.0.9.Final</version.org.jboss.narayana.lra>
+        <version.org.jboss.narayana.lra>0.0.10.Final</version.org.jboss.narayana.lra>
         <version.org.jboss.openjdk-orb>10.1.0.Final</version.org.jboss.openjdk-orb>
         <version.org.jboss.resteasy>6.2.11.Final</version.org.jboss.resteasy>
         <version.org.jboss.resteasy.extensions>2.0.1.Final</version.org.jboss.resteasy.extensions>
