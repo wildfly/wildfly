@@ -6,11 +6,8 @@ package org.wildfly.extension.microprofile.faulttolerance.tck;
 
 import static org.jboss.as.test.shared.PermissionUtils.createPermissionsXmlAsset;
 
-import java.io.FilePermission;
-import java.lang.management.ManagementPermission;
 import java.lang.reflect.ReflectPermission;
 import java.util.PropertyPermission;
-import java.util.logging.LoggingPermission;
 
 import jakarta.enterprise.inject.spi.Extension;
 
@@ -64,18 +61,10 @@ public class FaultToleranceApplicationArchiveProcessor implements ApplicationArc
                     new PropertyPermission("*", "read,write"),
                     new RuntimePermission("getenv.*"),
                     new RuntimePermission("modifyThread"),
+                    new RuntimePermission("accessDeclaredMembers"),
                     // Permissions required by test instrumentation - awaitility.jar
                     new RuntimePermission("setDefaultUncaughtExceptionHandler"),
-                    new RuntimePermission("modifyThread"),
-                    // Permissions required by io.vertx.core / opentelemetry-sdk-extension-autoconfigure.jar
-                    new FilePermission("<<ALL FILES>>", "read,write,delete"),
-                    new RuntimePermission("getClassLoader"),
-                    new RuntimePermission("shutdownHooks"),
-                    new RuntimePermission("accessDeclaredMembers"),
-                    new LoggingPermission("control", null),
-                    new ManagementPermission("monitor"),
-                    new RuntimePermission("getStackTrace"),
-                    new RuntimePermission("setContextClassLoader")
+                    new RuntimePermission("modifyThread")
             ), "permissions.xml");
         }
     }
