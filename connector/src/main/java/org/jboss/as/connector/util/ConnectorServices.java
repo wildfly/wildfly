@@ -90,7 +90,9 @@ public class ConnectorServices {
 
     public static final ServiceName RESOURCEADAPTERS_SERVICE = ServiceName.JBOSS.append("resourceadapters");
 
-    public static final ServiceName RESOURCEADAPTERS_SUBSYSTEM_SERVICE = ServiceName.JBOSS.append("resourceadapters-subsystem");
+    public static final ServiceName RESOURCEADAPTERS_CONFIGURED_ADAPTERS_SERVICE = ServiceName.JBOSS.append("resourceadapters-configured-adapters");
+
+    public static final ServiceName RESOURCEADAPTERS_REPORT_DIRECTORY_SERVICE = ServiceName.JBOSS.append("resourceadapters-report-directory");
 
     public static final ServiceName RA_SERVICE = ServiceName.JBOSS.append("resourceadapters", "ra");
 
