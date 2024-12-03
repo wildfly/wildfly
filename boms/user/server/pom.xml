@@ -98,4 +98,30 @@
         <module>expansion</module>
     </modules>
 
+    <profiles>
+        <profile>
+            <id>base-feature-pack-build</id>
+            <activation>
+                <property>
+                    <name>!no.base.build</name>
+                </property>
+            </activation>
+            <modules>
+                <module>ee</module>
+            </modules>
+        </profile>
+        <profile>
+            <id>expansion-feature-pack-build</id>
+            <activation>
+                <property>
+                    <!-- Allow users to disable building expansion stuff if they just want base artifacts -->
+                    <name>!no.expansion.build</name>
+                </property>
+            </activation>
+            <modules>
+                <module>expansion</module>
+            </modules>
+        </profile>
+    </profiles>
+
 </project>

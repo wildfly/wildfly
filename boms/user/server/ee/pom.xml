@@ -25,6 +25,29 @@
     <name>WildFly BOM Builders: Server EE</name>
     <description>The Server's EE common dependency management and BOM Builder plugin configuration.</description>
 
+    <dependencies>
+
+        <!-- depend on client BOM builders to ensure such BOMs are built before this builder runs -->
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>wildfly-ejb-client-bom-builder</artifactId>
+            <version>${project.version}</version>
+            <type>pom</type>
+        </dependency>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>wildfly-jaxws-client-bom-builder</artifactId>
+            <version>${project.version}</version>
+            <type>pom</type>
+        </dependency>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>wildfly-jms-client-bom-builder</artifactId>
+            <version>${project.version}</version>
+            <type>pom</type>
+        </dependency>
+    </dependencies>
+
     <build>
         <pluginManagement>
             <plugins>
