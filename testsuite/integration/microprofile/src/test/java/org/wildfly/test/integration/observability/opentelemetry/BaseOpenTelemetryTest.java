@@ -5,12 +5,7 @@
 
 package org.wildfly.test.integration.observability.opentelemetry;
 
-import static org.jboss.as.test.shared.PermissionUtils.createPermissionsXmlAsset;
-
-import java.lang.reflect.ReflectPermission;
 import java.net.MalformedURLException;
-import java.net.NetPermission;
-import java.util.PropertyPermission;
 
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.testcontainers.api.DockerRequired;
@@ -50,17 +45,7 @@ public abstract class BaseOpenTelemetryTest {
             .addPackage(JaegerResponse.class.getPackage())
             .addAsManifestResource(new StringAsset(MP_CONFIG), "microprofile-config.properties")
             .addAsWebInfResource(CdiUtils.createBeansXml(), "beans.xml")
-            // Some of the classes used in testing do things that break when the Security Manager is installed
-            .addAsManifestResource(createPermissionsXmlAsset(
-                    new RuntimePermission("getClassLoader"),
-                    new RuntimePermission("getProtectionDomain"),
-                    new RuntimePermission("getenv.*"),
-                    new RuntimePermission("setDefaultUncaughtExceptionHandler"),
-                    new RuntimePermission("modifyThread"),
-                    new ReflectPermission("suppressAccessChecks"),
-                    new NetPermission("getProxySelector"),
-                    new PropertyPermission("*", "read, write")),
-                "permissions.xml");
+            ;
     }
 
     protected String getDeploymentUrl(String deploymentName) throws MalformedURLException {
