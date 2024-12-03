@@ -8,6 +8,7 @@ package org.jboss.as.ejb3.timerservice.distributable;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.Map;
+import java.util.function.Function;
 
 import jakarta.ejb.EJBException;
 import jakarta.ejb.ScheduleExpression;
@@ -57,12 +58,16 @@ public class OOBTimer<I> implements ManagedTimer {
     private final I id;
     private final TimedObjectInvoker invoker;
     private final TimerSynchronizationFactory<I> synchronizationFactory;
+    private final Function<I, Timer<I>> fixedReader;
+    private final Function<I, Timer<I>> dynamicReader;
 
     public OOBTimer(TimerManager<I> manager, I id, TimedObjectInvoker invoker, TimerSynchronizationFactory<I> synchronizationFactory) {
         this.manager = manager;
         this.id = id;
         this.invoker = invoker;
         this.synchronizationFactory = synchronizationFactory;
+        this.fixedReader = manager::readTimer;
+        this.dynamicReader = manager::getTimer;
     }
 
     @Override
@@ -72,37 +77,37 @@ public class OOBTimer<I> implements ManagedTimer {
 
     @Override
     public long getTimeRemaining() {
-        return this.invoke(GET_TIME_REMAINING);
+        return this.invokeDynamic(GET_TIME_REMAINING);
     }
 
     @Override
     public Date getNextTimeout() {
-        return this.invoke(GET_NEXT_TIMEOUT);
+        return this.invokeDynamic(GET_NEXT_TIMEOUT);
     }
 
     @Override
     public ScheduleExpression getSchedule() {
-        return this.invoke(GET_SCHEDULE);
+        return this.invokeFixed(GET_SCHEDULE);
     }
 
     @Override
     public boolean isPersistent() {
-        return this.invoke(IS_PERSISTENT);
+        return this.invokeFixed(IS_PERSISTENT);
     }
 
     @Override
     public boolean isCalendarTimer() {
-        return this.invoke(IS_CALENDAR);
+        return this.invokeFixed(IS_CALENDAR);
     }
 
     @Override
     public Serializable getInfo() {
-        return this.invoke(GET_INFO);
+        return this.invokeFixed(GET_INFO);
     }
 
     @Override
     public TimerHandle getHandle() {
-        return this.invoke(GET_HANDLE);
+        return this.invokeFixed(GET_HANDLE);
     }
 
     @Override
@@ -127,20 +132,30 @@ public class OOBTimer<I> implements ManagedTimer {
 
     @Override
     public boolean isActive() {
-        return this.invoke(IS_ACTIVE);
+        return this.invokeDynamic(IS_ACTIVE);
     }
 
     @Override
     public boolean isCanceled() {
-        return this.invoke(IS_CANCELED);
+        return this.invokeDynamic(IS_CANCELED);
     }
 
     @Override
     public boolean isExpired() {
-        return this.invoke(IS_EXPIRED);
+        return this.invokeDynamic(IS_EXPIRED);
     }
 
-    private <R, E extends Exception> R invoke(ExceptionFunction<ManagedTimer, R, E> function) throws E {
+    // Invokes a method reading fixed timer meta data where exclusive access is not required
+    private <R, E extends Exception> R invokeFixed(ExceptionFunction<ManagedTimer, R, E> function) throws E {
+        return this.invoke(function, this.fixedReader);
+    }
+
+    // Invokes a method reading dynamic timer meta data requiring exclusive access
+    private <R, E extends Exception> R invokeDynamic(ExceptionFunction<ManagedTimer, R, E> function) throws E {
+        return this.invoke(function, this.dynamicReader);
+    }
+
+    private <R, E extends Exception> R invoke(ExceptionFunction<ManagedTimer, R, E> function, Function<I, Timer<I>> reader) throws E {
         InterceptorContext interceptorContext = CurrentInvocationContext.get();
         ManagedTimer currentTimer = (interceptorContext != null) ? (ManagedTimer) interceptorContext.getTimer() : null;
         if ((currentTimer != null) && currentTimer.getId().equals(this.id.toString())) {
@@ -155,7 +170,7 @@ public class OOBTimer<I> implements ManagedTimer {
             return function.apply(new DistributableTimer<>(this.manager, timer, suspendedBatch, this.invoker, this.synchronizationFactory));
         }
         try (Batch batch = this.manager.getBatchFactory().get()) {
-            Timer<I> timer = this.manager.getTimer(this.id);
+            Timer<I> timer = reader.apply(this.id);
             if (timer == null) {
                 throw EjbLogger.ROOT_LOGGER.timerWasCanceled(this.id.toString());
             }
@@ -166,7 +181,7 @@ public class OOBTimer<I> implements ManagedTimer {
     }
 
     private <E extends Exception> void invoke(ExceptionConsumer<ManagedTimer, E> consumer) throws E {
-        this.invoke(new ExceptionFunction<ManagedTimer, Void, E>() {
+        this.invokeDynamic(new ExceptionFunction<ManagedTimer, Void, E>() {
             @Override
             public Void apply(ManagedTimer timer) throws E {
                 consumer.accept(timer);
