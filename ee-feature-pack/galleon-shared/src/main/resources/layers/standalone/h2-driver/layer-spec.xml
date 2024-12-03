@@ -8,6 +8,8 @@
     <props>
         <prop name="org.wildfly.rule.xml-path" value="[/WEB-INF/*.xml,/META-INF/*.xml],/datasources/datasource/driver,h2"/>
         <prop name="org.wildfly.rule.xml-path-xa" value="[/WEB-INF/*.xml,/META-INF/*.xml],/datasources/xa-datasource/driver,h2"/>
+        <prop name="org.wildfly.rule.annotation.field.value-url" value="jakarta.annotation.sql.DataSourceDefinition,url=jdbc:h2:*"/>
+        <prop name="org.wildfly.rule.annotation.field.value-className" value="jakarta.annotation.sql.DataSourceDefinition,className=org.h2.*"/>
     </props>
     <dependencies>
         <layer name="datasources"/>

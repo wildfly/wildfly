@@ -11,6 +11,7 @@ import java.security.AccessControlContext;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
 
@@ -18,6 +19,7 @@ import jakarta.enterprise.inject.spi.InjectionPoint;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
 import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.PersistenceProperty;
 import jakarta.persistence.PersistenceUnit;
 import jakarta.transaction.TransactionManager;
 import jakarta.transaction.TransactionSynchronizationRegistry;
@@ -71,7 +73,7 @@ public class WeldJpaInjectionServices implements JpaInjectionServices {
                 public EntityManager call() throws Exception {
                     return new TransactionScopedEntityManager(
                             scopedPuName,
-                            new HashMap<>(),
+                            getProperties(context),
                             persistenceUnitService.getEntityManagerFactory(),
                             context.synchronization(),
                             deploymentUnit.getAttachment(JpaAttachments.TRANSACTION_SYNCHRONIZATION_REGISTRY),
@@ -122,6 +124,15 @@ public class WeldJpaInjectionServices implements JpaInjectionServices {
         return scopedPu.getScopedPersistenceUnitName();
     }
 
+    private static Map getProperties(PersistenceContext context) {
+        HashMap map = new HashMap();
+        for (PersistenceProperty property : context.properties()) {
+            map.put(property.name(), property.value());
+        }
+        return map;
+    }
+
+
     private static class EntityManagerResourceReferenceFactory implements ResourceReferenceFactory<EntityManager> {
         private final String scopedPuName;
         private final EntityManagerFactory entityManagerFactory;
@@ -139,9 +150,10 @@ public class WeldJpaInjectionServices implements JpaInjectionServices {
 
         @Override
         public ResourceReference<EntityManager> createResource() {
-            final TransactionScopedEntityManager result = new TransactionScopedEntityManager(scopedPuName, new HashMap<>(), entityManagerFactory, context.synchronization(), transactionSynchronizationRegistry, transactionManager);
+            final TransactionScopedEntityManager result = new TransactionScopedEntityManager(scopedPuName, getProperties(context), entityManagerFactory, context.synchronization(), transactionSynchronizationRegistry, transactionManager);
             return new SimpleResourceReference<EntityManager>(result);
         }
+
     }
 
     private static class LazyFactory<T> implements ResourceReferenceFactory<T> {

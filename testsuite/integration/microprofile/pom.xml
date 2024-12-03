@@ -17,7 +17,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>34.0.0.Final-SNAPSHOT</version>
+        <version>35.0.0.Beta1-SNAPSHOT</version>
     </parent>
 
     <artifactId>wildfly-ts-integ-microprofile</artifactId>
@@ -33,6 +33,8 @@
 
         <ts.glow.phase>none</ts.glow.phase>
         <ts.glow.config-name>standalone-microprofile.xml</ts.glow.config-name>
+
+        <wildfly.test.kafka.version>${version.org.apache.kafka.test-image}</wildfly.test.kafka.version>
 
         <!-- Use the expansion bom -->
         <dependency.management.import.artifact>wildfly-standard-expansion-bom</dependency.management.import.artifact>
@@ -386,6 +388,11 @@
             <scope>test</scope>
         </dependency>
         <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>kafka</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
             <groupId>org.hamcrest</groupId>
             <artifactId>hamcrest</artifactId>
             <scope>test</scope>
@@ -401,7 +408,6 @@
         <dependency>
             <groupId>org.jboss.arquillian</groupId>
             <artifactId>arquillian-testcontainers</artifactId>
-            <version>1.0.0.Alpha1</version>
             <scope>test</scope>
         </dependency>
     </dependencies>
@@ -504,6 +510,7 @@
                     </environmentVariables>
                     <systemPropertyVariables>
                         <jboss.install.dir>${basedir}/target/wildfly</jboss.install.dir>
+                        <wildfly.test.kafka.version>${wildfly.test.kafka.version}</wildfly.test.kafka.version>
                     </systemPropertyVariables>
                 </configuration>
                 <executions>
@@ -536,6 +543,7 @@
                         <configuration>
                             <systemPropertyVariables>
                                 <jboss.server.config.file.name>standalone.xml</jboss.server.config.file.name>
+                                <wildfly.test.kafka.version>${wildfly.test.kafka.version}</wildfly.test.kafka.version>
                             </systemPropertyVariables>
                             <excludes>
                                 <!-- The enable-microprofile.cli script does not enable the reactive extensions/subsystems -->
@@ -1011,6 +1019,35 @@
                                 <phase>none</phase>
                             </execution>
                         </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
+        <profile>
+            <id>disable-container-tests</id>
+            <!--
+                There is currently no way to identify hosts on which Docker-based tests should not run apart from an
+                OS check. There are CI updates in the pipeline (see https://issues.redhat.com/browse/WFCI-63 and
+                https://issues.redhat.com/browse/WFCI-64, for example) that will require this to be modified. Ideally,
+                a system property or environment variable can be set to indicate that such tests should not be run. For
+                now, we'll have to live with an OS check, which addresses the immediate need.
+            -->
+            <activation>
+                <os>
+                    <family>Windows</family>
+                </os>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-surefire-plugin</artifactId>
+                        <configuration>
+                            <systemPropertyVariables>
+                                <org.arquillian.testcontainers.docker.required.exception>org.junit.AssumptionViolatedException</org.arquillian.testcontainers.docker.required.exception>
+                            </systemPropertyVariables>
+                        </configuration>
                     </plugin>
                 </plugins>
             </build>

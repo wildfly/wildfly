@@ -17,7 +17,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>34.0.0.Final-SNAPSHOT</version>
+        <version>35.0.0.Beta1-SNAPSHOT</version>
         <relativePath>../../pom.xml</relativePath>
     </parent>
 
@@ -28,6 +28,7 @@
 
     <properties>
         <version.org.eclipse.jetty>11.0.20</version.org.eclipse.jetty>
+        <version.org.eclipse.microprofile.fault-tolerance.api>4.1.1</version.org.eclipse.microprofile.fault-tolerance.api>
         <version.org.eclipse.microprofile.rest.client.api>4.0</version.org.eclipse.microprofile.rest.client.api>
         <version.org.eclipse.microprofile.telemetry>2.0</version.org.eclipse.microprofile.telemetry>
         <version.org.jboss.resteasy.microprofile>3.0.0.Final</version.org.jboss.resteasy.microprofile>
@@ -113,6 +114,13 @@
                 <artifactId>jetty-proxy</artifactId>
                 <version>${version.org.eclipse.jetty}</version>
                 <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.eclipse.microprofile.fault-tolerance</groupId>
+                <artifactId>microprofile-fault-tolerance-tck</artifactId>
+                <version>${version.org.eclipse.microprofile.fault-tolerance.api}</version>
+                <scope>test</scope>
+                <!-- Don't exclude all TCK dependencies, only specific ones that cause problems -->
             </dependency>
             <dependency>
                 <groupId>org.eclipse.microprofile.telemetry</groupId>

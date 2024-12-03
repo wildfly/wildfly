@@ -88,7 +88,7 @@ public class CoreBridgeCallTimeoutTestCase {
         System.out.println("jvm.args:" + System.getProperty("jvm.args"));
         System.out.println("basedir:" + System.getProperty("basedir"));
         System.setProperty("jvm.args", ORIGINAL_JVM_ARGS +
-                " -Xmx512m -XX:MaxMetaspaceSize=256m " +
+                " -Xmx512m " +
                 "-Dorg.jboss.byteman.verbose " +
                 "-Djboss.modules.system.pkgs=org.jboss.byteman " +
                 "-Dorg.jboss.byteman.transform.all " +
