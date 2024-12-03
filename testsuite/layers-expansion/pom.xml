@@ -80,7 +80,7 @@
         <provisioning.phase.preview.only>none</provisioning.phase.preview.only> <!-- Use for executions that will only work with WildFly Preview -->
         <!-- Don't run the default surefire execution unless a profile enables it -->
         <surefire.default-test.phase>none</surefire.default-test.phase>
-        
+
         <!-- default configs provisioned with passive+ -->
         <std.default.install.dir>${project.build.directory}/std-configs</std.default.install.dir>
 
@@ -187,6 +187,34 @@
                                             <layers>
                                                 <layer>datasources-web-server</layer>
                                                 <layer>observability</layer>
+                                            </layers>
+                                        </config>
+                                    </configurations>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>grpc-provisioning-test</id>
+                                <goals>
+                                    <goal>provision</goal>
+                                </goals>
+                                <phase>${provisioning.phase.preview.only}</phase>
+                                <configuration>
+                                    <install-dir>${layers.install.dir}/grpc</install-dir>
+                                    <feature-packs>
+                                        <feature-pack>
+                                            <groupId>${testsuite.full.galleon.pack.groupId}</groupId>
+                                            <artifactId>${testsuite.full.galleon.pack.artifactId}</artifactId>
+                                            <version>${testsuite.full.galleon.pack.version}</version>
+                                            <inherit-configs>false</inherit-configs>
+                                            <inherit-packages>false</inherit-packages>
+                                        </feature-pack>
+                                    </feature-packs>
+                                    <configurations>
+                                        <config>
+                                            <model>standalone</model>
+                                            <name>standalone.xml</name>
+                                            <layers>
+                                                <layer>grpc</layer>
                                             </layers>
                                         </config>
                                     </configurations>
@@ -996,6 +1024,7 @@
                                                 <layer>elytron</layer>
                                                 <layer>elytron-oidc-client</layer>
                                                 <layer>embedded-activemq</layer>
+                                                <layer>grpc</layer>
                                                 <layer>hibernate-search</layer>
                                                 <layer>h2-datasource</layer>
                                                 <layer>h2-default-datasource</layer>
@@ -1107,6 +1136,7 @@
                                                 <layer>ejb-http-invoker</layer>
                                                 <layer>ejb-lite</layer>
                                                 <layer>elytron</layer>
+                                                <layer>grpc</layer>
                                                 <layer>hibernate-search</layer>
                                                 <layer>h2-datasource</layer>
                                                 <layer>h2-default-datasource</layer>

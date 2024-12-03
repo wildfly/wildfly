@@ -18,7 +18,7 @@
         <layer name="ejb-http-invoker" optional="true"/>
         <layer name="resource-adapters" optional="true"/>
         <layer name="remoting" optional="true"/>
-                        
+
         <layer name="web-passivation" optional="true"/>
         <layer name="undertow-https" optional="true"/>
         <layer name="jdr" optional="true"/>
@@ -28,6 +28,7 @@
         <layer name="mail" optional="true"/>
         <layer name="sar" optional="true"/>
         <layer name="batch-jberet" optional="true"/>
+        <layer name="grpc" optional="true"/>
 
         <layer name="microprofile-config" optional="true"/>
         <layer name="microprofile-jwt" optional="true"/>

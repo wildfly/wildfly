@@ -465,7 +465,7 @@ public class AbstractValidationUnitTest {
         return tmp;
     }
 
-    private static String fixExpressions(String line) {
+    protected String fixExpressions(String line) {
         String result = line.replace("${jboss.management.native.port:9999}", "9999");
         result = result.replace("${jboss.management.http.port:9990}", "9990");
         result = result.replace("${jboss.management.https.port:9993}", "9993");

@@ -89,7 +89,7 @@
         <provisioning.phase.preview.only>none</provisioning.phase.preview.only> <!-- Use for executions that will only work with WildFly Preview -->
         <!-- Don't run the default surefire execution unless a profile enables it -->
         <surefire.default-test.phase>none</surefire.default-test.phase>
-        
+
         <!-- default configs provisioned with passive+ -->
         <std.default.install.dir>${project.build.directory}/std-configs</std.default.install.dir>
     </properties>
@@ -2355,6 +2355,7 @@
                                                 <layer>elytron</layer>
                                                 <layer>elytron-oidc-client</layer>
                                                 <layer>embedded-activemq</layer>
+                                                <layer>grpc</layer>
                                                 <layer>hibernate-search</layer>
                                                 <layer>h2-datasource</layer>
                                                 <layer>h2-default-datasource</layer>
@@ -2444,6 +2445,7 @@
                                                 <layer>ejb-http-invoker</layer>
                                                 <layer>ejb-lite</layer>
                                                 <layer>elytron</layer>
+                                                <layer>grpc</layer>
                                                 <layer>hibernate-search</layer>
                                                 <layer>h2-datasource</layer>
                                                 <layer>h2-default-datasource</layer>
