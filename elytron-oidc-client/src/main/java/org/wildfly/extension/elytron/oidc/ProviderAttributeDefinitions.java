@@ -231,7 +231,7 @@ class ProviderAttributeDefinitions {
                     .setAllowExpression(true)
                     .setDefaultValue(new ModelNode(OAUTH2))
                     .setValidator(new StringAllowedValuesValidator(OAUTH2, REQUEST, REQUEST_URI))
-                    .setStability(Stability.PREVIEW)
+                    .setStability(Stability.COMMUNITY)
                     .build();
 
     protected static final SimpleAttributeDefinition REQUEST_OBJECT_ENCRYPTION_ALG_VALUE =
@@ -239,7 +239,7 @@ class ProviderAttributeDefinitions {
                     .setAllowExpression(true)
                     .setValidator(new StringLengthValidator(1, Integer.MAX_VALUE, true, true))
                     .setRequires(ElytronOidcDescriptionConstants.REQUEST_OBJECT_ENCRYPTION_ENC_VALUE)
-                    .setStability(Stability.PREVIEW)
+                    .setStability(Stability.COMMUNITY)
                     .build();
 
     protected static final SimpleAttributeDefinition REQUEST_OBJECT_ENCRYPTION_ENC_VALUE =
@@ -247,7 +247,7 @@ class ProviderAttributeDefinitions {
                     .setAllowExpression(true)
                     .setValidator(new StringLengthValidator(1, Integer.MAX_VALUE, true, true))
                     .setRequires(ElytronOidcDescriptionConstants.REQUEST_OBJECT_ENCRYPTION_ALG_VALUE)
-                    .setStability(Stability.PREVIEW)
+                    .setStability(Stability.COMMUNITY)
                     .build();
 
     protected static final SimpleAttributeDefinition REQUEST_OBJECT_SIGNING_ALGORITHM =
@@ -255,42 +255,42 @@ class ProviderAttributeDefinitions {
                     .setAllowExpression(true)
                     .setDefaultValue(new ModelNode(NONE)) // plaintext jwt to be sent
                     .setValidator(new StringLengthValidator(1, Integer.MAX_VALUE, true, true))
-                    .setStability(Stability.PREVIEW)
+                    .setStability(Stability.COMMUNITY)
                     .build();
 
     protected static final SimpleAttributeDefinition REQUEST_OBJECT_SIGNING_KEYSTORE_FILE =
             new SimpleAttributeDefinitionBuilder(ElytronOidcDescriptionConstants.REQUEST_OBJECT_SIGNING_KEYSTORE_FILE, ModelType.STRING, true)
                     .setAllowExpression(true)
                     .setValidator(new StringLengthValidator(1, Integer.MAX_VALUE, true, true))
-                    .setStability(Stability.PREVIEW)
+                    .setStability(Stability.COMMUNITY)
                     .build();
 
     protected static final SimpleAttributeDefinition REQUEST_OBJECT_SIGNING_KEYSTORE_PASSWORD =
             new SimpleAttributeDefinitionBuilder(ElytronOidcDescriptionConstants.REQUEST_OBJECT_SIGNING_KEYSTORE_PASSWORD, ModelType.STRING, true)
                     .setAllowExpression(true)
                     .setValidator(new StringLengthValidator(1, Integer.MAX_VALUE, true, true))
-                    .setStability(Stability.PREVIEW)
+                    .setStability(Stability.COMMUNITY)
                     .build();
 
     protected static final SimpleAttributeDefinition REQUEST_OBJECT_SIGNING_KEY_PASSWORD =
             new SimpleAttributeDefinitionBuilder(ElytronOidcDescriptionConstants.REQUEST_OBJECT_SIGNING_KEY_PASSWORD, ModelType.STRING, true)
                     .setAllowExpression(true)
                     .setValidator(new StringLengthValidator(1, Integer.MAX_VALUE, true, true))
-                    .setStability(Stability.PREVIEW)
+                    .setStability(Stability.COMMUNITY)
                     .build();
 
     protected static final SimpleAttributeDefinition REQUEST_OBJECT_SIGNING_KEY_ALIAS =
             new SimpleAttributeDefinitionBuilder(ElytronOidcDescriptionConstants.REQUEST_OBJECT_SIGNING_KEY_ALIAS, ModelType.STRING, true)
                     .setAllowExpression(true)
                     .setValidator(new StringLengthValidator(1, Integer.MAX_VALUE, true, true))
-                    .setStability(Stability.PREVIEW)
+                    .setStability(Stability.COMMUNITY)
                     .build();
 
     protected static final SimpleAttributeDefinition REQUEST_OBJECT_SIGNING_KEYSTORE_TYPE =
             new SimpleAttributeDefinitionBuilder(ElytronOidcDescriptionConstants.REQUEST_OBJECT_SIGNING_KEYSTORE_TYPE, ModelType.STRING, true)
                     .setAllowExpression(true)
                     .setValidator(new StringLengthValidator(1, Integer.MAX_VALUE, true, true))
-                    .setStability(Stability.PREVIEW)
+                    .setStability(Stability.COMMUNITY)
                     .build();
 
 
