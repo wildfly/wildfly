@@ -120,7 +120,7 @@ public abstract class MixedDomainDeploymentTest {
     @After
     public void confirmNoDeployments() throws Exception {
         List<ModelNode> deploymentList = getDeploymentList(PathAddress.EMPTY_ADDRESS);
-        if (deploymentList.size() > 0) {
+        if (!deploymentList.isEmpty()) {
             cleanDeployments();
         }
         deploymentList = getDeploymentList(PathAddress.EMPTY_ADDRESS);

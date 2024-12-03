@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package org.jboss.as.test.integration.domain.mixed.eap740;
+package org.jboss.as.test.integration.domain.mixed.eap800;
 
 import org.jboss.as.test.integration.domain.mixed.MixedDomainTestSuite;
 import org.jboss.as.test.integration.domain.mixed.Version;
@@ -14,15 +14,17 @@ import org.junit.runners.Suite;
 import org.junit.runners.Suite.SuiteClasses;
 
 /**
- * @author Emmanuel Hugonnet (c) 2017 Red Hat, inc.
+ * Test suite for the standard mixed domain tests.
+ *
+ * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
 @RunWith(Suite.class)
-@SuiteClasses(value= {MixedDomainDeploymentOverlay740TestCase.class})
-@Version(AsVersion.EAP_7_4_0)
-public class MixedDomainOverlay740TestSuite extends MixedDomainTestSuite {
+@SuiteClasses(value= {SimpleMixedDomain800TestCase.class, MixedDomainDeployment800TestCase.class})
+@Version(AsVersion.EAP_8_0_0)
+public class MixedDomain800TestSuite extends MixedDomainTestSuite {
 
     @BeforeClass
     public static void initializeDomain() {
-        MixedDomainTestSuite.getSupport(MixedDomainOverlay740TestSuite.class, "primary-config/host.xml", "secondary-config/host-secondary-overlay-mgmt-realm-security.xml", Profile.DEFAULT, true, false, true);
+        MixedDomainTestSuite.getSupport(MixedDomain800TestSuite.class);
     }
 }

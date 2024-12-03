@@ -13,7 +13,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOS
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INCLUDE_RUNTIME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INET_ADDRESS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INTERFACE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PRIMARY;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PORT;
@@ -40,6 +39,7 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Locale;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
@@ -77,10 +77,12 @@ public class WildcardReadsTestCase {
 
     private static DomainTestSupport support;
     private static Boolean primaryServerOneStarted;
+    protected static Version.AsVersion version;
 
     @Before
     public void init() throws Exception {
         support = KernelBehaviorTestSuite.getSupport(this.getClass());
+        version = this.getClass().getAnnotation(Version.class).value();
 
         if (primaryServerOneStarted == null) {
             String state = readPrimaryServerOneState();
@@ -94,7 +96,7 @@ public class WildcardReadsTestCase {
             long timeout = System.currentTimeMillis() + TimeoutUtil.adjust(30000);
             while (!"running".equalsIgnoreCase(state = readPrimaryServerOneState())
                     && System.currentTimeMillis() < timeout) {
-                Thread.sleep(25);
+                TimeUnit.MILLISECONDS.sleep(25);
             }
             assertNotNull("Could not start primary/server-one", state);
             assertEquals("Could not start primary/server-one", "running", state.toLowerCase(Locale.ENGLISH));
@@ -333,12 +335,9 @@ public class WildcardReadsTestCase {
         assertNotNull(resp.toString(), secondaryResult);
 
         // Now limit the result to secondary hosts
-        op.get(WHERE, PRIMARY).set(false);
-        resp = executeForResult(op);
-        assertEquals(resp.toString(), 0, resp.asInt());
-
+        String dcCheck = version.getMajor() <= 7 ? "master" : "primary";
         op = Util.createEmptyOperation(QUERY, PathAddress.pathAddress(HOST_WILD));
-        op.get(WHERE, "master").set(false);
+        op.get(WHERE, dcCheck).set(false);
         resp = executeForResult(op);
         assertEquals(resp.toString(), 1, resp.asInt());
         assertEquals(resp.toString(), secondaryResult, resp.get(0).get(RESULT));
@@ -360,14 +359,16 @@ public class WildcardReadsTestCase {
         assertTrue(result.toString(), result.hasDefined("host-state"));
         assertEquals(result.toString(), "secondary", result.get(NAME).asString());
 
+        String dcCheck = version.getMajor() <= 7 ? "master" : "primary";
         // Now cause the filter to exclude the secondary
-        op.get(WHERE, "master").set(true);
+        op.get(WHERE, dcCheck).set(true);
         executeForResult(op, ModelType.UNDEFINED);
 
         // Correct the filter, slim down the input
-        op.get(WHERE, "master").set(false);
+        op.get(WHERE, dcCheck).set(false);
         op.get(SELECT).add(NAME);
         result = executeForResult(op, ModelType.OBJECT);
+
 
         assertEquals(result.toString(), 1, result.keys().size());
         assertEquals(result.toString(), "secondary", result.get(NAME).asString());
