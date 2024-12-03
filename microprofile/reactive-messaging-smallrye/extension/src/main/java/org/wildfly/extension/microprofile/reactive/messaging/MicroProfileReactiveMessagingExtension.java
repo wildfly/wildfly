@@ -14,6 +14,7 @@ import java.util.List;
 import io.netty.util.internal.logging.InternalLoggerFactory;
 import io.netty.util.internal.logging.JdkLoggerFactory;
 
+import io.vertx.core.logging.LoggerFactory;
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
 import org.jboss.as.controller.ModelVersion;
@@ -28,7 +29,6 @@ import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelNode;
-import org.jboss.modules.Module;
 import org.jboss.modules.ModuleClassLoader;
 import org.jboss.modules.ModuleLoadException;
 import org.jboss.modules.ModuleLoader;
@@ -61,14 +61,22 @@ public class MicroProfileReactiveMessagingExtension implements Extension {
     @Override
     public void initialize(ExtensionContext extensionContext) {
         // Initialize the Netty logger factory or we get horrible stack traces
+        // Initialize the vert.x logger factory or we get SM failures if deployment code is on the stack when it initializes stack traces
         ClassLoader cl = WildFlySecurityManager.getClassLoaderPrivileged(this.getClass());
         if (cl instanceof ModuleClassLoader) {
             ModuleLoader loader = ((ModuleClassLoader) cl).getModule().getModuleLoader();
             try {
-                Module module = loader.loadModule("io.netty");
+                loader.loadModule("io.netty");
                 InternalLoggerFactory.setDefaultFactory(JdkLoggerFactory.INSTANCE);
             } catch (ModuleLoadException e) {
                 // The netty module is not there so don't do anything
+            }
+            try {
+                loader.loadModule("io.vertx.core");
+                //noinspection deprecation
+                LoggerFactory.initialise();
+            } catch (ModuleLoadException e) {
+                // The vert.x module is not there so don't do anything
             }
         }
 

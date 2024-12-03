@@ -7,6 +7,7 @@ package org.wildfly.extension.opentelemetry;
 
 import io.netty.util.internal.logging.InternalLoggerFactory;
 import io.netty.util.internal.logging.JdkLoggerFactory;
+import io.vertx.core.logging.LoggerFactory;
 import org.wildfly.subsystem.SubsystemConfiguration;
 import org.wildfly.subsystem.SubsystemExtension;
 import org.wildfly.subsystem.SubsystemPersistence;
@@ -23,5 +24,8 @@ public class OpenTelemetrySubsystemExtension extends SubsystemExtension<OpenTele
 
         // Initialize the Netty logger factory
         InternalLoggerFactory.setDefaultFactory(JdkLoggerFactory.INSTANCE);
+        // Initialize the Vert.x logger factory
+        //noinspection deprecation
+        LoggerFactory.initialise();
     }
 }

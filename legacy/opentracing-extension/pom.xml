@@ -83,6 +83,13 @@
             <artifactId>netty-common</artifactId>
         </dependency>
 
+        <!-- This is only required for the extension to initialize Vert.x's LoggerFactory -->
+        <dependency>
+            <groupId>io.vertx</groupId>
+            <artifactId>vertx-core</artifactId>
+        </dependency>
+
+
         <!-- Test dependencies -->
         <dependency>
             <groupId>io.smallrye.opentelemetry</groupId>
