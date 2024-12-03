@@ -7,6 +7,9 @@ package org.wildfly.clustering.ejb.infinispan.timer;
 
 import org.wildfly.clustering.ejb.timer.Timer;
 import org.wildfly.clustering.ejb.timer.TimerManager;
+
+import java.time.Instant;
+
 import org.wildfly.clustering.ejb.cache.timer.TimerFactory;
 import org.wildfly.clustering.ejb.cache.timer.TimerMetaDataFactory;
 import org.wildfly.clustering.ejb.timer.ImmutableTimerMetaData;
@@ -29,7 +32,7 @@ public class InfinispanTimerFactory<I, V> implements TimerFactory<I, V> {
     }
 
     @Override
-    public Timer<I> createTimer(I id, ImmutableTimerMetaData metaData, TimerManager<I> manager, Scheduler<I, ImmutableTimerMetaData> scheduler) {
+    public Timer<I> createTimer(I id, ImmutableTimerMetaData metaData, TimerManager<I> manager, Scheduler<I, Instant> scheduler) {
         return new InfinispanTimer<>(manager, id, metaData, scheduler, this.listener, this.factory);
     }
 

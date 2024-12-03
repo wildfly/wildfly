@@ -5,6 +5,8 @@
 
 package org.wildfly.clustering.ejb.infinispan.timer;
 
+import java.time.Instant;
+import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 
 import org.wildfly.clustering.cache.CacheEntryRemover;
@@ -22,13 +24,13 @@ public class InfinispanTimer<I> implements Timer<I> {
     private final TimerManager<I> manager;
     private final I id;
     private final ImmutableTimerMetaData metaData;
-    private final Scheduler<I, ImmutableTimerMetaData> scheduler;
+    private final Scheduler<I, Instant> scheduler;
     private final TimeoutListener<I> listener;
     private final CacheEntryRemover<I> remover;
 
     private volatile boolean canceled = false;
 
-    public InfinispanTimer(TimerManager<I> manager, I id, ImmutableTimerMetaData metaData, Scheduler<I, ImmutableTimerMetaData> scheduler, TimeoutListener<I> listener, CacheEntryRemover<I> remover) {
+    public InfinispanTimer(TimerManager<I> manager, I id, ImmutableTimerMetaData metaData, Scheduler<I, Instant> scheduler, TimeoutListener<I> listener, CacheEntryRemover<I> remover) {
         this.manager = manager;
         this.id = id;
         this.metaData = metaData;
@@ -81,7 +83,10 @@ public class InfinispanTimer<I> implements Timer<I> {
     @Override
     public void activate() {
         if (!this.isActive()) {
-            this.scheduler.schedule(this.id, this.metaData);
+            Optional<Instant> nextTimeout = this.metaData.getNextTimeout();
+            if (nextTimeout.isPresent()) {
+                this.scheduler.schedule(this.id, nextTimeout.get());
+            }
         }
     }
 

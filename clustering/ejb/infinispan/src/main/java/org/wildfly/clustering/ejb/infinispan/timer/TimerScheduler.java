@@ -43,7 +43,7 @@ import org.wildfly.security.manager.WildFlySecurityManager;
  * @param <I> the timer identifier type
  * @param <V> the timer metadata value type
  */
-public class TimerScheduler<I, V> extends AbstractCacheEntryScheduler<I, ImmutableTimerMetaData> {
+public class TimerScheduler<I, V> extends AbstractCacheEntryScheduler<I, Instant> {
     private static final ThreadFactory THREAD_FACTORY = new DefaultThreadFactory(TimerScheduler.class, WildFlySecurityManager.getClassLoaderPrivileged(TimerScheduler.class));
 
     private final TimerFactory<I, V> factory;
@@ -52,7 +52,7 @@ public class TimerScheduler<I, V> extends AbstractCacheEntryScheduler<I, Immutab
         this(name, factory, manager, new AtomicReference<>(), locality, closeTimeout, registry, ScheduledEntries.sorted(), Executors.newSingleThreadExecutor(THREAD_FACTORY));
     }
 
-    private TimerScheduler(String name, TimerFactory<I, V> factory, TimerManager<I> manager, AtomicReference<Scheduler<I, ImmutableTimerMetaData>> reference, Supplier<Locality> locality, Duration closeTimeout, TimerRegistry<I> registry, ScheduledEntries<I, Instant> entries, ExecutorService executor) {
+    private TimerScheduler(String name, TimerFactory<I, V> factory, TimerManager<I> manager, AtomicReference<Scheduler<I, Instant>> reference, Supplier<Locality> locality, Duration closeTimeout, TimerRegistry<I> registry, ScheduledEntries<I, Instant> entries, ExecutorService executor) {
         this(name, entries, new InvokeTask<>(factory, manager, reference::getPlain, locality, entries, registry, executor), closeTimeout, registry, executor, factory);
         reference.setPlain(this);
     }
@@ -109,7 +109,7 @@ public class TimerScheduler<I, V> extends AbstractCacheEntryScheduler<I, Immutab
     }
 
     private TimerScheduler(Scheduler<I, Instant> scheduler, TimerFactory<I, V> factory) {
-        super(scheduler, ImmutableTimerMetaData::getNextTimeout);
+        super(scheduler, Optional::ofNullable);
         this.factory = factory;
     }
 
@@ -119,7 +119,10 @@ public class TimerScheduler<I, V> extends AbstractCacheEntryScheduler<I, Immutab
         V value = metaDataFactory.findValue(id);
         if (value != null) {
             ImmutableTimerMetaData metaData = metaDataFactory.createImmutableTimerMetaData(value);
-            this.schedule(id, metaData);
+            Optional<Instant> nextTimeout = metaData.getNextTimeout();
+            if (nextTimeout.isPresent()) {
+                this.schedule(id, nextTimeout.get());
+            }
         }
     }
 
@@ -130,9 +133,9 @@ public class TimerScheduler<I, V> extends AbstractCacheEntryScheduler<I, Immutab
         private final ScheduledEntries<I, Instant> entries;
         private final TimerRegistry<I> registry;
         private final ExecutorService executor;
-        private final Supplier<Scheduler<I, ImmutableTimerMetaData>> scheduler;
+        private final Supplier<Scheduler<I, Instant>> scheduler;
 
-        InvokeTask(TimerFactory<I, V> factory, TimerManager<I> manager, Supplier<Scheduler<I, ImmutableTimerMetaData>> scheduler, Supplier<Locality> locality, ScheduledEntries<I, Instant> entries, TimerRegistry<I> registry, ExecutorService executor) {
+        InvokeTask(TimerFactory<I, V> factory, TimerManager<I> manager, Supplier<Scheduler<I, Instant>> scheduler, Supplier<Locality> locality, ScheduledEntries<I, Instant> entries, TimerRegistry<I> registry, ExecutorService executor) {
             this.factory = factory;
             this.manager = manager;
             this.scheduler = scheduler;
@@ -149,7 +152,7 @@ public class TimerScheduler<I, V> extends AbstractCacheEntryScheduler<I, Immutab
             Supplier<Locality> locality = this.locality;
             ScheduledEntries<I, Instant> entries = this.entries;
             TimerRegistry<I> registry = this.registry;
-            Scheduler<I, ImmutableTimerMetaData> scheduler = this.scheduler.get();
+            Scheduler<I, Instant> scheduler = this.scheduler.get();
             TimerMetaDataKey<I> key = new InfinispanTimerMetaDataKey<>(id);
             // Ensure timer is owned by local member
             if (!locality.get().isLocal(key)) {

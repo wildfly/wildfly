@@ -8,6 +8,7 @@ package org.wildfly.clustering.ejb.infinispan.timer;
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.time.Duration;
+import java.time.Instant;
 import java.util.AbstractMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
@@ -68,9 +69,9 @@ public class InfinispanTimerManager<I, C> implements TimerManager<I> {
     private final AtomicBoolean identifierFactoryStarted = new AtomicBoolean(false);
     private final Supplier<Batch> batchFactory;
     private final TimerRegistry<I> registry;
-    private final CacheEntryScheduler<I, ImmutableTimerMetaData> inactiveScheduler = new CacheEntryScheduler<>() {
+    private final CacheEntryScheduler<I, Instant> inactiveScheduler = new CacheEntryScheduler<>() {
         @Override
-        public void schedule(I id, ImmutableTimerMetaData metaData) {
+        public void schedule(I id, Instant nextTimeout) {
         }
 
         @Override
@@ -94,9 +95,9 @@ public class InfinispanTimerManager<I, C> implements TimerManager<I> {
         public void close() {
         }
     };
-    private final Scheduler<I, ImmutableTimerMetaData> scheduler;
+    private final Scheduler<I, Instant> scheduler;
     private final Runnable affinityReset;
-    private final AtomicReference<CacheEntryScheduler<I, ImmutableTimerMetaData>> schedulerReference = new AtomicReference<>(this.inactiveScheduler);
+    private final AtomicReference<CacheEntryScheduler<I, Instant>> schedulerReference = new AtomicReference<>(this.inactiveScheduler);
     private final AtomicReference<ListenerRegistration> schedulerListenerRegistration = new AtomicReference<>();
 
     public InfinispanTimerManager(InfinispanTimerManagerConfiguration<I, C> config) {
@@ -111,7 +112,7 @@ public class InfinispanTimerManager<I, C> implements TimerManager<I> {
         RetryConfig retryConfig = config.getRetryConfig();
         CacheContainerCommandDispatcherFactory dispatcherFactory = config.getCommandDispatcherFactory();
         CacheContainerGroup group = dispatcherFactory.getGroup();
-        CacheEntryScheduler<I, ImmutableTimerMetaData> localScheduler = new ReferenceScheduler<>(this.schedulerReference::get);
+        CacheEntryScheduler<I, Instant> localScheduler = new ReferenceScheduler<>(this.schedulerReference::get);
         AtomicReference<Function<I, CacheContainerGroupMember>> affinityReference = new AtomicReference<>();
         // If suspend/resume restarts the cache, the member affinity will need to be reset
         this.affinityReset = () -> affinityReference.set(new UnaryGroupMemberAffinity<>(config.getCache(), group));
@@ -128,7 +129,7 @@ public class InfinispanTimerManager<I, C> implements TimerManager<I> {
             }
 
             @Override
-            public CacheEntryScheduler<I, ImmutableTimerMetaData> getScheduler() {
+            public CacheEntryScheduler<I, Instant> getScheduler() {
                 return localScheduler;
             }
 
@@ -138,7 +139,7 @@ public class InfinispanTimerManager<I, C> implements TimerManager<I> {
             }
 
             @Override
-            public BiFunction<I, ImmutableTimerMetaData, ScheduleCommand<I, ImmutableTimerMetaData>> getScheduleCommandFactory() {
+            public BiFunction<I, Instant, ScheduleCommand<I, Instant>> getScheduleCommandFactory() {
                 return properties.isTransactional() ? ScheduleWithPersistentMetaDataCommand::new : ScheduleWithTransientMetaDataCommand::new;
             }
 
@@ -167,7 +168,7 @@ public class InfinispanTimerManager<I, C> implements TimerManager<I> {
         Supplier<Locality> locality = () -> Locality.forCurrentConsistentHash(this.cache);
 
         TimerScheduler<I, RemappableTimerMetaDataEntry<C>> localScheduler = new TimerScheduler<>(this.cache.getName(), this.factory, this, locality, Duration.ofMillis(this.cache.getCacheConfiguration().transaction().cacheStopTimeout()), this.registry);
-        try (Scheduler<I, ImmutableTimerMetaData> scheduler = this.schedulerReference.getAndSet(localScheduler)) {
+        try (Scheduler<I, Instant> scheduler = this.schedulerReference.getAndSet(localScheduler)) {
             // auto-close
         }
 
@@ -192,7 +193,7 @@ public class InfinispanTimerManager<I, C> implements TimerManager<I> {
             // auto-closed
         }
 
-        try (Scheduler<I, ImmutableTimerMetaData> scheduler = this.schedulerReference.getAndSet(this.inactiveScheduler)) {
+        try (Scheduler<I, Instant> scheduler = this.schedulerReference.getAndSet(this.inactiveScheduler)) {
             // Switch to inactive scheduler
         }
     }
