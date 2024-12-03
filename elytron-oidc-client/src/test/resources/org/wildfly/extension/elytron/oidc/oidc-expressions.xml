@@ -3,7 +3,7 @@
   ~ SPDX-License-Identifier: Apache-2.0
   -->
 
-<subsystem xmlns="urn:wildfly:elytron-oidc-client:preview:3.0">
+<subsystem xmlns="urn:wildfly:elytron-oidc-client:community:3.0">
     <realm name="main-expressions">
         <realm-public-key>${exp.realm-public-key:MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQC4siLKUew0WYxdtq6/rwk4Uj/4amGFFnE/yzIxQVU0PUqz3QBRVkUWpDj0K6ZnS5nzJV/y6DHLEy7hjZTdRDphyF1sq09aDOYnVpzu8o2sIlMM8q5RnUyEfIyUZqwo8pSZDJ90fS0s+IDUJNCSIrAKO3w1lqZDHL6E/YFHXyzkvQIDAQAB}</realm-public-key>
         <auth-server-url>${exp.auth-server-url:http://localhost:8080/auth}</auth-server-url>
