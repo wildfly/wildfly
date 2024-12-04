@@ -34,6 +34,7 @@
         <module name="org.eclipse.microprofile.config.api"/>
         <module name="org.eclipse.microprofile.openapi.api"/>
 
+        <module name="io.smallrye.common.classloader"/>
         <module name="io.smallrye.jandex"/>
         <module name="org.jboss.logging"/>
 
