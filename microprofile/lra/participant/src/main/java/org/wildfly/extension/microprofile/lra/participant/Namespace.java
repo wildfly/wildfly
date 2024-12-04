@@ -12,13 +12,13 @@ enum Namespace {
     // must be first
     UNKNOWN(null),
 
-    LRA_PARTICIPANT_1_0("urn:wildfly:microprofile-lra-participant:1.0"),
+    LRA_PARTICIPANT_2_0("urn:wildfly:microprofile-lra-participant:2.0"),
     ;
 
     /**
      * The current namespace version.
      */
-    public static final Namespace CURRENT = LRA_PARTICIPANT_1_0;
+    public static final Namespace CURRENT = LRA_PARTICIPANT_2_0;
 
     private final String name;
 
