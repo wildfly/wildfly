@@ -18,6 +18,7 @@ import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.client.helpers.Operations;
 import org.jboss.as.test.shared.ServerReload;
 import org.jboss.as.test.shared.TestSuiteEnvironment;
+import org.jboss.as.test.shared.util.AssumeTestGroupUtil;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -99,6 +100,7 @@ public class ActiveRequestTrackerHandlerTest {
 
         @Override
         public void setup(final ManagementClient managementClient, final String containerId) throws Exception {
+            AssumeTestGroupUtil.assumeWildFlyPreview();
             // /subsystem=undertow/server=default-server/host=default-host:write-attribute(name="active-request-tracking-enabled", value="true")
             execute(managementClient,
                     Operations.createWriteAttributeOperation(subsystemAddress, "statistics-enabled", true),

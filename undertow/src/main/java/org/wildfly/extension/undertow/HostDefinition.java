@@ -99,6 +99,7 @@ class HostDefinition extends SimpleResourceDefinition {
             .setAllowExpression(true)
             .setValidator(PredicateValidator.INSTANCE)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+                    .setStability(Stability.PREVIEW)
             .build();
 
     static final Collection<AttributeDefinition> ATTRIBUTES = List.of(ALIAS, DEFAULT_WEB_MODULE, DEFAULT_RESPONSE_CODE,
@@ -109,6 +110,7 @@ class HostDefinition extends SimpleResourceDefinition {
                     UndertowExtension.getResolver("active-request-tracker"))
                     .setReplyType(ModelType.LIST).setReplyValueType(ModelType.STRING)
                     .setRuntimeOnly()
+                    .setStability(Stability.PREVIEW)
                     .build();
 
     HostDefinition() {
