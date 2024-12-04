@@ -540,7 +540,7 @@
         <version.org.infinispan>15.0.11.Final</version.org.infinispan>
         <version.org.infinispan.protostream>5.0.12.Final</version.org.infinispan.protostream>
         <version.org.jasypt>1.9.3</version.org.jasypt>
-        <version.org.jberet>3.0.0.Final</version.org.jberet>
+        <version.org.jberet>3.1.0.Final</version.org.jberet>
         <version.org.jboss.activemq.artemis.integration>2.0.3.Final</version.org.jboss.activemq.artemis.integration>
         <version.org.jboss.common.jboss-common-beans>2.0.1.Final</version.org.jboss.common.jboss-common-beans>
         <version.org.jboss.ejb-client>5.0.8.Final</version.org.jboss.ejb-client>
