@@ -105,7 +105,7 @@ class HostDefinition extends SimpleResourceDefinition {
             DISABLE_CONSOLE_REDIRECT, QUEUE_REQUESTS_ON_START, ACTIVE_REQUEST_TRACKING_ENABLED, ACTIVE_REQUEST_TRACKING_PREDICATE);
 
     private static final SimpleOperationDefinition LIST_ACTIVE_REQUESTS =
-            new SimpleOperationDefinitionBuilder("list-active-requests",
+            new SimpleOperationDefinitionBuilder(Constants.LIST_ACTIVE_REQUESTS,
                     UndertowExtension.getResolver("active-request-tracker"))
                     .setReplyType(ModelType.LIST).setReplyValueType(ModelType.STRING)
                     .setRuntimeOnly()
