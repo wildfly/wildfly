@@ -19,23 +19,6 @@ import java.util.List;
  */
 public abstract class VertxOptionsAttributes implements VertxConstants {
 
-  public static final SimpleAttributeDefinition VERTX_OPTION_FILE_PATH = new SimpleAttributeDefinitionBuilder(VertxConstants.ATTR_PATH, ModelType.STRING)
-    .setRequired(true)
-    .setAllowExpression(true)
-    .build();
-
-  private static final List<AttributeDefinition> VERTX_OPTIONS_FILE_ATTRS = new ArrayList<>();
-  static {
-    VERTX_OPTIONS_FILE_ATTRS.add(VERTX_OPTION_FILE_PATH);
-  }
-
-  /**
-   * @return Attributes used in element like: /subsystem=vertx/vertx-options-file=vof
-   */
-  static List<AttributeDefinition> getVertxOptionsFileAttributes() {
-    return VERTX_OPTIONS_FILE_ATTRS;
-  }
-
   public static final SimpleAttributeDefinition ATTR_EVENTLOOP_POOL_SIZE = new SimpleAttributeDefinitionBuilder(VertxConstants.ATTR_EVENTLOOP_POOL_SIZE, ModelType.INT)
     .setRequired(false)
     .setAllowExpression(true)
