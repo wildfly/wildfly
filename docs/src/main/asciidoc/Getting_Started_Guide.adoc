@@ -476,7 +476,7 @@ to what's shown below.
  
   JAVA: java
  
-  JAVA_OPTS:  -server -Xms64m -Xmx512m -XX:MetaspaceSize=96M -Djava.net.preferIPv4Stack=true -Djboss.modules.system.pkgs=com.yourkit,org.jboss.byteman -Djava.awt.headless=true
+  JAVA_OPTS:  -server -Xms64m -Xmx512m -Djava.net.preferIPv4Stack=true -Djboss.modules.system.pkgs=com.yourkit,org.jboss.byteman -Djava.awt.headless=true
  
 =========================================================================
  
