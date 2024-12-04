@@ -381,6 +381,27 @@
         </dependency>
 
         <dependency>
+            <groupId>io.github.resilience4j</groupId>
+            <artifactId>resilience4j-core</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>io.github.resilience4j</groupId>
+            <artifactId>resilience4j-retry</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <dependency>
             <groupId>io.netty</groupId>
             <artifactId>netty-buffer</artifactId>
             <exclusions>
@@ -1737,7 +1758,7 @@
 
         <dependency>
             <groupId>org.infinispan</groupId>
-            <artifactId>infinispan-cachestore-jdbc-jakarta</artifactId>
+            <artifactId>infinispan-cachestore-jdbc</artifactId>
             <exclusions>
                 <exclusion>
                     <groupId>*</groupId>
@@ -1747,7 +1768,7 @@
         </dependency>
         <dependency>
             <groupId>org.infinispan</groupId>
-            <artifactId>infinispan-cachestore-jdbc-common-jakarta</artifactId>
+            <artifactId>infinispan-cachestore-jdbc-common</artifactId>
             <exclusions>
                 <exclusion>
                     <groupId>*</groupId>
@@ -1767,7 +1788,7 @@
         </dependency>
         <dependency>
             <groupId>org.infinispan</groupId>
-            <artifactId>infinispan-client-hotrod-jakarta</artifactId>
+            <artifactId>infinispan-client-hotrod</artifactId>
             <exclusions>
                 <exclusion>
                     <groupId>*</groupId>
@@ -1777,7 +1798,7 @@
         </dependency>
         <dependency>
             <groupId>org.infinispan</groupId>
-            <artifactId>infinispan-commons-jakarta</artifactId>
+            <artifactId>infinispan-commons</artifactId>
             <exclusions>
                 <exclusion>
                     <groupId>*</groupId>
@@ -1787,7 +1808,7 @@
         </dependency>
         <dependency>
             <groupId>org.infinispan</groupId>
-            <artifactId>infinispan-core-jakarta</artifactId>
+            <artifactId>infinispan-core</artifactId>
             <exclusions>
                 <exclusion>
                     <groupId>*</groupId>
@@ -1797,7 +1818,7 @@
         </dependency>
         <dependency>
             <groupId>org.infinispan</groupId>
-            <artifactId>infinispan-cdi-common-jakarta</artifactId>
+            <artifactId>infinispan-cdi-common</artifactId>
             <exclusions>
                 <exclusion>
                     <groupId>*</groupId>
@@ -1807,7 +1828,7 @@
         </dependency>
         <dependency>
             <groupId>org.infinispan</groupId>
-            <artifactId>infinispan-cdi-embedded-jakarta</artifactId>
+            <artifactId>infinispan-cdi-embedded</artifactId>
             <exclusions>
                 <exclusion>
                     <groupId>*</groupId>
@@ -1817,7 +1838,7 @@
         </dependency>
         <dependency>
             <groupId>org.infinispan</groupId>
-            <artifactId>infinispan-cdi-remote-jakarta</artifactId>
+            <artifactId>infinispan-cdi-remote</artifactId>
             <exclusions>
                 <exclusion>
                     <groupId>*</groupId>

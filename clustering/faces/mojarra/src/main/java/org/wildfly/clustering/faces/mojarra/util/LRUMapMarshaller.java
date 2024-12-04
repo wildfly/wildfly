@@ -8,9 +8,10 @@ package org.wildfly.clustering.faces.mojarra.util;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.security.PrivilegedAction;
-import java.util.Iterator;
+import java.util.AbstractMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 import org.infinispan.protostream.descriptors.WireType;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamReader;
@@ -25,7 +26,7 @@ import com.sun.faces.util.LRUMap;
  */
 public class LRUMapMarshaller extends AbstractMapMarshaller<LRUMap<Object, Object>> {
 
-    private static final int MAX_CAPACITY_INDEX = VALUE_INDEX + 1;
+    private static final int MAX_CAPACITY_INDEX = ENTRY_INDEX + 1;
     private static final int DEFAULT_MAX_CAPACITY = 15;
     private static final Field MAX_CAPACITY_FIELD = WildFlySecurityManager.doUnchecked(new PrivilegedAction<Field>() {
         @Override
@@ -48,16 +49,12 @@ public class LRUMapMarshaller extends AbstractMapMarshaller<LRUMap<Object, Objec
     @Override
     public LRUMap<Object, Object> readFrom(ProtoStreamReader reader) throws IOException {
         int maxCapacity = DEFAULT_MAX_CAPACITY;
-        List<Object> keys = new LinkedList<>();
-        List<Object> values = new LinkedList<>();
+        List<Map.Entry<Object, Object>> entries = new LinkedList<>();
         while (!reader.isAtEnd()) {
             int tag = reader.readTag();
             switch (WireType.getTagFieldNumber(tag)) {
-                case KEY_INDEX:
-                    keys.add(reader.readAny());
-                    break;
-                case VALUE_INDEX:
-                    values.add(reader.readAny());
+                case ENTRY_INDEX:
+                    entries.add(reader.readObject(AbstractMap.SimpleEntry.class));
                     break;
                 case MAX_CAPACITY_INDEX:
                     maxCapacity = reader.readUInt32();
@@ -67,10 +64,8 @@ public class LRUMapMarshaller extends AbstractMapMarshaller<LRUMap<Object, Objec
             }
         }
         LRUMap<Object, Object> map = new LRUMap<>(maxCapacity);
-        Iterator<Object> keyIterator = keys.iterator();
-        Iterator<Object> valueIterator = values.iterator();
-        while (keyIterator.hasNext() || valueIterator.hasNext()) {
-            map.put(keyIterator.next(), valueIterator.next());
+        for (Map.Entry<Object, Object> entry : entries) {
+            map.put(entry.getKey(), entry.getValue());
         }
         return map;
     }

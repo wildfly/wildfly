@@ -6,6 +6,7 @@
 package org.jboss.as.clustering.infinispan.subsystem;
 
 import org.infinispan.Cache;
+import org.infinispan.factories.ComponentRegistry;
 import org.wildfly.subsystem.service.capture.FunctionExecutorRegistry;
 
 /**
@@ -21,9 +22,8 @@ public class CacheComponentMetricExecutor<C> extends CacheMetricExecutor<C> {
         this.componentClass = componentClass;
     }
 
-    @SuppressWarnings("deprecation")
     @Override
     public C apply(Cache<?, ?> cache) {
-        return cache.getAdvancedCache().getComponentRegistry().getLocalComponent(this.componentClass);
+        return ComponentRegistry.componentOf(cache, this.componentClass);
     }
 }

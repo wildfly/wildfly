@@ -5,13 +5,16 @@
 
 package org.jboss.as.clustering.infinispan.subsystem;
 
+import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 
 import org.infinispan.commons.executors.ExecutorFactory;
 import org.infinispan.commons.executors.ThreadPoolExecutorFactory;
+import org.infinispan.commons.jdkspecific.ThreadCreator;
 import org.infinispan.commons.util.ProcessorInfo;
+import org.infinispan.commons.util.concurrent.BlockingRejectedExecutionHandler;
 import org.infinispan.configuration.global.ThreadPoolConfigurationBuilder;
 import org.infinispan.factories.threads.EnhancedQueueExecutorFactory;
 import org.jboss.as.clustering.controller.Attribute;
@@ -38,6 +41,7 @@ import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
+import org.jboss.threads.EnhancedQueueExecutor;
 import org.wildfly.clustering.context.DefaultThreadFactory;
 import org.wildfly.subsystem.resource.operation.ResourceOperationRuntimeHandler;
 import org.wildfly.subsystem.service.ResourceServiceConfigurator;
@@ -151,7 +155,26 @@ public enum ThreadPoolResourceDefinition implements ResourceDefinitionProvider, 
 
         @Override
         public ExecutorService createExecutor(ThreadFactory factory) {
-            return super.createExecutor(new DefaultThreadFactory(factory, ExecutorFactory.class.getClassLoader()));
+            // return super.createExecutor(new DefaultThreadFactory(factory, ExecutorFactory.class.getClassLoader()));
+            // Workaround jboss-threads 2.4 vs 3.x incompatibility
+            return ThreadCreator.createBlockingExecutorService().orElseGet(() -> {
+                EnhancedQueueExecutor.Builder builder = new EnhancedQueueExecutor.Builder();
+                builder.setThreadFactory(new DefaultThreadFactory(factory, ExecutorFactory.class.getClassLoader()));
+                builder.setCorePoolSize(this.coreThreads);
+                builder.setMaximumPoolSize(this.maxThreads);
+                builder.setGrowthResistance(0.0f);
+                builder.setMaximumQueueSize(this.queueLength);
+                builder.setKeepAliveTime(this.keepAlive, TimeUnit.MILLISECONDS);
+
+                EnhancedQueueExecutor enhancedQueueExecutor = builder.build();
+                enhancedQueueExecutor.setHandoffExecutor(new Executor() {
+                    @Override
+                    public void execute(Runnable task) {
+                        BlockingRejectedExecutionHandler.getInstance().rejectedExecution(task, enhancedQueueExecutor);
+                    }
+                });
+                return enhancedQueueExecutor;
+            });
         }
     }
 

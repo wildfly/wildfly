@@ -1,10 +1,14 @@
+syntax = "proto3";
+
 package org.jboss.weld.module.ejb;
+
+import "org.wildfly.clustering.marshalling.protostream.proto";
 
 /**
  * @TypeId(490)
  */
 message EnterpriseBeanProxyMethodHandler {
-	optional	bytes	beanManager	 = 1;
-	optional	bytes	identifier	 = 2;
-	optional	bytes	reference	 = 3;
+	org.wildfly.clustering.marshalling.protostream.Any	beanManager	 = 1;
+	org.wildfly.clustering.marshalling.protostream.Any	identifier	 = 2;
+	org.wildfly.clustering.marshalling.protostream.Any	reference	 = 3;
 }

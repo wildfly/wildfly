@@ -34,6 +34,7 @@ import org.infinispan.client.hotrod.impl.RemoteCacheSupport;
 import org.infinispan.client.hotrod.impl.operations.OperationsFactory;
 import org.infinispan.client.hotrod.impl.operations.PingResponse;
 import org.infinispan.client.hotrod.impl.operations.RetryAwareCompletionStage;
+import org.infinispan.commons.api.query.ContinuousQuery;
 import org.infinispan.commons.util.CloseableIterator;
 import org.infinispan.commons.util.CloseableIteratorCollection;
 import org.infinispan.commons.util.CloseableIteratorSet;
@@ -144,12 +145,6 @@ public class ManagedRemoteCache<K, V> extends RemoteCacheSupport<K, V> implement
     @Override
     public DataFormat getDataFormat() {
         return this.cache.getDataFormat();
-    }
-
-    @Deprecated
-    @Override
-    public Set<Object> getListeners() {
-        return this.cache.getListeners();
     }
 
     @Override
@@ -410,5 +405,15 @@ public class ManagedRemoteCache<K, V> extends RemoteCacheSupport<K, V> implement
     @Override
     public CompletionStage<Void> updateBloomFilter() {
         return this.cache.updateBloomFilter();
+    }
+
+    @Override
+    public <T> org.infinispan.commons.api.query.Query<T> query(String query) {
+        return this.cache.query(query);
+    }
+
+    @Override
+    public ContinuousQuery<K, V> continuousQuery() {
+        return this.cache.continuousQuery();
     }
 }

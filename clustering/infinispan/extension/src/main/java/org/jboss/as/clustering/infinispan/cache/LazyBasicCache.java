@@ -16,6 +16,8 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 import org.infinispan.commons.api.BasicCache;
+import org.infinispan.commons.api.query.ContinuousQuery;
+import org.infinispan.commons.api.query.Query;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
@@ -403,5 +405,15 @@ public abstract class LazyBasicCache<K, V, C extends BasicCache<K, V>> implement
     @Override
     public CompletableFuture<Long> sizeAsync() {
         return this.get().sizeAsync();
+    }
+
+    @Override
+    public <T> Query<T> query(String query) {
+        return this.get().query(query);
+    }
+
+    @Override
+    public ContinuousQuery<K, V> continuousQuery() {
+        return this.get().continuousQuery();
     }
 }

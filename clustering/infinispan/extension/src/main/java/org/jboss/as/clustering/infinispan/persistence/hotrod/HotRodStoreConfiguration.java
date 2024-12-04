@@ -18,14 +18,14 @@ import org.wildfly.clustering.infinispan.client.RemoteCacheContainer;
  */
 @BuiltBy(HotRodStoreConfigurationBuilder.class)
 @ConfigurationFor(HotRodStore.class)
-public class HotRodStoreConfiguration extends AbstractStoreConfiguration {
+public class HotRodStoreConfiguration extends AbstractStoreConfiguration<HotRodStoreConfiguration> {
 
     static final AttributeDefinition<RemoteCacheContainer> REMOTE_CACHE_CONTAINER = AttributeDefinition.builder("remoteCacheContainer", null, RemoteCacheContainer.class).build();
 
     static final AttributeDefinition<String> CACHE_CONFIGURATION = AttributeDefinition.builder("cacheConfiguration", null, String.class).build();
 
     public HotRodStoreConfiguration(AttributeSet attributes, AsyncStoreConfiguration async) {
-        super(attributes, async);
+        super(org.infinispan.persistence.remote.configuration.Element.REMOTE_STORE, attributes, async);
     }
 
     public RemoteCacheContainer remoteCacheContainer() {

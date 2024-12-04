@@ -48,16 +48,21 @@ public class TimerScheduler<I, V> extends AbstractCacheEntryScheduler<I, Immutab
 
     private final TimerFactory<I, V> factory;
 
-    public TimerScheduler(TimerFactory<I, V> factory, TimerManager<I> manager, Supplier<Locality> locality, Duration closeTimeout, TimerRegistry<I> registry) {
-        this(factory, manager, locality, closeTimeout, registry, ScheduledEntries.sorted(), Executors.newSingleThreadExecutor(THREAD_FACTORY));
+    public TimerScheduler(String name, TimerFactory<I, V> factory, TimerManager<I> manager, Supplier<Locality> locality, Duration closeTimeout, TimerRegistry<I> registry) {
+        this(name, factory, manager, locality, closeTimeout, registry, ScheduledEntries.sorted(), Executors.newSingleThreadExecutor(THREAD_FACTORY));
     }
 
-    private TimerScheduler(TimerFactory<I, V> factory, TimerManager<I> manager, Supplier<Locality> locality, Duration closeTimeout, TimerRegistry<I> registry, ScheduledEntries<I, Instant> entries, ExecutorService executor) {
-        this(entries, new InvokeTask<>(factory, manager, locality, entries, registry, executor), closeTimeout, registry, executor, factory);
+    private TimerScheduler(String name, TimerFactory<I, V> factory, TimerManager<I> manager, Supplier<Locality> locality, Duration closeTimeout, TimerRegistry<I> registry, ScheduledEntries<I, Instant> entries, ExecutorService executor) {
+        this(name, entries, new InvokeTask<>(factory, manager, locality, entries, registry, executor), closeTimeout, registry, executor, factory);
     }
 
-    private <T extends Predicate<I> & Consumer<Scheduler<I, ImmutableTimerMetaData>>> TimerScheduler(ScheduledEntries<I, Instant> entries, T invokeTask, Duration closeTimeout, TimerRegistry<I> registry, ExecutorService executor, TimerFactory<I, V> factory) {
+    private <T extends Predicate<I> & Consumer<Scheduler<I, ImmutableTimerMetaData>>> TimerScheduler(String name, ScheduledEntries<I, Instant> entries, T invokeTask, Duration closeTimeout, TimerRegistry<I> registry, ExecutorService executor, TimerFactory<I, V> factory) {
         this(new LocalSchedulerConfiguration<>() {
+            @Override
+            public String getName() {
+                return name;
+            }
+
             @Override
             public ScheduledEntries<I, Instant> getScheduledEntries() {
                 return entries;

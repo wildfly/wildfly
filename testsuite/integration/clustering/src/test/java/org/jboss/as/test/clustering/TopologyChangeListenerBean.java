@@ -19,6 +19,7 @@ import javax.naming.NamingException;
 import org.infinispan.Cache;
 import org.infinispan.distribution.DistributionManager;
 import org.infinispan.distribution.LocalizedCacheTopology;
+import org.infinispan.factories.GlobalComponentRegistry;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.infinispan.notifications.Listener;
 import org.infinispan.notifications.Listener.Observation;
@@ -91,8 +92,7 @@ public class TopologyChangeListenerBean implements TopologyChangeListener, Runna
 
     @TopologyChanged
     public CompletionStage<Void> topologyChanged(TopologyChangedEvent<?, ?> event) {
-        @SuppressWarnings("deprecation")
-        BlockingManager blocking = event.getCache().getCacheManager().getGlobalComponentRegistry().getComponent(BlockingManager.class);
+        BlockingManager blocking = GlobalComponentRegistry.componentOf(event.getCache().getCacheManager(), BlockingManager.class);
         blocking.asExecutor(this.getClass().getName()).execute(this);
         return CompletableFuture.completedFuture(null);
     }

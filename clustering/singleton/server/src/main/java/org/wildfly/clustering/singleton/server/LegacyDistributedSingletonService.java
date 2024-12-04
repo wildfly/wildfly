@@ -126,6 +126,11 @@ public class LegacyDistributedSingletonService<T> extends AbstractSingletonServi
         }
 
         @Override
+        public boolean isStarted() {
+            return this.primaryLifecycle.isStarted();
+        }
+
+        @Override
         public void start() {
             this.backupLifecycle.stop();
             this.primaryLifecycle.start();

@@ -1,10 +1,13 @@
+syntax = "proto3";
+
 package com.sun.faces.util;
+
+import "org.wildfly.clustering.marshalling.protostream.proto";
 
 /**
  * @TypeId(530)
  */
 message LRUMap {
-	repeated	bytes	key	 = 1;
-	repeated	bytes	value	 = 2;
-	optional	uint32	maxCapacity	 = 3;
+	repeated	org.wildfly.clustering.marshalling.protostream.Any	entry	 = 1;
+	uint32	maxCapacity	 = 2;
 }

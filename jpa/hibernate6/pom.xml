@@ -116,7 +116,7 @@
 
         <dependency>
             <groupId>org.infinispan</groupId>
-            <artifactId>infinispan-commons-jakarta</artifactId>
+            <artifactId>infinispan-commons</artifactId>
             <scope>provided</scope>
         </dependency>
         <dependency>
@@ -126,7 +126,7 @@
         </dependency>
         <dependency>
             <groupId>org.infinispan</groupId>
-            <artifactId>infinispan-core-jakarta</artifactId>
+            <artifactId>infinispan-core</artifactId>
             <scope>provided</scope>
         </dependency>
         <dependency>
