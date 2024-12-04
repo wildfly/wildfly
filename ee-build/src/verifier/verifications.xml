@@ -33,7 +33,7 @@
     </file>
     <file>
       <location>target/${server.output.dir.prefix}-${server.output.dir.version}/modules/system/layers/base/org/jboss/as/product/${ee.dist.product.slot}/module.xml</location>
-      <contains>org.wildfly:wildfly-ee-feature-pack-product-conf</contains>
+      <contains>${project.groupId}:wildfly-ee-feature-pack-product-conf</contains>
     </file>
     <file>
       <location>target/${server.output.dir.prefix}-${server.output.dir.version}/jboss-modules.jar</location>

@@ -51,6 +51,23 @@
                 </exclusion>
             </exclusions>
         </dependency>
+        <!-- Depends on the org.wildfly.channels:wildfly-preview artifact to ensure
+             that this channel is built first before the distribution is created -->
+        <dependency>
+            <groupId>org.wildfly.channels</groupId>
+            <artifactId>wildfly-preview</artifactId>
+            <version>${project.version}</version>
+            <classifier>manifest</classifier>
+            <type>yaml</type>
+            <scope>provided</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
@@ -83,22 +100,9 @@
         <finalName>${server.output.dir.prefix}-preview-${server.output.dir.version}</finalName>
         <plugins>
             <plugin>
-                <!-- Installation provisioning is vulnerable to leftover files in the target
-                     folder from previous builds, so always clean even if the clean lifecycle is not invoked -->
-                <artifactId>maven-clean-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <id>auto-clean</id>
-                        <phase>initialize</phase>
-                        <goals>
-                            <goal>clean</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <groupId>org.jboss.galleon</groupId>
-                <artifactId>galleon-maven-plugin</artifactId>
+                <groupId>org.wildfly.plugins</groupId>
+                <artifactId>wildfly-maven-plugin</artifactId>
+                <version>${version.org.wildfly.plugin}</version>
                 <executions>
                     <execution>
                         <id>server-provisioning</id>
@@ -107,13 +111,23 @@
                         </goals>
                         <phase>compile</phase>
                         <configuration>
-                            <install-dir>${project.build.directory}/${project.build.finalName}</install-dir>
-                            <record-state>true</record-state>
-                            <log-time>${galleon.log.time}</log-time>
-                            <offline>true</offline>
-                            <plugin-options>
+                            <provisioningDir>${project.build.directory}/${project.build.finalName}</provisioningDir>
+                            <recordProvisioningState>true</recordProvisioningState>
+                            <log-provisioning-time>${galleon.log.time}</log-provisioning-time>
+                            <offline-provisioning>true</offline-provisioning>
+                            <galleon-options>
                                 <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
-                            </plugin-options>
+                            </galleon-options>
+                            <channels>
+                                <channel>
+                                    <name>wildfly-preview</name>
+                                    <manifest>
+                                        <groupId>org.wildfly.channels</groupId>
+                                        <artifactId>wildfly-preview</artifactId>
+                                        <version>${project.version}</version>
+                                    </manifest>
+                                </channel>
+                            </channels>
                             <feature-packs>
                                 <feature-pack>
                                     <groupId>${project.groupId}</groupId>

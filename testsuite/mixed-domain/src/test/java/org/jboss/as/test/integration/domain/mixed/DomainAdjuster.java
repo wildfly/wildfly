@@ -36,6 +36,7 @@ import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.test.integration.domain.management.util.DomainTestUtils;
 import org.jboss.as.test.integration.domain.mixed.eap740.DomainAdjuster740;
+import org.jboss.as.test.integration.domain.mixed.eap800.DomainAdjuster800;
 import org.jboss.as.test.integration.management.util.MgmtOperationException;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
@@ -67,6 +68,9 @@ public class DomainAdjuster {
         switch (asVersion) {
             case EAP_7_4_0:
                 adjuster = new DomainAdjuster740();
+                break;
+            case EAP_8_0_0:
+                adjuster = new DomainAdjuster800();
                 break;
             default:
                 adjuster = new DomainAdjuster();
