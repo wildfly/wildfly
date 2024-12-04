@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package org.jboss.as.test.integration.domain.mixed.eap740;
+package org.jboss.as.test.integration.domain.mixed.eap800;
 
 import org.jboss.as.test.integration.domain.mixed.MixedDomainTestSuite;
 import org.jboss.as.test.integration.domain.mixed.Version;
@@ -18,14 +18,14 @@ import org.junit.runners.Suite;
  */
 @RunWith(Suite.class)
 @Suite.SuiteClasses(value= {
-        LegacyConfig740TestCase.class,
-        DomainHostExcludes740TestCase.class
+        LegacyConfig800TestCase.class,
+        DomainHostExcludes800TestCase.class
 })
-@Version(Version.AsVersion.EAP_7_4_0)
-public class LegacyConfig740TestSuite extends MixedDomainTestSuite {
+@Version(Version.AsVersion.EAP_8_0_0)
+public class LegacyConfig800TestSuite extends MixedDomainTestSuite {
 
     @BeforeClass
     public static void initializeDomain() {
-        MixedDomainTestSuite.getSupportForLegacyConfig(LegacyConfig740TestSuite.class, Version.AsVersion.EAP_7_4_0);
+        MixedDomainTestSuite.getSupportForLegacyConfig(LegacyConfig800TestSuite.class, Version.AsVersion.EAP_8_0_0);
     }
 }

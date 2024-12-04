@@ -342,7 +342,7 @@
         <dependency>
             <groupId>org.wildfly.channels</groupId>
             <artifactId>wildfly-ee</artifactId>
-            <version>35.0.0.Beta1-SNAPSHOT</version>
+            <version>${ee.maven.version}</version>
             <type>yaml</type>
             <classifier>manifest</classifier>
         </dependency>
@@ -422,44 +422,6 @@
                                 <!-- TODO needing to add this seems not user-friendly -->
                                 <ignore-not-excluded-layers>true</ignore-not-excluded-layers>
                             </galleon-options>
-                        <channels>
-                        <channel>
-                            <manifest>
-                                <groupId>${channels.maven.groupId}</groupId>
-                                <artifactId>wildfly-ee</artifactId>
-                                <version>${ee.maven.version}</version>
-                            </manifest>
-                        </channel>
-                        <channel>
-                            <manifest>
-                                 <url>${project.baseUri}/target/test-classes/product-conf-override-manifest.yaml</url>
-                            </manifest>
-                        </channel>
-                        </channels>
-                        <feature-packs>
-                            <feature-pack>
-                                <groupId>${ee.maven.groupId}</groupId>
-                                <artifactId>wildfly-ee-galleon-pack</artifactId>
-                                <version>${ee.maven.version}</version>
-                            </feature-pack>
-                        </feature-packs>
-                        </configuration>
-                    </execution>
-                    <execution>
-                        <id>channel-provisioning-comparison</id>
-                        <goals>
-                            <goal>provision</goal>
-                        </goals>
-                        <phase>${channel.provisioning.phase}</phase>
-                        <configuration>
-                            <provisioning-dir>${project.build.directory}/wildfly-from-channel</provisioning-dir>
-                            <record-provisioning-state>true</record-provisioning-state>
-                            <log-provisioning-time>${galleon.log.time}</log-provisioning-time>
-                            <offline-provisioning>true</offline-provisioning>
-                            <overwrite-provisioned-server>true</overwrite-provisioned-server>
-                            <galleon-options>
-                                <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
-                            </galleon-options>
                             <channels>
                                 <channel>
                                     <manifest>
@@ -468,7 +430,69 @@
                                         <version>${ee.maven.version}</version>
                                     </manifest>
                                 </channel>
+                                <channel>
+                                    <manifest>
+                                        <url>${project.baseUri}/target/test-classes/product-conf-override-manifest.yaml</url>
+                                    </manifest>
+                                </channel>
                             </channels>
+                            <feature-packs>
+                                <feature-pack>
+                                    <groupId>${ee.maven.groupId}</groupId>
+                                    <artifactId>wildfly-ee-galleon-pack</artifactId>
+                                    <version>${ee.maven.version}</version>
+                                </feature-pack>
+                            </feature-packs>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
+                <!-- galleon-maven-plugin installation provisioning is vulnerable to leftover files in the target
+                     folder from previous builds, so always clean even if the clean lifecycle is not invoked -->
+                <artifactId>maven-clean-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>clean-wildfly-without-channel</id>
+                        <phase>initialize</phase>
+                        <goals>
+                            <goal>clean</goal>
+                        </goals>
+                        <configuration>
+                            <excludeDefaultDirectories>true</excludeDefaultDirectories>
+                            <filesets>
+                                <fileset>
+                                    <directory>${project.build.directory}/wildfly-without-channel</directory>
+                                    <follow-symlinks>false</follow-symlinks>
+                                    <use-default-excludes>false</use-default-excludes>
+                                </fileset>
+                            </filesets>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.jboss.galleon</groupId>
+                <artifactId>galleon-maven-plugin</artifactId>
+                <executions>
+                    <!-- Provision an installation not using a channel to check that
+                         channel-based provisioning provides the same results as provisioning
+                         from the version included in the feature pack. -->
+                    <execution>
+                        <id>channel-provisioning-comparison</id>
+                        <goals>
+                            <goal>provision</goal>
+                        </goals>
+                        <phase>${channel.provisioning.phase}</phase>
+                        <configuration>
+                            <install-dir>${project.build.directory}/wildfly-without-channel</install-dir>
+                            <record-state>true</record-state>
+                            <log-time>${galleon.log.time}</log-time>
+                            <offline>true</offline>
+                            <plugin-options>
+                                <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
+                            </plugin-options>
                             <feature-packs>
                                 <feature-pack>
                                     <groupId>${ee.maven.groupId}</groupId>

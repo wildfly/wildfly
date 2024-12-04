@@ -23,6 +23,8 @@
         <module name="io.opentelemetry.context" />
         <module name="io.opentelemetry.exporter" />
         <module name="io.smallrye.opentelemetry" services="import"/>
+        <!-- Needed to initialise the vert.x logger if the module is present -->
+        <module name="io.vertx.core"/>
 
         <module name="java.logging"/>
         <module name="jakarta.enterprise.api" />
