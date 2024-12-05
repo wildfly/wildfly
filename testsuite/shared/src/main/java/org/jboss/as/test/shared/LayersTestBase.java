@@ -63,7 +63,9 @@ public abstract class LayersTestBase {
     public static final String[] NO_LAYER_WILDFLY_EE = {
             // In 'wildfly-ee' this is only a dep of org.apache.activemq.artemis.protocol.amqp,
             // which is not part of test-all-layers. It is used in a layer in 'wildfly' and 'wildfly-preview'
-            "org.apache.qpid.proton"
+            "org.apache.qpid.proton",
+            // 'preview' stability module so not yet included in "all-layers" installation
+            "jakarta.data.api"
     };
 
     /**
@@ -88,7 +90,11 @@ public abstract class LayersTestBase {
             "org.wildfly.extension.mvc-krazo",
             "jakarta.mvc.api",
             "org.eclipse.krazo.core",
-            "org.eclipse.krazo.resteasy"
+            "org.eclipse.krazo.resteasy",
+            // 'preview' stability extension so not yet included in
+            // the "all-layers" installation
+            "org.wildfly.extension.jakarta.data",
+            "jakarta.data.api",
     };
 
     /**
@@ -239,6 +245,8 @@ public abstract class LayersTestBase {
             "jakarta.mvc.api",
             "org.eclipse.krazo.core",
             "org.eclipse.krazo.resteasy",
+            // 'preview' stability extension so not yet included in the standard configs
+            "org.wildfly.extension.jakarta.data",
     };
 
     /**
@@ -252,10 +260,7 @@ public abstract class LayersTestBase {
             "org.wildfly.extension.mvc-krazo",
             "jakarta.mvc.api",
             "org.eclipse.krazo.core",
-            "org.eclipse.krazo.resteasy",
-            // Extension not included in the default config
-            "org.wildfly.extension.jakarta.data",
-            // "jakarta.data.api" this is an optional dep of org.hibernate
+            "org.eclipse.krazo.resteasy"
     };
 
     /**
@@ -319,7 +324,10 @@ public abstract class LayersTestBase {
             "io.reactivex.rxjava2.rxjava",
             // Downstream uses this in installations provisioned with wildfly-ee but upstream does not.
             // To make life easier downstream we include it in wildfly-ee.
-            "com.fasterxml.jackson.dataformat.jackson-dataformat-yaml"
+            "com.fasterxml.jackson.dataformat.jackson-dataformat-yaml",
+            // 'preview' stability extension so not yet included in
+            // the "all-layers" installation or the standard configs
+            "org.wildfly.extension.jakarta.data"
     };
 
     /**

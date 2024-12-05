@@ -44,6 +44,8 @@ include::subsystem-configuration/Health.adoc[]
 
 include::subsystem-configuration/Jakarta_Batch.adoc[]
 
+include::subsystem-configuration/Jakarta_Data.adoc[]
+
 include::subsystem-configuration/Jakarta_Enterprise_Beans_3.adoc[]
 
 include::subsystem-configuration/Jakarta_Faces.adoc[]

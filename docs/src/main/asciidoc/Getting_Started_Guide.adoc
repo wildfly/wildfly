@@ -59,6 +59,9 @@ Profile |WildFly {wildflyVersion} Full Configuration |WildFly {wildflyVersion} D
 
 |Jakarta Contexts and Dependency Injection 4.0 |X |X |X |X
 
+|Jakarta Data 1.0
+(xref:Admin_Guide.adoc#Feature_stability_levels[`preview` stability] )| -- |-- |-- | --
+
 |Jakarta Debugging Support for Other Languages 2.0 |X |X |X |X
 
 |Jakarta Dependency Injection 2.0 |X |X |X |X
