@@ -6,13 +6,13 @@ package org.jboss.as.clustering.controller;
 
 import java.util.function.Function;
 
+import org.jboss.as.clustering.controller.validation.ModuleNameValidator;
 import org.jboss.as.controller.AbstractAttributeDefinitionBuilder;
 import org.jboss.as.controller.AttributeParser;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.controller.operations.validation.ModuleNameValidator;
 import org.jboss.as.controller.registry.AttributeAccess.Flag;
 import org.jboss.as.server.Services;
 import org.jboss.dmr.ModelNode;

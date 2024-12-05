@@ -8,13 +8,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
 
+import org.jboss.as.clustering.controller.validation.ModuleNameValidator;
 import org.jboss.as.controller.AttributeMarshaller;
 import org.jboss.as.controller.AttributeParser;
 import org.jboss.as.controller.ListAttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.StringListAttributeDefinition;
-import org.jboss.as.controller.operations.validation.ModuleNameValidator;
 import org.jboss.as.controller.registry.AttributeAccess.Flag;
 import org.jboss.as.server.Services;
 import org.jboss.dmr.ModelNode;
