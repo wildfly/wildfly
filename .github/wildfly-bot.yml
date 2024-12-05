@@ -234,7 +234,8 @@ wildfly:
   emails:
     - mstefank@redhat.com
     - pberan@redhat.com
-    - rbudinsk@redhat.com
+    - khermano@redhat.com
+    - mjusko@redhat.com
     - brian.stansberry@redhat.com
   
   format:
