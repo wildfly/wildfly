@@ -135,7 +135,7 @@ public class DomainAdjuster {
      * @throws Exception
      */
     protected List<ModelNode> adjustForVersion(final DomainClient client, final PathAddress profileAddress, final boolean withPrimaryServer) throws Exception {
-        return Collections.emptyList();
+        return new ArrayList<>();
     }
 
     private void removeProfile(final DomainClient client, final String name) throws Exception {
