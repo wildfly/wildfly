@@ -32,9 +32,7 @@
 
     <properties>
         <version.jakarta.annotation.jakarta-annotation-api>3.0.0</version.jakarta.annotation.jakarta-annotation-api>
-        <!-- TODO ElytronAuthConfigFactory uses removed field AuthConfigFactory.providerRegistrationSecurityPermission
-        <version.jakarta.authentication.jakarta-authentication-api>3.1.0-M1</version.jakarta.authentication.jakarta-authentication-api>
-        -->
+        <version.jakarta.authentication.jakarta-authentication-api>3.1.0</version.jakarta.authentication.jakarta-authentication-api>
         <version.jakarta.authorization.jakarta-authorization-api>3.0.0</version.jakarta.authorization.jakarta-authorization-api>
         <version.jakarta.el>6.0.1</version.jakarta.el>
         <version.jakarta.enterprise.concurrent.jakarta-enterprise.concurrent-api>3.1.0</version.jakarta.enterprise.concurrent.jakarta-enterprise.concurrent-api>
@@ -56,6 +54,7 @@
         <version.org.jboss.weld.weld>6.0.0.CR2</version.org.jboss.weld.weld>
         <version.org.jboss.weld.weld-api>6.0.CR1</version.org.jboss.weld.weld-api>
         <version.org.hibernate.validator>9.0.0.Beta2</version.org.hibernate.validator>
+        <version.org.wildfly.security.jakarta.elytron-ee>4.0.0.Beta1</version.org.wildfly.security.jakarta.elytron-ee>
     </properties>
 
     <dependencyManagement>
@@ -85,7 +84,6 @@
                     </exclusion>
                 </exclusions>
             </dependency>
-            <!-- TODO ElytronAuthConfigFactory uses removed field AuthConfigFactory.providerRegistrationSecurityPermission
             <dependency>
                 <groupId>jakarta.authentication</groupId>
                 <artifactId>jakarta.authentication-api</artifactId>
@@ -97,7 +95,6 @@
                     </exclusion>
                 </exclusions>
             </dependency>
-            -->
             <dependency>
                 <groupId>jakarta.authorization</groupId>
                 <artifactId>jakarta.authorization-api</artifactId>
@@ -595,6 +592,18 @@
                 <groupId>${project.groupId}</groupId>
                 <artifactId>wildfly-preview-feature-pack-product-conf</artifactId>
                 <version>${ee.maven.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.wildfly.security.jakarta</groupId>
+                <artifactId>jakarta-authentication</artifactId>
+                <version>${version.org.wildfly.security.jakarta.elytron-ee}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
         </dependencies>
     </dependencyManagement>
