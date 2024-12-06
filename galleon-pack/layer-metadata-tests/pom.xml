@@ -47,7 +47,7 @@
         </dependency>
         <dependency>
             <groupId>io.opentelemetry</groupId>
-            <artifactId>opentelemetry-api-events</artifactId>
+            <artifactId>opentelemetry-api-incubator</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>

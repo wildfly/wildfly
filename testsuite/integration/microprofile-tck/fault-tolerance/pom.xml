@@ -24,7 +24,7 @@
         <jbossas.ts.dir>${jbossas.ts.integ.dir}/..</jbossas.ts.dir>
         <jbossas.ts.integ.dir>${basedir}/../..</jbossas.ts.integ.dir>
         <ts.microprofile-tck-tests-dependency>org.eclipse.microprofile.fault-tolerance:microprofile-fault-tolerance-tck</ts.microprofile-tck-tests-dependency>
-        <ts.microprofile-tck-glow.expected-discovery>[cdi, datasources, ee-integration, microprofile-config, microprofile-fault-tolerance]==>ee-core-profile-server,datasources,microprofile-fault-tolerance</ts.microprofile-tck-glow.expected-discovery>
+        <ts.microprofile-tck-glow.expected-discovery>[cdi, datasources, ee-integration, microprofile-config, microprofile-fault-tolerance, microprofile-telemetry, opentelemetry]==>ee-core-profile-server,datasources,microprofile-fault-tolerance,microprofile-telemetry</ts.microprofile-tck-glow.expected-discovery>
     </properties>
 
     <dependencies>
@@ -63,6 +63,18 @@
             <artifactId>shrinkwrap-descriptors-impl-javaee</artifactId>
             <scope>test</scope>
         </dependency>
+        <!-- Required for eager instantiation of OpenTelemetry bean -->
+        <dependency>
+            <groupId>io.opentelemetry</groupId>
+            <artifactId>opentelemetry-api</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <!-- Used by org.eclipse.microprofile.fault.tolerance.tck.telemetryMetrics.TimeoutTelemetryTest -->
+        <dependency>
+            <groupId>io.opentelemetry</groupId>
+            <artifactId>opentelemetry-sdk-extension-autoconfigure-spi</artifactId>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
     <build>
@@ -80,8 +92,8 @@
                         <org.eclipse.microprofile.fault.tolerance.tck.timeout.multiplier>2.0</org.eclipse.microprofile.fault.tolerance.tck.timeout.multiplier>
                     </systemPropertyVariables>
                     <excludes>
+                        <!-- These are unsupportable legacy MicroProfile Metrics tests; not to be confused with **/telemetryMetrics/** tests -->
                         <exclude>**/metrics/**</exclude>
-                        <exclude>**/telemetryMetrics/**</exclude>
                     </excludes>
                 </configuration>
             </plugin>

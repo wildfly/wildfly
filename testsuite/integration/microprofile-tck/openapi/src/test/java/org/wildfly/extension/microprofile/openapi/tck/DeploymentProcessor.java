@@ -5,7 +5,9 @@
 package org.wildfly.extension.microprofile.openapi.tck;
 
 import org.hamcrest.Matchers;
+import org.hamcrest.collection.IsEmptyCollection;
 import org.hamcrest.core.IsEqual;
+import org.hamcrest.internal.ReflectiveTypeFinder;
 import org.jboss.arquillian.container.test.spi.client.deployment.ApplicationArchiveProcessor;
 import org.jboss.arquillian.test.spi.TestClass;
 import org.jboss.shrinkwrap.api.Archive;
@@ -21,7 +23,9 @@ public class DeploymentProcessor implements ApplicationArchiveProcessor {
             JavaArchive extensionsJar = ShrinkWrap.create(JavaArchive.class, "extension.jar");
 
             extensionsJar.addPackage(Matchers.class.getPackage());
+            extensionsJar.addPackage(IsEmptyCollection.class.getPackage());
             extensionsJar.addPackage(IsEqual.class.getPackage());
+            extensionsJar.addPackage(ReflectiveTypeFinder.class.getPackage());
 
             WebArchive war = WebArchive.class.cast(archive);
             war.addAsLibraries(extensionsJar);

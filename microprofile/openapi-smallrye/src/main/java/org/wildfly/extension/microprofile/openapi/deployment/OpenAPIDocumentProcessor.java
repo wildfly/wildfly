@@ -36,14 +36,14 @@ public class OpenAPIDocumentProcessor implements DeploymentUnitProcessor {
             OpenAPIModelConfiguration configuration = new DeploymentUnitOpenAPIModelConfiguration(unit);
 
             if (configuration.isEnabled()) {
-                OpenApiConfig config = configuration.getOpenApiConfig();
+                OpenApiConfig config = OpenApiConfig.fromConfig(configuration.getMicroProfileConfig());
 
                 // The MicroProfile OpenAPI specification expects the container to register an OpenAPI endpoint if any of the following conditions are met:
                 // * An OASModelReader was configured
                 // * An OASFilter was configured
                 // * A static OpenAPI file is present
                 // * The application contains Jakarta RESTful Web Services
-                if ((config.modelReader() != null) || (config.filter() != null) || (configuration.getStaticFile() != null) || isRestful(unit)) {
+                if ((config.modelReader() != null) || (config.filter() != null) || configuration.getStaticFile().isPresent() || isRestful(unit)) {
                     try {
                         new OpenAPIModelServiceInstaller(configuration).install(context);
 

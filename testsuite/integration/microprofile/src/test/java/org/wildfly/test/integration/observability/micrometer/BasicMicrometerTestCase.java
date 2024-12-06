@@ -18,7 +18,8 @@ import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.wildfly.test.integration.observability.opentelemetry.application.JaxRsActivator;
+import org.wildfly.test.integration.observability.JaxRsActivator;
+import org.wildfly.test.integration.observability.micrometer.multiple.application.MicrometerMetricResource;
 
 
 @RunWith(Arquillian.class)
@@ -33,7 +34,7 @@ public class BasicMicrometerTestCase {
         return ShrinkWrap.create(WebArchive.class, "micrometer-test.war")
                 .addClasses(
                         JaxRsActivator.class,
-                        MetricResource.class)
+                        MicrometerMetricResource.class)
                 .addAsWebInfResource(CdiUtils.createBeansXml(), "beans.xml");
     }
 
