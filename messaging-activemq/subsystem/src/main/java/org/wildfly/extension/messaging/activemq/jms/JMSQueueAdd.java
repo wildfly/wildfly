@@ -12,7 +12,6 @@ import java.util.List;
 
 import jakarta.jms.Queue;
 
-import org.hornetq.api.jms.HornetQJMSClient;
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -23,6 +22,7 @@ import org.jboss.msc.service.ServiceTarget;
 import org.wildfly.extension.messaging.activemq.BinderServiceUtil;
 import org.wildfly.extension.messaging.activemq.CommonAttributes;
 import org.wildfly.extension.messaging.activemq.MessagingServices;
+import org.wildfly.extension.messaging.activemq.jms.legacy.HornetQHelper;
 
 /**
  * Update handler adding a queue to the Jakarta Messaging subsystem. The
@@ -61,10 +61,7 @@ public class JMSQueueAdd extends AbstractAddStepHandler {
 
         List<String> legacyEntries = CommonAttributes.LEGACY_ENTRIES.unwrap(context, model);
         if (!legacyEntries.isEmpty()) {
-            Queue legacyQueue = HornetQJMSClient.createQueue(name);
-            for (String legacyEntry : legacyEntries) {
-                BinderServiceUtil.installBinderService(serviceTarget, legacyEntry, legacyQueue);
-            }
+            HornetQHelper.getLegacyConnectionFactory().createQueue(serviceTarget, name, legacyEntries);
         }
     }
 }
