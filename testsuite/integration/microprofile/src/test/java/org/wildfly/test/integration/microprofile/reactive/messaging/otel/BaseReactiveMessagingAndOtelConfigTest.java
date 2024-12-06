@@ -24,7 +24,6 @@ import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.wildfly.extension.microprofile.reactive.messaging.MicroProfileReactiveMessagingConnectorOpenTelemetryTracingResourceDefinition;
 import org.wildfly.microprofile.reactive.messaging.config.TracingType;
 import org.wildfly.test.integration.microprofile.reactive.messaging.otel.application.ConfigBeanAndEndpoint;
 import org.wildfly.test.integration.microprofile.reactive.messaging.otel.application.TestReactiveMessagingOtelApplication;
@@ -42,7 +41,6 @@ import org.wildfly.test.integration.microprofile.reactive.messaging.otel.applica
 public abstract class BaseReactiveMessagingAndOtelConfigTest {
 
     private static final PathAddress SUBSYSTEM_ADDRESS = PathAddress.pathAddress(SUBSYSTEM, SUBSYSTEM_NAME);
-    private static final PathAddress RESOURCE_ADDRESS = SUBSYSTEM_ADDRESS.append(MicroProfileReactiveMessagingConnectorOpenTelemetryTracingResourceDefinition.PATH);
 
     @ContainerResource
     ManagementClient managementClient;

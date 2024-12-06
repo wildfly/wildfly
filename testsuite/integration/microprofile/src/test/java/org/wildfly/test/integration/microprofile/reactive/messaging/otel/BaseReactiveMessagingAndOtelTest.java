@@ -5,6 +5,7 @@
 
 package org.wildfly.test.integration.microprofile.reactive.messaging.otel;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PACKAGE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 import static org.junit.Assert.assertEquals;
 import static org.wildfly.extension.microprofile.reactive.messaging.MicroProfileReactiveMessagingExtension.SUBSYSTEM_NAME;
@@ -16,6 +17,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -27,7 +29,6 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.message.BasicNameValuePair;
-import org.jboss.arquillian.junit.InSequence;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ContainerResource;
 import org.jboss.as.arquillian.container.ManagementClient;
@@ -35,7 +36,6 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.test.integration.management.base.AbstractCliTestBase;
 import org.jboss.as.test.shared.TimeoutUtil;
 import org.jboss.as.test.shared.observability.containers.OpenTelemetryCollectorContainer;
-import org.jboss.as.test.shared.observability.signals.jaeger.JaegerSpan;
 import org.jboss.as.test.shared.observability.signals.jaeger.JaegerTrace;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -44,8 +44,11 @@ import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestName;
 import org.wildfly.extension.microprofile.reactive.messaging.MicroProfileReactiveMessagingConnectorOpenTelemetryTracingResourceDefinition;
 import org.wildfly.microprofile.reactive.messaging.config.TracingType;
 import org.wildfly.security.manager.WildFlySecurityManager;
@@ -67,12 +70,15 @@ public abstract class BaseReactiveMessagingAndOtelTest {
 
     private final String connectorTracingPropertyName;
     private final String tracingAttributeName;
+    final String incomingChannelProperty = "mp.messaging.incoming.sink.tracing-enabled";
+    final String outgoingChannelProperty = "mp.messaging.outgoing.source.tracing-enabled";
     private final String connectorSuffix;
 
     private static String deploymentName;
 
-    private Set<String> previousTestsTraceIds = new HashSet<>();
-    private Set<String> currentTraceIds = new HashSet<>();
+    // these must be static and final so that they are same objects for test instances / thread
+    private static final Set<String> previousTestsTraceIds = new HashSet<>();
+    private static final Set<String> currentTraceIds = new HashSet<>();
 
     private int ITERATIONS = Integer.valueOf(WildFlySecurityManager.getPropertyPrivileged("wildfly.mp.rm.otel.iterations", "2"));
 
@@ -92,6 +98,16 @@ public abstract class BaseReactiveMessagingAndOtelTest {
         AbstractCliTestBase.closeCLI();
     }
 
+    @Rule
+    public TestName name = new TestName();
+
+    @Before
+    public void testName() {
+        System.out.println("=============================");
+        System.out.println("TestName: " + name.getMethodName());
+        System.out.println("=============================");
+    }
+
     @After
     public void after() throws Exception {
         previousTestsTraceIds.addAll(currentTraceIds);
@@ -104,16 +120,13 @@ public abstract class BaseReactiveMessagingAndOtelTest {
             .addPackage(TestReactiveMessagingOtelBean.class.getPackage())
             .addAsWebInfResource(TestReactiveMessagingOtelBean.class.getPackage(), mpCfgPropertiesFileName, "classes/META-INF/microprofile-config.properties")
             .add(EmptyAsset.INSTANCE, "WEB-INF/beans.xml");
-        //war.as(ZipExporter.class).exportTo(new File("target/" + war.getName()));
         return war;
     }
 
     abstract OpenTelemetryCollectorContainer getCollector();
 
     @Test
-    @InSequence(1)
     public void testNoOpenTelemetryTracing() throws Exception {
-        // None of these should be set at this stage, but make sure they are not just in case
         ReactiveMessagingOtelUtils.enableConnectorOpenTelemetryResource(managementClient.getControllerClient(), false);
         ReactiveMessagingOtelUtils.setTracingConfigSystemProperty(managementClient.getControllerClient(), connectorTracingPropertyName, null);
         ReactiveMessagingOtelUtils.reload(managementClient.getControllerClient());
@@ -126,62 +139,252 @@ public abstract class BaseReactiveMessagingAndOtelTest {
             // sleep a little bit so that rogue ones can have time to come through.
             List<JaegerTrace> traces = getCollector().getTraces(deploymentName);
             System.out.println(traces);
-            checkJaegerTraces(JAEGER_TIMEOUT, 1, ((post, publish, receive) -> post && !publish && !receive));
+            checkJaegerTraces(JAEGER_TIMEOUT,
+                    ReactiveMessagingOtelAssertUtils.createChecker(1, ReactiveMessagingOtelAssertUtils.spanSet(connectorSuffix)
+                                    .zeroDisabledReceiveAndPublish()
+                                    .singlePost()
+                                    .zeroTracedPublish()
+                                    .zeroTracedReceive()));
         }
+    }
 
+    private void testOpenTelemetryTraces(Map<String, TracingType> tracingAttributes, Map<String, Boolean> tracingConfigSystemProperties, int iterations, ReactiveMessagingOtelAssertUtils.TraceChecker... traceCheckers) throws Exception {
+        String[] values = new String[iterations];
+        for (int i = 0; i < iterations; i++) {
+            values[i] = "trace-" + i;
+        }
+        try {
+            // configure connector tracing type (NEVER, OFF, ON, ALWAYS)
+            for (Map.Entry<String, TracingType> stringTracingTypeEntry : tracingAttributes.entrySet()) {
+                ReactiveMessagingOtelUtils.setConnectorTracingType(managementClient.getControllerClient(), stringTracingTypeEntry.getKey(), "${NON-EXISTING:" + stringTracingTypeEntry.getValue() + "}");
+            }
+            // configure system properties for connector and channels (true,false)
+            for (Map.Entry<String, Boolean> stringBooleanEntry : tracingConfigSystemProperties.entrySet()) {
+                ReactiveMessagingOtelUtils.setTracingConfigSystemProperty(managementClient.getControllerClient(), stringBooleanEntry.getKey(), stringBooleanEntry.getValue());
+            }
+            ReactiveMessagingOtelUtils.reload(managementClient.getControllerClient());
+
+            // send data
+            try (CloseableHttpClient client = HttpClientBuilder.create().build()) {
+                for (String value : values) {
+                    postData(client, value);
+                }
+                waitForData(client, values);
+            }
+            checkJaegerTraces(JAEGER_TIMEOUT, traceCheckers);
+        } finally {
+            ReactiveMessagingOtelUtils.enableConnectorOpenTelemetryResource(managementClient.getControllerClient(), false);
+            for (String tracingConfigSystemProperty : tracingConfigSystemProperties.keySet()) {
+                ReactiveMessagingOtelUtils.setTracingConfigSystemProperty(managementClient.getControllerClient(), tracingConfigSystemProperty, null);
+            }
+            ReactiveMessagingOtelUtils.reload(managementClient.getControllerClient());
+        }
     }
 
     @Test
-    @InSequence(2)
     public void testOpenTelemetryTracingOffEnabledAtConnectorLevel() throws Exception {
-        String[] values = new String[ITERATIONS];
-        for (int i = 0; i < ITERATIONS; i++) {
-            values[i] = "trace-" + i;
-        }
-        try {
-            ReactiveMessagingOtelUtils.setConnectorTracingType(managementClient.getControllerClient(), tracingAttributeName, TracingType.OFF);
-            ReactiveMessagingOtelUtils.setTracingConfigSystemProperty(managementClient.getControllerClient(), connectorTracingPropertyName, true);
-            ReactiveMessagingOtelUtils.reload(managementClient.getControllerClient());
-
-            try (CloseableHttpClient client = HttpClientBuilder.create().build()) {
-                for (String value : values) {
-                    postData(client, value);
-                }
-                waitForData(client, values);
-                checkJaegerTraces(JAEGER_TIMEOUT, ITERATIONS, (post, publish, receive) -> post && publish && receive);
-            }
-        } finally {
-            ReactiveMessagingOtelUtils.enableConnectorOpenTelemetryResource(managementClient.getControllerClient(), false);
-            ReactiveMessagingOtelUtils.setTracingConfigSystemProperty(managementClient.getControllerClient(), connectorTracingPropertyName, null);
-            ReactiveMessagingOtelUtils.reload(managementClient.getControllerClient());
-        }
+        testOpenTelemetryTraces(
+                Map.of(tracingAttributeName, TracingType.OFF),
+                Map.of(connectorTracingPropertyName, true),
+                ITERATIONS,
+                ReactiveMessagingOtelAssertUtils.createChecker(ITERATIONS, ReactiveMessagingOtelAssertUtils.spanSet(connectorSuffix)
+                                .zeroDisabledReceiveAndPublish()
+                                .singlePost()
+                                .singleTracedPublish()
+                                .singleTracedReceive())
+                );
     }
 
     @Test
-    @InSequence(3)
-    public void testOpenTelemetryTracingOnDisabledAtIncomingChannel() throws Exception {
-        final String channelProperty = "mp.messaging.incoming.sink.tracing-enabled";
-        String[] values = new String[ITERATIONS];
-        for (int i = 0; i < ITERATIONS; i++) {
-            values[i] = "trace-" + i;
-        }
-        try {
-            ReactiveMessagingOtelUtils.setConnectorTracingType(managementClient.getControllerClient(), tracingAttributeName, TracingType.ON);
-            ReactiveMessagingOtelUtils.setTracingConfigSystemProperty(managementClient.getControllerClient(), channelProperty, false);
-            ReactiveMessagingOtelUtils.reload(managementClient.getControllerClient());
+    public void testOpenTelemetryTracingOffEnabledAtConnectorLevelDisabledAtIncomingChannel() throws Exception {
+        testOpenTelemetryTraces(
+                Map.of(tracingAttributeName, TracingType.OFF),
+                Map.of(connectorTracingPropertyName, true, incomingChannelProperty, false),
+                ITERATIONS,
+                ReactiveMessagingOtelAssertUtils.createChecker(ITERATIONS, ReactiveMessagingOtelAssertUtils.spanSet(connectorSuffix)
+                                .zeroDisabledReceiveAndPublish()
+                                .singlePost()
+                                .singleTracedPublish()
+                                .zeroTracedReceive()));
+    }
 
-            try (CloseableHttpClient client = HttpClientBuilder.create().build()) {
-                for (String value : values) {
-                    postData(client, value);
-                }
-                waitForData(client, values);
-                checkJaegerTraces(JAEGER_TIMEOUT, ITERATIONS, (post, publish, receive) -> post && publish && !receive);
-            }
-        } finally {
-            ReactiveMessagingOtelUtils.enableConnectorOpenTelemetryResource(managementClient.getControllerClient(), false);
-            ReactiveMessagingOtelUtils.setTracingConfigSystemProperty(managementClient.getControllerClient(), channelProperty, null);
-            ReactiveMessagingOtelUtils.reload(managementClient.getControllerClient());
-        }
+    @Test
+    public void testOpenTelemetryTracingOffEnabledAtConnectorLevelDisabledAtOutgoingChannel() throws Exception {
+        testOpenTelemetryTraces(
+                Map.of(tracingAttributeName, TracingType.OFF),
+                Map.of(connectorTracingPropertyName, true, outgoingChannelProperty, false),
+                ITERATIONS,
+                ReactiveMessagingOtelAssertUtils.createChecker(ITERATIONS, ReactiveMessagingOtelAssertUtils.spanSet(connectorSuffix)
+                        .zeroDisabledReceiveAndPublish()
+                        .singlePost()
+                        .zeroTracedPublish()
+                        .zeroTracedReceive()),
+                ReactiveMessagingOtelAssertUtils.createChecker(ITERATIONS, ReactiveMessagingOtelAssertUtils.spanSet(connectorSuffix)
+                        .zeroDisabledReceiveAndPublish()
+                        .zeroPost()
+                        .zeroTracedPublish()
+                        .singleTracedReceive())
+                );
+    }
+
+    @Test
+    public void testOpenTelemetryTracingOffEnabledAtIncomingChannel() throws Exception {
+        testOpenTelemetryTraces(
+                Map.of(tracingAttributeName, TracingType.OFF),
+                Map.of(incomingChannelProperty, true),
+                ITERATIONS,
+                ReactiveMessagingOtelAssertUtils.createChecker(ITERATIONS, ReactiveMessagingOtelAssertUtils.spanSet(connectorSuffix)
+                        .zeroDisabledReceiveAndPublish()
+                        .singlePost()
+                        .zeroTracedPublish()
+                        .zeroTracedReceive()),
+                ReactiveMessagingOtelAssertUtils.createChecker(ITERATIONS, ReactiveMessagingOtelAssertUtils.spanSet(connectorSuffix)
+                        .zeroDisabledReceiveAndPublish()
+                        .zeroPost()
+                        .zeroTracedPublish()
+                        .singleTracedReceive()));
+    }
+
+    @Test
+    public void testOpenTelemetryTracingOffEnabledAtOutgoingChannel() throws Exception {
+        testOpenTelemetryTraces(
+                Map.of(tracingAttributeName, TracingType.OFF),
+                Map.of(outgoingChannelProperty, true),
+                ITERATIONS,
+                ReactiveMessagingOtelAssertUtils.createChecker(ITERATIONS, ReactiveMessagingOtelAssertUtils.spanSet(connectorSuffix)
+                        .zeroDisabledReceiveAndPublish()
+                        .singlePost()
+                        .singleTracedPublish()
+                        .zeroTracedReceive()));
+    }
+
+    @Test
+    public void testOpenTelemetryTracingOnDisabledAtConnectorLevel() throws Exception {
+        testOpenTelemetryTraces(
+                Map.of(tracingAttributeName, TracingType.ON),
+                Map.of(connectorTracingPropertyName, false),
+                ITERATIONS,
+                ReactiveMessagingOtelAssertUtils.createChecker(ITERATIONS, ReactiveMessagingOtelAssertUtils.spanSet(connectorSuffix)
+                        .zeroDisabledReceiveAndPublish()
+                        .singlePost()
+                        .zeroTracedPublish()
+                        .zeroTracedReceive()));
+    }
+    @Test
+    public void testOpenTelemetryTracingOnDisabledAtConnectorLevelEnabledAtIncomingChannel() throws Exception {
+        testOpenTelemetryTraces(
+                Map.of(tracingAttributeName, TracingType.ON),
+                Map.of(connectorTracingPropertyName, false, incomingChannelProperty, true),
+                ITERATIONS,
+                ReactiveMessagingOtelAssertUtils.createChecker(ITERATIONS, ReactiveMessagingOtelAssertUtils.spanSet(connectorSuffix)
+                        .zeroDisabledReceiveAndPublish()
+                        .singlePost()
+                        .zeroTracedPublish()
+                        .zeroTracedReceive()),
+                ReactiveMessagingOtelAssertUtils.createChecker(ITERATIONS, ReactiveMessagingOtelAssertUtils.spanSet(connectorSuffix)
+                        .zeroDisabledReceiveAndPublish()
+                        .zeroPost()
+                        .zeroTracedPublish()
+                        .singleTracedReceive()));
+    }
+
+    @Test
+    public void testOpenTelemetryTracingOnDisabledAtConnectorLevelEnabledAtOutgoingChannel() throws Exception {
+        testOpenTelemetryTraces(
+                Map.of(tracingAttributeName, TracingType.ON),
+                Map.of(connectorTracingPropertyName, false, outgoingChannelProperty, true),
+                ITERATIONS,
+                ReactiveMessagingOtelAssertUtils.createChecker(ITERATIONS, ReactiveMessagingOtelAssertUtils.spanSet(connectorSuffix)
+                        .zeroDisabledReceiveAndPublish()
+                        .singlePost()
+                        .singleTracedPublish()
+                        .zeroTracedReceive()));
+    }
+
+    @Test
+    public void testOpenTelemetryTracingOnDisabledAtIncomingChannel() throws Exception {
+        testOpenTelemetryTraces(
+                Map.of(tracingAttributeName, TracingType.ON),
+                Map.of(incomingChannelProperty, false),
+                ITERATIONS,
+                ReactiveMessagingOtelAssertUtils.createChecker(ITERATIONS, ReactiveMessagingOtelAssertUtils.spanSet(connectorSuffix)
+                        .zeroDisabledReceiveAndPublish()
+                        .singlePost()
+                        .singleTracedPublish()
+                        .zeroTracedReceive()));
+    }
+
+    @Test
+    public void testOpenTelemetryTracingOnDisabledAtOutgoingChannel() throws Exception {
+        testOpenTelemetryTraces(
+                Map.of(tracingAttributeName, TracingType.ON),
+                Map.of(outgoingChannelProperty, false),
+                ITERATIONS,
+                ReactiveMessagingOtelAssertUtils.createChecker(ITERATIONS, ReactiveMessagingOtelAssertUtils.spanSet(connectorSuffix)
+                        .zeroDisabledReceiveAndPublish()
+                        .singlePost()
+                        .zeroTracedPublish()
+                        .zeroTracedReceive()),
+                ReactiveMessagingOtelAssertUtils.createChecker(ITERATIONS, ReactiveMessagingOtelAssertUtils.spanSet(connectorSuffix)
+                        .zeroDisabledReceiveAndPublish()
+                        .zeroPost()
+                        .zeroTracedPublish()
+                        .singleTracedReceive()));
+
+    }
+
+    @Test
+    public void testOpenTelemetryTracingAlwaysDisabledAtConnectorLevel() throws Exception {
+        testOpenTelemetryTraces(
+                Map.of(tracingAttributeName, TracingType.ALWAYS),
+                Map.of(connectorTracingPropertyName, false),
+                ITERATIONS,
+                ReactiveMessagingOtelAssertUtils.createChecker(ITERATIONS, ReactiveMessagingOtelAssertUtils.spanSet(connectorSuffix)
+                        .singlePost()
+                        .singleTracedPublish()
+                        .singleTracedReceive()
+                        .singleDisabledReceive()
+                        .singleDisabledPublish()));
+    }
+
+    @Test
+    public void testOpenTelemetryTracingAlwaysDisabledAtChannel() throws Exception {
+        testOpenTelemetryTraces(
+                Map.of(tracingAttributeName, TracingType.ALWAYS),
+                Map.of(outgoingChannelProperty, false, incomingChannelProperty, false),
+                ITERATIONS,
+                ReactiveMessagingOtelAssertUtils.createChecker(ITERATIONS, ReactiveMessagingOtelAssertUtils.spanSet(connectorSuffix)
+                        .singlePost()
+                        .singleTracedPublish()
+                        .singleTracedReceive()
+                        .singleDisabledPublish()
+                        .singleDisabledReceive()));
+    }
+
+    @Test
+    public void testOpenTelemetryTracingNeverEnabledAtConnectorLevel() throws Exception {
+        testOpenTelemetryTraces(
+                Map.of(tracingAttributeName, TracingType.NEVER),
+                Map.of(connectorTracingPropertyName, true),
+                ITERATIONS,
+                ReactiveMessagingOtelAssertUtils.createChecker(ITERATIONS, ReactiveMessagingOtelAssertUtils.spanSet(connectorSuffix)
+                        .zeroDisabledReceiveAndPublish()
+                        .singlePost()
+                        .zeroTracedPublish()
+                        .zeroTracedReceive()));
+    }
+
+    @Test
+    public void testOpenTelemetryTracingNeverEnabledAtChannel() throws Exception {
+        testOpenTelemetryTraces(
+                Map.of(tracingAttributeName, TracingType.NEVER),
+                Map.of(outgoingChannelProperty, true, incomingChannelProperty, true),
+                ITERATIONS,
+                ReactiveMessagingOtelAssertUtils.createChecker(ITERATIONS, ReactiveMessagingOtelAssertUtils.spanSet(connectorSuffix)
+                        .zeroDisabledReceiveAndPublish()
+                        .singlePost()
+                        .zeroTracedPublish()
+                        .zeroTracedReceive()));
     }
 
     private void postData(CloseableHttpClient client, String value) throws Exception {
@@ -227,55 +430,46 @@ public abstract class BaseReactiveMessagingAndOtelTest {
         return Collections.emptyList();
     }
 
-    private void checkJaegerTraces(int timeout, int expectedCount, TraceChecker traceChecker) throws InterruptedException {
+    private void checkJaegerTraces(int timeout, ReactiveMessagingOtelAssertUtils.TraceChecker... traceCheckers) throws InterruptedException {
         long end = System.currentTimeMillis() + timeout;
-        int count = 0;
+        String errMessage = null;
+        List<JaegerTrace> currentDebug = new ArrayList<>();
         while (System.currentTimeMillis() < end) {
-            count = 0;
+            List<JaegerTrace> current = new ArrayList<>();
             List<JaegerTrace> traces = getCollector().getTraces(deploymentName);
             for (JaegerTrace trace : traces) {
                 if (previousTestsTraceIds.contains(trace.getTraceID())) {
                     continue;
                 }
                 currentTraceIds.add(trace.getTraceID());
-                if (checkTrace(trace, traceChecker)) {
-                    count++;
+                current.add(trace);
+            }
+            boolean allGood = true;
+            for (ReactiveMessagingOtelAssertUtils.TraceChecker traceChecker : traceCheckers) {
+                if (!traceChecker.areValidTraces(current)) {
+                    allGood = false;
+                    errMessage = traceChecker.errorMessaage();
+                    break;
                 }
             }
-
-            if (count == expectedCount) {
+            if (allGood) {
                 return;
             }
-
             Thread.sleep(1000);
+            currentDebug = new ArrayList<>(current);
         }
-
-        Assert.assertEquals("Number of traces containing microprofile messaging traces was different from expected", expectedCount, count);
-    }
-
-    private boolean checkTrace(JaegerTrace trace, TraceChecker traceChecker) {
-        List<JaegerSpan> spans = trace.getSpans();
-
-        boolean post = false;
-        boolean publish = false;
-        boolean receive = false;
-
-        for (JaegerSpan span : spans) {
-            if (span.getOperationName().equals(String.format("POST /mp-rm-%s-otel/", connectorSuffix))) {
-                post = true;
-            } else if (span.getOperationName().equals(String.format("test%s publish", connectorSuffix))) {
-                publish = true;
-            } else if (span.getOperationName().equals(String.format("test%s receive", connectorSuffix))) {
-                receive = true;
-            }
+        System.out.println("Current traces:");
+        currentDebug.forEach(trace -> {
+                System.out.println("TraceID: " + trace.getTraceID());
+                trace.getSpans().forEach(s -> System.out.println(s.getOperationName()));
+                System.out.println("-------------------------");
+        });
+        if (errMessage != null) {
+            // some checker produced false and err message
+            Assert.fail(errMessage);
+        } else {
+            // should not really happen, just to be sure. If everything is good, method returns without getting here
+            Assert.fail();
         }
-
-        return traceChecker.isValidTrace(post, publish, receive);
     }
-
-    private interface TraceChecker {
-        boolean isValidTrace(boolean post, boolean publish, boolean receive);
-    }
-
-
 }

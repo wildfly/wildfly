@@ -91,10 +91,14 @@ public class ReactiveMessagingOtelUtils {
     }
 
     static void setConnectorTracingType(ModelControllerClient client, String tracingAttributeName, TracingType tracingType) throws Exception {
+        setConnectorTracingType(client, tracingAttributeName, tracingType.toString());
+    }
+
+    static void setConnectorTracingType(ModelControllerClient client, String tracingAttributeName, String tracingType) throws Exception {
         enableConnectorOpenTelemetryResource(client, true);
         ModelNode op =
                 Operations.createWriteAttributeOperation(
-                        RESOURCE_ADDRESS.toModelNode(), tracingAttributeName, tracingType.toString());
+                        RESOURCE_ADDRESS.toModelNode(), tracingAttributeName, tracingType);
             ModelNode result = client.execute(op);
             Assert.assertTrue(Operations.isSuccessfulOutcome(result));
     }
