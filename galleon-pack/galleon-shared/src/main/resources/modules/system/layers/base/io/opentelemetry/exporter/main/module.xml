@@ -9,12 +9,16 @@
 
     <resources>
         <artifact name="${io.opentelemetry:opentelemetry-exporter-common}"/>
+        <artifact name="${io.opentelemetry:opentelemetry-exporter-logging}"/>
+        <artifact name="${io.opentelemetry:opentelemetry-exporter-otlp-common}"/>
         <artifact name="${com.fasterxml.jackson.jr:jackson-jr-objects}"/>
     </resources>
 
     <dependencies>
+        <module name="io.grpc"/>
         <module name="io.opentelemetry.api"/>
         <module name="io.opentelemetry.sdk"/>
+        <module name="io.opentelemetry.semconv"/>
         <module name="io.opentelemetry.context"/>
         <module name="io.opentelemetry.otlp" services="export"/>
         <module name="com.fasterxml.jackson.core.jackson-core"/>

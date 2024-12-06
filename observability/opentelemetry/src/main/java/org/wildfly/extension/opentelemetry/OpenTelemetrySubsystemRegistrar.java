@@ -22,7 +22,6 @@ import static org.wildfly.extension.opentelemetry.OpenTelemetryConfigurationCons
 import static org.wildfly.extension.opentelemetry.OpenTelemetryConfigurationConstants.VERTX_DISABLE_DNS_RESOLVER;
 import static org.wildfly.extension.opentelemetry.OpenTelemetryExtensionLogger.OTEL_LOGGER;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -56,23 +55,6 @@ import org.wildfly.subsystem.service.capability.CapabilityServiceInstaller;
  */
 
 class OpenTelemetrySubsystemRegistrar implements SubsystemResourceDefinitionRegistrar, ResourceServiceConfigurator {
-    public static final boolean IS_WILDFLY_PREVIEW;
-
-    static {
-        // Temporary check to determine if the server is WildFly Standard or WildFly Preview. This is
-        // a *temporary* check, so there should be no long-term dependencies on this. -- jdl
-        boolean classFound = false;
-        try {
-            Class.forName("io.smallrye.opentelemetry.implementation.exporters.metrics.VertxMetricsExporterProvider");
-            classFound = true;
-        } catch (ClassNotFoundException e) {
-        }
-        IS_WILDFLY_PREVIEW = classFound;
-    }
-
-    public static final String API_MODULE = "org.wildfly.extension.opentelemetry-api";
-    public static final List<String> EXPORTED_MODULES = new ArrayList<>();
-
     static final RuntimeCapability<Void> OPENTELEMETRY_CAPABILITY =
             RuntimeCapability.Builder.of(OPENTELEMETRY_CAPABILITY_NAME)
                     .addRequirements(WELD_CAPABILITY_NAME)
@@ -184,20 +166,6 @@ class OpenTelemetrySubsystemRegistrar implements SubsystemResourceDefinitionRegi
         // We need to disable vertx's DNS resolver as it causes failures under k8s
         if (System.getProperty(VERTX_DISABLE_DNS_RESOLVER) == null) {
             System.setProperty(VERTX_DISABLE_DNS_RESOLVER, "true");
-        }
-
-        EXPORTED_MODULES.addAll(List.of(
-                "io.opentelemetry.api",
-                "io.opentelemetry.api.events",
-                "io.opentelemetry.context",
-                "io.opentelemetry.exporter",
-                "io.opentelemetry.otlp",
-                "io.opentelemetry.sdk",
-                "io.opentelemetry.semconv",
-                "io.smallrye.opentelemetry"));
-        if (IS_WILDFLY_PREVIEW) {
-            EXPORTED_MODULES.add("io.opentelemetry.instrumentation.api");
-            EXPORTED_MODULES.add("io.opentelemetry.semconv");
         }
     }
 

@@ -44,7 +44,7 @@ public class MicrometerSetupTask extends AbstractSetupTask {
                 otelCollector.getOtlpHttpEndpoint() + "/v1/metrics"));
         executeOp(managementClient, writeAttribute("micrometer", "step", "1"));
 
-        ServerReload.reloadIfRequired(managementClient);
+        ServerReload.executeReloadAndWaitForCompletion(managementClient);
     }
 
     @Override
@@ -55,6 +55,6 @@ public class MicrometerSetupTask extends AbstractSetupTask {
         executeOp(managementClient, Operations.createRemoveOperation(micrometerSubsystem));
         executeOp(managementClient, Operations.createRemoveOperation(micrometerExtension));
 
-        ServerReload.reloadIfRequired(managementClient);
+        ServerReload.executeReloadAndWaitForCompletion(managementClient);
     }
 }
