@@ -52,8 +52,9 @@ public class MicroProfileReactiveMessagingExtension implements Extension {
     static final String REACTIVE_STREAMS_OPERATORS_CAPABILITY_NAME = "org.wildfly.microprofile.reactive-streams-operators";
     static final String CONFIG_CAPABILITY_NAME = "org.wildfly.microprofile.config";
 
-    protected static final ModelVersion VERSION_1_0_0 = ModelVersion.create(1, 0, 0);
-    private static final ModelVersion CURRENT_MODEL_VERSION = VERSION_1_0_0;
+    static final ModelVersion VERSION_1_0_0 = ModelVersion.create(1, 0, 0);
+    static final ModelVersion VERSION_2_0_0 = ModelVersion.create(2, 0, 0);
+    private static final ModelVersion CURRENT_MODEL_VERSION = VERSION_2_0_0;
 
 
     private final PersistentResourceXMLDescription currentDescription = MicroProfileReactiveMessagingSubsystemSchema.CURRENT.getXMLDescription();
@@ -93,4 +94,5 @@ public class MicroProfileReactiveMessagingExtension implements Extension {
             extensionParsingContext.setSubsystemXmlMapping(SUBSYSTEM_NAME, schema.getNamespace().getUri(), reader);
         }
     }
+
 }
