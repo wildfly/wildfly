@@ -4,8 +4,6 @@
  */
 package org.jboss.as.clustering.infinispan.subsystem;
 
-import io.netty.util.internal.logging.InternalLoggerFactory;
-import io.netty.util.internal.logging.JdkLoggerFactory;
 
 import org.jboss.as.clustering.controller.SubsystemExtension;
 import org.jboss.as.controller.Extension;
@@ -27,8 +25,5 @@ public class InfinispanExtension extends SubsystemExtension<InfinispanSubsystemS
 
     public InfinispanExtension() {
         super(SUBSYSTEM_NAME, InfinispanSubsystemModel.CURRENT, InfinispanSubsystemResourceDefinition::new, InfinispanSubsystemSchema.CURRENT, new InfinispanSubsystemXMLWriter());
-
-        // Initialize the Netty logger factory
-        InternalLoggerFactory.setDefaultFactory(JdkLoggerFactory.INSTANCE);
     }
 }

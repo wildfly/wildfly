@@ -112,11 +112,6 @@
         </dependency>
 
         <!-- External dependencies -->
-        <!-- This is only required for the InfinispanExtension to initialize Netty's InternalLoggerFactory -->
-        <dependency>
-            <groupId>io.netty</groupId>
-            <artifactId>netty-common</artifactId>
-        </dependency>
         <dependency>
             <groupId>io.reactivex.rxjava3</groupId>
             <artifactId>rxjava</artifactId>
