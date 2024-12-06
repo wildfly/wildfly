@@ -33,7 +33,7 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.wildfly.extension.micrometer.registry.WildFlyRegistry;
 
-public class MicrometerCollector {
+public class MicrometerCollector implements AutoCloseable {
     private final LocalModelControllerClient modelControllerClient;
     private final ProcessStateNotifier processStateNotifier;
     private final WildFlyRegistry micrometerRegistry;
@@ -77,6 +77,11 @@ public class MicrometerCollector {
         }
 
         return registration;
+    }
+
+    @Override
+    public void close() throws Exception {
+        micrometerRegistry.close();
     }
 
     private void queueMetricRegistration(final Resource current,
