@@ -30,12 +30,6 @@
 
     <name>WildFly Preview: Dependency Management (Expansion Dependencies)</name>
 
-    <properties>
-        <version.io.opentelemetry.instrumentation>2.5.0</version.io.opentelemetry.instrumentation>
-        <version.io.opentelemetry.opentelemetry>1.39.0</version.io.opentelemetry.opentelemetry>
-        <version.io.opentelemetry.opentelemetry-semconv>1.25.0-alpha</version.io.opentelemetry.opentelemetry-semconv>
-        <version.io.smallrye.smallrye-opentelemetry>2.8.0</version.io.smallrye.smallrye-opentelemetry>
-    </properties>
 
     <dependencyManagement>
         <dependencies>
