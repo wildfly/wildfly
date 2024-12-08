@@ -54,6 +54,7 @@
         <module name="org.wildfly.security.elytron-private"/>
         <module name="org.wildfly.security.elytron-web.undertow-server"/>
         <module name="org.wildfly.security.elytron-web.undertow-server-servlet"/>
+        <module name="org.wildfly.security.jakarta.authorization"/>
         <module name="org.jboss.as.server"/>
         <module name="org.jboss.common-beans" services="import"/>
         <module name="org.jboss.marshalling"/>

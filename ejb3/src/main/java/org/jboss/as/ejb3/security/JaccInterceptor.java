@@ -9,7 +9,6 @@ import static java.security.AccessController.doPrivileged;
 
 import java.lang.reflect.Method;
 import java.security.AccessController;
-import java.security.Policy;
 import java.security.Principal;
 import java.security.PrivilegedAction;
 import java.security.PrivilegedActionException;
@@ -32,6 +31,7 @@ import org.jboss.metadata.ejb.spec.MethodInterfaceType;
 import org.wildfly.common.Assert;
 import org.wildfly.security.auth.server.SecurityDomain;
 import org.wildfly.security.auth.server.SecurityIdentity;
+import org.wildfly.security.authz.jacc.PolicyUtil;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
@@ -96,8 +96,8 @@ public class JaccInterceptor implements Interceptor {
         MethodInterfaceType methodIntfType = componentView.getPrivateData(MethodInterfaceType.class);
         EJBMethodPermission permission = createEjbMethodPermission(method, ejbComponent, methodIntfType);
         ProtectionDomain domain = new ProtectionDomain (componentView.getProxyClass().getProtectionDomain().getCodeSource(), null, null, getGrantedRoles(securityIdentity));
-        Policy policy = WildFlySecurityManager.isChecking() ? doPrivileged((PrivilegedAction<Policy>) Policy::getPolicy) : Policy.getPolicy();
-        if (!policy.implies(domain, permission)) {
+        PolicyUtil policyUtil = WildFlySecurityManager.isChecking() ? doPrivileged((PrivilegedAction<PolicyUtil>) PolicyUtil::getPolicyUtil) : PolicyUtil.getPolicyUtil();
+        if (!policyUtil.implies(domain, permission)) {
             throw EjbLogger.ROOT_LOGGER.invocationOfMethodNotAllowed(method,ejbComponent.getComponentName());
         }
     }
