@@ -429,4 +429,7 @@ public interface UndertowLogger extends BasicLogger {
     @Message(id = 111, value = "The annotation: '%s' will have no effect on Servlet: '%s'")
     void badAnnotationOnServlet(String annotation, String servlet);
 
+    @LogMessage(level = WARN)
+    @Message(id=112, value="Statistics must be enabled to track active requests")
+    void cannotEnableActiveRequestTracking();
 }
