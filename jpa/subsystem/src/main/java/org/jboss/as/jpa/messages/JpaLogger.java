@@ -298,6 +298,18 @@ public interface JpaLogger extends BasicLogger {
     @Message(id = 25, value = "Couldn't load %s from Jakarta Persistence modules classloader")
     RuntimeException cannotLoadFromJpa(@Cause Throwable cause, String injectionTypeName);
 
+//    /**
+//     * Creates an exception indicating the module, represented by the {@code moduleId} parameter, could not be loaded
+//     * for the adapter, represented by the {@code name} parameter.
+//     *
+//     * @param cause    the cause of the error.
+//     * @param moduleId the module id that was attempting to be loaded.
+//     * @param name     the name of the adapter.
+//     * @return a {@link RuntimeException} for the error.
+//     */
+    //@Message(id = 26, value = "Could not load module %s to add %s adapter to deployment")
+    //RuntimeException cannotLoadModule(@Cause Throwable cause, ModuleIdentifier moduleId, String name);
+
     /**
      * Creates an exception indicating the persistence provider module, represented by the
      * {@code persistenceProviderModule} parameter, had an error loading.
