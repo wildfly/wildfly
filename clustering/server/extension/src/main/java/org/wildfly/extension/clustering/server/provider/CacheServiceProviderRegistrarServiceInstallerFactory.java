@@ -8,7 +8,6 @@ import java.util.List;
 import java.util.function.Supplier;
 
 import org.infinispan.Cache;
-import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.msc.service.ServiceName;
 import org.wildfly.clustering.infinispan.service.InfinispanServiceDescriptor;
 import org.wildfly.clustering.server.infinispan.CacheContainerGroup;
@@ -27,7 +26,7 @@ import org.wildfly.subsystem.service.ServiceInstaller;
 public class CacheServiceProviderRegistrarServiceInstallerFactory<T> extends ServiceProviderRegistrarServiceInstallerFactory<T> {
 
     @Override
-    public ServiceInstaller apply(CapabilityServiceSupport support, BinaryServiceConfiguration configuration) {
+    public ServiceInstaller apply(BinaryServiceConfiguration configuration) {
         ServiceDependency<CacheContainerGroup> group = configuration.getServiceDependency(ClusteringServiceDescriptor.GROUP).map(CacheContainerGroup.class::cast);
         ServiceDependency<Cache<?, ?>> cache = configuration.getServiceDependency(InfinispanServiceDescriptor.CACHE);
         ServiceName name = configuration.resolveServiceName(this.getServiceDescriptor());

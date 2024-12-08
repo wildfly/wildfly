@@ -18,7 +18,9 @@ import org.wildfly.subsystem.resource.ResourceModelResolver;
 
 /**
  * @author Paul Ferraro
+ * @deprecated Use {@link ModuleListAttributeDefinition#resolve(org.jboss.as.controller.OperationContext, org.jboss.dmr.ModelNode)} instead.
  */
+@Deprecated(forRemoval = true)
 public class ModulesServiceConfigurator extends AbstractModulesServiceConfigurator<List<Module>> {
 
     private final List<Module> defaultModules;
