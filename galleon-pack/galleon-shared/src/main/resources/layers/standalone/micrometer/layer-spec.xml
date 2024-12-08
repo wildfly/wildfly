@@ -14,6 +14,11 @@
     <dependencies>
         <layer name="cdi"/>
     </dependencies>
-
     <feature-group name="micrometer"/>
+
+    <packages>
+        <!-- If a non-default-only installation, install the io.prometheus module
+             in case the registry=prometheus resource is wanted. -->
+        <package name="io.prometheus" valid-for-stability="community" optional="true"/>
+    </packages>
 </layer-spec>
