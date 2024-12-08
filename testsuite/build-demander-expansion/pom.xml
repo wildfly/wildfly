@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+
+
+<!--
+    This module ensures the default server installation used by testsuites
+    is built, unless -Djboss.home is used to specify an externally built server.
+-->
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>org.wildfly</groupId>
+        <artifactId>wildfly-parent</artifactId>
+        <!--
+        Maintain separation between the artifact id and the version to help prevent
+        merge conflicts between commits changing the GA and those changing the V.
+        -->
+        <version>35.0.0.Beta1-SNAPSHOT</version>
+        <relativePath>../../pom.xml</relativePath>
+    </parent>
+
+    <artifactId>wildfly-ts-build-demander-expansion</artifactId>
+    <packaging>pom</packaging>
+
+    <name>WildFly Test Suite: Expansion Server Build Demander</name>
+    <description>Ensures the default server installation used by expansion testsuites
+        is built</description>
+
+    <profiles>
+
+        <!-- Unless we are configured to only run the testsuite,
+             make sure we have built the server we will test  -->
+        <profile>
+            <id>build.test.installation</id>
+            <activation><property><name>!testsuite.only</name></property></activation>
+            <dependencies>
+                <dependency>
+                    <groupId>${full.maven.groupId}</groupId>
+                    <artifactId>wildfly-build</artifactId>
+                    <version>${full.maven.version}</version>
+                    <type>pom</type>
+                </dependency>
+            </dependencies>
+        </profile>
+
+    </profiles>
+</project>
