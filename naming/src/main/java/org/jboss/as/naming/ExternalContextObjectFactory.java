@@ -28,7 +28,6 @@ import org.jboss.as.server.deployment.ModuleClassFactory;
 import org.jboss.invocation.proxy.ProxyConfiguration;
 import org.jboss.invocation.proxy.ProxyFactory;
 import org.jboss.modules.Module;
-import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoadException;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
@@ -100,7 +99,7 @@ public class ExternalContextObjectFactory implements ObjectFactory {
             Constructor ctor = initialContextClass.getConstructor(Hashtable.class);
             loadedContext = (Context) ctor.newInstance(newEnvironment);
         } else {
-            Module module = Module.getBootModuleLoader().loadModule(ModuleIdentifier.fromString(initialContextModule));
+            Module module = Module.getBootModuleLoader().loadModule(initialContextModule);
             loader = module.getClassLoader();
             final ClassLoader currentClassLoader = WildFlySecurityManager.getCurrentContextClassLoaderPrivileged();
             try {
