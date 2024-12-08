@@ -5,9 +5,11 @@
 package org.jboss.as.test.shared.observability.setuptasks;
 
 import org.jboss.arquillian.testcontainers.api.DockerRequired;
+import org.jboss.arquillian.testcontainers.api.Testcontainer;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.client.helpers.Operations;
 import org.jboss.as.test.shared.ServerReload;
+import org.jboss.as.test.shared.observability.containers.OpenTelemetryCollectorContainer;
 import org.jboss.dmr.ModelNode;
 
 @DockerRequired
@@ -18,6 +20,9 @@ public class OpenTelemetrySetupTask extends AbstractSetupTask {
 
     private volatile boolean addedExtension;
     private volatile boolean addedSubsystem;
+
+    @Testcontainer
+    private OpenTelemetryCollectorContainer otelCollectorContainer;
 
     @Override
     public void setup(final ManagementClient managementClient, final String containerId) throws Exception {
@@ -31,6 +36,7 @@ public class OpenTelemetrySetupTask extends AbstractSetupTask {
             addedSubsystem = true;
         }
 
+        executeOp(managementClient, writeAttribute(SUBSYSTEM_NAME, "endpoint", otelCollectorContainer.getOtlpGrpcEndpoint()));
         executeOp(managementClient, writeAttribute(SUBSYSTEM_NAME, "batch-delay", "1"));
         executeOp(managementClient, writeAttribute(SUBSYSTEM_NAME, "sampler-type", "on"));
 
@@ -39,6 +45,8 @@ public class OpenTelemetrySetupTask extends AbstractSetupTask {
 
     @Override
     public void tearDown(final ManagementClient managementClient, final String containerId) throws Exception {
+        otelCollectorContainer.stop();
+
         if (addedSubsystem) {
             executeOp(managementClient, Operations.createRemoveOperation(subsystemAddress));
         }
