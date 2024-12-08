@@ -22,7 +22,6 @@ import org.jboss.as.jpa.service.PersistenceUnitServiceImpl;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
-import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.DeploymentUtils;
 import org.jboss.as.server.deployment.JPADeploymentMarker;
@@ -33,7 +32,6 @@ import org.jboss.as.server.deployment.module.ResourceRoot;
 import org.jboss.metadata.ear.spec.EarMetaData;
 import org.jboss.metadata.ear.spec.ModuleMetaData;
 import org.jboss.modules.Module;
-import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoader;
 import org.jboss.msc.service.ServiceName;
 import org.jipijapa.plugin.spi.PersistenceUnitMetadata;
@@ -45,48 +43,33 @@ import org.jipijapa.plugin.spi.PersistenceUnitMetadata;
  */
 public class JPADependencyProcessor implements DeploymentUnitProcessor {
 
-    private static final ModuleIdentifier JAVAX_PERSISTENCE_API_ID = ModuleIdentifier.create("jakarta.persistence.api");
-    private static final ModuleIdentifier JBOSS_AS_JPA_ID = ModuleIdentifier.create("org.jboss.as.jpa");
-    private static final ModuleIdentifier JBOSS_AS_JPA_SPI_ID = ModuleIdentifier.create("org.jboss.as.jpa.spi");
-    private static final String JAR_FILE_EXTENSION = ".jar";
-    private static final String LIB_FOLDER = "lib";
+    private static final String JAVAX_PERSISTENCE_API_ID = "jakarta.persistence.api";
+    private static final String JBOSS_AS_JPA_ID = "org.jboss.as.jpa";
+    private static final String JBOSS_AS_JPA_SPI_ID = "org.jboss.as.jpa.spi";
 
     /**
      * Add dependencies for modules required for Jakarta Persistence deployments
      */
-    public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
+    public void deploy(DeploymentPhaseContext phaseContext) {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
         final ModuleSpecification moduleSpecification = deploymentUnit.getAttachment(Attachments.MODULE_SPECIFICATION);
         final ModuleLoader moduleLoader = Module.getBootModuleLoader();
 
-        // all applications get the jakarta.persistence module added to their deplyoment by default
-        addDependency(moduleSpecification, moduleLoader, deploymentUnit, JAVAX_PERSISTENCE_API_ID);
+        // all applications get the jakarta.persistence SPEC API module added to their deployment by default
+        moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, JAVAX_PERSISTENCE_API_ID, false, false, true, false));
+        ROOT_LOGGER.debugf("added %s dependency to %s", JAVAX_PERSISTENCE_API_ID, deploymentUnit.getName());
 
         if (!JPADeploymentMarker.isJPADeployment(deploymentUnit)) {
             return; // Skip if there are no persistence use in the deployment
         }
-        addDependency(moduleSpecification, moduleLoader, deploymentUnit, JBOSS_AS_JPA_ID, JBOSS_AS_JPA_SPI_ID);
-        addPersistenceProviderModuleDependencies(phaseContext, moduleSpecification, moduleLoader);
-    }
-
-    private void addDependency(ModuleSpecification moduleSpecification, ModuleLoader moduleLoader,
-                               DeploymentUnit deploymentUnit, ModuleIdentifier... moduleIdentifiers) {
-        for ( ModuleIdentifier moduleIdentifier : moduleIdentifiers) {
+        for ( String moduleIdentifier : new String[]{JBOSS_AS_JPA_ID, JBOSS_AS_JPA_SPI_ID}) {
             moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, moduleIdentifier, false, false, true, false));
             ROOT_LOGGER.debugf("added %s dependency to %s", moduleIdentifier, deploymentUnit.getName());
         }
+        addPersistenceProviderModuleDependencies(phaseContext, moduleSpecification, moduleLoader);
     }
 
-    private void addOptionalDependency(ModuleSpecification moduleSpecification, ModuleLoader moduleLoader,
-                               DeploymentUnit deploymentUnit, ModuleIdentifier... moduleIdentifiers) {
-        for ( ModuleIdentifier moduleIdentifier : moduleIdentifiers) {
-            moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, moduleIdentifier, true, false, false, false));
-            ROOT_LOGGER.debugf("added %s dependency to %s", moduleIdentifier, deploymentUnit.getName());
-        }
-    }
-
-    private void addPersistenceProviderModuleDependencies(DeploymentPhaseContext phaseContext, ModuleSpecification moduleSpecification, ModuleLoader moduleLoader) throws
-        DeploymentUnitProcessingException {
+    private void addPersistenceProviderModuleDependencies(DeploymentPhaseContext phaseContext, ModuleSpecification moduleSpecification, ModuleLoader moduleLoader) {
 
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
 
@@ -111,7 +94,8 @@ public class JPADependencyProcessor implements DeploymentUnitProcessor {
 
         // add persistence provider dependency
         for (String dependency : moduleDependencies) {
-            addDependency(moduleSpecification, moduleLoader, deploymentUnit, ModuleIdentifier.fromString(dependency));
+            moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, dependency, false, false, true, false));
+            ROOT_LOGGER.debugf("added %s dependency to %s", dependency, deploymentUnit.getName());
         }
 
         // add the PU service as a dependency to all EE components in this scope
@@ -194,12 +178,10 @@ public class JPADependencyProcessor implements DeploymentUnitProcessor {
         }
     }
 
-    private int loadPersistenceUnits(final ModuleSpecification moduleSpecification, final ModuleLoader moduleLoader, final DeploymentUnit deploymentUnit, final Set<String> moduleDependencies, final PersistenceUnitMetadataHolder holder) throws
-        DeploymentUnitProcessingException {
+    private int loadPersistenceUnits(final ModuleSpecification moduleSpecification, final ModuleLoader moduleLoader, final DeploymentUnit deploymentUnit, final Set<String> moduleDependencies, final PersistenceUnitMetadataHolder holder) {
         int defaultProviderCount = 0;
         if (holder != null) {
             for (PersistenceUnitMetadata pu : holder.getPersistenceUnits()) {
-                String providerModule = pu.getProperties().getProperty(Configuration.PROVIDER_MODULE);
                 String adapterModule = pu.getProperties().getProperty(Configuration.ADAPTER_MODULE);
                 String adapterClass = pu.getProperties().getProperty(Configuration.ADAPTER_CLASS);
 
@@ -227,11 +209,13 @@ public class JPADependencyProcessor implements DeploymentUnitProcessor {
                     // since we don't know (until after PersistenceProviderProcessor runs in a later phase) if the provider
                     // is packaged with the app or will be accessed as a module, make the module dependency optional (in case it
                     // doesn't exist).
-                    String providerModuleName = Configuration.getProviderModuleNameFromProviderClassName(pu.getPersistenceProviderClassName());
-                    if (providerModuleName != null) {
-                        addOptionalDependency(moduleSpecification, moduleLoader, deploymentUnit, ModuleIdentifier.fromString(providerModuleName));
-                        ROOT_LOGGER.debugf("%s is configured to use persistence provider '%s', adding an optional dependency on module '%s'",
-                                pu.getPersistenceUnitName(), pu.getPersistenceProviderClassName(), providerModuleName);
+                    String persistenceProviderModule = Configuration.getProviderModuleNameFromProviderClassName(pu.getPersistenceProviderClassName());
+                    if (persistenceProviderModule != null) {
+                        moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, persistenceProviderModule, true, false, false, false));
+                        ROOT_LOGGER.debugf("Adding %s dependency to %s.  " +
+                                "Persistence Unit %s is configured to use Persistence Provider '%s', adding an optional dependency on Persistence Provider Module '%s'",
+                                persistenceProviderModule, deploymentUnit.getName(),
+                                pu.getPersistenceUnitName(), pu.getPersistenceProviderClassName(), persistenceProviderModule);
                     }
                 }
             }
