@@ -29,6 +29,7 @@ public @interface Version {
     enum AsVersion {
         EAP_7_4_0(EAP, 7, 4, 0, 11, 8, "EAP7.4", ModelVersion.create(16, 0), Stability.DEFAULT, true),
         EAP_8_0_0(EAP, 8, 0, 0, 17, 11, "EAP8.0", ModelVersion.create(22, 0), Stability.DEFAULT, false),
+        WFLY_31_0_0(WILDFLY, 31, 0, 0, 17, 11, "WildFly31.0", ModelVersion.create(24, 0), Stability.COMMUNITY, false),
         ;
 
 
