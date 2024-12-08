@@ -36,9 +36,10 @@ public enum InfinispanSubsystemModel implements SubsystemModel {
     VERSION_16_0_0(16, 0, 0), // WildFly 27
     VERSION_17_0_0(17, 0, 0), // WildFly 28-29
     VERSION_17_1_0(17, 1, 0), // EAP 8.0
-    VERSION_18_0_0(18, 0, 0), // WildFly 30-present
+    VERSION_18_0_0(18, 0, 0), // WildFly 30-34
+    VERSION_19_0_0(19, 0, 0), // WildFly 35-present
     ;
-    static final InfinispanSubsystemModel CURRENT = VERSION_18_0_0;
+    static final InfinispanSubsystemModel CURRENT = VERSION_19_0_0;
 
     private final ModelVersion version;
 

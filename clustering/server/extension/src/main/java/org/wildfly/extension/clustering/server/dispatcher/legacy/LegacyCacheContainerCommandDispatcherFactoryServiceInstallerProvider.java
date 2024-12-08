@@ -5,9 +5,6 @@
 
 package org.wildfly.extension.clustering.server.dispatcher.legacy;
 
-import java.util.Map;
-
-import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.kohsuke.MetaInfServices;
 import org.wildfly.clustering.server.infinispan.dispatcher.CacheContainerCommandDispatcherFactory;
 import org.wildfly.clustering.server.service.CacheContainerServiceInstallerProvider;
@@ -24,7 +21,7 @@ public class LegacyCacheContainerCommandDispatcherFactoryServiceInstallerProvide
     private final UnaryServiceInstallerProvider<org.wildfly.clustering.dispatcher.CommandDispatcherFactory> provider = new LegacyCommandDispatcherFactoryServiceInstallerProvider(new LegacyCommandDispatcherFactoryServiceInstallerFactory<>(CacheContainerCommandDispatcherFactory.class, LegacyCacheContainerCommandDispatcherFactory::wrap));
 
     @Override
-    public Iterable<ServiceInstaller> apply(CapabilityServiceSupport support, Map.Entry<String, String> entry) {
-        return this.provider.apply(support, entry.getKey());
+    public Iterable<ServiceInstaller> apply(String name, String context) {
+        return this.provider.apply(name);
     }
 }

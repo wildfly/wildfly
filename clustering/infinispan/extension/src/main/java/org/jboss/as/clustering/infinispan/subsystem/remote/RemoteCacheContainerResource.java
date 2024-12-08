@@ -21,7 +21,7 @@ import org.wildfly.clustering.server.Registration;
  */
 public class RemoteCacheContainerResource extends ComplexResource implements Registrar<String> {
 
-    private static final String CHILD_TYPE = RemoteCacheResourceDefinition.WILDCARD_PATH.getKey();
+    private static final String CHILD_TYPE = RemoteCacheRuntimeResourceDefinitionRegistrar.WILDCARD_PATH.getKey();
 
     public RemoteCacheContainerResource(Resource resource) {
         this(resource, Collections.singletonMap(CHILD_TYPE, new SimpleChildResourceProvider(ConcurrentHashMap.newKeySet())));

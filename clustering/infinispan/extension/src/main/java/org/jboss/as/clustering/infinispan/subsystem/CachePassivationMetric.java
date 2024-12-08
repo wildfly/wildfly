@@ -6,12 +6,12 @@
 package org.jboss.as.clustering.infinispan.subsystem;
 
 import org.infinispan.eviction.impl.PassivationManager;
-import org.jboss.as.clustering.controller.Metric;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
+import org.wildfly.subsystem.resource.executor.Metric;
 
 /**
  * @author Paul Ferraro
@@ -35,7 +35,7 @@ public enum CachePassivationMetric implements Metric<PassivationManager> {
     }
 
     @Override
-    public AttributeDefinition getDefinition() {
+    public AttributeDefinition get() {
         return this.definition;
     }
 }
