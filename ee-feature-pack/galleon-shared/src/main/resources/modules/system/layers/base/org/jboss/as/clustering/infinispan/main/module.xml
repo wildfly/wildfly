@@ -25,9 +25,6 @@
         <module name="java.transaction.xa"/>
         <module name="java.xml"/>
         <module name="jakarta.transaction.api"/>
-
-        <!-- The netty-common module is only require to initialize Netty's InternalLoggingFactory -->
-        <module name="io.netty.netty-common"/>
         <module name="io.netty.netty-transport-native-epoll"/>
         <module name="io.netty.netty-transport-native-kqueue"/>
         <module name="io.reactivex.rxjava3.rxjava"/>
