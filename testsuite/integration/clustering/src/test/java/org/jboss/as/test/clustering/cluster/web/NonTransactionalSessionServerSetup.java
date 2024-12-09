@@ -11,8 +11,8 @@ import org.jboss.as.test.shared.CLIServerSetupTask;
 /**
  * @author Paul Ferraro
  */
-public class ConcurrentSessionServerSetup extends CLIServerSetupTask {
-    public ConcurrentSessionServerSetup() {
+public class NonTransactionalSessionServerSetup extends CLIServerSetupTask {
+    public NonTransactionalSessionServerSetup() {
         this.builder.node(AbstractClusteringTestCase.THREE_NODES)
                 .setup("/subsystem=infinispan/cache-container=web/distributed-cache=concurrent:add()")
                 .setup("/subsystem=infinispan/cache-container=web/distributed-cache=concurrent/store=file:add(passivation=true, purge=true)")
