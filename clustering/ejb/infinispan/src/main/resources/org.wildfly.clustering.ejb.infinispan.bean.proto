@@ -20,3 +20,10 @@ message InfinispanBeanGroupKey {
 message InfinispanBeanMetaDataKey {
 	org.jboss.ejb.client.SessionID	id	= 1;
 }
+
+/**
+ * @TypeId(312)
+ */
+message InfinispanBeanMetaDataFilter {
+	string	beanName	= 1;
+}

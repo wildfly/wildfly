@@ -4,6 +4,8 @@
  */
 package org.wildfly.clustering.faces.mojarra.context;
 
+import org.assertj.core.api.Assertions;
+import org.assertj.core.api.ObjectAssert;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.wildfly.clustering.marshalling.MarshallingTesterFactory;
 import org.wildfly.clustering.marshalling.Tester;
@@ -19,7 +21,7 @@ public class SessionMapMutexMarshallerTestCase {
     @ParameterizedTest
     @TesterFactorySource(MarshallingTesterFactory.class)
     public void test(TesterFactory factory) {
-        Tester<Object> tester = factory.createTester(Object::getClass);
+        Tester<Object> tester = factory.createTester(Assertions::assertThat, ObjectAssert::hasSameClassAs);
         tester.accept(ContextImmutability.createMutex());
     }
 }

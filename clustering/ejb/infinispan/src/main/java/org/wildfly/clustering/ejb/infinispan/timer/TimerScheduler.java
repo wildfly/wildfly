@@ -7,6 +7,7 @@ package org.wildfly.clustering.ejb.infinispan.timer;
 
 import java.time.Duration;
 import java.time.Instant;
+import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
@@ -39,11 +40,12 @@ import org.wildfly.clustering.server.scheduler.Scheduler;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
+ * A scheduler of timer timeouts.
  * @author Paul Ferraro
  * @param <I> the timer identifier type
  * @param <V> the timer metadata value type
  */
-public class TimerScheduler<I, V> extends AbstractCacheEntryScheduler<I, ImmutableTimerMetaData> {
+public class TimerScheduler<I, V> extends AbstractCacheEntryScheduler<I, TimerMetaDataKey<I>, V, ImmutableTimerMetaData> {
     private static final ThreadFactory THREAD_FACTORY = new DefaultThreadFactory(TimerScheduler.class, WildFlySecurityManager.getClassLoaderPrivileged(TimerScheduler.class));
 
     private final TimerFactory<I, V> factory;
@@ -88,6 +90,12 @@ public class TimerScheduler<I, V> extends AbstractCacheEntryScheduler<I, Immutab
     private TimerScheduler(LocalSchedulerConfiguration<I> schedulerConfig, TimerRegistry<I> registry, ExecutorService executor, Consumer<Scheduler<I, ImmutableTimerMetaData>> injector, TimerFactory<I, V> factory) {
         this(new LocalScheduler<>(schedulerConfig) {
             @Override
+            public void schedule(I id, Instant instant) {
+                super.schedule(id, instant);
+                registry.register(id);
+            }
+
+            @Override
             public void cancel(I id) {
                 registry.unregister(id);
                 super.cancel(id);
@@ -102,19 +110,26 @@ public class TimerScheduler<I, V> extends AbstractCacheEntryScheduler<I, Immutab
     }
 
     private TimerScheduler(Scheduler<I, Instant> scheduler, Consumer<Scheduler<I, ImmutableTimerMetaData>> injector, TimerFactory<I, V> factory) {
-        super(scheduler, ImmutableTimerMetaData::getNextTimeout);
+        super(scheduler.map(ImmutableTimerMetaData::getNextTimeout));
         this.factory = factory;
         injector.accept(this);
     }
 
     @Override
     public void schedule(I id) {
-        TimerMetaDataFactory<I, V> metaDataFactory = this.factory.getMetaDataFactory();
-        V value = metaDataFactory.findValue(id);
+        V value = this.factory.getMetaDataFactory().findValue(id);
         if (value != null) {
-            ImmutableTimerMetaData metaData = metaDataFactory.createImmutableTimerMetaData(value);
-            this.schedule(id, metaData);
+            this.schedule(Map.entry(new InfinispanTimerMetaDataKey<>(id), value));
         }
+    }
+
+    @Override
+    public void schedule(Map.Entry<TimerMetaDataKey<I>, V> entry) {
+        this.scheduleValue(entry.getKey().getId(), entry.getValue());
+    }
+
+    private void scheduleValue(I id, V value) {
+        this.schedule(id, this.factory.getMetaDataFactory().createImmutableTimerMetaData(value));
     }
 
     private static class InvokeTask<I, V> implements Predicate<I>, Consumer<Scheduler<I, ImmutableTimerMetaData>> {
