@@ -115,6 +115,7 @@
                             <recordProvisioningState>true</recordProvisioningState>
                             <log-provisioning-time>${galleon.log.time}</log-provisioning-time>
                             <offline-provisioning>true</offline-provisioning>
+                            <overwrite-provisioned-server>true</overwrite-provisioned-server>
                             <galleon-options>
                                 <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
                             </galleon-options>
