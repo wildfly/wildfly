@@ -9,7 +9,6 @@ import java.util.EnumSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeoutException;
-import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -30,7 +29,7 @@ import org.jboss.ejb.client.NodeAffinity;
 import org.wildfly.clustering.cache.CacheProperties;
 import org.wildfly.clustering.cache.Key;
 import org.wildfly.clustering.cache.batch.Batch;
-import org.wildfly.clustering.cache.infinispan.embedded.distribution.Locality;
+import org.wildfly.clustering.cache.infinispan.embedded.distribution.CacheStreamFilter;
 import org.wildfly.clustering.cache.infinispan.embedded.listener.ListenerRegistration;
 import org.wildfly.clustering.ejb.bean.Bean;
 import org.wildfly.clustering.ejb.bean.BeanExpirationConfiguration;
@@ -50,8 +49,8 @@ import org.wildfly.clustering.server.infinispan.manager.AffinityIdentifierFactor
 import org.wildfly.clustering.server.infinispan.scheduler.CacheEntryScheduler;
 import org.wildfly.clustering.server.infinispan.scheduler.PrimaryOwnerScheduler;
 import org.wildfly.clustering.server.infinispan.scheduler.PrimaryOwnerSchedulerConfiguration;
+import org.wildfly.clustering.server.infinispan.scheduler.ScheduleCacheEntriesTask;
 import org.wildfly.clustering.server.infinispan.scheduler.ScheduleCommand;
-import org.wildfly.clustering.server.infinispan.scheduler.ScheduleLocalEntriesTask;
 import org.wildfly.clustering.server.infinispan.scheduler.ScheduleWithTransientMetaDataCommand;
 import org.wildfly.clustering.server.infinispan.scheduler.SchedulerTopologyChangeListener;
 import org.wildfly.clustering.server.manager.IdentifierFactory;
@@ -143,11 +142,11 @@ public class InfinispanBeanManager<K, V extends BeanInstance<K>, M> implements B
             }
         })) : null;
 
-        BiConsumer<Locality, Locality> scheduleTask = (localScheduler != null) ? new ScheduleLocalEntriesTask<>(this.cache, this.filter, localScheduler) : null;
+        Consumer<CacheStreamFilter<Map.Entry<Key<K>, Object>>> scheduleTask = (localScheduler != null) ? new ScheduleCacheEntriesTask<>(this.cache, this.filter, localScheduler) : null;
         this.schedulerListenerRegistration = (localScheduler != null) ? new SchedulerTopologyChangeListener<>(this.cache, localScheduler, scheduleTask).register() : null;
         if (scheduleTask != null) {
             // Schedule expiration of existing beans that we own
-            scheduleTask.accept(Locality.of(false), Locality.forCurrentConsistentHash(this.cache));
+            scheduleTask.accept(CacheStreamFilter.local(this.cache));
         }
         // If bean has expiration configuration, perform expiration task on close
         Consumer<Bean<K, V>> closeTask = (this.expiration != null) ? bean -> {

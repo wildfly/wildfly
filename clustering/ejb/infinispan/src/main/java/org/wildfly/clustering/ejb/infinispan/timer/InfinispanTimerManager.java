@@ -9,7 +9,6 @@ import java.io.IOException;
 import java.lang.reflect.Method;
 import java.time.Duration;
 import java.util.AbstractMap;
-import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -22,6 +21,7 @@ import org.infinispan.Cache;
 import org.wildfly.clustering.cache.CacheProperties;
 import org.wildfly.clustering.cache.Key;
 import org.wildfly.clustering.cache.batch.Batch;
+import org.wildfly.clustering.cache.infinispan.embedded.distribution.CacheStreamFilter;
 import org.wildfly.clustering.cache.infinispan.embedded.distribution.Locality;
 import org.wildfly.clustering.cache.infinispan.embedded.listener.ListenerRegistration;
 import org.wildfly.clustering.ejb.cache.timer.ImmutableTimerMetaDataFactory;
@@ -46,8 +46,8 @@ import org.wildfly.clustering.server.infinispan.manager.AffinityIdentifierFactor
 import org.wildfly.clustering.server.infinispan.scheduler.CacheEntryScheduler;
 import org.wildfly.clustering.server.infinispan.scheduler.PrimaryOwnerScheduler;
 import org.wildfly.clustering.server.infinispan.scheduler.PrimaryOwnerSchedulerConfiguration;
+import org.wildfly.clustering.server.infinispan.scheduler.ScheduleCacheKeysTask;
 import org.wildfly.clustering.server.infinispan.scheduler.ScheduleCommand;
-import org.wildfly.clustering.server.infinispan.scheduler.ScheduleLocalKeysTask;
 import org.wildfly.clustering.server.infinispan.scheduler.ScheduleWithPersistentMetaDataCommand;
 import org.wildfly.clustering.server.infinispan.scheduler.ScheduleWithTransientMetaDataCommand;
 import org.wildfly.clustering.server.infinispan.scheduler.SchedulerTopologyChangeListener;
@@ -132,7 +132,7 @@ public class InfinispanTimerManager<I, C> implements TimerManager<I> {
         });
 
         TimerRegistry<I> registry = this.registry;
-        BiConsumer<Locality, Locality> scheduleTask = new ScheduleLocalKeysTask<>(this.cache, TimerMetaDataKeyFilter.INSTANCE, new Consumer<I>() {
+        Consumer<CacheStreamFilter<Key<I>>> scheduleTask = new ScheduleCacheKeysTask<>(this.cache, TimerMetaDataKeyFilter.INSTANCE, new Consumer<I>() {
             @Override
             public void accept(I id) {
                 localScheduler.schedule(id);
@@ -142,7 +142,7 @@ public class InfinispanTimerManager<I, C> implements TimerManager<I> {
 
         this.schedulerListenerRegistration = new SchedulerTopologyChangeListener<>(this.cache, localScheduler, scheduleTask).register();
 
-        scheduleTask.accept(Locality.of(false), Locality.forCurrentConsistentHash(this.cache));
+        scheduleTask.accept(CacheStreamFilter.local(this.cache));
 
         this.identifierFactory.start();
     }
@@ -214,8 +214,7 @@ public class InfinispanTimerManager<I, C> implements TimerManager<I> {
 
     @Override
     public Stream<I> getActiveTimers() {
-        // The primary owner scheduler can miss entries, if called during a concurrent topology change event
-        return this.dispatcherFactory.getGroup().isSingleton() ? this.scheduledTimers.stream() : this.cache.keySet().stream().filter(TimerMetaDataKeyFilter.INSTANCE).map(Key::getId);
+        return this.cache.keySet().stream().filter(TimerMetaDataKeyFilter.INSTANCE).map(Key::getId);
     }
 
     @Override
