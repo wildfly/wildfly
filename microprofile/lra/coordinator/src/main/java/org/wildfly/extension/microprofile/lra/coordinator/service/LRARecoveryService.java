@@ -36,6 +36,8 @@ public class LRARecoveryService implements Service {
                     .noneMatch(rm -> rm instanceof LRARecoveryModule)) {
                     RecoveryManager.manager().addModule(lraRecoveryModule);
                 }
+                // run an initial recovery scan - skip periodicWorkFirstPass since it is a no-op
+                lraRecoveryModule.periodicWorkSecondPass();
             } catch (Exception e) {
                 throw MicroProfileLRACoordinatorLogger.LOGGER.lraRecoveryServiceFailedToStart();
             }
