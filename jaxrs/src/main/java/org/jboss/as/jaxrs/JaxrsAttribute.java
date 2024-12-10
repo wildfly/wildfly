@@ -328,6 +328,16 @@ public abstract class JaxrsAttribute {
             .setRestartAllServices()
             .build();
 
+    static final SimpleAttributeDefinition RESTEASY_PATCHFILTER_DISABLED = new SimpleAttributeDefinitionBuilder("resteasy-patchfilter-disabled", ModelType.BOOLEAN)
+            .setRequired(false)
+            .setAllowExpression(true)
+            .setValidator(new ModelTypeValidator(ModelType.BOOLEAN, false))
+            .setDefaultValue(ModelNode.FALSE)
+            .setAttributeMarshaller(AttributeMarshallers.SIMPLE_ELEMENT)
+            .setAttributeParser(AttributeParsers.SIMPLE_ELEMENT)
+            .setRestartAllServices()
+            .build();
+
     static final SimpleAttributeDefinition TRACING_TYPE = SimpleAttributeDefinitionBuilder.create("tracing-type", ModelType.STRING)
             .addAccessConstraint(TRACING_MANAGEMENT_CONSTRAINT)
             .setAllowExpression(true)
@@ -366,6 +376,7 @@ public abstract class JaxrsAttribute {
             RESTEASY_LANGUAGE_MAPPINGS,
             RESTEASY_MEDIA_TYPE_MAPPINGS,
             RESTEASY_MEDIA_TYPE_PARAM_MAPPING,
+            RESTEASY_PATCHFILTER_DISABLED,
             RESTEASY_PREFER_JACKSON_OVER_JSONB,
             RESTEASY_PROVIDERS,
             RESTEASY_RFC7232_PRECONDITIONS,
