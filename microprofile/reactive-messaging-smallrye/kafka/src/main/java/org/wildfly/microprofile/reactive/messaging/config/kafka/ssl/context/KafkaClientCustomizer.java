@@ -43,6 +43,7 @@ public class KafkaClientCustomizer implements ClientCustomizer<Map<String, Objec
                             (String) config.get(ElytronSSLContextRegistry.SSL_CONTEXT_PROPERTY));
             config.put(WildFlyKafkaSSLEngineFactory.SSL_ENGINE_FACTORY_CLASS, WildFlyKafkaSSLEngineFactory.class);
         }
+
         return config;
     }
 }

@@ -1057,6 +1057,7 @@
                                                 <layer>microprofile-telemetry</layer>
                                                 <layer>microprofile-platform</layer>
                                                 <layer>mvc-krazo</layer>
+                                                <layer>vertx</layer>
                                             </layers>
                                             <excluded-layers>
                                                 <layer>jpa-distributed</layer>
@@ -1159,6 +1160,7 @@
                                                 <layer>microprofile-openapi</layer>
                                                 <layer>microprofile-telemetry</layer>
                                                 <layer>mvc-krazo</layer>
+                                                <layer>vertx</layer>
                                             </layers>
                                             <excluded-layers>
                                                 <layer>jpa</layer>

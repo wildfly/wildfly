@@ -177,7 +177,7 @@ public class MicroProfileHealthReporter {
         if (checks != null) {
             for (Map.Entry<HealthCheck, ClassLoader> entry : checks.entrySet()) {
                 // use the classloader of the deployment's module instead of the TCCL (which is the server's ModuleClassLoader
-                // to ensure that any resources that checks the TCCL (such as MP Config) will use the correct one
+                // to ensure that any resources that checks the TCCL (such as MicroProfile Config) will use the correct one
                 // when the health checks are called.
                 final ClassLoader oldTCCL = Thread.currentThread().getContextClassLoader();
                 try {
