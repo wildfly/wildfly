@@ -89,29 +89,53 @@ details of one of them, via the CLI one would:
     "result" => [
         "add-namespace",
         "add-schema-location",
+        "clean-obsolete-content",
+        "composite",
         "delete-snapshot",
         "full-replace-deployment",
+        "list-add",
+        "list-clear",
+        "list-get",
+        "list-remove",
         "list-snapshots",
+        "map-clear",
+        "map-get",
+        "map-put",
+        "map-remove",
+        "product-info",
+        "query",
         "read-attribute",
+        "read-attribute-group",
+        "read-attribute-group-names",
         "read-children-names",
         "read-children-resources",
         "read-children-types",
         "read-config-as-xml",
+        "read-config-as-xml-file",
         "read-operation-description",
         "read-operation-names",
         "read-resource",
         "read-resource-description",
         "reload",
+        "reload-enhanced",
         "remove-namespace",
         "remove-schema-location",
         "replace-deployment",
+        "resolve-expression",
+        "resolve-internet-address",
+        "resume",
         "shutdown",
+        "suspend",
         "take-snapshot",
+        "undefine-attribute",
         "upload-deployment-bytes",
         "upload-deployment-stream",
         "upload-deployment-url",
         "validate-address",
-        "write-attribute"
+        "validate-operation",
+        "whoami",
+        "write-attribute",
+        "write-config"
     ]
 }
 [standalone@localhost:9990 /] :read-operation-description(name=upload-deployment-url)
@@ -123,17 +147,28 @@ details of one of them, via the CLI one would:
         "request-properties" => {"url" => {
             "type" => STRING,
             "description" => "The URL at which the deployment content is available for upload to the domain's or standalone server's deployment content repository.. Note that the URL must be accessible from the target of the operation (i.e. the Domain Controller or standalone server).",
+            "expressions-allowed" => false,
             "required" => true,
-            "min-length" => 1,
-            "nillable" => false
+            "nillable" => false,
+            "min-length" => 1L,
+            "max-length" => 2147483647L,
+            "web-url" => true,
+            "stability" => "default"
         }},
         "reply-properties" => {
             "type" => BYTES,
             "description" => "The hash of managed deployment content that has been uploaded to the domain's or standalone server's deployment content repository.",
-            "min-length" => 20,
-            "max-length" => 20,
-            "nillable" => false
-        }
+            "expressions-allowed" => false,
+            "required" => true,
+            "nillable" => false,
+            "min-length" => 20L,
+            "max-length" => 20L,
+            "stability" => "default"
+        },
+        "access-constraints" => {"application" => {"deployment" => {"type" => "core"}}},
+        "stability" => "default",
+        "read-only" => false,
+        "runtime-only" => true
     }
 }
 ----
