@@ -24,6 +24,7 @@ import org.wildfly.microprofile.reactive.messaging.common.security.ElytronSSLCon
 public class AmqpClientCustomizer implements ClientCustomizer<AmqpClientOptions> {
     @Override
     public AmqpClientOptions customize(String channel, Config channelConfig, AmqpClientOptions config) {
+
         String sslContextName =
                 channelConfig.getOptionalValue(ElytronSSLContextRegistry.SSL_CONTEXT_PROPERTY, String.class).orElse(null);
 

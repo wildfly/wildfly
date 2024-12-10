@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+
+<module xmlns="urn:jboss:module:1.9" name="io.smallrye.reactive.messaging.otel">
+    <properties>
+        <property name="jboss.api" value="private"/>
+    </properties>
+
+    <resources>
+        <artifact name="${io.smallrye.reactive:smallrye-reactive-messaging-otel}"/>
+    </resources>
+
+    <dependencies>
+        <!--
+            Make the OTel dependencies optional. We only want tracing of RM connectors to happen if OTel is provisioned,
+            and not to force provisioning of OTel.
+         -->
+        <module name="io.opentelemetry.api" optional="true"/>
+        <module name="io.opentelemetry.context" optional="true"/>
+        <module name="io.opentelemetry.instrumentation.api" optional="true"/>
+        <module name="io.smallrye.opentelemetry" optional="true"/>
+        <module name="io.smallrye.reactive.messaging"/>
+        <module name="jakarta.enterprise.api" />
+        <!-- We need some classes from the smallrye-reactive-messaging-api-jar which are in this module -->
+        <module name="org.eclipse.microprofile.reactive-messaging.api"/>
+        <module name="org.jboss.logging" />
+        <module name="org.slf4j"/>
+    </dependencies>
+</module>
