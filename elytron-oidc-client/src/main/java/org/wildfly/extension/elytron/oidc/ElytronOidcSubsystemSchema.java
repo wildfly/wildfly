@@ -47,6 +47,7 @@ import static org.wildfly.extension.elytron.oidc.ProviderAttributeDefinitions.TR
 import static org.wildfly.extension.elytron.oidc.ProviderAttributeDefinitions.TRUSTSTORE_PASSWORD;
 import static org.wildfly.extension.elytron.oidc.ProviderAttributeDefinitions.VERIFY_TOKEN_AUDIENCE;
 import static org.wildfly.extension.elytron.oidc.SecureDeploymentDefinition.ADAPTER_STATE_COOKIE_PATH;
+import static org.wildfly.extension.elytron.oidc.SecureDeploymentDefinition.ALLOW_QUERY_PARAMS;
 import static org.wildfly.extension.elytron.oidc.SecureDeploymentDefinition.BEARER_ONLY;
 import static org.wildfly.extension.elytron.oidc.SecureDeploymentDefinition.CLIENT_ID;
 import static org.wildfly.extension.elytron.oidc.SecureDeploymentDefinition.ENABLE_BASIC_AUTH;
@@ -94,9 +95,10 @@ public enum ElytronOidcSubsystemSchema implements PersistentSubsystemSchema<Elyt
     VERSION_2_0(2, Stability.DEFAULT),
     VERSION_2_0_PREVIEW(2, 0, Stability.PREVIEW), // WildFly 32.0-present
     VERSION_3_0_PREVIEW(3, 0, Stability.PREVIEW), // WildFly 33.0-present
+    VERSION_4_0_PREVIEW(4, 0, Stability.PREVIEW), // WildFly 34.0-present
     ;
 
-    static final Map<Stability, ElytronOidcSubsystemSchema> CURRENT = Feature.map(EnumSet.of(VERSION_3_0_PREVIEW, VERSION_2_0));
+    static final Map<Stability, ElytronOidcSubsystemSchema> CURRENT = Feature.map(EnumSet.of(VERSION_4_0_PREVIEW, VERSION_2_0));
     private static final AttributeParser SIMPLE_ATTRIBUTE_PARSER = new AttributeElementParser();
     private static final AttributeMarshaller SIMPLE_ATTRIBUTE_MARSHALLER = new AttributeElementMarshaller();
 
@@ -140,6 +142,8 @@ public enum ElytronOidcSubsystemSchema implements PersistentSubsystemSchema<Elyt
                 REQUEST_OBJECT_SIGNING_KEYSTORE_FILE, REQUEST_OBJECT_SIGNING_KEYSTORE_PASSWORD,
                 REQUEST_OBJECT_SIGNING_KEY_ALIAS, REQUEST_OBJECT_SIGNING_KEY_PASSWORD, REQUEST_OBJECT_SIGNING_KEYSTORE_TYPE};
 
+        SimpleAttributeDefinition[] allowQueryParamsObjectAttributes ={ALLOW_QUERY_PARAMS};
+
         redirectRewriteRuleDefinitionBuilder.addAttribute(RedirectRewriteRuleDefinition.REPLACEMENT, SIMPLE_ATTRIBUTE_PARSER, SIMPLE_ATTRIBUTE_MARSHALLER);
         Stream.of(CredentialDefinition.ATTRIBUTES).forEach(attribute -> credentialDefinitionBuilder.addAttribute(attribute, SIMPLE_ATTRIBUTE_PARSER, SIMPLE_ATTRIBUTE_MARSHALLER));
         Stream.of(providerDefaultAttributes).forEach(attribute -> realmDefinitionBuilder.addAttribute(attribute, SIMPLE_ATTRIBUTE_PARSER, SIMPLE_ATTRIBUTE_MARSHALLER));
@@ -148,6 +152,11 @@ public enum ElytronOidcSubsystemSchema implements PersistentSubsystemSchema<Elyt
         Stream.of(secureDeploymentDefaultAttributes).forEach(attribute -> secureServerDefinitionBuilder.addAttribute(attribute, SIMPLE_ATTRIBUTE_PARSER, SIMPLE_ATTRIBUTE_MARSHALLER));
         Stream.of(providerDefaultAttributes).forEach(attribute -> secureDeploymentDefinitionBuilder.addAttribute(attribute, SIMPLE_ATTRIBUTE_PARSER, SIMPLE_ATTRIBUTE_MARSHALLER));
         Stream.of(providerDefaultAttributes).forEach(attribute -> secureServerDefinitionBuilder.addAttribute(attribute, SIMPLE_ATTRIBUTE_PARSER, SIMPLE_ATTRIBUTE_MARSHALLER));
+
+        if (this.since(VERSION_4_0_PREVIEW) && this.enables(ALLOW_QUERY_PARAMS)) {
+            secureDeploymentDefinitionBuilder.addAttribute(ALLOW_QUERY_PARAMS, SIMPLE_ATTRIBUTE_PARSER, SIMPLE_ATTRIBUTE_MARSHALLER);
+            // rls Stream.of(allowQueryParamsObjectAttributes).forEach(attribute -> secureDeploymentDefinitionBuilder.addAttribute(attribute, SIMPLE_ATTRIBUTE_PARSER, SIMPLE_ATTRIBUTE_MARSHALLER));
+        }
 
         if (this.since(VERSION_3_0_PREVIEW) && this.enables(AUTHENTICATION_REQUEST_FORMAT)) {
             Stream.of(requestObjectAttributes).forEach(attribute -> secureDeploymentDefinitionBuilder.addAttribute(attribute, SIMPLE_ATTRIBUTE_PARSER, SIMPLE_ATTRIBUTE_MARSHALLER));
