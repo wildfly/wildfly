@@ -30,9 +30,10 @@
         <management-model.filename>${server.name}.dmr</management-model.filename>
 
         <wildfly.github.io.dir>
-            ..${file.separator}..${file.separator}wildfly.github.io${file.separator}${product.docs.server.version}
+            ..${file.separator}..${file.separator}wildfly.github.io${file.separator}latest-new
         </wildfly.github.io.dir>
         <jboss.home>${project.build.directory}/wildfly</jboss.home>
+        <previousVersion/>
     </properties>
 
     <build>
@@ -179,6 +180,37 @@
                                 </configuration>
                             </execution>
                         </executions>
+                    </plugin>
+                    <!-- DO NOT REORDER - script must be run after directory is copied -->
+                    <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>exec-maven-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>python-update-latest</id>
+                                <phase>package</phase>
+                                <goals>
+                                    <goal>exec</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                        <configuration>
+                            <executable>python3</executable>
+                            <arguments>
+                                <argument>src/main/scripts/update-latest-and-redirects.py</argument>
+                                <argument>--source</argument>
+                                <argument>${wildfly.github.io.dir}</argument> <!-- Directory with new documentation -->
+                                <argument>--source-version</argument>
+                                <argument>${parent.version}</argument> <!-- Version number of the new documentation -->
+                                <argument>--previous</argument>
+                                <argument>latest</argument>
+                                <argument>--previous-version</argument>
+                                <argument>${previousVersion}</argument> <!-- Version number of the previous documentation -->
+                                <argument>--product</argument>
+                                <argument>${full.dist.product.release.name}</argument> <!-- Product name -->
+                                <argument>--update-sitemap</argument>
+                            </arguments>
+                        </configuration>
                     </plugin>
                 </plugins>
             </build>
