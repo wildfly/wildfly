@@ -27,6 +27,7 @@ public class ReactiveMessagingConfigSource implements ConfigSource {
         map.put("mp.messaging.connector.smallrye-amqp.tracing-enabled", "false");
         map.put("mp.messaging.connector.smallrye-kafka.tracing-enabled", "false");
         map.put("smallrye-messaging-strict-binding", "true");
+        map.put("mp.messaging.connector.vertx.cdi.identifier", "vertx");
         PROPERTIES = Collections.unmodifiableMap(map);
     }
 
