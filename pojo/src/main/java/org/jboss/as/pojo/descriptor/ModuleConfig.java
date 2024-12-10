@@ -32,7 +32,7 @@ public class ModuleConfig extends AbstractConfigVisitorNode implements Serializa
                 ServiceName serviceName = ServiceModuleLoader.moduleServiceName(identifier);
                 visitor.addDependency(serviceName, getInjectedModule());
             } else {
-                Module dm = visitor.loadModule(identifier);
+                Module dm = visitor.loadModule(moduleName);
                 getInjectedModule().setValue(() -> dm);
             }
         } else {
