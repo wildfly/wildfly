@@ -1,5 +1,5 @@
 [[Remote_Jakarta_Enterprise_Beans_invocations_via_JNDI_-_Jakarta_Enterprise_Beans_client_API_or_wildfly-naming-client_project]]
-= Remote Jakarta Enterprise Beans invocations via JNDI - Jakarta Enterprise Beans client API or wildfly-naming-client project
+= Remote Invocation via JNDI - Jakarta Enterprise Beans client API or wildfly-naming-client project?
 
 ifdef::env-github[]
 :tip-caption: :bulb:
@@ -272,8 +272,7 @@ off the java:jboss/exported/ namespace prefix if supplied. But let's not
 go into that here.
 
 [[how-does-wildfly-naming-client-project-implementation-transfer-the-jndi-objects-to-the-clients]]
-=== How does wildfly-naming-client project implementation transfer the JNDI
-objects to the clients
+=== How does wildfly-naming-client project implementation transfer the JNDI objects to the clients
 
 When a lookup is done on a JNDI string, the wildfly-naming-client implementation
 internally uses the connection to the remoting connector (which it has
@@ -298,7 +297,7 @@ invocations from a remote client using JNDI>>) as against using
 wildfly-naming-client project for doing the same thing.
 
 [[few-more-things-]]
-=== Few more things
+=== A few more things
 
 Unlike the previous `jboss-remote-naming` project, the connection to
 the peer is not requested. Until an operation is performed on the connection,
@@ -442,7 +441,7 @@ added to the properties passed to the InitialContext constructor. +
 3) And subsequently the invocation on the bean interface returned by the
 lookup.
 
-Let's see what the " `wildfly.naming.client.ejb.context`" does. In
+Let's see what the `wildfly.naming.client.ejb.context` does. In
 WildFly, remote access/invocations on EJBs is facilitated by the JBoss
 specific EJB client API, which is a project on its own
 https://github.com/wildfly/jboss-ejb-client. So no matter, what
@@ -472,8 +471,7 @@ explained in a previous section about how the wildfly-naming-client project
 establishes a connection to the remote server, you'll realize that these
 properties are indeed the same as what the
 `RemotingConnectionEJBReceiver` would expect to be able to establish the
-connection to the server. Now this is where the "
-`wildfly.naming.client.ejb.context`" property comes into picture. When
+connection to the server. Now this is where the `wildfly.naming.client.ejb.context` property comes into picture. When
 this is set to true and passed to the InitialContext creation (either
 via jndi.properties or via the constructor of that class), the
 wildfly-naming-client project internally will do whatever is necessary to setup
@@ -487,8 +485,7 @@ EJB invocations (remember, no remote EJB invocations are possible
 without the presence of a `EJBClientContext` containing a `EJBReceiver`
 which can handle the EJB).
 
-So we now know the importance of the "
-`wildfly.naming.client.ejb.context`" property and its usage. Let's move on
+So we now know the importance of the `wildfly.naming.client.ejb.context` property and its usage. Let's move on
 the next part in that code, the JNDI name. Notice that we have used the
 JNDI name relative to the `java:jboss/exported/` namespace while doing
 the lookup. And since we know that the Foo view is exposed on that JNDI
@@ -502,8 +499,7 @@ it's an EJB or some random object.
 Once the unmarshalled object is returned (which actually is a proxy to
 the bean), the rest is straightforward, we just invoke on that returned
 object. Now since the wildfly-naming-client implementation has done the
-necessary setup for the EJBClientContext (due to the presence of "
-`wildfly.naming.client.ejb.context`" property), the invocation on that
+necessary setup for the EJBClientContext (due to the presence of `wildfly.naming.client.ejb.context` property), the invocation on that
 proxy will internally use the `EJBClientContext` (the proxy is smart
 enough to do that) to interact with the server and return back the
 result. We won't go into the details of how the EJB client API handles
@@ -568,7 +564,7 @@ Notice the use of `"?stateful`" in that JNDI name. See
 <<EJB_invocations_from_a_remote_client_using_JNDI,EJB invocations from a remote client using JNDI>> for
 more details about such lookup.
 
-The presence of " `?stateful`" in the JNDI name lookup string is a
+The presence of `?stateful` in the JNDI name lookup string is a
 directive to the EJB client API to let it know that a stateful bean is
 being looked up and it's necessary to communicate with the server and
 create a session during that lookup. Though `?stateful` is optional now.
