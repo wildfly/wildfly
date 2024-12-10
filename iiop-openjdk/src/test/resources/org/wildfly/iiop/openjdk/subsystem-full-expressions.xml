@@ -3,7 +3,7 @@
   ~ SPDX-License-Identifier: Apache-2.0
   -->
 
-<subsystem xmlns="urn:jboss:domain:iiop-openjdk:3.0">
+<subsystem xmlns="urn:jboss:domain:iiop-openjdk:3.1">
     <properties>
         <property name="${sysprop:some_property}" value="${sysprop:some_value}"/>
     </properties>
