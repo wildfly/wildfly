@@ -261,6 +261,10 @@
             <artifactId>wildfly-elytron-ssl</artifactId>
         </dependency>
         <dependency>
+            <groupId>org.wildfly.security.jakarta</groupId>
+            <artifactId>jakarta-authorization</artifactId>
+        </dependency>
+        <dependency>
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
             <scope>test</scope>

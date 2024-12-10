@@ -111,6 +111,6 @@ public class ResteasyPreferJacksonOverJsonbTestCase extends AbstractResteasyAttr
     }
 
     private UriBuilder uriBuilder() {
-        return UriBuilder.fromUri(uri).path("/test/user");
+        return UriBuilder.fromUri(uri).path("/test/user/echo");
     }
 }

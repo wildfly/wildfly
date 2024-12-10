@@ -144,6 +144,10 @@
             <artifactId>wildfly-elytron-security-manager-action</artifactId>
         </dependency>
         <dependency>
+            <groupId>org.wildfly.security.jakarta</groupId>
+            <artifactId>jakarta-authorization</artifactId>
+        </dependency>
+        <dependency>
             <groupId>org.wildfly.transaction</groupId>
             <artifactId>wildfly-transaction-client</artifactId>
         </dependency>

@@ -438,7 +438,7 @@
         <version.gnu.getopt>1.0.13</version.gnu.getopt>
         <version.io.agroal>2.0</version.io.agroal>
         <version.io.github.resilience4j>2.2.0</version.io.github.resilience4j>
-        <version.io.grpc>1.58.0</version.io.grpc>
+        <version.io.grpc>1.68.0</version.io.grpc>
         <version.io.micrometer>1.14.1</version.io.micrometer>
         <version.io.netty>4.1.115.Final</version.io.netty>
         <version.io.opentelemetry.instrumentation>2.8.0</version.io.opentelemetry.instrumentation>
@@ -591,10 +591,11 @@
         <version.org.ow2.asm>9.7.1</version.org.ow2.asm>
         <version.org.reactivestreams>1.0.4</version.org.reactivestreams>
         <version.org.wildfly.clustering>4.0.5.Final</version.org.wildfly.clustering>
-        <version.org.wildfly.core>27.0.0.Beta4</version.org.wildfly.core>
+        <version.org.wildfly.core>27.0.0.Beta5</version.org.wildfly.core>
         <version.org.wildfly.http-client>2.0.7.Final</version.org.wildfly.http-client>
         <version.org.wildfly.launcher>1.0.0.Beta3</version.org.wildfly.launcher>
         <version.org.wildfly.mvc.krazo>1.0.0.Final</version.org.wildfly.mvc.krazo>
+        <version.org.wildfly.vertx>1.0.2.Final</version.org.wildfly.vertx>
         <version.org.wildfly.naming-client>2.0.1.Final</version.org.wildfly.naming-client>
         <version.org.wildfly.security.elytron-tests-common>2.4.2.Final</version.org.wildfly.security.elytron-tests-common>
         <version.org.wildfly.security.elytron-mp>2.0.0.Final</version.org.wildfly.security.elytron-mp>

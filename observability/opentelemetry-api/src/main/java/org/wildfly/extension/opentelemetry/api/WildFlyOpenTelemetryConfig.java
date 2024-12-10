@@ -85,6 +85,7 @@ public final class WildFlyOpenTelemetryConfig implements OpenTelemetryConfig {
         }
 
 
+        addValue(config, "otel.exporter.vertx.cdi.identifier", "vertx");
         properties = Collections.unmodifiableMap(config);
         this.mpTelemetryInstalled = mpTelemetryInstalled;
     }
