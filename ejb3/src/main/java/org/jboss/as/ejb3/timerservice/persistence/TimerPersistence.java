@@ -10,12 +10,15 @@ import java.util.List;
 import org.jboss.as.ejb3.timerservice.TimerImpl;
 import org.jboss.as.ejb3.timerservice.TimerServiceImpl;
 import org.jboss.msc.service.ServiceName;
+import org.wildfly.service.descriptor.UnaryServiceDescriptor;
 
 /**
  * @author Stuart Douglas
  */
 public interface TimerPersistence {
 
+    UnaryServiceDescriptor<TimerPersistence> SERVICE_DESCRIPTOR = UnaryServiceDescriptor.of("org.wildfly.ejb3.timer-service.timer-persistence-service", TimerPersistence.class);
+    @Deprecated(forRemoval = true)
     ServiceName SERVICE_NAME = ServiceName.JBOSS.append("ejb3", "timerService", "timerPersistence");
 
     /**

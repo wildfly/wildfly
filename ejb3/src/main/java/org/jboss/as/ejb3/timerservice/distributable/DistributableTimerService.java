@@ -26,14 +26,6 @@ import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
-import jakarta.ejb.EJBException;
-import jakarta.ejb.ScheduleExpression;
-import jakarta.ejb.TimerConfig;
-import jakarta.transaction.RollbackException;
-import jakarta.transaction.SystemException;
-import jakarta.transaction.Transaction;
-import jakarta.transaction.TransactionSynchronizationRegistry;
-
 import org.jboss.as.ejb3.component.EJBComponent;
 import org.jboss.as.ejb3.context.CurrentInvocationContext;
 import org.jboss.as.ejb3.timerservice.spi.AutoTimer;
@@ -49,6 +41,14 @@ import org.wildfly.clustering.ejb.timer.IntervalTimerConfiguration;
 import org.wildfly.clustering.ejb.timer.ScheduleTimerConfiguration;
 import org.wildfly.clustering.ejb.timer.Timer;
 import org.wildfly.clustering.ejb.timer.TimerManager;
+
+import jakarta.ejb.EJBException;
+import jakarta.ejb.ScheduleExpression;
+import jakarta.ejb.TimerConfig;
+import jakarta.transaction.RollbackException;
+import jakarta.transaction.SystemException;
+import jakarta.transaction.Transaction;
+import jakarta.transaction.TransactionSynchronizationRegistry;
 
 /**
  * EJB specification facade for a distributable EJB timer manager.
@@ -71,6 +71,25 @@ public class DistributableTimerService<I> implements ManagedTimerService {
         this.registry = configuration.getTimerServiceRegistry();
         this.manager = manager;
         this.synchronizationFactory = configuration.getTimerSynchronizationFactory();
+
+        // Create auto-timers if they do not already exist
+        Supplier<I> identifierFactory = this.manager.getIdentifierFactory();
+        EJBComponent component = this.invoker.getComponent();
+        try (Batch batch = this.manager.getBatchFactory().get()) {
+            for (Map.Entry<Method, List<AutoTimer>> entry : component.getComponentDescription().getScheduleMethods().entrySet()) {
+                Method method = entry.getKey();
+                ListIterator<AutoTimer> timers = entry.getValue().listIterator();
+                while (timers.hasNext()) {
+                    AutoTimer autoTimer = timers.next();
+                    if (this.filter.test(autoTimer.getTimerConfig())) {
+                        // Create, but do not activate auto-timers (the manager is not yet started)
+                        // These will auto-activate during TimerManager.start()
+                        this.manager.createTimer(identifierFactory.get(), new SimpleScheduleTimerConfiguration(autoTimer.getScheduleExpression()), autoTimer.getTimerConfig().getInfo(), method, timers.previousIndex());
+                    }
+                }
+            }
+        }
+        this.registry.registerTimerService(this);
     }
 
     @Override
@@ -86,33 +105,17 @@ public class DistributableTimerService<I> implements ManagedTimerService {
     @Override
     public void start() {
         this.manager.start();
-
-        // Create and start auto-timers, if they do not already exist
-        Supplier<I> identifierFactory = this.manager.getIdentifierFactory();
-        EJBComponent component = this.invoker.getComponent();
-        try (Batch batch = this.manager.getBatchFactory().get()) {
-            for (Map.Entry<Method, List<AutoTimer>> entry : component.getComponentDescription().getScheduleMethods().entrySet()) {
-                Method method = entry.getKey();
-                ListIterator<AutoTimer> timers = entry.getValue().listIterator();
-                while (timers.hasNext()) {
-                    AutoTimer autoTimer = timers.next();
-                    if (this.filter.test(autoTimer.getTimerConfig())) {
-                        Timer<I> timer = this.manager.createTimer(identifierFactory.get(), new SimpleScheduleTimerConfiguration(autoTimer.getScheduleExpression()), autoTimer.getTimerConfig().getInfo(), method, timers.previousIndex());
-                        if (timer != null) {
-                            timer.activate();
-                        }
-                    }
-                }
-            }
-        }
-
-        this.registry.registerTimerService(this);
     }
 
     @Override
     public void stop() {
-        this.registry.unregisterTimerService(this);
         this.manager.stop();
+    }
+
+    @Override
+    public void close() {
+        this.manager.close();
+        this.registry.unregisterTimerService(this);
     }
 
     @Override

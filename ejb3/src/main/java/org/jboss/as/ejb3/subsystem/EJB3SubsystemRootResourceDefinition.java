@@ -13,7 +13,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CopyOnWriteArraySet;
-import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -53,6 +53,7 @@ import org.jboss.as.threads.ThreadsServices;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.wildfly.service.descriptor.NullaryServiceDescriptor;
+import org.wildfly.service.descriptor.UnaryServiceDescriptor;
 
 /**
  * {@link org.jboss.as.controller.ResourceDefinition} for the EJB3 subsystem's root management resource.
@@ -71,6 +72,9 @@ public class EJB3SubsystemRootResourceDefinition extends SimpleResourceDefinitio
     private static final String EJB_CAPABILITY_NAME = "org.wildfly.ejb3";
     private static final String EJB_CLIENT_CONFIGURATOR_CAPABILITY_NAME = "org.wildfly.ejb3.remote.client-configurator";
     private static final String TRANSACTION_GLOBAL_DEFAULT_LOCAL_PROVIDER_CAPABILITY_NAME = "org.wildfly.transactions.global-default-local-provider";
+
+    // TODO Relocate this ServiceDescriptor the the threads subsystem in wildfly-core
+    public static final UnaryServiceDescriptor<Executor> EXECUTOR_SERVICE_DESCRIPTOR = UnaryServiceDescriptor.of(ThreadsServices.getCapabilityBaseName(EJB3SubsystemModel.BASE_EJB_THREAD_POOL_NAME), Executor.class);
 
     static final SimpleAttributeDefinition DEFAULT_SLSB_INSTANCE_POOL =
             new SimpleAttributeDefinitionBuilder(EJB3SubsystemModel.DEFAULT_SLSB_INSTANCE_POOL, ModelType.STRING, true)
@@ -416,7 +420,7 @@ public class EJB3SubsystemRootResourceDefinition extends SimpleResourceDefinitio
                 new EJB3ThreadFactoryResolver(),
                 EJB3SubsystemModel.BASE_THREAD_POOL_SERVICE_NAME,
                 registerRuntimeOnly,
-                ThreadsServices.createCapability(EJB3SubsystemModel.BASE_EJB_THREAD_POOL_NAME, ExecutorService.class),
+                RuntimeCapability.Builder.of(EXECUTOR_SERVICE_DESCRIPTOR).build(),
                 false));
 
         // subsystem=ejb3/service=iiop

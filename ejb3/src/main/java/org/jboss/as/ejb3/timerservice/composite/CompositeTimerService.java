@@ -60,6 +60,12 @@ public class CompositeTimerService implements ManagedTimerService {
         this.transientTimerService.stop();
     }
 
+    @Override
+    public void close() {
+        this.persistentTimerService.close();
+        this.transientTimerService.close();
+    }
+
     private ManagedTimerService getTimerService(TimerConfig config) {
         return config.isPersistent() ? this.persistentTimerService : this.transientTimerService;
     }
