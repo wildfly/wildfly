@@ -123,6 +123,8 @@ class JaxrsSubsystemAdd extends AbstractBoottimeAddStepHandler {
 
         addContextParameter(config, JaxrsAttribute.RESTEASY_MEDIA_TYPE_PARAM_MAPPING, context, configuration);
 
+        addContextParameter(config, JaxrsAttribute.RESTEASY_PATCHFILTER_DISABLED, context, configuration);
+
         addContextParameter(config, ResteasyContextParameters.RESTEASY_PREFER_JACKSON_OVER_JSONB,
                 JaxrsAttribute.RESTEASY_PREFER_JACKSON_OVER_JSONB, context, configuration);
 
