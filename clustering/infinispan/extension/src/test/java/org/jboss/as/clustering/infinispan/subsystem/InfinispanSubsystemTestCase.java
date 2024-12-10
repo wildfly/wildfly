@@ -5,14 +5,15 @@
 package org.jboss.as.clustering.infinispan.subsystem;
 
 import java.util.EnumSet;
+import java.util.List;
 import java.util.Properties;
 
 import org.jboss.as.clustering.controller.CommonServiceDescriptor;
-import org.jboss.as.clustering.jgroups.subsystem.JGroupsSubsystemResourceDefinition;
+import org.jboss.as.clustering.jgroups.subsystem.JGroupsSubsystemResourceDescription;
+import org.jboss.as.clustering.subsystem.AdditionalInitialization;
 import org.jboss.as.controller.services.path.PathManager;
 import org.jboss.as.network.OutboundSocketBinding;
 import org.jboss.as.subsystem.test.AbstractSubsystemSchemaTest;
-import org.jboss.as.subsystem.test.AdditionalInitialization;
 import org.jboss.as.subsystem.test.KernelServices;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
@@ -20,7 +21,7 @@ import org.junit.Assert;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
-import org.wildfly.clustering.jgroups.spi.ChannelFactory;
+import org.wildfly.clustering.jgroups.spi.ForkChannelFactory;
 
 /**
  * Tests parsing / booting / marshalling of Infinispan configurations.
@@ -41,7 +42,7 @@ public class InfinispanSubsystemTestCase extends AbstractSubsystemSchemaTest<Inf
     private final InfinispanSubsystemSchema schema;
 
     public InfinispanSubsystemTestCase(InfinispanSubsystemSchema schema) {
-        super(InfinispanExtension.SUBSYSTEM_NAME, new InfinispanExtension(), schema, InfinispanSubsystemSchema.CURRENT);
+        super(InfinispanSubsystemResourceDescription.INSTANCE.getName(), new InfinispanExtension(), schema, InfinispanSubsystemSchema.CURRENT);
         this.schema = schema;
     }
 
@@ -52,14 +53,14 @@ public class InfinispanSubsystemTestCase extends AbstractSubsystemSchemaTest<Inf
 
     @Override
     protected AdditionalInitialization createAdditionalInitialization() {
-        return new InfinispanSubsystemInitialization()
-                .require(OutboundSocketBinding.SERVICE_DESCRIPTOR, "hotrod-server-1")
-                .require(OutboundSocketBinding.SERVICE_DESCRIPTOR, "hotrod-server-2")
+        return new JGroupsSubsystemInitialization()
+                .require(OutboundSocketBinding.SERVICE_DESCRIPTOR, List.of("hotrod-server-1", "hotrod-server-2"))
                 .require(CommonServiceDescriptor.DATA_SOURCE, "ExampleDS")
                 .require(PathManager.PATH_SERVICE_DESCRIPTOR, "jboss.server.temp.dir")
-                .require(ChannelFactory.DEFAULT_SERVICE_DESCRIPTOR)
-                .require(TransactionResourceDefinition.LOCAL_TRANSACTION_PROVIDER)
-                .require(TransactionResourceDefinition.XA_RESOURCE_RECOVERY_REGISTRY)
+                .require(ForkChannelFactory.DEFAULT_SERVICE_DESCRIPTOR)
+                .require(ForkChannelFactory.SERVICE_DESCRIPTOR, "maximal-channel")
+                .require(TransactionResourceDescription.LOCAL_TRANSACTION_PROVIDER)
+                .require(XAResourceRecoveryServiceInstallerFactory.XA_RESOURCE_RECOVERY_REGISTRY)
                 ;
     }
 
@@ -71,7 +72,7 @@ public class InfinispanSubsystemTestCase extends AbstractSubsystemSchemaTest<Inf
     }
 
     private static void purgeJGroupsModel(ModelNode model) {
-        model.get(JGroupsSubsystemResourceDefinition.PATH.getKey()).remove(JGroupsSubsystemResourceDefinition.PATH.getValue());
+        model.get(JGroupsSubsystemResourceDescription.INSTANCE.getPathElement().getKey()).remove(JGroupsSubsystemResourceDescription.INSTANCE.getPathElement().getValue());
     }
 
     @Override
@@ -82,18 +83,18 @@ public class InfinispanSubsystemTestCase extends AbstractSubsystemSchemaTest<Inf
     }
 
     @Override
-    protected KernelServices standardSubsystemTest(String configId, String configIdResolvedModel, boolean compareXml, AdditionalInitialization additionalInit) throws Exception {
+    protected KernelServices standardSubsystemTest(String configId, String configIdResolvedModel, boolean compareXml, org.jboss.as.subsystem.test.AdditionalInitialization additionalInit) throws Exception {
         KernelServices services = super.standardSubsystemTest(configId, configIdResolvedModel, compareXml, additionalInit);
 
         if (!this.schema.since(InfinispanSubsystemSchema.VERSION_1_5)) {
             ModelNode model = services.readWholeModel();
 
-            Assert.assertTrue(model.get(InfinispanSubsystemResourceDefinition.PATH.getKey()).hasDefined(InfinispanSubsystemResourceDefinition.PATH.getValue()));
-            ModelNode subsystem = model.get(InfinispanSubsystemResourceDefinition.PATH.getKeyValuePair());
+            Assert.assertTrue(model.hasDefined(InfinispanSubsystemResourceDescription.INSTANCE.getPathElement().getKeyValuePair()));
+            ModelNode subsystem = model.get(InfinispanSubsystemResourceDescription.INSTANCE.getPathElement().getKeyValuePair());
 
-            for (Property containerProp : subsystem.get(CacheContainerResourceDefinition.WILDCARD_PATH.getKey()).asPropertyList()) {
+            for (Property containerProp : subsystem.get(CacheContainerResourceDescription.INSTANCE.getPathElement().getKey()).asPropertyList()) {
                 Assert.assertTrue("cache-container=" + containerProp.getName(),
-                        containerProp.getValue().get(CacheContainerResourceDefinition.Attribute.STATISTICS_ENABLED.getName()).asBoolean());
+                        containerProp.getValue().get(CacheContainerResourceDescription.STATISTICS_ENABLED.getName()).asBoolean());
 
                 for (String key : containerProp.getValue().keys()) {
                     if (key.endsWith("-cache") && !key.equals("default-cache")) {
@@ -101,7 +102,7 @@ public class InfinispanSubsystemTestCase extends AbstractSubsystemSchemaTest<Inf
                         if (caches.isDefined()) {
                             for (Property cacheProp : caches.asPropertyList()) {
                                 Assert.assertTrue("cache-container=" + containerProp.getName() + "," + key + "=" + cacheProp.getName(),
-                                        containerProp.getValue().get(CacheResourceDefinition.Attribute.STATISTICS_ENABLED.getName()).asBoolean());
+                                        containerProp.getValue().get(CacheResourceDescription.STATISTICS_ENABLED.getName()).asBoolean());
                             }
                         }
                     }

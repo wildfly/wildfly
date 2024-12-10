@@ -5,7 +5,6 @@
 
 package org.wildfly.extension.clustering.server.registry.legacy;
 
-import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.wildfly.clustering.server.infinispan.CacheContainerGroupMember;
 import org.wildfly.clustering.server.registry.RegistryFactory;
 import org.wildfly.clustering.server.service.BinaryServiceConfiguration;
@@ -20,7 +19,7 @@ import org.wildfly.subsystem.service.ServiceInstaller;
 public class LegacyCacheRegistryFactoryServiceInstallerFactory<K, V> extends LegacyRegistryFactoryServiceInstallerFactory<K, V> {
 
     @Override
-    public ServiceInstaller apply(CapabilityServiceSupport support, BinaryServiceConfiguration configuration) {
+    public ServiceInstaller apply(BinaryServiceConfiguration configuration) {
         ServiceDependency<RegistryFactory<CacheContainerGroupMember, K, V>> factory = configuration.getServiceDependency(ClusteringServiceDescriptor.REGISTRY_FACTORY).map(RegistryFactory.class::cast);
         return ServiceInstaller.builder(LegacyCacheRegistryFactory::wrap, factory)
                 .provides(configuration.resolveServiceName(this.getServiceDescriptor()))
