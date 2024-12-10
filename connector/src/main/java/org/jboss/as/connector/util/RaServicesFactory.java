@@ -17,7 +17,6 @@ import org.jboss.as.connector.services.mdr.AS7MetadataRepository;
 import org.jboss.as.connector.services.resourceadapters.deployment.ResourceAdapterXmlDeploymentService;
 import org.jboss.as.connector.services.resourceadapters.deployment.registry.ResourceAdapterDeploymentRegistry;
 import org.jboss.as.connector.subsystems.jca.JcaSubsystemConfiguration;
-import org.jboss.as.connector.subsystems.resourceadapters.ResourceAdaptersSubsystemService;
 import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.as.controller.descriptions.OverrideDescriptionProvider;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
@@ -67,7 +66,7 @@ public class RaServicesFactory {
                 .addDependency(ConnectorServices.CONNECTOR_CONFIG_SERVICE, JcaSubsystemConfiguration.class,
                         service.getConfigInjector())
                 .addDependency(ConnectorServices.CCM_SERVICE, CachedConnectionManager.class, service.getCcmInjector())
-                .addDependency(ConnectorServices.RESOURCEADAPTERS_SUBSYSTEM_SERVICE, ResourceAdaptersSubsystemService.class, service.getResourceAdaptersSubsystem());
+                .addDependency(ConnectorServices.RESOURCEADAPTERS_CONFIGURED_ADAPTERS_SERVICE, CopyOnWriteArrayListMultiMap.class, service.getConfiguredAdaptersInjector());
         builder.requires(ConnectorServices.IDLE_REMOVER_SERVICE);
         builder.requires(ConnectorServices.CONNECTION_VALIDATOR_SERVICE);
         builder.requires(support.getCapabilityServiceName(NamingService.CAPABILITY_NAME));
