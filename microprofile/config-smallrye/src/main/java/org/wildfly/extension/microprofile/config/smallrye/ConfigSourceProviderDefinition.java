@@ -26,7 +26,6 @@ import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.modules.Module;
-import org.jboss.modules.ModuleIdentifier;
 
 /**
  * @author <a href="http://jmesnil.net/">Jeff Mesnil</a> (c) 2017 Red Hat inc.
@@ -63,8 +62,7 @@ class ConfigSourceProviderDefinition extends PersistentResourceDefinition {
         String className = classModel.get(NAME).asString();
         String moduleName = classModel.get(MODULE).asString();
         try {
-            ModuleIdentifier moduleID = ModuleIdentifier.fromString(moduleName);
-            Module module = Module.getCallerModuleLoader().loadModule(moduleID);
+            Module module = Module.getCallerModuleLoader().loadModule(moduleName);
             Class<?> clazz = module.getClassLoader().loadClass(className);
             return clazz;
         } catch (Exception e) {
