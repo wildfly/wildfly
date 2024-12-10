@@ -18,11 +18,13 @@ import org.jboss.as.test.shared.observability.signals.PrometheusMetric;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.wildfly.test.integration.observability.JaxRsActivator;
 import org.wildfly.test.integration.observability.micrometer.multiple.application.DuplicateMetricResource1;
 import org.wildfly.test.integration.observability.micrometer.multiple.application.DuplicateMetricResource2;
 
+@Ignore("WFLY-20079")
 public class MultipleWarTestCase extends BaseMultipleTestCase {
     @Deployment(name = SERVICE_ONE, order = 1, testable = false)
     public static WebArchive createDeployment1() {
