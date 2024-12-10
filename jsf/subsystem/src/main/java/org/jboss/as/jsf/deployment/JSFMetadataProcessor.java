@@ -72,7 +72,7 @@ public class JSFMetadataProcessor implements DeploymentUnitProcessor {
 
             String version = JsfVersionMarker.getVersion(deploymentUnit);
             // Disable counter-productive "distributable" logic in Mojarra implementation
-            if (version.equals(JsfVersionMarker.JSF_4_0) && JSFModuleIdFactory.getInstance().getImplModId(version).getSlot().equals(JSFResourceDefinition.DEFAULT_SLOT)) {
+            if (version.equals(JsfVersionMarker.JSF_4_0) && JSFModuleIdFactory.getInstance().getImplModId(version).split(":")[1].equals(JSFResourceDefinition.DEFAULT_SLOT)) {
                 setContextParameterIfAbsent(webMetaData, WebConfiguration.BooleanWebContextInitParameter.EnableDistributable.getQualifiedName(), Boolean.FALSE.toString());
             }
         }
