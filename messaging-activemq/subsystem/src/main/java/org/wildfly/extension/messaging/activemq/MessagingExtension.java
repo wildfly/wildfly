@@ -86,8 +86,6 @@ import org.wildfly.extension.messaging.activemq.jms.JMSTopicDefinition;
 import org.wildfly.extension.messaging.activemq.jms.PooledConnectionFactoryDefinition;
 import org.wildfly.extension.messaging.activemq.jms.bridge.JMSBridgeDefinition;
 
-import io.netty.util.internal.logging.InternalLoggerFactory;
-import io.netty.util.internal.logging.JdkLoggerFactory;
 
 /**
  * Domain extension that integrates Apache ActiveMQ Artemis 2.x.
@@ -348,8 +346,6 @@ public class MessagingExtension implements Extension {
 
     @Override
     public void initialize(ExtensionContext context) {
-        // Initialize the Netty logger factory
-        InternalLoggerFactory.setDefaultFactory(JdkLoggerFactory.INSTANCE);
         final SubsystemRegistration subsystemRegistration = context.registerSubsystem(SUBSYSTEM_NAME, CURRENT_MODEL_VERSION);
         subsystemRegistration.registerXMLElementWriter(CURRENT_PARSER);
 
