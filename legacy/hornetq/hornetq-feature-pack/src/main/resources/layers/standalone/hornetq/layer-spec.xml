@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+<layer-spec xmlns="urn:jboss:galleon:layer-spec:2.0" name="hornetq">
+    <props>
+    </props>
+    <dependencies>
+        <layer name="embedded-activemq"/>
+    </dependencies>
+    <packages>
+        <package name="org.wildfly.extension.hornetq"/>
+    </packages>
+</layer-spec>

@@ -1,0 +1,33 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>org.wildfly</groupId>
+        <artifactId>wildfly-parent</artifactId>
+        <relativePath>../../pom.xml</relativePath>
+        <!--
+        Maintain separation between the artifact id and the version to help prevent
+        merge conflicts between commits changing the GA and those changing the V.
+        -->
+        <version>35.0.0.Beta1-SNAPSHOT</version>
+    </parent>
+    <groupId>org.wildfly</groupId>
+    <artifactId>wildfly-hornetq-parent</artifactId>
+    <packaging>pom</packaging>
+
+    <name>Parent HornetQ Messaging integration for WildFly</name>
+  
+    <description>Parent of the feature pack for HornetQ integration in WildFly</description>
+
+    <licenses>
+        <license>
+            <name>Apache License, Version 2.0</name>
+            <url>http://www.apache.org/licenses/LICENSE-2.0.html</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
+    <modules>
+        <module>hornetq-extension</module>
+        <module>hornetq-feature-pack</module>
+    </modules>
+</project>
