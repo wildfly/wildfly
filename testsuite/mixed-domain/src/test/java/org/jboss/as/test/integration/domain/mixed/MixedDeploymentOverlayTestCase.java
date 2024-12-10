@@ -328,6 +328,8 @@ public class MixedDeploymentOverlayTestCase {
     }
 
     private ModelNode undeployAndRemoveOp() throws MalformedURLException {
+        // Pending, before cleaning up, check if the resource exist, otherwise this operation will generate some noise in the logs
+        // that can be confusing since you will never know if it is a test error or a normal operation where the resources are not present
         ModelNode op = new ModelNode();
         op.get(OP).set(COMPOSITE);
         ModelNode steps = op.get(STEPS);

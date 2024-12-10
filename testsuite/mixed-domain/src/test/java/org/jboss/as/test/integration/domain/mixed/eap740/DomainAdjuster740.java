@@ -77,4 +77,10 @@ public class DomainAdjuster740 extends DomainAdjuster {
         // remove its extension from the list of extensions
         ops.add(Util.createRemoveOperation(PathAddress.pathAddress(EXTENSION, "org.wildfly.extension.clustering.ejb")));
     }
+
+    @Override
+    protected void adjustExpansionExtensions(DomainClient client, PathAddress profileAddress) throws Exception {
+        removeSubsystemExtensionIfExist(client, profileAddress.append(SUBSYSTEM, "microprofile-jwt-smallrye"), PathAddress.pathAddress(EXTENSION, "org.wildfly.extension.microprofile.jwt-smallrye"));
+        removeSubsystemExtensionIfExist(client, profileAddress.append(SUBSYSTEM, "microprofile-config-smallrye"), PathAddress.pathAddress(EXTENSION, "org.wildfly.extension.microprofile.config-smallrye"));
+    }
 }
