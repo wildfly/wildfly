@@ -9,7 +9,6 @@ import static java.security.AccessController.doPrivileged;
 
 import java.security.CodeSource;
 import java.security.Permission;
-import java.security.Policy;
 import java.security.Principal;
 import java.security.PrivilegedAction;
 import java.security.ProtectionDomain;
@@ -30,6 +29,7 @@ import io.undertow.servlet.api.Deployment;
 import io.undertow.servlet.api.ServletInfo;
 import io.undertow.servlet.api.SingleConstraintMatch;
 import io.undertow.servlet.api.TransportGuaranteeType;
+import org.wildfly.security.authz.jacc.PolicyUtil;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
@@ -125,8 +125,8 @@ public class JACCAuthorizationManager implements AuthorizationManager {
     }
 
     private boolean hasPermission(ProtectionDomain domain, Permission permission) {
-        Policy policy = WildFlySecurityManager.isChecking() ? doPrivileged((PrivilegedAction<Policy>) Policy::getPolicy) : Policy.getPolicy();
-        return policy.implies(domain, permission);
+        PolicyUtil policyUtil = WildFlySecurityManager.isChecking() ? doPrivileged((PrivilegedAction<PolicyUtil>) PolicyUtil::getPolicyUtil) : PolicyUtil.getPolicyUtil();
+        return policyUtil.implies(domain, permission);
     }
 
     private Principal[] getGrantedRoles(Account account, Deployment deployment) {
