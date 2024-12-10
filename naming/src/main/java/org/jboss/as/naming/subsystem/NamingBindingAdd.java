@@ -38,7 +38,6 @@ import org.jboss.as.naming.service.ExternalContextBinderService;
 import org.jboss.as.naming.service.ExternalContextsService;
 import org.jboss.dmr.ModelNode;
 import org.jboss.modules.Module;
-import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoadException;
 import org.jboss.modules.ModuleNotFoundException;
 import org.jboss.msc.service.ServiceBuilder;
@@ -144,7 +143,7 @@ public class NamingBindingAdd extends AbstractAddStepHandler {
     }
 
     private ObjectFactory createObjectFactory(OperationContext context, ModelNode model) throws OperationFailedException {
-        final ModuleIdentifier moduleID = ModuleIdentifier.fromString(NamingBindingResourceDefinition.MODULE.resolveModelAttribute(context, model).asString());
+        final String moduleID = NamingBindingResourceDefinition.MODULE.resolveModelAttribute(context, model).asString();
         final String className = NamingBindingResourceDefinition.CLASS.resolveModelAttribute(context, model).asString();
         final Module module;
         try {
