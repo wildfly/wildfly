@@ -104,12 +104,6 @@
             <artifactId>smallrye-opentelemetry-propagation</artifactId>
         </dependency>
 
-        <!-- This is only required for the extension to initialize Netty's InternalLoggerFactory -->
-        <dependency>
-            <groupId>io.netty</groupId>
-            <artifactId>netty-common</artifactId>
-        </dependency>
-
         <!-- This is only required for the extension to initialize Vert.x's LoggerFactory -->
         <dependency>
             <groupId>io.vertx</groupId>

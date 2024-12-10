@@ -166,7 +166,10 @@ public abstract class LayersTestBase {
             "org.wildfly.extension.mod_cluster",
             "org.wildfly.mod_cluster.undertow",
             // Brought by galleon ServerRootResourceDefinition
-            "wildflyee.api"
+            "wildflyee.api",
+            // Brought by netty-common
+            "org.jboss.logmanager.log4j2",
+            "org.apache.logging.log4j.api"
     };
 
 
