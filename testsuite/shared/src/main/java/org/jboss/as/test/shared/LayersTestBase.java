@@ -166,7 +166,7 @@ public abstract class LayersTestBase {
             "org.wildfly.extension.mod_cluster",
             "org.wildfly.mod_cluster.undertow",
             // Brought by galleon ServerRootResourceDefinition
-            "wildflyee.api"
+            "wildflyee.api",
     };
 
 
@@ -176,8 +176,6 @@ public abstract class LayersTestBase {
      */
     public static final String[] NOT_REFERENCED_WILDFLY_EE = {
             // Only injected by logging in 'wildfly-ee', but referenced in 'wildfly' and 'wildfly-preview'
-            "org.apache.logging.log4j.api",
-            "org.jboss.logmanager.log4j2",
     };
 
 
