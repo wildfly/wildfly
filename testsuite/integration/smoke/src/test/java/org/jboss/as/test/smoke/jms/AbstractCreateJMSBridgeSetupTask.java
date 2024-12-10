@@ -38,7 +38,7 @@ public abstract class AbstractCreateJMSBridgeSetupTask extends CreateQueueSetupT
         jmsBridgeAttributes.get("source-destination").set(QUEUE1_JNDI_NAME);
         jmsBridgeAttributes.get("target-connection-factory").set(CF_JNDI_NAME);
         jmsBridgeAttributes.get("target-destination").set(QUEUE2_JNDI_NAME);
-        jmsBridgeAttributes.get("module").set("org.apache.activemq.artemis:main");
+        jmsBridgeAttributes.get("module").set("org.apache.activemq.artemis");
         configureBridge(jmsBridgeAttributes);
         jmsOperations.addJmsBridge(JMS_BRIDGE_NAME, jmsBridgeAttributes);
     }
