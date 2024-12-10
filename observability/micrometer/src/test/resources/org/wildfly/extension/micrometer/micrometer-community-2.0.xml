@@ -1,0 +1,12 @@
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+
+<subsystem xmlns="urn:wildfly:micrometer:community:2.0"
+    exposed-subsystems="*">
+    <otlp-registry endpoint="${test.endpoint:http\://localhost\:4318/v1/metrics}"
+                   step="${test.step:10}"/>
+    <prometheus-registry context="${test.prometheus.context:/prometheus}"
+                         security-enabled="${test.prometheus.secured:true}"/>
+</subsystem>
