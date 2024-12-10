@@ -101,7 +101,7 @@ public class RankedAffinityTestCase extends AbstractClusteringTestCase {
         URL lbURL = new URL(baseURL.getProtocol(), baseURL.getHost(), baseURL.getPort() + 500, baseURL.getFile());
         URI lbURI = SimpleServlet.createURI(lbURL);
 
-        establishTopology(baseURL, THREE_NODES);
+        establishTopology(baseURL, NODE_1_2_3);
 
         try (CloseableHttpClient client = TestHttpClientUtils.promiscuousCookieHttpClient()) {
             String[] previousAffinities;
@@ -165,8 +165,8 @@ public class RankedAffinityTestCase extends AbstractClusteringTestCase {
         }
     }
 
-    private static void establishTopology(URL baseURL, String... nodes) throws URISyntaxException, IOException {
-        ClusterHttpClientUtil.establishTopology(baseURL, "web", DEPLOYMENT_NAME, nodes);
+    private static void establishTopology(URL baseURL, Set<String> topology) throws URISyntaxException, IOException {
+        ClusterHttpClientUtil.establishTopology(baseURL, "web", DEPLOYMENT_NAME, topology);
     }
 
     public static class ServerSetupTask extends ManagementServerSetupTask {
