@@ -13,7 +13,6 @@ import jakarta.persistence.spi.PersistenceProvider;
 
 import org.jboss.as.jpa.config.Configuration;
 import org.jboss.modules.Module;
-import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoadException;
 import org.jboss.modules.ModuleLoader;
 
@@ -45,7 +44,7 @@ public class PersistenceProviderLoader {
      */
     public static List<PersistenceProvider> loadProviderModuleByName(String moduleName) throws ModuleLoadException {
         final ModuleLoader moduleLoader = Module.getBootModuleLoader();
-        Module module = moduleLoader.loadModule(ModuleIdentifier.fromString(moduleName));
+        Module module = moduleLoader.loadModule(moduleName);
         final ServiceLoader<PersistenceProvider> serviceLoader =
             module.loadService(PersistenceProvider.class);
         List<PersistenceProvider> result = new ArrayList<>();
