@@ -187,10 +187,11 @@ class MicrometerSubsystemRegistrar implements SubsystemResourceDefinitionRegistr
         }, OperationContext.Stage.VERIFY);
 
         return CapabilityServiceInstaller.builder(MICROMETER_COLLECTOR_RUNTIME_CAPABILITY, collectorSupplier)
-                .requires(List.of(mccf, executor, processStateNotifier))
-                .withCaptor(captor::set) // capture the provided value
-                .asActive() // Start actively
-                .build();
+            .requires(List.of(mccf, executor, processStateNotifier))
+            .withCaptor(captor::set) // capture the provided value
+            .onRemove(wildFlyRegistry::close)
+            .asActive() // Start actively
+            .build();
     }
 
     public interface MicrometerDeploymentConfiguration {

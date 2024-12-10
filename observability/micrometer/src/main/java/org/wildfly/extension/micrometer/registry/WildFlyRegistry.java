@@ -20,7 +20,7 @@ import org.wildfly.extension.micrometer.MicrometerExtensionLogger;
 import org.wildfly.extension.micrometer.metrics.MetricMetadata;
 import org.wildfly.extension.micrometer.metrics.WildFlyMetric;
 
-public interface WildFlyRegistry {
+public interface WildFlyRegistry extends AutoCloseable {
     Meter remove(Meter.Id mappedId);
 
     default Meter.Id addMeter(WildFlyMetric metric, MetricMetadata metadata) {
@@ -34,9 +34,7 @@ public interface WildFlyRegistry {
         }
     }
 
-    default void close() {
-
-    }
+    void close();
 
     private Meter.Id addCounter(WildFlyMetric metric, MetricMetadata metadata) {
         return FunctionCounter.builder(metadata.getMetricName(), metric,
