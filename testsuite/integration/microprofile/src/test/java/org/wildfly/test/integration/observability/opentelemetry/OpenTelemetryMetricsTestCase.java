@@ -18,7 +18,6 @@ import org.jboss.arquillian.junit.InSequence;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.test.shared.observability.setuptasks.OpenTelemetryWithCollectorSetupTask;
-import org.jboss.as.test.shared.observability.signals.PrometheusMetric;
 import org.jboss.shrinkwrap.api.Archive;
 import org.junit.Assert;
 import org.junit.Test;
@@ -57,16 +56,9 @@ public class OpenTelemetryMetricsTestCase extends BaseOpenTelemetryTest {
     @Test
     @InSequence(2)
     public void getMetrics() throws InterruptedException {
-        List<String> metricsToTest = List.of(
-                OtelMetricResource.COUNTER_NAME
-        );
+        List<String> metricsToTest = List.of(OtelMetricResource.COUNTER_NAME);
 
-        final List<PrometheusMetric> metrics = otelCollector.fetchMetrics(metricsToTest.get(0));
-        System.err.println("**************\nPrometheus metrics:");
-        System.err.println(metrics);
-        System.err.println("**************");
-
-        metricsToTest.forEach(n -> Assert.assertTrue("Missing metric: " + n,
-                metrics.stream().anyMatch(m -> m.getKey().startsWith(n))));
+        otelCollector.assertMetrics(prometheusMetrics -> metricsToTest.forEach(n -> Assert.assertTrue("Missing metric: " + n,
+                prometheusMetrics.stream().anyMatch(m -> m.getKey().startsWith(n)))));
     }
 }
