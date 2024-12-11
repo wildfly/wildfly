@@ -19,6 +19,7 @@ public class ReactiveMessagingConfigSource implements ConfigSource {
     static {
         Map<String, String> map = new HashMap<>();
         map.put("smallrye-messaging-strict-binding", "true");
+        map.put("mp.messaging.connector.vertx.cdi.identifier", "vertx");
         PROPERTIES = Collections.unmodifiableMap(map);
     }
 

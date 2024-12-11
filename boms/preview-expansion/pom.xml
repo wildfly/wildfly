@@ -56,6 +56,25 @@
 
             <!-- Dependencies specific to this bom. Keep sorted -->
 
+            <dependency>
+                <groupId>org.wildfly.extras.vertx</groupId>
+                <artifactId>wildfly-vertx-feature-pack-content</artifactId>
+                <version>${version.org.wildfly.vertx}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.wildfly.extras.vertx</groupId>
+                <artifactId>wildfly-vertx-feature-pack-content</artifactId>
+                <version>${version.org.wildfly.vertx}</version>
+                <type>zip</type>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 
