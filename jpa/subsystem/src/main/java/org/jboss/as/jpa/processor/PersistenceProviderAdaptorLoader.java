@@ -16,6 +16,7 @@ import java.util.ServiceLoader;
 import jakarta.enterprise.inject.spi.BeanManager;
 import jakarta.persistence.spi.PersistenceProvider;
 
+import org.jboss.as.controller.ModuleIdentifierUtil;
 import org.jboss.as.jpa.messages.JpaLogger;
 import org.jboss.as.jpa.transaction.JtaManagerImpl;
 import org.jboss.jandex.Index;
@@ -95,7 +96,7 @@ public class PersistenceProviderAdaptorLoader {
      * @return the persistence provider adaptor for the provider class
      * @throws ModuleLoadException
      */
-    public static PersistenceProviderAdaptor loadPersistenceAdapterModule(final String adapterModule, final Platform platform, JtaManagerImpl manager) throws
+    public static PersistenceProviderAdaptor loadPersistenceAdapterModule(String adapterModule, final Platform platform, JtaManagerImpl manager) throws
         ModuleLoadException {
         final ModuleLoader moduleLoader = Module.getBootModuleLoader();
 
@@ -104,7 +105,7 @@ public class PersistenceProviderAdaptorLoader {
         }
 
         PersistenceProviderAdaptor persistenceProviderAdaptor=null;
-
+        adapterModule = ModuleIdentifierUtil.canonicalModuleIdentifier(adapterModule);
         Module module = moduleLoader.loadModule(adapterModule);
         final ServiceLoader<PersistenceProviderAdaptor> serviceLoader =
             module.loadService(PersistenceProviderAdaptor.class);
@@ -171,7 +172,7 @@ public class PersistenceProviderAdaptorLoader {
         final ModuleLoader moduleLoader = Module.getBootModuleLoader();
 
         List<PersistenceProviderIntegratorAdaptor> persistenceProviderAdaptors = new ArrayList<>();
-
+        adapterModule = ModuleIdentifierUtil.canonicalModuleIdentifier(adapterModule);
         Module module = moduleLoader.loadModule(adapterModule);
         final ServiceLoader<PersistenceProviderIntegratorAdaptor> serviceLoader =
                 module.loadService(PersistenceProviderIntegratorAdaptor.class);
