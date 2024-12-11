@@ -7,8 +7,7 @@ package org.jboss.as.ee.security;
 
 import static org.jboss.as.ee.logging.EeLogger.ROOT_LOGGER;
 import static org.wildfly.common.Assert.checkNotNullParam;
-
-import java.security.Policy;
+import static org.wildfly.security.authz.jacc.PolicyUtil.getPolicyUtil;
 
 import jakarta.security.jacc.PolicyConfiguration;
 import jakarta.security.jacc.PolicyConfigurationFactory;
@@ -84,7 +83,7 @@ public abstract class JaccService<T> implements Service<PolicyConfiguration> {
                     policyConfiguration.commit();
                 }
                 // Allow the policy to incorporate the policy configs
-                Policy.getPolicy().refresh();
+                getPolicyUtil().refresh();
             }
         } catch (Exception e) {
             throw ROOT_LOGGER.unableToStartException("JaccService", e);
