@@ -230,7 +230,7 @@ public class ResteasyAttributeTestCase {
         for (AttributeDefinition attribute : JaxrsAttribute.ATTRIBUTES) {
             // Ignore these attributes as they are not set in the context as the attributes are not public. These are
             // also tested elsewhere
-            if ("tracing-type".equals(attribute.getName()) || "tracing-threshold".equals(attribute.getName())) {
+            if ("tracing-type".equals(attribute.getName()) || "tracing-threshold".equals(attribute.getName()) || "resteasy-patchfilter-disabled".equals(attribute.getName())) {
                 continue;
             }
             testAttribute(target, attribute);
