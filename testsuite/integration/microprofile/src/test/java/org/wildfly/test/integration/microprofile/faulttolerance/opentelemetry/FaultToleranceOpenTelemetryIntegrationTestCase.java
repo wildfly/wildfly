@@ -6,7 +6,6 @@
 package org.wildfly.test.integration.microprofile.faulttolerance.opentelemetry;
 
 import java.net.URL;
-import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
@@ -76,34 +75,32 @@ public class FaultToleranceOpenTelemetryIntegrationTestCase {
             HttpRequest.get(url.toString() + "app/timeout", 10, TimeUnit.SECONDS);
         }
 
-        // Pick a random metric to make sure that metrics are already collected and available for inspection
-        // Subsequently we will use concrete tags to lookup specific counters
-        List<PrometheusMetric> metrics = otelCollector.fetchMetrics("ft_invocations_total");
+        otelCollector.assertMetrics(metrics -> {
+            Optional<PrometheusMetric> prometheusMetric;
 
-        // Uncomment the following lines for debugging:
-        //System.out.println("Metrics collected:");
-        //metrics.forEach(metric -> System.out.println(metric.toString()));
+            // First verify total invocation count for the method + value returned + fallback applied
+            prometheusMetric = metrics.stream().filter(metric -> metric.getKey().equals("ft_invocations_total")).findFirst();
+            Assert.assertTrue(prometheusMetric.isPresent());
+            Assert.assertEquals(INVOCATION_COUNT, Integer.parseInt(prometheusMetric.get().getValue()), 0);
 
-        // First verify total invocation count for the method + value returned + fallback applied
-        Optional<PrometheusMetric> prometheusMetric = metrics.stream().filter(metric -> metric.getKey().equals("ft_invocations_total")).findFirst();
-        Assert.assertTrue(prometheusMetric.isPresent());
-        Assert.assertEquals(INVOCATION_COUNT, Integer.parseInt(prometheusMetric.get().getValue()), 0);
 
-        // Verify the number of timeouts being equal to the number of invocations
-        prometheusMetric = metrics.stream()
-                .filter(metric -> metric.getKey().equals("ft_timeout_calls_total"))
-                .filter(metric -> Boolean.TRUE.toString().equalsIgnoreCase(metric.getTags().get("timedOut")))
-                .findFirst();
-        Assert.assertTrue(prometheusMetric.isPresent());
-        Assert.assertEquals(INVOCATION_COUNT, Integer.parseInt(prometheusMetric.get().getValue()), 0);
+            // Verify the number of timeouts being equal to the number of invocations
+            prometheusMetric = metrics.stream()
+                    .filter(metric -> metric.getKey().equals("ft_timeout_calls_total"))
+                    .filter(metric -> Boolean.TRUE.toString().equalsIgnoreCase(metric.getTags().get("timedOut")))
+                    .findFirst();
+            Assert.assertTrue(prometheusMetric.isPresent());
+            Assert.assertEquals(INVOCATION_COUNT, Integer.parseInt(prometheusMetric.get().getValue()), 0);
 
-        // Verify the number of successful invocations to be none, since it always fails
-        prometheusMetric = metrics.stream()
-                .filter(metric -> metric.getKey().equals("ft_timeout_calls_total"))
-                .filter(metric -> Boolean.FALSE.toString().equalsIgnoreCase(metric.getTags().get("timedOut")))
-                .findFirst();
-        Assert.assertTrue(prometheusMetric.isPresent());
-        Assert.assertEquals(0, Integer.parseInt(prometheusMetric.get().getValue()), 0);
+
+            // Verify the number of successful invocations to be none, since it always fails
+            prometheusMetric = metrics.stream()
+                    .filter(metric -> metric.getKey().equals("ft_timeout_calls_total"))
+                    .filter(metric -> Boolean.FALSE.toString().equalsIgnoreCase(metric.getTags().get("timedOut")))
+                    .findFirst();
+            Assert.assertTrue(prometheusMetric.isPresent());
+            Assert.assertEquals(0, Integer.parseInt(prometheusMetric.get().getValue()), 0);
+        });
     }
 
 }
