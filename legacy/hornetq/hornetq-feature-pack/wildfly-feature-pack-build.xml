@@ -1,0 +1,17 @@
+<!--
+~ Copyright The WildFly Authors
+~ SPDX-License-Identifier: Apache-2.0
+-->
+
+<build xmlns="urn:wildfly:feature-pack-build:3.1" producer="org.wildfly:hornetq-feature-pack">
+    <dependencies>
+        <dependency group-id="org.wildfly" artifact-id="wildfly-ee-galleon-pack">
+            <name>org.wildfly:wildfly-ee-galleon-pack</name>
+            <packages inherit="true"/>
+            <default-configs inherit="false"/>
+        </dependency>
+    </dependencies>
+    <default-packages>
+        <package name="modules.all"/>
+    </default-packages>
+</build>
