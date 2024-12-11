@@ -6,26 +6,46 @@
 
 
 <!--
-    1. The testsuite module has a small number of submodules:
+    1. The testsuite module has a number of child modules that provide test classes:
 
-    integration - holds all integration tests for Wildfly.
-    domain      - holds all domain management tests for Wildfly.
+    integration      - holds all integration tests for standalone Wildfly servers.
+    domain           - holds all domain management tests for Wildfly.
+    galleon          - tests of manipulation of WildFly installations via the Galleon command line tool
+    layers           - validation of Galleon layers that can be provisioned using the wildfly-ee feature pack
+    layers-expansion - validation of Galleon layers that can be provisioned using the wildfly or wildfly-preview feature packs
+    mixed-domain     - test domain mode management of previous-release secondary host controllers by a current version DC
+    preview          - tests that are only applicable to WildFly Preview
+    scripts          - tests execution of scripts shipped with the server
 
-    All tests should fit into one of these four categories.
+    All tests should fit into one of these child modules.
 
-    2. This pom is inherited by all submodules and should be used to do the following:
+    2. This pom is inherited by all child modules that provide tests and should be used to do the following:
        - Set defaults for common testsuite system properties (which can then be overridden on the command line).
        - Define dependencies common to all tests (Arquillian, junit or testng, and container type).
        - Provide a workaround for @Resource(lookup=...) which requires libraries in jbossas/endorsed.
-       - Define a default server configuration installed into target/jboasas in each submodule, which
+       - Define a default server configuration installed into target/wildfly in each submodule, which
          represents an unmodified copy of the AS server. Custom server configurations are defined in the submodules.
-       - Define profiles to allow selection of which test modules will be executed.
 
     3. This pom should not be used to do the following:
        - Define module-specific server configuration build steps.
        - Define module-specific surefire executions.
        These elements should be defined in logical profiles associated with each logical grouping of tests,
        in the pom for the module which contains the tests. See the submodule poms for more details.
+
+   4. The testsuite directory includes a number of other modules whose parent is not this module and that do not
+      provide tests. These modules provide support infrastructure of various types that is used to execute
+      the testsuite.
+
+      aggregator-xxx     Coordinates which test modules execute based on what profiles are enabled.
+                         A separate aggregator handles base server, expansion server and preview server testing.
+      build-demander-xxx Unless building the production code is disabled, these ensure the production code that builds
+                         the various thin and fat server installations has executed before the testsuite modules start
+                         trying to test them.
+                         A separate build-demander handles base server, expansion server and preview server testing.
+      shared             Shared utility code used by tests
+      test-feature-pack  Feature pack base server tests can use to provision a server adapted to various test requirements
+      t-f-p-preview      Feature pack preview server tests can use to provision a server adapted to various test requirements
+      test-product-conf  Provides an artifact used in some manual mode tests.
 
 -->
 
@@ -48,11 +68,6 @@
     <packaging>pom</packaging>
 
     <name>WildFly Test Suite: Aggregator</name>
-
-    <modules>
-        <module>integration</module>
-        <module>test-product-conf</module>
-    </modules>
 
 
     <!-- Global testsuite system properties defaults. -->
@@ -205,13 +220,6 @@
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <!-- Ensure the relevant test feature pack is built -->
-        <dependency>
-            <groupId>${full.maven.groupId}</groupId>
-            <artifactId>${testsuite.test.feature.pack.artifactId}</artifactId>
-            <type>zip</type>
             <scope>test</scope>
         </dependency>
     </dependencies>
@@ -382,93 +390,36 @@
     <profiles>
 
         <!--
-           Module profiles
-           - used to activate modules alone or in combination
-           - naming convention: X.module.profile activated by -DX.module
-           - this requires that a default profile be set for each module
+           Module execution profiles. DO NOT CONFIGURE PLUGIN EXECUTION VIA THESE PROFILES
         -->
         <profile>
-            <id>all-modules.module.profile</id>
-            <activation><property><name>allTests</name></property></activation>
+            <id>base-server-tests</id>
+            <!-- Base server tests run unless -P !preview-server-tests is used -->
+            <activation><property><name>!preview-server-tests</name></property></activation>
             <modules>
-                <module>integration</module>
-                <module>domain</module>
-                <module>scripts</module>
-            </modules>
-        </profile>
-
-        <profile>
-            <id>mixed-domain.module.profile</id>
-            <activation><property><name>jboss.test.mixed.domain.dir</name></property></activation>
-            <modules>
-                <module>mixed-domain</module>
-            </modules>
-        </profile>
-
-        <profile>
-            <id>integ.module.profile</id>
-            <activation><property><name>integ.module</name></property></activation>
-            <modules>
-                <module>integration</module>
+                <module>build-demander-base</module> <!-- Ensure base server build/dist modules used by tests are built -->
+                <module>aggregator-base</module>
             </modules>
         </profile>
         <profile>
-            <id>integ-basic.module.profile</id>
-            <activation><property><name>ts.basic</name></property></activation>
-            <modules><module>integration</module></modules>
-        </profile>
-        <profile>
-            <id>integ-clustering.module.profile</id>
-            <activation><property><name>ts.clustering</name></property></activation>
-            <modules><module>integration</module></modules>
-        </profile>
-        <profile>
-            <id>integ-iiop.module.profile</id>
-            <activation><property><name>ts.iiop</name></property></activation>
-            <modules><module>integration</module></modules>
-        </profile>
-        <profile>
-            <id>integ-xts.module.profile</id>
-            <activation><property><name>ts.xts</name></property></activation>
-            <modules><module>integration</module></modules>
-        </profile>
-        <profile>
-            <id>integ-rts.module.profile</id>
-            <activation><property><name>ts.rts</name></property></activation>
-            <modules><module>integration</module></modules>
-        </profile>
-
-        <profile>
-            <id>domain.module.profile</id>
-            <activation><property><name>domain.module</name></property></activation>
-            <modules><module>domain</module></modules>
-        </profile>
-        <profile>
-            <id>domain_.module.profile</id>
-            <activation><property><name>ts.domain</name></property></activation>
-            <modules><module>domain</module></modules>
-        </profile>
-
-        <profile>
-            <id>layers.module.profile</id>
-            <activation><property><name>layers.module</name></property></activation>
-            <modules><module>layers</module></modules>
-        </profile>
-        <profile>
-            <id>layers-expansion.module.profile</id>
-            <activation><property><name>layers-expansion.module</name></property></activation>
-            <modules><module>layers-expansion</module></modules>
-        </profile>
-        <profile>
-            <id>layers_.module.profile</id>
-            <activation><property><name>ts.layers</name></property></activation>
+            <id>expansion-server-tests</id>
+            <!-- Expansion server tests run unless -P !preview-server-tests is used -->
+            <activation><property><name>!preview-server-tests</name></property></activation>
             <modules>
-                <module>integration</module>
-                <module>preview</module>
-                <module>layers</module>
-                <module>layers-expansion</module>
+                <module>build-demander-expansion</module> <!-- Ensure expansion server build/dist modules used by tests are built -->
+                <module>aggregator-expansion</module>
             </modules>
         </profile>
+        <profile>
+            <id>preview-server-tests</id>
+            <activation><property><name>preview-server-tests</name></property></activation>
+            <modules>
+                <module>build-demander-preview</module> <!-- Ensure preview server build/dist modules used by tests are built -->
+                <module>aggregator-preview</module>
+            </modules>
+        </profile>
+        <!-- These execute in all feature pack contexts, so declare them here instead
+             of repeating this in the aggregator modules -->
         <profile>
             <id>galleon.module.profile</id>
             <activation><property><name>galleon.module</name></property></activation>
@@ -479,16 +430,11 @@
             <activation><property><name>ts.galleon</name></property></activation>
             <modules><module>galleon</module></modules>
         </profile>
-        <profile>
-            <id>scripts.module.profile</id>
-            <activation><property><name>scripts.module</name></property></activation>
-            <modules><module>scripts</module></modules>
-        </profile>
-        <profile>
-            <id>scripts_.module.profile</id>
-            <activation><property><name>ts.scripts</name></property></activation>
-            <modules><module>scripts</module></modules>
-        </profile>
+
+
+        <!--
+            Plugin execution configuration profiles. DO NOT ACTIVATE MODULES VIA THESE PROFILES
+        -->
 
         <profile>
             <id>preview.profile</id>
@@ -499,16 +445,8 @@
                 <!-- For WFP, if there are EE-version-specific test sources, uses the ee11 ones -->
                 <additional.ee.test.source>ee11</additional.ee.test.source>
             </properties>
-            <modules>
-                <module>domain</module>
-                <module>galleon</module>
-                <module>integration</module>
-                <module>layers</module>
-                <module>layers-expansion</module>
-                <module>preview</module>
-                <module>scripts</module>
-            </modules>
         </profile>
+
         <profile>
             <id>bootablejar.preview.profile</id>
             <activation>
@@ -520,10 +458,6 @@
                 <!-- For WFP, if there are EE-version-specific test sources, uses the ee11 ones -->
                 <additional.ee.test.source>ee11</additional.ee.test.source>
             </properties>
-            <modules>
-                <module>integration</module>
-                <module>preview</module>
-            </modules>
         </profile>
         <!-- Profile that can be activated in combination with -Dts.layers and -Dts.galleon
              to execute the tests activated by those profiles, but using the wildfly-preview feature pack
