@@ -905,4 +905,7 @@ public interface MessagingLogger extends BasicLogger {
 
     @Message(id = 119, value = "'%s' wasn't found among existing JMS resources.")
     OperationFormatException jndiWasNotFound(String jndiName);
+
+    @Message(id = 120, value = "No LegacyConnectionFactory service could be loaded")
+    IllegalStateException noLegacyConnectionFactory();
 }

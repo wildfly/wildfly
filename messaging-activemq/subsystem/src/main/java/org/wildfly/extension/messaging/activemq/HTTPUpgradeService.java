@@ -10,9 +10,6 @@ import static org.apache.activemq.artemis.core.remoting.impl.netty.NettyConnecto
 import static org.apache.activemq.artemis.core.remoting.impl.netty.NettyConnector.SEC_ACTIVEMQ_REMOTING_ACCEPT;
 import static org.apache.activemq.artemis.core.remoting.impl.netty.NettyConnector.SEC_ACTIVEMQ_REMOTING_KEY;
 import static org.apache.activemq.artemis.core.remoting.impl.netty.TransportConstants.HTTP_UPGRADE_ENDPOINT_PROP_NAME;
-import static org.hornetq.core.remoting.impl.netty.NettyConnector.HORNETQ_REMOTING;
-import static org.hornetq.core.remoting.impl.netty.NettyConnector.SEC_HORNETQ_REMOTING_ACCEPT;
-import static org.hornetq.core.remoting.impl.netty.NettyConnector.SEC_HORNETQ_REMOTING_KEY;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.CORE;
 import static org.wildfly.extension.messaging.activemq.Capabilities.HTTP_LISTENER_REGISTRY_CAPABILITY_NAME;
 import static org.wildfly.extension.messaging.activemq.Capabilities.HTTP_UPGRADE_REGISTRY_CAPABILITY_NAME;
@@ -270,7 +267,7 @@ public class HTTPUpgradeService implements Service<HTTPUpgradeService> {
 
         @Override
         protected String getProtocol() {
-            return HORNETQ_REMOTING;
+            return "hornetq-remoting";
         }
 
         @Override
@@ -280,12 +277,12 @@ public class HTTPUpgradeService implements Service<HTTPUpgradeService> {
 
         @Override
         protected String getSecKeyHeader() {
-            return SEC_HORNETQ_REMOTING_KEY;
+            return "Sec-HornetQRemoting-Key";
         }
 
         @Override
         protected String getSecAcceptHeader() {
-            return SEC_HORNETQ_REMOTING_ACCEPT;
+            return "Sec-HornetQRemoting-Accept";
         }
     }
 
