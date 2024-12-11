@@ -14,6 +14,8 @@
     </resources>
 
     <dependencies>
+        <module name="io.smallrye.config"/>
         <module name="org.eclipse.microprofile.config.api"/>
+        <module name="org.jboss.logging"/>
     </dependencies>
 </module>
