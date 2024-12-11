@@ -15,7 +15,7 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
-import org.wildfly.httpclient.ejb.EjbHttpService;
+import org.wildfly.httpclient.ejb.HttpRemoteEjbService;
 import org.wildfly.transaction.client.LocalTransactionContext;
 
 /**
@@ -35,7 +35,7 @@ public class EJB3RemoteHTTPService implements Service<EJB3RemoteHTTPService> {
 
     @Override
     public void start(StartContext context) throws StartException {
-        EjbHttpService service = new EjbHttpService(associationServiceInjectedValue.getValue().getAssociation(),
+        HttpRemoteEjbService service = new HttpRemoteEjbService(associationServiceInjectedValue.getValue().getAssociation(),
                 null, localTransactionContextInjectedValue.getValue(), classResolverFilter);
         pathHandlerInjectedValue.getValue().addPrefixPath("/ejb", service.createHttpHandler());
     }
