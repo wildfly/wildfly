@@ -78,6 +78,7 @@ public class OpenTelemetryCollectorContainer extends BaseContainer<OpenTelemetry
 
     public List<PrometheusMetric> fetchMetrics(String nameToMonitor) throws InterruptedException {
         String body = "";
+        String metricName = PrometheusMetric.sanitizeMetricName(nameToMonitor);
         try (Client client = ClientBuilder.newClient()) {
             WebTarget target = client.target(getPrometheusUrl());
 
@@ -90,7 +91,7 @@ public class OpenTelemetryCollectorContainer extends BaseContainer<OpenTelemetry
                 Thread.sleep(1000);
 
                 body = target.request().get().readEntity(String.class);
-                found = body.contains(nameToMonitor);
+                found = body.contains(metricName);
                 attemptCount++;
             }
         }
