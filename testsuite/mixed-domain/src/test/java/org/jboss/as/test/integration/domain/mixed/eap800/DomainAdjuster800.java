@@ -5,6 +5,9 @@
 
 package org.jboss.as.test.integration.domain.mixed.eap800;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXTENSION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -23,5 +26,11 @@ public class DomainAdjuster800 extends DomainAdjuster {
     @Override
     protected List<ModelNode> adjustForVersion(final DomainClient client, PathAddress profileAddress, boolean withPrimaryServers) {
         return new ArrayList<>();
+    }
+
+    @Override
+    protected void adjustExpansionExtensions(DomainClient client, PathAddress profileAddress) throws Exception {
+        removeSubsystemExtensionIfExist(client, profileAddress.append(SUBSYSTEM, "microprofile-jwt-smallrye"), PathAddress.pathAddress(EXTENSION, "org.wildfly.extension.microprofile.jwt-smallrye"));
+        removeSubsystemExtensionIfExist(client, profileAddress.append(SUBSYSTEM, "microprofile-config-smallrye"), PathAddress.pathAddress(EXTENSION, "org.wildfly.extension.microprofile.config-smallrye"));
     }
 }
