@@ -96,7 +96,6 @@
                     <name>!quickly</name>
                 </property>
             </activation>
-
             <modules>
                 <module>build</module>
                 <module>channel</module>

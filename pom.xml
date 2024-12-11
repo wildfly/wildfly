@@ -35,78 +35,6 @@
         </license>
     </licenses>
 
-    <modules>
-        <module>appclient</module>
-        <module>batch-jberet</module>
-        <module>bean-validation</module>
-        <module>boms/common-ee</module>
-        <module>boms/common-expansion</module>
-        <module>boms/legacy-ee</module>
-        <module>boms/legacy-expansion</module>
-        <module>boms/legacy-test</module>
-        <module>boms/preview-ee</module>
-        <module>boms/preview-expansion</module>
-        <module>boms/preview-test</module>
-        <module>boms/preview-test-expansion</module>
-        <module>boms/standard-ee</module>
-        <module>boms/standard-expansion</module>
-        <module>boms/standard-test</module>
-        <module>boms/standard-test-expansion</module>
-        <module>boms/user</module>
-        <module>build</module>
-        <module>client/properties</module>
-        <module>client/shade</module>
-        <module>clustering</module>
-        <module>concurrency/impl-30</module>
-        <module>concurrency/spi</module>
-        <module>connector</module>
-        <module>datasources-agroal</module>
-        <module>dist</module>
-        <module>ee</module>
-        <module>ee-build</module>
-        <module>ee-dist</module>
-        <module>ee-feature-pack</module>
-        <module>ee-security</module>
-        <module>ejb3</module>
-        <module>elytron-oidc-client</module>
-        <module>galleon-pack</module>
-        <module>health</module>
-        <module>iiop-openjdk</module>
-        <module>jakarta-data</module>
-        <module>jaxrs</module>
-        <module>jdr</module>
-        <module>jpa</module>
-        <module>jsf</module>
-        <module>mail</module>
-        <module>legacy/jsr77</module>
-        <module>legacy/keycloak</module>
-        <module>legacy/opentracing-extension</module>
-        <module>metrics</module>
-        <module>messaging-activemq</module>
-        <module>microprofile</module>
-        <module>mod_cluster</module>
-        <module>naming</module>
-        <module>observability</module>
-        <module>picketlink</module>
-        <module>pojo</module>
-        <module>preview</module>
-        <module>release</module>
-        <module>rts</module>
-        <module>sar</module>
-        <module>security</module>
-        <module>system-jmx</module>
-        <module>spec-api</module>
-        <module>weld</module>
-        <module>testsuite/test-feature-pack</module>
-        <module>testsuite/shared</module>
-        <module>testsuite</module>
-        <module>transactions</module>
-        <module>undertow</module>
-        <module>webservices</module>
-        <module>web-common</module>
-        <module>xts</module>
-    </modules>
-
     <scm>
         <connection>scm:git:${jboss.as.scm.connection}</connection>
         <developerConnection>scm:git:${jboss.as.scm.connection}</developerConnection>
@@ -1448,6 +1376,95 @@
 
     <!-- Profiles -->
     <profiles>
+
+        <profile>
+            <id>base.build</id>
+            <activation>
+                <property>
+                    <name>!no.base.build</name>
+                </property>
+            </activation>
+            <modules>
+                <module>appclient</module>
+                <module>batch-jberet</module>
+                <module>bean-validation</module>
+                <module>boms/common-ee</module>
+                <module>boms/legacy-ee</module>
+                <module>boms/legacy-test</module>
+                <module>boms/standard-ee</module>
+                <module>boms/standard-test</module>
+                <module>boms/user</module>
+                <module>client/properties</module>
+                <module>client/shade</module>
+                <module>clustering</module>
+                <module>concurrency/impl-30</module>
+                <module>concurrency/spi</module>
+                <module>connector</module>
+                <module>datasources-agroal</module>
+                <module>ee</module>
+                <module>ee-build</module>
+                <module>ee-dist</module>
+                <module>ee-feature-pack</module>
+                <module>ee-security</module>
+                <module>ejb3</module>
+                <module>elytron-oidc-client</module>
+                <module>health</module>
+                <module>iiop-openjdk</module>
+                <module>jakarta-data</module>
+                <module>jaxrs</module>
+                <module>jdr</module>
+                <module>jpa</module>
+                <module>jsf</module>
+                <module>mail</module>
+                <module>legacy/jsr77</module>
+                <module>legacy/keycloak</module>
+                <module>legacy/opentracing-extension</module>
+                <module>metrics</module>
+                <module>messaging-activemq</module>
+                <module>mod_cluster</module>
+                <module>naming</module>
+                <module>picketlink</module>
+                <module>pojo</module>
+                <module>rts</module>
+                <module>sar</module>
+                <module>security</module>
+                <module>system-jmx</module>
+                <module>spec-api</module>
+                <module>weld</module>
+                <module>transactions</module>
+                <module>undertow</module>
+                <module>webservices</module>
+                <module>web-common</module>
+                <module>xts</module>
+                <module>testsuite/shared</module>
+                <module>testsuite</module>
+            </modules>
+        </profile>
+
+        <profile>
+            <id>expansion-build</id>
+            <activation>
+                <property>
+                    <!-- Allow users to disable building expansion stuff if they just want base artifacts -->
+                    <name>!no.expansion.build</name>
+                </property>
+            </activation>
+            <modules>
+                <module>boms/common-expansion</module>
+                <module>boms/legacy-expansion</module>
+                <module>boms/standard-expansion</module>
+                <module>boms/standard-test-expansion</module>
+                <module>boms/user</module>
+                <module>build</module>
+                <module>dist</module>
+                <module>galleon-pack</module>
+                <module>microprofile</module>
+                <module>observability</module>
+                <module>release</module>
+                <module>testsuite</module>
+            </modules>
+        </profile>
+
         <profile>
             <id>quick-build</id>
             <activation>
@@ -1469,14 +1486,18 @@
         </profile>
 
         <profile>
-            <id>normal-build</id>
+            <id>preview-build</id>
             <activation>
                 <property>
-                    <name>!quickly</name>
+                    <name>!no.preview.build</name>
                 </property>
             </activation>
             <modules>
-                <module>testsuite/test-feature-pack-preview</module>
+                <module>boms/preview-ee</module>
+                <module>boms/preview-test</module>
+                <module>boms/preview-expansion</module>
+                <module>boms/preview-test-expansion</module>
+                <module>preview</module>
             </modules>
         </profile>
 
@@ -1645,6 +1666,21 @@
         </profile>
 
         <profile>
+            <id>preview.server.test</id>
+            <activation>
+                <property>
+                    <name>preview-server-tests</name>
+                </property>
+            </activation>
+            <properties>
+                <wildfly.build.output.dir>preview/build/target/${server.output.dir.prefix}-preview-${server.output.dir.version}</wildfly.build.output.dir>
+                <testsuite.ee.galleon.pack.artifactId>wildfly-preview-feature-pack</testsuite.ee.galleon.pack.artifactId>
+                <testsuite.full.galleon.pack.artifactId>wildfly-preview-feature-pack</testsuite.full.galleon.pack.artifactId>
+                <testsuite.test.feature.pack.artifactId>wildfly-test-feature-pack-preview</testsuite.test.feature.pack.artifactId>
+            </properties>
+        </profile>
+
+        <profile>
             <id>preview.test.profile</id>
             <activation>
                 <property>
@@ -1652,10 +1688,6 @@
                 </property>
             </activation>
             <properties>
-                <wildfly.build.output.dir>preview/dist/target/${server.output.dir.prefix}-preview-${server.output.dir.version}</wildfly.build.output.dir>
-                <testsuite.ee.galleon.pack.artifactId>wildfly-preview-feature-pack</testsuite.ee.galleon.pack.artifactId>
-                <testsuite.full.galleon.pack.artifactId>wildfly-preview-feature-pack</testsuite.full.galleon.pack.artifactId>
-                <testsuite.test.feature.pack.artifactId>wildfly-test-feature-pack-preview</testsuite.test.feature.pack.artifactId>
                 <!-- If we are using channel-driven provisioning, use the wildfly-preview channel -->
                 <channel.maven.artifactId>wildfly-preview</channel.maven.artifactId>
                 <!-- Disable the surefire tests (at least the default ones) for all modules except for
@@ -1672,8 +1704,6 @@
                 </property>
             </activation>
             <properties>
-                <testsuite.ee.galleon.pack.artifactId>wildfly-preview-feature-pack</testsuite.ee.galleon.pack.artifactId>
-                <testsuite.full.galleon.pack.artifactId>wildfly-preview-feature-pack</testsuite.full.galleon.pack.artifactId>
                 <!-- Disable the default surefire test execution for all modules except for
                      those where this profile turns them back on. -->
                 <surefire.default-test.phase>none</surefire.default-test.phase>

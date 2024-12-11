@@ -71,9 +71,22 @@
     </build>
 
     <modules>
-        <module>client</module>
         <module>server</module>
-        <module>tools</module>
     </modules>
+
+    <profiles>
+        <profile>
+            <id>base-feature-pack-build</id>
+            <activation>
+                <property>
+                    <name>!no.base.build</name>
+                </property>
+            </activation>
+            <modules>
+                <module>client</module>
+                <module>tools</module>
+            </modules>
+        </profile>
+    </profiles>
 
 </project>
