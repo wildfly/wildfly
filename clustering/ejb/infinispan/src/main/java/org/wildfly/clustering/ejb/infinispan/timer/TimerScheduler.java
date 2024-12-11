@@ -27,7 +27,7 @@ import org.wildfly.clustering.ejb.cache.timer.TimerFactory;
 import org.wildfly.clustering.ejb.cache.timer.TimerMetaDataFactory;
 import org.wildfly.clustering.ejb.cache.timer.TimerMetaDataKey;
 import org.wildfly.clustering.ejb.infinispan.logging.InfinispanEjbLogger;
-import org.wildfly.clustering.ejb.timer.ImmutableTimerMetaData;
+import org.wildfly.clustering.ejb.timer.TimeoutMetaData;
 import org.wildfly.clustering.ejb.timer.Timer;
 import org.wildfly.clustering.ejb.timer.TimerManager;
 import org.wildfly.clustering.ejb.timer.TimerMetaData;
@@ -45,7 +45,7 @@ import org.wildfly.security.manager.WildFlySecurityManager;
  * @param <I> the timer identifier type
  * @param <V> the timer metadata value type
  */
-public class TimerScheduler<I, V> extends AbstractCacheEntryScheduler<I, TimerMetaDataKey<I>, V, ImmutableTimerMetaData> {
+public class TimerScheduler<I, V> extends AbstractCacheEntryScheduler<I, TimerMetaDataKey<I>, V, TimeoutMetaData> {
     private static final ThreadFactory THREAD_FACTORY = new DefaultThreadFactory(TimerScheduler.class, WildFlySecurityManager.getClassLoaderPrivileged(TimerScheduler.class));
 
     private final TimerFactory<I, V> factory;
@@ -58,7 +58,7 @@ public class TimerScheduler<I, V> extends AbstractCacheEntryScheduler<I, TimerMe
         this(name, entries, new InvokeTask<>(factory, manager, locality, entries, registry, executor), closeTimeout, registry, executor, factory);
     }
 
-    private <T extends Predicate<I> & Consumer<Scheduler<I, ImmutableTimerMetaData>>> TimerScheduler(String name, ScheduledEntries<I, Instant> entries, T invokeTask, Duration closeTimeout, TimerRegistry<I> registry, ExecutorService executor, TimerFactory<I, V> factory) {
+    private <T extends Predicate<I> & Consumer<Scheduler<I, TimeoutMetaData>>> TimerScheduler(String name, ScheduledEntries<I, Instant> entries, T invokeTask, Duration closeTimeout, TimerRegistry<I> registry, ExecutorService executor, TimerFactory<I, V> factory) {
         this(new LocalSchedulerConfiguration<>() {
             @Override
             public String getName() {
@@ -87,7 +87,7 @@ public class TimerScheduler<I, V> extends AbstractCacheEntryScheduler<I, TimerMe
         }, registry, executor, invokeTask, factory);
     }
 
-    private TimerScheduler(LocalSchedulerConfiguration<I> schedulerConfig, TimerRegistry<I> registry, ExecutorService executor, Consumer<Scheduler<I, ImmutableTimerMetaData>> injector, TimerFactory<I, V> factory) {
+    private TimerScheduler(LocalSchedulerConfiguration<I> schedulerConfig, TimerRegistry<I> registry, ExecutorService executor, Consumer<Scheduler<I, TimeoutMetaData>> injector, TimerFactory<I, V> factory) {
         this(new LocalScheduler<>(schedulerConfig) {
             @Override
             public void schedule(I id, Instant instant) {
@@ -109,8 +109,8 @@ public class TimerScheduler<I, V> extends AbstractCacheEntryScheduler<I, TimerMe
         }, injector, factory);
     }
 
-    private TimerScheduler(Scheduler<I, Instant> scheduler, Consumer<Scheduler<I, ImmutableTimerMetaData>> injector, TimerFactory<I, V> factory) {
-        super(scheduler.map(ImmutableTimerMetaData::getNextTimeout));
+    private TimerScheduler(Scheduler<I, Instant> scheduler, Consumer<Scheduler<I, TimeoutMetaData>> injector, TimerFactory<I, V> factory) {
+        super(scheduler.map(TimeoutMetaData::getNextTimeout));
         this.factory = factory;
         injector.accept(this);
     }
@@ -132,14 +132,14 @@ public class TimerScheduler<I, V> extends AbstractCacheEntryScheduler<I, TimerMe
         this.schedule(id, this.factory.getMetaDataFactory().createImmutableTimerMetaData(value));
     }
 
-    private static class InvokeTask<I, V> implements Predicate<I>, Consumer<Scheduler<I, ImmutableTimerMetaData>> {
+    private static class InvokeTask<I, V> implements Predicate<I>, Consumer<Scheduler<I, TimeoutMetaData>> {
         private final TimerFactory<I, V> factory;
         private final TimerManager<I> manager;
         private final Supplier<Locality> locality;
         private final ScheduledEntries<I, Instant> entries;
         private final TimerRegistry<I> registry;
         private final ExecutorService executor;
-        private Scheduler<I, ImmutableTimerMetaData> scheduler;
+        private Scheduler<I, TimeoutMetaData> scheduler;
 
         InvokeTask(TimerFactory<I, V> factory, TimerManager<I> manager, Supplier<Locality> locality, ScheduledEntries<I, Instant> entries, TimerRegistry<I> registry, ExecutorService executor) {
             this.factory = factory;
@@ -151,7 +151,7 @@ public class TimerScheduler<I, V> extends AbstractCacheEntryScheduler<I, TimerMe
         }
 
         @Override
-        public void accept(Scheduler<I, ImmutableTimerMetaData> scheduler) {
+        public void accept(Scheduler<I, TimeoutMetaData> scheduler) {
             this.scheduler = scheduler;
         }
 
@@ -162,7 +162,7 @@ public class TimerScheduler<I, V> extends AbstractCacheEntryScheduler<I, TimerMe
             Supplier<Locality> locality = this.locality;
             ScheduledEntries<I, Instant> entries = this.entries;
             TimerRegistry<I> registry = this.registry;
-            Scheduler<I, ImmutableTimerMetaData> scheduler = this.scheduler;
+            Scheduler<I, TimeoutMetaData> scheduler = this.scheduler;
             TimerMetaDataKey<I> key = new InfinispanTimerMetaDataKey<>(id);
             // Ensure timer is owned by local member
             if (!locality.get().isLocal(key)) {

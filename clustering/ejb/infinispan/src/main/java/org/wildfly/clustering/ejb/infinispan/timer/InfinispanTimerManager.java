@@ -36,6 +36,7 @@ import org.wildfly.clustering.ejb.cache.timer.TimerMetaDataKey;
 import org.wildfly.clustering.ejb.timer.ImmutableTimerMetaData;
 import org.wildfly.clustering.ejb.timer.IntervalTimerConfiguration;
 import org.wildfly.clustering.ejb.timer.ScheduleTimerConfiguration;
+import org.wildfly.clustering.ejb.timer.TimeoutMetaData;
 import org.wildfly.clustering.ejb.timer.Timer;
 import org.wildfly.clustering.ejb.timer.TimerManager;
 import org.wildfly.clustering.ejb.timer.TimerRegistry;
@@ -50,7 +51,6 @@ import org.wildfly.clustering.server.infinispan.scheduler.CacheKeysTask;
 import org.wildfly.clustering.server.infinispan.scheduler.PrimaryOwnerScheduler;
 import org.wildfly.clustering.server.infinispan.scheduler.PrimaryOwnerSchedulerConfiguration;
 import org.wildfly.clustering.server.infinispan.scheduler.ScheduleCommand;
-import org.wildfly.clustering.server.infinispan.scheduler.ScheduleWithPersistentMetaDataCommand;
 import org.wildfly.clustering.server.infinispan.scheduler.ScheduleWithTransientMetaDataCommand;
 import org.wildfly.clustering.server.infinispan.scheduler.Scheduler;
 import org.wildfly.clustering.server.infinispan.scheduler.SchedulerTopologyChangeListener;
@@ -72,7 +72,7 @@ public class InfinispanTimerManager<I, C> implements TimerManager<I> {
     private final CacheContainerCommandDispatcherFactory dispatcherFactory;
     private final TimerRegistry<I> registry;
 
-    private volatile Scheduler<I, ImmutableTimerMetaData> scheduler;
+    private volatile Scheduler<I, TimeoutMetaData> scheduler;
     private volatile ListenerRegistration schedulerListenerRegistration;
 
     public InfinispanTimerManager(InfinispanTimerManagerConfiguration<I, C> config) {
@@ -111,7 +111,7 @@ public class InfinispanTimerManager<I, C> implements TimerManager<I> {
             }
 
             @Override
-            public Scheduler<I, ImmutableTimerMetaData> getScheduler() {
+            public Scheduler<I, TimeoutMetaData> getScheduler() {
                 return localScheduler;
             }
 
@@ -121,8 +121,8 @@ public class InfinispanTimerManager<I, C> implements TimerManager<I> {
             }
 
             @Override
-            public BiFunction<I, ImmutableTimerMetaData, ScheduleCommand<I, ImmutableTimerMetaData>> getScheduleCommandFactory() {
-                return InfinispanTimerManager.this.properties.isTransactional() ? ScheduleWithPersistentMetaDataCommand::new : ScheduleWithTransientMetaDataCommand::new;
+            public BiFunction<I, TimeoutMetaData, ScheduleCommand<I, TimeoutMetaData>> getScheduleCommandFactory() {
+                return InfinispanTimerManager.this.properties.isTransactional() ? ScheduleWithPersistentTimeoutMetaDataCommand::new : ScheduleWithTransientMetaDataCommand::new;
             }
 
             @Override
@@ -151,7 +151,7 @@ public class InfinispanTimerManager<I, C> implements TimerManager<I> {
             registration.close();
         }
 
-        Scheduler<I, ImmutableTimerMetaData> scheduler = this.scheduler;
+        Scheduler<I, TimeoutMetaData> scheduler = this.scheduler;
         if (scheduler != null) {
             scheduler.close();
         }

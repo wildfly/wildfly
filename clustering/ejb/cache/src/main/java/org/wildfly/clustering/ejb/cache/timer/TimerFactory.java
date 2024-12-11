@@ -8,7 +8,9 @@ package org.wildfly.clustering.ejb.cache.timer;
 import org.wildfly.clustering.ejb.timer.Timer;
 import org.wildfly.clustering.ejb.timer.TimerManager;
 import org.wildfly.clustering.server.scheduler.Scheduler;
+
 import org.wildfly.clustering.ejb.timer.ImmutableTimerMetaData;
+import org.wildfly.clustering.ejb.timer.TimeoutMetaData;
 
 /**
  * @author Paul Ferraro
@@ -19,5 +21,5 @@ public interface TimerFactory<I, V> {
 
     TimerMetaDataFactory<I, V> getMetaDataFactory();
 
-    Timer<I> createTimer(I id, ImmutableTimerMetaData metaData, TimerManager<I> manager, Scheduler<I, ImmutableTimerMetaData> scheduler);
+    Timer<I> createTimer(I id, ImmutableTimerMetaData metaData, TimerManager<I> manager, Scheduler<I, TimeoutMetaData> scheduler);
 }

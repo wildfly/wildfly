@@ -39,3 +39,10 @@ enum TimerCacheKeyFilter {
 enum TimerCacheEntryFilter {
 	META_DATA_ENTRY	= 0;
 }
+
+/**
+ * @TypeId(344)
+ */
+message SimpleTimeoutMetaData {
+    uint64  nextTimeout = 1;
+}
