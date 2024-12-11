@@ -66,16 +66,17 @@ public class ContextPropagationTestCase extends BaseOpenTelemetryTest {
                     .request().get();
             Assert.assertEquals(204, response.getStatus());
 
-            List<JaegerTrace> traces = otelCollector.getTraces(DEPLOYMENT_SERVICE1 + ".war");
-            Assert.assertFalse("Traces not found for service", traces.isEmpty());
+            otelCollector.assertTraces(DEPLOYMENT_SERVICE1 + ".war", traces -> {
+                Assert.assertFalse("Traces not found for service", traces.isEmpty());
 
-            JaegerTrace trace = traces.get(0);
-            String traceId = trace.getTraceID();
-            List<JaegerSpan> spans = trace.getSpans();
+                JaegerTrace trace = traces.get(0);
+                String traceId = trace.getTraceID();
+                List<JaegerSpan> spans = trace.getSpans();
 
-            spans.forEach(s ->
+                spans.forEach(s ->
                     Assert.assertEquals("The traceId of the span did not match the first span's. Context propagation failed.",
-                            traceId, s.getTraceID()));
+                        traceId, s.getTraceID()));
+            });
         }
     }
 
