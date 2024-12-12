@@ -106,15 +106,4 @@ public class RunArtemisAmqpSetupTask implements ServerSetupTask {
             }
         }
     }
-
-    public static void main(String[] args) throws Exception {
-        RunArtemisAmqpSetupTask task = new RunArtemisAmqpSetupTask();
-        try {
-            task.setup(null, null);
-            Thread.sleep(10 * 60000);
-        } finally {
-            task.tearDown(null, null);
-        }
-
-    }
 }

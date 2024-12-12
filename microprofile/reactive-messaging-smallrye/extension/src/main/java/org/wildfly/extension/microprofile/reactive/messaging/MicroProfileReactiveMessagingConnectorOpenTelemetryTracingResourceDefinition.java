@@ -63,11 +63,10 @@ public class MicroProfileReactiveMessagingConnectorOpenTelemetryTracingResourceD
         super(
                 new SimpleResourceDefinition.Parameters(
                         PATH,
-                        MicroProfileReactiveMessagingExtension.SUBSYSTEM_RESOLVER.createChildResolver(PATH.getKey())
-                )
-                .setAddHandler(ReloadRequiredAddStepHandler.INSTANCE)
-                .setRemoveHandler(ReloadRequiredRemoveStepHandler.INSTANCE)
-                .setCapabilities(MP_REACTIVE_MESSAGING_OTEL_TRACING));
+                        MicroProfileReactiveMessagingExtension.SUBSYSTEM_RESOLVER.createChildResolver(PATH.getKey()))
+                        .setAddHandler(ReloadRequiredAddStepHandler.INSTANCE)
+                        .setRemoveHandler(ReloadRequiredRemoveStepHandler.INSTANCE)
+                        .setCapabilities(MP_REACTIVE_MESSAGING_OTEL_TRACING));
     }
 
     @Override
