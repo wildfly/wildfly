@@ -42,6 +42,7 @@
             <id>expansion.all-modules.module.profile</id>
             <activation><property><name>allTests</name></property></activation>
             <modules>
+                <module>../integration</module>
                 <module>../integration/microprofile</module>
                 <module>../integration/microprofile-tck</module>
                 <module>../integration/manualmode-expansion</module>
@@ -52,6 +53,7 @@
             <id>expansion.integ.module.profile</id>
             <activation><property><name>integ.module</name></property></activation>
             <modules>
+                <module>../integration</module>
                 <module>../integration/manualmode-expansion</module>
                 <module>../integration/microprofile</module>
                 <module>../integration/microprofile-tck</module>
@@ -69,6 +71,7 @@
             <id>expansion.layers_.module.profile</id>
             <activation><property><name>ts.layers</name></property></activation>
             <modules>
+                <module>../integration</module>
                 <module>../integration/microprofile</module>
                 <module>../integration/microprofile-tck</module>
                 <module>../layers-expansion</module>
@@ -80,6 +83,7 @@
             <id>expansion.ts.integ.allGroupsIntegration</id>
             <activation><property><name>ts.integration</name></property></activation>
             <modules>
+                <module>../integration</module>
                 <module>../integration/microprofile</module>
                 <module>../integration/microprofile-tck</module>
                 <module>../integration/manualmode-expansion</module>
@@ -91,6 +95,7 @@
             <id>ts.integ.group.manualmode-expansion</id>
             <activation><property><name>ts.manualmode-expansion</name></property></activation>
             <modules>
+                <module>../integration</module>
                 <module>../integration/manualmode-expansion</module>
             </modules>
         </profile>
@@ -100,6 +105,8 @@
             <id>ts.integ.group.standalone.microprofile</id>
             <activation><property><name>ts.standalone.microprofile</name></property></activation>
             <modules>
+                <module>../integration</module>
+                <module>../test-feature-pack</module> <!-- needed by integration/basic -->
                 <module>../integration/basic</module>
                 <module>../integration/microprofile</module>
                 <module>../integration/microprofile-tck</module>
@@ -113,6 +120,7 @@
             <id>ts.integ.group.microprofile</id>
             <activation><property><name>ts.microprofile</name></property></activation>
             <modules>
+                <module>../integration</module>
                 <module>../integration/microprofile</module>
                 <module>../integration/microprofile-tck</module>
             </modules>
@@ -127,6 +135,7 @@
                 </property>
             </activation>
             <modules>
+                <module>../integration</module>
                 <module>../integration/microprofile</module>
                 <module>../integration/microprofile-tck</module>
             </modules>
