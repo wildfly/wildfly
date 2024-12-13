@@ -70,9 +70,7 @@
     </feature>
     <feature spec="domain.host-exclude">
         <param name="host-exclude" value="WildFly34.0"/>
-        <!-- TODO  WFLY-20012 switch to host-release when WFCORE-6904 is integrated -->
-        <param name="management-major-version" value="27"/>
-        <param name="management-minor-version" value="0"/>
+        <param name="host-release" value="WildFly34.0"/>
         <param name="excluded-extensions"
                value="[&quot;org.wildfly.extension.jakarta.data&quot;]"/>
     </feature>
