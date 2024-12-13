@@ -1504,7 +1504,7 @@
         <profile>
             <id>jdk18</id>
             <activation>
-                <jdk>[18,)</jdk>
+                <jdk>[18,24)</jdk>
             </activation>
             <properties>
                 <security.manager.props>
