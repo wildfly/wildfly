@@ -1,13 +1,9 @@
-<?xml version="1.0" encoding="UTF-8" ?>
+<?xml version="1.0" encoding="UTF-8"?>
 <!--
   ~ Copyright The WildFly Authors
   ~ SPDX-License-Identifier: Apache-2.0
   -->
-<project
-    xmlns="http://maven.apache.org/POM/4.0.0"
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
->
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
@@ -15,7 +11,7 @@
         <artifactId>jboss-parent</artifactId>
         <version>39</version>
         <!-- The empty relativePath makes Maven lookup it in the repository. Missing tag default is ../pom.xml. -->
-        <relativePath />
+        <relativePath/>
     </parent>
 
     <groupId>org.wildfly</groupId>
@@ -141,7 +137,7 @@
             --add-opens=java.management/javax.management=ALL-UNNAMED
             --add-opens=java.naming/javax.naming=ALL-UNNAMED
         </modular.jdk.args>
-        <security.manager.props />
+        <security.manager.props></security.manager.props>
 
         <!--
             See ChildFirstClassLoaderBuilder in model-test for the explanation of the org.jboss.model.test.cache.root and org.jboss.model.test.classpath.cache properties.
@@ -163,9 +159,8 @@
         <!-- First, prefix to add to the standard maven child project whose output should be used.
              An empty value means no prefix.
              Custom test jobs can override this using -D, e.g. -Dtestsuite.default.build.project.prefix=ee- -->
-        <testsuite.default.build.project.prefix />
-        <wildfly.build.output.dir
-        >${testsuite.default.build.project.prefix}build/target/${server.output.dir.prefix}-${server.output.dir.version}</wildfly.build.output.dir>
+        <testsuite.default.build.project.prefix></testsuite.default.build.project.prefix>
+        <wildfly.build.output.dir>${testsuite.default.build.project.prefix}build/target/${server.output.dir.prefix}-${server.output.dir.version}</wildfly.build.output.dir>
 
         <!-- Protocol to use for communication with remote maven repositories.
              You can set to 'http' if you are using a maven proxy and 'https'
@@ -173,16 +168,13 @@
              to non-snapshot public maven repos -->
         <maven.repository.protocol>https</maven.repository.protocol>
         <!-- The full remote maven repo URL; can be overridden via -D for special use cases -->
-        <maven.repository.url
-        >${maven.repository.protocol}://repository.jboss.org/nexus/content/groups/public/</maven.repository.url>
+        <maven.repository.url>${maven.repository.protocol}://repository.jboss.org/nexus/content/groups/public/</maven.repository.url>
 
         <!-- Surefire args -->
-        <surefire.extra.args />
-        <surefire.jpda.args />
-        <surefire.non-modular.system.args
-        >-ea -Duser.region=US -Duser.language=en ${surefire.jpda.args} ${surefire.extra.args} ${surefire.jacoco.args}</surefire.non-modular.system.args>
-        <surefire.system.args
-        >${modular.jdk.args} ${security.manager.props} ${surefire.non-modular.system.args}</surefire.system.args>
+        <surefire.extra.args></surefire.extra.args>
+        <surefire.jpda.args></surefire.jpda.args>
+        <surefire.non-modular.system.args>-ea -Duser.region=US -Duser.language=en ${surefire.jpda.args} ${surefire.extra.args} ${surefire.jacoco.args}</surefire.non-modular.system.args>
+        <surefire.system.args>${modular.jdk.args} ${security.manager.props} ${surefire.non-modular.system.args}</surefire.system.args>
         <arquillian.servlet.protocol>Servlet 5.0</arquillian.servlet.protocol>
         <testLogToFile>true</testLogToFile>
         <maven.test.redirectTestOutputToFile>${testLogToFile}</maven.test.redirectTestOutputToFile>
@@ -309,8 +301,7 @@
         <version.org.jboss.arquillian.jakarta>10.0.0.Final</version.org.jboss.arquillian.jakarta>
         <version.org.jboss.arquillian.testcontainers>1.0.0.Alpha3</version.org.jboss.arquillian.testcontainers>
         <version.org.jboss.byteman>4.0.23</version.org.jboss.byteman>
-        <version.org.jboss.logmanager.commons-logging-jboss-logmanager
-        >1.0.3.Final</version.org.jboss.logmanager.commons-logging-jboss-logmanager>
+        <version.org.jboss.logmanager.commons-logging-jboss-logmanager>1.0.3.Final</version.org.jboss.logmanager.commons-logging-jboss-logmanager>
         <!-- only needed here until wildfly-arquillian has this version properly synced with arquillian itself  -->
         <version.org.jboss.shrinkwrap.descriptors>2.0.0</version.org.jboss.shrinkwrap.descriptors>
         <!-- It's currently required to use 2.2.7. The wildfly-model-test and wildfly-subsystem-test dependencies bring
@@ -318,10 +309,8 @@
              versions of the Shrinkwrap Resolvers. -->
         <version.org.jboss.shrinkwrap.resolvers>2.2.7</version.org.jboss.shrinkwrap.resolvers>
         <version.org.jboss.shrinkwrap.shrinkwrap>1.2.6</version.org.jboss.shrinkwrap.shrinkwrap>
-        <legacy.version.org.jboss.spec.javax.jms.jboss-jms-api_2.0_spec
-        >2.0.0.Final</legacy.version.org.jboss.spec.javax.jms.jboss-jms-api_2.0_spec>
-        <version.org.jboss.spec.javax.servlet.jboss-servlet-api_4.0_spec
-        >2.0.0.Final</version.org.jboss.spec.javax.servlet.jboss-servlet-api_4.0_spec>
+        <legacy.version.org.jboss.spec.javax.jms.jboss-jms-api_2.0_spec>2.0.0.Final</legacy.version.org.jboss.spec.javax.jms.jboss-jms-api_2.0_spec>
+        <version.org.jboss.spec.javax.servlet.jboss-servlet-api_4.0_spec>2.0.0.Final</version.org.jboss.spec.javax.servlet.jboss-servlet-api_4.0_spec>
         <version.org.junit>5.10.5</version.org.junit>
         <version.org.keycloak>25.0.2</version.org.keycloak>
         <version.org.mockito>3.10.0</version.org.mockito>
@@ -346,10 +335,8 @@
         <version.com.carrotsearch.hppc>0.10.0</version.com.carrotsearch.hppc>
         <version.com.fasterxml.classmate>1.5.1</version.com.fasterxml.classmate>
         <version.com.fasterxml.jackson>2.18.2</version.com.fasterxml.jackson>
-        <version.com.fasterxml.jackson.databind
-        >${version.com.fasterxml.jackson}</version.com.fasterxml.jackson.databind>
-        <version.com.fasterxml.jackson.jr.jackson-jr-objects
-        >${version.com.fasterxml.jackson}</version.com.fasterxml.jackson.jr.jackson-jr-objects>
+        <version.com.fasterxml.jackson.databind>${version.com.fasterxml.jackson}</version.com.fasterxml.jackson.databind>
+        <version.com.fasterxml.jackson.jr.jackson-jr-objects>${version.com.fasterxml.jackson}</version.com.fasterxml.jackson.jr.jackson-jr-objects>
         <version.com.github.ben-manes.caffeine>3.1.8</version.com.github.ben-manes.caffeine>
         <version.com.github.fge.btf>1.2</version.com.github.fge.btf>
         <version.com.github.fge.jackson-coreutils>1.8</version.com.github.fge.jackson-coreutils>
@@ -409,8 +396,7 @@
         <version.jakarta.batch.jakarta.batch-api>2.1.1</version.jakarta.batch.jakarta.batch-api>
         <version.jakarta.data.jakarta-data-api>1.0.1</version.jakarta.data.jakarta-data-api>
         <version.jakarta.ejb.jakarta-ejb-api>4.0.1</version.jakarta.ejb.jakarta-ejb-api>
-        <version.jakarta.enterprise.concurrent.jakarta-enterprise.concurrent-api
-        >3.0.3</version.jakarta.enterprise.concurrent.jakarta-enterprise.concurrent-api>
+        <version.jakarta.enterprise.concurrent.jakarta-enterprise.concurrent-api>3.0.3</version.jakarta.enterprise.concurrent.jakarta-enterprise.concurrent-api>
         <version.jakarta.enterprise>4.0.1</version.jakarta.enterprise>
         <version.jakarta.faces.jakarta-faces-api>4.0.1</version.jakarta.faces.jakarta-faces-api>
         <version.jakarta.faces>4.0.8</version.jakarta.faces>
@@ -424,8 +410,7 @@
         <version.jakarta.security.enterprise>3.0.0</version.jakarta.security.enterprise>
         <version.jakarta.servlet.jakarta-servlet-api>6.0.0</version.jakarta.servlet.jakarta-servlet-api>
         <version.jakarta.servlet.jsp.jakarta-servlet-jsp-api>3.1.1</version.jakarta.servlet.jsp.jakarta-servlet-jsp-api>
-        <version.jakarta.servlet.jsp.jstl.jakarta-servlet-jsp-jstl-api
-        >3.0.2</version.jakarta.servlet.jsp.jstl.jakarta-servlet-jsp-jstl-api>
+        <version.jakarta.servlet.jsp.jstl.jakarta-servlet-jsp-jstl-api>3.0.2</version.jakarta.servlet.jsp.jstl.jakarta-servlet-jsp-jstl-api>
         <version.jakarta.transaction.jakarta-transaction-api>2.0.1</version.jakarta.transaction.jakarta-transaction-api>
         <version.jakarta.validation.jakarta-validation-api>3.0.2</version.jakarta.validation.jakarta-validation-api>
         <version.jakarta.websocket.jakarta-websocket-api>2.1.1</version.jakarta.websocket.jakarta-websocket-api>
@@ -461,16 +446,13 @@
         <version.org.eclipse.jdt>3.32.0</version.org.eclipse.jdt>
         <version.org.eclipse.microprofile>6.1</version.org.eclipse.microprofile>
         <version.org.eclipse.microprofile.config.api>3.1</version.org.eclipse.microprofile.config.api>
-        <version.org.eclipse.microprofile.fault-tolerance.api
-        >4.1.1</version.org.eclipse.microprofile.fault-tolerance.api>
+        <version.org.eclipse.microprofile.fault-tolerance.api>4.1.1</version.org.eclipse.microprofile.fault-tolerance.api>
         <version.org.eclipse.microprofile.health.api>4.0.1</version.org.eclipse.microprofile.health.api>
         <version.org.eclipse.microprofile.jwt.api>2.1</version.org.eclipse.microprofile.jwt.api>
         <version.org.eclipse.microprofile.lra.api>2.0</version.org.eclipse.microprofile.lra.api>
         <version.org.eclipse.microprofile.openapi>4.0.2</version.org.eclipse.microprofile.openapi>
-        <version.org.eclipse.microprofile.reactive-messaging.api
-        >3.0.1</version.org.eclipse.microprofile.reactive-messaging.api>
-        <version.org.eclipse.microprofile.reactive-streams-operators.api
-        >3.0.1</version.org.eclipse.microprofile.reactive-streams-operators.api>
+        <version.org.eclipse.microprofile.reactive-messaging.api>3.0.1</version.org.eclipse.microprofile.reactive-messaging.api>
+        <version.org.eclipse.microprofile.reactive-streams-operators.api>3.0.1</version.org.eclipse.microprofile.reactive-streams-operators.api>
         <version.org.eclipse.microprofile.rest.client.api>4.0</version.org.eclipse.microprofile.rest.client.api>
         <version.org.eclipse.microprofile.telemetry>2.0.1</version.org.eclipse.microprofile.telemetry>
         <version.org.eclipse.persistence.eclipselink>4.0.4</version.org.eclipse.persistence.eclipselink>
@@ -481,8 +463,7 @@
         <version.org.glassfish.jaxb>4.0.5</version.org.glassfish.jaxb>
         <version.org.glassfish.jaxb.jaxb-xjc>${version.org.glassfish.jaxb}</version.org.glassfish.jaxb.jaxb-xjc>
         <version.org.glassfish.soteria>3.0.3</version.org.glassfish.soteria>
-        <version.org.glassfish.web.jakarta.servlet.jsp.jstl
-        >3.0.1-jbossorg-1</version.org.glassfish.web.jakarta.servlet.jsp.jstl>
+        <version.org.glassfish.web.jakarta.servlet.jsp.jstl>3.0.1-jbossorg-1</version.org.glassfish.web.jakarta.servlet.jsp.jstl>
         <version.org.hibernate.commons.annotations>7.0.3.Final</version.org.hibernate.commons.annotations>
         <version.org.hibernate>6.6.3.Final</version.org.hibernate>
         <version.org.hibernate.search>7.2.2.Final</version.org.hibernate.search>
@@ -510,12 +491,9 @@
         <version.org.jboss.resteasy.extensions>2.0.1.Final</version.org.jboss.resteasy.extensions>
         <version.org.jboss.resteasy.microprofile>3.0.0.Final</version.org.jboss.resteasy.microprofile>
         <version.org.jboss.resteasy.spring>3.2.0.Final</version.org.jboss.resteasy.spring>
-        <version.org.jboss.spec.jakarta.el.jboss-el-api_5.0_spec
-        >4.0.1.Final</version.org.jboss.spec.jakarta.el.jboss-el-api_5.0_spec>
-        <version.org.jboss.spec.jakarta.xml.soap.saaj-api_3.0_spec
-        >1.0.0.Final</version.org.jboss.spec.jakarta.xml.soap.saaj-api_3.0_spec>
-        <version.org.jboss.spec.jakarta.xml.ws.api_4.0_spec
-        >1.0.0.Final</version.org.jboss.spec.jakarta.xml.ws.api_4.0_spec>
+        <version.org.jboss.spec.jakarta.el.jboss-el-api_5.0_spec>4.0.1.Final</version.org.jboss.spec.jakarta.el.jboss-el-api_5.0_spec>
+        <version.org.jboss.spec.jakarta.xml.soap.saaj-api_3.0_spec>1.0.0.Final</version.org.jboss.spec.jakarta.xml.soap.saaj-api_3.0_spec>
+        <version.org.jboss.spec.jakarta.xml.ws.api_4.0_spec>1.0.0.Final</version.org.jboss.spec.jakarta.xml.ws.api_4.0_spec>
         <version.org.jboss.universe.community>1.2.0.Final</version.org.jboss.universe.community>
         <version.org.jboss.universe.producer.wildfly>1.3.11.Final</version.org.jboss.universe.producer.wildfly>
         <version.org.jboss.weld.weld>5.1.3.Final</version.org.jboss.weld.weld>
@@ -526,8 +504,7 @@
         <version.org.jboss.ws.cxf>7.3.0.Final</version.org.jboss.ws.cxf>
         <version.org.jboss.ws.jaxws-undertow-httpspi>2.0.0.Final</version.org.jboss.ws.jaxws-undertow-httpspi>
         <version.org.jboss.ws.spi>5.0.0.Final</version.org.jboss.ws.spi>
-        <version.org.jboss.xnio.netty.netty-xnio-transport
-        >0.1.10.Final</version.org.jboss.xnio.netty.netty-xnio-transport>
+        <version.org.jboss.xnio.netty.netty-xnio-transport>0.1.10.Final</version.org.jboss.xnio.netty.netty-xnio-transport>
         <version.org.jctools.jctools-core>4.0.5</version.org.jctools.jctools-core>
         <version.org.jgroups>5.3.13.Final</version.org.jgroups>
         <version.org.jgroups.aws>3.0.0.Final</version.org.jgroups.aws>
@@ -535,8 +512,7 @@
         <version.org.jgroups.kubernetes>2.0.2.Final</version.org.jgroups.kubernetes>
         <version.org.jipijapa>1.0.1.Final</version.org.jipijapa>
         <version.org.jvnet.staxex>2.1.0</version.org.jvnet.staxex>
-        <version.org.keycloak.keycloak-saml-wildfly-subsystem
-        >18.0.2</version.org.keycloak.keycloak-saml-wildfly-subsystem>
+        <version.org.keycloak.keycloak-saml-wildfly-subsystem>18.0.2</version.org.keycloak.keycloak-saml-wildfly-subsystem>
         <version.org.kohsuke.metainf-services>1.11</version.org.kohsuke.metainf-services>
         <version.org.lz4.lz4-java>1.8.0</version.org.lz4.lz4-java>
         <version.org.opensaml.opensaml>4.3.0</version.org.opensaml.opensaml>
@@ -549,12 +525,10 @@
         <version.org.wildfly.mvc.krazo>1.0.0.Final</version.org.wildfly.mvc.krazo>
         <version.org.wildfly.vertx>1.0.2.Final</version.org.wildfly.vertx>
         <version.org.wildfly.naming-client>2.0.1.Final</version.org.wildfly.naming-client>
-        <version.org.wildfly.security.elytron-tests-common
-        >2.4.2.Final</version.org.wildfly.security.elytron-tests-common>
+        <version.org.wildfly.security.elytron-tests-common>2.4.2.Final</version.org.wildfly.security.elytron-tests-common>
         <version.org.wildfly.security.elytron-mp>2.0.0.Final</version.org.wildfly.security.elytron-mp>
         <version.org.wildfly.transaction.client>3.0.5.Final</version.org.wildfly.transaction.client>
-        <preview.version.org.wildfly.wildfly-ee-9-deployment-transformer
-        >2.0.0.Final</preview.version.org.wildfly.wildfly-ee-9-deployment-transformer>
+        <preview.version.org.wildfly.wildfly-ee-9-deployment-transformer>2.0.0.Final</preview.version.org.wildfly.wildfly-ee-9-deployment-transformer>
         <version.software.amazon.awssdk>2.20.126</version.software.amazon.awssdk>
         <version.software.amazon.eventstream>1.0.1</version.software.amazon.eventstream>
         <version.org.xerial.snappy.snappy-java>1.1.10.5</version.org.xerial.snappy.snappy-java>
@@ -924,15 +898,12 @@
                         <redirectTestOutputToFile>${maven.test.redirectTestOutputToFile}</redirectTestOutputToFile>
                         <enableAssertions>true</enableAssertions>
                         <systemPropertyVariables>
-                            <org.jboss.model.test.cache.root
-                            >${org.jboss.model.test.cache.root}</org.jboss.model.test.cache.root>
-                            <org.jboss.model.test.classpath.cache
-                            >${org.jboss.model.test.classpath.cache}</org.jboss.model.test.classpath.cache>
+                            <org.jboss.model.test.cache.root>${org.jboss.model.test.cache.root}</org.jboss.model.test.cache.root>
+                            <org.jboss.model.test.classpath.cache>${org.jboss.model.test.classpath.cache}</org.jboss.model.test.classpath.cache>
                             <org.jboss.model.test.cache.strict>true</org.jboss.model.test.cache.strict>
                             <!--<org.jboss.model.test.maven.repository.urls>${org.jboss.model.test.maven.repository.urls}</org.jboss.model.test.maven.repository.urls>-->
                             <java.util.logging.manager>org.jboss.logmanager.LogManager</java.util.logging.manager>
-                            <jdk.xml.enableTemplatesImplDeserialization
-                            >true</jdk.xml.enableTemplatesImplDeserialization>
+                            <jdk.xml.enableTemplatesImplDeserialization>true</jdk.xml.enableTemplatesImplDeserialization>
                         </systemPropertyVariables>
                         <argLine>${surefire.system.args}</argLine>
                     </configuration>
@@ -970,10 +941,9 @@
                         <consoleOutput>true</consoleOutput>
                         <failsOnError>true</failsOnError>
                         <includeTestSourceDirectory>true</includeTestSourceDirectory>
-                        <excludes
-                        >**/*$logger.java,**/*$bundle.java,**/*$___Marshaller_*.java,**/*SerializationContextInitializerImpl.java</excludes>
+                        <excludes>**/*$logger.java,**/*$bundle.java,**/*$___Marshaller_*.java,**/*SerializationContextInitializerImpl.java</excludes>
                         <suppressionsLocation>checkstyle-suppressions.xml</suppressionsLocation>
-                        <useFile />
+                        <useFile></useFile>
                     </configuration>
                 </plugin>
 
@@ -1081,12 +1051,9 @@
                                             <!-- replaced by wildfly-elytron -->
                                             <exclude>org.jboss.sasl:jboss-sasl</exclude>
                                             <exclude>org.jboss.slf4j:slf4j-jboss-logging</exclude>
-                                            <exclude
-                                            >org.jboss.spec.javax.resource:jboss-connector-api_1.5_spec</exclude>
-                                            <exclude
-                                            >org.jboss.spec.javax.transaction:jboss-transaction-api_1.1_spec</exclude>
-                                            <exclude
-                                            >org.jboss.spec.javax.transaction:jboss-transaction-api_1.2_spec</exclude>
+                                            <exclude>org.jboss.spec.javax.resource:jboss-connector-api_1.5_spec</exclude>
+                                            <exclude>org.jboss.spec.javax.transaction:jboss-transaction-api_1.1_spec</exclude>
+                                            <exclude>org.jboss.spec.javax.transaction:jboss-transaction-api_1.2_spec</exclude>
                                             <exclude>org.jboss.spec.javax.xml.soap:jboss-saaj-api_1.3_spec</exclude>
                                             <exclude>org.ops4j.base</exclude>
                                             <exclude>org.ops4j.pax.swissbox</exclude>
@@ -1108,7 +1075,7 @@
                                             <exclude>org.jboss:jandex</exclude>
                                         </excludes>
                                     </bannedDependencies>
-                                    <dependencyConvergence />
+                                    <dependencyConvergence></dependencyConvergence>
                                 </rules>
                             </configuration>
                         </execution>
@@ -1162,7 +1129,7 @@
                                         </goals>
                                     </pluginExecutionFilter>
                                     <action>
-                                        <ignore />
+                                        <ignore></ignore>
                                     </action>
                                 </pluginExecution>
                                 <pluginExecution>
@@ -1175,7 +1142,7 @@
                                         </goals>
                                     </pluginExecutionFilter>
                                     <action>
-                                        <ignore />
+                                        <ignore></ignore>
                                     </action>
                                 </pluginExecution>
                                 <pluginExecution>
@@ -1188,7 +1155,7 @@
                                         </goals>
                                     </pluginExecutionFilter>
                                     <action>
-                                        <ignore />
+                                        <ignore></ignore>
                                     </action>
                                 </pluginExecution>
                                 <pluginExecution>
@@ -1201,7 +1168,7 @@
                                         </goals>
                                     </pluginExecutionFilter>
                                     <action>
-                                        <ignore />
+                                        <ignore></ignore>
                                     </action>
                                 </pluginExecution>
                                 <pluginExecution>
@@ -1216,7 +1183,7 @@
                                         </goals>
                                     </pluginExecutionFilter>
                                     <action>
-                                        <ignore />
+                                        <ignore></ignore>
                                     </action>
                                 </pluginExecution>
                                 <pluginExecution>
@@ -1229,7 +1196,7 @@
                                         </goals>
                                     </pluginExecutionFilter>
                                     <action>
-                                        <ignore />
+                                        <ignore></ignore>
                                     </action>
                                 </pluginExecution>
                                 <pluginExecution>
@@ -1245,7 +1212,7 @@
                                         </goals>
                                     </pluginExecutionFilter>
                                     <action>
-                                        <ignore />
+                                        <ignore></ignore>
                                     </action>
                                 </pluginExecution>
                                 <pluginExecution>
@@ -1261,7 +1228,7 @@
                                         </goals>
                                     </pluginExecutionFilter>
                                     <action>
-                                        <ignore />
+                                        <ignore></ignore>
                                     </action>
                                 </pluginExecution>
                                 <pluginExecution>
@@ -1274,7 +1241,7 @@
                                         </goals>
                                     </pluginExecutionFilter>
                                     <action>
-                                        <ignore />
+                                        <ignore></ignore>
                                     </action>
                                 </pluginExecution>
                             </pluginExecutions>
@@ -1359,9 +1326,9 @@
                         <attributes>
                             <source-highlighter>coderay</source-highlighter>
                             <icons>font</icons>
-                            <pagenums />
+                            <pagenums></pagenums>
                             <version>${project.version}</version>
-                            <idprefix />
+                            <idprefix></idprefix>
                             <idseparator>-</idseparator>
                             <allow-uri-read>true</allow-uri-read>
                             <wildflyVersion>${product.docs.server.version}</wildflyVersion>
@@ -1618,8 +1585,7 @@
                 </property>
             </activation>
             <properties>
-                <surefire.jpda.args
-                >-agentlib:jdwp=transport=dt_socket,address=*:8787,server=y,suspend=y</surefire.jpda.args>
+                <surefire.jpda.args>-agentlib:jdwp=transport=dt_socket,address=*:8787,server=y,suspend=y</surefire.jpda.args>
             </properties>
         </profile>
 
@@ -1695,8 +1661,7 @@
                      is expected to be the project.version of the relevant feature pack being
                      built during this build.
                 -->
-                <wildfly.channels
-                >${channels.maven.groupId}:${channels.maven.artifactId}:${channels.maven.version}</wildfly.channels>
+                <wildfly.channels>${channels.maven.groupId}:${channels.maven.artifactId}:${channels.maven.version}</wildfly.channels>
             </properties>
         </profile>
 
@@ -1708,14 +1673,10 @@
                 </property>
             </activation>
             <properties>
-                <wildfly.build.output.dir
-                >preview/build/target/${server.output.dir.prefix}-preview-${server.output.dir.version}</wildfly.build.output.dir>
-                <testsuite.ee.galleon.pack.artifactId
-                >wildfly-preview-feature-pack</testsuite.ee.galleon.pack.artifactId>
-                <testsuite.full.galleon.pack.artifactId
-                >wildfly-preview-feature-pack</testsuite.full.galleon.pack.artifactId>
-                <testsuite.test.feature.pack.artifactId
-                >wildfly-test-feature-pack-preview</testsuite.test.feature.pack.artifactId>
+                <wildfly.build.output.dir>preview/build/target/${server.output.dir.prefix}-preview-${server.output.dir.version}</wildfly.build.output.dir>
+                <testsuite.ee.galleon.pack.artifactId>wildfly-preview-feature-pack</testsuite.ee.galleon.pack.artifactId>
+                <testsuite.full.galleon.pack.artifactId>wildfly-preview-feature-pack</testsuite.full.galleon.pack.artifactId>
+                <testsuite.test.feature.pack.artifactId>wildfly-test-feature-pack-preview</testsuite.test.feature.pack.artifactId>
             </properties>
         </profile>
 
@@ -1871,48 +1832,48 @@
                                 <inherited>false</inherited>
                                 <configuration>
                                     <target>
-                                        <taskdef classname="org.jacoco.ant.ReportTask" name="report" />
+                                        <taskdef classname="org.jacoco.ant.ReportTask" name="report"></taskdef>
                                         <echo>Creating JaCoCo test coverage reports...</echo>
-                                        <mkdir dir="${basedir}/target/coverage-report" />
+                                        <mkdir dir="${basedir}/target/coverage-report"></mkdir>
                                         <report>
                                             <executiondata>
                                                 <fileset dir="${basedir}">
-                                                    <include name="**/target/jacoco.exec" />
+                                                    <include name="**/target/jacoco.exec"></include>
                                                 </fileset>
                                             </executiondata>
                                             <structure name="WildFly project">
                                                 <classfiles>
                                                     <fileset dir="${jboss.dist}/modules">
-                                                        <include name="**/*.jar" />
+                                                        <include name="**/*.jar"></include>
                                                         <!-- Excludes solve "Can't add different class with same name: ..." -->
-                                                        <exclude name="**/openjdk-orb*.jar" />
-                                                        <exclude name="**/jboss-marshalling*.jar" />
-                                                        <exclude name="**/hornetq-core-client*.jar" />
-                                                        <exclude name="**/jipijapa-hibernate5*.jar" />
-                                                        <exclude name="**/infinispan-commons*.jar" />
-                                                        <exclude name="**/jboss-logmanager*.jar" />
-                                                        <exclude name="**/wildfly-common*.jar" />
-                                                        <exclude name="**/wildfly-elytron*.jar" />
-                                                        <exclude name="**/jaxb*.jar" />
-                                                        <exclude name="**/h2-*.jar" />
-                                                        <exclude name="**/snakeyaml-*.jar" />
-                                                        <exclude name="**/yasson-*.jar" />
-                                                        <exclude name="**/bcprov-*.jar" />
-                                                        <exclude name="**/lucene-*.jar" />
-                                                        <exclude name="**/log4j-api-*.jar" />
-                                                        <exclude name="**/vertx-core-*.jar" />
-                                                        <exclude name="**/opentelemetry-sdk-common-*.jar" />
+                                                        <exclude name="**/openjdk-orb*.jar"></exclude>
+                                                        <exclude name="**/jboss-marshalling*.jar"></exclude>
+                                                        <exclude name="**/hornetq-core-client*.jar"></exclude>
+                                                        <exclude name="**/jipijapa-hibernate5*.jar"></exclude>
+                                                        <exclude name="**/infinispan-commons*.jar"></exclude>
+                                                        <exclude name="**/jboss-logmanager*.jar"></exclude>
+                                                        <exclude name="**/wildfly-common*.jar"></exclude>
+                                                        <exclude name="**/wildfly-elytron*.jar"></exclude>
+                                                        <exclude name="**/jaxb*.jar"></exclude>
+                                                        <exclude name="**/h2-*.jar"></exclude>
+                                                        <exclude name="**/snakeyaml-*.jar"></exclude>
+                                                        <exclude name="**/yasson-*.jar"></exclude>
+                                                        <exclude name="**/bcprov-*.jar"></exclude>
+                                                        <exclude name="**/lucene-*.jar"></exclude>
+                                                        <exclude name="**/log4j-api-*.jar"></exclude>
+                                                        <exclude name="**/vertx-core-*.jar"></exclude>
+                                                        <exclude name="**/opentelemetry-sdk-common-*.jar"></exclude>
                                                     </fileset>
                                                 </classfiles>
                                                 <sourcefiles encoding="UTF-8">
                                                     <dirset dir="${basedir}">
-                                                        <include name="**/src/main/java" />
+                                                        <include name="**/src/main/java"/>
                                                     </dirset>
                                                 </sourcefiles>
                                             </structure>
-                                            <html destdir="${basedir}/target/coverage-report/html" />
-                                            <xml destfile="${basedir}/target/coverage-report/coverage-report.xml" />
-                                            <csv destfile="${basedir}/target/coverage-report/coverage-report.csv" />
+                                            <html destdir="${basedir}/target/coverage-report/html"></html>
+                                            <xml destfile="${basedir}/target/coverage-report/coverage-report.xml"></xml>
+                                            <csv destfile="${basedir}/target/coverage-report/coverage-report.csv"></csv>
                                         </report>
                                     </target>
                                 </configuration>
@@ -1938,7 +1899,7 @@
                 </property>
             </activation>
             <properties>
-                <surefire.jacoco.args />
+                <surefire.jacoco.args></surefire.jacoco.args>
             </properties>
         </profile>
         <profile>
