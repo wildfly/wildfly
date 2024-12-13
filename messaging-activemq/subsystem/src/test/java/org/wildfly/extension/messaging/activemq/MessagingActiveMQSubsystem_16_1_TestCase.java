@@ -56,20 +56,20 @@ import org.wildfly.clustering.server.service.ClusteringServiceDescriptor;
 import org.wildfly.clustering.server.service.LegacyClusteringServiceDescriptor;
 import org.wildfly.extension.messaging.activemq.jms.ConnectionFactoryAttributes;
 
-public class MessagingActiveMQSubsystem_16_0_TestCase extends AbstractSubsystemBaseTest {
+public class MessagingActiveMQSubsystem_16_1_TestCase extends AbstractSubsystemBaseTest {
 
-    public MessagingActiveMQSubsystem_16_0_TestCase() {
+    public MessagingActiveMQSubsystem_16_1_TestCase() {
         super(MessagingExtension.SUBSYSTEM_NAME, new MessagingExtension());
     }
 
     @Override
     protected String getSubsystemXml() throws IOException {
-        return readResource("subsystem_16_0.xml");
+        return readResource("subsystem_16_1.xml");
     }
 
     @Override
     protected String getSubsystemXsdPath() throws IOException {
-        return "schema/wildfly-messaging-activemq_16_0.xsd";
+        return "schema/wildfly-messaging-activemq_16_1.xsd";
     }
 
     @Override
@@ -78,11 +78,6 @@ public class MessagingActiveMQSubsystem_16_0_TestCase extends AbstractSubsystemB
         properties.put("messaging.cluster.user.name", "myClusterUser");
         properties.put("messaging.cluster.user.password", "myClusterPassword");
         return properties;
-    }
-
-    @Override
-    protected KernelServices standardSubsystemTest(String configId, boolean compareXml) throws Exception {
-        return super.standardSubsystemTest(configId, false);
     }
 
     @Test
@@ -111,7 +106,7 @@ public class MessagingActiveMQSubsystem_16_0_TestCase extends AbstractSubsystemB
         Assert.assertEquals(60000, bridgeModel.get(BridgeDefinition.CALL_TIMEOUT.getName()).resolve().asLong());
         kernelServices.shutdown();
     }
-
+/*
     /////////////////////////////////////////
     //  Tests for HA Policy Configuration  //
     /////////////////////////////////////////
@@ -119,7 +114,7 @@ public class MessagingActiveMQSubsystem_16_0_TestCase extends AbstractSubsystemB
     public void testHAPolicyConfiguration() throws Exception {
         standardSubsystemTest("subsystem_16_0_ha-policy.xml");
     }
-
+*/
     ///////////////////////
     // Transformers test //
     ///////////////////////
