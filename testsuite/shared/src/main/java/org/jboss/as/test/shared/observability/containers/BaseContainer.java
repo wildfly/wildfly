@@ -4,7 +4,6 @@
  */
 package org.jboss.as.test.shared.observability.containers;
 
-import java.time.Duration;
 import java.util.List;
 
 import org.jboss.arquillian.testcontainers.api.DockerRequired;
@@ -18,8 +17,6 @@ public abstract class BaseContainer<SELF extends GenericContainer<SELF>> extends
 
     private static final int STARTUP_ATTEMPTS = Integer.parseInt(
             System.getProperty("testsuite.integration.container.startup.attempts", "5"));
-    private static final Duration ATTEMPT_DURATION = Duration.parse(
-            System.getProperty("testsuite.integration.container.attempt.duration", "PT10S"));
     protected Boolean loggingEnabled; // Default: null/false
 
     public BaseContainer(String containerName,
