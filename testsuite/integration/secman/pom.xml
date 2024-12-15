@@ -131,6 +131,16 @@
                 </plugins>
             </build>
         </profile>
+        <!-- SecurityManager can't work on SE 24+ so turn of test execution -->
+        <profile>
+            <id>secman.integration.unsupported.profile</id>
+            <activation>
+                <jdk>[24,)</jdk>
+            </activation>
+            <properties>
+                <surefire.default-test.phase>none</surefire.default-test.phase>
+            </properties>
+        </profile>
     </profiles>
 
 </project>
