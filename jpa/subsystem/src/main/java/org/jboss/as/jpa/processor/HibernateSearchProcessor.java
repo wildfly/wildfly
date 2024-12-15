@@ -22,7 +22,6 @@ import org.jboss.as.server.deployment.module.ModuleSpecification;
 import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.DotName;
 import org.jboss.modules.Module;
-import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoader;
 import org.jipijapa.plugin.spi.PersistenceUnitMetadata;
 
@@ -38,17 +37,6 @@ import static org.jboss.as.jpa.messages.JpaLogger.ROOT_LOGGER;
 public class HibernateSearchProcessor implements DeploymentUnitProcessor {
 
     private static final DotName ANNOTATION_INDEXED_NAME = DotName.createSimple("org.hibernate.search.mapper.pojo.mapping.definition.annotation.Indexed");
-    private static final ModuleIdentifier MODULE_MAPPER_ORM_DEFAULT =
-            ModuleIdentifier.fromString(Configuration.HIBERNATE_SEARCH_MODULE_MAPPER_ORM);
-
-    private static final ModuleIdentifier MODULE_MAPPER_ORM_OUTBOXPOLLING =
-            ModuleIdentifier.fromString(Configuration.HIBERNATE_SEARCH_MODULE_MAPPER_ORM_OUTBOXPOLLING);
-    private static final ModuleIdentifier MODULE_BACKEND_LUCENE =
-            ModuleIdentifier.fromString(Configuration.HIBERNATE_SEARCH_MODULE_BACKEND_LUCENE);
-    private static final ModuleIdentifier MODULE_BACKEND_ELASTICSEARCH =
-            ModuleIdentifier.fromString(Configuration.HIBERNATE_SEARCH_MODULE_BACKEND_ELASTICSEARCH);
-
-
     private static final String NONE = "none";
     private static final String IGNORE = "auto";  // if set to `auto`, will behave like not having set the property
 
@@ -93,18 +81,20 @@ public class HibernateSearchProcessor implements DeploymentUnitProcessor {
 
         // use Search module name specified in persistence unit definition
         if (searchMapperModuleName != null && !IGNORE.equals(searchMapperModuleName)) {
-            ModuleIdentifier moduleIdentifier = ModuleIdentifier.fromString(searchMapperModuleName);
-            moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, moduleIdentifier, false, true, true, false));
-            ROOT_LOGGER.debugf("added %s dependency to %s", moduleIdentifier, deploymentUnit.getName());
+            moduleSpecification.addSystemDependency(ModuleDependency.Builder.of(moduleLoader, searchMapperModuleName).
+                    setOptional(false).setExport(true).setImportServices(true).setUserSpecified(false).build());
+
+            ROOT_LOGGER.debugf("added %s dependency to %s", searchMapperModuleName, deploymentUnit.getName());
         } else {
             // add Hibernate Search module dependency if application is using the Hibernate Search Indexed annotation
             final CompositeIndex index = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.COMPOSITE_ANNOTATION_INDEX);
             List<AnnotationInstance> annotations = index.getAnnotations(ANNOTATION_INDEXED_NAME);
             if (annotations != null && !annotations.isEmpty()) {
-                moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, MODULE_MAPPER_ORM_DEFAULT,
-                        false, true, true, false));
+                moduleSpecification.addSystemDependency(
+                        ModuleDependency.Builder.of(moduleLoader, Configuration.HIBERNATE_SEARCH_MODULE_MAPPER_ORM).
+                                setOptional(false).setExport(true).setImportServices(true).setUserSpecified(false).build());
                 ROOT_LOGGER.debugf("deployment %s contains %s annotation, added %s dependency", deploymentUnit.getName(),
-                        ANNOTATION_INDEXED_NAME, MODULE_MAPPER_ORM_DEFAULT);
+                        ANNOTATION_INDEXED_NAME, Configuration.HIBERNATE_SEARCH_MODULE_MAPPER_ORM);
             }
         }
 
@@ -116,20 +106,23 @@ public class HibernateSearchProcessor implements DeploymentUnitProcessor {
         List<String> backendTypes = HibernateSearchDeploymentMarker.getBackendTypes(deploymentUnit);
         if (backendTypes != null) {
             if (backendTypes.contains(Configuration.HIBERNATE_SEARCH_BACKEND_TYPE_VALUE_LUCENE)) {
-                moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, MODULE_BACKEND_LUCENE,
-                        false, true, true, false));
+                moduleSpecification.addSystemDependency(
+                        ModuleDependency.Builder.of(moduleLoader, Configuration.HIBERNATE_SEARCH_MODULE_BACKEND_LUCENE).
+                                setOptional(false).setExport(true).setImportServices(true).setUserSpecified(false).build());
             }
             if (backendTypes.contains(Configuration.HIBERNATE_SEARCH_BACKEND_TYPE_VALUE_ELASTICSEARCH)) {
-                moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, MODULE_BACKEND_ELASTICSEARCH,
-                        false, true, true, false));
+                moduleSpecification.addSystemDependency(
+                        ModuleDependency.Builder.of(moduleLoader, Configuration.HIBERNATE_SEARCH_MODULE_BACKEND_ELASTICSEARCH).
+                                        setOptional(false).setExport(true).setImportServices(true).setUserSpecified(false).build());
             }
         }
 
         List<String> coordinationStrategies = HibernateSearchDeploymentMarker.getCoordinationStrategies(deploymentUnit);
         if (coordinationStrategies != null) {
             if (coordinationStrategies.contains(Configuration.HIBERNATE_SEARCH_COORDINATION_STRATEGY_VALUE_OUTBOX_POLLING)) {
-                moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, MODULE_MAPPER_ORM_OUTBOXPOLLING,
-                        false, true, true, false));
+                moduleSpecification.addSystemDependency(
+                        ModuleDependency.Builder.of(moduleLoader, Configuration.HIBERNATE_SEARCH_MODULE_MAPPER_ORM_OUTBOXPOLLING).
+                                setOptional(false).setExport(true).setExport(true).setImportServices(true).setUserSpecified(false).build());
             }
         }
     }
