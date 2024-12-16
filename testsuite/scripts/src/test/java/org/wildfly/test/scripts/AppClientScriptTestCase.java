@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.TimeoutException;
 
+import org.jboss.as.test.shared.AssumeTestGroupUtil;
 import org.junit.Assert;
 
 /**
@@ -26,9 +27,11 @@ public class AppClientScriptTestCase extends ScriptTestCase {
         script.start(MAVEN_JAVA_OPTS, "-v");
         testScript(script, 0);
 
-        // Test with the security manager enabled
-        script.start(MAVEN_JAVA_OPTS, "-v", "-secmgr");
-        testScript(script, jvmVersion() >= 17 ? 4 : 0);
+        if (AssumeTestGroupUtil.isJDKVersionBefore(24)) {
+            // Test with the security manager enabled
+            script.start(MAVEN_JAVA_OPTS, "-v", "-secmgr");
+            testScript(script, jvmVersion() >= 17 ? 4 : 0);
+        }
     }
 
     private void testScript(final ScriptProcess script, final int additionalLines) throws InterruptedException, IOException {
