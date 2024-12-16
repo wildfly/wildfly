@@ -52,7 +52,7 @@ public class ClockSkewTest {
     public static WebArchive createDeployment() {
         return ShrinkWrap
                 .create(WebArchive.class, "ClockSkewTest.war")
-                .addClasses(App.class, SampleEndPoint.class, BaseJWTCase.class)
+                .addClasses(App.class, SampleEndPoint.class)
                 .add(EmptyAsset.INSTANCE, "WEB-INF/beans.xml")
                 .addAsManifestResource(ClockSkewTest.class.getPackage(), "microprofile-config-with-clock-skew.properties", "microprofile-config.properties")
                 .addAsManifestResource(ClockSkewTest.class.getPackage(), "public.pem", "public.pem");

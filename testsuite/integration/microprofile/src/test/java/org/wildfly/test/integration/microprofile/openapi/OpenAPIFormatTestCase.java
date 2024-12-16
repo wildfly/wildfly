@@ -45,7 +45,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 public class OpenAPIFormatTestCase {
     private static final String DEPLOYMENT_NAME = OpenAPIFormatTestCase.class.getSimpleName() + ".war";
 
-    @Deployment
+    @Deployment(testable = false)
     public static Archive<?> deploy() {
         return ShrinkWrap.create(WebArchive.class, DEPLOYMENT_NAME)
                 .addPackage(TestApplication.class.getPackage())

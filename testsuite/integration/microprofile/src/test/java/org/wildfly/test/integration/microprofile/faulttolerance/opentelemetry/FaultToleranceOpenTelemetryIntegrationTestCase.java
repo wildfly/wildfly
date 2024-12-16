@@ -16,7 +16,6 @@ import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.arquillian.testcontainers.api.DockerRequired;
 import org.jboss.arquillian.testcontainers.api.Testcontainer;
 import org.jboss.as.arquillian.api.ServerSetup;
-import org.jboss.as.arquillian.api.ServerSetupTask;
 import org.jboss.as.test.integration.common.HttpRequest;
 import org.jboss.as.test.shared.observability.containers.OpenTelemetryCollectorContainer;
 import org.jboss.as.test.shared.observability.setuptasks.MicrometerSetupTask;
@@ -52,11 +51,10 @@ public class FaultToleranceOpenTelemetryIntegrationTestCase {
     private static final String MP_CONFIG = "otel.sdk.disabled=false\n" +
             "otel.metric.export.interval=10";
 
-    @Deployment
+    @Deployment(testable = false)
     public static Archive<?> deploy() {
         return ShrinkWrap.create(WebArchive.class, FaultToleranceMicrometerIntegrationTestCase.class.getSimpleName() + ".war")
                 .addAsManifestResource(new StringAsset(MP_CONFIG), "microprofile-config.properties")
-                .addClasses(ServerSetupTask.class)
                 .addPackage(FaultTolerantApplication.class.getPackage())
                 .addAsWebInfResource(FaultToleranceMicrometerIntegrationTestCase.class.getPackage(), "web.xml", "web.xml")
                 .addAsWebInfResource(FaultToleranceMicrometerIntegrationTestCase.class.getPackage(), "beans.xml", "beans.xml");

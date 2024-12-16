@@ -48,7 +48,7 @@ import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 public class OpenAPIAbsoluteServersTestCase {
     private static final String DEPLOYMENT_NAME = OpenAPIAbsoluteServersTestCase.class.getSimpleName() + ".war";
 
-    @Deployment
+    @Deployment(testable = false)
     public static Archive<?> deploy() {
         return ShrinkWrap.create(WebArchive.class, DEPLOYMENT_NAME)
                 .add(EmptyAsset.INSTANCE, "WEB-INF/beans.xml")
