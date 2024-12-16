@@ -34,18 +34,25 @@ public class SharedTldsMetaDataBuilder {
     private static final String[] JSTL_TAGLIBS = {
             "c-1_0-rt.tld",
             "c-1_0.tld",
+            "c-1_2.tld",
             "c.tld",
             "fmt-1_0-rt.tld",
             "fmt-1_0.tld",
+            "fmt-1_1.tld",
             "fmt.tld",
+            "fn-1_1.tld",
             "fn.tld",
+            "permittedTaglibs-1_1.tld",
             "permittedTaglibs.tld",
+            "scriptfree-1_1.tld",
             "scriptfree.tld",
             "sql-1_0-rt.tld",
             "sql-1_0.tld",
+            "sql-1_1.tld",
             "sql.tld",
             "x-1_0-rt.tld",
             "x-1_0.tld",
+            "x-1_1.tld",
             "x.tld"
     };
 
