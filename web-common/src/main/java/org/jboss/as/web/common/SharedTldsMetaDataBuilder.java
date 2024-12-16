@@ -47,7 +47,7 @@ public class SharedTldsMetaDataBuilder {
         final List<TldMetaData> metadata = new ArrayList<TldMetaData>();
 
         try {
-            ModuleClassLoader jstl = Module.getModuleFromCallerModuleLoader("javax.servlet.jstl.api").getClassLoader();
+            ModuleClassLoader jstl = Module.getModuleFromCallerModuleLoader("jakarta.servlet.jstl.api").getClassLoader();
             for (String tld : JSTL_TAGLIBS) {
                 InputStream is = jstl.getResourceAsStream("META-INF/" + tld);
                 if (is != null) {
