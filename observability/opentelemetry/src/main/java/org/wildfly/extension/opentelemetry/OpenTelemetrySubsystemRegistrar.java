@@ -215,7 +215,8 @@ class OpenTelemetrySubsystemRegistrar implements SubsystemResourceDefinitionRegi
                 OpenTelemetrySubsystemRegistrar.SPAN_PROCESSOR_TYPE.resolveModelAttribute(context, model).asStringOrNull(),
                 OpenTelemetrySubsystemRegistrar.SAMPLER.resolveModelAttribute(context, model).asStringOrNull(),
                 OpenTelemetrySubsystemRegistrar.RATIO.resolveModelAttribute(context, model).asDoubleOrNull(),
-                context.getCapabilityServiceSupport().hasCapability("org.wildfly.extension.microprofile.telemetry")
+                context.getCapabilityServiceSupport().hasCapability("org.wildfly.extension.microprofile.telemetry"),
+                context.hasOptionalCapability("org.wildfly.extension.vertx", OPENTELEMETRY_CAPABILITY, null)
         );
 
         return CapabilityServiceInstaller.builder(OPENTELEMETRY_CONFIG_CAPABILITY, config)
