@@ -44,7 +44,7 @@ public final class WildFlyOpenTelemetryConfig implements OpenTelemetryConfig {
     public WildFlyOpenTelemetryConfig(String serviceName, String exporter, String endpoint,
                                       Long batchDelay, Long maxQueueSize, Long maxExportBatchSize,
                                       Long exportTimeout, String spanProcessorType, String sampler, Double ratio,
-                                      boolean mpTelemetryInstalled) {
+                                      boolean mpTelemetryInstalled, boolean vertxInstalled) {
         Map<String, String> config = new HashMap<>();
         // Default to on
         addValue(config, OTEL_SDK_DISABLED, "false");
@@ -85,7 +85,9 @@ public final class WildFlyOpenTelemetryConfig implements OpenTelemetryConfig {
         }
 
 
-        addValue(config, "otel.exporter.vertx.cdi.identifier", "vertx");
+        if (vertxInstalled) {
+            addValue(config, "otel.exporter.vertx.cdi.identifier", "vertx");
+        }
         properties = Collections.unmodifiableMap(config);
         this.mpTelemetryInstalled = mpTelemetryInstalled;
     }
