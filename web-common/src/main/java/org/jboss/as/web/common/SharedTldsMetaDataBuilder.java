@@ -31,7 +31,23 @@ public class SharedTldsMetaDataBuilder {
 
     public static final AttachmentKey<List<TldMetaData>> ATTACHMENT_KEY = AttachmentKey.create(List.class);
 
-    private static final String[] JSTL_TAGLIBS = { "c-1_0-rt.tld", "c-1_0.tld", "c.tld", "fmt-1_0-rt.tld", "fmt-1_0.tld", "fmt.tld", "fn.tld", "permittedTaglibs.tld", "scriptfree.tld", "sql-1_0-rt.tld", "sql-1_0.tld", "sql.tld", "x-1_0-rt.tld", "x-1_0.tld", "x.tld" };
+    private static final String[] JSTL_TAGLIBS = {
+            "c-1_0-rt.tld",
+            "c-1_0.tld",
+            "c.tld",
+            "fmt-1_0-rt.tld",
+            "fmt-1_0.tld",
+            "fmt.tld",
+            "fn.tld",
+            "permittedTaglibs.tld",
+            "scriptfree.tld",
+            "sql-1_0-rt.tld",
+            "sql-1_0.tld",
+            "sql.tld",
+            "x-1_0-rt.tld",
+            "x-1_0.tld",
+            "x.tld"
+    };
 
     // Not used right now due to hardcoding
     /** The common container config. */
