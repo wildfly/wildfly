@@ -4,9 +4,9 @@
  */
 package org.jboss.as.test.integration.beanvalidation.hibernate.validator;
 
-import org.hibernate.validator.constraints.Email;
-import org.hibernate.validator.constraints.NotBlank;
-import org.hibernate.validator.constraints.NotEmpty;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotEmpty;
 
 /**
  * @author Madhumita Sadhukhan
