@@ -119,6 +119,15 @@
       <packageUrl regex="true">^pkg:maven/org\.wildfly\.clustering/wildfly-clustering-server-jgroups@.*$</packageUrl>
       <cpe>cpe:/a:redhat:jgroups</cpe>
    </suppress>
+   <suppress>
+      <notes><![CDATA[
+      file name: wildfly-launcher-1.0.0.Final.jar
+      
+      [WFLY-20135] Suppress wildfly-launcher mapping to the WildFly CPE as it is an independent artifact.
+      ]]></notes>
+      <packageUrl regex="true">^pkg:maven/org\.wildfly\.launcher/wildfly-launcher@.*$</packageUrl>
+      <cpe>cpe:/a:redhat:wildfly</cpe>
+   </suppress>
    <!-- CVE Expressions -->
 
    <!-- In this section specific CVEs are supressed where we have triaged we are not interested in them being reported. -->
