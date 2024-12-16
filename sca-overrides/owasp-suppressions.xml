@@ -128,6 +128,15 @@
       <packageUrl regex="true">^pkg:maven/org\.wildfly\.launcher/wildfly-launcher@.*$</packageUrl>
       <cpe>cpe:/a:redhat:wildfly</cpe>
    </suppress>
+   <suppress>
+      <notes><![CDATA[
+      file name: wildfly-vertx-extension-1.0.2.Final.jar
+
+      [WFLY-20136] Suppress wildfly-vertx-* mapping to the WildFly CPE as it is an independent artifact.
+      ]]></notes>
+      <packageUrl regex="true">^pkg:maven/org\.wildfly\.extras\.vertx/wildfly-vertx-.*@.*$</packageUrl>
+      <cpe>cpe:/a:redhat:wildfly</cpe>
+   </suppress>
    <!-- CVE Expressions -->
 
    <!-- In this section specific CVEs are supressed where we have triaged we are not interested in them being reported. -->
