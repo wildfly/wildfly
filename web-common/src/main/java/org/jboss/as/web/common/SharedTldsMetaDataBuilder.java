@@ -4,7 +4,6 @@
  */
 package org.jboss.as.web.common;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
@@ -69,21 +68,12 @@ public class SharedTldsMetaDataBuilder {
         return metadata;
     }
 
-    private TldMetaData parseTLD(InputStream is)
-    throws Exception {
-        try {
+    private TldMetaData parseTLD(final InputStream is) throws Exception {
+        try (is) {
             final XMLInputFactory inputFactory = XMLInputFactory.newInstance();
             inputFactory.setXMLResolver(NoopXMLResolver.create());
             XMLStreamReader xmlReader = inputFactory.createXMLStreamReader(is);
-            return TldMetaDataParser.parse(xmlReader    );
-        } finally {
-            try {
-                if (is != null) {
-                    is.close();
-                }
-            } catch (IOException e) {
-                // Ignore
-            }
+            return TldMetaDataParser.parse(xmlReader);
         }
     }
 
