@@ -10,7 +10,9 @@ import static org.jboss.as.server.deployment.Phase.DEPENDENCIES;
 import static org.jboss.as.server.deployment.Phase.DEPENDENCIES_MICROMETER;
 import static org.jboss.as.server.deployment.Phase.POST_MODULE;
 import static org.jboss.as.server.deployment.Phase.POST_MODULE_MICROMETER;
+import static org.wildfly.extension.micrometer.MicrometerExtensionLogger.MICROMETER_LOGGER;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
@@ -55,6 +57,8 @@ import org.wildfly.subsystem.service.ServiceInstaller;
 class MicrometerSubsystemRegistrar implements SubsystemResourceDefinitionRegistrar, ResourceServiceConfigurator {
     private static final String MICROMETER_MODULE = "org.wildfly.extension.micrometer";
     private static final String MICROMETER_API_MODULE = "org.wildfly.micrometer.deployment";
+    private static final String CAPABILITY_NAME_METRICS = "org.wildfly.extension.metrics.scan";
+    private static final String CAPABILITY_NAME_OPENTELEMETRY = "org.wildfly.extension.opentelemetry";
 
     static final PathElement PATH = SubsystemResourceDefinitionRegistrar.pathElement(MicrometerConfigurationConstants.NAME);
     static final ParentResourceDescriptionResolver RESOLVER =
@@ -129,6 +133,19 @@ class MicrometerSubsystemRegistrar implements SubsystemResourceDefinitionRegistr
 
     @Override
     public ResourceServiceInstaller configure(OperationContext context, ModelNode model) throws OperationFailedException {
+        List<String> otherMetrics = new ArrayList<>();
+        if (context.getCapabilityServiceSupport().hasCapability(CAPABILITY_NAME_METRICS)) {
+            otherMetrics.add("WildFly Metrics");
+        }
+        if (context.getCapabilityServiceSupport().hasCapability(CAPABILITY_NAME_OPENTELEMETRY)) {
+            otherMetrics.add("OpenTelemetry Metrics");
+        }
+        if (!otherMetrics.isEmpty()) {
+            if (Boolean.parseBoolean(System.getProperty("wildfly.multiple.metrics.warn", "true"))) {
+                MICROMETER_LOGGER.multipleMetricsSystemsEnabled(String.join(",", otherMetrics));
+            }
+        }
+
         WildFlyMicrometerConfig micrometerConfig = new WildFlyMicrometerConfig.Builder()
             .endpoint(MicrometerSubsystemRegistrar.ENDPOINT.resolveModelAttribute(context, model).asStringOrNull())
             .step(MicrometerSubsystemRegistrar.STEP.resolveModelAttribute(context, model).asLong())

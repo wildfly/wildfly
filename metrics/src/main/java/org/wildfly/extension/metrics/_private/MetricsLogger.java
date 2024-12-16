@@ -52,4 +52,8 @@ public interface MetricsLogger extends BasicLogger {
     @LogMessage(level = ERROR)
     @Message(id = 5, value = "Malformed name.")
     void malformedName(@Cause Exception exception);
+
+    @LogMessage(level = INFO)
+    @Message(id = 6, value = "Additional metrics systems discovered while configuring WildFly Metrics: %s. Please refer to the documentation for more information.")
+    void multipleMetricsSystemsEnabled(String others);
 }

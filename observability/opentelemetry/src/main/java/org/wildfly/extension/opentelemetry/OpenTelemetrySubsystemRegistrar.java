@@ -5,6 +5,10 @@
 
 package org.wildfly.extension.opentelemetry;
 
+import static org.jboss.as.server.deployment.Phase.DEPENDENCIES;
+import static org.jboss.as.server.deployment.Phase.DEPENDENCIES_OPENTELEMETRY;
+import static org.jboss.as.server.deployment.Phase.POST_MODULE;
+import static org.jboss.as.server.deployment.Phase.POST_MODULE_OPENTELEMETRY;
 import static org.jboss.as.weld.Capabilities.WELD_CAPABILITY_NAME;
 import static org.wildfly.extension.opentelemetry.OpenTelemetryConfigurationConstants.DEFAULT_BATCH_DELAY;
 import static org.wildfly.extension.opentelemetry.OpenTelemetryConfigurationConstants.DEFAULT_EXPORT_TIMEOUT;
@@ -22,6 +26,7 @@ import static org.wildfly.extension.opentelemetry.OpenTelemetryConfigurationCons
 import static org.wildfly.extension.opentelemetry.OpenTelemetryConfigurationConstants.VERTX_DISABLE_DNS_RESOLVER;
 import static org.wildfly.extension.opentelemetry.OpenTelemetryExtensionLogger.OTEL_LOGGER;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -37,7 +42,6 @@ import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.operations.validation.StringAllowedValuesValidator;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
-import org.jboss.as.server.deployment.Phase;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.wildfly.extension.opentelemetry.api.WildFlyOpenTelemetryConfig;
@@ -55,6 +59,9 @@ import org.wildfly.subsystem.service.capability.CapabilityServiceInstaller;
  */
 
 class OpenTelemetrySubsystemRegistrar implements SubsystemResourceDefinitionRegistrar, ResourceServiceConfigurator {
+    private static final String CAPABILITY_NAME_METRICS = "org.wildfly.extension.metrics.scan";
+    private static final String CAPABILITY_NAME_MICROMETER = "org.wildfly.extension.micrometer";
+
     static final RuntimeCapability<Void> OPENTELEMETRY_CAPABILITY =
             RuntimeCapability.Builder.of(OPENTELEMETRY_CAPABILITY_NAME)
                     .addRequirements(WELD_CAPABILITY_NAME)
@@ -172,8 +179,7 @@ class OpenTelemetrySubsystemRegistrar implements SubsystemResourceDefinitionRegi
     public ManagementResourceRegistration register(SubsystemRegistration parent,
                                                    ManagementResourceRegistrationContext context) {
         ManagementResourceRegistration registration =
-                parent.registerSubsystemModel(ResourceDefinition.builder(ResourceRegistration.of(SUBSYSTEM_PATH),
-                        SUBSYSTEM_RESOLVER).build());
+                parent.registerSubsystemModel(ResourceDefinition.builder(ResourceRegistration.of(SUBSYSTEM_PATH), SUBSYSTEM_RESOLVER).build());
         ResourceDescriptor descriptor = ResourceDescriptor.builder(SUBSYSTEM_RESOLVER)
                 .addCapability(OPENTELEMETRY_CAPABILITY)
                 .addCapability(OPENTELEMETRY_CONFIG_CAPABILITY)
@@ -183,12 +189,12 @@ class OpenTelemetrySubsystemRegistrar implements SubsystemResourceDefinitionRegi
                 .withRemoveOperationRestartFlag(OperationEntry.Flag.RESTART_ALL_SERVICES)
                 .withDeploymentChainContributor(target -> {
                     target.addDeploymentProcessor(OpenTelemetryConfigurationConstants.SUBSYSTEM_NAME,
-                            Phase.DEPENDENCIES,
-                            0x18C5, // TODO: Update once WF Core is updated
+                            DEPENDENCIES,
+                            DEPENDENCIES_OPENTELEMETRY,
                             new OpenTelemetryDependencyProcessor());
                     target.addDeploymentProcessor(OpenTelemetryConfigurationConstants.SUBSYSTEM_NAME,
-                            Phase.POST_MODULE,
-                            0x3810, // TODO: Update once WF Core is updated
+                            POST_MODULE,
+                            POST_MODULE_OPENTELEMETRY,
                             new OpenTelemetryDeploymentProcessor(this.openTelemetryConfig::get));
                 })
                 .build();
@@ -200,6 +206,19 @@ class OpenTelemetrySubsystemRegistrar implements SubsystemResourceDefinitionRegi
 
     @Override
     public ResourceServiceInstaller configure(OperationContext context, ModelNode model) throws OperationFailedException {
+        List<String> otherMetrics = new ArrayList<>();
+        if (context.getCapabilityServiceSupport().hasCapability(CAPABILITY_NAME_METRICS)) {
+            otherMetrics.add("WildFly Metrics");
+        }
+        if (context.getCapabilityServiceSupport().hasCapability(CAPABILITY_NAME_MICROMETER)) {
+            otherMetrics.add("Micrometer");
+        }
+        if (!otherMetrics.isEmpty()) {
+            if (Boolean.parseBoolean(System.getProperty("wildfly.multiple.metrics.warn", "true"))) {
+                OTEL_LOGGER.multipleMetricsSystemsEnabled(String.join(",", otherMetrics));
+            }
+        }
+
         String exporter = OpenTelemetrySubsystemRegistrar.EXPORTER.resolveModelAttribute(context, model).asString();
         validateExporter(context, exporter);
 
