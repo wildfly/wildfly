@@ -20,7 +20,6 @@ import org.jboss.metadata.parser.util.NoopXMLResolver;
 import org.jboss.metadata.web.spec.TldMetaData;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleClassLoader;
-import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoadException;
 
 /**
@@ -48,7 +47,7 @@ public class SharedTldsMetaDataBuilder {
         final List<TldMetaData> metadata = new ArrayList<TldMetaData>();
 
         try {
-            ModuleClassLoader jstl = Module.getModuleFromCallerModuleLoader(ModuleIdentifier.create("javax.servlet.jstl.api")).getClassLoader();
+            ModuleClassLoader jstl = Module.getModuleFromCallerModuleLoader("javax.servlet.jstl.api").getClassLoader();
             for (String tld : JSTL_TAGLIBS) {
                 InputStream is = jstl.getResourceAsStream("META-INF/" + tld);
                 if (is != null) {
