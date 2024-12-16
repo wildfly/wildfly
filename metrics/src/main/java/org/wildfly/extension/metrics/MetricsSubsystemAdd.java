@@ -34,6 +34,8 @@ import org.wildfly.extension.metrics.deployment.DeploymentMetricProcessor;
  * @author <a href="http://jmesnil.net/">Jeff Mesnil</a> (c) 2018 Red Hat inc.
  */
 class MetricsSubsystemAdd extends AbstractBoottimeAddStepHandler {
+    private static final String CAPABILITY_NAME_MICROMETER = "org.wildfly.extension.micrometer.micrometer-collector";
+    private static final String CAPABILITY_NAME_OPENTELEMETRY = "org.wildfly.extension.opentelemetry";
 
 
     MetricsSubsystemAdd() {
@@ -70,6 +72,14 @@ class MetricsSubsystemAdd extends AbstractBoottimeAddStepHandler {
             context.addStep(new OperationStepHandler() {
                 @Override
                 public void execute(OperationContext operationContext, ModelNode modelNode) {
+
+                    if (context.hasOptionalCapability(CAPABILITY_NAME_MICROMETER, METRICS_REGISTRY_RUNTIME_CAPABILITY, null) ||
+                        context.hasOptionalCapability(CAPABILITY_NAME_OPENTELEMETRY, METRICS_REGISTRY_RUNTIME_CAPABILITY, null)) {
+                        if (Boolean.parseBoolean(System.getProperty("wildfly.multiple.metrics.warn", "true"))) {
+                            LOGGER.multipleMetricsSystemsEnabled();
+                        }
+                    }
+
                     ServiceController<?> serviceController = context.getServiceRegistry(false).getService(WILDFLY_COLLECTOR);
                     MetricCollector metricCollector = MetricCollector.class.cast(serviceController.getValue());
                     ServiceController<?> wildflyRegistryController = context.getServiceRegistry(false).getService(METRICS_REGISTRY_RUNTIME_CAPABILITY.getCapabilityServiceName());
