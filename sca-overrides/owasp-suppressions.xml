@@ -119,6 +119,24 @@
       <packageUrl regex="true">^pkg:maven/org\.wildfly\.clustering/wildfly-clustering-server-jgroups@.*$</packageUrl>
       <cpe>cpe:/a:redhat:jgroups</cpe>
    </suppress>
+   <suppress>
+      <notes><![CDATA[
+      file name: wildfly-launcher-1.0.0.Final.jar
+      
+      [WFLY-20135] Suppress wildfly-launcher mapping to the WildFly CPE as it is an independent artifact.
+      ]]></notes>
+      <packageUrl regex="true">^pkg:maven/org\.wildfly\.launcher/wildfly-launcher@.*$</packageUrl>
+      <cpe>cpe:/a:redhat:wildfly</cpe>
+   </suppress>
+   <suppress>
+      <notes><![CDATA[
+      file name: wildfly-vertx-extension-1.0.2.Final.jar
+
+      [WFLY-20136] Suppress wildfly-vertx-* mapping to the WildFly CPE as it is an independent artifact.
+      ]]></notes>
+      <packageUrl regex="true">^pkg:maven/org\.wildfly\.extras\.vertx/wildfly-vertx-.*@.*$</packageUrl>
+      <cpe>cpe:/a:redhat:wildfly</cpe>
+   </suppress>
    <!-- CVE Expressions -->
 
    <!-- In this section specific CVEs are supressed where we have triaged we are not interested in them being reported. -->
@@ -142,26 +160,11 @@
    </suppress>
    <suppress until="2025-02-09">
       <notes><![CDATA[
-      file name: grpc-api-1.58.0.jar
-      ]]></notes>
-      <packageUrl regex="true">^pkg:maven/io\.grpc/grpc\-api@.*$</packageUrl>
-      <cve>CVE-2023-44487</cve> <!-- This CVE specifically affects grpc-go not grpc-api -->
-   </suppress>
-   <suppress until="2025-02-09">
-      <notes><![CDATA[
       file name: h2-2.2.224.jar
       ]]></notes>
       <packageUrl regex="true">^pkg:maven/com\.h2database/h2@.*$</packageUrl>
       <!-- Disputed by h2database https://github.com/h2database/h2database/issues/1294 -->
       <vulnerabilityName>CVE-2018-14335</vulnerabilityName>
-   </suppress>
-   <suppress until="2025-02-09">
-      <notes><![CDATA[
-      file name: jackson-databind-2.15.3.jar
-      ]]></notes>
-      <packageUrl regex="true">^pkg:maven/com\.fasterxml\.jackson\.core/jackson\-databind@.*$</packageUrl>
-      <!-- Disputed by FasterXML that this is a vulnerability https://github.com/FasterXML/jackson-databind/issues/3972 -->
-      <cve>CVE-2023-35116</cve>
    </suppress>
    <suppress until="2025-02-09">
       <notes><![CDATA[
@@ -184,15 +187,6 @@
       <packageUrl regex="true">^pkg:maven/org\.apache\.commons/commons\-compress@.*$</packageUrl>
       <cve>CVE-2024-25710</cve>
       <cve>CVE-2024-26308</cve>
-   </suppress>
-   <suppress until="2025-03-04">
-      <notes><![CDATA[
-      file name: opentelemetry-proto-0.20.0-alpha.jar
-      ]]></notes>
-      <packageUrl regex="true">^pkg:maven/io\.opentelemetry\.proto/opentelemetry\-proto@.*$</packageUrl>
-      <cve>CVE-2023-43810</cve> <!-- CVE within the Python library. -->
-      <cve>CVE-2023-45142</cve> <!-- CVE within the Go library. -->
-      <cve>CVE-2023-47108</cve> <!-- CVE within the Go library. -->
    </suppress>
    <suppress until="2025-03-04">
       <notes><![CDATA[
@@ -241,15 +235,6 @@
       <packageUrl regex="true">^pkg:maven/org\.jboss\.resteasy/resteasy\-tracing\-api@.*$</packageUrl>
       <cve>CVE-2021-20293</cve>
    </suppress>
-   <suppress until="2025-09-13">
-      <notes><![CDATA[
-      file name: undertow-core-2.3.17.Final.jar
-
-      [WFLY-19732] This has been addressed under UNDERTOW-2429.
-      ]]></notes>
-      <packageUrl regex="true">^pkg:maven/io\.undertow/undertow-core@.*$</packageUrl>
-      <vulnerabilityName>CVE-2024-7885</vulnerabilityName>
-   </suppress>
    <suppress until="2025-09-20">
       <notes><![CDATA[
       file name: vertx-kafka-client-4.4.9.jar
@@ -276,14 +261,5 @@
       ]]></notes>
       <packageUrl regex="true">^pkg:maven/commons-io/commons-io@.*$</packageUrl>
       <vulnerabilityName>CVE-2024-47554</vulnerabilityName>
-   </suppress>
-   <suppress until="2025-10-08">
-      <notes><![CDATA[
-      file name: artemis-commons-2.37.0.jar (shaded: jakarta.json:jakarta.json-api:1.1.6)
-
-      [WFLY-19827] Suppress CVE-2024-9329 as it related to the GlassFish server not the libraries.
-      ]]></notes>
-      <packageUrl regex="true">^pkg:maven/.*$</packageUrl>
-      <cve>CVE-2024-9329</cve>
    </suppress>
 </suppressions>
