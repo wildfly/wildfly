@@ -15,7 +15,6 @@ import org.jboss.as.server.deployment.module.ModuleDependency;
 import org.jboss.as.server.deployment.module.ModuleSpecification;
 import org.jboss.as.server.moduleservice.ExtensionIndexService;
 import org.jboss.as.server.moduleservice.ServiceModuleLoader;
-import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoader;
 
 /**
@@ -30,8 +29,8 @@ import org.jboss.modules.ModuleLoader;
  */
 public class ApplicationClientDependencyProcessor implements DeploymentUnitProcessor {
 
-    public static final ModuleIdentifier CORBA_ID = ModuleIdentifier.create("org.omg.api");
-    public static final ModuleIdentifier XNIO = ModuleIdentifier.create("org.jboss.xnio");
+    public static final String CORBA_ID = "org.omg.api";
+    public static final String XNIO = "org.jboss.xnio";
 
 
     public ApplicationClientDependencyProcessor() {
@@ -48,18 +47,18 @@ public class ApplicationClientDependencyProcessor implements DeploymentUnitProce
         moduleSpecification.addSystemDependency(new ModuleDependency(loader, CORBA_ID, false, true, true, false));
         moduleSpecification.addSystemDependency(new ModuleDependency(loader, XNIO, false, true, true, false));
 
-        final Set<ModuleIdentifier> moduleIdentifiers = new HashSet<ModuleIdentifier>();
+        final Set<String> moduleIdentifiers = new HashSet<>();
         final DeploymentUnit top = deploymentUnit.getParent() == null ? deploymentUnit : deploymentUnit.getParent();
 
-        moduleIdentifiers.add(top.getAttachment(Attachments.MODULE_IDENTIFIER));
+        moduleIdentifiers.add(top.getAttachment(Attachments.MODULE_IDENTIFIER).toString());
         for(final DeploymentUnit module : top.getAttachmentList(Attachments.SUB_DEPLOYMENTS)) {
-            moduleIdentifiers.add(module.getAttachment(Attachments.MODULE_IDENTIFIER));
+            moduleIdentifiers.add(module.getAttachment(Attachments.MODULE_IDENTIFIER).toString());
         }
 
         moduleSpecification.removeUserDependencies(dep -> {
-            final ModuleIdentifier identifier = dep.getIdentifier();
-            return identifier.getName().startsWith(ServiceModuleLoader.MODULE_PREFIX)
-                    && !identifier.getName().startsWith(ExtensionIndexService.MODULE_PREFIX)
+            final String identifier = dep.getIdentifier().toString();
+            return identifier.startsWith(ServiceModuleLoader.MODULE_PREFIX)
+                    && !identifier.startsWith(ExtensionIndexService.MODULE_PREFIX)
                     && !moduleIdentifiers.contains(identifier);
         });
     }
