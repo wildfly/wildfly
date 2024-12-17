@@ -4,8 +4,10 @@
  */
 package org.wildfly.clustering.ejb.cache.bean;
 
-import org.wildfly.clustering.ee.Creator;
-import org.wildfly.clustering.ee.Remover;
+import java.util.concurrent.CompletionStage;
+
+import org.wildfly.clustering.cache.CacheEntryCreator;
+import org.wildfly.clustering.cache.CacheEntryRemover;
 import org.wildfly.clustering.ejb.bean.BeanInstance;
 import org.wildfly.clustering.ejb.bean.BeanMetaData;
 
@@ -16,7 +18,7 @@ import org.wildfly.clustering.ejb.bean.BeanMetaData;
  * @param <V> the bean instance type
  * @param <M> the bean metadata value type
  */
-public interface BeanFactory<K, V extends BeanInstance<K>, M> extends ImmutableBeanFactory<K, V, M>, Creator<V, M, K>, Remover<K> {
+public interface BeanFactory<K, V extends BeanInstance<K>, M> extends ImmutableBeanFactory<K, V, M>, CacheEntryCreator<V, M, K>, CacheEntryRemover<K> {
 
     @Override
     BeanMetaDataFactory<K, M> getMetaDataFactory();
@@ -24,18 +26,18 @@ public interface BeanFactory<K, V extends BeanInstance<K>, M> extends ImmutableB
     BeanGroupManager<K, V> getBeanGroupManager();
 
     @Override
-    default M createValue(V id, K groupId) {
-        return this.getMetaDataFactory().createValue(id, groupId);
+    default CompletionStage<M> createValueAsync(V id, K groupId) {
+        return this.getMetaDataFactory().createValueAsync(id, groupId);
     }
 
     @Override
-    default boolean remove(K id) {
-        return this.getMetaDataFactory().remove(id);
+    default CompletionStage<Void> removeAsync(K id) {
+        return this.getMetaDataFactory().removeAsync(id);
     }
 
     @Override
-    default boolean purge(K id) {
-        return this.getMetaDataFactory().purge(id);
+    default CompletionStage<Void> purgeAsync(K id) {
+        return this.getMetaDataFactory().purgeAsync(id);
     }
 
     default MutableBean<K, V> createBean(K id, M value) {

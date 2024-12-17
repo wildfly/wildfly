@@ -4,13 +4,6 @@
    <!-- Sometimes the mapping from GAV to CPE creates a bad match, this section supresses those matches. -->
    <suppress>
       <notes><![CDATA[
-      file name: expressly-5.0.0.jar
-      ]]></notes>
-      <packageUrl regex="true">^pkg:maven/org\.glassfish\.expressly/expressly@.*$</packageUrl>
-      <cpe>cpe:/a:eclipse:glassfish</cpe>
-   </suppress>
-   <suppress>
-      <notes><![CDATA[
       file name: jakarta-client-resteasy-3.0.3.Final.jar
       ]]></notes>
       <packageUrl regex="true">^pkg:maven/org\.wildfly\.security\.jakarta/jakarta\-client\-resteasy@.*$</packageUrl>
@@ -60,14 +53,6 @@
    </suppress>
    <suppress>
       <notes><![CDATA[
-      file name: wildfly-plugin-core-4.1.1.Final.jar
-      ]]></notes>
-      <packageUrl regex="true">^pkg:maven/org\.wildfly\.plugins/wildfly\-plugin\-core@.*$</packageUrl>
-      <cpe>cpe:/a:redhat:wildfly</cpe>
-      <cpe>cpe:/a:redhat:wildfly_core</cpe>
-   </suppress>
-   <suppress>
-      <notes><![CDATA[
       file name: transformer-7.0.0.Beta2.jar
 
       [WFLY-19236] This component is independent of WildFly so should not be matched against WildFly CVEs.
@@ -107,6 +92,51 @@
       <packageUrl regex="true">^pkg:maven/org\.wildfly\.unstable\.api\.annotation/unstable-api-annotation-classpath-indexer@.*$</packageUrl>
       <cpe>cpe:/a:redhat:wildfly</cpe>
    </suppress>
+   <suppress>
+      <notes><![CDATA[
+      file name: wildfly-clustering-cache-infinispan-common-1.1.2.Final.jar
+
+      [WFLY-19762] Suppress wildfly-clustering mapping to infinispan CPE.
+      ]]></notes>
+      <packageUrl regex="true">^pkg:maven/org\.wildfly\.clustering/wildfly-clustering-.*-infinispan.*@.*$</packageUrl>
+      <cpe>cpe:/a:infinispan:infinispan</cpe>
+   </suppress>
+   <suppress>
+      <notes><![CDATA[
+      file name: wildfly-clustering-server-api-1.1.2.Final.jar
+
+      [WFLY-19762] Suppress wildfly-clustering mapping to redhat:wildfly CPE.
+      ]]></notes>
+      <packageUrl regex="true">^pkg:maven/org\.wildfly\.clustering/wildfly-clustering-.*@.*$</packageUrl>
+      <cpe>cpe:/a:redhat:wildfly</cpe>
+   </suppress>
+   <suppress>
+      <notes><![CDATA[
+      file name: wildfly-clustering-server-jgroups-1.1.2.Final.jar
+      
+      [WFLY-19762] Suppress wildfly-clustering-server-jgroups mapping to redhat:jgroups CPE.
+      ]]></notes>
+      <packageUrl regex="true">^pkg:maven/org\.wildfly\.clustering/wildfly-clustering-server-jgroups@.*$</packageUrl>
+      <cpe>cpe:/a:redhat:jgroups</cpe>
+   </suppress>
+   <suppress>
+      <notes><![CDATA[
+      file name: wildfly-launcher-1.0.0.Final.jar
+      
+      [WFLY-20135] Suppress wildfly-launcher mapping to the WildFly CPE as it is an independent artifact.
+      ]]></notes>
+      <packageUrl regex="true">^pkg:maven/org\.wildfly\.launcher/wildfly-launcher@.*$</packageUrl>
+      <cpe>cpe:/a:redhat:wildfly</cpe>
+   </suppress>
+   <suppress>
+      <notes><![CDATA[
+      file name: wildfly-vertx-extension-1.0.2.Final.jar
+
+      [WFLY-20136] Suppress wildfly-vertx-* mapping to the WildFly CPE as it is an independent artifact.
+      ]]></notes>
+      <packageUrl regex="true">^pkg:maven/org\.wildfly\.extras\.vertx/wildfly-vertx-.*@.*$</packageUrl>
+      <cpe>cpe:/a:redhat:wildfly</cpe>
+   </suppress>
    <!-- CVE Expressions -->
 
    <!-- In this section specific CVEs are supressed where we have triaged we are not interested in them being reported. -->
@@ -130,26 +160,11 @@
    </suppress>
    <suppress until="2025-02-09">
       <notes><![CDATA[
-      file name: grpc-api-1.58.0.jar
-      ]]></notes>
-      <packageUrl regex="true">^pkg:maven/io\.grpc/grpc\-api@.*$</packageUrl>
-      <cve>CVE-2023-44487</cve> <!-- This CVE specifically affects grpc-go not grpc-api -->
-   </suppress>
-   <suppress until="2025-02-09">
-      <notes><![CDATA[
       file name: h2-2.2.224.jar
       ]]></notes>
       <packageUrl regex="true">^pkg:maven/com\.h2database/h2@.*$</packageUrl>
       <!-- Disputed by h2database https://github.com/h2database/h2database/issues/1294 -->
       <vulnerabilityName>CVE-2018-14335</vulnerabilityName>
-   </suppress>
-   <suppress until="2025-02-09">
-      <notes><![CDATA[
-      file name: jackson-databind-2.15.3.jar
-      ]]></notes>
-      <packageUrl regex="true">^pkg:maven/com\.fasterxml\.jackson\.core/jackson\-databind@.*$</packageUrl>
-      <!-- Disputed by FasterXML that this is a vulnerability https://github.com/FasterXML/jackson-databind/issues/3972 -->
-      <cve>CVE-2023-35116</cve>
    </suppress>
    <suppress until="2025-02-09">
       <notes><![CDATA[
@@ -172,15 +187,6 @@
       <packageUrl regex="true">^pkg:maven/org\.apache\.commons/commons\-compress@.*$</packageUrl>
       <cve>CVE-2024-25710</cve>
       <cve>CVE-2024-26308</cve>
-   </suppress>
-   <suppress until="2025-03-04">
-      <notes><![CDATA[
-      file name: opentelemetry-proto-0.20.0-alpha.jar
-      ]]></notes>
-      <packageUrl regex="true">^pkg:maven/io\.opentelemetry\.proto/opentelemetry\-proto@.*$</packageUrl>
-      <cve>CVE-2023-43810</cve> <!-- CVE within the Python library. -->
-      <cve>CVE-2023-45142</cve> <!-- CVE within the Go library. -->
-      <cve>CVE-2023-47108</cve> <!-- CVE within the Go library. -->
    </suppress>
    <suppress until="2025-03-04">
       <notes><![CDATA[
@@ -229,39 +235,31 @@
       <packageUrl regex="true">^pkg:maven/org\.jboss\.resteasy/resteasy\-tracing\-api@.*$</packageUrl>
       <cve>CVE-2021-20293</cve>
    </suppress>
-   <suppress until="2025-03-15">
+   <suppress until="2025-09-20">
       <notes><![CDATA[
-      file name: resteasy-spring-3.1.2.Final.jar
+      file name: vertx-kafka-client-4.4.9.jar
+
+      [WFLY-19764] Suppress CVE-2024-8391 mapping to vertx-kafka-client
       ]]></notes>
-      <packageUrl regex="true">^pkg:maven/org\.jboss\.resteasy\.spring/resteasy\-spring@.*$</packageUrl>
-      <cve>CVE-2018-1051</cve>
+      <packageUrl regex="true">^pkg:maven/io\.vertx/vertx-kafka-client@.*$</packageUrl>
+      <cve>CVE-2024-8391</cve>
    </suppress>
-   <suppress until="2025-04-10">
+   <suppress until="2025-10-07">
       <notes><![CDATA[
-      file name: undertow-core-2.3.12.Final.jar
+      file name: lucene-core-9.11.1.jar
 
-      [WFLY-19224] Since WildFly moved to using WildFly Elytron exclusively for security the
-      authentication mechanism from undertow-core is not used. This is a false positive.
+      [WFLY-19821] Supress CVE-2024-45772 as we don't include the affected module.
       ]]></notes>
-      <packageUrl regex="true">^pkg:maven/io\.undertow/undertow\-core@.*$</packageUrl>
-      <vulnerabilityName>CVE-2023-1973</vulnerabilityName>
+      <packageUrl regex="true">^pkg:maven/org\.apache\.lucene/lucene-.*@.*$</packageUrl>
+      <cve>CVE-2024-45772</cve>
    </suppress>
-   <suppress until="2025-04-12">
+   <suppress until="2025-10-07">
       <notes><![CDATA[
-      file name: joda-time-2.12.6.jar
+      file name: velocity-engine-core-2.3.jar (shaded: commons-io:commons-io:2.8.0)
 
-      [WFLY-19237] This CVE is disputed as the only proposed reason for the CVE is a NullPointerException is possible.
+      [WFLY-19822] Although some of commons-io is shaded in this affected class is not a part of the shading.
       ]]></notes>
-      <packageUrl regex="true">^pkg:maven/joda\-time/joda\-time@.*$</packageUrl>
-      <vulnerabilityName>CVE-2024-23080</vulnerabilityName>
-   </suppress>   
-   <suppress until="2025-07-03">
-      <notes><![CDATA[
-      file name: undertow-core-2.3.14.Final.jar
-
-      [WFLY-19494] This has already been addressed within UNDERTOW-2334.
-      ]]></notes>
-      <packageUrl regex="true">^pkg:maven/io\.undertow/undertow-core@.*$</packageUrl>
-      <vulnerabilityName>CVE-2024-6162</vulnerabilityName>
+      <packageUrl regex="true">^pkg:maven/commons-io/commons-io@.*$</packageUrl>
+      <vulnerabilityName>CVE-2024-47554</vulnerabilityName>
    </suppress>
 </suppressions>

@@ -15,8 +15,7 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.capability.BinaryCapabilityNameResolver;
 import org.jboss.dmr.ModelNode;
-import org.jboss.msc.service.ServiceName;
-import org.wildfly.clustering.infinispan.service.InfinispanCacheRequirement;
+import org.wildfly.clustering.infinispan.service.InfinispanServiceDescriptor;
 import org.wildfly.service.capture.FunctionExecutor;
 import org.wildfly.subsystem.service.ServiceDependency;
 import org.wildfly.subsystem.service.capture.FunctionExecutorRegistry;
@@ -40,8 +39,8 @@ public abstract class CacheMetricExecutor<C> implements MetricExecutor<C>, Funct
 
     @Override
     public ModelNode execute(OperationContext context, Metric<C> metric) throws OperationFailedException {
-        ServiceName name = InfinispanCacheRequirement.CACHE.getServiceName(context, this.resolver);
-        FunctionExecutor<Cache<?, ?>> executor = this.executors.getExecutor(ServiceDependency.on(name));
+        String[] resolved = this.resolver.apply(context.getCurrentAddress());
+        FunctionExecutor<Cache<?, ?>> executor = this.executors.getExecutor(ServiceDependency.on(InfinispanServiceDescriptor.CACHE, resolved[0], resolved[1]));
         return (executor != null) ? executor.execute(new MetricFunction<>(this, metric)) : null;
     }
 }

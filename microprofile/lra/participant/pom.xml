@@ -11,7 +11,11 @@
   <parent>
     <groupId>org.wildfly</groupId>
     <artifactId>wildfly-microprofile-lra</artifactId>
-    <version>34.0.0.Beta1-SNAPSHOT</version>
+    <!--
+        Maintain separation between the artifact id and the version to help prevent
+        merge conflicts between commits changing the GA and those changing the V.
+    -->
+    <version>35.0.0.Final-SNAPSHOT</version>
   </parent>
 
   <artifactId>wildfly-microprofile-lra-participant</artifactId>
@@ -52,11 +56,11 @@
       <artifactId>microprofile-lra-api</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.jboss.narayana.rts</groupId>
+      <groupId>org.jboss.narayana.lra</groupId>
       <artifactId>narayana-lra</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.jboss.narayana.rts</groupId>
+      <groupId>org.jboss.narayana.lra</groupId>
       <artifactId>lra-proxy-api</artifactId>
     </dependency>
     <dependency>
@@ -82,10 +86,6 @@
     <dependency>
       <groupId>org.jboss.resteasy</groupId>
       <artifactId>resteasy-cdi</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>${ee.maven.groupId}</groupId>
-      <artifactId>wildfly-clustering-service</artifactId>
     </dependency>
     <dependency>
       <groupId>${ee.maven.groupId}</groupId>

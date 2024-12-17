@@ -4,6 +4,8 @@
  */
 package org.wildfly.extension.messaging.activemq;
 
+import static org.jboss.as.controller.ModuleIdentifierUtil.canonicalModuleIdentifier;
+
 import static org.wildfly.extension.messaging.activemq._private.MessagingLogger.ROOT_LOGGER;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
@@ -17,10 +19,6 @@ import static org.wildfly.extension.messaging.activemq.Capabilities.ELYTRON_DOMA
 import static org.wildfly.extension.messaging.activemq.Capabilities.ELYTRON_SSL_CONTEXT_CAPABILITY_NAME;
 import static org.wildfly.extension.messaging.activemq.Capabilities.HTTP_UPGRADE_REGISTRY_CAPABILITY_NAME;
 import static org.wildfly.extension.messaging.activemq.Capabilities.JMX_CAPABILITY;
-import static org.wildfly.extension.messaging.activemq.Capabilities.OUTBOUND_SOCKET_BINDING_CAPABILITY;
-import static org.wildfly.extension.messaging.activemq.Capabilities.OUTBOUND_SOCKET_BINDING_CAPABILITY_NAME;
-import static org.wildfly.extension.messaging.activemq.Capabilities.PATH_MANAGER_CAPABILITY;
-import static org.wildfly.extension.messaging.activemq.Capabilities.SOCKET_BINDING_CAPABILITY_NAME;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.ADDRESS_SETTING;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.BINDINGS_DIRECTORY;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.HTTP_ACCEPTOR;
@@ -154,7 +152,6 @@ import org.jboss.as.network.SocketBinding;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 import org.jboss.modules.Module;
-import org.jboss.modules.ModuleIdentifier;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceController.Mode;
@@ -298,8 +295,8 @@ class ServerAdd extends AbstractAddStepHandler {
 
             // Add the ActiveMQ Service
             ServiceName activeMQServiceName = MessagingServices.getActiveMQServiceName(serverName);
-            final CapabilityServiceBuilder serviceBuilder = capabilityServiceTarget.addCapability(ACTIVEMQ_SERVER_CAPABILITY);
-            Supplier<PathManager> pathManager = serviceBuilder.requiresCapability(PATH_MANAGER_CAPABILITY, PathManager.class);
+            final CapabilityServiceBuilder<?> serviceBuilder = capabilityServiceTarget.addCapability(ACTIVEMQ_SERVER_CAPABILITY);
+            Supplier<PathManager> pathManager = serviceBuilder.requires(PathManager.SERVICE_DESCRIPTOR);
 
             Optional<Supplier<DataSource>> dataSource = Optional.empty();
             String dataSourceName = JOURNAL_DATASOURCE.resolveModelAttribute(context, model).asStringOrNull();
@@ -338,7 +335,7 @@ class ServerAdd extends AbstractAddStepHandler {
 
             Map<String, Supplier<SocketBinding>> socketBindings = new HashMap<>();
             for (final String socketBindingName : socketBindingNames) {
-                Supplier<SocketBinding> socketBinding = serviceBuilder.requiresCapability(SOCKET_BINDING_CAPABILITY_NAME, SocketBinding.class, socketBindingName);
+                Supplier<SocketBinding> socketBinding = serviceBuilder.requires(SocketBinding.SERVICE_DESCRIPTOR, socketBindingName);
                 socketBindings.put(socketBindingName, socketBinding);
             }
 
@@ -356,13 +353,12 @@ class ServerAdd extends AbstractAddStepHandler {
             for (final String connectorSocketBinding : connectorsSocketBindings) {
                 // find whether the connectorSocketBinding references a SocketBinding or an OutboundSocketBinding
                 if (outbounds.get(connectorSocketBinding)) {
-                    final ServiceName outboundSocketName = OUTBOUND_SOCKET_BINDING_CAPABILITY.getCapabilityServiceName(connectorSocketBinding);
-                    Supplier<OutboundSocketBinding> outboundSocketBinding = serviceBuilder.requiresCapability(OUTBOUND_SOCKET_BINDING_CAPABILITY_NAME, OutboundSocketBinding.class, connectorSocketBinding);
+                    Supplier<OutboundSocketBinding> outboundSocketBinding = serviceBuilder.requires(OutboundSocketBinding.SERVICE_DESCRIPTOR, connectorSocketBinding);
                     outboundSocketBindings.put(connectorSocketBinding, outboundSocketBinding);
                 } else {
                     // check if the socket binding has not already been added by the acceptors
                     if (!socketBindings.containsKey(connectorSocketBinding)) {
-                        Supplier<SocketBinding> socketBinding = serviceBuilder.requiresCapability(SOCKET_BINDING_CAPABILITY_NAME, SocketBinding.class, connectorSocketBinding);
+                        Supplier<SocketBinding> socketBinding = serviceBuilder.requires(SocketBinding.SERVICE_DESCRIPTOR, connectorSocketBinding);
                         socketBindings.put(connectorSocketBinding, socketBinding);
                     }
                 }
@@ -722,8 +718,7 @@ class ServerAdd extends AbstractAddStepHandler {
             String className = classModel.get(NAME).asString();
             String moduleName = classModel.get(MODULE).asString();
             try {
-                ModuleIdentifier moduleID = ModuleIdentifier.fromString(moduleName);
-                Module module = Module.getCallerModuleLoader().loadModule(moduleID);
+                Module module = Module.getCallerModuleLoader().loadModule(canonicalModuleIdentifier(moduleName));
                 Class<?> clazz = module.getClassLoader().loadClass(className);
                 return clazz;
             } catch (Exception e) {

@@ -10,9 +10,12 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Consumer;
+import java.util.UUID;
+import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.function.Supplier;
 
+import org.jboss.as.controller.RequirementServiceTarget;
 import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.as.ee.component.Attachments;
 import org.jboss.as.ee.component.ComponentConfiguration;
@@ -20,6 +23,7 @@ import org.jboss.as.ee.component.ComponentConfigurator;
 import org.jboss.as.ee.component.ComponentDescription;
 import org.jboss.as.ee.component.DependencyConfigurator;
 import org.jboss.as.ee.component.EEModuleDescription;
+import org.jboss.as.ejb3.component.EJBComponent;
 import org.jboss.as.ejb3.component.EJBComponentCreateService;
 import org.jboss.as.ejb3.component.EJBComponentDescription;
 import org.jboss.as.ejb3.deployment.EjbDeploymentAttachmentKeys;
@@ -31,10 +35,16 @@ import org.jboss.as.ejb3.timerservice.TimerServiceFactoryServiceConfigurator;
 import org.jboss.as.ejb3.timerservice.TimerServiceMetaData;
 import org.jboss.as.ejb3.timerservice.TimerServiceRegistryImpl;
 import org.jboss.as.ejb3.timerservice.composite.CompositeTimerServiceFactoryServiceConfigurator;
-import org.jboss.as.ejb3.timerservice.distributable.DistributableTimerServiceFactoryServiceConfigurator;
+import org.jboss.as.ejb3.timerservice.distributable.DistributableTimeoutListener;
+import org.jboss.as.ejb3.timerservice.distributable.DistributableTimerService;
+import org.jboss.as.ejb3.timerservice.distributable.DistributableTimerServiceConfiguration;
+import org.jboss.as.ejb3.timerservice.distributable.DistributableTimerSynchronizationFactory;
+import org.jboss.as.ejb3.timerservice.distributable.TimerSynchronizationFactory;
+import org.jboss.as.ejb3.timerservice.spi.ManagedTimerService;
 import org.jboss.as.ejb3.timerservice.spi.ManagedTimerServiceConfiguration.TimerFilter;
 import org.jboss.as.ejb3.timerservice.spi.ManagedTimerServiceFactory;
 import org.jboss.as.ejb3.timerservice.spi.ManagedTimerServiceFactoryConfiguration;
+import org.jboss.as.ejb3.timerservice.spi.TimedObjectInvoker;
 import org.jboss.as.ejb3.timerservice.spi.TimedObjectInvokerFactory;
 import org.jboss.as.ejb3.timerservice.spi.TimerListener;
 import org.jboss.as.ejb3.timerservice.spi.TimerServiceRegistry;
@@ -46,12 +56,22 @@ import org.jboss.as.server.deployment.EjbDeploymentMarker;
 import org.jboss.metadata.ejb.spec.EjbJarMetaData;
 import org.jboss.modules.Module;
 import org.jboss.msc.service.ServiceBuilder;
+import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
+import org.wildfly.clustering.ejb.timer.TimeoutListener;
 import org.wildfly.clustering.ejb.timer.TimerManagementProvider;
+import org.wildfly.clustering.ejb.timer.TimerManager;
+import org.wildfly.clustering.ejb.timer.TimerManagerConfiguration;
+import org.wildfly.clustering.ejb.timer.TimerManagerFactory;
+import org.wildfly.clustering.ejb.timer.TimerManagerFactoryConfiguration;
+import org.wildfly.clustering.ejb.timer.TimerRegistry;
 import org.wildfly.clustering.ejb.timer.TimerServiceConfiguration;
-import org.wildfly.clustering.ejb.timer.TimerServiceRequirement;
-import org.wildfly.clustering.service.ChildTargetService;
+import org.wildfly.clustering.server.util.UUIDFactory;
+import org.wildfly.subsystem.service.ServiceDependency;
+import org.wildfly.subsystem.service.ServiceInstaller;
+
+import jakarta.ejb.TimerConfig;
 
 /**
  * Deployment processor that sets up the timer service for singletons and stateless session beans
@@ -229,17 +249,135 @@ public class TimerServiceDeploymentProcessor implements DeploymentUnitProcessor 
                 return unit.getAttachment(org.jboss.as.server.deployment.Attachments.MODULE);
             }
         };
-
-        CapabilityServiceSupport support = unit.getAttachment(org.jboss.as.server.deployment.Attachments.CAPABILITY_SERVICE_SUPPORT);
-        ServiceName providerServiceName = TimerServiceRequirement.TIMER_MANAGEMENT_PROVIDER.getServiceName(support, providerName);
-        ServiceBuilder<?> builder = context.getServiceTarget().addService(name.append("installer"));
-        Supplier<TimerManagementProvider> dependency = builder.requires(providerServiceName);
-        builder.setInstance(new ChildTargetService(new Consumer<ServiceTarget>() {
+        TimerListener timerListener = factoryConfiguration.getTimerListener();
+        TimerRegistry<UUID> timerRegistry = new TimerRegistry<>() {
             @Override
-            public void accept(ServiceTarget target) {
-                TimerManagementProvider provider = dependency.get();
-                new DistributableTimerServiceFactoryServiceConfigurator(name, factoryConfiguration, configuration, provider, filter).configure(support).build(target).install();
+            public void register(UUID id) {
+                timerListener.timerAdded(id.toString());
             }
-        })).install();
+
+            @Override
+            public void unregister(UUID id) {
+                timerListener.timerRemoved(id.toString());
+            }
+        };
+        TimerManagerFactoryConfiguration<UUID> managerFactoryConfiguration = new TimerManagerFactoryConfiguration<>() {
+            @Override
+            public Supplier<UUID> getIdentifierFactory() {
+                return TimerIdentifierFactory.INSTANCE;
+            }
+
+            @Override
+            public TimerServiceConfiguration getTimerServiceConfiguration() {
+                return configuration;
+            }
+
+            @Override
+            public TimerRegistry<UUID> getRegistry() {
+                return timerRegistry;
+            }
+
+            @Override
+            public boolean isPersistent() {
+                return filter.test(new TimerConfig(null, true));
+            }
+        };
+        ServiceName timerManagerFactoryName = ServiceName.JBOSS.append("clustering", "timer", timerServiceName);
+        TimedObjectInvokerFactory invokerFactory = factoryConfiguration.getInvokerFactory();
+        TimerServiceRegistry registry = factoryConfiguration.getTimerServiceRegistry();
+        ServiceDependency<TimerManagerFactory<UUID>> managerFactory = ServiceDependency.on(timerManagerFactoryName);
+        ManagedTimerServiceFactory factory = new ManagedTimerServiceFactory() {
+            @Override
+            public ManagedTimerService createTimerService(EJBComponent component) {
+                TimedObjectInvoker invoker = invokerFactory.createInvoker(component);
+                TimerSynchronizationFactory<UUID> synchronizationFactory = new DistributableTimerSynchronizationFactory<>(timerRegistry);
+                TimeoutListener<UUID> timeoutListener = new DistributableTimeoutListener<>(invoker, synchronizationFactory);
+                TimerManager<UUID> manager = managerFactory.get().createTimerManager(new TimerManagerConfiguration<UUID>() {
+                    @Override
+                    public TimerServiceConfiguration getTimerServiceConfiguration() {
+                        return managerFactoryConfiguration.getTimerServiceConfiguration();
+                    }
+
+                    @Override
+                    public Supplier<UUID> getIdentifierFactory() {
+                        return managerFactoryConfiguration.getIdentifierFactory();
+                    }
+
+                    @Override
+                    public TimerRegistry<UUID> getRegistry() {
+                        return managerFactoryConfiguration.getRegistry();
+                    }
+
+                    @Override
+                    public boolean isPersistent() {
+                        return managerFactoryConfiguration.isPersistent();
+                    }
+
+                    @Override
+                    public TimeoutListener<UUID> getListener() {
+                        return timeoutListener;
+                    }
+                });
+                DistributableTimerServiceConfiguration<UUID> serviceConfiguration = new DistributableTimerServiceConfiguration<>() {
+                    @Override
+                    public TimedObjectInvoker getInvoker() {
+                        return invoker;
+                    }
+
+                    @Override
+                    public TimerServiceRegistry getTimerServiceRegistry() {
+                        return registry;
+                    }
+
+                    @Override
+                    public TimerListener getTimerListener() {
+                        return timerListener;
+                    }
+
+                    @Override
+                    public Function<String, UUID> getIdentifierParser() {
+                        return TimerIdentifierFactory.INSTANCE;
+                    }
+
+                    @Override
+                    public Predicate<TimerConfig> getTimerFilter() {
+                        return filter;
+                    }
+
+                    @Override
+                    public TimerSynchronizationFactory<UUID> getTimerSynchronizationFactory() {
+                        return synchronizationFactory;
+                    }
+                };
+                return new DistributableTimerService<>(serviceConfiguration, manager);
+            }
+        };
+        ServiceInstaller.builder(factory).provides(name).requires(managerFactory).build().install(context);
+
+        ServiceDependency<TimerManagementProvider> provider = ServiceDependency.on(TimerManagementProvider.SERVICE_DESCRIPTOR, providerName);
+        ServiceInstaller installer = new ServiceInstaller() {
+            @Override
+            public ServiceController<?> install(RequirementServiceTarget target) {
+                for (ServiceInstaller installer : provider.get().getTimerManagerFactoryServiceInstallers(timerManagerFactoryName, managerFactoryConfiguration)) {
+                    installer.install(target);
+                }
+                return null;
+            }
+        };
+        ServiceInstaller.builder(installer, unit.getAttachment(org.jboss.as.server.deployment.Attachments.CAPABILITY_SERVICE_SUPPORT)).requires(provider).build().install(context);
+    }
+
+    enum TimerIdentifierFactory implements Supplier<java.util.UUID>, Function<String, UUID> {
+        INSTANCE;
+
+        @Override
+        public java.util.UUID get() {
+            return UUIDFactory.INSECURE.get();
+        }
+
+        @Override
+        public java.util.UUID apply(String id) {
+            return java.util.UUID.fromString(id);
+        }
     }
 }

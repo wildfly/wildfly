@@ -10,7 +10,7 @@
     </properties>
 
     <resources>
-        <artifact name="${org.infinispan:infinispan-core-jakarta}"/>
+        <artifact name="${org.infinispan:infinispan-core}"/>
     </resources>
 
     <dependencies>
@@ -27,7 +27,6 @@
         <module name="org.infinispan.persistence.remote" optional="true"/>
         <module name="org.infinispan.client.hotrod" optional="true"/>
         <module name="org.infinispan.commons"/>
-        <module name="org.infinispan.component.annotations"/>
         <module name="org.infinispan.protostream"/>
         <module name="org.infinispan.protostream.types"/>
         <module name="org.jboss.logging"/>

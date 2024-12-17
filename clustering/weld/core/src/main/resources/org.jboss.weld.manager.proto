@@ -1,9 +1,11 @@
+syntax = "proto3";
+
 package org.jboss.weld.manager;
 
 /**
  * @TypeId(460)
  */
 message BeanManagerImpl {
-	optional	string	context	 = 1;
-	optional	string	id	 = 2;
+	string	context	 = 1;
+	string	id	 = 2;
 }

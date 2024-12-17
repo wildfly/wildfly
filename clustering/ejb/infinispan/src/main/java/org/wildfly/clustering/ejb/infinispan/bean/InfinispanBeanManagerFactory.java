@@ -7,9 +7,6 @@ package org.wildfly.clustering.ejb.infinispan.bean;
 import java.util.function.Supplier;
 
 import org.infinispan.Cache;
-import org.infinispan.remoting.transport.Address;
-import org.wildfly.clustering.dispatcher.CommandDispatcherFactory;
-import org.wildfly.clustering.ee.cache.tx.TransactionBatch;
 import org.wildfly.clustering.ejb.bean.BeanExpirationConfiguration;
 import org.wildfly.clustering.ejb.bean.BeanInstance;
 import org.wildfly.clustering.ejb.bean.BeanManager;
@@ -18,8 +15,7 @@ import org.wildfly.clustering.ejb.bean.BeanManagerFactory;
 import org.wildfly.clustering.ejb.cache.bean.BeanFactory;
 import org.wildfly.clustering.ejb.cache.bean.CompositeBeanFactory;
 import org.wildfly.clustering.ejb.cache.bean.RemappableBeanMetaDataEntry;
-import org.wildfly.clustering.infinispan.affinity.KeyAffinityServiceFactory;
-import org.wildfly.clustering.server.group.Group;
+import org.wildfly.clustering.server.infinispan.dispatcher.CacheContainerCommandDispatcherFactory;
 
 /**
  * Factory for creating an infinispan-based {@link BeanManager}.
@@ -27,7 +23,7 @@ import org.wildfly.clustering.server.group.Group;
  * @param <K> the bean identifier type
  * @param <V> the bean instance type
  */
-public class InfinispanBeanManagerFactory<K, V extends BeanInstance<K>> implements BeanManagerFactory<K, V, TransactionBatch> {
+public class InfinispanBeanManagerFactory<K, V extends BeanInstance<K>> implements BeanManagerFactory<K, V> {
 
     private final InfinispanBeanManagerFactoryConfiguration<K, V> configuration;
 
@@ -36,7 +32,7 @@ public class InfinispanBeanManagerFactory<K, V extends BeanInstance<K>> implemen
     }
 
     @Override
-    public BeanManager<K, V, TransactionBatch> createBeanManager(BeanManagerConfiguration<K, V> configuration) {
+    public BeanManager<K, V> createBeanManager(BeanManagerConfiguration<K, V> configuration) {
         return new InfinispanBeanManager<>(new DefaultInfinispanBeanManagerConfiguration<>(this.configuration, configuration));
     }
 
@@ -77,17 +73,7 @@ public class InfinispanBeanManagerFactory<K, V extends BeanInstance<K>> implemen
         }
 
         @Override
-        public KeyAffinityServiceFactory getAffinityFactory() {
-            return this.factoryConfiguration.getKeyAffinityServiceFactory();
-        }
-
-        @Override
-        public Group<Address> getGroup() {
-            return this.factoryConfiguration.getGroup();
-        }
-
-        @Override
-        public CommandDispatcherFactory getCommandDispatcherFactory() {
+        public CacheContainerCommandDispatcherFactory getCommandDispatcherFactory() {
             return this.factoryConfiguration.getCommandDispatcherFactory();
         }
     }

@@ -8,6 +8,8 @@ package org.wildfly.extension.elytron.oidc._private;
 import static org.jboss.logging.Logger.Level.INFO;
 import static org.jboss.logging.Logger.Level.WARN;
 
+import java.lang.invoke.MethodHandles;
+
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.logging.BasicLogger;
@@ -25,7 +27,7 @@ public interface ElytronOidcLogger extends BasicLogger {
     /**
      * The root logger with a category of the package name.
      */
-    ElytronOidcLogger ROOT_LOGGER = Logger.getMessageLogger(ElytronOidcLogger.class, ElytronOidcLogger.class.getPackage().getName());
+    ElytronOidcLogger ROOT_LOGGER = Logger.getMessageLogger(MethodHandles.lookup(), ElytronOidcLogger.class, ElytronOidcLogger.class.getPackage().getName());
 
     /**
      * Logs an informational message indicating the naming subsystem is being activated.

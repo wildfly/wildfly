@@ -5,6 +5,8 @@
 
 package org.wildfly.clustering.web.undertow.logging;
 
+import java.lang.invoke.MethodHandles;
+
 import org.jboss.logging.BasicLogger;
 import org.jboss.logging.Logger;
 import org.jboss.logging.Logger.Level;
@@ -15,7 +17,7 @@ import org.jboss.logging.annotations.MessageLogger;
 @MessageLogger(projectCode = "WFLYCLWEBUT", length = 4)
 public interface UndertowClusteringLogger extends BasicLogger {
 
-    UndertowClusteringLogger ROOT_LOGGER = Logger.getMessageLogger(UndertowClusteringLogger.class, "org.wildfly.clustering.web.undertow");
+    UndertowClusteringLogger ROOT_LOGGER = Logger.getMessageLogger(MethodHandles.lookup(), UndertowClusteringLogger.class, "org.wildfly.clustering.web.undertow");
 
     @Message(id = 1, value = "Session %s is invalid")
     IllegalStateException sessionIsInvalid(String sessionId);

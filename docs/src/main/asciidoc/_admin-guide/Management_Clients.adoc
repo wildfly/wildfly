@@ -120,6 +120,35 @@ Additionally as they have special handling within the management interface overr
 
 The configured headers are set at the very end of processing the request immediately before the response is returned to the client, this will mean any of the configured headers will override the same headers set by the corresponding endpoint.
 
+=== HTTP Interface Resource Constraints
+
+When the application server is running at the `Community` stability level or lower, four
+attributes are available to control the resource constraints for the HTTP management
+interface. These attributes are:
+
+* `backlog` - The number of connection requests allowed to build up in a backlog attempting
+to connect the open listener socket before being accepted by the server process (Default 50).
+* `connection-high-water` - The maximum number of concurrent connections that the server will
+accept before pausing the acceptance of new connections (Default 100).
+* `connection-low-water` - After the high water limit has been reached the server will not
+accept any more connections until the concurrent connection count drops below the value for
+`connection-low-water` (Default 75).
+* `no-request-timeout` - the time in milliseconds after which the server will close the
+connection if no new HTTP request has been received (Default 60000).
+
+When running at the stability level `Default` the management model attributes are not
+available but the default values defined here still apply. In this case the following
+system properties can be used to set the values:
+
+* `org.wildfly.management.backlog`
+* `org.wildfly.management.connection-high-water`
+* `org.wildfly.management.connection-low-water`
+* `org.wildfly.management.no-request-timeout`
+
+Although it is also possible to use the system properties with the lower stability levels,
+this is not recommended as the system properties are deprecated and will be removed in a
+future release. So where possible you should use the attributes defined in the management model.
+
 include::Command_Line_Interface.adoc[leveloffset=+1]
 
 include::Default_HTTP_Interface_Security.adoc[leveloffset=+1]

@@ -1,0 +1,163 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>org.wildfly.bom.builder</groupId>
+        <artifactId>wildfly-server</artifactId>
+        <!--
+        Maintain separation between the artifact id and the version to help prevent
+        merge conflicts between commits changing the GA and those changing the V.
+        -->
+        <version>35.0.0.Final-SNAPSHOT</version>
+    </parent>
+
+    <artifactId>wildfly-server-expansion</artifactId>
+
+    <packaging>pom</packaging>
+
+    <name>WildFly BOM Builders: Server Expansion</name>
+    <description>The Server's Expansion common dependency management and BOM Builder plugin configuration.</description>
+
+    <build>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.wildfly.plugins</groupId>
+                    <artifactId>wildfly-bom-builder-plugin</artifactId>
+                    <configuration>
+                        <!-- bom builder plugin config common to all Server Expansion BOMs -->
+                        <includeDependencies combine.children="append">
+                                <!-- Import MicroProfile APIs -->
+                                <dependency>
+                                    <groupId>org.eclipse.microprofile.config</groupId>
+                                    <artifactId>microprofile-config-api</artifactId>
+                                </dependency>
+                                <dependency>
+                                    <groupId>org.eclipse.microprofile.fault-tolerance</groupId>
+                                    <artifactId>microprofile-fault-tolerance-api</artifactId>
+                                </dependency>
+                                <dependency>
+                                    <groupId>org.eclipse.microprofile.health</groupId>
+                                    <artifactId>microprofile-health-api</artifactId>
+                                </dependency>
+                                <dependency>
+                                    <groupId>org.eclipse.microprofile.jwt</groupId>
+                                    <artifactId>microprofile-jwt-auth-api</artifactId>
+                                </dependency>
+                                <dependency>
+                                    <groupId>org.eclipse.microprofile.lra</groupId>
+                                    <artifactId>microprofile-lra-api</artifactId>
+                                </dependency>
+                                <dependency>
+                                    <groupId>org.eclipse.microprofile.openapi</groupId>
+                                    <artifactId>microprofile-openapi-api</artifactId>
+                                </dependency>
+                                <dependency>
+                                    <groupId>org.eclipse.microprofile.rest.client</groupId>
+                                    <artifactId>microprofile-rest-client-api</artifactId>
+                                </dependency>
+                                <dependency>
+                                    <groupId>org.eclipse.microprofile.reactive.messaging</groupId>
+                                    <artifactId>microprofile-reactive-messaging-api</artifactId>
+                                </dependency>
+                                <dependency>
+                                    <groupId>org.eclipse.microprofile.reactive-streams-operators</groupId>
+                                    <artifactId>microprofile-reactive-streams-operators-api</artifactId>
+                                </dependency>
+                                <!-- include OpenTelemetry API -->
+                                <dependency>
+                                    <groupId>io.opentelemetry</groupId>
+                                    <artifactId>opentelemetry-api</artifactId>
+                                </dependency>
+                                <dependency>
+                                    <groupId>io.opentelemetry</groupId>
+                                    <artifactId>opentelemetry-context</artifactId>
+                                </dependency>
+                                <!-- include Micrometer API -->
+                                <dependency>
+                                    <groupId>io.micrometer</groupId>
+                                    <artifactId>micrometer-core</artifactId>
+                                </dependency>
+                                <!-- include jakarta specs APIs -->
+                                <dependency>
+                                    <groupId>jakarta.annotation</groupId>
+                                    <artifactId>jakarta.annotation-api</artifactId>
+                                </dependency>
+                                <dependency>
+                                    <groupId>jakarta.enterprise</groupId>
+                                    <artifactId>jakarta.enterprise.cdi-api</artifactId>
+                                </dependency>
+                                <dependency>
+                                    <groupId>jakarta.interceptor</groupId>
+                                    <artifactId>jakarta.interceptor-api</artifactId>
+                                </dependency>
+                                <dependency>
+                                    <groupId>jakarta.json</groupId>
+                                    <artifactId>jakarta.json-api</artifactId>
+                                </dependency>
+                                <dependency>
+                                    <groupId>jakarta.json.bind</groupId>
+                                    <artifactId>jakarta.json.bind-api</artifactId>
+                                </dependency>
+                                <!-- replaces org.jboss.spec.javax.ws.rs:jboss-jaxrs-api_2.1_spec -->
+                                <dependency>
+                                    <groupId>jakarta.ws.rs</groupId>
+                                    <artifactId>jakarta.ws.rs-api</artifactId>
+                                </dependency>
+                                <!-- include Kafka client API -->
+                                <dependency>
+                                    <groupId>org.apache.kafka</groupId>
+                                    <artifactId>kafka-clients</artifactId>
+                                </dependency>
+                                <!-- include reactive-streams -->
+                                <dependency>
+                                    <groupId>org.reactivestreams</groupId>
+                                    <artifactId>reactive-streams</artifactId>
+                                </dependency>
+                                <!-- include SmallRye Kafka API -->
+                                <dependency>
+                                    <groupId>io.smallrye.reactive</groupId>
+                                    <artifactId>smallrye-reactive-messaging-kafka-api</artifactId>
+                                </dependency>
+                                <!-- include RESTeasy MP REST Client -->
+                                <dependency>
+                                    <groupId>org.jboss.resteasy.microprofile</groupId>
+                                    <artifactId>microprofile-rest-client</artifactId>
+                                </dependency>
+                                <!-- include SmallRye Config -->
+                                <dependency>
+                                    <groupId>io.smallrye.config</groupId>
+                                    <artifactId>smallrye-config</artifactId>
+                                </dependency>
+                        </includeDependencies>
+                    </configuration>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+    </build>
+
+    <modules>
+        <module>standard</module>
+    </modules>
+
+    <profiles>
+        <profile>
+            <id>skip.preview</id>
+            <activation>
+                <property>
+                    <name>!quickly</name>
+                </property>
+            </activation>
+            <modules>
+                <module>preview</module>
+            </modules>
+        </profile>
+    </profiles>
+</project>

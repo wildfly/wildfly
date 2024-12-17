@@ -37,12 +37,14 @@ import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.client.helpers.MeasurementUnit;
 import org.jboss.as.controller.descriptions.ParentResourceDescriptionResolver;
 import org.jboss.as.controller.descriptions.SubsystemResourceDescriptionResolver;
+import org.jboss.as.controller.management.Capabilities;
 import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
+import org.wildfly.common.function.Functions;
 import org.wildfly.extension.micrometer.jmx.JmxMicrometerCollector;
 import org.wildfly.extension.micrometer.metrics.MicrometerCollector;
 import org.wildfly.extension.micrometer.registry.NoOpRegistry;
@@ -62,17 +64,13 @@ class MicrometerSubsystemRegistrar implements SubsystemResourceDefinitionRegistr
     private static final String MICROMETER_MODULE = "org.wildfly.extension.micrometer";
     private static final String MICROMETER_API_MODULE = "org.wildfly.micrometer.deployment";
 
-    static final String CLIENT_FACTORY_CAPABILITY = "org.wildfly.management.model-controller-client-factory";
-    static final String MANAGEMENT_EXECUTOR = "org.wildfly.management.executor";
-    static final String PROCESS_STATE_NOTIFIER = "org.wildfly.management.process-state-notifier";
-
     static final PathElement PATH = SubsystemResourceDefinitionRegistrar.pathElement(MicrometerConfigurationConstants.NAME);
     public static final ParentResourceDescriptionResolver RESOLVER =
             new SubsystemResourceDescriptionResolver(MicrometerConfigurationConstants.NAME, MicrometerSubsystemRegistrar.class);
 
     static final RuntimeCapability<Void> MICROMETER_COLLECTOR_RUNTIME_CAPABILITY =
             RuntimeCapability.Builder.of(MICROMETER_MODULE + ".wildfly-collector", MicrometerCollector.class)
-                    .addRequirements(CLIENT_FACTORY_CAPABILITY, MANAGEMENT_EXECUTOR, PROCESS_STATE_NOTIFIER)
+                    .addRequirements(ModelControllerClientFactory.SERVICE_DESCRIPTOR, Capabilities.MANAGEMENT_EXECUTOR, ProcessStateNotifier.SERVICE_DESCRIPTOR)
                     .build();
 
     static final String[] EXPORTED_MODULES = {
@@ -154,9 +152,9 @@ class MicrometerSubsystemRegistrar implements SubsystemResourceDefinitionRegistr
             throw MICROMETER_LOGGER.failedInitializeJMXRegistrar(e);
         }
 
-        ServiceDependency<ModelControllerClientFactory> mccf = ServiceDependency.on(CLIENT_FACTORY_CAPABILITY, ModelControllerClientFactory.class);
-        ServiceDependency<Executor> executor = ServiceDependency.on(MANAGEMENT_EXECUTOR, Executor.class);
-        ServiceDependency<ProcessStateNotifier> processStateNotifier = ServiceDependency.on(PROCESS_STATE_NOTIFIER, ProcessStateNotifier.class);
+        ServiceDependency<ModelControllerClientFactory> mccf = ServiceDependency.on(ModelControllerClientFactory.SERVICE_DESCRIPTOR);
+        ServiceDependency<Executor> executor = ServiceDependency.on(Capabilities.MANAGEMENT_EXECUTOR);
+        ServiceDependency<ProcessStateNotifier> processStateNotifier = ServiceDependency.on(ProcessStateNotifier.SERVICE_DESCRIPTOR);
 
         Supplier<MicrometerCollector> collectorSupplier = () ->
                 new MicrometerCollector(mccf.get().createClient(executor.get()), processStateNotifier.get(), wildFlyRegistry);
@@ -172,7 +170,6 @@ class MicrometerSubsystemRegistrar implements SubsystemResourceDefinitionRegistr
                 return subsystem -> exposeAnySubsystem || exposedSubsystems.contains(subsystem);
             }
         });
-
 
         AtomicReference<MicrometerCollector> captor = new AtomicReference<>();
 
@@ -190,10 +187,11 @@ class MicrometerSubsystemRegistrar implements SubsystemResourceDefinitionRegistr
         }, OperationContext.Stage.VERIFY);
 
         return CapabilityServiceInstaller.builder(MICROMETER_COLLECTOR_RUNTIME_CAPABILITY, collectorSupplier)
-                .requires(List.of(mccf, executor, processStateNotifier))
-                .withCaptor(captor::set) // capture the provided value
-                .asActive() // Start actively
-                .build();
+            .requires(List.of(mccf, executor, processStateNotifier))
+            .withCaptor(captor::set) // capture the provided value
+            .onStop(Functions.closingConsumer())
+            .asActive() // Start actively
+            .build();
     }
 
     public interface MicrometerDeploymentConfiguration {

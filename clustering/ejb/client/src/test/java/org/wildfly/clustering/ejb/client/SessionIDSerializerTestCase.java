@@ -5,19 +5,16 @@
 
 package org.wildfly.clustering.ejb.client;
 
-import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.UUID;
+import java.util.function.Consumer;
 
 import org.jboss.ejb.client.SessionID;
 import org.jboss.ejb.client.UUIDSessionID;
-import org.junit.Test;
-import org.wildfly.clustering.ejb.client.SessionIDSerializer.BasicSessionIDExternalizer;
-import org.wildfly.clustering.ejb.client.SessionIDSerializer.UUIDSessionIDExternalizer;
-import org.wildfly.clustering.ejb.client.SessionIDSerializer.UnknownSessionIDExternalizer;
-import org.wildfly.clustering.marshalling.ExternalizerTesterFactory;
-import org.wildfly.clustering.marshalling.Tester;
-import org.wildfly.clustering.marshalling.protostream.ProtoStreamTesterFactory;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.wildfly.clustering.marshalling.MarshallingTesterFactory;
+import org.wildfly.clustering.marshalling.TesterFactory;
+import org.wildfly.clustering.marshalling.junit.TesterFactorySource;
 
 /**
  * Unit test for {@link SessionIDSerializer}.
@@ -25,32 +22,25 @@ import org.wildfly.clustering.marshalling.protostream.ProtoStreamTesterFactory;
  */
 public class SessionIDSerializerTestCase {
 
-    @Test
-    public void testProtoStream() throws IOException {
-        test(ProtoStreamTesterFactory.INSTANCE.createTester());
-    }
-
-    @Test
-    public void testExternalizer() throws IOException {
-        test(new ExternalizerTesterFactory(new UUIDSessionIDExternalizer(), new BasicSessionIDExternalizer(), new UnknownSessionIDExternalizer()).createTester());
-    }
-
-    private static void test(Tester<SessionID> tester) throws IOException {
+    @ParameterizedTest
+    @TesterFactorySource(MarshallingTesterFactory.class)
+    public void test(TesterFactory factory) {
         UUID uuid = UUID.randomUUID();
+        Consumer<SessionID> tester = factory.createTester();
 
-        tester.test(new UUIDSessionID(uuid));
+        tester.accept(new UUIDSessionID(uuid));
 
         ByteBuffer buffer = ByteBuffer.allocate(20);
         buffer.putInt(0x07000000);
         buffer.putLong(uuid.getMostSignificantBits());
         buffer.putLong(uuid.getLeastSignificantBits());
 
-        tester.test(SessionID.createSessionID(buffer.array()));
+        tester.accept(SessionID.createSessionID(buffer.array()));
 
         buffer = ByteBuffer.allocate(16);
         buffer.putLong(uuid.getMostSignificantBits());
         buffer.putLong(uuid.getLeastSignificantBits());
 
-        tester.test(SessionID.createSessionID(buffer.array()));
+        tester.accept(SessionID.createSessionID(buffer.array()));
     }
 }

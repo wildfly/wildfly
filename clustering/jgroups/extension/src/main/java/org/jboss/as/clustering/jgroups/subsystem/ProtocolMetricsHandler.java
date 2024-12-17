@@ -8,7 +8,6 @@ import java.lang.reflect.AccessibleObject;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.security.AccessController;
 import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
 import java.util.HashMap;
@@ -18,7 +17,6 @@ import org.jboss.as.clustering.jgroups.logging.JGroupsLogger;
 import org.jboss.as.controller.AbstractRuntimeOnlyHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.capability.UnaryCapabilityNameResolver;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -28,8 +26,8 @@ import org.jgroups.annotations.ManagedAttribute;
 import org.jgroups.annotations.Property;
 import org.jgroups.stack.Protocol;
 import org.jgroups.util.Util;
-import org.wildfly.clustering.jgroups.spi.JGroupsRequirement;
 import org.wildfly.common.function.ExceptionFunction;
+import org.wildfly.security.manager.WildFlySecurityManager;
 import org.wildfly.service.capture.FunctionExecutor;
 import org.wildfly.subsystem.service.ServiceDependency;
 import org.wildfly.subsystem.service.capture.FunctionExecutorRegistry;
@@ -95,7 +93,7 @@ public class ProtocolMetricsHandler extends AbstractRuntimeOnlyHandler {
                 }
             };
             try {
-                return AccessController.doPrivileged(action);
+                return WildFlySecurityManager.doUnchecked(action);
             } catch (PrivilegedActionException e) {
                 throw e.getException();
             }
@@ -221,7 +219,7 @@ public class ProtocolMetricsHandler extends AbstractRuntimeOnlyHandler {
 
         String name = operation.get(ModelDescriptionConstants.NAME).asString();
         String protocolName = context.getCurrentAddressValue();
-        ServiceName channelServiceName = JGroupsRequirement.CHANNEL.getServiceName(context, UnaryCapabilityNameResolver.PARENT);
+        ServiceName channelServiceName = ChannelResourceDefinition.CHANNEL_CAPABILITY.getCapabilityServiceName(context.getCurrentAddress().getParent());
         ExceptionFunction<JChannel, ModelNode, Exception> function = new ExceptionFunction<>() {
             @Override
             public ModelNode apply(JChannel channel) throws Exception {

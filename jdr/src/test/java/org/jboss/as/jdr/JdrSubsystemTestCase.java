@@ -5,19 +5,18 @@
  */
 package org.jboss.as.jdr;
 
-import static org.jboss.as.jdr.JdrReportSubsystemDefinition.EXECUTOR_CAPABILITY;
-
 import java.io.IOException;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.Locale;
-import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executor;
 
 import javax.xml.stream.XMLStreamException;
 
 import org.jboss.as.controller.RunningMode;
 import org.jboss.as.controller.capability.registry.RuntimeCapabilityRegistry;
 import org.jboss.as.controller.extension.ExtensionRegistry;
+import org.jboss.as.controller.management.Capabilities;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
@@ -82,7 +81,7 @@ public class JdrSubsystemTestCase extends AbstractSubsystemBaseTest {
             @Override
             protected void initializeExtraSubystemsAndModel(ExtensionRegistry extensionRegistry, Resource rootResource, ManagementResourceRegistration rootRegistration, RuntimeCapabilityRegistry capabilityRegistry) {
                 super.initializeExtraSubystemsAndModel(extensionRegistry, rootResource, rootRegistration, capabilityRegistry);
-                registerServiceCapabilities(capabilityRegistry, Collections.singletonMap(EXECUTOR_CAPABILITY, ExecutorService.class));
+                registerServiceCapabilities(capabilityRegistry, Collections.singletonMap(Capabilities.MANAGEMENT_EXECUTOR.getName(), Executor.class));
             }
         };
     }

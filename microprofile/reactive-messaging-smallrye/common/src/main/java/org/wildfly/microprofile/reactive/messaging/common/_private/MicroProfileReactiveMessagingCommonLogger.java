@@ -13,6 +13,8 @@ import org.jboss.logging.annotations.MessageLogger;
 
 import static org.jboss.logging.Logger.Level.INFO;
 
+import java.lang.invoke.MethodHandles;
+
 /**
  * Log messages for WildFly microprofile-reactive-messaging-smallrye Extension.
  *
@@ -21,7 +23,7 @@ import static org.jboss.logging.Logger.Level.INFO;
 @MessageLogger(projectCode = "WFLYRXMKAF", length = 4)
 public interface MicroProfileReactiveMessagingCommonLogger extends BasicLogger {
 
-    MicroProfileReactiveMessagingCommonLogger LOGGER = Logger.getMessageLogger(MicroProfileReactiveMessagingCommonLogger.class, "org.wildfly.extension.microprofile.reactive.messaging");
+    MicroProfileReactiveMessagingCommonLogger LOGGER = Logger.getMessageLogger(MethodHandles.lookup(), MicroProfileReactiveMessagingCommonLogger.class, "org.wildfly.extension.microprofile.reactive.messaging");
 
     /**
      * Logs an informational message indicating the subsystem is being activated.

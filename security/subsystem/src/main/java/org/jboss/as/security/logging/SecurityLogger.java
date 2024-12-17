@@ -4,6 +4,7 @@
  */
 
 package org.jboss.as.security.logging;
+import java.lang.invoke.MethodHandles;
 import javax.xml.stream.Location;
 import javax.xml.stream.XMLStreamException;
 
@@ -25,7 +26,7 @@ public interface SecurityLogger extends BasicLogger {
     /**
      * A logger with a category of the package name.
      */
-    SecurityLogger ROOT_LOGGER = Logger.getMessageLogger(SecurityLogger.class, "org.jboss.as.security");
+    SecurityLogger ROOT_LOGGER = Logger.getMessageLogger(MethodHandles.lookup(), SecurityLogger.class, "org.jboss.as.security");
 
 //   /** Logs a message indicating the current version of the PicketBox library
 //    *

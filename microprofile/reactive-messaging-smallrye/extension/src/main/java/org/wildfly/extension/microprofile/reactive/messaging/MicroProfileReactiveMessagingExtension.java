@@ -8,11 +8,10 @@ package org.wildfly.extension.microprofile.reactive.messaging;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 
+import io.vertx.core.logging.LoggerFactory;
 import java.util.EnumSet;
 import java.util.List;
 
-import io.netty.util.internal.logging.InternalLoggerFactory;
-import io.netty.util.internal.logging.JdkLoggerFactory;
 
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
@@ -28,7 +27,6 @@ import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelNode;
-import org.jboss.modules.Module;
 import org.jboss.modules.ModuleClassLoader;
 import org.jboss.modules.ModuleLoadException;
 import org.jboss.modules.ModuleLoader;
@@ -52,8 +50,9 @@ public class MicroProfileReactiveMessagingExtension implements Extension {
     static final String REACTIVE_STREAMS_OPERATORS_CAPABILITY_NAME = "org.wildfly.microprofile.reactive-streams-operators";
     static final String CONFIG_CAPABILITY_NAME = "org.wildfly.microprofile.config";
 
-    protected static final ModelVersion VERSION_1_0_0 = ModelVersion.create(1, 0, 0);
-    private static final ModelVersion CURRENT_MODEL_VERSION = VERSION_1_0_0;
+    static final ModelVersion VERSION_1_0_0 = ModelVersion.create(1, 0, 0);
+    static final ModelVersion VERSION_2_0_0 = ModelVersion.create(2, 0, 0);
+    private static final ModelVersion CURRENT_MODEL_VERSION = VERSION_2_0_0;
 
 
     private final PersistentResourceXMLDescription currentDescription = MicroProfileReactiveMessagingSubsystemSchema.CURRENT.getXMLDescription();
@@ -61,14 +60,16 @@ public class MicroProfileReactiveMessagingExtension implements Extension {
     @Override
     public void initialize(ExtensionContext extensionContext) {
         // Initialize the Netty logger factory or we get horrible stack traces
+        // Initialize the vert.x logger factory or we get SM failures if deployment code is on the stack when it initializes stack traces
         ClassLoader cl = WildFlySecurityManager.getClassLoaderPrivileged(this.getClass());
         if (cl instanceof ModuleClassLoader) {
             ModuleLoader loader = ((ModuleClassLoader) cl).getModule().getModuleLoader();
             try {
-                Module module = loader.loadModule("io.netty");
-                InternalLoggerFactory.setDefaultFactory(JdkLoggerFactory.INSTANCE);
+                loader.loadModule("io.vertx.core");
+                //noinspection deprecation
+                LoggerFactory.initialise();
             } catch (ModuleLoadException e) {
-                // The netty module is not there so don't do anything
+                // The vert.x module is not there so don't do anything
             }
         }
 
@@ -85,4 +86,5 @@ public class MicroProfileReactiveMessagingExtension implements Extension {
             extensionParsingContext.setSubsystemXmlMapping(SUBSYSTEM_NAME, schema.getNamespace().getUri(), reader);
         }
     }
+
 }

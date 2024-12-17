@@ -27,7 +27,6 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -64,6 +63,8 @@ import org.junit.Test;
 
 /**
  * Tests we can patch and rollback a legacy host by using the patch high level commands and management operations.
+ *
+ * This test is only valid for EAP 7.4.0 legacy hosts, since the patching subsystem was removed in EAP 8.0.0 and above
  */
 public class PatchRemoteHostTest extends AbstractCliTestBase {
     private static final int EXIT_CODE_HOST_TIMEOUT = TimeoutUtil.adjust(30);
@@ -101,6 +102,12 @@ public class PatchRemoteHostTest extends AbstractCliTestBase {
         secondaryProductVersion = new ProductVersion(configuration);
     }
 
+    /**
+     * Tests we can patch and rollback a legacy host by using the patch high level commands using
+     * a legacy host client. The operation should be rejected by using a client connected to the DC.
+     *
+     * @throws Exception if an error occurs
+     */
     @Test
     public void testPatchCommand() throws Exception {
         try {
@@ -123,7 +130,7 @@ public class PatchRemoteHostTest extends AbstractCliTestBase {
             String actualMessage = exception.getMessage();
             assertTrue(actualMessage, actualMessage.contains(expectedMessage));
 
-            // works against the secondary
+            // works against the secondary if the host is an EAP 7.4.0
             Assert.assertTrue(cli.sendLine("patch info --host=" + secondaryHostName, false));
 
             final String patchID = "secondary-host-domain-patch";
@@ -168,6 +175,12 @@ public class PatchRemoteHostTest extends AbstractCliTestBase {
         }
     }
 
+    /**
+     * Tests we can patch and rollback a legacy host from the DC by using the patch management operation
+     * against the secondary host resource.
+     *
+     * @throws Exception if an error occurs
+     */
     @Test
     public void testPatchMgmtOperation() throws Exception {
         final ModelControllerClient client = primaryLifecycleUtil.getDomainClient();
@@ -233,9 +246,9 @@ public class PatchRemoteHostTest extends AbstractCliTestBase {
                 final Class<?> clazz = module.getClassLoader().loadClass("org.jboss.as.version.ProductConfig");
                 final Method resolveName = clazz.getMethod("resolveName");
                 final Method resolveVersion = clazz.getMethod("resolveVersion");
-                final Constructor<?> constructor = clazz.getConstructor(ModuleLoader.class, String.class, Map.class);
+                final Method fromFilesystemSlot = clazz.getMethod("fromFilesystemSlot", ModuleLoader.class, String.class, Map.class);
 
-                final Object productConfig = constructor.newInstance(loader, jbossHomeDir.toAbsolutePath().toString(),
+                final Object productConfig = fromFilesystemSlot.invoke(null, loader, jbossHomeDir.toAbsolutePath().toString(),
                         Collections.emptyMap());
 
                 product = (String) resolveName.invoke(productConfig);
@@ -285,8 +298,7 @@ public class PatchRemoteHostTest extends AbstractCliTestBase {
         byte[] newHash = hashFile(addedFile);
         String[] subdir = new String[fileSegments.length - 1];
         System.arraycopy(fileSegments, 0, subdir, 0, fileSegments.length - 1);
-        ContentModification fileAdded = new ContentModification(new MiscContentItem(addedFile.getName(), subdir, newHash),
+        return new ContentModification(new MiscContentItem(addedFile.getName(), subdir, newHash),
                 NO_CONTENT, ADD);
-        return fileAdded;
     }
 }

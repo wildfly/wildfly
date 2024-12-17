@@ -11,16 +11,13 @@ import static org.junit.Assert.assertTrue;
 
 import java.util.List;
 import java.util.ServiceLoader;
-import java.util.stream.Collectors;
 
 import jakarta.annotation.Resource;
 
 import org.infinispan.client.hotrod.RemoteCache;
 import org.infinispan.client.hotrod.RemoteCacheContainer;
 import org.infinispan.client.hotrod.Search;
-import org.infinispan.commons.marshall.ProtoStreamMarshaller;
 import org.infinispan.protostream.GeneratedSchema;
-import org.infinispan.protostream.SerializationContext;
 import org.infinispan.protostream.SerializationContextInitializer;
 import org.infinispan.query.dsl.Query;
 import org.infinispan.query.dsl.QueryFactory;
@@ -68,17 +65,13 @@ public class ContainerRemoteQueryTestCase {
         RemoteCache<String, Book> cache = this.container.getCache();
         cache.clear();
 
-        List<GeneratedSchema> schemas = ServiceLoader.load(SerializationContextInitializer.class, this.getClass().getClassLoader()).stream().map(ServiceLoader.Provider::get).filter(GeneratedSchema.class::isInstance).map(GeneratedSchema.class::cast).collect(Collectors.toList());
-
-        ProtoStreamMarshaller marshaller = (ProtoStreamMarshaller) cache.getRemoteCacheContainer().getMarshaller();
-        SerializationContext context = marshaller.getSerializationContext();
         RemoteCache<String, String> schemaCache = this.container.getCache(ProtobufMetadataManagerConstants.PROTOBUF_METADATA_CACHE_NAME);
-        for (GeneratedSchema schema : schemas) {
-            schema.registerSchema(context);
-            schema.registerMarshallers(context);
-
-            schemaCache.put(schema.getProtoFileName(), schema.getProtoFile());
-            assertFalse(schemaCache.containsKey(ProtobufMetadataManagerConstants.ERRORS_KEY_SUFFIX));
+        for (SerializationContextInitializer initializer : ServiceLoader.load(SerializationContextInitializer.class, this.getClass().getClassLoader())) {
+            if (initializer instanceof GeneratedSchema) {
+                GeneratedSchema schema = (GeneratedSchema) initializer;
+                schemaCache.put(schema.getProtoFileName(), schema.getProtoFile());
+                assertFalse(schemaCache.containsKey(ProtobufMetadataManagerConstants.ERRORS_KEY_SUFFIX));
+            }
         }
 
         QueryFactory queryFactory = Search.getQueryFactory(cache);

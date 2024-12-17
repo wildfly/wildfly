@@ -1,0 +1,301 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+
+
+<!--
+    This module provides various profiles that enable the execution of other modules that test functionality provided
+    via the base server (i.e. provisioned via wildfly-ee-galleon-pack feature pack artifact).
+
+    It should not be used as the parent of those modules.
+-->
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>org.wildfly</groupId>
+        <artifactId>wildfly-parent</artifactId>
+        <!--
+        Maintain separation between the artifact id and the version to help prevent
+        merge conflicts between commits changing the GA and those changing the V.
+        -->
+        <version>35.0.0.Final-SNAPSHOT</version>
+        <relativePath>../../pom.xml</relativePath>
+    </parent>
+
+    <artifactId>wildfly-testsuite-aggregator-base</artifactId>
+    <packaging>pom</packaging>
+
+    <name>WildFly Test Suite: Base Server Aggregator</name>
+    <description>Controls execution of testsuite modules relevant to testing functionality
+                 available via the wildfly-ee-galleon-pack feature pack</description>
+
+    <profiles>
+
+        <!-- -Dts.smoke -->
+        <profile>
+            <id>ts.integ.group.smoke</id>
+            <activation><property><name>!ts.noSmoke</name></property></activation>
+            <modules>
+                <module>../integration/web</module>
+                <module>../integration/smoke</module>
+            </modules>
+        </profile>
+
+        <!-- -DallTests -->
+        <profile>
+            <id>base.all-modules.module.profile</id>
+            <activation><property><name>allTests</name></property></activation>
+            <modules>
+                <module>../integration/ws</module>
+                <module>../test-feature-pack</module> <!-- needed by integration/basic -->
+                <module>../integration/basic</module>
+                <module>../integration/clustering</module>
+                <module>../integration/elytron</module>
+                <module>../integration/elytron-oidc-client</module>
+                <module>../integration/vdx</module>
+                <module>../integration/iiop</module>
+                <module>../integration/xts</module>
+                <module>../integration/rts</module>
+                <module>../integration/rbac</module>
+                <module>../integration/multinode</module>
+                <module>../integration/manualmode</module>
+                <module>../integration/secman</module>
+                <module>../integration/legacy</module>
+                <module>../domain</module>
+                <module>../scripts</module>
+                <module>../test-product-conf</module>
+            </modules>
+        </profile>
+
+        <profile>
+            <id>mixed-domain.module.profile</id>
+            <activation><property><name>jboss.test.mixed.domain.dir</name></property></activation>
+            <modules>
+                <module>../mixed-domain</module>
+            </modules>
+        </profile>
+
+        <profile>
+            <id>base.integ.module.profile</id>
+            <activation><property><name>integ.module</name></property></activation>
+            <modules>
+                <module>../integration/ws</module>
+                <module>../integration/web</module>
+                <module>../integration/smoke</module>
+                <module>../test-feature-pack</module> <!-- needed by integration/basic -->
+                <module>../integration/basic</module>
+                <module>../integration/vdx</module>
+                <module>../integration/iiop</module>
+                <module>../integration/xts</module>
+                <module>../integration/rts</module>
+                <module>../integration/rbac</module>
+                <module>../integration/clustering</module>
+                <module>../integration/multinode</module>
+                <module>../test-product-conf</module> <!-- needed by manualmode -->
+                <module>../integration/manualmode</module>
+                <module>../integration/secman</module>
+                <module>../integration/legacy</module>
+                <module>../integration/elytron</module>
+                <module>../integration/elytron-oidc-client</module>
+            </modules>
+        </profile>
+
+        <!-- -Dts.basic -->
+        <profile>
+            <id>integ-basic.module.profile</id>
+            <activation><property><name>ts.basic</name></property></activation>
+            <modules>
+                <module>../integration/ws</module>
+                <module>../test-feature-pack</module> <!-- needed by integration/basic -->
+                <module>../integration/basic</module>
+            </modules>
+        </profile>
+
+        <!-- -Dts.clustering -->
+        <profile>
+            <id>integ-clustering.module.profile</id>
+            <activation><property><name>ts.clustering</name></property></activation>
+            <modules><module>../integration/clustering</module></modules>
+        </profile>
+
+        <!-- -Dts.iiop -->
+        <profile>
+            <id>integ-iiop.module.profile</id>
+            <activation><property><name>ts.iiop</name></property></activation>
+            <modules><module>../integration/iiop</module></modules>
+        </profile>
+
+        <!-- -Dts.xts -->
+        <profile>
+            <id>integ-xts.module.profile</id>
+            <activation><property><name>ts.xts</name></property></activation>
+            <modules><module>../integration/xts</module></modules>
+        </profile>
+
+        <!-- -Dts.rts -->
+        <profile>
+            <id>integ-rts.module.profile</id>
+            <activation><property><name>ts.rts</name></property></activation>
+            <modules><module>../integration/rts</module></modules>
+        </profile>
+
+        <profile>
+            <id>domain.module.profile</id>
+            <activation><property><name>domain.module</name></property></activation>
+            <modules><module>../domain</module></modules>
+        </profile>
+        <!-- -Dts.domain -->
+        <profile>
+            <id>domain_.module.profile</id>
+            <activation><property><name>ts.domain</name></property></activation>
+            <modules><module>../domain</module></modules>
+        </profile>
+
+
+        <profile>
+            <id>layers.module.profile</id>
+            <activation><property><name>layers.module</name></property></activation>
+            <modules><module>../layers</module></modules>
+        </profile>
+
+        <!-- -Dts.layers -->
+        <profile>
+            <id>base.layers_.module.profile</id>
+            <activation><property><name>ts.layers</name></property></activation>
+            <modules>
+                <module>../test-feature-pack</module> <!-- needed by integration/basic -->
+                <module>../integration/basic</module>
+                <module>../integration/elytron</module>
+                <module>../integration/clustering</module>
+                <module>../integration/ws</module>
+                <module>../integration/elytron-oidc-client</module>
+                <module>../layers</module>
+            </modules>
+        </profile>
+
+        <profile>
+            <id>scripts.module.profile</id>
+            <activation><property><name>scripts.module</name></property></activation>
+            <modules><module>../scripts</module></modules>
+        </profile>
+        <!-- -Dts.scripts -->
+        <profile>
+            <id>scripts_.module.profile</id>
+            <activation><property><name>ts.scripts</name></property></activation>
+            <modules><module>../scripts</module></modules>
+        </profile>
+
+        <!-- Define ts.integration uber-group. -->
+        <profile>
+            <id>base.ts.integ.allGroupsIntegration</id>
+            <activation><property><name>ts.integration</name></property></activation>
+            <modules>
+                <module>../integration/ws</module>
+                <module>../integration/web</module>
+                <module>../integration/smoke</module>
+                <module>../test-feature-pack</module> <!-- needed by integration/basic -->
+                <module>../integration/basic</module>
+                <module>../integration/vdx</module>
+                <module>../integration/clustering</module>
+                <module>../integration/iiop</module>
+                <module>../integration/xts</module>
+                <module>../integration/rts</module>
+                <module>../integration/rbac</module>
+                <module>../integration/multinode</module>
+                <module>../test-product-conf</module> <!-- needed by manualmode -->
+                <module>../integration/manualmode</module>
+                <module>../integration/secman</module>
+                <module>../integration/legacy</module>
+                <module>../integration/elytron</module>
+                <module>../integration/elytron-oidc-client</module>
+            </modules>
+        </profile>
+
+        <!-- -Dts.multinode -->
+        <profile>
+            <id>ts.integ.group.multinode</id>
+            <activation><property><name>ts.multinode</name></property></activation>
+            <modules>
+                <module>../integration/multinode</module>
+            </modules>
+        </profile>
+
+        <!-- -Dts.manualmode -->
+        <profile>
+            <id>ts.integ.group.manualmode</id>
+            <activation><property><name>ts.manualmode</name></property></activation>
+            <modules>
+                <module>../test-product-conf</module> <!-- needed by manualmode -->
+                <module>../integration/manualmode</module>
+            </modules>
+        </profile>
+
+        <!-- -Dts.rbac -->
+        <profile>
+            <id>ts.integ.group.rbac</id>
+            <activation><property><name>ts.rbac</name></property></activation>
+            <modules>
+                <module>../integration/rbac</module>
+            </modules>
+        </profile>
+
+        <!-- -Dts.secman -->
+        <profile>
+            <id>ts.integ.group.secman</id>
+            <activation><property><name>ts.secman</name></property></activation>
+            <modules>
+                <module>../integration/secman</module>
+            </modules>
+        </profile>
+
+        <!-- -Dts.legacy -->
+        <profile>
+            <id>ts.integ.group.legacy</id>
+            <activation><property><name>ts.legacy</name></property></activation>
+            <modules>
+                <module>../integration/legacy</module>
+            </modules>
+        </profile>
+
+        <!-- -Dts.elytron -->
+        <profile>
+            <id>ts.integ.group.elytron</id>
+            <activation><property><name>ts.elytron</name></property></activation>
+            <modules>
+                <module>../integration/elytron</module>
+            </modules>
+        </profile>
+
+        <!-- -Dts.elytron-oidc-client-->
+        <profile>
+            <id>ts.integ.group.elytron-oidc-client</id>
+            <activation><property><name>ts.elytron-oidc-client</name></property></activation>
+            <modules>
+                <module>../integration/elytron-oidc-client</module>
+            </modules>
+        </profile>
+
+        <!-- Test against bootable jar -->
+        <profile>
+            <id>base.bootablejar.profile</id>
+            <activation>
+                <property>
+                    <name>ts.bootable</name>
+                </property>
+            </activation>
+            <modules>
+                <module>../test-feature-pack</module> <!-- needed by integration/basic -->
+                <module>../integration/basic</module>
+                <module>../integration/clustering</module>
+                <module>../integration/elytron</module>
+                <module>../integration/elytron-oidc-client</module>
+            </modules>
+        </profile>
+
+    </profiles>
+</project>

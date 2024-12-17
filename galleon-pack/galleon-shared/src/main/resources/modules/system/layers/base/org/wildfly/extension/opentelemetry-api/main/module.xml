@@ -22,14 +22,14 @@
         <module name="io.opentelemetry.sdk" />
         <module name="io.smallrye.opentelemetry" />
 
-        <module name="org.jboss.weld.api"/>
-        <module name="org.jboss.weld.core"/>
-        <module name="org.jboss.weld.spi"/>
-        <module name="org.wildfly.security.manager"/>
-
         <module name="java.logging"/>
 
         <module name="jakarta.enterprise.api" />
         <module name="jakarta.ws.rs.api" optional="true" services="import"/>
+        <module name="org.jboss.weld.api"/>
+        <module name="org.jboss.weld.core"/>
+        <module name="org.jboss.weld.spi"/>
+        <module name="org.wildfly.security.manager"/>
+        <module name="org.wildfly.service"/>
     </dependencies>
 </module>

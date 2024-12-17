@@ -44,6 +44,11 @@ public class SimpleApplicationClientTestCase extends AbstractSimpleApplicationCl
         lib.addClasses(Employee.class);
         lib.addAsManifestResource(PersistenceUnitPackagingTestCase.class.getPackage(), "persistence.xml", "persistence.xml");
         ear.addAsLibrary(lib);
+
+        final JavaArchive otherLib = ShrinkWrap.create(JavaArchive.class, "otherlib.jar");
+        otherLib.addClass(Status.class);
+        ear.addAsLibrary(otherLib);
+
         final JavaArchive ejb = ShrinkWrap.create(JavaArchive.class, MODULE_NAME + ".jar");
         ejb.addClasses(SimpleApplicationClientTestCase.class, AppClientStateSingleton.class);
         ear.addAsModule(ejb);

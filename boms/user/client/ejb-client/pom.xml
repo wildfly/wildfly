@@ -1,42 +1,28 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-  ~ JBoss, Home of Professional Open Source
-  ~ Copyright 2018, Red Hat, Inc., and individual contributors as indicated
-  ~ by the @authors tag.
-  ~
-  ~ Licensed under the Apache License, Version 2.0 (the "License");
-  ~ you may not use this file except in compliance with the License.
-  ~ You may obtain a copy of the License at
-  ~
-  ~ http://www.apache.org/licenses/LICENSE-2.0
-  ~
-  ~ Unless required by applicable law or agreed to in writing, software
-  ~ distributed under the License is distributed on an "AS IS" BASIS,
-  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-  ~ See the License for the specific language governing permissions and
-  ~ limitations under the License.
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
   -->
-
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>org.wildfly.bom</groupId>
+        <groupId>org.wildfly.bom.builder</groupId>
         <artifactId>wildfly-client</artifactId>
         <!--
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>34.0.0.Beta1-SNAPSHOT</version>
+        <version>35.0.0.Final-SNAPSHOT</version>
     </parent>
 
     <artifactId>wildfly-ejb-client-bom-builder</artifactId>
 
     <packaging>pom</packaging>
 
-    <name>WildFly BOMs: EJB Client Builder</name>
+    <name>WildFly BOM Builders: Client EJB Builder</name>
 
     <description>
         This artifact builds a bill of materials (BOM) for EJB client usage.
@@ -61,6 +47,12 @@
             <version>${ee.maven.version}</version>
             <type>pom</type>
         </dependency>
+        <dependency>
+            <groupId>org.wildfly.channels</groupId>
+            <artifactId>wildfly-ee</artifactId>
+            <version>${ee.maven.version}</version>
+            <type>pom</type>
+        </dependency>
     </dependencies>
 
     <build>
@@ -80,14 +72,23 @@
                                 <artifactId>jboss-parent</artifactId>
                                 <relativePath/>
                             </parent>
-                            <bomGroupId>org.wildfly</bomGroupId>
-                            <bomArtifactId>wildfly-ejb-client-bom</bomArtifactId>
+                            <bomGroupId>${bomGroupId}</bomGroupId>
+                            <bomArtifactId>${bomArtifactIdPrefix}-ejb-client-bom</bomArtifactId>
                             <bomVersion>${project.version}</bomVersion>
-                            <bomName>WildFly BOMs: EJB Client</bomName>
+                            <bomName>${full.dist.product.release.name} BOMs: EJB Client</bomName>
                             <bomDescription>This artifact provides a bill of materials (BOM) for remoting based EJB usage. Importing this bom into your project will give you the maven artifacts you need to perform remote EJB calls.</bomDescription>
                             <bomWithDependencies>true</bomWithDependencies>
                             <licenses>true</licenses>
                             <inheritExclusions>UNMANAGED</inheritExclusions>
+                            <channels>
+                                <channel>
+                                    <manifest>
+                                        <groupId>org.wildfly.channels</groupId>
+                                        <artifactId>wildfly-ee</artifactId>
+                                        <version>${version.boms.channel.ee}</version>
+                                    </manifest>
+                                </channel>
+                            </channels>
                             <includeDependencies>
                                 <!-- ejb client, the main artifact -->
                                 <dependency>

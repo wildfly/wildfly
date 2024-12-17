@@ -10,10 +10,10 @@ import java.util.LinkedList;
 import java.util.List;
 
 import org.infinispan.protostream.descriptors.WireType;
-import org.wildfly.clustering.group.Node;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamMarshaller;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamReader;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamWriter;
+import org.wildfly.clustering.server.GroupMember;
 
 /**
  * @author Paul Ferraro
@@ -25,13 +25,13 @@ public class SingletonElectionCommandMarshaller implements ProtoStreamMarshaller
 
     @Override
     public SingletonElectionCommand readFrom(ProtoStreamReader reader) throws IOException {
-        List<Node> candidates = new LinkedList<>();
+        List<GroupMember> candidates = new LinkedList<>();
         Integer elected = null;
         while (!reader.isAtEnd()) {
             int tag = reader.readTag();
             switch (WireType.getTagFieldNumber(tag)) {
                 case CANDIDATE_INDEX:
-                    candidates.add(reader.readAny(Node.class));
+                    candidates.add(reader.readAny(GroupMember.class));
                     break;
                 case ELECTED_INDEX:
                     elected = reader.readUInt32();
@@ -45,7 +45,7 @@ public class SingletonElectionCommandMarshaller implements ProtoStreamMarshaller
 
     @Override
     public void writeTo(ProtoStreamWriter writer, SingletonElectionCommand command) throws IOException {
-        for (Node candidate : command.getCandidates()) {
+        for (GroupMember candidate : command.getCandidates()) {
             writer.writeAny(CANDIDATE_INDEX, candidate);
         }
         Integer elected = command.getIndex();

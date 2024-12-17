@@ -1,3 +1,5 @@
+syntax = "proto3";
+
 package org.wildfly.clustering.ejb.infinispan.network;
 
 import "org.jboss.as.network.proto";
@@ -8,6 +10,6 @@ import "org.jboss.as.network.proto";
  * @TypeId(300)
  */
 message ClientMappingsRegistryEntry {
-	required	string	name	 = 1;
-	repeated	org.jboss.as.network.ClientMapping	mapping	 = 2;
+	string	name	 = 1;
+	org.jboss.as.network.ClientMapping	mapping	 = 2;
 }

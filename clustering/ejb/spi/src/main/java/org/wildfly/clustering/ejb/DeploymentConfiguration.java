@@ -11,7 +11,12 @@ import org.jboss.msc.service.ServiceName;
 /**
  * @author Paul Ferraro
  */
-public interface DeploymentConfiguration extends org.wildfly.clustering.ee.DeploymentConfiguration {
+public interface DeploymentConfiguration extends org.wildfly.clustering.server.deployment.DeploymentConfiguration {
+
+    @Override
+    default String getServerName() {
+        return "ejb";
+    }
 
     /**
      * Returns the service name of the deployment containing the EJB.

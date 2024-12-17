@@ -16,12 +16,16 @@
     <dependencies>
         <module name="io.opentelemetry.api"/>
         <module name="io.opentelemetry.context"/>
+        <module name="io.opentelemetry.instrumentation.api" optional="true"/>
+        <module name="io.opentelemetry.semconv" optional="true"/>
         <module name="io.reactivex.rxjava2.rxjava"/>
         <module name="io.smallrye.config" services="import"/>
         <module name="io.smallrye.common.annotation"/>
+        <module name="io.smallrye.opentelemetry" optional="true"/>
         <module name="io.smallrye.reactive.converters.api"/>
         <module name="io.smallrye.reactive.messaging"/>
         <module name="io.smallrye.reactive.messaging.connector.kafka.api"/>
+        <module name="io.smallrye.reactive.messaging.otel"/>
         <module name="io.smallrye.reactive.mutiny"/>
         <module name="io.smallrye.reactive.mutiny.reactive-streams-operators"/>
         <module name="io.smallrye.reactive.mutiny.vertx-core"/>
@@ -32,6 +36,7 @@
         <module name="io.vertx.core"/>
         <module name="jakarta.annotation.api"/>
         <module name="jakarta.enterprise.api" />
+        <module name="jakarta.inject.api" />
         <module name="org.apache.kafka.client" export="true" services="export"/>
         <module name="org.eclipse.microprofile.reactive-messaging.api"/>
         <module name="org.eclipse.microprofile.reactive-streams-operators.api"/>
@@ -43,6 +48,7 @@
         <module name="org.jboss.weld.spi"/>
         <module name="org.reactivestreams"/>
         <module name="org.wildfly.reactive.messaging.config" optional="true" export="true" services="export"/>
+        <module name="org.wildfly.reactive.messaging.kafka" services="import"/>
         <module name="org.slf4j"/>
     </dependencies>
 </module>

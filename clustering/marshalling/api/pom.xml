@@ -16,7 +16,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>34.0.0.Beta1-SNAPSHOT</version>
+        <version>35.0.0.Final-SNAPSHOT</version>
     </parent>
 
     <artifactId>wildfly-clustering-marshalling-api</artifactId>
@@ -27,13 +27,5 @@
         Public module containing interfaces to be implemented by applications and internal modules to optimize marshalling behavior for both distributable @Stateful Jakarta Enterprise Beans and HTTP sessions.
         The API is independent of the backing marshalling framework.
     </description>
-
-    <dependencies>
-        <dependency>
-            <groupId>org.kohsuke.metainf-services</groupId>
-            <artifactId>metainf-services</artifactId>
-            <scope>test</scope>
-        </dependency>
-    </dependencies>
 
 </project>

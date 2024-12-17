@@ -8,6 +8,8 @@ package org.jboss.as.xts.logging;
 import static org.jboss.logging.Logger.Level.WARN;
 import static org.jboss.logging.Logger.Level.ERROR;
 
+import java.lang.invoke.MethodHandles;
+
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.xts.XTSException;
 import org.jboss.logging.BasicLogger;
@@ -29,7 +31,7 @@ public interface XtsAsLogger extends BasicLogger {
     /**
      * A logger with the category of the package name.
      */
-    XtsAsLogger ROOT_LOGGER = Logger.getMessageLogger(XtsAsLogger.class, "org.jboss.as.xts");
+    XtsAsLogger ROOT_LOGGER = Logger.getMessageLogger(MethodHandles.lookup(), XtsAsLogger.class, "org.jboss.as.xts");
 
     /**
      * Creates an exception indicating that the TxBridge inbound recovery service failed to start.

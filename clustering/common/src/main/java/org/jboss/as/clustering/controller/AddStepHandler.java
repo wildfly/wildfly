@@ -22,6 +22,7 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
+import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.descriptions.DefaultResourceAddDescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.logging.ControllerLogger;
@@ -219,9 +220,10 @@ public class AddStepHandler extends AbstractAddStepHandler implements Management
         ModelNode model = resource.getModel();
         // The super implementation assumes that the capability name is a simple extension of the base name - we do not.
         // Only register capabilities when allowed by the associated predicate
-        for (Map.Entry<Capability, Predicate<ModelNode>> entry : this.descriptor.getCapabilities().entrySet()) {
+        for (Map.Entry<RuntimeCapability<?>, Predicate<ModelNode>> entry : this.descriptor.getCapabilities().entrySet()) {
             if (entry.getValue().test(model)) {
-                context.registerCapability(entry.getKey().resolve(address));
+                RuntimeCapability<?> capability = entry.getKey();
+                context.registerCapability(capability.isDynamicallyNamed() ? capability.fromBaseCapability(address) : capability);
             }
         }
 

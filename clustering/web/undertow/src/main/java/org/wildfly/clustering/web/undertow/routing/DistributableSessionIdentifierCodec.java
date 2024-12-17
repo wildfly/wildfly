@@ -5,9 +5,11 @@
 
 package org.wildfly.clustering.web.undertow.routing;
 
+import java.util.function.UnaryOperator;
+
 import org.jboss.as.web.session.RoutingSupport;
 import org.jboss.as.web.session.SessionIdentifierCodec;
-import org.wildfly.clustering.web.routing.RouteLocator;
+import org.jboss.as.web.session.SimpleRoutingSupport;
 
 /**
  * {@link SessionIdentifierCodec} that encodes the route determined by a {@link RouteLocator}.
@@ -15,17 +17,21 @@ import org.wildfly.clustering.web.routing.RouteLocator;
  */
 public class DistributableSessionIdentifierCodec implements SessionIdentifierCodec {
 
-    private final RouteLocator locator;
+    private final UnaryOperator<String> locator;
     private final RoutingSupport routing;
 
-    public DistributableSessionIdentifierCodec(RouteLocator locator, RoutingSupport routing) {
+    public DistributableSessionIdentifierCodec(UnaryOperator<String> locator) {
+        this(locator, new SimpleRoutingSupport());
+    }
+
+    public DistributableSessionIdentifierCodec(UnaryOperator<String> locator, RoutingSupport routing) {
         this.locator = locator;
         this.routing = routing;
     }
 
     @Override
     public CharSequence encode(CharSequence sessionId) {
-        String route = this.locator.locate(sessionId.toString());
+        String route = this.locator.apply(sessionId.toString());
         return (route != null) ? this.routing.format(sessionId, route) : sessionId;
     }
 

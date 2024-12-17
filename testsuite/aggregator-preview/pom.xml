@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+
+
+<!--
+    This module provides various profiles that enable the execution of other modules that test functionality provided
+    via WildFly Preview (i.e. provisioned via wildfly-preview feature pack).
+
+    It should not be used as the parent of those modules.
+-->
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>org.wildfly</groupId>
+        <artifactId>wildfly-parent</artifactId>
+        <!--
+        Maintain separation between the artifact id and the version to help prevent
+        merge conflicts between commits changing the GA and those changing the V.
+        -->
+        <version>35.0.0.Final-SNAPSHOT</version>
+        <relativePath>../../pom.xml</relativePath>
+    </parent>
+
+    <artifactId>wildfly-testsuite-aggregator-preview</artifactId>
+    <packaging>pom</packaging>
+
+    <name>WildFly Test Suite: Preview Aggregator</name>
+    <description>Controls execution of testsuite modules relevant to testing functionality
+        available via the wildfly-preview feature pack</description>
+
+
+    <profiles>
+
+        <!-- -Dts.smoke -->
+        <profile>
+            <id>ts.integ.group.smoke</id>
+            <activation><property><name>!ts.noSmoke</name></property></activation>
+            <modules>
+                <module>../integration/web</module>
+                <module>../integration/smoke</module>
+            </modules>
+        </profile>
+
+        <!-- -Dts.layers -->
+        <profile>
+            <id>layers_.module.profile</id>
+            <activation><property><name>ts.layers</name></property></activation>
+            <modules>
+                <module>../preview</module>
+            </modules>
+        </profile>
+
+        <!-- -Dts.preview -->
+        <profile>
+            <id>preview.profile</id>
+            <activation><property><name>ts.preview</name></property></activation>
+            <modules>
+                <module>../integration/ws</module>
+                <module>../test-feature-pack-preview</module> <!-- needed by integration/basic -->
+                <module>../integration/basic</module>
+                <module>../integration/clustering</module>
+                <module>../integration/elytron</module>
+                <module>../integration/elytron-oidc-client</module>
+                <module>../integration/microprofile</module>
+                <module>../integration/microprofile-tck</module>
+                <module>../integration/vdx</module>
+                <module>../integration/rbac</module>
+                <module>../integration/legacy</module>
+                <module>../preview</module>
+                <module>../layers</module>
+                <module>../layers-expansion</module>
+                <module>../domain</module>
+                <module>../scripts</module>
+                <module>../galleon</module>
+            </modules>
+        </profile>
+
+        <profile>
+            <id>bootablejar.preview.profile</id>
+            <activation>
+                <property>
+                    <name>ts.bootable.preview</name>
+                </property>
+            </activation>
+            <modules>
+                <module>../test-feature-pack-preview</module> <!-- needed by integration/basic -->
+                <module>../integration/basic</module>
+                <module>../integration/clustering</module>
+                <module>../integration/microprofile</module>
+                <module>../integration/microprofile-tck</module>
+                <module>../integration/elytron-oidc-client</module>
+                <module>../preview</module>
+            </modules>
+        </profile>
+
+    </profiles>
+</project>

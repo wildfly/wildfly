@@ -7,6 +7,7 @@ package org.jboss.as.clustering.logging;
 
 import static org.jboss.logging.Logger.Level.WARN;
 
+import java.lang.invoke.MethodHandles;
 import java.util.Set;
 
 import org.jboss.as.controller.OperationFailedException;
@@ -28,7 +29,7 @@ public interface ClusteringLogger extends BasicLogger {
     /**
      * The root logger.
      */
-    ClusteringLogger ROOT_LOGGER = Logger.getMessageLogger(ClusteringLogger.class, ROOT_LOGGER_CATEGORY);
+    ClusteringLogger ROOT_LOGGER = Logger.getMessageLogger(MethodHandles.lookup(), ClusteringLogger.class, ROOT_LOGGER_CATEGORY);
 
     @Message(id = 1, value = "%2$g is not a valid value for parameter %1$s. The value must be %3$s %4$g")
     OperationFailedException parameterValueOutOfBounds(String name, double value, String relationalOperator, double bound);

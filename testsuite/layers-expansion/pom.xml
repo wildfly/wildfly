@@ -16,7 +16,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>34.0.0.Beta1-SNAPSHOT</version>
+        <version>35.0.0.Final-SNAPSHOT</version>
     </parent>
 
     <artifactId>wildfly-ts-layers-expansion</artifactId>
@@ -39,7 +39,7 @@
             </exclusions>
         </dependency>
         <dependency>
-            <groupId>org.wildfly.core</groupId>
+            <groupId>org.wildfly.launcher</groupId>
             <artifactId>wildfly-launcher</artifactId>
         </dependency>
         <dependency>
@@ -86,6 +86,7 @@
 
         <!-- This module tests expanded funtionality, so use a bom that includes expansion dependencies -->
 		<dependency.management.import.artifact>wildfly-standard-expansion-bom</dependency.management.import.artifact>
+        <dependency.management.import.test.artifact>wildfly-standard-test-expansion-bom</dependency.management.import.test.artifact>
     </properties>
 
     <profiles>
@@ -104,7 +105,7 @@
             </properties>
         </profile>
 
-        <!-- Test against EE 9 feature packs -->
+        <!-- Test against wildfly-preview feature pack -->
         <profile>
             <id>preview.profile</id>
             <activation>
@@ -186,6 +187,34 @@
                                             <layers>
                                                 <layer>datasources-web-server</layer>
                                                 <layer>observability</layer>
+                                            </layers>
+                                        </config>
+                                    </configurations>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>jakarta-data-provisioning-test</id>
+                                <goals>
+                                    <goal>provision</goal>
+                                </goals>
+                                <phase>${provisioning.phase.preview.only}</phase>
+                                <configuration>
+                                    <install-dir>${layers.install.dir}/jakarta-data</install-dir>
+                                    <feature-packs>
+                                        <feature-pack>
+                                            <groupId>${testsuite.full.galleon.pack.groupId}</groupId>
+                                            <artifactId>${testsuite.full.galleon.pack.artifactId}</artifactId>
+                                            <version>${testsuite.full.galleon.pack.version}</version>
+                                            <inherit-configs>false</inherit-configs>
+                                            <inherit-packages>false</inherit-packages>
+                                        </feature-pack>
+                                    </feature-packs>
+                                    <configurations>
+                                        <config>
+                                            <model>standalone</model>
+                                            <name>standalone.xml</name>
+                                            <layers>
+                                                <layer>jakarta-data</layer>
                                             </layers>
                                         </config>
                                     </configurations>
@@ -976,6 +1005,7 @@
                                                 <layer>infinispan</layer>
                                                 <layer>io</layer>
                                                 <layer>infinispan</layer>
+                                                <layer>jakarta-data</layer>
                                                 <layer>jaxrs</layer>
                                                 <layer>jaxrs-server</layer>
                                                 <layer>jdr</layer>
@@ -1027,7 +1057,11 @@
                                                 <layer>microprofile-telemetry</layer>
                                                 <layer>microprofile-platform</layer>
                                                 <layer>mvc-krazo</layer>
+                                                <layer>vertx</layer>
                                             </layers>
+                                            <excluded-layers>
+                                                <layer>jpa-distributed</layer>
+                                            </excluded-layers>
                                         </config>
                                     </configurations>
                                 </configuration>
@@ -1082,6 +1116,7 @@
                                                 <layer>iiop-openjdk</layer>
                                                 <layer>infinispan</layer>
                                                 <layer>io</layer>
+                                                <layer>jakarta-data</layer>
                                                 <layer>jaxrs</layer>
                                                 <layer>jaxrs-server</layer>
                                                 <layer>jdr</layer>
@@ -1125,6 +1160,7 @@
                                                 <layer>microprofile-openapi</layer>
                                                 <layer>microprofile-telemetry</layer>
                                                 <layer>mvc-krazo</layer>
+                                                <layer>vertx</layer>
                                             </layers>
                                             <excluded-layers>
                                                 <layer>jpa</layer>

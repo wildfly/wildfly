@@ -9,13 +9,12 @@ import jakarta.resource.spi.work.DistributableWork;
 import jakarta.resource.spi.work.WorkException;
 
 import org.jboss.jca.core.spi.workmanager.Address;
-import org.wildfly.clustering.dispatcher.Command;
 
 /**
  * Equivalent to org.jboss.jca.core.workmanager.transport.remote.jgroups.JGroupsTransport#startWork(Address, DistributableWork).
  * @author Paul Ferraro
  */
-public class StartWorkCommand implements Command<Long, CommandDispatcherTransport> {
+public class StartWorkCommand implements TransportCommand<Long> {
     private static final long serialVersionUID = -661447249010320508L;
 
     private final Address address;

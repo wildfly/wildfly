@@ -6,6 +6,8 @@ package org.wildfly.clustering.ejb.infinispan.logging;
 
 import static org.jboss.logging.Logger.Level.WARN;
 
+import java.lang.invoke.MethodHandles;
+
 import org.jboss.logging.BasicLogger;
 import org.jboss.logging.Logger;
 import org.jboss.logging.annotations.Cause;
@@ -26,7 +28,7 @@ public interface InfinispanEjbLogger extends BasicLogger {
     /**
      * A logger with the category of the default clustering package.
      */
-    InfinispanEjbLogger ROOT_LOGGER = Logger.getMessageLogger(InfinispanEjbLogger.class, ROOT_LOGGER_CATEGORY);
+    InfinispanEjbLogger ROOT_LOGGER = Logger.getMessageLogger(MethodHandles.lookup(), InfinispanEjbLogger.class, ROOT_LOGGER_CATEGORY);
 
 //    @LogMessage(level = WARN)
 //    @Message(id = 1, value = "Failed to passivate stateful session bean %s")

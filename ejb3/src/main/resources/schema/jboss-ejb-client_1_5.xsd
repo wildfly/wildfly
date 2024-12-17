@@ -62,7 +62,7 @@
                     </xsd:documentation>
                 </xsd:annotation>
             </xsd:element>
-            <xsd:element name="http-connections" type="http-connectionsType" >
+            <xsd:element name="http-connections" type="http-connectionsType" minOccurs="0">
                 <xsd:annotation>
                     <xsd:documentation>
                         Configures remote http-connection for EJB invocation

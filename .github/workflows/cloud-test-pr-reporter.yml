@@ -1,0 +1,58 @@
+name: Report Cloud Test Status
+on:
+  repository_dispatch:
+    types:
+      # These two come from cloud-test-pr-workflow-run.yml which does the remote dispatch in the
+      # wildfly-cloud-tests repository
+      - report-cloud-tests-workflow-run-pending
+      - report-cloud-tests-workflow-run-failed
+      # These two come from the remote job in the wildfly-cloud-tests repository
+      - report-cloud-tests-pr-pending
+      - report-cloud-tests-pr-complete
+env:
+  DESC: ${{ github.event.client_payload.desc }}
+  GH_TOKEN: ${{ github.token }}
+  PR_HEAD_SHA: ${{ github.event.client_payload.prHeadSha }}
+  RUN_URL: ${{ github.event.client_payload.runUrl }}
+  STATE: ${{ github.event.client_payload.state }}
+
+jobs:
+  reporter:
+    permissions:
+      checks: write
+      statuses: write
+    runs-on: ubuntu-latest
+    steps:
+      - name: Output
+        env:
+          MESSAGE: ${{ toJSON(github.event.client_payload) }}
+        run: echo $MESSAGE
+      - name: Report status
+        run: |        
+          JSON_STRING=$(jq -c -n \
+                    --arg state "$STATE" \
+                    --arg tgt "$RUN_URL" \
+                    --arg desc "$DESC" \
+                    '{state: $state, target_url: $tgt, description: $desc, context: "Cloud Tests Remote Run"}' )
+          
+          set -x
+          
+          resp=$(curl -L -X POST \
+           -H "Accept: application/vnd.github.v3+json" \
+           -H "Authorization: Bearer ${GH_TOKEN}"\
+           -H "X-GitHub-Api-Version: 2022-11-28" \
+           https://api.github.com/repos/${{ github.repository }}/statuses/${PR_HEAD_SHA}  \
+           -d "${JSON_STRING}")
+          
+          ret=$?
+                    
+          set +x
+          
+          if [ $ret -eq 0 ]; then
+            sleep 2
+          else
+            echo "Workflow failed to trigger"
+            echo "$resp"
+            exit 1
+          fi
+

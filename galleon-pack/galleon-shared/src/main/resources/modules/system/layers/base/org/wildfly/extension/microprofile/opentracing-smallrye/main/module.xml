@@ -27,6 +27,7 @@
         <module name="org.jboss.modules"/>
         <module name="org.jboss.staxmapper"/>
         <module name="org.wildfly.security.elytron"/>
+        <module name="org.wildfly.service"/>
 
         <module name="jakarta.enterprise.api" />
         <module name="org.eclipse.microprofile.config.api"/>

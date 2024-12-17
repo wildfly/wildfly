@@ -16,7 +16,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>34.0.0.Beta1-SNAPSHOT</version>
+        <version>35.0.0.Final-SNAPSHOT</version>
     </parent>
 
     <artifactId>wildfly-ts-layers</artifactId>
@@ -39,7 +39,7 @@
             </exclusions>
         </dependency>
         <dependency>
-            <groupId>org.wildfly.core</groupId>
+            <groupId>org.wildfly.launcher</groupId>
             <artifactId>wildfly-launcher</artifactId>
         </dependency>
         <dependency>
@@ -2381,6 +2381,7 @@
                                                 <layer>metrics</layer>
                                                 <layer>mod_cluster</layer>
                                                 <layer>mvc-krazo</layer>
+                                                <layer>vertx</layer>
                                                 <layer>naming</layer>
                                                 <layer>pojo</layer>
                                                 <layer>remoting</layer>
@@ -2470,6 +2471,7 @@
                                                 <layer>metrics</layer>
                                                 <layer>mod_cluster</layer>
                                                 <layer>mvc-krazo</layer>
+                                                <layer>vertx</layer>
                                                 <layer>naming</layer>
                                                 <layer>pojo</layer>
                                                 <layer>remote-activemq</layer>

@@ -12,7 +12,9 @@ import org.wildfly.clustering.group.Node;
 /**
  * Listener for singleton election results.
  * @author Paul Ferraro
+ * @deprecated Replaced by {@link org.wildfly.clustering.singleton.election.SingletonElectionListener}
  */
+@Deprecated(forRemoval = true)
 public interface SingletonElectionListener {
     /**
      * Triggered when a singleton election completes, electing the specified member from the specified list of candidates.

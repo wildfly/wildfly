@@ -5,13 +5,13 @@
 
 package org.wildfly.clustering.ejb.infinispan.timer;
 
-import org.wildfly.clustering.ee.infinispan.GroupedKey;
+import org.wildfly.clustering.cache.infinispan.CacheKey;
 import org.wildfly.clustering.ejb.cache.timer.TimerIndex;
 
 /**
  * @author Paul Ferraro
  */
-public class InfinispanTimerIndexKey extends GroupedKey<TimerIndex> implements org.wildfly.clustering.ejb.cache.timer.TimerIndexKey {
+public class InfinispanTimerIndexKey extends CacheKey<TimerIndex> implements org.wildfly.clustering.ejb.cache.timer.TimerIndexKey {
 
     public InfinispanTimerIndexKey(TimerIndex index) {
         super(index);

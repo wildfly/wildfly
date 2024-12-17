@@ -31,7 +31,6 @@ public class FileDataStoreAdd extends AbstractAddStepHandler {
 
     private static final String TRANSACTION_SYNCHRONIZATION_REGISTRY_CAPABILITY_NAME = "org.wildfly.transactions.transaction-synchronization-registry";
     private static final String TRANSACTION_GLOBAL_DEFAULT_LOCAL_PROVIDER_CAPABILITY_NAME = "org.wildfly.transactions.global-default-local-provider";
-    private static final String PATH_MANAGER_CAPABILITY_NAME = "org.wildfly.management.path-manager";
 
     FileDataStoreAdd(AttributeDefinition... attributes) {
         super(attributes);
@@ -50,7 +49,7 @@ public class FileDataStoreAdd extends AbstractAddStepHandler {
         builder.requiresCapability(TRANSACTION_GLOBAL_DEFAULT_LOCAL_PROVIDER_CAPABILITY_NAME, Void.class);
         final Supplier<TransactionSynchronizationRegistry> txnRegistrySupplier = builder.requiresCapability(TRANSACTION_SYNCHRONIZATION_REGISTRY_CAPABILITY_NAME, TransactionSynchronizationRegistry.class);
         final Supplier<ModuleLoader> moduleLoaderSupplier = builder.requires(Services.JBOSS_SERVICE_MODULE_LOADER);
-        final Supplier<PathManager> pathManagerSupplier = builder.requiresCapability(PATH_MANAGER_CAPABILITY_NAME, PathManager.class);
+        final Supplier<PathManager> pathManagerSupplier = builder.requires(PathManager.SERVICE_DESCRIPTOR);
         final FileTimerPersistence fileTimerPersistence = new FileTimerPersistence(consumer, txnRegistrySupplier, moduleLoaderSupplier, pathManagerSupplier, true, path, relativeTo);
         builder.setInstance(fileTimerPersistence);
         builder.install();

@@ -8,10 +8,10 @@ The MicroProfile Telemetry specification describes how OpenTelemetry can be inte
 [[subsystem-configuration-microprofile-telemetry]]
 == Subsystem
 
-The MicroProfile Telemetry integration is provided by the _microprofle-telemetry_ subsystem, and is included in the default configuration.  If not no present, the subsystem can be added using the following CLI commands.
+The MicroProfile Telemetry integration is provided by the _microprofle-telemetry_ subsystem, and is included in the default configuration.  If not present, the subsystem can be added using the following CLI commands.
 [NOTE]
 =====
-The MicroProfile Telemetry subsystem depends on the OpenTelemetry subsystem, so it must be added prior to adding MicroProfile Telemetry.
+The MicroProfile Telemetry subsystem depends on the `opentelemetry` subsystem, so it must be added prior to adding MicroProfile Telemetry.
 =====
 
 [source,options="nowrap"]
@@ -26,6 +26,43 @@ $ jboss-cli.sh -c <<EOF
     reload
 EOF
 -----
+
+=== Important Update Note
+
+MicroProfile Telemetry 2.0 now includes support for https://opentelemetry.io/docs/concepts/signals/metrics/[OpenTelemetry Metrics] and https://opentelemetry.io/docs/concepts/signals/logs/[OpenTelemetry Logs]. While detailed information on their usage should be found in the relevant external documentation, systems administrators should make note of the inclusion of metrics. When the MicroProfile Telemetry subsystem starts, certain JVM- and system-related metrics will be registered, and their values will be exported to the configured downstream collector. While this is the desired behavior for the subsystem, it can result in the duplication of metrics if either (or both) WildFly Metrics or Micrometer are also configured.
+
+To disable the export of metrics via MicroProfile Telemetry, the following should be added to an MicroProfile Config source available to the application:
+
+[source]
+----
+otel.metrics.exporter=none
+----
+
+Duplication can also be avoided by disabling either of the other subsystems:
+
+[source,options="nowrap"]
+.Removing WildFly Metrics
+----
+$ jboss-cli.sh -c <<EOF
+    /subsystem=metrics:remove()
+    /extension=org.wildfly.extension.metrics:remove()
+    reload
+EOF
+----
+
+or
+
+[source,options="nowrap"]
+.Removing Micrometer
+----
+$ jboss-cli.sh -c <<EOF
+    /subsystem=micrometer:remove()
+    /extension=org.wildfly.extension.micrometer:remove()
+    reload
+EOF
+----
+
+Migration from Micrometer to MicroProfile Telemetry Metrics is outside the scope of this document.
 
 == Configuration
 

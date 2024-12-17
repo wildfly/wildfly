@@ -1,3 +1,6 @@
+:OpenAPIVersion: 3.1
+:MicroProfileOpenAPIVersion: 4.0
+
 [[MicroProfile_OpenAPI_SmallRye]]
 = MicroProfile OpenAPI Subsystem
 
@@ -9,8 +12,8 @@ ifdef::env-github[]
 :warning-caption: :warning:
 endif::[]
 
-The https://github.com/OAI/OpenAPI-Specification/blob/main/versions/3.0.0.md[OpenAPI specification] defines a contract for JAX-RS applications in the same way that WSDL defined a contract for legacy web services.
-The https://download.eclipse.org/microprofile/microprofile-open-api-1.1.2/microprofile-openapi-spec.html[MicroProfile OpenAPI specification] defines a mechanism for generating an OpenAPI v3 document from a JAX-RS application as well as an API for customizing production of the document.
+The https://github.com/OAI/OpenAPI-Specification/blob/main/versions/{OpenAPIVersion}.0.md[OpenAPI specification] defines a contract for JAX-RS applications in the same way that WSDL defined a contract for legacy web services.
+The https://download.eclipse.org/microprofile/microprofile-open-api-{MicroProfileOpenAPIVersion}/microprofile-openapi-spec-{MicroProfileOpenAPIVersion}.html[MicroProfile OpenAPI specification] defines a mechanism for generating an OpenAPI v3 document from a JAX-RS application as well as an API for customizing production of the document.
 
 == Subsystem
 
@@ -30,7 +33,7 @@ You can also add the subsystem manually to any profile via the CLI:
 
 The microprofile-openapi-smallrye subsystem obtains all of its configuration via MicroProfile Config.  Thus the subsystem itself defines no attributes.
 
-In addition to the https://download.eclipse.org/microprofile/microprofile-open-api-1.1.2/microprofile-openapi-spec.html#_core_configurations[standard Open API configuration] properties, WildFly supports the following additional MicroProfile Config properties:
+In addition to the https://download.eclipse.org/microprofile/microprofile-open-api-{MicroProfileOpenAPIVersion}/microprofile-openapi-spec-{MicroProfileOpenAPIVersion}.html#_core_configurations[standard Open API configuration] properties, WildFly supports the following additional MicroProfile Config properties:
 
 [cols="2,1,5"]
 |===
@@ -60,7 +63,7 @@ mp.openapi.extensions.servers.relative=false
 
 == HTTP/S Endpoint
 
-The MicroProfile OpenAPI specification defines an HTTP endpoint that serves an OpenAPI 3.0 document describing the REST endpoints for the host.
+The MicroProfile OpenAPI specification defines an HTTP endpoint that serves an OpenAPI {OpenAPIVersion} document describing the REST endpoints for the host.
 The OpenAPI endpoint is registered using the configured path (e.g. http://localhost:8080/openapi) local to the root of the host associated with a given deployment.
 
 [NOTE]
@@ -72,18 +75,18 @@ Alternatively, a JSON document can be requested via an `Accept` HTTP header, or 
 
 e.g.
 
-[source,shell]
+[source,shell,subs="attributes+"]
 ----
 $ curl -v http://localhost:8080/openapi?format=JSON
 < HTTP/1.1 200 OK
 ...
-{"openapi": "3.0.1" ... }
+{"openapi": "{OpenAPIVersion}.0" ... }
 
 
 $ curl -v -H'Accept: application/json' http://localhost:8080/openapi
 < HTTP/1.1 200 OK
 ...
-{"openapi": "3.0.1" ... }
+{"openapi": "{OpenAPIVersion}.0" ... }
 ----
 
 If the Undertow server/host of a given application defines an HTTPS listener, then the OpenAPI document will also be available via HTTPS, e.g. https://localhost:8443/openapi

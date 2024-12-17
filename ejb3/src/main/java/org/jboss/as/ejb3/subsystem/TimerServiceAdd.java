@@ -33,12 +33,6 @@ import org.jboss.msc.service.StopContext;
  */
 public class TimerServiceAdd extends AbstractBoottimeAddStepHandler {
 
-    public static final TimerServiceAdd INSTANCE = new TimerServiceAdd();
-
-    private TimerServiceAdd() {
-        super(TimerServiceResourceDefinition.ATTRIBUTES);
-    }
-
     @Override
     protected void performBoottime(final OperationContext context, ModelNode operation, final ModelNode model) throws OperationFailedException {
 

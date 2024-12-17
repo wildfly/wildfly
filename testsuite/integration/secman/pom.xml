@@ -17,7 +17,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>34.0.0.Beta1-SNAPSHOT</version>
+        <version>35.0.0.Final-SNAPSHOT</version>
     </parent>
 
 
@@ -130,6 +130,16 @@
                     </plugin>
                 </plugins>
             </build>
+        </profile>
+        <!-- SecurityManager can't work on SE 24+ so turn of test execution -->
+        <profile>
+            <id>secman.integration.unsupported.profile</id>
+            <activation>
+                <jdk>[24,)</jdk>
+            </activation>
+            <properties>
+                <surefire.default-test.phase>none</surefire.default-test.phase>
+            </properties>
         </profile>
     </profiles>
 

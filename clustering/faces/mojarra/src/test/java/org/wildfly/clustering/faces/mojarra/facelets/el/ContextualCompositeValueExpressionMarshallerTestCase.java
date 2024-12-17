@@ -4,18 +4,19 @@
  */
 package org.wildfly.clustering.faces.mojarra.facelets.el;
 
-import java.io.IOException;
 import java.util.ServiceLoader;
 
-import jakarta.faces.view.Location;
-
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.params.ParameterizedTest;
 import org.wildfly.clustering.el.ValueExpressionFactory;
+import org.wildfly.clustering.marshalling.MarshallingTesterFactory;
 import org.wildfly.clustering.marshalling.Tester;
-import org.wildfly.clustering.marshalling.protostream.ProtoStreamTesterFactory;
+import org.wildfly.clustering.marshalling.TesterFactory;
+import org.wildfly.clustering.marshalling.junit.TesterFactorySource;
 
 import com.sun.faces.facelets.el.ContextualCompositeValueExpression;
+
+import jakarta.faces.view.Location;
 
 /**
  * Validates marshalling of a {@link ContextualCompositeValueExpression}.
@@ -25,15 +26,16 @@ public class ContextualCompositeValueExpressionMarshallerTestCase {
 
     private final ValueExpressionFactory factory = ServiceLoader.load(ValueExpressionFactory.class, ValueExpressionFactory.class.getClassLoader()).iterator().next();
 
-    @Test
-    public void test() throws IOException {
-        Tester<ContextualCompositeValueExpression> tester = ProtoStreamTesterFactory.INSTANCE.createTester();
-        tester.test(new ContextualCompositeValueExpression(new Location("/path", 1, 2), this.factory.createValueExpression("foo", String.class)), ContextualCompositeValueExpressionMarshallerTestCase::assertEquals);
+    @ParameterizedTest
+    @TesterFactorySource(MarshallingTesterFactory.class)
+    public void test(TesterFactory factory) {
+        Tester<ContextualCompositeValueExpression> tester = factory.createTester(ContextualCompositeValueExpressionMarshallerTestCase::assertEquals);
+        tester.accept(new ContextualCompositeValueExpression(new Location("/path", 1, 2), this.factory.createValueExpression("foo", String.class)));
     }
 
     // ContextualCompositeValueExpression.equals(...) impl is screwy
     static void assertEquals(ContextualCompositeValueExpression expression1, ContextualCompositeValueExpression expression2) {
-        Assert.assertEquals(expression1.getExpressionString(), expression2.getExpressionString());
-        Assert.assertEquals(expression1.isLiteralText(), expression2.isLiteralText());
+        Assertions.assertEquals(expression1.getExpressionString(), expression2.getExpressionString());
+        Assertions.assertEquals(expression1.isLiteralText(), expression2.isLiteralText());
     }
 }

@@ -6,7 +6,8 @@
 package org.wildfly.clustering.ejb.cache.bean;
 
 import org.wildfly.clustering.ejb.bean.BeanInstance;
-import org.wildfly.clustering.group.Group;
+import org.wildfly.clustering.server.Group;
+import org.wildfly.clustering.server.GroupMember;
 
 /**
  * Encapsulates the configuration of a {@link org.wildfly.clustering.ejb.bean.BeanManager} implementation.
@@ -14,7 +15,7 @@ import org.wildfly.clustering.group.Group;
  * @param <K> the bean identifier type
  * @param <V> the bean instance type
  */
-public interface BeanManagerConfiguration<K, V extends BeanInstance<K>, M> extends  org.wildfly.clustering.ejb.bean.BeanManagerConfiguration<K, V>, BeanMetaDataFactoryConfiguration {
+public interface BeanManagerConfiguration<K, V extends BeanInstance<K>, M, GM extends GroupMember> extends  org.wildfly.clustering.ejb.bean.BeanManagerConfiguration<K, V>, BeanMetaDataFactoryConfiguration {
     BeanFactory<K, V, M> getBeanFactory();
-    Group getGroup();
+    Group<GM> getGroup();
 }

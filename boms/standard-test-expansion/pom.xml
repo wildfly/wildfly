@@ -13,7 +13,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>34.0.0.Beta1-SNAPSHOT</version>
+        <version>35.0.0.Final-SNAPSHOT</version>
         <relativePath>../../pom.xml</relativePath>
     </parent>
 
@@ -30,13 +30,6 @@
                 <version>${ee.maven.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
-            </dependency>
-
-            <dependency>
-                <groupId>com.github.tomakehurst</groupId>
-                <artifactId>wiremock</artifactId>
-                <version>${version.com.github.tomakehurst.wiremock}</version>
-                <scope>test</scope>
             </dependency>
 
             <!-- Microprofile TCK test dependencies -->
@@ -121,7 +114,21 @@
                 <!-- Don't exclude all TCK dependencies, only specific ones that cause problems -->
             </dependency>
             <dependency>
-                <groupId>org.eclipse.microprofile.telemetry.tracing</groupId>
+                <groupId>org.eclipse.microprofile.telemetry</groupId>
+                <artifactId>microprofile-telemetry-logs-tck</artifactId>
+                <version>${version.org.eclipse.microprofile.telemetry}</version>
+                <scope>test</scope>
+                <!-- Don't exclude all TCK dependencies, only specific ones that cause problems -->
+            </dependency>
+            <dependency>
+                <groupId>org.eclipse.microprofile.telemetry</groupId>
+                <artifactId>microprofile-telemetry-metrics-tck</artifactId>
+                <version>${version.org.eclipse.microprofile.telemetry}</version>
+                <scope>test</scope>
+                <!-- Don't exclude all TCK dependencies, only specific ones that cause problems -->
+            </dependency>
+            <dependency>
+                <groupId>org.eclipse.microprofile.telemetry</groupId>
                 <artifactId>microprofile-telemetry-tracing-tck</artifactId>
                 <version>${version.org.eclipse.microprofile.telemetry}</version>
                 <scope>test</scope>
@@ -232,9 +239,9 @@
             </dependency>
 
             <dependency>
-                <groupId>org.jboss.arquillian.testng</groupId>
-                <artifactId>arquillian-testng-container</artifactId>
-                <version>${version.org.jboss.arquillian.core}</version>
+                <groupId>org.jboss.arquillian</groupId>
+                <artifactId>arquillian-testcontainers</artifactId>
+                <version>${version.org.jboss.arquillian.testcontainers}</version>
                 <scope>test</scope>
             </dependency>
 
@@ -256,6 +263,18 @@
                 <groupId>org.testng</groupId>
                 <artifactId>testng</artifactId>
                 <version>${version.org.testng}</version>
+                <scope>test</scope>
+                <exclusions>
+                    <exclusion>
+                        <groupId>com.github.tomakehurst</groupId>
+                        <artifactId>wiremock</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>org.wiremock</groupId>
+                <artifactId>wiremock</artifactId>
+                <version>${version.org.wiremock}</version>
                 <scope>test</scope>
             </dependency>
 

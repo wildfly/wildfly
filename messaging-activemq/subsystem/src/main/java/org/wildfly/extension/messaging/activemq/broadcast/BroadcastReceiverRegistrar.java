@@ -5,7 +5,7 @@
 
 package org.wildfly.extension.messaging.activemq.broadcast;
 
-import org.wildfly.clustering.Registrar;
+import org.wildfly.clustering.server.Registrar;
 
 /**
  * A {@link BroadcastReceiver} that notifies a set of registered {@link BroadcastReceiver} instances.

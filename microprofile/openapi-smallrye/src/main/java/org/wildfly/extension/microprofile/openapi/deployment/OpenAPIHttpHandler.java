@@ -14,19 +14,20 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Deque;
+import java.util.EnumMap;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Supplier;
 
 import jakarta.ws.rs.core.MediaType;
 
-import org.eclipse.microprofile.openapi.models.OpenAPI;
 import org.jboss.resteasy.util.AcceptParser;
 
+import io.smallrye.openapi.api.SmallRyeOpenAPI;
 import io.smallrye.openapi.runtime.io.Format;
-import io.smallrye.openapi.runtime.io.OpenApiSerializer;
 import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
 import io.undertow.util.HeaderMap;
@@ -56,10 +57,11 @@ public class OpenAPIHttpHandler implements HttpHandler {
         }
     }
 
-    private final OpenAPI model;
+    private final Map<Format, Supplier<String>> formatters = new EnumMap<>(Format.class);
 
-    public OpenAPIHttpHandler(OpenAPI model) {
-        this.model = model;
+    public OpenAPIHttpHandler(SmallRyeOpenAPI model) {
+        this.formatters.put(Format.JSON, model::toJSON);
+        this.formatters.put(Format.YAML, model::toYAML);
     }
 
     @Override
@@ -103,7 +105,7 @@ public class OpenAPIHttpHandler implements HttpHandler {
             // Use format preferred by Accept header if unambiguous, otherwise determine format from query parameter
             Format format = (preferredTypes.size() == 1) ? ACCEPTED_TYPES.get(preferredTypes.get(0)) : parseFormatParameter(exchange);
 
-            byte[] result = OpenApiSerializer.serialize(this.model, format).getBytes(charset);
+            byte[] result = this.formatters.get(format).get().getBytes(charset);
 
             responseHeaders.put(Headers.CONTENT_TYPE, format.getMimeType());
             responseHeaders.put(Headers.CONTENT_LENGTH, result.length);

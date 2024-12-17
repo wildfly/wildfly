@@ -12,7 +12,9 @@ import java.util.Map;
  * @author Paul Ferraro
  * @param <K> the registration key
  * @param <V> the registration value
+ * @deprecated Replaced by {@link org.wildfly.clustering.server.registry.RegistryListener}.
  */
+@Deprecated(forRemoval = true)
 public interface RegistryListener<K, V> {
     /**
      * Called when new entries have been added.

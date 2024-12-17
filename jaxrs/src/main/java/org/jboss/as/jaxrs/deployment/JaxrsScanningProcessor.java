@@ -4,18 +4,22 @@
  */
 package org.jboss.as.jaxrs.deployment;
 
+import static org.jboss.as.jaxrs.logging.JaxrsLogger.JAXRS_LOGGER;
+import static org.jboss.resteasy.plugins.server.servlet.ResteasyContextParameters.RESTEASY_SCAN;
+import static org.jboss.resteasy.plugins.server.servlet.ResteasyContextParameters.RESTEASY_SCAN_PROVIDERS;
+import static org.jboss.resteasy.plugins.server.servlet.ResteasyContextParameters.RESTEASY_SCAN_RESOURCES;
+
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 import jakarta.ws.rs.core.Application;
-
 import org.jboss.as.jaxrs.JaxrsAnnotations;
 import org.jboss.as.jaxrs.logging.JaxrsLogger;
 import org.jboss.as.server.deployment.Attachments;
@@ -40,11 +44,6 @@ import org.jboss.resteasy.plugins.server.servlet.HttpServlet30Dispatcher;
 import org.jboss.resteasy.plugins.server.servlet.ResteasyBootstrapClasses;
 import org.jboss.resteasy.plugins.server.servlet.ResteasyContextParameters;
 
-import static org.jboss.as.jaxrs.logging.JaxrsLogger.JAXRS_LOGGER;
-import static org.jboss.resteasy.plugins.server.servlet.ResteasyContextParameters.RESTEASY_SCAN;
-import static org.jboss.resteasy.plugins.server.servlet.ResteasyContextParameters.RESTEASY_SCAN_PROVIDERS;
-import static org.jboss.resteasy.plugins.server.servlet.ResteasyContextParameters.RESTEASY_SCAN_RESOURCES;
-
 /**
  * Processor that finds Jakarta RESTful Web Services classes in the deployment
  *
@@ -64,14 +63,15 @@ public class JaxrsScanningProcessor implements DeploymentUnitProcessor {
             return;
         }
         final DeploymentUnit parent = deploymentUnit.getParent() == null ? deploymentUnit : deploymentUnit.getParent();
-        final Map<ModuleIdentifier, ResteasyDeploymentData> deploymentData;
+        final Map<String, ResteasyDeploymentData> deploymentData;
         if (deploymentUnit.getParent() == null) {
-            deploymentData = Collections.synchronizedMap(new HashMap<ModuleIdentifier, ResteasyDeploymentData>());
+            deploymentData = new ConcurrentHashMap<>();
             deploymentUnit.putAttachment(JaxrsAttachments.ADDITIONAL_RESTEASY_DEPLOYMENT_DATA, deploymentData);
         } else {
             deploymentData = parent.getAttachment(JaxrsAttachments.ADDITIONAL_RESTEASY_DEPLOYMENT_DATA);
         }
 
+        @SuppressWarnings("deprecation")
         final ModuleIdentifier moduleIdentifier = deploymentUnit.getAttachment(Attachments.MODULE_IDENTIFIER);
 
         ResteasyDeploymentData resteasyDeploymentData = new ResteasyDeploymentData();
@@ -83,9 +83,9 @@ public class JaxrsScanningProcessor implements DeploymentUnitProcessor {
             if (warMetaData == null) {
                 resteasyDeploymentData.setScanAll(true);
                 scan(deploymentUnit, module.getClassLoader(), resteasyDeploymentData);
-                deploymentData.put(moduleIdentifier, resteasyDeploymentData);
+                deploymentData.put(moduleIdentifier.toString(), resteasyDeploymentData);
             } else {
-                scanWebDeployment(deploymentUnit, warMetaData.getMergedJBossWebMetaData(), module.getClassLoader(), resteasyDeploymentData);
+                scanWebDeployment(warMetaData.getMergedJBossWebMetaData(), module.getClassLoader(), resteasyDeploymentData);
                 scan(deploymentUnit, module.getClassLoader(), resteasyDeploymentData);
 
                 // When BootStrap classes are present and no Application subclass declared
@@ -131,12 +131,11 @@ public class JaxrsScanningProcessor implements DeploymentUnitProcessor {
             }
         }
 
-        processDeclaredApplicationClasses(du, appClazzList, webdata, classLoader, resteasyDeploymentData);
+        processDeclaredApplicationClasses(du, appClazzList, classLoader, resteasyDeploymentData);
     }
 
     private void processDeclaredApplicationClasses(final DeploymentUnit du,
                                                    final Set<String> appClazzList,
-                                                 final JBossWebMetaData webdata,
                                                  final ClassLoader classLoader,
                                                  final ResteasyDeploymentData resteasyDeploymentData)
         throws DeploymentUnitProcessingException {
@@ -144,17 +143,15 @@ public class JaxrsScanningProcessor implements DeploymentUnitProcessor {
         final CompositeIndex index = du.getAttachment(Attachments.COMPOSITE_ANNOTATION_INDEX);
         List<AnnotationInstance> resources = index.getAnnotations(JaxrsAnnotations.PATH.getDotName());
         Map<String, ClassInfo> resourceMap = new HashMap<>(resources.size());
-        if (resources != null) {
-           for (AnnotationInstance a: resources) {
-               if (a.target() instanceof ClassInfo) {
-                   resourceMap.put(((ClassInfo)a.target()).name().toString(),
-                       (ClassInfo)a.target());
-               }
-           }
+        for (AnnotationInstance a : resources) {
+            if (a.target() instanceof ClassInfo) {
+                resourceMap.put(((ClassInfo) a.target()).name().toString(),
+                        (ClassInfo) a.target());
+            }
         }
 
         for (String clazzName: appClazzList) {
-            Class<?> clazz = null;
+            Class<?> clazz;
             try {
                 clazz = classLoader.loadClass(clazzName);
             } catch (ClassNotFoundException e) {
@@ -163,27 +160,18 @@ public class JaxrsScanningProcessor implements DeploymentUnitProcessor {
 
             if (Application.class.isAssignableFrom(clazz)) {
                 try {
-                    Application appClazz = (Application) clazz.newInstance();
-                    Set<Class<?>> declClazzs = appClazz.getClasses();
-                    Set<Object> declSingletons = appClazz.getSingletons();
-                    HashSet<Class<?>> clazzSet = new HashSet<>();
-                    if (declClazzs != null) {
-                        clazzSet.addAll(declClazzs);
-                    }
-                    if (declSingletons != null) {
-                        for (Object obj : declSingletons) {
-                            clazzSet.add((Class) obj);
-                        }
-                    }
+                    final Constructor<?> constructor = clazz.getConstructor();
+                    final Application appClass = (Application) constructor.newInstance();
+                    final Set<Class<?>> resourceClasses = appClass.getClasses() == null ? Set.of() : appClass.getClasses();
 
                     Set<String> scannedResourceClasses = resteasyDeploymentData.getScannedResourceClasses();
-                    for (Class<?> cClazz : clazzSet) {
+                    for (Class<?> cClazz : resourceClasses) {
                         if (cClazz.isAnnotationPresent(jakarta.ws.rs.Path.class)) {
                             final ClassInfo info = resourceMap.get(cClazz.getName());
                             if (info != null) {
                                 if (info.annotationsMap().containsKey(DECORATOR)) {
                                     //we do not add decorators as resources
-                                    //we can't pick up on programatically added decorators, but that is such an edge case it should not really matter
+                                    //we can't pick up on programmatically added decorators, but that is such an edge case it should not really matter
                                     continue;
                                 }
                                 if (!Modifier.isInterface(info.flags())) {
@@ -194,32 +182,28 @@ public class JaxrsScanningProcessor implements DeploymentUnitProcessor {
                     }
 
                 } catch (Exception e) {
-                    JAXRS_LOGGER.cannotLoadApplicationClass(e);
+                    throw JAXRS_LOGGER.cannotLoadApplicationClass(e);
                 }
             }
         }
     }
 
-    public static final Set<String> BOOT_CLASSES = new HashSet<String>();
-
-    static {
-        Collections.addAll(BOOT_CLASSES, ResteasyBootstrapClasses.BOOTSTRAP_CLASSES);
-    }
+    private static final Set<String> BOOT_CLASSES = Set.of(ResteasyBootstrapClasses.BOOTSTRAP_CLASSES);
 
     /**
      * If any servlet/filter classes are declared, then we probably don't want to scan.
      */
-    protected boolean hasBootClasses(JBossWebMetaData webdata) throws DeploymentUnitProcessingException {
+    protected boolean hasBootClasses(JBossWebMetaData webdata) {
         if (webdata.getServlets() != null) {
             for (ServletMetaData servlet : webdata.getServlets()) {
                 String servletClass = servlet.getServletClass();
-                if (BOOT_CLASSES.contains(servletClass))
+                if (servletClass != null && BOOT_CLASSES.contains(servletClass))
                     return true;
             }
         }
         if (webdata.getFilters() != null) {
             for (FilterMetaData filter : webdata.getFilters()) {
-                if (BOOT_CLASSES.contains(filter.getFilterClass()))
+                if (filter.getFilterClass() != null && BOOT_CLASSES.contains(filter.getFilterClass()))
                     return true;
             }
         }
@@ -227,7 +211,7 @@ public class JaxrsScanningProcessor implements DeploymentUnitProcessor {
 
     }
 
-    protected void scanWebDeployment(final DeploymentUnit du, final JBossWebMetaData webdata, final ClassLoader classLoader, final ResteasyDeploymentData resteasyDeploymentData) throws DeploymentUnitProcessingException {
+    protected void scanWebDeployment(final JBossWebMetaData webdata, final ClassLoader classLoader, final ResteasyDeploymentData resteasyDeploymentData) throws DeploymentUnitProcessingException {
 
 
         // If there is a resteasy boot class in web.xml, then the default should be to not scan
@@ -307,7 +291,7 @@ public class JaxrsScanningProcessor implements DeploymentUnitProcessor {
 
         if ((resources == null || resources.isEmpty()) && (providers == null || providers.isEmpty()))
             return;
-        final Set<ClassInfo> pathInterfaces = new HashSet<ClassInfo>();
+        final Set<ClassInfo> pathInterfaces = new HashSet<>();
         if (resources != null) {
             for (AnnotationInstance e : resources) {
                 final ClassInfo info;
@@ -327,7 +311,7 @@ public class JaxrsScanningProcessor implements DeploymentUnitProcessor {
                 }
                 if(info.annotationsMap().containsKey(DECORATOR)) {
                     //we do not add decorators as resources
-                    //we can't pick up on programatically added decorators, but that is such an edge case it should not really matter
+                    //we can't pick up on programmatically added decorators, but that is such an edge case it should not really matter
                     continue;
                 }
                 if (!Modifier.isInterface(info.flags())) {
@@ -373,7 +357,7 @@ public class JaxrsScanningProcessor implements DeploymentUnitProcessor {
 
                 if(implementor.annotationsMap().containsKey(DECORATOR)) {
                     //we do not add decorators as resources
-                    //we can't pick up on programatically added decorators, but that is such an edge case it should not really matter
+                    //we can't pick up on programmatically added decorators, but that is such an edge case it should not really matter
                     continue;
                 }
                 resteasyDeploymentData.getScannedResourceClasses().add(implementor.name().toString());
@@ -404,7 +388,7 @@ public class JaxrsScanningProcessor implements DeploymentUnitProcessor {
                 param.setParamValue(servletClass);
                 List<ParamValueMetaData> params = servlet.getInitParam();
                 if (params == null) {
-                    params = new ArrayList<ParamValueMetaData>();
+                    params = new ArrayList<>();
                     servlet.setInitParam(params);
                 }
                 params.add(param);
@@ -420,9 +404,9 @@ public class JaxrsScanningProcessor implements DeploymentUnitProcessor {
         if (value == null) {
             throw JaxrsLogger.JAXRS_LOGGER.invalidParamValue(paramName, value);
         }
-        if (value.toLowerCase(Locale.ENGLISH).equals("true")) {
+        if (value.equalsIgnoreCase("true")) {
             return true;
-        } else if (value.toLowerCase(Locale.ENGLISH).equals("false")) {
+        } else if (value.equalsIgnoreCase("false")) {
             return false;
         } else {
             throw JaxrsLogger.JAXRS_LOGGER.invalidParamValue(paramName, value);

@@ -5,6 +5,7 @@
 
 package org.jboss.as.connector.subsystems.datasources;
 
+import java.lang.invoke.MethodHandles;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -37,7 +38,7 @@ public class ModifiableDataSource extends DataSourceAbstractImpl implements Data
     /**
      * The bundle
      */
-    private static CommonBundle bundle = Messages.getBundle(CommonBundle.class);
+    private static CommonBundle bundle = Messages.getBundle(MethodHandles.lookup(), CommonBundle.class);
 
     private final Boolean jta;
 

@@ -11,6 +11,7 @@ import static org.jboss.logging.Logger.Level.INFO;
 import static org.jboss.logging.Logger.Level.WARN;
 
 import java.io.IOException;
+import java.lang.invoke.MethodHandles;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.Collection;
@@ -26,7 +27,6 @@ import org.jboss.as.ee.component.ComponentConfiguration;
 import org.jboss.as.ee.component.ComponentInstance;
 import org.jboss.as.ee.component.ComponentIsStoppedException;
 import org.jboss.as.ee.component.InjectionSource;
-import org.jboss.as.ee.concurrent.ConcurrentContext;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.invocation.proxy.MethodIdentifier;
 import org.jboss.jandex.AnnotationTarget;
@@ -53,7 +53,7 @@ public interface EeLogger extends BasicLogger {
     /**
      * A logger with a category of the package name.
      */
-    EeLogger ROOT_LOGGER = Logger.getMessageLogger(EeLogger.class, "org.jboss.as.ee");
+    EeLogger ROOT_LOGGER = Logger.getMessageLogger(MethodHandles.lookup(), EeLogger.class, "org.jboss.as.ee");
 
 //    /**
 //     * Logs a warning message indicating the transaction datasource, represented by the {@code className} parameter,
@@ -1044,10 +1044,10 @@ public interface EeLogger extends BasicLogger {
     IOException serializationMustBeHandledByTheFactory();
 
     @Message(id = 104, value = "The EE Concurrent Context %s already has a factory named %s")
-    IllegalArgumentException factoryAlreadyExists(ConcurrentContext concurrentContext, String factoryName);
+    IllegalArgumentException factoryAlreadyExists(String concurrentContext, String factoryName);
 
     @Message(id = 105, value = "EE Concurrent Context %s does not has a factory named %s")
-    IOException factoryNotFound(ConcurrentContext concurrentContext, String factoryName);
+    IOException factoryNotFound(String concurrentContext, String factoryName);
 
     @Message(id = 106, value = "EE Concurrent Context %s service not installed.")
     IOException concurrentContextServiceNotInstalled(ServiceName serviceName);
@@ -1227,4 +1227,10 @@ public interface EeLogger extends BasicLogger {
 
     @Message(id = 141, value="Running with a SecurityManager enabled is not allowed in a Jakarta EE 11 or later environment")
     OperationFailedException securityManagerNotAllowed();
+
+    @Message(id = 142, value = "Failed to load Jakarta Concurrency implementation")
+    RuntimeException failedToLoadConcurrencyImplementation(@Cause Throwable cause);
+
+    @Message(id = 143, value = "Lifecycle operation not supported")
+    IllegalStateException lifecycleOperationNotSupported();
 }

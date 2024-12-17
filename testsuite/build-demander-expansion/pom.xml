@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+
+
+<!--
+    This module ensures the default server installation used by testsuites
+    is built, unless -Djboss.home is used to specify an externally built server.
+
+    We use a separate maven module to do this because:
+    1) Placing this logic in the aggregator-expansion module doesn't work as maven executes
+       logic in an aggregator *after* the child modules it aggregates. We need this before.
+    2) We can't add this logic into the testsuite/pom.xml profiles that trigger the aggregate builds,
+       as we need a profile of our own to disable demanding the build if -Djboss.home is used, thus
+       allowing the testsuite to be executed without requiring a build of the production server code.
+       Maven doesn't support nested profiles.
+-->
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>org.wildfly</groupId>
+        <artifactId>wildfly-parent</artifactId>
+        <!--
+        Maintain separation between the artifact id and the version to help prevent
+        merge conflicts between commits changing the GA and those changing the V.
+        -->
+        <version>35.0.0.Final-SNAPSHOT</version>
+        <relativePath>../../pom.xml</relativePath>
+    </parent>
+
+    <artifactId>wildfly-ts-build-demander-expansion</artifactId>
+    <packaging>pom</packaging>
+
+    <name>WildFly Test Suite: Expansion Server Build Demander</name>
+    <description>Ensures the default server installation used by expansion testsuites
+        is built</description>
+
+    <profiles>
+
+        <!-- Unless we are configured to only run the testsuite,
+             make sure we have built the server we will test  -->
+        <profile>
+            <id>build.test.installation</id>
+            <activation><property><name>!testsuite.only</name></property></activation>
+            <dependencies>
+                <dependency>
+                    <groupId>${full.maven.groupId}</groupId>
+                    <artifactId>wildfly-build</artifactId>
+                    <version>${full.maven.version}</version>
+                    <type>pom</type>
+                </dependency>
+                <dependency>
+                    <groupId>${full.maven.groupId}</groupId>
+                    <artifactId>wildfly-dist</artifactId>
+                    <version>${full.maven.version}</version>
+                    <type>pom</type>
+                </dependency>
+            </dependencies>
+        </profile>
+
+    </profiles>
+</project>

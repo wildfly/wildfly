@@ -28,6 +28,5 @@
         <module name="java.xml"/>
         <module name="jdk.management"/>
         <module name="jdk.unsupported"/>
-        <module name="com.carrotsearch.hppc" />
     </dependencies>
 </module>

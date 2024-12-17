@@ -5,11 +5,12 @@
 
 package org.jboss.as.test.clustering.cluster.group.bean;
 
-import org.wildfly.clustering.group.Membership;
+import org.wildfly.clustering.server.GroupMember;
+import org.wildfly.clustering.server.GroupMembership;
 
 /**
  * @author Paul Ferraro
  */
-public interface Group extends org.wildfly.clustering.group.Group {
-    Membership getPreviousMembership();
+public interface Group extends org.wildfly.clustering.server.Group<GroupMember> {
+    GroupMembership<GroupMember> getPreviousMembership();
 }

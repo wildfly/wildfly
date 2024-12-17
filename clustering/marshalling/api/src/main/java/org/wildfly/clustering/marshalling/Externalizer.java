@@ -13,7 +13,9 @@ import java.util.OptionalInt;
 /**
  * Service provider interface for custom externalizers.
  * @author Paul Ferraro
+ * @deprecated Use {@link org.jboss.marshalling.Externalizer} instead.
  */
+@Deprecated(forRemoval = true)
 public interface Externalizer<T> {
 
     /**

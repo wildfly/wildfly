@@ -1,35 +1,43 @@
+syntax = "proto3";
+
 package org.wildfly.clustering.singleton.server;
+
+import "org.wildfly.clustering.marshalling.protostream.proto";
 
 // IDs: 155 - 159
 
 /**
  * @TypeId(155)
  */
-message StartCommand {
+enum StartCommand {
+	START_COMMAND_INSTANCE	= 0;
 }
 
 /**
  * @TypeId(156)
  */
-message StopCommand {
+enum StopCommand {
+	STOP_COMMAND_INSTANCE	= 0;
 }
 
 /**
  * @TypeId(157)
  */
 message SingletonElectionCommand {
-	repeated	bytes	candidate	= 1;
-	optional	uint32	elected	= 2;
+	repeated	org.wildfly.clustering.marshalling.protostream.Any	candidate	= 1;
+	uint32	elected	= 2;
 }
 
 /**
  * @TypeId(158)
  */
-message PrimaryProviderCommand {
+enum PrimaryProviderCommand {
+	PRIMARY_PROVIDER_COMMAND_INSTANCE	= 0;
 }
 
 /**
  * @TypeId(159)
  */
-message SingletonValueCommand {
+enum SingletonValueCommand {
+	SINGLETON_VALUE_COMMAND_INSTANCE	= 0;
 }

@@ -8,8 +8,8 @@ package org.jboss.as.jsf.deployment;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.jboss.as.controller.ModuleIdentifierUtil;
 import org.jboss.as.jsf.logging.JSFLogger;
-import org.jboss.as.jsf.subsystem.JSFResourceDefinition;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
@@ -70,8 +70,20 @@ public class JSFMetadataProcessor implements DeploymentUnitProcessor {
 
             String version = JsfVersionMarker.getVersion(deploymentUnit);
             // Disable counter-productive "distributable" logic in Mojarra implementation
-            if (version.equals(JsfVersionMarker.JSF_4_0) && JSFModuleIdFactory.getInstance().getImplModId(version).getSlot().equals(JSFResourceDefinition.DEFAULT_SLOT)) {
-                setContextParameterIfAbsent(webMetaData, WebConfiguration.BooleanWebContextInitParameter.EnableDistributable.getQualifiedName(), Boolean.FALSE.toString());
+            if (version.equals(JsfVersionMarker.JSF_4_0)) {
+                // Retrieve the canonical module identifier string
+                String implModId = JSFModuleIdFactory.getInstance().getImplModId(version);
+
+                // Now compare the canonical module identifier (which doesn't include "main" as the slot)
+                String canonicalModId = ModuleIdentifierUtil.canonicalModuleIdentifier(implModId);
+                // Check if the canonical module identifier is for the "main" slot
+                if (canonicalModId != null && !canonicalModId.contains(":")) {
+                    setContextParameterIfAbsent(
+                            webMetaData,
+                            WebConfiguration.BooleanWebContextInitParameter.EnableDistributable.getQualifiedName(),
+                            Boolean.FALSE.toString()
+                    );
+                }
             }
         }
     }

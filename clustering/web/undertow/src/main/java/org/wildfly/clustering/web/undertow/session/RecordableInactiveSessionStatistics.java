@@ -5,9 +5,7 @@
 
 package org.wildfly.clustering.web.undertow.session;
 
-import org.wildfly.clustering.ee.Recordable;
-import org.wildfly.clustering.web.session.ImmutableSessionMetaData;
-import org.wildfly.clustering.web.session.InactiveSessionStatistics;
+import org.wildfly.clustering.session.ImmutableSessionMetaData;
 
 /**
  * Recordable {@link InactiveSessionStatistics}.

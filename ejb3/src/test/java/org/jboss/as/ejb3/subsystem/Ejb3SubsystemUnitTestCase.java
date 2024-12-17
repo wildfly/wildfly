@@ -15,14 +15,15 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
 import org.jboss.as.subsystem.test.AdditionalInitialization;
 import org.jboss.as.subsystem.test.KernelServices;
 import org.jboss.dmr.ModelNode;
 import org.junit.Test;
-import org.wildfly.clustering.ejb.timer.TimerServiceRequirement;
-import org.wildfly.clustering.singleton.SingletonDefaultRequirement;
+import org.wildfly.clustering.ejb.timer.TimerManagementProvider;
+import org.wildfly.clustering.singleton.service.ServiceTargetFactory;
 
 /**
  * Test case for testing the integrity of the EJB3 subsystem.
@@ -39,9 +40,9 @@ import org.wildfly.clustering.singleton.SingletonDefaultRequirement;
 public class Ejb3SubsystemUnitTestCase extends AbstractSubsystemBaseTest {
 
     private static final AdditionalInitialization ADDITIONAL_INITIALIZATION = AdditionalInitialization.withCapabilities(
-            TimerServiceRequirement.TIMER_MANAGEMENT_PROVIDER.resolve("transient"),
-            TimerServiceRequirement.TIMER_MANAGEMENT_PROVIDER.resolve("persistent"),
-            SingletonDefaultRequirement.POLICY.getName()
+            RuntimeCapability.resolveCapabilityName(TimerManagementProvider.SERVICE_DESCRIPTOR, "transient"),
+            RuntimeCapability.resolveCapabilityName(TimerManagementProvider.SERVICE_DESCRIPTOR, "persistent"),
+            ServiceTargetFactory.DEFAULT_SERVICE_DESCRIPTOR.getName()
             );
 
     public Ejb3SubsystemUnitTestCase() {

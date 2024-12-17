@@ -160,7 +160,7 @@ public class AppClientWrapper implements Runnable {
         // Instead we prove expressions work by passing an expression
         final String archiveArg;
         if(clientArchiveName == null) {
-            archiveArg = "${test.expr.appclient.file: " + archivePath + "}";
+            archiveArg = "${test.expr.appclient.file:" + archivePath + "}";
         } else {
             archiveArg = "${test.expr.appclient.file:" + archivePath + "}#${test.expr.appclient.deployment:" + clientArchiveName + "}";
         }

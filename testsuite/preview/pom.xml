@@ -16,7 +16,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>34.0.0.Beta1-SNAPSHOT</version>
+        <version>35.0.0.Final-SNAPSHOT</version>
     </parent>
 
     <artifactId>wildfly-ts-preview</artifactId>
@@ -55,6 +55,7 @@
 
         <!-- Use the WildFly Preview EE dependency set. Child modules that test expansion capabilities can override. -->
         <dependency.management.import.artifact>wildfly-preview-ee-bom</dependency.management.import.artifact>
+        <dependency.management.import.test.artifact>wildfly-preview-test-bom</dependency.management.import.test.artifact>
         <container.java.home>${java.home}</container.java.home>
         
         <ts.config-as.copy-mgmt-users.phase>generate-test-resources</ts.config-as.copy-mgmt-users.phase>
@@ -64,7 +65,7 @@
         <dependencies>
             <dependency>
                 <groupId>org.wildfly</groupId>
-                <artifactId>wildfly-standard-test-expansion-bom</artifactId>
+                <artifactId>wildfly-preview-test-expansion-bom</artifactId>
                 <version>${project.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
@@ -121,22 +122,7 @@
             </activation>
             <modules>
                 <module>basic</module>
-                <!--<module>ws</module>
-                <module>web</module>
-                <module>smoke</module>
-                <module>microprofile</module>
-                <module>microprofile-tck</module>
-                <module>vdx</module>
-                <module>iiop</module>
-                <module>xts</module>
-                <module>rts</module>
-                <module>rbac</module>
-                <module>clustering</module>
-                <module>multinode</module>
-                <module>secman</module>
-                <module>legacy</module>
-                <module>elytron</module>
-                <module>elytron-oidc-client</module>-->
+                <module>expansion</module>
             </modules>
         </profile>
 
@@ -145,9 +131,11 @@
             <activation><property><name>ts.preview</name></property></activation>
             <properties>
                 <dependency.management.import.artifact>wildfly-preview-expansion-bom</dependency.management.import.artifact>
+                <dependency.management.import.test.artifact>wildfly-preview-test-expansion-bom</dependency.management.import.test.artifact>
             </properties>
             <modules>
                 <module>basic</module>
+                <module>expansion</module>
                 <module>manualmode</module>
             </modules>
         </profile>
@@ -166,6 +154,7 @@
             </properties>
             <modules>
                 <module>basic</module>
+                <module>expansion</module>
                 <!--<module>clustering</module>
                 <module>microprofile</module>
                 <module>microprofile-tck</module>
@@ -182,23 +171,8 @@
             </activation>
             <modules>
                 <module>basic</module>
-                <!--<module>ws</module>
-                <module>web</module>
-                <module>smoke</module>
-                <module>microprofile</module>
-                <module>microprofile-tck</module>
-                <module>vdx</module>
-                <module>iiop</module>
-                <module>xts</module>
-                <module>rts</module>
-                <module>rbac</module>
-                <module>clustering</module>
-                <module>multinode</module>-->
+                <module>expansion</module>
                 <module>manualmode</module>
-                <!--<module>secman</module>
-                <module>legacy</module>
-                <module>elytron</module>
-                <module>elytron-oidc-client</module>-->
             </modules>
         </profile>
         <!-- Define ts.integration uber-group. -->
@@ -210,36 +184,10 @@
             </activation>
             <modules>
                 <module>basic</module>
-                <!--<module>ws</module>
-                <module>web</module>
-                <module>smoke</module>
-                <module>microprofile</module>
-                <module>microprofile-tck</module>
-                <module>vdx</module>
-                <module>clustering</module>
-                <module>iiop</module>
-                <module>xts</module>
-                <module>rts</module>
-                <module>rbac</module>-->
+                <module>expansion</module>
                 <module>manualmode</module>
-                <!--<module>multinode</module>
-                <module>secman</module>
-                <module>legacy</module>
-                <module>elytron</module>
-                <module>elytron-oidc-client</module>-->
             </modules>
         </profile>
-
-        <!-- -Dts.smoke
-        <profile>
-            <id>ts.integ.group.smoke</id>
-            <activation><property><name>!ts.noSmoke</name></property></activation>
-            <modules>
-                <module>web</module>
-                <module>smoke</module>
-            </modules>
-        </profile>
-        -->
 
         <!-- -Dts.basic -->
         <profile>
@@ -251,58 +199,9 @@
             <modules>
                 <!--<module>ws</module>-->
                 <module>basic</module>
+                <module>expansion</module>
             </modules>
         </profile>
-
-        <!-- -Dts.clustering
-        <profile>
-            <id>ts.integ.group.clustering</id>
-            <activation><property><name>ts.clustering</name></property></activation>
-            <modules>
-                <module>clustering</module>
-            </modules>
-        </profile>
-        -->
-
-        <!-- -Dts.iiop
-        <profile>
-            <id>ts.integ.group.iiop</id>
-            <activation><property><name>ts.iiop</name></property></activation>
-            <modules>
-                <module>iiop</module>
-            </modules>
-        </profile>
-        -->
-
-        <!-- -Dts.xts
-        <profile>
-            <id>ts.integ.group.xts</id>
-            <activation><property><name>ts.xts</name></property></activation>
-            <modules>
-                <module>xts</module>
-            </modules>
-        </profile>
-         -->
-
-        <!-- -Dts.rts
-        <profile>
-            <id>ts.integ.group.rts</id>
-            <activation><property><name>ts.rts</name></property></activation>
-            <modules>
-                <module>rts</module>
-            </modules>
-        </profile>
-        -->
-
-        <!-- -Dts.multinode
-        <profile>
-            <id>ts.integ.group.multinode</id>
-            <activation><property><name>ts.multinode</name></property></activation>
-            <modules>
-                <module>multinode</module>
-            </modules>
-        </profile>
-        -->
 
         <!-- -Dts.manualmode. -->
         <profile>
@@ -313,26 +212,6 @@
             </modules>
         </profile>
 
-        <!-- -Dts.rbac
-        <profile>
-            <id>ts.integ.group.rbac</id>
-            <activation><property><name>ts.rbac</name></property></activation>
-            <modules>
-                <module>rbac</module>
-            </modules>
-        </profile>
-        -->
-
-        <!-- -Dts.secman
-        <profile>
-            <id>ts.integ.group.secman</id>
-            <activation><property><name>ts.secman</name></property></activation>
-            <modules>
-                <module>secman</module>
-            </modules>
-        </profile>
-        -->
-
         <!-- -Dts.layers -->
         <profile>
             <id>ts.preview.group.layers</id>
@@ -342,84 +221,9 @@
             </activation>
             <modules>
                 <module>basic</module>
+                <module>expansion</module>
             </modules>
         </profile>
-
-        <!-- -Dts.standalone.microprofile
-        <profile>
-            <id>ts.integ.group.standalone.microprofile</id>
-            <activation><property><name>ts.standalone.microprofile</name></property></activation>
-            <modules>
-                <module>basic</module>
-                <module>microprofile</module>
-                <module>microprofile-tck</module>
-                <module>clustering</module>
-                <module>elytron-oidc-client</module>
-            </modules>
-        </profile>
-        -->
-
-        <!-- -Dts.legacy
-        <profile>
-            <id>ts.integ.group.legacy</id>
-            <activation><property><name>ts.legacy</name></property></activation>
-            <modules>
-                <module>legacy</module>
-            </modules>
-        </profile>
-        -->
-
-        <!-- -Dts.microprofile
-        <profile>
-            <id>ts.integ.group.microprofile</id>
-            <activation><property><name>ts.microprofile</name></property></activation>
-            <modules>
-                <module>microprofile</module>
-                <module>microprofile-tck</module>
-            </modules>
-        </profile>
-        -->
-
-        <!-- -Dts.elytron
-        <profile>
-            <id>ts.integ.group.elytron</id>
-            <activation><property><name>ts.elytron</name></property></activation>
-            <modules>
-                <module>elytron</module>
-            </modules>
-        </profile>
-        -->
-
-        <!-- -Dts.elytron-oidc-client
-        <profile>
-            <id>ts.integ.group.elytron-oidc-client</id>
-            <activation><property><name>ts.elytron-oidc-client</name></property></activation>
-            <modules>
-                <module>elytron-oidc-client</module>
-            </modules>
-        </profile>
-        -->
-
-        <!-- Test against bootable jar
-        <profile>
-            <id>bootablejar.preview.profile</id>
-            <activation>
-                <property>
-                    <name>ts.bootable.preview</name>
-                </property>
-            </activation>
-            <properties>
-                <surefire.default-test.phase>test</surefire.default-test.phase>
-            </properties>
-            <modules>
-                <module>basic</module>
-                <module>clustering</module>
-                <module>microprofile</module>
-                <module>microprofile-tck</module>
-                <module>elytron-oidc-client</module>
-            </modules>
-        </profile>
-        -->
 
     </profiles>
 

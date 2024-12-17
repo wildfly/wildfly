@@ -6,6 +6,7 @@
 package org.jboss.as.ee.subsystem;
 
 import org.jboss.as.controller.capability.RuntimeCapability;
+import org.jboss.as.controller.services.path.PathManager;
 
 /**
  * The capabilities provided by and required by this subsystem.
@@ -15,13 +16,11 @@ import org.jboss.as.controller.capability.RuntimeCapability;
 public final class EeCapabilities {
     private static final String CAPABILITY_BASE = "org.wildfly.ee.";
 
-    static final String PATH_MANAGER_CAPABILITY = "org.wildfly.management.path-manager";
-
     public static final String EE_GLOBAL_DIRECTORY_CAPABILITY_NAME = CAPABILITY_BASE + "global-directory";
 
     public static final RuntimeCapability<Void> EE_GLOBAL_DIRECTORY_CAPABILITY = RuntimeCapability
             .Builder.of(EE_GLOBAL_DIRECTORY_CAPABILITY_NAME, true, GlobalDirectoryService.class)
-            .addRequirements(PATH_MANAGER_CAPABILITY)
+            .addRequirements(PathManager.SERVICE_DESCRIPTOR)
             .build();
 
     public static final String ELYTRON_JACC_CAPABILITY = "org.wildfly.security.jacc-policy";

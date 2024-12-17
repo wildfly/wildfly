@@ -5,10 +5,11 @@
 
 package org.wildfly.clustering.ejb.timer;
 
+import java.util.OptionalInt;
 import java.util.function.Function;
 
 import org.jboss.modules.Module;
-import org.wildfly.clustering.marshalling.spi.ByteBufferMarshaller;
+import org.wildfly.clustering.marshalling.ByteBufferMarshaller;
 
 /**
  * Encapsulates the configuration of a {@link TimerManagementProvider}.
@@ -18,5 +19,5 @@ public interface TimerManagementConfiguration {
 
     Function<Module, ByteBufferMarshaller> getMarshallerFactory();
 
-    Integer getMaxActiveTimers();
+    OptionalInt getMaxActiveTimers();
 }

@@ -17,7 +17,7 @@ import java.util.Set;
 
 import org.jboss.as.jsf.logging.JSFLogger;
 import org.jboss.as.jsf.subsystem.JSFResourceDefinition;
-import org.jboss.modules.ModuleIdentifier;
+import org.jboss.as.controller.ModuleIdentifierUtil;
 
 /**
  * This class finds all the installed Jakarta Server Faces implementations and provides their ModuleId's.
@@ -34,9 +34,9 @@ public class JSFModuleIdFactory {
     // The default JSF impl slot.  This can be overridden by the management layer.
     private String defaultSlot = JSFResourceDefinition.DEFAULT_SLOT;
 
-    private Map<String, ModuleIdentifier> apiIds = new HashMap<>();
-    private Map<String, ModuleIdentifier> implIds = new HashMap<>();
-    private Map<String, ModuleIdentifier> injectionIds = new HashMap<>();
+    private Map<String, String> apiIds = new HashMap<>();
+    private Map<String, String> implIds = new HashMap<>();
+    private Map<String, String> injectionIds = new HashMap<>();
 
     private Set<String> allVersions = new HashSet<>();
     private List<String> activeVersions = new ArrayList<>();
@@ -79,9 +79,9 @@ public class JSFModuleIdFactory {
 
     // just provide the default implementations
     private void loadIdsManually() {
-        implIds.put("main", ModuleIdentifier.create(IMPL_MODULE));
-        apiIds.put("main", ModuleIdentifier.create(API_MODULE));
-        injectionIds.put("main", ModuleIdentifier.create(INJECTION_MODULE));
+        implIds.put("main", ModuleIdentifierUtil.canonicalModuleIdentifier(IMPL_MODULE, "main"));
+        apiIds.put("main", ModuleIdentifierUtil.canonicalModuleIdentifier(API_MODULE, "main"));
+        injectionIds.put("main", ModuleIdentifierUtil.canonicalModuleIdentifier(INJECTION_MODULE, "main"));
 
         allVersions.add("main");
 
@@ -97,7 +97,7 @@ public class JSFModuleIdFactory {
         checkVersionIntegrity();
     }
 
-    private void loadIds(String moduleRootDir, Map<String, ModuleIdentifier> idMap, String moduleName) {
+    private void loadIds(String moduleRootDir, Map<String, String> idMap, String moduleName) {
         StringBuilder baseDirBuilder = new StringBuilder(moduleRootDir);
         baseDirBuilder.append(File.separator);
         baseDirBuilder.append(moduleName.replace(".", File.separator));
@@ -116,7 +116,7 @@ public class JSFModuleIdFactory {
             if (!new File(slot, "module.xml").exists()) continue; // make sure directory represents a real module
             String slotName = slot.getName();
             allVersions.add(slotName);
-            idMap.put(slotName, ModuleIdentifier.create(moduleName, slotName));
+            idMap.put(slotName, ModuleIdentifierUtil.canonicalModuleIdentifier(moduleName, slotName));
         }
     }
 
@@ -154,15 +154,15 @@ public class JSFModuleIdFactory {
         return jsfVersion;
     }
 
-    ModuleIdentifier getApiModId(String jsfVersion) {
+    String getApiModId(String jsfVersion) {
         return this.apiIds.get(computeSlot(jsfVersion));
     }
 
-    ModuleIdentifier getImplModId(String jsfVersion) {
+    String getImplModId(String jsfVersion) {
         return this.implIds.get(computeSlot(jsfVersion));
     }
 
-    ModuleIdentifier getInjectionModId(String jsfVersion) {
+    String getInjectionModId(String jsfVersion) {
         return this.injectionIds.get(computeSlot(jsfVersion));
     }
 

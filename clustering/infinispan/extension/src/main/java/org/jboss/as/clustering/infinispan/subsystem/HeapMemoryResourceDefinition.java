@@ -52,6 +52,6 @@ public class HeapMemoryResourceDefinition extends MemoryResourceDefinition {
     }
 
     HeapMemoryResourceDefinition() {
-        super(StorageType.HEAP, PATH, new ResourceDescriptorConfigurator(), Attribute.SIZE_UNIT);
+        super(StorageType.HEAP, PATH, new ResourceDescriptorConfigurator(), Attribute.SIZE_UNIT.getDefinition());
     }
 }

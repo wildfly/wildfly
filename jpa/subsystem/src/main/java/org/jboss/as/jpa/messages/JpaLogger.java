@@ -9,6 +9,8 @@ import static org.jboss.logging.Logger.Level.ERROR;
 import static org.jboss.logging.Logger.Level.INFO;
 import static org.jboss.logging.Logger.Level.WARN;
 
+import java.lang.invoke.MethodHandles;
+
 import jakarta.ejb.EJBException;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceException;
@@ -36,7 +38,7 @@ public interface JpaLogger extends BasicLogger {
     /**
      * Default root level logger with the package name for he category.
      */
-    JpaLogger ROOT_LOGGER = Logger.getMessageLogger(JpaLogger.class, "org.jboss.as.jpa");
+    JpaLogger ROOT_LOGGER = Logger.getMessageLogger(MethodHandles.lookup(), JpaLogger.class, "org.jboss.as.jpa");
 
     /**
      * Logs a warning message indicating duplicate persistence.xml files were found.

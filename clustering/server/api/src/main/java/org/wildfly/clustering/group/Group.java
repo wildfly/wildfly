@@ -10,7 +10,9 @@ import org.wildfly.clustering.Registrar;
  * Represents a groups of nodes.
  *
  * @author Paul Ferraro
+ * @deprecated Replaced by {@link org.wildfly.clustering.server.Group}.
  */
+@Deprecated(forRemoval = true)
 public interface Group extends Registrar<GroupListener> {
 
     /**

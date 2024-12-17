@@ -47,6 +47,7 @@ WildFly Preview variant.
 the kind of WildFly installation that best fits your application's deployment needs:
 a WildFly zip installation, a WildFly server provisioned with Galleon or a WildFly bootable JAR.
 
+* The link:WildFly_Maven_Plugin_Guide{outfilesuffix}[WildFly Maven Plugin Guide] shows you how to package a WildFly server along with your application as part of your application's Maven build.
 * The link:Bootable_Guide{outfilesuffix}[Bootable JAR Guide] shows you how to package your application and the WildFly server
 into a bootable JAR.
 
@@ -112,7 +113,7 @@ features which have been removed from WildFly.
 
 == Client Guide
 
-* The link:Client_Guide{outfilesuffix}[WildFly Client Configuration] guide walks you through the new Wildfly client and how to use it.
+* The link:Client_Guide{outfilesuffix}[WildFly Client Configuration] guide walks you through the new WildFly client and how to use it.
 
 [[quickstarts]]
 == Quickstarts

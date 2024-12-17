@@ -5,12 +5,12 @@
 
 package org.wildfly.clustering.el.expressly;
 
-import java.io.IOException;
-
 import org.glassfish.expressly.ValueExpressionLiteral;
-import org.junit.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.wildfly.clustering.marshalling.MarshallingTesterFactory;
 import org.wildfly.clustering.marshalling.Tester;
-import org.wildfly.clustering.marshalling.protostream.ProtoStreamTesterFactory;
+import org.wildfly.clustering.marshalling.TesterFactory;
+import org.wildfly.clustering.marshalling.junit.TesterFactorySource;
 
 /**
  * Validates marshalling of a {@link ValueExpressionLiteral}.
@@ -18,9 +18,10 @@ import org.wildfly.clustering.marshalling.protostream.ProtoStreamTesterFactory;
  */
 public class ValueExpressionLiteralMarshallerTestCase {
 
-    @Test
-    public void test() throws IOException {
-        Tester<ValueExpressionLiteral> tester = ProtoStreamTesterFactory.INSTANCE.createTester();
-        tester.test(new ValueExpressionLiteral(Boolean.TRUE, Boolean.class));
+    @ParameterizedTest
+    @TesterFactorySource(MarshallingTesterFactory.class)
+    public void test(TesterFactory factory) {
+        Tester<ValueExpressionLiteral> tester = factory.createTester();
+        tester.accept(new ValueExpressionLiteral(Boolean.TRUE, Boolean.class));
     }
 }

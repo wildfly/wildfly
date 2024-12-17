@@ -5,14 +5,15 @@
 
 package org.wildfly.clustering.faces.mojarra.facelets.el;
 
-import java.io.IOException;
 import java.util.ServiceLoader;
 
-import org.junit.Test;
+import org.junit.jupiter.params.ParameterizedTest;
 import org.wildfly.clustering.el.MethodExpressionFactory;
 import org.wildfly.clustering.faces.view.facelets.MockTagAttribute;
+import org.wildfly.clustering.marshalling.MarshallingTesterFactory;
 import org.wildfly.clustering.marshalling.Tester;
-import org.wildfly.clustering.marshalling.protostream.ProtoStreamTesterFactory;
+import org.wildfly.clustering.marshalling.TesterFactory;
+import org.wildfly.clustering.marshalling.junit.TesterFactorySource;
 
 import com.sun.faces.facelets.el.TagMethodExpression;
 
@@ -24,9 +25,10 @@ public class TagMethodExpressionMarshallerTestCase {
 
     private final MethodExpressionFactory factory = ServiceLoader.load(MethodExpressionFactory.class, MethodExpressionFactory.class.getClassLoader()).iterator().next();
 
-    @Test
-    public void test() throws IOException {
-        Tester<TagMethodExpression> tester = ProtoStreamTesterFactory.INSTANCE.createTester();
-        tester.test(new TagMethodExpression(new MockTagAttribute("foo"), this.factory.createMethodExpression("foo", String.class, new Class[0])));
+    @ParameterizedTest
+    @TesterFactorySource(MarshallingTesterFactory.class)
+    public void test(TesterFactory factory) {
+        Tester<TagMethodExpression> tester = factory.createTester();
+        tester.accept(new TagMethodExpression(new MockTagAttribute("foo"), this.factory.createMethodExpression("foo", String.class, new Class[0])));
     }
 }

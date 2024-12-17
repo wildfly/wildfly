@@ -14,7 +14,7 @@ import org.kohsuke.MetaInfServices;
 public class OpenTelemetryExtensionTransformerRegistration implements ExtensionTransformerRegistration {
     @Override
     public String getSubsystemName() {
-        return OpenTelemetrySubsystemExtension.SUBSYSTEM_NAME;
+        return OpenTelemetryConfigurationConstants.SUBSYSTEM_NAME;
     }
 
     @Override
@@ -26,7 +26,7 @@ public class OpenTelemetryExtensionTransformerRegistration implements ExtensionT
 
     private void registerV_1_1_Transformers(ResourceTransformationDescriptionBuilder builder) {
         builder.getAttributeBuilder()
-                .setValueConverter(AttributeConverter.DEFAULT_VALUE, OpenTelemetrySubsystemDefinition.EXPORTER)
+                .setValueConverter(AttributeConverter.DEFAULT_VALUE, OpenTelemetrySubsystemRegistrar.EXPORTER)
                 .end();
     }
 }

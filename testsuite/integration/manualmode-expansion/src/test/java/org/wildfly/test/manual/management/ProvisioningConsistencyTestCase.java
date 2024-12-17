@@ -20,6 +20,6 @@ import org.wildfly.test.distribution.validation.ProvisioningConsistencyBaseTest;
 public class ProvisioningConsistencyTestCase extends ProvisioningConsistencyBaseTest {
 
     public ProvisioningConsistencyTestCase() {
-        super("dist");
+        super(System.getProperty("dist.output.dir"));
     }
 }

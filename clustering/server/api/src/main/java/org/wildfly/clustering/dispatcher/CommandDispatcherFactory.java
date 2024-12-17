@@ -10,7 +10,9 @@ import org.wildfly.clustering.group.Group;
  * Factory for creating a command dispatcher.
  *
  * @author Paul Ferraro
+ * @deprecated Replaced by {@link org.wildfly.clustering.server.dispatcher.CommandDispatcherFactory}.
  */
+@Deprecated(forRemoval = true)
 public interface CommandDispatcherFactory {
 
     /**

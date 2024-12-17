@@ -280,7 +280,7 @@ next Final release without more version bumps. It is also worth noting
 that a new WildFly release does not automatically mean a new version for
 the subsystem, the new version is only needed if something was changed.
 For example the `jaxrs` subsystem remained on 1.0.0 for all versions
-of WildFly and JBoss AS 7 through Wildfly 18.
+of WildFly and JBoss AS 7 through WildFly 18.
 
 You can find the `ModelVersion` of a subsystem by querying its
 extension:

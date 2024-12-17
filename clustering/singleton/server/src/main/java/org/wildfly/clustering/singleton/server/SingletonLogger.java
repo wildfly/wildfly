@@ -8,6 +8,7 @@ import static org.jboss.logging.Logger.Level.ERROR;
 import static org.jboss.logging.Logger.Level.INFO;
 import static org.jboss.logging.Logger.Level.WARN;
 
+import java.lang.invoke.MethodHandles;
 import java.util.Collection;
 
 import org.jboss.logging.BasicLogger;
@@ -17,7 +18,7 @@ import org.jboss.logging.annotations.LogMessage;
 import org.jboss.logging.annotations.Message;
 import org.jboss.logging.annotations.MessageLogger;
 import org.jboss.msc.service.StartException;
-import org.wildfly.clustering.group.Node;
+import org.wildfly.clustering.server.GroupMember;
 
 /**
  * @author <a href="mailto:pferraro@redhat.com">Paul Ferraro</a>
@@ -29,7 +30,7 @@ public interface SingletonLogger extends BasicLogger {
     /**
      * The root logger.
      */
-    SingletonLogger ROOT_LOGGER = Logger.getMessageLogger(SingletonLogger.class, ROOT_LOGGER_CATEGORY);
+    SingletonLogger ROOT_LOGGER = Logger.getMessageLogger(MethodHandles.lookup(), SingletonLogger.class, ROOT_LOGGER_CATEGORY);
 
     @LogMessage(level = INFO)
     @Message(id = 1, value = "This node will now operate as the singleton provider of the %s service")
@@ -59,7 +60,7 @@ public interface SingletonLogger extends BasicLogger {
     void quorumJustReached(String service, int quorum);
 
     @Message(id = 8, value = "Detected multiple primary providers for %s service: %s")
-    IllegalArgumentException multiplePrimaryProvidersDetected(String serviceName, Collection<Node> nodes);
+    IllegalArgumentException multiplePrimaryProvidersDetected(String serviceName, Collection<GroupMember> providers);
 
     @Message(id = 9, value = "Singleton service %s is not started.")
     IllegalStateException notStarted(String serviceName);

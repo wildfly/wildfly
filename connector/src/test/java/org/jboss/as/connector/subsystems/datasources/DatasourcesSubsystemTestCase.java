@@ -45,12 +45,12 @@ public class DatasourcesSubsystemTestCase extends AbstractSubsystemBaseTest {
     @Override
     protected String getSubsystemXml() throws IOException {
         //test configuration put in standalone.xml
-        return readResource("datasources-minimal.xml");
+        return readResource("datasources-full.xml");
     }
 
     @Override
     protected String getSubsystemXsdPath() throws Exception {
-        return "schema/wildfly-datasources_7_1.xsd";
+        return "schema/wildfly-datasources_7_2.xsd";
     }
 
     @Test

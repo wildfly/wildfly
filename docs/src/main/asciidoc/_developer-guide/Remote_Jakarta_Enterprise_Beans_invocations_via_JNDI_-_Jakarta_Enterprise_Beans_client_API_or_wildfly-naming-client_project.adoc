@@ -312,8 +312,8 @@ implementation using the approach described in the `java.util.ServiceLoader` doc
 [NOTE]
 
 Note: One important thing is that jndi.properties should not be packaged in an
-app running in Wildfly though you can put it in a standalone java app.
-The reason is, when you run in Wildfly , if you do new InitialContext() and
+app running in WildFly though you can put it in a standalone java app.
+The reason is, when you run in WildFly, if you do new InitialContext() and
 you have jndi.properties in your classpath, it will read those settings
 and change the default configuration for the whole wildfly JVM.
 

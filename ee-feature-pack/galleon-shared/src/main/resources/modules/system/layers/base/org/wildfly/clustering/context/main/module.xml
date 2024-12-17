@@ -12,14 +12,15 @@
     </properties>
 
     <resources>
-        <artifact name="${org.wildfly:wildfly-clustering-context}"/>
+        <artifact name="${org.wildfly.clustering:wildfly-clustering-context}"/>
     </resources>
 
     <dependencies>
         <!-- Loads naming contextualizer -->
         <module name="org.jboss.as.clustering.common" services="import" optional="true"/>
+        <!-- Loads batching contextualizer -->
+        <module name="org.wildfly.clustering.cache.infinispan.common" services="import" optional="true"/>
         <module name="org.jboss.threads"/>
         <module name="org.wildfly.common"/>
-        <module name="org.wildfly.security.elytron-private"/>
     </dependencies>
 </module>

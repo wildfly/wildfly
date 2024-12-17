@@ -7,8 +7,6 @@ package org.wildfly.extension.messaging.activemq;
 import static org.apache.activemq.artemis.core.remoting.impl.invm.TransportConstants.SERVER_ID_PROP_NAME;
 import static org.apache.activemq.artemis.core.remoting.impl.netty.TransportConstants.ACTIVEMQ_SERVER_NAME;
 import static org.wildfly.extension.messaging.activemq.AbstractTransportDefinition.CONNECTOR_CAPABILITY;
-import static org.wildfly.extension.messaging.activemq.Capabilities.OUTBOUND_SOCKET_BINDING_CAPABILITY_NAME;
-import static org.wildfly.extension.messaging.activemq.Capabilities.SOCKET_BINDING_CAPABILITY_NAME;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.ACCEPTOR;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.CONNECTOR;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.FACTORY_CLASS;
@@ -399,9 +397,9 @@ public class TransportConfigOperationHandlers {
         Supplier<SocketBinding> socketBindingSupplier = null;
         if (socketBindingName != null) {
             if (listOutBoundSocketBinding(context, Collections.singleton(socketBindingName)).get(socketBindingName)) {
-                outboundSocketBindingSupplier = builder.requiresCapability(OUTBOUND_SOCKET_BINDING_CAPABILITY_NAME, OutboundSocketBinding.class, socketBindingName);
+                outboundSocketBindingSupplier = builder.requires(OutboundSocketBinding.SERVICE_DESCRIPTOR, socketBindingName);
             } else {
-                socketBindingSupplier = builder.requiresCapability(SOCKET_BINDING_CAPABILITY_NAME, SocketBinding.class, socketBindingName);
+                socketBindingSupplier = builder.requires(SocketBinding.SERVICE_DESCRIPTOR, socketBindingName);
             }
         }
         Supplier<ActiveMQBroker> serverSupplier = builder.requires(MessagingServices.getActiveMQServiceName(context.getCurrentAddress()));

@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+
+
+<!--
+    This module ensures the default server installation used by testsuites
+    is built, unless -Djboss.home is used to specify an externally built server.
+
+    We use a separate maven module to do this because:
+    1) Placing this logic in the aggregator-base module doesn't work as maven executes
+       logic in an aggregator *after* the child modules it aggregates. We need this before.
+    2) We can't add this logic into the testsuite/pom.xml profiles that trigger the aggregate builds,
+       as we need a profile of our own to disable demanding the build if -Djboss.home is used, thus
+       allowing the testsuite to be executed without requiring a build of the production server code.
+       Maven doesn't support nested profiles.
+-->
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>org.wildfly</groupId>
+        <artifactId>wildfly-parent</artifactId>
+        <!--
+        Maintain separation between the artifact id and the version to help prevent
+        merge conflicts between commits changing the GA and those changing the V.
+        -->
+        <version>35.0.0.Final-SNAPSHOT</version>
+        <relativePath>../../pom.xml</relativePath>
+    </parent>
+
+    <artifactId>wildfly-ts-build-demander-base</artifactId>
+    <packaging>pom</packaging>
+
+    <name>WildFly Test Suite: Base Server Build Demander</name>
+    <description>Ensures the default server installation used by base testsuites
+        is built</description>
+
+    <properties>
+        <!--
+             The GAV information of the module that produces that test build
+             (so testsuites can depend on it / ensure it's built)
+             We use properties so profiles can override these default values.
+        -->
+        <testsuite.default.base.build.groupId>${full.maven.groupId}</testsuite.default.base.build.groupId>
+        <testsuite.default.base.build.artifactId>wildfly-build</testsuite.default.base.build.artifactId>
+        <testsuite.default.base.dist.artifactId>wildfly-dist</testsuite.default.base.dist.artifactId>
+        <testsuite.default.base.build.version>${full.maven.version}</testsuite.default.base.build.version>
+    </properties>
+
+    <profiles>
+
+        <!-- Unless we are configured to only run the testsuite,
+             make sure we have built the server we will test  -->
+        <profile>
+            <id>build.test.installation</id>
+            <activation><property><name>!testsuite.only</name></property></activation>
+            <dependencies>
+                <dependency>
+                    <groupId>${testsuite.default.base.build.groupId}</groupId>
+                    <artifactId>${testsuite.default.base.build.artifactId}</artifactId>
+                    <version>${testsuite.default.base.build.version}</version>
+                    <type>pom</type>
+                </dependency>
+                <dependency>
+                    <groupId>${testsuite.default.base.build.groupId}</groupId>
+                    <artifactId>${testsuite.default.base.dist.artifactId}</artifactId>
+                    <version>${testsuite.default.base.build.version}</version>
+                    <type>pom</type>
+                </dependency>
+            </dependencies>
+        </profile>
+
+        <!--
+           If we're using wildfly-ee-galleon-pack for provisioning in the testsuite,
+           assume the pre-built server we'd use is wildfly-ee-build
+         -->
+        <profile>
+            <id>test.ee.galleon.pack.profile</id>
+            <activation>
+                <property>
+                    <name>testsuite.ee.galleon.pack.artifactId</name>
+                    <value>wildfly-ee-galleon-pack</value>
+                </property>
+            </activation>
+            <properties>
+                <testsuite.default.base.build.groupId>${ee.maven.groupId}</testsuite.default.base.build.groupId>
+                <testsuite.default.base.build.artifactId>wildfly-ee-build</testsuite.default.base.build.artifactId>
+                <testsuite.default.base.build.artifactId>wildfly-ee-dist</testsuite.default.base.build.artifactId>
+                <testsuite.default.base.build.version>${ee.maven.version}</testsuite.default.base.build.version>
+            </properties>
+        </profile>
+
+        <!--
+           If we're using wildfly-ee-galleon-pack for provisioning in the testsuite,
+           assume the pre-built server we'd use is wildfly-preview-build
+         -->
+        <profile>
+            <id>test.preview.galleon.pack.profile</id>
+            <activation>
+                <property>
+                    <name>testsuite.ee.galleon.pack.artifactId</name>
+                    <value>wildfly-preview-feature-pack</value>
+                </property>
+            </activation>
+            <properties>
+                <testsuite.default.base.build.artifactId>wildfly-preview-build</testsuite.default.base.build.artifactId>
+                <testsuite.default.base.build.artifactId>wildfly-preview-dist</testsuite.default.base.build.artifactId>
+            </properties>
+        </profile>
+
+    </profiles>
+</project>

@@ -4,11 +4,11 @@
  */
 package org.wildfly.clustering.faces.mojarra.util;
 
-import java.io.IOException;
-
-import org.junit.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.wildfly.clustering.marshalling.MarshallingTesterFactory;
 import org.wildfly.clustering.marshalling.Tester;
-import org.wildfly.clustering.marshalling.protostream.ProtoStreamTesterFactory;
+import org.wildfly.clustering.marshalling.TesterFactory;
+import org.wildfly.clustering.marshalling.junit.TesterFactorySource;
 
 import com.sun.faces.util.LRUMap;
 
@@ -17,13 +17,14 @@ import com.sun.faces.util.LRUMap;
  */
 public class LRUMapMarshallerTestCase {
 
-    @Test
-    public void test() throws IOException {
-        Tester<LRUMap<Object, Object>> tester = ProtoStreamTesterFactory.INSTANCE.createTester();
+    @ParameterizedTest
+    @TesterFactorySource(MarshallingTesterFactory.class)
+    public void test(TesterFactory factory) {
+        Tester<LRUMap<Object, Object>> tester = factory.createTester();
         LRUMap<Object, Object> map = new LRUMap<>(10);
-        tester.test(map);
+        tester.accept(map);
         map.put(1, "1");
         map.put(2, "2");
-        tester.test(map);
+        tester.accept(map);
     }
 }

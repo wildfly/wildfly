@@ -10,7 +10,9 @@ import java.util.List;
 /**
  * Encapsulates an immutable membership of a group.
  * @author Paul Ferraro
+ * @deprecated Replaced by {@link org.wildfly.clustering.server.GroupMembership}.
  */
+@Deprecated(forRemoval = true)
 public interface Membership {
     /**
      * Indicates whether or not the local node is the coordinator of this group membership.

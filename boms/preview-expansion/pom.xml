@@ -17,18 +17,19 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>34.0.0.Beta1-SNAPSHOT</version>
+        <version>35.0.0.Final-SNAPSHOT</version>
         <relativePath>../../pom.xml</relativePath>
     </parent>
 
     <artifactId>wildfly-preview-expansion-bom</artifactId>
     <description>
-        Build of materials that can be used to build WildFly Preview maven modules 
+        Build of materials that can be used to build WildFly Preview maven modules
         that provide expansion capabilities like MicroProfile.
     </description>
     <packaging>pom</packaging>
 
     <name>WildFly Preview: Dependency Management (Expansion Dependencies)</name>
+
 
     <dependencyManagement>
         <dependencies>
@@ -55,6 +56,25 @@
 
             <!-- Dependencies specific to this bom. Keep sorted -->
 
+            <dependency>
+                <groupId>org.wildfly.extras.vertx</groupId>
+                <artifactId>wildfly-vertx-feature-pack-content</artifactId>
+                <version>${version.org.wildfly.vertx}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.wildfly.extras.vertx</groupId>
+                <artifactId>wildfly-vertx-feature-pack-content</artifactId>
+                <version>${version.org.wildfly.vertx}</version>
+                <type>zip</type>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 

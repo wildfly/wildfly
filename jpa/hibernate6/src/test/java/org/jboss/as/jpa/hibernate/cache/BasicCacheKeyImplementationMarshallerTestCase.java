@@ -5,13 +5,14 @@
 
 package org.jboss.as.jpa.hibernate.cache;
 
-import java.io.IOException;
 import java.util.UUID;
 
 import org.hibernate.cache.internal.BasicCacheKeyImplementation;
-import org.junit.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.wildfly.clustering.marshalling.MarshallingTesterFactory;
 import org.wildfly.clustering.marshalling.Tester;
-import org.wildfly.clustering.marshalling.protostream.ProtoStreamTesterFactory;
+import org.wildfly.clustering.marshalling.TesterFactory;
+import org.wildfly.clustering.marshalling.junit.TesterFactorySource;
 
 /**
  * Unit test for {@link BasicCacheKeyImplementationMarshaller}.
@@ -19,12 +20,13 @@ import org.wildfly.clustering.marshalling.protostream.ProtoStreamTesterFactory;
  */
 public class BasicCacheKeyImplementationMarshallerTestCase {
 
-    @Test
-    public void test() throws IOException {
-        Tester<BasicCacheKeyImplementation> tester = ProtoStreamTesterFactory.INSTANCE.createTester();
+    @ParameterizedTest
+    @TesterFactorySource(MarshallingTesterFactory.class)
+    public void test(TesterFactory factory) {
+        Tester<BasicCacheKeyImplementation> tester = factory.createKeyTester();
         UUID id = UUID.randomUUID();
         String entity = "foo";
-        tester.testKey(new BasicCacheKeyImplementation(id, entity, id.hashCode()));
-        tester.testKey(new BasicCacheKeyImplementation(id, entity, 1));
+        tester.accept(new BasicCacheKeyImplementation(id, entity, id.hashCode()));
+        tester.accept(new BasicCacheKeyImplementation(id, entity, 1));
     }
 }

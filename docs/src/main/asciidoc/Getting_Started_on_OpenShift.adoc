@@ -65,8 +65,6 @@ It is possible to use a specific https://github.com/wildfly/quickstart/tags[quic
 ```
 --set build.ref={WildFlyQuickStartRepoTag}
 ```
-Take a look at the `bootable-jar-openshift` profile configuration in the `todo-backend` quickstart's https://github.com/wildfly/quickstart/blob/main/todo-backend/pom.xml#L254-L304[pom.xml]. The Maven profile named `bootable-jar-openshift` is used by the Helm chart to provision the server with the quickstart deployed. Notice the `wildfly-jar-maven-plugin` configuration defined in this profile. It specifies the link:Galleon_Guide{outfilesuffix}[layer] that should be used when provisioning WildFly. For more details about this, take a look at the https://github.com/wildfly/quickstart/tree/main/todo-backend#architecture[Architecture] section in the quickstart's README.
-
 We have named this application `todo-backend`. This may be changed to a different name, if desired.
 
 The application will now begin to build. The build can be observed via:

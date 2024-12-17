@@ -12,10 +12,8 @@ import org.jboss.as.clustering.controller.MetricExecutor;
 import org.jboss.as.clustering.controller.MetricFunction;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.capability.UnaryCapabilityNameResolver;
 import org.jboss.dmr.ModelNode;
-import org.jboss.msc.service.ServiceName;
-import org.wildfly.clustering.infinispan.service.InfinispanRequirement;
+import org.wildfly.clustering.infinispan.service.InfinispanServiceDescriptor;
 import org.wildfly.service.capture.FunctionExecutor;
 import org.wildfly.subsystem.service.ServiceDependency;
 import org.wildfly.subsystem.service.capture.FunctionExecutorRegistry;
@@ -35,8 +33,7 @@ public class CacheContainerMetricExecutor implements MetricExecutor<EmbeddedCach
 
     @Override
     public ModelNode execute(OperationContext context, Metric<EmbeddedCacheManager> metric) throws OperationFailedException {
-        ServiceName name = InfinispanRequirement.CONTAINER.getServiceName(context, UnaryCapabilityNameResolver.DEFAULT);
-        FunctionExecutor<EmbeddedCacheManager> executor = this.executors.getExecutor(ServiceDependency.on(name));
+        FunctionExecutor<EmbeddedCacheManager> executor = this.executors.getExecutor(ServiceDependency.on(InfinispanServiceDescriptor.CACHE_CONTAINER, context.getCurrentAddressValue()));
         return (executor != null) ? executor.execute(new MetricFunction<>(Function.identity(), metric)) : null;
     }
 }

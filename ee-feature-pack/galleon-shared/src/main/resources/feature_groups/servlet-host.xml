@@ -16,7 +16,7 @@
         </feature>
         <feature spec="host.jvm">
             <param name="jvm" value="default"/>
-            <param name="jvm-options" value="[&quot;-server&quot;,&quot;-XX:MetaspaceSize=96m&quot;,&quot;-XX:MaxMetaspaceSize=256m&quot;]"/>
+            <param name="jvm-options" value="[&quot;-server&quot;]"/>
         </feature>
         <feature spec="host.server-config">
             <param name="server-config" value="server-two"/>

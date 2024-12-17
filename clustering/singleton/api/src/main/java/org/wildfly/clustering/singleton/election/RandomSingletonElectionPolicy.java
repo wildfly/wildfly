@@ -14,7 +14,9 @@ import org.wildfly.clustering.singleton.SingletonElectionPolicy;
 /**
  * {@link SingletonElectionPolicy} that elects a random member.
  * @author Paul Ferraro
+ * @deprecated Replaced by {@link org.wildfly.clustering.singleton.election.SingletonElectionPolicy#random()}.
  */
+@Deprecated(forRemoval = true)
 public class RandomSingletonElectionPolicy implements SingletonElectionPolicy {
 
     private final Random random = new Random(System.currentTimeMillis());

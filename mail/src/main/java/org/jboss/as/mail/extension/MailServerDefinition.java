@@ -28,6 +28,7 @@ import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry.Flag;
 import org.jboss.as.controller.security.CredentialReference;
+import org.jboss.as.network.OutboundSocketBinding;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
@@ -36,7 +37,6 @@ import org.jboss.dmr.ModelType;
  * @since 7.1.0
  */
 class MailServerDefinition extends PersistentResourceDefinition {
-    static final String OUTBOUND_SOCKET_BINDING_CAPABILITY_NAME = "org.wildfly.network.outbound-socket-binding";
     static final String CREDENTIAL_STORE_CAPABILITY = "org.wildfly.security.credential-store";
 
     static final RuntimeCapability<Void> SERVER_CAPABILITY = RuntimeCapability.Builder.of("org.wildfly.mail.session.server", true)
@@ -56,7 +56,7 @@ class MailServerDefinition extends PersistentResourceDefinition {
                     .build();
 
     static final SimpleAttributeDefinition OUTBOUND_SOCKET_BINDING_REF_OPTIONAL = SimpleAttributeDefinitionBuilder.create(OUTBOUND_SOCKET_BINDING_REF)
-            .setCapabilityReference(OUTBOUND_SOCKET_BINDING_CAPABILITY_NAME)
+            .setCapabilityReference(OutboundSocketBinding.SERVICE_DESCRIPTOR.getName())
             .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
             .setRequired(false)
             .build();

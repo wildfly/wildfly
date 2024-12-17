@@ -7,6 +7,7 @@ package org.wildfly.extension.undertow;
 
 import static org.wildfly.extension.undertow.ServerDefinition.SERVER_CAPABILITY;
 
+import java.util.Map;
 import java.util.ServiceLoader;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
@@ -18,13 +19,14 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.web.host.CommonWebServer;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
-import org.wildfly.extension.undertow.session.DistributableServerRuntimeHandler;
+import org.wildfly.extension.undertow.session.DistributableServerServiceInstallerFactory;
 
 /**
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a> (c) 2013 Red Hat Inc.
@@ -53,7 +55,7 @@ final class ServerAdd extends AbstractAddStepHandler {
         if (isDefaultServer) { //only install for default server
             final CapabilityServiceBuilder<?> csb = context.getCapabilityServiceTarget().addCapability(CommonWebServer.CAPABILITY);
             final Consumer<WebServerService> wssConsumer = csb.provides(CommonWebServer.CAPABILITY, CommonWebServer.SERVICE_NAME);
-            final Supplier<Server> sSupplier = csb.requiresCapability(Capabilities.CAPABILITY_SERVER, Server.class, name);
+            final Supplier<Server> sSupplier = csb.requires(Server.SERVICE_DESCRIPTOR, name);
             csb.setInstance(new WebServerService(wssConsumer, sSupplier));
             csb.setInitialMode(ServiceController.Mode.PASSIVE);
 
@@ -63,8 +65,8 @@ final class ServerAdd extends AbstractAddStepHandler {
             csb.install();
         }
 
-        for (DistributableServerRuntimeHandler handler : ServiceLoader.load(DistributableServerRuntimeHandler.class, DistributableServerRuntimeHandler.class.getClassLoader())) {
-            handler.execute(context, name);
+        for (DistributableServerServiceInstallerFactory factory : ServiceLoader.load(DistributableServerServiceInstallerFactory.class, DistributableServerServiceInstallerFactory.class.getClassLoader())) {
+            factory.getServiceInstaller(context, name).install(context);
         }
     }
 
@@ -92,7 +94,11 @@ final class ServerAdd extends AbstractAddStepHandler {
         // We currently don't have any attributes that reference capabilities, but we have this code in case that changes
         // since we are not calling the superclass code.
         ModelNode model = resource.getModel();
-        for (AttributeDefinition ad : getAttributes()) {
+
+        Map<String, AttributeAccess> attributeAccessMap = context.getResourceRegistration().getAttributes(PathAddress.EMPTY_ADDRESS);
+        for (Map.Entry<String, AttributeAccess> entry : attributeAccessMap.entrySet()) {
+            AttributeAccess attributeAccess = entry.getValue();
+            AttributeDefinition ad = attributeAccess.getAttributeDefinition();
             if (model.hasDefined(ad.getName()) || ad.hasCapabilityRequirements()) {
                 ad.addCapabilityRequirements(context, resource, model.get(ad.getName()));
             }

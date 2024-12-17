@@ -81,7 +81,6 @@ public class RunAsEjbMdbTestCase {
         // TODO WFLY-15289 Should these permissions be required?
         jar.addAsResource(createPermissionsXmlAsset(new PropertyPermission("ts.timeout.factor", "read"),
                                                     new ElytronPermission("setRunAsPrincipal"),
-                                                    new ElytronPermission("handleSecurityEvent"),
                                                     new ChangeRoleMapperPermission("ejb")), "META-INF/jboss-permissions.xml");
         jar.addAsManifestResource(new StringAsset("Dependencies: deployment.runasmdbejb-ejb2.jar  \n"), "MANIFEST.MF");
         return jar;

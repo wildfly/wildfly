@@ -9,10 +9,10 @@ import java.io.IOException;
 import java.util.List;
 
 import org.jboss.as.clustering.controller.Attribute;
-import org.jboss.as.clustering.controller.CommonUnaryRequirement;
 import org.jboss.as.clustering.subsystem.AdditionalInitialization;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.operations.common.Util;
+import org.jboss.as.network.SocketBinding;
 import org.jboss.as.subsystem.test.AbstractSubsystemTest;
 import org.jboss.as.subsystem.test.KernelServices;
 import org.jboss.dmr.ModelNode;
@@ -65,7 +65,7 @@ public class OperationTestCaseBase extends AbstractSubsystemTest {
 
     protected static ModelNode getTransportAddOperation(String stackName, String protocol) {
         ModelNode operation = Util.createAddOperation(getTransportAddress(stackName, protocol));
-        operation.get(MulticastProtocolResourceDefinition.Attribute.SOCKET_BINDING.getName()).set("some-binding");
+        operation.get(MulticastSocketProtocolResourceDefinition.Attribute.SOCKET_BINDING.getName()).set("some-binding");
         return operation;
     }
 
@@ -180,6 +180,12 @@ public class OperationTestCaseBase extends AbstractSubsystemTest {
     }
 
     protected KernelServices buildKernelServices() throws Exception {
-        return createKernelServicesBuilder(new AdditionalInitialization().require(CommonUnaryRequirement.SOCKET_BINDING, "some-binding", "jgroups-diagnostics", "jgroups-mping", "jgroups-tcp-fd", "new-socket-binding")).setSubsystemXml(this.getSubsystemXml()).build();
+        return createKernelServicesBuilder(new AdditionalInitialization()
+                .require(SocketBinding.SERVICE_DESCRIPTOR, "some-binding")
+                .require(SocketBinding.SERVICE_DESCRIPTOR, "jgroups-diagnostics")
+                .require(SocketBinding.SERVICE_DESCRIPTOR, "jgroups-mping")
+                .require(SocketBinding.SERVICE_DESCRIPTOR, "jgroups-tcp-fd")
+                .require(SocketBinding.SERVICE_DESCRIPTOR, "new-socket-binding")
+            ).setSubsystemXml(this.getSubsystemXml()).build();
     }
 }

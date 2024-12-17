@@ -1,3 +1,5 @@
+syntax = "proto3";
+
 package org.wildfly.clustering.ejb.cache.bean;
 
 import "java.time.proto";
@@ -9,15 +11,15 @@ import "org.jboss.ejb.client.proto";
  * @TypeId(320)
  */
 message DefaultBeanMetaDataEntry {
-	optional	string	name	= 1;
-	optional	org.jboss.ejb.client.SessionID	groupId	= 2;
-	optional	java.time.Instant	creationTime	= 3;
-	optional	java.time.Duration	lastAccessOffset	= 4;
+	string	name	= 1;
+	org.jboss.ejb.client.SessionID	groupId	= 2;
+	java.time.Instant	creationTime	= 3;
+	java.time.Duration	lastAccessOffset	= 4;
 }
 
 /**
  * @TypeId(321)
  */
 message BeanMetaDataEntryFunction {
-	optional	java.time.Duration	lastAccessOffset	= 1;
+	java.time.Duration	lastAccessOffset	= 1;
 }

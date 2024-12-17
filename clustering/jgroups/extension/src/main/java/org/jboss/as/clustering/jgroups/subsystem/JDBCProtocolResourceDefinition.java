@@ -5,28 +5,41 @@
 
 package org.jboss.as.clustering.jgroups.subsystem;
 
+import java.util.Map;
+import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.function.UnaryOperator;
 
-import org.jboss.as.clustering.controller.CapabilityReference;
-import org.jboss.as.clustering.controller.CommonUnaryRequirement;
+import javax.sql.DataSource;
+
+import org.jboss.as.clustering.controller.CommonServiceDescriptor;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
-import org.jboss.as.clustering.controller.ResourceServiceConfiguratorFactory;
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.RequirementServiceBuilder;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.registry.AttributeAccess;
+import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
+import org.jgroups.protocols.JDBC_PING;
+import org.wildfly.clustering.jgroups.spi.ProtocolConfiguration;
+import org.wildfly.clustering.jgroups.spi.ProtocolStackConfiguration;
+import org.wildfly.subsystem.resource.capability.CapabilityReferenceRecorder;
+import org.wildfly.subsystem.service.ResourceServiceConfigurator;
+import org.wildfly.subsystem.service.ServiceDependency;
 
 /**
  * Resource definition override for protocols that require a JDBC DataSource.
  * @author Paul Ferraro
  */
-public class JDBCProtocolResourceDefinition extends ProtocolResourceDefinition {
+public class JDBCProtocolResourceDefinition extends ProtocolResourceDefinition<JDBC_PING> {
 
     enum Attribute implements org.jboss.as.clustering.controller.Attribute, UnaryOperator<SimpleAttributeDefinitionBuilder> {
         DATA_SOURCE("data-source", ModelType.STRING) {
             @Override
             public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
-                return builder.setCapabilityReference(new CapabilityReference(Capability.PROTOCOL, CommonUnaryRequirement.DATA_SOURCE));
+                return builder.setCapabilityReference(CapabilityReferenceRecorder.builder(CAPABILITY, CommonServiceDescriptor.DATA_SOURCE).build());
             }
         },
         ;
@@ -63,7 +76,23 @@ public class JDBCProtocolResourceDefinition extends ProtocolResourceDefinition {
         }
     }
 
-    JDBCProtocolResourceDefinition(String name, UnaryOperator<ResourceDescriptor> configurator, ResourceServiceConfiguratorFactory parentServiceConfiguratorFactory) {
-        super(pathElement(name), new ResourceDescriptorConfigurator(configurator), JDBCProtocolConfigurationServiceConfigurator::new, parentServiceConfiguratorFactory);
+    JDBCProtocolResourceDefinition(String name, UnaryOperator<ResourceDescriptor> configurator, ResourceServiceConfigurator parentServiceConfigurator) {
+        super(pathElement(name), new ResourceDescriptorConfigurator(configurator), parentServiceConfigurator);
+    }
+
+    @Override
+    public Map.Entry<Function<ProtocolConfiguration<JDBC_PING>, ProtocolConfiguration<JDBC_PING>>, Consumer<RequirementServiceBuilder<?>>> resolve(OperationContext context, ModelNode model) throws OperationFailedException {
+        ServiceDependency<DataSource> dataSource = ServiceDependency.on(CommonServiceDescriptor.DATA_SOURCE, Attribute.DATA_SOURCE.resolveModelAttribute(context, model).asString());
+        return Map.entry(new UnaryOperator<>() {
+            @Override
+            public ProtocolConfiguration<JDBC_PING> apply(ProtocolConfiguration<JDBC_PING> configuration) {
+                return new ProtocolConfigurationDecorator<>(configuration) {
+                    @Override
+                    public JDBC_PING createProtocol(ProtocolStackConfiguration stackConfiguration) {
+                        return super.createProtocol(stackConfiguration).setDataSource(dataSource.get());
+                    }
+                };
+            }
+        }, dataSource);
     }
 }

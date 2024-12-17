@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+
+<module xmlns="urn:jboss:module:1.9" name="org.wildfly.extension.jakarta.data">
+
+    <properties>
+        <property name="jboss.api" value="private"/>
+        <property name="jboss.stability" value="preview"/>
+    </properties>
+
+    <resources>
+        <artifact name="${org.wildfly:wildfly-jakarta-data}"/>
+    </resources>
+
+    <dependencies>
+        <module name="org.jboss.as.controller"/>
+        <module name="org.jboss.as.server"/>
+        <module name="org.jboss.as.version"/>
+        <module name="org.jboss.logging"/>
+        <module name="org.jboss.modules"/>
+        <module name="org.jboss.staxmapper"/>
+        <module name="org.wildfly.subsystem"/>
+    </dependencies>
+</module>

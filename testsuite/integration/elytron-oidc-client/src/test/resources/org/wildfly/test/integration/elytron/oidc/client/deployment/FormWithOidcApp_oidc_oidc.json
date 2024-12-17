@@ -1,0 +1,10 @@
+{
+    "client-id" : "oidc",
+    "provider-url" : "${oidc.provider.url}",
+    "public-client" : "false",
+    "ssl-required" : "EXTERNAL",
+    "credentials" : {
+    "secret" : "longerclientsecretthatisstleast256bitslong"
+}
+}
+

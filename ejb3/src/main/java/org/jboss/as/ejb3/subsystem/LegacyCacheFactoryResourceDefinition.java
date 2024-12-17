@@ -43,7 +43,7 @@ public class LegacyCacheFactoryResourceDefinition extends SimpleResourceDefiniti
                     .build();
 
     private static final AttributeDefinition[] ATTRIBUTES = { ALIASES, PASSIVATION_STORE };
-    private static final LegacyCacheFactoryAdd ADD_HANDLER = new LegacyCacheFactoryAdd(ATTRIBUTES);
+    private static final LegacyCacheFactoryAdd ADD_HANDLER = new LegacyCacheFactoryAdd();
     private static final LegacyCacheFactoryRemove REMOVE_HANDLER = new LegacyCacheFactoryRemove(ADD_HANDLER);
 
     LegacyCacheFactoryResourceDefinition() {
@@ -56,9 +56,8 @@ public class LegacyCacheFactoryResourceDefinition extends SimpleResourceDefiniti
 
     @Override
     public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
-        ReloadRequiredWriteAttributeHandler handler = new ReloadRequiredWriteAttributeHandler(ATTRIBUTES);
         for (AttributeDefinition attribute: ATTRIBUTES) {
-            resourceRegistration.registerReadWriteAttribute(attribute,  null, handler);
+            resourceRegistration.registerReadWriteAttribute(attribute,  null, ReloadRequiredWriteAttributeHandler.INSTANCE);
         }
     }
 }

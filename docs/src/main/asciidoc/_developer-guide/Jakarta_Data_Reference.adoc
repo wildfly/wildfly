@@ -1,0 +1,169 @@
+[[Jakarta_Data_Reference]]
+= Jakarta Data Reference
+
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
+
+link:https://jakarta.ee/specifications/data[Jakarta Data] brings the repository pattern to the Jakarta ecosystem. {appservername} provides Jakarta Data support via its `jakarta-data` subsystem, which integrates https://docs.jboss.org/hibernate/orm/6.6/repositories/html_single/Hibernate_Data_Repositories.html[Hibernate Data Repositories, window=_blank], a part of Hibernate ORM.
+
+== Jakarta Data Overview
+
+The key concept in Jakarta Data is the _repository_ . As explained in the link:https://jakarta.ee/specifications/data/1.0/jakarta-data-1.0#architecture[Jakarta Data 1.0 Specification, window=_blank]
+
+[quote]
+____
+a repository is a mediator between an application’s domain logic and the underlying data storage, be it a relational database, NoSQL database, or any other data source.
+
+In Jakarta Data, a Repository provides a structured and organized way to interact with data. It abstracts data storage and retrieval complexities, allowing you to work with domain-specific objects and perform common operations on data without writing low-level database queries.
+____
+
+An application developer defines a repository by providing an interface annotated with the Jakarta Data `@Repository` annotation. The repository interface declares methods used for data retrieval and modification of a particular link:https://jakarta.ee/specifications/data/1.0/jakarta-data-1.0#_entity_classes[entity type, window=_blank]. A repository interface can include different methods that deal with different entity types, giving application authors flexibility to define repositories that fit the needs of their application domain.
+
+Following is an example repository:
+
+[source,java]
+----
+@Repository
+interface Publishing {
+    @Find
+    Book book(String isbn);
+
+    @Find
+    Author author(String ssn);
+
+    @Insert
+    void publish(Book book);
+
+    @Insert
+    void create(Author author);
+
+    ...
+}
+----
+
+`Book` and `Author` are typical entity classes.
+
+The repository interface methods are annotated with various Jakarta Data annotations (`@Insert`, `@Find`, etc) that define the expected persistence behavior of the method.
+
+There's much more to the Jakarta Data programming model than this; for all the details see:
+
+* The link:https://jakarta.ee/specifications/data/1.0/jakarta-data-1.0[Jakarta Data 1.0 specification, window=_blank]
+* The link:https://docs.jboss.org/hibernate/orm/6.6/repositories/html_single/Hibernate_Data_Repositories.html[Hibernate Data Repositories documentation, window=_blank]
+* Gavin King's excellent link:https://in.relation.to/2024/04/01/jakarta-data-1/[blog posts, window=_blank] on Jakarta Data
+
+
+A Jakarta Data implementation like WildFly can support one or more Jakarta Data link:https://jakarta.ee/specifications/data/1.0/jakarta-data-1.0#_jakarta_data_providers[providers, window=_blank]. A provider understands one or more Java annotation types that are used to define entities, and it understands how to interact with a particular type of back end datastore.
+
+WildFly's Jakarta Data implementation supports the link:https://docs.jboss.org/hibernate/orm/6.6/repositories/html_single/Hibernate_Data_Repositories.html[Hibernate Data Repositories, window=_blank] provider, which uses Hibernate ORM to interact with a variety of different relational databases. Hibernate Data Repositories supports the `jakarta.persistence.Entity` annotation as the mechanism for application authors to define entities.
+
+== Using Hibernate Data Repositories in Your Application
+
+There are two key things to understand in order to use WildFly's Hibernate Data Repositories provider:
+
+* How to configure build time generation of the implementation of your `@Repository` interfaces.
+* How to configure the runtime behavior of the Hibernate ORM instance that will interact with the database.
+
+
+=== Build-time Generation of Repository Implementations
+
+An application author using Jakarta Data simply writes an interface for their repository, but of course for that to work at runtime there must be an actual implementation of that interface. It's the responsibility of the Jakarta Data provider to provide that implementation. Hibernate Data Repositories does this by generating the implementation classes as part of the build of your application.
+
+So, _to use Jakarta Data with WildFly you need to configure the generation of those classes as part of your application build_. In a Maven build this is done by configuring the Maven compiler plugin to use the `org.hibernate.orm:hibernate-jpamodelgen` artifact as an annotation processor:
+
+[source,xml]
+----
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.12.1</version> <!--Must be 3.12 or later-->
+                <configuration>
+                    <annotationProcessorPaths>
+                        <path>
+                            <groupId>org.hibernate.orm</groupId>
+                            <artifactId>hibernate-jpamodelgen</artifactId>
+                        </path>
+                    </annotationProcessorPaths>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+----
+
+Note that there is no version element in the `org.hibernate.orm:hibernate-jpamodelgen` declaration above. You could provide one, but best practice is to control the version in your pom's `dependencyManagement`. Importing the `org.wildfly.bom:wildfly-ee-with-tools` BOM lets you align the version of Hibernate artifacts with what's used in your target WildFly runtime:
+
+[source,xml]
+----
+    <dependencyManagement>
+        <dependencies>
+            <!-- importing the ee-with-tools BOM adds specs and
+                 other useful artifacts as managed dependencies -->
+            <dependency>
+                <groupId>org.wildfly.bom</groupId>
+                <artifactId>wildfly-ee-with-tools</artifactId>
+                <version>${wildfly.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+----
+
+WARNING: Some users may have learned to configure Hibernate annotation processing by declaring `org.hibernate.orm:hibernate-jpamodelgen` as a `provided` dependency in their pom. With the Hibernate version used with WildFly, link:https://docs.jboss.org/hibernate/orm/6.3/migration-guide/migration-guide.html#metamodel-generation[this will likely fail, window=_blank]. Use the `maven-compiler-plugin` configuration approach described above.
+
+If you're using Gradle, you'll need to use `annotationProcessor`:
+
+[source,groovy]
+----
+annotationProcessor 'org.hibernate.orm:hibernate-jpamodelgen:6.6.1'
+----
+
+The generated repository implementation classes internally use various Hibernate ORM classes, so to compile the generated code you'll need to add a dependency on Hibernate:
+
+[source,xml]
+----
+  <dependencies>
+      <dependency>
+          <groupId>org.hibernate.orm</groupId>
+          <artifactId>hibernate-core</artifactId>
+          <scope>provided</scope>
+      </dependency>
+  </dependencies>
+----
+
+=== Configuring Hibernate ORM
+
+Under the covers, your repository implementation will use Hibernate ORM to interact with the database. You configure ORM by providing a `META-INF/persistence.xml` file, the same as you would with a Jakarta Persistence application:
+
+[source,xml]
+----
+<persistence xmlns="http://java.sun.com/xml/ns/persistence"
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             xsi:schemaLocation="http://java.sun.com/xml/ns/persistence https://jakarta.ee/xml/ns/persistence/persistence_3_0.xsd"
+             version="3.0">
+
+    <persistence-unit name="Publisher">
+
+        <jta-data-source>java:jboss/datasources/ExampleDS</jta-data-source>
+        <properties>
+            <property name="hibernate.hbm2ddl.auto" value="create"/>
+            <property name="hibernate.show_sql" value="false"/>
+        </properties>
+
+    </persistence-unit>
+
+</persistence>
+----
+
+The `jta-data-source` value should match the value of the `jndi-name` attribute in a datasource you've declared in the WildFly `datasources` or `datasources-agroal` subsystem configuration.
+
+
+== Configuring WildFly to Support Jakarta Data
+
+For information on how to enable Jakarta Data support in your server configuration, see the xref:Admin_Guide.adoc#Jakarta_Data[Admin Guide].

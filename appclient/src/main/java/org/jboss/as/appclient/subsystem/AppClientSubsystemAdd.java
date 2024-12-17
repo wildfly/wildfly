@@ -9,7 +9,7 @@ import java.io.File;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.List;
-import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executor;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
@@ -21,13 +21,13 @@ import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.appclient.deployment.ApplicationClientManifestProcessor;
 import org.jboss.as.appclient.deployment.ApplicationClientParsingDeploymentProcessor;
 import org.jboss.as.appclient.deployment.ApplicationClientStartProcessor;
-import org.jboss.as.appclient.deployment.ApplicationClientStructureProcessor;
 import org.jboss.as.appclient.service.ApplicationClientDeploymentService;
 import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.CapabilityServiceBuilder;
 import org.jboss.as.controller.ModelControllerClientFactory;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.management.Capabilities;
 import org.jboss.as.server.AbstractDeploymentChainStep;
 import org.jboss.as.server.DeploymentProcessorTarget;
 import org.jboss.as.server.deployment.Phase;
@@ -40,8 +40,6 @@ import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 
 import static org.jboss.as.appclient.subsystem.AppClientSubsystemResourceDefinition.APPCLIENT_CAPABILITY;
-import static org.jboss.as.appclient.subsystem.AppClientSubsystemResourceDefinition.EXECUTOR_CAPABILITY;
-import static org.jboss.as.appclient.subsystem.AppClientSubsystemResourceDefinition.MCF_CAPABILITY;
 import static org.jboss.as.appclient.subsystem.Constants.CONNECTION_PROPERTIES_URL;
 import static org.jboss.as.appclient.subsystem.Constants.HOST_URL;
 
@@ -70,7 +68,7 @@ class AppClientSubsystemAdd extends AbstractBoottimeAddStepHandler {
     }
 
     protected void performBoottime(final OperationContext context, ModelNode operation, final ModelNode model) throws OperationFailedException {
-        final String deployment = AppClientSubsystemResourceDefinition.DEPLOYMENT.resolveModelAttribute(context, model).asString();
+        final String deployment = AppClientSubsystemResourceDefinition.DEPLOYMENT.resolveModelAttribute(context, model).asStringOrNull();
         final File file = new File(AppClientSubsystemResourceDefinition.FILE.resolveModelAttribute(context, model).asString());
         if (!file.exists()) {
             context.setRollbackOnly();
@@ -82,9 +80,6 @@ class AppClientSubsystemAdd extends AbstractBoottimeAddStepHandler {
 
         context.addStep(new AbstractDeploymentChainStep() {
             protected void execute(DeploymentProcessorTarget processorTarget) {
-                if (deployment != null && !deployment.isEmpty()) {
-                    processorTarget.addDeploymentProcessor(Constants.SUBSYSTEM_NAME, Phase.STRUCTURE, Phase.STRUCTURE_APP_CLIENT, new ApplicationClientStructureProcessor(deployment));
-                }
                 processorTarget.addDeploymentProcessor(Constants.SUBSYSTEM_NAME, Phase.STRUCTURE, Phase.STRUCTURE_REGISTER_JBOSS_ALL_APPCLIENT, new JBossAllXmlParserRegisteringProcessor<>(AppClientJBossAllParser.ROOT_ELEMENT, AppClientJBossAllParser.ATTACHMENT_KEY, new AppClientJBossAllParser()));
                 processorTarget.addDeploymentProcessor(Constants.SUBSYSTEM_NAME, Phase.PARSE, Phase.PARSE_APP_CLIENT_XML, new ApplicationClientParsingDeploymentProcessor());
                 processorTarget.addDeploymentProcessor(Constants.SUBSYSTEM_NAME, Phase.POST_MODULE, Phase.POST_MODULE_APPLICATION_CLIENT_MANIFEST, new ApplicationClientManifestProcessor());
@@ -97,11 +92,9 @@ class AppClientSubsystemAdd extends AbstractBoottimeAddStepHandler {
 
         CapabilityServiceBuilder<?> builder = context.getCapabilityServiceTarget().addCapability(APPCLIENT_CAPABILITY);
         Consumer<ApplicationClientDeploymentService> consumer = builder.provides(APPCLIENT_CAPABILITY);
-        Supplier<ModelControllerClientFactory> mcfSupplier =
-                builder.requiresCapability(MCF_CAPABILITY, ModelControllerClientFactory.class);
-        Supplier<ExecutorService> esSupplier =
-                builder.requiresCapability(EXECUTOR_CAPABILITY, ExecutorService.class);
-        builder.setInstance(new ApplicationClientDeploymentService(consumer, file, mcfSupplier, esSupplier));
+        Supplier<ModelControllerClientFactory> mcfSupplier = builder.requires(ModelControllerClientFactory.SERVICE_DESCRIPTOR);
+        Supplier<Executor> executorSupplier = builder.requires(Capabilities.MANAGEMENT_EXECUTOR);
+        builder.setInstance(new ApplicationClientDeploymentService(consumer, file, mcfSupplier, executorSupplier));
         builder.install();
 
         try {

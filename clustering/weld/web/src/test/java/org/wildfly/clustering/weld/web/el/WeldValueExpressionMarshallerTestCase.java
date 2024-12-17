@@ -4,15 +4,16 @@
  */
 package org.wildfly.clustering.weld.web.el;
 
-import java.io.IOException;
 import java.util.ServiceLoader;
 
 import org.jboss.weld.module.web.el.WeldValueExpression;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.params.ParameterizedTest;
 import org.wildfly.clustering.el.ValueExpressionFactory;
+import org.wildfly.clustering.marshalling.MarshallingTesterFactory;
 import org.wildfly.clustering.marshalling.Tester;
-import org.wildfly.clustering.marshalling.protostream.ProtoStreamTesterFactory;
+import org.wildfly.clustering.marshalling.TesterFactory;
+import org.wildfly.clustering.marshalling.junit.TesterFactorySource;
 
 /**
  * Validates marshalling of a {@WeldValueExpression}.
@@ -22,15 +23,16 @@ public class WeldValueExpressionMarshallerTestCase {
 
     private final ValueExpressionFactory factory = ServiceLoader.load(ValueExpressionFactory.class, ValueExpressionFactory.class.getClassLoader()).iterator().next();
 
-    @Test
-    public void test() throws IOException {
-        Tester<WeldValueExpression> tester = ProtoStreamTesterFactory.INSTANCE.createTester();
+    @ParameterizedTest
+    @TesterFactorySource(MarshallingTesterFactory.class)
+    public void test(TesterFactory factory) {
+        Tester<WeldValueExpression> tester = factory.createTester(WeldValueExpressionMarshallerTestCase::assertEquals);
 
-        tester.test(new WeldValueExpression(this.factory.createValueExpression("foo", WeldValueExpressionMarshallerTestCase.class)), WeldValueExpressionMarshallerTestCase::assertEquals);
+        tester.accept(new WeldValueExpression(this.factory.createValueExpression("foo", WeldValueExpressionMarshallerTestCase.class)));
     }
 
     static void assertEquals(WeldValueExpression expression1, WeldValueExpression expression2) {
-        Assert.assertEquals(expression1.getExpectedType(), expression2.getExpectedType());
-        Assert.assertEquals(expression1.getExpressionString(), expression2.getExpressionString());
+        Assertions.assertEquals(expression1.getExpectedType(), expression2.getExpectedType());
+        Assertions.assertEquals(expression1.getExpressionString(), expression2.getExpressionString());
     }
 }

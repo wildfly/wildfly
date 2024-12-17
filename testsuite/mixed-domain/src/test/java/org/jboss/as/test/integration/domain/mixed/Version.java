@@ -10,6 +10,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 import org.jboss.as.controller.ModelVersion;
+import org.jboss.as.version.Stability;
 import org.junit.Assume;
 
 /**
@@ -26,7 +27,9 @@ public @interface Version {
     String EAP = "jboss-eap-";
 
     enum AsVersion {
-        EAP_7_4_0(EAP, 7, 4, 0, 11, 8, "EAP7.4", ModelVersion.create(16, 0)),
+        EAP_7_4_0(EAP, 7, 4, 0, 11, 8, "EAP7.4", ModelVersion.create(16, 0), Stability.DEFAULT, true),
+        EAP_8_0_0(EAP, 8, 0, 0, 17, 11, "EAP8.0", ModelVersion.create(22, 0), Stability.DEFAULT, false),
+        WFLY_31_0_0(WILDFLY, 31, 0, 0, 17, 11, "WildFly31.0", ModelVersion.create(24, 0), Stability.COMMUNITY, false),
         ;
 
 
@@ -40,19 +43,24 @@ public @interface Version {
         final String version;
         final String hostExclude;
         final ModelVersion modelVersion;
+        private final Stability stability;
+        private final boolean useManagementRealms;
 
         /**
          * Metadata related to the server version we are using as secondary
-         * @param basename Base name of the server, used to locate the zip file that contains the secondary under test.
-         * @param major Major release number
-         * @param minor Minor release number
-         * @param micro Micro release number
-         * @param maxVM The maximum Java version under which a legacy host can properly execute tests
-         * @param minVM The minimum Java version under which a legacy host can properly execute tests
-         * @param hostExclude The host-exclude name that represents this secondary
-         * @param modelVersion The Kernel version of this secondary
+         *
+         * @param basename            Base name of the server, used to locate the zip file that contains the secondary under test.
+         * @param major               Major release number
+         * @param minor               Minor release number
+         * @param micro               Micro release number
+         * @param maxVM               The maximum Java version under which a legacy host can properly execute tests
+         * @param minVM               The minimum Java version under which a legacy host can properly execute tests
+         * @param hostExclude         The host-exclude name that represents this secondary
+         * @param modelVersion        The Kernel version of this secondary
+         * @param stability           The stability level of this secondary host controller
+         * @param useManagementRealms Whether the secondary host controller uses management realms based security
          */
-        AsVersion(String basename, int major, int minor, int micro, int maxVM, int minVM, String hostExclude, ModelVersion modelVersion){
+        AsVersion(String basename, int major, int minor, int micro, int maxVM, int minVM, String hostExclude, ModelVersion modelVersion, Stability stability, boolean useManagementRealms) {
             this.basename = basename;
             this.major = major;
             this.minor = minor;
@@ -62,6 +70,8 @@ public @interface Version {
             this.minVM = minVM;
             this.hostExclude = hostExclude;
             this.modelVersion = modelVersion;
+            this.stability = stability;
+            this.useManagementRealms = useManagementRealms;
         }
 
         public String getBaseName() {
@@ -143,6 +153,14 @@ public @interface Version {
                 return 0;
             }
             return this.minor < minor ? -1 : 1;
+        }
+
+        public Stability getStability() {
+            return stability;
+        }
+
+        public String getDefaultSecondaryHostConfigFileName() {
+            return useManagementRealms ? "secondary-config/host-secondary-mgmt-realm-security.xml" : "secondary-config/host-secondary.xml";
         }
     }
 }

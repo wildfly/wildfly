@@ -15,17 +15,18 @@ import static org.mockito.Mockito.when;
 
 import org.junit.Assert;
 import org.junit.Test;
-import org.wildfly.clustering.Registration;
-import org.wildfly.clustering.dispatcher.CommandDispatcher;
-import org.wildfly.clustering.dispatcher.CommandDispatcherFactory;
-import org.wildfly.clustering.group.Group;
+import org.wildfly.clustering.server.Group;
+import org.wildfly.clustering.server.GroupMember;
+import org.wildfly.clustering.server.Registration;
+import org.wildfly.clustering.server.dispatcher.CommandDispatcher;
+import org.wildfly.clustering.server.dispatcher.CommandDispatcherFactory;
 
 /**
  * @author Paul Ferraro
  */
 public class ConcurrentBroadcastCommandDispatcherFactoryTestCase {
 
-    private final CommandDispatcherFactory factory = mock(CommandDispatcherFactory.class);
+    private final CommandDispatcherFactory<GroupMember> factory = mock(CommandDispatcherFactory.class);
 
     @Test
     public void registration() {
@@ -58,31 +59,31 @@ public class ConcurrentBroadcastCommandDispatcherFactoryTestCase {
 
     @Test
     public void getGroup() {
-        Group group = mock(Group.class);
-        CommandDispatcherFactory factory = new ConcurrentBroadcastCommandDispatcherFactory(this.factory);
+        Group<GroupMember> group = mock(Group.class);
+        CommandDispatcherFactory<GroupMember> factory = new ConcurrentBroadcastCommandDispatcherFactory(this.factory);
 
         when(this.factory.getGroup()).thenReturn(group);
 
-        Group result = factory.getGroup();
+        Group<GroupMember> result = factory.getGroup();
 
         Assert.assertSame(group, result);
     }
 
     @Test
     public void createCommandDispatcher() {
-        CommandDispatcher<Object> dispatcher = mock(CommandDispatcher.class);
+        CommandDispatcher<GroupMember, Object> dispatcher = mock(CommandDispatcher.class);
         Object id = new Object();
         Object context = new Object();
-        CommandDispatcherFactory factory = new ConcurrentBroadcastCommandDispatcherFactory(this.factory);
+        CommandDispatcherFactory<GroupMember> factory = new ConcurrentBroadcastCommandDispatcherFactory(this.factory);
 
         when(this.factory.createCommandDispatcher(same(id), any(), any())).thenReturn(dispatcher);
         when(dispatcher.getContext()).thenReturn(context);
 
         // Verify that dispatcher does not close until all created dispatchers are closed
-        try (CommandDispatcher<Object> dispatcher1 = factory.createCommandDispatcher(id, new Object())) {
+        try (CommandDispatcher<GroupMember, Object> dispatcher1 = factory.createCommandDispatcher(id, new Object())) {
             Assert.assertSame(context, dispatcher1.getContext());
 
-            try (CommandDispatcher<Object> dispatcher2 = factory.createCommandDispatcher(id, new Object())) {
+            try (CommandDispatcher<GroupMember, Object> dispatcher2 = factory.createCommandDispatcher(id, new Object())) {
                 Assert.assertSame(context, dispatcher2.getContext());
             }
 

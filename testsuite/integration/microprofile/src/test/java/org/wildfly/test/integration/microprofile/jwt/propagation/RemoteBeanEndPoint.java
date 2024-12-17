@@ -38,8 +38,15 @@ public class RemoteBeanEndPoint {
         Principal caller = ctx.getUserPrincipal();
         String name = caller == null ? "anonymous" : caller.getName();
         boolean hasJWT = jwt.getClaimNames() != null;
-        String helloReply = String.format("hello + %s, hasJWT: %s, targetCallerPrincipal: %s, targetIsCallerAdmin: %b", name, hasJWT, whoAmIRemote.getCallerPrincipal(), whoAmIRemote.isCallerInRole("Admin"));
-
+        //String helloReply = String.format("hello + %s, hasJWT: %s, targetCallerPrincipal: %s, targetIsCallerAdmin: %b",
+        //        name, hasJWT, whoAmIRemote.getCallerPrincipal(), whoAmIRemote.isCallerInRole("Admin"));
+        String helloReply = "hello " + name
+                + "  hasJWT: " + hasJWT
+                + "  targetCallerPrincipal: " + whoAmIRemote.getCallerPrincipal()
+                + ", targetIsCallerAdmin: " + whoAmIRemote.isCallerInRole("Admin")
+                + "  ## ctx: " + ctx
+                + "  ## whoAmIRemote context: " + whoAmIRemote.getSessionContext();
+        new Throwable(helloReply).printStackTrace(); // rls debug
         return helloReply;
     }
 

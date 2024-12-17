@@ -10,14 +10,15 @@ ifdef::env-github[]
 endif::[]
 
 * Latest Maven build tool https://maven.apache.org/
-* OpenJDK 11 (eleven!) You can use any distribution in example Eclipse https://adoptium.net/
-* Eclipse https://www.eclipse.org/downloads/packages/[Eclipse Download] or any other IDE allowing correct source formatting (IntelliJ)
+* JDK 17 You can use any distribution in example Eclipse https://adoptium.net/
+* https://www.eclipse.org/downloads/packages/[Eclipse] or any other IDE allowing correct source formatting (IntelliJ)
 
 = Maven
 Use maven. Simplest is to use the build.sh or build.bat scripts in the root of the source tree. If you don't use those scripts and use the ```mvn``` command directly, note that WildFly's root pom will enforce a minimum maven version.
 
-Building WildFly requires Java 11 or newer. Make sure you have JAVA_HOME set to point to the JDK11 installation. Build uses Maven 3.
-
+Building WildFly requires JDK 17 or newer.
+Make sure you have JAVA_HOME set to point to the JDK 17 installation.
+Build uses Maven 3.
 
 [source,options="nowrap"]
 ----

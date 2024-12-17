@@ -15,6 +15,8 @@
     <dependencies>
         <!-- Needed to initialise the netty logger if the module is present -->
         <module name="io.netty" optional="true"/>
+        <!-- Needed to initialise the vert.x logger if the module is present -->
+        <module name="io.vertx.core" optional="true"/>
 
         <module name="org.eclipse.microprofile.config.api"/>
         <module name="org.jboss.as.controller"/>
@@ -24,6 +26,7 @@
         <module name="org.jboss.modules"/>
         <module name="org.jboss.staxmapper"/>
         <module name="org.wildfly.reactive.messaging.common"/>
+        <module name="org.wildfly.reactive.messaging.config"/>
         <module name="org.wildfly.reactive.messaging.amqp" optional="true" services="export"/>
         <module name="org.wildfly.reactive.messaging.kafka" optional="true" services="export"/>
         <module name="org.wildfly.security.manager"/>

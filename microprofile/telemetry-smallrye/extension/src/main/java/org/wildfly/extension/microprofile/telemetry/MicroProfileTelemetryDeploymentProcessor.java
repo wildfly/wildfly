@@ -10,12 +10,11 @@ import static org.wildfly.extension.microprofile.telemetry.MicroProfileTelemetry
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.function.Supplier;
 
-import io.smallrye.opentelemetry.api.OpenTelemetryConfig;
 import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.as.ee.structure.DeploymentType;
 import org.jboss.as.ee.structure.DeploymentTypeMarker;
+import org.jboss.as.server.deployment.AttachmentKey;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -23,8 +22,12 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.weld.WeldCapability;
 import org.wildfly.extension.microprofile.telemetry.api.MicroProfileTelemetryCdiExtension;
+import org.wildfly.extension.opentelemetry.api.WildFlyOpenTelemetryConfig;
 
 public class MicroProfileTelemetryDeploymentProcessor implements DeploymentUnitProcessor {
+
+    static final AttachmentKey<WildFlyOpenTelemetryConfig> CONFIG_ATTACHMENT_KEY = AttachmentKey.create(WildFlyOpenTelemetryConfig.class);
+
     @Override
     public void deploy(DeploymentPhaseContext deploymentPhaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = deploymentPhaseContext.getDeploymentUnit();
@@ -35,14 +38,12 @@ public class MicroProfileTelemetryDeploymentProcessor implements DeploymentUnitP
         try {
             final CapabilityServiceSupport support = deploymentUnit.getAttachment(Attachments.CAPABILITY_SERVICE_SUPPORT);
             final WeldCapability weldCapability = support.getCapabilityRuntimeAPI(WELD_CAPABILITY_NAME, WeldCapability.class);
-            if (weldCapability != null && !weldCapability.isPartOfWeldDeployment(deploymentUnit)) {
+            if (weldCapability == null || !weldCapability.isPartOfWeldDeployment(deploymentUnit)) {
                 MPTEL_LOGGER.debug("The deployment does not have Jakarta Contexts and Dependency Injection enabled. " +
                         "Skipping MicroProfile Telemetry integration.");
             } else {
-                final OpenTelemetryConfig serverConfig =
-                        (OpenTelemetryConfig) support.getCapabilityRuntimeAPI("org.wildfly.extension.opentelemetry.config",
-                                Supplier.class).get();
-                Map<String, String> properties = new HashMap<>(serverConfig.properties());
+                WildFlyOpenTelemetryConfig config = deploymentUnit.getAttachment(CONFIG_ATTACHMENT_KEY);
+                Map<String, String> properties = new HashMap<>(config.properties());
                 if (!properties.containsKey("otel.service.name")) {
                     properties.put("otel.service.name", getServiceName(deploymentUnit));
                 }

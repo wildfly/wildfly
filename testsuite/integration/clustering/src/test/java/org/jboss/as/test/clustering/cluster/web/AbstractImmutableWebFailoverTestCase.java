@@ -53,7 +53,7 @@ public abstract class AbstractImmutableWebFailoverTestCase extends AbstractClust
     }
 
     protected void testGracefulSimpleFailover(URL baseURL1, URL baseURL2, URL baseURL3) throws Exception {
-        this.testFailover(new RestartLifecycle(), baseURL1, baseURL2, baseURL3);
+        this.testFailover(new GracefulRestartLifecycle(), baseURL1, baseURL2, baseURL3);
     }
 
     protected void testGracefulUndeployFailover(URL baseURL1, URL baseURL2, URL baseURL3) throws Exception {

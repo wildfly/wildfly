@@ -41,7 +41,7 @@ public class ResourceRegistrar implements ManagementRegistrar<ManagementResource
 
     @Override
     public void register(ManagementResourceRegistration registration) {
-        new CapabilityRegistrar(this.descriptor.getCapabilities().keySet()).register(registration);
+        this.descriptor.getCapabilities().keySet().forEach(registration::registerCapability);
 
         registration.registerRequirements(this.descriptor.getResourceCapabilityReferences());
 
@@ -56,9 +56,8 @@ public class ResourceRegistrar implements ManagementRegistrar<ManagementResource
         // Register attributes that will be ignored at runtime
         Collection<AttributeDefinition> ignoredAttributes = this.descriptor.getIgnoredAttributes();
         if (!ignoredAttributes.isEmpty()) {
-            OperationStepHandler writeHandler = new ModelOnlyWriteAttributeHandler(ignoredAttributes);
             for (AttributeDefinition ignoredAttribute : ignoredAttributes) {
-                registration.registerReadWriteAttribute(ignoredAttribute, null, writeHandler);
+                registration.registerReadWriteAttribute(ignoredAttribute, null, ModelOnlyWriteAttributeHandler.INSTANCE);
             }
         }
 

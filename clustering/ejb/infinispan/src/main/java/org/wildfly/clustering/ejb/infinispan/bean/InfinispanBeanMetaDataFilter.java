@@ -8,7 +8,7 @@ package org.wildfly.clustering.ejb.infinispan.bean;
 import java.util.Map;
 
 import org.infinispan.util.function.SerializablePredicate;
-import org.wildfly.clustering.ee.Key;
+import org.wildfly.clustering.cache.Key;
 import org.wildfly.clustering.ejb.cache.bean.BeanMetaDataEntry;
 
 /**

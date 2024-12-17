@@ -16,7 +16,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>34.0.0.Beta1-SNAPSHOT</version>
+        <version>35.0.0.Final-SNAPSHOT</version>
     </parent>
 
     <!-- ********************************************************************************** -->
@@ -34,12 +34,14 @@
         <!-- Disable the default surefire test execution. -->
         <surefire.default-test.phase>none</surefire.default-test.phase>
         <glow.mvc.phase>none</glow.mvc.phase>
+        <glow.vertx.phase>none</glow.vertx.phase>
         <glow.hibernate-search.phase>none</glow.hibernate-search.phase>
         <ts.copy-wildfly-standalone-embedded-broker.phase>process-test-resources</ts.copy-wildfly-standalone-embedded-broker.phase>
         <cloud-profile-provisioning.phase>none</cloud-profile-provisioning.phase>
         <full-provisioning.phase>generate-test-resources</full-provisioning.phase>
         <hibernate-search-provisioning.phase>none</hibernate-search-provisioning.phase>
         <mvc-provisioning.phase>none</mvc-provisioning.phase>
+        <vertx-provisioning.phase>none</vertx-provisioning.phase>
     </properties>
 
     <dependencies>
@@ -66,6 +68,11 @@
         <dependency>
             <groupId>jakarta.transaction</groupId>
             <artifactId>jakarta.transaction-api</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>jakarta.ejb</groupId>
+            <artifactId>jakarta.ejb-api</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -116,6 +123,16 @@
         <dependency>
             <groupId>org.wildfly.core</groupId>
             <artifactId>wildfly-core-testsuite-shared</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.smallrye.common</groupId>
+            <artifactId>smallrye-common-annotation</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.vertx</groupId>
+            <artifactId>vertx-core</artifactId>
             <scope>test</scope>
         </dependency>
     </dependencies>
@@ -188,6 +205,20 @@
                             </add-ons>
                         </configuration>
                     </execution>
+                    <execution>
+                        <id>scan-vertx-layers</id>
+                        <goals>
+                            <goal>scan</goal>
+                        </goals>
+                        <phase>${glow.vertx.phase}</phase>
+                        <configuration>
+                            <expected-discovery>[cdi, datasources, ejb-lite, h2-datasource, h2-default-datasource, jaxrs, vertx]==>ee-core-profile-server,ejb-lite,h2-default-datasource,jaxrs,vertx</expected-discovery>
+                            <surefire-execution-for-included-classes>vertx.layer.surefire</surefire-execution-for-included-classes>
+                            <add-ons>
+                                <add-on>h2-database:default</add-on>
+                            </add-ons>
+                        </configuration>
+                    </execution>
                 </executions>
             </plugin>
             <plugin>
@@ -196,6 +227,14 @@
                 <version>${version.org.wildfly.plugin}</version>
                 <configuration>
                     <overwrite-provisioned-server>true</overwrite-provisioned-server>
+                    <record-provisioning-state>false</record-provisioning-state>
+                    <log-provisioning-time>${galleon.log.time}</log-provisioning-time>
+                    <offline-provisioning>${galleon.offline}</offline-provisioning>
+                    <galleon-options>
+                        <jboss-maven-dist/>
+                        <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
+                        <optional-packages>passive+</optional-packages>
+                    </galleon-options>
                 </configuration>
                 <executions>
                     <!-- Provision a non-slimmed server -->
@@ -207,14 +246,6 @@
                         <phase>${full-provisioning.phase}</phase>
                         <configuration>
                             <provisioning-dir>${project.build.directory}/wildfly</provisioning-dir>
-                            <record-provisioning-state>false</record-provisioning-state>
-                            <log-provisioning-time>${galleon.log.time}</log-provisioning-time>
-                            <offline-provisioning>${galleon.offline}</offline-provisioning>
-                            <galleon-options>
-                                <jboss-maven-dist/>
-                                <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
-                                <optional-packages>passive+</optional-packages>
-                            </galleon-options>
                             <feature-packs>
                                 <feature-pack>
                                     <groupId>${full.maven.groupId}</groupId>
@@ -234,14 +265,6 @@
                         <phase>${hibernate-search-provisioning.phase}</phase>
                         <configuration>
                             <provisioning-dir>${project.build.directory}/wildfly-hibernate-search</provisioning-dir>
-                            <record-provisioning-state>false</record-provisioning-state>
-                            <log-provisioning-time>${galleon.log.time}</log-provisioning-time>
-                            <offline-provisioning>${galleon.offline}</offline-provisioning>
-                            <galleon-options>
-                                <jboss-maven-dist/>
-                                <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
-                                <optional-packages>passive+</optional-packages>
-                            </galleon-options>
                             <provisioning-file>target/glow-scan/hibernate-search.layer.surefire/provisioning.xml</provisioning-file>
                         </configuration>
                     </execution>
@@ -255,15 +278,75 @@
                         <phase>${mvc-provisioning.phase}</phase>
                         <configuration>
                             <provisioning-dir>${project.build.directory}/wildfly-mvc</provisioning-dir>
-                            <record-provisioning-state>false</record-provisioning-state>
-                            <log-provisioning-time>${galleon.log.time}</log-provisioning-time>
-                            <offline-provisioning>${galleon.offline}</offline-provisioning>
-                            <galleon-options>
-                                <jboss-maven-dist/>
-                                <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
-                                <optional-packages>passive+</optional-packages>
-                            </galleon-options>
                             <provisioning-file>target/glow-scan/mvc.layer.surefire/provisioning.xml</provisioning-file>
+                        </configuration>
+                    </execution>
+
+                    <!-- Provision a server with vertx-subsystem -->
+                    <execution>
+                        <id>vertx-subsystem-provisioning</id>
+                        <goals>
+                            <goal>provision</goal>
+                        </goals>
+                        <phase>${vertx-provisioning.phase}</phase>
+                        <configuration>
+                            <provisioning-dir>${project.build.directory}/wildfly-vertx</provisioning-dir>
+                            <provisioning-file>target/glow-scan/vertx.layer.surefire/provisioning.xml</provisioning-file>
+                        </configuration>
+                    </execution>
+
+                    <!-- Package a server with hibernate-search -->
+                    <execution>
+                        <id>bootable-jar-hibernate-search-packaging</id>
+                        <goals>
+                            <goal>package</goal>
+                        </goals>
+                        <phase>${ts.bootable-jar-packaging.phase}</phase>
+                        <configuration>
+                            <bootableJar>true</bootableJar>
+                            <skipDeployment>true</skipDeployment>
+                            <bootableJarName>test-wildfly-hibernate-search.jar</bootableJarName>
+                            <extra-server-content-dirs>
+                                <!-- Uncomment if we add extra content
+                                <extraServerContent>${project.build.directory}/extraContent/</extraServerContent>
+                                -->
+                            </extra-server-content-dirs>
+                            <provisioning-file>target/glow-scan/hibernate-search.layer.surefire/provisioning.xml</provisioning-file>
+                        </configuration>
+                    </execution>
+
+                    <!-- Package a server with mvc -->
+                    <execution>
+                        <id>bootable-jar-mvc-packaging</id>
+                        <goals>
+                            <goal>package</goal>
+                        </goals>
+                        <phase>${ts.bootable-jar-packaging.phase}</phase>
+                        <configuration>
+                            <bootableJar>true</bootableJar>
+                            <skipDeployment>true</skipDeployment>
+                            <bootableJarName>test-wildfly-mvc.jar</bootableJarName>
+                            <extra-server-content-dirs>
+                                <!-- Uncomment if we add extra content
+                                <extraServerContent>${project.build.directory}/extraContent/</extraServerContent>
+                                -->
+                            </extra-server-content-dirs>
+                            <provisioning-file>target/glow-scan/mvc.layer.surefire/provisioning.xml</provisioning-file>
+                        </configuration>
+                    </execution>
+
+                    <!-- Package a server with vertx -->
+                    <execution>
+                        <id>bootable-jar-vertx-packaging</id>
+                        <goals>
+                            <goal>package</goal>
+                        </goals>
+                        <phase>${ts.bootable-jar-packaging.phase}</phase>
+                        <configuration>
+                            <bootableJar>true</bootableJar>
+                            <skipDeployment>true</skipDeployment>
+                            <bootableJarName>test-wildfly-vertx.jar</bootableJarName>
+                            <provisioning-file>target/glow-scan/vertx.layer.surefire/provisioning.xml</provisioning-file>
                         </configuration>
                     </execution>
                 </executions>
@@ -403,9 +486,11 @@
                 <glow.cloud-profile.phase>test-compile</glow.cloud-profile.phase>
                 <glow.hibernate-search.phase>test-compile</glow.hibernate-search.phase>
                 <glow.mvc.phase>test-compile</glow.mvc.phase>
+                <glow.vertx.phase>test-compile</glow.vertx.phase>
                 <full-provisioning.phase>none</full-provisioning.phase>
                 <hibernate-search-provisioning.phase>test-compile</hibernate-search-provisioning.phase>
                 <mvc-provisioning.phase>test-compile</mvc-provisioning.phase>
+                <vertx-provisioning.phase>test-compile</vertx-provisioning.phase>
                 <ts.config-as.copy-mgmt-users.phase>process-test-classes</ts.config-as.copy-mgmt-users.phase>
                 <ts.copy-wildfly-standalone-embedded-broker.phase>none</ts.copy-wildfly-standalone-embedded-broker.phase>
             </properties>
@@ -450,6 +535,30 @@
                                 </configuration>
                             </execution>
 
+                            <!-- Tests against the vertx install -->
+                            <execution>
+                                <id>vertx.layer.surefire</id>
+                                <phase>test</phase>
+                                <goals>
+                                    <goal>test</goal>
+                                </goals>
+                                <configuration>
+                                    <systemPropertyVariables>
+                                        <jboss.install.dir>${basedir}/target/wildfly-vertx</jboss.install.dir>
+                                        <jboss.home>${project.build.directory}/wildfly-vertx</jboss.home>
+                                        <jboss.home.dir>${project.build.directory}/wildfly-vertx</jboss.home.dir>
+                                        <jbossas.dist>${project.build.directory}/wildfly-vertx</jbossas.dist>
+                                        <jboss.dist>${project.build.directory}/wildfly-vertx</jboss.dist>
+                                        <!-- Override the standard module path that points at the shared module set from dist -->
+                                        <module.path>${project.build.directory}/wildfly-vertx/modules${path.separator}${basedir}/target/modules</module.path>
+                                    </systemPropertyVariables>
+                                    <includes>
+                                        <!-- Dummy test used to validate this pom -->
+                                        <include>org/wildfly/test/preview/vertx/**/*TestCase.java</include>
+                                    </includes>
+                                    <reportNameSuffix>vertx.layer.surefire</reportNameSuffix>
+                                </configuration>
+                            </execution>
                             <!-- Tests against the hibernate-search install -->
                             <execution>
                                 <id>hibernate-search.layer.surefire</id>
@@ -503,7 +612,9 @@
                 <glow.cloud-profile.phase>test-compile</glow.cloud-profile.phase>
                 <glow.hibernate-search.phase>test-compile</glow.hibernate-search.phase>
                 <glow.mvc.phase>test-compile</glow.mvc.phase>
+                <glow.vertx.phase>test-compile</glow.vertx.phase>
                 <ts.copy-wildfly-standalone-embedded-broker.phase>none</ts.copy-wildfly-standalone-embedded-broker.phase>
+                <ts.bootable-jar-packaging.phase>process-test-classes</ts.bootable-jar-packaging.phase>
             </properties>
             <build>
                 <plugins>
@@ -535,47 +646,6 @@
                                             </includes>
                                         </resource>
                                     </resources>
-                                </configuration>
-                            </execution>
-                        </executions>
-                    </plugin>
-                    <plugin>
-                        <groupId>org.wildfly.plugins</groupId>
-                        <artifactId>wildfly-jar-maven-plugin</artifactId>
-                        <executions>
-                            <!-- Package a server with hibernate-search -->
-                            <execution>
-                                <id>bootable-jar-hibernate-search-packaging</id>
-                                <goals>
-                                    <goal>package</goal>
-                                </goals>
-                                <phase>process-test-classes</phase>
-                                <configuration>
-                                    <output-file-name>test-wildfly-hibernate-search.jar</output-file-name>
-                                    <extra-server-content-dirs>
-                                        <!-- Uncomment if we add extra content
-                                        <extraServerContent>${project.build.directory}/extraContent/</extraServerContent>
-                                        -->
-                                    </extra-server-content-dirs>
-                                    <provisioning-file>target/glow-scan/hibernate-search.layer.surefire/provisioning.xml</provisioning-file>
-                                </configuration>
-                            </execution>
-
-                            <!-- Package a server with mvc -->
-                            <execution>
-                                <id>bootable-jar-mvc-packaging</id>
-                                <goals>
-                                    <goal>package</goal>
-                                </goals>
-                                <phase>process-test-classes</phase>
-                                <configuration>
-                                    <output-file-name>test-wildfly-mvc.jar</output-file-name>
-                                    <extra-server-content-dirs>
-                                        <!-- Uncomment if we add extra content
-                                        <extraServerContent>${project.build.directory}/extraContent/</extraServerContent>
-                                        -->
-                                    </extra-server-content-dirs>
-                                    <provisioning-file>target/glow-scan/mvc.layer.surefire/provisioning.xml</provisioning-file>
                                 </configuration>
                             </execution>
                         </executions>
@@ -641,6 +711,31 @@
                                         <include>org/wildfly/test/preview/mvc/**/*TestCase.java</include>
                                     </includes>
                                     <reportNameSuffix>mvc.layer.surefire</reportNameSuffix>
+                                </configuration>
+                            </execution>
+
+                            <!-- Tests against a server provisioned with vertx layer -->
+                            <execution>
+                                <id>vertx.layer.surefire</id>
+                                <phase>test</phase>
+                                <goals>
+                                    <goal>test</goal>
+                                </goals>
+                                <configuration>
+                                    <systemPropertyVariables>
+                                        <install.dir>${project.build.directory}/wildfly-bootable-vertx</install.dir>
+                                        <bootable.jar>${project.build.directory}/test-wildfly-vertx.jar</bootable.jar>
+                                        <arquillian.xml>arquillian-bootable.xml</arquillian.xml>
+                                    </systemPropertyVariables>
+                                    <classpathDependencyExcludes>
+                                        <classpathDependencyExclude>
+                                            org.wildfly.arquillian:wildfly-arquillian-container-managed
+                                        </classpathDependencyExclude>
+                                    </classpathDependencyExcludes>
+                                    <includes>
+                                        <include>org/wildfly/test/preview/vertx/**/*TestCase.java</include>
+                                    </includes>
+                                    <reportNameSuffix>vertx.layer.surefire</reportNameSuffix>
                                 </configuration>
                             </execution>
                         </executions>
