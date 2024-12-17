@@ -29,6 +29,20 @@ message InfinispanTimerIndexKey {
 /**
  * @TypeId(342)
  */
-enum TimerMetaDataKeyFilter {
-	INSTANCE	 = 0;
+enum TimerCacheKeyFilter {
+	META_DATA_KEY	= 0;
+}
+
+/**
+ * @TypeId(343)
+ */
+enum TimerCacheEntryFilter {
+	META_DATA_ENTRY	= 0;
+}
+
+/**
+ * @TypeId(344)
+ */
+message SimpleTimeoutMetaData {
+    uint64  nextTimeout = 1;
 }

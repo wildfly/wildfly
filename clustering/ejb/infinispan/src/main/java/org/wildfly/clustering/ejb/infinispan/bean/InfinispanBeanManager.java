@@ -9,7 +9,6 @@ import java.util.EnumSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeoutException;
-import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -28,15 +27,15 @@ import org.jboss.ejb.client.Affinity;
 import org.jboss.ejb.client.ClusterAffinity;
 import org.jboss.ejb.client.NodeAffinity;
 import org.wildfly.clustering.cache.CacheProperties;
-import org.wildfly.clustering.cache.Key;
 import org.wildfly.clustering.cache.batch.Batch;
-import org.wildfly.clustering.cache.infinispan.embedded.distribution.Locality;
+import org.wildfly.clustering.cache.infinispan.embedded.distribution.CacheStreamFilter;
 import org.wildfly.clustering.cache.infinispan.embedded.listener.ListenerRegistration;
 import org.wildfly.clustering.ejb.bean.Bean;
 import org.wildfly.clustering.ejb.bean.BeanExpirationConfiguration;
 import org.wildfly.clustering.ejb.bean.BeanInstance;
 import org.wildfly.clustering.ejb.bean.BeanManager;
 import org.wildfly.clustering.ejb.cache.bean.BeanFactory;
+import org.wildfly.clustering.ejb.cache.bean.BeanMetaDataKey;
 import org.wildfly.clustering.ejb.cache.bean.MutableBean;
 import org.wildfly.clustering.ejb.cache.bean.OnCloseBean;
 import org.wildfly.clustering.ejb.infinispan.logging.InfinispanEjbLogger;
@@ -47,15 +46,14 @@ import org.wildfly.clustering.server.infinispan.affinity.UnaryGroupMemberAffinit
 import org.wildfly.clustering.server.infinispan.dispatcher.CacheContainerCommandDispatcherFactory;
 import org.wildfly.clustering.server.infinispan.expiration.ScheduleWithExpirationMetaDataCommand;
 import org.wildfly.clustering.server.infinispan.manager.AffinityIdentifierFactory;
-import org.wildfly.clustering.server.infinispan.scheduler.CacheEntryScheduler;
+import org.wildfly.clustering.server.infinispan.scheduler.CacheEntriesTask;
 import org.wildfly.clustering.server.infinispan.scheduler.PrimaryOwnerScheduler;
 import org.wildfly.clustering.server.infinispan.scheduler.PrimaryOwnerSchedulerConfiguration;
 import org.wildfly.clustering.server.infinispan.scheduler.ScheduleCommand;
-import org.wildfly.clustering.server.infinispan.scheduler.ScheduleLocalEntriesTask;
 import org.wildfly.clustering.server.infinispan.scheduler.ScheduleWithTransientMetaDataCommand;
+import org.wildfly.clustering.server.infinispan.scheduler.Scheduler;
 import org.wildfly.clustering.server.infinispan.scheduler.SchedulerTopologyChangeListener;
 import org.wildfly.clustering.server.manager.IdentifierFactory;
-import org.wildfly.clustering.server.scheduler.Scheduler;
 
 /**
  * A {@link BeanManager} implementation backed by an infinispan cache.
@@ -66,7 +64,7 @@ import org.wildfly.clustering.server.scheduler.Scheduler;
  */
 public class InfinispanBeanManager<K, V extends BeanInstance<K>, M> implements BeanManager<K, V> {
 
-    private final Cache<Key<K>, Object> cache;
+    private final Cache<BeanMetaDataKey<K>, M> cache;
     private final CacheProperties properties;
     private final RetryConfig retryConfig;
     private final BeanFactory<K, V, M> beanFactory;
@@ -74,7 +72,7 @@ public class InfinispanBeanManager<K, V extends BeanInstance<K>, M> implements B
     private final CacheContainerCommandDispatcherFactory dispatcherFactory;
     private final BeanExpirationConfiguration<K, V> expiration;
     private final Supplier<Batch> batchFactory;
-    private final Predicate<Map.Entry<? super Key<K>, ? super Object>> filter;
+    private final Predicate<Map.Entry<? super BeanMetaDataKey<K>, ? super M>> filter;
     private final Function<K, CacheContainerGroupMember> primaryOwnerLocator;
     private final Affinity strongAffinity;
 
@@ -108,7 +106,7 @@ public class InfinispanBeanManager<K, V extends BeanInstance<K>, M> implements B
         this.identifierFactory.start();
 
         Duration stopTimeout = Duration.ofMillis(this.cache.getCacheConfiguration().transaction().cacheStopTimeout());
-        CacheEntryScheduler<K, ExpirationMetaData> localScheduler = (this.expiration != null) && !this.expiration.getTimeout().isZero() ? new BeanExpirationScheduler<>(this.cache.getName(), this.dispatcherFactory.getGroup(), this.batchFactory, this.beanFactory, this.expiration, stopTimeout) : null;
+        BeanExpirationScheduler<K, V, M> localScheduler = (this.expiration != null) && !this.expiration.getTimeout().isZero() ? new BeanExpirationScheduler<>(this.cache.getName(), this.dispatcherFactory.getGroup(), this.batchFactory, this.beanFactory, this.expiration, stopTimeout) : null;
 
         String dispatcherName = String.join("/", this.cache.getName(), this.filter.toString());
         this.scheduler = (localScheduler != null) ? (this.dispatcherFactory.getGroup().isSingleton() ? localScheduler : new PrimaryOwnerScheduler<>(new PrimaryOwnerSchedulerConfiguration<>() {
@@ -123,7 +121,7 @@ public class InfinispanBeanManager<K, V extends BeanInstance<K>, M> implements B
             }
 
             @Override
-            public CacheEntryScheduler<K, ExpirationMetaData> getScheduler() {
+            public Scheduler<K, ExpirationMetaData> getScheduler() {
                 return localScheduler;
             }
 
@@ -143,11 +141,12 @@ public class InfinispanBeanManager<K, V extends BeanInstance<K>, M> implements B
             }
         })) : null;
 
-        BiConsumer<Locality, Locality> scheduleTask = (localScheduler != null) ? new ScheduleLocalEntriesTask<>(this.cache, this.filter, localScheduler) : null;
-        this.schedulerListenerRegistration = (localScheduler != null) ? new SchedulerTopologyChangeListener<>(this.cache, localScheduler, scheduleTask).register() : null;
+        Consumer<CacheStreamFilter<Map.Entry<BeanMetaDataKey<K>, M>>> scheduleTask = (localScheduler != null) ? CacheEntriesTask.schedule(this.cache, this.filter, localScheduler) : null;
+        Consumer<CacheStreamFilter<Map.Entry<BeanMetaDataKey<K>, M>>> cancelTask = (localScheduler != null) ? CacheEntriesTask.cancel(this.cache, this.filter, localScheduler) : null;
+        this.schedulerListenerRegistration = (localScheduler != null) ? new SchedulerTopologyChangeListener<>(this.cache, scheduleTask, cancelTask).register() : null;
         if (scheduleTask != null) {
             // Schedule expiration of existing beans that we own
-            scheduleTask.accept(Locality.of(false), Locality.forCurrentConsistentHash(this.cache));
+            scheduleTask.accept(CacheStreamFilter.local(this.cache));
         }
         // If bean has expiration configuration, perform expiration task on close
         Consumer<Bean<K, V>> closeTask = (this.expiration != null) ? bean -> {
@@ -262,17 +261,18 @@ public class InfinispanBeanManager<K, V extends BeanInstance<K>, M> implements B
 
     @Override
     public int getActiveCount() {
-        return this.count(EnumSet.of(Flag.CACHE_MODE_LOCAL, Flag.SKIP_CACHE_LOAD));
+        return this.count(EnumSet.of(Flag.SKIP_CACHE_LOAD));
     }
 
     @Override
     public int getPassiveCount() {
-        return this.count(EnumSet.of(Flag.CACHE_MODE_LOCAL)) - this.getActiveCount();
+        return this.count(Set.of()) - this.getActiveCount();
     }
 
     private int count(Set<Flag> flags) {
-        try (Stream<Key<K>> keys = this.cache.getAdvancedCache().withFlags(flags).keySet().stream()) {
-            return (int) keys.filter(InfinispanBeanGroupKey.class::isInstance).count();
+        CacheStreamFilter<Map.Entry<BeanMetaDataKey<K>, M>> filter = CacheStreamFilter.local(this.cache);
+        try (Stream<Map.Entry<BeanMetaDataKey<K>, M>> entries = filter.apply(this.cache.getAdvancedCache().withFlags(flags).entrySet().stream())) {
+            return (int) entries.filter(this.filter).count();
         }
     }
 }

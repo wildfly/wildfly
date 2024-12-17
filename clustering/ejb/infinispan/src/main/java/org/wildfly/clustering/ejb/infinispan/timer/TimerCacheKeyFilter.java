@@ -11,11 +11,17 @@ import org.wildfly.clustering.ejb.cache.timer.TimerMetaDataKey;
 /**
  * @author Paul Ferraro
  */
-public enum TimerMetaDataKeyFilter implements SerializablePredicate<Object> {
-    INSTANCE;
+public enum TimerCacheKeyFilter implements SerializablePredicate<Object> {
+    META_DATA_KEY(TimerMetaDataKey.class);
+
+    private final Class<?> keyClass;
+
+    TimerCacheKeyFilter(Class<?> keyClass) {
+        this.keyClass = keyClass;
+    }
 
     @Override
     public boolean test(Object key) {
-        return key instanceof TimerMetaDataKey;
+        return this.keyClass.isInstance(key);
     }
 }

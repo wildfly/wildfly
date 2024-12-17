@@ -269,7 +269,7 @@ e.g.
 
 One of the primary design goals of WildFly's distributed session manager was the parity of HttpSession semantics between distributable and non-distributable web applications.
 In order to provide predictable behavior suitable for most web applications, the default distributed session manager configuration is quite conservative, generally favoring consistency over availability.
-However, these defaults may not be appropriate for your application.
+While these defaults are suitable for most applications, they may not be ideal for others.
 In general, the effective performance of the distributed session manager is constrained by:
 
 . Replication/persistence payload size
@@ -296,32 +296,24 @@ For read-heavy applications, this can dramatically reduce the replication/persis
 [[session_concurrency]]
 === Session concurrency
 
-WildFly's default distributed session manager behavior is also conservative with respect to concurrent access to a given session.
-By default, a request acquires exclusive access to its associated session for the duration of a request, and until any async child context is complete.
-This maximizes the performance of a single request, as each request corresponds to a single cache transaction; allows for repeatable read semantics to the session; and ensures that subsequent requests are not prone to stale reads, even when handled by another cluster member.
+By default, WildFly's distributed session manager configuration permits concurrent access to a given session on a single cluster member at a time,
+as mandated by https://jakarta.ee/specifications/servlet/6.1/jakarta-servlet-spec-6.1#distributed-environments[§7.7.2 of the Jakarta Servlet specification].
 
-However, if multiple requests attempt to access the same session concurrently, their processing will be effectively serialized.  This might not be feasible, especially for heavily asynchronous web applications.
+By default, the first request for a given session acquires exclusive, cluster-wide access to its associated session, and maintains that exclusivity until the last concurrent request for that session has completed.
+Concurrent requests for the same session arriving on other cluster members will be blocked until all requests for the given session have completed on the cluster member retaining exclusive access.
+This level of concurrency should be sufficient for most applications using a load balancer properly configured with session affinity.
 
-Relaxing transaction isolation from REPEATABLE_READ to READ_COMMITTED on the associated cache configuration will allow concurrent requests to perform lock-free (but potentially stale) reads by deferring locking to the first attempt to write to the session.
-This improves the throughput of requests for the same session for highly asynchronous web applications whose session access is read-heavy.
-
-e.g.
-[source]
-----
-/subsystem=infinispan/cache-container=web/distributed-cache=dist/component=locking:write-attribute(name=isolation, value=READ_COMMITTED)
-----
-
-For asynchronous web applications whose session access is write-heavy, merely relaxing transaction isolation is not likely to be sufficient.
-These web applications will likely benefit from disabling cache transactions altogether.
-When transactions are disabled, cache entries are locked and released for every write to the session, resulting in last-write-wins semantics.
-For write-heavy applications, this typically improves the throughput of concurrent requests for the same session, at the cost of longer response times for individual requests.
+If your application uses the HttpSession in a sufficiently read-only manner and/or can tolerate potentially dirty reads, you may consider disabling transactions on the Infinispan cache used to store HttpSession attributes and metadata.
+Disabling transactions will permit concurrent access to a given session by any cluster member.
+When transactions are disabled, however, changes to an HttpSession on one cluster member will not be visible to a concurrent request for the same session on a different cluster member, and updates will have last-write-wins semantics.
+Disabling transactions on the default cache configuration for sessions is achieved using the following command:
 
 [source]
 ----
 /subsystem=infinispan/cache-container=web/distributed-cache=dist/component=transaction:write-attribute(name=mode, value=NONE)
 ----
 
-NOTE: Relaxing transaction isolation currently prevents WildFly from enforcing that a given session is handled by one JVM at a time, a constraint dictated by the servlet specification.
+NOTE: Relaxing transaction isolation or disabling transactions prevents WildFly from enforcing that a given session is handled by one JVM at a time, a constraint mandated by the Jakarta Servlet specification.
 
 [[session_attribute_immutability]]
 === Session attribute immutability

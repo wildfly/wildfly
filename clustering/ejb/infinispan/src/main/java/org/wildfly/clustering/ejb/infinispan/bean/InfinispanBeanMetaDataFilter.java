@@ -8,15 +8,15 @@ package org.wildfly.clustering.ejb.infinispan.bean;
 import java.util.Map;
 
 import org.infinispan.util.function.SerializablePredicate;
-import org.wildfly.clustering.cache.Key;
 import org.wildfly.clustering.ejb.cache.bean.BeanMetaDataEntry;
+import org.wildfly.clustering.ejb.cache.bean.BeanMetaDataKey;
 
 /**
  * Filters a cache for entries specific to a particular bean.
  * @author Paul Ferraro
  * @param <K> the bean identifier type
  */
-public class InfinispanBeanMetaDataFilter<K> implements SerializablePredicate<Map.Entry<? super Key<K>, ? super Object>> {
+public class InfinispanBeanMetaDataFilter<K, V> implements SerializablePredicate<Map.Entry<? super K, ? super V>> {
     private static final long serialVersionUID = -1079989480899595045L;
 
     private final String beanName;
@@ -26,16 +26,27 @@ public class InfinispanBeanMetaDataFilter<K> implements SerializablePredicate<Ma
     }
 
     @Override
-    public boolean test(Map.Entry<? super Key<K>, ? super Object> entry) {
-        if (entry.getKey() instanceof InfinispanBeanMetaDataKey) {
+    public boolean test(Map.Entry<? super K, ? super V> entry) {
+        if (entry.getKey() instanceof BeanMetaDataKey) {
             Object value = entry.getValue();
             if (value instanceof BeanMetaDataEntry) {
-                @SuppressWarnings("unchecked")
-                BeanMetaDataEntry<K> metaData = (BeanMetaDataEntry<K>) value;
+                BeanMetaDataEntry<?> metaData = (BeanMetaDataEntry<?>) value;
                 return this.beanName.equals(metaData.getName());
             }
         }
         return false;
+    }
+
+    @Override
+    public boolean equals(Object object) {
+        if (!(object instanceof InfinispanBeanMetaDataFilter)) return false;
+        InfinispanBeanMetaDataFilter<?, ?> filter = (InfinispanBeanMetaDataFilter<?, ?>) object;
+        return this.beanName.equals(filter.beanName);
+    }
+
+    @Override
+    public int hashCode() {
+        return this.beanName.hashCode();
     }
 
     @Override

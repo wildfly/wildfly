@@ -5,13 +5,14 @@
 
 package org.wildfly.clustering.ejb.infinispan.timer;
 
+import org.wildfly.clustering.cache.CacheEntryRemover;
+import org.wildfly.clustering.ejb.timer.ImmutableTimerMetaData;
+import org.wildfly.clustering.ejb.timer.TimeoutListener;
+import org.wildfly.clustering.ejb.timer.TimeoutMetaData;
 import org.wildfly.clustering.ejb.timer.Timer;
 import org.wildfly.clustering.ejb.timer.TimerManager;
 import org.wildfly.clustering.ejb.timer.TimerRegistry;
 import org.wildfly.clustering.server.scheduler.Scheduler;
-import org.wildfly.clustering.cache.CacheEntryRemover;
-import org.wildfly.clustering.ejb.timer.ImmutableTimerMetaData;
-import org.wildfly.clustering.ejb.timer.TimeoutListener;
 
 /**
  * @author Paul Ferraro
@@ -21,14 +22,14 @@ public class InfinispanTimer<I> implements Timer<I> {
     private final TimerManager<I> manager;
     private final I id;
     private final ImmutableTimerMetaData metaData;
-    private final Scheduler<I, ImmutableTimerMetaData> scheduler;
+    private final Scheduler<I, TimeoutMetaData> scheduler;
     private final TimeoutListener<I> listener;
     private final CacheEntryRemover<I> remover;
     private final TimerRegistry<I> registry;
 
     private volatile boolean canceled = false;
 
-    public InfinispanTimer(TimerManager<I> manager, I id, ImmutableTimerMetaData metaData, Scheduler<I, ImmutableTimerMetaData> scheduler, TimeoutListener<I> listener, CacheEntryRemover<I> remover, TimerRegistry<I> registry) {
+    public InfinispanTimer(TimerManager<I> manager, I id, ImmutableTimerMetaData metaData, Scheduler<I, TimeoutMetaData> scheduler, TimeoutListener<I> listener, CacheEntryRemover<I> remover, TimerRegistry<I> registry) {
         this.manager = manager;
         this.id = id;
         this.metaData = metaData;
