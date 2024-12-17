@@ -17,6 +17,7 @@ import java.util.Set;
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 
+import org.jboss.as.controller.ModuleIdentifierUtil;
 import org.jboss.as.pojo.BeanState;
 import org.jboss.as.pojo.ParseResult;
 import org.jboss.as.pojo.logging.PojoLogger;
@@ -362,7 +363,7 @@ public class KernelDeploymentXmlDescriptorParser implements XMLElementReader<Par
 
             switch (attribute) {
                 case NAME:
-                    moduleConfig.setModuleName(attributeValue);
+                    moduleConfig.setModuleName(ModuleIdentifierUtil.canonicalModuleIdentifier(attributeValue));
                     break;
                 default:
                     throw unexpectedAttribute(reader, i);

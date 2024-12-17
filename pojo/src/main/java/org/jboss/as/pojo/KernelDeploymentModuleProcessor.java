@@ -15,7 +15,6 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.module.ModuleDependency;
 import org.jboss.as.server.deployment.module.ModuleSpecification;
 import org.jboss.modules.Module;
-import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoader;
 import org.jboss.modules.filter.PathFilter;
 import org.jboss.modules.filter.PathFilters;
@@ -29,7 +28,7 @@ import java.util.List;
  */
 public class KernelDeploymentModuleProcessor implements DeploymentUnitProcessor {
 
-    private ModuleIdentifier POJO_MODULE = ModuleIdentifier.create("org.jboss.as.pojo");
+    private final String POJO_MODULE = "org.jboss.as.pojo";
 
     /**
      * Add POJO module if we have any bean factories.
