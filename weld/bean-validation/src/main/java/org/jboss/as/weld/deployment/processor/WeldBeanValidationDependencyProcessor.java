@@ -16,7 +16,6 @@ import org.jboss.as.server.deployment.module.ModuleDependency;
 import org.jboss.as.server.deployment.module.ModuleSpecification;
 import org.jboss.as.weld.WeldCapability;
 import org.jboss.modules.Module;
-import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoader;
 
 /**
@@ -25,7 +24,7 @@ import org.jboss.modules.ModuleLoader;
  */
 public class WeldBeanValidationDependencyProcessor implements DeploymentUnitProcessor {
 
-    private static final ModuleIdentifier CDI_BEAN_VALIDATION_ID = ModuleIdentifier.create("org.hibernate.validator.cdi");
+    private static final String CDI_BEAN_VALIDATION_ID = "org.hibernate.validator.cdi";
 
     @Override
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
