@@ -30,6 +30,7 @@ public interface EJB3SubsystemModel {
     String IN_VM_REMOTE_INTERFACE_INVOCATION_PASS_BY_VALUE = "in-vm-remote-interface-invocation-pass-by-value";
 
     String DATASOURCE_JNDI_NAME = "datasource-jndi-name";
+    String DATASOURCE_NAME = "datasource-name";
     String DEFAULT_DISTINCT_NAME = "default-distinct-name";
     String DEFAULT_SECURITY_DOMAIN = "default-security-domain";
     String DEFAULT_MDB_INSTANCE_POOL = "default-mdb-instance-pool";

@@ -48,6 +48,7 @@ import java.util.function.Supplier;
 import java.util.regex.Pattern;
 import jakarta.ejb.ScheduleExpression;
 import javax.sql.DataSource;
+
 import jakarta.transaction.HeuristicMixedException;
 import jakarta.transaction.HeuristicRollbackException;
 import jakarta.transaction.NotSupportedException;
@@ -90,7 +91,8 @@ import org.wildfly.transaction.client.ContextTransactionManager;
  */
 public class DatabaseTimerPersistence implements TimerPersistence, Service {
     private final Consumer<DatabaseTimerPersistence> dbConsumer;
-    private final Supplier<ManagedReferenceFactory> dataSourceSupplier;
+    private final Supplier<DataSource> dataSourceSupplier;
+    private final Supplier<ManagedReferenceFactory> dataSourceReferenceSupplier;
     private final Supplier<ModuleLoader> moduleLoaderSupplier;
     private final Supplier<Timer> timerSupplier;
     private final Map<String, TimerChangeListener> changeListeners = Collections.synchronizedMap(new HashMap<String, TimerChangeListener>());
@@ -168,12 +170,14 @@ public class DatabaseTimerPersistence implements TimerPersistence, Service {
             WildFlySecurityManager.getPropertyPrivileged("jboss.ejb.timer.database.clearTimerInfoCacheBeyond", "15")));
 
     public DatabaseTimerPersistence(final Consumer<DatabaseTimerPersistence> dbConsumer,
-                                    final Supplier<ManagedReferenceFactory> dataSourceSupplier,
+                                    final Supplier<DataSource> dataSourceSupplier,
+                                    final Supplier<ManagedReferenceFactory> dataSourceReferenceSupplier,
                                     final Supplier<ModuleLoader> moduleLoaderSupplier,
                                     final Supplier<Timer> timerSupplier,
                                     final String database, String partition, String nodeName, int refreshInterval, boolean allowExecution) {
         this.dbConsumer = dbConsumer;
         this.dataSourceSupplier = dataSourceSupplier;
+        this.dataSourceReferenceSupplier = dataSourceReferenceSupplier;
         this.moduleLoaderSupplier = moduleLoaderSupplier;
         this.timerSupplier = timerSupplier;
         this.database = database;
@@ -190,8 +194,12 @@ public class DatabaseTimerPersistence implements TimerPersistence, Service {
         configuration = new MarshallingConfiguration();
         configuration.setClassResolver(ModularClassResolver.getInstance(moduleLoaderSupplier.get()));
 
-        managedReference = dataSourceSupplier.get().getReference();
-        dataSource = (DataSource) managedReference.getInstance();
+        if (dataSourceSupplier != null) {
+            dataSource = dataSourceSupplier.get();
+        } else {
+            managedReference = dataSourceReferenceSupplier.get().getReference();
+            dataSource = (DataSource) managedReference.getInstance();
+        }
         investigateDialect();
         loadSqlProperties();
         checkDatabase();
@@ -206,8 +214,10 @@ public class DatabaseTimerPersistence implements TimerPersistence, Service {
         dbConsumer.accept(null);
         refreshTask.cancel();
         knownTimerIds.clear();
-        managedReference.release();
-        managedReference = null;
+        if (managedReference != null) {
+            managedReference.release();
+            managedReference = null;
+        }
         dataSource = null;
     }
 
