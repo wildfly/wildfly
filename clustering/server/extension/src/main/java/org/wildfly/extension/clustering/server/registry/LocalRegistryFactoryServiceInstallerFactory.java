@@ -9,7 +9,6 @@ import java.util.Map;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
-import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.wildfly.clustering.server.local.LocalGroup;
 import org.wildfly.clustering.server.local.LocalGroupMember;
@@ -27,7 +26,7 @@ import org.wildfly.subsystem.service.ServiceInstaller;
 public class LocalRegistryFactoryServiceInstallerFactory<K, V> extends AbstractRegistryFactoryServiceInstallerFactory<K, V> {
 
     @Override
-    public ServiceInstaller apply(CapabilityServiceSupport support, BinaryServiceConfiguration configuration) {
+    public ServiceInstaller apply(BinaryServiceConfiguration configuration) {
         Function<LocalGroup, RegistryFactory<LocalGroupMember, K, V>> factory = new Function<>() {
             @Override
             public RegistryFactory<LocalGroupMember, K, V> apply(LocalGroup group) {

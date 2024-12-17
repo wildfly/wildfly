@@ -5,11 +5,13 @@
 
 package org.jboss.as.clustering.jgroups.subsystem;
 
+import java.time.Duration;
+
 /**
  * @author Paul Ferraro
  */
 public interface ThreadPoolConfiguration {
     int getMinThreads();
     int getMaxThreads();
-    long getKeepAliveTime();
+    Duration getKeepAlive();
 }
