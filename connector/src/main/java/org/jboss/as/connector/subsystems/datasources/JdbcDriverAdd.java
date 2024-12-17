@@ -15,6 +15,7 @@ import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_NAM
 import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_XA_DATASOURCE_CLASS_NAME;
 import static org.jboss.as.connector.subsystems.datasources.Constants.JDBC_DRIVER_ATTRIBUTES;
 import static org.jboss.as.connector.subsystems.datasources.Constants.MODULE_SLOT;
+import static org.jboss.as.controller.ModuleIdentifierUtil.canonicalModuleIdentifier;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
 import java.lang.reflect.Constructor;
@@ -41,7 +42,6 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.dmr.ModelNode;
 import org.jboss.modules.Module;
-import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoadException;
 import org.jboss.modules.ModuleNotFoundException;
 import org.jboss.msc.service.ServiceBuilder;
@@ -77,12 +77,12 @@ public class JdbcDriverAdd extends AbstractAddStepHandler {
 
         final ServiceTarget target = context.getServiceTarget();
 
-        final ModuleIdentifier moduleId;
+        final String moduleId;
         final Module module;
         String slot = model.hasDefined(MODULE_SLOT.getName()) ? MODULE_SLOT.resolveModelAttribute(context, model).asString() : null;
 
         try {
-            moduleId = ModuleIdentifier.create(moduleName, slot);
+            moduleId = canonicalModuleIdentifier(moduleName, slot);
             module = Module.getCallerModuleLoader().loadModule(moduleId);
         } catch (ModuleNotFoundException e) {
             throw new OperationFailedException(ConnectorLogger.ROOT_LOGGER.missingDependencyInModuleDriver(moduleName, e.getMessage()), e);
@@ -153,7 +153,7 @@ public class JdbcDriverAdd extends AbstractAddStepHandler {
         }
     }
 
-    public static void startDriverServices(final ServiceTarget target, final ModuleIdentifier moduleId, Driver driver, final String driverName, final Integer majorVersion,
+    public static void startDriverServices(final ServiceTarget target, final String moduleId, Driver driver, final String driverName, final Integer majorVersion,
                                            final Integer minorVersion, final String dataSourceClassName, final String xaDataSourceClassName) throws IllegalStateException {
         final int majorVer = driver.getMajorVersion();
         final int minorVer = driver.getMinorVersion();

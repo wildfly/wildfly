@@ -5,6 +5,7 @@
 
 package org.jboss.as.connector.subsystems.datasources;
 
+import static org.jboss.as.controller.ModuleIdentifierUtil.canonicalModuleIdentifier;
 import static org.jboss.as.connector.logging.ConnectorLogger.SUBSYSTEM_DATASOURCES_LOGGER;
 import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_CLASS_NAME;
 import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_DATASOURCE_CLASS_NAME;
@@ -24,7 +25,6 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.dmr.ModelNode;
 import org.jboss.modules.Module;
-import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoadException;
 import org.jboss.modules.ModuleNotFoundException;
 import org.jboss.msc.service.ServiceController;
@@ -52,7 +52,7 @@ public class JdbcDriverRemove extends AbstractRemoveStepHandler {
 
     protected void recoverServices(OperationContext context, ModelNode operation, ModelNode model) {
         final String driverName = context.getCurrentAddressValue();
-        final String moduleName = model.require(DRIVER_MODULE_NAME.getName()).asString();
+        final String moduleName = canonicalModuleIdentifier(model.require(DRIVER_MODULE_NAME.getName()).asString());
         final Integer majorVersion = model.hasDefined(DRIVER_MAJOR_VERSION.getName()) ? model.get(DRIVER_MAJOR_VERSION.getName()).asInt() : null;
         final Integer minorVersion = model.hasDefined(DRIVER_MINOR_VERSION.getName()) ? model.get(DRIVER_MINOR_VERSION.getName()).asInt() : null;
         final String driverClassName = model.hasDefined(DRIVER_CLASS_NAME.getName()) ? model.get(DRIVER_CLASS_NAME.getName()).asString() : null;
@@ -62,11 +62,9 @@ public class JdbcDriverRemove extends AbstractRemoveStepHandler {
 
         final ServiceTarget target = context.getServiceTarget();
 
-        final ModuleIdentifier moduleId;
         final Module module;
         try {
-            moduleId = ModuleIdentifier.fromString(moduleName);
-            module = Module.getCallerModuleLoader().loadModule(moduleId);
+            module = Module.getCallerModuleLoader().loadModule(moduleName);
         } catch (ModuleNotFoundException e) {
             context.getFailureDescription().set(ConnectorLogger.ROOT_LOGGER.missingDependencyInModuleDriver(moduleName, e.getMessage()));
             return;
@@ -79,7 +77,7 @@ public class JdbcDriverRemove extends AbstractRemoveStepHandler {
             final ServiceLoader<Driver> serviceLoader = module.loadService(Driver.class);
             if (serviceLoader != null)
                 for (Driver driver : serviceLoader) {
-                    startDriverServices(target, moduleId, driver, driverName, majorVersion, minorVersion, dataSourceClassName, xaDataSourceClassName);
+                    startDriverServices(target, moduleName, driver, driverName, majorVersion, minorVersion, dataSourceClassName, xaDataSourceClassName);
                 }
         } else {
             try {
@@ -87,7 +85,7 @@ public class JdbcDriverRemove extends AbstractRemoveStepHandler {
                         .asSubclass(Driver.class);
                 final Constructor<? extends Driver> constructor = driverClass.getConstructor();
                 final Driver driver = constructor.newInstance();
-                startDriverServices(target, moduleId, driver, driverName, majorVersion, minorVersion, dataSourceClassName, xaDataSourceClassName);
+                startDriverServices(target, moduleName, driver, driverName, majorVersion, minorVersion, dataSourceClassName, xaDataSourceClassName);
             } catch (Exception e) {
                 SUBSYSTEM_DATASOURCES_LOGGER.cannotInstantiateDriverClass(driverClassName, e);
 

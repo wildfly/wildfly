@@ -359,8 +359,7 @@ public abstract class AbstractDataSourceService implements Service<DataSource> {
                     String driverName = dataSourceConfig.getDriver();
                     InstalledDriver installedDriver = driverRegistry.getValue().getInstalledDriver(driverName);
                     if (installedDriver != null) {
-                        String moduleName = installedDriver.getModuleName() != null ? installedDriver.getModuleName().getName()
-                                : null;
+                        String moduleName = installedDriver.getModuleName();
                         org.jboss.jca.common.api.metadata.ds.Driver driver = new DriverImpl(installedDriver.getDriverName(),
                                 installedDriver.getMajorVersion(), installedDriver.getMinorVersion(),
                                 moduleName, installedDriver.getDriverClassName(),
@@ -386,8 +385,7 @@ public abstract class AbstractDataSourceService implements Service<DataSource> {
                     String driverName = xaDataSourceConfig.getDriver();
                     InstalledDriver installedDriver = driverRegistry.getValue().getInstalledDriver(driverName);
                     if (installedDriver != null) {
-                        String moduleName = installedDriver.getModuleName() != null ? installedDriver.getModuleName().getName()
-                                : null;
+                        String moduleName = installedDriver.getModuleName();
                         org.jboss.jca.common.api.metadata.ds.Driver driver = new DriverImpl(installedDriver.getDriverName(),
                                 installedDriver.getMajorVersion(), installedDriver.getMinorVersion(), moduleName,
                                 installedDriver.getDriverClassName(),

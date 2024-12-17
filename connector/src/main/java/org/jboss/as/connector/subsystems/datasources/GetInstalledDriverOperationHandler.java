@@ -71,9 +71,12 @@ public class GetInstalledDriverOperationHandler implements OperationStepHandler 
                         driverNode.get(DRIVER_DATASOURCE_CLASS_NAME.getName());
                         driverNode.get(DRIVER_XA_DATASOURCE_CLASS_NAME.getName());
                     } else {
+                        final int commaIndex = driver.getModuleName() != null ? driver.getModuleName().indexOf(":") : -1;
+                        final String moduleName = commaIndex != -1 ? driver.getModuleName().substring(0, commaIndex) : driver.getModuleName();
+                        final String moduleSlot = commaIndex != -1 ? driver.getModuleName().substring(commaIndex + 1) : "";
                         driverNode.get(DEPLOYMENT_NAME.getName());
-                        driverNode.get(DRIVER_MODULE_NAME.getName()).set(driver.getModuleName().getName());
-                        driverNode.get(MODULE_SLOT.getName()).set(driver.getModuleName() != null ? driver.getModuleName().getSlot() : "");
+                        driverNode.get(DRIVER_MODULE_NAME.getName()).set(moduleName);
+                        driverNode.get(MODULE_SLOT.getName()).set(moduleSlot);
                         driverNode.get(DRIVER_DATASOURCE_CLASS_NAME.getName()).set(
                                 driver.getDataSourceClassName() != null ? driver.getDataSourceClassName() : "");
                         driverNode.get(DRIVER_XA_DATASOURCE_CLASS_NAME.getName()).set(driver.getXaDataSourceClassName() != null ? driver.getXaDataSourceClassName() : "");

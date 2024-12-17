@@ -4,6 +4,7 @@
  */
 package org.jboss.as.connector.subsystems.resourceadapters;
 
+import static org.jboss.as.controller.ModuleIdentifierUtil.canonicalModuleIdentifier;
 import static org.jboss.as.connector._private.Capabilities.AUTHENTICATION_CONTEXT_CAPABILITY;
 import static org.jboss.as.connector._private.Capabilities.ELYTRON_SECURITY_DOMAIN_CAPABILITY;
 import static org.jboss.as.connector.logging.ConnectorLogger.SUBSYSTEM_RA_LOGGER;
@@ -125,7 +126,6 @@ import org.jboss.jca.common.metadata.common.ValidationImpl;
 import org.jboss.jca.common.metadata.common.XaPoolImpl;
 import org.jboss.jca.common.metadata.resourceadapter.WorkManagerImpl;
 import org.jboss.modules.Module;
-import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoadException;
 import org.jboss.modules.ModuleNotFoundException;
 import org.jboss.msc.service.LifecycleEvent;
@@ -449,7 +449,7 @@ public class RaOperationUtil {
 
         Module module;
         try {
-            ModuleIdentifier moduleId = ModuleIdentifier.create(moduleName, slot);
+            String moduleId = canonicalModuleIdentifier(moduleName, slot);
             module = Module.getCallerModuleLoader().loadModule(moduleId);
         } catch (ModuleNotFoundException e) {
             throw new OperationFailedException(ConnectorLogger.ROOT_LOGGER.raModuleNotFound(moduleName, e.getMessage()), e);
