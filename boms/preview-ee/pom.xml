@@ -53,7 +53,7 @@
         <version.org.jboss.resteasy>7.0.0.Alpha4</version.org.jboss.resteasy>
         <version.org.jboss.weld.weld>6.0.0.Final</version.org.jboss.weld.weld>
         <version.org.jboss.weld.weld-api>6.0.Final</version.org.jboss.weld.weld-api>
-        <version.org.hibernate.validator>9.0.0.Beta2</version.org.hibernate.validator>
+        <version.org.hibernate.validator>9.0.0.CR1</version.org.hibernate.validator>
         <version.org.wildfly.security.jakarta.elytron-ee>4.0.0.Beta1</version.org.wildfly.security.jakarta.elytron-ee>
     </properties>
 
