@@ -10,6 +10,7 @@ import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
+import org.jboss.arquillian.testcontainers.api.DockerRequired;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.test.shared.CLIServerSetupTask;
@@ -21,7 +22,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.wildfly.test.integration.microprofile.reactive.ConfigureElytronSslContextSetupTask;
 import org.wildfly.test.integration.microprofile.reactive.EnableReactiveExtensionsSetupTask;
-import org.wildfly.test.integration.microprofile.reactive.KeystoreUtil;
 import org.wildfly.test.integration.microprofile.reactive.RunArtemisAmqpSetupTask;
 
 import java.net.URL;
@@ -34,6 +34,7 @@ import static org.jboss.as.test.shared.PermissionUtils.createPermissionsXmlAsset
 @RunWith(Arquillian.class)
 @RunAsClient
 @ServerSetup({SslAmqpWithSslConfiguredOnConnectorTestCase.RunArtemisSslUsernamePasswordSecuredSetupTask.class, EnableReactiveExtensionsSetupTask.class, ConfigureElytronSslContextSetupTask.class})
+@DockerRequired
 public class SslAmqpWithSslConfiguredOnConnectorTestCase {
     @ArquillianResource
     URL url;
@@ -67,22 +68,7 @@ public class SslAmqpWithSslConfiguredOnConnectorTestCase {
 
     static class RunArtemisSslUsernamePasswordSecuredSetupTask extends RunArtemisAmqpSetupTask {
         public RunArtemisSslUsernamePasswordSecuredSetupTask() {
-            super("messaging/amqp/broker-ssl.xml");
-        }
-
-        @Override
-        public void setup(ManagementClient managementClient, String containerId) throws Exception {
-            KeystoreUtil.createKeystores();
-            super.setup(managementClient, containerId);
-        }
-
-        @Override
-        public void tearDown(ManagementClient managementClient, String containerId) throws Exception {
-            try {
-                super.tearDown(managementClient, containerId);
-            } finally {
-                KeystoreUtil.cleanUp();
-            }
+            super("messaging/amqp/broker-ssl.xml", true);
         }
     }
 }
