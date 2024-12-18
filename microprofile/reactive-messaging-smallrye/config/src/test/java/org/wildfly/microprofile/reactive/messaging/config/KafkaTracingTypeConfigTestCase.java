@@ -10,8 +10,7 @@ public class KafkaTracingTypeConfigTestCase extends TracingTypeConfigTest {
         super("smallrye-kafka");
     }
 
-        protected void setInterceptorFactoryTracingType(TracingType tracingType) {
+    protected void setInterceptorFactoryTracingType(TracingType tracingType) {
         TracingTypeInterceptorFactory.KAFKA_TRACING_TYPE = tracingType;
     }
-
 }

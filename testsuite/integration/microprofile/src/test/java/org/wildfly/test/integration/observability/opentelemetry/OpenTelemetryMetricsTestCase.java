@@ -39,6 +39,13 @@ public class OpenTelemetryMetricsTestCase extends BaseOpenTelemetryTest {
 
     @Test
     @InSequence(1)
+    public void metricsShouldStartPublishingImmediately() throws Exception {
+        Assert.assertFalse("Metrics should be published immediately.",
+            otelCollector.fetchMetrics("jvm_class_count").isEmpty());
+    }
+
+    @Test
+    @InSequence(2)
     public void makeRequests() throws MalformedURLException {
         final String testName = "TeamCity";
         try (Client client = ClientBuilder.newClient()) {
@@ -54,7 +61,7 @@ public class OpenTelemetryMetricsTestCase extends BaseOpenTelemetryTest {
     // Request the published metrics from the OpenTelemetry Collector via the configured Prometheus exporter and check
     // a few metrics to verify there existence
     @Test
-    @InSequence(2)
+    @InSequence(3)
     public void getMetrics() throws InterruptedException {
         List<String> metricsToTest = List.of(OtelMetricResource.COUNTER_NAME);
 

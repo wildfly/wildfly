@@ -128,6 +128,14 @@
             </dependency>
 
             <dependency>
+                <groupId>org.assertj</groupId>
+                <artifactId>assertj-bom</artifactId>
+                <version>${version.org.assertj}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+
+            <dependency>
                 <groupId>org.codehaus.plexus</groupId>
                 <artifactId>plexus-utils</artifactId>
                 <version>${version.org.codehaus.plexus.plexus-utils}</version>
@@ -229,17 +237,10 @@
             </dependency>
             <dependency>
                 <groupId>org.jboss.shrinkwrap</groupId>
-                <artifactId>shrinkwrap-api</artifactId>
+                <artifactId>shrinkwrap-bom</artifactId>
                 <version>${version.org.jboss.shrinkwrap.shrinkwrap}</version>
-                <scope>test</scope>
-            </dependency>
-
-            <!-- only still used by JPA tests -->
-            <dependency>
-                <groupId>org.jboss.shrinkwrap</groupId>
-                <artifactId>shrinkwrap-impl-base</artifactId>
-                <version>${version.org.jboss.shrinkwrap.shrinkwrap}</version>
-                <scope>test</scope>
+                <type>pom</type>
+                <scope>import</scope>
             </dependency>
 
             <dependency>
@@ -298,11 +299,13 @@
                 <version>${version.org.keycloak}</version>
                 <scope>test</scope>
             </dependency>
+
             <dependency>
                 <groupId>org.mockito</groupId>
-                <artifactId>mockito-core</artifactId>
+                <artifactId>mockito-bom</artifactId>
                 <version>${version.org.mockito}</version>
-                <scope>test</scope>
+                <type>pom</type>
+                <scope>import</scope>
             </dependency>
 
             <dependency>
@@ -311,23 +314,13 @@
                 <version>${version.org.syslog4j}</version>
                 <scope>test</scope>
             </dependency>
+
             <dependency>
                 <groupId>org.testcontainers</groupId>
-                <artifactId>elasticsearch</artifactId>
+                <artifactId>testcontainers-bom</artifactId>
                 <version>${version.org.testcontainers}</version>
-                <scope>test</scope>
-            </dependency>
-            <dependency>
-                <groupId>org.testcontainers</groupId>
-                <artifactId>kafka</artifactId>
-                <version>${version.org.testcontainers}</version>
-                <scope>test</scope>
-            </dependency>
-            <dependency>
-                <groupId>org.testcontainers</groupId>
-                <artifactId>testcontainers</artifactId>
-                <version>${version.org.testcontainers}</version>
-                <scope>test</scope>
+                <type>pom</type>
+                <scope>import</scope>
             </dependency>
 
             <dependency>

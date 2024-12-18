@@ -15,41 +15,44 @@ import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 
-@ServerSetup(ConcurrentSessionServerSetup.class)
-public class ConcurrentCoarseWebFailoverTestCase extends AbstractWebFailoverTestCase {
+/**
+ * @author Radoslav Husar
+ */
+@ServerSetup(NonTransactionalSessionServerSetup.class)
+public class FineNonTransactionalWebFailoverTestCase extends AbstractWebFailoverTestCase {
 
-    private static final String MODULE_NAME = ConcurrentCoarseWebFailoverTestCase.class.getSimpleName();
+    private static final String MODULE_NAME = FineNonTransactionalWebFailoverTestCase.class.getSimpleName();
     private static final String DEPLOYMENT_NAME = MODULE_NAME + ".war";
 
-    public ConcurrentCoarseWebFailoverTestCase() {
+    public FineNonTransactionalWebFailoverTestCase() {
         super(DEPLOYMENT_NAME, TransactionMode.NON_TRANSACTIONAL);
     }
 
     @Deployment(name = DEPLOYMENT_1, managed = false, testable = false)
     @TargetsContainer(NODE_1)
     public static Archive<?> deployment1() {
-        return getDeployment();
+        return createDeployment();
     }
 
     @Deployment(name = DEPLOYMENT_2, managed = false, testable = false)
     @TargetsContainer(NODE_2)
     public static Archive<?> deployment2() {
-        return getDeployment();
+        return createDeployment();
     }
 
     @Deployment(name = DEPLOYMENT_3, managed = false, testable = false)
     @TargetsContainer(NODE_3)
     public static Archive<?> deployment3() {
-        return getDeployment();
+        return createDeployment();
     }
 
-    private static Archive<?> getDeployment() {
+    private static Archive<?> createDeployment() {
         WebArchive war = ShrinkWrap.create(WebArchive.class, DEPLOYMENT_NAME);
         war.addClasses(SimpleServlet.class, Mutable.class);
         ClusterTestUtil.addTopologyListenerDependencies(war);
         // Take web.xml from the managed test.
         war.setWebXML(DistributableTestCase.class.getPackage(), "web.xml");
-        war.addAsWebInfResource(DistributableTestCase.class.getPackage(), "jboss-all_concurrent_coarse.xml", "jboss-all.xml");
+        war.addAsWebInfResource(DistributableTestCase.class.getPackage(), "jboss-all_non-tx_fine.xml", "jboss-all.xml");
         return war;
     }
 }

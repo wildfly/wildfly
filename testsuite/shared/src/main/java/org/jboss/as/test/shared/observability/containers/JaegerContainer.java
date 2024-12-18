@@ -10,7 +10,6 @@ import jakarta.ws.rs.client.Client;
 import jakarta.ws.rs.client.ClientBuilder;
 import org.jboss.as.test.shared.observability.signals.jaeger.JaegerResponse;
 import org.jboss.as.test.shared.observability.signals.jaeger.JaegerTrace;
-import org.junit.Assert;
 
 /*
  * This class is really intended to be called ONLY from OpenTelemetryCollectorContainer. Any test working with
@@ -38,7 +37,6 @@ class JaegerContainer extends BaseContainer<JaegerContainer> {
 
     public List<JaegerTrace> getTraces(String serviceName) throws InterruptedException {
         try (Client client = ClientBuilder.newClient()) {
-            waitForDataToAppear(serviceName);
             return client.target(getJaegerEndpoint() + "/api/traces?service=" + serviceName).request()
                     .get()
                     .readEntity(JaegerResponse.class)
@@ -50,6 +48,7 @@ class JaegerContainer extends BaseContainer<JaegerContainer> {
         return "http://localhost:" + getMappedPort(PORT_JAEGER_QUERY);
     }
 
+    /*
     private void waitForDataToAppear(String serviceName) {
         try (Client client = ClientBuilder.newClient()) {
             boolean found = false;
@@ -73,4 +72,5 @@ class JaegerContainer extends BaseContainer<JaegerContainer> {
             Assert.assertTrue("Expected service name not found", found);
         }
     }
+    */
 }

@@ -18,7 +18,6 @@ import org.jboss.as.ee.subsystem.GlobalDirectoryResourceDefinition.GlobalDirecto
 import org.jboss.as.server.deployment.module.ModuleDependency;
 import org.jboss.as.server.deployment.module.ModuleSpecification;
 import org.jboss.as.server.moduleservice.ExternalModule;
-import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoader;
 import org.jboss.msc.Service;
 import org.jboss.msc.service.ServiceRegistry;
@@ -74,7 +73,7 @@ public class GlobalDirectoryDeploymentService implements Service {
             for (GlobalDirectory data : dataSorted) {
                 Path resolvedPath = data.getResolvedPath();
                 String moduleName = data.getModuleName();
-                ModuleIdentifier moduleIdentifier = externalModuleService.addExternalModule(moduleName, resolvedPath.toString(), serviceRegistry, serviceTarget);
+                String moduleIdentifier = externalModuleService.addExternalModule(moduleName, resolvedPath.toString(), serviceRegistry, serviceTarget).toString();
                 moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, moduleIdentifier, false, false, true, false));
             }
         }

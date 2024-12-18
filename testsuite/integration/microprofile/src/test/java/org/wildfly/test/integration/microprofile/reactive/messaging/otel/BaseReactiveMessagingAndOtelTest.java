@@ -137,7 +137,6 @@ public abstract class BaseReactiveMessagingAndOtelTest {
             // We should not get any traces for reactive messaging. Since traces are not synchronous,
             // sleep a little bit so that rogue ones can have time to come through.
             List<JaegerTrace> traces = getCollector().getTraces(deploymentName);
-            System.out.println(traces);
             checkJaegerTraces(JAEGER_TIMEOUT,
                     ReactiveMessagingOtelAssertUtils.createChecker(1, ReactiveMessagingOtelAssertUtils.spanSet(connectorSuffix)
                                     .zeroDisabledReceiveAndPublish()

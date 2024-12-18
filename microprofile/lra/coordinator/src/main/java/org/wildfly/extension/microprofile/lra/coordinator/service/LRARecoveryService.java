@@ -16,10 +16,43 @@ import org.jboss.msc.service.StopContext;
 import org.wildfly.extension.microprofile.lra.coordinator._private.MicroProfileLRACoordinatorLogger;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.RejectedExecutionException;
+import java.util.function.Supplier;
+
+import static org.wildfly.extension.microprofile.lra.coordinator.service.LRACoordinatorService.CONTEXT_PATH;
+
 public class LRARecoveryService implements Service {
     private static final Logger log = Logger.getLogger(LRARecoveryService.class);
 
+    private final Supplier<ExecutorService> executorSupplier;
+
     private volatile LRARecoveryModule lraRecoveryModule;
+
+    public LRARecoveryService(Supplier<ExecutorService> executorSupplier) {
+        this.executorSupplier = executorSupplier;
+    }
+
+    private void startRecoveryScan(final StartContext context) {
+        assert executorSupplier != null;
+        final ExecutorService service = executorSupplier.get();
+        final Runnable task = () -> {
+            try {
+                // run an initial recovery scan - skip periodicWorkFirstPass since it is a no-op
+                lraRecoveryModule.periodicWorkSecondPass();
+                context.complete();
+            } catch (Exception e) {
+                MicroProfileLRACoordinatorLogger.LOGGER.failedToRunRecoveryScan(CONTEXT_PATH, e);
+            }
+        };
+        try {
+            service.execute(task);
+        } catch (RejectedExecutionException e) {
+            task.run();
+        } finally {
+            context.asynchronous();
+        }
+    }
 
     @Override
     public synchronized void start(final StartContext context) throws StartException {
@@ -36,6 +69,7 @@ public class LRARecoveryService implements Service {
                     .noneMatch(rm -> rm instanceof LRARecoveryModule)) {
                     RecoveryManager.manager().addModule(lraRecoveryModule);
                 }
+                startRecoveryScan(context);
             } catch (Exception e) {
                 throw MicroProfileLRACoordinatorLogger.LOGGER.lraRecoveryServiceFailedToStart();
             }

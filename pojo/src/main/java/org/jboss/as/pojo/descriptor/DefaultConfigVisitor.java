@@ -9,7 +9,6 @@ import org.jboss.as.pojo.BeanState;
 import org.jboss.as.pojo.service.BeanInfo;
 import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
 import org.jboss.modules.Module;
-import org.jboss.modules.ModuleIdentifier;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
@@ -50,7 +49,7 @@ public class DefaultConfigVisitor extends AbstractConfigVisitor {
     }
 
     @Override
-    public Module loadModule(ModuleIdentifier identifier) {
+    public Module loadModule(String identifier) {
         try {
             return module.getModule(identifier);
         } catch (Throwable t) {

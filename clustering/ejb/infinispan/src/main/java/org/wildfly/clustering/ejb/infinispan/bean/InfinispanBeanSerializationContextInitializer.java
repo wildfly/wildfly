@@ -9,6 +9,7 @@ import org.jboss.ejb.client.SessionID;
 import org.kohsuke.MetaInfServices;
 import org.wildfly.clustering.marshalling.protostream.AbstractSerializationContextInitializer;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamMarshaller;
+import org.wildfly.clustering.marshalling.protostream.Scalar;
 import org.wildfly.clustering.marshalling.protostream.SerializationContext;
 import org.wildfly.clustering.marshalling.protostream.SerializationContextInitializer;
 
@@ -25,5 +26,6 @@ public class InfinispanBeanSerializationContextInitializer extends AbstractSeria
         ProtoStreamMarshaller<SessionID> sessionIdMarshaller = context.getMarshaller(SessionID.class);
         context.registerMarshaller(sessionIdMarshaller.wrap((Class<InfinispanBeanMetaDataKey<SessionID>>) (Class<?>) InfinispanBeanMetaDataKey.class, InfinispanBeanMetaDataKey::getId, InfinispanBeanMetaDataKey::new));
         context.registerMarshaller(sessionIdMarshaller.wrap((Class<InfinispanBeanGroupKey<SessionID>>) (Class<?>) InfinispanBeanGroupKey.class, InfinispanBeanGroupKey::getId, InfinispanBeanGroupKey::new));
+        context.registerMarshaller(Scalar.STRING.cast(String.class).toMarshaller(InfinispanBeanMetaDataFilter.class, Object::toString, InfinispanBeanMetaDataFilter::new));
     }
 }

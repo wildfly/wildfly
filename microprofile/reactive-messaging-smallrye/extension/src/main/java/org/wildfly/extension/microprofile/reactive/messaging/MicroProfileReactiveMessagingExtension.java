@@ -8,13 +8,11 @@ package org.wildfly.extension.microprofile.reactive.messaging;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 
+import io.vertx.core.logging.LoggerFactory;
 import java.util.EnumSet;
 import java.util.List;
 
-import io.netty.util.internal.logging.InternalLoggerFactory;
-import io.netty.util.internal.logging.JdkLoggerFactory;
 
-import io.vertx.core.logging.LoggerFactory;
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
 import org.jboss.as.controller.ModelVersion;
@@ -66,12 +64,6 @@ public class MicroProfileReactiveMessagingExtension implements Extension {
         ClassLoader cl = WildFlySecurityManager.getClassLoaderPrivileged(this.getClass());
         if (cl instanceof ModuleClassLoader) {
             ModuleLoader loader = ((ModuleClassLoader) cl).getModule().getModuleLoader();
-            try {
-                loader.loadModule("io.netty");
-                InternalLoggerFactory.setDefaultFactory(JdkLoggerFactory.INSTANCE);
-            } catch (ModuleLoadException e) {
-                // The netty module is not there so don't do anything
-            }
             try {
                 loader.loadModule("io.vertx.core");
                 //noinspection deprecation

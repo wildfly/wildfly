@@ -15,14 +15,15 @@ import io.undertow.server.handlers.builder.PredicatedHandler;
 import io.undertow.server.handlers.builder.PredicatedHandlersParser;
 
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.ModuleIdentifierUtil;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
+
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.modules.Module;
-import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoadException;
 import org.jboss.modules.ModuleLoader;
 import org.wildfly.extension.undertow.logging.UndertowLogger;
@@ -62,7 +63,7 @@ public class ExpressionFilterDefinition extends SimpleFilterDefinition {
         if (moduleName != null) {
             try {
                 ModuleLoader moduleLoader = Module.getBootModuleLoader();
-                Module filterModule = moduleLoader.loadModule(ModuleIdentifier.fromString(moduleName));
+                Module filterModule = moduleLoader.loadModule(ModuleIdentifierUtil.canonicalModuleIdentifier(moduleName));
                 loader = filterModule.getClassLoader();
             } catch (ModuleLoadException e) {
                 throw UndertowLogger.ROOT_LOGGER.couldNotLoadHandlerFromModule(expression, moduleName, e);
