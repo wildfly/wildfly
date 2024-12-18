@@ -74,7 +74,7 @@ public class GlobalDirectoryDeploymentService implements Service {
                 Path resolvedPath = data.getResolvedPath();
                 String moduleName = data.getModuleName();
                 String moduleIdentifier = externalModuleService.addExternalModule(moduleName, resolvedPath.toString(), serviceRegistry, serviceTarget).toString();
-                moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, moduleIdentifier, false, false, true, false));
+                moduleSpecification.addSystemDependency(ModuleDependency.Builder.of(moduleLoader, moduleIdentifier).setImportServices(true).build());
             }
         }
     }
