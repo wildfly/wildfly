@@ -53,13 +53,13 @@ public class InfinispanTimerManagementProvider implements TimerManagementProvide
 
     @Override
     public <I> Iterable<ServiceInstaller> getTimerManagerFactoryServiceInstallers(ServiceName name, TimerManagerFactoryConfiguration<I> configuration) {
-        BinaryServiceConfiguration beanCacheConfiguration = this.cacheConfiguration.withChildName(configuration.getTimerServiceConfiguration().getName());
+        BinaryServiceConfiguration timerManagerCacheConfiguration = this.cacheConfiguration.withChildName(configuration.getTimerServiceConfiguration().getName());
 
-        ServiceInstaller cacheConfigurationInstaller = new TemplateConfigurationServiceInstallerFactory(this).apply(this.cacheConfiguration, beanCacheConfiguration);
-        ServiceInstaller cacheInstaller = CacheServiceInstallerFactory.INSTANCE.apply(beanCacheConfiguration);
+        ServiceInstaller cacheConfigurationInstaller = new TemplateConfigurationServiceInstallerFactory(this).apply(this.cacheConfiguration, timerManagerCacheConfiguration);
+        ServiceInstaller cacheInstaller = CacheServiceInstallerFactory.INSTANCE.apply(timerManagerCacheConfiguration);
 
-        ServiceDependency<CacheContainerCommandDispatcherFactory> commandDispatcherFactory = beanCacheConfiguration.getServiceDependency(ClusteringServiceDescriptor.COMMAND_DISPATCHER_FACTORY).map(CacheContainerCommandDispatcherFactory.class::cast);
-        ServiceDependency<Cache<?, ?>> cache = beanCacheConfiguration.getServiceDependency(InfinispanServiceDescriptor.CACHE);
+        ServiceDependency<CacheContainerCommandDispatcherFactory> commandDispatcherFactory = timerManagerCacheConfiguration.getServiceDependency(ClusteringServiceDescriptor.COMMAND_DISPATCHER_FACTORY).map(CacheContainerCommandDispatcherFactory.class::cast);
+        ServiceDependency<Cache<?, ?>> cache = timerManagerCacheConfiguration.getServiceDependency(InfinispanServiceDescriptor.CACHE);
         InfinispanTimerManagerFactoryConfiguration<I> factoryConfiguration = new InfinispanTimerManagerFactoryConfiguration<>() {
             @Override
             public TimerServiceConfiguration getTimerServiceConfiguration() {

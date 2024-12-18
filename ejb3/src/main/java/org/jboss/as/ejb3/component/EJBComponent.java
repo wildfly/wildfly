@@ -584,6 +584,7 @@ public abstract class EJBComponent extends BasicComponent implements ServerActiv
         getShutDownInterceptorFactory().shutdown();
         this.timerService.stop();
         this.done();
+        this.timerService.close();
     }
 
     @Override
