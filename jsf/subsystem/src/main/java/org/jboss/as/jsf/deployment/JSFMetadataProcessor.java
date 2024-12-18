@@ -8,6 +8,7 @@ package org.jboss.as.jsf.deployment;
 import java.util.ArrayList;
 import java.util.List;
 
+import jakarta.faces.application.ViewHandler;
 import org.jboss.as.controller.ModuleIdentifierUtil;
 import org.jboss.as.jsf.logging.JSFLogger;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
@@ -28,6 +29,7 @@ import com.sun.faces.config.WebConfiguration;
 public class JSFMetadataProcessor implements DeploymentUnitProcessor {
 
     public static final String JAVAX_FACES_WEBAPP_FACES_SERVLET = "jakarta.faces.webapp.FacesServlet";
+    private static final int DEFAULT_BUFFERS_IZE = -1;
 
     private final Boolean disallowDoctypeDecl;
 
@@ -86,6 +88,12 @@ public class JSFMetadataProcessor implements DeploymentUnitProcessor {
                 }
             }
         }
+        // Set a default buffer size as 1024 is too small
+        // First check the legacy facelets.BUFFER_SIZE property which is required for backwards compatibility
+        if (!hasContextParam(webMetaData, "facelets.BUFFER_SIZE")) {
+            // The legacy parameter has not been set, set a default buffer if the current parameter name has not been set.
+            setContextParameterIfAbsent(webMetaData, ViewHandler.FACELETS_BUFFER_SIZE_PARAM_NAME, Integer.toString(DEFAULT_BUFFERS_IZE));
+        }
     }
 
     private static String setContextParameterIfAbsent(final JBossWebMetaData webMetaData, final String name, final String value) {
@@ -105,5 +113,14 @@ public class JSFMetadataProcessor implements DeploymentUnitProcessor {
         param.setParamValue(value);
         contextParams.add(param);
         return value;
+    }
+
+    private static boolean hasContextParam(final JBossWebMetaData webMetaData, final String name) {
+        final List<ParamValueMetaData> contextParams = webMetaData.getContextParams();
+        if (contextParams == null) {
+            return false;
+        }
+        return contextParams.stream()
+                .anyMatch(value -> name.equals(value.getParamName()));
     }
 }
