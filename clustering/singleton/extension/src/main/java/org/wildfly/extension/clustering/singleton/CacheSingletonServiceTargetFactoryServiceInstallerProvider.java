@@ -9,7 +9,6 @@ import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
-import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
@@ -48,7 +47,7 @@ public class CacheSingletonServiceTargetFactoryServiceInstallerProvider implemen
 
     @SuppressWarnings({ "deprecation", "removal" })
     @Override
-    public Iterable<ServiceInstaller> apply(CapabilityServiceSupport support, BinaryServiceConfiguration configuration) {
+    public Iterable<ServiceInstaller> apply(BinaryServiceConfiguration configuration) {
         ServiceDependency<CommandDispatcherFactory<GroupMember>> dispatcherFactory = ServiceDependency.on(configuration.resolveServiceName(ClusteringServiceDescriptor.COMMAND_DISPATCHER_FACTORY));
         ServiceDependency<ServiceProviderRegistrar<ServiceName, GroupMember>> registrar = ServiceDependency.on(configuration.resolveServiceName(ClusteringServiceDescriptor.SERVICE_PROVIDER_REGISTRAR)).map(ServiceProviderRegistrar.class::cast);
         SingletonServiceTargetContext context = new SingletonServiceTargetContext() {

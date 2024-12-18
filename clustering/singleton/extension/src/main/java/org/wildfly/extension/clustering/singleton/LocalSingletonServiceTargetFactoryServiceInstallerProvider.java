@@ -10,7 +10,6 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 
 import org.jboss.as.controller.ServiceNameFactory;
-import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
@@ -42,7 +41,7 @@ import org.wildfly.subsystem.service.ServiceInstaller;
 public class LocalSingletonServiceTargetFactoryServiceInstallerProvider implements LocalCacheServiceInstallerProvider {
 
     @Override
-    public Iterable<ServiceInstaller> apply(CapabilityServiceSupport support, BinaryServiceConfiguration configuration) {
+    public Iterable<ServiceInstaller> apply(BinaryServiceConfiguration configuration) {
         ServiceDependency<GroupMember> member = ServiceDependency.<Group<GroupMember>>on(ServiceNameFactory.resolveServiceName(ClusteringServiceDescriptor.GROUP, ModelDescriptionConstants.LOCAL)).map(Group::getLocalMember);
         Function<ServiceBuilder<?>, Consumer<Singleton>> discardingStateProviderFactory = new Function<>() {
             @Override

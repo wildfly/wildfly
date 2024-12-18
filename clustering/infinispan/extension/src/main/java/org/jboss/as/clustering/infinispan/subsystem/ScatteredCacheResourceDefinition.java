@@ -11,12 +11,12 @@ import java.util.function.UnaryOperator;
 import org.infinispan.Cache;
 import org.infinispan.configuration.cache.CacheMode;
 import org.jboss.as.clustering.controller.SimpleResourceDescriptorConfigurator;
-import org.jboss.as.clustering.controller.validation.IntRangeValidatorBuilder;
-import org.jboss.as.clustering.controller.validation.LongRangeValidatorBuilder;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.client.helpers.MeasurementUnit;
+import org.jboss.as.controller.operations.validation.IntRangeValidator;
+import org.jboss.as.controller.operations.validation.LongRangeValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -39,7 +39,7 @@ public class ScatteredCacheResourceDefinition extends SegmentedCacheResourceDefi
         BIAS_LIFESPAN("bias-lifespan", ModelType.LONG, new ModelNode(TimeUnit.MINUTES.toMillis(5))) {
             @Override
             public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
-                return builder.setValidator(new LongRangeValidatorBuilder().min(0).configure(builder).build())
+                return builder.setValidator(LongRangeValidator.NON_NEGATIVE)
                         .setMeasurementUnit(MeasurementUnit.MILLISECONDS)
                         ;
             }
@@ -47,7 +47,7 @@ public class ScatteredCacheResourceDefinition extends SegmentedCacheResourceDefi
         INVALIDATION_BATCH_SIZE("invalidation-batch-size", ModelType.INT, new ModelNode(128)) {
             @Override
             public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
-                return builder.setValidator(new IntRangeValidatorBuilder().min(0).configure(builder).build())
+                return builder.setValidator(new IntRangeValidator(0))
                         ;
             }
         },
