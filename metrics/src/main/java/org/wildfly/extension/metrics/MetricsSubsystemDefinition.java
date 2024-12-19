@@ -41,7 +41,7 @@ public class MetricsSubsystemDefinition extends PersistentResourceDefinition {
 
     public static final RuntimeCapability<Void> METRICS_REGISTRY_RUNTIME_CAPABILITY = RuntimeCapability.Builder.of("org.wildfly.extension.metrics.registry", WildFlyMetricRegistry.class)
             .build();
-    static final RuntimeCapability METRICS_CAPABILITY =
+    static final RuntimeCapability<Void> METRICS_CAPABILITY =
             RuntimeCapability.Builder.of("org.wildfly.management.http-context.metrics").build();
 
     public static final ServiceName WILDFLY_COLLECTOR = METRICS_COLLECTOR_RUNTIME_CAPABILITY.getCapabilityServiceName();

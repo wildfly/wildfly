@@ -64,6 +64,10 @@ class MicrometerSubsystemRegistrar implements SubsystemResourceDefinitionRegistr
     private static final String MICROMETER_MODULE = "org.wildfly.extension.micrometer";
     private static final String MICROMETER_API_MODULE = "org.wildfly.micrometer.deployment";
 
+    private static final String CAPABILITY_NAME_METRICS = "org.wildfly.extension.metrics.scan";
+    private static final String CAPABILITY_NAME_OPENTELEMETRY = "org.wildfly.extension.opentelemetry";
+
+
     static final PathElement PATH = SubsystemResourceDefinitionRegistrar.pathElement(MicrometerConfigurationConstants.NAME);
     public static final ParentResourceDescriptionResolver RESOLVER =
             new SubsystemResourceDescriptionResolver(MicrometerConfigurationConstants.NAME, MicrometerSubsystemRegistrar.class);
@@ -117,17 +121,22 @@ class MicrometerSubsystemRegistrar implements SubsystemResourceDefinitionRegistr
         ManagementResourceRegistration registration =
                 parent.registerSubsystemModel(ResourceDefinition.builder(ResourceRegistration.of(PATH), RESOLVER).build());
         ResourceDescriptor descriptor = ResourceDescriptor.builder(RESOLVER)
-                .withRuntimeHandler(ResourceOperationRuntimeHandler.configureService(this))
                 .addCapability(MICROMETER_COLLECTOR_RUNTIME_CAPABILITY)
+
+                .withRuntimeHandler(ResourceOperationRuntimeHandler.configureService(this))
                 .addAttributes(List.of(ENDPOINT, STEP, EXPOSED_SUBSYSTEMS))
-                .withDeploymentChainContributor(target -> {
-                    target.addDeploymentProcessor(MicrometerConfigurationConstants.NAME, DEPENDENCIES, DEPENDENCIES_MICROMETER,
-                            new MicrometerDependencyProcessor());
-                    target.addDeploymentProcessor(MicrometerConfigurationConstants.NAME, POST_MODULE, POST_MODULE_MICROMETER,
-                            new MicrometerDeploymentProcessor(deploymentConfig.get()));
-                })
                 .withAddOperationRestartFlag(OperationEntry.Flag.RESTART_ALL_SERVICES)
                 .withRemoveOperationRestartFlag(OperationEntry.Flag.RESTART_ALL_SERVICES)
+                .withDeploymentChainContributor(target -> {
+                    target.addDeploymentProcessor(MicrometerConfigurationConstants.NAME,
+                        DEPENDENCIES,
+                        DEPENDENCIES_MICROMETER,
+                        new MicrometerDependencyProcessor());
+                    target.addDeploymentProcessor(MicrometerConfigurationConstants.NAME,
+                        POST_MODULE,
+                        POST_MODULE_MICROMETER,
+                        new MicrometerDeploymentProcessor(deploymentConfig.get()));
+                })
                 .build();
 
         ManagementResourceRegistrar.of(descriptor).register(registration);
@@ -137,6 +146,13 @@ class MicrometerSubsystemRegistrar implements SubsystemResourceDefinitionRegistr
 
     @Override
     public ResourceServiceInstaller configure(OperationContext context, ModelNode model) throws OperationFailedException {
+        if (context.hasOptionalCapability(CAPABILITY_NAME_METRICS, MICROMETER_COLLECTOR_RUNTIME_CAPABILITY, null) ||
+            context.hasOptionalCapability(CAPABILITY_NAME_OPENTELEMETRY, MICROMETER_COLLECTOR_RUNTIME_CAPABILITY, null)) {
+            if (Boolean.parseBoolean(System.getProperty("wildfly.multiple.metrics.warn", "true"))) {
+                MICROMETER_LOGGER.multipleMetricsSystemsEnabled();
+            }
+        }
+
         List<String> exposedSubsystems = MicrometerSubsystemRegistrar.EXPOSED_SUBSYSTEMS.unwrap(context, model);
         boolean exposeAnySubsystem = exposedSubsystems.remove("*");
         String endpoint = MicrometerSubsystemRegistrar.ENDPOINT.resolveModelAttribute(context, model).asStringOrNull();
