@@ -27,8 +27,8 @@ ifdef::basebackend-html[toc::[]]
 
 = Different flavors of WildFly
 
-Beginning with the WildFly 22 release, the WildFly project began producing two variants of
-its landmark application server -- the standard "WildFly" variant and the new "WildFly Preview".
+Beginning with the WildFly 22 release, the WildFly project produces two variants of
+its landmark application server -- the standard "WildFly" variant and the newer "WildFly Preview".
 
 The standard "WildFly" variant is the classic server that users have been familiar with for many
 years now. It's a very mature server, with a lot of care taken to ensure new features are fully
@@ -46,7 +46,7 @@ The expectation is on any given release date, both standard WildFly and WildFly 
 [WARNING]
 ====
 
-A WildFly Preview release will have the same version number and suffix (Beta, Final, etc) as the
+A WildFly Preview release will have the same version number and suffix (Beta, Final, etc.) as the
 main WildFly release, but regardless of the suffix, a WildFly Preview release should be treated
 as a Technical Preview release.
 ====
@@ -85,7 +85,7 @@ The following table lists the various Jakarta technologies offered by WildFly Pr
 
 |Jakarta Annotations| 3.0 |11
 
-|Jakarta Authentication| 3.0 |10
+|Jakarta Authentication| 3.1 |11
 
 |Jakarta Authorization| 3.0 |11
 
@@ -186,15 +186,6 @@ This deployment transformation feature will be removed from WildFly Preview in a
 that the WildFly developers will offer a separate Galleon feature pack that can be used to add this behavior into both
 standard WildFly and WildFly Preview.
 
-== WildFly Preview and Java SE 11
-
-Standard WildFly supports Java SE 11, 17 and 21, but, as a result of this shift to EE 11 APIs, *WildFly Preview no longer supports running on Java SE 11.* Going forward, if you want to use WildFly Preview you'll need to use SE 17 or higher.  A number of EE 11 APIs no longer produce SE 11 compatible binaries, which means an EE 11 runtime can no longer support SE 11.
-
-[NOTE]
-====
-This removal of support for SE 11 has no impact on standard WildFly. Standard WildFly continues to support running on SE 11. We do, however, encourage users to move to SE 17 or later, as the general Java ecosystem is moving away from SE 11 support, and eventually standard WildFly will as well.
-====
-
 == BOMs
 
 WildFly provides BOMs that users can use when developing applications. We provide different BOMs for standard WildFly and WildFly Preview, with different Maven artifact ids.
@@ -243,5 +234,7 @@ configuration to act as a primary or backup. An embedded messaging broker also h
 requirements than a server primarily dedicated to handling HTTP requests would have. Note however that running an
 embedded broker is still supported. We've added to the $WILDFLY_HOME/docs/examples/configs folder an example
 ``standalone-activemq-embedded.xml`` configuration showing its use.
+* WildFly Preview provides the link:Admin_Guide{outfilesuffix}#Micrometer_Metrics[`micrometer` subsystem] in its out-of-the-box `standalone.xml`, `standalone-ha.xml`, `standalone-full.xml` and `standalone-full-ha.xml` configuration files, while standard WildFly instead provides the basic link:Admin_Guide{outfilesuffix}#MicroProfile_Metrics_SmallRye[`metrics` subsystem].
 * WildFly Preview includes the `jakarta-data` subsystem in its out-of-the-box `standalone.xml`, `standalone-ha.xml`, `standalone-full.xml`, `standalone-full-ha.xml`, `standalone-microprofile.xml` and `standalone-microprofile-ha.xml` configuration files. It also include the subsystem in the out-of-the-box `domain.xml` configuration file's `default`, `ha`, `full` and `full-ha` profiles. Standard WildFly includes support for the `jakarta-data` subsystem but does not include it in any out-of-the-box-configuration file. link:https://jakarta.ee/specifications/data/[Jakarta Data] is a new Jakarta specification that will be part of Jakarta EE 11.
+* WildFly Preview includes a new xref:Admin_Guide.adoc#Feature_stability_levels[`preview` stability] `org.wildfly.extension.vertx` extension and its `vertx` subsystem, along with a new `vertx` Galleon layer so you can provision it in a slimmed server. This subsystem can be used to configure the Vert.x instance used by our OpenTelemetry integration.
 * The Hibernate ORM integration used by the link:Developer_Guide{outfilesuffix}#JPA_Reference_Guide[JPA subsystem's] Hibernate Search feature supports using outbox polling as a coordination strategy for automatic indexing.

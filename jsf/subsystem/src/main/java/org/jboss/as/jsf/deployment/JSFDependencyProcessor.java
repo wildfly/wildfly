@@ -79,7 +79,7 @@ public class JSFDependencyProcessor implements DeploymentUnitProcessor {
         addJSFAPI(jsfVersion, moduleSpecification, moduleLoader);
         addJSFImpl(jsfVersion, moduleSpecification, moduleLoader);
 
-        moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, JSF_SUBSYSTEM, false, false, true, false));
+        moduleSpecification.addSystemDependency(ModuleDependency.Builder.of(moduleLoader, JSF_SUBSYSTEM).setImportServices(true).build());
 
         addJSFInjection(jsfVersion, moduleSpecification, moduleLoader);
 
@@ -93,17 +93,15 @@ public class JSFDependencyProcessor implements DeploymentUnitProcessor {
         if (jsfVersion.equals(JsfVersionMarker.WAR_BUNDLES_JSF_IMPL)) return;
 
         String jsfModule = moduleIdFactory.getApiModId(jsfVersion);
-        ModuleDependency jsfAPI = new ModuleDependency(moduleLoader, jsfModule, false, false, false, false);
+        ModuleDependency jsfAPI = ModuleDependency.Builder.of(moduleLoader, jsfModule).build();
         moduleSpecification.addSystemDependency(jsfAPI);
     }
 
-    private void addJSFImpl(String jsfVersion,
-            ModuleSpecification moduleSpecification,
-            ModuleLoader moduleLoader) {
+    private void addJSFImpl(String jsfVersion, ModuleSpecification moduleSpecification, ModuleLoader moduleLoader) {
         if (jsfVersion.equals(JsfVersionMarker.WAR_BUNDLES_JSF_IMPL)) return;
 
         String jsfModule = moduleIdFactory.getImplModId(jsfVersion);
-        ModuleDependency jsfImpl = new ModuleDependency(moduleLoader, jsfModule, false, false, true, false);
+        ModuleDependency jsfImpl = ModuleDependency.Builder.of(moduleLoader, jsfModule).setImportServices(true).build();
         jsfImpl.addImportFilter(PathFilters.getMetaInfFilter(), true);
         moduleSpecification.addSystemDependency(jsfImpl);
     }
@@ -113,7 +111,7 @@ public class JSFDependencyProcessor implements DeploymentUnitProcessor {
         if (jsfVersion.equals(JsfVersionMarker.WAR_BUNDLES_JSF_IMPL)) return;
 
         String jsfInjectionModule = moduleIdFactory.getInjectionModId(jsfVersion);
-        ModuleDependency jsfInjectionDependency = new ModuleDependency(moduleLoader, jsfInjectionModule, false, true, true, false);
+        ModuleDependency jsfInjectionDependency = ModuleDependency.Builder.of(moduleLoader, jsfInjectionModule).setExport(true).setImportServices(true).build();
 
         try {
             if (isJSF12(jsfInjectionDependency, jsfInjectionModule.toString())) {

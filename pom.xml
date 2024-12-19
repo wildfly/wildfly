@@ -283,7 +283,6 @@
         <version.httpunit>1.7.3</version.httpunit>
         <legacy.version.io.netty>4.0.19.Final</legacy.version.io.netty>
         <version.io.rest-assured>5.5.0</version.io.rest-assured>
-        <version.org.keycloak.keycloak-services>23.0.7</version.org.keycloak.keycloak-services>
         <legacy.version.jakarta.enterprise>2.0.2</legacy.version.jakarta.enterprise>
         <legacy.version.jakarta.inject.jakarta.inject-api>1.0.5</legacy.version.jakarta.inject.jakarta.inject-api>
         <version.jaxen>1.1.6</version.jaxen>
@@ -313,7 +312,7 @@
         <legacy.version.org.jboss.spec.javax.jms.jboss-jms-api_2.0_spec>2.0.0.Final</legacy.version.org.jboss.spec.javax.jms.jboss-jms-api_2.0_spec>
         <version.org.jboss.spec.javax.servlet.jboss-servlet-api_4.0_spec>2.0.0.Final</version.org.jboss.spec.javax.servlet.jboss-servlet-api_4.0_spec>
         <version.org.junit>5.10.5</version.org.junit>
-        <version.org.keycloak>25.0.2</version.org.keycloak>
+        <version.org.keycloak>25.0.6</version.org.keycloak>
         <version.org.mockito>5.14.2</version.org.mockito>
         <version.org.syslog4j>0.9.30</version.org.syslog4j>
         <version.org.testcontainers>1.20.4</version.org.testcontainers>
@@ -369,7 +368,7 @@
         <version.io.github.resilience4j>2.2.0</version.io.github.resilience4j>
         <version.io.grpc>1.68.0</version.io.grpc>
         <version.io.micrometer>1.14.2</version.io.micrometer>
-        <version.io.netty>4.1.115.Final</version.io.netty>
+        <version.io.netty>4.1.116.Final</version.io.netty>
         <version.io.opentelemetry.instrumentation>2.8.0</version.io.opentelemetry.instrumentation>
         <version.io.opentelemetry.opentelemetry-semconv>1.25.0-alpha</version.io.opentelemetry.opentelemetry-semconv>
         <version.io.opentelemetry.opentelemetry>1.42.1</version.io.opentelemetry.opentelemetry>
@@ -517,8 +516,7 @@
         <version.org.lz4.lz4-java>1.8.0</version.org.lz4.lz4-java>
         <version.org.opensaml.opensaml>4.3.0</version.org.opensaml.opensaml>
         <version.org.ow2.asm>9.7.1</version.org.ow2.asm>
-        <version.org.reactivestreams>1.0.4</version.org.reactivestreams>
-        <version.org.wildfly.clustering>5.0.2.Final</version.org.wildfly.clustering>
+        <version.org.wildfly.clustering>5.0.3.Final</version.org.wildfly.clustering>
         <version.org.wildfly.core>27.0.0.Beta7</version.org.wildfly.core>
         <version.org.wildfly.http-client>2.0.7.Final</version.org.wildfly.http-client>
         <version.org.wildfly.launcher>1.0.0.Final</version.org.wildfly.launcher>
@@ -818,7 +816,7 @@
             <dependency>
                 <groupId>org.keycloak</groupId>
                 <artifactId>keycloak-services</artifactId>
-                <version>${version.org.keycloak.keycloak-services}</version>
+                <version>${version.org.keycloak}</version>
                 <scope>test</scope>
             </dependency>
 

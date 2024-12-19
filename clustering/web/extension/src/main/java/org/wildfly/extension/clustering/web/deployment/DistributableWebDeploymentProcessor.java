@@ -50,35 +50,35 @@ public class DistributableWebDeploymentProcessor implements DeploymentUnitProces
             ModuleSpecification specification = unit.getAttachment(Attachments.MODULE_SPECIFICATION);
             ModuleLoader loader = Module.getBootModuleLoader();
 
-            specification.addSystemDependency(new ModuleDependency(loader, WEB_API, false, false, false, false));
+            specification.addSystemDependency(ModuleDependency.Builder.of(loader, WEB_API).build());
 
             if (provider.getSessionManagementConfiguration().getMarshallerFactory() == SessionMarshallerFactory.PROTOSTREAM) {
-                specification.addSystemDependency(new ModuleDependency(loader, PROTOSTREAM, false, false, false, false));
-                specification.addSystemDependency(new ModuleDependency(loader, UNDERTOW, false, false, true, false));
+                specification.addSystemDependency(ModuleDependency.Builder.of(loader, PROTOSTREAM).build());
+                specification.addSystemDependency(ModuleDependency.Builder.of(loader, UNDERTOW).setImportServices(true).build());
 
                 CapabilityServiceSupport support = unit.getAttachment(Attachments.CAPABILITY_SERVICE_SUPPORT);
                 if (support.hasCapability(Capabilities.WELD_CAPABILITY_NAME)) {
                     try {
                         WeldCapability weldCapability = support.getCapabilityRuntimeAPI(Capabilities.WELD_CAPABILITY_NAME, WeldCapability.class);
                         if (weldCapability.isPartOfWeldDeployment(unit)) {
-                            specification.addSystemDependency(new ModuleDependency(loader, EJB_CLIENT, false, false, true, false));
-                            specification.addSystemDependency(new ModuleDependency(loader, EL_EXPRESSLY, false, false, true, false));
-                            specification.addSystemDependency(new ModuleDependency(loader, WELD_CORE, false, false, true, false));
-                            specification.addSystemDependency(new ModuleDependency(loader, WELD_EJB, false, false, true, false));
-                            specification.addSystemDependency(new ModuleDependency(loader, WELD_WEB, false, false, true, false));
+                            specification.addSystemDependency(ModuleDependency.Builder.of(loader, EJB_CLIENT).setImportServices(true).build());
+                            specification.addSystemDependency(ModuleDependency.Builder.of(loader, EL_EXPRESSLY).setImportServices(true).build());
+                            specification.addSystemDependency(ModuleDependency.Builder.of(loader, WELD_CORE).setImportServices(true).build());
+                            specification.addSystemDependency(ModuleDependency.Builder.of(loader, WELD_EJB).setImportServices(true).build());
+                            specification.addSystemDependency(ModuleDependency.Builder.of(loader, WELD_WEB).setImportServices(true).build());
                         }
                     } catch (NoSuchCapabilityException e) {
                         throw new IllegalStateException(e);
                     }
                 }
             } else {
-                specification.addSystemDependency(new ModuleDependency(loader, MARSHALLING_API, false, false, false, false));
+                specification.addSystemDependency(ModuleDependency.Builder.of(loader, MARSHALLING_API).build());
             }
 
             if (JsfVersionMarker.getVersion(unit).equals(JsfVersionMarker.JSF_4_0)) {
-                specification.addSystemDependency(new ModuleDependency(loader, EL_EXPRESSLY, false, false, true, false));
-                specification.addSystemDependency(new ModuleDependency(loader, FACES_API, false, false, true, false));
-                specification.addSystemDependency(new ModuleDependency(loader, FACES_MOJARRA, false, false, true, false));
+                specification.addSystemDependency(ModuleDependency.Builder.of(loader, EL_EXPRESSLY).setImportServices(true).build());
+                specification.addSystemDependency(ModuleDependency.Builder.of(loader, FACES_API).setImportServices(true).build());
+                specification.addSystemDependency(ModuleDependency.Builder.of(loader, FACES_MOJARRA).setImportServices(true).build());
             }
         }
     }
