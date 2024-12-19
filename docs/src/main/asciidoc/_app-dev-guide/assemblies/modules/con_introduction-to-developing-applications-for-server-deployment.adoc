@@ -1,0 +1,21 @@
+:_newdoc-version: 2.15.0
+:_template-generated: 2023-12-4
+
+:_mod-docs-content-type: CONCEPT
+
+[id="introduction-to-developing-applications-for-server-deployment_{context}"]
+= Introduction to developing applications for {ProductShortName} deployment
+
+[role="_abstract"]
+
+To develop applications for {ProductShortName} deployment, you need a Java development kit (JDK), Maven, and optionally have {ProductShortName} installed. You can deploy your application to a locally installed {ProductShortName}, if available, or you can provision a {ProductShortName} server with your application deployed by using the {wildflyMavenPluginArtifactID}. You can also deploy your application to a cloud platform such as {cloudPlatform}.
+
+To create, deploy, and test a Hello World application on {ProductShortName}, follow these procedures:
+
+* xref:creating-a-maven-project-for-a-hello-world-application_default[Creating a Maven project for a Hello World application]
+
+* xref:creating-a-hello-world-servlet_default[Creating a Hello World servlet]
+
+* xref:deploying-an-application-to-the-server_default[Building and deploying an application to the server]
+
+* xref:testing-an-application-deployed-to-server_default[Testing an application deployed on {ProductShortName]
