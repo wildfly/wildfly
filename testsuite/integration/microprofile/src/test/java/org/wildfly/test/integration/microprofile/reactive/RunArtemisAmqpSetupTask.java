@@ -5,24 +5,25 @@
 
 package org.wildfly.test.integration.microprofile.reactive;
 
-import org.apache.activemq.artemis.core.security.CheckType;
-import org.apache.activemq.artemis.core.security.Role;
-import org.apache.activemq.artemis.core.server.embedded.EmbeddedActiveMQ;
-import org.apache.activemq.artemis.spi.core.security.ActiveMQSecurityManager;
-import org.jboss.as.arquillian.api.ServerSetupTask;
-import org.jboss.as.arquillian.container.ManagementClient;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYSTEM_PROPERTY;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
+import static org.wildfly.test.integration.microprofile.reactive.KeystoreUtil.SERVER_KEYSTORE_PATH;
 
-import java.io.BufferedWriter;
-import java.io.FileWriter;
-import java.net.URL;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.List;
-import java.util.Set;
+import java.util.Map;
 
-import static java.util.concurrent.TimeUnit.SECONDS;
-import static org.awaitility.Awaitility.await;
+import org.jboss.arquillian.testcontainers.api.DockerRequired;
+import org.jboss.as.arquillian.api.ServerSetupTask;
+import org.jboss.as.arquillian.container.ManagementClient;
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.operations.common.Util;
+import org.jboss.as.model.test.ModelTestUtils;
+import org.jboss.dmr.ModelNode;
+import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.utility.DockerImageName;
+import org.testcontainers.utility.MountableFile;
 
 /**
  * Setup task to start an embedded version of Artemis for AMQP support.
@@ -32,61 +33,71 @@ import static org.awaitility.Awaitility.await;
  *
  * @author <a href="mailto:kabir.khan@jboss.com">Kabir Khan</a>
  */
+@DockerRequired
 public class RunArtemisAmqpSetupTask implements ServerSetupTask {
-    private static volatile EmbeddedActiveMQ server;
+    private static GenericContainer<?> container;
+    private volatile boolean copyKeystore = false;
+
     private volatile String brokerXml = "messaging/amqp/broker.xml";
-    private volatile Path replacedBrokerXml;
+
+    private static final int AMQP_PORT = 5672;
+    private static final PathElement AMQP_PORT_PATH = PathElement.pathElement(SYSTEM_PROPERTY, "calculated.amqp.port");
 
     public RunArtemisAmqpSetupTask() {
     }
 
-    public RunArtemisAmqpSetupTask(String brokerXml) {
+    public RunArtemisAmqpSetupTask(String brokerXml, boolean copyKeystore) {
         this.brokerXml = brokerXml;
+        this.copyKeystore = copyKeystore;
     }
 
     @Override
     public void setup(ManagementClient managementClient, String containerId) throws Exception {
         try {
-            server = new EmbeddedActiveMQ();
-            URL url = RunArtemisAmqpSetupTask.class.getResource(brokerXml);
-            Path path = Paths.get(url.toURI());
-            List<String> lines = Files.readAllLines(path);
 
-            // The broker.xml expects an absolute path to the server keystore. So copy it to a new location,
-            // and replace the '$SERVER_KEYSTORE$' placeholder with the actual location
-            if (!Files.exists(KeystoreUtil.KEY_STORE_DIRECTORY_PATH)) {
-                Files.createDirectories(KeystoreUtil.KEY_STORE_DIRECTORY_PATH);
+            DockerImageName imageName = DockerImageName.parse("quay.io/artemiscloud/activemq-artemis-broker:1.0.32");
+            container = new GenericContainer<>(imageName);
+            container.addExposedPort(AMQP_PORT);
+            container.withEnv(Map.of(
+                    "AMQ_ROLE", "amq",
+                    "AMQ_USER", "artemis",
+                    "AMQ_PASSWORD", "artemis",
+                    "SCRIPT_DEBUG", "true"));
+            // Grant all possible file permissions since it ends up under the wrong user, and I can't find how to change
+            // the owner/group with testcontainers
+            Path path = Paths.get(RunArtemisAmqpSetupTask.class.getResource("messaging/amqp/launch.sh").toURI());
+            container.withCopyFileToContainer(
+                    MountableFile.forHostPath(path, 0777),
+                    "/opt/amq/bin/launch.sh"
+            );
+            path = Paths.get(RunArtemisAmqpSetupTask.class.getResource(brokerXml).toURI());
+            container.withCopyFileToContainer(
+                    MountableFile.forHostPath(path),
+                    "/home/jboss/config/broker.xml"
+            );
+            if (copyKeystore) {
+                KeystoreUtil.createKeystores();
+                // Copy the keystore files to the expected container location
+                // The subclass should have configured the keystore in the broker.xml
+                container.withCopyFileToContainer(
+                    MountableFile.forHostPath(SERVER_KEYSTORE_PATH.getParent()),
+                    "/home/jboss/config/");
+
+
             }
-            replacedBrokerXml = Files.createTempFile(KeystoreUtil.KEY_STORE_DIRECTORY_PATH, "broker", "xml");
-            try (BufferedWriter writer = new BufferedWriter(new FileWriter(replacedBrokerXml.toFile()))) {
-                String serverKeystorePath = KeystoreUtil.SERVER_KEYSTORE_PATH.toAbsolutePath().normalize().toString();
-                // On Windows this will parse to e.g: C:\some\where. The Artemis broker.xml parser does not like this
-                // so attempt to change this to C:/some/where
-                serverKeystorePath = serverKeystorePath.replaceAll("\\\\", "/");
+            container.start();
 
-                for (String line : lines) {
-                    String replaced = line.replace("$SERVER_KEYSTORE$", serverKeystorePath);
-                    writer.write(replaced);
-                    writer.newLine();
-                }
-            }
-            String brokerXml = replacedBrokerXml.toUri().toURL().toExternalForm();
-
-            server.setConfigResourcePath(brokerXml);
-            server.setSecurityManager(new ActiveMQSecurityManager() {
-                @Override
-                public boolean validateUser(String username, String password) {
-                    return true;
-                }
-
-                @Override
-                public boolean validateUserAndRole(String username, String password, Set<Role> set, CheckType checkType) {
-                    return true;
-                }
-            });
-            server.start();
-            await().atMost(60, SECONDS).until(() -> server.getActiveMQServer().isStarted());
+            // Set the calculated port as a property in the model
+            int amqpPort = container.getMappedPort(AMQP_PORT);
+            ModelNode op = Util.createAddOperation(PathAddress.pathAddress(AMQP_PORT_PATH), Map.of(VALUE, new ModelNode(amqpPort)));
+            ModelNode result =  managementClient.getControllerClient().execute(op);
+            ModelTestUtils.checkOutcome(result);
         } catch (Exception e) {
+            try {
+                tearDown(managementClient, containerId);
+            } catch (Exception ex) {
+                e.printStackTrace();
+            }
             throw new RuntimeException(e);
         }
     }
@@ -95,14 +106,17 @@ public class RunArtemisAmqpSetupTask implements ServerSetupTask {
     @Override
     public void tearDown(ManagementClient managementClient, String containerId) throws Exception {
         try {
-            if (server != null) {
-                server.stop();
+            ModelNode op = Util.createRemoveOperation(PathAddress.pathAddress(AMQP_PORT_PATH));
+            managementClient.getControllerClient().execute(op);
+
+            if (container != null) {
+                container.stop();
             }
         } catch (Exception e) {
             throw new RuntimeException(e);
         } finally {
-            if (Files.exists(replacedBrokerXml)) {
-                Files.delete(replacedBrokerXml);
+            if (copyKeystore) {
+                KeystoreUtil.cleanUp();
             }
         }
     }
