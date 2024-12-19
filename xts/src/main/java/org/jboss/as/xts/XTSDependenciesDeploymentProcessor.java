@@ -68,7 +68,7 @@ public class XTSDependenciesDeploymentProcessor implements DeploymentUnitProcess
     private void addXTSModuleDependency(final DeploymentUnit unit) {
         final ModuleLoader moduleLoader = Module.getBootModuleLoader();
         final ModuleSpecification moduleSpec = unit.getAttachment(Attachments.MODULE_SPECIFICATION);
-        moduleSpec.addSystemDependency(new ModuleDependency(moduleLoader, XTS_MODULE, false, false, false, false));
+        moduleSpec.addSystemDependency(ModuleDependency.Builder.of(moduleLoader, XTS_MODULE).build());
     }
 
 }
