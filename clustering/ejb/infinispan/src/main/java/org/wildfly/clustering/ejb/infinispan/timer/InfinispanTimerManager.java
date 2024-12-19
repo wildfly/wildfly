@@ -71,7 +71,7 @@ public class InfinispanTimerManager<I, C> implements TimerManager<I> {
     private final AtomicBoolean identifierFactoryStarted = new AtomicBoolean(false);
     private final Supplier<Batch> batchFactory;
     private final TimerRegistry<I> registry;
-    private final Scheduler<I, TimeoutMetaData> inactiveScheduler = new InactiveScheduler<>();
+    private final Scheduler<I, TimeoutMetaData> inactiveScheduler = Scheduler.inactive();
     private final Scheduler<I, TimeoutMetaData> scheduler;
     private final AtomicReference<Scheduler<I, TimeoutMetaData>> schedulerReference = new AtomicReference<>(this.inactiveScheduler);
     private final AtomicReference<ListenerRegistration> schedulerListenerRegistration = new AtomicReference<>();
@@ -88,7 +88,7 @@ public class InfinispanTimerManager<I, C> implements TimerManager<I> {
         RetryConfig retryConfig = config.getRetryConfig();
         CacheContainerCommandDispatcherFactory dispatcherFactory = config.getCommandDispatcherFactory();
         CacheContainerGroup group = dispatcherFactory.getGroup();
-        Scheduler<I, TimeoutMetaData> localScheduler = new ReferenceScheduler<>(this.schedulerReference::get);
+        Scheduler<I, TimeoutMetaData> localScheduler = Scheduler.fromReference(this.schedulerReference::get);
         this.scheduler = group.isSingleton() ? localScheduler : new PrimaryOwnerScheduler<>(new PrimaryOwnerSchedulerConfiguration<>() {
             @Override
             public String getName() {
@@ -252,26 +252,5 @@ public class InfinispanTimerManager<I, C> implements TimerManager<I> {
     @Override
     public String toString() {
         return this.cache.getName();
-    }
-
-    private static class InactiveScheduler<I, V> extends org.wildfly.clustering.server.scheduler.Scheduler.InactiveScheduler<I, V> implements Scheduler<I, V> {
-
-        @Override
-        public void schedule(I id) {
-        }
-    }
-
-    private static class ReferenceScheduler<I, V> extends org.wildfly.clustering.server.scheduler.Scheduler.ReferenceScheduler<I, V> implements Scheduler<I, V> {
-        private final Supplier<? extends Scheduler<I, V>> reference;
-
-        ReferenceScheduler(Supplier<? extends Scheduler<I, V>> reference) {
-            super(reference);
-            this.reference = reference;
-        }
-
-        @Override
-        public void schedule(I id) {
-            this.reference.get().schedule(id);
-        }
     }
 }
