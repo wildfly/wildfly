@@ -49,6 +49,9 @@
         <maven.local.repo>${settings.localRepository}</maven.local.repo>
         <modular.jdk.testsuite.args>${modular.jdk.args} --add-opens=java.base/sun.security.x509=ALL-UNNAMED --add-opens=java.base/sun.security.util=ALL-UNNAMED</modular.jdk.testsuite.args>
         <embedded.server.stability>community</embedded.server.stability>
+
+        <!-- Allow profile-driven control over whether we reuse forks when running tests -->
+        <surefire.reuse.forks>true</surefire.reuse.forks>
     </properties>
 
     <dependencies>
@@ -480,7 +483,7 @@
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
                     <skip>true</skip>
-                    <reuseForks>false</reuseForks>
+                    <reuseForks>${surefire.reuse.forks}</reuseForks>
                     <environmentVariables>
                         <JBOSS_HOME>${wildfly.dir}</JBOSS_HOME>
                     </environmentVariables>
@@ -861,6 +864,15 @@
                     <name>ts.bootable</name>
                 </property>
             </activation>
+            <properties>
+                <!-- This sets the same value as the default.
+                     It's here just in case we decide to change the default
+                     but still want to reuse forks for bootable  
+                     because WFCORE-7097 is unresolved.
+                     TODO get rid of this and the property if we don't need
+                     separate control of this for different profiles. -->
+                <surefire.reuse.forks>true</surefire.reuse.forks>
+            </properties>
             <dependencies>
                 <dependency>
                     <groupId>org.wildfly.arquillian</groupId>
