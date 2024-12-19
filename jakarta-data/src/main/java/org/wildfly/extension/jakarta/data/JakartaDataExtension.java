@@ -171,8 +171,8 @@ public class JakartaDataExtension extends SubsystemExtension<JakartaDataExtensio
 
     private static void addDependencies(ModuleSpecification moduleSpecification, ModuleLoader moduleLoader,
                                DeploymentUnit deploymentUnit, String... moduleIdentifiers) {
-        for ( String moduleIdentifier : moduleIdentifiers) {
-            moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, moduleIdentifier, false, false, true, false));
+        for (String moduleIdentifier : moduleIdentifiers) {
+            moduleSpecification.addSystemDependency(ModuleDependency.Builder.of(moduleLoader, moduleIdentifier).setImportServices(true).build());
             ROOT_LOGGER.debugf("added %s dependency to %s", moduleIdentifier, deploymentUnit.getName());
         }
     }
