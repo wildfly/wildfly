@@ -14,7 +14,6 @@ import org.jboss.as.ee.concurrent.handle.SetupContextHandle;
 import org.jboss.as.ee.logging.EeLogger;
 import org.jboss.as.server.CurrentServiceContainer;
 import org.jboss.modules.Module;
-import org.jboss.modules.ModuleIdentifier;
 import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
@@ -210,7 +209,7 @@ public class ConcurrentContext {
             // switch to EE module classloader, otherwise, due to serialization, deployments would need to have dependencies to other internal modules
             final Module module;
             try {
-                module = Module.getBootModuleLoader().loadModule(ModuleIdentifier.create("org.jboss.as.ee"));
+                module = Module.getBootModuleLoader().loadModule("org.jboss.as.ee");
             } catch (Throwable e) {
                 throw new IOException(e);
             }
@@ -219,22 +218,14 @@ public class ConcurrentContext {
             if (sm == null) {
                 classLoader = currentThread().getContextClassLoader();
             } else {
-                classLoader = AccessController.doPrivileged(new PrivilegedAction<ClassLoader>() {
-                    @Override
-                    public ClassLoader run() {
-                        return currentThread().getContextClassLoader();
-                    }
-                });
+                classLoader = AccessController.doPrivileged((PrivilegedAction<ClassLoader>) currentThread()::getContextClassLoader);
             }
             if (sm == null) {
                 currentThread().setContextClassLoader(module.getClassLoader());
             } else {
-                AccessController.doPrivileged(new PrivilegedAction<Object>() {
-                    @Override
-                    public Object run() {
-                        currentThread().setContextClassLoader(module.getClassLoader());
-                        return null;
-                    }
+                AccessController.doPrivileged((PrivilegedAction<Void>) () -> {
+                    currentThread().setContextClassLoader(module.getClassLoader());
+                    return null;
                 });
             }
             try {
@@ -262,12 +253,9 @@ public class ConcurrentContext {
                 if (sm == null) {
                     currentThread().setContextClassLoader(classLoader);
                 } else {
-                    AccessController.doPrivileged(new PrivilegedAction<Object>() {
-                        @Override
-                        public Object run() {
-                            currentThread().setContextClassLoader(classLoader);
-                            return null;
-                        }
+                    AccessController.doPrivileged((PrivilegedAction<Void>) () -> {
+                        currentThread().setContextClassLoader(classLoader);
+                        return null;
                     });
                 }
             }
