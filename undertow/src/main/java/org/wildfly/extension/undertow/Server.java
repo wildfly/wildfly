@@ -47,6 +47,7 @@ public class Server implements Service<Server> {
     private final Supplier<ServletContainerService> servletContainer;
     private final Supplier<UndertowService> undertowService;
     private final String defaultHost;
+    private String finalRoute = null;
     private final String name;
     private final NameVirtualHostHandler virtualHostHandler = new NameVirtualHostHandler();
     private final List<ListenerService> listeners = new CopyOnWriteArrayList<>();
@@ -162,6 +163,9 @@ public class Server implements Service<Server> {
     }
 
     public String getRoute() {
+        if (this.finalRoute != null) {
+            return this.finalRoute;
+        }
         final UndertowService service = this.undertowService.get();
         final String defaultServerRoute = service.getInstanceId();
         if (service.isObfuscateSessionRoute()) {
@@ -172,14 +176,16 @@ public class Server implements Service<Server> {
                 // encode
                 final byte[] digestedBytes = md.digest(defaultServerRoute.getBytes(UTF_8));
                 final Base64.Encoder encoder = Base64.getUrlEncoder().withoutPadding(); // = is not allowed in V0 Cookie
-                final String encodedRoute = new String(encoder.encode(digestedBytes), UTF_8);
-                UndertowLogger.ROOT_LOGGER.obfuscatedSessionRoute(encodedRoute, defaultServerRoute);
-                return encodedRoute;
+                this.finalRoute = new String(encoder.encode(digestedBytes), UTF_8);
+                UndertowLogger.ROOT_LOGGER.obfuscatedSessionRoute(this.finalRoute, defaultServerRoute);
             } catch (NoSuchAlgorithmException e) {
                 UndertowLogger.ROOT_LOGGER.unableToObfuscateSessionRoute(defaultServerRoute, e);
             }
         }
-        return this.name.equals(service.getDefaultServer()) ? defaultServerRoute : String.join("-", defaultServerRoute, this.name);
+        if (this.finalRoute == null ) {
+            this.finalRoute = this.name.equals(service.getDefaultServer()) ? defaultServerRoute : String.join("-", defaultServerRoute, this.name);
+        }
+        return this.finalRoute;
     }
 
     private final class DefaultHostHandler implements HttpHandler {
