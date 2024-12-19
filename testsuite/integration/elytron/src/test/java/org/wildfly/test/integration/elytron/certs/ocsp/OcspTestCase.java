@@ -13,6 +13,7 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.test.shared.CliUtils;
+import org.jboss.as.version.Stability;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 
@@ -30,6 +31,9 @@ import org.wildfly.test.integration.elytron.util.WelcomeContent;
 @ServerSetup({OcspTestBase.OcspServerSetup.class, WelcomeContent.SetupTask.class})
 public class OcspTestCase extends OcspTestBase {
 
+    public OcspTestCase() {
+        super(Stability.DEFAULT);
+    }
     /**
      * Let's check connection to server using a valid certificate. OCSP responder is active; CRL not configured.
      * Expected behavior: server accepts connection for both soft-fail values.
