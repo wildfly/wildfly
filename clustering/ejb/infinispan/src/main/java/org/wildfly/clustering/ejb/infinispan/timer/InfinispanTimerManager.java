@@ -72,7 +72,6 @@ public class InfinispanTimerManager<I, C> implements TimerManager<I> {
     private final Supplier<Batch> batchFactory;
     private final TimerRegistry<I> registry;
     private final Scheduler<I, TimeoutMetaData> inactiveScheduler = new InactiveScheduler<>();
-    private final Runnable affinityReset;
     private final Scheduler<I, TimeoutMetaData> scheduler;
     private final AtomicReference<Scheduler<I, TimeoutMetaData>> schedulerReference = new AtomicReference<>(this.inactiveScheduler);
     private final AtomicReference<ListenerRegistration> schedulerListenerRegistration = new AtomicReference<>();
@@ -90,10 +89,6 @@ public class InfinispanTimerManager<I, C> implements TimerManager<I> {
         CacheContainerCommandDispatcherFactory dispatcherFactory = config.getCommandDispatcherFactory();
         CacheContainerGroup group = dispatcherFactory.getGroup();
         Scheduler<I, TimeoutMetaData> localScheduler = new ReferenceScheduler<>(this.schedulerReference::get);
-        AtomicReference<Function<I, CacheContainerGroupMember>> affinityReference = new AtomicReference<>();
-        // If suspend/resume restarts the cache, the member affinity will need to be reset
-        this.affinityReset = () -> affinityReference.set(new UnaryGroupMemberAffinity<>(config.getCache(), group));
-        this.affinityReset.run();
         this.scheduler = group.isSingleton() ? localScheduler : new PrimaryOwnerScheduler<>(new PrimaryOwnerSchedulerConfiguration<>() {
             @Override
             public String getName() {
@@ -112,7 +107,7 @@ public class InfinispanTimerManager<I, C> implements TimerManager<I> {
 
             @Override
             public Function<I, CacheContainerGroupMember> getAffinity() {
-                return new ReferenceFunction<>(affinityReference::get);
+                return new UnaryGroupMemberAffinity<>(config.getCache(), group);
             }
 
             @Override
@@ -140,8 +135,6 @@ public class InfinispanTimerManager<I, C> implements TimerManager<I> {
 
     @Override
     public void start() {
-        // Reset affinity, in the event that the cache was restarted
-        this.affinityReset.run();
         Supplier<Locality> locality = () -> Locality.forCurrentConsistentHash(this.cache);
 
         TimerScheduler<I, RemappableTimerMetaDataEntry<C>> localScheduler = new TimerScheduler<>(this.cache.getName(), this.factory, this, locality, Duration.ofMillis(this.cache.getCacheConfiguration().transaction().cacheStopTimeout()), this.registry);
@@ -259,19 +252,6 @@ public class InfinispanTimerManager<I, C> implements TimerManager<I> {
     @Override
     public String toString() {
         return this.cache.getName();
-    }
-
-    private static class ReferenceFunction<T, R> implements Function<T, R> {
-        private final Supplier<Function<T, R>> reference;
-
-        ReferenceFunction(Supplier<Function<T, R>> reference) {
-            this.reference = reference;
-        }
-
-        @Override
-        public R apply(T value) {
-            return this.reference.get().apply(value);
-        }
     }
 
     private static class InactiveScheduler<I, V> extends org.wildfly.clustering.server.scheduler.Scheduler.InactiveScheduler<I, V> implements Scheduler<I, V> {
