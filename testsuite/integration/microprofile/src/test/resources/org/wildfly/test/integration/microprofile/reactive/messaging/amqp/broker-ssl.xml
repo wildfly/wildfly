@@ -41,7 +41,7 @@
             <acceptor name="artemis">tcp://0.0.0.0:61616?tcpSendBufferSize=1048576;tcpReceiveBufferSize=1048576;protocols=CORE,AMQP;amqpCredits=1000;amqpLowCredits=300;amqpDuplicateDetection=true</acceptor>
 
             <!-- AMQP Acceptor.  Listens on default AMQP port for AMQP traffic - secured with SSL. -->
-            <acceptor name="amqp">tcp://0.0.0.0:5672?tcpSendBufferSize=1048576;tcpReceiveBufferSize=1048576;protocols=AMQP;amqpCredits=1000;amqpLowCredits=300;amqpDuplicateDetection=true;sslEnabled=true;keyStorePath=$SERVER_KEYSTORE$;keyStorePassword=serverks</acceptor>
+            <acceptor name="amqp">tcp://0.0.0.0:5672?tcpSendBufferSize=1048576;tcpReceiveBufferSize=1048576;protocols=AMQP;amqpCredits=1000;amqpLowCredits=300;amqpDuplicateDetection=true;sslEnabled=true;keyStorePath=/home/jboss/config/server.keystore.p12;keyStorePassword=serverks</acceptor>
         </acceptors>
 
 
