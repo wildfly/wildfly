@@ -47,14 +47,12 @@ class OpenTelemetryDependencyProcessor implements DeploymentUnitProcessor {
                 .getCapabilityRuntimeAPI(Capabilities.WELD_CAPABILITY_NAME, WeldCapability.class);
             if (weldCapability.isPartOfWeldDeployment(deploymentUnit)) {
                 // Export the -api module only if CDI is available
-                moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, API_MODULE,
-                        false, true, true, false));
+                moduleSpecification.addSystemDependency(ModuleDependency.Builder.of(moduleLoader, API_MODULE).setExport(true).setImportServices(true).build());
             }
 
             // Export all other modules regardless of CDI availability
             for (String module : EXPORTED_MODULES) {
-                moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, module, false, true,
-                        true, false));
+                moduleSpecification.addSystemDependency(ModuleDependency.Builder.of(moduleLoader, module).setExport(true).setImportServices(true).build());
             }
         } catch (CapabilityServiceSupport.NoSuchCapabilityException e) {
             throw new IllegalStateException();
