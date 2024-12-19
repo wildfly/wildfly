@@ -3,12 +3,12 @@
   ~ SPDX-License-Identifier: Apache-2.0
   -->
 
-<subsystem xmlns="urn:jboss:domain:undertow:preview:14.0" default-server="some-server" default-servlet-container="myContainer" default-virtual-host="default-virtual-host" instance-id="some-id" statistics-enabled="true">
+<subsystem xmlns="urn:jboss:domain:undertow:15.0" default-server="some-server" default-servlet-container="myContainer" default-virtual-host="default-virtual-host" instance-id="some-id" statistics-enabled="true">
    <byte-buffer-pool name="default" thread-local-cache-size="45" buffer-size="1000" direct="false" leak-detection-percent="50" max-pool-size="1000"/>
    <buffer-cache buffer-size="1025" buffers-per-region="1054" max-regions="15" name="default"/>
    <buffer-cache buffer-size="1025" buffers-per-region="1054" max-regions="15" name="extra"/>
    <server default-host="other-host" name="some-server" servlet-container="myContainer">
-      <ajp-listener disallowed-methods="FOO TRACE" allow-unescaped-characters-in-url="true" max-parameters="5000" name="ajp-connector" no-request-timeout="10000" receive-buffer="5000" redirect-socket="ajps" request-parse-timeout="2000" resolve-peer-address="true" secure="true" send-buffer="50000" socket-binding="ajp" tcp-backlog="500" tcp-keep-alive="true" max-ajp-packet-size="10000"/>
+      <ajp-listener disallowed-methods="FOO TRACE" allow-unescaped-characters-in-url="true" allowed-request-attributes-pattern="test" max-parameters="5000" name="ajp-connector" no-request-timeout="10000" receive-buffer="5000" redirect-socket="ajps" request-parse-timeout="2000" resolve-peer-address="true" secure="true" send-buffer="50000" socket-binding="ajp" tcp-backlog="500" tcp-keep-alive="true" max-ajp-packet-size="10000"/>
       <http-listener always-set-keep-alive="${prop.smth:false}" certificate-forwarding="true" name="default" proxy-address-forwarding="${prop.smth:false}" redirect-socket="ajp" resolve-peer-address="true" socket-binding="http" proxy-protocol="true"/>
       <http-listener max-cookies="100" max-headers="30" max-parameters="30" max-post-size="100000" name="second" redirect-socket="https-non-default" require-host-http11="true" socket-binding="http-2" url-charset="windows-1250"/>
       <http-listener max-cookies="100" max-headers="30" max-parameters="30" max-post-size="100000" name="no-redirect" socket-binding="http-3" url-charset="windows-1250" worker="non-default"/>
@@ -72,7 +72,7 @@
    </servlet-container>
    <handlers>
       <file case-sensitive="false" directory-listing="true" follow-symlink="true" name="welcome-content" path="${jboss.home.dir}" safe-symlink-paths="/path/to/folder /second/path"/>
-      <reverse-proxy connection-idle-timeout="60000" max-request-time="60000" connections-per-thread="30" max-retries="10" name="reverse-proxy" reuse-x-forwarded-header="true" rewrite-host-header="false">
+      <reverse-proxy connection-idle-timeout="60000" max-request-time="60000" connections-per-thread="30" max-retries="10" name="reverse-proxy">
          <host instance-id="myRoute" name="server1" outbound-socket-binding="ajp-remote" path="/test" scheme="ajp" ssl-context="TestContext"/>
          <host instance-id="myRoute" name="server2" outbound-socket-binding="ajp-remote" path="/test" scheme="ajp" ssl-context="TestContext"/>
       </reverse-proxy>
