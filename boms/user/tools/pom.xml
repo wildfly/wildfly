@@ -135,6 +135,12 @@
                                     <groupId>org.wildfly.core</groupId>
                                     <artifactId>wildfly-cli</artifactId>
                                 </dependency>
+                                <!-- Annotation processor for generating Jakarta Data repositories
+                                     and Jakarta Persistence static metamodel classes. -->
+                                <dependency>
+                                    <groupId>org.hibernate.orm</groupId>
+                                    <artifactId>hibernate-jpamodelgen</artifactId>
+                                </dependency>
                             </includeDependencies>
                             <versionRefDependencies>
                                 <dependency>
@@ -151,6 +157,11 @@
                                     <groupId>org.jboss.arquillian.junit5</groupId>
                                     <artifactId>arquillian-junit5-container</artifactId>
                                     <version>org.jboss.arquillian.container:arquillian-container-test-spi:jar</version>
+                                </dependency>
+                                <dependency>
+                                    <groupId>org.hibernate.orm</groupId>
+                                    <artifactId>hibernate-jpamodelgen</artifactId>
+                                    <version>org.hibernate.orm:hibernate-core:jar</version>
                                 </dependency>
                             </versionRefDependencies>
                             <includePlugins>
