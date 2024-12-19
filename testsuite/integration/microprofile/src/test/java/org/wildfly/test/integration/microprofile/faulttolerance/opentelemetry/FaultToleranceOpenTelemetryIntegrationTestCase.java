@@ -6,6 +6,7 @@
 package org.wildfly.test.integration.microprofile.faulttolerance.opentelemetry;
 
 import java.net.URL;
+import java.time.Duration;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
@@ -50,7 +51,8 @@ public class FaultToleranceOpenTelemetryIntegrationTestCase {
     protected OpenTelemetryCollectorContainer otelCollector;
 
     private static final String MP_CONFIG = "otel.sdk.disabled=false\n" +
-            "otel.metric.export.interval=10";
+            // Lower the interval from 60 seconds to 100 millis
+            "otel.metric.export.interval=100";
 
     @Deployment
     public static Archive<?> deploy() {
@@ -100,7 +102,7 @@ public class FaultToleranceOpenTelemetryIntegrationTestCase {
                     .findFirst();
             Assert.assertTrue(prometheusMetric.isPresent());
             Assert.assertEquals(0, Integer.parseInt(prometheusMetric.get().getValue()), 0);
-        });
+        }, Duration.ofSeconds(70)); // n.b. this in ~2% of cases needs slightly more time on our CI given the asynchronicity
     }
 
 }

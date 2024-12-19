@@ -17,7 +17,7 @@ import org.jboss.as.test.shared.observability.signals.jaeger.JaegerTrace;
  */
 class JaegerContainer extends BaseContainer<JaegerContainer> {
     public static final String IMAGE_NAME = "jaegertracing/all-in-one";
-    public static final String IMAGE_VERSION = "1.53.0";
+    public static final String IMAGE_VERSION = "1.64.0";
     public static final int PORT_JAEGER_QUERY = 16686;
     public static final int PORT_JAEGER_OTLP = 4317;
 
@@ -47,30 +47,4 @@ class JaegerContainer extends BaseContainer<JaegerContainer> {
     private String getJaegerEndpoint() {
         return "http://localhost:" + getMappedPort(PORT_JAEGER_QUERY);
     }
-
-    /*
-    private void waitForDataToAppear(String serviceName) {
-        try (Client client = ClientBuilder.newClient()) {
-            boolean found = false;
-            int count = 0;
-            while (count < 30) {
-                String response = client.target(getJaegerEndpoint() + "/api/services").request()
-                        .get()
-                        .readEntity(String.class);
-                if (response.contains(serviceName)) {
-                    found = true;
-                    break;
-                }
-                count++;
-                try {
-                    Thread.sleep(500);
-                } catch (InterruptedException e) {
-                    //
-                }
-            }
-
-            Assert.assertTrue("Expected service name not found", found);
-        }
-    }
-    */
 }
