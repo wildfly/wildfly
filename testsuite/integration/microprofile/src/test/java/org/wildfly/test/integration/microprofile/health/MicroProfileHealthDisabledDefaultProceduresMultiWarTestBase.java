@@ -22,7 +22,7 @@ public abstract class MicroProfileHealthDisabledDefaultProceduresMultiWarTestBas
     abstract void checkGlobalOutcome(final ManagementClient managementClient, final String operation, final boolean mustBeUP,
                                      final String probeName, final Integer expectedChecksCount) throws IOException;
 
-    @Deployment(name = SERVICE_ONE, order = 1)
+    @Deployment(name = SERVICE_ONE, order = 1, testable = false)
     public static WebArchive createDeployment1() {
         return ShrinkWrap.create(WebArchive.class, SERVICE_ONE + ".war")
                 // no deployment health checks provided, we want for WildFly to automatically add readiness + startup checks here
@@ -30,7 +30,7 @@ public abstract class MicroProfileHealthDisabledDefaultProceduresMultiWarTestBas
                 .addAsWebInfResource(new StringAsset("<beans bean-discovery-mode=\"all\"></beans>"), "beans.xml");
     }
 
-    @Deployment(name = SERVICE_TWO, order = 2)
+    @Deployment(name = SERVICE_TWO, order = 2, testable = false)
     public static WebArchive createDeployment2() {
         return ShrinkWrap.create(WebArchive.class, SERVICE_TWO + ".war")
                 // we want the deployment to provide ready and startup checks here

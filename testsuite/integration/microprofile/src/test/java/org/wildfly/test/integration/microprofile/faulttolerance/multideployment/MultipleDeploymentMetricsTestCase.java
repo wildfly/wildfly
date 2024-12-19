@@ -43,12 +43,12 @@ public class MultipleDeploymentMetricsTestCase {
     public static final String DEPLOYMENT_1 = "deployment-1";
     public static final String DEPLOYMENT_2 = "deployment-2";
 
-    @Deployment(name = DEPLOYMENT_1)
+    @Deployment(name = DEPLOYMENT_1, testable = false)
     public static Archive<?> deployment1() {
         return deployment(1);
     }
 
-    @Deployment(name = DEPLOYMENT_2)
+    @Deployment(name = DEPLOYMENT_2, testable = false)
     public static Archive<?> deployment2() {
         return deployment(2);
     }

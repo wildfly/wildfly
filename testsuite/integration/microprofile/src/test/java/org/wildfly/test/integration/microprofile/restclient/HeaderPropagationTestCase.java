@@ -39,7 +39,7 @@ public class HeaderPropagationTestCase {
     @ArquillianResource
     private URI uri;
 
-    @Deployment
+    @Deployment(testable = false)
     public static WebArchive deployment() {
         return ShrinkWrap.create(WebArchive.class, HeaderPropagationTestCase.class.getSimpleName() + ".war")
                 .addClasses(
