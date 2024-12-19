@@ -60,24 +60,24 @@ public class EjbDependencyDeploymentUnitProcessor implements DeploymentUnitProce
         final ModuleSpecification moduleSpecification = deploymentUnit.getAttachment(Attachments.MODULE_SPECIFICATION);
 
         //always add EE API
-        moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, EJB_API, false, false, true, false));
+        moduleSpecification.addSystemDependency(ModuleDependency.Builder.of(moduleLoader, EJB_API).setImportServices(true).build());
         //we always give them the Jakarta Enterprise Beans client
-        moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, EJB_CLIENT, false, false, true, false));
-        moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, EJB_NAMING_CLIENT, false, false, true, false));
-        moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, EJB_IIOP_CLIENT, false, false, false, false));
+        moduleSpecification.addSystemDependency(ModuleDependency.Builder.of(moduleLoader, EJB_CLIENT).setImportServices(true).build());
+        moduleSpecification.addSystemDependency(ModuleDependency.Builder.of(moduleLoader, EJB_NAMING_CLIENT).setImportServices(true).build());
+        moduleSpecification.addSystemDependency(ModuleDependency.Builder.of(moduleLoader, EJB_IIOP_CLIENT).build());
 
         //we always have to add this, as even non-ejb deployments may still lookup IIOP ejb's
-        moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, EJB_SUBSYSTEM, false, false, true, false));
-        moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, HTTP_EJB, false, false, true, false));
-        moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, HTTP_NAMING, false, false, true, false));
-        moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, HTTP_TRANSACTION, false, false, true, false));
+        moduleSpecification.addSystemDependency(ModuleDependency.Builder.of(moduleLoader, EJB_SUBSYSTEM).setImportServices(true).build());
+        moduleSpecification.addSystemDependency(ModuleDependency.Builder.of(moduleLoader, HTTP_EJB).setImportServices(true).build());
+        moduleSpecification.addSystemDependency(ModuleDependency.Builder.of(moduleLoader, HTTP_NAMING).setImportServices(true).build());
+        moduleSpecification.addSystemDependency(ModuleDependency.Builder.of(moduleLoader, HTTP_TRANSACTION).setImportServices(true).build());
         // Marshalling support for EJB SessionIDs
         // TODO Move this to distributable-ejb subsystem
-        moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, CLUSTERING_EJB_CLIENT, false, false, true, false));
+        moduleSpecification.addSystemDependency(ModuleDependency.Builder.of(moduleLoader, CLUSTERING_EJB_CLIENT).setImportServices(true).build());
 
         if (IIOPDeploymentMarker.isIIOPDeployment(deploymentUnit)) {
             //needed for dynamic IIOP stubs
-            moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, IIOP_OPENJDK, false, false, false, false));
+            moduleSpecification.addSystemDependency(ModuleDependency.Builder.of(moduleLoader, IIOP_OPENJDK).build());
         }
 
         // fetch the EjbJarMetaData
@@ -91,7 +91,7 @@ public class EjbDependencyDeploymentUnitProcessor implements DeploymentUnitProce
         // FIXME: still not the best way to do it
         //this must be the first dep listed in the module
         if (Boolean.getBoolean("org.jboss.as.ejb3.EMBEDDED"))
-            moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, "Classpath", false, false, false, false));
+            moduleSpecification.addSystemDependency(ModuleDependency.Builder.of(moduleLoader, "Classpath").build());
 
     }
 }
