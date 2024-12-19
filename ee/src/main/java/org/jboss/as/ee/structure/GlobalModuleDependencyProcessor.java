@@ -36,11 +36,10 @@ public class GlobalModuleDependencyProcessor implements DeploymentUnitProcessor 
     public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
         final ModuleSpecification moduleSpecification = deploymentUnit.getAttachment(Attachments.MODULE_SPECIFICATION);
-
         final List<GlobalModule> globalMods = this.globalModules;
 
             for (final GlobalModule module : globalMods) {
-                final ModuleDependency dependency = new ModuleDependency(Module.getBootModuleLoader(), module.getModuleName(), false, false, module.isServices(), false);
+                final ModuleDependency dependency = ModuleDependency.Builder.of(Module.getBootModuleLoader(), module.getModuleName()).setImportServices(module.isServices()).build();
 
                 if (module.isMetaInf()) {
                     dependency.addImportFilter(PathFilters.getMetaInfSubdirectoriesFilter(), true);
