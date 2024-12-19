@@ -62,7 +62,9 @@ public class WSClassVerificationProcessor implements DeploymentUnitProcessor {
             for (AbstractEndpoint ejbEndpoint : wsDeployment.getEjbEndpoints()) {
                 verifyEndpoint(ejbEndpoint, moduleClassLoader, deploymentReflectionIndex);
             }
-            verifyApacheCXFModuleDependencyRequirement(unit);
+            if (!hasCxfModuleDependency(unit)) {
+                checkCXFModuleDependency(unit);
+            }
         }
     }
 
@@ -99,28 +101,6 @@ public class WSClassVerificationProcessor implements DeploymentUnitProcessor {
             throw WSLogger.ROOT_LOGGER.declaredEndpointInterfaceClassNotFound(endpointInterfaceClassName, endpointClass);
         }
     }
-
-    private void verifyApacheCXFModuleDependencyRequirement(DeploymentUnit unit) {
-        if (!hasCxfModuleDependency(unit)) {
-            //notify user if he clearly forgot the CXF module dependency
-            final CompositeIndex index = unit.getAttachment(Attachments.COMPOSITE_ANNOTATION_INDEX);
-            final DotName[] dotNames = {WEB_SERVICE_ANNOTATION, WEB_SERVICE_PROVIDER_ANNOTATION};
-            for (final DotName dotName : dotNames) {
-                for (AnnotationInstance ai : index.getAnnotations(dotName)) {
-                    AnnotationTarget at = ai.target();
-                    if (at instanceof ClassInfo) {
-                        final ClassInfo clazz = (ClassInfo)ai.target();
-                        for (DotName dn : clazz.annotationsMap().keySet()) {
-                            if (dn.toString().startsWith("org.apache.cxf")) {
-                                WSLogger.ROOT_LOGGER.missingModuleDependency(dn.toString(), clazz.name().toString(), "org.apache.cxf");
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
-
     static boolean hasCxfModuleDependency(DeploymentUnit unit) {
         final ModuleSpecification moduleSpec = unit.getAttachment(Attachments.MODULE_SPECIFICATION);
         for (ModuleDependency dep : moduleSpec.getUserDependenciesSet()) {
@@ -129,38 +109,25 @@ public class WSClassVerificationProcessor implements DeploymentUnitProcessor {
                 return true;
             }
         }
-        return hasExportedCxfModuleDependency(unit.getParent()) || hasSiblingCxfModuleDependency(unit);
-    }
-
-    private static boolean hasExportedCxfModuleDependency(DeploymentUnit unit) {
-        if (unit != null) {
-            final ModuleSpecification moduleSpec = unit.getAttachment(Attachments.MODULE_SPECIFICATION);
-            for (ModuleDependency dep : moduleSpec.getUserDependenciesSet()) {
-                final String id = dep.getIdentifier().getName();
-                if (cxfExportingModules.contains(id) && dep.isExport()) {
-                    return true;
-                }
-            }
-        }
         return false;
     }
 
-    private static boolean hasSiblingCxfModuleDependency(DeploymentUnit unit) {
-        if (unit.getParent() == null) {
-            return false;
-        }
-        final ModuleSpecification rootModuleSpec = unit.getParent().getAttachment(Attachments.MODULE_SPECIFICATION);
-        // if ear-subdeployments-isolated is false, we can also look at siblings exported dependencies
-        if (!rootModuleSpec.isSubDeploymentModulesIsolated()) {
-            for (DeploymentUnit siblingUnit : unit.getParent().getAttachment(Attachments.SUB_DEPLOYMENTS)) {
-                // look only at JAR dependencies, WARs are always isolated
-                if (siblingUnit.getName().endsWith(".jar")
-                        && !siblingUnit.equals(unit)
-                        && hasExportedCxfModuleDependency(siblingUnit)) {
-                    return true;
+    private void checkCXFModuleDependency(DeploymentUnit unit) {
+        final CompositeIndex index = unit.getAttachment(Attachments.COMPOSITE_ANNOTATION_INDEX);
+        final DotName[] dotNames = {WEB_SERVICE_ANNOTATION, WEB_SERVICE_PROVIDER_ANNOTATION};
+        for (final DotName dotName : dotNames) {
+            for (AnnotationInstance ai : index.getAnnotations(dotName)) {
+                AnnotationTarget at = ai.target();
+                if (at instanceof ClassInfo) {
+                    final ClassInfo clazz = (ClassInfo)ai.target();
+                    for (DotName dn : clazz.annotationsMap().keySet()) {
+                        if (dn.toString().startsWith("org.apache.cxf")) {
+                            WSLogger.ROOT_LOGGER.checkModuleDependency(dn.toString(), clazz.name().toString(), "org.apache.cxf");
+                            return;
+                        }
+                    }
                 }
             }
         }
-        return false;
     }
 }
