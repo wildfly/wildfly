@@ -93,6 +93,7 @@ class TransactionSubsystemXMLPersister implements XMLElementWriter<SubsystemMars
 
         if (node.hasDefined(CommonAttributes.USE_JDBC_STORE) && node.get(CommonAttributes.USE_JDBC_STORE).asBoolean()) {
             writer.writeStartElement(Element.JDBC_STORE.getLocalName());
+            TransactionSubsystemRootResourceDefinition.JDBC_STORE_DATASOURCE_NAME.marshallAsAttribute(node, writer);
             TransactionSubsystemRootResourceDefinition.JDBC_STORE_DATASOURCE.marshallAsAttribute(node, writer);
             if (TransactionSubsystemRootResourceDefinition.JDBC_ACTION_STORE_TABLE_PREFIX.isMarshallable(node)
                     || TransactionSubsystemRootResourceDefinition.JDBC_ACTION_STORE_DROP_TABLE.isMarshallable(node)) {
