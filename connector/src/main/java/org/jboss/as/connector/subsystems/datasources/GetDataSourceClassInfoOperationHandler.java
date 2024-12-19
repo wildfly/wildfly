@@ -26,7 +26,6 @@ import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.server.Services;
 import org.jboss.as.server.moduleservice.ServiceModuleLoader;
 import org.jboss.dmr.ModelNode;
-import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoadException;
 import org.jboss.msc.service.ServiceRegistry;
 
@@ -71,7 +70,7 @@ public class GetDataSourceClassInfoOperationHandler implements OperationStepHand
         }
     }
 
-    static ModelNode dsClsInfoNode(ServiceModuleLoader serviceModuleLoader, ModuleIdentifier mid, String dsClsName, String xaDSClsName)
+    static ModelNode dsClsInfoNode(ServiceModuleLoader serviceModuleLoader, String mid, String dsClsName, String xaDSClsName)
             throws OperationFailedException {
         ModelNode result = new ModelNode();
         if (dsClsName != null) {
@@ -87,7 +86,7 @@ public class GetDataSourceClassInfoOperationHandler implements OperationStepHand
         return result;
     }
 
-    private static ModelNode findPropsFromCls(ServiceModuleLoader serviceModuleLoader, ModuleIdentifier mid, String clsName) throws OperationFailedException {
+    private static ModelNode findPropsFromCls(ServiceModuleLoader serviceModuleLoader, String mid, String clsName) throws OperationFailedException {
         Class<?> cls = null;
         if (mid != null) {
             try {
