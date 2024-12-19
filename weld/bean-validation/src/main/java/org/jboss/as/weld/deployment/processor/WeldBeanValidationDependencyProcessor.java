@@ -45,7 +45,7 @@ public class WeldBeanValidationDependencyProcessor implements DeploymentUnitProc
             return; // Skip if there are no beans.xml files in the deployment
         }
 
-        ModuleDependency cdiBeanValidationDep = new ModuleDependency(moduleLoader, CDI_BEAN_VALIDATION_ID, false, false, true, false);
+        ModuleDependency cdiBeanValidationDep = ModuleDependency.Builder.of(moduleLoader, CDI_BEAN_VALIDATION_ID).setImportServices(true).build();
         moduleSpecification.addSystemDependency(cdiBeanValidationDep);
     }
 }
