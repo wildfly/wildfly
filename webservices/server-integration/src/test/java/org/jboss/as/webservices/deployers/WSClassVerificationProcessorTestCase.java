@@ -46,14 +46,14 @@ public class WSClassVerificationProcessorTestCase {
 
     @Test
     public void testCxfModuleDependencyPresent() {
-        spec.addUserDependency(new ModuleDependency(null, "org.apache.cxf", false, false, false, false));
+        spec.addUserDependency(ModuleDependency.Builder.of(null, "org.apache.cxf").build());
 
         Assert.assertTrue(WSClassVerificationProcessor.hasCxfModuleDependency(unit));
     }
 
     @Test
     public void testRootNonExportedCxfModuleDependencyPresent() {
-        rootSpec.addUserDependency(new ModuleDependency(null, "org.apache.cxf", false, false, false, false));
+        rootSpec.addUserDependency(ModuleDependency.Builder.of(null, "org.apache.cxf").build());
 
         Assert.assertFalse(WSClassVerificationProcessor.hasCxfModuleDependency(unit)); // parent dep not exported, should return false
     }
@@ -61,7 +61,7 @@ public class WSClassVerificationProcessorTestCase {
     @Test
     public void testSiblingNonExportedCxfModuleDependencyPresent() {
         setSubDeploymentsIsolated(false);
-        siblingSpec.addUserDependency(new ModuleDependency(null, "org.apache.cxf", false, false, false, false));
+        siblingSpec.addUserDependency(ModuleDependency.Builder.of(null, "org.apache.cxf").build());
 
         Assert.assertFalse(WSClassVerificationProcessor.hasCxfModuleDependency(unit)); // parent dep not exported, should return false
     }
@@ -69,7 +69,7 @@ public class WSClassVerificationProcessorTestCase {
     @Test
     public void testSiblingCxfModuleDependencyPresentIsolatedDeploymentsTrue() {
         setSubDeploymentsIsolated(true);
-        siblingSpec.addUserDependency(new ModuleDependency(null, "org.apache.cxf", false, true, false, false));
+        siblingSpec.addUserDependency(ModuleDependency.Builder.of(null, "org.apache.cxf").setExport(true).build());
 
         Assert.assertFalse(WSClassVerificationProcessor.hasCxfModuleDependency(unit));
     }
