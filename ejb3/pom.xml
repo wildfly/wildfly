@@ -74,11 +74,6 @@ vi:ts=4:sw=4:expandtab
         </dependency>
 
         <dependency>
-            <groupId>org.wildfly.core</groupId>
-            <artifactId>wildfly-subsystem</artifactId>
-        </dependency>
-
-        <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>wildfly-clustering-common</artifactId>
         </dependency>
