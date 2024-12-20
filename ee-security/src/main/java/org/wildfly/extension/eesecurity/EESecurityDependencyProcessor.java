@@ -19,17 +19,16 @@ import org.jboss.modules.ModuleLoader;
 class EESecurityDependencyProcessor implements DeploymentUnitProcessor {
     @Override
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
-
         final DeploymentUnit unit = phaseContext.getDeploymentUnit();
         final DeploymentUnit top = unit.getParent() == null ? unit : unit.getParent();
         final ModuleLoader moduleLoader = Module.getBootModuleLoader();
 
         final ModuleSpecification moduleSpec = unit.getAttachment(Attachments.MODULE_SPECIFICATION);
-        moduleSpec.addSystemDependency(new ModuleDependency(moduleLoader, "jakarta.security.enterprise.api", false, false, true, false));
+        moduleSpec.addSystemDependency(ModuleDependency.Builder.of(moduleLoader, "jakarta.security.enterprise.api").setImportServices(true).build());
 
         Boolean securityPresent = top.getAttachment(EESecurityAnnotationProcessor.SECURITY_PRESENT);
-        if(securityPresent != null && securityPresent) {
-            moduleSpec.addSystemDependency(new ModuleDependency(moduleLoader, ELYTRON_JAKARTA_SECURITY, false, false, true, false));
+        if (securityPresent != null && securityPresent) {
+            moduleSpec.addSystemDependency(ModuleDependency.Builder.of(moduleLoader, ELYTRON_JAKARTA_SECURITY).setImportServices(true).build());
         }
 
     }

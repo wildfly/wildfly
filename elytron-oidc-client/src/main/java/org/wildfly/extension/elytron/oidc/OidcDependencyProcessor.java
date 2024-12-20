@@ -33,6 +33,6 @@ class OidcDependencyProcessor implements DeploymentUnitProcessor {
 
         ModuleLoader moduleLoader = Module.getBootModuleLoader();
         ModuleSpecification moduleSpec = deploymentUnit.getAttachment(Attachments.MODULE_SPECIFICATION);
-        moduleSpec.addSystemDependency(new ModuleDependency(moduleLoader, ELYTRON_HTTP_OIDC, false, false, true, false));
+        moduleSpec.addSystemDependency(ModuleDependency.Builder.of(moduleLoader, ELYTRON_HTTP_OIDC).setImportServices(true).build());
     }
 }
