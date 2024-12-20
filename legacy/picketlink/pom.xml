@@ -17,6 +17,7 @@
         merge conflicts between commits changing the GA and those changing the V.
         -->
         <version>35.0.0.Final-SNAPSHOT</version>
+        <relativePath>../../pom.xml</relativePath>
     </parent>
 
     <artifactId>wildfly-picketlink</artifactId>
