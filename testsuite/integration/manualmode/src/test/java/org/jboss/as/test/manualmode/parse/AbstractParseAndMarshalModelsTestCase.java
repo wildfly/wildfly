@@ -31,7 +31,7 @@ abstract class AbstractParseAndMarshalModelsTestCase {
 
     private static final File JBOSS_HOME = Paths.get("target", "jbossas-parse-marshal").toFile();
 
-    static final boolean altDistTest = "ee-".equals(System.getProperty("testsuite.default.build.project.prefix"));
+    static final boolean altDistTest = System.getProperty("build.output.dir", "").startsWith("ee-");
 
     protected ModelNode standaloneXmlTest(File original) throws Exception {
         return ModelParserUtils.standaloneXmlTest(original, JBOSS_HOME);
