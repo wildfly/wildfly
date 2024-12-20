@@ -41,11 +41,10 @@ public class JWTEJBTestCase {
 
     private static final String DEPLOYMENT_NAME = JWTEJBTestCase.class.getSimpleName() + ".war";
 
-    @Deployment
+    @Deployment(testable = false)
     public static Archive<?> deploy() {
         return ShrinkWrap.create(WebArchive.class, DEPLOYMENT_NAME)
                 .add(EmptyAsset.INSTANCE, "WEB-INF/beans.xml")
-                .addClasses(JWTEJBTestCase.class)
                 .addClasses(App.class, BeanEndPoint.class, TargetBean.class)
                 .addAsManifestResource(BaseJWTCase.class.getPackage(), "microprofile-config.properties", "microprofile-config.properties")
                 .addAsManifestResource(BaseJWTCase.class.getPackage(), "public.pem", "public.pem");

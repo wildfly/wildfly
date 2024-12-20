@@ -41,12 +41,12 @@ public class ContextPropagationTestCase extends BaseOpenTelemetryTest {
     @ArquillianResource
     private Deployer deployer;
 
-    @Deployment(name = DEPLOYMENT_SERVICE1, managed = false)
+    @Deployment(name = DEPLOYMENT_SERVICE1, managed = false, testable = false)
     public static WebArchive getDeployment1() {
         return buildBaseArchive(DEPLOYMENT_SERVICE1);
     }
 
-    @Deployment(name = DEPLOYMENT_SERVICE2, managed = false)
+    @Deployment(name = DEPLOYMENT_SERVICE2, managed = false, testable = false)
     public static WebArchive getDeployment2() {
         return buildBaseArchive(DEPLOYMENT_SERVICE2).addClass(OtelService2.class);
     }

@@ -32,7 +32,7 @@ public class KafkaReactiveMessagingAndOtelTestCase extends BaseReactiveMessaging
         super("kafka");
     }
 
-    @Deployment
+    @Deployment(testable = false)
     public static WebArchive createDeployment() {
         return BaseReactiveMessagingAndOtelTest.createDeployment(
                 "mp-rm-kafka-otel.war",

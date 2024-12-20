@@ -1,13 +1,12 @@
+/*
+ * Copyright The WildFly Authors
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 package org.wildfly.test.integration.observability.opentelemetry;
 
 import java.net.URL;
 
-import io.opentelemetry.instrumentation.annotations.WithSpan;
-import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.enterprise.context.RequestScoped;
-import jakarta.inject.Inject;
-import jakarta.ws.rs.GET;
-import jakarta.ws.rs.Path;
 import jakarta.ws.rs.client.Client;
 import jakarta.ws.rs.client.ClientBuilder;
 import jakarta.ws.rs.client.WebTarget;
@@ -22,6 +21,7 @@ import org.jboss.as.test.shared.observability.signals.jaeger.JaegerSpan;
 import org.jboss.shrinkwrap.api.Archive;
 import org.junit.Assert;
 import org.junit.Test;
+import org.wildfly.test.integration.observability.opentelemetry.span.AppScopedBean;
 
 @RunAsClient
 @ServerSetup({OpenTelemetryWithCollectorSetupTask.class})
@@ -32,10 +32,10 @@ public class WithSpanTestCase extends BaseOpenTelemetryTest {
     @ArquillianResource
     private URL url;
 
-    @Deployment
+    @Deployment(testable = false)
     public static Archive<?> getDeployment() {
         return buildBaseArchive(DEPLOYMENT_NAME)
-            .addClasses(AppScopedBean.class, RequestScopedBean.class);
+            .addPackage(AppScopedBean.class.getPackage());
     }
 
     @Test
@@ -56,23 +56,4 @@ public class WithSpanTestCase extends BaseOpenTelemetryTest {
         }
     }
 
-    @ApplicationScoped
-    public static class AppScopedBean {
-        @WithSpan
-        public String getString() {
-            return "greeting";
-        }
-    }
-
-    @RequestScoped
-    @Path("/span")
-    public static class RequestScopedBean {
-        @Inject
-        AppScopedBean bean;
-
-        @GET
-        public String getString() {
-            return bean.getString();
-        }
-    }
 }

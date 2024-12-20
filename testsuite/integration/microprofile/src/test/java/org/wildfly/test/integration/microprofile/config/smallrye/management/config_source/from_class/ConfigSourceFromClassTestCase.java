@@ -37,10 +37,10 @@ import org.wildfly.test.integration.microprofile.config.smallrye.AssertUtils;
 @ServerSetup(SetupTask.class)
 public class ConfigSourceFromClassTestCase extends AbstractMicroProfileConfigTestCase {
 
-    @Deployment
+    @Deployment(testable = false)
     public static Archive<?> deploy() {
         WebArchive war = ShrinkWrap.create(WebArchive.class, "ConfigSourceFromClassTestCase.war")
-                .addClasses(TestApplication.class, TestApplication.Resource.class, AbstractMicroProfileConfigTestCase.class)
+                .addClasses(TestApplication.class)
                 .addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml")
                 .addAsWebInfResource(ConfigSourceFromClassTestCase.class.getPackage(), "jboss-deployment-structure.xml",
                         "jboss-deployment-structure.xml");

@@ -50,7 +50,7 @@ public class OpenAPIMultiModuleDeploymentIndexTestCase {
     private static final String PARENT_DEPLOYMENT_NAME =
             OpenAPIMultiModuleDeploymentIndexTestCase.class.getSimpleName() + ".ear";
 
-    @Deployment
+    @Deployment(testable = false)
     public static Archive<?> deploy() throws Exception {
         WebArchive jaxrs = ShrinkWrap.create(WebArchive.class, "rest.war")
                                      .addAsResource(TestResource.class.getResource("beans.xml"), "WEB-INF/beans.xml")

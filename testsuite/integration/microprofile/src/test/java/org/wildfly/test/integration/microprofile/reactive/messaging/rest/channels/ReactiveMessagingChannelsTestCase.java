@@ -32,7 +32,6 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.arquillian.testcontainers.api.DockerRequired;
 import org.jboss.as.arquillian.api.ServerSetup;
-import org.jboss.as.test.shared.CLIServerSetupTask;
 import org.jboss.as.test.shared.TimeoutUtil;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
@@ -54,13 +53,12 @@ public class ReactiveMessagingChannelsTestCase {
     @ArquillianResource
     URL url;
 
-    @Deployment
+    @Deployment(testable = false)
     public static WebArchive getDeployment() {
         final WebArchive webArchive = ShrinkWrap.create(WebArchive.class, "rm-channels-client.war")
                 .addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml")
                 .setWebXML(ReactiveMessagingChannelsTestCase.class.getPackage(), "web.xml")
                 .addAsWebInfResource(ReactiveMessagingChannelsTestCase.class.getPackage(), "microprofile-config.properties", "classes/META-INF/microprofile-config.properties")
-                .addClasses(EnableReactiveExtensionsSetupTask.class, CLIServerSetupTask.class, RunKafkaSetupTask.class)
                 .addClasses(
                         PublisherToChannelPublisherEndpoint.class,
                         EmitterToSubscriberEndpoint.class,
