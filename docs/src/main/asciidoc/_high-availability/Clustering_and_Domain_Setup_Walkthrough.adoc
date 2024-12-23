@@ -129,7 +129,7 @@ First open the host.xml in the primary host for editing:
 vi domain/configuration/host.xml
 ----
 
-The default settings for interface in this file is like:
+The default settings for interfaces in this file are:
 
 [source,xml,options="nowrap"]
 ----
@@ -139,9 +139,6 @@ The default settings for interface in this file is like:
     </interface>
     <interface name="public">
        <inet-address value="${jboss.bind.address:127.0.0.1}"/>
-    </interface>
-    <interface name="unsecured">
-       <inet-address value="127.0.0.1" />
     </interface>
 </interfaces>
 ----
@@ -161,10 +158,35 @@ config to:
     <interface name="public">
        <inet-address value="${jboss.bind.address:10.211.55.7}"/>
     </interface>
-    <interface name="unsecured">
-       <inet-address value="10.211.55.7" />
-    </interface>
 </interfaces>
+----
+
+We also need to add the native management interface in the management-interfaces section.
+The default section for management-interfaces is
+
+[source,xml,options="nowrap"]
+----
+<management-interfaces>
+    <http-interface http-authentication-factory="management-http-authentication">
+        <http-upgrade enabled="true" sasl-authentication-factory="management-sasl-authentication"/>
+        <socket interface="management" port="${jboss.management.http.port:9990}"/>
+    </http-interface>
+</management-interfaces>
+----
+
+We need to add the native-interface.
+
+[source,xml,options="nowrap"]
+----
+<management-interfaces>
+    <http-interface http-authentication-factory="management-http-authentication">
+        <http-upgrade enabled="true" sasl-authentication-factory="management-sasl-authentication"/>
+        <socket interface="management" port="${jboss.management.http.port:9990}"/>
+    </http-interface>
+    <native-interface>
+        <socket interface="management" port="${jboss.management.native.port:9999}"/>
+    </native-interface>
+</management-interfaces>
 ----
 
 [[interface-config-on-secondary-hc]]
@@ -233,9 +255,6 @@ management ports to public address:
     </interface>
     <interface name="public">
        <inet-address value="${jboss.bind.address:10.211.55.2}"/>
-    </interface>
-    <interface name="unsecured">
-       <inet-address value="10.211.55.2" />
     </interface>
 </interfaces>
 ----
