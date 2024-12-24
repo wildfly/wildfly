@@ -256,6 +256,7 @@ public abstract class LayersTestBase {
             "org.wildfly.extension.metrics",
             // Extension not included in the default config
             "org.wildfly.extension.mvc-krazo",
+            "org.wildfly.extension.security.manager",
             "jakarta.mvc.api",
             "org.eclipse.krazo.core",
             "org.eclipse.krazo.resteasy",
