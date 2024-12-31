@@ -372,6 +372,11 @@
             <artifactId>mockito-core</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-subclass</artifactId>
+            <scope>test</scope>
+        </dependency>
 
         <!-- javax dependencies required to bootstrap the legacy controllers for transformer tests -->
         <dependency>
