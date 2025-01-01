@@ -399,6 +399,7 @@
             <modules>
                 <module>build-demander-base</module> <!-- Ensure base server build/dist modules used by tests are built -->
                 <module>aggregator-base</module>
+                <module>integration</module>
             </modules>
         </profile>
         <profile>
@@ -408,6 +409,7 @@
             <modules>
                 <module>build-demander-expansion</module> <!-- Ensure expansion server build/dist modules used by tests are built -->
                 <module>aggregator-expansion</module>
+                <module>integration</module>
             </modules>
         </profile>
         <profile>
@@ -416,6 +418,7 @@
             <modules>
                 <module>build-demander-preview</module> <!-- Ensure preview server build/dist modules used by tests are built -->
                 <module>aggregator-preview</module>
+                <module>integration</module>
             </modules>
         </profile>
         <!-- These execute in all feature pack contexts, so declare them here instead
