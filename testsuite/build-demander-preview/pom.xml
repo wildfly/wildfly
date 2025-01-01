@@ -40,6 +40,20 @@
     <description>Ensures the default server installation used by preview testsuites
         is built</description>
 
+    <dependencies>
+        <!-- Sure the test boms are built -->
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>wildfly-preview-test-bom</artifactId>
+            <type>pom</type>
+        </dependency>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>wildfly-preview-test-expansion-bom</artifactId>
+            <type>pom</type>
+        </dependency>
+    </dependencies>
+
     <profiles>
 
         <!-- Unless we are configured to only run the testsuite,

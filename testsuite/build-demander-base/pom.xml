@@ -52,6 +52,15 @@
         <testsuite.default.base.build.version>${full.maven.version}</testsuite.default.base.build.version>
     </properties>
 
+    <dependencies>
+        <!-- Sure the test bom is built -->
+        <dependency>
+            <groupId>${ee.maven.groupId}</groupId>
+            <artifactId>wildfly-standard-test-bom</artifactId>
+            <type>pom</type>
+        </dependency>
+    </dependencies>
+
     <profiles>
 
         <!-- Unless we are configured to only run the testsuite,

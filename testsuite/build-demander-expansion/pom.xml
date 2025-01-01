@@ -40,6 +40,20 @@
     <description>Ensures the default server installation used by expansion testsuites
         is built</description>
 
+    <dependencies>
+        <!-- Sure the test boms are built -->
+        <dependency>
+            <groupId>${ee.maven.groupId}</groupId>
+            <artifactId>wildfly-standard-test-bom</artifactId>
+            <type>pom</type>
+        </dependency>
+        <dependency>
+            <groupId>${full.maven.groupId}</groupId>
+            <artifactId>wildfly-standard-test-expansion-bom</artifactId>
+            <type>pom</type>
+        </dependency>
+    </dependencies>
+
     <profiles>
 
         <!-- Unless we are configured to only run the testsuite,
