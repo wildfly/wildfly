@@ -17,6 +17,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Base64;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -90,6 +91,8 @@ public class KeycloakConfiguration {
     public static final String ALICE_LAST_NAME = "Smith";
     public static final boolean ALICE_EMAIL_VERIFIED = true;
 
+    private static HashMap<ClientRepresentation,OIDCAdvancedConfigWrapper> logoutChannelMap =
+            new HashMap<>();
     public enum ClientAppType {
         OIDC_CLIENT,
         DIRECT_ACCESS_GRANT_OIDC_CLIENT,
@@ -234,11 +237,10 @@ public class KeycloakConfiguration {
         client.setClientId(clientId);
         client.setPublicClient(false);
         client.setSecret(clientSecret);
-        //client.setRedirectUris(Arrays.asList("*"));
         if (multiTenancyRedirectUri != null) {
             client.setRedirectUris(Arrays.asList(multiTenancyRedirectUri));
         } else {
-            client.setRedirectUris(Arrays.asList("http://" + clientHostName + ":" + clientPort + "/" + clientApp + "/*"));
+           client.setRedirectUris(Arrays.asList("http://" + clientHostName + ":" + clientPort + "/" + clientApp + "/*"));
         }
         client.setEnabled(true);
 
@@ -261,6 +263,7 @@ public class KeycloakConfiguration {
         }
         OIDCAdvancedConfigWrapper oidcAdvancedConfigWrapper = OIDCAdvancedConfigWrapper.fromClientRepresentation(client);
         oidcAdvancedConfigWrapper.setUseJwksUrl(false);
+        logoutChannelMap.put(client, oidcAdvancedConfigWrapper);
         KEYSTORE_CLASSPATH = Objects.requireNonNull(KeycloakConfiguration.class.getClassLoader().getResource("")).getPath();
         File ksFile = new File(KEYSTORE_CLASSPATH + KEYSTORE_FILE_NAME);
         if (ksFile.exists()) {
@@ -319,4 +322,47 @@ public class KeycloakConfiguration {
         return user;
     }
 
+    public static void setBackchannelLogoutUrl(ClientRepresentation client,
+                                        String backchannelLogoutUrl) {
+        OIDCAdvancedConfigWrapper oidcAdvancedConfigWrapper = logoutChannelMap.get(client);
+        if (oidcAdvancedConfigWrapper != null) {
+            oidcAdvancedConfigWrapper.setBackchannelLogoutUrl(backchannelLogoutUrl);
+        }
+    }
+
+    public static void setFrontChannelLogoutUrl(ClientRepresentation client,
+                                         String frontChannelLogoutUrl) {
+        OIDCAdvancedConfigWrapper oidcAdvancedConfigWrapper = logoutChannelMap.get(client);
+        if (oidcAdvancedConfigWrapper != null) {
+            oidcAdvancedConfigWrapper.setFrontChannelLogoutUrl(frontChannelLogoutUrl);
+        }
+    }
+
+    public static void setBackchannelLogoutSessionRequired(ClientRepresentation client,
+                                                           boolean backchannelLogoutSessionRequired) {
+        OIDCAdvancedConfigWrapper oidcAdvancedConfigWrapper = logoutChannelMap.get(client);
+        if (oidcAdvancedConfigWrapper != null) {
+            oidcAdvancedConfigWrapper.setBackchannelLogoutSessionRequired(backchannelLogoutSessionRequired);
+        }
+    }
+
+    public static void setFrontChannelLogoutSessionRequired(ClientRepresentation client,
+                                                            boolean frontchannelLogoutSessionRequired) {
+        OIDCAdvancedConfigWrapper oidcAdvancedConfigWrapper = logoutChannelMap.get(client);
+        if (oidcAdvancedConfigWrapper != null) {
+            oidcAdvancedConfigWrapper.setFrontChannelLogoutSessionRequired(frontchannelLogoutSessionRequired);
+        }
+    }
+
+    public static List<String> getPostLogoutRedirectUris(ClientRepresentation client) {
+        OIDCAdvancedConfigWrapper oidcAdvancedConfigWrapper = logoutChannelMap.get(client);
+        return oidcAdvancedConfigWrapper == null? null: oidcAdvancedConfigWrapper.getPostLogoutRedirectUris();
+    }
+    public static void setPostLogoutRedirectUris(ClientRepresentation client,
+                                          List<String> postLogoutRedirectUris) {
+        OIDCAdvancedConfigWrapper oidcAdvancedConfigWrapper = logoutChannelMap.get(client);
+        if (oidcAdvancedConfigWrapper != null) {
+            oidcAdvancedConfigWrapper.setPostLogoutRedirectUris(postLogoutRedirectUris);
+        }
+    }
 }
