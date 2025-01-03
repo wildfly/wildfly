@@ -12,7 +12,6 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
-
 /**
  * @author <a href="jasondlee@redhat.com">Jason Lee</a>
  */
@@ -24,11 +23,7 @@ public class SubsystemParsingTestCase extends AbstractSubsystemSchemaTest<Microm
     }
 
     public SubsystemParsingTestCase(MicrometerSubsystemSchema schema) {
-        super(MicrometerConfigurationConstants.NAME, new MicrometerExtension(), schema, MicrometerSubsystemSchema.CURRENT);
-    }
-
-    @Override
-    protected String getSubsystemXmlPathPattern() {
-        return "%s_%d_%d.xml";
+        super(MicrometerConfigurationConstants.NAME, new MicrometerExtension(), schema,
+            MicrometerSubsystemSchema.VERSION_2_0_COMMUNITY);
     }
 }

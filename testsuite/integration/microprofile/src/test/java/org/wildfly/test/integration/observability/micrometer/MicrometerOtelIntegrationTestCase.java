@@ -23,7 +23,6 @@ import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.arquillian.testcontainers.api.DockerRequired;
 import org.jboss.arquillian.testcontainers.api.Testcontainer;
 import org.jboss.as.arquillian.api.ServerSetup;
-import org.jboss.as.test.shared.CdiUtils;
 import org.jboss.as.test.shared.observability.containers.OpenTelemetryCollectorContainer;
 import org.jboss.as.test.shared.observability.setuptasks.MicrometerSetupTask;
 import org.jboss.as.test.shared.observability.signals.PrometheusMetric;
@@ -36,7 +35,6 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.wildfly.test.integration.observability.JaxRsActivator;
-import org.wildfly.test.integration.observability.micrometer.multiple.application.MicrometerMetricResource;
 
 @RunWith(Arquillian.class)
 @ServerSetup(MicrometerSetupTask.class)
@@ -54,9 +52,8 @@ public class MicrometerOtelIntegrationTestCase {
 
     @Deployment
     public static Archive<?> deploy() {
-        return ShrinkWrap.create(WebArchive.class, DEPLOYMENT_NAME)
-                .addClasses(JaxRsActivator.class, MicrometerMetricResource.class)
-                .addAsWebInfResource(CdiUtils.createBeansXml(), "beans.xml");
+        return ShrinkWrap.create(WebArchive.class, "micrometer-test.war")
+                .addClasses(JaxRsActivator.class, MicrometerResource.class);
     }
 
     // The @ServerSetup(MicrometerSetupTask.class) requires Docker to be available.
