@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package org.wildfly.extension.messaging.activemq.deployment.injection;
+package org.wildfly.extension.messaging.activemq.injection.deployment;
 
 
 import java.io.Serializable;
@@ -23,7 +23,7 @@ import javax.naming.NamingException;
 import jakarta.transaction.Status;
 import jakarta.transaction.TransactionSynchronizationRegistry;
 
-import static org.wildfly.extension.messaging.activemq._private.MessagingLogger.ROOT_LOGGER;
+import static org.wildfly.extension.messaging.activemq.injection._private.MessagingLogger.ROOT_LOGGER;
 
 /**
  * @author <a href="http://jmesnil.net/">Jeff Mesnil</a> (c) 2016 Red Hat inc.

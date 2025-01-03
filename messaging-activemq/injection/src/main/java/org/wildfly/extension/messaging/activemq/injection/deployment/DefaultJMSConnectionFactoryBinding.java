@@ -2,7 +2,7 @@
  * Copyright The WildFly Authors
  * SPDX-License-Identifier: Apache-2.0
  */
-package org.wildfly.extension.messaging.activemq.deployment;
+package org.wildfly.extension.messaging.activemq.injection.deployment;
 
 /**
  *

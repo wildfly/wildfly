@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package org.wildfly.extension.messaging.activemq.deployment.injection;
+package org.wildfly.extension.messaging.activemq.injection.deployment;
 
 import jakarta.enterprise.event.Observes;
 import jakarta.enterprise.inject.spi.AnnotatedType;

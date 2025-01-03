@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package org.wildfly.extension.messaging.activemq._private;
+package org.wildfly.extension.messaging.activemq.injection._private;
 
 import java.lang.invoke.MethodHandles;
 
