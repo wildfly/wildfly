@@ -9,8 +9,6 @@ import static org.jboss.as.test.shared.PermissionUtils.createPermissionsXmlAsset
 import java.lang.reflect.ReflectPermission;
 import java.util.PropertyPermission;
 
-import jakarta.enterprise.inject.spi.Extension;
-
 import org.jboss.arquillian.container.test.spi.client.deployment.ApplicationArchiveProcessor;
 import org.jboss.arquillian.test.spi.TestClass;
 import org.jboss.shrinkwrap.api.Archive;
@@ -49,10 +47,6 @@ public class FaultToleranceApplicationArchiveProcessor implements ApplicationArc
 
         if (applicationArchive instanceof ManifestContainer<?>) {
             ManifestContainer<?> manifestContainer = (ManifestContainer<?>) applicationArchive;
-
-            // Eager OpenTelemetry bean
-            manifestContainer.addAsServiceProvider(Extension.class, EagerOpenTelemetryBean.class);
-            classContainer.addClass(EagerOpenTelemetryBean.class);
 
             // Run the TCK with security manager
             manifestContainer.addAsManifestResource(createPermissionsXmlAsset(
