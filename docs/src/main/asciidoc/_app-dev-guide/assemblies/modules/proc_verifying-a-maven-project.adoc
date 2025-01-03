@@ -1,0 +1,51 @@
+:_newdoc-version: 2.15.0
+:_template-generated: 2023-11-21
+:_mod-docs-content-type: PROCEDURE
+
+[id="verifying-a-maven-project_{context}"]
+= Verifying a maven project
+
+[role="_abstract"]
+Verify that the Maven project you configured builds.
+
+.Prerequisites
+
+* You have defined Maven properties.
++
+For more information, see xref:defining-properties-in-a-maven-project_creating-a-maven-project-for-a-hello-world-application[Defining properties in a Maven project].
+
+* You have defined Maven repositories.
++ 
+For more information, see xref:defining-the-repositories-in-a-maven-project_creating-a-maven-project-for-a-hello-world-application[Defining the repositories in a Maven project].
+
+* You have imported the {ProductShortname} Bill of materials (BOMs) as dependency management.
++
+For more information, see xref:importing-the-server-boms-dependency-management-in-maven-project_creating-a-maven-project-for-a-hello-world-application[Importing the {ProductShortname} BOMs as dependency management in a Maven project].
+* You have added plug-in management.
++
+For more information, see xref:adding-plugin-management-in-a-maven-project_creating-a-maven-project-for-a-hello-world-application[Adding plugin management in Maven project for a server Hello World application].
+
+
+.Procedure
+
+* Build the project by using the `package` command.
++
+[source,options="nowrap"]
+----
+$ mvn package
+----
++
+You get an output similar to the following:
++
+----
+...
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+...
+----
+
+[role="_additional-resources"]
+.Next steps
+
+* xref:creating-a-hello-world-servlet_default[Creating a Hello World servlet]
