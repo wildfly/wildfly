@@ -53,7 +53,9 @@ public class ElytronOidcSubsystemTransformers implements ExtensionTransformerReg
         // 2.0.0 (WildFly 29) to 1.0.0 (WildFly 28)
         from2(chainedBuilder);
 
-        chainedBuilder.buildAndRegister(registration, new ModelVersion[] { VERSION_3_0_0.getVersion(), VERSION_2_0_0.getVersion(), VERSION_1_0_0.getVersion() });
+        chainedBuilder.buildAndRegister(registration, new ModelVersion[] {
+                VERSION_4_0_0.getVersion(), VERSION_3_0_0.getVersion(),
+                VERSION_2_0_0.getVersion(), VERSION_1_0_0.getVersion() });
     }
 
     private static void from2(ChainedTransformationDescriptionBuilder chainedBuilder) {
@@ -167,5 +169,4 @@ public class ElytronOidcSubsystemTransformers implements ExtensionTransformerReg
                 .setDiscard(DiscardAttributeChecker.ALWAYS, REQUEST_OBJECT_SIGNING_KEYSTORE_TYPE)
                 .end();
     }
-
 }
