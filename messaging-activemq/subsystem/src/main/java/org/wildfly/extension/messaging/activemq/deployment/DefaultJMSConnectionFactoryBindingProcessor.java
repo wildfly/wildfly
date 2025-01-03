@@ -4,7 +4,7 @@
  */
 package org.wildfly.extension.messaging.activemq.deployment;
 
-import static org.wildfly.extension.messaging.activemq.deployment.DefaultJMSConnectionFactoryBinding.DEFAULT_JMS_CONNECTION_FACTORY;
+import static org.wildfly.extension.messaging.activemq.injection.deployment.DefaultJMSConnectionFactoryBinding.DEFAULT_JMS_CONNECTION_FACTORY;
 
 import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ee.component.deployers.AbstractPlatformBindingProcessor;

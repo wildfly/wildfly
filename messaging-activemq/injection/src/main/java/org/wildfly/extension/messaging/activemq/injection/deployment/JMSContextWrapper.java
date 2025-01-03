@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package org.wildfly.extension.messaging.activemq.deployment.injection;
+package org.wildfly.extension.messaging.activemq.injection.deployment;
 
 
 import java.io.Serializable;
@@ -25,7 +25,7 @@ import jakarta.jms.TemporaryQueue;
 import jakarta.jms.TemporaryTopic;
 import jakarta.jms.TextMessage;
 import jakarta.jms.Topic;
-import org.wildfly.extension.messaging.activemq._private.MessagingLogger;
+import org.wildfly.extension.messaging.activemq.injection._private.MessagingLogger;
 
 
 /**

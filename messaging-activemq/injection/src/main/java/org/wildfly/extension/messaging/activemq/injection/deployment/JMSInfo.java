@@ -3,10 +3,10 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package org.wildfly.extension.messaging.activemq.deployment.injection;
+package org.wildfly.extension.messaging.activemq.injection.deployment;
 
 import static jakarta.jms.JMSContext.AUTO_ACKNOWLEDGE;
-import static org.wildfly.extension.messaging.activemq.deployment.DefaultJMSConnectionFactoryBinding.COMP_DEFAULT_JMS_CONNECTION_FACTORY;
+import static org.wildfly.extension.messaging.activemq.injection.deployment.DefaultJMSConnectionFactoryBinding.COMP_DEFAULT_JMS_CONNECTION_FACTORY;
 
 import jakarta.jms.JMSConnectionFactory;
 import jakarta.jms.JMSPasswordCredential;
