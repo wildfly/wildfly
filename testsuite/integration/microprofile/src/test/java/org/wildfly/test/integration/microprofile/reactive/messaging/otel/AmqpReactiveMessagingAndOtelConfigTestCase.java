@@ -23,7 +23,7 @@ public class AmqpReactiveMessagingAndOtelConfigTestCase extends BaseReactiveMess
         super("mp.messaging.connector.smallrye-amqp.tracing-enabled", "amqp-connector");
     }
 
-    @Deployment
+    @Deployment(testable = false)
     public static WebArchive getDeployment() {
         return createDeployment("mp-rm-amqp-otel-config.war");
     }

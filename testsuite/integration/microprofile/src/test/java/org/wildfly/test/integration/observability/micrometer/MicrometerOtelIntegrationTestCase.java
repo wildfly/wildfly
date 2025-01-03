@@ -52,7 +52,7 @@ public class MicrometerOtelIntegrationTestCase {
     @Testcontainer
     private OpenTelemetryCollectorContainer otelCollector;
 
-    @Deployment
+    @Deployment(testable = false)
     public static Archive<?> deploy() {
         return ShrinkWrap.create(WebArchive.class, DEPLOYMENT_NAME)
                 .addClasses(JaxRsActivator.class, MicrometerMetricResource.class)

@@ -47,7 +47,7 @@ public class OpenAPIMultiModuleDeploymentTestCase {
     private static final String DEPLOYMENT_NAME = OpenAPIMultiModuleDeploymentTestCase.class.getSimpleName() + ".war";
     private static final String PARENT_DEPLOYMENT_NAME = OpenAPIMultiModuleDeploymentTestCase.class.getSimpleName() + ".ear";
 
-    @Deployment
+    @Deployment(testable = false)
     public static Archive<?> deploy() {
         WebArchive jaxrs = ShrinkWrap.create(WebArchive.class, DEPLOYMENT_NAME)
                 .add(EmptyAsset.INSTANCE, "WEB-INF/beans.xml")

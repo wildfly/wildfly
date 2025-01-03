@@ -32,7 +32,7 @@ public class OpenTelemetryMetricsTestCase extends BaseOpenTelemetryTest {
     @ArquillianResource
     private URL url;
 
-    @Deployment
+    @Deployment(testable = false)
     public static Archive<?> getDeployment() {
         return buildBaseArchive(DEPLOYMENT_NAME);
     }

@@ -30,7 +30,7 @@ public abstract class MicroProfileHealthDisabledDefaultProceduresTestBase {
     abstract void checkGlobalOutcome(final ManagementClient managementClient, final String operation, final boolean mustBeUP,
                                      final String probeName, final Integer expectedChecksCount) throws IOException;
 
-    @Deployment(name = "MicroProfileHealthDisabledDefaultProceduresTestBase")
+    @Deployment(name = "MicroProfileHealthDisabledDefaultProceduresTestBase", testable = false)
     public static Archive<?> deployDisabledDefaultProcedures() {
         WebArchive war = ShrinkWrap.create(WebArchive.class, "DisabledProcedures.war")
                 .addClass(MyReadyProbe.class)

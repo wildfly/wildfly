@@ -83,7 +83,7 @@ public class MultiDeploymentReactiveMessagingTestCase extends AbstractCliTestBas
         closeCLI();
     }
 
-    @Deployment
+    @Deployment(testable = false)
     public static Archive<?> getDeployment() {
         // Empty deployment to satisfy Arquillian
         JavaArchive ja = ShrinkWrap.create(JavaArchive.class, "dummy.jar");

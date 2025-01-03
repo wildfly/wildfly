@@ -38,7 +38,7 @@ public class MicroProfileHealthSecuredHTTPEndpointTestCase {
     @ContainerResource
     ManagementClient managementClient;
 
-    @Deployment
+    @Deployment(testable = false)
     public static Archive<?> deployment() {
         final Archive<?> deployment = ShrinkWrap.create(JavaArchive.class, "MicroProfileHealthSecuredHTTPEndpointTestCase.jar")
                 .addClasses(MicroProfileHealthSecuredHTTPEndpointSetupTask.class);

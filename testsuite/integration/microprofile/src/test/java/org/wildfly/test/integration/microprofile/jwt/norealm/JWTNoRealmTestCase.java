@@ -27,11 +27,10 @@ public class JWTNoRealmTestCase extends BaseJWTCase {
 
     private static final String DEPLOYMENT_NAME = JWTNoRealmTestCase.class.getSimpleName() + ".war";
 
-    @Deployment
+    @Deployment(testable = false)
     public static Archive<?> deploy() {
         return ShrinkWrap.create(WebArchive.class, DEPLOYMENT_NAME)
                 .add(EmptyAsset.INSTANCE, "WEB-INF/beans.xml")
-                .addClasses(BaseJWTCase.class, JWTNoRealmTestCase.class)
                 .addClasses(App.class, SampleEndPoint.class)
                 .addAsWebInfResource(BaseJWTCase.class.getPackage(), "web.xml", "web.xml")
                 .addAsManifestResource(BaseJWTCase.class.getPackage(),"microprofile-config.properties", "microprofile-config.properties")

@@ -35,7 +35,7 @@ import org.junit.runner.RunWith;
 @RunAsClient
 public class OpenAPIRESTlessTestCase {
 
-    @Deployment
+    @Deployment(testable = false)
     public static Archive<?> deploy() {
         return ShrinkWrap.create(WebArchive.class, "openapi-RESTless.war")
                 .add(EmptyAsset.INSTANCE, "WEB-INF/beans.xml")
