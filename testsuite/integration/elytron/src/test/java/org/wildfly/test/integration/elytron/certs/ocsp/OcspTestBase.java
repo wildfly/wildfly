@@ -5,6 +5,8 @@
 
 package org.wildfly.test.integration.elytron.certs.ocsp;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYSTEM_PROPERTY;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 import static org.wildfly.security.x500.X500.OID_AD_OCSP;
 import static org.wildfly.security.x500.X500.OID_KP_OCSP_SIGNING;
 
@@ -27,9 +29,15 @@ import java.util.LinkedList;
 
 import javax.security.auth.x500.X500Principal;
 
+import org.jboss.as.arquillian.container.ManagementClient;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.client.ModelControllerClient;
+import org.jboss.as.controller.operations.common.Util;
+import org.jboss.as.test.integration.management.ManagementOperations;
 import org.jboss.as.test.shared.CliUtils;
 
+import org.jboss.as.version.Stability;
+import org.jboss.dmr.ModelNode;
 import org.wildfly.security.x500.GeneralName;
 import org.wildfly.security.x500.cert.AccessDescription;
 import org.wildfly.security.x500.cert.AuthorityInformationAccessExtension;
@@ -67,6 +75,7 @@ import org.junit.Assert;
 public class OcspTestBase extends CommonBase {
 
     protected static KeyStore trustStore;
+    protected static KeyStore ladybirdKeyStore;
     protected static KeyStore ocspCheckedGoodKeyStore;
     protected static KeyStore ocspCheckedGoodNoUrlKeyStore;
     protected static KeyStore ocspCheckedRevokedKeyStore;
@@ -76,7 +85,7 @@ public class OcspTestBase extends CommonBase {
     private static final int OCSP_PORT = 4854;
     protected static TestingOcspServer ocspServer = null;
     protected static final String PASSWORD = "Elytron";
-    protected static final char[] PASSWORD_CHAR = PASSWORD.toCharArray();
+    public static final char[] PASSWORD_CHAR = PASSWORD.toCharArray();
     protected static final String CA_JKS_LOCATION = "." + File.separator + "target" + File.separator + "test-classes" +
             File.separator + "ca" + File.separator + "jks";
     protected static final File WORKING_DIR_CA = new File(CA_JKS_LOCATION);
@@ -96,6 +105,11 @@ public class OcspTestBase extends CommonBase {
     protected static final File TRUST_FILE = new File(WORKING_DIR_CA,"ca.truststore");
 
     protected static final String OCSP_RESPONDER_URL = "http://localhost:" + OCSP_PORT + "/ocsp";
+    private final Stability desiredStability;
+
+    public OcspTestBase(Stability desiredStability) {
+        this.desiredStability = desiredStability;
+    }
 
     private static KeyStore createKeyStore() throws Exception {
         KeyStore ks = KeyStore.getInstance("JKS");
@@ -143,7 +157,7 @@ public class OcspTestBase extends CommonBase {
         X500Principal issuerDN = new X500Principal("CN=Elytron CA, ST=Elytron, C=UK, EMAILADDRESS=elytron@wildfly.org, O=Root Certificate Authority");
         X500Principal intermediateIssuerDN = new X500Principal("CN=Elytron ICA, ST=Elytron, C=UK, O=Intermediate Certificate Authority");
 
-        KeyStore ladybirdKeyStore = createKeyStore();
+        ladybirdKeyStore = createKeyStore();
         trustStore = createKeyStore();
 
         // Generates the issuer certificate and adds it to the keystores
@@ -445,26 +459,71 @@ public class OcspTestBase extends CommonBase {
     }
 
     /**
+     * Server setup task that configures OCSP and related dependencies with also fully functional OCSP responder.
+     */
+    static class OcspStaplingServerSetup extends AbstractElytronSetupTask {
+
+        @Override
+        protected void setup(ModelControllerClient modelControllerClient) throws Exception {
+            OcspTestBase.beforeTest();
+
+            startOcspServer();
+
+            super.setup(modelControllerClient);
+        }
+
+        @Override
+        protected void tearDown(ModelControllerClient modelControllerClient) throws Exception {
+            super.tearDown(modelControllerClient);
+
+            stopOcspServer();
+
+            OcspTestBase.afterTest();
+        }
+
+        @Override
+        protected ConfigurableElement[] getConfigurableElements() {
+            return getConfigurableElementsCommon(true);
+        }
+    }
+
+    private static ConfigurableElement[] getConfigurableElementsCommon() {
+        return getConfigurableElementsCommon(false);
+    }
+
+    /**
      * Common part of server configuration that is used for OCSP testing.
      *
      * @return list of configurable elements that shall be setup on server
      */
-    private static ConfigurableElement[] getConfigurableElementsCommon() {
+    private static ConfigurableElement[] getConfigurableElementsCommon(boolean configureOCSPStapling) {
         LinkedList<ConfigurableElement> elements = new LinkedList<>();
 
         CredentialReference serverKeyStoreCredRef = CredentialReference.builder().withClearText(PASSWORD).build();
 
         CredentialReference ocspResponderKeyStoreCredRef = CredentialReference.builder().withClearText(PASSWORD).build();
-
         // Prepare server key-store and key-manager for server ssl context
-        Path serverKeyStorePath = Path.builder().withPath(CliUtils.asAbsolutePath(LADYBIRD_FILE)).build();
+        File serverKeyStoreGoodFile = (configureOCSPStapling) ? OCSP_CHECKED_GOOD_FILE : LADYBIRD_FILE;
+        Path serverKeyStoreGoodPath = Path.builder().withPath(CliUtils.asAbsolutePath(serverKeyStoreGoodFile)).build();
 
-        SimpleKeyStore serverKeyStore = SimpleKeyStore.builder().withName("serverKeyStore").withCredentialReference(
-                serverKeyStoreCredRef).withType("JKS").withPath(serverKeyStorePath).build();
-        elements.add(serverKeyStore);
+        if (configureOCSPStapling) {
+            // add keystores with revoked and unknown certs to be used later
+            Path serverKeyStoreRevokedPath = Path.builder().withPath(CliUtils.asAbsolutePath(OCSP_CHECKED_REVOKED_FILE)).build();
+            Path serverKeyStoreUnknownPath = Path.builder().withPath(CliUtils.asAbsolutePath(OCSP_CHECKED_UNKNOWN_FILE)).build();
+            SimpleKeyStore serverKeyStoreRevoked = SimpleKeyStore.builder().withName("serverKeyStoreRevoked").withCredentialReference(
+                    serverKeyStoreCredRef).withType("JKS").withPath(serverKeyStoreRevokedPath).build();
+            SimpleKeyStore serverKeyStoreUnknown = SimpleKeyStore.builder().withName("serverKeyStoreUnknown").withCredentialReference(
+                    serverKeyStoreCredRef).withType("JKS").withPath(serverKeyStoreUnknownPath).build();
+            elements.add(serverKeyStoreRevoked);
+            elements.add(serverKeyStoreUnknown);
+        }
+
+        SimpleKeyStore serverKeyStoreGood = SimpleKeyStore.builder().withName("serverKeyStoreGood").withCredentialReference(
+                serverKeyStoreCredRef).withType("JKS").withPath(serverKeyStoreGoodPath).build();
+        elements.add(serverKeyStoreGood);
 
         SimpleKeyManager serverKeyManager = SimpleKeyManager.builder().withName("serverKeyManager").withKeyStore(
-                serverKeyStore.getName()).withCredentialReference(serverKeyStoreCredRef).build();
+                serverKeyStoreGood.getName()).withCredentialReference(serverKeyStoreCredRef).build();
         elements.add(serverKeyManager);
 
         // Prepare server trust-store (with OCSP configuration) and related key-manager for server ssl context
@@ -473,33 +532,54 @@ public class OcspTestBase extends CommonBase {
                 serverKeyStoreCredRef).withType("JKS").withPath(serverTrustStorePath).build();
         elements.add(serverTrustStore);
 
-        // Add OCSP responder key store
-        Path ocspResponderKeyStorePath = Path.builder().withPath(OCSP_RESPONDER_FILE.getAbsolutePath()).build();
-        SimpleKeyStore ocspResponderKeyStore = SimpleKeyStore.builder().withName("ocspResponderKeyStore").withCredentialReference(
-                ocspResponderKeyStoreCredRef).withType("JKS").withPath(ocspResponderKeyStorePath).build();
-        elements.add(ocspResponderKeyStore);
+        SimpleTrustManager serverTrustManager;
+        if (configureOCSPStapling) {
+            serverTrustManager = SimpleTrustManager.builder()
+                    .withName("serverTrustManager")
+                    .withKeyStore(serverTrustStore.getName())
+                    .build();
+        } else {
+            // Add OCSP responder key store
+            Path ocspResponderKeyStorePath = Path.builder().withPath(OCSP_RESPONDER_FILE.getAbsolutePath()).build();
+            SimpleKeyStore ocspResponderKeyStore = SimpleKeyStore.builder().withName("ocspResponderKeyStore").withCredentialReference(
+                    ocspResponderKeyStoreCredRef).withType("JKS").withPath(ocspResponderKeyStorePath).build();
+            elements.add(ocspResponderKeyStore);
 
-        Ocsp ocsp = Ocsp.builder()
-                .withPreferCrls(false)
-                .withResponderKeyStore("ocspResponderKeyStore")
-                .withResponderCertificate("ocspResponder").build();
+            Ocsp ocsp = Ocsp.builder()
+                    .withPreferCrls(false)
+                    .withResponderKeyStore("ocspResponderKeyStore")
+                    .withResponderCertificate("ocspResponder").build();
 
-        CertificateRevocationList crl =
-                CertificateRevocationList.builder().withPath(CliUtils.asAbsolutePath(CA_BLANK_PEM_CRL)).build();
-        SimpleTrustManager serverTrustManager = SimpleTrustManager.builder()
-                .withName("serverTrustManager")
-                .withKeyStore(serverTrustStore.getName())
-                .withOcsp(ocsp)
-                .withSoftFail(false)
-                .withCrl(crl)
-                .withAlgorithm("PKIX").build();
+            CertificateRevocationList crl =
+                    CertificateRevocationList.builder().withPath(CliUtils.asAbsolutePath(CA_BLANK_PEM_CRL)).build();
+            serverTrustManager = SimpleTrustManager.builder()
+                    .withName("serverTrustManager")
+                    .withKeyStore(serverTrustStore.getName())
+                    .withOcsp(ocsp)
+                    .withSoftFail(false)
+                    .withCrl(crl)
+                    .withAlgorithm("PKIX").build();
+        }
         elements.add(serverTrustManager);
 
         // Create final server ssl context with prepared key and trust managers.
-        SimpleServerSslContext serverSslContext =
-                SimpleServerSslContext.builder().withName("serverSslContext").withKeyManagers(
-                        serverKeyManager.getName()).withNeedClientAuth(true).withTrustManagers(
-                        serverTrustManager.getName()).build();
+        SimpleServerSslContext serverSslContext;
+        if (configureOCSPStapling) {
+            serverSslContext =
+                    SimpleServerSslContext.builder().withName("serverSslContext").withKeyManagers(
+                                    serverKeyManager.getName())
+                            .withNeedClientAuth(true)
+                            .withOcspStaplingEnabled(true)
+                            .withResponseTimeout(5000).withCacheSize(256).withCacheLifeTime(3600)
+                            .withResponderUri(null).withResponderOverride(false).withIgnoreExtension(false)
+                            .withTrustManagers(serverTrustManager.getName())
+                            .build();
+        } else {
+            serverSslContext =
+                    SimpleServerSslContext.builder().withName("serverSslContext").withKeyManagers(
+                            serverKeyManager.getName()).withNeedClientAuth(true).withTrustManagers(
+                            serverTrustManager.getName()).build();
+        }
         elements.add(serverSslContext);
 
         // Configure created server ssl context for undertow default HTTPS listener.
@@ -508,5 +588,11 @@ public class OcspTestBase extends CommonBase {
         elements.add(undertowSslContext);
 
         return elements.toArray(new ConfigurableElement[]{});
+    }
+
+    protected static <T extends OcspTestBase> void addSystemProperty(ManagementClient client, Class<T> clazz) throws Exception {
+        ModelNode add = Util.createAddOperation(PathAddress.pathAddress(SYSTEM_PROPERTY, OcspTestBase.class.getName()));
+        add.get(VALUE).set(clazz.getName());
+        ManagementOperations.executeOperation(client.getControllerClient(), add);
     }
 }
