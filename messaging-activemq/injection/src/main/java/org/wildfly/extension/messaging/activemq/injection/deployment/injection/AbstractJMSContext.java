@@ -2,9 +2,9 @@
  * Copyright The WildFly Authors
  * SPDX-License-Identifier: Apache-2.0
  */
-package org.wildfly.extension.messaging.activemq.deployment.injection;
+package org.wildfly.extension.messaging.activemq.injection.deployment.injection;
 
-import static org.wildfly.extension.messaging.activemq._private.MessagingLogger.ROOT_LOGGER;
+import static org.wildfly.extension.messaging.activemq.injection._private.MessagingLogger.ROOT_LOGGER;
 
 import java.io.Serializable;
 import java.util.Map;
