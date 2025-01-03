@@ -77,7 +77,7 @@
                                 </goals>
                                 <phase>${wildfly-ee.update.phase}</phase>
                                 <configuration>
-                                    <tasks>
+                                    <target>
                                         <exec executable="./run-test.sh" failonerror="true">
                                             <env key="GALLEON_VERSION" value="${version.org.jboss.galleon}"/>
                                             <env key="BASE_DIR" value="${project.basedir}"/>
@@ -87,7 +87,7 @@
                                             <env key="WILDFLY_CHANNEL" value="${galleon.minor.channel}"/>
                                             <env key="GALLEON_LAYERS" value="jaxrs-server"/>
                                         </exec>
-                                    </tasks>
+                                    </target>
                                 </configuration>
                             </execution>
                             <execution>
@@ -97,7 +97,7 @@
                                 </goals>
                                 <phase>${wildfly.update.phase}</phase>
                                 <configuration>
-                                    <tasks>
+                                    <target>
                                         <exec executable="./run-test.sh" failonerror="true">
                                             <env key="GALLEON_VERSION" value="${version.org.jboss.galleon}"/>
                                             <env key="BASE_DIR" value="${project.basedir}"/>
@@ -106,8 +106,8 @@
                                             <env key="WILDFLY_PRODUCER" value="wildfly"/>
                                             <env key="WILDFLY_CHANNEL" value="${galleon.minor.channel}"/>
                                             <env key="GALLEON_LAYERS" value="cloud-server"/>
-                                        </exec>\
-                                    </tasks>
+                                        </exec>
+                                    </target>
                                 </configuration>
                             </execution>
                             <execution>
@@ -117,7 +117,7 @@
                                 </goals>
                                 <phase>${wildfly-preview.update.phase}</phase>
                                 <configuration>
-                                    <tasks>
+                                    <target>
                                         <exec executable="./run-test.sh" failonerror="true">
                                             <env key="GALLEON_VERSION" value="${version.org.jboss.galleon}"/>
                                             <env key="BASE_DIR" value="${project.basedir}"/>
@@ -127,7 +127,7 @@
                                             <env key="WILDFLY_CHANNEL" value="${galleon.minor.channel}"/>
                                             <env key="GALLEON_LAYERS" value="cloud-server,microprofile-platform,-microprofile-fault-tolerance"/>
                                         </exec>
-                                    </tasks>
+                                    </target>
                                 </configuration>
                             </execution>
                         </executions>
