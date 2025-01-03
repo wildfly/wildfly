@@ -48,6 +48,10 @@
         <version.jakarta.validation.jakarta-validation-api>3.1.0</version.jakarta.validation.jakarta-validation-api>
         <version.jakarta.websocket.jakarta-websocket-api>2.2.0</version.jakarta.websocket.jakarta-websocket-api>
         <version.jakarta.ws.rs.jakarta-ws-rs-api>4.0.0</version.jakarta.ws.rs.jakarta-ws-rs-api>
+        <version.io.opentelemetry.instrumentation>2.5.0</version.io.opentelemetry.instrumentation>
+        <version.io.opentelemetry.opentelemetry>1.39.0</version.io.opentelemetry.opentelemetry>
+        <version.io.opentelemetry.opentelemetry-semconv>1.25.0-alpha</version.io.opentelemetry.opentelemetry-semconv>
+        <version.io.smallrye.smallrye-opentelemetry>2.8.0</version.io.smallrye.smallrye-opentelemetry>
         <version.org.glassfish.expressly>6.0.0-M1</version.org.glassfish.expressly>
         <version.org.glassfish.jakarta.faces>4.1.0</version.org.glassfish.jakarta.faces>
         <version.org.jboss.resteasy>7.0.0.Alpha4</version.org.jboss.resteasy>
@@ -276,6 +280,7 @@
                     </exclusion>
                 </exclusions>
             </dependency>
+
 
             <dependency>
                 <groupId>org.apache.avro</groupId>
