@@ -9,7 +9,7 @@
     <parent>
         <groupId>org.jboss</groupId>
         <artifactId>jboss-parent</artifactId>
-        <version>39</version>
+        <version>47</version>
         <!-- The empty relativePath makes Maven lookup it in the repository. Missing tag default is ../pom.xml. -->
         <relativePath/>
     </parent>
