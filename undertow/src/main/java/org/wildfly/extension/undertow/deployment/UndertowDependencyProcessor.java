@@ -25,12 +25,10 @@ import org.jboss.modules.ModuleLoader;
 public class UndertowDependencyProcessor implements DeploymentUnitProcessor {
 
     private static final String JSTL = "jakarta.servlet.jstl.api";
-
     private static final String UNDERTOW_CORE = "io.undertow.core";
     private static final String UNDERTOW_SERVLET = "io.undertow.servlet";
     private static final String UNDERTOW_JSP = "io.undertow.jsp";
     private static final String UNDERTOW_WEBSOCKET = "io.undertow.websocket";
-
     private static final String SERVLET_API = "jakarta.servlet.api";
     private static final String JSP_API = "jakarta.servlet.jsp.api";
     private static final String WEBSOCKET_API = "jakarta.websocket.api";
@@ -52,18 +50,18 @@ public class UndertowDependencyProcessor implements DeploymentUnitProcessor {
         final ModuleLoader moduleLoader = Module.getBootModuleLoader();
 
         //add the api classes for every deployment
-        moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, SERVLET_API, false, false, true, false));
-        moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, JSP_API, false, false, true, false));
-        moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, WEBSOCKET_API, false, false, true, false));
-        moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, JSTL, false, false, false, false));
+        moduleSpecification.addSystemDependency(ModuleDependency.Builder.of(moduleLoader, SERVLET_API).setImportServices(true).build());
+        moduleSpecification.addSystemDependency(ModuleDependency.Builder.of(moduleLoader, JSP_API).setImportServices(true).build());
+        moduleSpecification.addSystemDependency(ModuleDependency.Builder.of(moduleLoader, WEBSOCKET_API).setImportServices(true).build());
+        moduleSpecification.addSystemDependency(ModuleDependency.Builder.of(moduleLoader, JSTL).build());
 
         if (!DeploymentTypeMarker.isType(DeploymentType.WAR, deploymentUnit)) {
             return; // Skip non web deployments
         }
 
-        moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, UNDERTOW_CORE, false, false, true, false));
-        moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, UNDERTOW_SERVLET, false, false, true, false));
-        moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, UNDERTOW_JSP, false, false, true, false));
-        moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, UNDERTOW_WEBSOCKET, false, false, true, false));
+        moduleSpecification.addSystemDependency(ModuleDependency.Builder.of(moduleLoader, UNDERTOW_CORE).setImportServices(true).build());
+        moduleSpecification.addSystemDependency(ModuleDependency.Builder.of(moduleLoader, UNDERTOW_SERVLET).setImportServices(true).build());
+        moduleSpecification.addSystemDependency(ModuleDependency.Builder.of(moduleLoader, UNDERTOW_JSP).setImportServices(true).build());
+        moduleSpecification.addSystemDependency(ModuleDependency.Builder.of(moduleLoader, UNDERTOW_WEBSOCKET).setImportServices(true).build());
     }
 }
