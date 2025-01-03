@@ -50,9 +50,9 @@ public class ApplicationClientDependencyProcessor implements DeploymentUnitProce
         final Set<String> moduleIdentifiers = new HashSet<>();
         final DeploymentUnit top = deploymentUnit.getParent() == null ? deploymentUnit : deploymentUnit.getParent();
 
-        moduleIdentifiers.add(top.getAttachment(Attachments.MODULE_IDENTIFIER).toString());
+        moduleIdentifiers.add(top.getAttachment(Attachments.MODULE_NAME));
         for(final DeploymentUnit module : top.getAttachmentList(Attachments.SUB_DEPLOYMENTS)) {
-            moduleIdentifiers.add(module.getAttachment(Attachments.MODULE_IDENTIFIER).toString());
+            moduleIdentifiers.add(module.getAttachment(Attachments.MODULE_NAME));
         }
 
         moduleSpecification.removeUserDependencies(dep -> {

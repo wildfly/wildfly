@@ -38,7 +38,6 @@ import org.jboss.metadata.web.jboss.JBossWebMetaData;
 import org.jboss.metadata.web.spec.FilterMetaData;
 import org.jboss.metadata.web.spec.ServletMetaData;
 import org.jboss.modules.Module;
-import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoadException;
 import org.jboss.resteasy.plugins.server.servlet.HttpServlet30Dispatcher;
 import org.jboss.resteasy.plugins.server.servlet.ResteasyBootstrapClasses;
@@ -71,8 +70,7 @@ public class JaxrsScanningProcessor implements DeploymentUnitProcessor {
             deploymentData = parent.getAttachment(JaxrsAttachments.ADDITIONAL_RESTEASY_DEPLOYMENT_DATA);
         }
 
-        @SuppressWarnings("deprecation")
-        final ModuleIdentifier moduleIdentifier = deploymentUnit.getAttachment(Attachments.MODULE_IDENTIFIER);
+        final String moduleIdentifier = deploymentUnit.getAttachment(Attachments.MODULE_NAME);
 
         ResteasyDeploymentData resteasyDeploymentData = new ResteasyDeploymentData();
         final WarMetaData warMetaData = deploymentUnit.getAttachment(WarMetaData.ATTACHMENT_KEY);
@@ -83,7 +81,7 @@ public class JaxrsScanningProcessor implements DeploymentUnitProcessor {
             if (warMetaData == null) {
                 resteasyDeploymentData.setScanAll(true);
                 scan(deploymentUnit, module.getClassLoader(), resteasyDeploymentData);
-                deploymentData.put(moduleIdentifier.toString(), resteasyDeploymentData);
+                deploymentData.put(moduleIdentifier, resteasyDeploymentData);
             } else {
                 scanWebDeployment(warMetaData.getMergedJBossWebMetaData(), module.getClassLoader(), resteasyDeploymentData);
                 scan(deploymentUnit, module.getClassLoader(), resteasyDeploymentData);
