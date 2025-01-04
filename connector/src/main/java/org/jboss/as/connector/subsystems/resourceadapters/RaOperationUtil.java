@@ -93,6 +93,7 @@ import org.jboss.as.connector.services.resourceadapters.deployment.ResourceAdapt
 import org.jboss.as.connector.util.ConnectorServices;
 import org.jboss.as.connector.util.ModelNodeUtil;
 import org.jboss.as.connector.util.RaServicesFactory;
+import org.jboss.as.controller.ModuleIdentifierUtil;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.UninterruptibleCountDownLatch;
@@ -125,7 +126,6 @@ import org.jboss.jca.common.metadata.common.ValidationImpl;
 import org.jboss.jca.common.metadata.common.XaPoolImpl;
 import org.jboss.jca.common.metadata.resourceadapter.WorkManagerImpl;
 import org.jboss.modules.Module;
-import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoadException;
 import org.jboss.modules.ModuleNotFoundException;
 import org.jboss.msc.service.LifecycleEvent;
@@ -449,7 +449,7 @@ public class RaOperationUtil {
 
         Module module;
         try {
-            ModuleIdentifier moduleId = ModuleIdentifier.create(moduleName, slot);
+            String moduleId = ModuleIdentifierUtil.canonicalModuleIdentifier(moduleName, slot);
             module = Module.getCallerModuleLoader().loadModule(moduleId);
         } catch (ModuleNotFoundException e) {
             throw new OperationFailedException(ConnectorLogger.ROOT_LOGGER.raModuleNotFound(moduleName, e.getMessage()), e);
