@@ -297,7 +297,7 @@
         <version.org.hamcrest>2.2</version.org.hamcrest>
         <version.org.hamcrest.legacy>1.3</version.org.hamcrest.legacy>
         <version.org.javassist>3.29.2-GA</version.org.javassist>
-        <version.org.jboss.arquillian.core>1.9.1.Final</version.org.jboss.arquillian.core>
+        <version.org.jboss.arquillian.core>1.9.2.Final</version.org.jboss.arquillian.core>
         <version.org.jboss.arquillian.jakarta>10.0.0.Final</version.org.jboss.arquillian.jakarta>
         <version.org.jboss.arquillian.testcontainers>1.0.0.Alpha3</version.org.jboss.arquillian.testcontainers>
         <version.org.jboss.byteman>4.0.23</version.org.jboss.byteman>
@@ -321,7 +321,7 @@
              on the dependency on the MicroProfile REST Client TCK POM.
          -->
         <version.org.testng.mp.rest.client>7.10.2</version.org.testng.mp.rest.client>
-        <version.org.wildfly.arquillian>5.1.0.Beta8</version.org.wildfly.arquillian>
+        <version.org.wildfly.arquillian>5.1.0.Beta9</version.org.wildfly.arquillian>
         <version.org.wildfly.extras.creaper>2.0.3</version.org.wildfly.extras.creaper>
         <legacy.version.org.wildfly.naming-client>1.0.17.Final</legacy.version.org.wildfly.naming-client>
 
