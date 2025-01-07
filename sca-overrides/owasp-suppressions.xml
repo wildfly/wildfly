@@ -271,4 +271,28 @@
       <packageUrl regex="true">^pkg:maven/org\.apache\.mina/mina-core@.*$</packageUrl>
       <vulnerabilityName>CVE-2024-52046</vulnerabilityName>
    </suppress>
+   <suppress until="2026-01-06">
+      <notes><![CDATA[
+      file name: artemis-wildfly-integration-2.0.3.Final.jar (shaded: org.apache.activemq.tests:unit-tests:2.37.0)
+
+      [WFLY-20239] Suppress CVEs against ActiveMQ Classic as we use Artemis ActiveMQ.
+      ]]></notes>
+      <packageUrl regex="true">^pkg:maven/org\.apache\.activemq\.tests/.*@.*$</packageUrl>
+      <cve>CVE-2023-46604</cve>
+      <cve>CVE-2022-41678</cve>
+      <cve>CVE-2014-3576</cve>
+      <cve>CVE-2018-11775</cve>
+      <cve>CVE-2010-1244</cve>
+      <cve>CVE-2013-3060</cve>
+      <cve>CVE-2020-13947</cve>
+      <cve>CVE-2020-13920</cve>
+      <cve>CVE-2012-5784</cve>
+      <cve>CVE-2011-4905</cve>
+      <cve>CVE-2012-6551</cve>
+      <cve>CVE-2012-6092</cve>
+      <cve>CVE-2013-1879</cve>
+      <cve>CVE-2013-1880</cve>
+      <cve>CVE-2010-0684</cve>
+      <cve>CVE-2015-7559</cve>
+   </suppress>
 </suppressions>
