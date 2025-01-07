@@ -359,7 +359,7 @@
         <version.com.sun.xml.fastinfoset>2.1.1</version.com.sun.xml.fastinfoset>
         <version.com.sun.xml.messaging.saaj>3.0.0</version.com.sun.xml.messaging.saaj>
         <version.commons-beanutils>1.9.4</version.commons-beanutils>
-        <version.commons-codec>1.17.1</version.commons-codec>
+        <version.commons-codec>1.17.2</version.commons-codec>
         <version.commons-collections>3.2.2</version.commons-collections>
         <version.commons-io>2.16.1</version.commons-io>
         <version.de.dentrassi.crypto>2.4.0</version.de.dentrassi.crypto>
