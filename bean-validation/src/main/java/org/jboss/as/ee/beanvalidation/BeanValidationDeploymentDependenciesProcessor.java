@@ -32,9 +32,9 @@ public class BeanValidationDeploymentDependenciesProcessor implements Deployment
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
         final ModuleSpecification moduleSpecification = deploymentUnit.getAttachment(Attachments.MODULE_SPECIFICATION);
         final ModuleLoader moduleLoader = Module.getBootModuleLoader();
-        //
-        for (final String moduleIdentifier : DEPENDENCIES) {
-            moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, moduleIdentifier, true, false, true, false));
+
+        for (String moduleIdentifier : DEPENDENCIES) {
+            moduleSpecification.addSystemDependency(ModuleDependency.Builder.of(moduleLoader, moduleIdentifier).setOptional(true).setImportServices(true).build());
         }
     }
 }
