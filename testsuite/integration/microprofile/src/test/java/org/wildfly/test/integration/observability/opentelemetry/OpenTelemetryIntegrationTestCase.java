@@ -13,13 +13,13 @@ import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.testcontainers.api.DockerRequired;
 import org.jboss.as.arquillian.api.ServerSetup;
-import org.jboss.as.test.shared.observability.setuptasks.OpenTelemetryWithCollectorSetupTask;
+import org.jboss.as.test.shared.observability.setuptasks.OpenTelemetrySetupTask;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
 import org.junit.Test;
 import org.wildfly.test.integration.observability.setuptask.ServiceNameSetupTask;
 
-@ServerSetup({OpenTelemetryWithCollectorSetupTask.class, ServiceNameSetupTask.class})
+@ServerSetup({OpenTelemetrySetupTask.class, ServiceNameSetupTask.class})
 @RunAsClient
 @DockerRequired
 public class OpenTelemetryIntegrationTestCase extends BaseOpenTelemetryTest {

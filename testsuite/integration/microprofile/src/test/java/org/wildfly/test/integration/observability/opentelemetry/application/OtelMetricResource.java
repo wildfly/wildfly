@@ -16,7 +16,7 @@ import jakarta.ws.rs.QueryParam;
 @RequestScoped
 @Path("/metrics")
 public class OtelMetricResource {
-    public static final String COUNTER_NAME = "testCounter";
+    public static final String COUNTER_NAME = "wildfly.otel.test";
     @Inject
     private Meter sdkMeter;
     private LongCounter longCounter;
