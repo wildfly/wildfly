@@ -28,9 +28,9 @@ public class IIOPDependencyProcessor implements DeploymentUnitProcessor {
         final ModuleSpecification moduleSpecification = deploymentUnit.getAttachment(Attachments.MODULE_SPECIFICATION);
 
         final ModuleLoader moduleLoader = Module.getBootModuleLoader();
-        moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, CORBA_ID, false, false, false, false));
-        moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, JAVAX_RMI_API_ID, false, false, false, false));
+        moduleSpecification.addSystemDependency(ModuleDependency.Builder.of(moduleLoader, CORBA_ID).build());
+        moduleSpecification.addSystemDependency(ModuleDependency.Builder.of(moduleLoader, JAVAX_RMI_API_ID).build());
         //we need to add iiop, as the orb is initialized from the context class loader of the deployment
-        moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, IIOP_OPENJDK_ID, false, false, false, false));
+        moduleSpecification.addSystemDependency(ModuleDependency.Builder.of(moduleLoader, IIOP_OPENJDK_ID).build());
     }
 }
