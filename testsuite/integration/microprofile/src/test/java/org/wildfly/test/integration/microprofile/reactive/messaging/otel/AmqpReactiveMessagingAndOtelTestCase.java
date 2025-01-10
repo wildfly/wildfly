@@ -31,7 +31,7 @@ public class AmqpReactiveMessagingAndOtelTestCase extends BaseReactiveMessagingA
         super("amqp");
     }
 
-    @Deployment
+    @Deployment(testable = false)
     public static WebArchive createDeployment() {
         return BaseReactiveMessagingAndOtelTest.createDeployment(
                 "mp-rm-amqp-otel.war",

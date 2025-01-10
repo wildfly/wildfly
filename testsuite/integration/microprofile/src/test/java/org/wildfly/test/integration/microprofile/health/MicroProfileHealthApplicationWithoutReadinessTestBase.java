@@ -38,7 +38,7 @@ public abstract class MicroProfileHealthApplicationWithoutReadinessTestBase {
 
     abstract void checkGlobalOutcome(ManagementClient managementClient, String operation, boolean mustBeUP, String probeName) throws IOException;
 
-    @Deployment(name = "MicroProfileHealthApplicationWithoutReadinessTestBaseSetup")
+    @Deployment(name = "MicroProfileHealthApplicationWithoutReadinessTestBaseSetup", testable = false)
     public static Archive<?> deploySetup() {
         WebArchive war = ShrinkWrap.create(WebArchive.class, "MicroProfileHealthApplicationWithoutReadinessTestBaseSetup.war")
                 .addClass(MicroProfileHealthApplicationReadySetupTask.class);
@@ -46,7 +46,7 @@ public abstract class MicroProfileHealthApplicationWithoutReadinessTestBase {
     }
 
     // deployment does not define any readiness probe
-    @Deployment(name = "MicroProfileHealthApplicationWithoutReadinessTestBase", managed = false)
+    @Deployment(name = "MicroProfileHealthApplicationWithoutReadinessTestBase", managed = false, testable = false)
     public static Archive<?> deploy() {
         WebArchive war = ShrinkWrap.create(WebArchive.class, "MicroProfileHealthApplicationWithoutReadinessTestBase.war")
                 .addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml");

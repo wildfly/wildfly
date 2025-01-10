@@ -18,7 +18,6 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.arquillian.testcontainers.api.DockerRequired;
 import org.jboss.as.arquillian.api.ServerSetup;
-import org.jboss.as.test.shared.CLIServerSetupTask;
 import org.jboss.as.test.shared.TimeoutUtil;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
@@ -35,16 +34,16 @@ import io.restassured.RestAssured;
 @ServerSetup({RunArtemisAmqpSetupTask.class, EnableReactiveExtensionsSetupTask.class})
 @DockerRequired
 public class AnonymousAmqpTestCase {
+
     @ArquillianResource
     URL url;
 
-    @Deployment
+    @Deployment(testable = false)
     public static WebArchive createDeployment() {
         final WebArchive webArchive = ShrinkWrap.create(WebArchive.class, "reactive-messaging-anonymous-amqp.war")
                 .addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml")
                 .setWebXML(AnonymousAmqpTestCase.class.getPackage(), "web.xml")
                 .addClasses(ConsumingBean.class, ProducingBean.class, TestResource.class)
-                .addClasses(RunArtemisAmqpSetupTask.class, EnableReactiveExtensionsSetupTask.class, CLIServerSetupTask.class)
                 .addAsWebInfResource(AnonymousAmqpTestCase.class.getPackage(), "microprofile-config-no-ssl.properties", "classes/META-INF/microprofile-config.properties")
                 .addClass(TimeoutUtil.class)
                 .addAsManifestResource(createPermissionsXmlAsset(
