@@ -10,7 +10,7 @@ import java.util.function.Function;
 /**
  * A simple principal transformer that converts into a {@link TestCustomPrincipal custom principal}.
  *
- * @author <a href="mailto:carodrig@redhat.com">Cameron Rodriguez</a>
+ * @author <a href="mailto:jrodri@redhat.com">Jessica Rodriguez</a>
  */
 public class TestCustomPrincipalTransformer implements Function<Principal, Principal> {
 

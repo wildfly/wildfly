@@ -1,39 +1,43 @@
+syntax = "proto3";
+
 package org.glassfish.expressly;
+
+import "org.wildfly.clustering.marshalling.protostream.proto";
 
 /**
  * @TypeId(410)
  */
 message MethodExpressionImpl {
-	optional	string	expression	 = 1;
-	optional	string	expectedType	 = 2;
-	optional	bytes	functionMapper	 = 3;
-	optional	bytes	variableMapper	 = 4;
-	repeated	string	parameterType	 = 5;
+	string	expression	 = 1;
+	org.wildfly.clustering.marshalling.protostream.Any	expectedType	 = 2;
+	org.wildfly.clustering.marshalling.protostream.Any	functionMapper	 = 3;
+	org.wildfly.clustering.marshalling.protostream.Any	variableMapper	 = 4;
+	repeated	org.wildfly.clustering.marshalling.protostream.Any	parameterType	 = 5;
 }
 
 /**
  * @TypeId(411)
  */
 message MethodExpressionLiteral {
-	optional	string	expression	 = 1;
-	optional	string	expectedType	 = 2;
-	repeated	string	parameterType	 = 3;
+	string	expression	 = 1;
+	org.wildfly.clustering.marshalling.protostream.Any	expectedType	 = 2;
+	repeated	org.wildfly.clustering.marshalling.protostream.Any	parameterType	 = 3;
 }
 
 /**
  * @TypeId(412)
  */
 message ValueExpressionImpl {
-	optional	string	expression	 = 1;
-	optional	string	expectedType	 = 2;
-	optional	bytes	functionMapper	 = 3;
-	optional	bytes	variableMapper	 = 4;
+	string	expression	 = 1;
+	org.wildfly.clustering.marshalling.protostream.Any	expectedType	 = 2;
+	org.wildfly.clustering.marshalling.protostream.Any	functionMapper	 = 3;
+	org.wildfly.clustering.marshalling.protostream.Any	variableMapper	 = 4;
 }
 
 /**
  * @TypeId(413)
  */
 message ValueExpressionLiteral {
-	optional	string	value	 = 1;
-	optional	string	expectedType	 = 2;
+	org.wildfly.clustering.marshalling.protostream.Any	value	 = 1;
+	org.wildfly.clustering.marshalling.protostream.Any	expectedType	 = 2;
 }

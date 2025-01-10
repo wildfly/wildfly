@@ -161,8 +161,10 @@ public class HotRodStore<K, V> implements NonBlockingStore<K, V> {
         RemoteCache<Object, MarshalledValue> cache = this.segmentCache(segment);
         if (cache == null) return CompletableFuture.completedStage(null);
         Metadata metadata = entry.getMetadata();
+        long lifespan = (metadata != null) ? metadata.lifespan() : -1L;
+        long maxIdle = (metadata != null) ? metadata.maxIdle() : -1L;
         try {
-            return cache.withFlags(Flag.SKIP_LISTENER_NOTIFICATION).putAsync(entry.getKey(), entry.getMarshalledValue(), metadata.lifespan(), TimeUnit.MILLISECONDS, metadata.maxIdle(), TimeUnit.MILLISECONDS)
+            return cache.withFlags(Flag.SKIP_LISTENER_NOTIFICATION).putAsync(entry.getKey(), entry.getMarshalledValue(), lifespan, TimeUnit.MILLISECONDS, maxIdle, TimeUnit.MILLISECONDS)
                     .thenAcceptAsync(Functions.discardingConsumer(), this.executor);
         } catch (PersistenceException e) {
             return CompletableFuture.failedStage(e);

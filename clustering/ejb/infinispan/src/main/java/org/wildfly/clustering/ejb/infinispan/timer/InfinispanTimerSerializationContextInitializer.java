@@ -5,12 +5,14 @@
 
 package org.wildfly.clustering.ejb.infinispan.timer;
 
+import java.time.Instant;
 import java.util.UUID;
 
 import org.kohsuke.MetaInfServices;
 import org.wildfly.clustering.ejb.cache.timer.TimerIndex;
 import org.wildfly.clustering.marshalling.protostream.AbstractSerializationContextInitializer;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamMarshaller;
+import org.wildfly.clustering.marshalling.protostream.Scalar;
 import org.wildfly.clustering.marshalling.protostream.SerializationContext;
 import org.wildfly.clustering.marshalling.protostream.SerializationContextInitializer;
 
@@ -24,6 +26,8 @@ public class InfinispanTimerSerializationContextInitializer extends AbstractSeri
     public void registerMarshallers(SerializationContext context) {
         context.registerMarshaller(context.getMarshaller(UUID.class).wrap(InfinispanTimerMetaDataKey.class, InfinispanTimerMetaDataKey<UUID>::getId, InfinispanTimerMetaDataKey::new));
         context.registerMarshaller(context.getMarshaller(TimerIndex.class).wrap(InfinispanTimerIndexKey.class, InfinispanTimerIndexKey::getId, InfinispanTimerIndexKey::new));
-        context.registerMarshaller(ProtoStreamMarshaller.of(TimerMetaDataKeyFilter.class));
+        context.registerMarshaller(ProtoStreamMarshaller.of(TimerCacheKeyFilter.class));
+        context.registerMarshaller(ProtoStreamMarshaller.of(TimerCacheEntryFilter.class));
+        context.registerMarshaller(Scalar.LONG.cast(Long.class).toMarshaller(Instant::toEpochMilli, Instant::ofEpochMilli).wrap(SimpleTimeoutMetaData.class, SimpleTimeoutMetaData::getNextTimeout, SimpleTimeoutMetaData::new));
     }
 }

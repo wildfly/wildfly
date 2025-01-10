@@ -21,7 +21,7 @@ import org.wildfly.test.security.common.ModelNodeUtil;
  * A {@link ConfigurableElement} to define a custom principal transformer. Requires a {@link Module} to be
  * added to the server.
  *
- * @author <a href="mailto:carodrig@redhat.com">Cameron Rodriguez</a>
+ * @author <a href="mailto:jrodri@redhat.com">Jessica Rodriguez</a>
  */
 public class CustomPrincipalTransformer implements ConfigurableElement {
 

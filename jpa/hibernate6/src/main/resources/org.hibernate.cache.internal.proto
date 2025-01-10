@@ -1,4 +1,8 @@
+syntax = "proto3";
+
 package org.hibernate.cache.internal;
+
+import "org.wildfly.clustering.marshalling.protostream.proto";
 
 // IDs: 350-359
 
@@ -6,27 +10,27 @@ package org.hibernate.cache.internal;
  * @TypeId(350)
  */
 message BasicCacheKeyImplementation {
-	optional	bytes	id	 = 1;
-	optional	string	entity	 = 2;
-	optional	sfixed32	hashCode	 = 4;
+	org.wildfly.clustering.marshalling.protostream.Any	id	 = 1;
+	string	entity	 = 2;
+	sfixed32	hashCode	 = 4;
 }
 
 /**
  * @TypeId(351)
  */
 message CacheKeyImplementation {
-	optional	bytes	id	 = 1;
-	optional	string	entity	 = 2;
-	optional	string	tenant	 = 3;
-	optional	sfixed32	hashCode	 = 4;
+	org.wildfly.clustering.marshalling.protostream.Any	id	 = 1;
+	string	entity	 = 2;
+	string	tenant	 = 3;
+	sfixed32	hashCode	 = 4;
 }
 
 /**
  * @TypeId(352)
  */
 message NaturalIdCacheKey {
-	optional	bytes	value	 = 1;
-	optional	string	entity	 = 2;
-	optional	string	tenant	 = 3;
-	optional	sfixed32	hashCode	 = 4;
+	org.wildfly.clustering.marshalling.protostream.Any	value	 = 1;
+	string	entity	 = 2;
+	string	tenant	 = 3;
+	sfixed32	hashCode	 = 4;
 }

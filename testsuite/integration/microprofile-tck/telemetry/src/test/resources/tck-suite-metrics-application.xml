@@ -1,0 +1,18 @@
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+
+<suite name="MicroProfile TCKs" verbose="1" preserve-order="true" configfailurepolicy="continue">
+    <test name="microprofile-telemetry-metrics-application">
+        <groups>
+            <run>
+                <exclude name="optional-tests"/>
+                <exclude name="optional-jaxrs-tests"/>
+            </run>
+        </groups>
+        <packages>
+            <package name="org.eclipse.microprofile.telemetry.metrics.tck.application.*"/>
+        </packages>
+    </test>
+</suite>

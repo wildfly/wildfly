@@ -6,6 +6,7 @@ package org.wildfly.extension.undertow.deployment;
 
 import io.undertow.server.handlers.builder.PredicatedHandler;
 import io.undertow.server.handlers.builder.PredicatedHandlersParser;
+import org.jboss.as.controller.ModuleIdentifierUtil;
 import org.jboss.as.server.deployment.AttachmentKey;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
@@ -18,7 +19,6 @@ import org.jboss.metadata.javaee.spec.ParamValueMetaData;
 import org.jboss.metadata.web.jboss.HttpHandlerMetaData;
 import org.jboss.metadata.web.jboss.JBossWebMetaData;
 import org.jboss.modules.Module;
-import org.jboss.modules.ModuleIdentifier;
 import org.jboss.vfs.VirtualFile;
 import org.wildfly.extension.undertow.logging.UndertowLogger;
 
@@ -70,7 +70,7 @@ public class UndertowHandlersDeploymentProcessor implements DeploymentUnitProces
             try {
                 ClassLoader cl = module.getClassLoader();
                 if (hander.getModule() != null) {
-                    Module handlerModule = deploymentUnit.getAttachment(Attachments.SERVICE_MODULE_LOADER).loadModule(ModuleIdentifier.fromString(hander.getModule()));
+                    Module handlerModule = deploymentUnit.getAttachment(Attachments.SERVICE_MODULE_LOADER).loadModule(ModuleIdentifierUtil.canonicalModuleIdentifier(hander.getModule()));
                     cl = handlerModule.getClassLoader();
 
                 }

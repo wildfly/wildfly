@@ -1,10 +1,12 @@
+syntax = "proto3";
+
 package jakarta.faces.view;
 
 /**
  * @TypeId(505)
  */
 message Location {
-	optional	string	path	 = 1;
-	optional	uint32	line	 = 2;
-	optional	uint32	column	 = 3;
+	string	path	 = 1;
+	uint32	line	 = 2;
+	uint32	column	 = 3;
 }

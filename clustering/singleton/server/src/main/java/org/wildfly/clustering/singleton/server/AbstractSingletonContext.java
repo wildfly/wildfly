@@ -71,6 +71,11 @@ public abstract class AbstractSingletonContext<C extends SingletonContext, S ext
     }
 
     @Override
+    public boolean isStarted() {
+        return this.service.isStarted();
+    }
+
+    @Override
     public synchronized void start() {
         // If we were not already the primary node
         if (this.primary.compareAndSet(false, true)) {

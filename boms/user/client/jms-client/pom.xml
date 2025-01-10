@@ -15,7 +15,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>34.0.0.Beta1-SNAPSHOT</version>
+        <version>36.0.0.Beta1-SNAPSHOT</version>
     </parent>
 
     <artifactId>wildfly-jms-client-bom-builder</artifactId>
@@ -47,6 +47,12 @@
             <version>${ee.maven.version}</version>
             <type>pom</type>
         </dependency>
+        <dependency>
+            <groupId>org.wildfly.channels</groupId>
+            <artifactId>wildfly-ee</artifactId>
+            <version>${ee.maven.version}</version>
+            <type>pom</type>
+        </dependency>
     </dependencies>
 
     <build>
@@ -74,6 +80,15 @@
                             <bomWithDependencies>true</bomWithDependencies>
                             <licenses>true</licenses>
                             <inheritExclusions>UNMANAGED</inheritExclusions>
+                            <channels>
+                                <channel>
+                                    <manifest>
+                                        <groupId>org.wildfly.channels</groupId>
+                                        <artifactId>wildfly-ee</artifactId>
+                                        <version>${version.boms.channel.ee}</version>
+                                    </manifest>
+                                </channel>
+                            </channels>
                             <includeDependencies>
                                 <!-- artemis jakarta jms client, the main artifact -->
                                 <!-- replaces org.apache.activemq:artemis-jms-client -->

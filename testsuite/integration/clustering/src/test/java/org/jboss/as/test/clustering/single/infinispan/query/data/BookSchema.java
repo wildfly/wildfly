@@ -6,7 +6,7 @@
 package org.jboss.as.test.clustering.single.infinispan.query.data;
 
 import org.infinispan.protostream.GeneratedSchema;
-import org.infinispan.protostream.annotations.AutoProtoSchemaBuilder;
+import org.infinispan.protostream.annotations.ProtoSchema;
 
 /**
  * Adopted and adapted from Infinispan testsuite.
@@ -14,6 +14,6 @@ import org.infinispan.protostream.annotations.AutoProtoSchemaBuilder;
  * @author Radoslav Husar
  * @since 27
  */
-@AutoProtoSchemaBuilder(includeClasses = { Book.class }, service = false)
+@ProtoSchema(includeClasses = { Book.class }, service = false)
 public interface BookSchema extends GeneratedSchema {
 }

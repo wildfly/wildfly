@@ -15,7 +15,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>34.0.0.Beta1-SNAPSHOT</version>
+        <version>36.0.0.Beta1-SNAPSHOT</version>
     </parent>
 
     <artifactId>wildfly-ts-integ-clustering</artifactId>
@@ -259,22 +259,22 @@
         </dependency>
         <dependency>
             <groupId>org.infinispan</groupId>
-            <artifactId>infinispan-cdi-common-jakarta</artifactId>
+            <artifactId>infinispan-cdi-common</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.infinispan</groupId>
-            <artifactId>infinispan-cdi-embedded-jakarta</artifactId>
+            <artifactId>infinispan-cdi-embedded</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.infinispan</groupId>
-            <artifactId>infinispan-cdi-remote-jakarta</artifactId>
+            <artifactId>infinispan-cdi-remote</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.infinispan</groupId>
-            <artifactId>infinispan-client-hotrod-jakarta</artifactId>
+            <artifactId>infinispan-client-hotrod</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -787,7 +787,7 @@
                                     <goal>copy-resources</goal>
                                 </goals>
                                 <configuration>
-                                    <outputDirectory>${infinispan.server.home.template}/server/conf</outputDirectory>
+                                    <outputDirectory>${infinispan.server.home.template}</outputDirectory>
                                     <resources>
                                         <resource>
                                             <directory>src/test/resources/infinispan-server-overlay</directory>
@@ -846,7 +846,7 @@
                                     <goal>copy-resources</goal>
                                 </goals>
                                 <configuration>
-                                    <outputDirectory>${infinispan.server.home.template}/server/conf</outputDirectory>
+                                    <outputDirectory>${infinispan.server.home.template}</outputDirectory>
                                     <resources>
                                         <resource>
                                             <directory>src/test/resources/infinispan-server-overlay</directory>
@@ -1319,8 +1319,8 @@
                                         <exclude>org/jboss/as/test/clustering/cluster/singleton/SingletonPartitionTestCase.java</exclude>
                                         <exclude>org/jboss/as/test/clustering/cluster/web/CoarseImmutableWebFailoverTestCase.java</exclude>
                                         <exclude>org/jboss/as/test/clustering/cluster/web/CoarseWebFailoverTestCase.java</exclude>
-                                        <exclude>org/jboss/as/test/clustering/cluster/web/ConcurrentCoarseWebFailoverTestCase.java</exclude>
-                                        <exclude>org/jboss/as/test/clustering/cluster/web/ConcurrentFineWebFailoverTestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/clustering/cluster/web/CoarseNonTransactionalWebFailoverTestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/clustering/cluster/web/FineNonTransactionalWebFailoverTestCase.java</exclude>
                                         <exclude>org/jboss/as/test/clustering/cluster/web/FineImmutableWebFailoverTestCase.java</exclude>
                                         <exclude>org/jboss/as/test/clustering/cluster/web/FineWebFailoverTestCase.java</exclude>
                                         <exclude>org/jboss/as/test/clustering/cluster/web/ReplicationForNegotiationAuthenticatorTestCase.java</exclude>

@@ -6,7 +6,9 @@
 package org.jboss.as.clustering.infinispan.subsystem;
 
 import org.infinispan.Cache;
+import org.infinispan.factories.ComponentRegistry;
 import org.infinispan.interceptors.AsyncInterceptor;
+import org.infinispan.interceptors.AsyncInterceptorChain;
 import org.wildfly.subsystem.service.capture.FunctionExecutorRegistry;
 
 /**
@@ -22,9 +24,8 @@ public class CacheInterceptorOperationExecutor<I extends AsyncInterceptor> exten
         this.interceptorClass = interceptorClass;
     }
 
-    @SuppressWarnings("deprecation")
     @Override
     public I apply(Cache<?, ?> cache) {
-        return cache.getAdvancedCache().getAsyncInterceptorChain().findInterceptorExtending(this.interceptorClass);
+        return ComponentRegistry.componentOf(cache, AsyncInterceptorChain.class).findInterceptorExtending(this.interceptorClass);
     }
 }

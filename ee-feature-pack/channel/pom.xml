@@ -21,7 +21,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>34.0.0.Beta1-SNAPSHOT</version>
+        <version>36.0.0.Beta1-SNAPSHOT</version>
         <relativePath>../../pom.xml</relativePath>
     </parent>
 
@@ -160,6 +160,7 @@
                     <manifestPath>${project.build.directory}/assembly-manifest-rename/assembly/${project.artifactId}-${project.version}-manifest.yaml</manifestPath>
                     <manifestName>WildFly EE manifest version ${project.version}</manifestName>
                     <manifestId>${project.groupId}:${project.artifactId}</manifestId>
+                    <manifestLogicalVersion>WildFly EE ${project.version}</manifestLogicalVersion>
                     <manifestDescription>Manifest for WildFly EE feature pack.</manifestDescription>
                 </configuration>
             </plugin>

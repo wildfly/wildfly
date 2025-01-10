@@ -97,6 +97,7 @@ public class TLSSyslogAuditLogTestCase extends AbstractSyslogAuditLogTestCase {
                         .withHostName(HOSTNAME)
                         .withTransportProtocol("SSL_TCP")
                         .withSslContext(SSL_CONTEXT_NAME)
+                        .setMaxReconnectAttempts(5) // an arbitrary number to avoid intermittent failures.
                         .build();
                 auditLog.create(cli);
 

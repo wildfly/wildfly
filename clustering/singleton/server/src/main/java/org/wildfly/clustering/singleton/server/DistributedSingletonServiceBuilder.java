@@ -8,6 +8,7 @@ package org.wildfly.clustering.singleton.server;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -29,6 +30,7 @@ import org.wildfly.service.AsyncServiceBuilder;
  */
 public class DistributedSingletonServiceBuilder<T> extends AbstractSingletonServiceBuilder<T> {
 
+    private final ServiceName id = ServiceName.parse(UUID.randomUUID().toString());
     private final Function<ServiceTarget, ServiceBuilder<?>> builderFactory;
     private final List<Map.Entry<ServiceName[], Consumer<Consumer<?>>>> injectors = new LinkedList<>();
     private final SingletonServiceBuilderContext context;
@@ -39,7 +41,8 @@ public class DistributedSingletonServiceBuilder<T> extends AbstractSingletonServ
         super(new AsyncServiceBuilder<>(builder, builder.requires(ServiceName.parse("org.wildfly.management.executor"))), context);
         this.builderFactory = builderFactory;
         this.context = context;
-        this.singleton = singletonFactory.apply(builder).andThen(this.reference);
+        Consumer<Singleton> injector = builder.provides(this.id);
+        this.singleton = singletonFactory.apply(builder).andThen(this.reference).andThen(injector);
     }
 
     @SuppressWarnings("unchecked")
@@ -59,17 +62,14 @@ public class DistributedSingletonServiceBuilder<T> extends AbstractSingletonServ
 
     @Override
     public SingletonServiceBuilder<T> setInstance(Service service) {
-        this.context.setServiceName(ServiceName.parse(service.getClass().getName()));
         this.context.setService(service);
         return this;
     }
 
     @Override
     public SingletonServiceController<T> install() {
-        ServiceName name = this.context.getServiceName();
-        if (name == null) {
-            throw new IllegalStateException();
-        }
+        // Identify singleton service via its id if caller did not provide one
+        this.context.setServiceName(this.id);
         ServiceController<T> controller = this.getDelegate().setInstance(new DistributedSingletonService(this.context, this.builderFactory, this.injectors, this.singleton)).install();
         return new DistributedSingletonServiceController<>(controller, this.reference);
     }

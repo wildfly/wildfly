@@ -21,7 +21,7 @@ endif::[]
 
 ifndef::ebook-format[:leveloffset: 1]
 
-(C) 2017 The original authors.
+(C) The WildFly Authors.
 
 ifdef::basebackend-html[toc::[]]
 :numbered:
@@ -48,6 +48,8 @@ include::_developer-guide/Embedded_API.adoc[]
 include::_developer-guide/Jakarta_Contexts_and_Dependency_Injection_Reference.adoc[]
 
 include::_developer-guide/EE_Concurrency_Utilities.adoc[]
+
+include::_developer-guide/Jakarta_Data_Reference.adoc[]
 
 include::_developer-guide/Jakarta_Enterprise_Beans_3_Reference_Guide.adoc[]
 

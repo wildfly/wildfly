@@ -46,12 +46,11 @@ import org.wildfly.test.integration.microprofile.config.smallrye.AssertUtils;
 @ServerSetup(SetupTask.class)
 public class ConfigSourceFromDirTestCase extends AbstractMicroProfileConfigTestCase {
 
-    @Deployment
+    @Deployment(testable = false)
     public static Archive<?> deploy() {
-        WebArchive war = ShrinkWrap.create(WebArchive.class, "ConfigSourceFromDirTestCase.war")
-                .addClasses(TestApplication.class, TestApplication.Resource.class, AbstractMicroProfileConfigTestCase.class)
+        return ShrinkWrap.create(WebArchive.class, "ConfigSourceFromDirTestCase.war")
+                .addClasses(TestApplication.class)
                 .addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml");
-        return war;
     }
 
     @ArquillianResource

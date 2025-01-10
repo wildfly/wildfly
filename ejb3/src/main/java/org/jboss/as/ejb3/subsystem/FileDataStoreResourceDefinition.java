@@ -18,13 +18,12 @@ import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.as.controller.services.path.PathManager;
 import org.jboss.as.controller.services.path.ResolvePathHandler;
-import org.jboss.as.ejb3.timerservice.persistence.TimerPersistence;
 import org.jboss.dmr.ModelType;
 
 /**
  * {@link org.jboss.as.controller.ResourceDefinition} for the file data store
  */
-public class FileDataStoreResourceDefinition extends SimpleResourceDefinition {
+public class FileDataStoreResourceDefinition extends TimerPersistenceResourceDefinition {
     public static final SimpleAttributeDefinition PATH =
             new SimpleAttributeDefinitionBuilder(EJB3SubsystemModel.PATH, ModelType.STRING, false)
                     .setAllowExpression(true)
@@ -41,22 +40,21 @@ public class FileDataStoreResourceDefinition extends SimpleResourceDefinition {
     private final PathManager pathManager;
 
     private static final AttributeDefinition[] ATTRIBUTES = new AttributeDefinition[] { PATH, RELATIVE_TO };
-    private static final FileDataStoreAdd ADD_HANDLER = new FileDataStoreAdd(ATTRIBUTES);
+    private static final FileDataStoreAdd ADD_HANDLER = new FileDataStoreAdd();
 
     public FileDataStoreResourceDefinition(final PathManager pathManager) {
         super(new SimpleResourceDefinition.Parameters(EJB3SubsystemModel.FILE_DATA_STORE_PATH, EJB3Extension.getResourceDescriptionResolver(EJB3SubsystemModel.FILE_DATA_STORE))
                 .setAddHandler(ADD_HANDLER)
-                .setRemoveHandler(new ServiceRemoveStepHandler(TimerPersistence.SERVICE_NAME, ADD_HANDLER))
+                .setRemoveHandler(new ServiceRemoveStepHandler(CAPABILITY.getCapabilityServiceName(), ADD_HANDLER))
                 .setAddRestartLevel(OperationEntry.Flag.RESTART_ALL_SERVICES)
-                .setRemoveRestartLevel(OperationEntry.Flag.RESTART_ALL_SERVICES)
-                .setCapabilities(TimerServiceResourceDefinition.TIMER_PERSISTENCE_CAPABILITY));
+                .setRemoveRestartLevel(OperationEntry.Flag.RESTART_ALL_SERVICES));
         this.pathManager = pathManager;
     }
 
     @Override
     public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
         for (AttributeDefinition attr : ATTRIBUTES) {
-            resourceRegistration.registerReadWriteAttribute(attr, null, new ReloadRequiredWriteAttributeHandler(attr));
+            resourceRegistration.registerReadWriteAttribute(attr, null, ReloadRequiredWriteAttributeHandler.INSTANCE);
         }
     }
 

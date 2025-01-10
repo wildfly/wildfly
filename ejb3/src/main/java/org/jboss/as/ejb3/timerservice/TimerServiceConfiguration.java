@@ -6,7 +6,7 @@
 package org.jboss.as.ejb3.timerservice;
 
 import java.util.Timer;
-import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executor;
 
 import org.jboss.as.ejb3.timerservice.persistence.TimerPersistence;
 import org.jboss.as.ejb3.timerservice.spi.ManagedTimerServiceConfiguration;
@@ -16,7 +16,7 @@ import org.jboss.as.ejb3.timerservice.spi.ManagedTimerServiceConfiguration;
  */
 public interface TimerServiceConfiguration extends ManagedTimerServiceConfiguration {
 
-    ExecutorService getExecutor();
+    Executor getExecutor();
 
     Timer getTimer();
 

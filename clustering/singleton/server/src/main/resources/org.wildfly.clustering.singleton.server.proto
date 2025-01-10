@@ -1,4 +1,8 @@
+syntax = "proto3";
+
 package org.wildfly.clustering.singleton.server;
+
+import "org.wildfly.clustering.marshalling.protostream.proto";
 
 // IDs: 155 - 159
 
@@ -20,8 +24,8 @@ enum StopCommand {
  * @TypeId(157)
  */
 message SingletonElectionCommand {
-	repeated	bytes	candidate	= 1;
-	optional	uint32	elected	= 2;
+	repeated	org.wildfly.clustering.marshalling.protostream.Any	candidate	= 1;
+	uint32	elected	= 2;
 }
 
 /**

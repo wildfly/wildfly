@@ -47,7 +47,7 @@
             </store>
             <state-transfer timeout="0" chunk-size="10000"/>
         </replicated-cache>
-        <distributed-cache name="dist" l1-lifespan="1200000" owners="4" remote-timeout="35000" segments="2" capacity-factor="1.0" statistics-enabled="true">
+        <distributed-cache name="dist" l1-lifespan="1200000" owners="4" remote-timeout="35000" segments="2" capacity-factor="1.0" statistics-enabled="true" modules="org.wildfly.clustering.session.infinispan.embedded">
             <locking acquire-timeout="30000" concurrency-level="2000" isolation="READ_COMMITTED" striping="true"/>
             <transaction mode="FULL_XA" stop-timeout="60000" locking="OPTIMISTIC"/>
             <heap-memory size="20000"/>
@@ -85,7 +85,7 @@
                             default-remote-cluster="primary-site"
                             key-size-estimate="512"
                             max-retries="2"
-                            modules="org.infinispan"
+                            modules="org.wildfly.clustering.session.infinispan.remote"
                             marshaller="LEGACY"
                             name="my-remote-container"
                             protocol-version="2.5"

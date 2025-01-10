@@ -44,6 +44,7 @@ import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
+import org.wildfly.common.function.Functions;
 import org.wildfly.extension.micrometer.jmx.JmxMicrometerCollector;
 import org.wildfly.extension.micrometer.metrics.MicrometerCollector;
 import org.wildfly.extension.micrometer.registry.NoOpRegistry;
@@ -170,7 +171,6 @@ class MicrometerSubsystemRegistrar implements SubsystemResourceDefinitionRegistr
             }
         });
 
-
         AtomicReference<MicrometerCollector> captor = new AtomicReference<>();
 
         context.addStep((operationContext, modelNode) -> {
@@ -187,10 +187,11 @@ class MicrometerSubsystemRegistrar implements SubsystemResourceDefinitionRegistr
         }, OperationContext.Stage.VERIFY);
 
         return CapabilityServiceInstaller.builder(MICROMETER_COLLECTOR_RUNTIME_CAPABILITY, collectorSupplier)
-                .requires(List.of(mccf, executor, processStateNotifier))
-                .withCaptor(captor::set) // capture the provided value
-                .asActive() // Start actively
-                .build();
+            .requires(List.of(mccf, executor, processStateNotifier))
+            .withCaptor(captor::set) // capture the provided value
+            .onStop(Functions.closingConsumer())
+            .asActive() // Start actively
+            .build();
     }
 
     public interface MicrometerDeploymentConfiguration {

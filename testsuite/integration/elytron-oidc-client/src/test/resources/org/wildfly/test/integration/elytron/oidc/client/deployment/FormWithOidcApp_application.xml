@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+<application xmlns="https://jakarta.ee/xml/ns/jakartaee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/application_10.xsd" version="10">
+  <display-name>ear</display-name>
+  <module>
+    <web>
+      <web-uri>form.war</web-uri>
+      <context-root>/form</context-root>
+    </web>
+  </module>
+  <module>
+    <web>
+      <web-uri>oidc.war</web-uri>
+      <context-root>/oidc</context-root>
+    </web>
+  </module>
+  <library-directory>lib</library-directory>
+</application>

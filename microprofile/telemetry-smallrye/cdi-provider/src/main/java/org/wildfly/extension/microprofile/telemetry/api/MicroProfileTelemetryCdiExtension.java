@@ -34,7 +34,6 @@ public class MicroProfileTelemetryCdiExtension implements Extension {
                             Map<String, String> properties = new HashMap<>(serverConfig);
                             // MicroProfile Telemetry is disabled by default
                             properties.put("otel.sdk.disabled", "true");
-                            properties.put("otel.experimental.sdk.enabled", "false");
                             for (String propertyName : appConfig.getPropertyNames()) {
                                 if (propertyName.startsWith("otel.") || propertyName.startsWith("OTEL_")) {
                                     appConfig.getOptionalValue(propertyName, String.class).ifPresent(

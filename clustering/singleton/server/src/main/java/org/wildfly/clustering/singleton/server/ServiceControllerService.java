@@ -50,6 +50,11 @@ public class ServiceControllerService implements Service {
     }
 
     @Override
+    public boolean isStarted() {
+        return this.controller.getState() == ServiceController.State.UP;
+    }
+
+    @Override
     public void start() {
         this.transition(Transition.START);
     }

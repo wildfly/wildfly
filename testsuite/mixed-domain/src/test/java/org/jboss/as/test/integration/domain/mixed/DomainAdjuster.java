@@ -7,7 +7,6 @@ package org.jboss.as.test.integration.domain.mixed;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADDRESS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.AUTO_START;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHILD_TYPE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXTENSION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROFILE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_CHILDREN_NAMES_OPERATION;
@@ -16,7 +15,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RES
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_CONFIG;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_GROUP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_GROUP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYSTEM_PROPERTY;
 import static org.jboss.as.test.integration.domain.management.util.DomainTestUtils.executeForResult;
 
@@ -24,7 +22,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -36,6 +33,7 @@ import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.test.integration.domain.management.util.DomainTestUtils;
 import org.jboss.as.test.integration.domain.mixed.eap740.DomainAdjuster740;
+import org.jboss.as.test.integration.domain.mixed.eap800.DomainAdjuster800;
 import org.jboss.as.test.integration.management.util.MgmtOperationException;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
@@ -68,6 +66,9 @@ public class DomainAdjuster {
             case EAP_7_4_0:
                 adjuster = new DomainAdjuster740();
                 break;
+            case EAP_8_0_0:
+                adjuster = new DomainAdjuster800();
+                break;
             default:
                 adjuster = new DomainAdjuster();
         }
@@ -97,14 +98,8 @@ public class DomainAdjuster {
         // with the current configs on legacy secondaries
         removeHostExcludes(client);
 
-        // Mixed Domain tests always use the full build instead of alternating between ee-dist and dist. If the DC is not an EAP server, we need to remove here
-        // the pre-configured extensions provided by WildFly build to adjust the current domain to work with a node running EAP which does not contain
-        // those extensions.
-        // We remove here these extensions and subsystems configured by default if they are in the current configuration, this makes this code capable to work for wildfly and EAP
         final PathAddress profileAddress = PathAddress.pathAddress(PROFILE, profile);
-        removeSubsystemExtensionIfExist(client, profileAddress.append(SUBSYSTEM, "microprofile-jwt-smallrye"), PathAddress.pathAddress(EXTENSION, "org.wildfly.extension.microprofile.jwt-smallrye"));
-        removeSubsystemExtensionIfExist(client, profileAddress.append(SUBSYSTEM, "microprofile-config-smallrye"), PathAddress.pathAddress(EXTENSION, "org.wildfly.extension.microprofile.config-smallrye"));
-        removeSubsystemExtensionIfExist(client, profileAddress.append(SUBSYSTEM, "opentelemetry"), PathAddress.pathAddress(EXTENSION, "org.wildfly.extension.opentelemetry"));
+        adjustExpansionExtensions(client, profileAddress);
 
         //Version specific changes
         final List<ModelNode> adjustments = adjustForVersion(client, PathAddress.pathAddress(PROFILE, profile), withPrimaryServers);
@@ -140,7 +135,7 @@ public class DomainAdjuster {
      * @throws Exception
      */
     protected List<ModelNode> adjustForVersion(final DomainClient client, final PathAddress profileAddress, final boolean withPrimaryServer) throws Exception {
-        return Collections.emptyList();
+        return new ArrayList<>();
     }
 
     private void removeProfile(final DomainClient client, final String name) throws Exception {
@@ -254,7 +249,7 @@ public class DomainAdjuster {
         return list;
     }
 
-    private void removeSubsystemExtensionIfExist(DomainClient client, PathAddress subsystem, PathAddress extension) throws IOException {
+    protected void removeSubsystemExtensionIfExist(DomainClient client, PathAddress subsystem, PathAddress extension) throws IOException {
         try {
             DomainTestUtils.executeForResult(Util.getReadResourceOperation(subsystem), client);
             DomainTestUtils.executeForResult(Util.createRemoveOperation(subsystem), client);
@@ -267,5 +262,9 @@ public class DomainAdjuster {
         } catch (MgmtOperationException e) {
             // ignored, the extension does not exist
         }
+    }
+
+    protected void adjustExpansionExtensions(DomainClient client, PathAddress profileAddress) throws Exception {
+       // no-op, it is expected to be implemented by the subclasses if they require to adjust the XP extensions before starting the secondary Host Controller.
     }
 }

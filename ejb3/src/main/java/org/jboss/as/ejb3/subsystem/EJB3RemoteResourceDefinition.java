@@ -29,6 +29,7 @@ import org.jboss.dmr.ModelType;
 import org.wildfly.clustering.server.GroupMember;
 import org.wildfly.clustering.server.registry.Registry;
 import org.wildfly.service.descriptor.UnaryServiceDescriptor;
+import org.wildfly.subsystem.resource.capability.CapabilityReference;
 
 import java.util.List;
 
@@ -45,7 +46,6 @@ public class EJB3RemoteResourceDefinition extends SimpleResourceDefinition {
     public static final String CONNECTOR_CAPABILITY_NAME = "org.wildfly.remoting.connector";
     protected static final String REMOTE_TRANSACTION_SERVICE_CAPABILITY_NAME = "org.wildfly.transactions.remote-transaction-service";
     protected static final String REMOTING_ENDPOINT_CAPABILITY_NAME = "org.wildfly.remoting.endpoint";
-    protected static final String THREAD_POOL_CAPABILITY_NAME = "org.wildfly.threads.executor.ejb3";
 
     public static final String EJB_REMOTE_CAPABILITY_NAME = "org.wildfly.ejb.remote";
 
@@ -89,7 +89,7 @@ public class EJB3RemoteResourceDefinition extends SimpleResourceDefinition {
             new SimpleAttributeDefinitionBuilder(EJB3SubsystemModel.THREAD_POOL_NAME, ModelType.STRING, true)
                     .setAllowExpression(true)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-                    .setCapabilityReference(THREAD_POOL_CAPABILITY_NAME, EJB_REMOTE_CAPABILITY)
+                    .setCapabilityReference(CapabilityReference.builder(EJB_REMOTE_CAPABILITY, EJB3SubsystemRootResourceDefinition.EXECUTOR_SERVICE_DESCRIPTOR).build())
                     .build();
 
     static final SimpleAttributeDefinition EXECUTE_IN_WORKER =

@@ -16,7 +16,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>34.0.0.Beta1-SNAPSHOT</version>
+        <version>36.0.0.Beta1-SNAPSHOT</version>
     </parent>
 
     <artifactId>wildfly-ee-feature-pack-galleon-shared</artifactId>
@@ -381,6 +381,27 @@
         </dependency>
 
         <dependency>
+            <groupId>io.github.resilience4j</groupId>
+            <artifactId>resilience4j-core</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>io.github.resilience4j</groupId>
+            <artifactId>resilience4j-retry</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <dependency>
             <groupId>io.netty</groupId>
             <artifactId>netty-buffer</artifactId>
             <exclusions>
@@ -670,6 +691,11 @@
         <dependency>
             <groupId>jakarta.batch</groupId>
             <artifactId>jakarta.batch-api</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>jakarta.data</groupId>
+            <artifactId>jakarta.data-api</artifactId>
         </dependency>
 
         <dependency>
@@ -1737,7 +1763,7 @@
 
         <dependency>
             <groupId>org.infinispan</groupId>
-            <artifactId>infinispan-cachestore-jdbc-jakarta</artifactId>
+            <artifactId>infinispan-cachestore-jdbc</artifactId>
             <exclusions>
                 <exclusion>
                     <groupId>*</groupId>
@@ -1747,7 +1773,7 @@
         </dependency>
         <dependency>
             <groupId>org.infinispan</groupId>
-            <artifactId>infinispan-cachestore-jdbc-common-jakarta</artifactId>
+            <artifactId>infinispan-cachestore-jdbc-common</artifactId>
             <exclusions>
                 <exclusion>
                     <groupId>*</groupId>
@@ -1767,7 +1793,7 @@
         </dependency>
         <dependency>
             <groupId>org.infinispan</groupId>
-            <artifactId>infinispan-client-hotrod-jakarta</artifactId>
+            <artifactId>infinispan-client-hotrod</artifactId>
             <exclusions>
                 <exclusion>
                     <groupId>*</groupId>
@@ -1777,7 +1803,7 @@
         </dependency>
         <dependency>
             <groupId>org.infinispan</groupId>
-            <artifactId>infinispan-commons-jakarta</artifactId>
+            <artifactId>infinispan-commons</artifactId>
             <exclusions>
                 <exclusion>
                     <groupId>*</groupId>
@@ -1787,7 +1813,7 @@
         </dependency>
         <dependency>
             <groupId>org.infinispan</groupId>
-            <artifactId>infinispan-core-jakarta</artifactId>
+            <artifactId>infinispan-core</artifactId>
             <exclusions>
                 <exclusion>
                     <groupId>*</groupId>
@@ -1797,7 +1823,7 @@
         </dependency>
         <dependency>
             <groupId>org.infinispan</groupId>
-            <artifactId>infinispan-cdi-common-jakarta</artifactId>
+            <artifactId>infinispan-cdi-common</artifactId>
             <exclusions>
                 <exclusion>
                     <groupId>*</groupId>
@@ -1807,7 +1833,7 @@
         </dependency>
         <dependency>
             <groupId>org.infinispan</groupId>
-            <artifactId>infinispan-cdi-embedded-jakarta</artifactId>
+            <artifactId>infinispan-cdi-embedded</artifactId>
             <exclusions>
                 <exclusion>
                     <groupId>*</groupId>
@@ -1817,7 +1843,7 @@
         </dependency>
         <dependency>
             <groupId>org.infinispan</groupId>
-            <artifactId>infinispan-cdi-remote-jakarta</artifactId>
+            <artifactId>infinispan-cdi-remote</artifactId>
             <exclusions>
                 <exclusion>
                     <groupId>*</groupId>
@@ -2953,19 +2979,6 @@
 
         <dependency>
             <groupId>org.wildfly.core</groupId>
-            <artifactId>wildfly-cli</artifactId>
-            <classifier>client</classifier>
-            <!-- TODO add global excludes in the wf core depMgmt -->
-            <exclusions>
-                <exclusion>
-                    <groupId>*</groupId>
-                    <artifactId>*</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-
-        <dependency>
-            <groupId>org.wildfly.core</groupId>
             <artifactId>wildfly-elytron-integration</artifactId>
             <exclusions>
                 <exclusion>
@@ -3007,6 +3020,11 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>org.wildfly.launcher</groupId>
+            <artifactId>wildfly-launcher</artifactId>
         </dependency>
 
         <dependency>
@@ -3437,6 +3455,33 @@
 
         <dependency>
             <groupId>${ee.maven.groupId}</groupId>
+            <artifactId>wildfly-client-properties</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>${ee.maven.groupId}</groupId>
+            <artifactId>wildfly-jakarta-data</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>jcl-over-slf4j</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>${ee.maven.groupId}</groupId>
             <artifactId>wildfly-clustering-common</artifactId>
         </dependency>
 
@@ -3766,6 +3811,16 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>${ee.maven.groupId}</groupId>
+            <artifactId>wildfly-concurrency-impl-30</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>${ee.maven.groupId}</groupId>
+            <artifactId>wildfly-concurrency-spi</artifactId>
         </dependency>
 
         <dependency>

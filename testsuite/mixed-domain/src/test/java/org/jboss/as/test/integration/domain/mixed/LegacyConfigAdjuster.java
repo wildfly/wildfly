@@ -64,7 +64,7 @@ public class LegacyConfigAdjuster {
     }
 
     private void applyVersionAdjustments(DomainClient client, List<ModelNode> operations) throws Exception {
-        if (operations.size() == 0) {
+        if (operations.isEmpty()) {
             return;
         }
         for (ModelNode op : operations) {

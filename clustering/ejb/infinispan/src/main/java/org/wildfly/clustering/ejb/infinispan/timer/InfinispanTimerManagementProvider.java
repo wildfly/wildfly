@@ -13,12 +13,12 @@ import java.util.function.Supplier;
 import org.infinispan.Cache;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.configuration.cache.ExpirationConfiguration;
+import org.infinispan.configuration.cache.IsolationLevel;
 import org.infinispan.configuration.cache.StorageType;
 import org.infinispan.eviction.EvictionStrategy;
 import org.infinispan.transaction.LockingMode;
 import org.infinispan.transaction.TransactionMode;
 import org.infinispan.transaction.tm.EmbeddedTransactionManager;
-import org.infinispan.util.concurrent.IsolationLevel;
 import org.jboss.msc.service.ServiceName;
 import org.wildfly.clustering.cache.infinispan.embedded.container.DataContainerConfigurationBuilder;
 import org.wildfly.clustering.ejb.cache.timer.TimerMetaDataKey;
@@ -53,13 +53,13 @@ public class InfinispanTimerManagementProvider implements TimerManagementProvide
 
     @Override
     public <I> Iterable<ServiceInstaller> getTimerManagerFactoryServiceInstallers(ServiceName name, TimerManagerFactoryConfiguration<I> configuration) {
-        BinaryServiceConfiguration beanCacheConfiguration = this.cacheConfiguration.withChildName(configuration.getTimerServiceConfiguration().getName());
+        BinaryServiceConfiguration timerManagerCacheConfiguration = this.cacheConfiguration.withChildName(configuration.getTimerServiceConfiguration().getName());
 
-        ServiceInstaller cacheConfigurationInstaller = new TemplateConfigurationServiceInstallerFactory(this).apply(this.cacheConfiguration, beanCacheConfiguration);
-        ServiceInstaller cacheInstaller = CacheServiceInstallerFactory.INSTANCE.apply(beanCacheConfiguration);
+        ServiceInstaller cacheConfigurationInstaller = new TemplateConfigurationServiceInstallerFactory(this).apply(this.cacheConfiguration, timerManagerCacheConfiguration);
+        ServiceInstaller cacheInstaller = CacheServiceInstallerFactory.INSTANCE.apply(timerManagerCacheConfiguration);
 
-        ServiceDependency<CacheContainerCommandDispatcherFactory> commandDispatcherFactory = beanCacheConfiguration.getServiceDependency(ClusteringServiceDescriptor.COMMAND_DISPATCHER_FACTORY).map(CacheContainerCommandDispatcherFactory.class::cast);
-        ServiceDependency<Cache<?, ?>> cache = beanCacheConfiguration.getServiceDependency(InfinispanServiceDescriptor.CACHE);
+        ServiceDependency<CacheContainerCommandDispatcherFactory> commandDispatcherFactory = timerManagerCacheConfiguration.getServiceDependency(ClusteringServiceDescriptor.COMMAND_DISPATCHER_FACTORY).map(CacheContainerCommandDispatcherFactory.class::cast);
+        ServiceDependency<Cache<?, ?>> cache = timerManagerCacheConfiguration.getServiceDependency(InfinispanServiceDescriptor.CACHE);
         InfinispanTimerManagerFactoryConfiguration<I> factoryConfiguration = new InfinispanTimerManagerFactoryConfiguration<>() {
             @Override
             public TimerServiceConfiguration getTimerServiceConfiguration() {

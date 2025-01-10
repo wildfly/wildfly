@@ -17,7 +17,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>34.0.0.Beta1-SNAPSHOT</version>
+        <version>36.0.0.Beta1-SNAPSHOT</version>
         <relativePath>../../pom.xml</relativePath>
     </parent>
 
@@ -32,9 +32,7 @@
 
     <properties>
         <version.jakarta.annotation.jakarta-annotation-api>3.0.0</version.jakarta.annotation.jakarta-annotation-api>
-        <!-- TODO ElytronAuthConfigFactory uses removed field AuthConfigFactory.providerRegistrationSecurityPermission
-        <version.jakarta.authentication.jakarta-authentication-api>3.1.0-M1</version.jakarta.authentication.jakarta-authentication-api>
-        -->
+        <version.jakarta.authentication.jakarta-authentication-api>3.1.0</version.jakarta.authentication.jakarta-authentication-api>
         <version.jakarta.authorization.jakarta-authorization-api>3.0.0</version.jakarta.authorization.jakarta-authorization-api>
         <version.jakarta.el>6.0.1</version.jakarta.el>
         <version.jakarta.enterprise.concurrent.jakarta-enterprise.concurrent-api>3.1.0</version.jakarta.enterprise.concurrent.jakarta-enterprise.concurrent-api>
@@ -52,10 +50,11 @@
         <version.jakarta.ws.rs.jakarta-ws-rs-api>4.0.0</version.jakarta.ws.rs.jakarta-ws-rs-api>
         <version.org.glassfish.expressly>6.0.0-M1</version.org.glassfish.expressly>
         <version.org.glassfish.jakarta.faces>4.1.0</version.org.glassfish.jakarta.faces>
-        <version.org.jboss.resteasy>7.0.0.Alpha3</version.org.jboss.resteasy>
-        <version.org.jboss.weld.weld>6.0.0.Beta4</version.org.jboss.weld.weld>
-        <version.org.jboss.weld.weld-api>6.0.Beta5</version.org.jboss.weld.weld-api>
-        <version.org.hibernate.validator>9.0.0.Beta2</version.org.hibernate.validator>
+        <version.org.jboss.resteasy>7.0.0.Alpha4</version.org.jboss.resteasy>
+        <version.org.jboss.weld.weld>6.0.0.Final</version.org.jboss.weld.weld>
+        <version.org.jboss.weld.weld-api>6.0.Final</version.org.jboss.weld.weld-api>
+        <version.org.hibernate.validator>9.0.0.CR1</version.org.hibernate.validator>
+        <version.org.wildfly.security.jakarta.elytron-ee>4.0.0.Beta1</version.org.wildfly.security.jakarta.elytron-ee>
     </properties>
 
     <dependencyManagement>
@@ -85,7 +84,6 @@
                     </exclusion>
                 </exclusions>
             </dependency>
-            <!-- TODO ElytronAuthConfigFactory uses removed field AuthConfigFactory.providerRegistrationSecurityPermission
             <dependency>
                 <groupId>jakarta.authentication</groupId>
                 <artifactId>jakarta.authentication-api</artifactId>
@@ -97,22 +95,10 @@
                     </exclusion>
                 </exclusions>
             </dependency>
-            -->
             <dependency>
                 <groupId>jakarta.authorization</groupId>
                 <artifactId>jakarta.authorization-api</artifactId>
                 <version>${version.jakarta.authorization.jakarta-authorization-api}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>jakarta.data</groupId>
-                <artifactId>jakarta.data-api</artifactId>
-                <version>${version.jakarta.data.jakarta-data-api}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>
@@ -580,18 +566,6 @@
             </dependency>
 
             <dependency>
-                <groupId>${ee.maven.groupId}</groupId>
-                <artifactId>wildfly-jakarta-data</artifactId>
-                <version>${ee.maven.version}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-
-            <dependency>
                 <groupId>org.wildfly.deployment</groupId>
                 <artifactId>wildfly-ee-9-deployment-transformer</artifactId>
                 <version>${preview.version.org.wildfly.wildfly-ee-9-deployment-transformer}</version>
@@ -618,6 +592,18 @@
                 <groupId>${project.groupId}</groupId>
                 <artifactId>wildfly-preview-feature-pack-product-conf</artifactId>
                 <version>${ee.maven.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.wildfly.security.jakarta</groupId>
+                <artifactId>jakarta-authentication</artifactId>
+                <version>${version.org.wildfly.security.jakarta.elytron-ee}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
         </dependencies>
     </dependencyManagement>

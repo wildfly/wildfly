@@ -5,6 +5,7 @@
 
 package org.wildfly.extension.opentelemetry;
 
+import io.vertx.core.logging.LoggerFactory;
 import org.wildfly.subsystem.SubsystemConfiguration;
 import org.wildfly.subsystem.SubsystemExtension;
 import org.wildfly.subsystem.SubsystemPersistence;
@@ -18,5 +19,8 @@ public class OpenTelemetrySubsystemExtension extends SubsystemExtension<OpenTele
                 OpenTelemetrySubsystemModel.CURRENT,
                 OpenTelemetrySubsystemRegistrar::new),
                 SubsystemPersistence.of(OpenTelemetrySubsystemSchema.CURRENT));
+        // Initialize the Vert.x logger factory
+        //noinspection deprecation
+        LoggerFactory.initialise();
     }
 }

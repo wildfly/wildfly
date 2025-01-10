@@ -15,6 +15,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.SimpleFileVisitor;
+import java.nio.file.StandardOpenOption;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
 import java.util.List;
@@ -25,8 +26,14 @@ public class KeystoreUtil {
 
     private static final String KEY_STORE_DIRECTORY = "target/reactive-messaging-security";
     public static final Path KEY_STORE_DIRECTORY_PATH = Paths.get(KEY_STORE_DIRECTORY);
+
     public static final String SERVER_KEYSTORE = KEY_STORE_DIRECTORY + "/server.keystore.p12";
     public static final Path SERVER_KEYSTORE_PATH = Paths.get(SERVER_KEYSTORE);
+
+    public static final String SERVER_KEYSTORE_CREDENTIALS = KEY_STORE_DIRECTORY + "/server.keystore.pwd.txt";
+
+    public static final Path SERVER_KEYSTORE_CREDENTIALS_PATH = Paths.get(SERVER_KEYSTORE_CREDENTIALS);
+
     private static final String SERVER_CER = KEY_STORE_DIRECTORY + "/server.cer";
     private static final String SERVER_TRUSTSTORE = KEY_STORE_DIRECTORY + "/server.truststore.p12";
     public static final String CLIENT_TRUSTSTORE = KEY_STORE_DIRECTORY + "/client.truststore.p12";
@@ -51,6 +58,9 @@ public class KeystoreUtil {
         createKeyStoreWithCertificateCommand.addAll(List.of("-validity", "3650"));
         createKeyStoreWithCertificateCommand.addAll(List.of("-ext", "SAN=DNS:localhost,IP:127.0.0.1"));
         runKeytoolCommand(createKeyStoreWithCertificateCommand);
+
+        Files.createFile(SERVER_KEYSTORE_CREDENTIALS_PATH);
+        Files.writeString(SERVER_KEYSTORE_CREDENTIALS_PATH, KEYSTORE_PWD, StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING);
 
         //keytool -exportcert -alias localhost -keystore server.keystore.p12 -file server.cer -storetype pkcs12 -noprompt -storepass serverks
         final List<String> exportCertificateCommand = new ArrayList<>(List.of("keytool", "-exportcert"));

@@ -39,7 +39,7 @@ import org.wildfly.test.undertow.common.UndertowApplicationSecurityDomain;
  * but still uses parts of the API. Here, a custom principal is returned to the client via
  * {@link jakarta.security.enterprise.SecurityContext}, while authentication is performed by Elytron.
  *
- * @author <a href="mailto:carodrig@redhat.com">Cameron Rodriguez</a>
+ * @author <a href="mailto:jrodri@redhat.com">Jessica Rodriguez</a>
  */
 @RunWith(Arquillian.class)
 @RunAsClient

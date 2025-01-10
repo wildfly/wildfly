@@ -38,6 +38,11 @@ public class DistributableStatefulSessionBeanCache<K, V extends StatefulSessionB
     }
 
     @Override
+    public boolean isStarted() {
+        return this.manager.isStarted();
+    }
+
+    @Override
     public void start() {
         this.manager.start();
     }

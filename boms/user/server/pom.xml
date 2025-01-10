@@ -15,7 +15,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>34.0.0.Beta1-SNAPSHOT</version>
+        <version>36.0.0.Beta1-SNAPSHOT</version>
     </parent>
 
     <artifactId>wildfly-server</artifactId>
@@ -97,5 +97,31 @@
         <module>ee</module>
         <module>expansion</module>
     </modules>
+
+    <profiles>
+        <profile>
+            <id>base-feature-pack-build</id>
+            <activation>
+                <property>
+                    <name>!no.base.build</name>
+                </property>
+            </activation>
+            <modules>
+                <module>ee</module>
+            </modules>
+        </profile>
+        <profile>
+            <id>expansion-feature-pack-build</id>
+            <activation>
+                <property>
+                    <!-- Allow users to disable building expansion stuff if they just want base artifacts -->
+                    <name>!no.expansion.build</name>
+                </property>
+            </activation>
+            <modules>
+                <module>expansion</module>
+            </modules>
+        </profile>
+    </profiles>
 
 </project>

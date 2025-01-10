@@ -16,7 +16,7 @@ import org.jboss.shrinkwrap.api.spec.WebArchive;
 /**
  * @author Paul Ferraro
  */
-@ServerSetup(ConcurrentSessionServerSetup.class)
+@ServerSetup(NonTransactionalSessionServerSetup.class)
 public class FineNonTransactionalSessionActivationTestCase extends AbstractSessionActivationTestCase {
 
     private static final String MODULE_NAME = FineNonTransactionalSessionActivationTestCase.class.getSimpleName();
@@ -44,7 +44,7 @@ public class FineNonTransactionalSessionActivationTestCase extends AbstractSessi
         WebArchive war = ShrinkWrap.create(WebArchive.class, DEPLOYMENT_NAME);
         war.addClasses(SessionActivationServlet.class);
         war.setWebXML(DistributableTestCase.class.getPackage(), "web.xml");
-        war.addAsWebInfResource(DistributableTestCase.class.getPackage(), "jboss-all_concurrent_fine.xml", "jboss-all.xml");
+        war.addAsWebInfResource(DistributableTestCase.class.getPackage(), "jboss-all_non-tx_fine.xml", "jboss-all.xml");
         return war;
     }
 

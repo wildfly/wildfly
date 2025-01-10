@@ -16,6 +16,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.function.BiFunction;
@@ -23,14 +25,6 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
-
-import jakarta.ejb.EJBException;
-import jakarta.ejb.ScheduleExpression;
-import jakarta.ejb.TimerConfig;
-import jakarta.transaction.RollbackException;
-import jakarta.transaction.SystemException;
-import jakarta.transaction.Transaction;
-import jakarta.transaction.TransactionSynchronizationRegistry;
 
 import org.jboss.as.ejb3.component.EJBComponent;
 import org.jboss.as.ejb3.context.CurrentInvocationContext;
@@ -47,6 +41,14 @@ import org.wildfly.clustering.ejb.timer.IntervalTimerConfiguration;
 import org.wildfly.clustering.ejb.timer.ScheduleTimerConfiguration;
 import org.wildfly.clustering.ejb.timer.Timer;
 import org.wildfly.clustering.ejb.timer.TimerManager;
+
+import jakarta.ejb.EJBException;
+import jakarta.ejb.ScheduleExpression;
+import jakarta.ejb.TimerConfig;
+import jakarta.transaction.RollbackException;
+import jakarta.transaction.SystemException;
+import jakarta.transaction.Transaction;
+import jakarta.transaction.TransactionSynchronizationRegistry;
 
 /**
  * EJB specification facade for a distributable EJB timer manager.
@@ -69,18 +71,8 @@ public class DistributableTimerService<I> implements ManagedTimerService {
         this.registry = configuration.getTimerServiceRegistry();
         this.manager = manager;
         this.synchronizationFactory = configuration.getTimerSynchronizationFactory();
-    }
 
-    @Override
-    public TimedObjectInvoker getInvoker() {
-        return this.invoker;
-    }
-
-    @Override
-    public void start() {
-        this.manager.start();
-
-        // Create and start auto-timers, if they do not already exist
+        // Create auto-timers if they do not already exist
         Supplier<I> identifierFactory = this.manager.getIdentifierFactory();
         EJBComponent component = this.invoker.getComponent();
         try (Batch batch = this.manager.getBatchFactory().get()) {
@@ -90,22 +82,40 @@ public class DistributableTimerService<I> implements ManagedTimerService {
                 while (timers.hasNext()) {
                     AutoTimer autoTimer = timers.next();
                     if (this.filter.test(autoTimer.getTimerConfig())) {
-                        Timer<I> timer = this.manager.createTimer(identifierFactory.get(), new SimpleScheduleTimerConfiguration(autoTimer.getScheduleExpression()), autoTimer.getTimerConfig().getInfo(), method, timers.previousIndex());
-                        if (timer != null) {
-                            timer.activate();
-                        }
+                        // Create, but do not activate auto-timers (the manager is not yet started)
+                        // These will auto-activate during TimerManager.start()
+                        this.manager.createTimer(identifierFactory.get(), new SimpleScheduleTimerConfiguration(autoTimer.getScheduleExpression()), autoTimer.getTimerConfig().getInfo(), method, timers.previousIndex());
                     }
                 }
             }
         }
-
         this.registry.registerTimerService(this);
     }
 
     @Override
+    public TimedObjectInvoker getInvoker() {
+        return this.invoker;
+    }
+
+    @Override
+    public boolean isStarted() {
+        return this.manager.isStarted();
+    }
+
+    @Override
+    public void start() {
+        this.manager.start();
+    }
+
+    @Override
     public void stop() {
-        this.registry.unregisterTimerService(this);
         this.manager.stop();
+    }
+
+    @Override
+    public void close() {
+        this.manager.close();
+        this.registry.unregisterTimerService(this);
     }
 
     @Override
@@ -210,8 +220,11 @@ public class DistributableTimerService<I> implements ManagedTimerService {
     }
 
     private void addTimers(Collection<jakarta.ejb.Timer> timers, Iterable<I> timerIds) {
+        ManagedTimer currentTimer = Optional.ofNullable(CurrentInvocationContext.get()).map(InterceptorContext::getTimer).filter(ManagedTimer.class::isInstance).map(ManagedTimer.class::cast).orElse(null);
         for (I timerId : timerIds) {
-            timers.add(new OOBTimer<>(this.manager, timerId, this.invoker, this.synchronizationFactory));
+            ManagedTimer timer = new OOBTimer<>(this.manager, timerId, this.invoker, this.synchronizationFactory);
+            // Use timer from interceptor context, if one exists
+            timers.add(Objects.equals(timer, currentTimer) ? currentTimer : timer);
         }
     }
 

@@ -15,7 +15,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>34.0.0.Beta1-SNAPSHOT</version>
+        <version>36.0.0.Beta1-SNAPSHOT</version>
     </parent>
 
     <artifactId>wildfly-ts-integ-mp-telemetry</artifactId>
@@ -24,7 +24,8 @@
     <properties>
         <jbossas.ts.integ.dir>${basedir}/../..</jbossas.ts.integ.dir>
         <ts.microprofile-tck-tests-dependency>org.eclipse.microprofile.telemetry.tracing:microprofile-telemetry-tracing-tck</ts.microprofile-tck-tests-dependency>
-        <ts.microprofile-tck-glow.expected-discovery>[cdi, ee-concurrency, ee-integration, jaxrs, microprofile-config, microprofile-rest-client, microprofile-telemetry, opentelemetry]==>ee-core-profile-server,jaxrs,microprofile-rest-client,microprofile-telemetry</ts.microprofile-tck-glow.expected-discovery>
+        <ts.microprofile-tck-glow.expected-discovery>[cdi, ee-integration, jaxrs, microprofile-config, microprofile-rest-client, microprofile-telemetry, opentelemetry]==>ee-core-profile-server,jaxrs,microprofile-rest-client,microprofile-telemetry</ts.microprofile-tck-glow.expected-discovery>
+        <server.log.path>${project.basedir}/target/wildfly/standalone/log/server.log</server.log.path>
     </properties>
 
     <dependencies>
@@ -46,8 +47,30 @@
         </dependency>
         <dependency>
             <groupId>io.opentelemetry</groupId>
+            <artifactId>opentelemetry-sdk-logs</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.opentelemetry</groupId>
+            <artifactId>opentelemetry-sdk-metrics</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.opentelemetry</groupId>
             <artifactId>opentelemetry-sdk-trace</artifactId>
         </dependency>
+        <dependency>
+            <groupId>io.opentelemetry.semconv</groupId>
+            <artifactId>opentelemetry-semconv</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>io.smallrye.config</groupId>
+            <artifactId>smallrye-config</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.smallrye.config</groupId>
+            <artifactId>smallrye-config-common</artifactId>
+        </dependency>
+
         <dependency>
             <groupId>jakarta.enterprise</groupId>
             <artifactId>jakarta.enterprise.cdi-api</artifactId>
@@ -73,12 +96,32 @@
             <groupId>org.eclipse.microprofile.config</groupId>
             <artifactId>microprofile-config-api</artifactId>
         </dependency>
-
         <dependency>
-            <groupId>org.eclipse.microprofile.telemetry.tracing</groupId>
+            <groupId>org.eclipse.microprofile.telemetry</groupId>
+            <artifactId>microprofile-telemetry-logs-tck</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.microprofile.telemetry</groupId>
+            <artifactId>microprofile-telemetry-metrics-tck</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.microprofile.telemetry</groupId>
             <artifactId>microprofile-telemetry-tracing-tck</artifactId>
             <scope>test</scope>
         </dependency>
+
+        <dependency>
+            <groupId>org.eclipse.microprofile.rest.client</groupId>
+            <artifactId>microprofile-rest-client-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.resteasy.microprofile</groupId>
+            <artifactId>microprofile-rest-client</artifactId>
+            <scope>test</scope>
+        </dependency>
+
         <dependency>
             <groupId>org.jboss.resteasy</groupId>
             <artifactId>resteasy-core</artifactId>
@@ -113,6 +156,7 @@
             <artifactId>yasson</artifactId>
             <scope>test</scope>
         </dependency>
+
         <dependency>
             <groupId>org.jboss.resteasy</groupId>
             <artifactId>resteasy-client</artifactId>
@@ -130,10 +174,6 @@
         <finalName>microprofile-telemetry-${project.version}</finalName>
         <plugins>
             <plugin>
-                <groupId>org.wildfly.glow</groupId>
-                <artifactId>wildfly-glow-arquillian-plugin</artifactId>
-            </plugin>
-            <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <dependencies>
@@ -143,18 +183,104 @@
                         <version>${version.surefire.plugin}</version>
                     </dependency>
                 </dependencies>
+                <executions>
+                    <execution>
+                        <id>default-test</id>
+                        <phase>none</phase>
+                    </execution>
+                    <execution>
+                        <id>logs</id>
+                        <goals>
+                            <goal>test</goal>
+                        </goals>
+                        <configuration>
+                            <reportsDirectory>${project.build.directory}/surefire-reports-logs</reportsDirectory>
+                            <dependenciesToScan>
+                                <dependency>org.eclipse.microprofile.telemetry:microprofile-telemetry-logs-tck</dependency>
+                            </dependenciesToScan>
+                            <suiteXmlFiles>
+                                <suiteXmlFile>src/test/resources/tck-suite-logs.xml</suiteXmlFile>
+                            </suiteXmlFiles>
+                            <systemPropertyVariables>
+                                <microprofile.jvm.args>
+                                    ${microprofile.jvm.args} -Dotel.sdk.disabled=false -Dmptelemetry.tck.log.file.path=${server.log.path}
+                                </microprofile.jvm.args>
+                            </systemPropertyVariables>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>metrics-application</id>
+                        <goals>
+                            <goal>test</goal>
+                        </goals>
+                        <configuration>
+                            <reportsDirectory>${project.build.directory}/surefire-reports-metrics-application
+                            </reportsDirectory>
+                            <dependenciesToScan>
+                                <dependency>org.eclipse.microprofile.telemetry:microprofile-telemetry-metrics-tck</dependency>
+                            </dependenciesToScan>
+                            <suiteXmlFiles>
+                                <suiteXmlFile>src/test/resources/tck-suite-metrics-application.xml</suiteXmlFile>
+                            </suiteXmlFiles>
+                            <systemPropertyVariables>
+                                <microprofile.jvm.args>
+                                    ${microprofile.jvm.args} -Dotel.sdk.disabled=false -Dotel.metric.export.interval=1000 -Dmptelemetry.tck.log.file.path=${server.log.path}
+                                </microprofile.jvm.args>
+                            </systemPropertyVariables>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>metrics-jvm</id>
+                        <goals>
+                            <goal>test</goal>
+                        </goals>
+                        <configuration>
+                            <reportsDirectory>${project.build.directory}/surefire-reports-metrics-jvm</reportsDirectory>
+                            <dependenciesToScan>
+                                <dependency>org.eclipse.microprofile.telemetry:microprofile-telemetry-metrics-tck</dependency>
+                            </dependenciesToScan>
+                            <suiteXmlFiles>
+                                <suiteXmlFile>src/test/resources/tck-suite-metrics-jvm.xml</suiteXmlFile>
+                            </suiteXmlFiles>
+                            <systemPropertyVariables>
+                                <microprofile.jvm.args>
+                                    ${microprofile.jvm.args} -Dotel.sdk.disabled=false -Dotel.metrics.exporter=logging -Dotel.metric.export.interval=1000 -Dmptelemetry.tck.log.file.path=${server.log.path}
+                                </microprofile.jvm.args>
+                            </systemPropertyVariables>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>tracing</id>
+                        <goals>
+                            <goal>test</goal>
+                        </goals>
+                        <configuration>
+                            <reportsDirectory>${project.build.directory}/surefire-reports-tracing</reportsDirectory>
+                            <dependenciesToScan>
+                                <dependency>org.eclipse.microprofile.telemetry:microprofile-telemetry-tracing-tck</dependency>
+                            </dependenciesToScan>
+                            <includes>
+                                <include>**/tracing/tck/**/*Test.java</include>
+                            </includes>
+                            <excludesFile>src/test/resources/exclusions.txt</excludesFile>
+                            <systemPropertyVariables>
+                                <microprofile.jvm.args>
+                                    ${microprofile.jvm.args} -Dmptelemetry.tck.log.file.path=${server.log.path}
+                                </microprofile.jvm.args>
+                            </systemPropertyVariables>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.wildfly.glow</groupId>
+                <artifactId>wildfly-glow-arquillian-plugin</artifactId>
                 <configuration>
-                    <suiteXmlFiles>
-                        <suiteXmlFile>src/test/resources/tck-suite.xml</suiteXmlFile>
-                    </suiteXmlFiles>
                     <dependenciesToScan>
-                        <dependency>
-                            ${ts.microprofile-tck-tests-dependency}
-                        </dependency>
+                        <dependency>org.eclipse.microprofile.telemetry:microprofile-telemetry-logs-tck</dependency>
+                        <dependency>org.eclipse.microprofile.telemetry:microprofile-telemetry-metrics-tck</dependency>
+                        <dependency>org.eclipse.microprofile.telemetry:microprofile-telemetry-tracing-tck</dependency>
                     </dependenciesToScan>
-                    <systemPropertyVariables>
-                        <microprofile.jvm.args>${microprofile.jvm.args}</microprofile.jvm.args>
-                    </systemPropertyVariables>
                 </configuration>
             </plugin>
         </plugins>
@@ -204,6 +330,7 @@
                 <ts.microprofile-tck-glow.config.name>standalone.xml</ts.microprofile-tck-glow.config.name>
             </properties>
         </profile>
+
         <profile>
             <id>preview.test.profile</id>
             <activation>
@@ -218,5 +345,4 @@
             </properties>
         </profile>
     </profiles>
-
 </project>

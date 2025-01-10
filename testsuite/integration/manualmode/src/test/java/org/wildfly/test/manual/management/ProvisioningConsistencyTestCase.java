@@ -19,6 +19,6 @@ import org.wildfly.test.distribution.validation.ProvisioningConsistencyBaseTest;
 public class ProvisioningConsistencyTestCase extends ProvisioningConsistencyBaseTest {
 
     public ProvisioningConsistencyTestCase() {
-        super("ee-dist");
+        super(System.getProperty("ee.dist.output.dir"));
     }
 }

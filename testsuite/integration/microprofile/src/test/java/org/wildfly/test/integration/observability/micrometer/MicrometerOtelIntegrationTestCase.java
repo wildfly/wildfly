@@ -14,6 +14,7 @@ import java.util.stream.Collectors;
 import jakarta.ws.rs.client.Client;
 import jakarta.ws.rs.client.ClientBuilder;
 import jakarta.ws.rs.client.WebTarget;
+
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
@@ -23,23 +24,23 @@ import org.jboss.arquillian.testcontainers.api.DockerRequired;
 import org.jboss.arquillian.testcontainers.api.Testcontainer;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.test.shared.CdiUtils;
+import org.jboss.as.test.shared.observability.containers.OpenTelemetryCollectorContainer;
+import org.jboss.as.test.shared.observability.setuptasks.MicrometerSetupTask;
+import org.jboss.as.test.shared.observability.signals.PrometheusMetric;
 import org.jboss.as.test.shared.util.AssumeTestGroupUtil;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
-import org.junit.AssumptionViolatedException;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.wildfly.test.integration.observability.container.OpenTelemetryCollectorContainer;
-import org.wildfly.test.integration.observability.container.PrometheusMetric;
-import org.wildfly.test.integration.observability.opentelemetry.application.JaxRsActivator;
-import org.wildfly.test.integration.observability.setuptask.MicrometerSetupTask;
+import org.wildfly.test.integration.observability.JaxRsActivator;
+import org.wildfly.test.integration.observability.micrometer.multiple.application.MicrometerMetricResource;
 
 @RunWith(Arquillian.class)
 @ServerSetup(MicrometerSetupTask.class)
-@DockerRequired(AssumptionViolatedException.class)
+@DockerRequired
 @RunAsClient
 public class MicrometerOtelIntegrationTestCase {
     public static final int REQUEST_COUNT = 5;
@@ -51,10 +52,10 @@ public class MicrometerOtelIntegrationTestCase {
     @Testcontainer
     private OpenTelemetryCollectorContainer otelCollector;
 
-    @Deployment
+    @Deployment(testable = false)
     public static Archive<?> deploy() {
         return ShrinkWrap.create(WebArchive.class, DEPLOYMENT_NAME)
-                .addClasses(JaxRsActivator.class, MetricResource.class)
+                .addClasses(JaxRsActivator.class, MicrometerMetricResource.class)
                 .addAsWebInfResource(CdiUtils.createBeansXml(), "beans.xml");
     }
 
@@ -94,9 +95,8 @@ public class MicrometerOtelIntegrationTestCase {
                 "undertow_bytes_received"
         );
 
-        final List<PrometheusMetric> metrics = otelCollector.fetchMetrics(metricsToTest.get(0));
-        metricsToTest.forEach(n -> Assert.assertTrue("Missing metric: " + n,
-                metrics.stream().anyMatch(m -> m.getKey().startsWith(n))));
+        otelCollector.assertMetrics(prometheusMetrics -> metricsToTest.forEach(n -> Assert.assertTrue("Missing metric: " + n,
+                prometheusMetrics.stream().anyMatch(m -> m.getKey().startsWith(n)))));
     }
 
     @Test
@@ -116,17 +116,17 @@ public class MicrometerOtelIntegrationTestCase {
                 "undertow_session_max_alive_time_seconds",
                 "undertow_sessions_created_total"
         );
-        final List<PrometheusMetric> metrics = otelCollector.fetchMetrics(metricsToTest.get(0));
 
-        Map<String, PrometheusMetric> appMetrics =
-                metrics.stream().filter(m -> m.getTags().entrySet().stream()
-                                .anyMatch(t -> "app".equals(t.getKey()) && DEPLOYMENT_NAME.equals(t.getValue()))
-                        )
-                        .collect(Collectors.toMap(PrometheusMetric::getKey, i -> i));
+        otelCollector.assertMetrics(prometheusMetrics -> {
+            Map<String, PrometheusMetric> appMetrics =
+                    prometheusMetrics.stream().filter(m -> m.getTags().entrySet().stream()
+                                    .anyMatch(t -> "app".equals(t.getKey()) && DEPLOYMENT_NAME.equals(t.getValue()))
+                            )
+                            .collect(Collectors.toMap(PrometheusMetric::getKey, i -> i));
 
-        metricsToTest.forEach(m -> Assert.assertTrue("Missing app metric: " + m, appMetrics.containsKey(m)));
+            metricsToTest.forEach(m -> Assert.assertTrue("Missing app metric: " + m, appMetrics.containsKey(m)));
+        });
     }
-
 
 
     @Test
@@ -142,14 +142,15 @@ public class MicrometerOtelIntegrationTestCase {
                 "thread_daemon_count",
                 "cpu_available_processors"
         );
-        final List<PrometheusMetric> metrics = otelCollector.fetchMetrics(metricsToTest.get(0));
 
-        metricsToTest.forEach(m -> {
-            Assert.assertNotEquals("Metric value should be non-zero: " + m,
-                    "0", metrics.stream().filter(e -> e.getKey().startsWith(m))
-                            .findFirst()
-                            .orElseThrow()
-                            .getValue()); // Add the metrics tags to complete the key
+        otelCollector.assertMetrics(prometheusMetrics -> {
+            metricsToTest.forEach(m -> {
+                Assert.assertNotEquals("Metric value should be non-zero: " + m,
+                        "0", prometheusMetrics.stream().filter(e -> e.getKey().startsWith(m))
+                                .findFirst()
+                                .orElseThrow()
+                                .getValue()); // Add the metrics tags to complete the key
+            });
         });
     }
 
@@ -162,7 +163,7 @@ public class MicrometerOtelIntegrationTestCase {
 
     private String[] splitMetric(String entry) {
         int index = entry.lastIndexOf(" ");
-        return new String[]{
+        return new String[] {
                 entry.substring(0, index),
                 entry.substring(index + 1)
         };

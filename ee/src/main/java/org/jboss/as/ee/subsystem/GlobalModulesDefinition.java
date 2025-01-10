@@ -5,6 +5,8 @@
 
 package org.jboss.as.ee.subsystem;
 
+import static org.jboss.as.controller.ModuleIdentifierUtil.canonicalModuleIdentifier;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashSet;
@@ -27,7 +29,6 @@ import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.ee.logging.EeLogger;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
-import org.jboss.modules.ModuleIdentifier;
 
 /**
  * {@link AttributeDefinition} implementation for the "global-modules" attribute.
@@ -138,28 +139,28 @@ public class GlobalModulesDefinition {
                 boolean annotations = ANNOTATIONS_AD.resolveModelAttribute(context, module).asBoolean();
                 boolean services = SERVICES_AD.resolveModelAttribute(context, module).asBoolean();
                 boolean metaInf = META_INF_AD.resolveModelAttribute(context, module).asBoolean();
-                ret.add(new GlobalModule(ModuleIdentifier.create(name, slot), annotations, services, metaInf));
+                ret.add(new GlobalModule(canonicalModuleIdentifier(name, slot), annotations, services, metaInf));
             }
         }
         return ret;
     }
 
     public static final class GlobalModule {
-        private final ModuleIdentifier moduleIdentifier;
+        private final String moduleName;
         private final boolean annotations;
         private final boolean services;
         private final boolean metaInf;
 
 
-        GlobalModule(final ModuleIdentifier moduleIdentifier, final boolean annotations, final boolean services, final boolean metaInf) {
-            this.moduleIdentifier = moduleIdentifier;
+        GlobalModule(final String moduleName, final boolean annotations, final boolean services, final boolean metaInf) {
+            this.moduleName = moduleName;
             this.annotations = annotations;
             this.services = services;
             this.metaInf = metaInf;
         }
 
-        public ModuleIdentifier getModuleIdentifier() {
-            return moduleIdentifier;
+        public String getModuleName() {
+            return moduleName;
         }
 
         public boolean isAnnotations() {

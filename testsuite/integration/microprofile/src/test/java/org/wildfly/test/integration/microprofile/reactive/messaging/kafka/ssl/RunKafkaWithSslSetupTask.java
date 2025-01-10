@@ -5,78 +5,89 @@
 
 package org.wildfly.test.integration.microprofile.reactive.messaging.kafka.ssl;
 
-import io.smallrye.reactive.messaging.kafka.companion.KafkaCompanion;
-import io.smallrye.reactive.messaging.kafka.companion.test.EmbeddedKafkaBroker;
-import org.apache.kafka.common.Endpoint;
-import org.apache.kafka.common.config.SslConfigs;
-import org.jboss.as.arquillian.api.ServerSetupTask;
-import org.jboss.as.arquillian.container.ManagementClient;
-import org.jboss.logging.Logger;
-import org.wildfly.test.integration.microprofile.reactive.KeystoreUtil;
+import static org.wildfly.test.integration.microprofile.reactive.KeystoreUtil.SERVER_KEYSTORE_PATH;
 
-import java.io.File;
+import java.io.IOException;
+import java.nio.file.Path;
 import java.time.Duration;
 import java.time.temporal.ChronoUnit;
+import java.util.Arrays;
 
-import static io.smallrye.reactive.messaging.kafka.companion.test.EmbeddedKafkaBroker.endpoint;
-import static org.apache.kafka.common.security.auth.SecurityProtocol.PLAINTEXT;
-import static org.apache.kafka.common.security.auth.SecurityProtocol.SSL;
+import io.smallrye.reactive.messaging.kafka.companion.KafkaCompanion;
+import org.jboss.arquillian.testcontainers.api.DockerRequired;
+import org.jboss.as.arquillian.api.ServerSetupTask;
+import org.jboss.as.arquillian.container.ManagementClient;
+import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.containers.wait.strategy.Wait;
+import org.testcontainers.utility.MountableFile;
+import org.wildfly.security.manager.WildFlySecurityManager;
+import org.wildfly.test.integration.microprofile.reactive.KeystoreUtil;
 
 /**
  * @author <a href="mailto:kabir.khan@jboss.com">Kabir Khan</a>
  */
+@DockerRequired
 public class RunKafkaWithSslSetupTask implements ServerSetupTask {
-    volatile EmbeddedKafkaBroker broker;
+    volatile GenericContainer container;
     volatile KafkaCompanion companion;
-    private static final Logger log = Logger.getLogger(RunKafkaWithSslSetupTask.class);
-    private File configDir;
 
     @Override
     public void setup(ManagementClient managementClient, String s) throws Exception {
         try {
-            configDir = new File("target", "reactive-messaging-kafka");
-            configDir.mkdir();
-
             KeystoreUtil.createKeystores();
+            String kafkaVersion = WildFlySecurityManager.getPropertyPrivileged("wildfly.test.kafka.version", null);
+            if (kafkaVersion == null) {
+                throw new IllegalArgumentException("Specify Kafka version with -Dwildfly.test.kafka.version");
+            }
 
-            Endpoint external = endpoint("EXTERNAL", SSL, "localhost", 9092);
-            Endpoint internal = endpoint("INTERNAL", PLAINTEXT, "localhost", 19002);
-            broker = new EmbeddedKafkaBroker()
-                    .withAdvertisedListeners(external, internal)
-                    .withAdditionalProperties(properties -> {
-                        properties.put(SslConfigs.SSL_KEYSTORE_LOCATION_CONFIG, KeystoreUtil.SERVER_KEYSTORE);
-                        properties.put(SslConfigs.SSL_KEYSTORE_PASSWORD_CONFIG, KeystoreUtil.KEYSTORE_PWD);
-                        properties.put(SslConfigs.SSL_KEY_PASSWORD_CONFIG, KeystoreUtil.KEYSTORE_PWD);
-                        properties.put(SslConfigs.SSL_KEYSTORE_TYPE_CONFIG, "PKCS12");
-                        properties.put(SslConfigs.SSL_SECURE_RANDOM_IMPLEMENTATION_CONFIG, "SHA1PRNG");
-                    })
-                    .withDeleteLogDirsOnClose(true);
-            broker.start();
+            // The KafkaContainer class doesn't play nicely when trying to make it use SSL
+            container = new GenericContainer("apache/kafka-native:" + kafkaVersion);
+            container.setPortBindings(Arrays.asList("9092:9092", "19092:19092"));
+            container.withCopyFileToContainer(
+                    MountableFile.forHostPath(Path.of("src/test/resources/org/wildfly/test/integration/microprofile/reactive/messaging/kafka/ssl/server.properties")),
+                    "/mnt/shared/config/server.properties"
+            );
+            container.waitingFor(Wait.forLogMessage(".*Transitioning from RECOVERY to RUNNING.*", 1));
 
-            companion = new KafkaCompanion(EmbeddedKafkaBroker.toListenerString(internal));
+
+            // Copy the keystore files to the expected container location
+            container.withCopyFileToContainer(
+                    MountableFile.forHostPath(SERVER_KEYSTORE_PATH.getParent()),
+                    "/etc/kafka/secrets/");
+
+//            // Set env vars which don't seem to have any effect when only in server.properties
+            container.addEnv("KAFKA_CONTROLLER_QUORUM_VOTERS", "1@localhost:29093");
+
+            container.start();
+
+            companion = new KafkaCompanion("INTERNAL://localhost:19092");
             companion.topics().createAndWait("testing", 1, Duration.of(10, ChronoUnit.SECONDS));
         } catch (Exception e) {
-            try {
-                if (companion != null) {
-                    companion.close();
-                }
-                if (broker != null) {
-                    broker.close();
-                }
-            } finally {
-                throw e;
-            }
+            cleanupKafka();
+            throw e;
         }
     }
 
     @Override
     public void tearDown(ManagementClient managementClient, String s) throws Exception {
+        cleanupKafka();
+    }
+
+    private void cleanupKafka() throws IOException {
         try {
             if (companion != null) {
-                companion.close();
+                try {
+                    companion.close();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
             }
-            if (broker != null) {
-                broker.close();
+            if (container != null) {
+                try {
+                    container.close();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
             }
         } finally {
             KeystoreUtil.cleanUp();

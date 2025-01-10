@@ -88,12 +88,10 @@ public class JWTIdentityPropagationTestCase {
     @ArquillianResource
     private URL deploymentUrl;
 
-    @Deployment(name= SINGLE_DEPLOYMENT, order = 1)
+    @Deployment(name = SINGLE_DEPLOYMENT, order = 1, testable = false)
     public static Archive<?> singleDeploymentLocal() {
         final WebArchive war = ShrinkWrap.create(WebArchive.class, SINGLE_DEPLOYMENT + "-web.war")
-                .addClasses(JWTIdentityPropagationTestCase.class)
                 .addClasses(App.class, BeanEndPoint.class)
-                .addClasses(PropagationSetup.class)
                 .addAsManifestResource(BaseJWTCase.class.getPackage(), "microprofile-config.properties", "microprofile-config.properties")
                 .addAsManifestResource(BaseJWTCase.class.getPackage(), "public.pem", "public.pem");
         final JavaArchive jar = ShrinkWrap.create(JavaArchive.class, SINGLE_DEPLOYMENT + "-ejb.jar")
@@ -105,12 +103,10 @@ public class JWTIdentityPropagationTestCase {
         return ear;
     }
 
-    @Deployment(name= ANOTHER_SINGLE_DEPLOYMENT, order = 2)
+    @Deployment(name = ANOTHER_SINGLE_DEPLOYMENT, order = 2, testable = false)
     public static Archive<?> anotherSingleDeploymentLocal() {
         final WebArchive war = ShrinkWrap.create(WebArchive.class, ANOTHER_SINGLE_DEPLOYMENT + "-web.war")
-                .addClasses(JWTIdentityPropagationTestCase.class)
                 .addClasses(App.class, AnotherBeanEndPoint.class)
-                .addClasses(PropagationSetup.class)
                 .addAsManifestResource(BaseJWTCase.class.getPackage(), "microprofile-config.properties", "microprofile-config.properties")
                 .addAsManifestResource(BaseJWTCase.class.getPackage(), "public.pem", "public.pem");
         final JavaArchive jar = ShrinkWrap.create(JavaArchive.class, ANOTHER_SINGLE_DEPLOYMENT + "-ejb.jar")
@@ -122,12 +118,10 @@ public class JWTIdentityPropagationTestCase {
         return ear;
     }
 
-    @Deployment(name= NO_OUTFLOW_CONFIG, order = 3)
+    @Deployment(name = NO_OUTFLOW_CONFIG, order = 3, testable = false)
     public static Archive<?> noOutflowConfig() {
         final WebArchive war = ShrinkWrap.create(WebArchive.class, NO_OUTFLOW_CONFIG + "-web.war")
-                .addClasses(JWTIdentityPropagationTestCase.class)
                 .addClasses(App.class, BeanEndPoint.class)
-                .addClasses(PropagationSetup.class)
                 .addAsManifestResource(BaseJWTCase.class.getPackage(), "microprofile-config.properties", "microprofile-config.properties")
                 .addAsManifestResource(BaseJWTCase.class.getPackage(), "public.pem", "public.pem");
         final JavaArchive jar = ShrinkWrap.create(JavaArchive.class, NO_OUTFLOW_CONFIG + "-ejb.jar")
@@ -139,12 +133,10 @@ public class JWTIdentityPropagationTestCase {
         return ear;
     }
 
-    @Deployment(name= OUTFLOW_ANONYMOUS_CONFIG, order = 4)
+    @Deployment(name = OUTFLOW_ANONYMOUS_CONFIG, order = 4, testable = false)
     public static Archive<?> outflowAnonymousConfig() {
         final WebArchive war = ShrinkWrap.create(WebArchive.class, OUTFLOW_ANONYMOUS_CONFIG + "-web.war")
-                .addClasses(JWTIdentityPropagationTestCase.class)
                 .addClasses(App.class, BeanEndPoint.class)
-                .addClasses(PropagationSetup.class)
                 .addAsManifestResource(BaseJWTCase.class.getPackage(), "microprofile-config.properties", "microprofile-config.properties")
                 .addAsManifestResource(BaseJWTCase.class.getPackage(), "public.pem", "public.pem");
         final JavaArchive jar = ShrinkWrap.create(JavaArchive.class, OUTFLOW_ANONYMOUS_CONFIG + "-ejb.jar")
@@ -156,7 +148,7 @@ public class JWTIdentityPropagationTestCase {
         return ear;
     }
 
-    @Deployment(name= EAR_DEPLOYMENT_WITH_EJB, order = 5)
+    @Deployment(name = EAR_DEPLOYMENT_WITH_EJB, order = 5, testable = false)
     public static Archive<?> earDeploymentWithEJB() {
         final JavaArchive jar = ShrinkWrap.create(JavaArchive.class, EAR_DEPLOYMENT_WITH_EJB + "-ejb.jar")
                 .addClasses(WhoAmIRemote.class)
@@ -167,12 +159,10 @@ public class JWTIdentityPropagationTestCase {
         return ear;
     }
 
-    @Deployment(name= EAR_DEPLOYMENT_WITH_MP_JWT, order = 6)
+    @Deployment(name = EAR_DEPLOYMENT_WITH_MP_JWT, order = 6, testable = false)
     public static Archive<?> earDeploymentWithMPJWT() {
         final WebArchive war = ShrinkWrap.create(WebArchive.class, EAR_DEPLOYMENT_WITH_MP_JWT + "-web.war")
-                .addClasses(JWTIdentityPropagationTestCase.class)
                 .addClasses(App.class, RemoteBeanEndPoint.class)
-                .addClasses(PropagationSetup.class)
                 .addAsManifestResource(BaseJWTCase.class.getPackage(), "microprofile-config.properties", "microprofile-config.properties")
                 .addAsManifestResource(BaseJWTCase.class.getPackage(), "public.pem", "public.pem")
                 .addAsManifestResource(new StringAsset("Dependencies: deployment." + EAR_DEPLOYMENT_WITH_EJB + ".ear" + "." + EAR_DEPLOYMENT_WITH_EJB + "-ejb.jar"), "MANIFEST.MF");
@@ -181,7 +171,7 @@ public class JWTIdentityPropagationTestCase {
         return ear;
     }
 
-    @Deployment(name= EAR_DEPLOYMENT_WITH_EJB_SAME_DOMAIN, order = 7)
+    @Deployment(name = EAR_DEPLOYMENT_WITH_EJB_SAME_DOMAIN, order = 7, testable = false)
     public static Archive<?> earDeploymentWithEJBSameDomain() {
         final JavaArchive jar = ShrinkWrap.create(JavaArchive.class, EAR_DEPLOYMENT_WITH_EJB_SAME_DOMAIN + "-ejb.jar")
                 .addClasses(org.wildfly.test.integration.microprofile.jwt.propagation.sameVirtualDomain.WhoAmIRemote.class)
@@ -192,12 +182,10 @@ public class JWTIdentityPropagationTestCase {
         return ear;
     }
 
-    @Deployment(name= EAR_DEPLOYMENT_WITH_MP_JWT_SAME_DOMAIN, order = 8)
+    @Deployment(name = EAR_DEPLOYMENT_WITH_MP_JWT_SAME_DOMAIN, order = 8, testable = false)
     public static Archive<?> earDeploymentWithMPJWTSameDomain() {
         final WebArchive war = ShrinkWrap.create(WebArchive.class, EAR_DEPLOYMENT_WITH_MP_JWT_SAME_DOMAIN + "-web.war")
-                .addClasses(JWTIdentityPropagationTestCase.class)
                 .addClasses(App.class, org.wildfly.test.integration.microprofile.jwt.propagation.sameVirtualDomain.RemoteBeanEndPoint.class)
-                .addClasses(PropagationSetup.class)
                 .addAsManifestResource(BaseJWTCase.class.getPackage(), "microprofile-config.properties", "microprofile-config.properties")
                 .addAsManifestResource(BaseJWTCase.class.getPackage(), "public.pem", "public.pem")
                 .addAsManifestResource(new StringAsset("Dependencies: deployment." + EAR_DEPLOYMENT_WITH_EJB_SAME_DOMAIN + ".ear" + "." + EAR_DEPLOYMENT_WITH_EJB_SAME_DOMAIN + "-ejb.jar"), "MANIFEST.MF");
@@ -372,14 +360,20 @@ public class JWTIdentityPropagationTestCase {
 
         // rls start
         private void rlsSetupDebugLog(CLIWrapper cli){
+            cli.sendLine("/subsystem=logging/logger=org.wildfly.extension.elytron:add()");
+            cli.sendLine("/subsystem=logging/logger=org.wildfly.extension.elytron:write-attribute(name=level, value=DEBUG)");
+            cli.sendLine("/subsystem=logging/logger=org.jboss.as.ejb3:add()");
+            cli.sendLine("/subsystem=logging/logger=org.jboss.as.ejb3:write-attribute(name=level, value=TRACE)");
             cli.sendLine("/subsystem=logging/logger=org.wildfly.security:add()");
             cli.sendLine("/subsystem=logging/logger=org.wildfly.security:write-attribute(name=level, value=DEBUG)");
-            cli.sendLine("/subsystem=logging/logger=org.apache.http:add()");
-            cli.sendLine("/subsystem=logging/logger=org.apache.http:write-attribute(name=level, value=DEBUG)");
+            cli.sendLine("/subsystem=logging/logger=org.jboss.as.ee:add()");
+            cli.sendLine("/subsystem=logging/logger=org.jboss.as.ee:write-attribute(name=level, value=TRACE)");
         }
         private void rlsTearDownDebugLog(CLIWrapper cli){
+            cli.sendLine("/subsystem=logging/logger=org.wildfly.extension.elytron:remove()");
+            cli.sendLine("/subsystem=logging/logger=org.jboss.as.ejb3:remove()");
             cli.sendLine("/subsystem=logging/logger=org.wildfly.security:remove()");
-            cli.sendLine("/subsystem=logging/logger=org.apache.http:remove()");
+            cli.sendLine("/subsystem=logging/logger=org.jboss.as.ee:remove()");
         }
         // rls end
         @Override

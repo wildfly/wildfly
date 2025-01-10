@@ -49,7 +49,7 @@ public class WeldModuleEJBSerializationContextInitializer extends AbstractSerial
         TriFunction<BeanManagerImpl, BeanIdentifier, SessionObjectReference, Object> function = new TriFunction<>() {
             @Override
             public Object apply(BeanManagerImpl manager, BeanIdentifier identifier, SessionObjectReference reference) {
-                return WildFlySecurityManager.doUnchecked(new PrivilegedAction<Object>() {
+                return WildFlySecurityManager.doUnchecked(new PrivilegedAction<>() {
                     @Override
                     public Object run() {
                         try {

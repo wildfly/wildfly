@@ -17,7 +17,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>34.0.0.Beta1-SNAPSHOT</version>
+        <version>36.0.0.Beta1-SNAPSHOT</version>
     </parent>
 
     <artifactId>wildfly-ts-integ-microprofile</artifactId>
@@ -34,6 +34,8 @@
         <ts.glow.phase>none</ts.glow.phase>
         <ts.glow.config-name>standalone-microprofile.xml</ts.glow.config-name>
 
+        <wildfly.test.kafka.version>${version.org.apache.kafka.test-image}</wildfly.test.kafka.version>
+
         <!-- Use the expansion bom -->
         <dependency.management.import.artifact>wildfly-standard-expansion-bom</dependency.management.import.artifact>
         <dependency.management.import.test.artifact>wildfly-standard-test-expansion-bom</dependency.management.import.test.artifact>
@@ -42,9 +44,9 @@
     <dependencyManagement>
         <dependencies>
             <dependency>
-                <groupId>org.wildfly</groupId>
+                <groupId>${full.maven.groupId}</groupId>
                 <artifactId>${dependency.management.import.test.artifact}</artifactId>
-                <version>${project.version}</version>
+                <version>${full.maven.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
@@ -339,6 +341,11 @@
             <scope>test</scope>
         </dependency>
         <dependency>
+            <groupId>io.opentelemetry.instrumentation</groupId>
+            <artifactId>opentelemetry-instrumentation-annotations</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
             <groupId>${full.maven.groupId}</groupId>
             <artifactId>wildfly-opentelemetry-api</artifactId>
             <scope>test</scope>
@@ -386,8 +393,25 @@
             <scope>test</scope>
         </dependency>
         <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>kafka</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
             <groupId>org.hamcrest</groupId>
             <artifactId>hamcrest</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>wildfly-microprofile-reactive-messaging-config</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>wildfly-microprofile-reactive-messaging</artifactId>
             <scope>test</scope>
         </dependency>
 
@@ -401,7 +425,6 @@
         <dependency>
             <groupId>org.jboss.arquillian</groupId>
             <artifactId>arquillian-testcontainers</artifactId>
-            <version>1.0.0.Alpha1</version>
             <scope>test</scope>
         </dependency>
     </dependencies>
@@ -497,6 +520,8 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
+                    <!-- TODO Remove workaround for https://issues.redhat.com/browse/WFLY-20030 *ReactiveMessaging* tests fail with podman -->
+                    <reuseForks>false</reuseForks>
                     <environmentVariables>
                         <!-- dummy env property for MicroProfile Config testing -->
                         <MPCONFIG_TEST_ENV_VAR>integ-basicmpconfig-test-env-var-value</MPCONFIG_TEST_ENV_VAR>
@@ -504,6 +529,7 @@
                     </environmentVariables>
                     <systemPropertyVariables>
                         <jboss.install.dir>${basedir}/target/wildfly</jboss.install.dir>
+                        <wildfly.test.kafka.version>${wildfly.test.kafka.version}</wildfly.test.kafka.version>
                     </systemPropertyVariables>
                 </configuration>
                 <executions>
@@ -536,6 +562,7 @@
                         <configuration>
                             <systemPropertyVariables>
                                 <jboss.server.config.file.name>standalone.xml</jboss.server.config.file.name>
+                                <wildfly.test.kafka.version>${wildfly.test.kafka.version}</wildfly.test.kafka.version>
                             </systemPropertyVariables>
                             <excludes>
                                 <!-- The enable-microprofile.cli script does not enable the reactive extensions/subsystems -->

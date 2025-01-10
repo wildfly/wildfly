@@ -57,7 +57,7 @@ public class InfinispanTimerManagerFactory<I> implements TimerManagerFactory<I> 
             }
         };
         TimerMetaDataFactory<I, RemappableTimerMetaDataEntry<MarshalledValue<Object, ByteBufferMarshaller>>> metaDataFactory = new InfinispanTimerMetaDataFactory<>(metaDataFactoryConfig);
-        TimerFactory<I, RemappableTimerMetaDataEntry<MarshalledValue<Object, ByteBufferMarshaller>>> factory = new InfinispanTimerFactory<>(metaDataFactory, configuration.getListener(), this.configuration.getRegistry());
+        TimerFactory<I, RemappableTimerMetaDataEntry<MarshalledValue<Object, ByteBufferMarshaller>>> factory = new InfinispanTimerFactory<>(metaDataFactory, configuration.getListener());
 
         return new InfinispanTimerManager<>(new InfinispanTimerManagerConfiguration<I, MarshalledValue<Object, ByteBufferMarshaller>>() {
             @Override

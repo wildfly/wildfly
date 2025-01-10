@@ -55,24 +55,14 @@ import org.wildfly.subsystem.service.capability.CapabilityServiceInstaller;
  */
 
 class OpenTelemetrySubsystemRegistrar implements SubsystemResourceDefinitionRegistrar, ResourceServiceConfigurator {
-    public static final String API_MODULE = "org.wildfly.extension.opentelemetry-api";
-    public static final String[] EXPORTED_MODULES = {
-            "io.opentelemetry.api",
-            "io.opentelemetry.api.events",
-            "io.opentelemetry.exporter",
-            "io.opentelemetry.otlp",
-            "io.opentelemetry.sdk",
-            "io.opentelemetry.semconv",
-            "io.smallrye.opentelemetry"
-    };
-
     static final RuntimeCapability<Void> OPENTELEMETRY_CAPABILITY =
             RuntimeCapability.Builder.of(OPENTELEMETRY_CAPABILITY_NAME)
                     .addRequirements(WELD_CAPABILITY_NAME)
                     .build();
 
     public static final RuntimeCapability<Void> OPENTELEMETRY_CONFIG_CAPABILITY =
-            RuntimeCapability.Builder.of(WildFlyOpenTelemetryConfig.SERVICE_DESCRIPTOR).build();;
+            RuntimeCapability.Builder.of(WildFlyOpenTelemetryConfig.SERVICE_DESCRIPTOR).build();
+    ;
 
     public static final SimpleAttributeDefinition SERVICE_NAME = SimpleAttributeDefinitionBuilder
             .create(OpenTelemetryConfigurationConstants.SERVICE_NAME, ModelType.STRING, true)
@@ -214,19 +204,19 @@ class OpenTelemetrySubsystemRegistrar implements SubsystemResourceDefinitionRegi
         String exporter = OpenTelemetrySubsystemRegistrar.EXPORTER.resolveModelAttribute(context, model).asString();
         validateExporter(context, exporter);
 
-        final WildFlyOpenTelemetryConfig config = new WildFlyOpenTelemetryConfig(
-                OpenTelemetrySubsystemRegistrar.SERVICE_NAME.resolveModelAttribute(context, model).asStringOrNull(),
-                exporter,
-                OpenTelemetrySubsystemRegistrar.ENDPOINT.resolveModelAttribute(context, model).asStringOrNull(),
-                OpenTelemetrySubsystemRegistrar.BATCH_DELAY.resolveModelAttribute(context, model).asLongOrNull(),
-                OpenTelemetrySubsystemRegistrar.MAX_QUEUE_SIZE.resolveModelAttribute(context, model).asLongOrNull(),
-                OpenTelemetrySubsystemRegistrar.MAX_EXPORT_BATCH_SIZE.resolveModelAttribute(context, model).asLongOrNull(),
-                OpenTelemetrySubsystemRegistrar.EXPORT_TIMEOUT.resolveModelAttribute(context, model).asLongOrNull(),
-                OpenTelemetrySubsystemRegistrar.SPAN_PROCESSOR_TYPE.resolveModelAttribute(context, model).asStringOrNull(),
-                OpenTelemetrySubsystemRegistrar.SAMPLER.resolveModelAttribute(context, model).asStringOrNull(),
-                OpenTelemetrySubsystemRegistrar.RATIO.resolveModelAttribute(context, model).asDoubleOrNull(),
-                context.getCapabilityServiceSupport().hasCapability("org.wildfly.extension.microprofile.telemetry")
-        );
+        final WildFlyOpenTelemetryConfig config = new WildFlyOpenTelemetryConfig.Builder()
+            .setServiceName(OpenTelemetrySubsystemRegistrar.SERVICE_NAME.resolveModelAttribute(context, model).asStringOrNull())
+            .setExporter(exporter)
+            .setOtlpEndpoint(OpenTelemetrySubsystemRegistrar.ENDPOINT.resolveModelAttribute(context, model).asStringOrNull())
+            .setBatchDelay(OpenTelemetrySubsystemRegistrar.BATCH_DELAY.resolveModelAttribute(context, model).asLongOrNull())
+            .setMaxQueueSize(OpenTelemetrySubsystemRegistrar.MAX_QUEUE_SIZE.resolveModelAttribute(context, model).asLongOrNull())
+            .setMaxExportBatchSize(OpenTelemetrySubsystemRegistrar.MAX_EXPORT_BATCH_SIZE.resolveModelAttribute(context, model).asLongOrNull())
+            .setExportTimeout(OpenTelemetrySubsystemRegistrar.EXPORT_TIMEOUT.resolveModelAttribute(context, model).asLongOrNull())
+            .setSampler(OpenTelemetrySubsystemRegistrar.SAMPLER.resolveModelAttribute(context, model).asStringOrNull())
+            .setSamplerRatio(OpenTelemetrySubsystemRegistrar.RATIO.resolveModelAttribute(context, model).asDoubleOrNull())
+            .setMicroProfileTelemetryInstalled(context.hasOptionalCapability("org.wildfly.extension.microprofile.telemetry", OPENTELEMETRY_CAPABILITY, null))
+            .setInjectVertx(context.hasOptionalCapability("org.wildfly.extension.vertx", OPENTELEMETRY_CAPABILITY, null))
+            .build();
 
         return CapabilityServiceInstaller.builder(OPENTELEMETRY_CONFIG_CAPABILITY, config)
                 .withCaptor(openTelemetryConfig::set)

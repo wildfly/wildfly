@@ -30,7 +30,6 @@ public class DomainAdjuster740 extends DomainAdjuster {
         final List<ModelNode> ops = new ArrayList<>();
 
         adjustRemoting(ops, profileAddress.append(SUBSYSTEM, "remoting"));
-        adjustUndertow(ops, profileAddress.append(SUBSYSTEM, "undertow"));
         adjustEjb3(ops, profileAddress.append(SUBSYSTEM, "ejb3"));
         removeDistributableEjb(ops, profileAddress.append(SUBSYSTEM, "distributable-ejb"));
 
@@ -48,18 +47,6 @@ public class DomainAdjuster740 extends DomainAdjuster {
         final PathAddress httpRemotingConnector = subsystem
                 .append("http-connector", "http-remoting-connector");
         ops.add(Util.getUndefineAttributeOperation(httpRemotingConnector, "sasl-authentication-factory"));
-    }
-
-    private static void adjustUndertow(final List<ModelNode> ops, final PathAddress subsystem) {
-        // This adjusts the configuration to reflect the configuration that was used in EAP 7.4,
-        // this could equally be moved all the way back and only adjusted for EAP 7.0.0 as we remove
-        // the Elytron subsystem.
-        final PathAddress httpInvoker = subsystem
-                .append("server", "default-server")
-                .append("host", "default-host")
-                .append("setting", "http-invoker");
-        ops.add(Util.getUndefineAttributeOperation(httpInvoker, "http-authentication-factory"));
-        ops.add(Util.getWriteAttributeOperation(httpInvoker, "security-realm", "ApplicationRealm"));
     }
 
     private static void adjustEjb3(List<ModelNode> operations, PathAddress subsystemAddress) {
@@ -89,5 +76,11 @@ public class DomainAdjuster740 extends DomainAdjuster {
         ops.add(Util.createRemoveOperation(subsystem));
         // remove its extension from the list of extensions
         ops.add(Util.createRemoveOperation(PathAddress.pathAddress(EXTENSION, "org.wildfly.extension.clustering.ejb")));
+    }
+
+    @Override
+    protected void adjustExpansionExtensions(DomainClient client, PathAddress profileAddress) throws Exception {
+        removeSubsystemExtensionIfExist(client, profileAddress.append(SUBSYSTEM, "microprofile-jwt-smallrye"), PathAddress.pathAddress(EXTENSION, "org.wildfly.extension.microprofile.jwt-smallrye"));
+        removeSubsystemExtensionIfExist(client, profileAddress.append(SUBSYSTEM, "microprofile-config-smallrye"), PathAddress.pathAddress(EXTENSION, "org.wildfly.extension.microprofile.config-smallrye"));
     }
 }

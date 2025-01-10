@@ -60,13 +60,17 @@ import org.junit.runners.MethodSorters;
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public abstract class DomainHostExcludesTest {
 
-    private static final String[] EXCLUDED_EXTENSIONS_7X = {
-            "org.jboss.as.web",
-            "org.jboss.as.messaging",
+    // A set of extensions that are available in the server under test modules but
+    // are not configured by default in the legacy host.
+    // These extensions will be added on the server under test, and are expected
+    // to be ignored by the legacy hosts.
+    private static final String[] EXCLUDED_EXTENSIONS = {
+            "org.jboss.as.xts",
+            "org.wildfly.extension.rts",
             "org.jboss.as.threads"
     };
 
-    public static final Set<String> EXTENSIONS_SET_7X = new HashSet<>(Arrays.asList(EXCLUDED_EXTENSIONS_7X));
+    public static final Set<String> EXTENSIONS_SET = new HashSet<>(Arrays.asList(EXCLUDED_EXTENSIONS));
 
     private static final PathElement HOST = PathElement.pathElement("host", "secondary");
     private static final PathAddress HOST_EXCLUDE = PathAddress.pathAddress("host-exclude", "test");
@@ -129,7 +133,7 @@ public abstract class DomainHostExcludesTest {
             for (ModelNode host : hosts.asList()) {
                 if (HOST.getValue().equals(host.asString())) {
                     gone = false;
-                    Thread.sleep(100);
+                    TimeUnit.MILLISECONDS.sleep(100);
                     break;
                 }
             }
@@ -173,7 +177,6 @@ public abstract class DomainHostExcludesTest {
     }
 
     private static void startSecondary() throws TimeoutException, InterruptedException {
-
         DomainLifecycleUtil legacyUtil = testSupport.getDomainSecondaryLifecycleUtil();
         long start = System.currentTimeMillis();
         legacyUtil.start();
@@ -352,14 +355,14 @@ public abstract class DomainHostExcludesTest {
 
     private Set<String> getExtensionsSet() {
         if (version.getMajor() >= 7) {
-            return EXTENSIONS_SET_7X;
+            return EXTENSIONS_SET;
         }
         throw new IllegalStateException("Unknown version " + version);
     }
 
     private static String[] getExcludedExtensions() {
         if (version.getMajor() >= 7) {
-            return EXCLUDED_EXTENSIONS_7X;
+            return EXCLUDED_EXTENSIONS;
         }
         throw new IllegalStateException("Unknown version " + version);
     }

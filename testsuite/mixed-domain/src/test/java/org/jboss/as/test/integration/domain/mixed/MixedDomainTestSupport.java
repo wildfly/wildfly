@@ -24,6 +24,7 @@ import org.jboss.as.test.integration.domain.management.util.DomainTestUtils;
 import org.jboss.as.test.integration.domain.management.util.WildFlyManagedConfiguration;
 import org.jboss.as.test.integration.management.util.MgmtOperationException;
 import org.jboss.as.test.shared.TimeoutUtil;
+import org.jboss.as.version.Stability;
 import org.jboss.dmr.ModelNode;
 import org.junit.Assert;
 import org.junit.Assume;
@@ -53,7 +54,10 @@ public class MixedDomainTestSupport extends DomainTestSupport {
     private MixedDomainTestSupport(Version.AsVersion version, String testClass, String domainConfig, String primaryConfig, String secondaryConfig,
                                    String jbossHome, String profile, boolean adjustDomain, boolean legacyConfig, boolean withPrimaryServers)
             throws Exception {
-        super(testClass, domainConfig, primaryConfig, secondaryConfig, configWithDisabledAsserts(null), configWithDisabledAsserts(jbossHome));
+        super(testClass, domainConfig, primaryConfig, secondaryConfig,
+                configWithDisabledAsserts(null, version.getStability(), Boolean.getBoolean("wildfly.primary.debug"), "8787"),
+                configWithDisabledAsserts(jbossHome, null, Boolean.getBoolean("wildfly.secondary.debug"), "8788")
+        );
         this.version = version;
         this.adjustDomain = adjustDomain;
         this.legacyConfig = legacyConfig;
@@ -62,27 +66,32 @@ public class MixedDomainTestSupport extends DomainTestSupport {
         configureSecondaryJavaHome();
     }
 
-    private static WildFlyManagedConfiguration configWithDisabledAsserts(String jbossHome){
+    private static WildFlyManagedConfiguration configWithDisabledAsserts(String jbossHome, Stability stability, boolean debug, String debugPort) {
         WildFlyManagedConfiguration config = new WildFlyManagedConfiguration(jbossHome);
         config.setEnableAssertions(false);
+        config.setStability(stability);
+        if (debug) {
+            config.setHostCommandLineProperties("-agentlib:jdwp=transport=dt_socket,address=" + debugPort + ",server=y,suspend=y " +
+                    config.getHostCommandLineProperties());
+        }
         return config;
     }
 
     public static MixedDomainTestSupport create(String testClass, Version.AsVersion version) throws Exception {
         return create(testClass, version, STANDARD_DOMAIN_CONFIG, "primary-config/host.xml",
-                "secondary-config/host-secondary.xml", "full-ha", true, false, false);
+                version.getDefaultSecondaryHostConfigFileName(), "full-ha", true, false, false);
     }
 
     public static MixedDomainTestSupport create(String testClass, Version.AsVersion version, String domainConfig,
                                                 boolean adjustDomain, boolean legacyConfig) throws Exception {
         return create(testClass, version, domainConfig, "primary-config/host.xml",
-                "secondary-config/host-secondary.xml", "full-ha", adjustDomain, legacyConfig, false);
+                version.getDefaultSecondaryHostConfigFileName(), "full-ha", adjustDomain, legacyConfig, false);
     }
 
     public static MixedDomainTestSupport create(String testClass, Version.AsVersion version, String domainConfig, String profile,
                                                 boolean adjustDomain, boolean legacyConfig, boolean withPrimaryServers) throws Exception {
         return create(testClass, version, domainConfig, "primary-config/host.xml",
-                "secondary-config/host-secondary.xml", profile, adjustDomain, legacyConfig, withPrimaryServers);
+                version.getDefaultSecondaryHostConfigFileName(), profile, adjustDomain, legacyConfig, withPrimaryServers);
     }
 
     public static MixedDomainTestSupport create(String testClass, Version.AsVersion version, String domainConfig, String primaryConfig, String secondaryConfig,
@@ -174,16 +183,15 @@ public class MixedDomainTestSupport extends DomainTestSupport {
 
     private void startAndAdjust() {
 
-        String jbossDomainServerArgsValue = null;
         try {
-            //Start the primary in admin only  and reconfigure the domain with what
+            //Start the primary in admin only and reconfigure the domain with what
             //we want to test in the mixed domain and have the DomainAdjuster
             //strip down the domain model to something more workable. The domain
             //adjusters will also make adjustments for the legacy version being
             //tested.
             DomainLifecycleUtil primaryUtil = getDomainPrimaryLifecycleUtil();
+            assert primaryUtil.getConfiguration().getStability() == version.getStability();
             primaryUtil.getConfiguration().setAdminOnly(true);
-            //primaryUtil.getConfiguration().addHostCommandLineProperty("-agentlib:jdwp=transport=dt_socket,address=8787,server=y,suspend=y");
             primaryUtil.start();
             if (legacyConfig) {
                 LegacyConfigAdjuster.adjustForVersion(primaryUtil.getDomainClient(), version);

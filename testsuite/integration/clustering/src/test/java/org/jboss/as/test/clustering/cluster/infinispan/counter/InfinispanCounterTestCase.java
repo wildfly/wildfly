@@ -5,6 +5,9 @@
 
 package org.jboss.as.test.clustering.cluster.infinispan.counter;
 
+import static org.jboss.as.test.shared.PermissionUtils.createPermissionsXmlAsset;
+
+import java.io.FilePermission;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -67,6 +70,11 @@ public class InfinispanCounterTestCase extends AbstractClusteringTestCase {
                 .addPackage(InfinispanCounterServlet.class.getPackage())
                 .setManifest(new StringAsset("Manifest-Version: 1.0\nDependencies: org.infinispan, org.infinispan.commons, org.infinispan.counter\n"))
                 .addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml")
+                .addAsManifestResource(createPermissionsXmlAsset(
+                        // WFLY-17968
+                        new FilePermission("<<ALL FILES>>", "read,write"),
+                        new RuntimePermission("getClassLoader")
+                ), "permissions.xml")
                 ;
     }
 

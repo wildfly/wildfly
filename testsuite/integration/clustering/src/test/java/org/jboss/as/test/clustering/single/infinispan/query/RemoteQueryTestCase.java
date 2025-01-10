@@ -70,7 +70,7 @@ public class RemoteQueryTestCase {
         try (RemoteCacheManager container = this.createRemoteCacheManager()) {
             String xmlConfig =
                     "<local-cache name=\"books\">\n" +
-                    "  <indexing path=\"${java.io.tmpdir}/index\">\n" +
+                    "  <indexing storage=\"local-heap\">\n" +
                     "    <indexed-entities>\n" +
                     "      <indexed-entity>Book</indexed-entity>\n" +
                     "    </indexed-entities>\n" +

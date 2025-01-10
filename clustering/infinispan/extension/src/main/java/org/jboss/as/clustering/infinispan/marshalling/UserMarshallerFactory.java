@@ -7,6 +7,7 @@ package org.jboss.as.clustering.infinispan.marshalling;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UncheckedIOException;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.function.Supplier;
@@ -20,7 +21,6 @@ import org.infinispan.commons.marshall.ProtoStreamMarshaller;
 import org.infinispan.commons.util.AggregatedClassLoader;
 import org.infinispan.protostream.ImmutableSerializationContext;
 import org.infinispan.protostream.SerializationContext;
-import org.infinispan.query.remote.client.impl.MarshallerRegistration;
 import org.jboss.marshalling.ModularClassResolver;
 import org.jboss.modules.ModuleLoader;
 import org.wildfly.clustering.cache.infinispan.marshalling.MediaTypes;
@@ -41,7 +41,26 @@ import org.wildfly.clustering.marshalling.protostream.modules.ModuleClassLoaderM
 public enum UserMarshallerFactory implements MarshallerFactory {
 
     DEFAULT(MediaTypes.INFINISPAN_PROTOSTREAM) {
-        private final Supplier<SerializationContextBuilder<org.infinispan.protostream.SerializationContextInitializer>> builderFactory = () -> SerializationContextBuilder.newInstance().register(MarshallerRegistration.INSTANCE);
+        private final Supplier<SerializationContextBuilder<org.infinispan.protostream.SerializationContextInitializer>> builderFactory = () -> SerializationContextBuilder.newInstance().register(new org.infinispan.protostream.SerializationContextInitializer() {
+            @Override
+            public String getProtoFileName() {
+                return null;
+            }
+
+            @Override
+            public String getProtoFile() throws UncheckedIOException {
+                return null;
+            }
+
+            @Override
+            public void registerSchema(SerializationContext context) {
+                org.infinispan.query.remote.client.impl.MarshallerRegistration.init(context);
+            }
+
+            @Override
+            public void registerMarshallers(SerializationContext context) {
+            }
+        });
 
         @Override
         public ByteBufferMarshaller createByteBufferMarshaller(ModuleLoader moduleLoader, List<ClassLoader> loaders) {

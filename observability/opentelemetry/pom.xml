@@ -13,7 +13,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>34.0.0.Beta1-SNAPSHOT</version>
+        <version>36.0.0.Beta1-SNAPSHOT</version>
     </parent>
 
     <artifactId>wildfly-opentelemetry</artifactId>
@@ -88,11 +88,7 @@
             <artifactId>opentelemetry-sdk-trace</artifactId>
         </dependency>
         <dependency>
-            <groupId>io.opentelemetry</groupId>
-            <artifactId>opentelemetry-exporter-otlp</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>io.opentelemetry</groupId>
+            <groupId>io.opentelemetry.semconv</groupId>
             <artifactId>opentelemetry-semconv</artifactId>
         </dependency>
         <dependency>
@@ -106,6 +102,12 @@
         <dependency>
             <groupId>io.smallrye.opentelemetry</groupId>
             <artifactId>smallrye-opentelemetry-propagation</artifactId>
+        </dependency>
+
+        <!-- This is only required for the extension to initialize Vert.x's LoggerFactory -->
+        <dependency>
+            <groupId>io.vertx</groupId>
+            <artifactId>vertx-core</artifactId>
         </dependency>
 
         <!-- ======================================================= -->

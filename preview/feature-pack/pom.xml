@@ -16,7 +16,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>34.0.0.Beta1-SNAPSHOT</version>
+        <version>36.0.0.Beta1-SNAPSHOT</version>
     </parent>
     
     <artifactId>wildfly-preview-feature-pack</artifactId>
@@ -31,7 +31,7 @@
         <!-- WildFly and ee galleon contents -->
         <ee.galleon.shared.resources.directory>${basedir}/../../ee-feature-pack/galleon-shared/src/main/resources</ee.galleon.shared.resources.directory>
         <full.galleon.shared.resources.directory>${basedir}/../../galleon-pack/galleon-shared/src/main/resources</full.galleon.shared.resources.directory>
-
+        <galleon.client.resources.directory>${basedir}/../../client/shade/target/resources</galleon.client.resources.directory>
         <!-- WildFly Preview modules -->
         <galleon.local.resources.directory>${basedir}/../galleon-local/src/main/resources</galleon.local.resources.directory>
 
@@ -84,6 +84,23 @@
                                 <artifactItem>
                                     <groupId>org.wildfly</groupId>
                                     <artifactId>mvc-krazo-galleon-shared</artifactId>
+                                    <type>zip</type>
+                                </artifactItem>
+                                <artifactItem>
+                                    <groupId>org.wildfly.core</groupId>
+                                    <artifactId>wildfly-cli</artifactId>
+                                    <classifier>shaded-model</classifier>
+                                    <type>zip</type>
+                                </artifactItem>
+                                <artifactItem>
+                                    <groupId>org.wildfly.core</groupId>
+                                    <artifactId>wildfly-elytron-tool-wrapper</artifactId>
+                                    <classifier>shaded-model</classifier>
+                                    <type>zip</type>
+                                </artifactItem>
+                                <artifactItem>
+                                    <groupId>org.wildfly.extras.vertx</groupId>
+                                    <artifactId>wildfly-vertx-feature-pack-content</artifactId>
                                     <type>zip</type>
                                 </artifactItem>
                             </artifactItems>
@@ -166,6 +183,22 @@
                             <overwrite>true</overwrite>
                         </configuration>
                     </execution>
+                    <execution>
+                        <id>copy-galleon-client-resources</id>
+                        <phase>process-resources</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${basedir}/target/resources</outputDirectory>
+                            <resources>
+                                <resource>
+                                    <directory>${galleon.client.resources.directory}</directory>
+                                </resource>
+                            </resources>
+                            <overwrite>true</overwrite>
+                        </configuration>
+                    </execution>
                 </executions>
             </plugin>
             <plugin>
@@ -189,6 +222,7 @@
                                 <licensesConfigFile>${basedir}/target/resources/license/core-feature-pack-common-licenses.xml</licensesConfigFile>
                                 <licensesConfigFile>${basedir}/target/resources/license/core-feature-pack-ee-10-api-licenses.xml</licensesConfigFile>
                                 <licensesConfigFile>${basedir}/target/resources/license/wildfly-mvc-krazo-licenses.xml</licensesConfigFile>
+                                <licensesConfigFile>${basedir}/target/resources/license/wildfly-vertx-extension-licenses.xml</licensesConfigFile>
                                 <licensesConfigFile>${ee.galleon.shared.resources.directory}/license/licenses.xml</licensesConfigFile>
                                 <licensesConfigFile>${full.galleon.shared.resources.directory}/license/licenses.xml</licensesConfigFile>
                                 <licensesConfigFile>${galleon.local.resources.directory}/license/licenses.xml</licensesConfigFile>
@@ -238,6 +272,19 @@
         <dependency>
             <groupId>org.wildfly.galleon-plugins</groupId>
             <artifactId>wildfly-config-gen</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
+        <!-- Galleon universe dependencies (so that they are present in the channel manifest) -->
+
+        <dependency>
+            <groupId>org.jboss.universe</groupId>
+            <artifactId>community-universe</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.universe.producer</groupId>
+            <artifactId>wildfly-producers</artifactId>
             <scope>provided</scope>
         </dependency>
 
@@ -332,6 +379,12 @@
             <type>pom</type>
             <scope>provided</scope>
         </dependency>
+        <dependency>
+            <groupId>org.wildfly.extras.vertx</groupId>
+            <artifactId>wildfly-vertx-feature-pack-content</artifactId>
+            <type>pom</type>
+            <scope>provided</scope>
+        </dependency>
     </dependencies>
 
     <profiles>
@@ -397,6 +450,7 @@
                                                 <exclude>${full.maven.groupId}:wildfly-feature-pack-galleon-shared</exclude>
                                                 <exclude>${ee.maven.groupId}:wildfly-preview-feature-pack-galleon-local</exclude>
                                                 <exclude>org.wildfly:mvc-krazo-galleon-shared</exclude>
+                                                <exclude>org.wildfly.extras.vertx:wildfly-vertx-feature-pack-content</exclude>
                                             </excludes>
                                         </banTransitiveDependencies>
                                     </rules>

@@ -31,7 +31,6 @@ import org.jboss.metadata.property.PropertyReplacers;
 import org.jboss.metadata.property.SimpleExpressionResolver;
 import org.jboss.metadata.property.SystemPropertyResolver;
 import org.jboss.modules.LocalModuleLoader;
-import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoader;
 import org.jboss.modules.security.PermissionFactory;
 import org.junit.Assert;
@@ -47,7 +46,7 @@ public class PermissionParserExpressionsTestCase {
     final List<SimpleExpressionResolver> resolvers = Arrays.asList(SystemPropertyResolver.INSTANCE);
     final CompositePropertyResolver compositePropertyResolver = new CompositePropertyResolver(resolvers.toArray(new SimpleExpressionResolver[0]));
     final PropertyReplacer propertyReplacer = PropertyReplacers.resolvingExpressionReplacer(compositePropertyResolver);
-    final ModuleIdentifier identifier = ModuleIdentifier.fromString("java.base");
+    final String identifier = "java.base";
     final Path fileUnderTest = Paths.get("src", "test", "resources", "propertypermission", "permissions.xml");
     final Function<String, String> functionExpand = (value) -> propertyReplacer.replaceProperties(value);
 
@@ -86,7 +85,7 @@ public class PermissionParserExpressionsTestCase {
         Assert.assertEquals("Unexpected permission action", permission.getActions(), "write");
     }
 
-    private List<PermissionFactory> parsePermissions(final Path path, final ModuleLoader loader, final ModuleIdentifier identifier, final Function<String, String> exprExpandFunction)
+    private List<PermissionFactory> parsePermissions(final Path path, final ModuleLoader loader, final String identifier, final Function<String, String> exprExpandFunction)
             throws DeploymentUnitProcessingException {
 
         InputStream inputStream = null;

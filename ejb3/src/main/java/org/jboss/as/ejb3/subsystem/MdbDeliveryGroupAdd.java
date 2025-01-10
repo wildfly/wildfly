@@ -20,12 +20,6 @@ import org.jboss.msc.service.ServiceController;
  */
 public class MdbDeliveryGroupAdd extends AbstractAddStepHandler {
 
-    static final MdbDeliveryGroupAdd INSTANCE = new MdbDeliveryGroupAdd();
-
-    private MdbDeliveryGroupAdd() {
-        super(MdbDeliveryGroupResourceDefinition.ACTIVE);
-    }
-
     @Override
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
         installServices(context, operation, model);

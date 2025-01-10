@@ -16,7 +16,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>34.0.0.Beta1-SNAPSHOT</version>
+        <version>36.0.0.Beta1-SNAPSHOT</version>
         <relativePath>../../pom.xml</relativePath>
     </parent>
 
@@ -30,6 +30,9 @@
     <properties>
         <!-- the BOMs built's artifactId prefix-->
         <bomArtifactIdPrefix>wildfly</bomArtifactIdPrefix>
+        <!-- overridable channel versions -->
+        <version.boms.channel.ee>${ee.maven.version}</version.boms.channel.ee>
+        <version.boms.channel.full>${full.maven.version}</version.boms.channel.full>
     </properties>
 
     <licenses>
@@ -68,9 +71,22 @@
     </build>
 
     <modules>
-        <module>client</module>
         <module>server</module>
-        <module>tools</module>
     </modules>
+
+    <profiles>
+        <profile>
+            <id>base-feature-pack-build</id>
+            <activation>
+                <property>
+                    <name>!no.base.build</name>
+                </property>
+            </activation>
+            <modules>
+                <module>client</module>
+                <module>tools</module>
+            </modules>
+        </profile>
+    </profiles>
 
 </project>

@@ -11,7 +11,11 @@
     <parent>
         <groupId>org.wildfly</groupId>
         <artifactId>wildfly-ts-integ</artifactId>
-        <version>34.0.0.Beta1-SNAPSHOT</version>
+        <!--
+        Maintain separation between the artifact id and the version to help prevent
+        merge conflicts between commits changing the GA and those changing the V.
+        -->
+        <version>36.0.0.Beta1-SNAPSHOT</version>
     </parent>
 
     <artifactId>wildfly-ts-integ-mp</artifactId>
@@ -39,11 +43,7 @@
         <ts.microprofile-tck-glow.config.name>standalone-microprofile.xml</ts.microprofile-tck-glow.config.name>
         <ts.microprofile-tck-glow.expected-discovery>FIXME-must-override</ts.microprofile-tck-glow.expected-discovery>
         <ts.microprofile-tck-glow.verbose>false</ts.microprofile-tck-glow.verbose>
-        <!-- Child modules override these properties to control what feature packs are used
-             and what layers are provisioned if galleon provision occurs -->
-        <ts.microprofile-tck-provisioning.fp.groupId>${full.maven.groupId}</ts.microprofile-tck-provisioning.fp.groupId>
-        <ts.microprofile-tck-provisioning.fp.artifactId>wildfly-galleon-pack</ts.microprofile-tck-provisioning.fp.artifactId>
-        <ts.microprofile-tck-provisioning.fp.version>${full.maven.version}</ts.microprofile-tck-provisioning.fp.version>
+        <!-- Child modules override this property to control what TCK is used -->
         <ts.microprofile-tck-tests-dependency>FIXME-must-override</ts.microprofile-tck-tests-dependency>
         <!-- Use the complete WF dependencyManagement set, not just the default EE set -->
         <dependency.management.import.artifact>wildfly-standard-expansion-bom</dependency.management.import.artifact>
@@ -114,10 +114,9 @@
                 <configuration>
                     <feature-packs>
                         <feature-pack>
-                            <!-- Child modules can set properties to override what feature pack is used -->
-                            <groupId>${ts.microprofile-tck-provisioning.fp.groupId}</groupId>
-                            <artifactId>${ts.microprofile-tck-provisioning.fp.artifactId}</artifactId>
-                            <version>${ts.microprofile-tck-provisioning.fp.version}</version>
+                            <groupId>${testsuite.full.galleon.pack.groupId}</groupId>
+                            <artifactId>${testsuite.full.galleon.pack.artifactId}</artifactId>
+                            <version>${testsuite.full.galleon.pack.version}</version>
                         </feature-pack>
                     </feature-packs>
                     <config-name>${ts.microprofile-tck-glow.config.name}</config-name>
@@ -260,8 +259,6 @@
             <properties>
                 <jboss.dist>${project.build.directory}/wildfly</jboss.dist>
                 <maven.repo.local>${settings.localRepository}</maven.repo.local>
-                <!-- Use the wildfly-preview feature pack to provision -->
-                <ts.microprofile-tck-provisioning.fp.artifactId>wildfly-preview-feature-pack</ts.microprofile-tck-provisioning.fp.artifactId>
                 <!-- Disable the standard copy-based provisioning -->
                 <ts.copy-wildfly.phase>none</ts.copy-wildfly.phase>
                 <!-- Use the WFP dependencyManagement set.
@@ -392,11 +389,10 @@
                 </dependency>
             </dependencies>
             <properties>
+                <jboss.dist>${project.build.directory}/wildfly</jboss.dist>
+                <maven.repo.local>${settings.localRepository}</maven.repo.local>
                 <!-- Disable the standard copy-based provisioning -->
                 <ts.copy-wildfly.phase>none</ts.copy-wildfly.phase>
-                <!-- Use the WFP dependencyManagement set.
-                     This is set in this profile in a parent module, but the explicit global override
-                     in this module takes precedence. -->
                 <dependency.management.import.artifact>wildfly-preview-expansion-bom</dependency.management.import.artifact>
                 <dependency.management.import.test.artifact>wildfly-preview-test-expansion-bom</dependency.management.import.test.artifact>
             </properties>

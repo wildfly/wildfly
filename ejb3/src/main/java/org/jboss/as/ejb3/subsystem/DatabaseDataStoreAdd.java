@@ -10,7 +10,6 @@ import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 import org.jboss.as.controller.AbstractAddStepHandler;
-import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.CapabilityServiceBuilder;
 import org.jboss.as.controller.CapabilityServiceTarget;
 import org.jboss.as.controller.OperationContext;
@@ -30,12 +29,6 @@ import org.wildfly.security.manager.WildFlySecurityManager;
  * @author Stuart Douglas
  */
 public class DatabaseDataStoreAdd extends AbstractAddStepHandler {
-
-    private static final String TIMER_SERVICE_CAPABILITY_NAME = "org.wildfly.ejb3.timer-service";
-
-    DatabaseDataStoreAdd(AttributeDefinition... attributes) {
-        super(attributes);
-    }
 
     @Override
     protected void performRuntime(final OperationContext context, final ModelNode operation, final ModelNode model) throws OperationFailedException {
@@ -58,11 +51,11 @@ public class DatabaseDataStoreAdd extends AbstractAddStepHandler {
 
         // add the TimerPersistence instance
         final CapabilityServiceTarget serviceTarget = context.getCapabilityServiceTarget();
-        final CapabilityServiceBuilder<?> builder = serviceTarget.addCapability(TimerServiceResourceDefinition.TIMER_PERSISTENCE_CAPABILITY);
-        final Consumer<DatabaseTimerPersistence> consumer = builder.provides(TimerServiceResourceDefinition.TIMER_PERSISTENCE_CAPABILITY);
+        final CapabilityServiceBuilder<?> builder = serviceTarget.addCapability(TimerPersistenceResourceDefinition.CAPABILITY);
+        final Consumer<DatabaseTimerPersistence> consumer = builder.provides(TimerPersistenceResourceDefinition.CAPABILITY);
         final Supplier<ManagedReferenceFactory> dataSourceSupplier = builder.requires(ContextNames.bindInfoFor(jndiName).getBinderServiceName());
         final Supplier<ModuleLoader> moduleLoaderSupplier = builder.requires(Services.JBOSS_SERVICE_MODULE_LOADER);
-        final Supplier<Timer> timerSupplier = builder.requiresCapability(TIMER_SERVICE_CAPABILITY_NAME, java.util.Timer.class);
+        final Supplier<Timer> timerSupplier = builder.requires(TimerServiceResourceDefinition.TIMER_SERVICE_DESCRIPTOR);
         final DatabaseTimerPersistence databaseTimerPersistence = new DatabaseTimerPersistence(consumer, dataSourceSupplier, moduleLoaderSupplier, timerSupplier, database, partition, nodeName, refreshInterval, allowExecution);
         builder.setInstance(databaseTimerPersistence);
         builder.install();

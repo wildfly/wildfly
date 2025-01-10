@@ -13,6 +13,7 @@ import org.jboss.as.controller.transform.description.DiscardAttributeChecker;
 import org.jboss.as.controller.transform.description.RejectAttributeChecker;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.as.controller.transform.description.TransformationDescriptionBuilder;
+import org.jboss.as.jaxrs.JaxrsExtension.JaxrsSubsystemModel;
 import org.kohsuke.MetaInfServices;
 
 /**
@@ -32,14 +33,21 @@ public class ResteasyExtensionTransformerRegistration implements ExtensionTransf
     public void registerTransformers(final SubsystemTransformerRegistration subsystemRegistration) {
         ChainedTransformationDescriptionBuilder builder = TransformationDescriptionBuilder.Factory.createChainedSubystemInstance(subsystemRegistration.getCurrentSubsystemVersion());
 
-        registerV3Transformers(builder.createBuilder(JaxrsExtension.CURRENT_MODEL_VERSION, VERSION_3_0_0));
+        registerV4Transformers(builder.createBuilder(JaxrsSubsystemModel.CURRENT.getVersion(), JaxrsSubsystemModel.VERSION_4_0_0.getVersion()));
+        registerV3Transformers(builder.createBuilder(JaxrsSubsystemModel.VERSION_4_0_0.getVersion(), VERSION_3_0_0));
 
-        builder.buildAndRegister(subsystemRegistration, new ModelVersion[] {VERSION_3_0_0, JaxrsExtension.CURRENT_MODEL_VERSION});
+        builder.buildAndRegister(subsystemRegistration, new ModelVersion[] {VERSION_3_0_0, JaxrsSubsystemModel.VERSION_4_0_0.getVersion(), JaxrsSubsystemModel.CURRENT.getVersion()});
     }
 
     private static void registerV3Transformers(ResourceTransformationDescriptionBuilder subsystem) {
         subsystem.getAttributeBuilder()
                 .setDiscard(DiscardAttributeChecker.DEFAULT_VALUE, JaxrsAttribute.TRACING_TYPE, JaxrsAttribute.TRACING_THRESHOLD)
                 .addRejectCheck(RejectAttributeChecker.DEFINED, JaxrsAttribute.TRACING_TYPE, JaxrsAttribute.TRACING_THRESHOLD);
+    }
+
+    private static void registerV4Transformers(ResourceTransformationDescriptionBuilder subsystem) {
+        subsystem.getAttributeBuilder()
+                .setDiscard(DiscardAttributeChecker.DEFAULT_VALUE, JaxrsAttribute.RESTEASY_PATCHFILTER_DISABLED)
+                .addRejectCheck(RejectAttributeChecker.DEFINED, JaxrsAttribute.RESTEASY_PATCHFILTER_DISABLED);
     }
 }

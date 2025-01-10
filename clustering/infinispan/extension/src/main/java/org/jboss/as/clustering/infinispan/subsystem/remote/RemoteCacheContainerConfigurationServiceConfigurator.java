@@ -34,7 +34,6 @@ import org.infinispan.client.hotrod.configuration.SecurityConfiguration;
 import org.infinispan.client.hotrod.configuration.ServerConfigurationBuilder;
 import org.infinispan.commons.jmx.MBeanServerLookup;
 import org.infinispan.commons.marshall.Marshaller;
-import org.infinispan.commons.util.AggregatedClassLoader;
 import org.jboss.as.clustering.controller.CommonServiceDescriptor;
 import org.jboss.as.clustering.infinispan.jmx.MBeanServerProvider;
 import org.jboss.as.clustering.infinispan.subsystem.remote.RemoteCacheContainerResourceDefinition.Attribute;
@@ -135,7 +134,6 @@ public enum RemoteCacheContainerConfigurationServiceConfigurator implements Reso
                 List<Module> modules = containerModules.get();
                 Marshaller marshaller = marshallerFactory.apply(loader.get(), modules);
                 builder.marshaller(marshaller);
-                builder.classLoader(modules.size() > 1 ? new AggregatedClassLoader(modules.stream().map(Module::getClassLoader).collect(Collectors.toList())) : modules.get(0).getClassLoader());
                 builder.connectionPool().read(connectionPool.get());
                 builder.asyncExecutorFactory().read(pools.get(ClientThreadPoolResourceDefinition.ASYNC).get());
 

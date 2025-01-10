@@ -14,6 +14,7 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.module.ModuleDependency;
 import org.jboss.as.server.deployment.module.ModuleSpecification;
 import org.jboss.modules.Module;
+import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.filter.PathFilters;
 
 import static org.jboss.as.ee.subsystem.GlobalModulesDefinition.GlobalModule;
@@ -35,11 +36,10 @@ public class GlobalModuleDependencyProcessor implements DeploymentUnitProcessor 
     public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
         final ModuleSpecification moduleSpecification = deploymentUnit.getAttachment(Attachments.MODULE_SPECIFICATION);
-
         final List<GlobalModule> globalMods = this.globalModules;
 
             for (final GlobalModule module : globalMods) {
-                final ModuleDependency dependency = new ModuleDependency(Module.getBootModuleLoader(), module.getModuleIdentifier(), false, false, module.isServices(), false);
+                final ModuleDependency dependency = ModuleDependency.Builder.of(Module.getBootModuleLoader(), module.getModuleName()).setImportServices(module.isServices()).build();
 
                 if (module.isMetaInf()) {
                     dependency.addImportFilter(PathFilters.getMetaInfSubdirectoriesFilter(), true);
@@ -47,7 +47,7 @@ public class GlobalModuleDependencyProcessor implements DeploymentUnitProcessor 
                 }
 
                 if(module.isAnnotations()) {
-                    deploymentUnit.addToAttachmentList(Attachments.ADDITIONAL_ANNOTATION_INDEXES, module.getModuleIdentifier());
+                    deploymentUnit.addToAttachmentList(Attachments.ADDITIONAL_ANNOTATION_INDEXES, ModuleIdentifier.fromString(module.getModuleName()));
                 }
 
                 moduleSpecification.addSystemDependency(dependency);

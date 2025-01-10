@@ -45,11 +45,11 @@ public abstract class ProvisioningConsistencyBaseTest {
     private static final String INSTALLATION = ".installation";
     private static final String PROVISIONING = ".wildfly-maven-plugin-provisioning.xml";
     private static final Path JBOSS_HOME = resolveJBossHome();
-    private static final Path CHANNEL_INSTALLATION = JBOSS_HOME.getParent().resolve("wildfly-from-channel");
-    private static final Path INSTALLATION_METADATA = CHANNEL_INSTALLATION.resolve(INSTALLATION);
-    private static final Path PROVISIONING_XML = CHANNEL_INSTALLATION.resolve(PROVISIONING);
+    private final Path CHANNEL_INSTALLATION;
+    private final Path INSTALLATION_METADATA;
+    private final Path PROVISIONING_XML;
     private static final Path SOURCE_HOME = JBOSS_HOME.getParent().getParent().getParent().getParent().getParent();
-    private final Path DIST_INSTALLATION;
+    private static final Path DIST_INSTALLATION = JBOSS_HOME.getParent().resolve("wildfly-without-channel");
 
     private static Path resolveJBossHome() {
         try {
@@ -59,13 +59,10 @@ public abstract class ProvisioningConsistencyBaseTest {
         }
     }
 
-    private static String getDistDir() {
-        return "wildfly-" + System.getProperty("standard.dist.version");
-    }
-
-
     protected ProvisioningConsistencyBaseTest(String targetDist) {
-        DIST_INSTALLATION = SOURCE_HOME.resolve(targetDist).resolve("target").resolve(getDistDir());
+        CHANNEL_INSTALLATION = SOURCE_HOME.resolve(targetDist);
+        INSTALLATION_METADATA = CHANNEL_INSTALLATION.resolve(INSTALLATION);
+        PROVISIONING_XML = CHANNEL_INSTALLATION.resolve(PROVISIONING);
     }
 
     /**
@@ -75,7 +72,7 @@ public abstract class ProvisioningConsistencyBaseTest {
     @BeforeClass
     public static void assumeJbossDistIsNotExternallySet() throws IOException {
         Path jbossDist = new File(System.getProperty("jboss.dist")).getCanonicalFile().toPath();
-        Path defaultJbossDist = SOURCE_HOME.resolve("build").resolve("target").resolve(getDistDir());
+        Path defaultJbossDist = SOURCE_HOME.resolve(System.getProperty("build.output.dir"));
         Assume.assumeTrue(jbossDist.equals(defaultJbossDist));
     }
 

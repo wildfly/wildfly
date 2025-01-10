@@ -7,7 +7,6 @@ package org.wildfly.test.integration.observability.micrometer.multiple;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.util.Collections;
 import java.util.List;
 
 import org.jboss.arquillian.container.test.api.Deployment;
@@ -18,14 +17,14 @@ import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.junit.Assert;
 import org.junit.Test;
-import org.wildfly.test.integration.observability.container.PrometheusMetric;
 import org.wildfly.test.integration.observability.micrometer.multiple.application.DuplicateMetricResource1;
 import org.wildfly.test.integration.observability.micrometer.multiple.application.DuplicateMetricResource2;
+import org.jboss.as.test.shared.observability.signals.PrometheusMetric;
 
 public class EarDeploymentTestCase extends BaseMultipleTestCase {
     protected static final String ENTERPRISE_APP = "enterprise-app";
 
-    @Deployment(name = ENTERPRISE_APP)
+    @Deployment(name = ENTERPRISE_APP, testable = false)
     public static EnterpriseArchive createDeployment() {
         return ShrinkWrap.create(EnterpriseArchive.class, ENTERPRISE_APP + ".ear")
                 .addAsModule(MultipleWarTestCase.createDeployment1())
@@ -55,26 +54,13 @@ public class EarDeploymentTestCase extends BaseMultipleTestCase {
         makeRequests(new URI(String.format("%s/%s/%s/%s", earUrl, ENTERPRISE_APP, SERVICE_ONE, DuplicateMetricResource1.TAG)));
         makeRequests(new URI(String.format("%s/%s/%s/%s", earUrl, ENTERPRISE_APP, SERVICE_TWO, DuplicateMetricResource2.TAG)));
 
-        List<PrometheusMetric> results = Collections.emptyList();
 
-        int attemptCount = 0;
-
-        while (attemptCount < 10) {
-            attemptCount++;
-
-            results = getMetricsByName(
-                    otelCollector.fetchMetrics(DuplicateMetricResource1.METER_NAME),
+        otelCollector.assertMetrics(prometheusMetrics -> {
+            List<PrometheusMetric> results = getMetricsByName(prometheusMetrics,
                     DuplicateMetricResource1.METER_NAME + "_total"); // Adjust for Prometheus naming conventions
-            // On occasion, it seems that the test will grab the metrics between updates, so we get the metric for app 1,
-            // but app 2 has not been published yet. We loop here, then, for a short while to give the server time to
-            // publish the metrics it has. After that short while, we break out and fail.
-            if (results.size() == 2) {
-                break;
-            } else {
-                Thread.sleep(500);
-            }
-        }
-        Assert.assertEquals(2, results.size());
-        results.forEach(r -> Assert.assertEquals("" + REQUEST_COUNT, r.getValue()));
+
+            Assert.assertEquals(2, results.size());
+            results.forEach(r -> Assert.assertEquals("" + REQUEST_COUNT, r.getValue()));
+        });
     }
 }

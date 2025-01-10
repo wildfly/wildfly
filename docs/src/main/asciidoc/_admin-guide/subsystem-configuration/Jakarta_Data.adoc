@@ -1,0 +1,52 @@
+[[Jakarta_Data]]
+= Jakarta Data Subsystem
+
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
+
+[abstract]
+
+The `jakarta-data` subsystem provides support for the use of Jakarta Data in deployments.
+
+[WARNING]
+
+The `jakarta-data` subsystem is currently provided at xref:Admin_Guide.adoc#Feature_stability_levels[`preview` stability]. This means use of the subsystem requires running xref:WildFly_and_WildFly_Preview.adoc[WildFly Preview] or using the `--stability=preview` parameter when starting standard WildFly.
+
+[[jakarta-data-subsystem-provision]]
+== Provisioning the subsystem
+
+When provisioning a WildFly instance, you can include Jakarta Data support in your server configuration by specifying the `jakarta-data` Galleon layer.
+
+////
+TODO add discussion of the need to specify config-stability-level when provisioning. But this should point to general content available via WFLY-19021 and WFLY-19172
+////
+
+[[jakarta-data-subsystem-enable]]
+== Enabling the subsystem
+
+If the WildFly configuration does not have the `jakarta-data` subsystem enabled, it can be enabled using the CLI:
+
+[source,options="nowrap"]
+----
+[standalone@localhost:9990  /] /extension=org.wildfly.extension.jakarta.data:add
+{"outcome" => "success"}
+[standalone@localhost:9990  /] /subsystem=jakarta-data:add
+{
+    "outcome" => "success",
+    "response-headers" => {
+        "operation-requires-reload" => true,
+        "process-state" => "reload-required"
+    }
+}
+----
+
+Note that for the `jakarta-data` subsystem to work, the `jpa` subsystem must be present in your configuration. It's present in our out-of-the-box configurations and will be included if you provision a server using the `jakarta-data` Galleon layer.
+
+== Configuration
+
+The `jakarta-data` subsystem doesn't offer any configuration options beyond its presence in the overall configuration.

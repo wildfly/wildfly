@@ -6,7 +6,7 @@
 <module xmlns="urn:jboss:module:1.9" name="org.infinispan.cdi.embedded">
 
     <resources>
-        <artifact name="${org.infinispan:infinispan-cdi-embedded-jakarta}"/>
+        <artifact name="${org.infinispan:infinispan-cdi-embedded}"/>
     </resources>
 
     <dependencies>

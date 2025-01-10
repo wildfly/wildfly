@@ -8,7 +8,7 @@
     </properties>
 
     <resources>
-        <artifact name="${io.opentelemetry:opentelemetry-api-events}"/>
+        <artifact name="${io.opentelemetry:opentelemetry-api-incubator}"/>
     </resources>
 
     <dependencies>

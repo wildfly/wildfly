@@ -1,22 +1,25 @@
+syntax = "proto3";
+
 package org.jboss.weld.contexts;
 
 import "java.lang.proto";
+import "org.wildfly.clustering.marshalling.protostream.proto";
 
 /**
  * @TypeId(440)
  */
 message CreationalContextImpl {
-	optional	bytes	parent	 = 1;
-	repeated	bytes	dependent	 = 2;
+	org.wildfly.clustering.marshalling.protostream.Any	parent	 = 1;
+	repeated	org.wildfly.clustering.marshalling.protostream.Any	dependent	 = 2;
 }
 
 /**
  * @TypeId(441)
  */
 message SerializableContextualInstanceImpl {
-	optional	bytes	contextual	 = 1;
-	optional	bytes	instance	 = 2;
-	optional	java.lang.Class	proxyClass	 = 3;
-	optional	bytes	handler	 = 4;
-	optional	bytes	creationalContext	 = 5;
+	org.wildfly.clustering.marshalling.protostream.Any	contextual	 = 1;
+	org.wildfly.clustering.marshalling.protostream.Any	instance	 = 2;
+	java.lang.Class	proxyClass	 = 3;
+	org.wildfly.clustering.marshalling.protostream.Any	handler	 = 4;
+	org.wildfly.clustering.marshalling.protostream.Any	creationalContext	 = 5;
 }

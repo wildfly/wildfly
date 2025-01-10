@@ -26,6 +26,7 @@ import org.jboss.as.subsystem.test.AdditionalInitialization;
 import org.jboss.as.subsystem.test.KernelServices;
 import org.jboss.as.subsystem.test.KernelServicesBuilder;
 import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.Property;
 import org.jgroups.conf.ClassConfigurator;
 import org.junit.Assert;
 import org.junit.Test;
@@ -144,6 +145,21 @@ public class InfinispanTransformersTestCase extends OperationTestCaseBase {
 
         // check that both versions of the legacy model are the same and valid
         checkSubsystemModelTransformation(services, version, createModelFixer(version), false);
+
+        // Validate transformed model
+        ModelNode legacyModel = services.readTransformedModel(version);
+        if (InfinispanSubsystemModel.VERSION_18_0_0.requiresTransformation(version)) {
+            ModelNode subsystemModel = legacyModel.get(InfinispanSubsystemResourceDefinition.PATH.getKeyValuePair());
+            // Verify module conversions to legacy module names
+            for (Property property : subsystemModel.get(CacheContainerResourceDefinition.WILDCARD_PATH.getKey()).asPropertyListOrEmpty()) {
+                List<ModelNode> modules = property.getValue().get(CacheContainerResourceDefinition.ListAttribute.MODULES.getName()).asListOrEmpty();
+                Assert.assertTrue(modules.stream().map(ModelNode::asString).noneMatch("org.wildfly.clustering.session.infinispan.embedded"::equals));
+            }
+            for (Property property : subsystemModel.get(RemoteCacheContainerResourceDefinition.WILDCARD_PATH.getKey()).asPropertyList()) {
+                List<ModelNode> modules = property.getValue().get(RemoteCacheContainerResourceDefinition.ListAttribute.MODULES.getName()).asListOrEmpty();
+                Assert.assertTrue(modules.stream().map(ModelNode::asString).noneMatch("org.wildfly.clustering.session.infinispan.remote"::equals));
+            }
+        }
     }
 
     private static ModelFixer createModelFixer(ModelVersion version) {

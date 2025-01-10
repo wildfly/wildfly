@@ -9,7 +9,8 @@ import static org.wildfly.extension.microprofile.openapi.logging.MicroProfileOpe
 
 import java.util.List;
 
-import org.eclipse.microprofile.openapi.models.OpenAPI;
+import io.smallrye.openapi.api.SmallRyeOpenAPI;
+
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.wildfly.extension.undertow.Host;
 import org.wildfly.subsystem.service.DeploymentServiceInstaller;
@@ -35,7 +36,7 @@ public class OpenAPIHttpHandlerServiceInstaller implements DeploymentServiceInst
         String hostName = this.configuration.getHostName();
         String path = this.configuration.getPath();
         ServiceDependency<Host> host = ServiceDependency.on(Host.SERVICE_DESCRIPTOR, serverName, hostName);
-        ServiceDependency<OpenAPI> model = ServiceDependency.on(OpenAPIModelConfiguration.SERVICE_DESCRIPTOR, serverName, hostName, path);
+        ServiceDependency<SmallRyeOpenAPI> model = ServiceDependency.on(OpenAPIModelConfiguration.SERVICE_DESCRIPTOR, serverName, hostName, path);
 
         Runnable start = new Runnable() {
             @Override
