@@ -11,21 +11,11 @@ import java.util.stream.Collectors;
 import jakarta.ws.rs.client.Client;
 import jakarta.ws.rs.client.ClientBuilder;
 import jakarta.ws.rs.client.WebTarget;
-import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.arquillian.testcontainers.api.DockerRequired;
 import org.jboss.arquillian.testcontainers.api.Testcontainer;
-import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.test.shared.observability.containers.OpenTelemetryCollectorContainer;
-import org.jboss.as.test.shared.observability.setuptasks.MicrometerSetupTask;
 import org.jboss.as.test.shared.observability.signals.PrometheusMetric;
 import org.junit.Assert;
-import org.junit.runner.RunWith;
 
-@RunWith(Arquillian.class)
-@ServerSetup(MicrometerSetupTask.class)
-@DockerRequired
-@RunAsClient
 public abstract class BaseMultipleTestCase {
     protected static final String SERVICE_ONE = "service-one";
     protected static final String SERVICE_TWO = "service-two";
