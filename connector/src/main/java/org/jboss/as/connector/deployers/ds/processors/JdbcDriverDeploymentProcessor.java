@@ -51,7 +51,7 @@ public final class JdbcDriverDeploymentProcessor implements DeploymentUnitProces
         }
 
         if (javaSqlDriverDetected) {
-            moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, JDK_SECURITY_JGSS_ID, false, false, false, false));
+            moduleSpecification.addSystemDependency(ModuleDependency.Builder.of(moduleLoader, JDK_SECURITY_JGSS_ID).build());
         }
     }
 
