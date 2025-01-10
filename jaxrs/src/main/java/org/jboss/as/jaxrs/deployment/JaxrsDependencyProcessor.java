@@ -99,7 +99,7 @@ public class JaxrsDependencyProcessor implements DeploymentUnitProcessor {
         }
         // If bean-validation is available, add the support for the resteasy-validator
         if (support.hasCapability("org.wildfly.bean-validation")) {
-            final ModuleDependency dep = new ModuleDependency(moduleLoader, RESTEASY_VALIDATOR, true, true, true, false);
+            final ModuleDependency dep = ModuleDependency.Builder.of(moduleLoader, RESTEASY_VALIDATOR).setOptional(true).setExport(true).setImportServices(true).build();
             moduleSpecification.addSystemDependency(dep);
         }
     }
@@ -120,7 +120,7 @@ public class JaxrsDependencyProcessor implements DeploymentUnitProcessor {
 
     private void addDependency(ModuleSpecification moduleSpecification, ModuleLoader moduleLoader,
                                String moduleIdentifier, boolean optional, boolean deploymentBundlesClientBuilder) {
-        ModuleDependency dependency = new ModuleDependency(moduleLoader, moduleIdentifier, optional, false, true, false);
+        ModuleDependency dependency = ModuleDependency.Builder.of(moduleLoader, moduleIdentifier).setOptional(optional).setImportServices(true).build();
         if(deploymentBundlesClientBuilder) {
             dependency.addImportFilter(PathFilters.is(CLIENT_BUILDER), false);
         }
