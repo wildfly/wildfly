@@ -65,11 +65,6 @@ public final class WildFlyOpenTelemetryConfig implements OpenTelemetryConfig {
             return this;
         }
 
-        public Builder setSdkDisabled(boolean sdkDisabled) {
-            addValue(OTEL_SDK_DISABLED, "false");
-            return this;
-        }
-
         public Builder setExporter(String exporter) {
             if (!exporter.equals("otlp")) {
                 throw new IllegalArgumentException("An unexpected exporter type was found: " + exporter);
