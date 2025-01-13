@@ -7,6 +7,8 @@ package org.wildfly.extension.microprofile.reactive.streams.operators.cdi;
 
 import static org.wildfly.extension.microprofile.reactive.streams.operators.cdi._private.CdiProviderLogger.LOGGER;
 
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.util.Iterator;
 import java.util.ServiceLoader;
 
@@ -30,7 +32,8 @@ public class ReactiveEngineProvider {
     @Produces
     @ApplicationScoped
     public ReactiveStreamsEngine getEngine() {
-        Iterator<ReactiveStreamsEngine> iterator = ServiceLoader.load(ReactiveStreamsEngine.class).iterator();
+        ServiceLoader<ReactiveStreamsEngine> serviceLoader = AccessController.doPrivileged((PrivilegedAction<ServiceLoader<ReactiveStreamsEngine>>) () -> ServiceLoader.load(ReactiveStreamsEngine.class));
+        Iterator<ReactiveStreamsEngine> iterator = serviceLoader.iterator();
         if (iterator.hasNext()) {
             return iterator.next();
         }

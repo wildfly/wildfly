@@ -13,7 +13,7 @@ import org.jboss.logging.annotations.Message;
 import org.jboss.logging.annotations.MessageLogger;
 
 /**
- * Log messages for WildFly microprofile-health-smallrye Extension.
+ * Log messages for WildFly Reactive Streams Operators (SmallRye) Extension.
  *
  * @author <a href="kkhan@redhat.com">Kabir Khan</a>
  */
