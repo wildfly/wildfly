@@ -130,11 +130,11 @@ is_defined "${MP_VERSION}" "No MicroProfile version provided as an argument" 1
 rm -rf $PWD/target
 mkdir $PWD/target
 
-readonly FILE="$PWD/target/microprofile-${MP_VERSION}-selected-specifications-jdk-${JDK_VERSION}.adoc"
+readonly FILE="$PWD/target/microprofile-${MP_VERSION}-jdk-${JDK_VERSION}.adoc"
 touch "$FILE"
 
 tee -a "${FILE}" <<EOF
-= Selected MicroProfile TCKs Test results JDK ${JDK_VERSION}
+= MicroProfile Platform TCK Test results JDK ${JDK_VERSION}
 
 == Environment
 
