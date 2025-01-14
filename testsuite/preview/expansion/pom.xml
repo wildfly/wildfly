@@ -71,6 +71,11 @@
         </dependency>
         <dependency>
             <groupId>org.wildfly.core</groupId>
+            <artifactId>wildfly-cli</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.wildfly.core</groupId>
             <artifactId>wildfly-core-testsuite-shared</artifactId>
             <scope>test</scope>
         </dependency>
@@ -78,7 +83,6 @@
         <dependency>
             <groupId>org.jboss.arquillian</groupId>
             <artifactId>arquillian-testcontainers</artifactId>
-            <version>1.0.0.Alpha1</version>
             <scope>test</scope>
         </dependency>
 
@@ -90,6 +94,33 @@
         <dependency>
             <groupId>org.jboss.logmanager</groupId>
             <artifactId>jboss-logmanager</artifactId>
+        </dependency>
+
+        <!-- following dependencies are needed to test opentelemetry subsystem using the vertx instance from vertx subsystem -->
+        <dependency>
+            <groupId>io.opentelemetry</groupId>
+            <artifactId>opentelemetry-api</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.opentelemetry</groupId>
+            <artifactId>opentelemetry-context</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>jakarta.activation</groupId>
+            <artifactId>jakarta.activation-api</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.resteasy</groupId>
+            <artifactId>resteasy-json-binding-provider</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>jakarta.json</groupId>
+            <artifactId>jakarta.json-api</artifactId>
+            <scope>test</scope>
         </dependency>
 
     </dependencies>
