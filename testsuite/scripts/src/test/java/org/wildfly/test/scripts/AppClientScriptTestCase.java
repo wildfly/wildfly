@@ -39,6 +39,14 @@ public class AppClientScriptTestCase extends ScriptTestCase {
             validateProcess(script);
 
             final List<String> lines = script.getStdout();
+            // WFLY-20271 workaround
+            int deprecationWarningsCount = 0;
+            if (Runtime.version().feature() >= 24) {
+                // Ignore JDK warnings about sun.misc.Unsafe deprecated method usages on JDK24+
+                for (String line : lines) {
+                    if (line.contains("WARNING: ")) deprecationWarningsCount++;
+                }
+            }
             int count = 2 + additionalLines;
             for (String stdout : lines) {
                 if (stdout.startsWith("Picked up")) {
@@ -47,7 +55,7 @@ public class AppClientScriptTestCase extends ScriptTestCase {
             }
             final int expectedLines = (script.getShell() == Shell.BATCH ? 3 + additionalLines : count);
             Assert.assertEquals(script.getErrorMessage(String.format("Expected %d lines.", expectedLines)), expectedLines,
-                    lines.size());
+                    lines.size() - deprecationWarningsCount);
         }
     }
 }
