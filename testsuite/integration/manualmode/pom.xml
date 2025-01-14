@@ -386,7 +386,11 @@
                 <executions>
                     <execution>
                         <id>ts.config-as.configure-wildfly</id>
-                        <phase>generate-test-resources</phase>
+                        <!-- N.B. This is 'process-test-resources' so it is *after*
+                             its dependency ts.copy-wildfly, which is in generate-test-resources
+                             but is *before* its dependent build-manual-mode-servers, which is also
+                             in process-test-resources but is declared after this in the pom.-->
+                        <phase>process-test-resources</phase>
                         <goals>
                             <goal>execute-commands</goal>
                         </goals>
