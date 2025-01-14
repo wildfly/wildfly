@@ -37,7 +37,6 @@
         <surefire.forked.process.timeout>3600</surefire.forked.process.timeout>
         <!-- Disable the default surefire test execution. -->
         <surefire.default-test.phase>none</surefire.default-test.phase>
-        <ts.copy-wildfly-standalone-embedded-broker.phase>process-test-resources</ts.copy-wildfly-standalone-embedded-broker.phase>
         <cloud-profile-provisioning.phase>none</cloud-profile-provisioning.phase>
         <full-provisioning.phase>generate-test-resources</full-provisioning.phase>
     </properties>
@@ -190,31 +189,6 @@
                 <plugins>
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-resources-plugin</artifactId>
-                        <executions combine.children="append">
-                            <!-- Copy the docs/example configs into the regulard configuration dir so
-                                 they are available for use by surefire executions that need them. -->
-                            <execution>
-                                <id>ts.copy-wildfly-standalone-embedded-broker</id>
-                                <inherited>true</inherited>
-                                <phase>${ts.copy-wildfly-standalone-embedded-broker.phase}</phase>
-                                <goals>
-                                    <goal>copy-resources</goal>
-                                </goals>
-                                <configuration>
-                                    <outputDirectory>${basedir}/target/wildfly/standalone/configuration/</outputDirectory>
-                                    <overwrite>true</overwrite>
-                                    <resources>
-                                        <resource>
-                                            <directory>${jbossas.project.dir}/${wildfly.build.output.dir}/docs/examples/configs/</directory>
-                                        </resource>
-                                    </resources>
-                                </configuration>
-                            </execution>
-                        </executions>
-                    </plugin>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-surefire-plugin</artifactId>
                         <!-- General configuration is inherited from the surefire plugin declaration outside this profile-->
                         <!-- Here we just have executions -->
@@ -238,7 +212,7 @@
 
                                     <!-- Parameters to test cases. -->
                                     <systemPropertyVariables combine.children="append">
-                                        <jboss.server.config.file.name>standalone-activemq-embedded.xml</jboss.server.config.file.name>
+                                        <jboss.server.config.file.name>standalone.xml</jboss.server.config.file.name>
                                         <jboss.inst>${basedir}/target/wildfly</jboss.inst>
                                         <!-- Needed for the IIOP tests-->
                                         <com.sun.CORBA.ORBUseDynamicStub>true</com.sun.CORBA.ORBUseDynamicStub>
@@ -308,7 +282,6 @@
                 <glow.cloud-profile.phase>test-compile</glow.cloud-profile.phase>
                 <full-provisioning.phase>none</full-provisioning.phase>
                 <ts.config-as.copy-mgmt-users.phase>process-test-classes</ts.config-as.copy-mgmt-users.phase>
-                <ts.copy-wildfly-standalone-embedded-broker.phase>none</ts.copy-wildfly-standalone-embedded-broker.phase>
             </properties>
             <build>
                 <plugins>
@@ -350,7 +323,6 @@
                 <extra.server.jvm.args>-Dmaven.repo.local=${settings.localRepository}</extra.server.jvm.args>
                 <full-provisioning.phase>none</full-provisioning.phase>
                 <glow.cloud-profile.phase>test-compile</glow.cloud-profile.phase>
-                <ts.copy-wildfly-standalone-embedded-broker.phase>none</ts.copy-wildfly-standalone-embedded-broker.phase>
                 <ts.bootable-jar-packaging.phase>process-test-classes</ts.bootable-jar-packaging.phase>
             </properties>
             <build>
