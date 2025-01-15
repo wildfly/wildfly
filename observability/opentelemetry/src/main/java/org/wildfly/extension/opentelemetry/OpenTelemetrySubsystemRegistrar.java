@@ -62,7 +62,6 @@ class OpenTelemetrySubsystemRegistrar implements SubsystemResourceDefinitionRegi
 
     public static final RuntimeCapability<Void> OPENTELEMETRY_CONFIG_CAPABILITY =
             RuntimeCapability.Builder.of(WildFlyOpenTelemetryConfig.SERVICE_DESCRIPTOR).build();
-    ;
 
     public static final SimpleAttributeDefinition SERVICE_NAME = SimpleAttributeDefinitionBuilder
             .create(OpenTelemetryConfigurationConstants.SERVICE_NAME, ModelType.STRING, true)

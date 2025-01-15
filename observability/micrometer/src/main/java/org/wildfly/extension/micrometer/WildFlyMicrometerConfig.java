@@ -7,7 +7,9 @@ package org.wildfly.extension.micrometer;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.time.Duration;
+import java.util.List;
 import java.util.Map;
+import java.util.function.Predicate;
 
 import io.micrometer.registry.otlp.AggregationTemporality;
 import io.micrometer.registry.otlp.HistogramFlavor;
@@ -18,16 +20,16 @@ public final class WildFlyMicrometerConfig implements OtlpConfig {
     /**
      * The OTLP endpoint to which to push metrics
      */
-    private final String endpoint;
+    private String endpoint;
     /**
      * How frequently, in seconds, to push metrics
      */
-    private final Long step;
+    private Long step;
+    private List<String> exposedSubsystems;
+    private Predicate<String> subsystemFilter;
 
-    public WildFlyMicrometerConfig(String endpoint, Long step) {
-        this.endpoint = endpoint;
-        this.step = step;
-    }
+    // Use Builder
+    private WildFlyMicrometerConfig() {}
 
     @Override
     public String get(String key) {
@@ -80,4 +82,32 @@ public final class WildFlyMicrometerConfig implements OtlpConfig {
         }
     }
 
+    public Predicate<String> getSubsystemFilter() {
+        return subsystemFilter;
+    }
+
+    public static class Builder {
+        private final WildFlyMicrometerConfig config = new WildFlyMicrometerConfig();
+
+        public Builder endpoint(String endpoint) {
+            config.endpoint = endpoint;
+            return this;
+        }
+
+        public Builder step(Long step) {
+            config.step = step;
+            return this;
+        }
+        public Builder exposedSubsystems(List<String> exposedSubsystems) {
+            config.exposedSubsystems = exposedSubsystems;
+            boolean exposeAnySubsystem = exposedSubsystems.remove("*");
+            config.subsystemFilter = (subsystem) -> exposeAnySubsystem || exposedSubsystems.contains(subsystem);
+
+            return this;
+        }
+
+        public WildFlyMicrometerConfig build() {
+            return config;
+        }
+    }
 }
