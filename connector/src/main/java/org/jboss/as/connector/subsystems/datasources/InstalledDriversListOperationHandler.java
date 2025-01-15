@@ -26,6 +26,7 @@ import org.jboss.as.connector.logging.ConnectorLogger;
 import org.jboss.as.connector.services.driver.InstalledDriver;
 import org.jboss.as.connector.services.driver.registry.DriverRegistry;
 import org.jboss.as.connector.util.ConnectorServices;
+import org.jboss.as.controller.ModuleIdentifierUtil;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
@@ -71,14 +72,16 @@ public class InstalledDriversListOperationHandler implements OperationStepHandle
 
                         } else {
                             driverNode.get(DEPLOYMENT_NAME.getName());
-                            driverNode.get(DRIVER_MODULE_NAME.getName()).set(driver.getModuleName().getName());
-                            driverNode.get(MODULE_SLOT.getName()).set(
-                                    driver.getModuleName() != null ? driver.getModuleName().getSlot() : "");
+                            ModuleIdentifierUtil.parseModuleIdentifier(driver.getModuleName(), (parsedName, parsedSlot) -> {
+                                driverNode.get(DRIVER_MODULE_NAME.getName()).set(parsedName);
+                                driverNode.get(MODULE_SLOT.getName()).set(parsedSlot);
+                                return null;
+                            }, false, "main");
+
                             driverNode.get(DRIVER_DATASOURCE_CLASS_NAME.getName()).set(
                                     driver.getDataSourceClassName() != null ? driver.getDataSourceClassName() : "");
                             driverNode.get(DRIVER_XA_DATASOURCE_CLASS_NAME.getName()).set(
                                     driver.getXaDataSourceClassName() != null ? driver.getXaDataSourceClassName() : "");
-
                         }
                         driverNode.get(DATASOURCE_CLASS_INFO.getName()).set(
                                 dsClsInfoNode(serviceModuleLoader, driver.getModuleName(), driver.getDataSourceClassName(), driver.getXaDataSourceClassName()));
