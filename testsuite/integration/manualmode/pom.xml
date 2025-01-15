@@ -33,6 +33,7 @@
         <!-- Byteman -->
         <byteman.host>127.0.0.1</byteman.host>
         <byteman.port>17091</byteman.port>
+        <byteman.policy>true</byteman.policy>
 
         <oidc.jboss.home>${project.build.directory}/stability-preview</oidc.jboss.home>
         <multichannel.jboss.home>${project.build.directory}/wildfly-multi-channel</multichannel.jboss.home>
@@ -574,6 +575,7 @@
                         <byteman.server.port>${byteman.port}</byteman.server.port>
                         <byteman.host>${node0}</byteman.host>
                         <byteman.port>${byteman.port}</byteman.port>
+                        <byteman.policy>${byteman.policy}</byteman.policy>
                         <jvm.args>${jvm.args.ip.server} ${modular.jdk.args} -Dmaven.repo.local=${settings.localRepository}</jvm.args>
                         <server.jvm2.args>${surefire.system.args} ${jvm.args.ip} -Djboss.bind.address=${node1} -Djboss.bind.address.management=${node1} -Djboss.bind.address.unsecure=${node1} -Dnode0=${node0} -Dnode1=${node1} ${modular.jdk.args}</server.jvm2.args>
                         <arquillian.launch>manual-mode</arquillian.launch>
@@ -620,6 +622,16 @@
     </build>
 
     <profiles>
+        <profile>
+            <id>jdk24</id>
+            <activation>
+                <jdk>[24,)</jdk>
+            </activation>
+            <properties>
+                <!-- [WFLY-20282] Setting policy is not allowed since JDK24+ -->
+                <byteman.policy>false</byteman.policy>
+            </properties>
+        </profile>
         <!-- -Dts.nomanualmode -->
         <profile>
             <id>ts.nomanualmode</id>
