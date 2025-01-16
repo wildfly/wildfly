@@ -61,14 +61,13 @@ public class PersistenceUnitParseProcessor implements DeploymentUnitProcessor {
 
     private static final String WEB_PERSISTENCE_XML = "WEB-INF/classes/META-INF/persistence.xml";
     private static final String META_INF_PERSISTENCE_XML = "META-INF/persistence.xml";
-    private static final String META_INF_APPLICATION_CLIENT_XML = "META-INF/application-client.xml";
     private static final String JAR_FILE_EXTENSION = ".jar";
     private static final String LIB_FOLDER = "lib";
 
-    private final boolean appclient;
+    private final boolean inAppClientContainer;
 
-    public PersistenceUnitParseProcessor(boolean appclient) {
-        this.appclient = appclient;
+    public PersistenceUnitParseProcessor(boolean inAppClientContainer) {
+        this.inAppClientContainer = inAppClientContainer;
     }
 
     @Override
@@ -92,8 +91,7 @@ public class PersistenceUnitParseProcessor implements DeploymentUnitProcessor {
             List<PersistenceUnitMetadataHolder> listPUHolders = new ArrayList<PersistenceUnitMetadataHolder>(1);
             // handle META-INF/persistence.xml
             final ResourceRoot deploymentRoot = deploymentUnit.getAttachment(Attachments.DEPLOYMENT_ROOT);
-            VirtualFile appclientClientXml = deploymentRoot.getRoot().getChild(META_INF_APPLICATION_CLIENT_XML);
-            if (!appclient && appclientClientXml.exists()) {
+            if (!inAppClientContainer && DeploymentTypeMarker.isType(DeploymentType.APPLICATION_CLIENT, deploymentUnit)) {
                 // if not in appclient container, do not deploy persistence units contained in appclient container archive
                 return;
             }
