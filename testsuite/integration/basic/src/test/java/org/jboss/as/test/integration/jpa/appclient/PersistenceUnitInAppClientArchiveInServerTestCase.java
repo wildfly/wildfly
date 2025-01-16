@@ -72,9 +72,7 @@ public class PersistenceUnitInAppClientArchiveInServerTestCase {
             fail("The change for WFLY-20277 has been broken likely because the appclientcontainerarchive.jar contains an invalid persistence.xml (someone needs to verify that).  " +
                     "Deployment failure message: " + deploymentProblem.getMessage());
         }
-        finally {
-            deployer.undeploy(ARCHIVE_NAME);
-        }
+        deployer.undeploy(ARCHIVE_NAME);
     }
 
 }
