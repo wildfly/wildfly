@@ -4054,7 +4054,7 @@
                 <scope>test</scope>
                 <exclusions>
                     <exclusion>
-                        <groupId>org.infinispan</groupId>
+                        <groupId>*</groupId>
                         <artifactId>*</artifactId>
                     </exclusion>
                 </exclusions>
