@@ -5,13 +5,15 @@
 
 package org.jboss.as.test.integration.jpa.appclient;
 
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import javax.naming.NamingException;
 
+import org.jboss.arquillian.container.test.api.Deployer;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.integration.common.HttpRequest;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -33,9 +35,13 @@ import org.junit.runner.RunWith;
 @RunAsClient
 public class PersistenceUnitInAppClientArchiveInServerTestCase {
 
-    @Deployment
+    @ArquillianResource
+    private Deployer deployer;
+
+    private static final String ARCHIVE_NAME = "PersistenceUnitInAppClientArchiveInServerTestCase";
+    @Deployment(name = ARCHIVE_NAME, managed = false)
     public static Archive<?> deploy() {
-        EnterpriseArchive ear = ShrinkWrap.create(EnterpriseArchive.class, "PersistenceUnitInAppClientArchiveInServerTestCase.ear");
+        EnterpriseArchive ear = ShrinkWrap.create(EnterpriseArchive.class, ARCHIVE_NAME + ".ear");
 
         JavaArchive clientModule = ShrinkWrap.create(JavaArchive.class,"appclientcontainerarchive.jar");
         clientModule.addAsManifestResource( PersistenceUnitInAppClientArchiveInServerTestCase.class.getPackage(), "application-client.xml","application-client.xml");
@@ -59,7 +65,16 @@ public class PersistenceUnitInAppClientArchiveInServerTestCase {
      */
     @Test
     public void testNothing() throws NamingException {
-        assertTrue("if we don't get a deployer failure than this test has passed", true);
+        try {
+            deployer.deploy(ARCHIVE_NAME);
+        } catch (RuntimeException deploymentProblem) {
+            deploymentProblem.printStackTrace();
+            fail("The change for WFLY-20277 has been broken likely because the appclientcontainerarchive.jar contains an invalid persistence.xml (someone needs to verify that).  " +
+                    "Deployment failure message: " + deploymentProblem.getMessage());
+        }
+        finally {
+            deployer.undeploy(ARCHIVE_NAME);
+        }
     }
 
 }
