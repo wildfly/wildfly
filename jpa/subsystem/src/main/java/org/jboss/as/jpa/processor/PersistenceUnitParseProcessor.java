@@ -64,8 +64,10 @@ public class PersistenceUnitParseProcessor implements DeploymentUnitProcessor {
     private static final String JAR_FILE_EXTENSION = ".jar";
     private static final String LIB_FOLDER = "lib";
 
-    public PersistenceUnitParseProcessor() {
+    private final boolean inAppClientContainer;
 
+    public PersistenceUnitParseProcessor(boolean inAppClientContainer) {
+        this.inAppClientContainer = inAppClientContainer;
     }
 
     @Override
@@ -89,6 +91,11 @@ public class PersistenceUnitParseProcessor implements DeploymentUnitProcessor {
             List<PersistenceUnitMetadataHolder> listPUHolders = new ArrayList<PersistenceUnitMetadataHolder>(1);
             // handle META-INF/persistence.xml
             final ResourceRoot deploymentRoot = deploymentUnit.getAttachment(Attachments.DEPLOYMENT_ROOT);
+            if (!inAppClientContainer && DeploymentTypeMarker.isType(DeploymentType.APPLICATION_CLIENT, deploymentUnit)) {
+                // if not in appclient container, do not deploy persistence units contained in appclient container archive
+                return;
+            }
+
             VirtualFile persistence_xml = deploymentRoot.getRoot().getChild(META_INF_PERSISTENCE_XML);
             parse(persistence_xml, listPUHolders, deploymentUnit);
             PersistenceUnitMetadataHolder holder = normalize(listPUHolders);
