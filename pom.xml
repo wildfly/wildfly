@@ -1093,6 +1093,8 @@
                                             <exclude>xml-apis:xml-apis</exclude>
                                             <!-- Jandex moved to SmallRye -->
                                             <exclude>org.jboss:jandex</exclude>
+                                            <!-- We don't want the shaded jar that shades external artifacts -->
+                                            <exclude>org.wildfly.security:wildfly-elytron</exclude>
                                         </excludes>
                                     </bannedDependencies>
                                     <dependencyConvergence></dependencyConvergence>
