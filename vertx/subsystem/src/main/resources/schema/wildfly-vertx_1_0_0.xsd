@@ -52,8 +52,8 @@
 
         <xs:attribute name="blocked-thread-check-interval" type="xs:long" />
         <xs:attribute name="blocked-thread-check-interval-unit" type="xs:string" />
-        <xs:attribute name="max-eventloop-execute-time" type="xs:long" />
-        <xs:attribute name="max-eventloop-execute-time-unit" type="xs:string" />
+        <xs:attribute name="max-event-loop-execute-time" type="xs:long" />
+        <xs:attribute name="max-event-loop-execute-time-unit" type="xs:string" />
         <xs:attribute name="max-worker-execute-time" type="xs:long" />
         <xs:attribute name="max-worker-execute-time-unit" type="xs:string" />
         <xs:attribute name="warning-exception-time" type="xs:long" />

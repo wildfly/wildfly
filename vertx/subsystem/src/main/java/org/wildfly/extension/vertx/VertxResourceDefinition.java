@@ -20,7 +20,7 @@ import java.util.Collection;
 
 import static org.wildfly.extension.vertx.VertxConstants.ATTR_OPTION_NAME;
 import static org.wildfly.extension.vertx.VertxConstants.ELEMENT_VERTX;
-import static org.wildfly.extension.vertx.VertxConstants.VERTX_SERVICE;
+import static org.wildfly.extension.vertx.VertxConstants.ELEMENT_VERTX;
 
 /**
  * This represents a Vert.x instance, and there is only one Vert.x instance can be defined in this subsystem.
@@ -35,7 +35,7 @@ public class VertxResourceDefinition extends PersistentResourceDefinition {
     static VertxResourceDefinition INSTANCE = new VertxResourceDefinition();
 
     VertxResourceDefinition() {
-        super(new SimpleResourceDefinition.Parameters(PathElement.pathElement(VERTX_SERVICE, ELEMENT_VERTX),
+        super(new SimpleResourceDefinition.Parameters(PathElement.pathElement(ELEMENT_VERTX, ELEMENT_VERTX),
                 VertxSubsystemExtension.getResourceDescriptionResolver(VertxSubsystemExtension.SUBSYSTEM_NAME))
                 .setAddHandler(new VertxResourceAdd())
                 .setRemoveHandler(ReloadRequiredRemoveStepHandler.INSTANCE)

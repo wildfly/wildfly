@@ -17,25 +17,22 @@ public interface VertxConstants {
     String[] TIME_UNITS = Arrays.stream(TimeUnit.values()).map(Enum::toString).collect(Collectors.toList()).toArray(new String[0]);
 
     String CDI_QUALIFIER = "vertx";
-    String VERTX_SERVICE = "vertx";
     String ELEMENT_VERTX = "vertx";
 
     String ELEMENT_VERTX_OPTIONS = "vertx-options";
-    String ELEMENT_VERTX_OPTIONS_FILE = "vertx-option-file";
     String ELEMENT_VERTX_OPTION = "vertx-option";
     String ELEMENT_VERTX_OPTION_ADDRESS_RESOLVER = "address-resolver-option";
     String ATTR_OPTION_NAME = "option-name";
-    String ATTR_PATH = "path";
 
     // basic vertx-option attributes
-    String ATTR_EVENTLOOP_POOL_SIZE = "event-loop-pool-size";
+    String ATTR_EVENT_LOOP_POOL_SIZE = "event-loop-pool-size";
     String ATTR_WORKER_POOL_SIZE = "worker-pool-size";
     String ATTR_INTERNAL_BLOCKING_POOL_SIZE = "internal-blocking-pool-size";
     String ATTR_PREFER_NATIVE_TRANSPORT = "prefer-native-transport";
     String ATTR_BLOCKED_THREAD_CHECK_INTERVAL = "blocked-thread-check-interval";
     String ATTR_BLOCKED_THREAD_CHECK_INTERVAL_UNIT = "blocked-thread-check-interval-unit";
-    String ATTR_MAX_EVENTLOOP_EXECUTE_TIME = "max-eventloop-execute-time";
-    String ATTR_MAX_EVENTLOOP_EXECUTE_TIME_UNIT = "max-eventloop-execute-time-unit";
+    String ATTR_MAX_EVENT_LOOP_EXECUTE_TIME = "max-event-loop-execute-time";
+    String ATTR_MAX_EVENT_LOOP_EXECUTE_TIME_UNIT = "max-event-loop-execute-time-unit";
     String ATTR_MAX_WORKER_EXECUTE_TIME = "max-worker-execute-time";
     String ATTR_MAX_WORKER_EXECUTE_TIME_UNIT = "max-worker-execute-time-unit";
     String ATTR_WARNING_EXECUTION_TIME = "warning-exception-time";

@@ -23,13 +23,13 @@ import java.util.concurrent.TimeUnit;
 
 import static org.wildfly.extension.vertx.VertxConstants.ATTR_BLOCKED_THREAD_CHECK_INTERVAL;
 import static org.wildfly.extension.vertx.VertxConstants.ATTR_BLOCKED_THREAD_CHECK_INTERVAL_UNIT;
-import static org.wildfly.extension.vertx.VertxConstants.ATTR_EVENTLOOP_POOL_SIZE;
+import static org.wildfly.extension.vertx.VertxConstants.ATTR_EVENT_LOOP_POOL_SIZE;
 import static org.wildfly.extension.vertx.VertxConstants.ATTR_FS_CLASS_PATH_RESOLVING_ENABLED;
 import static org.wildfly.extension.vertx.VertxConstants.ATTR_FS_FILE_CACHE_DIR;
 import static org.wildfly.extension.vertx.VertxConstants.ATTR_FS_FILE_CACHE_ENABLED;
 import static org.wildfly.extension.vertx.VertxConstants.ATTR_INTERNAL_BLOCKING_POOL_SIZE;
-import static org.wildfly.extension.vertx.VertxConstants.ATTR_MAX_EVENTLOOP_EXECUTE_TIME;
-import static org.wildfly.extension.vertx.VertxConstants.ATTR_MAX_EVENTLOOP_EXECUTE_TIME_UNIT;
+import static org.wildfly.extension.vertx.VertxConstants.ATTR_MAX_EVENT_LOOP_EXECUTE_TIME;
+import static org.wildfly.extension.vertx.VertxConstants.ATTR_MAX_EVENT_LOOP_EXECUTE_TIME_UNIT;
 import static org.wildfly.extension.vertx.VertxConstants.ATTR_MAX_WORKER_EXECUTE_TIME;
 import static org.wildfly.extension.vertx.VertxConstants.ATTR_MAX_WORKER_EXECUTE_TIME_UNIT;
 import static org.wildfly.extension.vertx.VertxConstants.ATTR_PREFER_NATIVE_TRANSPORT;
@@ -85,8 +85,8 @@ class VertxOptionsResourceDefinition extends AbstractVertxOptionsResourceDefinit
 
   static VertxOptions parseOptions(ModelNode operation) throws OperationFailedException {
     VertxOptions vertxOptions = new VertxOptions();
-    if (operation.hasDefined(ATTR_EVENTLOOP_POOL_SIZE)) {
-      vertxOptions.setEventLoopPoolSize(VertxOptionsAttributes.ATTR_EVENTLOOP_POOL_SIZE.validateOperation(operation).asInt());
+    if (operation.hasDefined(ATTR_EVENT_LOOP_POOL_SIZE)) {
+      vertxOptions.setEventLoopPoolSize(VertxOptionsAttributes.ATTR_EVENT_LOOP_POOL_SIZE.validateOperation(operation).asInt());
     }
     if (operation.hasDefined(ATTR_WORKER_POOL_SIZE)) {
       vertxOptions.setWorkerPoolSize(VertxOptionsAttributes.ATTR_WORKER_POOL_SIZE.validateOperation(operation).asInt());
@@ -103,11 +103,11 @@ class VertxOptionsResourceDefinition extends AbstractVertxOptionsResourceDefinit
     if (operation.hasDefined(ATTR_BLOCKED_THREAD_CHECK_INTERVAL_UNIT)) {
       vertxOptions.setBlockedThreadCheckIntervalUnit(TimeUnit.valueOf(VertxOptionsAttributes.ATTR_BLOCKED_THREAD_CHECK_INTERVAL_UNIT.validateOperation(operation).asString()));
     }
-    if (operation.hasDefined(ATTR_MAX_EVENTLOOP_EXECUTE_TIME)) {
-      vertxOptions.setMaxEventLoopExecuteTime(VertxOptionsAttributes.ATTR_MAX_EVENTLOOP_EXECUTE_TIME.validateOperation(operation).asLong());
+    if (operation.hasDefined(ATTR_MAX_EVENT_LOOP_EXECUTE_TIME)) {
+      vertxOptions.setMaxEventLoopExecuteTime(VertxOptionsAttributes.ATTR_MAX_EVENT_LOOP_EXECUTE_TIME.validateOperation(operation).asLong());
     }
-    if (operation.hasDefined(ATTR_MAX_EVENTLOOP_EXECUTE_TIME_UNIT)) {
-      vertxOptions.setMaxEventLoopExecuteTimeUnit(TimeUnit.valueOf(VertxOptionsAttributes.ATTR_MAX_EVENTLOOP_EXECUTE_TIME_UNIT.validateOperation(operation).asString()));
+    if (operation.hasDefined(ATTR_MAX_EVENT_LOOP_EXECUTE_TIME_UNIT)) {
+      vertxOptions.setMaxEventLoopExecuteTimeUnit(TimeUnit.valueOf(VertxOptionsAttributes.ATTR_MAX_EVENT_LOOP_EXECUTE_TIME_UNIT.validateOperation(operation).asString()));
     }
     if (operation.hasDefined(ATTR_MAX_WORKER_EXECUTE_TIME)) {
       vertxOptions.setMaxWorkerExecuteTime(VertxOptionsAttributes.ATTR_MAX_WORKER_EXECUTE_TIME.validateOperation(operation).asLong());
