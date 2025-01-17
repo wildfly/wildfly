@@ -68,7 +68,6 @@ import org.jboss.metadata.web.spec.ServletSecurityMetaData;
 import org.jboss.metadata.web.spec.ServletsMetaData;
 import org.jboss.metadata.web.spec.TransportGuaranteeType;
 import org.jboss.metadata.web.spec.WebMetaData;
-import org.jboss.modules.ModuleIdentifier;
 import org.wildfly.extension.undertow.logging.UndertowLogger;
 
 /**
@@ -119,10 +118,10 @@ public class WarAnnotationDeploymentProcessor implements DeploymentUnitProcessor
             annotationsMetaData.put(entry.getKey().getRootName(), processAnnotations(jarIndex));
         }
 
-        Map<ModuleIdentifier, CompositeIndex> additionalModelAnnotations = deploymentUnit.getAttachment(Attachments.ADDITIONAL_ANNOTATION_INDEXES_BY_MODULE);
+        Map<String, CompositeIndex> additionalModelAnnotations = deploymentUnit.getAttachment(Attachments.ADDITIONAL_ANNOTATION_INDEXES_BY_MODULE_NAME);
         if (additionalModelAnnotations != null) {
             final List<WebMetaData> additional = new ArrayList<WebMetaData>();
-            for (Entry<ModuleIdentifier, CompositeIndex> entry : additionalModelAnnotations.entrySet()) {
+            for (Entry<String, CompositeIndex> entry : additionalModelAnnotations.entrySet()) {
                 for(Index index : entry.getValue().getIndexes()) {
                     additional.add(processAnnotations(index));
                 }
