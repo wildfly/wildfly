@@ -41,13 +41,13 @@ public class LRAParticipantDeploymentDependencyProcessor implements DeploymentUn
         final ModuleSpecification moduleSpecification = deploymentUnit.getAttachment(Attachments.MODULE_SPECIFICATION);
         final ModuleLoader moduleLoader = Module.getBootModuleLoader();
 
-        moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, "org.eclipse.microprofile.lra.api", false, false, false, false));
-        ModuleDependency lraParticipantDependency = new ModuleDependency(moduleLoader, "org.jboss.narayana.lra.lra-participant", false, false, true, false);
+        moduleSpecification.addSystemDependency(ModuleDependency.Builder.of(moduleLoader, "org.eclipse.microprofile.lra.api").build());
+        ModuleDependency lraParticipantDependency = ModuleDependency.Builder.of(moduleLoader, "org.jboss.narayana.lra.lra-participant").setImportServices(true).build();
         lraParticipantDependency.addImportFilter(PathFilters.getMetaInfFilter(), true);
         moduleSpecification.addSystemDependency(lraParticipantDependency);
-        moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, "io.smallrye.jandex", false, false, true, false));
-        moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, "org.jboss.as.weld.common", false, false, true, false));
-        moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, "org.jboss.resteasy.resteasy-cdi", false, false, true, false));
+        moduleSpecification.addSystemDependency(ModuleDependency.Builder.of(moduleLoader, "io.smallrye.jandex").setImportServices(true).build());
+        moduleSpecification.addSystemDependency(ModuleDependency.Builder.of(moduleLoader, "org.jboss.as.weld.common").setImportServices(true).build());
+        moduleSpecification.addSystemDependency(ModuleDependency.Builder.of(moduleLoader, "org.jboss.resteasy.resteasy-cdi").setImportServices(true).build());
 
         final CapabilityServiceSupport support = deploymentUnit.getAttachment(Attachments.CAPABILITY_SERVICE_SUPPORT);
         if (support.hasCapability(WELD_CAPABILITY_NAME)) {
