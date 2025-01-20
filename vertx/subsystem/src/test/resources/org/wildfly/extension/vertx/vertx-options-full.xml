@@ -9,7 +9,7 @@
     <vertx-option name="vo" address-resolver-option="aro" event-loop-pool-size="10"
                   worker-pool-size="20" internal-blocking-pool-size="50" prefer-native-transport="false"
                   blocked-thread-check-interval="2000" blocked-thread-check-interval-unit="MILLISECONDS"
-                  max-eventloop-execute-time="3000" max-eventloop-execute-time-unit="MILLISECONDS"
+                  max-event-loop-execute-time="3000" max-event-loop-execute-time-unit="MILLISECONDS"
                   max-worker-execute-time="5" max-worker-execute-time-unit="SECONDS"
                   warning-exception-time="5" warning-exception-time-unit="SECONDS"
                   classpath-resolving-enabled="true" file-cache-enabled="true" file-cache-dir="tmp"

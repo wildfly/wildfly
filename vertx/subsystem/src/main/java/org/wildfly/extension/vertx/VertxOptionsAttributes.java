@@ -19,7 +19,7 @@ import java.util.List;
  */
 public abstract class VertxOptionsAttributes implements VertxConstants {
 
-  public static final SimpleAttributeDefinition ATTR_EVENTLOOP_POOL_SIZE = new SimpleAttributeDefinitionBuilder(VertxConstants.ATTR_EVENTLOOP_POOL_SIZE, ModelType.INT)
+  public static final SimpleAttributeDefinition ATTR_EVENT_LOOP_POOL_SIZE = new SimpleAttributeDefinitionBuilder(VertxConstants.ATTR_EVENT_LOOP_POOL_SIZE, ModelType.INT)
     .setRequired(false)
     .setAllowExpression(true)
     .setValidator(new IntRangeValidator(1,  true))
@@ -54,13 +54,13 @@ public abstract class VertxOptionsAttributes implements VertxConstants {
     .setAllowedValues(TIME_UNITS)
     .build();
 
-  public static final SimpleAttributeDefinition ATTR_MAX_EVENTLOOP_EXECUTE_TIME = new SimpleAttributeDefinitionBuilder(VertxConstants.ATTR_MAX_EVENTLOOP_EXECUTE_TIME, ModelType.LONG)
+  public static final SimpleAttributeDefinition ATTR_MAX_EVENT_LOOP_EXECUTE_TIME = new SimpleAttributeDefinitionBuilder(VertxConstants.ATTR_MAX_EVENT_LOOP_EXECUTE_TIME, ModelType.LONG)
     .setRequired(false)
     .setAllowExpression(true)
     .setValidator(new LongRangeValidator(1,  true))
     .build();
 
-  public static final SimpleAttributeDefinition ATTR_MAX_EVENTLOOP_EXECUTE_TIME_UNIT = new SimpleAttributeDefinitionBuilder(VertxConstants.ATTR_MAX_EVENTLOOP_EXECUTE_TIME_UNIT, ModelType.STRING)
+  public static final SimpleAttributeDefinition ATTR_MAX_EVENT_LOOP_EXECUTE_TIME_UNIT = new SimpleAttributeDefinitionBuilder(VertxConstants.ATTR_MAX_EVENT_LOOP_EXECUTE_TIME_UNIT, ModelType.STRING)
     .setRequired(false)
     .setAllowExpression(true)
     .setAllowedValues(TIME_UNITS)
@@ -113,14 +113,14 @@ public abstract class VertxOptionsAttributes implements VertxConstants {
 
   private static final List<AttributeDefinition> VERTX_OPTIONS_ATTRS = new ArrayList<>();
   static {
-    VERTX_OPTIONS_ATTRS.add(ATTR_EVENTLOOP_POOL_SIZE);
+    VERTX_OPTIONS_ATTRS.add(ATTR_EVENT_LOOP_POOL_SIZE);
     VERTX_OPTIONS_ATTRS.add(ATTR_WORKER_POOL_SIZE);
     VERTX_OPTIONS_ATTRS.add(ATTR_INTERNAL_BLOCKING_POOL_SIZE);
     VERTX_OPTIONS_ATTRS.add(ATTR_PREFER_NATIVE_TRANSPORT);
     VERTX_OPTIONS_ATTRS.add(ATTR_BLOCKED_THREAD_CHECK_INTERVAL);
     VERTX_OPTIONS_ATTRS.add(ATTR_BLOCKED_THREAD_CHECK_INTERVAL_UNIT);
-    VERTX_OPTIONS_ATTRS.add(ATTR_MAX_EVENTLOOP_EXECUTE_TIME);
-    VERTX_OPTIONS_ATTRS.add(ATTR_MAX_EVENTLOOP_EXECUTE_TIME_UNIT);
+    VERTX_OPTIONS_ATTRS.add(ATTR_MAX_EVENT_LOOP_EXECUTE_TIME);
+    VERTX_OPTIONS_ATTRS.add(ATTR_MAX_EVENT_LOOP_EXECUTE_TIME_UNIT);
     VERTX_OPTIONS_ATTRS.add(ATTR_MAX_WORKER_EXECUTE_TIME);
     VERTX_OPTIONS_ATTRS.add(ATTR_MAX_WORKER_EXECUTE_TIME_UNIT);
     VERTX_OPTIONS_ATTRS.add(ATTR_WARNING_EXECUTION_TIME);

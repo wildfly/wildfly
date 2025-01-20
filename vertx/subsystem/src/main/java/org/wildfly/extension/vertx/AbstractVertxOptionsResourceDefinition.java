@@ -19,7 +19,7 @@ import java.util.Optional;
 import static org.wildfly.extension.vertx.VertxConstants.ATTR_OPTION_NAME;
 import static org.wildfly.extension.vertx.VertxConstants.ELEMENT_VERTX_OPTION;
 import static org.wildfly.extension.vertx.VertxConstants.ELEMENT_VERTX_OPTION_ADDRESS_RESOLVER;
-import static org.wildfly.extension.vertx.VertxConstants.VERTX_SERVICE;
+import static org.wildfly.extension.vertx.VertxConstants.ELEMENT_VERTX;
 import static org.wildfly.extension.vertx.VertxResourceDefinition.VERTX_CAPABILITY_NAME;
 
 /**
@@ -66,7 +66,7 @@ public abstract class AbstractVertxOptionsResourceDefinition extends SimpleResou
   }
 
   private static boolean isVertxOptionUsedInternal(Resource vertxResource, String vertxOptionName) {
-    return vertxResource.getChildren(VERTX_SERVICE).stream().anyMatch(re -> re.getModel().get(ATTR_OPTION_NAME).asString().equals(vertxOptionName));
+    return vertxResource.getChildren(ELEMENT_VERTX).stream().anyMatch(re -> re.getModel().get(ATTR_OPTION_NAME).asString().equals(vertxOptionName));
   }
 
   static boolean isVertxOptionUsed(OperationContext context, String vertxOptionName) {
