@@ -278,7 +278,7 @@
             Properties for dependencies that relate to production code go in the production code section below.
          -->
         <version.com.beust>1.78</version.com.beust>
-        <version.org.wiremock>3.9.2</version.org.wiremock>
+        <version.org.wiremock>3.10.0</version.org.wiremock>
         <version.dom4j>2.1.4</version.dom4j>
         <version.httpunit>1.7.3</version.httpunit>
         <legacy.version.io.netty>4.0.19.Final</legacy.version.io.netty>
