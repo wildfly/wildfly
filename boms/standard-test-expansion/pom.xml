@@ -245,6 +245,23 @@
                 <scope>test</scope>
             </dependency>
 
+            <!-- Used for the MP REST Client test to add the required permissions when running with the security manager
+                 enabled.
+             -->
+            <dependency>
+                <groupId>org.jboss.resteasy.microprofile</groupId>
+                <artifactId>microprofile-rest-client-tck</artifactId>
+                <version>${version.org.jboss.resteasy.microprofile}</version>
+                <scope>test</scope>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.jboss.arquillian.container</groupId>
+                        <artifactId>arquillian-container-test-spi</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <!-- End MP RES Client requirement -->
+
             <dependency>
                 <groupId>org.jboss.weld.se</groupId>
                 <artifactId>weld-se-core</artifactId>
