@@ -99,7 +99,7 @@
             <properties>
                 <testsuite.default.base.build.groupId>${ee.maven.groupId}</testsuite.default.base.build.groupId>
                 <testsuite.default.base.build.artifactId>wildfly-ee-build</testsuite.default.base.build.artifactId>
-                <testsuite.default.base.build.artifactId>wildfly-ee-dist</testsuite.default.base.build.artifactId>
+                <testsuite.default.base.dist.artifactId>wildfly-ee-dist</testsuite.default.base.dist.artifactId>
                 <testsuite.default.base.build.version>${ee.maven.version}</testsuite.default.base.build.version>
             </properties>
         </profile>
@@ -118,7 +118,7 @@
             </activation>
             <properties>
                 <testsuite.default.base.build.artifactId>wildfly-preview-build</testsuite.default.base.build.artifactId>
-                <testsuite.default.base.build.artifactId>wildfly-preview-dist</testsuite.default.base.build.artifactId>
+                <testsuite.default.base.dist.artifactId>wildfly-preview-dist</testsuite.default.base.dist.artifactId>
             </properties>
         </profile>
 
