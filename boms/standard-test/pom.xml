@@ -358,6 +358,20 @@
                 <scope>import</scope>
             </dependency>
             <dependency>
+                <groupId>org.jboss.arquillian.extension</groupId>
+                <artifactId>arquillian-drone-bom</artifactId>
+                <version>${version.org.jboss.arquillian.drone}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.jboss.arquillian.graphene</groupId>
+                <artifactId>graphene-webdriver</artifactId>
+                <version>${version.org.jboss.arquillian.graphene}</version>
+                <type>pom</type>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
                 <groupId>org.jboss.arquillian.jakarta</groupId>
                 <artifactId>arquillian-jakarta-bom</artifactId>
                 <version>${version.org.jboss.arquillian.jakarta}</version>
