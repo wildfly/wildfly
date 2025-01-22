@@ -42,7 +42,7 @@ public class Path implements CliFragment {
         if (isNotBlank(path)) {
             sb.append(String.format("path=\"%s\", ", escapePath(path)));
             if (isNotBlank(relativeTo)) {
-                sb.append(String.format("relative-to=\"%s\"", relativeTo));
+                sb.append(String.format("relative-to=\"%s\", ", relativeTo));
             }
         }
         return sb.toString();

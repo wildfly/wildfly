@@ -4,10 +4,6 @@
  */
 package org.jboss.as.test.integration.web.sso;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_ATTRIBUTE_OPERATION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
-import static org.jboss.as.test.integration.management.util.ModelUtil.createOpNode;
 import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
@@ -17,8 +13,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.concurrent.Callable;
-import java.util.concurrent.TimeoutException;
 
 import org.apache.http.Header;
 import org.apache.http.HttpResponse;
@@ -35,12 +29,8 @@ import org.apache.http.impl.client.HttpClients;
 import org.apache.http.impl.cookie.BasicClientCookie;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.util.EntityUtils;
-import org.jboss.as.controller.client.ModelControllerClient;
-import org.jboss.as.controller.client.OperationBuilder;
 import org.jboss.as.test.http.util.TestHttpClientUtils;
 import org.jboss.as.test.integration.web.sso.interfaces.StatelessSession;
-import org.jboss.as.test.shared.RetryTaskExecutor;
-import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
@@ -53,9 +43,16 @@ import org.jboss.shrinkwrap.api.spec.WebArchive;
  * @author Brian Stansberry
  * @author lbarreiro@redhat.com
  */
-public abstract class SSOTestBase {
+public final class SSOTestBase {
 
-    private static Logger log = Logger.getLogger(SSOTestBase.class);
+    public static final String USERNAME = "user1";
+    public static final String PASSWORD = "password1";
+    public static final String ROLE = "Users";
+
+    /*
+     * Nothing extends this class or needs to instantiate it, instead publicstatic accessor methods are used.
+     */
+    private SSOTestBase() {}
 
     /**
      * Test single sign-on across two web apps using form based auth
@@ -139,8 +136,9 @@ public abstract class SSOTestBase {
             checkAccessAllowed(httpclient, warB2 + "EJBServlet");
 
             // Do the same test on war6 to test SSO auth replication with no auth
-            // configured war
-            checkAccessAllowed(httpclient, warB6 + "index.html");
+            // configured war, by having no security domain this will map to Undertow's default
+            // security domain of "other" so unless SSO is operational it should prompt to authenticate.
+            checkAccessDenied(httpclient, warB6 + "index.html");
 
             checkAccessAllowed(httpclient, warB2 + "EJBServlet");
         } finally {
@@ -327,12 +325,18 @@ public abstract class SSOTestBase {
     }
 
     public static WebArchive createSsoWar(String warName) {
+        return createSsoWar(warName, true);
+    }
+
+    public static WebArchive createSsoWar(String warName, boolean includeJBossWeb) {
         ClassLoader tccl = Thread.currentThread().getContextClassLoader();
         String resourcesLocation = "org/jboss/as/test/integration/web/sso/resources/";
 
         WebArchive war = ShrinkWrap.create(WebArchive.class, warName);
         war.setWebXML(tccl.getResource(resourcesLocation + "web-form-auth.xml"));
-        war.addAsWebInfResource(tccl.getResource(resourcesLocation + "jboss-web.xml"), "jboss-web.xml");
+        if (includeJBossWeb) {
+            war.addAsWebInfResource(tccl.getResource(resourcesLocation + "jboss-web.xml"), "jboss-web.xml");
+        }
 
         war.addAsWebResource(tccl.getResource(resourcesLocation + "error.html"), "error.html");
         war.addAsWebResource(tccl.getResource(resourcesLocation + "index.html"), "index.html");
@@ -352,10 +356,7 @@ public abstract class SSOTestBase {
 
         WebArchive war1 = createSsoWar("sso-form-auth1.war");
         WebArchive war2 = createSsoWar("sso-form-auth2.war");
-        WebArchive war3 = createSsoWar("sso-with-no-auth.war");
-
-        // Remove jboss-web.xml so the war will not have an authenticator
-        war3.delete(war3.get("WEB-INF/jboss-web.xml").getPath());
+        WebArchive war3 = createSsoWar("sso-with-no-auth.war", false);
 
         JavaArchive webEjbs = ShrinkWrap.create(JavaArchive.class, "jbosstest-web-ejbs.jar");
         webEjbs.addAsManifestResource(tccl.getResource(resourcesLocation + "ejb-jar.xml"), "ejb-jar.xml");
@@ -373,64 +374,4 @@ public abstract class SSOTestBase {
         return ear;
     }
 
-    public static void addSso(ModelControllerClient client) throws Exception {
-        final List<ModelNode> updates = new ArrayList<>();
-
-        // SSO element name must be 'configuration'
-        updates.add(createOpNode("subsystem=undertow/server=default-server/host=default-host/setting=single-sign-on", ADD));
-
-        applyUpdates(updates, client);
-    }
-
-    public static void removeSso(final ModelControllerClient client) throws Exception {
-        final List<ModelNode> updates = new ArrayList<>();
-
-        updates.add(createOpNode("subsystem=undertow/server=default-server/host=default-host/setting=single-sign-on", REMOVE));
-
-        applyUpdates(updates, client);
-    }
-
-    public static void applyUpdates(final List<ModelNode> updates, final ModelControllerClient client) throws Exception {
-        for (ModelNode update : updates) {
-            //log.trace("+++ Update on " + client + ":\n" + update.toString());
-            ModelNode result = client.execute(new OperationBuilder(update).build());
-            if (result.hasDefined("outcome") && "success".equals(result.get("outcome").asString())) {
-                if (result.hasDefined("result"))
-                    log.trace(result.get("result"));
-            } else if (result.hasDefined("failure-description")) {
-                throw new RuntimeException(result.get("failure-description").toString());
-            } else {
-                throw new RuntimeException("Operation not successful; outcome = " + result.get("outcome"));
-            }
-        }
-    }
-
-    // Reload operation is not handled well by Arquillian
-    // See ARQ-791: JMX: Arquillian is unable to reconnect to JMX server if the connection is lost
-    public static void restartServer(final ModelControllerClient client) {
-        try {
-            applyUpdates(Arrays.asList(createOpNode(null, "reload")), client);
-        } catch (Exception e) {
-            throw new RuntimeException("Restart operation not successful. " + e.getMessage());
-        }
-        try {
-            RetryTaskExecutor<Boolean> rte = new RetryTaskExecutor<>();
-            rte.retryTask(new Callable<Boolean>() {
-                public Boolean call() throws Exception {
-                    ModelNode readOp = createOpNode(null, READ_ATTRIBUTE_OPERATION);
-                    readOp.get("name").set("server-state");
-                    ModelNode result = client.execute(new OperationBuilder(readOp).build());
-                    if (result.hasDefined("outcome") && "success".equals(result.get("outcome").asString())) {
-                        if ((result.hasDefined("result")) && (result.get("result").asString().equals("running")))
-                            return true;
-                    }
-                    log.trace("Server is down.");
-                    throw new Exception("Connector not available.");
-                }
-            });
-        } catch (TimeoutException e) {
-            throw new RuntimeException("Timeout on restart operation. " + e.getMessage());
-        }
-        log.trace("Server is up.");
-    }
 }
