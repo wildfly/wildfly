@@ -30,7 +30,7 @@ class MicrometerDependencyProcessor implements DeploymentUnitProcessor {
         ModuleSpecification moduleSpecification = deploymentUnit.getAttachment(Attachments.MODULE_SPECIFICATION);
         ModuleLoader moduleLoader = Module.getBootModuleLoader();
         for (String module : EXPORTED_MODULES) {
-            moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, module, false, true, true, false));
+            moduleSpecification.addSystemDependency(ModuleDependency.Builder.of(moduleLoader, module).setExport(true).setImportServices(true).build());
         }
     }
 }
