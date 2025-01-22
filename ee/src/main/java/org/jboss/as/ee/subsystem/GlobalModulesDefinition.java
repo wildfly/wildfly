@@ -145,6 +145,9 @@ public class GlobalModulesDefinition {
         return ret;
     }
 
+    /**
+     * Descriptive information for a module that should be added as a dependency to all deployment modules.
+     */
     public static final class GlobalModule {
         private final String moduleName;
         private final boolean annotations;
@@ -152,6 +155,14 @@ public class GlobalModulesDefinition {
         private final boolean metaInf;
 
 
+        /**
+         * Creates a new global module.
+         *
+         * @param moduleName {@link org.jboss.as.controller.ModuleIdentifierUtil#canonicalModuleIdentifier(String) canonicalized} name of the module
+         * @param annotations {@code true} if the module should be indexed for annotations
+         * @param services {@code true} if dependent modules should be able to import services from this module
+         * @param metaInf {@code true} if dependent modules should be able to import META-INF resources from this module
+         */
         GlobalModule(final String moduleName, final boolean annotations, final boolean services, final boolean metaInf) {
             this.moduleName = moduleName;
             this.annotations = annotations;
@@ -159,18 +170,36 @@ public class GlobalModulesDefinition {
             this.metaInf = metaInf;
         }
 
+        /**
+         * Gets the name of the module.
+         *
+         * @return the {@link org.jboss.as.controller.ModuleIdentifierUtil#canonicalModuleIdentifier(String) canonicalized} name of the module
+         *         Will not return {@code null}
+         */
         public String getModuleName() {
             return moduleName;
         }
 
+        /**
+         * Gets whether the module should be indexed for annotations.
+         * @return {@code true} if the module should be indexed for annotations
+         */
         public boolean isAnnotations() {
             return annotations;
         }
 
+        /**
+         * Gets whether dependent modules should be able to import services from this module
+         * @return {@code true} if dependent modules should be able to import services from this module
+         */
         public boolean isServices() {
             return services;
         }
 
+        /**
+         * Gets whether dependent modules should be able to import META-INF resources from this module
+         * @return {@code true} if dependent modules should be able to import META-INF resources from this module
+         */
         public boolean isMetaInf() {
             return metaInf;
         }
