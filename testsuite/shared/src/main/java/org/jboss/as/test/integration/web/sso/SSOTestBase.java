@@ -30,11 +30,9 @@ import org.apache.http.impl.cookie.BasicClientCookie;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.util.EntityUtils;
 import org.jboss.as.test.http.util.TestHttpClientUtils;
-import org.jboss.as.test.integration.web.sso.interfaces.StatelessSession;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
-import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 
 /**
@@ -86,7 +84,7 @@ public final class SSOTestBase {
 
             // Access a secured servlet that calls a secured Jakarta Enterprise Beans in war2 to test
             // propagation of the SSO identity to the Jakarta Enterprise Beans container.
-            checkAccessAllowed(httpclient, warB2 + "EJBServlet");
+            checkAccessAllowed(httpclient, warB2 + "NotAnEJBServlet");
 
             // Now try logging out of war2
             executeLogout(httpclient, warB2);
@@ -133,14 +131,14 @@ public final class SSOTestBase {
 
             // Access a secured servlet that calls a secured Jakarta Enterprise Beans in war2 to test
             // propagation of the SSO identity to the Jakarta Enterprise Beans container.
-            checkAccessAllowed(httpclient, warB2 + "EJBServlet");
+            checkAccessAllowed(httpclient, warB2 + "NotAnEJBServlet");
 
             // Do the same test on war6 to test SSO auth replication with no auth
             // configured war, by having no security domain this will map to Undertow's default
             // security domain of "other" so unless SSO is operational it should prompt to authenticate.
             checkAccessDenied(httpclient, warB6 + "index.html");
 
-            checkAccessAllowed(httpclient, warB2 + "EJBServlet");
+            checkAccessAllowed(httpclient, warB2 + "NotAnEJBServlet");
         } finally {
             HttpClientUtils.closeQuietly(httpclient);
         }
@@ -344,7 +342,7 @@ public final class SSOTestBase {
         war.addAsWebResource(tccl.getResource(resourcesLocation + "set_session_timeout.jsp"), "set_session_timeout.jsp");
         war.addAsWebResource(tccl.getResource(resourcesLocation + "login.html"), "login.html");
 
-        war.addClass(EJBServlet.class);
+        war.addClass(NotAnEJBServlet.class);
         war.addClass(LogoutServlet.class);
 
         return war;
@@ -358,18 +356,12 @@ public final class SSOTestBase {
         WebArchive war2 = createSsoWar("sso-form-auth2.war");
         WebArchive war3 = createSsoWar("sso-with-no-auth.war", false);
 
-        JavaArchive webEjbs = ShrinkWrap.create(JavaArchive.class, "jbosstest-web-ejbs.jar");
-        webEjbs.addAsManifestResource(tccl.getResource(resourcesLocation + "ejb-jar.xml"), "ejb-jar.xml");
-        webEjbs.addAsManifestResource(tccl.getResource(resourcesLocation + "jboss.xml"), "jboss.xml");
-        webEjbs.addPackage(StatelessSession.class.getPackage());
-
         EnterpriseArchive ear = ShrinkWrap.create(EnterpriseArchive.class, "web-sso.ear");
         ear.setApplicationXML(tccl.getResource(resourcesLocation + "application.xml"));
 
         ear.addAsModule(war1);
         ear.addAsModule(war2);
         ear.addAsModule(war3);
-        ear.addAsModule(webEjbs);
 
         return ear;
     }
