@@ -33,6 +33,7 @@
         <!-- use the web build for tests -->
         <jboss.dist>${jbossas.project.dir}/${wildfly.build.output.dir}</jboss.dist>
         <jboss.home>${jboss.dist}</jboss.home>
+        <keystore.base>${wildfly.dir}</keystore.base>
 
         <!-- properties to enable plugins shared by various bootable jar executions -->
         <bootable.ts.config-as.copy-users.phase>none</bootable.ts.config-as.copy-users.phase>
@@ -296,7 +297,7 @@
                     </execution>
                 </executions>
                 <configuration>
-                    <keystore>${wildfly.dir}/standalone/configuration/sso.keystore</keystore>
+                    <keystore>${keystore.base}/standalone/configuration/sso.keystore</keystore>
                     <dname>cn=commonName, ou=organizationUnit, o=organizationName, c=countryCode</dname>
                     <storetype>PKCS12</storetype>
                     <keypass>password</keypass>
@@ -584,6 +585,7 @@
                 <bootable.create-external-taglib-module.phase>process-test-classes</bootable.create-external-taglib-module.phase>
                 <ts.bootable-jar-packaging.phase>process-test-classes</ts.bootable-jar-packaging.phase>
                 <glow.phase>test-compile</glow.phase>
+                <keystore.base>${basedir}/target/wildfly-users</keystore.base>
             </properties>
             <build>
                 <plugins>
