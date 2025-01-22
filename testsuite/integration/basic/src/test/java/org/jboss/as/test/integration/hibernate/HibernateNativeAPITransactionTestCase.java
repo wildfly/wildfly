@@ -114,8 +114,8 @@ public class HibernateNativeAPITransactionTestCase {
         // setup Configuration and SessionFactory
         sfsb.setupConfig();
         try {
-            Student s1 = sfsb.createStudent("MADHUMITA", "SADHUKHAN", "99 Purkynova REDHAT BRNO CZ", 1);
-            Student s2 = sfsb.createStudent("REDHAT", "LINUX", "Worldwide", 3);
+            Student s1 = sfsb.createStudent("MADHUMITA", "SADHUKHAN", "99 Purkynova REDHAT BRNO CZ", false);
+            Student s2 = sfsb.createStudent("REDHAT", "LINUX", "Worldwide", false);
             assertTrue("address read from hibernate session associated with hibernate transaction is 99 Purkynova REDHAT BRNO CZ",
                     "99 Purkynova REDHAT BRNO CZ".equals(s1.getAddress()));
             // update Student
@@ -136,9 +136,9 @@ public class HibernateNativeAPITransactionTestCase {
         // setup Configuration and SessionFactory
         try {
             sfsb.setupConfig();
-            Student s2 = sfsb.createStudent("REDHAT", "LINUX", "Worldwide", 3);
-            // force creation of student with same Id to ensure RollBack
-            Student s3 = sfsb.createStudent("Hibernate", "ORM", "JavaWorld", s2.getStudentId());
+            Student s2 = sfsb.createStudent("REDHAT", "LINUX", "Worldwide", false);
+            // Force the rollback
+            Student s3 = sfsb.createStudent("Hibernate", "ORM", "JavaWorld", true);
             Student st = sfsb.getStudentNoTx(s2.getStudentId());
             assertTrue("name read from hibernate session associated with hibernate transaction after rollback is REDHAT",
                     "REDHAT".equals(st.getFirstName()));

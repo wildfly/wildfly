@@ -259,6 +259,8 @@ public abstract class LayersTestBase {
             "jakarta.mvc.api",
             "org.eclipse.krazo.core",
             "org.eclipse.krazo.resteasy",
+            // Not needed for WildFly as this module is effectively replaced by org.hibernate.models.hibernate-models
+            "org.hibernate.commons-annotations",
             "org.wildfly.extension.vertx"
     };
 
