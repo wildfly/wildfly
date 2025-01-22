@@ -33,7 +33,9 @@
         <!-- use the web build for tests -->
         <jboss.dist>${jbossas.project.dir}/${wildfly.build.output.dir}</jboss.dist>
         <jboss.home>${jboss.dist}</jboss.home>
+
         <keystore.base>${wildfly.dir}</keystore.base>
+        <genkey-keystore.phase>process-test-resources</genkey-keystore.phase>
 
         <!-- properties to enable plugins shared by various bootable jar executions -->
         <bootable.ts.config-as.copy-users.phase>none</bootable.ts.config-as.copy-users.phase>
@@ -289,7 +291,7 @@
                         </goals>
                     </execution>
                     <execution>
-                        <phase>generate-test-resources</phase>
+                        <phase>${genkey-keystore.phase}</phase>
                         <id>genkey-jcetest-keystore</id>
                         <goals>
                             <goal>generateKeyPair</goal>
@@ -482,6 +484,7 @@
             <properties>
                 <glow.phase>test-compile</glow.phase>
                 <ts.config-as.copy-mgmt-users.phase>test</ts.config-as.copy-mgmt-users.phase>
+                <genkey-keystore.phase>process-test-classes</genkey-keystore.phase>
             </properties>
             <build>
                 <plugins>
@@ -500,7 +503,7 @@
                                 <goals>
                                     <goal>provision</goal>
                                 </goals>
-                                <phase>process-test-classes</phase>
+                                <phase>test-compile</phase>
                                 <configuration>
                                     <provisioning-dir>${project.build.directory}/wildfly</provisioning-dir>
                                     <record-provisioning-state>false</record-provisioning-state>
