@@ -118,8 +118,8 @@ public class HibernateNativeAPINaturalIdTestCase {
         // setup Configuration and SessionFactory
         sfsb.setupConfig();
         try {
-            Person s1 = sfsb.createPerson("MADHUMITA", "SADHUKHAN", "99 Purkynova REDHAT BRNO CZ", 123, 1);
-            Person s2 = sfsb.createPerson("REDHAT", "LINUX", "Worldwide", 435, 3);
+            Person s1 = sfsb.createPerson("MADHUMITA", "SADHUKHAN", "99 Purkynova REDHAT BRNO CZ", 123);
+            Person s2 = sfsb.createPerson("REDHAT", "LINUX", "Worldwide", 435);
             Person p1 = sfsb.getPersonReference("REDHAT", 435);
             Person p2 = sfsb.loadPerson("MADHUMITA", 123);
 

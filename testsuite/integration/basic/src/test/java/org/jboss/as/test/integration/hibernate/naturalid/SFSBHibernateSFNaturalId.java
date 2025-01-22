@@ -53,10 +53,9 @@ public class SFSBHibernateSFNaturalId {
     }
 
     // create person
-    public Person createPerson(String firstName, String lastName, String address, int voterId, int id) {
+    public Person createPerson(String firstName, String lastName, String address, int voterId) {
 
         Person per = new Person();
-        per.setPersonId(id);
         per.setAddress(address);
         per.setPersonVoterId(voterId);
         per.setFirstName(firstName);
@@ -66,7 +65,7 @@ public class SFSBHibernateSFNaturalId {
             // We are not explicitly initializing a Transaction as Hibernate is expected to invoke the JTA TransactionManager
             // implicitly
             Session session = sessionFactory.openSession();
-            session.save(per);
+            session.persist(per);
             session.flush();
             session.close();
         } catch (Exception e) {

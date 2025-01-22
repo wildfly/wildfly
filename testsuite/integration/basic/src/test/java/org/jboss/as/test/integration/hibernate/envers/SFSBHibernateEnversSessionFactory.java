@@ -57,11 +57,10 @@ public class SFSBHibernateEnversSessionFactory {
     }
 
     // create student
-    public StudentAudited createStudent(String firstName, String lastName, String address, int id) {
+    public StudentAudited createStudent(String firstName, String lastName, String address) {
 
         // setupConfig();
         StudentAudited student = new StudentAudited();
-        student.setStudentId(id);
         student.setAddress(address);
         student.setFirstName(firstName);
         student.setLastName(lastName);
@@ -69,7 +68,7 @@ public class SFSBHibernateEnversSessionFactory {
         try {
             Session session = sessionFactory.openSession();
             Transaction trans = session.beginTransaction();
-            session.save(student);
+            session.persist(student);
             session.flush();
             trans.commit();
             session.close();
@@ -86,9 +85,9 @@ public class SFSBHibernateEnversSessionFactory {
         try {
             Session session = sessionFactory.openSession();
             Transaction trans = session.beginTransaction();
-            student = session.load(StudentAudited.class, id);
+            student = session.get(StudentAudited.class, id);
             student.setAddress(address);
-            session.save(student);
+            student = session.merge(student);
             session.flush();
             trans.commit();
             session.close();

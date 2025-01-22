@@ -59,11 +59,10 @@ public class SFSBHibernateTransaction {
     }
 
     // create student
-    public Student createStudent(String firstName, String lastName, String address, int id) {
+    public Student createStudent(String firstName, String lastName, String address, boolean rollback) {
 
         // setupConfig();
         Student student = new Student();
-        student.setStudentId(id);
         student.setAddress(address);
         student.setFirstName(firstName);
         student.setLastName(lastName);
@@ -71,8 +70,12 @@ public class SFSBHibernateTransaction {
 
         try {
             Transaction trans = session.beginTransaction();
-            session.save(student);
-            trans.commit();
+            session.persist(student);
+            if (rollback) {
+                trans.rollback();
+            } else {
+                trans.commit();
+            }
         } catch (Exception e) {
             throw new RuntimeException("transactional failure while persisting student entity", e);
         }
@@ -85,13 +88,13 @@ public class SFSBHibernateTransaction {
     public Student updateStudent(String address, int id) {
 
         Session session = sessionFactory.openSession();
-        Student student = session.load(Student.class, id);
+        Student student = session.get(Student.class, id);
         student.setAddress(address);
 
         try {
             // invoking the Hibernate transaction
             Transaction trans = session.beginTransaction();
-            session.save(student);
+            student = session.merge(student);
             trans.commit();
         } catch (Exception e) {
             throw new RuntimeException("transactional failure while persisting student entity", e);
@@ -104,7 +107,7 @@ public class SFSBHibernateTransaction {
     // fetch student
     public Student getStudentNoTx(int id) {
         // Transaction trans = sessionFactory.openSession().beginTransaction();
-        Student emp = sessionFactory.openSession().load(Student.class, id);
+        Student emp = sessionFactory.openSession().get(Student.class, id);
         return emp;
     }
 

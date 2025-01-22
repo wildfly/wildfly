@@ -59,10 +59,9 @@ public class SFSB {
     }
 
     // create student
-    public Student createStudent(String firstName, String lastName, String address, int id) {
+    public Student createStudent(String firstName, String lastName, String address) {
         // setupConfig();
         Student student = new Student();
-        student.setStudentId(id);
         student.setAddress(address);
         student.setFirstName(firstName);
         student.setLastName(lastName);
@@ -78,7 +77,7 @@ public class SFSB {
             //    throw new RuntimeException("Hibernate Transaction is not active after joining Hibernate to Jakarta Transactions transaction: " + status.name());
             //}
 
-            session.save(student);
+            session.persist(student);
             // trans.commit();
             session.close();
         } catch (Exception e) {
@@ -104,7 +103,7 @@ public class SFSB {
             // if(status.isNotOneOf(TransactionStatus.ACTIVE)) {
             //    throw new RuntimeException("Hibernate Transaction is not active after joining Hibernate to Jakarta Transactions transaction: " + status.name());
             // }
-            student = session.load(Student.class, id);
+            student = session.get(Student.class, id);
             session.close();
 
         } catch (Exception e) {
