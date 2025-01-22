@@ -19,6 +19,7 @@
         <module name="jakarta.xml.bind.api"/>
         <module name="org.jboss.logging" />
         <module name="org.hibernate" />
+        <module name="org.hibernate.models.hibernate-models" services="import"/>
         <module name="org.hibernate.search.engine" export="true" />
         <module name="org.hibernate.search.mapper.pojo" export="true" />
         <module name="org.hibernate.search.mapper.orm" export="true" />

@@ -44,6 +44,7 @@
 
     <modules>
         <module>hibernate6</module>
+        <module>hibernate7</module>
         <module>hibernatesearch</module>
         <module>subsystem</module>
         <module>spi</module>
