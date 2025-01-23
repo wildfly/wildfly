@@ -16,6 +16,7 @@
         <module name="org.apache.commons.beanutils" />
         <module name="org.slf4j"/>
         <module name="java.desktop"/>
+        <module name="java.xml"/>
         <module name="io.netty.netty-buffer"/>
         <module name="io.netty.netty-transport"/>
         <module name="io.netty.netty-handler"/>
