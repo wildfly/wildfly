@@ -104,6 +104,7 @@ public abstract class LayersTestBase {
     public static final String[] NO_LAYER_WILDFLY_PREVIEW = {
             // WFP standard config uses Micrometer instead of WF Metrics
             "org.wildfly.extension.metrics",
+            "org.wildfly.extension.security.manager",
     };
 
     /**
