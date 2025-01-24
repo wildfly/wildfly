@@ -8,6 +8,7 @@ package org.wildfly.extension.microprofile.health;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import jakarta.json.Json;
 import jakarta.json.JsonArray;
@@ -27,7 +28,6 @@ public class MicroProfileHealthReporter {
     public static final String DOWN = "DOWN";
     public static final String UP = "UP";
     private final boolean globalDefaultProceduresDisabled;
-    private boolean deploymentDefaultProceduresDisabled = false;
     private final String defaultReadinessEmptyResponse;
     private final String defaultStartupEmptyResponse;
     private final Map<HealthCheck, ClassLoader> healthChecks = new HashMap<>();
@@ -39,18 +39,59 @@ public class MicroProfileHealthReporter {
     private final HealthCheck emptyDeploymentLivenessCheck;
     private final HealthCheck emptyDeploymentReadinessCheck;
     private final HealthCheck emptyDeploymentStartupCheck;
-    private boolean userChecksProcessed = false;
+    private final Map<String, DeploymentConfiguration> deploymentsConfiguration = new ConcurrentHashMap<>();
 
-    public void registerDeploymentDefaultProceduresConfiguration(final String deploymentName, final boolean deploymentDefaultProceduresDisabled) {
-        if (deploymentDefaultProceduresDisabled && !globalDefaultProceduresDisabled) {
-            // Deployment-level setting is overriding the global setting
-            MicroProfileHealthLogger.LOGGER.defaultProceduresDisabledByDeployment(deploymentName);
-        }
-        this.deploymentDefaultProceduresDisabled |= deploymentDefaultProceduresDisabled;
+    /**
+     * Evaluate whether any deployment is disabling default procedures server-wide, i.e. by setting
+     * {@code mp.health.disable-default-procedures=true}
+     * @return {@code true} if any deployment is disabling the default procedures, {@code false} otherwise
+     */
+    private boolean isAnyDeploymentDisablingDefaultProcedures() {
+        return deploymentsConfiguration.entrySet().stream().anyMatch(dc -> dc.getValue().getDisableDefaultProcedures());
     }
 
+    /**
+     * Evaluate whether any user defined checks have been processed, for any deployments.
+     * @return {@code true} if any deployment has being tracked, {@code false} otherwise.
+     */
+    private boolean userChecksProcessed() {
+        return !deploymentsConfiguration.isEmpty();
+    }
+
+    /**
+     * Whether default procedures should be added or not to the returned health checks.
+     * Default procedures will be added when they're <i>not</i> disabled globally,
+     * <b>and</b> they're <i>not</i> disabled by any deployments.
+     * @return {@code true} if default procedures should be added, {@code false} otherwise.
+     */
     private boolean defaultProceduresShouldBeAdded() {
-        return !globalDefaultProceduresDisabled && !deploymentDefaultProceduresDisabled;
+        return !globalDefaultProceduresDisabled && !isAnyDeploymentDisablingDefaultProcedures();
+    }
+
+    /**
+     * Track a deployment configuration.
+     * @param deployment The deployment name
+     * @param disableDefaultProcedures Flag that tells whether the given deployment is disabling default procedures,
+     *                                 see the {@code mp.health.disable-default-procedures} MicroProfile Config property.
+     */
+    public void addDeploymentConfiguration(final String deployment, final Boolean disableDefaultProcedures) {
+        if (disableDefaultProcedures) {
+            // Log: deployment-level setting is overriding the global setting
+            MicroProfileHealthLogger.LOGGER.addDefaultProceduresDisabledByDeployment(deployment);
+        }
+        deploymentsConfiguration.put(deployment, new DeploymentConfiguration(disableDefaultProcedures));
+    }
+
+    /**
+     * Remove a deployment configuration.
+     * @param deployment The deployment name
+     */
+    public void removeDeploymentConfiguration(final String deployment) {
+        if (deploymentsConfiguration.get(deployment).getDisableDefaultProcedures()) {
+            // Log: deployment-level setting is being removed
+            MicroProfileHealthLogger.LOGGER.removeDefaultProceduresDisabledByDeployment(deployment);
+        }
+        deploymentsConfiguration.remove(deployment);
     }
 
     private static class EmptyDeploymentCheckStatus implements HealthCheck {
@@ -119,7 +160,7 @@ public class MicroProfileHealthReporter {
         if (readinessChecks.size() == 0) {
             if (!addDefaultProcedures) {
                 return getHealth(serverChecks, readinessChecks,
-                    userChecksProcessed ? HealthCheckResponse.Status.UP :
+                    userChecksProcessed() ? HealthCheckResponse.Status.UP :
                         HealthCheckResponse.Status.valueOf(defaultReadinessEmptyResponse));
             } else {
                 serverChecks.put(emptyDeploymentReadinessCheck, Thread.currentThread().getContextClassLoader());
@@ -134,7 +175,7 @@ public class MicroProfileHealthReporter {
         if (startupChecks.size() == 0) {
             if (!defaultProceduresShouldBeAdded()) {
                 return getHealth(serverChecks, startupChecks,
-                    userChecksProcessed ? HealthCheckResponse.Status.UP :
+                    userChecksProcessed() ? HealthCheckResponse.Status.UP :
                         HealthCheckResponse.Status.valueOf(defaultStartupEmptyResponse));
             } else {
                 serverChecks = Collections.singletonMap(emptyDeploymentStartupCheck, Thread.currentThread().getContextClassLoader());
@@ -285,7 +326,20 @@ public class MicroProfileHealthReporter {
         startupChecks.remove(check);
     }
 
-    public void setUserChecksProcessed(boolean userChecksProcessed) {
-        this.userChecksProcessed = userChecksProcessed;
+    /**
+     * Holds a deployment MicroProfile Health related configuration.
+     * Currently, the only field is the flag that tells whether the deployment is disabling default
+     * procedures, but it can be expanded in the future.
+     */
+    private static final class DeploymentConfiguration {
+        final Boolean disableDefaultProcedures;
+
+        private DeploymentConfiguration(Boolean disableDefaultProcedures) {
+            this.disableDefaultProcedures = disableDefaultProcedures;
+        }
+
+        public Boolean getDisableDefaultProcedures() {
+            return disableDefaultProcedures;
+        }
     }
 }
