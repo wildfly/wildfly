@@ -34,6 +34,9 @@
         <jboss.dist>${jbossas.project.dir}/${wildfly.build.output.dir}</jboss.dist>
         <jboss.home>${jboss.dist}</jboss.home>
 
+        <keystore.base>${wildfly.dir}</keystore.base>
+        <genkey-keystore.phase>process-test-resources</genkey-keystore.phase>
+
         <!-- properties to enable plugins shared by various bootable jar executions -->
         <bootable.ts.config-as.copy-users.phase>none</bootable.ts.config-as.copy-users.phase>
         <bootable.copy-external-taglib-module-xml.phase>none</bootable.copy-external-taglib-module-xml.phase>
@@ -268,6 +271,46 @@
                     </execution>
                 </executions>
             </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>keytool-maven-plugin</artifactId>
+                <version>1.5</version>
+                <dependencies>
+                    <dependency>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>keytool-api-1.7</artifactId>
+                        <version>1.5</version>
+                    </dependency>
+                </dependencies>
+                <executions>
+                    <execution>
+                        <phase>generate-test-resources</phase>
+                        <id>clean-jcetest-keystore</id>
+                        <goals>
+                            <goal>clean</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <phase>${genkey-keystore.phase}</phase>
+                        <id>genkey-jcetest-keystore</id>
+                        <goals>
+                            <goal>generateKeyPair</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <keystore>${keystore.base}/standalone/configuration/sso.keystore</keystore>
+                    <dname>cn=commonName, ou=organizationUnit, o=organizationName, c=countryCode</dname>
+                    <storetype>PKCS12</storetype>
+                    <keypass>password</keypass>
+                    <storepass>password</storepass>
+                    <alias>localhost</alias>
+                    <keyalg>RSA</keyalg>
+                    <keysize>2048</keysize>
+                    <validity>365</validity>
+                    <verbose>true</verbose>
+                </configuration>
+            </plugin>
             <!-- Pack external tag library module before bootable JAR is packed -->
             <plugin>
                 <artifactId>maven-jar-plugin</artifactId>
@@ -322,7 +365,7 @@
                     </execution>
                 </executions>
             </plugin>
-            
+
             <plugin>
                 <groupId>org.wildfly.plugins</groupId>
                 <artifactId>wildfly-maven-plugin</artifactId>
@@ -441,6 +484,7 @@
             <properties>
                 <glow.phase>test-compile</glow.phase>
                 <ts.config-as.copy-mgmt-users.phase>test</ts.config-as.copy-mgmt-users.phase>
+                <genkey-keystore.phase>process-test-classes</genkey-keystore.phase>
             </properties>
             <build>
                 <plugins>
@@ -459,7 +503,7 @@
                                 <goals>
                                     <goal>provision</goal>
                                 </goals>
-                                <phase>process-test-classes</phase>
+                                <phase>test-compile</phase>
                                 <configuration>
                                     <provisioning-dir>${project.build.directory}/wildfly</provisioning-dir>
                                     <record-provisioning-state>false</record-provisioning-state>
@@ -544,6 +588,7 @@
                 <bootable.create-external-taglib-module.phase>process-test-classes</bootable.create-external-taglib-module.phase>
                 <ts.bootable-jar-packaging.phase>process-test-classes</ts.bootable-jar-packaging.phase>
                 <glow.phase>test-compile</glow.phase>
+                <keystore.base>${basedir}/target/wildfly-users</keystore.base>
             </properties>
             <build>
                 <plugins>
@@ -623,7 +668,7 @@
                 </plugins>
             </build>
         </profile>
-        
+
         <!-- Test against bootable jar WildFly Preview -->
         <profile>
             <id>bootablejar.preview.profile</id>

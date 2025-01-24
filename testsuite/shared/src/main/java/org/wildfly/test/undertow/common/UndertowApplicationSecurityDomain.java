@@ -7,6 +7,8 @@ package org.wildfly.test.undertow.common;
 
 import static org.wildfly.test.security.common.ModelNodeUtil.setIfNotNull;
 
+import java.util.Arrays;
+
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.operations.common.Util;
@@ -30,6 +32,8 @@ import org.wildfly.test.security.common.elytron.ConfigurableElement;
      private final boolean enableJaspi;
      private final boolean integratedJaspi;
 
+     private final SingleSignOnSetting singleSignOnSettings;
+
      UndertowApplicationSecurityDomain(Builder builder) {
          super(builder);
          this.address = PathAddress.pathAddress().append("subsystem", "undertow").append("application-security-domain", name);
@@ -38,9 +42,10 @@ import org.wildfly.test.security.common.elytron.ConfigurableElement;
          this.enableJacc = builder.enableJacc;
          this.enableJaspi = builder.enableJaspi;
          this.integratedJaspi = builder.integratedJaspi;
+         this.singleSignOnSettings = builder.singleSignOnSettings;
      }
 
-     @Override
+    @Override
     public void create(ModelControllerClient client, CLIWrapper cli) throws Exception {
         ModelNode add = Util.createAddOperation(address);
         setIfNotNull(add, "security-domain", securityDomain);
@@ -51,7 +56,15 @@ import org.wildfly.test.security.common.elytron.ConfigurableElement;
         add.get("enable-jaspi").set(enableJaspi);
         add.get("integrated-jaspi").set(integratedJaspi);
 
-        Utils.applyUpdate(add, client);
+        if (singleSignOnSettings != null) {
+            ModelNode settingsAdd = singleSignOnSettings.getAddOperation(address);
+
+            ModelNode composite = Util.createCompositeOperation(Arrays.asList(add, settingsAdd));
+
+            Utils.applyUpdate(composite, client);
+        } else {
+            Utils.applyUpdate(add, client);
+        }
     }
 
     @Override
@@ -78,6 +91,8 @@ import org.wildfly.test.security.common.elytron.ConfigurableElement;
         private boolean enableJacc = false;
         private boolean enableJaspi = true;
         private boolean integratedJaspi = true;
+
+        private SingleSignOnSetting singleSignOnSettings = null;
 
         /**
          * Set the security domain to be mapped from this application-security-domain.
@@ -135,6 +150,18 @@ import org.wildfly.test.security.common.elytron.ConfigurableElement;
          */
         public Builder withIntegratedJaspi(final boolean integratedJaspi) {
             this.integratedJaspi = integratedJaspi;
+
+            return this;
+        }
+
+        /**
+         * Set the SingleSignOnSettings for this application-security-domain.
+         *
+         * @param singleSignOnSettings the SingleSignOnSettings for this application-security-domain.
+         * @return this {@link Builder} to allow method chaining.
+         */
+        public Builder withSingleSignOnSettings(final SingleSignOnSetting singleSignOnSettings) {
+            this.singleSignOnSettings = singleSignOnSettings;
 
             return this;
         }
