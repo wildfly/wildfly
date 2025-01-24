@@ -31,7 +31,7 @@ public class OpenAPIDependencyProcessor implements DeploymentUnitProcessor {
             ModuleSpecification specification = unit.getAttachment(Attachments.MODULE_SPECIFICATION);
             ModuleLoader loader = Module.getBootModuleLoader();
 
-            specification.addSystemDependency(new ModuleDependency(loader, "org.eclipse.microprofile.openapi.api", false, false, false, false));
+            specification.addSystemDependency(ModuleDependency.Builder.of(loader, "org.eclipse.microprofile.openapi.api").build());
         }
     }
 }

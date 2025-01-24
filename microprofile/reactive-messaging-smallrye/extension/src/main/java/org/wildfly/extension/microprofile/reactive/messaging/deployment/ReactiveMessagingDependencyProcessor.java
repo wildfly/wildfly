@@ -78,18 +78,13 @@ public class ReactiveMessagingDependencyProcessor implements DeploymentUnitProce
     private void addModuleDependencies(DeploymentUnit deploymentUnit) {
         final ModuleSpecification moduleSpecification = deploymentUnit.getAttachment(Attachments.MODULE_SPECIFICATION);
         final ModuleLoader moduleLoader = Module.getBootModuleLoader();
-
-        moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, "org.eclipse.microprofile.reactive-messaging.api", false, false, true, false));
-        moduleSpecification.addSystemDependency(
-                cdiDependency(
-                        new ModuleDependency(moduleLoader, "io.smallrye.reactive.messaging", false, false, true, false)));
-
-        moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, "io.smallrye.config", false, false, true, false));
-        moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, "org.eclipse.microprofile.config.api", false, false, true, false));
-
-        moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, "io.reactivex.rxjava2.rxjava", false, false, true, false));
-        moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, "io.smallrye.reactive.mutiny.reactive-streams-operators", false, false, true, false));
-        moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, "org.wildfly.reactive.messaging.config", false, false, true, false));
+        moduleSpecification.addSystemDependency(ModuleDependency.Builder.of(moduleLoader, "org.eclipse.microprofile.reactive-messaging.api").setImportServices(true).build());
+        moduleSpecification.addSystemDependency(cdiDependency(ModuleDependency.Builder.of(moduleLoader, "io.smallrye.reactive.messaging").setImportServices(true).build()));
+        moduleSpecification.addSystemDependency(ModuleDependency.Builder.of(moduleLoader, "io.smallrye.config").setImportServices(true).build());
+        moduleSpecification.addSystemDependency(ModuleDependency.Builder.of(moduleLoader, "org.eclipse.microprofile.config.api").setImportServices(true).build());
+        moduleSpecification.addSystemDependency(ModuleDependency.Builder.of(moduleLoader, "io.reactivex.rxjava2.rxjava").setImportServices(true).build());
+        moduleSpecification.addSystemDependency(ModuleDependency.Builder.of(moduleLoader, "io.smallrye.reactive.mutiny.reactive-streams-operators").setImportServices(true).build());
+        moduleSpecification.addSystemDependency(ModuleDependency.Builder.of(moduleLoader, "org.wildfly.reactive.messaging.config").setImportServices(true).build());
 
         // These are optional über modules that export all the independent connectors/clients. However, it seems
         // to confuse the ExternalBeanArchiveProcessor which provides the modules to scan for beans, so we
@@ -97,7 +92,7 @@ public class ReactiveMessagingDependencyProcessor implements DeploymentUnitProce
         addDependenciesForIntermediateModule(moduleSpecification, moduleLoader, "io.smallrye.reactive.messaging.connector");
 
         // Provisioned along with the connectors above
-        moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, "io.vertx.client", true, false, true, false));
+        moduleSpecification.addSystemDependency(ModuleDependency.Builder.of(moduleLoader, "io.vertx.client").setOptional(true).setImportServices(true).build());
     }
 
     private void addDependenciesForIntermediateModule(ModuleSpecification moduleSpecification, ModuleLoader moduleLoader, String intermediateModuleName) {
@@ -106,9 +101,7 @@ public class ReactiveMessagingDependencyProcessor implements DeploymentUnitProce
             for (DependencySpec dep : module.getDependencies()) {
                 if (dep instanceof ModuleDependencySpec) {
                     ModuleDependencySpec mds = (ModuleDependencySpec) dep;
-                    ModuleDependency md =
-                            cdiDependency(
-                                    new ModuleDependency(moduleLoader, mds.getName(), mds.isOptional(), false, true, false));
+                    ModuleDependency md = cdiDependency(ModuleDependency.Builder.of(moduleLoader, mds.getName()).setOptional(mds.isOptional()).setImportServices(true).build());
                     moduleSpecification.addSystemDependency(md);
                 }
             }

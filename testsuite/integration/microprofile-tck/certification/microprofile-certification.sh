@@ -26,13 +26,12 @@ sum_header_parameter() {
   local parameter=${1}
   local result
 
-  result=$(for file in $(find ./*); do (grep "<testsuite " $file || true) | sed "s/.*$parameter=\"//" | sed "s/\".*//"; done | awk '{s+=$1} END {print s}')
+  result=$(for file in $(find ./target/surefire-reports*/junitreports -type f -maxdepth 1); do (grep "<testsuite " $file || true) | sed "s/.*$parameter=\"//" | sed "s/\".*//"; done | awk '{s+=$1} END {print s}')
 
   echo $result
 }
 
 parse_testsuite_header() {
-  cd target/surefire-reports/junitreports
 
   local time=$(sum_header_parameter time)
   local tests=$(sum_header_parameter tests)
@@ -46,12 +45,10 @@ parse_testsuite_header() {
 parse_testcases() {
   local result
 
-  cd target/surefire-reports/junitreports
-
-  for file in $(find ./*); do
-    testcases=$(grep "<testcase" $file || true)
-    result+="$testcases\n"
-  done
+    for file in $(find ./target/surefire-reports*/junitreports -type f -maxdepth 1); do
+      testcases=$(grep "<testcase" $file || true)
+      result+="$testcases\n"
+    done
 
   echo -e "$result"
 }
@@ -130,11 +127,11 @@ is_defined "${MP_VERSION}" "No MicroProfile version provided as an argument" 1
 rm -rf $PWD/target
 mkdir $PWD/target
 
-readonly FILE="$PWD/target/microprofile-${MP_VERSION}-selected-specifications-jdk-${JDK_VERSION}.adoc"
+readonly FILE="$PWD/target/microprofile-${MP_VERSION}-jdk-${JDK_VERSION}.adoc"
 touch "$FILE"
 
 tee -a "${FILE}" <<EOF
-= Selected MicroProfile TCKs Test results JDK ${JDK_VERSION}
+= MicroProfile Platform TCK Test results JDK ${JDK_VERSION}
 
 == Environment
 

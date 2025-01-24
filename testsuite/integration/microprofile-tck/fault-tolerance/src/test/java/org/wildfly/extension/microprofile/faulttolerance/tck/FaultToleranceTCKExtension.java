@@ -15,7 +15,6 @@ public class FaultToleranceTCKExtension implements LoadableExtension {
 
     @Override
     public void register(ExtensionBuilder builder) {
-        // Local
         builder.service(DeploymentExceptionTransformer.class, WildFlyDeploymentExceptionTransformer.class);
         builder.service(ApplicationArchiveProcessor.class, FaultToleranceApplicationArchiveProcessor.class);
     }

@@ -4,8 +4,6 @@
  */
 package org.jboss.as.connector.services.driver;
 
-import org.jboss.modules.ModuleIdentifier;
-
 /**
  * Metadata describing a JDBC driver that has been installed as a service in the
  * runtime.
@@ -14,7 +12,7 @@ import org.jboss.modules.ModuleIdentifier;
 public final class InstalledDriver {
 
     private final String driverName;
-    private final ModuleIdentifier moduleName;
+    private final String moduleName;
     private final String deploymentUnitName;
     private final String driverClassName;
     private final String dataSourceClassName;
@@ -38,7 +36,7 @@ public final class InstalledDriver {
      * @param minorVersion the driver minor version
      * @param jdbcCompliant whether the driver is JDBC compliant
      */
-    public InstalledDriver(final String driverName, final ModuleIdentifier moduleName, final String driverClassName,
+    public InstalledDriver(final String driverName, final String moduleName, final String driverClassName,
                            final String dataSourceClassName, final String xaDataSourceClassName,
                            final int majorVersion, final int minorVersion, final boolean jdbcCompliant) {
         this.deploymentUnitName = null;
@@ -85,10 +83,10 @@ public final class InstalledDriver {
     /**
      * Gets the name of the module from which the driver was loaded, if it was
      * loaded from the module path.
-     * @return the module name, or {@code null} if {@link #isFromDeployment()}
+     * @return the canonical module name, or {@code null} if {@link #isFromDeployment()}
      *         returns {@code true}
      */
-    public ModuleIdentifier getModuleName() {
+    public String getModuleName() {
         return moduleName;
     }
 

@@ -57,7 +57,7 @@ import org.wildfly.extension.messaging.activemq.deployment.JMSDestinationDefinit
 import org.wildfly.extension.messaging.activemq.deployment.MessagingDependencyProcessor;
 import org.wildfly.extension.messaging.activemq.deployment.MessagingXmlInstallDeploymentUnitProcessor;
 import org.wildfly.extension.messaging.activemq.deployment.MessagingXmlParsingDeploymentUnitProcessor;
-import org.wildfly.extension.messaging.activemq.deployment.injection.CDIDeploymentProcessor;
+import org.wildfly.extension.messaging.activemq.injection.deployment.CDIDeploymentProcessor;
 import org.wildfly.extension.messaging.activemq._private.MessagingLogger;
 
 /**

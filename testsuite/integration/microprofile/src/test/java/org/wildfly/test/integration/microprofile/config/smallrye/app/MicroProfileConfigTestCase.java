@@ -42,10 +42,10 @@ import org.wildfly.test.integration.microprofile.config.smallrye.SubsystemConfig
 @ServerSetup(SubsystemConfigSourceTask.class)
 public class MicroProfileConfigTestCase extends AbstractMicroProfileConfigTestCase {
 
-    @Deployment
+    @Deployment(testable = false)
     public static Archive<?> deploy() {
         WebArchive war = ShrinkWrap.create(WebArchive.class, "MicroProfileConfigTestCase.war")
-                .addClasses(TestApplication.class, AbstractMicroProfileConfigTestCase.class)
+                .addClasses(TestApplication.class)
                 .addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml")
                 .addAsManifestResource(MicroProfileConfigTestCase.class.getPackage(),
                         "microprofile-config.properties", "microprofile-config.properties")

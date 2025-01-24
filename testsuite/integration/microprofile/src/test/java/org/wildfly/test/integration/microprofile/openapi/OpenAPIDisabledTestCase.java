@@ -37,7 +37,7 @@ import org.wildfly.test.integration.microprofile.openapi.service.TestApplication
 @RunAsClient
 public class OpenAPIDisabledTestCase {
 
-    @Deployment
+    @Deployment(testable = false)
     public static Archive<?> deploy() {
         return ShrinkWrap.create(WebArchive.class, "openapi-disabled.war")
                 .add(EmptyAsset.INSTANCE, "WEB-INF/beans.xml")

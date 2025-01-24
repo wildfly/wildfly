@@ -72,6 +72,7 @@ public class CoreBridgeCallTimeoutTestCase {
 
     private static final String BYTEMAN_ADDRESS = System.getProperty("byteman.server.ipaddress", Submit.DEFAULT_ADDRESS);
     private static final Integer BYTEMAN_PORT = Integer.getInteger("byteman.server.port", Submit.DEFAULT_PORT);
+    private static final Boolean BYTEMAN_POLICY = Boolean.getBoolean("byteman.policy");
     private static final Submit BYTEMAN = new Submit(BYTEMAN_ADDRESS, BYTEMAN_PORT);
 
     private static final String ORIGINAL_JVM_ARGS = System.getProperty("jvm.args", "");
@@ -92,7 +93,7 @@ public class CoreBridgeCallTimeoutTestCase {
                 "-Dorg.jboss.byteman.verbose " +
                 "-Djboss.modules.system.pkgs=org.jboss.byteman " +
                 "-Dorg.jboss.byteman.transform.all " +
-                "-javaagent:" + BASE_DIR + "/target/lib/byteman.jar=listener:true,port:" + BYTEMAN_PORT + ",address:" + BYTEMAN_ADDRESS + ",policy:true");
+                "-javaagent:" + BASE_DIR + "/target/lib/byteman.jar=listener:true,port:" + BYTEMAN_PORT + ",address:" + BYTEMAN_ADDRESS + ",policy:" + BYTEMAN_POLICY);
         container.start(SERVER_CONFIG_NAME, Server.StartMode.NORMAL);
     }
 

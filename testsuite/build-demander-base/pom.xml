@@ -29,7 +29,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>35.0.0.Final-SNAPSHOT</version>
+        <version>36.0.0.Beta1-SNAPSHOT</version>
         <relativePath>../../pom.xml</relativePath>
     </parent>
 
@@ -51,6 +51,15 @@
         <testsuite.default.base.dist.artifactId>wildfly-dist</testsuite.default.base.dist.artifactId>
         <testsuite.default.base.build.version>${full.maven.version}</testsuite.default.base.build.version>
     </properties>
+
+    <dependencies>
+        <!-- Sure the test bom is built -->
+        <dependency>
+            <groupId>${ee.maven.groupId}</groupId>
+            <artifactId>wildfly-standard-test-bom</artifactId>
+            <type>pom</type>
+        </dependency>
+    </dependencies>
 
     <profiles>
 
@@ -90,7 +99,7 @@
             <properties>
                 <testsuite.default.base.build.groupId>${ee.maven.groupId}</testsuite.default.base.build.groupId>
                 <testsuite.default.base.build.artifactId>wildfly-ee-build</testsuite.default.base.build.artifactId>
-                <testsuite.default.base.build.artifactId>wildfly-ee-dist</testsuite.default.base.build.artifactId>
+                <testsuite.default.base.dist.artifactId>wildfly-ee-dist</testsuite.default.base.dist.artifactId>
                 <testsuite.default.base.build.version>${ee.maven.version}</testsuite.default.base.build.version>
             </properties>
         </profile>
@@ -109,7 +118,7 @@
             </activation>
             <properties>
                 <testsuite.default.base.build.artifactId>wildfly-preview-build</testsuite.default.base.build.artifactId>
-                <testsuite.default.base.build.artifactId>wildfly-preview-dist</testsuite.default.base.build.artifactId>
+                <testsuite.default.base.dist.artifactId>wildfly-preview-dist</testsuite.default.base.dist.artifactId>
             </properties>
         </profile>
 

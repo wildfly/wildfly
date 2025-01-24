@@ -65,7 +65,7 @@ public class MultiEarModuleReactiveMessagingTestCase {
     @ArquillianResource
     URL url;
 
-    @Deployment
+    @Deployment(testable = false)
     public static Archive<?> deploy() {
         WebArchive jaxrs = ShrinkWrap.create(WebArchive.class, BASE_NAME + ".war")
                 .add(EmptyAsset.INSTANCE, "WEB-INF/beans.xml")

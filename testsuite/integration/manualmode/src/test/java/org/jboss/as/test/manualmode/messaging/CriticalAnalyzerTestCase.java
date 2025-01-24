@@ -52,15 +52,16 @@ public class CriticalAnalyzerTestCase {
     private static final String DEFAULT_FULL_JBOSSAS = "default-full-jbossas-byteman";
     private static final String EXPORTED_PREFIX = "java:jboss/exported/";
 
+    private static final String BYTEMAN_ADDRESS = System.getProperty("byteman.server.ipaddress", Submit.DEFAULT_ADDRESS);
+    private static final Integer BYTEMAN_PORT = Integer.getInteger("byteman.server.port", Submit.DEFAULT_PORT);
+
     @ArquillianResource
     protected static ContainerController container;
 
     private LoggerSetup loggerSetup;
     private ManagementClient managementClient;
 
-    private final Submit bytemanSubmit = new Submit(
-            System.getProperty("byteman.server.ipaddress", Submit.DEFAULT_ADDRESS),
-            Integer.getInteger("byteman.server.port", Submit.DEFAULT_PORT));
+    private final Submit bytemanSubmit = new Submit(BYTEMAN_ADDRESS, BYTEMAN_PORT);
 
     private void deployRules() throws Exception {
         bytemanSubmit.addRulesFromResources(Collections.singletonList(

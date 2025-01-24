@@ -266,10 +266,10 @@ public class ExternalJMSDestinationDefinitionMessagingDeploymentTestCase {
             op.get("child-type").set("runtime-queue");
             List<ModelNode> runtimeQueues = Operations.readResult(managementClient.getControllerClient().execute(op)).asList();
             Set<String> queues = runtimeQueues.stream().map(ModelNode::asString).collect(Collectors.toSet());
-            Assert.assertEquals(initialQueues.size() + 2, queues.size());
-            Assert.assertTrue("We should have myExternalQueue queue", queues.contains("myExternalQueue"));
+            Assert.assertTrue("We should have myExternalQueue queue in " + queues, queues.contains("myExternalQueue"));
             queues.removeAll(initialQueues);
             queues.remove("myExternalQueue");
+            Assert.assertEquals("Too many queues in " + queues, 1, queues.size());
             String topicId = queues.iterator().next();
             checkRuntimeQueue(ops, "myExternalQueue", "ANYCAST", "myExternalQueue");
             checkRuntimeQueue(ops, topicId, "MULTICAST", "myExternalTopic");

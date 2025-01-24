@@ -56,14 +56,14 @@ public class JPADependencyProcessor implements DeploymentUnitProcessor {
         final ModuleLoader moduleLoader = Module.getBootModuleLoader();
 
         // all applications get the jakarta.persistence SPEC API module added to their deployment by default
-        moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, JAVAX_PERSISTENCE_API_ID, false, false, true, false));
+        moduleSpecification.addSystemDependency(ModuleDependency.Builder.of(moduleLoader, JAVAX_PERSISTENCE_API_ID).setImportServices(true).build());
         ROOT_LOGGER.debugf("added %s dependency to %s", JAVAX_PERSISTENCE_API_ID, deploymentUnit.getName());
 
         if (!JPADeploymentMarker.isJPADeployment(deploymentUnit)) {
             return; // Skip if there are no persistence use in the deployment
         }
-        for ( String moduleIdentifier : new String[]{JBOSS_AS_JPA_ID, JBOSS_AS_JPA_SPI_ID}) {
-            moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, moduleIdentifier, false, false, true, false));
+        for (String moduleIdentifier : new String[]{JBOSS_AS_JPA_ID, JBOSS_AS_JPA_SPI_ID}) {
+            moduleSpecification.addSystemDependency(ModuleDependency.Builder.of(moduleLoader, moduleIdentifier).setImportServices(true).build());
             ROOT_LOGGER.debugf("added %s dependency to %s", moduleIdentifier, deploymentUnit.getName());
         }
         addPersistenceProviderModuleDependencies(phaseContext, moduleSpecification, moduleLoader);
@@ -94,7 +94,7 @@ public class JPADependencyProcessor implements DeploymentUnitProcessor {
 
         // add persistence provider dependency
         for (String dependency : moduleDependencies) {
-            moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, dependency, false, false, true, false));
+            moduleSpecification.addSystemDependency(ModuleDependency.Builder.of(moduleLoader, dependency).setImportServices(true).build());
             ROOT_LOGGER.debugf("added %s dependency to %s", dependency, deploymentUnit.getName());
         }
 
@@ -211,7 +211,7 @@ public class JPADependencyProcessor implements DeploymentUnitProcessor {
                     // doesn't exist).
                     String persistenceProviderModule = Configuration.getProviderModuleNameFromProviderClassName(pu.getPersistenceProviderClassName());
                     if (persistenceProviderModule != null) {
-                        moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, persistenceProviderModule, true, false, false, false));
+                        moduleSpecification.addSystemDependency(ModuleDependency.Builder.of(moduleLoader, persistenceProviderModule).setOptional(true).build());
                         ROOT_LOGGER.debugf("Adding %s dependency to %s.  " +
                                 "Persistence Unit %s is configured to use Persistence Provider '%s', adding an optional dependency on Persistence Provider Module '%s'",
                                 persistenceProviderModule, deploymentUnit.getName(),

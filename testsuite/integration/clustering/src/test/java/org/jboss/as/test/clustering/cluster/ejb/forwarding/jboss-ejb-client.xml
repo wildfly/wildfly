@@ -4,7 +4,7 @@
   ~ SPDX-License-Identifier: Apache-2.0
   -->
 
-<jboss-ejb-client xmlns="urn:jboss:ejb-client:1.2">
+<jboss-ejb-client xmlns="urn:jboss:ejb-client:1.5">
     <client-context>
         <ejb-receivers>
             <remoting-ejb-receiver outbound-connection-ref="remote-ejb-connection"/>

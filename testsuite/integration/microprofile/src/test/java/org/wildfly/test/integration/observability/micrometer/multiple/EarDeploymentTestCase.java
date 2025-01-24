@@ -24,7 +24,7 @@ import org.jboss.as.test.shared.observability.signals.PrometheusMetric;
 public class EarDeploymentTestCase extends BaseMultipleTestCase {
     protected static final String ENTERPRISE_APP = "enterprise-app";
 
-    @Deployment(name = ENTERPRISE_APP)
+    @Deployment(name = ENTERPRISE_APP, testable = false)
     public static EnterpriseArchive createDeployment() {
         return ShrinkWrap.create(EnterpriseArchive.class, ENTERPRISE_APP + ".ear")
                 .addAsModule(MultipleWarTestCase.createDeployment1())

@@ -31,6 +31,7 @@ import org.infinispan.configuration.global.GlobalConfiguration;
 import org.infinispan.configuration.global.ShutdownHookBehavior;
 import org.infinispan.configuration.global.ThreadPoolConfiguration;
 import org.infinispan.configuration.global.TransportConfiguration;
+import org.infinispan.configuration.global.UncleanShutdownAction;
 import org.infinispan.configuration.internal.PrivateGlobalConfigurationBuilder;
 import org.infinispan.globalstate.ConfigurationStorage;
 import org.infinispan.protostream.SerializationContext;
@@ -153,6 +154,7 @@ public class GlobalConfigurationServiceConfigurator implements ResourceServiceCo
                         .configurationStorage(ConfigurationStorage.VOLATILE)
                         .persistentLocation(path, environment.get().getServerDataDir().getPath())
                         .temporaryLocation(path, environment.get().getServerTempDir().getPath())
+                        .uncleanShutdownAction(UncleanShutdownAction.PURGE)
                         ;
                 return builder.build();
             }

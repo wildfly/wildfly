@@ -12,7 +12,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>35.0.0.Final-SNAPSHOT</version>
+        <version>36.0.0.Beta1-SNAPSHOT</version>
     </parent>
     <artifactId>wildfly-ts-integ-mp-rest-client</artifactId>
     <name>WildFly Test Suite: Integration - MicroProfile - REST Client TCK</name>
@@ -144,6 +144,17 @@
                 </exclusion>
             </exclusions>
         </dependency>
+
+        <!-- Used for the MP REST Client test to add the required permissions when running with the security manager
+             enabled.
+         -->
+        <dependency>
+            <groupId>org.jboss.resteasy.microprofile</groupId>
+            <artifactId>microprofile-rest-client-tck</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <!-- End permission requirement -->
+
         <dependency>
             <groupId>org.jboss.weld.se</groupId>
             <artifactId>weld-se-core</artifactId>

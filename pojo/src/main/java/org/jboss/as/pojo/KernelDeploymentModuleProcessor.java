@@ -28,7 +28,7 @@ import java.util.List;
  */
 public class KernelDeploymentModuleProcessor implements DeploymentUnitProcessor {
 
-    private final String POJO_MODULE = "org.jboss.as.pojo";
+    private static final String POJO_MODULE = "org.jboss.as.pojo";
 
     /**
      * Add POJO module if we have any bean factories.
@@ -47,7 +47,7 @@ public class KernelDeploymentModuleProcessor implements DeploymentUnitProcessor 
             if (kdxd.getBeanFactoriesCount() > 0) {
                 final ModuleSpecification moduleSpecification = unit.getAttachment(Attachments.MODULE_SPECIFICATION);
                 final ModuleLoader moduleLoader = Module.getBootModuleLoader();
-                ModuleDependency dependency = new ModuleDependency(moduleLoader, POJO_MODULE, false, false, false, false);
+                ModuleDependency dependency = ModuleDependency.Builder.of(moduleLoader, POJO_MODULE).build();
                 PathFilter filter = PathFilters.isChildOf(BaseBeanFactory.class.getPackage().getName());
                 dependency.addImportFilter(filter, true);
                 dependency.addImportFilter(PathFilters.rejectAll(), false);
