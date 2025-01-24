@@ -49,12 +49,13 @@ public class CDIExtension implements Extension {
     private final List<HealthCheck> startupChecks = new ArrayList<>();
     private HealthCheck defaultReadinessCheck;
     private HealthCheck defaultStartupCheck;
+    private final Config config;
 
 
     public CDIExtension(MicroProfileHealthReporter healthReporter, Module module) {
         this.reporter = healthReporter;
         this.module = module;
-
+        this.config = ConfigProvider.getConfig(this.module.getClassLoader());
     }
 
     /**
@@ -69,7 +70,6 @@ public class CDIExtension implements Extension {
         addHealthChecks(Startup.Literal.INSTANCE, reporter::addStartupCheck, startupChecks);
         reporter.setUserChecksProcessed(true);
 
-        final Config config = ConfigProvider.getConfig(module.getClassLoader());
         final boolean disableDefaultProcedures = config.getOptionalValue(MP_HEALTH_DISABLE_DEFAULT_PROCEDURES, Boolean.class).orElse(false);
         if (readinessChecks.isEmpty()) {
             if (!disableDefaultProcedures) {
@@ -117,6 +117,14 @@ public class CDIExtension implements Extension {
         if (defaultStartupCheck != null) {
             reporter.removeStartupCheck(defaultStartupCheck);
             defaultStartupCheck = null;
+        }
+
+        reporter.setUserChecksProcessed(false);
+
+        final boolean isDisableDefaultProceduresSet = config.getOptionalValue(MP_HEALTH_DISABLE_DEFAULT_PROCEDURES,
+                Boolean.class).orElse(false);
+        if (isDisableDefaultProceduresSet) {
+            reporter.evalDeploymentDefaultProceduresConfigurationReset(module.getName().replace(ServiceModuleLoader.MODULE_PREFIX, ""));
         }
 
         instance = null;
