@@ -14,7 +14,6 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.module.ModuleDependency;
 import org.jboss.as.server.deployment.module.ModuleSpecification;
 import org.jboss.modules.Module;
-import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.filter.PathFilters;
 
 import static org.jboss.as.ee.subsystem.GlobalModulesDefinition.GlobalModule;
@@ -47,7 +46,7 @@ public class GlobalModuleDependencyProcessor implements DeploymentUnitProcessor 
                 }
 
                 if(module.isAnnotations()) {
-                    deploymentUnit.addToAttachmentList(Attachments.ADDITIONAL_ANNOTATION_INDEXES, ModuleIdentifier.fromString(module.getModuleName()));
+                    deploymentUnit.addToAttachmentList(Attachments.ADDITIONAL_INDEX_MODULES, module.getModuleName());
                 }
 
                 moduleSpecification.addSystemDependency(dependency);
