@@ -72,7 +72,7 @@ public final class ArjunaTransactionManagerService implements Service<com.arjuna
         TxControl.setDefaultTimeout(coordinatorDefaultTimeout);
 
         // Object Store Browser bean
-        objStoreBrowser = new ObjStoreBrowser();
+        objStoreBrowser = ObjStoreBrowser.getInstance();
 
         if (!jts) {
             // No IIOP, stick with Jakarta Transactions mode.
