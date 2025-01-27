@@ -31,6 +31,13 @@
         <preview.dist.product.release.version>${full.dist.product.release.version}</preview.dist.product.release.version>
     </properties>
 
+    <modules>
+        <module>channel</module>
+        <module>feature-pack</module>
+        <module>galleon-local</module>
+        <module>product-conf</module>
+    </modules>
+
     <dependencyManagement>
         <dependencies>
             <dependency>
@@ -98,11 +105,7 @@
             </activation>
             <modules>
                 <module>build</module>
-                <module>channel</module>
                 <module>dist</module>
-                <module>feature-pack</module>
-                <module>galleon-local</module>
-                <module>product-conf</module>
             </modules>
         </profile>
     </profiles>

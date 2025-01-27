@@ -152,7 +152,7 @@
             <id>skip.preview</id>
             <activation>
                 <property>
-                    <name>!quickly</name>
+                    <name>!no.preview.build</name>
                 </property>
             </activation>
             <modules>
