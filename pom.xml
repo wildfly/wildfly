@@ -289,7 +289,7 @@
         <version.jsoup>1.15.4</version.jsoup>
         <version.junit>4.13.2</version.junit>
         <version.org.apache.ds>2.0.0.AM26</version.org.apache.ds>
-        <version.org.apache.groovy>4.0.24</version.org.apache.groovy>
+        <version.org.apache.groovy>4.0.25</version.org.apache.groovy>
         <version.org.assertj>3.26.3</version.org.assertj>
         <version.org.awaitility.awaitility>4.0.3</version.org.awaitility.awaitility>
         <version.org.codehaus.plexus.plexus-utils>3.5.1</version.org.codehaus.plexus.plexus-utils>
