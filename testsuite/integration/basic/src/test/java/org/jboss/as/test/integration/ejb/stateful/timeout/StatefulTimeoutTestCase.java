@@ -73,13 +73,31 @@ public class StatefulTimeoutTestCase extends StatefulTimeoutTestBase1 {
     }
 
     /**
-     * Verifies that a stateful bean with timeout value 0 is eligible for removal immediately, and its
+     * Verifies that a stateful bean with timeout value 0 is eligible for removal immediately after creation and its
      * preDestroy method is invoked.
      */
     @Test
     public void testStatefulTimeout0() throws Exception {
         Annotated0TimeoutBean timeout0 = lookup(Annotated0TimeoutBean.class);
+        try {
+            timeout0.doStuff();
+            throw new RuntimeException("Expecting NoSuchEJBException");
+        } catch (NoSuchEJBException expected) {
+        }
+        Assert.assertTrue(Annotated0TimeoutBean.preDestroy);
+    }
+
+    /**
+     * Verifies that a stateful bean with timeout value 0 is eligible for removal immediately and its
+     * preDestroy method is invoked, but not during an active transaction.
+     */
+    @Test
+    public void testTxStatefulTimeout0() throws Exception {
+        this.userTransaction.begin();
+        Annotated0TimeoutBean timeout0 = lookup(Annotated0TimeoutBean.class);
+        // Invocation should succeed, since bean was created within an active transaction
         timeout0.doStuff();
+        this.userTransaction.commit();
         try {
             timeout0.doStuff();
             throw new RuntimeException("Expecting NoSuchEJBException");

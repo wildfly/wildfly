@@ -37,7 +37,7 @@ public class StatefulComponentSessionIdGeneratingInterceptor implements Intercep
         } else {
             StatefulSessionComponent statefulComponent = (StatefulSessionComponent) component;
             statefulComponent.waitForComponentStart();
-            clientInstance.setViewInstanceData(SessionID.class, statefulComponent.getCache().createStatefulSessionBean());
+            clientInstance.setViewInstanceData(SessionID.class, statefulComponent.createSession());
         }
 
         // move to the next interceptor in chain
