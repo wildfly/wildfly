@@ -99,7 +99,8 @@ wildfly:
       notify: [ ropalka ]
 
     - id: picketlink
-      directories: [ picketlink ]
+      directories:
+        - legacy/picketlink
       notify: [ fjuma ]
 
     - id: pojo
@@ -115,7 +116,8 @@ wildfly:
       notify: [ kabir ]
 
     - id: security
-      directories: [ security ]
+      directories:
+        - legacy/security
       notify: [ fjuma ]
 
     - id: spec-api
