@@ -5,6 +5,7 @@
 
 package org.jboss.as.clustering.controller.validation;
 
+import org.jboss.as.controller.ModuleIdentifierUtil;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.operations.validation.ModelTypeValidator;
 import org.jboss.as.controller.operations.validation.ParameterValidator;
@@ -12,7 +13,9 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
 /**
- * {@link ParameterValidatorBuilder} that builds a validator that validates that a given value is a valid {@link ModuleIdentifier}.
+ * {@link ParameterValidatorBuilder} that builds a validator that validates that a given value is a valid module
+ * name + optional slot that can be {@link ModuleIdentifierUtil#canonicalModuleIdentifier(String) canonicalized}.
+ *
  * @author Paul Ferraro
  */
 public class ModuleIdentifierValidatorBuilder extends AbstractParameterValidatorBuilder {
@@ -35,7 +38,7 @@ public class ModuleIdentifierValidatorBuilder extends AbstractParameterValidator
             if (value.isDefined()) {
                 String module = value.asString();
                 try {
-                    org.jboss.modules.ModuleIdentifier.fromString(module);
+                    ModuleIdentifierUtil.canonicalModuleIdentifier(module);
                 } catch (IllegalArgumentException e) {
                     throw new OperationFailedException(e.getMessage() + ": " + module, e);
                 }
