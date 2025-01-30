@@ -295,4 +295,13 @@
       <cve>CVE-2010-0684</cve>
       <cve>CVE-2015-7559</cve>
    </suppress>
+   <suppress until="2026-01-27">
+      <notes><![CDATA[
+      file name: undertow-core-2.3.18.Final.jar
+
+      [WFLY-20339] Suppressing as triaged as not a securtity vulnerability.
+      ]]></notes>
+      <packageUrl regex="true">^pkg:maven/io\.undertow/undertow-core@.*$</packageUrl>
+      <vulnerabilityName>CVE-2024-4109</vulnerabilityName>
+   </suppress>
 </suppressions>
