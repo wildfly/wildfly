@@ -56,7 +56,7 @@ public class ApplicationClientDependencyProcessor implements DeploymentUnitProce
         }
 
         moduleSpecification.removeUserDependencies(dep -> {
-            final String identifier = dep.getIdentifier().toString();
+            final String identifier = dep.getDependencyModule();
             return identifier.startsWith(ServiceModuleLoader.MODULE_PREFIX)
                     && !identifier.startsWith(ExtensionIndexService.MODULE_PREFIX)
                     && !moduleIdentifiers.contains(identifier);

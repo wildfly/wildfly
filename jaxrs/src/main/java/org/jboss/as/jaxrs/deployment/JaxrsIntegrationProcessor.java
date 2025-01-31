@@ -121,10 +121,10 @@ public class JaxrsIntegrationProcessor implements DeploymentUnitProcessor {
             final Set<String> identifiers = new HashSet<>();
             for (ModuleDependency dep : moduleSpec.getAllDependencies()) {
                 //make sure we don't double up
-                if (!identifiers.contains(dep.getIdentifier().toString())) {
-                    identifiers.add(dep.getIdentifier().toString());
-                    if (attachmentMap.containsKey(dep.getIdentifier().toString())) {
-                        additionalData.add(attachmentMap.get(dep.getIdentifier().toString()));
+                if (!identifiers.contains(dep.getDependencyModule())) {
+                    identifiers.add(dep.getDependencyModule());
+                    if (attachmentMap.containsKey(dep.getDependencyModule())) {
+                        additionalData.add(attachmentMap.get(dep.getDependencyModule()));
                     }
                 }
             }
