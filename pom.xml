@@ -469,7 +469,7 @@
         <version.org.hibernate.search>7.2.2.Final</version.org.hibernate.search>
         <version.org.hibernate.validator>8.0.2.Final</version.org.hibernate.validator>
         <version.org.hornetq>2.4.11.Final</version.org.hornetq>
-        <version.org.infinispan>15.0.11.Final</version.org.infinispan>
+        <version.org.infinispan>15.0.13.Final</version.org.infinispan>
         <version.org.jasypt>1.9.3</version.org.jasypt>
         <version.org.jberet>3.1.0.Final</version.org.jberet>
         <version.org.jboss.activemq.artemis.integration>2.0.3.Final</version.org.jboss.activemq.artemis.integration>
