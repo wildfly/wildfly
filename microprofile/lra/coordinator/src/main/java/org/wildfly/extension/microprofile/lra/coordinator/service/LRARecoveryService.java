@@ -6,8 +6,15 @@
 package org.wildfly.extension.microprofile.lra.coordinator.service;
 
 import com.arjuna.ats.arjuna.recovery.RecoveryManager;
+import com.arjuna.ats.arjuna.tools.osb.mbean.OSBTypeHandler;
+import com.arjuna.ats.arjuna.tools.osb.mbean.ObjStoreBrowser;
+
+import io.narayana.lra.coordinator.domain.model.FailedLongRunningAction;
+import io.narayana.lra.coordinator.domain.model.LongRunningAction;
 import io.narayana.lra.coordinator.internal.Implementations;
 import io.narayana.lra.coordinator.internal.LRARecoveryModule;
+import io.narayana.lra.coordinator.tools.osb.mbean.LRAActionBean;
+
 import org.jboss.logging.Logger;
 import org.jboss.msc.Service;
 import org.jboss.msc.service.StartContext;
@@ -16,6 +23,7 @@ import org.jboss.msc.service.StopContext;
 import org.wildfly.extension.microprofile.lra.coordinator._private.MicroProfileLRACoordinatorLogger;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
+import java.io.File;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.function.Supplier;
@@ -28,6 +36,16 @@ public class LRARecoveryService implements Service {
     private final Supplier<ExecutorService> executorSupplier;
 
     private volatile LRARecoveryModule lraRecoveryModule;
+
+    private ObjStoreBrowser objStoreBrowser;
+
+    private static final String[][] LRA_OSB_TYPES = {
+            // osTypeClassName, beanTypeClassName - see
+            // com.arjuna.ats.arjuna.tools.osb.mbean.ObjStoreBrowser
+            { LongRunningAction.getType().substring(1), LongRunningAction.class.getName(),
+                    LRAActionBean.class.getName() },
+            { FailedLongRunningAction.getType().substring(1), FailedLongRunningAction.class.getName(),
+                    LRAActionBean.class.getName() } };
 
     public LRARecoveryService(Supplier<ExecutorService> executorSupplier) {
         this.executorSupplier = executorSupplier;
@@ -58,6 +76,15 @@ public class LRARecoveryService implements Service {
     public synchronized void start(final StartContext context) throws StartException {
         // installing LRA recovery types
         Implementations.install();
+
+        // Add ObjStore type handlers
+        objStoreBrowser = ObjStoreBrowser.getInstance();
+
+        for (String[] typeAndBean : LRA_OSB_TYPES) {
+            String typeName = typeAndBean[0].replace("/", File.separator);
+            objStoreBrowser.addOSBTypeHandler(typeName, new OSBTypeHandler(true, true, typeAndBean[1], typeAndBean[2],
+                    typeAndBean[0], null, this.getClass().getClassLoader()));
+        }
 
         final ClassLoader loader = LRARecoveryService.class.getClassLoader();
         WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(loader);
