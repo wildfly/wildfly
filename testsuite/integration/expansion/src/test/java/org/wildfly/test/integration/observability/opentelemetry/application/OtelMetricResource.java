@@ -12,10 +12,12 @@ import jakarta.inject.Inject;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.QueryParam;
+import org.jboss.logging.Logger;
 
 @RequestScoped
 @Path("/metrics")
 public class OtelMetricResource {
+    public static final String TEST_MESSAGE = "Test log message from application";
     public static final String COUNTER_NAME = "testCounter";
     @Inject
     private Meter sdkMeter;
@@ -31,6 +33,8 @@ public class OtelMetricResource {
 
     @GET
     public String sayHello(@QueryParam("name") String name) {
+        Logger.getLogger(OtelService1.class).info(TEST_MESSAGE);
+
         longCounter.add(1);
 
         return "Hello, " + name;

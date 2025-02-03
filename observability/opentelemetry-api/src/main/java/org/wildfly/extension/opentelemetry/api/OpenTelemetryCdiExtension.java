@@ -5,9 +5,8 @@
 
 package org.wildfly.extension.opentelemetry.api;
 
-import java.util.Map;
-
 import io.opentelemetry.api.OpenTelemetry;
+import io.smallrye.opentelemetry.api.HttpClientOptionsConsumer;
 import io.smallrye.opentelemetry.api.OpenTelemetryConfig;
 import io.smallrye.opentelemetry.implementation.rest.OpenTelemetryClientFilter;
 import io.smallrye.opentelemetry.implementation.rest.OpenTelemetryServerFilter;
@@ -23,10 +22,6 @@ import jakarta.inject.Singleton;
 public final class OpenTelemetryCdiExtension implements Extension {
     private final boolean useServerConfig;
     private final WildFlyOpenTelemetryConfig config;
-
-    public OpenTelemetryCdiExtension(boolean useServerConfig, Map<String, String> config) {
-        this (useServerConfig, new WildFlyOpenTelemetryConfig(config, useServerConfig));
-    }
 
     public OpenTelemetryCdiExtension(boolean useServerConfig, WildFlyOpenTelemetryConfig config) {
         this.useServerConfig = useServerConfig;
@@ -55,6 +50,13 @@ public final class OpenTelemetryCdiExtension implements Extension {
                     .addQualifier(Default.Literal.INSTANCE)
                     .types(OpenTelemetryConfig.class)
                     .createWith(e -> config);
+        }
+        if (config.getSslContext() != null) {
+            abd.addBean()
+                .scope(Singleton.class)
+                .addQualifier(Default.Literal.INSTANCE)
+                .types(HttpClientOptionsConsumer.class)
+                .createWith(e -> new WildFlyHttpClientOptionsConsumer(config));
         }
     }
 }
