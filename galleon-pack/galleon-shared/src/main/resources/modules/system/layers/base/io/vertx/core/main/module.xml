@@ -31,6 +31,7 @@
         <module name="io.netty.netty-transport-native-epoll"/>
         <module name="io.netty.netty-transport-native-kqueue"/>
         <module name="java.logging"/>
+        <module name="java.naming"/>
         <module name="org.slf4j"/>
     </dependencies>
 </module>
