@@ -6,26 +6,24 @@
 package org.wildfly.test.integration.elytron.oidc.client.subsystem;
 
 import static org.jboss.as.test.integration.management.util.ModelUtil.createOpNode;
-import static org.jose4j.jws.AlgorithmIdentifiers.NONE;
 import static org.jose4j.jws.AlgorithmIdentifiers.HMAC_SHA256;
-import static org.jose4j.jws.AlgorithmIdentifiers.RSA_USING_SHA256;
+import static org.jose4j.jws.AlgorithmIdentifiers.NONE;
 import static org.jose4j.jws.AlgorithmIdentifiers.RSA_PSS_USING_SHA256;
 import static org.jose4j.jws.AlgorithmIdentifiers.RSA_PSS_USING_SHA512;
-import static org.wildfly.test.integration.elytron.oidc.client.OidcBaseTest.CLIENT_SECRET;
+import static org.jose4j.jws.AlgorithmIdentifiers.RSA_USING_SHA256;
 import static org.wildfly.security.http.oidc.Oidc.AuthenticationRequestFormat.REQUEST;
 import static org.wildfly.security.http.oidc.Oidc.AuthenticationRequestFormat.REQUEST_URI;
 import static org.wildfly.test.integration.elytron.oidc.client.KeycloakConfiguration.A128CBC_HS256;
-import static org.wildfly.test.integration.elytron.oidc.client.KeycloakConfiguration.KEYSTORE_PASS;
+import static org.wildfly.test.integration.elytron.oidc.client.KeycloakConfiguration.A192CBC_HS384;
 import static org.wildfly.test.integration.elytron.oidc.client.KeycloakConfiguration.KEYSTORE_ALIAS;
 import static org.wildfly.test.integration.elytron.oidc.client.KeycloakConfiguration.KEYSTORE_CLASSPATH;
 import static org.wildfly.test.integration.elytron.oidc.client.KeycloakConfiguration.KEYSTORE_FILE_NAME;
+import static org.wildfly.test.integration.elytron.oidc.client.KeycloakConfiguration.KEYSTORE_PASS;
 import static org.wildfly.test.integration.elytron.oidc.client.KeycloakConfiguration.PKCS12_KEYSTORE_TYPE;
-import static org.wildfly.test.integration.elytron.oidc.client.KeycloakConfiguration.A192CBC_HS384;
 import static org.wildfly.test.integration.elytron.oidc.client.KeycloakConfiguration.RSA_OAEP;
 import static org.wildfly.test.integration.elytron.oidc.client.KeycloakConfiguration.RSA_OAEP_256;
 import static org.wildfly.test.integration.elytron.oidc.client.KeycloakConfiguration.getRealmRepresentation;
 
-import io.restassured.RestAssured;
 import java.net.HttpURLConnection;
 import java.util.HashMap;
 import java.util.Map;
@@ -42,7 +40,6 @@ import org.jboss.as.test.integration.security.common.Utils;
 import org.jboss.as.test.integration.security.common.servlets.SimpleSecuredServlet;
 import org.jboss.as.test.integration.security.common.servlets.SimpleServlet;
 import org.jboss.as.test.shared.ServerReload;
-import org.jboss.as.version.Stability;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -55,6 +52,8 @@ import org.wildfly.test.integration.elytron.oidc.client.KeycloakConfiguration;
 import org.wildfly.test.integration.elytron.oidc.client.OidcBaseTest;
 import org.wildfly.test.integration.elytron.oidc.client.deployment.OidcWithDeploymentConfigTest;
 import org.wildfly.test.stabilitylevel.StabilityServerSetupSnapshotRestoreTasks;
+
+import io.restassured.RestAssured;
 
 /**
  * Tests for the OpenID Connect authentication mechanism.
@@ -105,10 +104,6 @@ public class OidcWithSubsystemConfigTest extends OidcBaseTest {
         APP_NAMES.put(PS_SIGNED_REQUEST_URI_APP, KeycloakConfiguration.ClientAppType.OIDC_CLIENT);
         APP_NAMES.put(INVALID_SIGNATURE_ALGORITHM_APP, KeycloakConfiguration.ClientAppType.OIDC_CLIENT);
         APP_NAMES.put(FORM_WITH_OIDC_OIDC_APP, KeycloakConfiguration.ClientAppType.OIDC_CLIENT);
-    }
-
-    public OidcWithSubsystemConfigTest() {
-        super(Stability.PREVIEW);
     }
 
     @Deployment(name = PROVIDER_URL_APP)
