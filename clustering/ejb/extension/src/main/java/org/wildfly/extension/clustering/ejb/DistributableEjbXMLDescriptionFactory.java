@@ -26,6 +26,8 @@ public enum DistributableEjbXMLDescriptionFactory implements Function<Distributa
                 .addChild(builder(InfinispanBeanManagementResourceDefinition.WILDCARD_PATH).addAttributes(Stream.concat(Attribute.stream(BeanManagementResourceDefinition.Attribute.class), Attribute.stream(InfinispanBeanManagementResourceDefinition.Attribute.class))))
                 .addChild(builder(LocalClientMappingsRegistryProviderResourceDefinition.PATH).setXmlElementName("local-client-mappings-registry"))
                 .addChild(builder(InfinispanClientMappingsRegistryProviderResourceDefinition.PATH).addAttributes(Attribute.stream(InfinispanClientMappingsRegistryProviderResourceDefinition.Attribute.class)).setXmlElementName("infinispan-client-mappings-registry"))
+                .addChild(builder(LocalModuleAvailabilityRegistrarProviderResourceDefinition.PATH).setXmlElementName("local-module-availability-registrar"))
+                .addChild(builder(InfinispanModuleAvailabilityRegistrarProviderResourceDefinition.PATH).addAttributes(Attribute.stream(InfinispanModuleAvailabilityRegistrarProviderResourceDefinition.Attribute.class)).setXmlElementName("infinispan-module-availability-registrar"))
                 .addChild(builder(InfinispanTimerManagementResourceDefinition.WILDCARD_PATH).addAttributes(Attribute.stream(InfinispanTimerManagementResourceDefinition.Attribute.class)).setXmlElementName("infinispan-timer-management"))
                 .build();
     }
