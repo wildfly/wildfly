@@ -93,11 +93,6 @@
         </pluginManagement>
     </build>
 
-    <modules>
-        <module>ee</module>
-        <module>expansion</module>
-    </modules>
-
     <profiles>
         <profile>
             <id>base-feature-pack-build</id>
