@@ -39,6 +39,12 @@
                     <param name="interval" value="0"/>
                 </feature>
             </feature>
+            <feature spec="subsystem.infinispan.cache-container.replicated-cache">
+                <param name="replicated-cache" value="module-availability"/>
+                <feature spec="subsystem.infinispan.cache-container.replicated-cache.component.expiration">
+                    <param name="interval" value="0"/>
+                </feature>
+            </feature>
             <feature spec="subsystem.infinispan.cache-container.distributed-cache">
                 <param name="distributed-cache" value="persistent"/>
                 <feature spec="subsystem.infinispan.cache-container.distributed-cache.component.locking">
