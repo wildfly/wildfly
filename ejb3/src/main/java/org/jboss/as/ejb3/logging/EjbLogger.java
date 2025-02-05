@@ -3255,4 +3255,8 @@ public interface EjbLogger extends BasicLogger {
 
     @Message(id = 536, value = "Unsupported EJB receiver protocol %s")
     IllegalArgumentException unsupportedEJBReceiverProtocol(String uriScheme);
+
+    @LogMessage(level = WARN)
+    @Message(id = 537, value = "No module availability registrar provider found for %s; using legacy provider based on static configuration")
+    void legacyModuleAvailabilityRegistrarProviderInUse(String name);
 }

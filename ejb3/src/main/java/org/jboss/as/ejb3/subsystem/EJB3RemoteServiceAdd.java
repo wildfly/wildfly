@@ -39,6 +39,8 @@ import org.jboss.remoting3.Endpoint;
 import org.jboss.remoting3.RemotingOptions;
 import org.wildfly.clustering.ejb.remote.ClientMappingsRegistryProvider;
 import org.wildfly.clustering.ejb.remote.LegacyClientMappingsRegistryProviderFactory;
+import org.wildfly.clustering.ejb.remote.LegacyModuleAvailabilityRegistrarProviderFactory;
+import org.wildfly.clustering.ejb.remote.ModuleAvailabilityRegistrarProvider;
 import org.wildfly.clustering.infinispan.service.InfinispanServiceDescriptor;
 import org.wildfly.clustering.server.service.ClusteringServiceDescriptor;
 import org.wildfly.common.function.Functions;
@@ -61,10 +63,15 @@ import org.xnio.Options;
  */
 public class EJB3RemoteServiceAdd extends AbstractBoottimeAddStepHandler {
 
-    private static final LegacyClientMappingsRegistryProviderFactory LEGACY_PROVIDER_FACTORY = ServiceLoader
-            .load(LegacyClientMappingsRegistryProviderFactory.class,
-                    LegacyClientMappingsRegistryProviderFactory.class.getClassLoader())
+    // legacy provider factory for ClientMappingsRegistry
+    private static final LegacyClientMappingsRegistryProviderFactory LEGACY_CLIENT_MAPPINGS_REGISTRY_PROVIDER_FACTORY = ServiceLoader
+            .load(LegacyClientMappingsRegistryProviderFactory.class, LegacyClientMappingsRegistryProviderFactory.class.getClassLoader())
             .findFirst().orElse(null);
+    // legacy provider factory for ModuleAvailabilityRegistrar
+    private static final LegacyModuleAvailabilityRegistrarProviderFactory LEGACY_MODULE_AVAILABILITY_REGISTRAR_PROVIDER_FACTORY = ServiceLoader
+            .load(LegacyModuleAvailabilityRegistrarProviderFactory.class, LegacyModuleAvailabilityRegistrarProviderFactory.class.getClassLoader())
+            .findFirst().orElse(null);
+
     @SuppressWarnings("unchecked")
     private static final UnaryServiceDescriptor<List<ClientMapping>> CLIENT_MAPPINGS = UnaryServiceDescriptor
             .of("org.wildfly.ejb.remote.client-mappings", (Class<List<ClientMapping>>) (Class<?>) List.class);
@@ -99,6 +106,8 @@ public class EJB3RemoteServiceAdd extends AbstractBoottimeAddStepHandler {
         final boolean executeInWorker = EJB3RemoteResourceDefinition.EXECUTE_IN_WORKER.resolveModelAttribute(context, model)
                 .asBoolean();
 
+        CapabilityServiceSupport support = context.getCapabilityServiceSupport();
+
         // for each connector specified, we need to set up a client-mappings cache
         for (ModelNode connectorNameNode : connectorNameNodes) {
             String connectorName = connectorNameNode.asString();
@@ -109,16 +118,15 @@ public class EJB3RemoteServiceAdd extends AbstractBoottimeAddStepHandler {
                     .provides(ServiceNameFactory.resolveServiceName(CLIENT_MAPPINGS, connectorName))
                     .requires(remotingConnectorInfo).build().install(context);
 
-            ServiceDependency<ClientMappingsRegistryProvider> provider = getClientMappingsRegistryProvider(context, model);
-            CapabilityServiceSupport support = context.getCapabilityServiceSupport();
+            ServiceDependency<ClientMappingsRegistryProvider> cmrProvider = getClientMappingsRegistryProvider(context, model);
             ServiceInstaller installer = new ServiceInstaller() {
                 @Override
                 public ServiceController<?> install(RequirementServiceTarget target) {
-                    for (ServiceInstaller installer : provider.get().getServiceInstallers(support, connectorName,
+                    for (ServiceInstaller installer : cmrProvider.get().getServiceInstallers(support, connectorName,
                             ServiceDependency.on(CLIENT_MAPPINGS, connectorName))) {
                         ServiceController<?> controller = installer.install(target);
-                        ServiceName registryParentName = ServiceNameFactory
-                                .parseServiceName(ClusteringServiceDescriptor.REGISTRY.getName());
+                        // set up an alias for each provided name of the installed service
+                        ServiceName registryParentName = ServiceNameFactory.parseServiceName(ClusteringServiceDescriptor.REGISTRY.getName());
                         for (ServiceName providedName : controller.provides()) {
                             if (registryParentName.isParentOf(providedName)) {
                                 ServiceInstaller.builder(ServiceDependency.on(providedName))
@@ -131,9 +139,30 @@ public class EJB3RemoteServiceAdd extends AbstractBoottimeAddStepHandler {
                     return null;
                 }
             };
-            ServiceInstaller.builder(installer, context.getCapabilityServiceSupport()).requires(provider).build()
-                    .install(context);
+            ServiceInstaller.builder(installer, support).requires(cmrProvider).build().install(context);
         }
+
+        // set up a ModuleAvailabilityRegistrar to support cluster-wide ModuleAvailabilityUpdates
+        ServiceDependency<ModuleAvailabilityRegistrarProvider> marProvider = getModuleAvailabilityRegistrarProvider(context, model);
+        ServiceInstaller installer = new ServiceInstaller() {
+            @Override
+            public ServiceController<?> install(RequirementServiceTarget target) {
+                for (ServiceInstaller installer : marProvider.get().getServiceInstallers(support)) {
+                    ServiceController<?> controller = installer.install(target);
+                    // set up an alias for each provided name of the installed service
+                    ServiceName registryParentName = ServiceNameFactory.parseServiceName(ClusteringServiceDescriptor.SERVICE_PROVIDER_REGISTRAR.getName());
+                    for (ServiceName providedName : controller.provides()) {
+                        if (registryParentName.isParentOf(providedName)) {
+                            ServiceInstaller.builder(ServiceDependency.on(providedName))
+                                    .provides(ServiceNameFactory.resolveServiceName(EJB3RemoteResourceDefinition.MODULE_AVAILABILITY_REGISTRAR_SERVICE_PROVIDER_REGISTRAR))
+                                    .build().install(target);
+                        }
+                    }
+                }
+                return null;
+            }
+        };
+        ServiceInstaller.builder(installer, support).requires(marProvider).build().install(context);
 
         final OptionMap channelCreationOptions = this.getChannelCreationOptions(context);
         // Install the Jakarta Enterprise Beans remoting connector service which will listen for client connections on the
@@ -194,11 +223,11 @@ public class EJB3RemoteServiceAdd extends AbstractBoottimeAddStepHandler {
 
     /*
      * Return a client mappings registry provider, used to provide base clustering abstractions for the client mappings
-     * registries. The preference for obtaining the provider is: - use a client mappings registry provider defined in the
-     * distributable-ejb subsystem and installed as a service - otherwise, use the legacy provider loaded from the classpath
+     * registries. The preference for obtaining the provider is: - use a provider defined in the distributable-ejb subsystem
+     * and installed as a service - otherwise, use the legacy provider loaded from the classpath.
      */
     private static ServiceDependency<ClientMappingsRegistryProvider> getClientMappingsRegistryProvider(OperationContext context,
-            ModelNode model) throws OperationFailedException {
+                                                                                                       ModelNode model) throws OperationFailedException {
         if (context.hasOptionalCapability(ClientMappingsRegistryProvider.SERVICE_DESCRIPTOR,
                 EJB3RemoteResourceDefinition.EJB_REMOTE_CAPABILITY, null)) {
             return ServiceDependency.on(ClientMappingsRegistryProvider.SERVICE_DESCRIPTOR);
@@ -210,8 +239,30 @@ public class EJB3RemoteServiceAdd extends AbstractBoottimeAddStepHandler {
                 EJB3RemoteResourceDefinition.EJB_REMOTE_CAPABILITY_NAME,
                 EJB3RemoteResourceDefinition.CLIENT_MAPPINGS_CLUSTER_NAME.getName());
         EjbLogger.ROOT_LOGGER.legacyClientMappingsRegistryProviderInUse(clusterName);
-        return ServiceDependency.of(LEGACY_PROVIDER_FACTORY.createClientMappingsRegistryProvider(clusterName));
+        return ServiceDependency.of(LEGACY_CLIENT_MAPPINGS_REGISTRY_PROVIDER_FACTORY.createClientMappingsRegistryProvider(clusterName));
     }
+
+    /*
+     * Return a module availability registrar provider, used to provide base clustering abstractions for the module availability
+     * registrier. The preference for obtaining the provider is: - use a provider defined in the distributable-ejb subsystem and
+     * installed as a service - otherwise, use the legacy provider loaded from the classpath.
+     */
+    private static ServiceDependency<ModuleAvailabilityRegistrarProvider> getModuleAvailabilityRegistrarProvider(OperationContext context,
+                                                                                                                 ModelNode model) throws OperationFailedException {
+        if (context.hasOptionalCapability(ModuleAvailabilityRegistrarProvider.SERVICE_DESCRIPTOR,
+                EJB3RemoteResourceDefinition.EJB_REMOTE_CAPABILITY, null)) {
+            return ServiceDependency.on(ModuleAvailabilityRegistrarProvider.SERVICE_DESCRIPTOR);
+        }
+        String clusterName = EJB3RemoteResourceDefinition.CLIENT_MAPPINGS_CLUSTER_NAME.resolveModelAttribute(context, model)
+                .asString();
+        context.requireOptionalCapability(
+                RuntimeCapability.resolveCapabilityName(InfinispanServiceDescriptor.CACHE_CONTAINER, clusterName),
+                EJB3RemoteResourceDefinition.EJB_REMOTE_CAPABILITY_NAME,
+                EJB3RemoteResourceDefinition.CLIENT_MAPPINGS_CLUSTER_NAME.getName());
+        EjbLogger.ROOT_LOGGER.legacyModuleAvailabilityRegistrarProviderInUse(clusterName);
+        return ServiceDependency.of(LEGACY_MODULE_AVAILABILITY_REGISTRAR_PROVIDER_FACTORY.createModuleAvailabilityRegistrarProvider(clusterName));
+    }
+
 
     /**
      * This method provides client-mapping entries for all connected Jakarta Enterprise Beans clients. It returns either a set
