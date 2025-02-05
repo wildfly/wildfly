@@ -24,7 +24,7 @@ class MicroProfileTelemetryDependencyProcessor implements DeploymentUnitProcesso
         addDependencies(phaseContext.getDeploymentUnit());
 
         // Ensure the OpenTelemetryConfig is available to the Phase.POST_MODULE MicroProfileTelemetryDeploymentProcessor
-        // TODO WFCORE-6491 the kernel should support an API such that an OSH can record this requirement without
+        // TODO WFCORE-6941 the kernel should support an API such that an OSH can record this requirement without
         // needing to involve a DUP like this one that is separate from the one that consumes the dependency.
         phaseContext.addDeploymentDependency(ServiceNameFactory.resolveServiceName(WildFlyOpenTelemetryConfig.SERVICE_DESCRIPTOR),
                 MicroProfileTelemetryDeploymentProcessor.CONFIG_ATTACHMENT_KEY);
