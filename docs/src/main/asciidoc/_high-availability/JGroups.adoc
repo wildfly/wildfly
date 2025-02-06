@@ -17,3 +17,7 @@ include::jgroups/Kubernetes.adoc[]
 include::jgroups/AWS-Discovery.adoc[]
 
 // TODO Discovery in Azure
+
+== External Protocols
+
+include::jgroups/External_Protocols.adoc[]

@@ -1,0 +1,108 @@
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
+
+=== Adding an External Module
+
+Any JGroups protocol implementing `org.jgroups.stack.Protocol` can be added to the stack.
+While WildFly provides multitude of JGroups protocols out-of-box,
+users sometimes require addition of external protocols.
+We also manage a GitHub organization named https://github.com/jgroups-extras[jgroups-extras] where we host source code
+for some of these projects.
+
+In order to use these protocols from WildFly,
+an archive containing the protocols needs to be added as a module,
+and subsequently referenced from the protocol resource definition.
+
+First, locate the `jar` on the file system, boot the server and connect to it via the JBoss CLI.
+Update the following command with the module name, set of module dependencies (including `org.jgroups` module)
+and path to the archive.
+
+[source,options="nowrap"]
+----
+module add --name=com.acme.jgroups \
+           --dependencies=org.jgroups \
+           --resources=acme-jgroups.jar
+----
+
+Now, add the protocol from the newly added module to the stack, referencing that module:
+
+[source,options="nowrap"]
+----
+/subsystem=jgroups/stack=tcp/protocol=com.acme.jgroups.MYPROTOCOL:add(module="com.acme.jgroups")
+----
+
+Reload the server and the new protocol is now in operation.
+
+==== JGroups Raft
+
+JGroups Raft is a library implementing the Raft algorithm in JGroups,
+providing features such as configurable leader election,
+dynamic membership changes in a single step,
+member deduplication, and request redirection.
+Implementation is verified with Jepsen.
+
+The simplest way to use JGroups Raft from WildFly, is to use analogous commands to the above.
+First, fetch the protocol archive from Maven to the local repository.
+
+[source,bash]
+----
+mvn dependency:get -Dartifact=org.jgroups:jgroups-raft:1.0.14.Final
+----
+
+Now, boot the server and connect the CLI and add the module:
+
+[source,options="nowrap"]
+----
+module add --name=org.jgroups.raft \
+           --dependencies=org.jgroups \
+           --resources=~/.m2/repository/org/jgroups/jgroups-raft/1.0.14.Final/jgroups-raft-1.0.14.Final.jar
+----
+
+To add the protocol to the stack, run the following CLI command updating the stack name to the intended stack.
+Notice it is providing properties for the protocol to use a file-based Raft log implementation
+(which will be the default since version 1.0.15.Final).
+
+[source,options="nowrap"]
+----
+batch
+/subsystem=jgroups/stack=udp/protocol=org.jgroups.protocols.raft.NO_DUPES:add(module="org.jgroups.raft")
+/subsystem=jgroups/stack=udp/protocol=org.jgroups.protocols.raft.ELECTION:add(module="org.jgroups.raft")
+/subsystem=jgroups/stack=udp/protocol=org.jgroups.protocols.raft.RAFT:add(module="org.jgroups.raft", properties={log_class="org.jgroups.protocols.raft.FileBasedLog",members="node-1,node-2",raft_id="node-1"})
+/subsystem=jgroups/stack=udp/protocol=org.jgroups.protocols.raft.CLIENT:add(module="org.jgroups.raft")
+run-batch
+----
+
+NOTE: Remember to provide unique `raft_id` for each cluster member.
+
+NOTE: External protocols that define a module other than `org.jgroups` currently need to define a fully qualified class
+      name and cannot assume an `org.jgroups.protocols` prefix.
+
+// n.b. that is until https://issues.redhat.com/browse/WFLY-20366 is resolved
+
+A quick example check from the deployment, we could obtain the `RAFT` protocol instance from the stack
+and obtain the current leader:
+
+[source,java]
+----
+@Resource(lookup = "java:jboss/jgroups/channel/default")
+private JChannel channel;
+
+// ...
+
+RAFT raft = channel.getProtocolStack().findProtocol(RAFT.class);
+log.infof("Leader is: %s", raft.leader());
+----
+
+For advanced configuration options, please visit protocol's https://jgroups-extras.github.io/jgroups-raft/manual/index.html[manual] or its https://jgroups-extras.github.io/jgroups-raft/[website].
+
+
+// n.b. for editor's convenience:
+// /subsystem=jgroups/stack=udp/protocol=org.jgroups.protocols.raft.NO_DUPES:remove
+// /subsystem=jgroups/stack=udp/protocol=org.jgroups.protocols.raft.ELECTION:remove
+// /subsystem=jgroups/stack=udp/protocol=org.jgroups.protocols.raft.RAFT:remove
+// /subsystem=jgroups/stack=udp/protocol=org.jgroups.protocols.raft.CLIENT:remove
