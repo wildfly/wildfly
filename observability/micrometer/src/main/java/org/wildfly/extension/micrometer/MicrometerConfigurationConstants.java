@@ -8,6 +8,9 @@ public final class MicrometerConfigurationConstants {
     private MicrometerConfigurationConstants() {
     }
 
+    public static final String MICROMETER_MODULE = "org.wildfly.extension.micrometer";
+    public static final String MICROMETER_API_MODULE = "org.wildfly.micrometer.deployment";
+
     static final String NAME = "micrometer";
 
     static final String OTLP_REGISTRY = "otlp-registry";

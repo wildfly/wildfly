@@ -147,6 +147,12 @@
             <artifactId>wildfly-jaxrs</artifactId>
         </dependency>
 
+        <dependency>
+            <groupId>org.kohsuke.metainf-services</groupId>
+            <artifactId>metainf-services</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
         <!--Test dependencies -->
         <dependency>
             <groupId>org.projectodd.vdx</groupId>
