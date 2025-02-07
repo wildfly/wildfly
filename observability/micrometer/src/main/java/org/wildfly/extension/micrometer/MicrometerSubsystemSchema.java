@@ -11,13 +11,15 @@ import org.jboss.as.controller.PersistentSubsystemSchema;
 import org.jboss.as.controller.SubsystemSchema;
 import org.jboss.as.controller.xml.VersionedNamespace;
 import org.jboss.staxmapper.IntVersion;
+import org.wildfly.extension.micrometer.otlp.OtlpRegistryDefinitionRegistrar;
 
 public enum MicrometerSubsystemSchema implements PersistentSubsystemSchema<MicrometerSubsystemSchema> {
     VERSION_1_0(1, 0), // WildFly 28
     VERSION_1_1(1, 1), // WildFly 29.0.0.Alpha1
+    VERSION_2_0(2, 0) // WildFly 33
     ;
 
-    public static final MicrometerSubsystemSchema CURRENT = VERSION_1_1;
+    public static final MicrometerSubsystemSchema CURRENT = VERSION_2_0;
 
     private final VersionedNamespace<IntVersion, MicrometerSubsystemSchema> namespace;
 
@@ -33,9 +35,25 @@ public enum MicrometerSubsystemSchema implements PersistentSubsystemSchema<Micro
 
     @Override
     public PersistentResourceXMLDescription getXMLDescription() {
-        return factory(this)
-                .builder(MicrometerSubsystemRegistrar.PATH)
-                .addAttributes(MicrometerSubsystemRegistrar.ATTRIBUTES)
-                .build();
+        PersistentResourceXMLDescription.Factory factory = factory(this);
+        PersistentResourceXMLDescription.Builder builder =
+                factory.builder(MicrometerSubsystemRegistrar.PATH);
+
+        builder.addAttributes(MicrometerSubsystemRegistrar.ATTRIBUTES.stream());
+        if (this.since(VERSION_2_0)) {
+            builder.addChild(factory.builder(OtlpRegistryDefinitionRegistrar.PATH)
+                    .addAttributes(OtlpRegistryDefinitionRegistrar.ATTRIBUTES.stream())
+                    .setXmlElementName("otlp-registry")
+                    .build());
+        } else {
+            builder.addChild(factory.builder(OtlpRegistryDefinitionRegistrar.PATH)
+                    .addAttributes(MicrometerSubsystemRegistrar.ENDPOINT,
+                            MicrometerSubsystemRegistrar.STEP)
+                    .setXmlElementName("otlp-registry")
+                    .build()
+            );
+        }
+
+        return builder.build();
     }
 }

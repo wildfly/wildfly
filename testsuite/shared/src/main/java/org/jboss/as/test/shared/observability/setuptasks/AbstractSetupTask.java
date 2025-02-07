@@ -23,7 +23,11 @@ public abstract class AbstractSetupTask implements ServerSetupTask {
     }
 
     protected ModelNode writeAttribute(String subsystem, String name, String value) {
-        return Operations.createWriteAttributeOperation(Operations.createAddress(SUBSYSTEM, subsystem), name, value);
+        return writeAttribute(Operations.createAddress(SUBSYSTEM, subsystem), name, value);
+    }
+
+    protected ModelNode writeAttribute(ModelNode address, String name, String value) {
+        return Operations.createWriteAttributeOperation(address, name, value);
     }
 
     protected void executeOp(final ManagementClient client, final ModelNode op) throws IOException {
@@ -39,6 +43,7 @@ public abstract class AbstractSetupTask implements ServerSetupTask {
     }
 
     protected ModelNode executeRead(final ManagementClient managementClient, ModelNode address) throws IOException {
-        return managementClient.getControllerClient().execute(Operations.createReadResourceOperation(address));
+        ModelNode execute = managementClient.getControllerClient().execute(Operations.createReadResourceOperation(address));
+        return execute;
     }
 }

@@ -17,43 +17,38 @@ import org.jboss.as.controller.registry.Resource;
 import org.wildfly.extension.micrometer.jmx.JmxMicrometerCollector;
 import org.wildfly.extension.micrometer.metrics.MetricRegistration;
 import org.wildfly.extension.micrometer.metrics.MicrometerCollector;
-import org.wildfly.extension.micrometer.registry.NoOpRegistry;
-import org.wildfly.extension.micrometer.registry.WildFlyOtlpRegistry;
+import org.wildfly.extension.micrometer.registry.WildFlyCompositeRegistry;
 import org.wildfly.extension.micrometer.registry.WildFlyRegistry;
 
 public class MicrometerService implements AutoCloseable {
-    private final WildFlyMicrometerConfig micrometerConfig;
-    private final LocalModelControllerClient modelControllerClient;
-    private final ProcessStateNotifier processStateNotifier;
+    private WildFlyMicrometerConfig micrometerConfig;
+    private LocalModelControllerClient modelControllerClient;
+    private ProcessStateNotifier processStateNotifier;
     private MicrometerCollector micrometerCollector;
-    private WildFlyRegistry micrometerRegistry;
+    private WildFlyCompositeRegistry micrometerRegistry;
 
-    public MicrometerService(WildFlyMicrometerConfig micrometerConfig,
-                             LocalModelControllerClient modelControllerClient,
-                             ProcessStateNotifier processStateNotifier) {
-        this.micrometerConfig = micrometerConfig;
-        this.modelControllerClient = modelControllerClient;
-        this.processStateNotifier = processStateNotifier;
+    private MicrometerService() {
     }
 
-    public WildFlyRegistry getMicrometerRegistry() {
+    public void start() {
+        micrometerCollector = new MicrometerCollector(modelControllerClient, processStateNotifier, micrometerRegistry,
+            micrometerConfig.getSubsystemFilter());
+
+        registerJmxMetrics();
+    }
+
+    public WildFlyCompositeRegistry getMicrometerRegistry() {
         return micrometerRegistry;
+    }
+
+    public void addRegistry(WildFlyRegistry registry) {
+        micrometerRegistry.addRegistry(registry);
     }
 
     public synchronized MetricRegistration collectResourceMetrics(final Resource resource,
                                                                   ImmutableManagementResourceRegistration mrr,
                                                                   Function<PathAddress, PathAddress> addressResolver) {
         return micrometerCollector.collectResourceMetrics(resource, mrr, addressResolver);
-    }
-
-    public void start() {
-        micrometerRegistry = micrometerConfig.url() != null ?
-            new WildFlyOtlpRegistry(micrometerConfig) :
-            new NoOpRegistry();
-        micrometerCollector = new MicrometerCollector(modelControllerClient, processStateNotifier, micrometerRegistry,
-            micrometerConfig.getSubsystemFilter());
-
-        registerJmxMetrics();
     }
 
     private void registerJmxMetrics() {
@@ -67,5 +62,53 @@ public class MicrometerService implements AutoCloseable {
     @Override
     public void close() {
         micrometerRegistry.close();
+    }
+
+
+    void setMicrometerConfig(WildFlyMicrometerConfig micrometerConfig) {
+        this.micrometerConfig = micrometerConfig;
+    }
+
+    void setModelControllerClient(LocalModelControllerClient modelControllerClient) {
+        this.modelControllerClient = modelControllerClient;
+    }
+
+    void setProcessStateNotifier(ProcessStateNotifier processStateNotifier) {
+        this.processStateNotifier = processStateNotifier;
+    }
+
+    void setMicrometerRegistry(WildFlyCompositeRegistry micrometerRegistry) {
+        this.micrometerRegistry = micrometerRegistry;
+    }
+
+
+    public static class Builder {
+        private final MicrometerService service = new MicrometerService();
+
+        public Builder micrometerConfig(WildFlyMicrometerConfig micrometerConfig) {
+            service.setMicrometerConfig(micrometerConfig);
+            return this;
+        }
+        public Builder modelControllerClient(LocalModelControllerClient modelControllerClient) {
+            service.setModelControllerClient(modelControllerClient);
+            return this;
+        }
+        public Builder processStateNotifier(ProcessStateNotifier processStateNotifier) {
+            service.setProcessStateNotifier(processStateNotifier);
+            return this;
+        }
+        public Builder micrometerRegistry(WildFlyCompositeRegistry micrometerRegistry) {
+            service.setMicrometerRegistry(micrometerRegistry);
+            return this;
+        }
+
+        public MicrometerService build() {
+            assert service.micrometerRegistry != null &&
+                service.micrometerConfig != null &&
+                service.modelControllerClient != null &&
+                service.processStateNotifier != null;
+
+            return service;
+        }
     }
 }
