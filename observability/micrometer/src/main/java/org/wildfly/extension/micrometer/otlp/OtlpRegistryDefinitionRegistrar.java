@@ -8,7 +8,6 @@ import static org.wildfly.extension.micrometer.MicrometerConfigurationConstants.
 
 import java.util.Collection;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
@@ -40,7 +39,7 @@ public class OtlpRegistryDefinitionRegistrar implements ChildResourceDefinitionR
     static final String NAME = "otlp";
     public static final PathElement PATH = PathElement.pathElement("registry", NAME);
 
-    static final RuntimeCapability<Void> MICROMETER_OTLP_CONFIG_RUNTIME_CAPABILITY =
+    public static final RuntimeCapability<Void> MICROMETER_OTLP_CONFIG_RUNTIME_CAPABILITY =
             RuntimeCapability.Builder.of(MICROMETER_MODULE + ".wildfly-otlp-config", WildFlyMicrometerConfig.class)
                     .build();
 
@@ -53,7 +52,7 @@ public class OtlpRegistryDefinitionRegistrar implements ChildResourceDefinitionR
 
     public static final SimpleAttributeDefinition STEP = SimpleAttributeDefinitionBuilder
             .create(MicrometerConfigurationConstants.STEP, ModelType.LONG, true)
-            .setDefaultValue(new ModelNode(TimeUnit.MINUTES.toSeconds(60)))
+            .setDefaultValue(new ModelNode(60L))
             .setMeasurementUnit(MeasurementUnit.SECONDS)
             .setAllowExpression(true)
             .setRestartAllServices()

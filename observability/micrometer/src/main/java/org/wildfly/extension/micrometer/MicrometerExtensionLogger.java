@@ -76,6 +76,6 @@ public interface MicrometerExtensionLogger extends BasicLogger {
     @Message(id = 13, value = "There was an error registering the metric '%s'")
     IllegalArgumentException errorRegisteringMetric(String name);
 
-    @Message(id = 14, value = "Prometheus is not supported on host controllers")
+    @Message(id = 14, value = "Prometheus is not supported on domain mode servers")
     OperationFailedException prometheusNotSupportedOnHostControllers();
 }

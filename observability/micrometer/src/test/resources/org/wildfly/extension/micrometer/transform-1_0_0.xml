@@ -2,5 +2,4 @@
   ~ Copyright The WildFly Authors
   ~ SPDX-License-Identifier: Apache-2.0
   -->
-<subsystem xmlns="urn:wildfly:micrometer:1.1">
-</subsystem>
+<subsystem xmlns="urn:wildfly:micrometer:1.0"/>

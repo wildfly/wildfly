@@ -21,13 +21,21 @@ import org.wildfly.extension.micrometer.registry.WildFlyCompositeRegistry;
 import org.wildfly.extension.micrometer.registry.WildFlyRegistry;
 
 public class MicrometerService implements AutoCloseable {
-    private WildFlyMicrometerConfig micrometerConfig;
-    private LocalModelControllerClient modelControllerClient;
-    private ProcessStateNotifier processStateNotifier;
-    private MicrometerCollector micrometerCollector;
-    private WildFlyCompositeRegistry micrometerRegistry;
+    private final WildFlyMicrometerConfig micrometerConfig;
+    private final LocalModelControllerClient modelControllerClient;
+    private final ProcessStateNotifier processStateNotifier;
+    private final WildFlyCompositeRegistry micrometerRegistry;
 
-    private MicrometerService() {
+    private MicrometerCollector micrometerCollector;
+
+    private MicrometerService(WildFlyMicrometerConfig micrometerConfig,
+                              LocalModelControllerClient modelControllerClient,
+                              ProcessStateNotifier processStateNotifier,
+                              WildFlyCompositeRegistry micrometerRegistry) {
+        this.micrometerConfig = micrometerConfig;
+        this.modelControllerClient = modelControllerClient;
+        this.processStateNotifier = processStateNotifier;
+        this.micrometerRegistry = micrometerRegistry;
     }
 
     public void start() {
@@ -64,51 +72,39 @@ public class MicrometerService implements AutoCloseable {
         micrometerRegistry.close();
     }
 
-
-    void setMicrometerConfig(WildFlyMicrometerConfig micrometerConfig) {
-        this.micrometerConfig = micrometerConfig;
-    }
-
-    void setModelControllerClient(LocalModelControllerClient modelControllerClient) {
-        this.modelControllerClient = modelControllerClient;
-    }
-
-    void setProcessStateNotifier(ProcessStateNotifier processStateNotifier) {
-        this.processStateNotifier = processStateNotifier;
-    }
-
-    void setMicrometerRegistry(WildFlyCompositeRegistry micrometerRegistry) {
-        this.micrometerRegistry = micrometerRegistry;
-    }
-
-
     public static class Builder {
-        private final MicrometerService service = new MicrometerService();
+        private WildFlyMicrometerConfig micrometerConfig;
+        private LocalModelControllerClient modelControllerClient;
+        private ProcessStateNotifier processStateNotifier;
+        private WildFlyCompositeRegistry micrometerRegistry;
 
         public Builder micrometerConfig(WildFlyMicrometerConfig micrometerConfig) {
-            service.setMicrometerConfig(micrometerConfig);
+            this.micrometerConfig = micrometerConfig;
             return this;
         }
+
         public Builder modelControllerClient(LocalModelControllerClient modelControllerClient) {
-            service.setModelControllerClient(modelControllerClient);
+            this.modelControllerClient = modelControllerClient;
             return this;
         }
+
         public Builder processStateNotifier(ProcessStateNotifier processStateNotifier) {
-            service.setProcessStateNotifier(processStateNotifier);
+            this.processStateNotifier = processStateNotifier;
             return this;
         }
+
         public Builder micrometerRegistry(WildFlyCompositeRegistry micrometerRegistry) {
-            service.setMicrometerRegistry(micrometerRegistry);
+            this.micrometerRegistry = micrometerRegistry;
             return this;
         }
 
         public MicrometerService build() {
-            assert service.micrometerRegistry != null &&
-                service.micrometerConfig != null &&
-                service.modelControllerClient != null &&
-                service.processStateNotifier != null;
+            assert micrometerRegistry != null &&
+                micrometerConfig != null &&
+                modelControllerClient != null &&
+                processStateNotifier != null;
 
-            return service;
+            return new MicrometerService(micrometerConfig, modelControllerClient, processStateNotifier, micrometerRegistry);
         }
     }
 }

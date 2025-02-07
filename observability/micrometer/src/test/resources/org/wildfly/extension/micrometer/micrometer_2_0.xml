@@ -1,8 +1,0 @@
-<!--
-  ~ Copyright The WildFly Authors
-  ~ SPDX-License-Identifier: Apache-2.0
-  -->
-
-<subsystem xmlns="urn:wildfly:micrometer:2.0">
-    <otlp-registry endpoint="http://localhost:4318/v1/metrics"/>
-</subsystem>

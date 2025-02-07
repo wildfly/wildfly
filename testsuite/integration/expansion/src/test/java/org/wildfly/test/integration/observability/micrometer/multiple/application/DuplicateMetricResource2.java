@@ -16,7 +16,7 @@ import jakarta.ws.rs.Path;
 @Path("/" + DuplicateMetricResource2.TAG)
 public class DuplicateMetricResource2 {
     public static final String TAG = "app2";
-    public static final String METER_NAME = "ping-count";
+    public static final String METER_NAME = "ping_count";
 
     @SuppressWarnings("CdiInjectionPointsInspection")
     @Inject
