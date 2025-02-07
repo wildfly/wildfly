@@ -126,7 +126,7 @@ public class HibernateSecondLevelCacheTestCase {
         sfsb.setupConfig();
         DataSource ds = rawLookup("java:jboss/datasources/ExampleDS", DataSource.class);
         try {
-            Student s1 = sfsb.createStudent("MADHUMITA", "SADHUKHAN", "99 Purkynova REDHAT BRNO CZ", 1);
+            Student s1 = sfsb.createStudent("MADHUMITA", "SADHUKHAN", "99 Purkynova REDHAT BRNO CZ");
             Student s2 = sfsb.getStudent(1);
 
             Connection conn = ds.getConnection();
@@ -162,7 +162,7 @@ public class HibernateSecondLevelCacheTestCase {
         sfsb.setupConfig();
         DataSource ds = rawLookup("java:jboss/datasources/ExampleDS", DataSource.class);
         try {
-            Student s1 = sfsb.createStudent("Hope", "Solo", "6415 NE 138th Pl. Kirkland, WA 98034 USA", 1);
+            Student s1 = sfsb.createStudent("Hope", "Solo", "6415 NE 138th Pl. Kirkland, WA 98034 USA");
             Student s2 = sfsb.getStudent(1);
 
             Connection conn = ds.getConnection();

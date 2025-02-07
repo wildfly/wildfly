@@ -24,7 +24,7 @@
         <module name="jakarta.transaction.api"/>
 
         <module name="org.hibernate"/>
-        <module name="org.hibernate.jipijapa-hibernate6" services="import"/>
+        <module name="org.hibernate.jipijapa-hibernate" services="import"/>
         <module name="org.infinispan.commons"/>
         <module name="org.infinispan.core" services="import"/>
         <module name="org.jboss.as.jpa.spi"/>

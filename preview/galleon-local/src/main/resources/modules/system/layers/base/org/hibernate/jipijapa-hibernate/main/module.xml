@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+
+<module xmlns="urn:jboss:module:1.9" name="org.hibernate.jipijapa-hibernate">
+
+    <properties>
+        <property name="jboss.api" value="private"/>
+    </properties>
+
+    <resources>
+        <artifact name="${org.wildfly:jipijapa-hibernate7}"/>
+    </resources>
+
+    <dependencies>
+        <module name="jakarta.annotation.api"/>
+        <module name="jakarta.enterprise.api"/>
+        <module name="jakarta.persistence.api"/>
+        <module name="jakarta.transaction.api"/>
+        <module name="jakarta.validation.api"/>
+
+        <module name="org.hibernate" services="import"/>
+        <module name="org.hibernate.models.hibernate-models" services="import"/>
+        <module name="org.hibernate.orm.hibernate-scan-jandex"/>
+        <module name="org.infinispan.core" services="import"/>
+        <module name="org.infinispan.protostream"/>
+        <module name="org.infinispan.hibernate-cache" services="import"/>
+        <module name="org.jboss.as.jpa.spi"/>
+        <module name="org.jboss.logging"/>
+        <module name="org.jboss.vfs"/>
+        <module name="org.wildfly.clustering.marshalling.protostream"/>
+        <module name="org.wildfly.common"/>
+    </dependencies>
+</module>

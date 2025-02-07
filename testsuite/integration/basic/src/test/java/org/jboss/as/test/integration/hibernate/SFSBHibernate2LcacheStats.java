@@ -73,31 +73,30 @@ public class SFSBHibernate2LcacheStats {
     }
 
     // create planet
-    public Planet prepareData(String planetName, String galaxyName, String starName, Set<Satellite> satellites, Integer id) {
+    public Planet prepareData(String planetName, String galaxyName, String starName, Set<Satellite> satellites) {
 
         Session session = sessionFactory.openSession();
         Planet planet = new Planet();
-        planet.setPlanetId(id);
         planet.setPlanetName(planetName);
         planet.setGalaxy(galaxyName);
         planet.setStar(starName);
         // Transaction trans = session.beginTransaction();
         try {
 
-            session.save(planet);
+            session.persist(planet);
 
             if (satellites != null && satellites.size() > 0) {
                 Iterator<Satellite> itrSat = satellites.iterator();
                 while (itrSat.hasNext()) {
                     Satellite sat = itrSat.next();
-                    session.save(sat);
+                    session.persist(sat);
                 }
                 planet.setSatellites(new HashSet<Satellite>());
                 planet.getSatellites().addAll(satellites);
 
             }
 
-            session.saveOrUpdate(planet);
+            session.persist(planet);
             SessionStatistics stats = session.getStatistics();
             assertEquals(2, stats.getEntityKeys().size());
             assertEquals(2, stats.getEntityCount());

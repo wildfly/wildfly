@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+
+<!-- Represents Hibernate ORM 6  -->
+<module xmlns="urn:jboss:module:1.9" name="org.hibernate">
+
+    <resources>
+        <artifact name="${org.hibernate.orm:hibernate-core}"/>
+        <artifact name="${org.hibernate.orm:hibernate-envers}"/>
+    </resources>
+
+    <dependencies>
+        <!-- Java SE dependencies -->
+        <module name="java.desktop"/>
+        <module name="java.instrument"/>
+        <module name="java.management"/>
+        <module name="java.naming"/>
+        <module name="java.sql"/>
+        <module name="java.xml"/>
+
+        <!-- Jakarta Dependencies -->
+        <module name="jakarta.annotation.api"/>
+        <!-- If Jakarta Data is provisioned, depend on it -->
+        <module name="jakarta.data.api" optional="true"/>
+        <module name="jakarta.enterprise.api"/>
+        <module name="jakarta.json.bind.api"/>
+        <module name="jakarta.persistence.api"/>
+        <module name="jakarta.transaction.api"/>
+        <module name="jakarta.validation.api"/>
+        <module name="jakarta.xml.bind.api"/>
+
+        <!-- Other dependencies -->
+        <module name="com.fasterxml.classmate"/>
+        <module name="com.fasterxml.jackson.core.jackson-core" optional="true"/>
+        <module name="com.fasterxml.jackson.core.jackson-databind" optional="true"/>
+        <!-- If the Oracle JDBC driver classes are accessible, Hibernate ORM will use them to tailor OracleDialect behavior -->
+        <module name="com.oracle.ojdbc" optional="true"/>
+        <module name="io.smallrye.jandex" export="true"/>
+        <module name="net.bytebuddy"/>
+        <module name="org.antlr"/>
+        <module name="org.eclipse.yasson" optional="true"/>
+        <module name="org.glassfish.jaxb"/>
+        <module name="org.hibernate.jipijapa-hibernate" services="import"/>
+        <module name="org.hibernate.models.hibernate-models" services="import"/>
+        <module name="org.infinispan.hibernate-cache" services="import" optional="true"/>
+        <module name="org.jboss.as.jpa.spi"/>
+        <module name="org.jboss.logging"/>
+        <!-- If the PostgreSQL JDBC driver classes are accessible, Hibernate ORM will use them to tailor PostgresDialect and CockroachDialect behavior -->
+        <module name="org.postgresql.jdbc" optional="true"/>
+    </dependencies>
+
+    <provides>
+        <service name="org.hibernate.bytecode.spi.BytecodeProvider">
+            <with-class name="org.hibernate.bytecode.internal.bytebuddy.BytecodeProviderImpl"/>
+        </service>
+    </provides>
+
+</module>

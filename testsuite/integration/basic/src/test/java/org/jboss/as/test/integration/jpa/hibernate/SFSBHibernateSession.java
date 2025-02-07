@@ -30,7 +30,7 @@ public class SFSBHibernateSession {
     }
 
     public Employee getEmployee(int id) {
-        Employee emp = session.load(Employee.class, id);
+        Employee emp = session.get(Employee.class, id);
         return emp;
     }
 
