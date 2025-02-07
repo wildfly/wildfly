@@ -328,11 +328,6 @@
 
         <dependency>
             <groupId>io.smallrye.reactive</groupId>
-            <artifactId>smallrye-mutiny-vertx-kafka-client</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>io.smallrye.reactive</groupId>
             <artifactId>smallrye-mutiny-vertx-runtime</artifactId>
         </dependency>
 
