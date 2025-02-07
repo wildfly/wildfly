@@ -52,7 +52,22 @@
             <id>layers_.module.profile</id>
             <activation><property><name>ts.layers</name></property></activation>
             <modules>
+                <module>../test-feature-pack-preview</module> <!-- needed by integration/basic -->
+                <module>../integration/basic</module>
+                <module>../integration/elytron</module>
+                <module>../integration/clustering</module>
+                <module>../integration/ws</module>
+                <!-- TODO WFLY-20375 The ts.preview profile already uses
+                     slimmed servers for these, so instead of duplicating,
+                     for now just let it cover them. -->
+                <!--
+                <module>../integration/elytron-oidc-client</module>
+                <module>../layers</module>
+                <module>../integration/microprofile</module>
+                <module>../integration/microprofile-tck</module>
+                <module>../layers-expansion</module>
                 <module>../preview</module>
+                -->
             </modules>
         </profile>
 
@@ -73,6 +88,8 @@
                 <module>../integration/rbac</module>
                 <module>../integration/legacy</module>
                 <module>../preview</module>
+                <!-- TODO WFLY-20375 Probably just use ts.layers for these next two
+                     and remove them from here. -->
                 <module>../layers</module>
                 <module>../layers-expansion</module>
                 <module>../domain</module>
