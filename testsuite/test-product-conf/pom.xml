@@ -26,13 +26,41 @@
         with the same GA.</description>
 
     <artifactId>wildfly-ee-feature-pack-product-conf</artifactId>
-    <!-- DO NOT CHANGE THIS. It's a fixed, deliberate value for this test-only artifact
-         chosen to avoid interferin with the release artifact with the same GA.
-         Other test infrastructure (e.g. a custom channel manifest) relies on this value. -->
-    <version>100000.0.1.Final-SNAPSHOT</version>
+    <!-- This version is a deliberate value for this test-only artifact
+         chosen to avoid interfering with the release artifact with the same GA.-->
+    <version>100000.0.1.TEST-SNAPSHOT</version>
 
     <build>
         <plugins>
+            <plugin>
+                <!--
+                    This is a test-only artifact with a never-changing version.
+                    The artifact version is decoupled from this module version to keep it always stable
+                    since this test artifact is used in other tests that rely on this version.
+                -->
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-install-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>default-install</id>
+                        <phase>none</phase>
+                    </execution>
+                    <execution>
+                        <id>custom-product-conf-install</id>
+                        <phase>install</phase>
+                        <goals>
+                            <goal>install-file</goal>
+                        </goals>
+                        <configuration>
+                            <file>${project.build.directory}/${project.build.finalName}.jar</file>
+                            <groupId>${project.groupId}</groupId>
+                            <artifactId>${project.artifactId}</artifactId>
+                            <version>100000.0.1.TEST-stable-SNAPSHOT</version>
+                            <packaging>jar</packaging>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-deploy-plugin</artifactId>

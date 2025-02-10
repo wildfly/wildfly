@@ -350,7 +350,7 @@
         <dependency>
             <groupId>${ee.maven.groupId}</groupId>
             <artifactId>wildfly-ee-feature-pack-product-conf</artifactId>
-            <version>100000.0.1.Final-SNAPSHOT</version>
+            <version>100000.0.1.TEST-stable-SNAPSHOT</version>
         </dependency>
     </dependencies>
 

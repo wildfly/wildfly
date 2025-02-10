@@ -7,4 +7,4 @@ description: "Manifest for testing overriding the org.wildfly:wildfly-ee-feature
 streams:
   - groupId: "${project.groupId}"
     artifactId: "wildfly-ee-feature-pack-product-conf"
-    version: "100000.0.1.Final-SNAPSHOT"
+    version: "100000.0.1.TEST-stable-SNAPSHOT"

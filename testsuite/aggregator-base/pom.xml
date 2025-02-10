@@ -63,12 +63,12 @@
                 <module>../integration/rts</module>
                 <module>../integration/rbac</module>
                 <module>../integration/multinode</module>
+                <module>../test-product-conf</module> <!-- needed by manualmode -->
                 <module>../integration/manualmode</module>
                 <module>../integration/secman</module>
                 <module>../integration/legacy</module>
                 <module>../domain</module>
                 <module>../scripts</module>
-                <module>../test-product-conf</module>
             </modules>
         </profile>
 
