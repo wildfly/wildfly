@@ -261,6 +261,9 @@ public abstract class EJBComponent extends BasicComponent implements ServerActiv
     }
 
     public SecurityIdentity getIncomingRunAsIdentity() {
+        if (ROOT_LOGGER.isTraceEnabled()) {
+            ROOT_LOGGER.debug("## EJBComponent getIncomingRunAsIdentity ");
+        }
         return incomingRunAsIdentity.get();
     }
 
@@ -269,6 +272,15 @@ public abstract class EJBComponent extends BasicComponent implements ServerActiv
             incomingRunAsIdentity.remove();
         } else {
             incomingRunAsIdentity.set(identity);
+            // rls debug
+            if (ROOT_LOGGER.isTraceEnabled()) {
+                if (identity == null) {
+                    ROOT_LOGGER.debug("## EJBComponent setIncomingRunAsIdentity  identity is NULL");
+                } else {
+                    ROOT_LOGGER.debug("## EJBComponent setIncomingRunAsIdentity Principal: "
+                            + identity.getPrincipal().getName() + "  " + debugRoles(identity));
+                }
+            }
         }
     }
 
@@ -429,14 +441,14 @@ public abstract class EJBComponent extends BasicComponent implements ServerActiv
             } else {
                 boolean tmpBool = checkCallerSecurityIdentityRole(roleName); // rls debug todo remove
                 if (ROOT_LOGGER.isTraceEnabled()) {
-                    ROOT_LOGGER.trace("## EJBComponent isCallerInRole checkCallerSecurityIdentityRole() returned: "
+                    ROOT_LOGGER.debug("## EJBComponent isCallerInRole checkCallerSecurityIdentityRole() returned: "
                     + tmpBool);
                 }
                 return tmpBool;
             }
         }
         if (ROOT_LOGGER.isTraceEnabled()) {
-            ROOT_LOGGER.trace("## EJBComponent isCallerInRole No security, no role membership");
+            ROOT_LOGGER.debug("## EJBComponent isCallerInRole No security, no role membership");
         }
         // No security, no role membership.
         return false;
@@ -611,8 +623,15 @@ public abstract class EJBComponent extends BasicComponent implements ServerActiv
         if(roles != null) {
             if(roles.contains(roleName)) {
                 if (ROOT_LOGGER.isTraceEnabled()) {
-                    ROOT_LOGGER.trace("## EJBComponent checkCallerSecurityIdentityRole  roleName: " + roleName
-                            + "   found in identity.roles   principal: " + identity.getPrincipal().getName());
+                    StringBuffer sb = new StringBuffer();
+                    sb.append("  roles: [");
+                    for (String s : roles) {
+                        sb.append(s + ", ");
+                    }
+                    sb.append("]\n");
+                    ROOT_LOGGER.debug("## EJBComponent checkCallerSecurityIdentityRole  roleName: " + roleName
+                            + "   found in identity.roles   principal: " + identity.getPrincipal().getName()
+                        + "   " + sb.toString());
                 }
                 return true;
             }
@@ -622,7 +641,7 @@ public abstract class EJBComponent extends BasicComponent implements ServerActiv
                     for (String role : roles) {
                         if (linked.contains(role)) {
                             if (ROOT_LOGGER.isTraceEnabled()) {
-                                ROOT_LOGGER.trace("## EJBComponent checkCallerSecurityIdentityRole roleName: "
+                                ROOT_LOGGER.debug("## EJBComponent checkCallerSecurityIdentityRole roleName: "
                                         + roleName + "  found in securityMetaData.getSecurityRoleLinks(),"
                                         + "  runAsPrincipal: " + securityMetaData.getRunAsPrincipal());
                             }
@@ -633,13 +652,26 @@ public abstract class EJBComponent extends BasicComponent implements ServerActiv
             }
         }
         if (ROOT_LOGGER.isTraceEnabled()) {
-            ROOT_LOGGER.trace("## EJBComponent checkCallerSecurityIdentityRole  roleName: "
+            ROOT_LOGGER.debug("## EJBComponent checkCallerSecurityIdentityRole  roleName: "
                     + roleName + "  no role found    Principal: " + identity.getPrincipal().getName());
         }
         return false;
     }
-
     private SecurityIdentity getCallerSecurityIdentity() {
+        if (ROOT_LOGGER.isTraceEnabled()) {
+            // rls debug
+            SecurityIdentity si = securityDomain.getCurrentSecurityIdentity();
+            ROOT_LOGGER.debug("## EJBComponent BEFORE getCallerSecurityIdentity securityDomain Principal: "
+                    + si.getPrincipal().getName() + "  " + debugRoles(si));
+            si = getCallerSecurityIdentityORIGINAL();
+            ROOT_LOGGER.debug("## EJBComponent AFTER getCallerSecurityIdentity securityDomain Principal: "
+                    + si.getPrincipal().getName() + "  " + debugRoles(si));
+            return si;
+        } else {
+            return getCallerSecurityIdentityORIGINAL();
+        }
+    }
+    private SecurityIdentity getCallerSecurityIdentityORIGINAL() {
         InvocationType invocationType = CurrentInvocationContext.get().getPrivateData(InvocationType.class);
         boolean isRemote = invocationType != null && invocationType.equals(InvocationType.REMOTE);
         if (legacyCompliantPrincipalPropagation && !isRemote) {
@@ -662,5 +694,18 @@ public abstract class EJBComponent extends BasicComponent implements ServerActiv
 
     public EJBComponentDescription getComponentDescription() {
         return componentDescription;
+    }
+    // rls debug
+    private static String debugRoles(SecurityIdentity identity) {
+        Roles roles = identity.getRoles("ejb", true);
+        StringBuffer sb = new StringBuffer();
+        if (roles != null) {
+            sb.append("  roles: [");
+            for (String s : roles) {
+                sb.append(s + ", ");
+            }
+            sb.append("]\n");
+        }
+        return sb.toString().isEmpty() ? "null" : sb.toString();
     }
 }
