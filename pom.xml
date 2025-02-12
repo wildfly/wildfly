@@ -437,7 +437,7 @@
         <version.org.apache.wss4j>3.0.4</version.org.apache.wss4j>
         <version.org.apache.ws.xmlschema>2.3.0</version.org.apache.ws.xmlschema>
         <version.org.bitbucket.jose4j>0.9.6</version.org.bitbucket.jose4j>
-        <version.org.bytebuddy>1.14.18</version.org.bytebuddy>
+        <version.org.bytebuddy>1.15.11</version.org.bytebuddy>
         <version.org.codehaus.woodstox.stax2-api>4.2.2</version.org.codehaus.woodstox.stax2-api>
         <version.org.codehaus.woodstox.woodstox-core>7.0.0</version.org.codehaus.woodstox.woodstox-core>
         <version.org.cryptacular>1.2.5</version.org.cryptacular>
