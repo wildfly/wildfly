@@ -20,9 +20,9 @@
         <version>36.0.0.Beta1-SNAPSHOT</version>
     </parent>
 
-    <artifactId>wildfly-ts-integ-microprofile</artifactId>
+    <artifactId>wildfly-ts-integ-expansion</artifactId>
 
-    <name>WildFly Test Suite: Integration - MicroProfile</name>
+    <name>WildFly Test Suite: Integration - Expansion</name>
 
     <properties>
         <jbossas.ts.integ.dir>${basedir}/..</jbossas.ts.integ.dir>
@@ -555,7 +555,7 @@
                     </execution>
                     <!-- An execution analogous to default-test but uses standalone.xml -->
                     <execution>
-                        <id>standalone-enabled-microprofile-test</id>
+                        <id>standalone-enabled-expansion-test</id>
                         <goals>
                             <goal>test</goal>
                         </goals>
@@ -568,7 +568,7 @@
                                 <!-- The enable-microprofile.cli script does not enable the reactive extensions/subsystems -->
                                 <exclude>org/wildfly/test/integration/microprofile/reactive/**</exclude>
                             </excludes>
-                            <reportNameSuffix>standalone-enabled-microprofile-test</reportNameSuffix>
+                            <reportNameSuffix>standalone-enabled-expansion-test</reportNameSuffix>
                         </configuration>
                     </execution>
                 </executions>
@@ -622,7 +622,7 @@
                                 </goals>
                             </execution>
                             <execution>
-                                <id>microprofile-provisioning</id>
+                                <id>expansion-provisioning</id>
                                 <goals>
                                     <goal>provision</goal>
                                 </goals>
@@ -659,7 +659,7 @@
                                 <phase>none</phase>
                             </execution>
                             <execution>
-                                <id>standalone-enabled-microprofile-test</id>
+                                <id>standalone-enabled-expansion-test</id>
                                 <phase>none</phase>
                             </execution>
                         </executions>
@@ -727,7 +727,7 @@
                                 </goals>
                             </execution>
                             <execution>
-                                <id>microprofile-provisioning</id>
+                                <id>expansion-provisioning</id>
                                 <goals>
                                     <goal>provision</goal>
                                 </goals>
@@ -764,7 +764,7 @@
                                 <phase>none</phase>
                             </execution>
                             <execution>
-                                <id>standalone-enabled-microprofile-test</id>
+                                <id>standalone-enabled-expansion-test</id>
                                 <phase>none</phase>
                             </execution>
                         </executions>
@@ -783,10 +783,10 @@
              against an external dist (i.e. by using the jboss.dist property to point to one)
              and that dist does not include the full set of MP functionality. -->
         <profile>
-            <id>disable.microprofile.profile</id>
+            <id>disable.expansion.profile</id>
             <activation>
                 <property>
-                    <name>disable.microprofile.tests</name>
+                    <name>disable.expansion.tests</name>
                 </property>
             </activation>
             <build>
@@ -801,7 +801,7 @@
                                 <phase>none</phase>
                             </execution>
                             <execution>
-                                <id>standalone-enabled-microprofile-test</id>
+                                <id>standalone-enabled-expansion-test</id>
                                 <phase>none</phase>
                             </execution>
                         </executions>
@@ -824,10 +824,10 @@
         </profile>
 
         <profile>
-            <id>standalone.microprofile.profile</id>
+            <id>standalone.expansion.profile</id>
             <activation>
                 <property>
-                    <name>ts.standalone.microprofile</name>
+                    <name>ts.standalone.expansion</name>
                 </property>
             </activation>
             <build>
@@ -842,7 +842,7 @@
                                 <phase>test</phase>
                             </execution>
                             <execution>
-                                <id>standalone-enabled-microprofile-test</id>
+                                <id>standalone-enabled-expansion-test</id>
                                 <phase>none</phase>
                             </execution>
                         </executions>
@@ -941,7 +941,7 @@
                                 </configuration>
                             </execution>
                             <execution>
-                                <id>standalone-enabled-microprofile-test</id>
+                                <id>standalone-enabled-expansion-test</id>
                                 <phase>none</phase>
                             </execution>
                         </executions>
@@ -1034,7 +1034,7 @@
                                 </configuration>
                             </execution>
                             <execution>
-                                <id>standalone-enabled-microprofile-test</id>
+                                <id>standalone-enabled-expansion-test</id>
                                 <phase>none</phase>
                             </execution>
                         </executions>

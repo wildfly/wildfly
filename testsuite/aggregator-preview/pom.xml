@@ -82,7 +82,7 @@
                 <module>../integration/clustering</module>
                 <module>../integration/elytron</module>
                 <module>../integration/elytron-oidc-client</module>
-                <module>../integration/microprofile</module>
+                <module>../integration/expansion</module>
                 <module>../integration/microprofile-tck</module>
                 <module>../integration/vdx</module>
                 <module>../integration/rbac</module>
@@ -109,7 +109,7 @@
                 <module>../test-feature-pack-preview</module> <!-- needed by integration/basic -->
                 <module>../integration/basic</module>
                 <module>../integration/clustering</module>
-                <module>../integration/microprofile</module>
+                <module>../integration/expansion</module>
                 <module>../integration/microprofile-tck</module>
                 <module>../integration/elytron-oidc-client</module>
                 <module>../preview</module>
