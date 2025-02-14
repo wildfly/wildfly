@@ -29,6 +29,7 @@ import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.reflect.ClassReflectionIndex;
+import org.jboss.as.server.deployment.reflect.ClassReflectionIndexUtil;
 import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
 import org.jboss.invocation.proxy.MethodIdentifier;
 import org.jboss.metadata.ejb.spec.EjbJarMetaData;
@@ -179,7 +180,7 @@ public class DeploymentDescriptorInterceptorBindingsProcessor implements Deploym
                         final ClassReflectionIndex classIndex = index.getClassIndex(componentClass);
                         Method resolvedMethod = null;
                         if (methodData.getMethodParams() == null) {
-                            final Collection<Method> methods = classIndex.getAllMethods(methodData.getMethodName());
+                            final Collection<Method> methods = ClassReflectionIndexUtil.findAllMethodsByName(index, classIndex, methodData.getMethodName());
                             if (methods.isEmpty()) {
                                 throw EjbLogger.ROOT_LOGGER.failToFindMethodInEjbJarXml(componentClass.getName(), methodData.getMethodName());
                             } else if (methods.size() > 1) {
@@ -187,7 +188,7 @@ public class DeploymentDescriptorInterceptorBindingsProcessor implements Deploym
                             }
                             resolvedMethod = methods.iterator().next();
                         } else {
-                            final Collection<Method> methods = classIndex.getAllMethods(methodData.getMethodName(), methodData.getMethodParams().size());
+                            final Collection<Method> methods = ClassReflectionIndexUtil.findAllMethods(index, classIndex, methodData.getMethodName(), methodData.getMethodParams().size());
                             for (final Method method : methods) {
                                 boolean match = true;
                                 for (int i = 0; i < method.getParameterCount(); ++i) {

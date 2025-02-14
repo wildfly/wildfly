@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+<ejb-jar xmlns="http://xmlns.jcp.org/xml/ns/javaee"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee http://xmlns.jcp.org/xml/ns/javaee/ejb-jar_3_2.xsd" version="3.2">
+
+  <assembly-descriptor>
+    <interceptor-binding>
+        <ejb-name>FooBean</ejb-name>
+        <interceptor-class>org.jboss.as.test.integration.ejb.interceptor.superclass.FooInterceptor</interceptor-class>
+        <method>
+            <method-name>foo</method-name>
+            <method-params>
+                <method-param>java.lang.String</method-param>
+            </method-params>
+        </method>
+    </interceptor-binding>
+  </assembly-descriptor>
+</ejb-jar>
