@@ -40,14 +40,13 @@ public class JPAClassFileTransformerProcessor implements DeploymentUnitProcessor
         // during the call to CreateContainerEntityManagerFactory.
 
         DelegatingClassTransformer transformer = deploymentUnit.getAttachment(DelegatingClassTransformer.ATTACHMENT_KEY);
-        boolean appContainsPersistenceProviderJars = false;  // remove when we revert WFLY-10520
         if ( transformer != null) {
 
             for (ResourceRoot resourceRoot : DeploymentUtils.allResourceRoots(deploymentUnit)) {
                 PersistenceUnitMetadataHolder holder = resourceRoot.getAttachment(PersistenceUnitMetadataHolder.PERSISTENCE_UNITS);
                 if (holder != null) {
                     for (PersistenceUnitMetadata pu : holder.getPersistenceUnits()) {
-                        if (Configuration.needClassFileTransformer(pu)) {
+                        if (Configuration.needClassFileTransformer(pu) && pu.needsJPADelegatingClassFileTransformer()) {
                             transformer.addTransformer(new JPADelegatingClassFileTransformer(pu));
                         }
                     }
