@@ -52,6 +52,9 @@ public class JPAClassFileTransformerProcessor implements DeploymentUnitProcessor
                         }
                     }
                 }
+                if ( pu.needsJPADelegatingClassFileTransformer()) {
+                    transformer.addTransformer(new JPADelegatingClassFileTransformer(pu));
+                }
             }
         }
     }
