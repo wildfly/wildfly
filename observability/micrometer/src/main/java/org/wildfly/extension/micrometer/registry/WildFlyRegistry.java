@@ -16,25 +16,19 @@ import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Tag;
 import io.micrometer.core.instrument.Tags;
 import org.jboss.as.controller.client.helpers.MeasurementUnit;
-import org.wildfly.extension.micrometer.MicrometerExtensionLogger;
 import org.wildfly.extension.micrometer.metrics.MetricMetadata;
 import org.wildfly.extension.micrometer.metrics.WildFlyMetric;
 
 public interface WildFlyRegistry extends AutoCloseable {
     Meter remove(Meter.Id mappedId);
+    void close();
 
     default Meter.Id addMeter(WildFlyMetric metric, MetricMetadata metadata) {
-        switch (metadata.getType()) {
-            case GAUGE:
-                return addGauge(metric, metadata);
-            case COUNTER:
-                return addCounter(metric, metadata);
-            default:
-                throw MicrometerExtensionLogger.MICROMETER_LOGGER.unsupportedMetricType(metadata.getType().name());
-        }
+        return switch (metadata.getType()) {
+            case GAUGE -> addGauge(metric, metadata);
+            case COUNTER -> addCounter(metric, metadata);
+        };
     }
-
-    void close();
 
     private Meter.Id addCounter(WildFlyMetric metric, MetricMetadata metadata) {
         return FunctionCounter.builder(metadata.getMetricName(), metric,

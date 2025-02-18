@@ -12,6 +12,7 @@ import static org.jboss.logging.Logger.Level.WARN;
 import java.io.IOException;
 import java.lang.invoke.MethodHandles;
 
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.logging.BasicLogger;
 import org.jboss.logging.Logger;
@@ -67,4 +68,11 @@ public interface MicrometerExtensionLogger extends BasicLogger {
     @LogMessage(level = WARN)
     @Message(id = 11, value = "Micrometer has been enabled, but no endpoint has been configured. A No-op metrics registry has been configured.")
     void noOpRegistryChosen();
+
+    @Message(id = 12, value = "There was an error registering the metric '%s'")
+    IllegalArgumentException errorRegisteringMetric(String name);
+
+    @Message(id = 13, value = "Prometheus is not supported on host controllers")
+    OperationFailedException prometheusNotSupportedOnHostControllers();
+
 }
