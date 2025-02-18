@@ -1494,6 +1494,8 @@ public class DsParser extends AbstractParser {
                                 case DATASOURCES_4_0:
                                     parseDsSecurity(reader, operation);
                                     break;
+                                case DATASOURCES_5_0:
+                                case DATASOURCES_6_0:
                                 case DATASOURCES_7_0:
                                     parseDsSecurity_5_0(reader, operation);
                                     break;
