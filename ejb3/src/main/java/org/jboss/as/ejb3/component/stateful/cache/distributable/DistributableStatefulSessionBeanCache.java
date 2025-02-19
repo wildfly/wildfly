@@ -63,12 +63,15 @@ public class DistributableStatefulSessionBeanCache<K, V extends StatefulSessionB
     }
 
     @Override
-    public K createStatefulSessionBean() {
+    public StatefulSessionBean<K, V> createStatefulSessionBean() {
         boolean newGroup = CURRENT_GROUP.get() == null;
         if (newGroup) {
             CURRENT_GROUP.set(UNSET);
         }
-        try (Batch batch = this.manager.getBatchFactory().get()) {
+        try {
+            // Batch is not closed here - it will be closed by the StatefulSessionBean
+            boolean close = true;
+            Batch batch = this.manager.getBatchFactory().get();
             try {
                 // This will invoke createStatefulBean() for nested beans
                 // Nested beans will share the same group identifier
@@ -77,12 +80,18 @@ public class DistributableStatefulSessionBeanCache<K, V extends StatefulSessionB
                 if (CURRENT_GROUP.get() == UNSET) {
                     CURRENT_GROUP.set(id);
                 }
-                try (@SuppressWarnings("unchecked") Bean<K, V> bean = this.manager.createBean(instance, (K) CURRENT_GROUP.get())) {
-                    return bean.getId();
-                }
+                @SuppressWarnings("unchecked")
+                Bean<K, V> bean = this.manager.createBean(instance, (K) CURRENT_GROUP.get());
+                StatefulSessionBean<K, V> result = new DistributableStatefulSessionBean<>(bean, batch.suspend());
+                close = false;
+                return result;
             } catch (RuntimeException | Error e) {
                 batch.discard();
                 throw e;
+            } finally {
+                if (close) {
+                    batch.close();
+                }
             }
         } finally {
             if (newGroup) {

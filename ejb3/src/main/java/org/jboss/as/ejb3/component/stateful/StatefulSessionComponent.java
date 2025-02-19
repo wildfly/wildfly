@@ -20,6 +20,8 @@ import jakarta.ejb.EJBException;
 import jakarta.ejb.EJBLocalObject;
 import jakarta.ejb.EJBObject;
 import jakarta.ejb.RemoveException;
+import jakarta.transaction.Synchronization;
+import jakarta.transaction.TransactionSynchronizationRegistry;
 
 import org.jboss.as.ee.component.BasicComponentInstance;
 import org.jboss.as.ee.component.ComponentInstance;
@@ -30,6 +32,7 @@ import org.jboss.as.ejb3.component.EJBBusinessMethod;
 import org.jboss.as.ejb3.component.EJBComponentUnavailableException;
 import org.jboss.as.ejb3.component.allowedmethods.AllowedMethodsInformation;
 import org.jboss.as.ejb3.component.session.SessionBeanComponent;
+import org.jboss.as.ejb3.component.stateful.cache.StatefulSessionBean;
 import org.jboss.as.ejb3.component.stateful.cache.StatefulSessionBeanCache;
 import org.jboss.as.ejb3.component.stateful.cache.StatefulSessionBeanCacheConfiguration;
 import org.jboss.as.ejb3.component.stateful.cache.StatefulSessionBeanCacheFactory;
@@ -202,7 +205,25 @@ public class StatefulSessionComponent extends SessionBeanComponent implements St
     }
 
     public SessionID createSession() {
-        return this.cache.createStatefulSessionBean();
+        StatefulSessionBean<SessionID, StatefulSessionComponentInstance> bean = this.cache.createStatefulSessionBean();
+        SessionID id = bean.getId();
+        TransactionSynchronizationRegistry tsr = this.getTransactionSynchronizationRegistry();
+        // If created within an active transaction, defer bean close to tx completion
+        if (tsr.getTransactionKey() != null) {
+            tsr.registerInterposedSynchronization(new Synchronization() {
+                @Override
+                public void beforeCompletion() {
+                }
+
+                @Override
+                public void afterCompletion(int status) {
+                    bean.close();
+                }
+            });
+        } else {
+            bean.close();
+        }
+        return id;
     }
 
     /**

@@ -144,7 +144,7 @@ public class SimpleStatefulSessionBeanCache<K, V extends StatefulSessionBeanInst
     }
 
     @Override
-    public K createStatefulSessionBean() {
+    public StatefulSessionBean<K, V> createStatefulSessionBean() {
         if (CURRENT_GROUP.get() != null) {
             // An SFSB that uses a distributable cache cannot contain an SFSB that uses a simple cache
             throw EjbLogger.ROOT_LOGGER.incompatibleCaches();
@@ -152,7 +152,7 @@ public class SimpleStatefulSessionBeanCache<K, V extends StatefulSessionBeanInst
         V instance = this.factory.createInstance();
         K id = instance.getId();
         this.instances.put(id, instance);
-        return id;
+        return new SimpleStatefulSessionBean<>(instance, this.remover, this);
     }
 
     @Override

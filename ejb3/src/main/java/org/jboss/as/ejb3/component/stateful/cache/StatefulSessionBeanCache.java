@@ -23,9 +23,9 @@ public interface StatefulSessionBeanCache<K, V extends StatefulSessionBeanInstan
 
     /**
      * Creates and caches a stateful bean using a generated identifier.
-     * @return the identifier of the created session bean
+     * @return the newly created session bean
      */
-    K createStatefulSessionBean();
+    StatefulSessionBean<K, V> createStatefulSessionBean();
 
     /**
      * Returns the stateful bean with the specified identifier, or null if no such bean exists.
