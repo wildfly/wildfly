@@ -32,11 +32,17 @@ public class ReactiveEngineProvider {
     @Produces
     @ApplicationScoped
     public ReactiveStreamsEngine getEngine() {
-        ServiceLoader<ReactiveStreamsEngine> serviceLoader = AccessController.doPrivileged((PrivilegedAction<ServiceLoader<ReactiveStreamsEngine>>) () -> ServiceLoader.load(ReactiveStreamsEngine.class));
-        Iterator<ReactiveStreamsEngine> iterator = serviceLoader.iterator();
-        if (iterator.hasNext()) {
-            return iterator.next();
+        ReactiveStreamsEngine engine = AccessController.doPrivileged((PrivilegedAction<ReactiveStreamsEngine>) () -> {
+            Iterator<ReactiveStreamsEngine> iterator = ServiceLoader.load(ReactiveStreamsEngine.class).iterator();
+            if (iterator.hasNext()) {
+                return iterator.next();
+            }
+            return null;
+        });
+
+        if (engine == null) {
+            throw LOGGER.noImplementationFound(ReactiveStreamsEngine.class.getName());
         }
-        throw LOGGER.noImplementationFound(ReactiveStreamsEngine.class.getName());
+        return engine;
     }
 }
