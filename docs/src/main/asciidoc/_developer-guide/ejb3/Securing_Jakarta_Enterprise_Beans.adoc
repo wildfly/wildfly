@@ -82,8 +82,7 @@ The jboss-ejb3.xml is expected to be placed in the .jar/META-INF folder
 of a .jar deployment or .war/WEB-INF folder of a .war deployment.
 
 [[absence-of-security-domain-configuration-but-presence-of-other-security-metadata]]
-== Absence of security domain configuration but presence of other
-security metadata
+== Absence of security domain configuration but presence of other security metadata
 
 Let's consider the following example bean:
 
@@ -117,8 +116,7 @@ security domain for the bean if they want to using either the annotation
 or deployment descriptor approach explained earlier.
 
 [[access-to-methods-without-explicit-security-metadata-on-a-secured-bean]]
-== Access to methods without explicit security metadata, on a secured
-bean
+== Access to methods without explicit security metadata, on a secured bean
 
 Consider this example bean:
 
@@ -180,14 +178,14 @@ configurations, on secured beans. Setting this to false allows access to
 such methods for all users i.e. the behaviour will be switched to be
 similar to `@PermitAll`.
 
-This behaviour can also be configured at the Jakarta Enterprise Beans 3 subsystem level so
-that it applies to all Jakarta Enterprise Beans 3 deployments on the server, as follows:
+This behaviour can also be configured at the `ejb3` subsystem level so
+that it applies to all Jakarta Enterprise Beans deployments on the server, as follows:
 
 [source,xml,options="nowrap"]
 ----
 <subsystem xmlns="urn:jboss:domain:ejb3:1.4">
 ...
-            <default-missing-method-permissions-deny-access value="true"/>
+    <default-missing-method-permissions-deny-access value="true"/>
 ...
 </subsystem>
 ----

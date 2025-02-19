@@ -1,5 +1,5 @@
 [[Jakarta_Enterprise_Beans_3_Reference_Guide]]
-= Jakarta Enterprise Beans 3 Reference Guide
+= Jakarta Enterprise Beans Reference Guide
 
 ifdef::env-github[]
 :tip-caption: :bulb:
@@ -10,42 +10,32 @@ ifdef::env-github[]
 endif::[]
 
 This chapter details the extensions that are available when developing
-Enterprise Java Beans ^tm^ on WildFly {wildflyVersion}.
+Jakarta Enterprise Beans ^tm^ on WildFly {wildflyVersion}.
 
-Currently, there is no support for configuring the extensions using an
-implementation specific descriptor file.
+The chapter is divided into three main sections:
 
-[[resource-adapter-for-message-driven-beans]]
-== Resource Adapter for Message Driven Beans
+* Purely <<server-side-jakarta-enterprise-beans,server-side Jakarta Enterprise Bean>> functionality
+* <<remote-invocation-of-beans,Making remote calls>> to Jakarta Enterprise Beans running in a WildFly server.
+* <<Jakarta_Enterprise_Beans_on_Kubernetes, Jakarta Enterprise Beans on Kubernetes>>
 
-Each Message Driven Bean must be connected to a resource adapter.
+[[server-side-jakarta-enterprise-beans]]
+== Server Side Reference
 
-[[specification-of-resource-adapter-using-metadata-annotations]]
-=== Specification of Resource Adapter using Metadata Annotations
+:leveloffset: +2
 
-The `ResourceAdapter` annotation is used to specify the resource adapter
-with which the MDB should connect.
+include::ejb3/Securing_Jakarta_Enterprise_Beans.adoc[]
 
-The `value` of the annotation is the name of the deployment unit
-containing the resource adapter. For example `jms-ra.rar`.
-
-For example:
-
-[source,java,options="nowrap"]
-----
-@MessageDriven(messageListenerInterface = PostmanPat.class)
-@ResourceAdapter("ejb3-rar.rar")
-----
+:leveloffset: -2
 
 [[run-as-principal]]
-== Run-as Principal
+=== Run-as Principal
 
 Whenever a run-as role is specified for a given method invocation the
 default anonymous principal is used as the caller principal. This
 principal can be overridden by specifying a run-as principal.
 
 [[specification-of-run-as-principal-using-metadata-annotations]]
-=== Specification of Run-as Principal using Metadata Annotations
+==== Specification of Run-as Principal using Metadata Annotations
 
 The `RunAsPrincipal` annotation is used to specify the run-as principal
 to use for a given method invocation.
@@ -66,14 +56,14 @@ For example:
 ----
 
 [[security-domain-Jakarta-Enterprise-Beans-3-ref]]
-== Security Domain
+=== Security Domain
 
 Each Enterprise Java Bean ^tm^ can be associated with a security domain.
 Only when a Jakarta Enterprise Beans bean is associated with a security domain will
 authentication and authorization be enforced.
 
 [[specification-of-security-domain-using-metadata-annotations]]
-=== Specification of Security Domain using Metadata Annotations
+==== Specification of Security Domain using Metadata Annotations
 
 The `SecurityDomain` annotation is used to specify the security domain
 to associate with the Jakarta Enterprise Beans.
@@ -89,7 +79,7 @@ For example:
 ----
 
 [[transaction-timeout]]
-== Transaction Timeout
+=== Transaction Timeout
 
 For any newly started transaction a transaction timeout can be specified
 in seconds.
@@ -110,7 +100,7 @@ Take care that even when transaction attribute `REQUIRED` is specified,
 the timeout will only be applicable if a *new* transaction is started.
 
 [[specification-of-transaction-timeout-with-metadata-annotations]]
-=== Specification of Transaction Timeout with Metadata Annotations
+==== Specification of Transaction Timeout with Metadata Annotations
 
 The `TransactionTimeout` annotation is used to specify the transaction
 timeout for a given method.
@@ -127,7 +117,7 @@ result in an even amount of seconds.
 For example:@TransactionTimeout(value = 10, unit = TimeUnit.SECONDS)
 
 [[specification-of-transaction-timeout-in-the-deployment-descriptor]]
-=== Specification of Transaction Timeout in the Deployment Descriptor
+==== Specification of Transaction Timeout in the Deployment Descriptor
 
 The `trans-timeout` element is used to define the transaction timeout
 for business, home, component, and message-listener interface methods;
@@ -142,7 +132,7 @@ For the rules when a `container-transaction` is applicable please refer
 to EJB 3.1 FR 13.3.7.2.1.
 
 [[example-of-trans-timeout]]
-==== Example of trans-timeout
+===== Example of trans-timeout
 
 jboss-ejb3.xml
 
@@ -173,8 +163,39 @@ urn:trans-timeout http://www.jboss.org/j2ee/schema/trans-timeout-1_0.xsd"
 </jboss:ejb-jar>
 ----
 
+[[message-driven-beans]]
+=== Message Driven Beans
+
+[[resource-adapter-for-message-driven-beans]]
+==== Resource Adapter for Message Driven Beans
+
+Each Message Driven Bean must be connected to a resource adapter.
+
+[[specification-of-resource-adapter-using-metadata-annotations]]
+===== Specification of Resource Adapter using Metadata Annotations
+
+The `ResourceAdapter` annotation is used to specify the resource adapter
+with which the MDB should connect.
+
+The `value` of the annotation is the name of the deployment unit
+containing the resource adapter. For example `jms-ra.rar`.
+
+For example:
+
+[source,java,options="nowrap"]
+----
+@MessageDriven(messageListenerInterface = PostmanPat.class)
+@ResourceAdapter("ejb3-rar.rar")
+----
+
+:leveloffset: +3
+
+include::ejb3/Message_Driven_Beans_Controlled_Delivery.adoc[]
+
+:leveloffset: -3
+
 [[timer-service]]
-== Timer service
+=== Timer service
 
 The service is responsible to call the registered timeout methods of the
 different session beans.
@@ -188,7 +209,7 @@ timer entry became orphaned and the timer event will not longer be
 fired.
 
 [[single-event-timer]]
-=== Single event timer
+==== Single event timer
 
 The timer is will be started once at the specified time.
 
@@ -198,7 +219,7 @@ If the timer is not persistent, it will no longer be available
 if JBoss is restarted or the application is redeployed.
 
 [[recurring-timer]]
-=== Recurring timer
+==== Recurring timer
 
 The timer will be started at the specified first occurrence and after
 that point at each time if the interval is elapsed. +
@@ -213,7 +234,7 @@ If the timer is not persistent, it will no longer be active
 after the server is restarted or the application is redeployed.
 
 [[calendar-timer]]
-=== Calendar timer
+==== Calendar timer
 
 The timer will be started if the schedule expression match. It will be
 automatically deactivated and removed if there will be no next
@@ -228,7 +249,7 @@ For example:
 ----
 
 [[programmatic-calendar-timer]]
-==== Programmatic calendar timer
+===== Programmatic calendar timer
 
 If the timer is persistent it will be fetched at server start and the
 missed timeouts are called concurrent. +
@@ -245,7 +266,7 @@ server is restarted or the application is redeployed.
 fired only once like a recurring timer!
 
 [[annotated-calendar-timer]]
-==== Annotated calendar timer
+===== Annotated calendar timer
 
 If the timer is non persistent it will not activated for missed events
 during the server is down. In case of server start the timer is
@@ -258,28 +279,43 @@ method is called concurrent.
 *TODO*: clarify whether this should happen concurrently/blocked or even
 fired only once like a recurring timer!
 
-:leveloffset: +1
-
-include::ejb3/Container_interceptors.adoc[]
+:leveloffset: +2
 
 include::ejb3/Jakarta_Enterprise_Beans_Database_Persistent_Timers.adoc[]
 
 include::ejb3/Jakarta_Enterprise_Beans_Distributed_Timers.adoc[]
 
-include::ejb3/Jakarta_Enterprise_Beans_IIOP_Guide.adoc[]
-
-include::ejb3/Jakarta_Enterprise_Beans_over_HTTP.adoc[]
-
-include::ejb3/jboss-ejb3.xml_Reference.adoc[]
-
-include::ejb3/Message_Driven_Beans_Controlled_Delivery.adoc[]
-
-include::ejb3/Securing_Jakarta_Enterprise_Beans.adoc[]
+include::ejb3/Container_interceptors.adoc[]
 
 include::ejb3/Jakarta_Enterprise_Beans_Client_Interceptors.adoc[]
 
-include::ejb3/Jakarta_Enterprise_Beans_on_Kubernetes.adoc[]
+include::ejb3/Jakarta_Enterprise_Beans_IIOP_Guide.adoc[]
+
+include::ejb3/jboss-ejb3.xml_Reference.adoc[]
 
 include::ejb3/Jakarta_Enterprise_Beans_Deployment_Runtime_Resources.adoc[]
+
+:leveloffset: -2
+
+[[remote-invocation-of-beans]]
+== Remote Invocation of Jakarta Enterprise Beans
+
+:leveloffset: +2
+
+include::ejb3/Jakarta_Enterprise_Beans_over_HTTP.adoc[]
+
+include::ejb3/Scoped_Jakarta_Enterprise_Beans_client_contexts.adoc[]
+
+include::ejb3/Jakarta_Enterprise_Beans_invocations_from_a_remote_client_using_JNDI.adoc[]
+
+include::ejb3/Jakarta_Enterprise_Beans_invocations_from_a_remote_server_instance.adoc[]
+
+include::ejb3/Remote_Jakarta_Enterprise_Beans_invocations_via_JNDI_-_Jakarta_Enterprise_Beans_client_API_or_wildfly-naming-client_project.adoc[]
+
+:leveloffset: -2
+
+:leveloffset: +1
+
+include::ejb3/Jakarta_Enterprise_Beans_on_Kubernetes.adoc[]
 
 :leveloffset: -1

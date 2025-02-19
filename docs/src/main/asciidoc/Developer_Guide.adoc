@@ -4,7 +4,7 @@ WildFly developer team;
 :revnumber: {version}
 :revdate: {localdate}
 :toc: macro
-:toclevels: 2
+:toclevels: 3
 :toc-title: WildFly Developer guide
 :doctype: book
 :icons: font
@@ -64,14 +64,6 @@ include::_developer-guide/Jakarta_RESTful_Web_Services_Reference_Guide.adoc[]
 include::_developer-guide/Web_(Undertow)_Reference_Guide.adoc[]
 
 include::_developer-guide/Jakarta_XML_Web_Services_Reference_Guide.adoc[]
-
-include::_developer-guide/Scoped_Jakarta_Enterprise_Beans_client_contexts.adoc[]
-
-include::_developer-guide/Jakarta_Enterprise_Beans_invocations_from_a_remote_client_using_JNDI.adoc[]
-
-include::_developer-guide/Jakarta_Enterprise_Beans_invocations_from_a_remote_server_instance.adoc[]
-
-include::_developer-guide/Remote_Jakarta_Enterprise_Beans_invocations_via_JNDI_-_Jakarta_Enterprise_Beans_client_API_or_wildfly-naming-client_project.adoc[]
 
 include::_developer-guide/H2_Web_Console_Integration.adoc[]
 
