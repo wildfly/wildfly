@@ -5,6 +5,12 @@
 
 package org.jboss.as.jpa.processor;
 
+import static org.jboss.as.jpa.messages.JpaLogger.ROOT_LOGGER;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
+
 import org.jboss.as.jpa.config.Configuration;
 import org.jboss.as.jpa.config.PersistenceUnitMetadataHolder;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
@@ -40,22 +46,30 @@ public class JPAClassFileTransformerProcessor implements DeploymentUnitProcessor
         // during the call to CreateContainerEntityManagerFactory.
 
         DelegatingClassTransformer transformer = deploymentUnit.getAttachment(DelegatingClassTransformer.ATTACHMENT_KEY);
-        boolean appContainsPersistenceProviderJars = false;  // remove when we revert WFLY-10520
         if ( transformer != null) {
-
+            final List<PersistenceUnitMetadata> notEnhancedPersistenceUnits = new ArrayList<>();
+            int enhancedPersistenceUnitsCount = 0;
             for (ResourceRoot resourceRoot : DeploymentUtils.allResourceRoots(deploymentUnit)) {
                 PersistenceUnitMetadataHolder holder = resourceRoot.getAttachment(PersistenceUnitMetadataHolder.PERSISTENCE_UNITS);
                 if (holder != null) {
                     for (PersistenceUnitMetadata pu : holder.getPersistenceUnits()) {
-                        if (Configuration.needClassFileTransformer(pu)) {
+                        if (!Configuration.needClassFileTransformer(pu)) {
+                            notEnhancedPersistenceUnits.add(pu);
+                        } else if ( pu.needsJPADelegatingClassFileTransformer()) {
+                            enhancedPersistenceUnitsCount++;
                             transformer.addTransformer(new JPADelegatingClassFileTransformer(pu));
                         }
                     }
                 }
-                if ( pu.needsJPADelegatingClassFileTransformer()) {
-                    transformer.addTransformer(new JPADelegatingClassFileTransformer(pu));
-                }
             }
-        }
+
+            if (notEnhancedPersistenceUnits.size() > 0 && enhancedPersistenceUnitsCount > 0 ) {
+                // WFLY-20394 Log warning if applications have a mix of some persistence units with "jboss.as.jpa.classtransformer" set to false and some set to true
+                String persistenceUnitsConfiguredNotEnhanced = notEnhancedPersistenceUnits.
+                        stream().map(PersistenceUnitMetadata::getScopedPersistenceUnitName).
+                        collect(Collectors.joining(", "));
+                ROOT_LOGGER.mixedEnhancedAndNotEnhanced(persistenceUnitsConfiguredNotEnhanced);
+            }
+       }
     }
 }

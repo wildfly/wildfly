@@ -757,4 +757,15 @@ public interface JpaLogger extends BasicLogger {
     @Message(id = 75, value="Illegal to call this method from injected, managed EntityManager")
     IllegalStateException illegalCallOnCloseMethod();
 
+    /**
+     * Logs warning that a mix of bytecode enhanced + non-enhanced in this deployment was detected.
+     * Also see discussion on https://hibernate.zulipchat.com/#narrow/channel/132094-hibernate-orm-dev/topic/ORM.20bytecode.20enhancement.20.2B.20WildFly if possible.
+     * Also see https://hibernate.atlassian.net/browse/HHH-19168 + https://hibernate.atlassian.net/browse/HHH-19169
+     *
+     * @param scopedPuNames comma separated list of fully scoped persistence unit names that are non-enhanced
+     */
+    @LogMessage(level = WARN)
+    @Message(id = 76, value = "Some persistence units are configured to be bytecode enhanced but persistence unit(s) { %s } are configured to disable bytecode enhancement.  Bytecode enhancement will be performed.  Consider making all of the persistence units use bytecode enhancement.")
+    void mixedEnhancedAndNotEnhanced(String scopedPuNames);
+
 }
