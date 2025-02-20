@@ -315,7 +315,7 @@
         <version.org.keycloak>25.0.6</version.org.keycloak>
         <version.org.mockito>5.14.2</version.org.mockito>
         <version.org.syslog4j>0.9.30</version.org.syslog4j>
-        <version.org.testcontainers>1.20.4</version.org.testcontainers>
+        <version.org.testcontainers>1.20.5</version.org.testcontainers>
         <version.org.testng>7.8.0</version.org.testng>
         <!-- The MicroProfile REST Client TCK requires a newer version of TestNG. The version is explicitly overridden
              on the dependency on the MicroProfile REST Client TCK POM.
