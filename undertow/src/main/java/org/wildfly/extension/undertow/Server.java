@@ -47,7 +47,7 @@ public class Server implements Service<Server> {
     private final Supplier<ServletContainerService> servletContainer;
     private final Supplier<UndertowService> undertowService;
     private final String defaultHost;
-    private String finalRoute = null;
+    private volatile String finalRoute = null;
     private final String name;
     private final NameVirtualHostHandler virtualHostHandler = new NameVirtualHostHandler();
     private final List<ListenerService> listeners = new CopyOnWriteArrayList<>();
@@ -76,6 +76,8 @@ public class Server implements Service<Server> {
         UndertowLogger.ROOT_LOGGER.startedServer(name);
         undertowService.get().registerServer(this);
         serverConsumer.accept(this);
+
+        finalRoute = computeRoute();
     }
 
     @Override
@@ -163,9 +165,10 @@ public class Server implements Service<Server> {
     }
 
     public String getRoute() {
-        if (this.finalRoute != null) {
-            return this.finalRoute;
-        }
+        return finalRoute;
+    }
+
+    private String computeRoute() {
         final UndertowService service = this.undertowService.get();
         final String defaultServerRoute = service.getInstanceId();
         if (service.isObfuscateSessionRoute()) {
@@ -176,16 +179,14 @@ public class Server implements Service<Server> {
                 // encode
                 final byte[] digestedBytes = md.digest(defaultServerRoute.getBytes(UTF_8));
                 final Base64.Encoder encoder = Base64.getUrlEncoder().withoutPadding(); // = is not allowed in V0 Cookie
-                this.finalRoute = new String(encoder.encode(digestedBytes), UTF_8);
-                UndertowLogger.ROOT_LOGGER.obfuscatedSessionRoute(this.finalRoute, defaultServerRoute);
+                final String encodedRoute = new String(encoder.encode(digestedBytes), UTF_8);
+                UndertowLogger.ROOT_LOGGER.obfuscatedSessionRoute(encodedRoute, defaultServerRoute);
+                return encodedRoute;
             } catch (NoSuchAlgorithmException e) {
                 UndertowLogger.ROOT_LOGGER.unableToObfuscateSessionRoute(defaultServerRoute, e);
             }
         }
-        if (this.finalRoute == null ) {
-            this.finalRoute = this.name.equals(service.getDefaultServer()) ? defaultServerRoute : String.join("-", defaultServerRoute, this.name);
-        }
-        return this.finalRoute;
+        return this.name.equals(service.getDefaultServer()) ? defaultServerRoute : String.join("-", defaultServerRoute, this.name);
     }
 
     private final class DefaultHostHandler implements HttpHandler {

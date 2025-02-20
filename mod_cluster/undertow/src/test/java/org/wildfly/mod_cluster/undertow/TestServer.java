@@ -4,6 +4,7 @@
  */
 package org.wildfly.mod_cluster.undertow;
 
+import org.wildfly.common.function.Functions;
 import org.wildfly.extension.undertow.Host;
 import org.wildfly.extension.undertow.ListenerService;
 import org.wildfly.extension.undertow.Server;
@@ -15,7 +16,7 @@ final class TestServer extends Server {
     }
 
     TestServer(final String name, final String defaultHost, final UndertowService service, final Host host, final ListenerService listener) {
-        super(null, null, () -> service, name, defaultHost);
+        super(Functions.discardingConsumer(), null, () -> service, name, defaultHost);
         this.registerHost(host);
         this.registerListener(listener);
     }
