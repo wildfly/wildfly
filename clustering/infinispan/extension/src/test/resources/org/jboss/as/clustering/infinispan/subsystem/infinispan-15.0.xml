@@ -3,32 +3,40 @@
   ~ SPDX-License-Identifier: Apache-2.0
   -->
 <subsystem xmlns="urn:jboss:domain:infinispan:15.0">
-    <cache-container name="minimal" default-cache="local" marshaller="LEGACY" modules="org.wildfly.clustering.singleton.server org.wildfly.clustering.server.infinispan">
+    <cache-container name="minimal" default-cache="local" marshaller="JBOSS">
         <local-cache name="local"/>
     </cache-container>
-    <cache-container name="maximal" aliases="alias1 alias2" default-cache="local" modules="org.infinispan" marshaller="LEGACY" statistics-enabled="true">
+    <cache-container name="maximal" aliases="alias1 alias2" default-cache="local" marshaller="PROTOSTREAM" modules="org.infinispan org.infinispan.commons" statistics-enabled="true">
         <transport channel="maximal-channel" lock-timeout="120000"/>
+        <blocking-thread-pool min-threads="11"
+                              max-threads="12"
+                              queue-length="13"
+                              keepalive-time="14"/>
         <listener-thread-pool min-threads="21"
                               max-threads="22"
                               queue-length="23"
                               keepalive-time="24"/>
-        <expiration-thread-pool min-threads="71"
-                                keepalive-time="72"/>
-        <local-cache name="local" modules="org.infinispan" statistics-enabled="true">
+        <non-blocking-thread-pool min-threads="31"
+                              max-threads="32"
+                              queue-length="33"
+                              keepalive-time="34"/>
+        <expiration-thread-pool min-threads="41"
+                                keepalive-time="42"/>
+        <local-cache name="local" modules="org.infinispan org.infinispan.commons" statistics-enabled="true">
             <locking acquire-timeout="30000" concurrency-level="2000" isolation="NONE" striping="true"/>
-            <transaction mode="BATCH" stop-timeout="60000" locking="OPTIMISTIC"/>
+            <transaction mode="BATCH" stop-timeout="60000" locking="OPTIMISTIC" complete-timeout="60000"/>
             <heap-memory size="20000"/>
             <expiration interval="10000" lifespan="10" max-idle="10"/>
             <file-store fetch-state="false" passivation="false" path="path" preload="true" purge="false" relative-to="jboss.server.temp.dir" shared="true">
                 <write-behind modification-queue-size="2048"/>
             </file-store>
         </local-cache>
-        <invalidation-cache name="invalid" statistics-enabled="true">
+        <invalidation-cache name="invalid" modules="org.infinispan" statistics-enabled="true">
             <locking acquire-timeout="30000" concurrency-level="2000" isolation="READ_UNCOMMITTED" striping="true"/>
             <transaction mode="NON_XA" stop-timeout="60000" locking="OPTIMISTIC"/>
-            <off-heap-memory size="20000"/>
+            <off-heap-memory size="20000" size-unit="BYTES"/>
             <expiration interval="10000" lifespan="10" max-idle="10"/>
-            <remote-store cache="default" remote-servers="hotrod-server-1 hotrod-server-2" socket-timeout="60000" tcp-no-delay="true" fetch-state="false" passivation="false" preload="true" purge="false" shared="false">
+            <remote-store cache="default" remote-servers="hotrod-server-1 hotrod-server-2" socket-timeout="60000" tcp-no-delay="true" fetch-state="false" passivation="false" preload="true" purge="false" shared="false" segmented="false">
                 <write-behind modification-queue-size="2048"/>
                 <property name="valueSizeEstimate">100</property>
             </remote-store>
@@ -39,20 +47,30 @@
         <replicated-cache name="repl" statistics-enabled="true">
             <locking acquire-timeout="30000" concurrency-level="2000" isolation="SERIALIZABLE" striping="true"/>
             <transaction mode="NON_DURABLE_XA" stop-timeout="60000" locking="OPTIMISTIC"/>
-            <off-heap-memory size="20000"/>
+            <off-heap-memory size="20000" size-unit="BYTES"/>
             <expiration interval="10000" lifespan="10" max-idle="10"/>
-            <store class="org.infinispan.configuration.cache.SingleFileStoreConfigurationBuilder" fetch-state="true" passivation="true" preload="false" purge="true" shared="false">
+            <store class="org.infinispan.configuration.cache.SingleFileStoreConfigurationBuilder" fetch-state="true" passivation="true" preload="false" purge="true" shared="false" segmented="false">
                 <write-behind modification-queue-size="2048"/>
                 <property name="location">${java.io.tmpdir}</property>
             </store>
+            <partition-handling when-split="ALLOW_READS" merge-policy="REMOVE_ALL"/>
             <state-transfer timeout="0" chunk-size="10000"/>
         </replicated-cache>
-        <distributed-cache name="dist" l1-lifespan="1200000" owners="4" remote-timeout="35000" segments="2" capacity-factor="1.0" statistics-enabled="true" modules="org.wildfly.clustering.session.infinispan.embedded">
+        <distributed-cache name="dist" l1-lifespan="1200000" owners="4" remote-timeout="35000" segments="2" capacity-factor="1.0" statistics-enabled="true">
             <locking acquire-timeout="30000" concurrency-level="2000" isolation="READ_COMMITTED" striping="true"/>
             <transaction mode="FULL_XA" stop-timeout="60000" locking="OPTIMISTIC"/>
-            <heap-memory size="20000"/>
+            <heap-memory size="100"/>
             <expiration interval="10000" lifespan="10" max-idle="10"/>
-            <partition-handling when-split="DENY_READ_WRITES" merge-policy="NONE"/>
+            <jdbc-store data-source="ExampleDS" dialect="MARIA_DB" fetch-state="false" passivation="false" preload="true" purge="false" shared="false" max-batch-size="100">
+                <write-behind modification-queue-size="2048"/>
+                <table prefix="foo" fetch-size="100" create-on-start="false" drop-on-stop="true">
+                    <id-column name="id" type="VARCHAR"/>
+                    <data-column name="datum" type="BINARY"/>
+                    <segment-column name="segment" type="INTEGER"/>
+                    <timestamp-column name="version" type="BIGINT"/>
+                </table>
+            </jdbc-store>
+            <partition-handling when-split="DENY_READ_WRITES"/>
             <state-transfer timeout="60000" chunk-size="10000"/>
             <backups>
                 <backup site="NYC" failure-policy="WARN" strategy="SYNC" timeout="12000" enabled="false"/>
@@ -66,27 +84,16 @@
             <locking acquire-timeout="30000" concurrency-level="2000" isolation="READ_COMMITTED" striping="true"/>
             <heap-memory size="20000"/>
             <expiration interval="10000" lifespan="10" max-idle="10"/>
-            <partition-handling merge-policy="NONE"/>
+            <partition-handling merge-policy="PREFERRED_NON_NULL"/>
             <state-transfer timeout="60000" chunk-size="10000"/>
         </scattered-cache>
-        <replicated-cache name="cache-with-jdbc-store" statistics-enabled="true">
-            <jdbc-store data-source="ExampleDS" dialect="MARIA_DB" fetch-state="false" passivation="false" preload="true" purge="false" shared="false" max-batch-size="100">
-                <write-behind modification-queue-size="2048"/>
-                <table prefix="ispn_bucket" fetch-size="100">
-                    <id-column name="id" type="VARCHAR"/>
-                    <data-column name="datum" type="BINARY"/>
-                    <timestamp-column name="version" type="BIGINT"/>
-                </table>
-            </jdbc-store>
-            <state-transfer timeout="60000" chunk-size="10000"/>
-        </replicated-cache>
     </cache-container>
     <remote-cache-container connection-timeout="1000"
                             default-remote-cluster="primary-site"
                             key-size-estimate="512"
                             max-retries="2"
-                            modules="org.wildfly.clustering.session.infinispan.remote"
-                            marshaller="LEGACY"
+                            marshaller="JBOSS"
+                            modules="org.infinispan org.infinispan.commons"
                             name="my-remote-container"
                             protocol-version="3.0"
                             socket-timeout="1000"
