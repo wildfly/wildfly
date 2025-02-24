@@ -34,6 +34,15 @@
     <description>Controls execution of testsuite modules relevant to testing functionality
         available via the wildfly-preview feature pack</description>
 
+    <dependencies>
+        <dependency>
+            <groupId>${full.maven.groupId}</groupId>
+            <artifactId>wildfly-ts-build-demander-preview</artifactId>
+            <version>${project.version}</version>
+            <type>pom</type>
+        </dependency>
+    </dependencies>
+
 
     <profiles>
 

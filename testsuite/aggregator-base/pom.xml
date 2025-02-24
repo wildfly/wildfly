@@ -34,6 +34,15 @@
     <description>Controls execution of testsuite modules relevant to testing functionality
                  available via the wildfly-ee-galleon-pack feature pack</description>
 
+    <dependencies>
+        <dependency>
+            <groupId>${ee.maven.groupId}</groupId>
+            <artifactId>wildfly-ts-build-demander-base</artifactId>
+            <version>${project.version}</version>
+            <type>pom</type>
+        </dependency>
+    </dependencies>
+
     <profiles>
 
         <!-- -Dts.smoke -->
