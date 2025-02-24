@@ -39,6 +39,16 @@ Note that this an alternative to the existing WildFly Metrics extension. While t
 [standalone@localhost:9990 /] reload
 ----
 
+Additionally, WildFly support for OpenTelemetry and MicroProfile Telemetry now includes support for metrics as well. Running these in conjunction with Micrometer poses the same performance concerns mentioned above, so administrators/developers are advised to choose one subsystem and remove the other. If, however, Micrometer metrics and OpenTelemetry tracing/logging are both desired, OpenTelemetry/MicroProfile Telemetry metrics can be disabled via a system property:
+
+[source,options="nowrap"]
+-----
+[standalone@localhost:9990 /] /system-property=otel.metrics.exporter:add(value=none)
+[standalone@localhost:9990 /] reload
+-----
+
+or via `otel.metrics.exporter=none` in a MicroProfile Config `ConfigSource`.
+
 == Management Model
 
 The `/subsystem=micrometer` resource defines three attributes:

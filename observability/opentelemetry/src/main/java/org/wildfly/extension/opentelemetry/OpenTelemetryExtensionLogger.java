@@ -73,4 +73,8 @@ interface OpenTelemetryExtensionLogger extends BasicLogger {
 
     @Message(id = 13, value = "The 'jaeger' exporter is no longer supported. Please update the system to use " + EXPORTER_OTLP + ".")
     String jaegerIsNoLongerSupported();
+
+    @LogMessage(level = INFO)
+    @Message(id = 14, value = "Additional metrics systems discovered while configuring OpenTelemetry: %s. Please refer to the documentation for more information.")
+    void multipleMetricsSystemsEnabled(String others);
 }

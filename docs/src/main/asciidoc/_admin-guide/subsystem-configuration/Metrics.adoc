@@ -14,7 +14,13 @@ endif::[]
 This subsystem exposes only base metrics from the WildFly Management Model and JVM MBeans.
 
 https://microprofile.io/project/eclipse/microprofile-metrics[MicroProfile Metrics] is no longer supported by WildFly. For
-a more robust alternative, see https://micrometer.io[Micrometer] and the _micrometer_ subsystem.
+a more robust alternative, see any of the following:
+
+* https://micrometer.io[Micrometer] and the xref:Micrometer.adoc[_micrometer_ subsystem]
+* https://opentelemetry.io[OpenTelemetry] and the xref:Observability_Tracing.adoc[_opentelemetry_ subsystem]
+* https://microprofile.io/specifications/telemetry/[MicroProfile Telemetry] and the xref:MicroProfile_Telemetry.adoc[_microprofile-telemetry_ subsystem]
+
+Note that these new subsystems also offer metrics support, so their use in conjunction with this subsystem may carry some performance concerns. Please read the sections of the Admin Guide for each of these subsystems before enabling them.
 ====
 
 [[metrics-required-extension-metrics]]

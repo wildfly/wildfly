@@ -15,10 +15,40 @@ endif::[]
 This extension is not included in any of the standalone configurations included in the WildFly distribution.
 To enable, the administrator must run the following CLI commands:
 
-```
- $ jboss-cli.sh -c "/extension=org.wildfly.extension.opentelemetry:add()"
- $ jboss-cli.sh -c "/subsystem=opentelemetry:add()"
-```
+[source,options=nowrap]
+-----
+[standalone@localhost:9990 /]  /extension=org.wildfly.extension.opentelemetry:add()
+[standalone@localhost:9990 /]  /subsystem=opentelemetry:add()
+-----
+
+[IMPORTANT]
+The OpenTelemetry subsystem provides support for all three "pillars" of observability: traces, metrics, and logging. It is important for administrators to note that WildFly also supports two other metrics-reporting subsystems, `metrics` and `micrometer`. While these subsystems may all be run concurrently, it is not advisable, as this will likely have an impact on server performance due to the duplicated metrics collection.
+
+To disable WildFly Metrics, then, issue these commands:
+
+[source,options="nowrap"]
+----
+[standalone@localhost:9990 /] /subsystem=metrics:remove()
+[standalone@localhost:9990 /] /extension=org.wildfly.extension.metrics:remove()
+[standalone@localhost:9990 /] reload
+----
+
+and to disable Micrometer, issue these commands:
+
+[source,options="nowrap"]
+----
+[standalone@localhost:9990 /] /subsystem=micrometer:remove()
+[standalone@localhost:9990 /] /extension=org.wildfly.extension.micrometer:remove()
+[standalone@localhost:9990 /] reload
+----
+
+If, however, the use of Micrometer is desired for metrics and OpenTelemetry for tracing, for example, OpenTelemetry metrics can be disabled via `otel.metrics.exporter=none` in a MicroProfile Config `ConfigSource` or by setting a system either when starting the server or via the server config file:
+
+[source,options="nowrap"]
+-----
+[standalone@localhost:9990 /] /system-property=otel.metrics.exporter:add(value=none)
+[standalone@localhost:9990 /] reload
+-----
 
 == Configuration
 
