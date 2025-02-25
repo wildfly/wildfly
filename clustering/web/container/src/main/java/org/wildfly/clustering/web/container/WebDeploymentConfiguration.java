@@ -5,6 +5,8 @@
 
 package org.wildfly.clustering.web.container;
 
+import org.jboss.modules.Module;
+
 /**
  * Defines the configuration of a web deployment.
  * @author Paul Ferraro
@@ -22,4 +24,10 @@ public interface WebDeploymentConfiguration {
      * @return a deployment name
      */
     String getDeploymentName();
+
+    /**
+     * Returns the deployment module
+     * @return the deployment module
+     */
+    Module getModule();
 }

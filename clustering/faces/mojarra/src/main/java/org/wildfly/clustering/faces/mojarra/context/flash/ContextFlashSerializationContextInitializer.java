@@ -16,6 +16,8 @@ import org.wildfly.clustering.marshalling.protostream.SerializationContext;
 import org.wildfly.clustering.marshalling.protostream.SerializationContextInitializer;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
+import com.sun.faces.context.flash.ELFlash;
+
 import jakarta.servlet.http.HttpSessionActivationListener;
 
 /**
@@ -25,7 +27,7 @@ import jakarta.servlet.http.HttpSessionActivationListener;
 public class ContextFlashSerializationContextInitializer extends AbstractSerializationContextInitializer {
 
     public ContextFlashSerializationContextInitializer() {
-        super("com.sun.faces.context.flash.proto");
+        super(ELFlash.class.getPackage());
     }
 
     @Override

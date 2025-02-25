@@ -11,6 +11,8 @@ import org.wildfly.clustering.marshalling.protostream.ProtoStreamMarshaller;
 import org.wildfly.clustering.marshalling.protostream.SerializationContext;
 import org.wildfly.clustering.marshalling.protostream.SerializationContextInitializer;
 
+import com.sun.faces.context.StateContext;
+
 /**
  * @author Paul Ferraro
  */
@@ -18,7 +20,7 @@ import org.wildfly.clustering.marshalling.protostream.SerializationContextInitia
 public class ContextSerializationContextInitializer extends AbstractSerializationContextInitializer {
 
     public ContextSerializationContextInitializer() {
-        super("com.sun.faces.context.proto");
+        super(StateContext.class.getPackage());
     }
 
     @Override

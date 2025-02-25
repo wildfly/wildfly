@@ -20,7 +20,7 @@ import org.wildfly.clustering.marshalling.protostream.reflect.BinaryFieldMarshal
 public class UtilProxyBeanSerializationContextInitializer extends AbstractSerializationContextInitializer {
 
     public UtilProxyBeanSerializationContextInitializer() {
-        super("org.jboss.weld.bean.proxy.util.proto");
+        super(SerializableClientProxy.class.getPackage());
     }
 
     @Override

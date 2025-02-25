@@ -10,6 +10,8 @@ import org.wildfly.clustering.marshalling.protostream.AbstractSerializationConte
 import org.wildfly.clustering.marshalling.protostream.SerializationContext;
 import org.wildfly.clustering.marshalling.protostream.SerializationContextInitializer;
 
+import com.sun.faces.util.LRUMap;
+
 /**
  * @author Paul Ferraro
  */
@@ -17,7 +19,7 @@ import org.wildfly.clustering.marshalling.protostream.SerializationContextInitia
 public class UtilSerializationContextInitializer extends AbstractSerializationContextInitializer {
 
     public UtilSerializationContextInitializer() {
-        super("com.sun.faces.util.proto");
+        super(LRUMap.class.getPackage());
     }
 
     @Override

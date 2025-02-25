@@ -29,7 +29,7 @@ import org.wildfly.clustering.marshalling.protostream.reflect.TernaryFieldMarsha
 public class ProxyBeanSerializationContextInitializer extends AbstractSerializationContextInitializer {
 
     public ProxyBeanSerializationContextInitializer() {
-        super("org.jboss.weld.bean.proxy.proto");
+        super(ProxyMethodHandler.class.getPackage());
     }
 
     @Override

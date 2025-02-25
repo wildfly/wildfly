@@ -5,6 +5,7 @@
 
 package org.wildfly.clustering.weld.ejb;
 
+import org.jboss.as.weld.ejb.SerializedStatefulSessionObject;
 import org.jboss.as.weld.ejb.StatefulSessionObjectReferenceImpl;
 import org.kohsuke.MetaInfServices;
 import org.wildfly.clustering.marshalling.protostream.AbstractSerializationContextInitializer;
@@ -19,7 +20,7 @@ import org.wildfly.clustering.marshalling.protostream.reflect.ProxyMarshaller;
 public class WildFlyWeldEJBSerializationContextInitializer extends AbstractSerializationContextInitializer {
 
     public WildFlyWeldEJBSerializationContextInitializer() {
-        super("org.jboss.as.weld.ejb.proto");
+        super(SerializedStatefulSessionObject.class.getPackage());
     }
 
     @Override

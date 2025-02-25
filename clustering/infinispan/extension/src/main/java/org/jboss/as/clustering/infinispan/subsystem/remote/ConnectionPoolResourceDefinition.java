@@ -17,6 +17,7 @@ import org.jboss.as.clustering.controller.ManagementResourceRegistration;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.ResourceServiceHandler;
 import org.jboss.as.clustering.controller.SimpleResourceRegistrar;
+import org.jboss.as.clustering.infinispan.subsystem.InfinispanSubsystemModel;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -39,6 +40,7 @@ import org.wildfly.subsystem.service.capability.CapabilityServiceInstaller;
  *
  * @author Radoslav Husar
  */
+@Deprecated(forRemoval = true)
 public class ConnectionPoolResourceDefinition extends ComponentResourceDefinition {
 
     public static final PathElement PATH = pathElement("connection-pool");
@@ -84,6 +86,8 @@ public class ConnectionPoolResourceDefinition extends ComponentResourceDefinitio
 
     ConnectionPoolResourceDefinition() {
         super(PATH);
+        // No longer used as of Infinispan 15.1
+        this.setDeprecated(InfinispanSubsystemModel.VERSION_20_0_0.getVersion());
     }
 
     @Override

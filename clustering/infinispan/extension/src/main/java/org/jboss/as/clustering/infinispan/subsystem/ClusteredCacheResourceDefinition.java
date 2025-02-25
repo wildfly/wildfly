@@ -29,7 +29,7 @@ import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.wildfly.clustering.server.util.MapEntry;
-import org.wildfly.subsystem.resource.capability.ResourceCapabilityReferenceRecorder;
+import org.wildfly.subsystem.resource.capability.ResourceCapabilityReference;
 import org.wildfly.subsystem.service.capture.FunctionExecutorRegistry;
 
 /**
@@ -75,7 +75,7 @@ public class ClusteredCacheResourceDefinition extends CacheResourceDefinition {
         public ResourceDescriptor apply(ResourceDescriptor descriptor) {
             return this.configurator.apply(descriptor)
                     .addAttributes(Attribute.class)
-                    .addResourceCapabilityReference(ResourceCapabilityReferenceRecorder.builder(CACHE_CONFIGURATION_CAPABILITY, JGroupsTransportResourceDefinition.TRANSPORT_CHANNEL).withRequirementNameResolver(UnaryCapabilityNameResolver.PARENT).build())
+                    .addResourceCapabilityReference(ResourceCapabilityReference.builder(CACHE_CONFIGURATION_CAPABILITY, JGroupsTransportResourceDefinition.TRANSPORT_CHANNEL).withRequirementNameResolver(UnaryCapabilityNameResolver.PARENT).build())
                     ;
         }
     }

@@ -49,6 +49,7 @@ import org.wildfly.clustering.server.service.DefaultCacheServiceInstallerProvide
 import org.wildfly.clustering.server.service.ProvidedBinaryServiceInstallerProvider;
 import org.wildfly.clustering.singleton.service.SingletonServiceTargetFactory;
 import org.wildfly.service.descriptor.UnaryServiceDescriptor;
+import org.wildfly.subsystem.resource.capability.CapabilityReference;
 import org.wildfly.subsystem.resource.operation.ResourceOperationRuntimeHandler;
 import org.wildfly.subsystem.service.ResourceServiceConfigurator;
 import org.wildfly.subsystem.service.ResourceServiceInstaller;
@@ -84,7 +85,7 @@ public class CacheContainerResourceDefinition extends ChildResourceDefinition<Ma
         DEFAULT_CACHE("default-cache", ModelType.STRING) {
             @Override
             public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
-                return builder.setAllowExpression(false).setCapabilityReference(org.wildfly.subsystem.resource.capability.CapabilityReferenceRecorder.builder(DEFAULT_CACHE_CONFIGURATION_CAPABILITY, InfinispanServiceDescriptor.CACHE_CONFIGURATION).withParentPath(WILDCARD_PATH).build());
+                return builder.setAllowExpression(false).setCapabilityReference(CapabilityReference.builder(DEFAULT_CACHE_CONFIGURATION_CAPABILITY, InfinispanServiceDescriptor.CACHE_CONFIGURATION).withParentPath(WILDCARD_PATH).build());
             }
         },
         STATISTICS_ENABLED(ModelDescriptionConstants.STATISTICS_ENABLED, ModelType.BOOLEAN) {

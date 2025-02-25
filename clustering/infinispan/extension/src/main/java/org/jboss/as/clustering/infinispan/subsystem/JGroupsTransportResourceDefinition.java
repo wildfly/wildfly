@@ -42,8 +42,8 @@ import org.wildfly.clustering.server.service.CacheContainerServiceInstallerProvi
 import org.wildfly.clustering.server.service.ProvidedBiServiceInstallerProvider;
 import org.wildfly.clustering.server.util.MapEntry;
 import org.wildfly.service.descriptor.UnaryServiceDescriptor;
-import org.wildfly.subsystem.resource.capability.CapabilityReferenceRecorder;
-import org.wildfly.subsystem.resource.capability.ResourceCapabilityReferenceRecorder;
+import org.wildfly.subsystem.resource.capability.CapabilityReference;
+import org.wildfly.subsystem.resource.capability.ResourceCapabilityReference;
 import org.wildfly.subsystem.service.ResourceServiceInstaller;
 import org.wildfly.subsystem.service.ServiceDependency;
 import org.wildfly.subsystem.service.capability.CapabilityServiceInstaller;
@@ -68,7 +68,7 @@ public class JGroupsTransportResourceDefinition extends TransportResourceDefinit
             @Override
             public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
                 return builder.setAllowExpression(false)
-                        .setCapabilityReference(CapabilityReferenceRecorder.builder(CAPABILITY, ChannelFactory.SERVICE_DESCRIPTOR).build())
+                        .setCapabilityReference(CapabilityReference.builder(CAPABILITY, ChannelFactory.SERVICE_DESCRIPTOR).build())
                         ;
             }
         },
@@ -106,7 +106,7 @@ public class JGroupsTransportResourceDefinition extends TransportResourceDefinit
         public ResourceDescriptor apply(ResourceDescriptor descriptor) {
             return descriptor.addAttributes(Attribute.class)
                     .addCapabilities(List.of(CAPABILITY))
-                    .addResourceCapabilityReference(ResourceCapabilityReferenceRecorder.builder(CAPABILITY, ChannelFactory.DEFAULT_SERVICE_DESCRIPTOR).build())
+                    .addResourceCapabilityReference(ResourceCapabilityReference.builder(CAPABILITY, ChannelFactory.DEFAULT_SERVICE_DESCRIPTOR).build())
                     ;
         }
     }

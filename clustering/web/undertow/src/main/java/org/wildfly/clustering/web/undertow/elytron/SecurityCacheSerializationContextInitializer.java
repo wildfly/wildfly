@@ -9,6 +9,7 @@ import org.kohsuke.MetaInfServices;
 import org.wildfly.clustering.marshalling.protostream.AbstractSerializationContextInitializer;
 import org.wildfly.clustering.marshalling.protostream.SerializationContext;
 import org.wildfly.clustering.marshalling.protostream.SerializationContextInitializer;
+import org.wildfly.security.cache.CachedIdentity;
 
 /**
  * Marshaller registration for the {@link org.wildfly.security.cache} package.
@@ -18,7 +19,7 @@ import org.wildfly.clustering.marshalling.protostream.SerializationContextInitia
 public class SecurityCacheSerializationContextInitializer extends AbstractSerializationContextInitializer {
 
     public SecurityCacheSerializationContextInitializer() {
-        super("org.wildfly.security.cache.proto");
+        super(CachedIdentity.class.getPackage());
     }
 
     @Override

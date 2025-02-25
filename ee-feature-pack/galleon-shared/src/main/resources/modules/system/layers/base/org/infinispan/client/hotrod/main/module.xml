@@ -26,7 +26,9 @@
         <module name="io.netty.netty-transport-native-epoll"/>
         <module name="io.netty.netty-transport-native-kqueue"/>
         <module name="io.reactivex.rxjava3.rxjava"/>
+        <module name="org.infinispan.api"/>
         <module name="org.infinispan.commons"/>
+        <module name="org.infinispan.counter"/>
         <module name="org.infinispan.protostream"/>
         <module name="org.infinispan.protostream.types"/>
         <module name="org.infinispan.query.client"/>

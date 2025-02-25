@@ -38,7 +38,7 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.modules.Module;
 import org.wildfly.clustering.server.util.MapEntry;
-import org.wildfly.subsystem.resource.capability.CapabilityReferenceRecorder;
+import org.wildfly.subsystem.resource.capability.CapabilityReference;
 import org.wildfly.subsystem.service.ServiceDependency;
 
 /**
@@ -55,7 +55,7 @@ public class JDBCStoreResourceDefinition extends StoreResourceDefinition<JDBCSto
             @Override
             public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
                 return builder.setRequired(true)
-                        .setCapabilityReference(CapabilityReferenceRecorder.builder(CAPABILITY, CommonServiceDescriptor.DATA_SOURCE).build())
+                        .setCapabilityReference(CapabilityReference.builder(CAPABILITY, CommonServiceDescriptor.DATA_SOURCE).build())
                         ;
             }
         },

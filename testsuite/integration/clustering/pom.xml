@@ -1202,7 +1202,6 @@
                                     <!-- Needed for EJB client tests -->
                                     <useSystemClassLoader>true</useSystemClassLoader>
                                     <useManifestOnlyJar>true</useManifestOnlyJar>
-                                    <forkMode>once</forkMode>
                                     <environmentVariables>
                                         <BYTEMAN_HOME/>
                                     </environmentVariables>

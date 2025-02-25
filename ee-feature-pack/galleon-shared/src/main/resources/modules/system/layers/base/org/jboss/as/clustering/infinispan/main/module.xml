@@ -29,11 +29,13 @@
         <module name="io.netty.netty-transport-native-kqueue"/>
         <module name="io.reactivex.rxjava3.rxjava"/>
         <module name="net.jcip"/>
-        <module name="org.infinispan.core" services="import"/>
-        <module name="org.infinispan.persistence.jdbc"/>
-        <module name="org.infinispan.persistence.remote"/>
         <module name="org.infinispan.client.hotrod"/>
         <module name="org.infinispan.commons"/>
+        <module name="org.infinispan.core" services="import"/>
+        <module name="org.infinispan.counter"/>
+        <module name="org.infinispan.lock"/>
+        <module name="org.infinispan.persistence.jdbc"/>
+        <module name="org.infinispan.persistence.remote"/>
         <module name="org.infinispan.protostream"/>
         <module name="org.infinispan.query.client"/>
         <module name="org.jboss.as.clustering.common"/>

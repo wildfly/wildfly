@@ -19,6 +19,7 @@ import org.wildfly.clustering.marshalling.protostream.SerializationContextInitia
 import org.wildfly.clustering.marshalling.protostream.reflect.FieldMarshaller;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
+import jakarta.faces.component.FacesComponent;
 import jakarta.faces.component.StateHolder;
 import jakarta.faces.component.UIComponent;
 import jakarta.faces.context.FacesContext;
@@ -27,7 +28,7 @@ import jakarta.faces.context.FacesContext;
 public class ComponentSerializationContextInitializer extends AbstractSerializationContextInitializer {
 
     public ComponentSerializationContextInitializer() {
-        super("jakarta.faces.component.proto");
+        super(FacesComponent.class.getPackage());
     }
 
     @Override

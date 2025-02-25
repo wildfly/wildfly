@@ -1807,6 +1807,7 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
         }
 
         addRequiredChildOperations(address, RemoteCacheContainerResourceDefinition.REQUIRED_CHILDREN, operations);
+        addRequiredChildOperations(address, Set.of(ConnectionPoolResourceDefinition.PATH), operations);
 
         while (reader.hasNext() && (reader.nextTag() != XMLStreamConstants.END_ELEMENT)) {
             XMLElement element = XMLElement.forName(reader.getLocalName());
