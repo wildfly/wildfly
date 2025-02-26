@@ -1,0 +1,10 @@
+{
+    "realm" : "WildFly",
+    "resource" : "PostLogoutApp",
+    "public-client" : "false",
+    "auth-server-url" : "${oidc.logout.auth.server.url}",
+    "ssl-required" : "EXTERNAL",
+    "credentials" : {
+        "secret" : "longerclientsecretthatisstleast256bitslong"
+    }
+}
