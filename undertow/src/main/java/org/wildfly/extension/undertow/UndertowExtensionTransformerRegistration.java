@@ -5,6 +5,9 @@
 
 package org.wildfly.extension.undertow;
 
+import static org.wildfly.extension.undertow.AccessLogDefinition.CLOSE_RETRY_COUNT;
+import static org.wildfly.extension.undertow.AccessLogDefinition.CLOSE_RETRY_DELAY;
+
 import java.util.EnumSet;
 import java.util.Set;
 
@@ -19,6 +22,8 @@ import org.jboss.as.controller.transform.description.RejectAttributeChecker;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.as.controller.transform.description.TransformationDescription;
 import org.jboss.as.controller.transform.description.TransformationDescriptionBuilder;
+import org.jboss.as.controller.transform.description.RejectAttributeChecker.SimpleRejectAttributeChecker;
+import org.jboss.dmr.ModelNode;
 import org.kohsuke.MetaInfServices;
 import org.wildfly.extension.undertow.handlers.HandlerDefinitions;
 import org.wildfly.extension.undertow.handlers.ReverseProxyHandlerDefinition;
@@ -66,6 +71,13 @@ public class UndertowExtensionTransformerRegistration implements ExtensionTransf
                 ajpListenerAttributeTransformationDescriptionBuilder.setDiscard(DiscardAttributeChecker.UNDEFINED, AjpListenerResourceDefinition.ALLOWED_REQUEST_ATTRIBUTES_PATTERN)
                 .addRejectCheck(RejectAttributeChecker.DEFINED, AjpListenerResourceDefinition.ALLOWED_REQUEST_ATTRIBUTES_PATTERN)
                 .end();
+
+                final AttributeTransformationDescriptionBuilder accessLogAttributeBuilder = server.addChildResource(HostDefinition.PATH_ELEMENT).addChildResource(AccessLogDefinition.PATH_ELEMENT).getAttributeBuilder()
+                        .setDiscard(DiscardAttributeChecker.DEFAULT_VALUE, CLOSE_RETRY_COUNT)
+                        .setDiscard(DiscardAttributeChecker.DEFAULT_VALUE, CLOSE_RETRY_DELAY)
+                        .addRejectCheck(new SimpleRejectAttributeChecker(ModelNode.TRUE), CLOSE_RETRY_COUNT.getName())
+                        .addRejectCheck(new SimpleRejectAttributeChecker(ModelNode.TRUE), CLOSE_RETRY_DELAY.getName());
+                accessLogAttributeBuilder.end();
 
                 if (UndertowSubsystemModel.VERSION_13_0_0.requiresTransformation(version)) {
                     final ResourceTransformationDescriptionBuilder servletContainer = subsystem.addChildResource(ServletContainerDefinition.PATH_ELEMENT);
