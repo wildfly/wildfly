@@ -52,8 +52,6 @@ public abstract class LayersTestBase {
             "org.hornetq.client",
             // TODO we need to add an xts layer
             "org.jboss.as.xts",
-            // TODO should an undertow layer specify this?
-            "org.wildfly.event.logger",
     };
 
     /**

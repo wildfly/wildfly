@@ -73,7 +73,7 @@
         <module name="org.jboss.xnio"/>
         <module name="org.jboss.xnio.nio" services="import"/>
         <module name="org.wildfly.http-client.common"/>
-        <module name="org.wildfly.event.logger" optional="true"/>
+        <module name="org.wildfly.event.logger"/>
         <module name="org.wildfly.common" optional="true"/>
         <module name="org.wildfly.service"/>
         <module name="org.wildfly.subsystem"/>
