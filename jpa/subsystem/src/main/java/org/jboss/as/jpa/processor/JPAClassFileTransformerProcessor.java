@@ -5,7 +5,6 @@
 
 package org.jboss.as.jpa.processor;
 
-import org.jboss.as.jpa.config.Configuration;
 import org.jboss.as.jpa.config.PersistenceUnitMetadataHolder;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -46,7 +45,7 @@ public class JPAClassFileTransformerProcessor implements DeploymentUnitProcessor
                 PersistenceUnitMetadataHolder holder = resourceRoot.getAttachment(PersistenceUnitMetadataHolder.PERSISTENCE_UNITS);
                 if (holder != null) {
                     for (PersistenceUnitMetadata pu : holder.getPersistenceUnits()) {
-                        if (Configuration.needClassFileTransformer(pu) && pu.needsJPADelegatingClassFileTransformer()) {
+                        if (pu.needsJPADelegatingClassFileTransformer()) {
                             transformer.addTransformer(new JPADelegatingClassFileTransformer(pu));
                         }
                     }

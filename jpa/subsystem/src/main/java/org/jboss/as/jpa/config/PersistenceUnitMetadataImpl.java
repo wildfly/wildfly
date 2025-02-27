@@ -101,7 +101,7 @@ public class PersistenceUnitMetadataImpl implements PersistenceUnitMetadata {
 
     private volatile Map<URL, Index> annotationIndex;
 
-    private final AtomicBoolean needsJPADelegatingClassFileTransformer = new AtomicBoolean(false);
+    private final AtomicBoolean onlyCheckIfClassFileTransformerIsNeededOnce = new AtomicBoolean(false);
 
     @Override
     public void setPersistenceUnitName(String name) {
@@ -385,7 +385,10 @@ public class PersistenceUnitMetadataImpl implements PersistenceUnitMetadata {
     @Override
     public boolean needsJPADelegatingClassFileTransformer() {
         // WFLY-20393 Ensure that only one internal JPADelegatingClassFileTransformer bytecode transformer is configured for each Persistence Unit
-        return needsJPADelegatingClassFileTransformer.compareAndSet(false, true);
+        if (onlyCheckIfClassFileTransformerIsNeededOnce.compareAndSet(false, true)) {
+            return Configuration.needClassFileTransformer(this);
+        }
+        return false;
     }
 
     @Override
