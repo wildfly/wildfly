@@ -154,6 +154,13 @@
                          auto-create-addresses="false"
                          auto-delete-addresses="false" />
 
+        <http-connector name="http"
+                        socket-binding="http"
+                        endpoint="http"
+                        server-name="=foo">
+            <param name="batch-delay" value="${batch.delay:50}"/>
+        </http-connector>
+
         <remote-connector name="netty"
                                            socket-binding="messaging-throughput">
             <param name="batch-delay" value="${batch.delay:50}"/>
@@ -162,12 +169,14 @@
         <in-vm-connector name="in-vm"
                                           server-id="${my.server-id:0}"/>
 
-        <http-connector name="http"
-                        socket-binding="http"
-                        endpoint="http"
-                        server-name="=foo">
-            <param name="batch-delay" value="${batch.delay:50}"/>
-        </http-connector>
+        <jgroups-broadcast-group name="groupT"
+                         jgroups-channel="ee"
+                         jgroups-cluster="activemq-cluster"
+                         connectors="http"/>
+
+        <jgroups-discovery-group name="groupU"
+                         jgroups-channel="ee"
+                         jgroups-cluster="activemq-cluster"/>
 
         <cluster-connection name="cc1"
                             address="${address:cc1-address}"
@@ -223,15 +232,6 @@
                                    deserialization-allow-list="org.bar.Bar org.baz.Baz">
             <credential-reference clear-text="passwordOut!"/>
         </pooled-connection-factory>
-
-        <jgroups-broadcast-group name="groupT"
-                         jgroups-channel="ee"
-                         jgroups-cluster="activemq-cluster"
-                         connectors="http"/>
-
-        <jgroups-discovery-group name="groupU"
-                         jgroups-channel="ee"
-                         jgroups-cluster="activemq-cluster"/>
     </server>
     <server name="server1">
         <security elytron-domain="elytronDomain"/>
@@ -265,6 +265,9 @@
             <credential-reference store="cs1" clear-text="pooledpass"/>
         </pooled-connection-factory>
     </server>
+    <server name="other">
+        <replication-primary />
+    </server>
     <jms-bridge name="bridge-with-credential-reference"
                 module="com.foo.bar"
                 quality-of-service="${quality.of.service:AT_MOST_ONCE}"
@@ -283,7 +286,4 @@
             <target-credential-reference alias="bob" store="jms-bridge-store" clear-text="targetpass"/>
         </target>
     </jms-bridge>
-    <server name="other">
-        <replication-primary />
-    </server>
 </subsystem>
