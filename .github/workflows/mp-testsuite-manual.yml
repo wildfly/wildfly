@@ -1,0 +1,88 @@
+name: MicroProfile test suite - Manual Build and Test
+
+on:
+  workflow_dispatch:
+    inputs:
+      mp-ts-repo:
+        description: 'The MicroProfile test suite repository that will be used to build the snapshot from'
+        required: false
+        default: "jboss-eap-qe/eap-microprofile-test-suite"
+        type: string
+      mp-ts-ref:
+        description: 'The MicroProfile test suite branch that will be used to build the snapshot from'
+        required: false
+        default: "master"
+        type: string
+      os:
+        description: 'OS'
+        required: false
+        default: 'ubuntu-latest'
+        type: choice
+        options:
+          - ubuntu-latest
+          # - windows-latest - TODO: let's skip windows for now, ugly "file name too long error poppin' up currently": , 'windows-latest']
+      jdk-distribution:
+        description: 'JDK Distribution'
+        required: false
+        default: 'temurin'
+        type: choice
+        options:
+          - temurin
+          - semeru
+          - microsoft
+          - oracle
+          - zulu
+          - corretto
+          - liberica
+      jdk-version:
+        description: 'JDK Version'
+        required: true
+        type: string
+      timeout:
+        description: 'Job Timeout Minutes'
+        required: false
+        default: 120
+        type: number
+
+# Only run the latest job
+concurrency:
+  group: '${{ github.workflow }} @ ${{ github.head_ref || github.ref }}'
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Build WildFly and run the MicroProfile test suite
+    runs-on: ${{ inputs.os }}
+    timeout-minutes: ${{ fromJSON(inputs.timeout) }}
+    strategy:
+      fail-fast: false
+
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up JDK ${{ inputs.jdk-distribution }} ${{ inputs.jdk-version }}
+        uses: actions/setup-java@v4
+        with:
+          distribution: ${{ inputs.jdk-distribution }}
+          java-version: ${{ inputs.jdk-version }}
+          cache: 'maven'
+      - name: Checkout eap-microprofile-test-suite
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ inputs.mp-ts-repo }}
+          ref: ${{ inputs.mp-ts-ref }}
+          path: 'mp-ts'
+      - name: Build WildFly with Maven
+        run: mvn -U -B -ntp clean install -DskipTests
+      - name: Set the value for the ENV VAR that stores the WildFly version
+        run: |
+          echo "MAVEN_ARGS_WILDFLY_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout -f pom.xml)" >> "$GITHUB_ENV"
+      - name: Set the value for the ENV VAR that stores the WildFly snapshot distribution version property
+        run: |
+          echo "MAVEN_ARGS_WILDFLY_DIST_VERSION=-Dversion.org.jboss.wildfly.dist=${{ env.MAVEN_ARGS_WILDFLY_VERSION }}" >> "$GITHUB_ENV"
+      - name: Set the value for the ENV VAR that stores the WildFly snapshot distribution location property
+        run: |
+          echo "MAVEN_ARGS_WILDFLY_DIST_LOCATION=-Djboss.dist=${PWD}/dist/target/wildfly-${{ env.MAVEN_ARGS_WILDFLY_VERSION }}" >> "$GITHUB_ENV"
+      - name: Run the MicroProfile test suite with Maven
+        run: |
+          cd mp-ts
+          mvn clean verify --batch-mode -fae  ${{ env.MAVEN_ARGS_WILDFLY_DIST_LOCATION }} ${{ env.MAVEN_ARGS_WILDFLY_DIST_VERSION }}
