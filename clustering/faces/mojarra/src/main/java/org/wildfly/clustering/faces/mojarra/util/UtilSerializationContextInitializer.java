@@ -5,12 +5,12 @@
 
 package org.wildfly.clustering.faces.mojarra.util;
 
+import com.sun.faces.util.LRUMap;
+
 import org.kohsuke.MetaInfServices;
 import org.wildfly.clustering.marshalling.protostream.AbstractSerializationContextInitializer;
 import org.wildfly.clustering.marshalling.protostream.SerializationContext;
 import org.wildfly.clustering.marshalling.protostream.SerializationContextInitializer;
-
-import com.sun.faces.util.LRUMap;
 
 /**
  * @author Paul Ferraro

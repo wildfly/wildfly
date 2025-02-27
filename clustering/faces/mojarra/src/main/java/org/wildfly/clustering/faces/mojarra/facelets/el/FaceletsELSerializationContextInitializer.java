@@ -5,12 +5,12 @@
 
 package org.wildfly.clustering.faces.mojarra.facelets.el;
 
+import com.sun.faces.facelets.el.ELText;
+
 import org.kohsuke.MetaInfServices;
 import org.wildfly.clustering.marshalling.protostream.AbstractSerializationContextInitializer;
 import org.wildfly.clustering.marshalling.protostream.SerializationContext;
 import org.wildfly.clustering.marshalling.protostream.SerializationContextInitializer;
-
-import com.sun.faces.facelets.el.ELText;
 
 /**
  * @author Paul Ferraro

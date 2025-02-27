@@ -9,16 +9,16 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.security.PrivilegedAction;
 
+import jakarta.servlet.http.HttpSessionActivationListener;
+
+import com.sun.faces.context.flash.ELFlash;
+
 import org.kohsuke.MetaInfServices;
 import org.wildfly.clustering.marshalling.protostream.AbstractSerializationContextInitializer;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamMarshaller;
 import org.wildfly.clustering.marshalling.protostream.SerializationContext;
 import org.wildfly.clustering.marshalling.protostream.SerializationContextInitializer;
 import org.wildfly.security.manager.WildFlySecurityManager;
-
-import com.sun.faces.context.flash.ELFlash;
-
-import jakarta.servlet.http.HttpSessionActivationListener;
 
 /**
  * @author Paul Ferraro

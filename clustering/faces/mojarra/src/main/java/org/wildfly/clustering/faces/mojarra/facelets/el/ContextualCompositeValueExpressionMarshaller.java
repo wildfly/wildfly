@@ -11,13 +11,13 @@ import java.security.PrivilegedAction;
 import jakarta.el.ValueExpression;
 import jakarta.faces.view.Location;
 
+import com.sun.faces.facelets.el.ContextualCompositeValueExpression;
+
 import org.infinispan.protostream.descriptors.WireType;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamMarshaller;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamReader;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamWriter;
 import org.wildfly.security.manager.WildFlySecurityManager;
-
-import com.sun.faces.facelets.el.ContextualCompositeValueExpression;
 
 /**
  * @author Paul Ferraro
