@@ -1079,7 +1079,7 @@
             <xs:element name="connection-pool" type="tns:connection-pool" minOccurs="0">
                 <xs:annotation>
                     <xs:documentation>
-                        Configuration of the connection pool.
+                        Deprecated. Ignored if defined.
                     </xs:documentation>
                 </xs:annotation>
             </xs:element>
