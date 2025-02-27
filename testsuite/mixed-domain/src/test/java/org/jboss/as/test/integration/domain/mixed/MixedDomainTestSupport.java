@@ -23,6 +23,7 @@ import org.jboss.as.test.integration.domain.management.util.DomainTestSupport;
 import org.jboss.as.test.integration.domain.management.util.DomainTestUtils;
 import org.jboss.as.test.integration.domain.management.util.WildFlyManagedConfiguration;
 import org.jboss.as.test.integration.management.util.MgmtOperationException;
+import org.jboss.as.test.shared.util.AssumeTestGroupUtil;
 import org.jboss.as.test.shared.TimeoutUtil;
 import org.jboss.as.version.Stability;
 import org.jboss.dmr.ModelNode;
@@ -243,7 +244,7 @@ public class MixedDomainTestSupport extends DomainTestSupport {
                 break;
             case Version.WILDFLY:
             default:
-                fileName = "wildfly-" + number + ".xml";
+                fileName = "wildfly-" + number + (AssumeTestGroupUtil.isFullDistribution() ? "" : "-ee") + ".xml";
         }
         return loadFile("..", "integration", "manualmode", "src", "test", "resources", "legacy-configs", "domain", fileName);
     }

@@ -78,6 +78,17 @@
             <scope>test</scope>
         </dependency>
         <dependency>
+            <groupId>org.wildfly</groupId>
+            <artifactId>wildfly-testsuite-shared</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
             <groupId>org.wildfly.launcher</groupId>
             <artifactId>wildfly-launcher</artifactId>
         </dependency>
@@ -188,51 +199,118 @@
         </dependency>
 
     </dependencies>
+
     <build>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-surefire-plugin</artifactId>
+                    <configuration>
+                        <failIfNoTests>false</failIfNoTests>
+
+                        <!-- System properties to forked surefire JVM which runs clients. -->
+                        <argLine>${jvm.args.ip.client} ${jvm.args.timeouts} ${surefire.jacoco.args}</argLine>
+                        <skipTests>${ts.skipTests}</skipTests>
+                        <systemPropertyVariables combine.children="append">
+                            <mcast>${mcast}</mcast>
+                            <mcast1>${mcast1}</mcast1>
+                            <mcast2>${mcast2}</mcast2>
+                            <mcast.ttl>${mcast.ttl}</mcast.ttl>
+                            <jboss.options>${surefire.system.args}</jboss.options>
+                            <java.util.logging.manager>org.jboss.logmanager.LogManager</java.util.logging.manager>
+                            <jboss.home>${jboss.home}</jboss.home>
+                            <module.path>${jboss.home}/modules</module.path>
+                            <jboss.test.host.primary.address>${node0}</jboss.test.host.primary.address>
+                            <jboss.test.host.secondary.address>${node1}</jboss.test.host.secondary.address>
+                            <jboss.default.multicast.address>${mcast}</jboss.default.multicast.address>
+                            <jboss.modcluster.multicast.address>${mcast1}</jboss.modcluster.multicast.address>
+                            <server.jvm.args>${surefire.system.args} ${jvm.args.ip.server} ${jvm.args.other}
+                                ${jvm.args.timeouts} -Dnode0=${node0} -Dnode1=${node1}
+                                -Djboss.default.multicast.address=${mcast}
+                                -Djboss.messaging.cluster.password=ILoveWildfly ${extra.server.jvm.args}
+                            </server.jvm.args>
+                        </systemPropertyVariables>
+                        <includes>
+                            <include>**/*TestSuite.java</include>
+                        </includes>
+                    </configuration>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-resources-plugin</artifactId>
+                    <executions>
+                        <execution>
+                            <id>ts.copy-wildfly</id>
+                            <phase>none</phase>
+                        </execution>
+                    </executions>
+                </plugin>
+                <plugin>
+                    <groupId>org.wildfly.plugins</groupId>
+                    <artifactId>wildfly-maven-plugin</artifactId>
+                    <version>${version.org.wildfly.plugin}</version>
+                    <executions>
+                        <execution>
+                            <id>server-provisioning</id>
+                            <goals>
+                                <goal>provision</goal>
+                            </goals>
+                            <phase>${provision.phase}</phase>
+                            <configuration>
+                                <skip>${ts.skipTests}</skip>
+                                <provisioning-dir>${project.build.directory}/wildfly</provisioning-dir>
+                                <record-provisioning-state>true</record-provisioning-state>
+                                <log-provisioning-time>${galleon.log.time}</log-provisioning-time>
+                                <offline-provisioning>${galleon.offline}</offline-provisioning>
+                                <overwrite-provisioned-server>true</overwrite-provisioned-server>
+                                <feature-packs>
+                                    <feature-pack>
+                                        <transitive>true</transitive>
+                                        <groupId>${ee.maven.groupId}</groupId>
+                                        <artifactId>wildfly-ee-galleon-pack</artifactId>
+                                        <version>${ee.maven.version}</version>
+                                        <included-packages>
+                                            <name>docs.examples.configs</name>
+                                        </included-packages>
+                                    </feature-pack>
+                                    <feature-pack>
+                                        <groupId>${full.maven.groupId}</groupId>
+                                        <artifactId>wildfly-galleon-pack</artifactId>
+                                        <version>${full.maven.version}</version>
+                                        <included-packages>
+                                            <name>docs.examples.configs</name>
+                                        </included-packages>
+                                    </feature-pack>
+                                </feature-packs>
+                                <galleon-options>
+                                    <!--
+                                        Server used as the DC for the Mixed Domain tests. It is built under default
+                                        stability level and can be reloaded to a lower stability level
+                                    -->
+                                    <config-stability-level>default</config-stability-level>
+                                    <package-stability-level>experimental</package-stability-level>
+                                    <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
+                                </galleon-options>
+                            </configuration>
+                        </execution>
+                    </executions>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
-                <configuration>
-                    <failIfNoTests>false</failIfNoTests>
-
-                    <!-- System properties to forked surefire JVM which runs clients. -->
-                    <argLine>${jvm.args.ip.client} ${jvm.args.timeouts} ${surefire.jacoco.args}</argLine>
-                    <skipTests>${ts.skipTests}</skipTests>
-                    <systemPropertyVariables combine.children="append">
-                        <mcast>${mcast}</mcast>
-                        <mcast1>${mcast1}</mcast1>
-                        <mcast2>${mcast2}</mcast2>
-                        <mcast.ttl>${mcast.ttl}</mcast.ttl>
-                        <jboss.options>${surefire.system.args}</jboss.options>
-                        <java.util.logging.manager>org.jboss.logmanager.LogManager</java.util.logging.manager>
-                        <jboss.home>${jboss.home}</jboss.home>
-                        <module.path>${jboss.home}/modules</module.path>
-                        <jboss.test.host.primary.address>${node0}</jboss.test.host.primary.address>
-                        <jboss.test.host.secondary.address>${node1}</jboss.test.host.secondary.address>
-                        <jboss.default.multicast.address>${mcast}</jboss.default.multicast.address>
-                        <jboss.modcluster.multicast.address>${mcast1}</jboss.modcluster.multicast.address>
-                        <server.jvm.args>${surefire.system.args} ${jvm.args.ip.server} ${jvm.args.other} ${jvm.args.timeouts} -Dnode0=${node0} -Dnode1=${node1} -Djboss.default.multicast.address=${mcast} -Djboss.messaging.cluster.password=ILoveWildfly ${extra.server.jvm.args}</server.jvm.args>
-                    </systemPropertyVariables>
-                    <includes>
-                        <include>**/*TestSuite.java</include>
-                    </includes>
-                </configuration>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-resources-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <id>ts.copy-wildfly</id>
-                        <phase>none</phase>
-                    </execution>
-                </executions>
             </plugin>
             <plugin>
                 <groupId>org.wildfly.plugins</groupId>
                 <artifactId>wildfly-maven-plugin</artifactId>
-                <version>${version.org.wildfly.plugin}</version>
                 <executions>
                     <execution>
                         <id>server-provisioning</id>
@@ -240,42 +318,6 @@
                             <goal>provision</goal>
                         </goals>
                         <phase>${provision.phase}</phase>
-                        <configuration>
-                            <skip>${ts.skipTests}</skip>
-                            <provisioning-dir>${project.build.directory}/wildfly</provisioning-dir>
-                            <record-provisioning-state>true</record-provisioning-state>
-                            <log-provisioning-time>${galleon.log.time}</log-provisioning-time>
-                            <offline-provisioning>${galleon.offline}</offline-provisioning>
-                            <overwrite-provisioned-server>true</overwrite-provisioned-server>
-                            <feature-packs>
-                                <feature-pack>
-                                    <transitive>true</transitive>
-                                    <groupId>${ee.maven.groupId}</groupId>
-                                    <artifactId>wildfly-ee-galleon-pack</artifactId>
-                                    <version>${ee.maven.version}</version>
-                                    <included-packages>
-                                        <name>docs.examples.configs</name>
-                                    </included-packages>
-                                </feature-pack>
-                                <feature-pack>
-                                    <groupId>${full.maven.groupId}</groupId>
-                                    <artifactId>wildfly-galleon-pack</artifactId>
-                                    <version>${full.maven.version}</version>
-                                    <included-packages>
-                                        <name>docs.examples.configs</name>
-                                    </included-packages>
-                                </feature-pack>
-                            </feature-packs>
-                            <galleon-options>
-                                <!--
-                                    Server used as the DC for the Mixed Domain tests. It is built under default
-                                    stability level and can be reloaded to a lower stability level
-                                -->
-                                <config-stability-level>default</config-stability-level>
-                                <package-stability-level>experimental</package-stability-level>
-                                <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
-                            </galleon-options>
-                        </configuration>
                     </execution>
                 </executions>
             </plugin>
@@ -283,6 +325,67 @@
     </build>
 
     <profiles>
+        <profile>
+            <id>use-alt-feature-pack</id>
+            <activation>
+                <property>
+                    <name>testsuite.default.build.project.prefix</name>
+                    <value>ee-</value>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-surefire-plugin</artifactId>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-resources-plugin</artifactId>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.wildfly.plugins</groupId>
+                        <artifactId>wildfly-maven-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>server-provisioning</id>
+                                <goals>
+                                    <goal>provision</goal>
+                                </goals>
+                                <phase>${provision.phase}</phase>
+                                <configuration combine.self="override">
+                                    <skip>${ts.skipTests}</skip>
+                                    <provisioning-dir>${project.build.directory}/wildfly</provisioning-dir>
+                                    <record-provisioning-state>true</record-provisioning-state>
+                                    <log-provisioning-time>${galleon.log.time}</log-provisioning-time>
+                                    <offline-provisioning>${galleon.offline}</offline-provisioning>
+                                    <overwrite-provisioned-server>true</overwrite-provisioned-server>
+                                    <feature-packs>
+                                        <feature-pack>
+                                            <groupId>${ee.maven.groupId}</groupId>
+                                            <artifactId>wildfly-ee-galleon-pack</artifactId>
+                                            <version>${ee.maven.version}</version>
+                                            <included-packages>
+                                                <name>docs.examples.configs</name>
+                                            </included-packages>
+                                        </feature-pack>
+                                    </feature-packs>
+                                    <galleon-options>
+                                        <!--
+                                            Server used as the DC for the Mixed Domain tests. It is built under default
+                                            stability level and can be reloaded to a lower stability level
+                                        -->
+                                        <config-stability-level>default</config-stability-level>
+                                        <package-stability-level>experimental</package-stability-level>
+                                        <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
+                                    </galleon-options>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
         <profile>
             <id>mixed-domain-server-provision</id>
             <activation>

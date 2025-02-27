@@ -237,7 +237,7 @@ public class AssumeTestGroupUtil {
      * @throws {@code true} of system property {@code testsuite.default.build.project.prefix} has a non-empty value
      */
     public static boolean isFullDistribution() {
-        return System.getProperty("testsuite.default.build.project.prefix", "").equals("");
+        return System.getProperty("testsuite.default.build.project.prefix", "").isEmpty();
     }
 
     /**
