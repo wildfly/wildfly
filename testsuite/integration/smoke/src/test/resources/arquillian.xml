@@ -26,11 +26,4 @@
         </configuration>
     </container>
 
-    <extension qualifier="drone">
-        <property name="instantiationTimeoutInSeconds">120</property>
-    </extension>
-    <extension qualifier="webdriver">
-        <property name="browser">${browser:htmlUnit}</property>
-    </extension>
-
 </arquillian>

@@ -349,6 +349,13 @@
                 <version>${version.org.wildfly.glow}</version>
             </dependency>
 
+            <dependency>
+                <groupId>org.htmlunit</groupId>
+                <artifactId>htmlunit</artifactId>
+                <version>${version.org.htmlunit}</version>
+                <scope>test</scope>
+            </dependency>
+
             <!-- The below BOM's are imported last as to not override any dependencies above -->
             <dependency>
                 <groupId>org.jboss.arquillian</groupId>
@@ -356,20 +363,6 @@
                 <version>${version.org.jboss.arquillian.core}</version>
                 <type>pom</type>
                 <scope>import</scope>
-            </dependency>
-            <dependency>
-                <groupId>org.jboss.arquillian.extension</groupId>
-                <artifactId>arquillian-drone-bom</artifactId>
-                <version>${version.org.jboss.arquillian.drone}</version>
-                <type>pom</type>
-                <scope>import</scope>
-            </dependency>
-            <dependency>
-                <groupId>org.jboss.arquillian.graphene</groupId>
-                <artifactId>graphene-webdriver</artifactId>
-                <version>${version.org.jboss.arquillian.graphene}</version>
-                <type>pom</type>
-                <scope>test</scope>
             </dependency>
             <dependency>
                 <groupId>org.jboss.arquillian.jakarta</groupId>

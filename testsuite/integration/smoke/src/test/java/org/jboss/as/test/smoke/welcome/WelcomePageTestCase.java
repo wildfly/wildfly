@@ -8,17 +8,16 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
 import java.net.URL;
-import java.util.List;
 
+import org.htmlunit.WebClient;
+import org.htmlunit.html.DomNode;
+import org.htmlunit.html.DomNodeList;
+import org.htmlunit.html.HtmlPage;
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.drone.api.annotation.Drone;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.test.shared.TestSuiteEnvironment;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.openqa.selenium.By;
-import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.WebElement;
 
 /**
  * Test for the WildFly welcome page.
@@ -35,27 +34,26 @@ public class WelcomePageTestCase {
     public static final String QUICKSTARTS_LINK_TEXT = "Quickstarts";
     public static final String ADMINISTRATION_CONSOLE_LINK_TEXT = "Administration Console";
 
-    @Drone
-    WebDriver driver;
-
     @Test
     public void testWelcomePage() throws Exception {
-        URL url = TestSuiteEnvironment.getHttpUrl();
-        driver.get(url.toExternalForm());
-        assertEquals(TITLE, driver.getTitle());
+        try (WebClient webClient = new WebClient()) {
+            URL url = TestSuiteEnvironment.getHttpUrl();
+            HtmlPage welcomePage = webClient.getPage(url.toExternalForm());
+            assertEquals(TITLE, welcomePage.getTitleText());
 
-        WebElement header = driver.findElement(By.tagName("h1"));
-        assertEquals(HEADER_TEXT, header.getText());
+            DomNode header = welcomePage.querySelector("h1");
+            assertEquals(HEADER_TEXT, header.asNormalizedText());
 
-        List<WebElement> links = driver.findElements(By.tagName("a"));
-        assertLink(links, DOCUMENTATION_LINK_TEXT);
-        assertLink(links, QUICKSTARTS_LINK_TEXT);
-        assertLink(links, ADMINISTRATION_CONSOLE_LINK_TEXT);
+            DomNodeList<DomNode> links = welcomePage.querySelectorAll("a");
+            assertLink(links, DOCUMENTATION_LINK_TEXT);
+            assertLink(links, QUICKSTARTS_LINK_TEXT);
+            assertLink(links, ADMINISTRATION_CONSOLE_LINK_TEXT);
+        }
     }
 
-    private void assertLink(List<WebElement> links, String text) {
-        for (WebElement link : links) {
-            if (text.equals(link.getText())) {
+    private void assertLink(DomNodeList<DomNode> links, String text) {
+        for (DomNode link : links) {
+            if (text.equals(link.asNormalizedText())) {
                 return;
             }
         }
