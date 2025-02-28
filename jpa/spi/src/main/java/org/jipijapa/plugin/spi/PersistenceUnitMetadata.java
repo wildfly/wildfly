@@ -90,4 +90,6 @@ public interface PersistenceUnitMetadata extends PersistenceUnitInfo {
 
     List<ClassTransformer> getTransformers();
 
+    boolean needsJPADelegatingClassFileTransformer();
+
 }
