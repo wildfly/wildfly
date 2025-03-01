@@ -30,4 +30,8 @@ public class ClassifiedBean {
     public String overloadedMethod(String str) {
         return "ArgStr:" + str;
     }
+
+    public String methodWithArrayArgument(String[] array)  {
+        return "Array:" + array;
+    }
 }
