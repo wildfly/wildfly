@@ -18,7 +18,6 @@ import org.jboss.as.clustering.controller.ManagementResourceRegistration;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.ResourceServiceHandler;
 import org.jboss.as.clustering.controller.SimpleResourceRegistrar;
-import org.jboss.as.clustering.controller.validation.LongRangeValidatorBuilder;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -26,6 +25,7 @@ import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.capability.BinaryCapabilityNameResolver;
 import org.jboss.as.controller.capability.RuntimeCapability;
+import org.jboss.as.controller.operations.validation.LongRangeValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -52,7 +52,7 @@ public class MemoryResourceDefinition extends ComponentResourceDefinition {
         SIZE("size", ModelType.LONG, null) {
             @Override
             public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
-                return builder.setValidator(new LongRangeValidatorBuilder().min(1).configure(builder).build());
+                return builder.setValidator(LongRangeValidator.POSITIVE);
             }
         },
         ;

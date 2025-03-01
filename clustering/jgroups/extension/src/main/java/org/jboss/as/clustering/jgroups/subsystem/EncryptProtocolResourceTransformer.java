@@ -5,8 +5,10 @@
 
 package org.jboss.as.clustering.jgroups.subsystem;
 
-import org.jboss.as.clustering.jgroups.subsystem.EncryptProtocolResourceDefinition.Attribute;
+import java.util.function.Consumer;
+
 import org.jboss.as.controller.ModelVersion;
+import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.security.CredentialReference;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 
@@ -14,10 +16,11 @@ import org.jboss.as.controller.transform.description.ResourceTransformationDescr
  * Transformer for encrypt protocol resources.
  * @author Paul Ferraro
  */
-public class EncryptProtocolResourceTransformer extends ProtocolResourceTransformer {
+public class EncryptProtocolResourceTransformer implements Consumer<ModelVersion> {
+    private final ResourceTransformationDescriptionBuilder builder;
 
-    EncryptProtocolResourceTransformer(ResourceTransformationDescriptionBuilder builder) {
-        super(builder);
+    EncryptProtocolResourceTransformer(ResourceTransformationDescriptionBuilder parent, PathElement path) {
+        this.builder = parent.addChildResource(path);
     }
 
     @Override
@@ -25,10 +28,8 @@ public class EncryptProtocolResourceTransformer extends ProtocolResourceTransfor
 
         if (JGroupsSubsystemModel.VERSION_8_0_0.requiresTransformation(version)) {
             this.builder.getAttributeBuilder()
-                    .addRejectCheck(CredentialReference.REJECT_CREDENTIAL_REFERENCE_WITH_BOTH_STORE_AND_CLEAR_TEXT, Attribute.KEY_CREDENTIAL.getName())
+                    .addRejectCheck(CredentialReference.REJECT_CREDENTIAL_REFERENCE_WITH_BOTH_STORE_AND_CLEAR_TEXT, EncryptProtocolResourceDefinitionRegistrar.KEY_CREDENTIAL)
                     .end();
         }
-
-        super.accept(version);
     }
 }
