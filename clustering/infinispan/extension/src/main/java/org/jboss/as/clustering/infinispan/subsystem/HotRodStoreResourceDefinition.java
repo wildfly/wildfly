@@ -14,6 +14,7 @@ import org.jboss.as.clustering.controller.SimpleResourceDescriptorConfigurator;
 import org.jboss.as.clustering.infinispan.persistence.hotrod.HotRodStoreConfiguration;
 import org.jboss.as.clustering.infinispan.persistence.hotrod.HotRodStoreConfigurationBuilder;
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.CapabilityReferenceRecorder;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathElement;
@@ -25,7 +26,7 @@ import org.jboss.dmr.ModelType;
 import org.wildfly.clustering.infinispan.client.RemoteCacheContainer;
 import org.wildfly.clustering.infinispan.client.service.HotRodServiceDescriptor;
 import org.wildfly.clustering.server.util.MapEntry;
-import org.wildfly.subsystem.resource.capability.CapabilityReferenceRecorder;
+import org.wildfly.subsystem.resource.capability.CapabilityReference;
 import org.wildfly.subsystem.service.ServiceDependency;
 
 /**
@@ -41,12 +42,12 @@ public class HotRodStoreResourceDefinition extends StoreResourceDefinition<HotRo
 
     enum Attribute implements org.jboss.as.clustering.controller.Attribute {
         CACHE_CONFIGURATION("cache-configuration", ModelType.STRING, null),
-        REMOTE_CACHE_CONTAINER("remote-cache-container", ModelType.STRING, CapabilityReferenceRecorder.builder(CAPABILITY, HotRodServiceDescriptor.REMOTE_CACHE_CONTAINER).build()),
+        REMOTE_CACHE_CONTAINER("remote-cache-container", ModelType.STRING, CapabilityReference.builder(CAPABILITY, HotRodServiceDescriptor.REMOTE_CACHE_CONTAINER).build()),
         ;
 
         private final AttributeDefinition definition;
 
-        Attribute(String attributeName, ModelType type, CapabilityReferenceRecorder<?> capabilityReference) {
+        Attribute(String attributeName, ModelType type, CapabilityReferenceRecorder capabilityReference) {
             this.definition = new SimpleAttributeDefinitionBuilder(attributeName, type)
                     .setAllowExpression(capabilityReference == null)
                     .setRequired(capabilityReference != null)

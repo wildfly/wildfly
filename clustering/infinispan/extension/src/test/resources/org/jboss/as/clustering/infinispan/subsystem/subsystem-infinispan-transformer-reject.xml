@@ -2,7 +2,7 @@
   ~ Copyright The WildFly Authors
   ~ SPDX-License-Identifier: Apache-2.0
   -->
-<subsystem xmlns="urn:jboss:domain:infinispan:14.0">
+<subsystem xmlns="urn:jboss:domain:infinispan:15.0">
     <!-- Don't specify statistics-enabled="false" here so that we test undefined values too -->
     <cache-container name="minimal" default-cache="local">
         <local-cache name="local"/>
@@ -87,7 +87,7 @@
                             marshaller="PROTOSTREAM"
                             modules="org.infinispan org.infinispan.commons"
                             name="my-remote-container"
-                            protocol-version="2.5"
+                            protocol-version="3.0"
                             socket-timeout="1000"
                             tcp-no-delay="false"
                             tcp-keep-alive="true"

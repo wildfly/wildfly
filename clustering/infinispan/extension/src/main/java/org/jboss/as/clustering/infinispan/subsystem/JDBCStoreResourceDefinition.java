@@ -17,14 +17,14 @@ import java.util.stream.Stream;
 import javax.sql.DataSource;
 
 import org.infinispan.persistence.jdbc.common.DatabaseType;
+import org.infinispan.persistence.jdbc.configuration.JdbcStringBasedStoreConfiguration;
+import org.infinispan.persistence.jdbc.configuration.JdbcStringBasedStoreConfigurationBuilder;
 import org.infinispan.persistence.jdbc.configuration.TableManipulationConfiguration;
 import org.infinispan.persistence.keymappers.TwoWayKey2StringMapper;
 import org.jboss.as.clustering.controller.CommonServiceDescriptor;
 import org.jboss.as.clustering.controller.ManagementResourceRegistration;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.infinispan.persistence.jdbc.DataSourceConnectionFactoryConfigurationBuilder;
-import org.jboss.as.clustering.infinispan.persistence.jdbc.JDBCStoreConfiguration;
-import org.jboss.as.clustering.infinispan.persistence.jdbc.JDBCStoreConfigurationBuilder;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -38,7 +38,7 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.modules.Module;
 import org.wildfly.clustering.server.util.MapEntry;
-import org.wildfly.subsystem.resource.capability.CapabilityReferenceRecorder;
+import org.wildfly.subsystem.resource.capability.CapabilityReference;
 import org.wildfly.subsystem.service.ServiceDependency;
 
 /**
@@ -46,7 +46,7 @@ import org.wildfly.subsystem.service.ServiceDependency;
  *
  * @author Richard Achmatowicz (c) 2011 Red Hat Inc.
  */
-public class JDBCStoreResourceDefinition extends StoreResourceDefinition<JDBCStoreConfiguration, JDBCStoreConfigurationBuilder> {
+public class JDBCStoreResourceDefinition extends StoreResourceDefinition<JdbcStringBasedStoreConfiguration, JdbcStringBasedStoreConfigurationBuilder> {
 
     static final PathElement PATH = pathElement("jdbc");
 
@@ -55,7 +55,7 @@ public class JDBCStoreResourceDefinition extends StoreResourceDefinition<JDBCSto
             @Override
             public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
                 return builder.setRequired(true)
-                        .setCapabilityReference(CapabilityReferenceRecorder.builder(CAPABILITY, CommonServiceDescriptor.DATA_SOURCE).build())
+                        .setCapabilityReference(CapabilityReference.builder(CAPABILITY, CommonServiceDescriptor.DATA_SOURCE).build())
                         ;
             }
         },
@@ -96,7 +96,7 @@ public class JDBCStoreResourceDefinition extends StoreResourceDefinition<JDBCSto
     }
 
     JDBCStoreResourceDefinition() {
-        super(PATH, InfinispanExtension.SUBSYSTEM_RESOLVER.createChildResolver(PATH, WILDCARD_PATH), new ResourceDescriptorConfigurator(), JDBCStoreConfigurationBuilder.class);
+        super(PATH, InfinispanExtension.SUBSYSTEM_RESOLVER.createChildResolver(PATH, WILDCARD_PATH), new ResourceDescriptorConfigurator(), JdbcStringBasedStoreConfigurationBuilder.class);
     }
 
     @Override
@@ -109,7 +109,7 @@ public class JDBCStoreResourceDefinition extends StoreResourceDefinition<JDBCSto
     }
 
     @Override
-    public Map.Entry<Map.Entry<Supplier<JDBCStoreConfigurationBuilder>, Consumer<JDBCStoreConfigurationBuilder>>, Stream<Consumer<RequirementServiceBuilder<?>>>> resolve(OperationContext context, ModelNode model) throws OperationFailedException {
+    public Map.Entry<Map.Entry<Supplier<JdbcStringBasedStoreConfigurationBuilder>, Consumer<JdbcStringBasedStoreConfigurationBuilder>>, Stream<Consumer<RequirementServiceBuilder<?>>>> resolve(OperationContext context, ModelNode model) throws OperationFailedException {
 
         PathAddress cacheAddress = context.getCurrentAddress().getParent();
         String containerName = cacheAddress.getParent().getLastElement().getValue();
@@ -122,11 +122,11 @@ public class JDBCStoreResourceDefinition extends StoreResourceDefinition<JDBCSto
         ServiceDependency<TableManipulationConfiguration> table = ServiceDependency.on(TableResourceDefinition.SERVICE_DESCRIPTOR, containerName, cacheName);
         ServiceDependency<List<Module>> modules = ServiceDependency.on(CacheResourceDefinition.CACHE_MODULES, containerName, cacheName);
 
-        Map.Entry<Map.Entry<Supplier<JDBCStoreConfigurationBuilder>, Consumer<JDBCStoreConfigurationBuilder>>, Stream<Consumer<RequirementServiceBuilder<?>>>> entry = super.resolve(context, model);
-        Supplier<JDBCStoreConfigurationBuilder> builderFactory = entry.getKey().getKey();
-        Consumer<JDBCStoreConfigurationBuilder> configurator = entry.getKey().getValue().andThen(new Consumer<>() {
+        Map.Entry<Map.Entry<Supplier<JdbcStringBasedStoreConfigurationBuilder>, Consumer<JdbcStringBasedStoreConfigurationBuilder>>, Stream<Consumer<RequirementServiceBuilder<?>>>> entry = super.resolve(context, model);
+        Supplier<JdbcStringBasedStoreConfigurationBuilder> builderFactory = entry.getKey().getKey();
+        Consumer<JdbcStringBasedStoreConfigurationBuilder> configurator = entry.getKey().getValue().andThen(new Consumer<>() {
             @Override
-            public void accept(JDBCStoreConfigurationBuilder builder) {
+            public void accept(JdbcStringBasedStoreConfigurationBuilder builder) {
                 builder.table().read(table.get());
                 TwoWayKey2StringMapper mapper = this.findMapper();
                 if (mapper != null) {

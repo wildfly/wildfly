@@ -5,6 +5,7 @@
 
 package org.wildfly.clustering.weld.manager;
 
+import org.jboss.weld.manager.BeanManagerImpl;
 import org.kohsuke.MetaInfServices;
 import org.wildfly.clustering.marshalling.protostream.AbstractSerializationContextInitializer;
 import org.wildfly.clustering.marshalling.protostream.SerializationContext;
@@ -17,7 +18,7 @@ import org.wildfly.clustering.marshalling.protostream.SerializationContextInitia
 public class ManagerSerializationContextInitializer extends AbstractSerializationContextInitializer {
 
     public ManagerSerializationContextInitializer() {
-        super("org.jboss.weld.manager.proto");
+        super(BeanManagerImpl.class.getPackage());
     }
 
     @Override

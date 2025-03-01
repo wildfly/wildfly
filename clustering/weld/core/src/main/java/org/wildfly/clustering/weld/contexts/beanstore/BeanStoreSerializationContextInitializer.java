@@ -19,7 +19,7 @@ import org.wildfly.clustering.marshalling.protostream.SerializationContextInitia
 public class BeanStoreSerializationContextInitializer extends AbstractSerializationContextInitializer {
 
     public BeanStoreSerializationContextInitializer() {
-        super("org.jboss.weld.contexts.beanstore.proto");
+        super(LockStore.class.getPackage());
     }
 
     @Override

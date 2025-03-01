@@ -22,7 +22,7 @@ import org.wildfly.clustering.marshalling.protostream.reflect.UnaryFieldMarshall
 public class BeanSerializationContextInitializer extends AbstractSerializationContextInitializer {
 
     public BeanSerializationContextInitializer() {
-        super("org.jboss.weld.bean.proto");
+        super(ManagedBeanIdentifier.class.getPackage());
     }
 
     @Override

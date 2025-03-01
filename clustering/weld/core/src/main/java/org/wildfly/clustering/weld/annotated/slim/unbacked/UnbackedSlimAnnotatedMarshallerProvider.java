@@ -27,7 +27,7 @@ import org.wildfly.clustering.weld.annotated.slim.AnnotatedTypeMarshaller;
 public class UnbackedSlimAnnotatedMarshallerProvider extends AbstractSerializationContextInitializer {
 
     public UnbackedSlimAnnotatedMarshallerProvider() {
-        super("org.jboss.weld.annotated.slim.unbacked.proto");
+        super(UnbackedAnnotatedType.class.getPackage());
     }
 
     @Override

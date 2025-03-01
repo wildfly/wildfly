@@ -31,7 +31,7 @@ import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.wildfly.service.descriptor.UnaryServiceDescriptor;
-import org.wildfly.subsystem.resource.capability.CapabilityReferenceRecorder;
+import org.wildfly.subsystem.resource.capability.CapabilityReference;
 import org.wildfly.subsystem.resource.operation.ResourceOperationRuntimeHandler;
 import org.wildfly.subsystem.service.ResourceServiceInstaller;
 import org.wildfly.subsystem.service.ServiceDependency;
@@ -53,7 +53,7 @@ public class SecurityResourceDefinition extends ComponentResourceDefinition {
         SSL_CONTEXT("ssl-context", ModelType.STRING) {
             @Override
             public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
-                return builder.setCapabilityReference(CapabilityReferenceRecorder.builder(CAPABILITY, CommonServiceDescriptor.SSL_CONTEXT).build())
+                return builder.setCapabilityReference(CapabilityReference.builder(CAPABILITY, CommonServiceDescriptor.SSL_CONTEXT).build())
                         .setAccessConstraints(SensitiveTargetAccessConstraintDefinition.SSL_REF)
                         .setValidator(new StringLengthValidator(1))
                         ;

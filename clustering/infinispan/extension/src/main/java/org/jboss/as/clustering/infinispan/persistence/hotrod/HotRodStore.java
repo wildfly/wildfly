@@ -27,12 +27,12 @@ import io.reactivex.rxjava3.schedulers.Schedulers;
 
 import org.infinispan.Cache;
 import org.infinispan.client.hotrod.DataFormat;
-import org.infinispan.client.hotrod.DefaultTemplate;
 import org.infinispan.client.hotrod.Flag;
 import org.infinispan.client.hotrod.RemoteCache;
 import org.infinispan.client.hotrod.configuration.NearCacheMode;
 import org.infinispan.client.hotrod.configuration.RemoteCacheConfigurationBuilder;
 import org.infinispan.client.hotrod.configuration.TransactionMode;
+import org.infinispan.client.hotrod.impl.InternalRemoteCache;
 import org.infinispan.commons.configuration.ConfiguredBy;
 import org.infinispan.commons.io.ByteBuffer;
 import org.infinispan.commons.util.IntSet;
@@ -62,6 +62,7 @@ import org.wildfly.common.function.Functions;
 @ConfiguredBy(HotRodStoreConfiguration.class)
 public class HotRodStore<K, V> implements NonBlockingStore<K, V> {
     private static final Set<Characteristic> CHARACTERISTICS = EnumSet.of(Characteristic.SHAREABLE, Characteristic.BULK_READ, Characteristic.EXPIRATION, Characteristic.SEGMENTABLE);
+    private static final String DEFAULT_CONFIGURATION = "{\"distributed-cache\": { \"mode\": \"SYNC\" }}";
 
     private volatile RemoteCacheContainer container;
     private volatile AtomicReferenceArray<RemoteCache<Object, MarshalledValue>> caches;
@@ -90,11 +91,15 @@ public class HotRodStore<K, V> implements NonBlockingStore<K, V> {
         this.entryFactory = context.getMarshallableEntryFactory();
 
         String template = configuration.cacheConfiguration();
-        String templateName = (template != null) ? template : DefaultTemplate.DIST_SYNC.getTemplateName();
         Consumer<RemoteCacheConfigurationBuilder> configurator = new Consumer<>() {
             @Override
             public void accept(RemoteCacheConfigurationBuilder builder) {
-                builder.forceReturnValues(false).transactionMode(TransactionMode.NONE).nearCacheMode(NearCacheMode.DISABLED).templateName(templateName);
+                builder.forceReturnValues(false).transactionMode(TransactionMode.NONE).nearCacheMode(NearCacheMode.DISABLED);
+                if (template != null) {
+                    builder.templateName(template);
+                } else {
+                    builder.configuration(DEFAULT_CONFIGURATION);
+                }
             }
         };
 
@@ -271,7 +276,8 @@ public class HotRodStore<K, V> implements NonBlockingStore<K, V> {
 
     @Override
     public CompletionStage<Boolean> isAvailable() {
-        return this.container.isAvailable().thenApplyAsync(Function.identity(), this.executor);
+        InternalRemoteCache<?, ?> internalCache = (InternalRemoteCache<?, ?>) this.segmentCache(0);
+        return internalCache.ping().handleAsync((v, t) -> t == null && v.isSuccess(), this.executor);
     }
 
     @Override

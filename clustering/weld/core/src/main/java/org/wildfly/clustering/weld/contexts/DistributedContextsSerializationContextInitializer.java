@@ -17,7 +17,7 @@ import org.wildfly.clustering.marshalling.protostream.SerializationContextInitia
 public class DistributedContextsSerializationContextInitializer extends AbstractSerializationContextInitializer {
 
     public DistributedContextsSerializationContextInitializer() {
-        super("org.wildfly.clustering.weld.contexts.proto");
+        super(PassivationCapableSerializableContextual.class.getPackage());
     }
 
     @Override

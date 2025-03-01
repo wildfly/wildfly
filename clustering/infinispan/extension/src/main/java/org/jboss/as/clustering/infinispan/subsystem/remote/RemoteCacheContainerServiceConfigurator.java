@@ -48,7 +48,7 @@ public enum RemoteCacheContainerServiceConfigurator implements ResourceServiceCo
         Supplier<RemoteCacheManager> factory = new Supplier<>() {
             @Override
             public RemoteCacheManager get() {
-                return new RemoteCacheManager(configuration.get(), false);
+                return new RemoteCacheManager(configuration.get());
             }
         };
         Consumer<RemoteCacheManager> start = new Consumer<>() {

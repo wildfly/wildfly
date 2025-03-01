@@ -40,9 +40,10 @@ public enum InfinispanSubsystemSchema implements SubsystemSchema<InfinispanSubsy
     VERSION_11_0(11, 0), // WildFly 21
     VERSION_12_0(12, 0), // WildFly 23, EAP 7.4
     VERSION_13_0(13, 0), // WildFly 24-26
-    VERSION_14_0(14, 0), // WildFly 27-present
+    VERSION_14_0(14, 0), // WildFly 27-35
+    VERSION_15_0(15, 0), // WildFly 36-present
     ;
-    static final InfinispanSubsystemSchema CURRENT = VERSION_14_0;
+    static final InfinispanSubsystemSchema CURRENT = VERSION_15_0;
 
     private final VersionedNamespace<IntVersion, InfinispanSubsystemSchema> namespace;
 

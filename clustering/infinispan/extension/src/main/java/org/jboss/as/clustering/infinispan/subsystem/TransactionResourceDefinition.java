@@ -48,7 +48,7 @@ import org.jboss.tm.XAResourceRecoveryRegistry;
 import org.wildfly.clustering.infinispan.service.InfinispanServiceDescriptor;
 import org.wildfly.service.descriptor.BinaryServiceDescriptor;
 import org.wildfly.service.descriptor.NullaryServiceDescriptor;
-import org.wildfly.subsystem.resource.capability.ResourceCapabilityReferenceRecorder;
+import org.wildfly.subsystem.resource.capability.ResourceCapabilityReference;
 import org.wildfly.subsystem.resource.operation.ResourceOperationRuntimeHandler;
 import org.wildfly.subsystem.service.ResourceServiceInstaller;
 import org.wildfly.subsystem.service.ServiceDependency;
@@ -129,9 +129,9 @@ public class TransactionResourceDefinition extends ComponentResourceDefinition {
         ResourceDescriptor descriptor = new ResourceDescriptor(this.getResourceDescriptionResolver())
                 .addAttributes(Attribute.class)
                 .addCapabilities(List.of(CAPABILITY))
-                .addResourceCapabilityReference(ResourceCapabilityReferenceRecorder.builder(CAPABILITY, LOCAL_TRANSACTION_PROVIDER).when(Attribute.MODE.getDefinition(), new TransactionModeFilter(EnumSet.complementOf(EnumSet.of(TransactionMode.NONE, TransactionMode.BATCH)))).build())
-                .addResourceCapabilityReference(ResourceCapabilityReferenceRecorder.builder(CAPABILITY, TRANSACTION_SYNCHRONIZATION_REGISTRY).when(Attribute.MODE.getDefinition(), new TransactionModeFilter(EnumSet.of(TransactionMode.NON_XA))).build())
-                .addResourceCapabilityReference(ResourceCapabilityReferenceRecorder.builder(CAPABILITY, XA_RESOURCE_RECOVERY_REGISTRY).when(Attribute.MODE.getDefinition(), new TransactionModeFilter(EnumSet.of(TransactionMode.FULL_XA))).build())
+                .addResourceCapabilityReference(ResourceCapabilityReference.builder(CAPABILITY, LOCAL_TRANSACTION_PROVIDER).when(Attribute.MODE.getDefinition(), new TransactionModeFilter(EnumSet.complementOf(EnumSet.of(TransactionMode.NONE, TransactionMode.BATCH)))).build())
+                .addResourceCapabilityReference(ResourceCapabilityReference.builder(CAPABILITY, TRANSACTION_SYNCHRONIZATION_REGISTRY).when(Attribute.MODE.getDefinition(), new TransactionModeFilter(EnumSet.of(TransactionMode.NON_XA))).build())
+                .addResourceCapabilityReference(ResourceCapabilityReference.builder(CAPABILITY, XA_RESOURCE_RECOVERY_REGISTRY).when(Attribute.MODE.getDefinition(), new TransactionModeFilter(EnumSet.of(TransactionMode.FULL_XA))).build())
                 ;
         ResourceOperationRuntimeHandler handler = ResourceOperationRuntimeHandler.configureService(this);
         new SimpleResourceRegistrar(descriptor, ResourceServiceHandler.of(handler)).register(registration);

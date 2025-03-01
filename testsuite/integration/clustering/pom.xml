@@ -770,7 +770,7 @@
                                     <goal>wget</goal>
                                 </goals>
                                 <configuration>
-                                    <url>https://downloads.jboss.org/infinispan/${version.org.infinispan.server}/infinispan-server-${version.org.infinispan.server}.zip</url>
+                                    <url>https://github.com/infinispan/infinispan/releases/download/${version.org.infinispan.server}/infinispan-server-${version.org.infinispan.server}.zip</url>
                                     <unpack>true</unpack>
                                 </configuration>
                             </execution>
@@ -1202,7 +1202,6 @@
                                     <!-- Needed for EJB client tests -->
                                     <useSystemClassLoader>true</useSystemClassLoader>
                                     <useManifestOnlyJar>true</useManifestOnlyJar>
-                                    <forkMode>once</forkMode>
                                     <environmentVariables>
                                         <BYTEMAN_HOME/>
                                     </environmentVariables>

@@ -5,6 +5,8 @@
 
 package org.wildfly.clustering.faces.mojarra.facelets.el;
 
+import com.sun.faces.facelets.el.ELText;
+
 import org.kohsuke.MetaInfServices;
 import org.wildfly.clustering.marshalling.protostream.AbstractSerializationContextInitializer;
 import org.wildfly.clustering.marshalling.protostream.SerializationContext;
@@ -17,7 +19,7 @@ import org.wildfly.clustering.marshalling.protostream.SerializationContextInitia
 public class FaceletsELSerializationContextInitializer extends AbstractSerializationContextInitializer {
 
     public FaceletsELSerializationContextInitializer() {
-        super("com.sun.faces.facelets.el.proto");
+        super(ELText.class.getPackage());
     }
 
     @Override

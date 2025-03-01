@@ -24,7 +24,7 @@ import com.sun.faces.util.LRUMap;
 /**
  * @author Paul Ferraro
  */
-public class LRUMapMarshaller extends AbstractMapMarshaller<LRUMap<Object, Object>> {
+public class LRUMapMarshaller extends AbstractMapMarshaller<Object, Object, LRUMap<Object, Object>> {
 
     private static final int MAX_CAPACITY_INDEX = ENTRY_INDEX + 1;
     private static final int DEFAULT_MAX_CAPACITY = 15;

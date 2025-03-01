@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+<infinispan xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns="urn:infinispan:config:15.1"
+        xmlns:server="urn:infinispan:server:15.1">
+
+    <cache-container name="default" statistics="true" default-cache="default">
+        <security>
+            <authorization>
+                <!-- Declare a role mapper that associates a security principal to each role. -->
+                <cluster-role-mapper/>
+                <!-- Specify user roles and corresponding permissions. -->
+                <roles>
+                    <role name="testsuite-application-group" permissions="ALL"/>
+                </roles>
+            </authorization>
+        </security>
+        <local-cache name="default">
+            <expiration interval="1000"/>
+        </local-cache>
+        <local-cache name="transactional">
+            <transaction mode="NON_XA" locking="PESSIMISTIC"/>
+            <expiration interval="1000"/>
+        </local-cache>
+    </cache-container>
+
+    <server xmlns="urn:infinispan:server:15.1">
+        <interfaces>
+            <interface name="public">
+                <inet-address value="${infinispan.bind.address:127.0.0.1}"/>
+            </interface>
+        </interfaces>
+
+        <socket-bindings default-interface="public" port-offset="${infinispan.socket.binding.port-offset:0}">
+            <socket-binding name="default" port="${infinispan.bind.port:11222}"/>
+        </socket-bindings>
+
+        <security>
+            <security-realms>
+                <security-realm name="default">
+                    <!-- Uncomment to enable TLS on the realm -->
+                    <!-- server-identities>
+                        <ssl>
+                            <keystore path="server.pfx" password="password" alias="server" generate-self-signed-certificate-host="localhost"/>
+                        </ssl>
+                    </server-identities-->
+                    <properties-realm groups-attribute="Roles">
+                        <user-properties path="users.properties"/>
+                        <group-properties path="groups.properties"/>
+                    </properties-realm>
+                </security-realm>
+            </security-realms>
+        </security>
+
+        <endpoints socket-binding="default" security-realm="default" />
+    </server>
+</infinispan>

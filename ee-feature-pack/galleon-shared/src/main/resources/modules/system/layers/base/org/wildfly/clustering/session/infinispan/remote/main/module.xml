@@ -19,6 +19,7 @@
         <module name="jakarta.transaction.api"/>
 
         <module name="com.github.ben-manes.caffeine"/>
+        <module name="org.infinispan.api"/>
         <module name="org.infinispan.client.hotrod"/>
         <module name="org.infinispan.commons"/>
         <module name="org.infinispan.protostream"/>

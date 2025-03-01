@@ -29,4 +29,9 @@ public interface DeploymentConfiguration extends org.wildfly.clustering.server.d
      * @return a module
      */
     Module getModule();
+
+    @Override
+    default ClassLoader getClassLoader() {
+        return this.getModule().getClassLoader();
+    }
 }

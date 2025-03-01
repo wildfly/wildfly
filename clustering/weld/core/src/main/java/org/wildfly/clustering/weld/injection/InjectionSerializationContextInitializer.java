@@ -6,6 +6,7 @@
 package org.wildfly.clustering.weld.injection;
 
 import org.jboss.weld.injection.EmptyInjectionPoint;
+import org.jboss.weld.injection.InjectionPointFactory;
 import org.kohsuke.MetaInfServices;
 import org.wildfly.clustering.marshalling.protostream.AbstractSerializationContextInitializer;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamMarshaller;
@@ -19,7 +20,7 @@ import org.wildfly.clustering.marshalling.protostream.SerializationContextInitia
 public class InjectionSerializationContextInitializer extends AbstractSerializationContextInitializer {
 
     public InjectionSerializationContextInitializer() {
-        super("org.jboss.weld.injection.proto");
+        super(InjectionPointFactory.class.getPackage());
     }
 
     @Override

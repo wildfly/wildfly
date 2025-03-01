@@ -23,7 +23,7 @@ import org.wildfly.clustering.marshalling.protostream.reflect.TernaryMethodMarsh
 public class BuiltinBeanSerializationContextInitializer extends AbstractSerializationContextInitializer {
 
     public BuiltinBeanSerializationContextInitializer() {
-        super("org.jboss.weld.bean.builtin.proto");
+        super(InstanceImpl.class.getPackage());
     }
 
     @SuppressWarnings("unchecked")

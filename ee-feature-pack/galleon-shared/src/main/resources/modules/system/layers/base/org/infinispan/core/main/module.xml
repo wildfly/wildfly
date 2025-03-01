@@ -27,6 +27,7 @@
         <module name="org.infinispan.persistence.remote" optional="true"/>
         <module name="org.infinispan.client.hotrod" optional="true"/>
         <module name="org.infinispan.commons"/>
+        <module name="org.infinispan.counter"/>
         <module name="org.infinispan.protostream"/>
         <module name="org.infinispan.protostream.types"/>
         <module name="org.jboss.logging"/>

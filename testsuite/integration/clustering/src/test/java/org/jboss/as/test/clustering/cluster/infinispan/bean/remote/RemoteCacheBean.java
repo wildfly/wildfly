@@ -12,7 +12,6 @@ import jakarta.ejb.Local;
 import jakarta.ejb.Singleton;
 import jakarta.ejb.Startup;
 
-import org.infinispan.client.hotrod.DefaultTemplate;
 import org.infinispan.client.hotrod.RemoteCache;
 import org.infinispan.client.hotrod.RemoteCacheContainer;
 import org.infinispan.commons.api.BasicCache;
@@ -37,7 +36,7 @@ public class RemoteCacheBean extends CacheBean {
 
     @PostConstruct
     public void init() {
-        this.container.getConfiguration().addRemoteCache(CACHE_NAME, builder -> builder.templateName(DefaultTemplate.LOCAL).forceReturnValues(true));
+        this.container.getConfiguration().addRemoteCache(CACHE_NAME, builder -> builder.configuration("{\"local-cache\": {}}").forceReturnValues(true));
         this.cache = this.container.getCache(CACHE_NAME);
         this.cache.start();
     }

@@ -103,7 +103,6 @@
                             max-retries="2"
                             module="org.infinispan"
                             name="my-remote-container"
-                            protocol-version="2.5"
                             socket-timeout="1000"
                             tcp-no-delay="false"
                             tcp-keep-alive="true"

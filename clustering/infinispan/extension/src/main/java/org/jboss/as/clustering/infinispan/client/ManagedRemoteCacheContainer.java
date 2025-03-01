@@ -10,14 +10,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.ServiceLoader;
 import java.util.Set;
-import java.util.concurrent.CompletionStage;
 
 import org.infinispan.client.hotrod.DataFormat;
+import org.infinispan.client.hotrod.RemoteCache;
 import org.infinispan.client.hotrod.RemoteCacheManager;
 import org.infinispan.client.hotrod.RemoteCacheManagerAdmin;
 import org.infinispan.client.hotrod.configuration.Configuration;
-import org.infinispan.client.hotrod.impl.operations.OperationsFactory;
-import org.infinispan.client.hotrod.impl.operations.PingResponse;
 import org.infinispan.commons.dataconversion.MediaType;
 import org.infinispan.commons.marshall.Marshaller;
 import org.infinispan.commons.marshall.ProtoStreamMarshaller;
@@ -26,7 +24,6 @@ import org.infinispan.query.remote.client.ProtobufMetadataManagerConstants;
 import org.jboss.as.clustering.infinispan.dataconversion.MediaTypeFactory;
 import org.jboss.as.clustering.infinispan.marshalling.UserMarshallerFactory;
 import org.jboss.modules.ModuleLoader;
-import org.wildfly.clustering.infinispan.client.RemoteCache;
 import org.wildfly.clustering.infinispan.client.RemoteCacheContainer;
 import org.wildfly.clustering.server.Registrar;
 import org.wildfly.security.manager.WildFlySecurityManager;
@@ -40,7 +37,6 @@ import org.wildfly.security.manager.WildFlySecurityManager;
 public class ManagedRemoteCacheContainer implements RemoteCacheContainer {
 
     private final RemoteCacheManager container;
-    private final OperationsFactory factory;
     private final String name;
     private final ModuleLoader loader;
     private final Registrar<String> registrar;
@@ -50,7 +46,6 @@ public class ManagedRemoteCacheContainer implements RemoteCacheContainer {
         this.name = name;
         this.loader = loader;
         this.registrar = registrar;
-        this.factory = new OperationsFactory(container.getChannelFactory(), null, container.getConfiguration());
     }
 
     @Override
@@ -61,11 +56,6 @@ public class ManagedRemoteCacheContainer implements RemoteCacheContainer {
     @Override
     public RemoteCacheManagerAdmin administration() {
         return this.container.administration();
-    }
-
-    @Override
-    public CompletionStage<Boolean> isAvailable() {
-        return this.factory.newFaultTolerantPingOperation().execute().thenApply(PingResponse::isSuccess);
     }
 
     @Override

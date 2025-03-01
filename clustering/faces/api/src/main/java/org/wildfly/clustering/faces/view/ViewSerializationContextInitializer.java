@@ -4,6 +4,8 @@
  */
 package org.wildfly.clustering.faces.view;
 
+import jakarta.faces.view.Location;
+
 import org.kohsuke.MetaInfServices;
 import org.wildfly.clustering.marshalling.protostream.AbstractSerializationContextInitializer;
 import org.wildfly.clustering.marshalling.protostream.SerializationContext;
@@ -16,7 +18,7 @@ import org.wildfly.clustering.marshalling.protostream.SerializationContextInitia
 public class ViewSerializationContextInitializer extends AbstractSerializationContextInitializer {
 
     public ViewSerializationContextInitializer() {
-        super("jakarta.faces.view.proto");
+        super(Location.class.getPackage());
     }
 
     @Override

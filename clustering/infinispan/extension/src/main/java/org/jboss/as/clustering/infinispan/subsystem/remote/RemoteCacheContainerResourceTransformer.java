@@ -36,14 +36,14 @@ public class RemoteCacheContainerResourceTransformer implements Consumer<ModelVe
     @Override
     public void accept(ModelVersion version) {
         Map<String, String> legacyModules = new TreeMap<>();
-        if (InfinispanSubsystemModel.VERSION_18_0_0.requiresTransformation(version)) {
-            // Convert wildfly-clustering module to the appropriate module alias
-            legacyModules.put("org.wildfly.clustering.session.infinispan.remote", "org.wildfly.clustering.web.hotrod");
-        }
-        if (InfinispanSubsystemModel.VERSION_16_0_0.requiresTransformation(version)) {
+        if (InfinispanSubsystemModel.VERSION_20_0_0.requiresTransformation(version)) {
             this.builder.getAttributeBuilder()
                     .setValueConverter(AttributeConverter.DEFAULT_VALUE, Attribute.PROTOCOL_VERSION.getDefinition())
                     .end();
+        }
+        if (InfinispanSubsystemModel.VERSION_18_0_0.requiresTransformation(version)) {
+            // Convert wildfly-clustering module to the appropriate module alias
+            legacyModules.put("org.wildfly.clustering.session.infinispan.remote", "org.wildfly.clustering.web.hotrod");
         }
         if (InfinispanSubsystemModel.VERSION_15_0_0.requiresTransformation(version)) {
             this.builder.getAttributeBuilder()

@@ -5,6 +5,7 @@
 
 package org.wildfly.clustering.weld.contexts;
 
+import org.jboss.weld.contexts.CreationalContextImpl;
 import org.kohsuke.MetaInfServices;
 import org.wildfly.clustering.marshalling.protostream.AbstractSerializationContextInitializer;
 import org.wildfly.clustering.marshalling.protostream.SerializationContext;
@@ -17,7 +18,7 @@ import org.wildfly.clustering.marshalling.protostream.SerializationContextInitia
 public class ContextsSerializationContextInitializer extends AbstractSerializationContextInitializer {
 
     public ContextsSerializationContextInitializer() {
-        super("org.jboss.weld.contexts.proto");
+        super(CreationalContextImpl.class.getPackage());
     }
 
     @Override

@@ -30,7 +30,7 @@ import org.wildfly.security.manager.WildFlySecurityManager;
 public class ProxyInterceptorSerializationContextInitializer extends AbstractSerializationContextInitializer {
 
     public ProxyInterceptorSerializationContextInitializer() {
-        super("org.jboss.weld.interceptor.proxy.proto");
+        super(InterceptorMethodHandler.class.getPackage());
     }
 
     @Override

@@ -12,6 +12,7 @@ import java.security.PrivilegedAction;
 import org.jboss.weld.ejb.api.SessionObjectReference;
 import org.jboss.weld.manager.BeanManagerImpl;
 import org.jboss.weld.module.ejb.EnterpriseBeanInstance;
+import org.jboss.weld.module.ejb.WeldEjbModule;
 import org.jboss.weld.serialization.spi.BeanIdentifier;
 import org.kohsuke.MetaInfServices;
 import org.wildfly.clustering.marshalling.protostream.AbstractSerializationContextInitializer;
@@ -29,7 +30,7 @@ import org.wildfly.security.manager.WildFlySecurityManager;
 public class WeldModuleEJBSerializationContextInitializer extends AbstractSerializationContextInitializer implements ParametricPrivilegedAction<Class<?>, String> {
 
     public WeldModuleEJBSerializationContextInitializer() {
-        super("org.jboss.weld.module.ejb.proto");
+        super(WeldEjbModule.class.getPackage());
     }
 
     @Override

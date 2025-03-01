@@ -82,4 +82,12 @@ public class DefaultCacheContainerAdmin implements EmbeddedCacheManagerAdmin {
     public EmbeddedCacheManagerAdmin withSubject(Subject subject) {
         return this;
     }
+
+    @Override
+    public void assignAlias(String aliasName, String cacheName) {
+    }
+
+    @Override
+    public void updateConfigurationAttribute(String cacheName, String attribute, String value) {
+    }
 }

@@ -5,6 +5,7 @@
 
 package org.wildfly.clustering.ejb.infinispan.network;
 
+import org.jboss.as.network.ClientMapping;
 import org.kohsuke.MetaInfServices;
 import org.wildfly.clustering.marshalling.protostream.AbstractSerializationContextInitializer;
 import org.wildfly.clustering.marshalling.protostream.SerializationContext;
@@ -18,7 +19,7 @@ import org.wildfly.clustering.marshalling.protostream.SerializationContextInitia
 public class NetworkSerializationContextInitializer extends AbstractSerializationContextInitializer {
 
     public NetworkSerializationContextInitializer() {
-        super("org.jboss.as.network.proto");
+        super(ClientMapping.class.getPackage());
     }
 
     @Override

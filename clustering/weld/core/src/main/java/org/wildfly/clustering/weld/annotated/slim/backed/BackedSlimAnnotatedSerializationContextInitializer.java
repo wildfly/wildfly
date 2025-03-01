@@ -26,7 +26,7 @@ import org.wildfly.clustering.weld.annotated.slim.AnnotatedParameterMarshaller;
 public class BackedSlimAnnotatedSerializationContextInitializer extends AbstractSerializationContextInitializer {
 
     public BackedSlimAnnotatedSerializationContextInitializer() {
-        super("org.jboss.weld.annotated.slim.backed.proto");
+        super(BackedAnnotatedType.class.getPackage());
     }
 
     @Override
