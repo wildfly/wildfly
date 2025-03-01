@@ -47,6 +47,7 @@ public class Server implements Service<Server> {
     private final Supplier<ServletContainerService> servletContainer;
     private final Supplier<UndertowService> undertowService;
     private final String defaultHost;
+    private volatile String finalRoute = null;
     private final String name;
     private final NameVirtualHostHandler virtualHostHandler = new NameVirtualHostHandler();
     private final List<ListenerService> listeners = new CopyOnWriteArrayList<>();
@@ -75,6 +76,8 @@ public class Server implements Service<Server> {
         UndertowLogger.ROOT_LOGGER.startedServer(name);
         undertowService.get().registerServer(this);
         serverConsumer.accept(this);
+
+        finalRoute = computeRoute();
     }
 
     @Override
@@ -162,6 +165,10 @@ public class Server implements Service<Server> {
     }
 
     public String getRoute() {
+        return finalRoute;
+    }
+
+    private String computeRoute() {
         final UndertowService service = this.undertowService.get();
         final String defaultServerRoute = service.getInstanceId();
         if (service.isObfuscateSessionRoute()) {
