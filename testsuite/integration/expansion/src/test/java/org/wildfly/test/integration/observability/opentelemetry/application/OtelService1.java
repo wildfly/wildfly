@@ -25,6 +25,9 @@ import jakarta.ws.rs.core.UriInfo;
 @RequestScoped
 @Path("/")
 public class OtelService1 {
+    private static final String SPAN1 = "Custom Span: saying hello";
+    private static final String SPAN2 = "Custom Span: context propagation";
+
     @Context
     private UriInfo uriInfo;
 
@@ -33,8 +36,8 @@ public class OtelService1 {
 
     @GET
     public String sayHello(@QueryParam("name") String name) {
-        final Span span = tracer.spanBuilder("Saying hello from server1").startSpan();
-        try (Scope scope = span.makeCurrent()) {
+        final Span span = tracer.spanBuilder(SPAN1).startSpan();
+        try (Scope ignored = span.makeCurrent()) {
             span.addEvent("some-event");
             span.setAttribute("name", name);
             span.end();
@@ -46,7 +49,7 @@ public class OtelService1 {
     @GET
     @Path("contextProp1")
     public Response contextProp1() throws URISyntaxException {
-        final Span span = tracer.spanBuilder("Handling contextProp1 request from server1").startSpan();
+        final Span span = tracer.spanBuilder(SPAN2).startSpan();
         try (Scope scope = span.makeCurrent()) {
             span.setAttribute("method_called", "contextProp1");
             span.addEvent("The method contextProp1 was called");
