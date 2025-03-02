@@ -5,8 +5,6 @@
 
 package org.wildfly.extension.undertow;
 
-import static org.jboss.as.controller.PersistentResourceXMLDescription.builder;
-
 import java.util.EnumSet;
 import java.util.Map;
 import java.util.Set;
@@ -72,6 +70,7 @@ public enum UndertowSubsystemSchema implements PersistentSubsystemSchema<Underto
 
     static final Map<Stability, UndertowSubsystemSchema> CURRENT = Feature.map(EnumSet.of(VERSION_14_0, VERSION_14_0_PREVIEW));
     private final VersionedNamespace<IntVersion, UndertowSubsystemSchema> namespace;
+    private final PersistentResourceXMLDescription.Factory factory = PersistentResourceXMLDescription.factory(this);
 
     UndertowSubsystemSchema(int major) {
         this(new IntVersion(major));
@@ -100,32 +99,34 @@ public enum UndertowSubsystemSchema implements PersistentSubsystemSchema<Underto
 
     @Override
     public PersistentResourceXMLDescription getXMLDescription() {
-        PersistentResourceXMLDescription.PersistentResourceXMLBuilder builder = builder(UndertowRootDefinition.PATH_ELEMENT, this.getNamespace());
+        PersistentResourceXMLDescription.Builder builder = this.factory.builder(UndertowRootDefinition.PATH_ELEMENT);
 
         if (this.since(UndertowSubsystemSchema.VERSION_6_0)) {
-            builder.addChild(builder(ByteBufferPoolDefinition.PATH_ELEMENT).addAttributes(ByteBufferPoolDefinition.ATTRIBUTES.stream()));
+            builder.addChild(this.factory.builder(ByteBufferPoolDefinition.PATH_ELEMENT).addAttributes(ByteBufferPoolDefinition.ATTRIBUTES.stream()).build());
         }
-        builder.addChild(builder(BufferCacheDefinition.PATH_ELEMENT).addAttributes(BufferCacheDefinition.ATTRIBUTES.stream()));
-        builder.addChild(builder(ServerDefinition.PATH_ELEMENT).addAttributes(ServerDefinition.ATTRIBUTES.stream())
-            .addChild(this.ajpListenerBuilder())
-            .addChild(this.httpListenerBuilder())
-            .addChild(this.httpsListenerBuilder())
-            .addChild(this.hostBuilder())
+        builder.addChild(this.factory.builder(BufferCacheDefinition.PATH_ELEMENT).addAttributes(BufferCacheDefinition.ATTRIBUTES.stream()).build());
+        builder.addChild(this.factory.builder(ServerDefinition.PATH_ELEMENT).addAttributes(ServerDefinition.ATTRIBUTES.stream())
+            .addChild(this.ajpListener())
+            .addChild(this.httpListener())
+            .addChild(this.httpsListener())
+            .addChild(this.host())
+            .build()
         );
-        builder.addChild(this.servletContainerBuilder());
-        builder.addChild(this.handlersBuilder());
-        builder.addChild(PersistentResourceXMLDescription.builder(FilterDefinitions.PATH_ELEMENT).setXmlElementName(Constants.FILTERS).setNoAddOperation(true)
-            .addChild(builder(RequestLimitHandlerDefinition.PATH_ELEMENT).addAttributes(RequestLimitHandlerDefinition.ATTRIBUTES.stream()))
-            .addChild(builder(ResponseHeaderFilterDefinition.PATH_ELEMENT).addAttributes(ResponseHeaderFilterDefinition.ATTRIBUTES.stream()))
-            .addChild(builder(GzipFilterDefinition.PATH_ELEMENT))
-            .addChild(builder(ErrorPageDefinition.PATH_ELEMENT).addAttributes(ErrorPageDefinition.ATTRIBUTES.stream()))
-            .addChild(this.modClusterBuilder())
-            .addChild(builder(CustomFilterDefinition.PATH_ELEMENT).addAttributes(CustomFilterDefinition.ATTRIBUTES.stream()).setXmlElementName("filter"))
-            .addChild(builder(ExpressionFilterDefinition.PATH_ELEMENT).addAttributes(ExpressionFilterDefinition.ATTRIBUTES.stream()))
-            .addChild(builder(RewriteFilterDefinition.PATH_ELEMENT).addAttributes(RewriteFilterDefinition.ATTRIBUTES.stream()))
+        builder.addChild(this.servletContainer());
+        builder.addChild(this.handlers());
+        builder.addChild(this.factory.builder(FilterDefinitions.PATH_ELEMENT).setXmlElementName(Constants.FILTERS).setNoAddOperation(true)
+            .addChild(this.factory.builder(RequestLimitHandlerDefinition.PATH_ELEMENT).addAttributes(RequestLimitHandlerDefinition.ATTRIBUTES.stream()).build())
+            .addChild(this.factory.builder(ResponseHeaderFilterDefinition.PATH_ELEMENT).addAttributes(ResponseHeaderFilterDefinition.ATTRIBUTES.stream()).build())
+            .addChild(this.factory.builder(GzipFilterDefinition.PATH_ELEMENT).build())
+            .addChild(this.factory.builder(ErrorPageDefinition.PATH_ELEMENT).addAttributes(ErrorPageDefinition.ATTRIBUTES.stream()).build())
+            .addChild(this.modCluster())
+            .addChild(this.factory.builder(CustomFilterDefinition.PATH_ELEMENT).addAttributes(CustomFilterDefinition.ATTRIBUTES.stream()).setXmlElementName("filter").build())
+            .addChild(this.factory.builder(ExpressionFilterDefinition.PATH_ELEMENT).addAttributes(ExpressionFilterDefinition.ATTRIBUTES.stream()).build())
+            .addChild(this.factory.builder(RewriteFilterDefinition.PATH_ELEMENT).addAttributes(RewriteFilterDefinition.ATTRIBUTES.stream()).build())
+            .build()
         );
         if (this.since(UndertowSubsystemSchema.VERSION_4_0)) {
-            builder.addChild(this.applicationSecurityDomainBuilder());
+            builder.addChild(this.applicationSecurityDomain());
         }
         //here to make sure we always add filters & handlers path to mgmt model
         builder.setAdditionalOperationsGenerator((address, addOperation, operations) -> {
@@ -141,23 +142,23 @@ public enum UndertowSubsystemSchema implements PersistentSubsystemSchema<Underto
         return builder.build();
     }
 
-    private PersistentResourceXMLDescription.PersistentResourceXMLBuilder ajpListenerBuilder() {
-        PersistentResourceXMLDescription.PersistentResourceXMLBuilder builder = builder(AjpListenerResourceDefinition.PATH_ELEMENT);
+    private PersistentResourceXMLDescription ajpListener() {
+        PersistentResourceXMLDescription.Builder builder = this.factory.builder(AjpListenerResourceDefinition.PATH_ELEMENT);
         Stream<AttributeDefinition> attributes = AjpListenerResourceDefinition.ATTRIBUTES.stream();
         Stream.concat(this.listenerAttributes(), attributes).forEach(builder::addAttribute);
-        return builder;
+        return builder.build();
     }
 
-    private PersistentResourceXMLDescription.PersistentResourceXMLBuilder httpListenerBuilder() {
-        PersistentResourceXMLDescription.PersistentResourceXMLBuilder builder = builder(HttpListenerResourceDefinition.PATH_ELEMENT);
+    private PersistentResourceXMLDescription httpListener() {
+        PersistentResourceXMLDescription.Builder builder = this.factory.builder(HttpListenerResourceDefinition.PATH_ELEMENT);
         Stream<AttributeDefinition> attributes = HttpListenerResourceDefinition.ATTRIBUTES.stream();
         // Reproduce attribute order of the previous parser implementation
         Stream.of(this.listenerAttributes(), attributes, this.httpListenerAttributes()).flatMap(Function.identity()).forEach(builder::addAttribute);
-        return builder;
+        return builder.build();
     }
 
-    private PersistentResourceXMLDescription.PersistentResourceXMLBuilder httpsListenerBuilder() {
-        PersistentResourceXMLDescription.PersistentResourceXMLBuilder builder = builder(HttpsListenerResourceDefinition.PATH_ELEMENT);
+    private PersistentResourceXMLDescription httpsListener() {
+        PersistentResourceXMLDescription.Builder builder = this.factory.builder(HttpsListenerResourceDefinition.PATH_ELEMENT);
         Stream<AttributeDefinition> attributes = HttpsListenerResourceDefinition.ATTRIBUTES.stream();
         if (!this.since(UndertowSubsystemSchema.VERSION_4_0)) {
             attributes = attributes.filter(Predicate.isEqual(HttpsListenerResourceDefinition.SSL_CONTEXT).negate());
@@ -168,7 +169,7 @@ public enum UndertowSubsystemSchema implements PersistentSubsystemSchema<Underto
         }
         // Reproduce attribute order of the previous parser implementation
         Stream.of(this.listenerAttributes(), attributes, httpListenerAttributes).flatMap(Function.identity()).forEach(builder::addAttribute);
-        return builder;
+        return builder.build();
     }
 
     private Stream<AttributeDefinition> httpListenerAttributes() {
@@ -193,20 +194,21 @@ public enum UndertowSubsystemSchema implements PersistentSubsystemSchema<Underto
         return attributes;
     }
 
-    private PersistentResourceXMLDescription.PersistentResourceXMLBuilder hostBuilder() {
-        PersistentResourceXMLDescription.PersistentResourceXMLBuilder builder = builder(HostDefinition.PATH_ELEMENT);
+    private PersistentResourceXMLDescription host() {
+        PersistentResourceXMLDescription.Builder builder = this.factory.builder(HostDefinition.PATH_ELEMENT);
 
-        builder.addChild(builder(LocationDefinition.PATH_ELEMENT).addAttributes(LocationDefinition.ATTRIBUTES.stream())
-            .addChild(filterRefBuilder())
+        builder.addChild(this.factory.builder(LocationDefinition.PATH_ELEMENT).addAttributes(LocationDefinition.ATTRIBUTES.stream())
+            .addChild(this.filterRef())
+            .build()
         );
-        builder.addChild(builder(AccessLogDefinition.PATH_ELEMENT).addAttributes(AccessLogDefinition.ATTRIBUTES.stream()));
+        builder.addChild(this.factory.builder(AccessLogDefinition.PATH_ELEMENT).addAttributes(AccessLogDefinition.ATTRIBUTES.stream()).build());
         if (this.since(UndertowSubsystemSchema.VERSION_9_0)) {
-            builder.addChild(builder(ConsoleAccessLogDefinition.PATH_ELEMENT).addAttributes(ConsoleAccessLogDefinition.ATTRIBUTES.stream()));
+            builder.addChild(this.factory.builder(ConsoleAccessLogDefinition.PATH_ELEMENT).addAttributes(ConsoleAccessLogDefinition.ATTRIBUTES.stream()).build());
         }
-        builder.addChild(filterRefBuilder());
-        builder.addChild(builder(SingleSignOnDefinition.PATH_ELEMENT).addAttributes(EnumSet.allOf(SingleSignOnDefinition.Attribute.class).stream().map(Supplier::get)));
+        builder.addChild(this.filterRef());
+        builder.addChild(this.factory.builder(SingleSignOnDefinition.PATH_ELEMENT).addAttributes(EnumSet.allOf(SingleSignOnDefinition.Attribute.class).stream().map(Supplier::get)).build());
         if (this.since(UndertowSubsystemSchema.VERSION_4_0)) {
-            builder.addChild(builder(HttpInvokerDefinition.PATH_ELEMENT).addAttributes(HttpInvokerDefinition.ATTRIBUTES.stream()));
+            builder.addChild(this.factory.builder(HttpInvokerDefinition.PATH_ELEMENT).addAttributes(HttpInvokerDefinition.ATTRIBUTES.stream()).build());
         }
 
         Stream<AttributeDefinition> attributes = HostDefinition.ATTRIBUTES.stream();
@@ -214,26 +216,26 @@ public enum UndertowSubsystemSchema implements PersistentSubsystemSchema<Underto
             attributes = attributes.filter(Predicate.isEqual(HostDefinition.QUEUE_REQUESTS_ON_START).negate());
         }
         attributes.forEach(builder::addAttribute);
-        return builder;
+        return builder.build();
     }
 
-    private PersistentResourceXMLDescription.PersistentResourceXMLBuilder filterRefBuilder() {
-        return builder(FilterRefDefinition.PATH_ELEMENT).addAttributes(FilterRefDefinition.ATTRIBUTES.stream());
+    private PersistentResourceXMLDescription filterRef() {
+        return this.factory.builder(FilterRefDefinition.PATH_ELEMENT).addAttributes(FilterRefDefinition.ATTRIBUTES.stream()).build();
     }
 
-    private PersistentResourceXMLDescription.PersistentResourceXMLBuilder servletContainerBuilder() {
-        PersistentResourceXMLDescription.PersistentResourceXMLBuilder builder = builder(ServletContainerDefinition.PATH_ELEMENT);
+    private PersistentResourceXMLDescription servletContainer() {
+        PersistentResourceXMLDescription.Builder builder = this.factory.builder(ServletContainerDefinition.PATH_ELEMENT);
 
-        builder.addChild(builder(JspDefinition.PATH_ELEMENT).addAttributes(JspDefinition.ATTRIBUTES.stream()).setXmlElementName(Constants.JSP_CONFIG));
+        builder.addChild(this.factory.builder(JspDefinition.PATH_ELEMENT).addAttributes(JspDefinition.ATTRIBUTES.stream()).setXmlElementName(Constants.JSP_CONFIG).build());
         if (this.since(UndertowSubsystemSchema.VERSION_14_0)) {
-            builder.addChild(builder(AffinityCookieDefinition.PATH_ELEMENT).addAttributes(AffinityCookieDefinition.ATTRIBUTES.stream()));
+            builder.addChild(this.factory.builder(AffinityCookieDefinition.PATH_ELEMENT).addAttributes(AffinityCookieDefinition.ATTRIBUTES.stream()).build());
         }
-        builder.addChild(builder(SessionCookieDefinition.PATH_ELEMENT).addAttributes(SessionCookieDefinition.ATTRIBUTES.stream()));
-        builder.addChild(builder(PersistentSessionsDefinition.PATH_ELEMENT).addAttributes(PersistentSessionsDefinition.ATTRIBUTES.stream()));
-        builder.addChild(this.websocketsBuilder());
-        builder.addChild(builder(MimeMappingDefinition.PATH_ELEMENT).addAttributes(MimeMappingDefinition.ATTRIBUTES.stream()).setXmlWrapperElement("mime-mappings"));
-        builder.addChild(builder(WelcomeFileDefinition.PATH_ELEMENT).setXmlWrapperElement("welcome-files"));
-        builder.addChild(builder(CrawlerSessionManagementDefinition.PATH_ELEMENT).addAttributes(CrawlerSessionManagementDefinition.ATTRIBUTES.stream()));
+        builder.addChild(this.factory.builder(SessionCookieDefinition.PATH_ELEMENT).addAttributes(SessionCookieDefinition.ATTRIBUTES.stream()).build());
+        builder.addChild(this.factory.builder(PersistentSessionsDefinition.PATH_ELEMENT).addAttributes(PersistentSessionsDefinition.ATTRIBUTES.stream()).build());
+        builder.addChild(this.websockets());
+        builder.addChild(this.factory.builder(MimeMappingDefinition.PATH_ELEMENT).addAttributes(MimeMappingDefinition.ATTRIBUTES.stream()).setXmlWrapperElement("mime-mappings").build());
+        builder.addChild(this.factory.builder(WelcomeFileDefinition.PATH_ELEMENT).setXmlWrapperElement("welcome-files").build());
+        builder.addChild(this.factory.builder(CrawlerSessionManagementDefinition.PATH_ELEMENT).addAttributes(CrawlerSessionManagementDefinition.ATTRIBUTES.stream()).build());
 
         Stream<AttributeDefinition> attributes = ServletContainerDefinition.ATTRIBUTES.stream();
         if (!this.since(UndertowSubsystemSchema.VERSION_4_0)) {
@@ -249,23 +251,23 @@ public enum UndertowSubsystemSchema implements PersistentSubsystemSchema<Underto
             attributes = attributes.filter(Predicate.isEqual(ServletContainerDefinition.PRESERVE_PATH_ON_FORWARD).negate());
         }
         attributes.forEach(builder::addAttribute);
-        return builder;
+        return builder.build();
     }
 
-    private PersistentResourceXMLDescription.PersistentResourceXMLBuilder websocketsBuilder() {
-        PersistentResourceXMLDescription.PersistentResourceXMLBuilder builder = builder(WebsocketsDefinition.PATH_ELEMENT);
+    private PersistentResourceXMLDescription websockets() {
+        PersistentResourceXMLDescription.Builder builder = this.factory.builder(WebsocketsDefinition.PATH_ELEMENT);
         Stream<AttributeDefinition> attributes = WebsocketsDefinition.ATTRIBUTES.stream();
         if (!this.since(UndertowSubsystemSchema.VERSION_4_0)) {
             attributes = attributes.filter(Predicate.not(Set.of(WebsocketsDefinition.PER_MESSAGE_DEFLATE, WebsocketsDefinition.DEFLATER_LEVEL)::contains));
         }
         attributes.forEach(builder::addAttribute);
-        return builder;
+        return builder.build();
     }
 
-    private PersistentResourceXMLDescription.PersistentResourceXMLBuilder handlersBuilder() {
-        PersistentResourceXMLDescription.PersistentResourceXMLBuilder builder = builder(HandlerDefinitions.PATH_ELEMENT).setXmlElementName(Constants.HANDLERS).setNoAddOperation(true);
+    private PersistentResourceXMLDescription handlers() {
+        PersistentResourceXMLDescription.Builder builder = this.factory.builder(HandlerDefinitions.PATH_ELEMENT).setXmlElementName(Constants.HANDLERS).setNoAddOperation(true);
 
-        builder.addChild(builder(FileHandlerDefinition.PATH_ELEMENT).addAttributes(FileHandlerDefinition.ATTRIBUTES.stream()));
+        builder.addChild(this.factory.builder(FileHandlerDefinition.PATH_ELEMENT).addAttributes(FileHandlerDefinition.ATTRIBUTES.stream()).build());
 
         Stream<AttributeDefinition> reverseProxyHandlerAttributes = ReverseProxyHandlerDefinition.ATTRIBUTES.stream();
         if (!this.since(UndertowSubsystemSchema.VERSION_4_0)) {
@@ -275,19 +277,20 @@ public enum UndertowSubsystemSchema implements PersistentSubsystemSchema<Underto
         if (!this.since(UndertowSubsystemSchema.VERSION_4_0)) {
             reverseProxyHandlerHostAttributes = reverseProxyHandlerHostAttributes.filter(Predicate.not(Set.of(ReverseProxyHandlerHostDefinition.SSL_CONTEXT, ReverseProxyHandlerHostDefinition.ENABLE_HTTP2)::contains));
         }
-        builder.addChild(builder(ReverseProxyHandlerDefinition.PATH_ELEMENT).addAttributes(reverseProxyHandlerAttributes)
-            .addChild(builder(ReverseProxyHandlerHostDefinition.PATH_ELEMENT).addAttributes(ReverseProxyHandlerHostDefinition.ATTRIBUTES.stream()).setXmlElementName(Constants.HOST))
+        builder.addChild(this.factory.builder(ReverseProxyHandlerDefinition.PATH_ELEMENT).addAttributes(reverseProxyHandlerAttributes)
+            .addChild(this.factory.builder(ReverseProxyHandlerHostDefinition.PATH_ELEMENT).addAttributes(ReverseProxyHandlerHostDefinition.ATTRIBUTES.stream()).setXmlElementName(Constants.HOST).build())
+            .build()
         );
-        return builder;
+        return builder.build();
     }
 
-    private PersistentResourceXMLDescription.PersistentResourceXMLBuilder modClusterBuilder() {
-        PersistentResourceXMLDescription.PersistentResourceXMLBuilder builder = builder(ModClusterDefinition.PATH_ELEMENT);
+    private PersistentResourceXMLDescription modCluster() {
+        PersistentResourceXMLDescription.Builder builder = this.factory.builder(ModClusterDefinition.PATH_ELEMENT);
 
         if (this.since(UndertowSubsystemSchema.VERSION_10_0)) {
-            builder.addChild(builder(NoAffinityResourceDefinition.PATH).setXmlElementName(Constants.NO_AFFINITY));
-            builder.addChild(builder(SingleAffinityResourceDefinition.PATH).setXmlElementName(Constants.SINGLE_AFFINITY));
-            builder.addChild(builder(RankedAffinityResourceDefinition.PATH).addAttributes(Attribute.stream(RankedAffinityResourceDefinition.Attribute.class)).setXmlElementName(Constants.RANKED_AFFINITY));
+            builder.addChild(this.factory.builder(NoAffinityResourceDefinition.PATH).setXmlElementName(Constants.NO_AFFINITY).build());
+            builder.addChild(this.factory.builder(SingleAffinityResourceDefinition.PATH).setXmlElementName(Constants.SINGLE_AFFINITY).build());
+            builder.addChild(this.factory.builder(RankedAffinityResourceDefinition.PATH).addAttributes(Attribute.stream(RankedAffinityResourceDefinition.Attribute.class)).setXmlElementName(Constants.RANKED_AFFINITY).build());
         }
 
         Stream<AttributeDefinition> attributes = ModClusterDefinition.ATTRIBUTES.stream();
@@ -295,14 +298,14 @@ public enum UndertowSubsystemSchema implements PersistentSubsystemSchema<Underto
             attributes = attributes.filter(Predicate.not(Set.of(ModClusterDefinition.FAILOVER_STRATEGY, ModClusterDefinition.SSL_CONTEXT, ModClusterDefinition.MAX_RETRIES)::contains));
         }
         attributes.forEach(builder::addAttribute);
-        return builder;
+        return builder.build();
     }
 
-    private PersistentResourceXMLDescription.PersistentResourceXMLBuilder applicationSecurityDomainBuilder() {
-        PersistentResourceXMLDescription.PersistentResourceXMLBuilder builder = builder(ApplicationSecurityDomainDefinition.PATH_ELEMENT).setXmlWrapperElement(Constants.APPLICATION_SECURITY_DOMAINS);
+    private PersistentResourceXMLDescription applicationSecurityDomain() {
+        PersistentResourceXMLDescription.Builder builder = this.factory.builder(ApplicationSecurityDomainDefinition.PATH_ELEMENT).setXmlWrapperElement(Constants.APPLICATION_SECURITY_DOMAINS);
 
         Stream<AttributeDefinition> ssoAttributes = Stream.concat(EnumSet.allOf(ApplicationSecurityDomainSingleSignOnDefinition.Attribute.class).stream(), EnumSet.allOf(SingleSignOnDefinition.Attribute.class).stream()).map(Supplier::get);
-        builder.addChild(builder(SingleSignOnDefinition.PATH_ELEMENT).addAttributes(ssoAttributes));
+        builder.addChild(this.factory.builder(SingleSignOnDefinition.PATH_ELEMENT).addAttributes(ssoAttributes).build());
 
         Stream<AttributeDefinition> attributes = ApplicationSecurityDomainDefinition.ATTRIBUTES.stream();
         if (!this.since(UndertowSubsystemSchema.VERSION_7_0)) {
@@ -312,6 +315,6 @@ public enum UndertowSubsystemSchema implements PersistentSubsystemSchema<Underto
             attributes = attributes.filter(Predicate.not(Set.of(ApplicationSecurityDomainDefinition.ENABLE_JASPI, ApplicationSecurityDomainDefinition.INTEGRATED_JASPI)::contains));
         }
         attributes.forEach(builder::addAttribute);
-        return builder;
+        return builder.build();
     }
 }
