@@ -233,8 +233,8 @@ public enum UndertowSubsystemSchema implements PersistentSubsystemSchema<Underto
         builder.addChild(this.factory.builder(SessionCookieDefinition.PATH_ELEMENT).addAttributes(SessionCookieDefinition.ATTRIBUTES.stream()).build());
         builder.addChild(this.factory.builder(PersistentSessionsDefinition.PATH_ELEMENT).addAttributes(PersistentSessionsDefinition.ATTRIBUTES.stream()).build());
         builder.addChild(this.websockets());
-        builder.addChild(this.factory.builder(MimeMappingDefinition.PATH_ELEMENT).addAttributes(MimeMappingDefinition.ATTRIBUTES.stream()).setXmlWrapperElement("mime-mappings").build());
-        builder.addChild(this.factory.builder(WelcomeFileDefinition.PATH_ELEMENT).setXmlWrapperElement("welcome-files").build());
+        builder.addChild(PersistentResourceXMLDescription.builder(MimeMappingDefinition.PATH_ELEMENT).addAttributes(MimeMappingDefinition.ATTRIBUTES.stream()).setXmlWrapperElement("mime-mappings").build());
+        builder.addChild(PersistentResourceXMLDescription.builder(WelcomeFileDefinition.PATH_ELEMENT).setXmlWrapperElement("welcome-files").build());
         builder.addChild(this.factory.builder(CrawlerSessionManagementDefinition.PATH_ELEMENT).addAttributes(CrawlerSessionManagementDefinition.ATTRIBUTES.stream()).build());
 
         Stream<AttributeDefinition> attributes = ServletContainerDefinition.ATTRIBUTES.stream();
@@ -302,7 +302,7 @@ public enum UndertowSubsystemSchema implements PersistentSubsystemSchema<Underto
     }
 
     private PersistentResourceXMLDescription applicationSecurityDomain() {
-        PersistentResourceXMLDescription.Builder builder = this.factory.builder(ApplicationSecurityDomainDefinition.PATH_ELEMENT).setXmlWrapperElement(Constants.APPLICATION_SECURITY_DOMAINS);
+        PersistentResourceXMLDescription.Builder builder = PersistentResourceXMLDescription.builder(ApplicationSecurityDomainDefinition.PATH_ELEMENT).setXmlWrapperElement(Constants.APPLICATION_SECURITY_DOMAINS);
 
         Stream<AttributeDefinition> ssoAttributes = Stream.concat(EnumSet.allOf(ApplicationSecurityDomainSingleSignOnDefinition.Attribute.class).stream(), EnumSet.allOf(SingleSignOnDefinition.Attribute.class).stream()).map(Supplier::get);
         builder.addChild(this.factory.builder(SingleSignOnDefinition.PATH_ELEMENT).addAttributes(ssoAttributes).build());
