@@ -24,7 +24,7 @@ import org.wildfly.common.function.Functions;
 public class MSCSerializationContextInitializer extends AbstractSerializationContextInitializer {
 
     public MSCSerializationContextInitializer() {
-        super("org.jboss.msc.service.proto");
+        super(ServiceName.class.getPackage());
     }
 
     @Override

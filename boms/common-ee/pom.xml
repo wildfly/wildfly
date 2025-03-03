@@ -1367,6 +1367,12 @@
             </dependency>
 
             <dependency>
+                <groupId>io.smallrye.reactive</groupId>
+                <artifactId>mutiny</artifactId>
+                <version>${version.io.smallrye.smallrye-mutiny}</version>
+            </dependency>
+
+            <dependency>
                 <groupId>io.undertow.jastow</groupId>
                 <artifactId>jastow</artifactId>
                 <version>${version.io.undertow.jastow}</version>

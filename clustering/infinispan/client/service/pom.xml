@@ -51,10 +51,6 @@
             <artifactId>infinispan-client-hotrod</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.infinispan</groupId>
-            <artifactId>infinispan-commons</artifactId>
-        </dependency>
-        <dependency>
             <groupId>org.wildfly.core</groupId>
             <artifactId>wildfly-subsystem</artifactId>
         </dependency>

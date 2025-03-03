@@ -5,6 +5,7 @@
 
 package org.wildfly.clustering.weld.annotated.slim;
 
+import org.jboss.weld.annotated.slim.AnnotatedTypeIdentifier;
 import org.kohsuke.MetaInfServices;
 import org.wildfly.clustering.marshalling.protostream.AbstractSerializationContextInitializer;
 import org.wildfly.clustering.marshalling.protostream.SerializationContext;
@@ -17,7 +18,7 @@ import org.wildfly.clustering.marshalling.protostream.SerializationContextInitia
 public class SlimAnnotatedMarshallerProvider extends AbstractSerializationContextInitializer {
 
     public SlimAnnotatedMarshallerProvider() {
-        super("org.jboss.weld.annotated.slim.proto");
+        super(AnnotatedTypeIdentifier.class.getPackage());
     }
 
     @Override

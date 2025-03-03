@@ -7,7 +7,9 @@ package org.wildfly.clustering.web.container;
 import java.time.Duration;
 import java.util.OptionalInt;
 
+import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentUnit;
+import org.jboss.modules.Module;
 
 /**
  * Defines the container configuration for a session manager factory of a deployment.
@@ -32,4 +34,9 @@ public interface SessionManagerFactoryConfiguration extends WebDeploymentConfigu
      * @return a deployment unit
      */
     DeploymentUnit getDeploymentUnit();
+
+    @Override
+    default Module getModule() {
+        return this.getDeploymentUnit().getAttachment(Attachments.MODULE);
+    }
 }

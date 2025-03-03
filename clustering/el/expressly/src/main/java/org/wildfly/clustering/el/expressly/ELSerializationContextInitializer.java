@@ -5,6 +5,7 @@
 
 package org.wildfly.clustering.el.expressly;
 
+import org.glassfish.expressly.ExpressionFactoryImpl;
 import org.kohsuke.MetaInfServices;
 import org.wildfly.clustering.marshalling.protostream.AbstractSerializationContextInitializer;
 import org.wildfly.clustering.marshalling.protostream.SerializationContext;
@@ -17,7 +18,7 @@ import org.wildfly.clustering.marshalling.protostream.SerializationContextInitia
 public class ELSerializationContextInitializer extends AbstractSerializationContextInitializer {
 
     public ELSerializationContextInitializer() {
-        super("org.glassfish.expressly.proto");
+        super(ExpressionFactoryImpl.class.getPackage());
     }
 
     @Override

@@ -5,6 +5,7 @@
 
 package org.wildfly.persistence.jipijapa.hibernate7.cache;
 
+import org.hibernate.cache.internal.CacheKeyImplementation;
 import org.kohsuke.MetaInfServices;
 import org.wildfly.clustering.marshalling.protostream.AbstractSerializationContextInitializer;
 import org.wildfly.clustering.marshalling.protostream.SerializationContext;
@@ -18,7 +19,7 @@ import org.wildfly.clustering.marshalling.protostream.SerializationContextInitia
 public class HibernateCacheInternalSerializationContextInitializer extends AbstractSerializationContextInitializer {
 
     public HibernateCacheInternalSerializationContextInitializer() {
-        super("org.hibernate.cache.internal.proto");
+        super(CacheKeyImplementation.class.getPackage());
     }
 
     @Override

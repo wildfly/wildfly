@@ -11,6 +11,11 @@ import java.security.PrivilegedAction;
 import java.util.Map;
 import java.util.function.Supplier;
 
+import jakarta.faces.component.FacesComponent;
+import jakarta.faces.component.StateHolder;
+import jakarta.faces.component.UIComponent;
+import jakarta.faces.context.FacesContext;
+
 import org.kohsuke.MetaInfServices;
 import org.wildfly.clustering.marshalling.protostream.AbstractSerializationContextInitializer;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamMarshaller;
@@ -19,15 +24,11 @@ import org.wildfly.clustering.marshalling.protostream.SerializationContextInitia
 import org.wildfly.clustering.marshalling.protostream.reflect.FieldMarshaller;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
-import jakarta.faces.component.StateHolder;
-import jakarta.faces.component.UIComponent;
-import jakarta.faces.context.FacesContext;
-
 @MetaInfServices(SerializationContextInitializer.class)
 public class ComponentSerializationContextInitializer extends AbstractSerializationContextInitializer {
 
     public ComponentSerializationContextInitializer() {
-        super("jakarta.faces.component.proto");
+        super(FacesComponent.class.getPackage());
     }
 
     @Override

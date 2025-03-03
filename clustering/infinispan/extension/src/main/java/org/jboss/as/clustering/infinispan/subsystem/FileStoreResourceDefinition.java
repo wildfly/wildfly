@@ -18,7 +18,7 @@ import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.services.path.PathManager;
 import org.jboss.as.controller.services.path.ResolvePathHandler;
 import org.jboss.dmr.ModelType;
-import org.wildfly.subsystem.resource.capability.CapabilityReferenceRecorder;
+import org.wildfly.subsystem.resource.capability.CapabilityReference;
 
 /**
  * Resource description for the addressable resource /subsystem=infinispan/cache-container=X/cache=Y/store=STORE
@@ -39,7 +39,7 @@ public class FileStoreResourceDefinition extends StoreResourceDefinition<SoftInd
         RELATIVE_TO("relative-to", ModelType.STRING, InfinispanSubsystemModel.VERSION_16_0_0) {
             @Override
             public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
-                return builder.setCapabilityReference(CapabilityReferenceRecorder.builder(CAPABILITY, PathManager.PATH_SERVICE_DESCRIPTOR).build());
+                return builder.setCapabilityReference(CapabilityReference.builder(CAPABILITY, PathManager.PATH_SERVICE_DESCRIPTOR).build());
             }
         },
         ;

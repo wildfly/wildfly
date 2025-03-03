@@ -19,7 +19,7 @@ import org.wildfly.clustering.marshalling.protostream.SerializationContextInitia
 public class SessionComponentSerializationContextInitializer extends AbstractSerializationContextInitializer {
 
     public SessionComponentSerializationContextInitializer() {
-        super("org.jboss.as.ejb3.component.session.proto");
+        super(StatelessSerializedProxy.class.getPackage());
     }
 
     @Override

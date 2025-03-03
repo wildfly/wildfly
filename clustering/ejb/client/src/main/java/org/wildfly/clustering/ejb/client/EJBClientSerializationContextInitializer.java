@@ -20,7 +20,7 @@ import org.wildfly.clustering.marshalling.protostream.SerializationContextInitia
 public class EJBClientSerializationContextInitializer extends AbstractSerializationContextInitializer {
 
     public EJBClientSerializationContextInitializer() {
-        super("org.jboss.ejb.client.proto");
+        super(SessionID.class.getPackage());
     }
 
     @Override

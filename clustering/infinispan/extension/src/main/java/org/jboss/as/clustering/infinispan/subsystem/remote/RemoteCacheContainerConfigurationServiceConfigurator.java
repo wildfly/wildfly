@@ -28,7 +28,6 @@ import org.infinispan.client.hotrod.configuration.ClusterConfigurationBuilder;
 import org.infinispan.client.hotrod.configuration.Configuration;
 import org.infinispan.client.hotrod.configuration.ConfigurationBuilder;
 import org.infinispan.client.hotrod.configuration.ConfigurationChildBuilder;
-import org.infinispan.client.hotrod.configuration.ConnectionPoolConfiguration;
 import org.infinispan.client.hotrod.configuration.ExecutorFactoryConfiguration;
 import org.infinispan.client.hotrod.configuration.SecurityConfiguration;
 import org.infinispan.client.hotrod.configuration.ServerConfigurationBuilder;
@@ -98,7 +97,6 @@ public enum RemoteCacheContainerConfigurationServiceConfigurator implements Reso
         ServiceDependency<MBeanServer> server = context.hasOptionalCapability(CommonServiceDescriptor.MBEAN_SERVER, RemoteCacheContainerResourceDefinition.REMOTE_CACHE_CONTAINER_CONFIGURATION, null) ? ServiceDependency.on(CommonServiceDescriptor.MBEAN_SERVER) : ServiceDependency.of(null);
 
         ServiceDependency<List<Module>> containerModules = ServiceDependency.on(HotRodServiceDescriptor.REMOTE_CACHE_CONTAINER_MODULES, name);
-        ServiceDependency<ConnectionPoolConfiguration> connectionPool = ServiceDependency.on(ConnectionPoolResourceDefinition.SERVICE_DESCRIPTOR, name);
         ServiceDependency<SecurityConfiguration> security = ServiceDependency.on(SecurityResourceDefinition.SERVICE_DESCRIPTOR, name);
         ServiceDependency<ModuleLoader> loader = ServiceDependency.on(Services.JBOSS_SERVICE_MODULE_LOADER);
 
@@ -134,7 +132,6 @@ public enum RemoteCacheContainerConfigurationServiceConfigurator implements Reso
                 List<Module> modules = containerModules.get();
                 Marshaller marshaller = marshallerFactory.apply(loader.get(), modules);
                 builder.marshaller(marshaller);
-                builder.connectionPool().read(connectionPool.get());
                 builder.asyncExecutorFactory().read(pools.get(ClientThreadPoolResourceDefinition.ASYNC).get());
 
                 for (Map.Entry<String, Collection<ServiceDependency<OutboundSocketBinding>>> entry : clusters.entrySet()) {
@@ -155,7 +152,7 @@ public enum RemoteCacheContainerConfigurationServiceConfigurator implements Reso
             }
         };
         return CapabilityServiceInstaller.builder(RemoteCacheContainerResourceDefinition.REMOTE_CACHE_CONTAINER_CONFIGURATION, configurationFactory)
-                .requires(List.of(server, containerModules, connectionPool, security, loader))
+                .requires(List.of(server, containerModules, security, loader))
                 .requires(pools.values())
                 .requires(clusters.values().stream().<Consumer<RequirementServiceBuilder<?>>>flatMap(Collection::stream).collect(Collectors.toUnmodifiableList()))
                 .build();

@@ -5,13 +5,11 @@
 
 package org.wildfly.extension.clustering.web.session.hotrod;
 
-import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 import jakarta.servlet.ServletContext;
 
-import org.infinispan.client.hotrod.DefaultTemplate;
 import org.infinispan.client.hotrod.RemoteCache;
 import org.infinispan.client.hotrod.configuration.NearCacheMode;
 import org.infinispan.client.hotrod.configuration.RemoteCacheConfigurationBuilder;
@@ -41,7 +39,7 @@ import org.wildfly.subsystem.service.ServiceInstaller;
  * @author Paul Ferraro
  */
 public class HotRodSessionManagementProvider extends AbstractSessionManagementProvider {
-
+    private static final String DEFAULT_CONFIGURATION = "{\"distributed-cache\": { \"mode\": \"SYNC\" }}";
     public HotRodSessionManagementProvider(DistributableSessionManagementConfiguration<DeploymentUnit> configuration, BinaryServiceConfiguration cacheConfiguration, Supplier<RouteLocatorProvider> locatorProviderFactory) {
         super(configuration, cacheConfiguration, locatorProviderFactory);
     }
@@ -49,13 +47,18 @@ public class HotRodSessionManagementProvider extends AbstractSessionManagementPr
     @Override
     public <C> DeploymentServiceInstaller getSessionManagerFactoryServiceInstaller(SessionManagerFactoryConfiguration<C> configuration) {
         BinaryServiceConfiguration deploymentCacheConfiguration = this.getCacheConfiguration().withChildName(configuration.getDeploymentName());
-        String templateName = Optional.ofNullable(this.getCacheConfiguration().getChildName()).orElse(DefaultTemplate.DIST_SYNC.getTemplateName());
+        String templateName = this.getCacheConfiguration().getChildName();
 
         Consumer<RemoteCacheConfigurationBuilder> configurator = new Consumer<>() {
             @Override
             public void accept(RemoteCacheConfigurationBuilder builder) {
                 // Near caching not compatible with max-idle expiration.
-                builder.forceReturnValues(false).nearCacheMode(NearCacheMode.DISABLED).templateName(templateName).transactionMode(TransactionMode.NONE);
+                builder.forceReturnValues(false).nearCacheMode(NearCacheMode.DISABLED).transactionMode(TransactionMode.NONE);
+                if (templateName != null) {
+                    builder.templateName(templateName);
+                } else {
+                    builder.configuration(DEFAULT_CONFIGURATION);
+                }
             }
         };
         DeploymentServiceInstaller configurationInstaller = new RemoteCacheConfigurationServiceInstallerFactory(configurator).apply(deploymentCacheConfiguration);

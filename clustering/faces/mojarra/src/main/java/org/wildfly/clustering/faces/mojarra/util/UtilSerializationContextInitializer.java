@@ -5,6 +5,8 @@
 
 package org.wildfly.clustering.faces.mojarra.util;
 
+import com.sun.faces.util.LRUMap;
+
 import org.kohsuke.MetaInfServices;
 import org.wildfly.clustering.marshalling.protostream.AbstractSerializationContextInitializer;
 import org.wildfly.clustering.marshalling.protostream.SerializationContext;
@@ -17,7 +19,7 @@ import org.wildfly.clustering.marshalling.protostream.SerializationContextInitia
 public class UtilSerializationContextInitializer extends AbstractSerializationContextInitializer {
 
     public UtilSerializationContextInitializer() {
-        super("com.sun.faces.util.proto");
+        super(LRUMap.class.getPackage());
     }
 
     @Override

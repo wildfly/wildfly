@@ -5,6 +5,7 @@
 
 package org.wildfly.clustering.weld.ejb.component.stateful;
 
+import org.jboss.as.ejb3.component.stateful.StatefulSerializedProxy;
 import org.kohsuke.MetaInfServices;
 import org.wildfly.clustering.marshalling.protostream.AbstractSerializationContextInitializer;
 import org.wildfly.clustering.marshalling.protostream.SerializationContext;
@@ -17,7 +18,7 @@ import org.wildfly.clustering.marshalling.protostream.SerializationContextInitia
 public class StatefulComponentSerializationContextInitializer extends AbstractSerializationContextInitializer {
 
     public StatefulComponentSerializationContextInitializer() {
-        super("org.jboss.as.ejb3.component.stateful.proto");
+        super(StatefulSerializedProxy.class.getPackage());
     }
 
     @Override

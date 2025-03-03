@@ -769,16 +769,6 @@
                 <groupId>io.smallrye.common</groupId>
                 <artifactId>smallrye-common-annotation</artifactId>
                 <version>${version.io.smallrye.smallrye-common}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>jakarta.enterprise</groupId>
-                        <artifactId>jakarta.enterprise.cdi-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>jakarta.inject</groupId>
-                        <artifactId>jakarta.inject-api</artifactId>
-                    </exclusion>
-                </exclusions>
             </dependency>
             <dependency>
                 <groupId>io.smallrye.common</groupId>
@@ -893,18 +883,6 @@
                 </exclusions>
             </dependency>
 
-
-            <dependency>
-                <groupId>io.smallrye.reactive</groupId>
-                <artifactId>mutiny</artifactId>
-                <version>${version.io.smallrye.smallrye-mutiny}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
             <dependency>
                 <groupId>io.smallrye.reactive</groupId>
                 <artifactId>mutiny-reactive-streams-operators</artifactId>

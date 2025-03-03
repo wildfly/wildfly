@@ -15,6 +15,7 @@ import org.jboss.as.clustering.controller.ResourceServiceHandler;
 import org.jboss.as.clustering.controller.SimpleResourceRegistrar;
 import org.jboss.as.clustering.infinispan.subsystem.InfinispanExtension;
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.CapabilityReferenceRecorder;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.StringListAttributeDefinition;
 import org.jboss.as.controller.capability.RuntimeCapability;
@@ -23,7 +24,7 @@ import org.jboss.as.network.OutboundSocketBinding;
 import org.wildfly.clustering.infinispan.client.RemoteCacheContainer;
 import org.wildfly.clustering.infinispan.client.service.HotRodServiceDescriptor;
 import org.wildfly.service.descriptor.BinaryServiceDescriptor;
-import org.wildfly.subsystem.resource.capability.CapabilityReferenceRecorder;
+import org.wildfly.subsystem.resource.capability.CapabilityReference;
 import org.wildfly.subsystem.resource.operation.ResourceOperationRuntimeHandler;
 import org.wildfly.subsystem.service.capture.FunctionExecutorRegistry;
 
@@ -44,12 +45,12 @@ public class RemoteClusterResourceDefinition extends ChildResourceDefinition<Man
     private static final RuntimeCapability<Void> CAPABILITY = RuntimeCapability.Builder.of(SERVICE_DESCRIPTOR).build();
 
     public enum Attribute implements org.jboss.as.clustering.controller.Attribute {
-        SOCKET_BINDINGS("socket-bindings", CapabilityReferenceRecorder.builder(CAPABILITY, OutboundSocketBinding.SERVICE_DESCRIPTOR).build()),
+        SOCKET_BINDINGS("socket-bindings", CapabilityReference.builder(CAPABILITY, OutboundSocketBinding.SERVICE_DESCRIPTOR).build()),
         ;
 
         private final AttributeDefinition definition;
 
-        Attribute(String name, CapabilityReferenceRecorder<?> reference) {
+        Attribute(String name, CapabilityReferenceRecorder reference) {
             this.definition = new StringListAttributeDefinition.Builder(name)
                     .setAllowExpression(false)
                     .setRequired(true)

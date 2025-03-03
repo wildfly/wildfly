@@ -45,7 +45,7 @@ import org.jboss.dmr.ModelType;
 import org.jboss.modules.Module;
 import org.wildfly.clustering.infinispan.client.RemoteCacheContainer;
 import org.wildfly.clustering.infinispan.client.service.HotRodServiceDescriptor;
-import org.wildfly.subsystem.resource.capability.CapabilityReferenceRecorder;
+import org.wildfly.subsystem.resource.capability.CapabilityReference;
 import org.wildfly.subsystem.resource.operation.ResourceOperationRuntimeHandler;
 import org.wildfly.subsystem.service.ResourceServiceConfigurator;
 import org.wildfly.subsystem.service.ResourceServiceInstaller;
@@ -74,7 +74,7 @@ public class RemoteCacheContainerResourceDefinition extends ChildResourceDefinit
         DEFAULT_REMOTE_CLUSTER("default-remote-cluster", ModelType.STRING, null) {
             @Override
             public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
-                return builder.setAllowExpression(false).setCapabilityReference(CapabilityReferenceRecorder.builder(REMOTE_CACHE_CONTAINER_CONFIGURATION, RemoteClusterResourceDefinition.SERVICE_DESCRIPTOR).withParentPath(WILDCARD_PATH).build());
+                return builder.setAllowExpression(false).setCapabilityReference(CapabilityReference.builder(REMOTE_CACHE_CONTAINER_CONFIGURATION, RemoteClusterResourceDefinition.SERVICE_DESCRIPTOR).withParentPath(WILDCARD_PATH).build());
             }
         },
         MARSHALLER("marshaller", ModelType.STRING, new ModelNode(HotRodMarshallerFactory.LEGACY.name())) {
@@ -95,7 +95,7 @@ public class RemoteCacheContainerResourceDefinition extends ChildResourceDefinit
         },
         MAX_RETRIES("max-retries", ModelType.INT, new ModelNode(10)),
         PROPERTIES("properties"),
-        PROTOCOL_VERSION("protocol-version", ModelType.STRING, new ModelNode(ProtocolVersion.PROTOCOL_VERSION_40.toString())) {
+        PROTOCOL_VERSION("protocol-version", ModelType.STRING, new ModelNode(ProtocolVersion.PROTOCOL_VERSION_41.toString())) {
             @Override
             public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
                 return builder.setValidator(new org.jboss.as.controller.operations.validation.EnumValidator<>(ProtocolVersion.class, EnumSet.complementOf(EnumSet.of(ProtocolVersion.PROTOCOL_VERSION_AUTO))));
@@ -207,7 +207,7 @@ public class RemoteCacheContainerResourceDefinition extends ChildResourceDefinit
         }
     }
 
-    public static final Set<PathElement> REQUIRED_CHILDREN = Stream.concat(Set.of(ConnectionPoolResourceDefinition.PATH, SecurityResourceDefinition.PATH).stream(), EnumSet.allOf(ClientThreadPoolResourceDefinition.class).stream().map(ClientThreadPoolResourceDefinition::getPathElement)).collect(Collectors.toSet());
+    public static final Set<PathElement> REQUIRED_CHILDREN = Stream.concat(Set.of(SecurityResourceDefinition.PATH).stream(), EnumSet.allOf(ClientThreadPoolResourceDefinition.class).stream().map(ClientThreadPoolResourceDefinition::getPathElement)).collect(Collectors.toSet());
 
     private final ServiceValueExecutorRegistry<RemoteCacheContainer> registry = ServiceValueExecutorRegistry.newInstance();
 

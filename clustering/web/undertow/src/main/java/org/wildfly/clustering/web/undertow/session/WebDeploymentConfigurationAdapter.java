@@ -28,4 +28,9 @@ public class WebDeploymentConfigurationAdapter implements DeploymentConfiguratio
     public String getDeploymentName() {
         return this.configuration.getDeploymentName();
     }
+
+    @Override
+    public ClassLoader getClassLoader() {
+        return this.configuration.getModule().getClassLoader();
+    }
 }

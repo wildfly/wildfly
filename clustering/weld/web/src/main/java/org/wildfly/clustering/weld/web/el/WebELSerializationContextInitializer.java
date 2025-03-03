@@ -8,6 +8,7 @@ package org.wildfly.clustering.weld.web.el;
 import jakarta.el.MethodExpression;
 import jakarta.el.ValueExpression;
 
+import org.jboss.weld.module.web.el.WeldELResolver;
 import org.jboss.weld.module.web.el.WeldMethodExpression;
 import org.jboss.weld.module.web.el.WeldValueExpression;
 import org.kohsuke.MetaInfServices;
@@ -23,7 +24,7 @@ import org.wildfly.clustering.marshalling.protostream.reflect.DecoratorMarshalle
 public class WebELSerializationContextInitializer extends AbstractSerializationContextInitializer {
 
     public WebELSerializationContextInitializer() {
-        super("org.jboss.weld.module.web.el.proto");
+        super(WeldELResolver.class.getPackage());
     }
 
     @Override
