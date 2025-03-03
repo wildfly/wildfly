@@ -144,27 +144,18 @@ public class EJB3RemoteServiceAdd extends AbstractBoottimeAddStepHandler {
         }
 
         // set up a ServiceProviderRegistrar to support cluster-wide mdule availability updates via a ModuleAvailabilityRegsitrar
+        // this should already be set up by the cache service installation
+        // to get the service name, we need to take the ClusteringServiceDescriptor.SERVICE_PROVIDER_REGISTRY and compute the name and then create a dependeency
         ServiceDependency<ModuleAvailabilityRegistrarProvider> marProvider = getModuleAvailabilityRegistrarProvider(context, model);
         ServiceInstaller installer = new ServiceInstaller() {
             @Override
             public ServiceController<?> install(RequirementServiceTarget target) {
                 for (ServiceInstaller installer : marProvider.get().getServiceInstallers(support)) {
-                    System.out.println("Installing service: " + installer.getClass().getName());
                     ServiceController<?> controller = installer.install(target);
-                    // set up an alias for each provided name of the installed service
-                    ServiceName registryParentName = ServiceNameFactory.parseServiceName(ClusteringServiceDescriptor.SERVICE_PROVIDER_REGISTRAR.getName());
-                    for (ServiceName providedName : controller.provides()) {
-                        if (registryParentName.isParentOf(providedName)) {
-                            ServiceInstaller.builder(ServiceDependency.on(providedName))
-                                    .provides(ServiceNameFactory.resolveServiceName(EJB3RemoteResourceDefinition.MODULE_AVAILABILITY_REGISTRAR_SERVICE_PROVIDER_REGISTRAR))
-                                    .build().install(target);
-                        }
-                    }
                 }
                 return null;
             }
         };
-        System.out.println("EJB3RemoteServiceAdd: installing ServiceProviderRegistrar");
         ServiceInstaller.builder(installer, support).requires(marProvider).build().install(context);
 
         // install the ModuleAvailabilityRegistrar service

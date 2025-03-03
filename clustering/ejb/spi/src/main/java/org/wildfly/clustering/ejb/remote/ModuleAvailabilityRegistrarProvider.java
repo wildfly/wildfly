@@ -6,6 +6,8 @@
 package org.wildfly.clustering.ejb.remote;
 
 import org.jboss.as.controller.capability.CapabilityServiceSupport;
+import org.wildfly.clustering.server.GroupMember;
+import org.wildfly.clustering.server.provider.ServiceProviderRegistrar;
 import org.wildfly.service.descriptor.NullaryServiceDescriptor;
 import org.wildfly.subsystem.service.ServiceInstaller;
 
@@ -16,6 +18,7 @@ import org.wildfly.subsystem.service.ServiceInstaller;
  */
 public interface ModuleAvailabilityRegistrarProvider {
     NullaryServiceDescriptor<ModuleAvailabilityRegistrarProvider> SERVICE_DESCRIPTOR = NullaryServiceDescriptor.of("org.wildfly.clustering.ejb.module-availability-registrar-provider", ModuleAvailabilityRegistrarProvider.class);
+    NullaryServiceDescriptor<ServiceProviderRegistrar<Object, GroupMember>> MODULE_AVAILABILITY_REGISTRAR_SERVICE_PROVIDER_REGISTRAR = NullaryServiceDescriptor.of("org.wildfly.ejb.remote.module-availability-registrar-service-provider-registrar", (Class<ServiceProviderRegistrar<Object, GroupMember>>) (Class<?>) ServiceProviderRegistrar.class);
 
     Iterable<ServiceInstaller> getServiceInstallers(CapabilityServiceSupport support);
 }
