@@ -7,18 +7,18 @@ package org.wildfly.clustering.ejb.infinispan.remote;
 
 import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.jboss.as.controller.capability.CapabilityServiceSupport;
+import org.jboss.msc.service.ServiceName;
 import org.wildfly.clustering.ejb.remote.ModuleAvailabilityRegistrarProvider;
-import org.wildfly.clustering.infinispan.service.CacheServiceInstallerFactory;
-import org.wildfly.clustering.infinispan.service.TemplateConfigurationServiceInstallerFactory;
+import org.wildfly.clustering.server.provider.ServiceProviderRegistrar;
 import org.wildfly.clustering.server.service.BinaryServiceConfiguration;
+import org.wildfly.clustering.server.GroupMember;
 import org.wildfly.clustering.server.service.ClusteringServiceDescriptor;
-import org.wildfly.clustering.server.service.FilteredBinaryServiceInstallerProvider;
 import org.wildfly.common.function.Functions;
+import org.wildfly.subsystem.service.ServiceDependency;
 import org.wildfly.subsystem.service.ServiceInstaller;
 
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Set;
 import java.util.function.Consumer;
 
 /**
@@ -45,15 +45,26 @@ public class InfinispanModuleAvailabilityRegistrarProvider implements ModuleAvai
         this.configurator = configurator;
     }
 
+    /**
+     * This method aliases the ServiceProviderRegistry defined for the "module-availability" cache for the "ejb" container
+     * to the capability for the ServiceProviderRegistry used by the ModuleAvailabilityRegistrar instance.
+     * @param support
+     * @return
+     */
     @Override
     public Iterable<ServiceInstaller> getServiceInstallers(CapabilityServiceSupport support) {
-        BinaryServiceConfiguration configuration = this.configuration.withChildName("module-availability");
+        System.out.println("InfinispanModuleAvailabilityRegistrarProvider: calling getServiceIntallers()");
         List<ServiceInstaller> installers = new LinkedList<>();
-        // add in installers for cache service
-        installers.add(new TemplateConfigurationServiceInstallerFactory(this.configurator).apply(this.configuration, configuration));
-        installers.add(CacheServiceInstallerFactory.INSTANCE.apply(configuration));
-        // add in installer for service provider registry
-        new FilteredBinaryServiceInstallerProvider(Set.of(ClusteringServiceDescriptor.SERVICE_PROVIDER_REGISTRAR)).apply(support, configuration).forEach(installers::add);
+        // get a handle to the existing ServiceProviderRegistry installed for the cache
+        ServiceName serviceProviderRegistrarServiceName = configuration.resolveServiceName(ClusteringServiceDescriptor.SERVICE_PROVIDER_REGISTRAR);
+        ServiceDependency<ServiceProviderRegistrar<Object, GroupMember>> serviceProviderRegistrar = ServiceDependency.on(serviceProviderRegistrarServiceName);
+        System.out.println("Cache-installed ServiceProviderRegistrar name: " + serviceProviderRegistrarServiceName);
+        // create an installer to install an well-known alias to that SPR
+//        ServiceName aliasServiceName = ServiceName.of(ModuleAvailabilityRegistrarProvider.MODULE_AVAILABILITY_REGISTRAR_SERVICE_PROVIDER_REGISTRAR.getName());
+        ServiceName aliasServiceName = ServiceName.of(ModuleAvailabilityRegistrarProvider.SERVICE_DESCRIPTOR.getName());
+        aliasServiceName = ServiceName.of("org.wildfly.ejb.remote.module-availability-registrar-service-provider-registrar");
+        installers.add(ServiceInstaller.builder(serviceProviderRegistrar).provides(aliasServiceName).build());
+        System.out.println("InfinispanModuleAvailabilityRegistrarProvider: installer count = " + installers.size());
         return installers;
     }
 }

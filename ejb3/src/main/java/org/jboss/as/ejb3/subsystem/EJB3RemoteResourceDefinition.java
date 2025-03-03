@@ -27,10 +27,10 @@ import org.jboss.as.network.ClientMapping;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.wildfly.clustering.server.GroupMember;
-import org.wildfly.clustering.server.registry.Registry;
 import org.wildfly.clustering.server.provider.ServiceProviderRegistrar;
-import org.wildfly.service.descriptor.UnaryServiceDescriptor;
+import org.wildfly.clustering.server.registry.Registry;
 import org.wildfly.service.descriptor.NullaryServiceDescriptor;
+import org.wildfly.service.descriptor.UnaryServiceDescriptor;
 import org.wildfly.subsystem.resource.capability.CapabilityReference;
 
 import java.util.List;

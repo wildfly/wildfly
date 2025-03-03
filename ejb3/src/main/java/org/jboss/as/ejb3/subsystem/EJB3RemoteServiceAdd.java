@@ -144,16 +144,24 @@ public class EJB3RemoteServiceAdd extends AbstractBoottimeAddStepHandler {
         }
 
         // set up a ServiceProviderRegistrar to support cluster-wide mdule availability updates via a ModuleAvailabilityRegsitrar
+        // this should already be set up by the cache service installation
+        // to get the service name, we need to take the ClusteringServiceDescriptor.SERVICE_PROVIDER_REGISTRY and compute the name and then create a dependeency
         ServiceDependency<ModuleAvailabilityRegistrarProvider> marProvider = getModuleAvailabilityRegistrarProvider(context, model);
+        System.out.println("EJB3RemoteServiceAdd: got marProvider: " + (marProvider != null));
+
         ServiceInstaller installer = new ServiceInstaller() {
             @Override
             public ServiceController<?> install(RequirementServiceTarget target) {
                 for (ServiceInstaller installer : marProvider.get().getServiceInstallers(support)) {
-                    System.out.println("Installing service: " + installer.getClass().getName());
+                    System.out.println("EJB3RemoteServiceAdd: installing service: " + installer.getClass().getName());
                     ServiceController<?> controller = installer.install(target);
+
                     // set up an alias for each provided name of the installed service
+                    // NOTE: dont need this anymore as aliases are installed in provider
                     ServiceName registryParentName = ServiceNameFactory.parseServiceName(ClusteringServiceDescriptor.SERVICE_PROVIDER_REGISTRAR.getName());
+                    System.out.println("EJB3RemoteServiceAdd: Parent name: " + registryParentName);
                     for (ServiceName providedName : controller.provides()) {
+                        System.out.println("EJB3RemoteServiceAdd: Iterating through provider names: " + providedName);
                         if (registryParentName.isParentOf(providedName)) {
                             ServiceInstaller.builder(ServiceDependency.on(providedName))
                                     .provides(ServiceNameFactory.resolveServiceName(EJB3RemoteResourceDefinition.MODULE_AVAILABILITY_REGISTRAR_SERVICE_PROVIDER_REGISTRAR))
@@ -164,10 +172,11 @@ public class EJB3RemoteServiceAdd extends AbstractBoottimeAddStepHandler {
                 return null;
             }
         };
-        System.out.println("EJB3RemoteServiceAdd: installing ServiceProviderRegistrar");
+        System.out.println("EJB3RemoteServiceAdd: installing ServiceProviderRegistrar service");
         ServiceInstaller.builder(installer, support).requires(marProvider).build().install(context);
 
         // install the ModuleAvailabilityRegistrar service
+        System.out.println("EJB3RemoteServiceAdd: installing ModuleAvailabilityRegistrar service");
         new ModuleAvailabilityRegistrarServiceInstaller().install(context);
 
         final OptionMap channelCreationOptions = this.getChannelCreationOptions(context);
@@ -255,8 +264,11 @@ public class EJB3RemoteServiceAdd extends AbstractBoottimeAddStepHandler {
      */
     private static ServiceDependency<ModuleAvailabilityRegistrarProvider> getModuleAvailabilityRegistrarProvider(OperationContext context,
                                                                                                                  ModelNode model) throws OperationFailedException {
+        System.out.println("EJB3RemoteServiceAdd: calling getModuleAvailabilityRegistrarProvider()");
         if (context.hasOptionalCapability(ModuleAvailabilityRegistrarProvider.SERVICE_DESCRIPTOR,
                 EJB3RemoteResourceDefinition.EJB_REMOTE_CAPABILITY, null)) {
+
+            System.out.println("EJB3RemoteServiceAdd: ServiceDependency on module availability registrar provider");
             return ServiceDependency.on(ModuleAvailabilityRegistrarProvider.SERVICE_DESCRIPTOR);
         }
         String clusterName = EJB3RemoteResourceDefinition.CLIENT_MAPPINGS_CLUSTER_NAME.resolveModelAttribute(context, model)
@@ -266,6 +278,7 @@ public class EJB3RemoteServiceAdd extends AbstractBoottimeAddStepHandler {
                 EJB3RemoteResourceDefinition.EJB_REMOTE_CAPABILITY_NAME,
                 EJB3RemoteResourceDefinition.CLIENT_MAPPINGS_CLUSTER_NAME.getName());
         EjbLogger.ROOT_LOGGER.legacyModuleAvailabilityRegistrarProviderInUse(clusterName);
+        System.out.println("EJB3RemoteServiceAdd: ServiceDependency on legacy module availability registrar provider");
         return ServiceDependency.of(LEGACY_MODULE_AVAILABILITY_REGISTRAR_PROVIDER_FACTORY.createModuleAvailabilityRegistrarProvider(clusterName));
     }
 

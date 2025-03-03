@@ -21,6 +21,7 @@ public class LocalServiceProviderRegistrarServiceInstallerFactory<T> extends Ser
 
     @Override
     public ServiceInstaller apply(CapabilityServiceSupport support, BinaryServiceConfiguration configuration) {
+        System.out.println("LocalServiceProviderRegistryServiceInstallerFactory: installing configuration (" + configuration.getParentName() + "," + configuration.getChildName() + ")");
         ServiceDependency<LocalGroup> group = ServiceDependency.on(ClusteringServiceDescriptor.GROUP, ModelDescriptionConstants.LOCAL).map(LocalGroup.class::cast);
         return ServiceInstaller.builder(group.map(LocalServiceProviderRegistrar::of))
                 .provides(configuration.resolveServiceName(this.getServiceDescriptor()))
