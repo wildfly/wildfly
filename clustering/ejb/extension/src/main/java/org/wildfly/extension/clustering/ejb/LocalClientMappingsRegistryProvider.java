@@ -35,6 +35,7 @@ public enum LocalClientMappingsRegistryProvider implements ClientMappingsRegistr
         List<ServiceInstaller> installers = new LinkedList<>();
         installers.add(new ClientMappingsRegistryEntryServiceInstallerFactory(clientMappings).apply(configuration));
         new FilteredBinaryServiceInstallerProvider(Set.of(ClusteringServiceDescriptor.REGISTRY, ClusteringServiceDescriptor.REGISTRY_FACTORY)).apply(support, configuration).forEach(installers::add);
+        System.out.println("LocalClientMappingsRegistryProvider: (should be 3) installers = " + installers.size());
         return installers;
     }
 }
