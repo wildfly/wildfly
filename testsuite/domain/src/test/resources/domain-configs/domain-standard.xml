@@ -300,8 +300,8 @@
             <subsystem xmlns="urn:jboss:domain:messaging-activemq:13.0">
                 <server name="default"
                         persistence-enabled="false">
-                    <journal file-size="1024" />
                     <security elytron-domain="ApplicationDomain"/>
+                    <journal file-size="1024" />
                     <security-setting name="#">
                         <role name="guest" send="true" consume="true" create-non-durable-queue="true" delete-non-durable-queue="true"/>
                     </security-setting>
@@ -657,8 +657,8 @@
             <subsystem xmlns="urn:jboss:domain:messaging-activemq:13.0">
                 <server name="default"
                         persistence-enabled="false">
-                    <journal file-size="1024" />
                     <security elytron-domain="ApplicationDomain"/>
+                    <journal file-size="1024" />
                     <security-setting name="#">
                         <role name="guest" send="true" consume="true" create-non-durable-queue="true" delete-non-durable-queue="true"/>
                     </security-setting>
