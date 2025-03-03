@@ -192,7 +192,7 @@ public class DeploymentDescriptorInterceptorBindingsProcessor implements Deploym
                             for (final Method method : methods) {
                                 boolean match = true;
                                 for (int i = 0; i < method.getParameterCount(); ++i) {
-                                    if (!method.getParameterTypes()[i].getName().equals(methodData.getMethodParams().get(i))) {
+                                    if (!extractParamName(method.getParameterTypes()[i]).equals(methodData.getMethodParams().get(i))) {
                                         match = false;
                                         break;
                                     }
@@ -329,5 +329,14 @@ public class DeploymentDescriptorInterceptorBindingsProcessor implements Deploym
         }
 
 
+    }
+
+    private String extractParamName(Class<?> clazz) {
+        //WFLY-20432
+        if (clazz.isArray()) {
+            return clazz.getComponentType().getName() + "[]";
+        } else {
+            return clazz.getName();
+        }
     }
 }
