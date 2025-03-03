@@ -1,5 +1,5 @@
 [[Application_Client_Reference]]
-= Application Client Reference
+= Jakarta Application Client Reference
 
 ifdef::env-github[]
 :tip-caption: :bulb:
