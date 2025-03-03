@@ -5,6 +5,7 @@
 
 package org.jboss.as.clustering.jgroups.subsystem;
 
+import java.util.EnumSet;
 import java.util.function.Consumer;
 
 import org.jboss.as.controller.ModelVersion;
@@ -19,11 +20,16 @@ public class StackResourceTransformer implements Consumer<ModelVersion> {
     private final ResourceTransformationDescriptionBuilder builder;
 
     StackResourceTransformer(ResourceTransformationDescriptionBuilder parent) {
-        this.builder = parent.addChildResource(StackResourceDefinition.WILDCARD_PATH);
+        this.builder = parent.addChildResource(JGroupsResourceRegistration.STACK.getPathElement());
     }
 
     @Override
     public void accept(ModelVersion version) {
-        new ProtocolTransformer(this.builder).accept(version);
+        for (AuthProtocolResourceDefinitionRegistrar.Protocol protocol : EnumSet.allOf(AuthProtocolResourceDefinitionRegistrar.Protocol.class)) {
+            new AuthProtocolResourceTransformer(this.builder, protocol.getPathElement()).accept(version);
+        }
+        for (EncryptProtocolResourceDefinitionRegistrar.Protocol protocol : EnumSet.allOf(EncryptProtocolResourceDefinitionRegistrar.Protocol.class)) {
+            new EncryptProtocolResourceTransformer(this.builder, protocol.getPathElement()).accept(version);
+        }
     }
 }
