@@ -14,6 +14,7 @@ import static org.wildfly.security.http.HttpConstants.BASIC_NAME;
 import static org.wildfly.security.http.HttpConstants.CLIENT_CERT_NAME;
 import static org.wildfly.security.http.HttpConstants.DIGEST_NAME;
 import static org.wildfly.security.http.HttpConstants.FORM_NAME;
+import static org.wildfly.extension.undertow.logging.UndertowLogger.ROOT_LOGGER;
 
 import java.security.PrivilegedAction;
 import java.util.ArrayList;
@@ -427,6 +428,9 @@ public class ApplicationSecurityDomainDefinition extends SimpleResourceDefinitio
             HttpAuthenticationFactory httpAuthenticationFactory = this.httpAuthenticationFactory != null
                     ? this.httpAuthenticationFactory
                     : toHttpAuthenticationFactory(securityDomain, getRealmName(deploymentInfo));
+            ROOT_LOGGER.trace("THIS IS A LOG FOR Security Domain WebApp Mapping: "+
+                    "Security realm is "+ getRealmName(deploymentInfo)+
+                    " for " + deploymentInfo.getDeploymentName());
             AuthenticationManager.Builder builder = AuthenticationManager.builder()
                     .setHttpAuthenticationFactory(httpAuthenticationFactory)
                     .setOverrideDeploymentConfig(overrideDeploymentConfig)
