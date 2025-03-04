@@ -49,11 +49,21 @@ public class VertxDependenciesProcessor implements DeploymentUnitProcessor {
         final ModuleSpecification moduleSpecification = deploymentUnit.getAttachment(Attachments.MODULE_SPECIFICATION);
         final ModuleLoader moduleLoader = Module.getBootModuleLoader();
         moduleSpecification.addSystemDependencies(Set.of(
-                new ModuleDependency(moduleLoader, MODULE_VERTX_EXTENSION, false, true, true, false),
-                new ModuleDependency(moduleLoader, MODULE_VERTX_CORE, false, true, true, false),
-                new ModuleDependency(moduleLoader, MODULE_VERTX_MUTINY_CORE, false, true, true, false),
-                new ModuleDependency(moduleLoader, MODULE_MUTINY, false, true, true, false),
-                new ModuleDependency(moduleLoader, MODULE_SMALLRYE_COMMON_ANNOTATION, true, false, false, false)
+                ModuleDependency.Builder.of(moduleLoader, MODULE_VERTX_EXTENSION)
+                        .setOptional(false).setExport(true).setImportServices(true)
+                        .setUserSpecified(false).build(),
+                ModuleDependency.Builder.of(moduleLoader, MODULE_VERTX_CORE)
+                        .setOptional(false).setExport(true).setImportServices(true)
+                        .setUserSpecified(false).build(),
+                ModuleDependency.Builder.of(moduleLoader, MODULE_VERTX_MUTINY_CORE)
+                        .setOptional(false).setExport(true).setImportServices(true)
+                        .setUserSpecified(false).build(),
+                ModuleDependency.Builder.of(moduleLoader, MODULE_MUTINY)
+                        .setOptional(false).setExport(true).setImportServices(true)
+                        .setUserSpecified(false).build(),
+                ModuleDependency.Builder.of(moduleLoader, MODULE_SMALLRYE_COMMON_ANNOTATION)
+                        .setOptional(true).setExport(false).setImportServices(false)
+                        .setUserSpecified(false).build()
         ));
     }
 
