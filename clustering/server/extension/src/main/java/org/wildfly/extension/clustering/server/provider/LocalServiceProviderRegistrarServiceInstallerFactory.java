@@ -17,7 +17,7 @@ import org.wildfly.subsystem.service.ServiceInstaller;
 /**
  * @author Paul Ferraro
  */
-public class LocalServiceProviderRegistrarServiceInstallerFactory<T> extends ServiceProviderRegistrarServiceInstallerFactory<T> {
+public class LocalServiceProviderRegistrarServiceInstallerFactory<T> extends AbstractServiceProviderRegistrarServiceInstallerFactory<T> {
 
     @Override
     public ServiceInstaller apply(CapabilityServiceSupport support, BinaryServiceConfiguration configuration) {
