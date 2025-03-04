@@ -18,8 +18,8 @@ import org.jboss.staxmapper.IntVersion;
 public enum DistributableEjbSubsystemSchema implements PersistentSubsystemSchema<DistributableEjbSubsystemSchema> {
 
     VERSION_1_0(1, 0), // WildFly 27
-    ;
-    static final DistributableEjbSubsystemSchema CURRENT = VERSION_1_0;
+    VERSION_2_0(2, 0); // WildFly 36   ;
+    static final DistributableEjbSubsystemSchema CURRENT = VERSION_2_0;
 
     private final VersionedNamespace<IntVersion, DistributableEjbSubsystemSchema> namespace;
 
