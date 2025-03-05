@@ -5,6 +5,7 @@
 
 package org.wildfly.test.integration.elytron.oidc.client;
 
+import static org.apache.http.HttpStatus.SC_OK;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYSTEM_PROPERTY;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 import static org.junit.Assert.assertEquals;
@@ -13,9 +14,9 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assume.assumeTrue;
 import static org.wildfly.security.http.oidc.Oidc.OIDC_SCOPE;
-import static org.wildfly.security.http.oidc.Oidc.AuthenticationRequestFormat.REQUEST_URI;
-import static org.wildfly.security.http.oidc.Oidc.AuthenticationRequestFormat.REQUEST;
 import static org.wildfly.security.http.oidc.Oidc.AuthenticationRequestFormat.OAUTH2;
+import static org.wildfly.security.http.oidc.Oidc.AuthenticationRequestFormat.REQUEST;
+import static org.wildfly.security.http.oidc.Oidc.AuthenticationRequestFormat.REQUEST_URI;
 import static org.wildfly.test.integration.elytron.oidc.client.KeycloakConfiguration.ALLOWED_ORIGIN;
 
 import java.io.File;
@@ -30,7 +31,6 @@ import java.util.List;
 
 import org.apache.http.Header;
 import org.apache.http.HttpResponse;
-import static org.apache.http.HttpStatus.SC_OK;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.CookieStore;
 import org.apache.http.client.HttpClient;
@@ -47,7 +47,6 @@ import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.protocol.BasicHttpContext;
 import org.apache.http.protocol.HttpContext;
 import org.apache.http.util.EntityUtils;
-import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.as.arquillian.api.ServerSetupTask;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.PathAddress;
@@ -59,13 +58,11 @@ import org.jboss.as.test.integration.security.common.servlets.SimpleServlet;
 import org.jboss.as.test.shared.ManagementServerSetupTask;
 import org.jboss.as.test.shared.TestSuiteEnvironment;
 import org.jboss.as.test.shared.util.AssumeTestGroupUtil;
-import org.jboss.as.version.Stability;
 import org.jboss.dmr.ModelNode;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.junit.BeforeClass;
-import org.junit.Test;
 import org.keycloak.representations.idm.RealmRepresentation;
 import org.wildfly.common.iteration.CodePointIterator;
 import org.wildfly.security.jose.util.JsonSerialization;
@@ -140,12 +137,6 @@ public abstract class OidcBaseTest {
     public static final String ORIGINAL_ROLES_PATH = "application-roles.properties";
     public static final String RELATIVE_TO = "jboss.server.config.dir";
 
-    private final Stability desiredStability;
-
-    public OidcBaseTest(Stability desiredStability) {
-        this.desiredStability = desiredStability;
-    }
-
     private enum BearerAuthType {
         BEARER,
         QUERY_PARAM,
@@ -174,50 +165,34 @@ public abstract class OidcBaseTest {
         assumeTrue("Docker isn't available, OIDC tests will be skipped", AssumeTestGroupUtil.isDockerAvailable());
     }
 
-    @Test
-    @OperateOnDeployment(PROVIDER_URL_APP)
     public void testWrongPasswordWithProviderUrl() throws Exception {
         loginToApp(PROVIDER_URL_APP, org.wildfly.test.integration.elytron.oidc.client.KeycloakConfiguration.ALICE, "WRONG_PASSWORD", HttpURLConnection.HTTP_OK, "Invalid username or password");
     }
 
-    @Test
-    @OperateOnDeployment(PROVIDER_URL_APP)
     public void testSucessfulAuthenticationWithProviderUrl() throws Exception {
         loginToApp(PROVIDER_URL_APP, org.wildfly.test.integration.elytron.oidc.client.KeycloakConfiguration.ALICE, org.wildfly.test.integration.elytron.oidc.client.KeycloakConfiguration.ALICE_PASSWORD, HttpURLConnection.HTTP_OK, SimpleServlet.RESPONSE_BODY);
     }
 
-    @Test
-    @OperateOnDeployment(PROVIDER_URL_APP)
     public void testWrongRoleWithProviderUrl() throws Exception {
         loginToApp(PROVIDER_URL_APP, org.wildfly.test.integration.elytron.oidc.client.KeycloakConfiguration.BOB, org.wildfly.test.integration.elytron.oidc.client.KeycloakConfiguration.BOB_PASSWORD, HttpURLConnection.HTTP_FORBIDDEN, null);
     }
 
-    @Test
-    @OperateOnDeployment(AUTH_SERVER_URL_APP)
     public void testWrongPasswordWithAuthServerUrl() throws Exception {
         loginToApp(AUTH_SERVER_URL_APP, org.wildfly.test.integration.elytron.oidc.client.KeycloakConfiguration.ALICE, "WRONG_PASSWORD", HttpURLConnection.HTTP_OK, "Invalid username or password");
     }
 
-    @Test
-    @OperateOnDeployment(AUTH_SERVER_URL_APP)
     public void testSucessfulAuthenticationWithAuthServerUrl() throws Exception {
         loginToApp(AUTH_SERVER_URL_APP, org.wildfly.test.integration.elytron.oidc.client.KeycloakConfiguration.ALICE, org.wildfly.test.integration.elytron.oidc.client.KeycloakConfiguration.ALICE_PASSWORD, HttpURLConnection.HTTP_OK, SimpleServlet.RESPONSE_BODY);
     }
 
-    @Test
-    @OperateOnDeployment(AUTH_SERVER_URL_APP)
     public void testWrongRoleWithAuthServerUrl() throws Exception {
         loginToApp(AUTH_SERVER_URL_APP, org.wildfly.test.integration.elytron.oidc.client.KeycloakConfiguration.BOB, org.wildfly.test.integration.elytron.oidc.client.KeycloakConfiguration.BOB_PASSWORD, HttpURLConnection.HTTP_FORBIDDEN, null);
     }
 
-    @Test
-    @OperateOnDeployment(WRONG_PROVIDER_URL_APP)
     public void testWrongProviderUrl() throws Exception {
         loginToApp(WRONG_PROVIDER_URL_APP, org.wildfly.test.integration.elytron.oidc.client.KeycloakConfiguration.ALICE, org.wildfly.test.integration.elytron.oidc.client.KeycloakConfiguration.ALICE_PASSWORD, -1, null, false);
     }
 
-    @Test
-    @OperateOnDeployment(WRONG_SECRET_APP)
     public void testWrongClientSecret() throws Exception {
         loginToApp(WRONG_SECRET_APP, org.wildfly.test.integration.elytron.oidc.client.KeycloakConfiguration.ALICE, org.wildfly.test.integration.elytron.oidc.client.KeycloakConfiguration.ALICE_PASSWORD, HttpURLConnection.HTTP_FORBIDDEN, null);
     }
@@ -226,56 +201,40 @@ public abstract class OidcBaseTest {
      * Tests that use a bearer token.
      */
 
-    @Test
-    @OperateOnDeployment(BEARER_ONLY_AUTH_SERVER_URL_APP)
     public void testSucessfulBearerOnlyAuthenticationWithAuthServerUrl() throws Exception {
         performBearerAuthentication(BEARER_ONLY_AUTH_SERVER_URL_APP, KeycloakConfiguration.ALICE, KeycloakConfiguration.ALICE_PASSWORD,
                 SimpleServlet.RESPONSE_BODY, null, BearerAuthType.BEARER, DIRECT_ACCCESS_GRANT_ENABLED_CLIENT, CLIENT_SECRET);
     }
 
-    @Test
-    @OperateOnDeployment(BEARER_ONLY_PROVIDER_URL_APP)
     public void testSucessfulBearerOnlyAuthenticationWithProviderUrl() throws Exception {
         performBearerAuthentication(BEARER_ONLY_PROVIDER_URL_APP, KeycloakConfiguration.ALICE, KeycloakConfiguration.ALICE_PASSWORD,
                 SimpleServlet.RESPONSE_BODY, null, BearerAuthType.BEARER, DIRECT_ACCCESS_GRANT_ENABLED_CLIENT, CLIENT_SECRET);
     }
 
-    @Test
-    @OperateOnDeployment(BEARER_ONLY_PROVIDER_URL_APP)
     public void testWrongToken() throws Exception {
         String wrongToken = "eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICJrNmhQYTdHdmdrajdFdlhLeFAtRjFLZkNSUk85Q3kwNC04YzFqTERWOXNrIn0.eyJleHAiOjE2NTc2NjExODksImlhdCI6MTY1NzY2MTEyOSwianRpIjoiZThiZGQ3MWItYTA2OC00Mjc3LTkyY2UtZWJkYmU2MDVkMzBhIiwiaXNzIjoiaHR0cDovL2xvY2FsaG9zdDo4MDgwL3JlYWxtcy9tYXN0ZXIiLCJhdWQiOlsibXlyZWFsbS1yZWFsbSIsIm1hc3Rlci1yZWFsbSIsImFjY291bnQiXSwic3ViIjoiZTliOGE2OWItM2RlNy00ZDYzLWFjYmItMmYyNTRhMDM1MjVkIiwidHlwIjoiQmVhcmVyIiwiYXpwIjoidGVzdC13ZWJhcHAiLCJzZXNzaW9uX3N0YXRlIjoiMTQ1OTdhMmUtOGM1Ni00YzkwLWI3NjAtZWFjYzczNWU1Zjc1IiwiYWNyIjoiMSIsInJlYWxtX2FjY2VzcyI6eyJyb2xlcyI6WyJjcmVhdGUtcmVhbG0iLCJkZWZhdWx0LXJvbGVzLW1hc3RlciIsIm9mZmxpbmVfYWNjZXNzIiwiYWRtaW4iLCJ1bWFfYXV0aG9yaXphdGlvbiIsInVzZXIiXX0sInJlc291cmNlX2FjY2VzcyI6eyJteXJlYWxtLXJlYWxtIjp7InJvbGVzIjpbInZpZXctcmVhbG0iLCJ2aWV3LWlkZW50aXR5LXByb3ZpZGVycyIsIm1hbmFnZS1pZGVudGl0eS1wcm92aWRlcnMiLCJpbXBlcnNvbmF0aW9uIiwiY3JlYXRlLWNsaWVudCIsIm1hbmFnZS11c2VycyIsInF1ZXJ5LXJlYWxtcyIsInZpZXctYXV0aG9yaXphdGlvbiIsInF1ZXJ5LWNsaWVudHMiLCJxdWVyeS11c2VycyIsIm1hbmFnZS1ldmVudHMiLCJtYW5hZ2UtcmVhbG0iLCJ2aWV3LWV2ZW50cyIsInZpZXctdXNlcnMiLCJ2aWV3LWNsaWVudHMiLCJtYW5hZ2UtYXV0aG9yaXphdGlvbiIsIm1hbmFnZS1jbGllbnRzIiwicXVlcnktZ3JvdXBzIl19LCJtYXN0ZXItcmVhbG0iOnsicm9sZXMiOlsidmlldy1yZWFsbSIsInZpZXctaWRlbnRpdHktcHJvdmlkZXJzIiwibWFuYWdlLWlkZW50aXR5LXByb3ZpZGVycyIsImltcGVyc29uYXRpb24iLCJjcmVhdGUtY2xpZW50IiwibWFuYWdlLXVzZXJzIiwicXVlcnktcmVhbG1zIiwidmlldy1hdXRob3JpemF0aW9uIiwicXVlcnktY2xpZW50cyIsInF1ZXJ5LXVzZXJzIiwibWFuYWdlLWV2ZW50cyIsIm1hbmFnZS1yZWFsbSIsInZpZXctZXZlbnRzIiwidmlldy11c2VycyIsInZpZXctY2xpZW50cyIsIm1hbmFnZS1hdXRob3JpemF0aW9uIiwibWFuYWdlLWNsaWVudHMiLCJxdWVyeS1ncm91cHMiXX0sImFjY291bnQiOnsicm9sZXMiOlsibWFuYWdlLWFjY291bnQiLCJtYW5hZ2UtYWNjb3VudC1saW5rcyIsInZpZXctcHJvZmlsZSJdfX0sInNjb3BlIjoiZW1haWwgcHJvZmlsZSIsInNpZCI6IjE0NTk3YTJlLThjNTYtNGM5MC1iNzYwLWVhY2M3MzVlNWY3NSIsImVtYWlsX3ZlcmlmaWVkIjpmYWxzZSwicHJlZmVycmVkX3VzZXJuYW1lIjoiYWxpY2UifQ.hVj6SG-aTcDYhifdljpiBcz4ShCHej3h_4-82rgX0s_oJ-En68Cqt-_DgJLtMdr6dW_gQFFCPYBJfEGvZ8L6b_TwzbdLxyrQrKTOpeG0KJ8VAFlbWum9B1vvES_sav1Gj1sQHlV621EaLISYz7pnknuQEvrB7liJFRRjN9SH30AsAJy6nmKTDHGZ6Eegkveqd_7POaKfsHS3Z0-SGyL5GClXv9yZ1l5Y4VH-rrMUztLPCFH5bJ319-m-7sgizvV-C2EcM37XVAtPRVQbJNRW0wVmLEJKMuLYVnjS1Wn5eU_qnBvVMEaENNG3TzNd6b4YmxMFHFf9tnkb3wkDzdrRTA";
         performBearerAuthentication(BEARER_ONLY_PROVIDER_URL_APP, KeycloakConfiguration.ALICE, KeycloakConfiguration.ALICE_PASSWORD,
                 SimpleServlet.RESPONSE_BODY, wrongToken, BearerAuthType.BEARER);
     }
 
-    @Test
-    @OperateOnDeployment(BEARER_ONLY_PROVIDER_URL_APP)
     public void testInvalidToken() throws Exception {
         performBearerAuthentication(BEARER_ONLY_PROVIDER_URL_APP, KeycloakConfiguration.ALICE, KeycloakConfiguration.ALICE_PASSWORD,
                 SimpleServlet.RESPONSE_BODY, "INVALID_TOKEN", BearerAuthType.BEARER);
     }
 
-    @Test
-    @OperateOnDeployment(BEARER_ONLY_AUTH_SERVER_URL_APP)
     public void testNoTokenProvidedWithAuthServerUrl() throws Exception {
         accessAppWithoutToken(BEARER_ONLY_AUTH_SERVER_URL_APP, false, true, TEST_REALM);
     }
 
-    @Test
-    @OperateOnDeployment(BEARER_ONLY_PROVIDER_URL_APP)
     public void testNoTokenProvidedWithProviderUrl() throws Exception {
         accessAppWithoutToken(BEARER_ONLY_PROVIDER_URL_APP, false, true);
     }
 
-    @Test
-    @OperateOnDeployment(PROVIDER_URL_APP)
     public void testTokenProvidedBearerOnlyNotSet() throws Exception {
         performBearerAuthentication(PROVIDER_URL_APP, KeycloakConfiguration.ALICE, KeycloakConfiguration.ALICE_PASSWORD,
                 SimpleServlet.RESPONSE_BODY, null, BearerAuthType.BEARER, DIRECT_ACCCESS_GRANT_ENABLED_CLIENT, CLIENT_SECRET);
     }
 
-    @Test
-    @OperateOnDeployment(PROVIDER_URL_APP)
     public void testTokenNotProvidedBearerOnlyNotSet() throws Exception {
         // ensure the regular OIDC flow takes place
         accessAppWithoutToken(PROVIDER_URL_APP, false, false,null, HttpURLConnection.HTTP_OK, SimpleServlet.RESPONSE_BODY);
@@ -285,23 +244,17 @@ public abstract class OidcBaseTest {
      * Tests that pass the bearer token to use via an access_token query param.
      */
 
-    @Test
-    @OperateOnDeployment(BEARER_ONLY_PROVIDER_URL_APP)
     public void testValidTokenViaQueryParameter() throws Exception {
         performBearerAuthentication(BEARER_ONLY_PROVIDER_URL_APP, KeycloakConfiguration.ALICE, KeycloakConfiguration.ALICE_PASSWORD,
                 SimpleServlet.RESPONSE_BODY, null, BearerAuthType.QUERY_PARAM, DIRECT_ACCCESS_GRANT_ENABLED_CLIENT, CLIENT_SECRET);
     }
 
-    @Test
-    @OperateOnDeployment(BEARER_ONLY_PROVIDER_URL_APP)
     public void testWrongTokenViaQueryParameter() throws Exception {
         String wrongToken = "eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICJrNmhQYTdHdmdrajdFdlhLeFAtRjFLZkNSUk85Q3kwNC04YzFqTERWOXNrIn0.eyJleHAiOjE2NTc2NjExODksImlhdCI6MTY1NzY2MTEyOSwianRpIjoiZThiZGQ3MWItYTA2OC00Mjc3LTkyY2UtZWJkYmU2MDVkMzBhIiwiaXNzIjoiaHR0cDovL2xvY2FsaG9zdDo4MDgwL3JlYWxtcy9tYXN0ZXIiLCJhdWQiOlsibXlyZWFsbS1yZWFsbSIsIm1hc3Rlci1yZWFsbSIsImFjY291bnQiXSwic3ViIjoiZTliOGE2OWItM2RlNy00ZDYzLWFjYmItMmYyNTRhMDM1MjVkIiwidHlwIjoiQmVhcmVyIiwiYXpwIjoidGVzdC13ZWJhcHAiLCJzZXNzaW9uX3N0YXRlIjoiMTQ1OTdhMmUtOGM1Ni00YzkwLWI3NjAtZWFjYzczNWU1Zjc1IiwiYWNyIjoiMSIsInJlYWxtX2FjY2VzcyI6eyJyb2xlcyI6WyJjcmVhdGUtcmVhbG0iLCJkZWZhdWx0LXJvbGVzLW1hc3RlciIsIm9mZmxpbmVfYWNjZXNzIiwiYWRtaW4iLCJ1bWFfYXV0aG9yaXphdGlvbiIsInVzZXIiXX0sInJlc291cmNlX2FjY2VzcyI6eyJteXJlYWxtLXJlYWxtIjp7InJvbGVzIjpbInZpZXctcmVhbG0iLCJ2aWV3LWlkZW50aXR5LXByb3ZpZGVycyIsIm1hbmFnZS1pZGVudGl0eS1wcm92aWRlcnMiLCJpbXBlcnNvbmF0aW9uIiwiY3JlYXRlLWNsaWVudCIsIm1hbmFnZS11c2VycyIsInF1ZXJ5LXJlYWxtcyIsInZpZXctYXV0aG9yaXphdGlvbiIsInF1ZXJ5LWNsaWVudHMiLCJxdWVyeS11c2VycyIsIm1hbmFnZS1ldmVudHMiLCJtYW5hZ2UtcmVhbG0iLCJ2aWV3LWV2ZW50cyIsInZpZXctdXNlcnMiLCJ2aWV3LWNsaWVudHMiLCJtYW5hZ2UtYXV0aG9yaXphdGlvbiIsIm1hbmFnZS1jbGllbnRzIiwicXVlcnktZ3JvdXBzIl19LCJtYXN0ZXItcmVhbG0iOnsicm9sZXMiOlsidmlldy1yZWFsbSIsInZpZXctaWRlbnRpdHktcHJvdmlkZXJzIiwibWFuYWdlLWlkZW50aXR5LXByb3ZpZGVycyIsImltcGVyc29uYXRpb24iLCJjcmVhdGUtY2xpZW50IiwibWFuYWdlLXVzZXJzIiwicXVlcnktcmVhbG1zIiwidmlldy1hdXRob3JpemF0aW9uIiwicXVlcnktY2xpZW50cyIsInF1ZXJ5LXVzZXJzIiwibWFuYWdlLWV2ZW50cyIsIm1hbmFnZS1yZWFsbSIsInZpZXctZXZlbnRzIiwidmlldy11c2VycyIsInZpZXctY2xpZW50cyIsIm1hbmFnZS1hdXRob3JpemF0aW9uIiwibWFuYWdlLWNsaWVudHMiLCJxdWVyeS1ncm91cHMiXX0sImFjY291bnQiOnsicm9sZXMiOlsibWFuYWdlLWFjY291bnQiLCJtYW5hZ2UtYWNjb3VudC1saW5rcyIsInZpZXctcHJvZmlsZSJdfX0sInNjb3BlIjoiZW1haWwgcHJvZmlsZSIsInNpZCI6IjE0NTk3YTJlLThjNTYtNGM5MC1iNzYwLWVhY2M3MzVlNWY3NSIsImVtYWlsX3ZlcmlmaWVkIjpmYWxzZSwicHJlZmVycmVkX3VzZXJuYW1lIjoiYWxpY2UifQ.hVj6SG-aTcDYhifdljpiBcz4ShCHej3h_4-82rgX0s_oJ-En68Cqt-_DgJLtMdr6dW_gQFFCPYBJfEGvZ8L6b_TwzbdLxyrQrKTOpeG0KJ8VAFlbWum9B1vvES_sav1Gj1sQHlV621EaLISYz7pnknuQEvrB7liJFRRjN9SH30AsAJy6nmKTDHGZ6Eegkveqd_7POaKfsHS3Z0-SGyL5GClXv9yZ1l5Y4VH-rrMUztLPCFH5bJ319-m-7sgizvV-C2EcM37XVAtPRVQbJNRW0wVmLEJKMuLYVnjS1Wn5eU_qnBvVMEaENNG3TzNd6b4YmxMFHFf9tnkb3wkDzdrRTA";
         performBearerAuthentication(BEARER_ONLY_PROVIDER_URL_APP, KeycloakConfiguration.ALICE, KeycloakConfiguration.ALICE_PASSWORD,
                 SimpleServlet.RESPONSE_BODY, wrongToken, BearerAuthType.QUERY_PARAM);
     }
 
-    @Test
-    @OperateOnDeployment(BEARER_ONLY_PROVIDER_URL_APP)
     public void testInvalidTokenViaQueryParameter() throws Exception {
         performBearerAuthentication(BEARER_ONLY_PROVIDER_URL_APP, KeycloakConfiguration.ALICE, KeycloakConfiguration.ALICE_PASSWORD,
                 SimpleServlet.RESPONSE_BODY, "INVALID_TOKEN", BearerAuthType.QUERY_PARAM);
@@ -311,28 +264,20 @@ public abstract class OidcBaseTest {
      * Tests that rely on obtaining the bearer token to use from credentials obtained from basic auth.
      */
 
-    @Test
-    @OperateOnDeployment(BEARER_ONLY_PROVIDER_URL_APP)
     public void testBasicAuthenticationWithoutEnableBasicAuthSet() throws Exception {
         accessAppWithoutToken(BEARER_ONLY_PROVIDER_URL_APP, true, true, KeycloakConfiguration.ALICE, KeycloakConfiguration.ALICE_PASSWORD);
     }
 
-    @Test
-    @OperateOnDeployment(PROVIDER_URL_APP)
     public void testBasicAuthenticationWithoutEnableBasicAuthSetAndWithoutBearerOnlySet() throws Exception {
         // ensure the regular OIDC flow takes place
         accessAppWithoutToken(PROVIDER_URL_APP, true, false, null, HttpURLConnection.HTTP_OK, SimpleServlet.RESPONSE_BODY);
     }
 
-    @Test
-    @OperateOnDeployment(BASIC_AUTH_PROVIDER_URL_APP)
     public void testValidCredentialsBasicAuthentication() throws Exception {
         performBearerAuthentication(BASIC_AUTH_PROVIDER_URL_APP, KeycloakConfiguration.ALICE, KeycloakConfiguration.ALICE_PASSWORD,
                 SimpleServlet.RESPONSE_BODY, null, BearerAuthType.BASIC);
     }
 
-    @Test
-    @OperateOnDeployment(BASIC_AUTH_PROVIDER_URL_APP)
     public void testInvalidCredentialsBasicAuthentication() throws Exception {
         accessAppWithoutToken(BASIC_AUTH_PROVIDER_URL_APP, true, true, KeycloakConfiguration.ALICE, WRONG_PASSWORD);
     }
@@ -341,37 +286,27 @@ public abstract class OidcBaseTest {
      * Tests that simulate CORS preflight requests.
      */
 
-    @Test
-    @OperateOnDeployment(CORS_PROVIDER_URL_APP)
     public void testCorsRequestWithEnableCors() throws Exception {
         performBearerAuthenticationWithCors(CORS_PROVIDER_URL_APP, KeycloakConfiguration.ALICE, KeycloakConfiguration.ALICE_PASSWORD,
                 SimpleServlet.RESPONSE_BODY, null, CORS_CLIENT, CLIENT_SECRET, ALLOWED_ORIGIN, true);
     }
 
-    @Test
-    @OperateOnDeployment(CORS_PROVIDER_URL_APP)
     public void testCorsRequestWithEnableCorsWithWrongToken() throws Exception {
         String wrongToken = "eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICJrNmhQYTdHdmdrajdFdlhLeFAtRjFLZkNSUk85Q3kwNC04YzFqTERWOXNrIn0.eyJleHAiOjE2NTc2NjExODksImlhdCI6MTY1NzY2MTEyOSwianRpIjoiZThiZGQ3MWItYTA2OC00Mjc3LTkyY2UtZWJkYmU2MDVkMzBhIiwiaXNzIjoiaHR0cDovL2xvY2FsaG9zdDo4MDgwL3JlYWxtcy9tYXN0ZXIiLCJhdWQiOlsibXlyZWFsbS1yZWFsbSIsIm1hc3Rlci1yZWFsbSIsImFjY291bnQiXSwic3ViIjoiZTliOGE2OWItM2RlNy00ZDYzLWFjYmItMmYyNTRhMDM1MjVkIiwidHlwIjoiQmVhcmVyIiwiYXpwIjoidGVzdC13ZWJhcHAiLCJzZXNzaW9uX3N0YXRlIjoiMTQ1OTdhMmUtOGM1Ni00YzkwLWI3NjAtZWFjYzczNWU1Zjc1IiwiYWNyIjoiMSIsInJlYWxtX2FjY2VzcyI6eyJyb2xlcyI6WyJjcmVhdGUtcmVhbG0iLCJkZWZhdWx0LXJvbGVzLW1hc3RlciIsIm9mZmxpbmVfYWNjZXNzIiwiYWRtaW4iLCJ1bWFfYXV0aG9yaXphdGlvbiIsInVzZXIiXX0sInJlc291cmNlX2FjY2VzcyI6eyJteXJlYWxtLXJlYWxtIjp7InJvbGVzIjpbInZpZXctcmVhbG0iLCJ2aWV3LWlkZW50aXR5LXByb3ZpZGVycyIsIm1hbmFnZS1pZGVudGl0eS1wcm92aWRlcnMiLCJpbXBlcnNvbmF0aW9uIiwiY3JlYXRlLWNsaWVudCIsIm1hbmFnZS11c2VycyIsInF1ZXJ5LXJlYWxtcyIsInZpZXctYXV0aG9yaXphdGlvbiIsInF1ZXJ5LWNsaWVudHMiLCJxdWVyeS11c2VycyIsIm1hbmFnZS1ldmVudHMiLCJtYW5hZ2UtcmVhbG0iLCJ2aWV3LWV2ZW50cyIsInZpZXctdXNlcnMiLCJ2aWV3LWNsaWVudHMiLCJtYW5hZ2UtYXV0aG9yaXphdGlvbiIsIm1hbmFnZS1jbGllbnRzIiwicXVlcnktZ3JvdXBzIl19LCJtYXN0ZXItcmVhbG0iOnsicm9sZXMiOlsidmlldy1yZWFsbSIsInZpZXctaWRlbnRpdHktcHJvdmlkZXJzIiwibWFuYWdlLWlkZW50aXR5LXByb3ZpZGVycyIsImltcGVyc29uYXRpb24iLCJjcmVhdGUtY2xpZW50IiwibWFuYWdlLXVzZXJzIiwicXVlcnktcmVhbG1zIiwidmlldy1hdXRob3JpemF0aW9uIiwicXVlcnktY2xpZW50cyIsInF1ZXJ5LXVzZXJzIiwibWFuYWdlLWV2ZW50cyIsIm1hbmFnZS1yZWFsbSIsInZpZXctZXZlbnRzIiwidmlldy11c2VycyIsInZpZXctY2xpZW50cyIsIm1hbmFnZS1hdXRob3JpemF0aW9uIiwibWFuYWdlLWNsaWVudHMiLCJxdWVyeS1ncm91cHMiXX0sImFjY291bnQiOnsicm9sZXMiOlsibWFuYWdlLWFjY291bnQiLCJtYW5hZ2UtYWNjb3VudC1saW5rcyIsInZpZXctcHJvZmlsZSJdfX0sInNjb3BlIjoiZW1haWwgcHJvZmlsZSIsInNpZCI6IjE0NTk3YTJlLThjNTYtNGM5MC1iNzYwLWVhY2M3MzVlNWY3NSIsImVtYWlsX3ZlcmlmaWVkIjpmYWxzZSwicHJlZmVycmVkX3VzZXJuYW1lIjoiYWxpY2UifQ.hVj6SG-aTcDYhifdljpiBcz4ShCHej3h_4-82rgX0s_oJ-En68Cqt-_DgJLtMdr6dW_gQFFCPYBJfEGvZ8L6b_TwzbdLxyrQrKTOpeG0KJ8VAFlbWum9B1vvES_sav1Gj1sQHlV621EaLISYz7pnknuQEvrB7liJFRRjN9SH30AsAJy6nmKTDHGZ6Eegkveqd_7POaKfsHS3Z0-SGyL5GClXv9yZ1l5Y4VH-rrMUztLPCFH5bJ319-m-7sgizvV-C2EcM37XVAtPRVQbJNRW0wVmLEJKMuLYVnjS1Wn5eU_qnBvVMEaENNG3TzNd6b4YmxMFHFf9tnkb3wkDzdrRTA";
         performBearerAuthenticationWithCors(CORS_PROVIDER_URL_APP, KeycloakConfiguration.ALICE, KeycloakConfiguration.ALICE_PASSWORD,
                 SimpleServlet.RESPONSE_BODY, wrongToken, CORS_CLIENT, CLIENT_SECRET, ALLOWED_ORIGIN, true);
     }
 
-    @Test
-    @OperateOnDeployment(CORS_PROVIDER_URL_APP)
     public void testCorsRequestWithEnableCorsWithInvalidToken() throws Exception {
         performBearerAuthenticationWithCors(CORS_PROVIDER_URL_APP, KeycloakConfiguration.ALICE, KeycloakConfiguration.ALICE_PASSWORD,
                 SimpleServlet.RESPONSE_BODY, "INVALID_TOKEN", CORS_CLIENT, CLIENT_SECRET, ALLOWED_ORIGIN, true);
     }
 
-    @Test
-    @OperateOnDeployment(CORS_PROVIDER_URL_APP)
     public void testCorsRequestWithEnableCorsWithInvalidOrigin() throws Exception {
         performBearerAuthenticationWithCors(CORS_PROVIDER_URL_APP, KeycloakConfiguration.ALICE, KeycloakConfiguration.ALICE_PASSWORD,
                 SimpleServlet.RESPONSE_BODY, null, CORS_CLIENT, CLIENT_SECRET, "http://invalidorigin", true);
     }
 
-    @Test
-    @OperateOnDeployment(BEARER_ONLY_PROVIDER_URL_APP)
     public void testCorsRequestWithoutEnableCors() throws Exception {
         performBearerAuthenticationWithCors(BEARER_ONLY_PROVIDER_URL_APP, KeycloakConfiguration.ALICE, KeycloakConfiguration.ALICE_PASSWORD,
                 SimpleServlet.RESPONSE_BODY, null, CORS_CLIENT, CLIENT_SECRET, ALLOWED_ORIGIN, false);
@@ -381,8 +316,6 @@ public abstract class OidcBaseTest {
      * Tests that use different scope values to request access to claims values.
      */
 
-    @Test
-    @OperateOnDeployment(OPENID_SCOPE_APP)
     public void testOpenIDScope() throws Exception {
         String expectedScope = OIDC_SCOPE;
         loginToApp(KeycloakConfiguration.ALICE, KeycloakConfiguration.ALICE_PASSWORD, HttpURLConnection.HTTP_OK, SimpleServlet.RESPONSE_BODY, true,
@@ -390,8 +323,6 @@ public abstract class OidcBaseTest {
                         "/" + OPENID_SCOPE_APP + SimpleServletWithScope.SERVLET_PATH).toURI(), expectedScope, false);
     }
 
-    @Test
-    @OperateOnDeployment(SINGLE_SCOPE_APP)
     public void testSingleScope() throws Exception {
         String expectedScope = OIDC_SCOPE + "+profile";
         loginToApp(KeycloakConfiguration.ALICE, KeycloakConfiguration.ALICE_PASSWORD, HttpURLConnection.HTTP_OK, SimpleServlet.RESPONSE_BODY, true,
@@ -399,8 +330,7 @@ public abstract class OidcBaseTest {
                         "/" + SINGLE_SCOPE_APP + SimpleServletWithScope.SERVLET_PATH).toURI(), expectedScope, false);
     }
 
-    @Test
-    @OperateOnDeployment(MULTIPLE_SCOPE_APP)
+
     public void testMultipleScope() throws Exception {
         String expectedScope = OIDC_SCOPE + "+phone+profile+microprofile-jwt+email";
         loginToApp(KeycloakConfiguration.ALICE, KeycloakConfiguration.ALICE_PASSWORD, HttpURLConnection.HTTP_OK, SimpleServlet.RESPONSE_BODY, true,
@@ -408,8 +338,6 @@ public abstract class OidcBaseTest {
                         "/" + MULTIPLE_SCOPE_APP + SimpleServletWithScope.SERVLET_PATH).toURI(), expectedScope, false);
     }
 
-    @Test
-    @OperateOnDeployment(INVALID_SCOPE_APP)
     public void testInvalidScope() throws Exception {
         String expectedScope = OIDC_SCOPE + "+INVALID_SCOPE";
         loginToApp(KeycloakConfiguration.ALICE, KeycloakConfiguration.ALICE_PASSWORD, HttpURLConnection.HTTP_OK, SimpleServlet.RESPONSE_BODY, false,
@@ -420,103 +348,78 @@ public abstract class OidcBaseTest {
     /**
     * Tests that use authentication-request-format to send request objects using request and request_uri
     **/
-    @Test
-    @OperateOnDeployment(OAUTH2_REQUEST_METHOD_APP)
+
     public void testOpenIDWithOauth2Request() throws Exception {
         loginToApp(org.wildfly.test.integration.elytron.oidc.client.KeycloakConfiguration.ALICE, org.wildfly.test.integration.elytron.oidc.client.KeycloakConfiguration.ALICE_PASSWORD, HttpURLConnection.HTTP_OK, SimpleServlet.RESPONSE_BODY, true,
                 new URL("http", TestSuiteEnvironment.getHttpAddress(), TestSuiteEnvironment.getHttpPort(),
                         "/" + OAUTH2_REQUEST_METHOD_APP + SimpleSecuredServlet.SERVLET_PATH).toURI(), null, false, OAUTH2.getValue());
     }
 
-    @Test
-    @OperateOnDeployment(PLAINTEXT_REQUEST_APP)
     public void testOpenIDWithPlainTextRequest() throws Exception {
         loginToApp(org.wildfly.test.integration.elytron.oidc.client.KeycloakConfiguration.ALICE, org.wildfly.test.integration.elytron.oidc.client.KeycloakConfiguration.ALICE_PASSWORD, HttpURLConnection.HTTP_OK, SimpleServlet.RESPONSE_BODY, true,
                 new URL("http", TestSuiteEnvironment.getHttpAddress(), TestSuiteEnvironment.getHttpPort(),
                         "/" + PLAINTEXT_REQUEST_APP + SimpleSecuredServlet.SERVLET_PATH).toURI(), null, false, REQUEST.getValue());
     }
 
-    @Test
-    @OperateOnDeployment(PLAINTEXT_REQUEST_APP)
     public void testOpenIDWithPlainTextRequestUri() throws Exception {
         loginToApp(org.wildfly.test.integration.elytron.oidc.client.KeycloakConfiguration.ALICE, org.wildfly.test.integration.elytron.oidc.client.KeycloakConfiguration.ALICE_PASSWORD, HttpURLConnection.HTTP_OK, SimpleServlet.RESPONSE_BODY, true,
                 new URL("http", TestSuiteEnvironment.getHttpAddress(), TestSuiteEnvironment.getHttpPort(),
                         "/" + PLAINTEXT_REQUEST_URI_APP + SimpleSecuredServlet.SERVLET_PATH).toURI(), null, false, REQUEST_URI.getValue());
     }
 
-    @Test
-    @OperateOnDeployment(PLAINTEXT_ENCRYPTED_REQUEST_APP)
     public void testOpenIDWithPlainTextEncryptedRequest() throws Exception {
         loginToApp(org.wildfly.test.integration.elytron.oidc.client.KeycloakConfiguration.ALICE, org.wildfly.test.integration.elytron.oidc.client.KeycloakConfiguration.ALICE_PASSWORD, HttpURLConnection.HTTP_OK, SimpleServlet.RESPONSE_BODY, true,
                 new URL("http", TestSuiteEnvironment.getHttpAddress(), TestSuiteEnvironment.getHttpPort(),
                         "/" + PLAINTEXT_ENCRYPTED_REQUEST_APP + SimpleSecuredServlet.SERVLET_PATH).toURI(), null, false, REQUEST.getValue());
     }
 
-    @Test
-    @OperateOnDeployment(PLAINTEXT_ENCRYPTED_REQUEST_URI_APP)
     public void testOpenIDWithPlainTextEncryptedRequestUri() throws Exception {
         loginToApp(org.wildfly.test.integration.elytron.oidc.client.KeycloakConfiguration.ALICE, org.wildfly.test.integration.elytron.oidc.client.KeycloakConfiguration.ALICE_PASSWORD, HttpURLConnection.HTTP_OK, SimpleServlet.RESPONSE_BODY, true,
                 new URL("http", TestSuiteEnvironment.getHttpAddress(), TestSuiteEnvironment.getHttpPort(),
                         "/" + PLAINTEXT_ENCRYPTED_REQUEST_URI_APP + SimpleSecuredServlet.SERVLET_PATH).toURI(), null, false, REQUEST_URI.getValue());
     }
 
-    @Test
-    @OperateOnDeployment(RSA_SIGNED_REQUEST_APP)
     public void testOpenIDWithRsaSignedRequest() throws Exception {
         loginToApp(org.wildfly.test.integration.elytron.oidc.client.KeycloakConfiguration.ALICE, org.wildfly.test.integration.elytron.oidc.client.KeycloakConfiguration.ALICE_PASSWORD, HttpURLConnection.HTTP_OK, SimpleServlet.RESPONSE_BODY, true,
                 new URL("http", TestSuiteEnvironment.getHttpAddress(), TestSuiteEnvironment.getHttpPort(),
                         "/" + RSA_SIGNED_REQUEST_APP + SimpleSecuredServlet.SERVLET_PATH).toURI(), null, false, REQUEST.getValue());
     }
 
-    @Test
-    @OperateOnDeployment(RSA_SIGNED_AND_ENCRYPTED_REQUEST_APP)
     public void testOpenIDWithRsaSignedAndEncryptedRequest() throws Exception {
         loginToApp(org.wildfly.test.integration.elytron.oidc.client.KeycloakConfiguration.ALICE, org.wildfly.test.integration.elytron.oidc.client.KeycloakConfiguration.ALICE_PASSWORD, HttpURLConnection.HTTP_OK, SimpleServlet.RESPONSE_BODY, true,
                 new URL("http", TestSuiteEnvironment.getHttpAddress(), TestSuiteEnvironment.getHttpPort(),
                         "/" + RSA_SIGNED_AND_ENCRYPTED_REQUEST_APP + SimpleSecuredServlet.SERVLET_PATH).toURI(), null, false, REQUEST.getValue());
     }
 
-    @Test
-    @OperateOnDeployment(SIGNED_AND_ENCRYPTED_REQUEST_URI_APP)
     public void testOpenIDWithSignedAndEncryptedRequestUri() throws Exception {
         loginToApp(org.wildfly.test.integration.elytron.oidc.client.KeycloakConfiguration.ALICE, org.wildfly.test.integration.elytron.oidc.client.KeycloakConfiguration.ALICE_PASSWORD, HttpURLConnection.HTTP_OK, SimpleServlet.RESPONSE_BODY, true,
                 new URL("http", TestSuiteEnvironment.getHttpAddress(), TestSuiteEnvironment.getHttpPort(),
                         "/" + SIGNED_AND_ENCRYPTED_REQUEST_URI_APP + SimpleSecuredServlet.SERVLET_PATH).toURI(), null, false, REQUEST_URI.getValue());
     }
 
-    @Test
-    @OperateOnDeployment(PS_SIGNED_REQUEST_URI_APP)
     public void testOpenIDWithPsSignedRequestUri() throws Exception {
         loginToApp(org.wildfly.test.integration.elytron.oidc.client.KeycloakConfiguration.ALICE, org.wildfly.test.integration.elytron.oidc.client.KeycloakConfiguration.ALICE_PASSWORD, HttpURLConnection.HTTP_OK, SimpleServlet.RESPONSE_BODY, true,
                 new URL("http", TestSuiteEnvironment.getHttpAddress(), TestSuiteEnvironment.getHttpPort(),
                         "/" + PS_SIGNED_REQUEST_URI_APP + SimpleSecuredServlet.SERVLET_PATH).toURI(), null, false, REQUEST_URI.getValue());
     }
 
-    @Test
-    @OperateOnDeployment(PS_SIGNED_RSA_ENCRYPTED_REQUEST_APP)
     public void testOpenIDWithPsSignedAndRsaEncryptedRequest() throws Exception {
         loginToApp(org.wildfly.test.integration.elytron.oidc.client.KeycloakConfiguration.ALICE, org.wildfly.test.integration.elytron.oidc.client.KeycloakConfiguration.ALICE_PASSWORD, HttpURLConnection.HTTP_OK, SimpleServlet.RESPONSE_BODY, true,
                 new URL("http", TestSuiteEnvironment.getHttpAddress(), TestSuiteEnvironment.getHttpPort(),
                         "/" + PS_SIGNED_RSA_ENCRYPTED_REQUEST_APP + SimpleSecuredServlet.SERVLET_PATH).toURI(), null, false, REQUEST.getValue());
     }
 
-    @Test
-    @OperateOnDeployment(INVALID_SIGNATURE_ALGORITHM_APP)
     public void testOpenIDWithInvalidSigningAlgorithm() throws Exception {
         testRequestObjectInvalidConfiguration(new URL("http", TestSuiteEnvironment.getHttpAddress(), TestSuiteEnvironment.getHttpPort(),
                         "/" + INVALID_SIGNATURE_ALGORITHM_APP + SimpleSecuredServlet.SERVLET_PATH).toURI(), true);
     }
 
-    @Test
-    @OperateOnDeployment(MISSING_SECRET_APP)
     public void testOpenIDWithMissingSecretHmacSigningAlgorithm() throws Exception {
         //Expected to fail since the client secret is needed to sign the JWT
         testRequestObjectInvalidConfiguration(new URL("http", TestSuiteEnvironment.getHttpAddress(), TestSuiteEnvironment.getHttpPort(),
                 "/" + MISSING_SECRET_APP + SimpleSecuredServlet.SERVLET_PATH).toURI(), true);
     }
 
-    @Test
-    @OperateOnDeployment(FORM_WITH_OIDC_EAR_APP)
     public void testFormWithOidc() throws Exception {
         // oidc login
         // EAR declares context-root to be oidc
@@ -547,8 +450,6 @@ public abstract class OidcBaseTest {
                 " for request=" + requestUri, statusCode == HttpURLConnection.HTTP_MOVED_TEMP);
     }
 
-    @Test
-    @OperateOnDeployment(FORM_WITH_OIDC_EAR_APP)
     public void testInvalidFormWithOidcCredentials() throws Exception {
         // login with Form wfly user acct
         testInvalidFormCredentials();
