@@ -506,7 +506,7 @@
         <version.org.jboss.xnio.netty.netty-xnio-transport>0.1.10.Final</version.org.jboss.xnio.netty.netty-xnio-transport>
         <version.org.jctools.jctools-core>4.0.5</version.org.jctools.jctools-core>
         <version.org.jgroups>5.3.15.Final</version.org.jgroups>
-        <version.org.jgroups.aws>3.0.0.Final</version.org.jgroups.aws>
+        <version.org.jgroups.aws>3.0.1.Final</version.org.jgroups.aws>
         <version.org.jgroups.azure>2.0.2.Final</version.org.jgroups.azure>
         <version.org.jgroups.kubernetes>2.0.2.Final</version.org.jgroups.kubernetes>
         <version.org.jipijapa>1.0.1.Final</version.org.jipijapa>
