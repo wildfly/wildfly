@@ -34,6 +34,13 @@ import org.apache.http.impl.client.BasicResponseHandler;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.protocol.BasicHttpContext;
 import org.apache.http.protocol.HttpContext;
+
+import com.gargoylesoftware.htmlunit.WebClient;
+import com.gargoylesoftware.htmlunit.html.HtmlForm;
+import com.gargoylesoftware.htmlunit.html.HtmlInput;
+import com.gargoylesoftware.htmlunit.html.HtmlPage;
+import com.gargoylesoftware.htmlunit.html.HtmlSubmitInput;
+
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.operations.common.Util;
@@ -64,12 +71,11 @@ public class LoginLogoutBasics extends EnvSetupUtils {
         this.desiredStability = desiredStability;
     }
 
-
-    private URL generateURL(String appName) {
+    private URL generateURL(String appName, String servletPath) {
         try {
             return new URL("http", TestSuiteEnvironment.getHttpAddress(),
                     TestSuiteEnvironment.getHttpPort(),
-                    "/" + appName + SimpleSecuredServlet.SERVLET_PATH);
+                    "/" + appName + servletPath);
         } catch (MalformedURLException e) {
             assertFalse(e.getMessage(), false);
         }
@@ -80,6 +86,51 @@ public class LoginLogoutBasics extends EnvSetupUtils {
         this.httpClient = httpClient;
     }
 
+    public void browserLoginToApp(WebClient webClient, String appName) throws Exception {
+        browserLoginToApp(webClient, ALICE, ALICE_PASSWORD, SecuredFrontChannelServlet.SERVLET_PATH,
+                generateURL(appName, SecuredFrontChannelServlet.SERVLET_PATH));
+
+    }
+    public void browserLoginToApp(WebClient webClient, String username, String password,
+                           String expectedText, URL requestUrl) throws Exception {
+        HtmlPage page = (HtmlPage)webClient.getPage(requestUrl);
+        HtmlForm form = (HtmlForm)page.getElementById("kc-form-login");
+        HtmlInput userName = (HtmlInput)form.getInputByName("username");
+        userName.setValue(username);
+        HtmlInput passwd = (HtmlInput)form.getInputByName("password");
+        passwd.setValue(password);
+        HtmlSubmitInput login = (HtmlSubmitInput)form.getInputByName("login");
+        HtmlPage rtnPage = login.click();
+        String rtnText = rtnPage.asXml();
+        assertTrue("Expected result [ " + expectedText + " ] but was ["
+                        + rtnText + "]", rtnText.contains(expectedText));
+    }
+
+    public void browserLogoutOfKeycloak(WebClient webClient, String appName) throws Exception {
+        URL requestUrl = new URL(generateURL(appName, SecuredFrontChannelServlet.SERVLET_PATH).toString()+Constants.LOGOUT_PATH_VALUE);
+        browserLogoutOfKeycloak(webClient, requestUrl);
+    }
+
+    public void browserLogoutOfKeycloak(WebClient webClient, URL requestUrL) throws Exception {
+        HtmlPage pagelogout = (HtmlPage)webClient.getPage(requestUrL);
+        Thread.sleep(3500); // give time for logout to complete
+    }
+
+    public void browserAssertUserLoggedIn(WebClient webClient, String appName, String expectedText) throws Exception {
+        browserAccessPage(webClient, generateURL(appName, SecuredFrontChannelServlet.SERVLET_PATH), expectedText);
+    }
+
+    public void browserAssertUserLoggedOut(WebClient webClient, String appName, String expectedText) throws Exception {
+        browserAccessPage(webClient, generateURL(appName, SecuredFrontChannelServlet.SERVLET_PATH), expectedText);
+    }
+
+    public void browserAccessPage(WebClient webClient, URL requestUrl, String expectedText) throws Exception {
+        HtmlPage assertPage = (HtmlPage)webClient.getPage(requestUrl);
+        String apStr = assertPage.asXml();
+        assertTrue("Expected result [ " + expectedText + " ] but was ["
+                + apStr + "]", apStr.contains(expectedText));
+    }
+
     public void loginToApp(String appName) throws Exception {
         loginToApp(appName, ALICE, ALICE_PASSWORD, HttpURLConnection.HTTP_OK,
                 SimpleServlet.RESPONSE_BODY);
@@ -88,7 +139,7 @@ public class LoginLogoutBasics extends EnvSetupUtils {
     public void loginToApp(String appName,
                                   String username, String password, int expectedStatusCode, String expectedText) throws Exception {
         loginToApp(username, password, expectedStatusCode, expectedText, true,
-                generateURL(appName).toURI());
+                generateURL(appName, SimpleSecuredServlet.SERVLET_PATH).toURI());
     }
 
     public void loginToApp(String username, String password,
@@ -143,7 +194,7 @@ public class LoginLogoutBasics extends EnvSetupUtils {
     }
 
     public void logoutOfKeycloak(String appName, String expectedText) throws Exception {
-        URI requestUri = new URL(generateURL(appName).toString()+Constants.LOGOUT_PATH_VALUE).toURI();
+        URI requestUri = new URL(generateURL(appName, SimpleSecuredServlet.SERVLET_PATH).toString()+Constants.LOGOUT_PATH_VALUE).toURI();
         logoutOfKeycloak(requestUri, HttpURLConnection.HTTP_OK, expectedText, true);
     }
 
@@ -183,11 +234,11 @@ public class LoginLogoutBasics extends EnvSetupUtils {
     }
 
     public void assertUserLoggedIn(String appName, String expectedText) throws Exception {
-        accessPage(generateURL(appName).toURI(), HttpURLConnection.HTTP_OK, expectedText);
+        accessPage(generateURL(appName, SimpleSecuredServlet.SERVLET_PATH).toURI(), HttpURLConnection.HTTP_OK, expectedText);
     }
 
     public void assertUserLoggedOut(String appName, String expectedText) throws Exception {
-        accessPage(generateURL(appName).toURI(), HttpURLConnection.HTTP_OK, expectedText);
+        accessPage(generateURL(appName, SimpleSecuredServlet.SERVLET_PATH).toURI(), HttpURLConnection.HTTP_OK, expectedText);
     }
 
     public void accessPage(URI requestUri, int expectedStatusCode,
