@@ -21,6 +21,9 @@ import org.apache.http.client.HttpClient;
 import org.apache.http.impl.client.BasicCookieStore;
 import org.apache.http.impl.client.LaxRedirectStrategy;
 
+import com.gargoylesoftware.htmlunit.BrowserVersion;
+import com.gargoylesoftware.htmlunit.WebClient;
+
 import org.jboss.arquillian.container.test.api.Deployer;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
@@ -37,7 +40,6 @@ import org.jboss.as.version.Stability;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 
-import org.junit.Ignore;
 import org.wildfly.test.integration.elytron.oidc.client.KeycloakConfiguration;
 import org.wildfly.test.stabilitylevel.StabilityServerSetupSnapshotRestoreTasks;
 
@@ -98,7 +100,7 @@ public class ServerConfigLogoutTest extends LoginLogoutBasics {
     private static final String FRONT_CHANNEL_LOGOUT_URL = "http://"
             + EnvSetupUtils.HOST_TESTCONTAINERS_INTERNAL + ":"
             + EnvSetupUtils.CLIENT_PORT + "/" + FRONT_CHANNEL_LOGOUT_APP
-            + SimpleSecuredServlet.SERVLET_PATH + Constants.LOGOUT_CALLBACK_PATH_VALUE;
+            + SecuredFrontChannelServlet.SERVLET_PATH + Constants.LOGOUT_CALLBACK_PATH_VALUE;
 
     // These are the oidc logout URL paths that are registered with Keycloak.
     // The path of the URL must be the same as the system properties registered above.
@@ -168,8 +170,10 @@ public class ServerConfigLogoutTest extends LoginLogoutBasics {
     public static WebArchive createFrontChannelAuthServerUrlDeployment() {
         return ShrinkWrap.create(WebArchive.class, FRONT_CHANNEL_LOGOUT_APP + ".war")
                 .addClasses(SimpleServlet.class)
-                .addClasses(SimpleSecuredServlet.class)
+                .addClasses(SecuredFrontChannelServlet.class)
                 .addAsWebInfResource(packageName, WEB_XML, "web.xml")
+                .addAsWebInfResource(packageName,
+                        FRONT_CHANNEL_LOGOUT_APP+"-oidc.json", "oidc.json")
                 ;
     }
 
@@ -206,18 +210,22 @@ public class ServerConfigLogoutTest extends LoginLogoutBasics {
         }
     }
 
-    @Ignore // todo waiting on Selenium support for wfly
     @Test
     //  Test checks that front channel Logout can be completed.
     public void testFrontChannelLogout() throws Exception {
-        try {
+        try (WebClient webClient = new WebClient(BrowserVersion.CHROME)) {
             deployer.deploy(FRONT_CHANNEL_LOGOUT_APP);
 
-            loginToApp(FRONT_CHANNEL_LOGOUT_APP);
-            assertUserLoggedIn(FRONT_CHANNEL_LOGOUT_APP, SimpleServlet.RESPONSE_BODY);
-            logoutOfKeycloak(FRONT_CHANNEL_LOGOUT_APP, "You are logging out from following apps");
-            assertUserLoggedOut(FRONT_CHANNEL_LOGOUT_APP, SimpleServlet.RESPONSE_BODY);
+            browserLoginToApp(webClient, FRONT_CHANNEL_LOGOUT_APP);
+            browserAssertUserLoggedIn(webClient, FRONT_CHANNEL_LOGOUT_APP,
+                    SecuredFrontChannelServlet.SERVLET_PATH);
 
+            // logout
+            browserLogoutOfKeycloak(webClient, FRONT_CHANNEL_LOGOUT_APP);
+            browserAssertUserLoggedOut(webClient, FRONT_CHANNEL_LOGOUT_APP,
+                    SIGN_IN_TO_YOUR_ACCOUNT);
+
+            webClient.close();
         } finally {
             deployer.undeploy(FRONT_CHANNEL_LOGOUT_APP);
         }
