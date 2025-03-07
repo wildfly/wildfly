@@ -12,7 +12,7 @@ import jakarta.interceptor.Interceptors;
  */
 @Stateless
 @Interceptors(SecretInterceptor.class)
-public class ClassifiedBean {
+public class ClassifiedBean extends AbstractClassifiedBean {
 
     public String secretMethod() {
         return "Secret";
@@ -29,5 +29,13 @@ public class ClassifiedBean {
 
     public String overloadedMethod(String str) {
         return "ArgStr:" + str;
+    }
+
+    public String methodWithArrayArgument(String[] array)  {
+        return "Array:" + array;
+    }
+
+    public String overridedMethod(String a) {
+        return "Str " + a;
     }
 }
