@@ -49,12 +49,15 @@ public class CDIExtension implements Extension {
     private final List<HealthCheck> startupChecks = new ArrayList<>();
     private HealthCheck defaultReadinessCheck;
     private HealthCheck defaultStartupCheck;
+    private final Config config;
+    private final String deploymentName;
 
 
     public CDIExtension(MicroProfileHealthReporter healthReporter, Module module) {
         this.reporter = healthReporter;
         this.module = module;
-
+        this.config = ConfigProvider.getConfig(this.module.getClassLoader());
+        this.deploymentName = module.getName().replace(ServiceModuleLoader.MODULE_PREFIX, "");
     }
 
     /**
@@ -67,9 +70,7 @@ public class CDIExtension implements Extension {
         addHealthChecks(Liveness.Literal.INSTANCE, reporter::addLivenessCheck, livenessChecks);
         addHealthChecks(Readiness.Literal.INSTANCE, reporter::addReadinessCheck, readinessChecks);
         addHealthChecks(Startup.Literal.INSTANCE, reporter::addStartupCheck, startupChecks);
-        reporter.setUserChecksProcessed(true);
 
-        final Config config = ConfigProvider.getConfig(module.getClassLoader());
         final boolean disableDefaultProcedures = config.getOptionalValue(MP_HEALTH_DISABLE_DEFAULT_PROCEDURES, Boolean.class).orElse(false);
         if (readinessChecks.isEmpty()) {
             if (!disableDefaultProcedures) {
@@ -85,10 +86,11 @@ public class CDIExtension implements Extension {
                 reporter.addStartupCheck(defaultStartupCheck, module.getClassLoader());
             }
         }
-        // https://issues.redhat.com/browse/WFLY-19147 - let the per-application `mp.health.disable-default-procedures`
-        // configuration setting affect the Health checks response global server configuration
-        reporter.registerDeploymentDefaultProceduresConfiguration(
-                module.getName().replace(ServiceModuleLoader.MODULE_PREFIX, ""), disableDefaultProcedures);
+        // Track per-deployment configuration.
+        // Specifically, see https://issues.redhat.com/browse/WFLY-19147 - let the per-application
+        // `mp.health.disable-default-procedures` configuration setting affect the Health checks response global server
+        // configuration.
+        reporter.addDeploymentConfiguration(deploymentName, disableDefaultProcedures);
     }
 
     private void addHealthChecks(AnnotationLiteral qualifier,
@@ -118,6 +120,11 @@ public class CDIExtension implements Extension {
             reporter.removeStartupCheck(defaultStartupCheck);
             defaultStartupCheck = null;
         }
+        // Remove a deployment configuration tracker.
+        // Specifically, https://issues.redhat.com/browse/WFLY-20325 - remove the per-application
+        // `mp.health.disable-default-procedures` configuration setting affect the Health checks response global server
+        // configuration
+        reporter.removeDeploymentConfiguration(deploymentName);
 
         instance = null;
     }
