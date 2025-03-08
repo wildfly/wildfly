@@ -2,7 +2,7 @@
  * Copyright The WildFly Authors
  * SPDX-License-Identifier: Apache-2.0
  */
-package org.wildfly.test.integration.observability.micrometer.multiple.application;
+package org.wildfly.test.integration.observability.micrometer;
 
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.MeterRegistry;
@@ -19,7 +19,7 @@ import jakarta.ws.rs.Path;
  */
 @RequestScoped
 @Path("/")
-public class MicrometerMetricResource {
+public class MicrometerResource {
     @Inject
     private MeterRegistry meterRegistry;
     private Counter counter;
