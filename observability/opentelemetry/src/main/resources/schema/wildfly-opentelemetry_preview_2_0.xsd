@@ -6,10 +6,10 @@
   -->
 
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
-           targetNamespace="urn:wildfly:opentelemetry:1.1"
-           xmlns="urn:wildfly:opentelemetry:1.1"
+           targetNamespace="urn:wildfly:opentelemetry:preview:2.0"
+           xmlns="urn:wildfly:opentelemetry:preview:2.0"
            elementFormDefault="qualified"
-           version="1.1">
+           version="2.0">
 
     <xs:element name="subsystem">
         <xs:complexType>
@@ -17,7 +17,7 @@
                 <xs:element name="exporter" minOccurs="0">
                     <xs:annotation>
                         <xs:documentation>
-                            Configures the exporter used to export traces
+                            Configures the exporter used to export signals
                         </xs:documentation>
                     </xs:annotation>
                     <xs:complexType>
@@ -62,10 +62,10 @@
                                 </xs:restriction>
                             </xs:simpleType>
                         </xs:attribute>
-                        <xs:attribute type="xs:integer" name="batch-delay" default="5000">
+                        <xs:attribute type="xs:integer" name="export-interval" default="5000">
                             <xs:annotation>
                                 <xs:documentation>
-                                    The interval, in milliseconds, between two consecutive exports. Default is 5000.
+                                    The interval, in milliseconds, between two consecutive exports.
                                 </xs:documentation>
                             </xs:annotation>
                         </xs:attribute>
@@ -118,6 +118,80 @@
                         </xs:attribute>
                     </xs:complexType>
                 </xs:element>
+                <xs:element name="metrics" minOccurs="0">
+                    <xs:complexType>
+                        <xs:attribute type="xs:integer" name="export-interval" default="60000">
+                            <xs:annotation>
+                                <xs:documentation>
+                                    The interval, in milliseconds, between two consecutive exports.
+                                </xs:documentation>
+                            </xs:annotation>
+                        </xs:attribute>
+                        <xs:attribute name="exemplar-filter" default="trace_based">
+                            <xs:annotation>
+                                <xs:documentation>
+                                    The filter for exemplar sampling.
+                                </xs:documentation>
+                            </xs:annotation>
+                            <xs:simpleType>
+                                <xs:restriction base="xs:string">
+                                    <xs:enumeration value="always_off"/>
+                                    <xs:enumeration value="always_on"/>
+                                    <xs:enumeration value="trace_based"/>
+                                </xs:restriction>
+                            </xs:simpleType>
+                        </xs:attribute>
+                        <xs:attribute name="temporality" default="cumulative">
+                            <xs:annotation>
+                                <xs:documentation>
+                                    The preferred output aggregation temporality.
+                                </xs:documentation>
+                            </xs:annotation>
+                            <xs:simpleType>
+                                <xs:restriction base="xs:string">
+                                    <xs:enumeration value="delta"/>
+                                    <xs:enumeration value="lowmemory"/>
+                                    <xs:enumeration value="cumulative"/>
+                                </xs:restriction>
+                            </xs:simpleType>
+                        </xs:attribute>
+                        <xs:attribute name="histogram-aggregation" default="explicit_bucket_histogram">
+                            <xs:annotation>
+                                <xs:documentation>
+                                    The preferred default histogram aggregation.
+                                </xs:documentation>
+                            </xs:annotation>
+                            <xs:simpleType>
+                                <xs:restriction base="xs:string">
+                                    <xs:enumeration value="base2_exponential_bucket_histogram"/>
+                                    <xs:enumeration value="explicit_bucket_histogram"/>
+                                </xs:restriction>
+                            </xs:simpleType>
+                        </xs:attribute>
+                    </xs:complexType>
+                </xs:element>
+                <xs:element name="logs" minOccurs="0">
+                    <xs:complexType>
+                        <xs:attribute type="xs:integer" name="export-interval" default="1000">
+                            <xs:annotation>
+                                <xs:documentation>
+                                    The interval, in milliseconds, between two consecutive exports.
+                                </xs:documentation>
+                            </xs:annotation>
+                        </xs:attribute>
+                    </xs:complexType>
+                </xs:element>
+                <xs:element name="tls" minOccurs="0">
+                    <xs:complexType>
+                        <xs:attribute type="xs:string" name="ssl-context">
+                            <xs:annotation>
+                                <xs:documentation>
+                                    The name of the Elytron SSL context to use when communicating with the OpenTelemetry Collector
+                                </xs:documentation>
+                            </xs:annotation>
+                        </xs:attribute>
+                    </xs:complexType>
+                </xs:element>
             </xs:sequence>
             <xs:attribute type="xs:string" name="service-name">
                 <xs:annotation>
@@ -125,6 +199,18 @@
                         The service name reported to the trace collector
                     </xs:documentation>
                 </xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="compression" >
+                <xs:annotation>
+                    <xs:documentation>
+                        The compression type to use on OTLP trace, metric, and log requests.
+                    </xs:documentation>
+                </xs:annotation>
+                <xs:simpleType>
+                    <xs:restriction base="xs:string">
+                        <xs:enumeration value="gzip"/>
+                    </xs:restriction>
+                </xs:simpleType>
             </xs:attribute>
         </xs:complexType>
     </xs:element>
