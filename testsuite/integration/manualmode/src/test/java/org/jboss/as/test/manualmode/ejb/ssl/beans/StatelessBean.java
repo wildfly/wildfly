@@ -5,9 +5,11 @@
 
 package org.jboss.as.test.manualmode.ejb.ssl.beans;
 
+import jakarta.annotation.security.PermitAll;
 import jakarta.ejb.AsyncResult;
 import jakarta.ejb.Asynchronous;
 import jakarta.ejb.Stateless;
+
 import java.util.concurrent.Future;
 
 /**
@@ -15,6 +17,7 @@ import java.util.concurrent.Future;
  * @author Jan Martiska
  */
 @Stateless
+@PermitAll
 public class StatelessBean implements StatelessBeanRemote {
     @Override
     public String sayHello() {
