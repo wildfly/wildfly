@@ -52,7 +52,7 @@ public class AjpListenerResourceDefinition extends ListenerResourceDefinition {
             .setRequired(false)
             .setAllowExpression(true)
             .setDefaultValue(null)
-            .setStability(Stability.PREVIEW)
+            .setStability(Stability.COMMUNITY)
             .build();
 
     static final List<AttributeDefinition> ATTRIBUTES = List.of(SCHEME, REDIRECT_SOCKET, MAX_AJP_PACKET_SIZE, ALLOWED_REQUEST_ATTRIBUTES_PATTERN);

@@ -146,7 +146,7 @@ public enum UndertowSubsystemSchema implements PersistentSubsystemSchema<Underto
     private PersistentResourceXMLDescription ajpListener() {
         PersistentResourceXMLDescription.Builder builder = this.factory.builder(AjpListenerResourceDefinition.PATH_ELEMENT);
         Stream<AttributeDefinition> attributes = AjpListenerResourceDefinition.ATTRIBUTES.stream();
-        if (!this.since(VERSION_14_0_PREVIEW)) {
+        if (!this.since(VERSION_14_0_COMMUNITY)) {
             attributes = attributes.filter(Predicate.isEqual(AjpListenerResourceDefinition.ALLOWED_REQUEST_ATTRIBUTES_PATTERN).negate());
         }
         Stream.concat(this.listenerAttributes(), attributes).forEach(builder::addAttribute);
@@ -274,7 +274,7 @@ public enum UndertowSubsystemSchema implements PersistentSubsystemSchema<Underto
         builder.addChild(this.factory.builder(FileHandlerDefinition.PATH_ELEMENT).addAttributes(FileHandlerDefinition.ATTRIBUTES.stream()).build());
 
         Stream<AttributeDefinition> reverseProxyHandlerAttributes = ReverseProxyHandlerDefinition.ATTRIBUTES.stream();
-        if (!this.since(VERSION_14_0_PREVIEW)) {
+        if (!this.since(VERSION_14_0_COMMUNITY)) {
             reverseProxyHandlerAttributes = reverseProxyHandlerAttributes.filter(Predicate.not(Set.of(ReverseProxyHandlerDefinition.REUSE_X_FORWARDED_HEADER, ReverseProxyHandlerDefinition.REWRITE_HOST_HEADER)::contains));
         }
         if (!this.since(UndertowSubsystemSchema.VERSION_4_0)) {
