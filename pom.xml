@@ -367,7 +367,7 @@
         <version.io.agroal>2.0</version.io.agroal>
         <version.io.github.resilience4j>2.2.0</version.io.github.resilience4j>
         <version.io.grpc>1.70.0</version.io.grpc>
-        <version.io.micrometer>1.14.4</version.io.micrometer>
+        <version.io.micrometer>1.14.5</version.io.micrometer>
         <version.io.netty>4.1.119.Final</version.io.netty>
         <version.io.opentelemetry.instrumentation>2.8.0</version.io.opentelemetry.instrumentation>
         <version.io.opentelemetry.opentelemetry-semconv>1.25.0-alpha</version.io.opentelemetry.opentelemetry-semconv>
