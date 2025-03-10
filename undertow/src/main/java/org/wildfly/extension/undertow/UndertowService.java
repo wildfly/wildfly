@@ -125,6 +125,10 @@ public class UndertowService implements Service<UndertowService> {
         return AccessLogDefinition.ACCESS_LOG_CAPABILITY.getCapabilityServiceName(server, virtualHost);
     }
 
+    public static ServiceName activeRequestTrackingServiceName(final String server, final String virtualHost) {
+        return virtualHostName(server, virtualHost).append(Constants.ACTIVE_REQUEST_TRACKING);
+    }
+
     public static ServiceName consoleRedirectServiceName(final String server, final String virtualHost) {
         return virtualHostName(server, virtualHost).append("console", "redirect");
     }
