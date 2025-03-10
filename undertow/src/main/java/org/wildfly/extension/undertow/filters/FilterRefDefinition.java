@@ -15,6 +15,8 @@ import io.undertow.predicate.PredicateParser;
 
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.CapabilityServiceBuilder;
+import org.jboss.as.controller.CapabilityServiceTarget;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
@@ -24,11 +26,11 @@ import org.jboss.as.controller.ServiceRemoveStepHandler;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.operations.validation.IntRangeValidator;
+import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
-import org.jboss.msc.service.ServiceBuilder;
+import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.msc.service.ServiceName;
-import org.jboss.msc.service.ServiceTarget;
 import org.wildfly.extension.undertow.Capabilities;
 import org.wildfly.extension.undertow.Constants;
 import org.wildfly.extension.undertow.FilterLocation;
@@ -50,6 +52,7 @@ public class FilterRefDefinition extends PersistentResourceDefinition {
             .setRestartAllServices()
             .setValidator(PredicateValidator.INSTANCE)
             .build();
+
     public static final AttributeDefinition PRIORITY = new SimpleAttributeDefinitionBuilder("priority", ModelType.INT)
             .setRequired(false)
             .setAllowExpression(true)
@@ -77,21 +80,28 @@ public class FilterRefDefinition extends PersistentResourceDefinition {
         return ATTRIBUTES;
     }
 
+    @Override
+    public void registerCapabilities(ManagementResourceRegistration resourceRegistration) {
+        resourceRegistration.registerCapability(FilterCapabilities.FILTER_HOST_REF_CAPABILITY.getDefinition());
+        resourceRegistration.registerCapability(FilterCapabilities.FILTER_LOCATION_REF_CAPABILITY.getDefinition());
+    }
+
     static class FilterRefAdd extends AbstractAddStepHandler {
 
         @Override
         protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
             final PathAddress address = context.getCurrentAddress();
             final String name = context.getCurrentAddressValue();
-            final String locationType = address.getElement(address.size() - 2).getKey();
             final ServiceName locationSN;
+            final FilterCapabilities capabilityType;
 
-            if (locationType.equals(Constants.HOST)) {
+            if (isAddressHost(context)) {
                 final PathAddress hostAddress = address.getParent();
                 final PathAddress serverAddress = hostAddress.getParent();
                 final String serverName = serverAddress.getLastElement().getValue();
                 final String hostName = hostAddress.getLastElement().getValue();
                 locationSN = context.getCapabilityServiceName(Host.SERVICE_DESCRIPTOR, serverName, hostName);
+                capabilityType = FilterCapabilities.FILTER_HOST_REF_CAPABILITY;
             } else {
                 final PathAddress locationAddress = address.getParent();
                 final PathAddress hostAddress = locationAddress.getParent();
@@ -100,6 +110,7 @@ public class FilterRefDefinition extends PersistentResourceDefinition {
                 final String serverName = serverAddress.getLastElement().getValue();
                 final String hostName = hostAddress.getLastElement().getValue();
                 locationSN = context.getCapabilityServiceName(Capabilities.CAPABILITY_LOCATION, FilterLocation.class, serverName, hostName, locationName);
+                capabilityType = FilterCapabilities.FILTER_LOCATION_REF_CAPABILITY;
             }
 
             Predicate predicate = null;
@@ -108,15 +119,26 @@ public class FilterRefDefinition extends PersistentResourceDefinition {
                 predicate = PredicateParser.parse(predicateString, getClass().getClassLoader());
             }
 
-            int priority = PRIORITY.resolveModelAttribute(context, operation).asInt();
-            final ServiceTarget target = context.getServiceTarget();
+            final int priority = PRIORITY.resolveModelAttribute(context, operation).asInt();
+            final CapabilityServiceTarget target = context.getCapabilityServiceTarget();
             final ServiceName sn = UndertowService.getFilterRefServiceName(address, name);
-            final ServiceBuilder<?> sb = target.addService(sn);
-            final Consumer<UndertowFilter> frConsumer = sb.provides(sn);
-            final Supplier<PredicateHandlerWrapper> fSupplier = sb.requires(UndertowService.FILTER.append(name));
-            final Supplier<FilterLocation> lSupplier = sb.requires(locationSN);
-            sb.setInstance(new FilterService(frConsumer, fSupplier, lSupplier, predicate, priority));
-            sb.install();
+            final CapabilityServiceBuilder<?> csb = target.addCapability(capabilityType.getDefinition());
+            final Consumer<UndertowFilter> frConsumer = csb.provides(capabilityType.getDefinition() , sn);
+            final Supplier<PredicateHandlerWrapper> fSupplier = csb.requiresCapability(Capabilities.CAPABILITY_FILTER, PredicateHandlerWrapper.class, name);
+            final Supplier<FilterLocation> lSupplier = csb.requires(locationSN);
+            csb.setInitialMode(Mode.ACTIVE);
+            csb.setInstance(new FilterService(frConsumer, fSupplier, lSupplier, predicate, priority));
+            csb.install();
+        }
+    }
+
+    private static boolean isAddressHost(final OperationContext context) {
+        final PathAddress address = context.getCurrentAddress();
+        final String locationType = address.getElement(address.size() - 2).getKey();
+        if (locationType.equals(Constants.HOST)) {
+            return true;
+        } else {
+            return false;
         }
     }
 }
