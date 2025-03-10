@@ -486,7 +486,7 @@
         <version.org.jboss.narayana>7.2.1.Final</version.org.jboss.narayana>
         <version.org.jboss.narayana.lra>0.0.9.Final</version.org.jboss.narayana.lra>
         <version.org.jboss.openjdk-orb>10.1.1.Final</version.org.jboss.openjdk-orb>
-        <version.org.jboss.resteasy>6.2.11.Final</version.org.jboss.resteasy>
+        <version.org.jboss.resteasy>6.2.12.Final</version.org.jboss.resteasy>
         <version.org.jboss.resteasy.extensions>2.0.1.Final</version.org.jboss.resteasy.extensions>
         <version.org.jboss.resteasy.microprofile>3.0.1.Final</version.org.jboss.resteasy.microprofile>
         <version.org.jboss.resteasy.spring>3.2.0.Final</version.org.jboss.resteasy.spring>
