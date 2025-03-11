@@ -151,7 +151,7 @@
       <packageUrl regex="true">^pkg:maven/org\.apache\.directory\.server/apacheds\-.*@.*$</packageUrl>
       <cve>CVE-2010-1151</cve>
    </suppress>
-   <suppress until="2025-02-14">
+   <suppress until="2026-03-11">
       <notes><![CDATA[
       file name: mina-core-2.1.3.jar
       ]]></notes>
