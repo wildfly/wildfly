@@ -446,7 +446,7 @@
         <version.org.eclipse.jdt>3.33.0</version.org.eclipse.jdt>
         <version.org.eclipse.microprofile>7.0</version.org.eclipse.microprofile>
         <version.org.eclipse.microprofile.config.api>3.1</version.org.eclipse.microprofile.config.api>
-        <version.org.eclipse.microprofile.fault-tolerance.api>4.1.1</version.org.eclipse.microprofile.fault-tolerance.api>
+        <version.org.eclipse.microprofile.fault-tolerance.api>4.1.2</version.org.eclipse.microprofile.fault-tolerance.api>
         <version.org.eclipse.microprofile.health.api>4.0.1</version.org.eclipse.microprofile.health.api>
         <version.org.eclipse.microprofile.jwt.api>2.1</version.org.eclipse.microprofile.jwt.api>
         <version.org.eclipse.microprofile.lra.api>2.0</version.org.eclipse.microprofile.lra.api>
