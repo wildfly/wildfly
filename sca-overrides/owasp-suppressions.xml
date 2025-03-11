@@ -200,6 +200,7 @@
       <cve>CVE-2023-0482</cve> <!-- CVE within Rest Easy not RestEasy Spring -->
       <cve>CVE-2020-25633</cve> <!-- CVE within Rest Easy not RestEasy Spring -->
       <cve>CVE-2021-20289</cve> <!-- CVE within Rest Easy not RestEasy Spring -->
+      <cve>CVE-2021-20293</cve> <!-- WFLY-20461 CVE rejected by Red Hat --> 
    </suppress>
    <suppress until="2026-03-11">
       <notes><![CDATA[
@@ -213,8 +214,9 @@
       <cve>CVE-2021-20289</cve> <!-- CVE within Rest Easy not RestEasy Tracing API -->
       <cve>CVE-2011-5245</cve> <!-- CVE within Rest Easy not RestEasy Tracing API -->
       <cve>CVE-2012-0818</cve> <!-- CVE within Rest Easy not RestEasy Tracing API -->
+      <cve>CVE-2021-20293</cve> <!-- WFLY-20461 CVE rejected by Red Hat --> 
    </suppress>
-   <suppress until="2025-03-04">
+   <suppress until="2026-03-11">
       <notes><![CDATA[
       file name: undertow-core-2.3.12.Final.jar
       ]]></notes>
