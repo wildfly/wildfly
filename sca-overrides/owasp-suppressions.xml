@@ -173,7 +173,7 @@
       <packageUrl regex="true">^pkg:maven/org\.glassfish\.soteria/jakarta\.security\.enterprise@.*$</packageUrl>
       <vulnerabilityName>CVE-2020-1732</vulnerabilityName>
    </suppress>
-   <suppress until="2025-02-09">
+   <suppress until="2026-03-11">
       <notes><![CDATA[
       file name: jgroups-aws-3.0.0.Final.jar
       ]]></notes>
