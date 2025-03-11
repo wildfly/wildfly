@@ -207,7 +207,6 @@ public class JsonConfigLogoutTest extends LoginLogoutBasics {
             loginToApp(BACK_CHANNEL_LOGOUT_APP);
             assertUserLoggedIn(BACK_CHANNEL_LOGOUT_APP, SimpleServlet.RESPONSE_BODY);
             logoutOfKeycloak(BACK_CHANNEL_LOGOUT_APP, YOU_ARE_LOGGED_OUT);
-            Thread.sleep(2000);  // slow server adjustment
             assertUserLoggedOut(BACK_CHANNEL_LOGOUT_APP, SIGN_IN_TO_YOUR_ACCOUNT);
 
         } finally {
@@ -246,7 +245,6 @@ public class JsonConfigLogoutTest extends LoginLogoutBasics {
             assertUserLoggedIn(BACK_CHANNEL_LOGOUT_APP_TWO, "GOOD");
 
             logoutOfKeycloak(BACK_CHANNEL_LOGOUT_APP, YOU_ARE_LOGGED_OUT);
-            Thread.sleep(2000);  // slow server adjustment
             assertUserLoggedOut(BACK_CHANNEL_LOGOUT_APP, SIGN_IN_TO_YOUR_ACCOUNT);
             assertUserLoggedOut(BACK_CHANNEL_LOGOUT_APP_TWO, SIGN_IN_TO_YOUR_ACCOUNT);
 

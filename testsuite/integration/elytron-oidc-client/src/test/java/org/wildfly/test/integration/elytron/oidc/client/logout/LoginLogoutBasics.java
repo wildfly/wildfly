@@ -97,13 +97,32 @@ public class LoginLogoutBasics extends EnvSetupUtils {
 
         HttpGet getMethod = new HttpGet(requestUri);
         HttpContext context = new BasicHttpContext();
-        HttpResponse response = httpClient.execute(getMethod, context);
+        HttpResponse response = null;
+        Form keycloakLoginForm = null;
+
+        int retryMax = 10;
+        int retry = 0;
+        boolean retryAgain = true;
+        // allow for slow system response with limited retries
+        do {
+            Thread.sleep(500);
+            response = httpClient.execute(getMethod, context);
+            if (response.getStatusLine().getStatusCode() == expectedStatusCode) {
+                try {
+                    keycloakLoginForm = new Form(response);
+                    retryAgain = false;
+                } catch (IOException ee) {
+                    // contiune retries
+                }
+            }
+            retry++;
+        } while(retryAgain &&  retry < retryMax);
+
         try {
             int statusCode = response.getStatusLine().getStatusCode();
             if (loginToKeycloak) {
                 assertTrue("Expected code == OK but got " + statusCode
                         + " for request=" + requestUri, statusCode == HttpURLConnection.HTTP_OK);
-                Form keycloakLoginForm = new Form(response);
                 HttpResponse afterLoginClickResponse = simulateClickingOnButton(httpClient,
                         keycloakLoginForm, username, password, "Sign In");
 
@@ -134,7 +153,16 @@ public class LoginLogoutBasics extends EnvSetupUtils {
         HttpContext context = new BasicHttpContext();
         HttpResponse response = null;
         HttpGet getMethod = new HttpGet(requestUri);
-        response = httpClient.execute(getMethod, context);
+
+        int retryMax = 10;
+        int retry = 0;
+        // allow for slow system response with limited retries
+        do {
+            Thread.sleep(500);
+            response = httpClient.execute(getMethod, context);
+            retry++;
+        } while((response.getStatusLine().getStatusCode() != expectedStatusCode)
+                &&  retry < retryMax);
 
         try {
             int statusCode = response.getStatusLine().getStatusCode();
@@ -167,15 +195,24 @@ public class LoginLogoutBasics extends EnvSetupUtils {
         HttpContext context = new BasicHttpContext();
         HttpResponse response = null;
         HttpGet getMethod = new HttpGet(requestUri);
-        response = httpClient.execute(getMethod, context);
+
+        String responseString = null;
+        int retryMax = 10;
+        int retry = 0;
+        // allow for slow system response with limited retries
+        do {
+            Thread.sleep(500);
+            response = httpClient.execute(getMethod, context);
+            response.getEntity();
+            responseString = new BasicResponseHandler().handleResponse(response);
+            retry++;
+        } while((!responseString.contains(expectedText)) &&  retry < retryMax);
 
         try {
             int statusCode = response.getStatusLine().getStatusCode();
             assertTrue("Expected code == " + expectedStatusCode + " but got "
                             + statusCode + " for request=" + requestUri,
                     statusCode == expectedStatusCode);
-            response.getEntity();
-            String responseString = new BasicResponseHandler().handleResponse(response);
             assertTrue("Expected result [ " + expectedText + "] but was ["
                             + responseString + "]",
                     responseString.contains(expectedText));
@@ -219,6 +256,9 @@ public class LoginLogoutBasics extends EnvSetupUtils {
         public Form(HttpResponse response) throws IOException {
             this.response = response;
             final String responseString = new BasicResponseHandler().handleResponse(response);
+            if (!responseString.startsWith("<!DOCTYPE html>")) {
+                throw new IOException("Form is not the login doc");
+            }
             final Document doc = Jsoup.parse(responseString);
             final Element form = doc.select(FORM).first();
             this.action = form.attr(ACTION);
