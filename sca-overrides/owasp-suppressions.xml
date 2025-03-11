@@ -143,7 +143,7 @@
 
    <!-- If we specify an until in 12 months time, it will give us an opportunity to check again,
         also if it no longer triggers after this date we can remove the supression. -->
-   <suppress until="2025-02-09">
+   <suppress until="2026-03-11">
       <notes><![CDATA[
       file name: apacheds-interceptors-admin-2.0.0.AM26.jar
       ]]></notes>
