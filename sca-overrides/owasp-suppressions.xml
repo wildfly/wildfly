@@ -158,7 +158,7 @@
       <packageUrl regex="true">^pkg:maven/org\.apache\.mina/mina\-core@.*$</packageUrl>
       <cve>CVE-2021-41973</cve>
    </suppress>
-   <suppress until="2025-02-09">
+   <suppress until="2026-03-11">
       <notes><![CDATA[
       file name: h2-2.2.224.jar
       ]]></notes>
