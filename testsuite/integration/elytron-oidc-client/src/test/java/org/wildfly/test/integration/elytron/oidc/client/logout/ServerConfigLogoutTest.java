@@ -183,7 +183,6 @@ public class ServerConfigLogoutTest extends LoginLogoutBasics {
             loginToApp(RP_INITIATED_LOGOUT_APP);
             assertUserLoggedIn(RP_INITIATED_LOGOUT_APP, SimpleServlet.RESPONSE_BODY);
             logoutOfKeycloak(RP_INITIATED_LOGOUT_APP, SimplePostLogoutServlet.RESPONSE_BODY);
-            Thread.sleep(2000);  // slow server adjustment
             assertUserLoggedOut(RP_INITIATED_LOGOUT_APP, SIGN_IN_TO_YOUR_ACCOUNT);
 
         } finally {
@@ -200,7 +199,6 @@ public class ServerConfigLogoutTest extends LoginLogoutBasics {
             loginToApp(BACK_CHANNEL_LOGOUT_APP);
             assertUserLoggedIn(BACK_CHANNEL_LOGOUT_APP, SimpleServlet.RESPONSE_BODY);
             logoutOfKeycloak(BACK_CHANNEL_LOGOUT_APP, YOU_ARE_LOGGED_OUT);
-            Thread.sleep(2000);  // slow server adjustment
             assertUserLoggedOut(BACK_CHANNEL_LOGOUT_APP, SIGN_IN_TO_YOUR_ACCOUNT);
 
         } finally {
@@ -234,15 +232,12 @@ public class ServerConfigLogoutTest extends LoginLogoutBasics {
             deployer.deploy(BACK_CHANNEL_LOGOUT_APP_TWO);
             deployer.deploy(BACK_CHANNEL_LOGOUT_APP);
             loginToApp(BACK_CHANNEL_LOGOUT_APP);
-            Thread.sleep(3000);  // slow server adjustment
             loginToApp(BACK_CHANNEL_LOGOUT_APP_TWO);
 
             assertUserLoggedIn(BACK_CHANNEL_LOGOUT_APP, "GOOD");
             assertUserLoggedIn(BACK_CHANNEL_LOGOUT_APP_TWO, "GOOD");
 
-            Thread.sleep(1500);  // slow server adjustment
             logoutOfKeycloak(BACK_CHANNEL_LOGOUT_APP, YOU_ARE_LOGGED_OUT);
-            Thread.sleep(1000);  // slow server adjustment
             assertUserLoggedOut(BACK_CHANNEL_LOGOUT_APP, SIGN_IN_TO_YOUR_ACCOUNT);
             assertUserLoggedOut(BACK_CHANNEL_LOGOUT_APP_TWO, SIGN_IN_TO_YOUR_ACCOUNT);
 
