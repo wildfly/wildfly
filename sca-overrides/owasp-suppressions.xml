@@ -166,7 +166,7 @@
       <!-- Disputed by h2database https://github.com/h2database/h2database/issues/1294 -->
       <vulnerabilityName>CVE-2018-14335</vulnerabilityName>
    </suppress>
-   <suppress until="2025-02-09">
+   <suppress until="2026-03-11">
       <notes><![CDATA[
       file name: jakarta.security.enterprise-3.0.3.jar
       ]]></notes>
