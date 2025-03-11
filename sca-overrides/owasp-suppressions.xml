@@ -188,7 +188,7 @@
       <cve>CVE-2024-25710</cve>
       <cve>CVE-2024-26308</cve>
    </suppress>
-   <suppress until="2025-03-04">
+   <suppress until="2026-03-11">
       <notes><![CDATA[
       file name: resteasy-spring-3.0.4.Final.jar
       ]]></notes>
@@ -201,7 +201,7 @@
       <cve>CVE-2020-25633</cve> <!-- CVE within Rest Easy not RestEasy Spring -->
       <cve>CVE-2021-20289</cve> <!-- CVE within Rest Easy not RestEasy Spring -->
    </suppress>
-   <suppress>
+   <suppress until="2026-03-11">
       <notes><![CDATA[
       file name: resteasy-tracing-api-2.0.1.Final.jar
       ]]></notes>
