@@ -86,7 +86,7 @@
                                     </manifest>
                                 </channel>
                             </channels>
-                            <includeTransitives>false</includeTransitives>
+                            <includeTransitives>true</includeTransitives>
                             <includeDependencies>
                                 <dependency>
                                     <groupId>com.h2database</groupId>
