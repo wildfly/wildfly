@@ -36,9 +36,23 @@
             <interceptor-class>org.jboss.as.test.integration.ejb.interceptor.method.TopSecretInterceptor
             </interceptor-class>
             <method>
-                <method-name>methodWithArrayArgument</method-name>
+                <method-name>overridedMethod</method-name>
                 <method-params>
-                    <method-param>java.lang.String[]</method-param>
+                    <method-param>java.lang.String</method-param>
+                    <method-param>java.lang.String</method-param>
+                </method-params>
+            </method>
+        </interceptor-binding>
+
+        <!-- array bindings for objects and primitives -->
+        <interceptor-binding>
+            <ejb-name>ClassifiedBean</ejb-name>
+            <interceptor-class>org.jboss.as.test.integration.ejb.interceptor.method.TopSecretInterceptor
+            </interceptor-class>
+            <method>
+                <method-name>methodWithByteArrayArgument</method-name>
+                <method-params>
+                    <method-param>java.lang.byte[]</method-param>
                 </method-params>
             </method>
         </interceptor-binding>
@@ -47,10 +61,86 @@
             <interceptor-class>org.jboss.as.test.integration.ejb.interceptor.method.TopSecretInterceptor
             </interceptor-class>
             <method>
-                <method-name>overridedMethod</method-name>
+                <method-name>methodWithBooleanArrayArgument</method-name>
                 <method-params>
-                    <method-param>java.lang.String</method-param>
-                    <method-param>java.lang.String</method-param>
+                    <method-param>boolean[]</method-param>
+                </method-params>
+            </method>
+        </interceptor-binding>
+        <interceptor-binding>
+            <ejb-name>ClassifiedBean</ejb-name>
+            <interceptor-class>org.jboss.as.test.integration.ejb.interceptor.method.TopSecretInterceptor
+            </interceptor-class>
+            <method>
+                <method-name>methodWithCharArrayArgument</method-name>
+                <method-params>
+                    <method-param>java.lang.char[]</method-param>
+                </method-params>
+            </method>
+        </interceptor-binding>
+        <interceptor-binding>
+            <ejb-name>ClassifiedBean</ejb-name>
+            <interceptor-class>org.jboss.as.test.integration.ejb.interceptor.method.TopSecretInterceptor
+            </interceptor-class>
+            <method>
+                <method-name>methodWithDoubleArrayArgument</method-name>
+                <method-params>
+                    <method-param>double[]</method-param>
+                </method-params>
+            </method>
+        </interceptor-binding>
+        <interceptor-binding>
+            <ejb-name>ClassifiedBean</ejb-name>
+            <interceptor-class>org.jboss.as.test.integration.ejb.interceptor.method.TopSecretInterceptor
+            </interceptor-class>
+            <method>
+                <method-name>methodWithFloatArrayArgument</method-name>
+                <method-params>
+                    <method-param>java.lang.float[]</method-param>
+                </method-params>
+            </method>
+        </interceptor-binding>
+        <interceptor-binding>
+            <ejb-name>ClassifiedBean</ejb-name>
+            <interceptor-class>org.jboss.as.test.integration.ejb.interceptor.method.TopSecretInterceptor
+            </interceptor-class>
+            <method>
+                <method-name>methodWithIntArrayArgument</method-name>
+                <method-params>
+                    <method-param>int[]</method-param>
+                </method-params>
+            </method>
+        </interceptor-binding>
+        <interceptor-binding>
+            <ejb-name>ClassifiedBean</ejb-name>
+            <interceptor-class>org.jboss.as.test.integration.ejb.interceptor.method.TopSecretInterceptor
+            </interceptor-class>
+            <method>
+                <method-name>methodWithShortArrayArgument</method-name>
+                <method-params>
+                    <method-param>java.lang.short[]</method-param>
+                </method-params>
+            </method>
+        </interceptor-binding>
+        <interceptor-binding>
+            <ejb-name>ClassifiedBean</ejb-name>
+            <interceptor-class>org.jboss.as.test.integration.ejb.interceptor.method.TopSecretInterceptor
+            </interceptor-class>
+            <method>
+                <method-name>methodWithLongArrayArgument</method-name>
+                <method-params>
+                    <method-param>long[]</method-param>
+                </method-params>
+            </method>
+        </interceptor-binding>
+        <interceptor-binding>
+            <ejb-name>ClassifiedBean</ejb-name>
+            <interceptor-class>org.jboss.as.test.integration.ejb.interceptor.method.TopSecretInterceptor
+            </interceptor-class>
+            <method>
+                <method-name>methodWithStringArrayArgument</method-name>
+                <method-params>
+                    <method-param>java.lang.String[]</method-param>
                 </method-params>
             </method>
         </interceptor-binding>
