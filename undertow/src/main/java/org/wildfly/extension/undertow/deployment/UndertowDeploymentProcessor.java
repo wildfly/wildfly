@@ -297,6 +297,7 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor, Fun
             }
         }
 
+        ROOT_LOGGER.debugf("Security domain applied is \"%s\"", securityDomainName);
 
         Supplier<ControlPoint> controlPoint = RequestControllerActivationMarker.isRequestControllerEnabled(deploymentUnit) ? builder.requires(ControlPointService.serviceName(Optional.ofNullable(parentDeploymentUnit).orElse(deploymentUnit).getName(), UndertowExtension.SUBSYSTEM_NAME)) : null;
 
