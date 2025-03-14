@@ -3,7 +3,7 @@
   ~ SPDX-License-Identifier: Apache-2.0
   -->
 
-<subsystem xmlns="urn:jboss:domain:transactions:2.0">
+<subsystem xmlns="urn:jboss:domain:transactions:6.1">
     <core-environment>
         <process-id>
             <uuid/>
@@ -11,7 +11,7 @@
     </core-environment>
     <recovery-environment socket-binding="txn-recovery-environment" status-socket-binding="txn-status-manager"/>
     <object-store relative-to="jboss.server.data.dir"/>
-    <jdbc-store datasource-jndi-name="java:jboss/ExampleDS">
+    <jdbc-store datasource-name="ExampleDS">
         <action table-prefix="action" drop-table="true"/>
         <communication table-prefix="communication" drop-table="false"/>
         <state table-prefix="state" drop-table="true"/>
