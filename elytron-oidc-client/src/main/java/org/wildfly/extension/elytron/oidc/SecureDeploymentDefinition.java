@@ -157,6 +157,30 @@ class SecureDeploymentDefinition extends SimpleResourceDefinition {
                     .setValidator(new StringLengthValidator(1, Integer.MAX_VALUE, true, true))
                     .build();
 
+    protected static final SimpleAttributeDefinition LOGOUT_PATH =
+            new SimpleAttributeDefinitionBuilder(ElytronOidcDescriptionConstants.LOGOUT_PATH, ModelType.STRING, true)
+                    .setValidator(new StringLengthValidator(0, Integer.MAX_VALUE, true, false))
+                    .setStability(Stability.PREVIEW)
+                    .setAllowExpression(true)
+                    .build();
+    protected static final SimpleAttributeDefinition LOGOUT_CALLBACK_PATH =
+            new SimpleAttributeDefinitionBuilder(ElytronOidcDescriptionConstants.LOGOUT_CALLBACK_PATH, ModelType.STRING, true)
+                    .setValidator(new StringLengthValidator(0, Integer.MAX_VALUE, true, false))
+                    .setStability(Stability.PREVIEW)
+                    .setAllowExpression(true)
+                    .build();
+    protected static final SimpleAttributeDefinition POST_LOGOUT_URI =
+            new SimpleAttributeDefinitionBuilder(ElytronOidcDescriptionConstants.POST_LOGOUT_URI, ModelType.STRING, true)
+                    .setValidator(new StringLengthValidator(0, Integer.MAX_VALUE, true, false))
+                    .setStability(Stability.PREVIEW)
+                    .setAllowExpression(true)
+                    .build();
+    protected static final SimpleAttributeDefinition LOGOUT_SESSION_REQUIRED =
+            new SimpleAttributeDefinitionBuilder(ElytronOidcDescriptionConstants.LOGOUT_SESSION_REQUIRED, ModelType.BOOLEAN, true)
+                    .setAllowExpression(true)
+                    .setDefaultValue(ModelNode.TRUE)
+                    .build();
+
     static final List<SimpleAttributeDefinition> ALL_ATTRIBUTES = new ArrayList();
     static {
         ALL_ATTRIBUTES.add(REALM);
@@ -175,6 +199,10 @@ class SecureDeploymentDefinition extends SimpleResourceDefinition {
         ALL_ATTRIBUTES.add(CredentialDefinition.CREDENTIAL);
         ALL_ATTRIBUTES.add(SCOPE);
         ALL_ATTRIBUTES.add(RedirectRewriteRuleDefinition.REDIRECT_REWRITE_RULE);
+        ALL_ATTRIBUTES.add(LOGOUT_PATH);
+        ALL_ATTRIBUTES.add(LOGOUT_CALLBACK_PATH);
+        ALL_ATTRIBUTES.add(POST_LOGOUT_URI);
+        ALL_ATTRIBUTES.add(LOGOUT_SESSION_REQUIRED);
         for (SimpleAttributeDefinition attribute : ProviderAttributeDefinitions.ATTRIBUTES) {
             ALL_ATTRIBUTES.add(attribute);
         }
@@ -199,6 +227,10 @@ class SecureDeploymentDefinition extends SimpleResourceDefinition {
         NON_DEFAULT_ATTRIBUTES.add(REQUEST_OBJECT_SIGNING_KEYSTORE_PASSWORD);
         NON_DEFAULT_ATTRIBUTES.add(REQUEST_OBJECT_SIGNING_KEYSTORE_TYPE);
         NON_DEFAULT_ATTRIBUTES.add(REQUEST_OBJECT_SIGNING_ALGORITHM);
+        NON_DEFAULT_ATTRIBUTES.add(LOGOUT_PATH);
+        NON_DEFAULT_ATTRIBUTES.add(LOGOUT_CALLBACK_PATH);
+        NON_DEFAULT_ATTRIBUTES.add(POST_LOGOUT_URI);
+        NON_DEFAULT_ATTRIBUTES.add(LOGOUT_SESSION_REQUIRED);
     }
 
     @Override
