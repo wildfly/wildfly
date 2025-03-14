@@ -134,7 +134,7 @@ public class GlobalConfigurationServiceConfigurator implements ResourceServiceCo
 
                 builder.shutdown().hookBehavior(ShutdownHookBehavior.DONT_REGISTER);
                 // Disable registration of MicroProfile Metrics
-                builder.metrics().gauges(false).histograms(false).accurateSize(true);
+                builder.metrics().gauges(false).histograms(false);
 
                 MBeanServerLookup mbeanServerProvider = Optional.ofNullable(server.get()).map(MBeanServerProvider::new).orElse(null);
                 builder.jmx().domain("org.wildfly.clustering.infinispan")
