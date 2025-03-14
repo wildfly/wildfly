@@ -17,6 +17,7 @@ import java.util.Set;
 
 import org.jboss.as.connector.logging.ConnectorLogger;
 import org.jboss.as.connector.metadata.api.common.Security;
+import org.jboss.as.controller.AbstractWriteAttributeHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -64,7 +65,18 @@ public class JcaWorkManagerDefinition extends SimpleResourceDefinition {
         super.registerAttributes(resourceRegistration);
 
         resourceRegistration.registerReadOnlyAttribute(WmParameters.NAME.getAttribute(), ReadResourceNameOperationStepHandler.INSTANCE);
-        resourceRegistration.registerReadOnlyAttribute(WmParameters.ELYTRON_ENABLED.getAttribute(), null);
+        resourceRegistration.registerReadWriteAttribute(WmParameters.ELYTRON_ENABLED.getAttribute(), null, new AbstractWriteAttributeHandler<Void>() {
+            @Override
+            protected boolean applyUpdateToRuntime(OperationContext operationContext, ModelNode modelNode, String s, ModelNode modelNode1, ModelNode modelNode2, HandbackHolder<Void> handbackHolder) throws OperationFailedException {
+                //no-op deprecated,not used attribute
+                return false;
+            }
+
+            @Override
+            protected void revertUpdateToRuntime(OperationContext operationContext, ModelNode modelNode, String s, ModelNode modelNode1, ModelNode modelNode2, Void unused) throws OperationFailedException {
+
+            }
+        });
 
     }
 
