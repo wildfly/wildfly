@@ -317,6 +317,9 @@
         </xs:attribute>
         <xs:attribute name="disable-console-redirect" use="optional" type="xs:boolean" default="false"/>
         <xs:attribute name="queue-requests-on-start" type="xs:boolean" default="true"/>
+        <xs:attribute name="active-request-tracking-enabled" type="xs:boolean" default="false"/>
+        <xs:attribute name="active-request-tracking-predicate" type="xs:string"/>
+
     </xs:complexType>
 
     <xs:complexType name="http-invokerType">
