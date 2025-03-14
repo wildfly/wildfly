@@ -5,10 +5,6 @@
 
 package org.jboss.as.jpa.injectors;
 
-
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-
 import jakarta.persistence.EntityManagerFactory;
 
 import org.jboss.as.ee.component.InjectionSource;
@@ -27,8 +23,6 @@ import org.jipijapa.plugin.spi.PersistenceUnitMetadata;
 
 /**
  * Represents the PersistenceUnit injected into a component.
- * TODO:  support injecting into a HibernateSessionFactory.  Initially, hack it by checking injectionTypeName parameter
- * for HibernateSessionFactory.  If/when Jakarta Persistence supports unwrap on the EMF, switch to that.
  *
  * @author Scott Marlow
  */
@@ -91,31 +85,12 @@ public class PersistenceUnitInjectionSource extends InjectionSource {
                 try {
                     // make sure we can access the target class type
                     extensionClass = pu.getClassLoader().loadClass(injectionTypeName);
+                    Object targetValueToInject = emf.unwrap(extensionClass);
+                    return new ValueManagedReference(targetValueToInject);
                 } catch (ClassNotFoundException e) {
                     throw JpaLogger.ROOT_LOGGER.cannotLoadFromJpa(e, injectionTypeName);
                 }
-                // TODO:  when/if Jakarta Persistence supports unwrap, change to
-                //   Object targetValueToInject = emf.unwrap(extensionClass);
-                // Until Jakarta Persistence supports unwrap on sessionfactory, only support hibernate
-
-                Method getSessionFactory;
-                try {
-                    getSessionFactory = emf.getClass().getMethod("getSessionFactory");
-                } catch (NoSuchMethodException e) {
-                    throw JpaLogger.ROOT_LOGGER.hibernateOnlyEntityManagerFactory();
-                }
-
-                Object targetValueToInject = null;
-                try {
-                    targetValueToInject = getSessionFactory.invoke(emf, new Object[0]);
-                } catch (IllegalAccessException e) {
-                    throw JpaLogger.ROOT_LOGGER.cannotGetSessionFactory(e);
-                } catch (InvocationTargetException e) {
-                    throw JpaLogger.ROOT_LOGGER.cannotGetSessionFactory(e);
-                }
-                return new ValueManagedReference(targetValueToInject);
             }
-
             return new ValueManagedReference(emf);
         }
     }
