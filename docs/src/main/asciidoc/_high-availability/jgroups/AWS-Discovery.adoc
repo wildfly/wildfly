@@ -8,10 +8,9 @@ ifdef::env-github[]
 :warning-caption: :warning:
 endif::[]
 
-The `org.jgroups.protocols.aws.S3_PING` is a discovery protocol using AWS S3 buckets as cluster information store.
-
+The `org.jgroups.protocols.aws.S3_PING` is a discovery protocol using AWS S3 buckets as cluster information store that is bundled with the WildFly distribution.
 To provision using Galleon, use the `jgroups-aws` layer.
-Note that the layer does not update configuration, only provisions necessary modules.
+Note that this layer does not update the configuration, only provisions the necessary modules.
 
 The following minimal example updates the existing `tcp` stack to use this discovery protocol instead of `MPING`:
 
@@ -23,8 +22,8 @@ batch
 run-batch
 ----
 
-The S3 client used by the protocol uses the default credential store provider.
-Refer to AWS documentation how to generate and supply appropriate credentials.
+The AWS SDK (version 2.x) client used by the protocol uses the default credential store provider.
+Refer to https://docs.aws.amazon.com/sdk-for-java/[AWS SDK documentation] how to generate and supply appropriate credentials.
 For instance, credentials can be provided by Java system properties (`aws.accessKeyId` and `aws.secretAccessKey`),
 environmental properties (`AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY`), etc.
 
