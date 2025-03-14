@@ -320,10 +320,30 @@ public class DeploymentDescriptorInterceptorBindingsProcessor implements Deploym
         }
     }
 
+    private static final Map<String, String> primitiveArrayLiterals = new HashMap<>();
+
+    //WFLY-20432
+    static {
+        primitiveArrayLiterals.put("java.lang.boolean", "[Z");
+        primitiveArrayLiterals.put("java.lang.byte", "[B");
+        primitiveArrayLiterals.put("java.lang.char", "[C");
+        primitiveArrayLiterals.put("java.lang.double", "[D");
+        primitiveArrayLiterals.put("java.lang.float", "[F");
+        primitiveArrayLiterals.put("java.lang.int", "[I");
+        primitiveArrayLiterals.put("java.lang.short", "[S");
+        primitiveArrayLiterals.put("java.lang.long", "[J");
+    }
+
     private String mapArrayNotation(String param) {
-        //WFLY-20432
         if (param.endsWith("[]")) {
-            return "[L" + param.substring(0, param.length() - 2) + ";";
+            String type = param.substring(0, param.length() - 2);
+            if (primitiveArrayLiterals.containsKey(type)) {
+                return primitiveArrayLiterals.get(type);
+            } else if (primitiveArrayLiterals.containsKey("java.lang." + type)) {
+                return primitiveArrayLiterals.get("java.lang." + type);
+            } else {
+                return "[L" + type + ";";
+            }
         } else {
             return param;
         }
