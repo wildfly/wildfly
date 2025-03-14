@@ -22,20 +22,19 @@ This `org.wildfly.extension.micrometer` extension is available to all the standa
 ----
 [standalone@localhost:9990 /] /extension=org.wildfly.extension.micrometer:add
 [standalone@localhost:9990 /] /subsystem=micrometer:add(endpoint="http://localhost:4318/v1/metrics")
-[standalone@localhost:9990 /] reload
 ----
 
-This subsystem exposes metrics from the WildFly Management Model and JVM MBeans, as well as end-user applications via the Micrometer API now exposed to applications deployed to the server.  By default, this extension will attempt to push metrics data via the OTLP protocol to an OpenTelemetry-compatible "collector". The endpoint for the collector must be configured explicitly, as you can see in the `write-attribute` statement above.
+This subsystem exposes metrics from the WildFly Management Model and JVM MBeans, as well as end-user deployments via the Micrometer API now exposed by the server. Metrics are made available via Micrometer Registries, and WildFly supports two of these:
 
-[IMPORTANT]
-It is assumed that the server administrator will provision and secure the collector, which is outside the scope of this document.
+- OTLP - a push-based registry that publishes data periodically to the configured OpenTelemetry Collector
+- Prometheus - a pull-based registry that allows for metrics to be pulled (or scraped) by an external process
 
 Note that this an alternative to the existing WildFly Metrics extension. While they may be run concurrently, it is not advisable, as this will likely have an impact on server performance due to the duplicated metrics collection. To disable WildFly Metrics, issue these commands:
 
 [source,options="nowrap"]
 ----
-[standalone@localhost:9990 /] /subsystem=metrics:remove()
-[standalone@localhost:9990 /] /extension=org.wildfly.extension.metrics:remove()
+[standalone@localhost:9990 /] /subsystem=metrics:remove
+[standalone@localhost:9990 /] /extension=org.wildfly.extension.metrics:remove
 [standalone@localhost:9990 /] reload
 ----
 
@@ -49,14 +48,54 @@ Additionally, WildFly support for OpenTelemetry and MicroProfile Telemetry now i
 
 or via `otel.metrics.exporter=none` in a MicroProfile Config `ConfigSource`.
 
+[IMPORTANT]
+If no registry is explicitly added and configured, no metrics will be exported. WildFly administrators *MUST* choose at least one or the other, but _may_ choose both, if desired.
+
+=== OTLP Registry
+
+To add the OTLP registry, execute this command:
+
+[source,options="nowrap"]
+----
+[standalone@localhost:9990 /] /subsystem=micrometer/registry=otlp:add(endpoint="http://localhost:4318/v1/metrics")
+----
+
+There are two attributes for the OTLP registry, `endpoint` and `step`, which are described below, but note the `endpoint` attribute is required.
+
+[IMPORTANT]
+It is assumed that the server administrator will provision and secure the collector, which is outside the scope of this document.
+
+=== Prometheus Registry
+
+To install the Prometheus registry, execute this command:
+
+[source,options="nowrap"]
+----
+[standalone@localhost:9990 /] /subsystem=micrometer/registry=prometheus:add(context="/metrics")
+----
+
+This will create a context on the management interface from which metrics can be scraped. For example, the above configuration would result in a URL that looks like `http://localhost:9090/metrics`. If you have not disabled the WildFly Metrics subsystem, you will not be able to use `/metrics` as your context, as that is already configured. To disable the WildFly Metrics Subsystem, see the `remove` commands above.
+
 == Management Model
 
-The `/subsystem=micrometer` resource defines three attributes:
+The `/subsystem=micrometer` resource defines one attribute, that is shared by the two supported registries:
 
-* `endpoint` - the URL of the metrics collector endpoint (default: http://localhost:4318/v1/metrics)
 * `exposed-subsystems` - a list of strings corresponding to the names of subsystems that exposes their metrics in the
 HTTP metrics endpoints. By default, it is not defined (there will be no metrics exposed by subsystem). The special wildcard "{asterisk}" can be used to expose metrics from _all_ subsystems. The standalone configuration sets this attribute to "{asterisk}".
+
+=== OTLP Registry Model
+
+The `/subsystem=micrometer/registry=otlp` resource defines two attributes:
+
+* `endpoint` - the URL of the metrics collector endpoint (default: http://localhost:4318/v1/metrics)
 * `step` - the step size, or reporting frequency, to use (in seconds).
+
+=== Prometheus Registry Model
+
+The `/subsystem=micrometer/registry=prometheus` resource defines two attributes:
+
+* `context` - (*required*) The context on which to make metrics available for scraping. This will be exposed on the management interface (e.g, `http://localhost:9090`)
+* `security-enabled` - Whether or not to enable security on the Micrometer Prometheus context. This will use the same user credentials as the web console and command line interface tools. The default is `true`.
 
 == Exposed Metrics
 
@@ -70,13 +109,20 @@ The following types of metrics are gathered and published by Micrometer:
 
 WildFly metrics names are based on the subsystem that provides them, as well as the name of the attribute from the management model.
 
-For example Undertow exposes a metric attribute `request-count` for every Servlet in an application deployment. This attribute will be exposed with the name `undertow_request_count`. Other information such as the name of the `Servlet` are added to the tags of the metric.
+For example Undertow exposes a metric attribute `request-count` for every `Servlet` in a deployment. This attribute will be exposed with the name `undertow_request_count`. Other information such as the name of the `Servlet` are added to the tags of the metric.
 
-The https://github.com/wildfly/quickstart/tree/main/helloworld[helloworld quickstart] demonstrates the use of CDI and Servlet in WildFly. A corresponding metric will be exposed for it with the name and tags:
+NOTE: Prometheus has its own https://prometheus.io/docs/practices/naming/[metrics naming scheme], so metrics names exposed via that registry will adhere to that and may differ from the description above.
 
+The https://github.com/wildfly/quickstart/tree/main/helloworld[helloworld quickstart] demonstrates the use of CDI and Servlet in WildFly. A corresponding metric will be exposed for it with the name and tags (formatted for readability):
+
+[source]
 -----
-undertow_request_count_total{deployment="helloworld.war",servlet="org.jboss.as.quickstarts.helloworld.HelloWorldServlet",subdeployment="helloworld.war"} 4.0
+undertow_request_count_total{
+    deployment="helloworld.war",
+    servlet="org.jboss.as.quickstarts.helloworld.HelloWorldServlet",
+    subdeployment="helloworld.war"} 4.0
 -----
+
 [NOTE]
 Some subsystems (such as `undertow` or `messaging-activemq`) do not enable their statistics by default as they have an impact on performance and memory usage. These subsystems provide a `statistics-enabled` attribute that must be set to `true` to enable them. For convenience, WildFly standalone configuration provides expressions to enable the statistics by setting a System property `-Dwildfly.statistics-enabled=true` to enable statistics on the subsystems provided by the configuration.
 
