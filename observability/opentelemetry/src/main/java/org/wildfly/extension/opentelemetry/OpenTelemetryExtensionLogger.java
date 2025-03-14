@@ -5,19 +5,18 @@
 
 package org.wildfly.extension.opentelemetry;
 
-import static org.jboss.logging.Logger.Level.ERROR;
-import static org.jboss.logging.Logger.Level.INFO;
-import static org.wildfly.extension.opentelemetry.OpenTelemetryConfigurationConstants.EXPORTER_OTLP;
-
 import java.lang.invoke.MethodHandles;
 
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.logging.BasicLogger;
 import org.jboss.logging.Logger;
+import static org.jboss.logging.Logger.Level.ERROR;
+import static org.jboss.logging.Logger.Level.INFO;
 import org.jboss.logging.annotations.Cause;
 import org.jboss.logging.annotations.LogMessage;
 import org.jboss.logging.annotations.Message;
 import org.jboss.logging.annotations.MessageLogger;
+import static org.wildfly.extension.opentelemetry.OpenTelemetryConfigurationConstants.EXPORTER_OTLP;
 
 @MessageLogger(projectCode = "WFLYOTELEXT", length = 4)
 interface OpenTelemetryExtensionLogger extends BasicLogger {
@@ -77,4 +76,8 @@ interface OpenTelemetryExtensionLogger extends BasicLogger {
     @LogMessage(level = INFO)
     @Message(id = 14, value = "Additional metrics systems discovered while configuring OpenTelemetry: %s. Please refer to the documentation for more information.")
     void multipleMetricsSystemsEnabled(String others);
+
+    @Message(id = 15, value = "Could not find an Elytron SSLContext called: %s")
+    IllegalStateException noElytronSSLContext(String ctx);
+
 }
