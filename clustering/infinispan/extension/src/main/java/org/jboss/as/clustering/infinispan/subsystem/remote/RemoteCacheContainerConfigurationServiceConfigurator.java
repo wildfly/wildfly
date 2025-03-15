@@ -33,7 +33,7 @@ import org.infinispan.client.hotrod.configuration.SecurityConfiguration;
 import org.infinispan.client.hotrod.configuration.ServerConfigurationBuilder;
 import org.infinispan.commons.jmx.MBeanServerLookup;
 import org.infinispan.commons.marshall.Marshaller;
-import org.jboss.as.clustering.controller.CommonServiceDescriptor;
+import org.jboss.as.clustering.controller.MBeanServerResolver;
 import org.jboss.as.clustering.infinispan.jmx.MBeanServerProvider;
 import org.jboss.as.clustering.infinispan.subsystem.remote.RemoteCacheContainerResourceDefinition.Attribute;
 import org.jboss.as.controller.OperationContext;
@@ -94,7 +94,7 @@ public enum RemoteCacheContainerConfigurationServiceConfigurator implements Reso
             pools.put(pool, ServiceDependency.on(pool, name));
         }
 
-        ServiceDependency<MBeanServer> server = context.hasOptionalCapability(CommonServiceDescriptor.MBEAN_SERVER, RemoteCacheContainerResourceDefinition.REMOTE_CACHE_CONTAINER_CONFIGURATION, null) ? ServiceDependency.on(CommonServiceDescriptor.MBEAN_SERVER) : ServiceDependency.of(null);
+        ServiceDependency<MBeanServer> server = new MBeanServerResolver(RemoteCacheContainerResourceDefinition.REMOTE_CACHE_CONTAINER_CONFIGURATION).resolve(context, model);
 
         ServiceDependency<List<Module>> containerModules = ServiceDependency.on(HotRodServiceDescriptor.REMOTE_CACHE_CONTAINER_MODULES, name);
         ServiceDependency<SecurityConfiguration> security = ServiceDependency.on(SecurityResourceDefinition.SERVICE_DESCRIPTOR, name);
