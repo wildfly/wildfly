@@ -25,6 +25,7 @@ import org.infinispan.commons.dataconversion.MediaType;
 import org.infinispan.commons.util.AggregatedClassLoader;
 import org.infinispan.configuration.cache.CacheMode;
 import org.infinispan.configuration.cache.Configuration;
+import org.infinispan.configuration.cache.EncodingConfiguration;
 import org.infinispan.factories.GlobalComponentRegistry;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.infinispan.manager.EmbeddedCacheManagerAdmin;
@@ -121,7 +122,7 @@ public class DefaultCacheContainer extends AbstractDelegatingEmbeddedCacheManage
         Map.Entry<MediaType, MediaType> types = MediaTypeFactory.INSTANCE.apply(loader);
         MediaType keyType = types.getKey();
         MediaType valueType = (!mode.isInvalidation() || hasStore) ? types.getValue() : MediaType.APPLICATION_OBJECT;
-        EncoderRegistry registry = (EncoderRegistry) GlobalComponentRegistry.of(this.cm).getComponent(org.infinispan.marshall.core.EncoderRegistry.class);
+        EncoderRegistry registry = (EncoderRegistry) GlobalComponentRegistry.componentOf(this.cm, org.infinispan.marshall.core.EncoderRegistry.class);
         synchronized (registry) {
             boolean registerKeyMediaType = !registry.isConversionSupported(keyType, MediaType.APPLICATION_OBJECT);
             boolean registerValueMediaType = !registry.isConversionSupported(valueType, MediaType.APPLICATION_OBJECT);
@@ -143,7 +144,9 @@ public class DefaultCacheContainer extends AbstractDelegatingEmbeddedCacheManage
                     registry.registerTranscoder(new MarshalledValueTranscoder<>(valueType, valueFactory));
                 }
             }
-            return new DefaultCache<>(this, cache.getAdvancedCache().withMediaType(keyType, valueType)) {
+            AdvancedCache<K, V> advancedCache = cache.getAdvancedCache();
+            EncodingConfiguration encoding = configuration.encoding();
+            return new DefaultCache<>(this, encoding.keyDataType().mediaType().equals(keyType) && encoding.valueDataType().mediaType().equals(valueType) ? advancedCache : advancedCache.withMediaType(keyType, valueType)) {
                 @Override
                 public void stop() {
                     super.stop();
