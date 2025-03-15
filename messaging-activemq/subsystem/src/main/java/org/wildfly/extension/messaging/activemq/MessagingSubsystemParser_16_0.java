@@ -38,6 +38,10 @@ public class MessagingSubsystemParser_16_0 extends PersistentResourceXMLParser {
 
     static final String NAMESPACE = "urn:jboss:domain:messaging-activemq:16.0";
 
+    protected String getNamespace() {
+        return NAMESPACE;
+    }
+
     @Override
     public PersistentResourceXMLDescription getParserDescription() {
 
@@ -80,7 +84,7 @@ public class MessagingSubsystemParser_16_0 extends PersistentResourceXMLParser {
                         CommonAttributes.FACTORY_CLASS,
                         CommonAttributes.PARAMS);
 
-        return builder(MessagingExtension.SUBSYSTEM_PATH, NAMESPACE)
+        return builder(MessagingExtension.SUBSYSTEM_PATH, getNamespace())
                 .addAttributes(
                         MessagingSubsystemRootResourceDefinition.GLOBAL_CLIENT_THREAD_POOL_MAX_SIZE,
                         MessagingSubsystemRootResourceDefinition.GLOBAL_CLIENT_SCHEDULED_THREAD_POOL_MAX_SIZE)
