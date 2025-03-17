@@ -77,14 +77,23 @@ Once copied you'll need to add the directory to the git repository; `git add ./1
 
 === Edit and Build Index
 
-Next in the `wildfly.github.io` repository you'll need to edit the `index.adoc` and add the newly created directory. We
-try to keep the listings in release order with the new release on top.
+Next in the `wildfly.github.io` repository you'll need to add the newly created directory and link to it from the index page.
 
-Once you edit the `index.adoc` you'll need to regenerate the `index.html` file. This can be done with the `asciidoctor`
+In the `index.adoc`, edit the `:wildfly-latest-major:` attribute to set it to the new release of WildFly (only the major version).
+
+In the `archives.adoc`, add a table row for the previous version of WildFly.
+
+Once you edit these 2 files, you'll need to regenerate their HTML files. This can be done with the `asciidoctor`
 command.
 
 ```
-asciidoctor index.adoc
+asciidoctor index.adoc archives.adoc
 ```
+
+=== Update the Docs sitemap
+
+In your `wildfly.github.io` checkout, edit the `sitemap.xml` file. In all lines with URLs that include the previous WildFly version, update to the new WildFly version.
+
+=== Submit Your Changes
 
 After all that is complete you can commit your changes and submit a PR.
