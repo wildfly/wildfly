@@ -90,4 +90,10 @@ command.
 asciidoctor index.adoc archives.adoc
 ```
 
+=== Update the Docs sitemap
+
+In your `wildfly.github.io` checkout, edit the `sitemap.xml` file. In all lines with URLs that include the previous WildFly version, update to the new WildFly version.
+
+=== Submit Your Changes
+
 After all that is complete you can commit your changes and submit a PR.
