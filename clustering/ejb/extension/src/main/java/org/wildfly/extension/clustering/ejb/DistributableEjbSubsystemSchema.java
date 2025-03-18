@@ -4,8 +4,18 @@
  */
 package org.wildfly.extension.clustering.ejb;
 
-import org.jboss.as.controller.PersistentResourceXMLDescription;
-import org.jboss.as.controller.PersistentSubsystemSchema;
+import java.util.List;
+
+import org.jboss.as.clustering.controller.persistence.xml.NamedResourceRegistrationXMLElement;
+import org.jboss.as.clustering.controller.persistence.xml.ResourceXMLChoice;
+import org.jboss.as.clustering.controller.persistence.xml.ResourceXMLParticleFactory;
+import org.jboss.as.clustering.controller.persistence.xml.ResourceXMLSequence;
+import org.jboss.as.clustering.controller.persistence.xml.SingletonResourceRegistrationXMLChoice;
+import org.jboss.as.clustering.controller.persistence.xml.SingletonResourceRegistrationXMLElement;
+import org.jboss.as.clustering.controller.persistence.xml.SubsystemResourceRegistrationXMLElement;
+import org.jboss.as.clustering.controller.persistence.xml.SubsystemResourceXMLSchema;
+import org.jboss.as.clustering.controller.xml.XMLCardinality;
+import org.jboss.as.controller.ResourceRegistration;
 import org.jboss.as.controller.SubsystemSchema;
 import org.jboss.as.controller.xml.VersionedNamespace;
 import org.jboss.staxmapper.IntVersion;
@@ -15,16 +25,17 @@ import org.jboss.staxmapper.IntVersion;
  * @author Paul Ferraro
  * @author Richard Achmatowicz
  */
-public enum DistributableEjbSubsystemSchema implements PersistentSubsystemSchema<DistributableEjbSubsystemSchema> {
+public enum DistributableEjbSubsystemSchema implements SubsystemResourceXMLSchema<DistributableEjbSubsystemSchema> {
 
     VERSION_1_0(1, 0), // WildFly 27
     ;
     static final DistributableEjbSubsystemSchema CURRENT = VERSION_1_0;
 
     private final VersionedNamespace<IntVersion, DistributableEjbSubsystemSchema> namespace;
+    private final ResourceXMLParticleFactory factory = ResourceXMLParticleFactory.newInstance(this);
 
     DistributableEjbSubsystemSchema(int major, int minor) {
-        this.namespace = SubsystemSchema.createLegacySubsystemURN(DistributableEjbExtension.SUBSYSTEM_NAME, new IntVersion(major, minor));
+        this.namespace = SubsystemSchema.createLegacySubsystemURN(DistributableEjbSubsystemResourceDefinitionRegistrar.REGISTRATION.getName(), new IntVersion(major, minor));
     }
 
     @Override
@@ -33,7 +44,67 @@ public enum DistributableEjbSubsystemSchema implements PersistentSubsystemSchema
     }
 
     @Override
-    public PersistentResourceXMLDescription getXMLDescription() {
-        return DistributableEjbXMLDescriptionFactory.INSTANCE.apply(this);
+    public SubsystemResourceRegistrationXMLElement getSubsystemXMLElement() {
+        ResourceXMLSequence.Builder contentBuilder = this.factory.sequence()
+                .addChoice(this.beanManagementChoice())
+                .addChoice(this.clientMappingsRegistryChoice())
+                .addChoice(this.timerManagementChoice())
+                ;
+        return this.factory.subsystemElement(DistributableEjbSubsystemResourceDefinitionRegistrar.REGISTRATION)
+                .addAttribute(DistributableEjbSubsystemResourceDefinitionRegistrar.DEFAULT_BEAN_MANAGEMENT_PROVIDER)
+                .withContent(contentBuilder.build())
+                .build();
+    }
+
+    ResourceXMLChoice beanManagementChoice() {
+        return this.factory.choice()
+                .withCardinality(XMLCardinality.Unbounded.REQUIRED)
+                .addElement(this.infinispanBeanManagementElement())
+                .build();
+    }
+
+    NamedResourceRegistrationXMLElement infinispanBeanManagementElement() {
+        return this.beanManagementElementBuilder(BeanManagementResourceRegistration.INFINISPAN)
+                .addAttributes(InfinispanBeanManagementResourceDefinitionRegistrar.CACHE_ATTRIBUTE_GROUP.getAttributes())
+                .build();
+    }
+
+    NamedResourceRegistrationXMLElement.Builder beanManagementElementBuilder(ResourceRegistration registration) {
+        return this.factory.namedElement(registration)
+                .addAttribute(BeanManagementResourceDefinitionRegistrar.MAX_ACTIVE_BEANS)
+                ;
+    }
+
+    SingletonResourceRegistrationXMLChoice clientMappingsRegistryChoice() {
+        return this.factory.singletonElementChoice()
+                .addElement(this.localClientMappingsRegistryElement())
+                .addElement(this.infinispanClientMappingsRegistryElement())
+                .build();
+    }
+
+    SingletonResourceRegistrationXMLElement localClientMappingsRegistryElement() {
+        return this.factory.singletonElement(ClientMappingsRegistryProviderResourceRegistration.LOCAL)
+                .withElementLocalName("local-client-mappings-registry")
+                .build();
+    }
+
+    SingletonResourceRegistrationXMLElement infinispanClientMappingsRegistryElement() {
+        return this.factory.singletonElement(ClientMappingsRegistryProviderResourceRegistration.INFINISPAN)
+                .withElementLocalName("infinispan-client-mappings-registry")
+                .addAttributes(InfinispanClientMappingsRegistryProviderResourceDefinitionRegistrar.CACHE_ATTRIBUTE_GROUP.getAttributes())
+                .build();
+    }
+
+    ResourceXMLChoice timerManagementChoice() {
+        return this.factory.choice()
+                .withCardinality(XMLCardinality.Unbounded.OPTIONAL)
+                .addElement(this.infinispanTimerManagementElement())
+                .build();
+    }
+    NamedResourceRegistrationXMLElement infinispanTimerManagementElement() {
+        return this.factory.namedElement(InfinispanTimerManagementResourceDefinitionRegistrar.REGISTRATION)
+                .addAttributes(InfinispanTimerManagementResourceDefinitionRegistrar.CACHE_ATTRIBUTE_GROUP.getAttributes())
+                .addAttributes(List.of(InfinispanTimerManagementResourceDefinitionRegistrar.MARSHALLER, InfinispanTimerManagementResourceDefinitionRegistrar.MAX_ACTIVE_TIMERS))
+                .build();
     }
 }
