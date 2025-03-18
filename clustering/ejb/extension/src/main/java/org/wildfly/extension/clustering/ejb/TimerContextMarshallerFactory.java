@@ -17,6 +17,7 @@ import org.wildfly.clustering.marshalling.protostream.modules.ModuleClassLoaderM
 import org.wildfly.clustering.marshalling.ByteBufferMarshaller;
 
 /**
+ * Enumerates factories for creating a timer context marshaller, i.e. {@link jakarta.ejb.Timer#getInfo()}.
  * @author Paul Ferraro
  */
 public enum TimerContextMarshallerFactory implements Function<Module, ByteBufferMarshaller> {
