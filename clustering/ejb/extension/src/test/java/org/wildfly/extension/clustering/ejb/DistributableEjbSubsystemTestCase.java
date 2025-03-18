@@ -37,7 +37,7 @@ public class DistributableEjbSubsystemTestCase extends AbstractSubsystemSchemaTe
     }
 
     public DistributableEjbSubsystemTestCase(DistributableEjbSubsystemSchema schema) {
-        super(DistributableEjbExtension.SUBSYSTEM_NAME, new DistributableEjbExtension(), schema, DistributableEjbSubsystemSchema.CURRENT);
+        super(DistributableEjbSubsystemResourceDefinitionRegistrar.REGISTRATION.getName(), new DistributableEjbExtension(), schema, DistributableEjbSubsystemSchema.CURRENT);
     }
 
     /**
@@ -61,19 +61,19 @@ public class DistributableEjbSubsystemTestCase extends AbstractSubsystemSchemaTe
         final KernelServices ks = createKernelServicesBuilder(createAdditionalInitialization()).setSubsystemXml(subsystemXml).build();
         assertTrue("Subsystem boot failed!", ks.isSuccessfulBoot());
 
-        final PathAddress distributableEjbAddress = PathAddress.pathAddress(DistributableEjbResourceDefinition.PATH);
-        final PathAddress anotherBeanManagementProviderAddress = distributableEjbAddress.append(InfinispanBeanManagementResourceDefinition.pathElement("another-bean-management-provider"));
+        final PathAddress distributableEjbAddress = PathAddress.pathAddress(DistributableEjbSubsystemResourceDefinitionRegistrar.REGISTRATION.getPathElement());
+        final PathAddress anotherBeanManagementProviderAddress = distributableEjbAddress.append(BeanManagementResourceRegistration.INFINISPAN.pathElement("another-bean-management-provider"));
 
         // add a new bean-management instance
         ModelNode anotherBeanManagementProvider = Util.createAddOperation(anotherBeanManagementProviderAddress);
-        anotherBeanManagementProvider.get(InfinispanBeanManagementResourceDefinition.CACHE_ATTRIBUTE_GROUP.getContainerAttribute().getName()).set("foo");
-        anotherBeanManagementProvider.get(InfinispanBeanManagementResourceDefinition.CACHE_ATTRIBUTE_GROUP.getCacheAttribute().getName()).set("bar");
-        anotherBeanManagementProvider.get(BeanManagementResourceDefinition.Attribute.MAX_ACTIVE_BEANS.getName()).set(11);
+        anotherBeanManagementProvider.get(InfinispanBeanManagementResourceDefinitionRegistrar.CACHE_ATTRIBUTE_GROUP.getContainerAttribute().getName()).set("foo");
+        anotherBeanManagementProvider.get(InfinispanBeanManagementResourceDefinitionRegistrar.CACHE_ATTRIBUTE_GROUP.getCacheAttribute().getName()).set("bar");
+        anotherBeanManagementProvider.get(BeanManagementResourceDefinitionRegistrar.MAX_ACTIVE_BEANS.getName()).set(11);
         ModelNode addResponse = ks.executeOperation(anotherBeanManagementProvider);
         assertEquals(addResponse.toString(), ModelDescriptionConstants.SUCCESS, addResponse.get(ModelDescriptionConstants.OUTCOME).asString());
 
         // check max-active-beans attribute value
-        ModelNode readMaxActiveBeansAttribute = Util.getReadAttributeOperation(anotherBeanManagementProviderAddress, BeanManagementResourceDefinition.Attribute.MAX_ACTIVE_BEANS.getName());
+        ModelNode readMaxActiveBeansAttribute = Util.getReadAttributeOperation(anotherBeanManagementProviderAddress, BeanManagementResourceDefinitionRegistrar.MAX_ACTIVE_BEANS.getName());
         ModelNode readMaxActiveBeansResult = ks.executeOperation(readMaxActiveBeansAttribute);
         assertEquals(readMaxActiveBeansResult.toString(), ModelDescriptionConstants.SUCCESS, readMaxActiveBeansResult.get(ModelDescriptionConstants.OUTCOME).asString());
         assertEquals(readMaxActiveBeansResult.toString(), 11, readMaxActiveBeansResult.get(ModelDescriptionConstants.RESULT).asInt());
@@ -94,20 +94,20 @@ public class DistributableEjbSubsystemTestCase extends AbstractSubsystemSchemaTe
         final KernelServices ks = createKernelServicesBuilder(createAdditionalInitialization()).setSubsystemXml(subsystemXml).build();
         assertTrue("Subsystem boot failed!", ks.isSuccessfulBoot());
 
-        final PathAddress distributableEjbAddress = PathAddress.pathAddress(DistributableEjbResourceDefinition.PATH);
-        final PathAddress infinispanClientMappingsRegistryProviderAddress = distributableEjbAddress.append(ClientMappingsRegistryProviderResourceDefinition.pathElement("infinispan"));
+        final PathAddress distributableEjbAddress = PathAddress.pathAddress(DistributableEjbSubsystemResourceDefinitionRegistrar.REGISTRATION.getPathElement());
+        final PathAddress infinispanClientMappingsRegistryProviderAddress = distributableEjbAddress.append(ClientMappingsRegistryProviderResourceRegistration.INFINISPAN.getPathElement());
 
         // add a new client-mappings-registry instance
         ModelNode addInfinispanClientMappingsRegistryProvider = Util.createAddOperation(infinispanClientMappingsRegistryProviderAddress);
-        addInfinispanClientMappingsRegistryProvider.get(InfinispanClientMappingsRegistryProviderResourceDefinition.CACHE_ATTRIBUTE_GROUP.getContainerAttribute().getName()).set("foo");
-        addInfinispanClientMappingsRegistryProvider.get(InfinispanClientMappingsRegistryProviderResourceDefinition.CACHE_ATTRIBUTE_GROUP.getCacheAttribute().getName()).set("bar");
+        addInfinispanClientMappingsRegistryProvider.get(InfinispanClientMappingsRegistryProviderResourceDefinitionRegistrar.CACHE_ATTRIBUTE_GROUP.getContainerAttribute().getName()).set("foo");
+        addInfinispanClientMappingsRegistryProvider.get(InfinispanClientMappingsRegistryProviderResourceDefinitionRegistrar.CACHE_ATTRIBUTE_GROUP.getCacheAttribute().getName()).set("bar");
         ModelNode addResponse = ks.executeOperation(addInfinispanClientMappingsRegistryProvider);
         assertEquals(addResponse.toString(), ModelDescriptionConstants.SUCCESS, addResponse.get(ModelDescriptionConstants.OUTCOME).asString());
 
         // check that the old registry is no longer present and has been replaced by the new registry
-        final ModelNode distributableEjbSubsystem = ks.readWholeModel().get(DistributableEjbResourceDefinition.PATH.getKeyValuePair());
-        final ModelNode localClientMappingsRegistryProvider = distributableEjbSubsystem.get(LocalClientMappingsRegistryProviderResourceDefinition.PATH.getKeyValuePair());
-        final ModelNode infinispanClientMappingsRegistryProvider = distributableEjbSubsystem.get(InfinispanClientMappingsRegistryProviderResourceDefinition.PATH.getKeyValuePair());
+        final ModelNode distributableEjbSubsystem = ks.readWholeModel().get(DistributableEjbSubsystemResourceDefinitionRegistrar.REGISTRATION.getPathElement().getKeyValuePair());
+        final ModelNode localClientMappingsRegistryProvider = distributableEjbSubsystem.get(ClientMappingsRegistryProviderResourceRegistration.LOCAL.getPathElement().getKeyValuePair());
+        final ModelNode infinispanClientMappingsRegistryProvider = distributableEjbSubsystem.get(ClientMappingsRegistryProviderResourceRegistration.INFINISPAN.getPathElement().getKeyValuePair());
 
         assertEquals(localClientMappingsRegistryProvider.toString(), false, localClientMappingsRegistryProvider.isDefined());
         assertEquals(infinispanClientMappingsRegistryProvider.toString(), true, infinispanClientMappingsRegistryProvider.isDefined());
@@ -123,17 +123,17 @@ public class DistributableEjbSubsystemTestCase extends AbstractSubsystemSchemaTe
         final KernelServices ks = createKernelServicesBuilder(createAdditionalInitialization()).setSubsystemXml(subsystemXml).build();
         assertTrue("Subsystem boot failed!", ks.isSuccessfulBoot());
 
-        final ModelNode subsystem = ks.readWholeModel().get(DistributableEjbResourceDefinition.PATH.getKeyValuePair());
-        final ModelNode beanManagement = subsystem.get(InfinispanBeanManagementResourceDefinition.pathElement("default").getKeyValuePair());
+        final ModelNode subsystem = ks.readWholeModel().get(DistributableEjbSubsystemResourceDefinitionRegistrar.REGISTRATION.getPathElement().getKeyValuePair());
+        final ModelNode beanManagement = subsystem.get(BeanManagementResourceRegistration.INFINISPAN.pathElement("default").getKeyValuePair());
 
         // default within the expression should be 10000
-        final int maxActiveBeans = beanManagement.get(BeanManagementResourceDefinition.Attribute.MAX_ACTIVE_BEANS.getName()).resolve().asInt();
+        final int maxActiveBeans = beanManagement.get(BeanManagementResourceDefinitionRegistrar.MAX_ACTIVE_BEANS.getName()).resolve().asInt();
         assertEquals(10000, maxActiveBeans);
 
-        ModelNode persistentTimerManagement = subsystem.get(InfinispanTimerManagementResourceDefinition.pathElement("distributed").getKeyValuePair());
-        assertEquals(100, persistentTimerManagement.get(InfinispanTimerManagementResourceDefinition.Attribute.MAX_ACTIVE_TIMERS.getName()).resolve().asInt());
+        ModelNode persistentTimerManagement = subsystem.get(InfinispanTimerManagementResourceDefinitionRegistrar.REGISTRATION.getPathElement().getKey(), "distributed");
+        assertEquals(100, persistentTimerManagement.get(InfinispanTimerManagementResourceDefinitionRegistrar.MAX_ACTIVE_TIMERS.getName()).resolve().asInt());
 
-        ModelNode transientTimerManagement = subsystem.get(InfinispanTimerManagementResourceDefinition.pathElement("transient").getKeyValuePair());
-        assertEquals(1000, transientTimerManagement.get(InfinispanTimerManagementResourceDefinition.Attribute.MAX_ACTIVE_TIMERS.getName()).resolve().asInt());
+        ModelNode transientTimerManagement = subsystem.get(InfinispanTimerManagementResourceDefinitionRegistrar.REGISTRATION.getPathElement().getKey(), "transient");
+        assertEquals(1000, transientTimerManagement.get(InfinispanTimerManagementResourceDefinitionRegistrar.MAX_ACTIVE_TIMERS.getName()).resolve().asInt());
     }
 }

@@ -41,7 +41,7 @@ public class DistributableEjbTransformersTestCase extends AbstractSubsystemTest 
     private final ModelVersion version;
 
     public DistributableEjbTransformersTestCase(ModelTestControllerVersion controller) {
-        super(DistributableEjbExtension.SUBSYSTEM_NAME, new DistributableEjbExtension());
+        super(DistributableEjbSubsystemResourceDefinitionRegistrar.REGISTRATION.getName(), new DistributableEjbExtension());
 
         this.controller = controller;
         this.version = this.getModelVersion().getVersion();
