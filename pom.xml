@@ -293,7 +293,7 @@
         <version.org.assertj>3.26.3</version.org.assertj>
         <version.org.awaitility.awaitility>4.0.3</version.org.awaitility.awaitility>
         <version.org.codehaus.plexus.plexus-utils>3.5.1</version.org.codehaus.plexus.plexus-utils>
-        <version.org.eclipse.jetty>11.0.24</version.org.eclipse.jetty>
+        <version.org.eclipse.jetty>11.0.25</version.org.eclipse.jetty>
         <version.org.hamcrest>2.2</version.org.hamcrest>
         <version.org.hamcrest.legacy>1.3</version.org.hamcrest.legacy>
         <version.org.javassist>3.29.2-GA</version.org.javassist>
