@@ -87,7 +87,7 @@
                         <xs:attribute type="xs:integer" name="export-timeout" default="30000">
                             <xs:annotation>
                                 <xs:documentation>
-                                    The interval, in milliseconds, between two consecutive exports. Default is 5000.
+                                    The maximum allowed time, in milliseconds, to export data.
                                 </xs:documentation>
                             </xs:annotation>
                         </xs:attribute>
