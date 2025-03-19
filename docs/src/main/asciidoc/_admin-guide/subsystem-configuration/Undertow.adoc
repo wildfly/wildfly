@@ -136,15 +136,15 @@ server, unless is is explicitly overriden by the deployment
 |=======================================================================
 
 [[connector-configuration]]
-=== Connector configuration
+=== Listener configuration
 
-Undertow provides HTTP, HTTPS and AJP connectors, which are configured
+Undertow provides HTTP, HTTPS and AJP listeners, which are configured
 per server.
 
 [[common-settings]]
 ==== Common settings
 
-The following settings are common to all connectors:
+The following settings are common to all listeners:
 
 [cols=",",options="header"]
 |=======================================================================
@@ -305,7 +305,8 @@ a {@link WriteTimeoutException}.
 |=======================================================================
 
 [[http-connector]]
-==== HTTP Connector
+==== HTTP listener
+The HTTPS listener provides access to the server using unencrypted requests and responses.
 
 [source,xml,options="nowrap"]
 ----
@@ -326,8 +327,8 @@ socket binding port specified here.
 [[https-listener]]
 ==== HTTPS listener
 
-Https listener provides secure access to the server. The most important
-configuration option is ssl-context which cross references a pre-configured
+The HTTPS listener provides secure access to the server. The most important
+configuration option is `ssl-context`, which references a pre-configured
 SSL Context instance.
 
 [source,xml,options="nowrap"]
@@ -363,17 +364,37 @@ SSL Context instance.
 |verify-client (Deprecated)
 |The desired SSL client authentication mode for SSL channels
 
-
-
 |=======================================================================
 
 [[ajp-listener]]
 ==== AJP listener
 
+The AJP listener supports requests coming in via load balancers that use the AJP protocol to communicate with the servers they balance.
+
 [source,xml,options="nowrap"]
 ----
 <ajp-listener name="default" socket-binding="ajp" />
 ----
+
+[cols=",",options="header"]
+|=======================================================================
+|Attribute |Description
+
+|allowed-request-attributes-pattern
+|Pattern which will be used to match custom AJP attributes that should be allowed as part of a request. Value is a simple java regex. The `context`,`servlet_path`,`remote_user`, `auth_type`, `query_string`, `route`, `ssl_cert`, `ssl_cipher`, `ssl_session`, `req_attribute`, `ssl_key_size`, `secret` and `stored_method` attributes are always supported and do not need to be specified.
+
+|max-ajp-packet-size
+|The maximum supported size of AJP packets. If this is modified it has to be changed on both the load balancer and the backend server.
+
+|redirect-socket
+|If this listener is supporting non-SSL requests, and a request is received for which a matching
+<security-constraint> requires SSL transport, undertow will automatically redirect the request to the
+socket binding port specified here.
+
+|scheme
+|The listener scheme, which can be HTTP or HTTPS. By default, the scheme will be taken from the incoming AJP request.
+
+|=======================================================================
 
 [[host-configuration]]
 === Host configuration
