@@ -86,6 +86,10 @@ public class DistributableEjbResourceDefinition extends SubsystemResourceDefinit
         new LocalClientMappingsRegistryProviderResourceDefinition().register(registration);
         new InfinispanClientMappingsRegistryProviderResourceDefinition().register(registration);
 
+        // register the child resources for module-availability-registrar-provider
+        new LocalModuleAvailabilityRegistrarProviderResourceDefinition().register(registration);
+        new InfinispanModuleAvailabilityRegistrarProviderResourceDefinition().register(registration);
+
         new InfinispanTimerManagementResourceDefinition().register(registration);
     }
 
