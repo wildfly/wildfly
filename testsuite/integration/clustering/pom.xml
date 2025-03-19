@@ -179,6 +179,11 @@
             <artifactId>wildfly-clustering-web-api</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>wildfly-ejb3</artifactId>
+            <scope>test</scope>
+        </dependency>
 
         <!-- Test dependencies -->
         <dependency>
