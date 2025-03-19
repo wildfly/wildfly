@@ -14,6 +14,7 @@ import static org.wildfly.security.http.HttpConstants.BASIC_NAME;
 import static org.wildfly.security.http.HttpConstants.CLIENT_CERT_NAME;
 import static org.wildfly.security.http.HttpConstants.DIGEST_NAME;
 import static org.wildfly.security.http.HttpConstants.FORM_NAME;
+import static org.wildfly.extension.undertow.logging.UndertowLogger.ROOT_LOGGER;
 
 import java.security.PrivilegedAction;
 import java.util.ArrayList;
@@ -323,6 +324,7 @@ public class ApplicationSecurityDomainDefinition extends SimpleResourceDefinitio
                 new AggregateServerMechanismFactory(new BasicMechanismFactory(), new BearerMechanismFactory(),
                         new ClientCertMechanismFactory(), new DigestMechanismFactory(), new ExternalMechanismFactory(),
                         new FormMechanismFactory(), new SpnegoMechanismFactory()), SERVLET_MECHANISM);
+        ROOT_LOGGER.debugf("Security realm applied is \"%s\"", realmName);
         return HttpAuthenticationFactory.builder().setFactory(mechanismFactory)
                 .setSecurityDomain(securityDomain)
                 .setMechanismConfigurationSelector(
