@@ -5,6 +5,7 @@
 
 package org.jboss.as.connector.subsystems.jca;
 
+import static org.jboss.as.connector.subsystems.jca.Constants.ELYTRON_BY_DEFAULT_VERSION;
 import static org.jboss.as.connector.subsystems.jca.Constants.ELYTRON_ENABLED_NAME;
 import static org.jboss.as.connector.subsystems.jca.Constants.ELYTRON_MANAGED_SECURITY;
 import static org.jboss.as.connector.subsystems.jca.Constants.WORKMANAGER;
@@ -18,6 +19,7 @@ import java.util.Set;
 import org.jboss.as.connector.logging.ConnectorLogger;
 import org.jboss.as.connector.metadata.api.common.Security;
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.ModelOnlyWriteAttributeHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
@@ -64,7 +66,7 @@ public class JcaWorkManagerDefinition extends SimpleResourceDefinition {
         super.registerAttributes(resourceRegistration);
 
         resourceRegistration.registerReadOnlyAttribute(WmParameters.NAME.getAttribute(), ReadResourceNameOperationStepHandler.INSTANCE);
-        resourceRegistration.registerReadOnlyAttribute(WmParameters.ELYTRON_ENABLED.getAttribute(), null);
+        resourceRegistration.registerReadWriteAttribute(WmParameters.ELYTRON_ENABLED.getAttribute(), null, ModelOnlyWriteAttributeHandler.INSTANCE);
 
     }
 
@@ -147,6 +149,7 @@ public class JcaWorkManagerDefinition extends SimpleResourceDefinition {
                 .setXmlName(Security.Tag.ELYTRON_ENABLED.getLocalName())
                 .setAllowExpression(true)
                 .setDefaultValue(new ModelNode(ELYTRON_MANAGED_SECURITY))
+                .setDeprecated(ELYTRON_BY_DEFAULT_VERSION)
                 .build());
 
 
