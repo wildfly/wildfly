@@ -25,7 +25,6 @@
     <name>WildFly: Feature Pack Shared Galleon Content</name>
     <description>Content for the wildfly feature pack that can also be used in the wildfly-preview feature pack</description>
     <packaging>pom</packaging>
-
     <dependencies>
 
         <dependency><groupId>com.fasterxml.jackson.jr</groupId><artifactId>jackson-jr-objects</artifactId></dependency>
@@ -48,6 +47,13 @@
         <dependency><groupId>io.micrometer</groupId><artifactId>micrometer-commons</artifactId></dependency>
         <dependency><groupId>io.micrometer</groupId><artifactId>micrometer-core</artifactId></dependency>
         <dependency><groupId>io.micrometer</groupId><artifactId>micrometer-registry-otlp</artifactId></dependency>
+        <dependency><groupId>io.micrometer</groupId><artifactId>micrometer-registry-prometheus</artifactId></dependency>
+        <dependency><groupId>io.prometheus</groupId><artifactId>prometheus-metrics-exposition-formats</artifactId></dependency>
+        <dependency><groupId>io.prometheus</groupId><artifactId>prometheus-metrics-config</artifactId></dependency>
+        <dependency><groupId>io.prometheus</groupId><artifactId>prometheus-metrics-model</artifactId></dependency>
+        <dependency><groupId>io.prometheus</groupId><artifactId>prometheus-metrics-shaded-protobuf</artifactId></dependency>
+        <dependency><groupId>io.prometheus</groupId><artifactId>simpleclient</artifactId></dependency>
+        <dependency><groupId>io.prometheus</groupId><artifactId>simpleclient_common</artifactId></dependency>
 
         <dependency>
             <groupId>io.netty</groupId>

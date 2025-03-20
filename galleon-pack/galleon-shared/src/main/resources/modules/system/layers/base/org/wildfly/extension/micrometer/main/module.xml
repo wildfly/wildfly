@@ -28,6 +28,7 @@
         <module name="org.jboss.as.network"/>
         <module name="org.jboss.as.server"/>
         <module name="org.jboss.as.weld.common"/>
+        <module name="org.jboss.as.version"/>
         <module name="org.jboss.logging"/>
         <module name="org.jboss.modules"/>
         <module name="org.jboss.staxmapper"/>

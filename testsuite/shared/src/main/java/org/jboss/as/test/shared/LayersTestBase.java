@@ -234,6 +234,7 @@ public abstract class LayersTestBase {
             "org.wildfly.extension.micrometer",
             "org.wildfly.micrometer.deployment",
             "io.micrometer",
+            "io.prometheus",
             "io.opentelemetry.proto",
             // Extension not included in the default config
             "org.wildfly.extension.mvc-krazo",

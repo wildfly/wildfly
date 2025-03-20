@@ -12,6 +12,7 @@ import static org.jboss.logging.Logger.Level.WARN;
 import java.io.IOException;
 import java.lang.invoke.MethodHandles;
 
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.logging.BasicLogger;
 import org.jboss.logging.Logger;
@@ -71,4 +72,10 @@ public interface MicrometerExtensionLogger extends BasicLogger {
     @LogMessage(level = INFO)
     @Message(id = 12, value = "Additional metrics systems discovered while configuring Micrometer: %s. Please refer to the documentation for more information.")
     void multipleMetricsSystemsEnabled(String others);
+
+    @Message(id = 13, value = "There was an error registering the metric '%s'")
+    IllegalArgumentException errorRegisteringMetric(String name);
+
+    @Message(id = 14, value = "Prometheus is not supported on domain mode servers")
+    OperationFailedException prometheusNotSupportedOnHostControllers();
 }
