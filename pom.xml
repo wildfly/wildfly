@@ -346,7 +346,7 @@
         <version.com.google.api.grpc>2.0.1</version.com.google.api.grpc>
         <version.com.google.code.gson>2.8.9</version.com.google.code.gson>
         <version.com.google.guava>33.0.0-jre</version.com.google.guava>
-        <version.com.google.guava.failureaccess>1.0.2</version.com.google.guava.failureaccess>
+        <version.com.google.guava.failureaccess>1.0.3</version.com.google.guava.failureaccess>
         <version.com.google.protobuf>4.28.3</version.com.google.protobuf>
         <version.com.h2database>2.2.224</version.com.h2database>
         <version.com.ibm.async.asyncutil>0.1.0</version.com.ibm.async.asyncutil>
