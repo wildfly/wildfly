@@ -11,6 +11,7 @@ import static org.wildfly.extension.elytron.oidc.ElytronOidcClientSubsystemModel
 import static org.wildfly.extension.elytron.oidc.ElytronOidcClientSubsystemModel.VERSION_4_0_0;
 import static org.wildfly.extension.elytron.oidc.ElytronOidcClientSubsystemModel.VERSION_5_0_0;
 import static org.wildfly.extension.elytron.oidc.ElytronOidcDescriptionConstants.AUTHENTICATION_REQUEST_FORMAT;
+import static org.wildfly.extension.elytron.oidc.ElytronOidcDescriptionConstants.BACK_CHANNEL_LOGOUT_SESSION_INVALIDATION_LIMIT;
 import static org.wildfly.extension.elytron.oidc.ElytronOidcDescriptionConstants.POST_LOGOUT_REDIRECT_URI;
 import static org.wildfly.extension.elytron.oidc.ElytronOidcDescriptionConstants.LOGOUT_SESSION_REQUIRED;
 import static org.wildfly.extension.elytron.oidc.ElytronOidcDescriptionConstants.LOGOUT_CALLBACK_PATH;
@@ -190,6 +191,8 @@ public class ElytronOidcSubsystemTransformers implements ExtensionTransformerReg
                 .setDiscard(DiscardAttributeChecker.ALWAYS, POST_LOGOUT_REDIRECT_URI)
                 .addRejectCheck(RejectAttributeChecker.DEFINED, LOGOUT_SESSION_REQUIRED)
                 .setDiscard(DiscardAttributeChecker.ALWAYS, LOGOUT_SESSION_REQUIRED)
+                .addRejectCheck(RejectAttributeChecker.DEFINED, BACK_CHANNEL_LOGOUT_SESSION_INVALIDATION_LIMIT)
+                .setDiscard(DiscardAttributeChecker.ALWAYS, BACK_CHANNEL_LOGOUT_SESSION_INVALIDATION_LIMIT)
                 .end();
 
         builder.addChildResource(PathElement.pathElement(SECURE_DEPLOYMENT))
@@ -202,6 +205,8 @@ public class ElytronOidcSubsystemTransformers implements ExtensionTransformerReg
                 .setDiscard(DiscardAttributeChecker.ALWAYS, POST_LOGOUT_REDIRECT_URI)
                 .addRejectCheck(RejectAttributeChecker.DEFINED, LOGOUT_SESSION_REQUIRED)
                 .setDiscard(DiscardAttributeChecker.ALWAYS, LOGOUT_SESSION_REQUIRED)
+                .addRejectCheck(RejectAttributeChecker.DEFINED, BACK_CHANNEL_LOGOUT_SESSION_INVALIDATION_LIMIT)
+                .setDiscard(DiscardAttributeChecker.ALWAYS, BACK_CHANNEL_LOGOUT_SESSION_INVALIDATION_LIMIT)
                 .end();
     }
 }
