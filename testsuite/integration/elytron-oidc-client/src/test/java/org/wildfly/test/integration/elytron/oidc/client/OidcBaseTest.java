@@ -57,6 +57,7 @@ import org.jboss.as.test.integration.security.common.servlets.SimpleSecuredServl
 import org.jboss.as.test.integration.security.common.servlets.SimpleServlet;
 import org.jboss.as.test.shared.ManagementServerSetupTask;
 import org.jboss.as.test.shared.TestSuiteEnvironment;
+import org.jboss.as.test.shared.TimeoutUtil;
 import org.jboss.as.test.shared.util.AssumeTestGroupUtil;
 import org.jboss.dmr.ModelNode;
 import org.jsoup.Jsoup;
@@ -137,6 +138,8 @@ public abstract class OidcBaseTest {
     public static final String ORIGINAL_ROLES_PATH = "application-roles.properties";
     public static final String RELATIVE_TO = "jboss.server.config.dir";
 
+    private static final long REALM_CREATION_TIMEOUT = TimeoutUtil.adjust(20000);
+
     private enum BearerAuthType {
         BEARER,
         QUERY_PARAM,
@@ -144,19 +147,36 @@ public abstract class OidcBaseTest {
     }
 
     public static void sendRealmCreationRequest(RealmRepresentation realm) {
-        try {
-            String adminAccessToken = KeycloakConfiguration.getAdminAccessToken(KEYCLOAK_CONTAINER.getAuthServerUrl());
-            assertNotNull(adminAccessToken);
-            RestAssured
-                    .given()
-                    .auth().oauth2(adminAccessToken)
-                    .contentType("application/json")
-                    .body(JsonSerialization.writeValueAsBytes(realm))
-                    .when()
-                    .post(KEYCLOAK_CONTAINER.getAuthServerUrl() + "/admin/realms").then()
-                    .statusCode(201);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+        long timeout = System.currentTimeMillis() + REALM_CREATION_TIMEOUT;
+        while (true) {
+            try {
+                String adminAccessToken = KeycloakConfiguration.getAdminAccessToken(KEYCLOAK_CONTAINER.getAuthServerUrl());
+                assertNotNull(adminAccessToken);
+                RestAssured
+                        .given()
+                        .auth().oauth2(adminAccessToken)
+                        .contentType("application/json")
+                        .body(JsonSerialization.writeValueAsBytes(realm))
+                        .when()
+                        .post(KEYCLOAK_CONTAINER.getAuthServerUrl() + "/admin/realms").then()
+                        .statusCode(201);
+                return;
+            } catch (IOException | AssertionError e) {
+                if (System.currentTimeMillis() >= timeout) {
+                    // Time's up; throw on the failure
+                    if (e instanceof IOException) {
+                        throw new RuntimeException(e);
+                    }
+                    throw (AssertionError) e;
+                }
+                try {
+                    //noinspection BusyWait
+                    Thread.sleep(100);
+                } catch (InterruptedException ex) {
+                    Thread.currentThread().interrupt();
+                    throw new RuntimeException(ex);
+                }
+            }
         }
     }
 
