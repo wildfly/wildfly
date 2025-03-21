@@ -169,8 +169,8 @@ class SecureDeploymentDefinition extends SimpleResourceDefinition {
                     .setStability(Stability.PREVIEW)
                     .setAllowExpression(true)
                     .build();
-    protected static final SimpleAttributeDefinition POST_LOGOUT_URI =
-            new SimpleAttributeDefinitionBuilder(ElytronOidcDescriptionConstants.POST_LOGOUT_URI, ModelType.STRING, true)
+    protected static final SimpleAttributeDefinition POST_LOGOUT_REDIRECT_URI =
+            new SimpleAttributeDefinitionBuilder(ElytronOidcDescriptionConstants.POST_LOGOUT_REDIRECT_URI, ModelType.STRING, true)
                     .setValidator(new StringLengthValidator(0, Integer.MAX_VALUE, true, false))
                     .setStability(Stability.PREVIEW)
                     .setAllowExpression(true)
@@ -201,7 +201,7 @@ class SecureDeploymentDefinition extends SimpleResourceDefinition {
         ALL_ATTRIBUTES.add(RedirectRewriteRuleDefinition.REDIRECT_REWRITE_RULE);
         ALL_ATTRIBUTES.add(LOGOUT_PATH);
         ALL_ATTRIBUTES.add(LOGOUT_CALLBACK_PATH);
-        ALL_ATTRIBUTES.add(POST_LOGOUT_URI);
+        ALL_ATTRIBUTES.add(POST_LOGOUT_REDIRECT_URI);
         ALL_ATTRIBUTES.add(LOGOUT_SESSION_REQUIRED);
         for (SimpleAttributeDefinition attribute : ProviderAttributeDefinitions.ATTRIBUTES) {
             ALL_ATTRIBUTES.add(attribute);
@@ -229,7 +229,7 @@ class SecureDeploymentDefinition extends SimpleResourceDefinition {
         NON_DEFAULT_ATTRIBUTES.add(REQUEST_OBJECT_SIGNING_ALGORITHM);
         NON_DEFAULT_ATTRIBUTES.add(LOGOUT_PATH);
         NON_DEFAULT_ATTRIBUTES.add(LOGOUT_CALLBACK_PATH);
-        NON_DEFAULT_ATTRIBUTES.add(POST_LOGOUT_URI);
+        NON_DEFAULT_ATTRIBUTES.add(POST_LOGOUT_REDIRECT_URI);
         NON_DEFAULT_ATTRIBUTES.add(LOGOUT_SESSION_REQUIRED);
     }
 

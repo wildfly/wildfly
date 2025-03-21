@@ -54,7 +54,7 @@ import static org.wildfly.extension.elytron.oidc.SecureDeploymentDefinition.BEAR
 import static org.wildfly.extension.elytron.oidc.SecureDeploymentDefinition.CLIENT_ID;
 import static org.wildfly.extension.elytron.oidc.SecureDeploymentDefinition.ENABLE_BASIC_AUTH;
 import static org.wildfly.extension.elytron.oidc.SecureDeploymentDefinition.MIN_TIME_BETWEEN_JWKS_REQUESTS;
-import static org.wildfly.extension.elytron.oidc.SecureDeploymentDefinition.POST_LOGOUT_URI;
+import static org.wildfly.extension.elytron.oidc.SecureDeploymentDefinition.POST_LOGOUT_REDIRECT_URI;
 import static org.wildfly.extension.elytron.oidc.SecureDeploymentDefinition.PUBLIC_CLIENT;
 import static org.wildfly.extension.elytron.oidc.SecureDeploymentDefinition.PUBLIC_KEY_CACHE_TTL;
 import static org.wildfly.extension.elytron.oidc.SecureDeploymentDefinition.RESOURCE;
@@ -146,7 +146,7 @@ public enum ElytronOidcSubsystemSchema implements PersistentSubsystemSchema<Elyt
                 REQUEST_OBJECT_SIGNING_KEY_ALIAS, REQUEST_OBJECT_SIGNING_KEY_PASSWORD, REQUEST_OBJECT_SIGNING_KEYSTORE_TYPE};
 
         SimpleAttributeDefinition[] oidcLogoutChannelAttributes = {LOGOUT_PATH, LOGOUT_CALLBACK_PATH,
-                POST_LOGOUT_URI, LOGOUT_SESSION_REQUIRED};
+                POST_LOGOUT_REDIRECT_URI, LOGOUT_SESSION_REQUIRED};
 
         redirectRewriteRuleDefinitionBuilder.addAttribute(RedirectRewriteRuleDefinition.REPLACEMENT, SIMPLE_ATTRIBUTE_PARSER, SIMPLE_ATTRIBUTE_MARSHALLER);
         Stream.of(CredentialDefinition.ATTRIBUTES).forEach(attribute -> credentialDefinitionBuilder.addAttribute(attribute, SIMPLE_ATTRIBUTE_PARSER, SIMPLE_ATTRIBUTE_MARSHALLER));

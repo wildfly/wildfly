@@ -1492,7 +1492,7 @@
                 </xs:annotation>
             </xs:element>
 
-            <xs:element name="post-logout-uri"
+            <xs:element name="post-logout-redirect-uri"
                         type="xs:string" minOccurs="0">
                 <xs:annotation>
                     <xs:documentation>

@@ -155,7 +155,7 @@
         <client-id>wildfly-console</client-id>
         <logout-path>/myLogout</logout-path>
         <logout-callback-path>/logout/myCallback</logout-callback-path>
-        <post-logout-uri>http://localhost:8080/app/aCallback</post-logout-uri>
+        <post-logout-redirect-uri>http://localhost:8080/app/aCallback</post-logout-redirect-uri>
         <logout-session-required>true</logout-session-required>
     </secure-server>
     <secure-deployment name="app-oidc-logout">
@@ -163,7 +163,7 @@
         <client-id>wildfly-management</client-id>
         <logout-path>/myLogout</logout-path>
         <logout-callback-path>/logout/myCallback</logout-callback-path>
-        <post-logout-uri>http://localhost:8080/app/aCallback</post-logout-uri>
+        <post-logout-redirect-uri>http://localhost:8080/app/aCallback</post-logout-redirect-uri>
         <logout-session-required>true</logout-session-required>
     </secure-deployment>
 </subsystem>
