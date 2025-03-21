@@ -175,6 +175,13 @@ class SecureDeploymentDefinition extends SimpleResourceDefinition {
                     .setStability(Stability.PREVIEW)
                     .setAllowExpression(true)
                     .build();
+    // rls start
+    protected static final SimpleAttributeDefinition BACK_CHANNEL_LOGOUT_SESSION_INVALIDATION_LIMIT =
+            new SimpleAttributeDefinitionBuilder(ElytronOidcDescriptionConstants.BACK_CHANNEL_LOGOUT_SESSION_INVALIDATION_LIMIT, ModelType.INT, true)
+                    .setAllowExpression(true)
+                    .setValidator(new IntRangeValidator(-1, true))
+                    .build();
+    // rls end
     protected static final SimpleAttributeDefinition LOGOUT_SESSION_REQUIRED =
             new SimpleAttributeDefinitionBuilder(ElytronOidcDescriptionConstants.LOGOUT_SESSION_REQUIRED, ModelType.BOOLEAN, true)
                     .setAllowExpression(true)
@@ -203,6 +210,7 @@ class SecureDeploymentDefinition extends SimpleResourceDefinition {
         ALL_ATTRIBUTES.add(LOGOUT_CALLBACK_PATH);
         ALL_ATTRIBUTES.add(POST_LOGOUT_REDIRECT_URI);
         ALL_ATTRIBUTES.add(LOGOUT_SESSION_REQUIRED);
+        ALL_ATTRIBUTES.add(BACK_CHANNEL_LOGOUT_SESSION_INVALIDATION_LIMIT);
         for (SimpleAttributeDefinition attribute : ProviderAttributeDefinitions.ATTRIBUTES) {
             ALL_ATTRIBUTES.add(attribute);
         }
@@ -231,6 +239,7 @@ class SecureDeploymentDefinition extends SimpleResourceDefinition {
         NON_DEFAULT_ATTRIBUTES.add(LOGOUT_CALLBACK_PATH);
         NON_DEFAULT_ATTRIBUTES.add(POST_LOGOUT_REDIRECT_URI);
         NON_DEFAULT_ATTRIBUTES.add(LOGOUT_SESSION_REQUIRED);
+        NON_DEFAULT_ATTRIBUTES.add(BACK_CHANNEL_LOGOUT_SESSION_INVALIDATION_LIMIT);
     }
 
     @Override

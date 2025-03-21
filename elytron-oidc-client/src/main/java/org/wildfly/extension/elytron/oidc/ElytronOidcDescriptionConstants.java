@@ -19,6 +19,7 @@ interface ElytronOidcDescriptionConstants {
     String AUTH_SERVER_URL = "auth-server-url";
     String AUTHENTICATION_REQUEST_FORMAT = "authentication-request-format";
     String AUTODETECT_BEARER_ONLY = "autodetect-bearer-only";
+    String BACK_CHANNEL_LOGOUT_SESSION_INVALIDATION_LIMIT = "back-channel-logout-session-invalidation-limit";
     String BEARER_ONLY = "bearer-only";
     String CLIENT_ID = "client-id";
     String CLIENT_KEY_ALIAS = "client-key-alias";

@@ -157,6 +157,7 @@
         <logout-callback-path>/logout/myCallback</logout-callback-path>
         <post-logout-redirect-uri>http://localhost:8080/app/aCallback</post-logout-redirect-uri>
         <logout-session-required>true</logout-session-required>
+        <back-channel-logout-session-invalidation-limit>20</back-channel-logout-session-invalidation-limit>
     </secure-server>
     <secure-deployment name="app-oidc-logout">
         <provider>keycloak</provider>
@@ -165,5 +166,6 @@
         <logout-callback-path>/logout/myCallback</logout-callback-path>
         <post-logout-redirect-uri>http://localhost:8080/app/aCallback</post-logout-redirect-uri>
         <logout-session-required>true</logout-session-required>
+        <back-channel-logout-session-invalidation-limit>20</back-channel-logout-session-invalidation-limit>
     </secure-deployment>
 </subsystem>
