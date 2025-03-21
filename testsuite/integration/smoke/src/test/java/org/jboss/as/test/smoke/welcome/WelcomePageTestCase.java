@@ -16,6 +16,9 @@ import org.htmlunit.html.HtmlPage;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.test.shared.TestSuiteEnvironment;
+import org.jboss.as.test.shared.util.AssumeTestGroupUtil;
+import org.junit.Assume;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -33,6 +36,14 @@ public class WelcomePageTestCase {
     public static final String DOCUMENTATION_LINK_TEXT = "Documentation";
     public static final String QUICKSTARTS_LINK_TEXT = "Quickstarts";
     public static final String ADMINISTRATION_CONSOLE_LINK_TEXT = "Administration Console";
+
+    @BeforeClass
+    public static void requireSuitableInstallation() {
+        // Slimmed servers and bootable jars do not include welcome content
+        Assume.assumeFalse(AssumeTestGroupUtil.isBootableJar() || System.getProperty("ts.layers") != null);
+        // standalone-microprofile.xml does not turn on the handler to server welcome content
+        Assume.assumeFalse(System.getProperty("ts.standalone.microprofile") != null);
+    }
 
     @Test
     public void testWelcomePage() throws Exception {
