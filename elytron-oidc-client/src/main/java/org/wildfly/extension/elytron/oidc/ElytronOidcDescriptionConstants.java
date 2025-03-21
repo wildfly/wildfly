@@ -48,7 +48,7 @@ interface ElytronOidcDescriptionConstants {
     String MIN_TIME_BETWEEN_JWKS_REQUESTS = "min-time-between-jwks-requests";
     String OAUTH2 = "oauth2";
     String PATTERN = "pattern";
-    String POST_LOGOUT_URI ="post-logout-uri";
+    String POST_LOGOUT_REDIRECT_URI = "post-logout-redirect-uri";
     String PRINCIPAL_ATTRIBUTE = "principal-attribute";
     String PROVIDER = "provider";
     String PROVIDER_URL = "provider-url";
