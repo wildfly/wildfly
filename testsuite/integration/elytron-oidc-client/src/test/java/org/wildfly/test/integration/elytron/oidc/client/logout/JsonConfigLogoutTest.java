@@ -191,7 +191,7 @@ public class JsonConfigLogoutTest extends LoginLogoutBasics {
             loginToApp(RP_INITIATED_LOGOUT_APP);
             assertUserLoggedIn(RP_INITIATED_LOGOUT_APP, SimpleServlet.RESPONSE_BODY);
             logoutOfKeycloak(RP_INITIATED_LOGOUT_APP, SimplePostLogoutServlet.RESPONSE_BODY);
-            assertUserLoggedOut(RP_INITIATED_LOGOUT_APP, SimpleServlet.RESPONSE_BODY);
+            assertUserLoggedOut(RP_INITIATED_LOGOUT_APP, SIGN_IN_TO_YOUR_ACCOUNT);
 
         } finally {
             deployer.undeploy(RP_INITIATED_LOGOUT_APP);
