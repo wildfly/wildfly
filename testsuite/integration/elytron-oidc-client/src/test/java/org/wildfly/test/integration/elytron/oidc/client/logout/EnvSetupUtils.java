@@ -234,7 +234,7 @@ public class EnvSetupUtils {
                     operation.get(Oidc.LOGOUT_CALLBACK_PATH).set(appLogout.frontChannelPath);
                 }
                 if (appLogout.postLogoutRedirectPaths !=null) {
-                    operation.get(Oidc.POST_LOGOUT_URI).set(appLogout.postLogoutRedirectPaths.get(0));
+                    operation.get(Oidc.POST_LOGOUT_REDIRECT_URI).set(appLogout.postLogoutRedirectPaths.get(0));
                 }
 
                 Utils.applyUpdate(operation, client);

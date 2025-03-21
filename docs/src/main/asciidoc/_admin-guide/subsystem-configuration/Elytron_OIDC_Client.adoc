@@ -430,7 +430,7 @@ Here is an example of an `oidc.json` configuration file:
 
 * `logout-path`: The path component of a URL.  It is uses to identify the URL that is used to start an OIDC logout request.
 * `logout-callback-path`: An absolute URI.  It will be called after logout has been executed.  It is used by Front-channel and Back-channel logout.  The URI must be registered with the OpenId Provider.
-* `post-logout-uri` : An absolute URI.  It will be called after logout has been executed.  It is used by RP-Initiated logout only.
+* `post-logout-redirect-uri` : An absolute URI.  It will be called after logout has been executed.  It is used by RP-Initiated logout only.
  The URI must be registered with the OpenId Provider.
 * `logout-session-required` :  When set to `true` the `sid` and `iss` parameters will be enforced when processing front-channel logout requests and the `sid` will be enforced when processing back-channel requests.  If set to `false` these parameters will not be checked and any authenticated request will invalidate the local user session.
 
