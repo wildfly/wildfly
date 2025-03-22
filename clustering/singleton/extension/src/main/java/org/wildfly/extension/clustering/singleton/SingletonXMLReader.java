@@ -102,11 +102,11 @@ public class SingletonXMLReader implements XMLElementReader<List<ModelNode>> {
                     break;
                 }
                 case CACHE_CONTAINER: {
-                    readAttribute(reader, i, operation, SingletonPolicyResourceDefinition.Attribute.CACHE_CONTAINER);
+                    readAttribute(reader, i, operation, SingletonPolicyResourceDefinition.CACHE_ATTRIBUTE_GROUP::getContainerAttribute);
                     break;
                 }
                 case CACHE: {
-                    readAttribute(reader, i, operation, SingletonPolicyResourceDefinition.Attribute.CACHE);
+                    readAttribute(reader, i, operation, SingletonPolicyResourceDefinition.CACHE_ATTRIBUTE_GROUP::getCacheAttribute);
                     break;
                 }
                 case QUORUM: {

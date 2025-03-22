@@ -4,22 +4,13 @@
  */
 package org.wildfly.extension.clustering.ejb;
 
-import java.util.function.UnaryOperator;
-
-import org.jboss.as.clustering.controller.SimpleResourceDescriptorConfigurator;
-import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
-import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.ModelType;
 import org.wildfly.clustering.ejb.infinispan.remote.InfinispanClientMappingsRegistryProvider;
-import org.wildfly.clustering.infinispan.service.InfinispanServiceDescriptor;
-import org.wildfly.clustering.server.service.BinaryServiceConfiguration;
-import org.wildfly.subsystem.resource.ResourceModelResolver;
-import org.wildfly.subsystem.resource.capability.CapabilityReferenceRecorder;
+import org.wildfly.clustering.infinispan.service.InfinispanCacheConfigurationAttributeGroup;
+import org.wildfly.clustering.server.service.CacheConfigurationAttributeGroup;
 import org.wildfly.subsystem.service.ResourceServiceInstaller;
 import org.wildfly.subsystem.service.capability.CapabilityServiceInstaller;
 
@@ -32,48 +23,14 @@ import org.wildfly.subsystem.service.capability.CapabilityServiceInstaller;
 public class InfinispanClientMappingsRegistryProviderResourceDefinition extends ClientMappingsRegistryProviderResourceDefinition {
 
     static final PathElement PATH = pathElement("infinispan");
-
-    enum Attribute implements org.jboss.as.clustering.controller.Attribute, UnaryOperator<SimpleAttributeDefinitionBuilder> {
-        CACHE_CONTAINER("cache-container", ModelType.STRING) {
-            @Override
-            public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
-                return builder.setRequired(true)
-                        .setCapabilityReference(CapabilityReferenceRecorder.builder(CAPABILITY, InfinispanServiceDescriptor.DEFAULT_CACHE_CONFIGURATION).build())
-                        ;
-            }
-        },
-        CACHE("cache", ModelType.STRING) {
-            @Override
-            public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
-                return builder.setRequired(false)
-                        .setCapabilityReference(CapabilityReferenceRecorder.builder(CAPABILITY, InfinispanServiceDescriptor.CACHE_CONFIGURATION).withParentAttribute(CACHE_CONTAINER.getDefinition()).build());
-            }
-        }
-        ;
-
-        private final AttributeDefinition definition ;
-
-        Attribute(String name, ModelType type) {
-            this.definition = this.apply(new SimpleAttributeDefinitionBuilder(name, type)
-                    .setAllowExpression(false)
-                    .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
-                    ).build();
-        }
-
-        @Override
-        public AttributeDefinition getDefinition() {
-            return this.definition;
-        }
-    }
-
-    private final ResourceModelResolver<BinaryServiceConfiguration> resolver = BinaryServiceConfiguration.resolver(Attribute.CACHE_CONTAINER.getDefinition(), Attribute.CACHE.getDefinition());
+    static final CacheConfigurationAttributeGroup CACHE_ATTRIBUTE_GROUP = new InfinispanCacheConfigurationAttributeGroup(CAPABILITY);
 
     InfinispanClientMappingsRegistryProviderResourceDefinition() {
-        super(PATH, new SimpleResourceDescriptorConfigurator<>(Attribute.class));
+        super(PATH, builder -> builder.addAttributes(CACHE_ATTRIBUTE_GROUP.getAttributes()));
     }
 
     @Override
     public ResourceServiceInstaller configure(OperationContext context, ModelNode model) throws OperationFailedException {
-        return CapabilityServiceInstaller.builder(CAPABILITY, new InfinispanClientMappingsRegistryProvider(this.resolver.resolve(context, model))).build();
+        return CapabilityServiceInstaller.builder(CAPABILITY, new InfinispanClientMappingsRegistryProvider(CACHE_ATTRIBUTE_GROUP.resolve(context, model))).build();
     }
 }
