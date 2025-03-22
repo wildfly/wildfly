@@ -6,6 +6,7 @@ package org.wildfly.extension.clustering.web;
 
 import java.util.EnumSet;
 import java.util.List;
+import java.util.Set;
 import java.util.function.Consumer;
 
 import org.jboss.as.clustering.controller.SubsystemResourceRegistration;
@@ -14,6 +15,7 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.ResourceDefinition;
 import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.capability.RuntimeCapability;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.ParentResourceDescriptionResolver;
 import org.jboss.as.controller.descriptions.SubsystemResourceDescriptionResolver;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
@@ -60,6 +62,8 @@ public class DistributableWebSubsystemResourceDefinitionRegistrar implements Sub
                 .addAttributes(List.of(DEFAULT_SESSION_MANAGEMENT, DEFAULT_USER_MANAGEMENT))
                 .addCapabilities(List.of(DEFAULT_SESSION_MANAGEMENT_PROVIDER, DEFAULT_USER_MANAGEMENT_PROVIDER))
                 .requireSingletonChildResource(RoutingProviderResourceRegistration.LOCAL)
+                // Workaround for WFCORE-7188
+                .withOperationTransformation(Set.of(ModelDescriptionConstants.ADD), AddResourceOperationStepHandler::new)
                 .withRuntimeHandler(ResourceOperationRuntimeHandler.configureService(this))
                 .withDeploymentChainContributor(this)
                 .build();

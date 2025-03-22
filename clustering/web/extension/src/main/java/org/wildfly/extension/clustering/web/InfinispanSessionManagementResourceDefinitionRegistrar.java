@@ -4,8 +4,10 @@
  */
 package org.wildfly.extension.clustering.web;
 
+import java.util.Set;
 import java.util.function.Supplier;
 
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.wildfly.clustering.infinispan.service.InfinispanCacheConfigurationAttributeGroup;
@@ -34,6 +36,8 @@ public class InfinispanSessionManagementResourceDefinitionRegistrar extends Sess
     public ResourceDescriptor.Builder apply(ResourceDescriptor.Builder builder) {
         return super.apply(builder)
                 .requireSingletonChildResource(AffinityResourceRegistration.PRIMARY_OWNER)
+                // Workaround for WFCORE-7188
+                .withOperationTransformation(Set.of(ModelDescriptionConstants.ADD), AddResourceOperationStepHandler::new)
                 ;
     }
 
