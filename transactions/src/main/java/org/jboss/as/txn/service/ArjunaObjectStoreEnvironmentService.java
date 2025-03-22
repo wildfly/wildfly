@@ -19,6 +19,8 @@ import com.arjuna.ats.arjuna.common.ObjectStoreEnvironmentBean;
 import com.arjuna.ats.internal.arjuna.objectstore.hornetq.HornetqJournalEnvironmentBean;
 import com.arjuna.common.internal.util.propertyservice.BeanPopulator;
 
+import javax.sql.DataSource;
+
 /**
  * Configures the {@link ObjectStoreEnvironmentBean}s using an injected path.
  *
@@ -33,17 +35,21 @@ public class ArjunaObjectStoreEnvironmentService implements Service<Void> {
     private final String pathRef;
 
     private final boolean useJdbcStore;
+    private final DataSource dataSource;
     private final String dataSourceJndiName;
     private final JdbcStoreConfig jdbcSoreConfig;
 
     private volatile PathManager.Callback.Handle callbackHandle;
 
-    public ArjunaObjectStoreEnvironmentService(final boolean useJournalStore, final boolean enableAsyncIO, final String path, final String pathRef, final boolean useJdbcStore, final String dataSourceJndiName, final JdbcStoreConfig jdbcSoreConfig) {
+    public ArjunaObjectStoreEnvironmentService(final boolean useJournalStore, final boolean enableAsyncIO, final String path,
+                                               final String pathRef, final boolean useJdbcStore, final DataSource dataSource,
+                                               final String dataSourceJndiName, final JdbcStoreConfig jdbcSoreConfig) {
         this.useJournalStore = useJournalStore;
         this.enableAsyncIO = enableAsyncIO;
         this.path = path;
         this.pathRef = pathRef;
         this.useJdbcStore = useJdbcStore;
+        this.dataSource = dataSource;
         this.dataSourceJndiName = dataSourceJndiName;
         this.jdbcSoreConfig = jdbcSoreConfig;
     }
@@ -87,10 +93,15 @@ public class ArjunaObjectStoreEnvironmentService implements Service<Void> {
             stateStoreObjectStoreEnvironmentBean.setObjectStoreType("com.arjuna.ats.internal.arjuna.objectstore.jdbc.JDBCStore");
             communicationStoreObjectStoreEnvironmentBean.setObjectStoreType("com.arjuna.ats.internal.arjuna.objectstore.jdbc.JDBCStore");
 
-            defaultActionStoreObjectStoreEnvironmentBean.setJdbcAccess("com.arjuna.ats.internal.arjuna.objectstore.jdbc.accessors.DataSourceJDBCAccess;datasourceName=" + dataSourceJndiName);
-            stateStoreObjectStoreEnvironmentBean.setJdbcAccess("com.arjuna.ats.internal.arjuna.objectstore.jdbc.accessors.DataSourceJDBCAccess;datasourceName=" + dataSourceJndiName);
-            communicationStoreObjectStoreEnvironmentBean.setJdbcAccess("com.arjuna.ats.internal.arjuna.objectstore.jdbc.accessors.DataSourceJDBCAccess;datasourceName=" + dataSourceJndiName);
-
+            if (dataSource != null) {
+                defaultActionStoreObjectStoreEnvironmentBean.setJdbcDataSource(dataSource);
+                stateStoreObjectStoreEnvironmentBean.setJdbcDataSource(dataSource);
+                communicationStoreObjectStoreEnvironmentBean.setJdbcDataSource(dataSource);
+            } else {
+                defaultActionStoreObjectStoreEnvironmentBean.setJdbcAccess("com.arjuna.ats.internal.arjuna.objectstore.jdbc.accessors.DataSourceJDBCAccess;datasourceName=" + dataSourceJndiName);
+                stateStoreObjectStoreEnvironmentBean.setJdbcAccess("com.arjuna.ats.internal.arjuna.objectstore.jdbc.accessors.DataSourceJDBCAccess;datasourceName=" + dataSourceJndiName);
+                communicationStoreObjectStoreEnvironmentBean.setJdbcAccess("com.arjuna.ats.internal.arjuna.objectstore.jdbc.accessors.DataSourceJDBCAccess;datasourceName=" + dataSourceJndiName);
+            }
 
             defaultActionStoreObjectStoreEnvironmentBean.setTablePrefix(jdbcSoreConfig.getActionTablePrefix());
             stateStoreObjectStoreEnvironmentBean.setTablePrefix(jdbcSoreConfig.getStateTablePrefix());
