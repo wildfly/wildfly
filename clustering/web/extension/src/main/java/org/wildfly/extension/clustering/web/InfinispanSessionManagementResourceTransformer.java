@@ -23,7 +23,7 @@ public class InfinispanSessionManagementResourceTransformer extends SessionManag
 
     @Override
     public void accept(ModelVersion version) {
-        ResourceTransformationDescriptionBuilder builder = this.parent.addChildResource(InfinispanSessionManagementResourceDefinition.WILDCARD_PATH);
+        ResourceTransformationDescriptionBuilder builder = this.parent.addChildResource(SessionManagementResourceRegistration.INFINISPAN.getPathElement());
 
         this.accept(version, builder);
     }
