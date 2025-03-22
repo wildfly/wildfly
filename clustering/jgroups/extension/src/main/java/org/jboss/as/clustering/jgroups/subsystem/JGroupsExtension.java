@@ -4,12 +4,13 @@
  */
 package org.jboss.as.clustering.jgroups.subsystem;
 
-import org.jboss.as.clustering.controller.SubsystemExtension;
+import org.jboss.as.clustering.controller.persistence.xml.SubsystemResourceXMLSchema;
 import org.jboss.as.clustering.jgroups.LogFactory;
 import org.jboss.as.controller.Extension;
-import org.jboss.as.controller.descriptions.ParentResourceDescriptionResolver;
-import org.jboss.as.controller.descriptions.SubsystemResourceDescriptionResolver;
 import org.kohsuke.MetaInfServices;
+import org.wildfly.common.function.Functions;
+import org.wildfly.subsystem.SubsystemConfiguration;
+import org.wildfly.subsystem.SubsystemExtension;
 
 /**
  * Registers the JGroups subsystem.
@@ -20,11 +21,8 @@ import org.kohsuke.MetaInfServices;
 @MetaInfServices(Extension.class)
 public class JGroupsExtension extends SubsystemExtension<JGroupsSubsystemSchema> {
 
-    static final String SUBSYSTEM_NAME = "jgroups";
-    static final ParentResourceDescriptionResolver SUBSYSTEM_RESOLVER = new SubsystemResourceDescriptionResolver(SUBSYSTEM_NAME, JGroupsExtension.class);
-
     public JGroupsExtension() {
-        super(SUBSYSTEM_NAME, JGroupsSubsystemModel.CURRENT, JGroupsSubsystemResourceDefinition::new, JGroupsSubsystemSchema.CURRENT, new JGroupsSubsystemXMLWriter());
+        super(SubsystemConfiguration.of(JGroupsSubsystemResourceDefinitionRegistrar.INSTANCE.getName(), JGroupsSubsystemModel.CURRENT, Functions.constantSupplier(JGroupsSubsystemResourceDefinitionRegistrar.INSTANCE)), SubsystemResourceXMLSchema.persistence(JGroupsSubsystemSchema.CURRENT));
 
         // Workaround for JGRP-1475
         // Configure JGroups to use jboss-logging.

@@ -16,14 +16,14 @@ import org.jboss.as.controller.transform.description.ResourceTransformationDescr
 public class CipherAuthTokenResourceTransformer extends AuthTokenResourceTransformer {
 
     CipherAuthTokenResourceTransformer(ResourceTransformationDescriptionBuilder parent) {
-        super(parent.addChildResource(CipherAuthTokenResourceDefinition.PATH));
+        super(parent.addChildResource(AuthTokenResourceDefinitionRegistrar.Token.CIPHER.getPathElement()));
     }
 
     @Override
     public void accept(ModelVersion version) {
         if (JGroupsSubsystemModel.VERSION_8_0_0.requiresTransformation(version)) {
             this.builder.getAttributeBuilder()
-                    .addRejectCheck(CredentialReference.REJECT_CREDENTIAL_REFERENCE_WITH_BOTH_STORE_AND_CLEAR_TEXT, CipherAuthTokenResourceDefinition.Attribute.KEY_CREDENTIAL.getName())
+                    .addRejectCheck(CredentialReference.REJECT_CREDENTIAL_REFERENCE_WITH_BOTH_STORE_AND_CLEAR_TEXT, CipherAuthTokenResourceDefinitionRegistrar.KEY_CREDENTIAL)
                     .end();
         }
         super.accept(version);
