@@ -50,8 +50,8 @@ public class HotRodSessionManagementProvider extends AbstractSessionManagementPr
     }
 }""";
 
-    public HotRodSessionManagementProvider(DistributableSessionManagementConfiguration<DeploymentUnit> configuration, BinaryServiceConfiguration cacheConfiguration, Supplier<RouteLocatorProvider> locatorProviderFactory) {
-        super(configuration, cacheConfiguration, locatorProviderFactory);
+    public HotRodSessionManagementProvider(DistributableSessionManagementConfiguration<DeploymentUnit> configuration, BinaryServiceConfiguration cacheConfiguration, RouteLocatorProvider locatorProvider) {
+        super(configuration, cacheConfiguration, locatorProvider);
     }
 
     @Override

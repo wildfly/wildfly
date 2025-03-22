@@ -12,6 +12,7 @@ import org.jboss.as.controller.transform.description.DiscardAttributeChecker;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 
 /**
+ * Describes resource transformations for the HotRod session management provider.
  * @author Paul Ferraro
  */
 public class HotRodSessionManagementResourceTransformer extends SessionManagementResourceTransformer implements Consumer<ModelVersion> {
@@ -24,12 +25,12 @@ public class HotRodSessionManagementResourceTransformer extends SessionManagemen
 
     @Override
     public void accept(ModelVersion version) {
-        ResourceTransformationDescriptionBuilder builder = this.parent.addChildResource(HotRodSessionManagementResourceDefinition.WILDCARD_PATH);
+        ResourceTransformationDescriptionBuilder builder = this.parent.addChildResource(SessionManagementResourceRegistration.HOTROD.getPathElement());
 
         this.accept(version, builder);
 
         builder.getAttributeBuilder()
-                .setDiscard(DiscardAttributeChecker.ALWAYS, HotRodSessionManagementResourceDefinition.Attribute.EXPIRATION_THREAD_POOL_SIZE.getName())
+                .setDiscard(DiscardAttributeChecker.ALWAYS, HotRodSessionManagementResourceDefinitionRegistrar.EXPIRATION_THREAD_POOL_SIZE.getName())
                 .end();
     }
 }
