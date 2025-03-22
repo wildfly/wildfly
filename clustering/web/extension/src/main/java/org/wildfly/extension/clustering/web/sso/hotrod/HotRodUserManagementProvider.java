@@ -6,10 +6,8 @@
 package org.wildfly.extension.clustering.web.sso.hotrod;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.function.Consumer;
 
-import org.infinispan.client.hotrod.DefaultTemplate;
 import org.infinispan.client.hotrod.RemoteCache;
 import org.infinispan.client.hotrod.configuration.NearCacheMode;
 import org.infinispan.client.hotrod.configuration.RemoteCacheConfigurationBuilder;
@@ -31,6 +29,16 @@ import org.wildfly.subsystem.service.ServiceInstaller;
  * @author Paul Ferraro
  */
 public class HotRodUserManagementProvider implements DistributableUserManagementProvider {
+    private static final String DEFAULT_CONFIGURATION = """
+{
+    "distributed-cache": {
+        "mode" : "SYNC",
+        "transaction" : {
+            "mode" : "NON_XA",
+            "locking" : "PESSIMISTIC"
+        }
+    }
+}""";
 
     private final BinaryServiceConfiguration configuration;
 
@@ -40,11 +48,18 @@ public class HotRodUserManagementProvider implements DistributableUserManagement
 
     @Override
     public Iterable<ServiceInstaller> getServiceInstallers(String name) {
-        String templateName = Optional.ofNullable(this.configuration.getChildName()).orElse(DefaultTemplate.DIST_SYNC.getTemplateName());
+        String templateName = this.configuration.getChildName();
+
         Consumer<RemoteCacheConfigurationBuilder> configurator = new Consumer<>() {
             @Override
             public void accept(RemoteCacheConfigurationBuilder builder) {
-                builder.forceReturnValues(false).nearCacheMode(NearCacheMode.INVALIDATED).templateName(templateName).transactionMode(TransactionMode.NONE);
+                // Near caching not compatible with max-idle expiration.
+                builder.forceReturnValues(false).nearCacheMode(NearCacheMode.INVALIDATED).transactionMode(TransactionMode.NONE);
+                if (templateName != null) {
+                    builder.templateName(templateName);
+                } else {
+                    builder.configuration(DEFAULT_CONFIGURATION);
+                }
             }
         };
         BinaryServiceConfiguration configuration = this.configuration.withChildName(name);
