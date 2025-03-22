@@ -5,10 +5,12 @@
 package org.wildfly.extension.clustering.web;
 
 import java.util.List;
+import java.util.Set;
 import java.util.function.Supplier;
 
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.dmr.ModelNode;
@@ -46,6 +48,8 @@ public class HotRodSessionManagementResourceDefinitionRegistrar extends SessionM
         return super.apply(builder)
                 .addAttributes(List.of(EXPIRATION_THREAD_POOL_SIZE))
                 .requireSingletonChildResource(AffinityResourceRegistration.LOCAL)
+                // Workaround for WFCORE-7188
+                .withOperationTransformation(Set.of(ModelDescriptionConstants.ADD), AddResourceOperationStepHandler::new)
                 ;
     }
 
