@@ -5,23 +5,20 @@
 
 package org.wildfly.extension.clustering.web;
 
-import org.jboss.as.clustering.controller.PersistentSubsystemExtension;
 import org.jboss.as.controller.Extension;
-import org.jboss.as.controller.descriptions.ParentResourceDescriptionResolver;
-import org.jboss.as.controller.descriptions.SubsystemResourceDescriptionResolver;
 import org.kohsuke.MetaInfServices;
+import org.wildfly.subsystem.SubsystemConfiguration;
+import org.wildfly.subsystem.SubsystemExtension;
+import org.wildfly.subsystem.SubsystemPersistence;
 
 /**
  * Extension that registers the distributable-web subsystem.
  * @author Paul Ferraro
  */
 @MetaInfServices(Extension.class)
-public class DistributableWebExtension extends PersistentSubsystemExtension<DistributableWebSubsystemSchema> {
-
-    static final String SUBSYSTEM_NAME = "distributable-web";
-    static final ParentResourceDescriptionResolver SUBSYSTEM_RESOLVER = new SubsystemResourceDescriptionResolver(SUBSYSTEM_NAME, DistributableWebExtension.class);
+public class DistributableWebExtension extends SubsystemExtension<DistributableWebSubsystemSchema> {
 
     public DistributableWebExtension() {
-        super(SUBSYSTEM_NAME, DistributableWebSubsystemModel.CURRENT, DistributableWebResourceDefinition::new, DistributableWebSubsystemSchema.CURRENT);
+        super(SubsystemConfiguration.of(DistributableWebSubsystemResourceDefinitionRegistrar.REGISTRATION.getName(), DistributableWebSubsystemModel.CURRENT, DistributableWebSubsystemResourceDefinitionRegistrar::new), SubsystemPersistence.of(DistributableWebSubsystemSchema.CURRENT));
     }
 }

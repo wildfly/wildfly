@@ -31,6 +31,7 @@ import org.wildfly.clustering.marshalling.protostream.modules.ModuleClassLoaderM
 import org.wildfly.clustering.marshalling.protostream.reflect.ProxyMarshaller;
 
 /**
+ * Enumerates factories for creating a session attribute marshaller.
  * @author Paul Ferraro
  */
 public enum SessionMarshallerFactory implements Function<DeploymentUnit, ByteBufferMarshaller> {

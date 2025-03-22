@@ -17,7 +17,6 @@ import org.jboss.as.controller.parsing.ParseUtils;
 import org.jboss.staxmapper.XMLElementReader;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.wildfly.clustering.web.service.routing.RouteLocatorProvider;
-import org.wildfly.common.function.Functions;
 import org.wildfly.extension.clustering.web.routing.LocalRouteLocatorProvider;
 import org.wildfly.extension.clustering.web.routing.NullRouteLocatorProvider;
 import org.wildfly.extension.clustering.web.routing.infinispan.PrimaryOwnerRouteLocatorProvider;
@@ -77,13 +76,13 @@ public class DistributableWebDeploymentXMLReader implements XMLElementReader<Mut
             case HOTROD_SESSION_MANAGEMENT: {
                 MutableHotRodSessionManagementConfiguration config = new MutableHotRodSessionManagementConfiguration(configuration);
                 RouteLocatorProvider provider = this.readHotRodSessionManagement(reader, config);
-                configuration.setSessionManagementProvider(new HotRodSessionManagementProvider(config, config, Functions.constantSupplier(provider)));
+                configuration.setSessionManagementProvider(new HotRodSessionManagementProvider(config, config, provider));
                 break;
             }
             case INFINISPAN_SESSION_MANAGEMENT: {
                 MutableInfinispanSessionManagementConfiguration config = new MutableInfinispanSessionManagementConfiguration(configuration);
                 RouteLocatorProvider provider = this.readInfinispanSessionManagement(reader, config, configuration);
-                configuration.setSessionManagementProvider(new InfinispanSessionManagementProvider(config, config, Functions.constantSupplier(provider)));
+                configuration.setSessionManagementProvider(new InfinispanSessionManagementProvider(config, config, provider));
                 break;
             }
             default: {

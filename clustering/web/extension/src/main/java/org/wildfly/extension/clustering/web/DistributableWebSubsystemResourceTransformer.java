@@ -12,9 +12,10 @@ import org.jboss.as.controller.transform.description.ResourceTransformationDescr
 import org.jboss.as.controller.transform.description.TransformationDescriptionBuilder;
 
 /**
+ * Describes resource transformations for the distributable-web subsystem.
  * @author Paul Ferraro
  */
-public class DistributableWebResourceTransformer implements Function<ModelVersion, TransformationDescriptionBuilder> {
+public class DistributableWebSubsystemResourceTransformer implements Function<ModelVersion, TransformationDescriptionBuilder> {
 
     @Override
     public ResourceTransformationDescriptionBuilder apply(ModelVersion version) {

@@ -13,6 +13,7 @@ import org.jboss.modules.Module;
 import org.wildfly.clustering.marshalling.jboss.MarshallingConfigurationBuilder;
 
 /**
+ * Enumerates JBoss Marshalling configuration versions.
  * @author Paul Ferraro
  */
 public enum JBossMarshallingVersion implements Function<Module, MarshallingConfiguration> {

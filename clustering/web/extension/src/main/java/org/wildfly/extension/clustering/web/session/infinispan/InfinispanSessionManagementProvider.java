@@ -51,8 +51,8 @@ import jakarta.servlet.ServletContext;
  */
 public class InfinispanSessionManagementProvider extends AbstractSessionManagementProvider {
 
-    public InfinispanSessionManagementProvider(DistributableSessionManagementConfiguration<DeploymentUnit> configuration, BinaryServiceConfiguration cacheConfiguration, Supplier<RouteLocatorProvider> locatorProviderFactory) {
-        super(configuration, cacheConfiguration, locatorProviderFactory);
+    public InfinispanSessionManagementProvider(DistributableSessionManagementConfiguration<DeploymentUnit> configuration, BinaryServiceConfiguration cacheConfiguration, RouteLocatorProvider locatorProvider) {
+        super(configuration, cacheConfiguration, locatorProvider);
     }
 
     @Override

@@ -32,7 +32,6 @@ import org.wildfly.clustering.web.service.routing.RoutingProvider;
 import org.wildfly.clustering.web.service.session.DistributableSessionManagementConfiguration;
 import org.wildfly.clustering.web.service.session.DistributableSessionManagementProvider;
 import org.wildfly.clustering.web.service.session.LegacyDistributableSessionManagementProviderFactory;
-import org.wildfly.common.function.Functions;
 import org.wildfly.extension.clustering.web.routing.LocalRouteLocatorProvider;
 import org.wildfly.extension.clustering.web.routing.infinispan.PrimaryOwnerRouteLocatorProvider;
 import org.wildfly.subsystem.service.DeploymentServiceInstaller;
@@ -87,7 +86,7 @@ public class InfinispanLegacySessionManagementProviderFactory implements LegacyD
                 return InfinispanLegacySessionManagementProviderFactory.this;
             }
         };
-        return new InfinispanSessionManagementProvider(configuration, BinaryServiceConfiguration.of(containerName, cacheName), Functions.constantSupplier(new RouteLocatorProvider() {
+        return new InfinispanSessionManagementProvider(configuration, BinaryServiceConfiguration.of(containerName, cacheName), new RouteLocatorProvider() {
             @Override
             public DeploymentServiceInstaller getServiceInstaller(DeploymentPhaseContext context, BinaryServiceConfiguration infinispan, DeploymentConfiguration deployment) {
                 CapabilityServiceSupport support = unit.getAttachment(Attachments.CAPABILITY_SERVICE_SUPPORT);
@@ -97,7 +96,7 @@ public class InfinispanLegacySessionManagementProviderFactory implements LegacyD
                 RouteLocatorProvider provider = forceLocalRouting ? new LocalRouteLocatorProvider() : new PrimaryOwnerRouteLocatorProvider();
                 return provider.getServiceInstaller(context, infinispan, deployment);
             }
-        }));
+        });
     }
 
     @Override
