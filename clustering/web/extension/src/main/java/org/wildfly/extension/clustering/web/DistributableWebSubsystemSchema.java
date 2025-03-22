@@ -7,7 +7,9 @@ package org.wildfly.extension.clustering.web;
 
 import java.util.EnumSet;
 import java.util.List;
+import java.util.Map;
 
+import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ResourceRegistration;
 import org.jboss.as.controller.SubsystemSchema;
 import org.jboss.as.controller.persistence.xml.NamedResourceRegistrationXMLElement;
@@ -34,9 +36,10 @@ public enum DistributableWebSubsystemSchema implements SubsystemResourceXMLSchem
     VERSION_1_0(1, 0), // WildFly 17
     VERSION_2_0(2, 0), // WildFly 18-26.1, EAP 7.4
     VERSION_3_0(3, 0), // WildFly 27-29
-    VERSION_4_0(4, 0), // WildFly 30-present, EAP 8.0
+    VERSION_4_0(4, 0), // WildFly 30-35, EAP 8.0-8.1
+    VERSION_5_0(5, 0), // WildFly 36-present
     ;
-    static final DistributableWebSubsystemSchema CURRENT = VERSION_4_0;
+    static final DistributableWebSubsystemSchema CURRENT = VERSION_5_0;
 
     private final ResourceXMLParticleFactory factory = ResourceXMLParticleFactory.newInstance(this);
     private final VersionedNamespace<IntVersion, DistributableWebSubsystemSchema> namespace;
@@ -66,15 +69,29 @@ public enum DistributableWebSubsystemSchema implements SubsystemResourceXMLSchem
                 .addElement(this.localRoutingElement())
                 .addElement(this.infinispanRoutingElement())
                 .build();
-        ResourceXMLSequence content = this.factory.sequence()
-                .addChoice(sessionManagementChoice)
-                .addChoice(userManagementChoice)
-                .addChoice(routingProviderChoice)
-                .build();
-        return this.factory.subsystemElement(DistributableWebSubsystemResourceDefinitionRegistrar.REGISTRATION)
-                .addAttributes(List.of(DistributableWebSubsystemResourceDefinitionRegistrar.DEFAULT_SESSION_MANAGEMENT, DistributableWebSubsystemResourceDefinitionRegistrar.DEFAULT_USER_MANAGEMENT))
-                .withContent(content)
-                .build();
+
+        SubsystemResourceRegistrationXMLElement.Builder builder = this.factory.subsystemElement(DistributableWebSubsystemResourceDefinitionRegistrar.REGISTRATION);
+
+        ResourceXMLSequence.Builder contentBuilder = this.factory.sequence();
+        if (this.since(VERSION_5_0)) {
+            contentBuilder.addElement(this.factory.element(this.factory.resolve("session-management"))
+                    .addAttribute(DistributableWebSubsystemResourceDefinitionRegistrar.DEFAULT_SESSION_MANAGEMENT)
+                    .withContent(sessionManagementChoice)
+                    .build());
+            contentBuilder.addElement(this.factory.element(this.factory.resolve("single-sign-on-management"))
+                    .addAttribute(DistributableWebSubsystemResourceDefinitionRegistrar.DEFAULT_USER_MANAGEMENT)
+                    .withContent(userManagementChoice)
+                    .build());
+        } else {
+            for (AttributeDefinition attribute : List.of(DistributableWebSubsystemResourceDefinitionRegistrar.DEFAULT_SESSION_MANAGEMENT, DistributableWebSubsystemResourceDefinitionRegistrar.DEFAULT_USER_MANAGEMENT)) {
+                builder.addAttribute(attribute).withLocalNames(Map.of(attribute, attribute.getName()));
+            }
+            contentBuilder.addChoice(sessionManagementChoice);
+            contentBuilder.addChoice(userManagementChoice);
+        }
+        ResourceXMLSequence content = contentBuilder.addChoice(routingProviderChoice).build();
+
+        return builder.withContent(content).build();
     }
 
     ResourceRegistrationXMLElement infinispanSessionManagementElement() {
