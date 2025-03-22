@@ -5,8 +5,6 @@
 
 package org.wildfly.extension.clustering.web.session;
 
-import java.util.function.Supplier;
-
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.wildfly.clustering.server.deployment.DeploymentConfiguration;
@@ -22,13 +20,13 @@ import org.wildfly.subsystem.service.DeploymentServiceInstaller;
 public abstract class AbstractSessionManagementProvider implements DistributableSessionManagementProvider {
 
     private final DistributableSessionManagementConfiguration<DeploymentUnit> configuration;
-    private final Supplier<RouteLocatorProvider> locatorProviderFactory;
     private final BinaryServiceConfiguration cacheConfiguration;
+    private final RouteLocatorProvider locatorProvider;
 
-    protected AbstractSessionManagementProvider(DistributableSessionManagementConfiguration<DeploymentUnit> configuration, BinaryServiceConfiguration cacheConfiguration, Supplier<RouteLocatorProvider> locatorProviderFactory) {
+    protected AbstractSessionManagementProvider(DistributableSessionManagementConfiguration<DeploymentUnit> configuration, BinaryServiceConfiguration cacheConfiguration, RouteLocatorProvider locatorProvider) {
         this.configuration = configuration;
-        this.locatorProviderFactory = locatorProviderFactory;
         this.cacheConfiguration = cacheConfiguration;
+        this.locatorProvider = locatorProvider;
     }
 
     @Override
@@ -46,6 +44,6 @@ public abstract class AbstractSessionManagementProvider implements Distributable
     }
 
     public RouteLocatorProvider getRouteLocatorProvider() {
-        return this.locatorProviderFactory.get();
+        return this.locatorProvider;
     }
 }
