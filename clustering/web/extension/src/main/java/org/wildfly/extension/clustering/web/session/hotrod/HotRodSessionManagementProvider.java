@@ -40,8 +40,9 @@ import org.wildfly.subsystem.service.ServiceInstaller;
  */
 public class HotRodSessionManagementProvider extends AbstractSessionManagementProvider {
     private static final String DEFAULT_CONFIGURATION = "{\"distributed-cache\": { \"mode\": \"SYNC\" }}";
-    public HotRodSessionManagementProvider(DistributableSessionManagementConfiguration<DeploymentUnit> configuration, BinaryServiceConfiguration cacheConfiguration, Supplier<RouteLocatorProvider> locatorProviderFactory) {
-        super(configuration, cacheConfiguration, locatorProviderFactory);
+
+    public HotRodSessionManagementProvider(DistributableSessionManagementConfiguration<DeploymentUnit> configuration, BinaryServiceConfiguration cacheConfiguration, RouteLocatorProvider locatorProvider) {
+        super(configuration, cacheConfiguration, locatorProvider);
     }
 
     @Override
