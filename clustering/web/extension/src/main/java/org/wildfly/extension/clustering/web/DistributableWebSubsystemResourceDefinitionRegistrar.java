@@ -52,8 +52,8 @@ public class DistributableWebSubsystemResourceDefinitionRegistrar implements Sub
     static final RuntimeCapability<Void> DEFAULT_SESSION_MANAGEMENT_PROVIDER = RuntimeCapability.Builder.of(DistributableSessionManagementProvider.DEFAULT_SERVICE_DESCRIPTOR).build();
     static final RuntimeCapability<Void> DEFAULT_USER_MANAGEMENT_PROVIDER = RuntimeCapability.Builder.of(DistributableUserManagementProvider.DEFAULT_SERVICE_DESCRIPTOR).build();
 
-    static final CapabilityReferenceAttributeDefinition<DistributableSessionManagementProvider> DEFAULT_SESSION_MANAGEMENT = new CapabilityReferenceAttributeDefinition.Builder<>("default-session-management", CapabilityReference.builder(DEFAULT_SESSION_MANAGEMENT_PROVIDER, DistributableSessionManagementProvider.SERVICE_DESCRIPTOR).build()).build();
-    static final CapabilityReferenceAttributeDefinition<DistributableUserManagementProvider> DEFAULT_USER_MANAGEMENT = new CapabilityReferenceAttributeDefinition.Builder<>("default-single-sign-on-management", CapabilityReference.builder(DEFAULT_USER_MANAGEMENT_PROVIDER, DistributableUserManagementProvider.SERVICE_DESCRIPTOR).build()).build();
+    static final CapabilityReferenceAttributeDefinition<DistributableSessionManagementProvider> DEFAULT_SESSION_MANAGEMENT = new CapabilityReferenceAttributeDefinition.Builder<>("default-session-management", CapabilityReference.builder(DEFAULT_SESSION_MANAGEMENT_PROVIDER, DistributableSessionManagementProvider.SERVICE_DESCRIPTOR).build()).setXmlName(ModelDescriptionConstants.DEFAULT).build();
+    static final CapabilityReferenceAttributeDefinition<DistributableUserManagementProvider> DEFAULT_USER_MANAGEMENT = new CapabilityReferenceAttributeDefinition.Builder<>("default-single-sign-on-management", CapabilityReference.builder(DEFAULT_USER_MANAGEMENT_PROVIDER, DistributableUserManagementProvider.SERVICE_DESCRIPTOR).build()).setXmlName(ModelDescriptionConstants.DEFAULT).build();
 
     @Override
     public ManagementResourceRegistration register(SubsystemRegistration parent, ManagementResourceRegistrationContext context) {
