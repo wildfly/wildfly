@@ -6,6 +6,7 @@
 package org.wildfly.extension.clustering.singleton;
 
 import java.util.EnumSet;
+import java.util.List;
 
 import javax.xml.stream.XMLStreamException;
 
@@ -45,6 +46,7 @@ public class SingletonXMLWriter implements XMLElementWriter<SubsystemMarshalling
         writer.writeStartElement(XMLElement.SINGLETON_POLICY.getLocalName());
         writer.writeAttribute(XMLAttribute.NAME.getLocalName(), name);
 
+        writeAttributes(writer, policy, List.of(SingletonPolicyResourceDefinition.CACHE_ATTRIBUTE_GROUP::getContainerAttribute, SingletonPolicyResourceDefinition.CACHE_ATTRIBUTE_GROUP::getCacheAttribute));
         writeAttributes(writer, policy, SingletonPolicyResourceDefinition.Attribute.class);
 
         if (policy.hasDefined(ElectionPolicyResourceDefinition.WILDCARD_PATH.getKey())) {

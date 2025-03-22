@@ -16,12 +16,10 @@ import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.registry.AttributeAccess.Flag;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
-import org.wildfly.clustering.infinispan.client.service.HotRodServiceDescriptor;
-import org.wildfly.clustering.server.service.BinaryServiceConfiguration;
+import org.wildfly.clustering.infinispan.client.service.HotRodCacheConfigurationAttributeGroup;
+import org.wildfly.clustering.server.service.CacheConfigurationAttributeGroup;
 import org.wildfly.clustering.web.service.routing.RouteLocatorProvider;
 import org.wildfly.extension.clustering.web.session.hotrod.HotRodSessionManagementProvider;
-import org.wildfly.subsystem.resource.ResourceModelResolver;
-import org.wildfly.subsystem.resource.capability.CapabilityReferenceRecorder;
 import org.wildfly.subsystem.service.ResourceServiceInstaller;
 import org.wildfly.subsystem.service.ServiceDependency;
 import org.wildfly.subsystem.service.capability.CapabilityServiceInstaller;
@@ -35,18 +33,9 @@ public class HotRodSessionManagementResourceDefinition extends SessionManagement
     static PathElement pathElement(String name) {
         return PathElement.pathElement("hotrod-session-management", name);
     }
+    static final CacheConfigurationAttributeGroup CACHE_ATTRIBUTE_GROUP = new HotRodCacheConfigurationAttributeGroup(SESSION_MANAGEMENT_PROVIDER);
 
     public enum Attribute implements org.jboss.as.clustering.controller.Attribute, UnaryOperator<SimpleAttributeDefinitionBuilder> {
-        REMOTE_CACHE_CONTAINER("remote-cache-container", ModelType.STRING) {
-            @Override
-            public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
-                return builder.setAllowExpression(false)
-                        .setRequired(true)
-                        .setCapabilityReference(CapabilityReferenceRecorder.builder(SESSION_MANAGEMENT_PROVIDER, HotRodServiceDescriptor.REMOTE_CACHE_CONTAINER).build())
-                        ;
-            }
-        },
-        CACHE_CONFIGURATION("cache-configuration", ModelType.STRING),
         EXPIRATION_THREAD_POOL_SIZE("expiration-thread-pool-size", ModelType.INT) {
             @Override
             public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
@@ -75,13 +64,12 @@ public class HotRodSessionManagementResourceDefinition extends SessionManagement
         }
     }
 
-    private final ResourceModelResolver<BinaryServiceConfiguration> resolver = BinaryServiceConfiguration.resolver(Attribute.REMOTE_CACHE_CONTAINER.getDefinition(), Attribute.CACHE_CONFIGURATION.getDefinition());
-
     HotRodSessionManagementResourceDefinition() {
         super(WILDCARD_PATH, new UnaryOperator<>() {
             @Override
             public ResourceDescriptor apply(ResourceDescriptor descriptor) {
                 return descriptor.addAttributes(Attribute.class)
+                        .addAttributes(CACHE_ATTRIBUTE_GROUP.getAttributes())
                         .addRequiredSingletonChildren(LocalAffinityResourceDefinition.PATH)
                         ;
             }
@@ -91,7 +79,7 @@ public class HotRodSessionManagementResourceDefinition extends SessionManagement
     @Override
     public ResourceServiceInstaller configure(OperationContext context, ModelNode model) throws OperationFailedException {
         ServiceDependency<RouteLocatorProvider> locatorProvider = ServiceDependency.on(RouteLocatorProvider.SERVICE_DESCRIPTOR, context.getCurrentAddressValue());
-        return CapabilityServiceInstaller.builder(SessionManagementResourceDefinition.SESSION_MANAGEMENT_PROVIDER, new HotRodSessionManagementProvider(this.resolve(context, model), this.resolver.resolve(context, model), locatorProvider))
+        return CapabilityServiceInstaller.builder(SessionManagementResourceDefinition.SESSION_MANAGEMENT_PROVIDER, new HotRodSessionManagementProvider(this.resolve(context, model), CACHE_ATTRIBUTE_GROUP.resolve(context, model), locatorProvider))
                 .requires(locatorProvider)
                 .build();
     }
