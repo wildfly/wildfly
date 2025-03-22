@@ -23,6 +23,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
+import org.wildfly.clustering.infinispan.service.InfinispanServiceDescriptor;
 import org.wildfly.clustering.singleton.service.SingletonServiceTargetFactory;
 
 /**
@@ -95,8 +96,10 @@ public class SingletonTransformersTestCase extends AbstractSubsystemTest {
         return new AdditionalInitialization()
                 .require(OutboundSocketBinding.SERVICE_DESCRIPTOR, "binding0")
                 .require(OutboundSocketBinding.SERVICE_DESCRIPTOR, "binding1")
+                .require(InfinispanServiceDescriptor.DEFAULT_CACHE_CONFIGURATION, "singleton-container")
                 .require(SingletonServiceTargetFactory.DEFAULT_SERVICE_DESCRIPTOR, "singleton-container")
                 .require(org.wildfly.clustering.singleton.service.SingletonServiceConfiguratorFactory.DEFAULT_SERVICE_DESCRIPTOR, "singleton-container")
+                .require(InfinispanServiceDescriptor.CACHE_CONFIGURATION, "singleton-container", "singleton-cache")
                 .require(SingletonServiceTargetFactory.SERVICE_DESCRIPTOR, "singleton-container", "singleton-cache")
                 .require(org.wildfly.clustering.singleton.service.SingletonServiceConfiguratorFactory.SERVICE_DESCRIPTOR, "singleton-container", "singleton-cache")
                 ;
