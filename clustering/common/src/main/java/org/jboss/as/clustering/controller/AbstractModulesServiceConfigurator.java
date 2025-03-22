@@ -27,6 +27,7 @@ import org.wildfly.subsystem.service.capability.CapabilityServiceInstaller;
 /**
  * @author Paul Ferraro
  */
+@Deprecated(forRemoval = true)
 public abstract class AbstractModulesServiceConfigurator<T> implements ResourceServiceConfigurator, Function<List<Module>, T> {
 
     private final RuntimeCapability<Void> capability;
