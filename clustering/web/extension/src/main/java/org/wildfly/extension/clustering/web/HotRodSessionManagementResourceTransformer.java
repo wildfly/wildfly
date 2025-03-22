@@ -24,12 +24,12 @@ public class HotRodSessionManagementResourceTransformer extends SessionManagemen
 
     @Override
     public void accept(ModelVersion version) {
-        ResourceTransformationDescriptionBuilder builder = this.parent.addChildResource(HotRodSessionManagementResourceDefinition.WILDCARD_PATH);
+        ResourceTransformationDescriptionBuilder builder = this.parent.addChildResource(SessionManagementResourceRegistration.HOTROD.getPathElement());
 
         this.accept(version, builder);
 
         builder.getAttributeBuilder()
-                .setDiscard(DiscardAttributeChecker.ALWAYS, HotRodSessionManagementResourceDefinition.Attribute.EXPIRATION_THREAD_POOL_SIZE.getName())
+                .setDiscard(DiscardAttributeChecker.ALWAYS, HotRodSessionManagementResourceDefinitionRegistrar.EXPIRATION_THREAD_POOL_SIZE.getName())
                 .end();
     }
 }
