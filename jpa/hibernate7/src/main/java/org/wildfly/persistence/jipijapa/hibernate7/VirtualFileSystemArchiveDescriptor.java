@@ -82,4 +82,43 @@ public class VirtualFileSystemArchiveDescriptor implements ArchiveDescriptor {
             archiveContext.obtainArchiveEntryHandler( entry ).handleEntry( entry, archiveContext );
         }
     }
+
+    /**
+     * Example call from org.hibernate.boot.archive.scan.internal.DisabledScanner that would be used to look up orm.xml
+     * in persistence unit root (same path as persistence.xml).
+     *
+     * Example usage:
+     *     final ArchiveEntry entry = archiveDescriptor.findEntry( "META-INF/orm.xml" );
+     * @param path is expected to be META-INF/orm.xml
+     * @return
+     */
+
+    @Override
+    public ArchiveEntry findEntry(String path) {
+        if (path.equals("META-INF/orm.xml")) {
+            for (VirtualFile child : root.getChildren()) {
+                if ("orm.xml".equals(child.getName())) {
+                    final String relativeName = path;
+                    final InputStreamAccess inputStreamAccess = new VirtualFileInputStreamAccess(child.getName(), child);
+                    return new ArchiveEntry() {
+                        @Override
+                        public String getName() {
+                            return child.getName();
+                        }
+
+                        @Override
+                        public String getNameWithinArchive() {
+                            return relativeName;
+                        }
+
+                        @Override
+                        public InputStreamAccess getStreamAccess() {
+                            return inputStreamAccess;
+                        }
+                    };
+                }
+            }
+        }
+        return null;
+    }
 }

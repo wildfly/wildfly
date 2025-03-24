@@ -9,6 +9,8 @@
         <jta-data-source>java:jboss/datasources/ExampleDS</jta-data-source>
         <properties>
             <property name="hibernate.hbm2ddl.auto" value="create-drop"/>
+            <property name="wildfly.jpa.twophasebootstrap" value="false"/>
+            <property name="jboss.as.jpa.classtransformer" value="true"/>
         </properties>
     </persistence-unit>
 </persistence>

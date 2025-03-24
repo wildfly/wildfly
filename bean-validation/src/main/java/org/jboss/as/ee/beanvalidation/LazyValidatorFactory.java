@@ -5,6 +5,7 @@
 package org.jboss.as.ee.beanvalidation;
 
 import jakarta.validation.ClockProvider;
+import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorFactory;
 import jakarta.validation.MessageInterpolator;
 import jakarta.validation.ParameterNameProvider;
@@ -62,6 +63,18 @@ public class LazyValidatorFactory implements ValidatorFactory {
         try {
             WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(classLoader);
             return Validation.byDefaultProvider().providerResolver(new WildFlyProviderResolver()).configure()
+                    .constraintValidatorFactory( new ConstraintValidatorFactory() {
+
+                        @Override
+                        public <T extends ConstraintValidator<?, ?>> T getInstance(Class<T> key) {
+                            return getDelegate().getConstraintValidatorFactory().getInstance( key );
+                        }
+
+                        @Override
+                        public void releaseInstance(ConstraintValidator<?, ?> instance) {
+                            getDelegate().getConstraintValidatorFactory().releaseInstance( instance );
+                        }
+                    } )
                     .buildValidatorFactory();
         } finally {
             WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(oldTCCL);
