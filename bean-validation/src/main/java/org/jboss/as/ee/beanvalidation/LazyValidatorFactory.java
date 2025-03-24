@@ -4,6 +4,8 @@
  */
 package org.jboss.as.ee.beanvalidation;
 
+import java.lang.reflect.InvocationTargetException;
+
 import jakarta.validation.ClockProvider;
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorFactory;
@@ -30,6 +32,8 @@ public class LazyValidatorFactory implements ValidatorFactory {
 
     private volatile ValidatorFactory delegate; // use as a barrier
 
+    private volatile ConstraintValidatorFactory constraintValidatorFactory;
+
     public LazyValidatorFactory(ClassLoader classLoader) {
         this.classLoader = classLoader;
     }
@@ -53,6 +57,12 @@ public class LazyValidatorFactory implements ValidatorFactory {
         }
     }
 
+    public void replaceDelegate(ConstraintValidatorFactory constraintValidatorFactory) {
+        synchronized (this) {
+            this.constraintValidatorFactory = constraintValidatorFactory;
+        }
+    }
+
     @Override
     public Validator getValidator() {
         return getDelegate().getValidator();
@@ -62,17 +72,18 @@ public class LazyValidatorFactory implements ValidatorFactory {
         final ClassLoader oldTCCL = WildFlySecurityManager.getCurrentContextClassLoaderPrivileged();
         try {
             WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(classLoader);
+            constraintValidatorFactory = new WildFlyDefaultConstraintValidatorFactory();
             return Validation.byDefaultProvider().providerResolver(new WildFlyProviderResolver()).configure()
                     .constraintValidatorFactory( new ConstraintValidatorFactory() {
 
                         @Override
                         public <T extends ConstraintValidator<?, ?>> T getInstance(Class<T> key) {
-                            return getDelegate().getConstraintValidatorFactory().getInstance( key );
+                            return constraintValidatorFactory.getInstance( key );
                         }
 
                         @Override
                         public void releaseInstance(ConstraintValidator<?, ?> instance) {
-                            getDelegate().getConstraintValidatorFactory().releaseInstance( instance );
+                            constraintValidatorFactory.releaseInstance( instance );
                         }
                     } )
                     .buildValidatorFactory();
@@ -128,6 +139,23 @@ public class LazyValidatorFactory implements ValidatorFactory {
         // Avoid initializing delegate if closing it
         if (delegate != null) {
             getDelegate().close();
+        }
+    }
+
+    private static class WildFlyDefaultConstraintValidatorFactory implements ConstraintValidatorFactory {
+
+        @Override
+        public <T extends ConstraintValidator<?, ?>> T getInstance(Class<T> clazz) {
+            try {
+                return clazz.getConstructor().newInstance();
+            } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+        @Override
+        public void releaseInstance(ConstraintValidator<?, ?> instance) {
+            // noop
         }
     }
 }
