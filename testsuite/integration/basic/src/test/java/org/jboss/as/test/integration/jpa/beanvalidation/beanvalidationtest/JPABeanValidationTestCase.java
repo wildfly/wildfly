@@ -20,6 +20,7 @@ import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.integration.jpa.beanvalidation.Employee;
 import org.jboss.as.test.integration.jpa.beanvalidation.SFSB1;
 import org.jboss.shrinkwrap.api.Archive;
+import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Test;
@@ -44,6 +45,7 @@ public class JPABeanValidationTestCase {
                 SFSB1.class
         );
         jar.addAsManifestResource(JPABeanValidationTestCase.class.getPackage(), "persistence.xml", "persistence.xml");
+        jar.addAsManifestResource(new StringAsset("<beans bean-discovery-mode=\"none\"></beans>"), "beans.xml");
         jar.addAsManifestResource(createPermissionsXmlAsset(
                 HibernateValidatorPermission.ACCESS_PRIVATE_MEMBERS
         ), "permissions.xml");
