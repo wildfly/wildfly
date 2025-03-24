@@ -3,8 +3,10 @@
   ~ SPDX-License-Identifier: Apache-2.0
   -->
 
-<subsystem xmlns="urn:jboss:domain:distributable-ejb:1.0" default-bean-management="default">
-    <infinispan-bean-management name="default" cache-container="foo" cache="bar" max-active-beans="${exp.max-active-beans:10000}"/>
+<subsystem xmlns="urn:jboss:domain:distributable-ejb:2.0">
+    <bean-management default="default">
+        <infinispan-bean-management name="default" cache-container="foo" cache="bar" max-active-beans="${exp.max-active-beans:10000}"/>
+    </bean-management>
     <local-client-mappings-registry/>
     <infinispan-timer-management name="distributed" cache-container="foo" cache="bar" max-active-timers="${exp.max-active-distributed-timers:100}"/>
     <infinispan-timer-management name="transient" cache-container="foo" cache="bar" max-active-timers="${exp.max-active-transient-timers:1000}"/>
