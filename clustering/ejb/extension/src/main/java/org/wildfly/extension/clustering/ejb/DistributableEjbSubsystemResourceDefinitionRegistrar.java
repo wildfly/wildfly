@@ -40,7 +40,9 @@ public class DistributableEjbSubsystemResourceDefinitionRegistrar implements Sub
     static final ParentResourceDescriptionResolver RESOLVER = new SubsystemResourceDescriptionResolver(REGISTRATION.getName(), DistributableEjbExtension.class);
 
     private static final RuntimeCapability<Void> CAPABILITY = RuntimeCapability.Builder.of(BeanManagementProvider.DEFAULT_SERVICE_DESCRIPTOR).build();
-    static final CapabilityReferenceAttributeDefinition<BeanManagementProvider> DEFAULT_BEAN_MANAGEMENT_PROVIDER = new CapabilityReferenceAttributeDefinition.Builder<>("default-bean-management", CapabilityReference.builder(CAPABILITY, BeanManagementProvider.SERVICE_DESCRIPTOR).build()).build();
+    static final CapabilityReferenceAttributeDefinition<BeanManagementProvider> DEFAULT_BEAN_MANAGEMENT_PROVIDER = new CapabilityReferenceAttributeDefinition.Builder<>("default-bean-management", CapabilityReference.builder(CAPABILITY, BeanManagementProvider.SERVICE_DESCRIPTOR).build())
+            .setXmlName(ModelDescriptionConstants.DEFAULT)
+            .build();
 
     @Override
     public ManagementResourceRegistration register(SubsystemRegistration parent, ManagementResourceRegistrationContext context) {

@@ -5,6 +5,7 @@
 package org.wildfly.extension.clustering.ejb;
 
 import java.util.List;
+import java.util.Map;
 
 import org.jboss.as.controller.ResourceRegistration;
 import org.jboss.as.controller.SubsystemSchema;
@@ -27,9 +28,10 @@ import org.jboss.staxmapper.IntVersion;
  */
 public enum DistributableEjbSubsystemSchema implements SubsystemResourceXMLSchema<DistributableEjbSubsystemSchema> {
 
-    VERSION_1_0(1, 0), // WildFly 27
+    VERSION_1_0(1, 0), // WildFly 27-35
+    VERSION_2_0(2, 0), // WildFly 36
     ;
-    static final DistributableEjbSubsystemSchema CURRENT = VERSION_1_0;
+    static final DistributableEjbSubsystemSchema CURRENT = VERSION_2_0;
 
     private final VersionedNamespace<IntVersion, DistributableEjbSubsystemSchema> namespace;
     private final ResourceXMLParticleFactory factory = ResourceXMLParticleFactory.newInstance(this);
@@ -45,14 +47,21 @@ public enum DistributableEjbSubsystemSchema implements SubsystemResourceXMLSchem
 
     @Override
     public SubsystemResourceRegistrationXMLElement getSubsystemXMLElement() {
-        ResourceXMLSequence.Builder contentBuilder = this.factory.sequence()
-                .addChoice(this.beanManagementChoice())
-                .addChoice(this.clientMappingsRegistryChoice())
-                .addChoice(this.timerManagementChoice())
-                ;
-        return this.factory.subsystemElement(DistributableEjbSubsystemResourceDefinitionRegistrar.REGISTRATION)
-                .addAttribute(DistributableEjbSubsystemResourceDefinitionRegistrar.DEFAULT_BEAN_MANAGEMENT_PROVIDER)
-                .withContent(contentBuilder.build())
+        SubsystemResourceRegistrationXMLElement.Builder builder = this.factory.subsystemElement(DistributableEjbSubsystemResourceDefinitionRegistrar.REGISTRATION);
+        ResourceXMLSequence.Builder contentBuilder = this.factory.sequence();
+        if (this.since(VERSION_2_0)) {
+            contentBuilder.addElement(this.factory.element(this.factory.resolve("bean-management"))
+                    .addAttribute(DistributableEjbSubsystemResourceDefinitionRegistrar.DEFAULT_BEAN_MANAGEMENT_PROVIDER)
+                    .withContent(this.beanManagementChoice())
+                    .build());
+        } else {
+            builder.addAttribute(DistributableEjbSubsystemResourceDefinitionRegistrar.DEFAULT_BEAN_MANAGEMENT_PROVIDER);
+            builder.withLocalNames(Map.of(DistributableEjbSubsystemResourceDefinitionRegistrar.DEFAULT_BEAN_MANAGEMENT_PROVIDER, DistributableEjbSubsystemResourceDefinitionRegistrar.DEFAULT_BEAN_MANAGEMENT_PROVIDER.getName()));
+            contentBuilder.addChoice(this.beanManagementChoice());
+        }
+        contentBuilder.addChoice(this.clientMappingsRegistryChoice());
+        contentBuilder.addChoice(this.timerManagementChoice());
+        return builder.withContent(contentBuilder.build())
                 .build();
     }
 
