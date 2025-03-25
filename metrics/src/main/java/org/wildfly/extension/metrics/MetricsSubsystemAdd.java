@@ -23,6 +23,7 @@ import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
+import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.server.AbstractDeploymentChainStep;
@@ -44,6 +45,16 @@ class MetricsSubsystemAdd extends AbstractBoottimeAddStepHandler {
     }
 
     static final MetricsSubsystemAdd INSTANCE = new MetricsSubsystemAdd();
+
+    @Override
+    protected void recordCapabilitiesAndRequirements(OperationContext operationContext, ModelNode operation, Resource resource) throws OperationFailedException {
+        super.recordCapabilitiesAndRequirements(operationContext, operation, resource);
+
+        operationContext.registerCapability(
+            RuntimeCapability.Builder.of("org.wildfly.management.context", true).build()
+                .fromBaseCapability(MetricsContextService.CONTEXT_NAME.substring(1))
+        );
+    }
 
     @Override
     protected void performBoottime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {

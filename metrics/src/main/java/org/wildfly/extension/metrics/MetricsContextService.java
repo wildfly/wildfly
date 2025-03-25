@@ -28,7 +28,7 @@ import org.jboss.msc.service.StopContext;
  */
 public class MetricsContextService implements Service {
 
-    private static final String CONTEXT_NAME = "/metrics";
+    static final String CONTEXT_NAME = "/metrics";
 
     private final Consumer<MetricsContextService> consumer;
     private final Supplier<ExtensibleHttpManagement> extensibleHttpManagement;
