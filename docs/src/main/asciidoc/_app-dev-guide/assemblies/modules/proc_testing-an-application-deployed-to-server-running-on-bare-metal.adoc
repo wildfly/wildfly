@@ -1,0 +1,44 @@
+:_newdoc-version: 2.15.0
+:_template-generated: 2023-11-6
+:_mod-docs-content-type: PROCEDURE
+
+[id="testing-an-application-deployed-to-server-running-on-bare-metal_{context}"]
+= Testing an application deployed on {ProductShortname} that is running on bare metal
+
+[role="_abstract"]
+Test the application deployed on {ProductShortname} that is running on bare metal.
+
+.Prerequisites
+
+* You have created a test class.
++
+For more information, see xref:creating-a-test-class-to-test-an-application_testing-an-application-deployed-to-server[Creating a test class to test an application].
+
+* The application to test is deployed on {ProductShortName}.
+* {ProductShortName} is running.
+
+.Procedure
+
+. Navigate to the _<application_home>_ directory.
+
+. Run the integration test by using the `verify` command with the `integration-testing` profile.
++
+[source,options="nowrap"]
+----
+$ mvn verify -Pintegration-testing
+----
++
+.Example output
+[source,options="nowrap"]
+---- 
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0
+[INFO] 
+[INFO] 
+[INFO] --- maven-failsafe-plugin:3.2.2:verify (default) @ helloworld ---
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  9.982 s
+[INFO] Finished at: 2023-11-22T14:53:54+05:30
+[INFO] ------------------------------------------------------------------------
+----
