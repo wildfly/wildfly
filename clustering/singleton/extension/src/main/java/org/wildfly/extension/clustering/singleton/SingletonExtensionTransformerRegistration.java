@@ -22,7 +22,7 @@ public class SingletonExtensionTransformerRegistration implements ExtensionTrans
 
     @Override
     public String getSubsystemName() {
-        return SingletonExtension.SUBSYSTEM_NAME;
+        return SingletonSubsystemResourceDefinitionRegistrar.REGISTRATION.getName();
     }
 
     @Override

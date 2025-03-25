@@ -19,14 +19,14 @@ public class SingletonPolicyResourceTransformer implements Consumer<ModelVersion
     private final ResourceTransformationDescriptionBuilder builder;
 
     SingletonPolicyResourceTransformer(ResourceTransformationDescriptionBuilder parent) {
-        this.builder = parent.addChildResource(SingletonPolicyResourceDefinition.WILDCARD_PATH);
+        this.builder = parent.addChildResource(SingletonPolicyResourceDefinitionRegistrar.REGISTRATION.getPathElement());
     }
 
     @Override
     public void accept(ModelVersion version) {
         if (SingletonSubsystemModel.VERSION_3_0_0.requiresTransformation(version)) {
-            this.builder.discardChildResource(SingletonDeploymentResourceDefinition.WILDCARD_PATH);
-            this.builder.discardChildResource(SingletonServiceResourceDefinition.WILDCARD_PATH);
+            this.builder.discardChildResource(SingletonRuntimeResourceRegistration.DEPLOYMENT.getPathElement());
+            this.builder.discardChildResource(SingletonRuntimeResourceRegistration.SERVICE.getPathElement());
         }
     }
 }
