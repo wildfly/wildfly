@@ -144,22 +144,24 @@ public class EJB3RemoteServiceAdd extends AbstractBoottimeAddStepHandler {
         }
 
         // set up a ServiceProviderRegistrar to support cluster-wide mdule availability updates via a ModuleAvailabilityRegsitrar
-        // this should already be set up by the cache service installation
-        // to get the service name, we need to take the ClusteringServiceDescriptor.SERVICE_PROVIDER_REGISTRY and compute the name and then create a dependeency
-        ServiceDependency<ModuleAvailabilityRegistrarProvider> marProvider = getModuleAvailabilityRegistrarProvider(context, model);
+        ServiceDependency<ModuleAvailabilityRegistrarProvider> moduleAvailabilityRegistrarProvider = getModuleAvailabilityRegistrarProvider(context, model);
         ServiceInstaller installer = new ServiceInstaller() {
             @Override
             public ServiceController<?> install(RequirementServiceTarget target) {
-                for (ServiceInstaller installer : marProvider.get().getServiceInstallers(support)) {
+                for (ServiceInstaller installer : moduleAvailabilityRegistrarProvider.get().getServiceInstallers(support)) {
                     ServiceController<?> controller = installer.install(target);
                 }
-                return null;
+                ModuleAvailabilityRegistrarServiceInstaller moduleAvailabilityRegistrarInstaller =  new ModuleAvailabilityRegistrarServiceInstaller();
+                ServiceController<?> controller = moduleAvailabilityRegistrarInstaller.install(target);
+                return controller;
             }
         };
-        ServiceInstaller.builder(installer, support).requires(marProvider).build().install(context);
-
-        // install the ModuleAvailabilityRegistrar service
-        new ModuleAvailabilityRegistrarServiceInstaller().install(context);
+        // this is an anonymous installer from org.wildfly.subsystem.service
+        // installs into aspecial target
+        ServiceInstaller.builder(installer, support)
+                .requires(moduleAvailabilityRegistrarProvider)
+                .build()
+                .install(context);
 
         final OptionMap channelCreationOptions = this.getChannelCreationOptions(context);
         // Install the Jakarta Enterprise Beans remoting connector service which will listen for client connections on the

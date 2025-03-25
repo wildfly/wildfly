@@ -41,6 +41,9 @@ import java.util.concurrent.CompletionStage;
  * <p>
  * This class is also suspend and resume aware, so that locally depployed modules will be marked as unavailable
  * when the server is suspended, and marked as available when the server is resumed.
+ *
+ * As this service is only required to support EJB deployments, it should ideally be started ON_DEMAND and
+ * made available only when one or more EJBs are deployed on the server.
  */
 public class ModuleAvailabilityRegistrarService implements ModuleAvailabilityRegistrar, Service {
     private final ServiceDependency<SuspendableActivityRegistry> registryDependency;
@@ -57,6 +60,8 @@ public class ModuleAvailabilityRegistrarService implements ModuleAvailabilityReg
     private final List<ModuleAvailabilityRegistrarListener> listeners = new ArrayList<>();
     private final Map<DeploymentModuleIdentifier, ServiceProviderRegistration<Object, GroupMember>> registrations = new HashMap<>();
 
+    private boolean started;
+
     /**
      * Create an instance of a ModuleAvailabilityRegistrar which reflects the content of a given DepoymentRepository.
      *
@@ -71,14 +76,14 @@ public class ModuleAvailabilityRegistrarService implements ModuleAvailabilityReg
 
         this.activity = new ModuleAvailabilityRegistrarSuspendableActivity();
         this.deploymentRepositoryListener = new ModuleAvailabilityRegistrarDeploymentRepositoryListener();
-        EjbLogger.ROOT_LOGGER.info("ModuleAvailabilityRegistrarService : <init>");
+
+        this.started = false;
     }
 
     // service interface
     @Override
     public boolean isStarted() {
-        // how to check started
-        return true;
+        return started;
     }
 
     @Override
@@ -88,12 +93,12 @@ public class ModuleAvailabilityRegistrarService implements ModuleAvailabilityReg
         this.registry = this.registryDependency.get();
         this.registrar = this.registrarDependency.get();
         this.deploymentRepository = this.repositoryDependency.get();
-
         // register as a listener of the DeploymentRepository
         deploymentRepository.addListener(this.deploymentRepositoryListener);
-
         // register as a ServerActivity
         registry.registerActivity(this.activity);
+        // mark this services as started
+        this.started = true;
     }
 
     @Override
@@ -101,14 +106,14 @@ public class ModuleAvailabilityRegistrarService implements ModuleAvailabilityReg
         EjbLogger.ROOT_LOGGER.info("Stopping ModuleAvailabilityRegistrarService");
         // unregister as a listener of the DeploymentRepository
         deploymentRepository.removeListener(this.deploymentRepositoryListener);
-
         // unregister as a ServerActivity
         registry.unregisterActivity(this.activity);
-
         // nullify the depenedencies
         this.registry = null;
         this.registrar = null;
         this.deploymentRepository = null;
+        // mark the service as stopped
+        this.started = false;
     }
 
     // the ModuleAvailabilityRegistrar listener interface
