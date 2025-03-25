@@ -11,6 +11,7 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.List;
 import java.util.ServiceLoader;
+import java.util.Set;
 import java.util.concurrent.Executor;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
@@ -34,6 +35,7 @@ import org.jboss.as.network.ClientMapping;
 import org.jboss.as.network.ProtocolSocketBinding;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
+import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.remoting3.Endpoint;
@@ -150,16 +152,29 @@ public class EJB3RemoteServiceAdd extends AbstractBoottimeAddStepHandler {
         ServiceInstaller installer = new ServiceInstaller() {
             @Override
             public ServiceController<?> install(RequirementServiceTarget target) {
+                int i = 1;
                 for (ServiceInstaller installer : marProvider.get().getServiceInstallers(support)) {
                     ServiceController<?> controller = installer.install(target);
+                    // service debugging
+                    dumpServiceControllerInformation("ModuleAvailabilityRegistrarProvider: installed service # " + i++, controller);
                 }
-                return null;
+                ModuleAvailabilityRegistrarServiceInstaller marInstaller =  new ModuleAvailabilityRegistrarServiceInstaller();
+                ServiceController<?> controller = marInstaller.install(target);
+                dumpServiceControllerInformation("ModuleAvailabilityRegistrarService", controller);
+
+                //dumpServiceContainerInformation("mainContainer", controller.getServiceContainer());
+
+                return controller;
             }
         };
-        ServiceInstaller.builder(installer, support).requires(marProvider).build().install(context);
+        // this is an anonymous installer from org.wildfly.subsystem.service
+        // installs into aspecial target
+        ServiceInstaller.builder(installer, support)
+                .requires(marProvider)
+                .build()
+                .install(context);
 
-        // install the ModuleAvailabilityRegistrar service
-        new ModuleAvailabilityRegistrarServiceInstaller().install(context);
+        System.out.println("MAR provider = " + marProvider.toString());
 
         final OptionMap channelCreationOptions = this.getChannelCreationOptions(context);
         // Install the Jakarta Enterprise Beans remoting connector service which will listen for client connections on the
@@ -182,6 +197,34 @@ public class EJB3RemoteServiceAdd extends AbstractBoottimeAddStepHandler {
                 channelCreationOptions, FilterSpecClassResolverFilter.getFilterForOperationContext(context));
         builder.setInstance(ejbRemoteConnectorService);
         builder.install();
+    }
+
+    private void dumpServiceContainerInformation(String containerName, ServiceContainer container) {
+        System.out.println("Listing services for container " + containerName + ": ");
+        for (ServiceName name : container.getServiceNames()) {
+            ServiceController<?> controller1 = container.getService(name);
+            if (controller1 == null) {
+                System.out.printf("Service %s has null controller\n", name);
+            }
+            dumpServiceControllerInformation(name.toString(), controller1);
+        }
+    }
+
+    private void dumpServiceControllerInformation(String name, ServiceController<?> controller) {
+        System.out.printf(name + ": mode = %s\n", controller.getMode());
+        System.out.printf(name + ": state = %s\n",controller.getState());
+        Set<ServiceName> requires = controller.requires();
+        for (ServiceName serviceName : requires) {
+            System.out.printf(name + ": required services = %s\n", serviceName);
+        }
+        Set<ServiceName> provides = controller.provides();
+        for (ServiceName serviceName : provides) {
+            System.out.printf(name + ": provided services = %s\n", serviceName);
+        }
+        Set<ServiceName> missing = controller.missing();
+        for (ServiceName serviceName : missing) {
+            System.out.printf(name + ": missing services = %s\n", serviceName);
+        }
     }
 
     private OptionMap getChannelCreationOptions(final OperationContext context) throws OperationFailedException {
