@@ -16,7 +16,6 @@ import org.wildfly.subsystem.service.ServiceDependency;
 import org.wildfly.subsystem.service.ServiceInstaller;
 
 import java.util.List;
-
 /**
  * Used to install a ModuleAvailabilityRegistrar service to support module avalability updates sent
  * to remote EJB clients.
@@ -29,7 +28,8 @@ public class ModuleAvailabilityRegistrarServiceInstaller implements ServiceInsta
         ServiceDependency<DeploymentRepository> deploymentRepository = ServiceDependency.on(DeploymentRepositoryService.SERVICE_NAME);
         ServiceDependency<ServiceProviderRegistrar<Object, GroupMember>> serviceProviderRegistrar = ServiceDependency.on(EjbClientServicesProvider.MODULE_AVAILABILITY_REGISTRAR_SERVICE_PROVIDER_REGISTRAR);
         ServiceDependency<SuspendableActivityRegistry> activityRegistry = ServiceDependency.on(SuspendableActivityRegistry.SERVICE_DESCRIPTOR);
-        return ServiceInstaller.builder(new ModuleAvailabilityRegistrarService(activityRegistry.get(), serviceProviderRegistrar.get(), deploymentRepository.get()))
+        // NOTE: choose the correct builder to avoid service installation issues (need a supplier builder here)
+        return ServiceInstaller.builder(() -> new ModuleAvailabilityRegistrarService(activityRegistry, serviceProviderRegistrar, deploymentRepository))
                 .requires(List.of(deploymentRepository, serviceProviderRegistrar, activityRegistry))
                 .build()
                 .install(target);

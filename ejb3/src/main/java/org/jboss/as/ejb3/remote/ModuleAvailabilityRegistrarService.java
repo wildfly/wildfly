@@ -18,6 +18,7 @@ import org.wildfly.clustering.server.manager.Service;
 import org.wildfly.clustering.server.provider.ServiceProviderListener;
 import org.wildfly.clustering.server.provider.ServiceProviderRegistrar;
 import org.wildfly.clustering.server.provider.ServiceProviderRegistration;
+import org.wildfly.subsystem.service.ServiceDependency;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -41,9 +42,13 @@ import java.util.concurrent.CompletionStage;
  * when the server is suspended, and marked as available when the server is resumed.
  */
 public class ModuleAvailabilityRegistrarService implements ModuleAvailabilityRegistrar, Service {
-    private final DeploymentRepository deploymentRepository;
-    private final ServiceProviderRegistrar<Object, GroupMember> registrar;
-    private final SuspendableActivityRegistry registry;
+    private final ServiceDependency<SuspendableActivityRegistry> registryDependency;
+    private final ServiceDependency<ServiceProviderRegistrar<Object, GroupMember>> registrarDependency;
+    private final ServiceDependency<DeploymentRepository> repositoryDependency;
+
+    private SuspendableActivityRegistry registry;
+    private ServiceProviderRegistrar<Object, GroupMember> registrar;
+    private DeploymentRepository deploymentRepository;
 
     private final DeploymentRepositoryListener deploymentRepositoryListener ;
     private final SuspendableActivity activity;
@@ -58,13 +63,14 @@ public class ModuleAvailabilityRegistrarService implements ModuleAvailabilityReg
      * @param registrar            the ServiceProviderRegistrar instance used to store module availability information
      * @param registry             the suspendable activity registry to register our server activity with
      */
-    public ModuleAvailabilityRegistrarService(SuspendableActivityRegistry registry, ServiceProviderRegistrar<Object, GroupMember> registrar, DeploymentRepository deploymentRepository) {
-        this.registry = registry;
-        this.registrar = registrar;
-        this.deploymentRepository = deploymentRepository;
+    public ModuleAvailabilityRegistrarService(ServiceDependency<SuspendableActivityRegistry> registryDependency, ServiceDependency<ServiceProviderRegistrar<Object, GroupMember>> registrarDependency, ServiceDependency<DeploymentRepository> repositoryDependency) {
+        this.registryDependency = registryDependency;
+        this.registrarDependency = registrarDependency;
+        this.repositoryDependency = repositoryDependency;
 
         this.activity = new ModuleAvailabilityRegistrarSuspendableActivity();
         this.deploymentRepositoryListener = new ModuleAvailabilityRegistrarDeploymentRepositoryListener();
+        EjbLogger.ROOT_LOGGER.info("ModuleAvailabilityRegistrarService : <init>");
     }
 
     // service interface
@@ -77,6 +83,11 @@ public class ModuleAvailabilityRegistrarService implements ModuleAvailabilityReg
     @Override
     public void start() {
         EjbLogger.ROOT_LOGGER.info("Starting ModuleAvailabilityRegistrarService");
+        // inject the dependencies
+        this.registry = this.registryDependency.get();
+        this.registrar = this.registrarDependency.get();
+        this.deploymentRepository = this.repositoryDependency.get();
+
         // register as a listener of the DeploymentRepository
         deploymentRepository.addListener(this.deploymentRepositoryListener);
 
@@ -92,6 +103,11 @@ public class ModuleAvailabilityRegistrarService implements ModuleAvailabilityReg
 
         // unregister as a ServerActivity
         registry.unregisterActivity(this.activity);
+
+        // nullify the depenedencies
+        this.registry = null;
+        this.registrar = null;
+        this.deploymentRepository = null;
     }
 
     // the ModuleAvailabilityRegistrar listener interface
@@ -260,9 +276,11 @@ public class ModuleAvailabilityRegistrarService implements ModuleAvailabilityReg
          */
         @Override
         public void listenerAdded (DeploymentRepository repository){
+            EjbLogger.ROOT_LOGGER.info("Adding ModuleAvailabilityRegistrarDeploymentModuleListener");
             // get all deployments in the DeploymentRepository, started or not
             Map<DeploymentModuleIdentifier, ModuleDeployment> availableModules = repository.getModules();
             for (DeploymentModuleIdentifier moduleId : availableModules.keySet()){
+                EjbLogger.ROOT_LOGGER.infof("Adding moduleID %s to ServiceProviderRegistry", moduleId);
                 // initialize the listener for the new service
                 ModuleAvailabilityRegistrarServiceProviderListener listener = new ModuleAvailabilityRegistrarServiceProviderListener(moduleId, listeners);
                 // register the new service
@@ -284,7 +302,7 @@ public class ModuleAvailabilityRegistrarService implements ModuleAvailabilityReg
         @Override
         public void deploymentAvailable (DeploymentModuleIdentifier deployment, ModuleDeployment moduleDeployment){
             // add an entry to the ServiceProviderRegistrar
-
+            EjbLogger.ROOT_LOGGER.infof("Adding moduleID %s to ServiceProviderRegistry", deployment);
             ServiceProviderRegistration<Object, GroupMember> registration = registrar.register(deployment);
             // keep track of which services are registered
             registrations.putIfAbsent(deployment, registration);
@@ -300,7 +318,7 @@ public class ModuleAvailabilityRegistrarService implements ModuleAvailabilityReg
         @Override
         public void deploymentStarted (DeploymentModuleIdentifier deployment, ModuleDeployment moduleDeployment){
             // TODO: how do we differentiate between deployments whch have not started and those which have started?
-
+            EjbLogger.ROOT_LOGGER.infof("Starting moduleID %s", deployment);
         }
 
         /**
@@ -310,7 +328,8 @@ public class ModuleAvailabilityRegistrarService implements ModuleAvailabilityReg
          */
         @Override
         public void deploymentRemoved (DeploymentModuleIdentifier deployment){
-            // get hod of the deployment's service registration
+            EjbLogger.ROOT_LOGGER.infof("Removing moduleID %s from ServiceProviderRegistry", deployment);
+            // get hold of the deployment's service registration
             //ServiceProviderRegistration<Object, GroupMember> registration = ModuleAvailabilityRegistrarService.this.registrations.remove(deployment);
             ServiceProviderRegistration<Object, GroupMember> registration = registrations.remove(deployment);
             // close the registrarion
