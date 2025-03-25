@@ -25,19 +25,19 @@ import org.wildfly.extension.clustering.singleton.SingletonLogger;
  */
 public class SingletonDeploymentProcessor implements DeploymentUnitProcessor, LifecycleListener {
 
-    public static final AttachmentKey<ServiceTargetFactory> POLICY_KEY = AttachmentKey.create(ServiceTargetFactory.class);
+    static final AttachmentKey<ServiceTargetFactory> SERVICE_TARGET_FACTORY_KEY = AttachmentKey.create(ServiceTargetFactory.class);
 
     @Override
     public void deploy(DeploymentPhaseContext context) throws DeploymentUnitProcessingException {
         DeploymentUnit unit = context.getDeploymentUnit();
         if (unit.getParent() == null) {
-            ServiceTargetFactory policy = unit.getAttachment(POLICY_KEY);
-            if (policy != null) {
+            ServiceTargetFactory factory = context.getAttachment(SERVICE_TARGET_FACTORY_KEY);
+            if (factory != null) {
                 CapabilityServiceSupport support = unit.getAttachment(Attachments.CAPABILITY_SERVICE_SUPPORT);
                 // Ideally, we would just install the next phase using the singleton policy, however deployment unit phases do not currently support restarts
                 // Restart the deployment using the attached ServiceTarget transformer, but only if a transformer was not already attached
-                if (unit.putAttachment(Attachments.DEPLOYMENT_UNIT_PHASE_SERVICE_TARGET_TRANSFORMER, new SingletonDeploymentServiceTargetTransformer(support, policy)) == null) {
-                    SingletonLogger.ROOT_LOGGER.singletonDeploymentDetected(policy);
+                if (unit.putAttachment(Attachments.DEPLOYMENT_UNIT_PHASE_SERVICE_TARGET_TRANSFORMER, new SingletonDeploymentServiceTargetTransformer(support, factory)) == null) {
+                    SingletonLogger.ROOT_LOGGER.singletonDeploymentDetected(factory);
                     ServiceController<?> controller = context.getServiceRegistry().getRequiredService(unit.getServiceName());
                     controller.addListener(this);
                     controller.setMode(Mode.NEVER);

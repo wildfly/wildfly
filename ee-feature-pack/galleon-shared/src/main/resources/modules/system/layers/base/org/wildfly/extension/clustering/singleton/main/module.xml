@@ -28,6 +28,8 @@
         <module name="org.jboss.msc"/>
         <module name="org.jboss.staxmapper"/>
         <module name="org.jboss.vfs"/>
+        <!-- For resolving socket binding preferences -->
+        <module name="org.jgroups"/>
         <module name="org.wildfly.clustering.infinispan.embedded.service"/>
         <module name="org.wildfly.clustering.server.api"/>
         <module name="org.wildfly.clustering.server.service"/>

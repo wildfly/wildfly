@@ -12,9 +12,7 @@ import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
-import org.jboss.msc.service.ServiceTarget;
 import org.wildfly.clustering.singleton.service.ServiceTargetFactory;
-import org.wildfly.service.ServiceDependency;
 
 /**
  * DUP that adds a dependency on a configured deployment policy service to the next phase.
@@ -31,25 +29,8 @@ public class SingletonDeploymentDependencyProcessor implements DeploymentUnitPro
             SingletonDeploymentConfiguration config = unit.getAttachment(CONFIGURATION_KEY);
             if (config != null) {
                 CapabilityServiceSupport support = unit.getAttachment(Attachments.CAPABILITY_SERVICE_SUPPORT);
-                ServiceDependency<ServiceTargetFactory> targetFactory = ServiceDependency.on(support.getCapabilityServiceName(ServiceTargetFactory.SERVICE_DESCRIPTOR, config.getPolicy()));
-                context.requires(targetFactory);
-                unit.putAttachment(SingletonDeploymentProcessor.POLICY_KEY, new ServiceTargetFactory() {
-                    @Override
-                    public ServiceTarget createSingletonServiceTarget(ServiceTarget target) {
-                        return targetFactory.get().createSingletonServiceTarget(target);
-                    }
-
-                    @Override
-                    public String toString() {
-                        return targetFactory.get().toString();
-                    }
-                });
+                context.addDependency(support.getCapabilityServiceName(ServiceTargetFactory.SERVICE_DESCRIPTOR, config.getPolicy()), SingletonDeploymentProcessor.SERVICE_TARGET_FACTORY_KEY);
             }
         }
-    }
-
-    @Override
-    public void undeploy(DeploymentUnit unit) {
-        unit.removeAttachment(SingletonDeploymentProcessor.POLICY_KEY);
     }
 }

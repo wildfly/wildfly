@@ -28,19 +28,18 @@ public interface SingletonElectionPolicy {
     GroupMember elect(List<GroupMember> candidates);
 
     default SingletonElectionPolicy prefer(List<Predicate<GroupMember>> preferences) {
-        SingletonElectionPolicy policy = this;
-        return new SingletonElectionPolicy() {
+        return !preferences.isEmpty() ? new SingletonElectionPolicy() {
             @Override
             public GroupMember elect(List<GroupMember> candidates) {
                 for (Predicate<GroupMember> preference : preferences) {
                     List<GroupMember> preferred = candidates.stream().filter(preference).collect(Collectors.toUnmodifiableList());
                     if (!preferred.isEmpty()) {
-                        return policy.elect(preferred);
+                        return SingletonElectionPolicy.this.elect(preferred);
                     }
                 }
-                return policy.elect(candidates);
+                return SingletonElectionPolicy.this.elect(candidates);
             }
-        };
+        } : this;
     }
 
     static SingletonElectionPolicy random() {
