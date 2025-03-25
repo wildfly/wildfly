@@ -1,0 +1,10 @@
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+
+<subsystem xmlns="urn:wildfly:opentelemetry:preview:2.0" service-name="otel-service">
+    <exporter type="otlp" endpoint="http://localhost:4317/"/>
+    <span-processor type="simple" />
+    <sampler type="on" ratio="1.0"/>
+</subsystem>
