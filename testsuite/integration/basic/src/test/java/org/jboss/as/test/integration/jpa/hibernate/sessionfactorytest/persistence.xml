@@ -12,12 +12,6 @@
             <property name="hibernate.hbm2ddl.auto" value="create-drop"/>
             <property name="hibernate.show_sql" value="false"/>
             <property name="hibernate.session_factory_name" value="modelSessionFactory"/>
-            <!-- There is a bug, HHH-19072, where the above property is being overlooked in Hibernate 7.0. This is
-                 likely to be resolved. However, the below property works around the issue to get the test passing
-                 for the 7.0 upgrade. Once the bug is fixed, this comment and the hibernate.session_factory_jndi_name
-                 can be removed.
-            -->
-            <property name="hibernate.session_factory_jndi_name" value="modelSessionFactory"/>
             <!-- Hibernate 5.2+ (see https://hibernate.atlassian.net/browse/HHH-10877 +
                  https://hibernate.atlassian.net/browse/HHH-12665) no longer defaults
                  to allowing a DML operation outside of a started transaction.

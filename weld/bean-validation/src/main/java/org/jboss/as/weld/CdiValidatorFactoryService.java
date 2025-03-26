@@ -67,6 +67,7 @@ public class CdiValidatorFactoryService implements Service {
             // Replace the delegate of LazyValidatorFactory
             LazyValidatorFactory lazyValidatorFactory = (LazyValidatorFactory)(deploymentUnit.getAttachment(BeanValidationAttachments.VALIDATOR_FACTORY));
             lazyValidatorFactory.replaceDelegate(validatorFactory);
+            lazyValidatorFactory.replaceDelegate(validatorFactory.getConstraintValidatorFactory());
         } finally {
             WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(cl);
         }

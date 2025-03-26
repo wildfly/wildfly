@@ -466,8 +466,8 @@ public interface JpaLogger extends BasicLogger {
      *
      * @return a {@link RuntimeException} for the error.
      */
-    @Message(id = 41, value = "Can only inject from a Hibernate EntityManagerFactoryImpl")
-    RuntimeException hibernateOnlyEntityManagerFactory();
+//     @Message(id = 41, value = "Can only inject from a Hibernate EntityManagerFactoryImpl")
+//     RuntimeException hibernateOnlyEntityManagerFactory();
 
 //    /**
 //     * Creates an exception indicating the entity manager factory implementation can only be a Hibernate version.
