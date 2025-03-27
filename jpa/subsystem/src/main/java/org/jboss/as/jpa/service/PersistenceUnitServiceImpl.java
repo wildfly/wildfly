@@ -187,7 +187,6 @@ public class PersistenceUnitServiceImpl implements Service<PersistenceUnitServic
                                     context.failed(new StartException(t));
                                 } finally {
                                     Thread.currentThread().setContextClassLoader(old);
-                                    pu.setAnnotationIndex(null);    // close reference to Annotation Index
                                     pu.setTempClassLoaderFactory(null);    // release the temp classloader factory (only needed when creating the EMF)
                                     WritableServiceBasedNamingStore.popOwner();
 

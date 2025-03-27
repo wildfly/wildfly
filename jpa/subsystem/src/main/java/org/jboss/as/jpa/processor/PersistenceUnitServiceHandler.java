@@ -9,8 +9,6 @@ import static org.jboss.as.jpa.messages.JpaLogger.ROOT_LOGGER;
 import static org.jboss.as.server.Services.addServerExecutorDependency;
 import static org.jboss.as.weld.Capabilities.WELD_CAPABILITY_NAME;
 
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -76,7 +74,6 @@ import org.jboss.as.server.deployment.module.ResourceRoot;
 import org.jboss.as.weld.WeldCapability;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
-import org.jboss.jandex.Index;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleClassLoader;
 import org.jboss.modules.ModuleLoadException;
@@ -236,7 +233,6 @@ public class PersistenceUnitServiceHandler {
             final ModuleClassLoader classLoader = module.getClassLoader();
 
             for (PersistenceUnitMetadataHolder holder : puList) {
-                setAnnotationIndexes(holder, deploymentUnit);
                 for (PersistenceUnitMetadata pu : holder.getPersistenceUnits()) {
 
                     // only start the persistence unit if JPA_CONTAINER_MANAGED is true
@@ -756,39 +752,6 @@ public class PersistenceUnitServiceHandler {
                         binderService.getNamingStoreInjector().uninject();
                     }
                 }).install();
-        }
-    }
-
-    /**
-     * Setup the annotation index map
-     *
-     * @param puHolder
-     * @param deploymentUnit
-     */
-    private static void setAnnotationIndexes(
-            final PersistenceUnitMetadataHolder puHolder,
-            DeploymentUnit deploymentUnit ) {
-
-        final Map<URL, Index> annotationIndexes = new HashMap<>();
-
-        do {
-            for (ResourceRoot root : DeploymentUtils.allResourceRoots(deploymentUnit)) {
-                final Index index = root.getAttachment(Attachments.ANNOTATION_INDEX);
-                if (index != null) {
-                    try {
-                        ROOT_LOGGER.tracef("adding '%s' to annotation index map", root.getRoot().toURL());
-                        annotationIndexes.put(root.getRoot().toURL(), index);
-                    } catch (MalformedURLException e) {
-                        throw new RuntimeException(e);
-                    }
-                }
-            }
-            deploymentUnit = deploymentUnit.getParent(); // get annotation indexes for top level also
-        }
-        while (deploymentUnit != null);
-
-        for (PersistenceUnitMetadata pu : puHolder.getPersistenceUnits()) {
-            pu.setAnnotationIndex(annotationIndexes);   // hold onto the annotation index for Persistence Provider use during deployment
         }
     }
 
