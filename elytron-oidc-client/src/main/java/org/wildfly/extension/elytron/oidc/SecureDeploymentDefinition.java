@@ -175,13 +175,13 @@ class SecureDeploymentDefinition extends SimpleResourceDefinition {
                     .setStability(Stability.PREVIEW)
                     .setAllowExpression(true)
                     .build();
-    // rls start
+
     protected static final SimpleAttributeDefinition BACK_CHANNEL_LOGOUT_SESSION_INVALIDATION_LIMIT =
             new SimpleAttributeDefinitionBuilder(ElytronOidcDescriptionConstants.BACK_CHANNEL_LOGOUT_SESSION_INVALIDATION_LIMIT, ModelType.INT, true)
                     .setAllowExpression(true)
                     .setValidator(new IntRangeValidator(-1, true))
                     .build();
-    // rls end
+
     protected static final SimpleAttributeDefinition LOGOUT_SESSION_REQUIRED =
             new SimpleAttributeDefinitionBuilder(ElytronOidcDescriptionConstants.LOGOUT_SESSION_REQUIRED, ModelType.BOOLEAN, true)
                     .setAllowExpression(true)

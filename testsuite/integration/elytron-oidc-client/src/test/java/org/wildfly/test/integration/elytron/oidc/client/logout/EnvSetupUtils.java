@@ -100,7 +100,7 @@ public class EnvSetupUtils {
 
             ModelControllerClient client = managementClient.getControllerClient();
             ModelNode operation = createOpNode("system-property=" + LOGOUT_AUTH_SERVER_URL, ModelDescriptionConstants.ADD);
-            operation.get("value").set(KEYCLOAK_CONTAINER.getAuthServerUrl());
+            operation.get("value").set(KEYCLOAK_CONTAINER.getAuthServerUrl() + "/realms/" + TEST_REALM);
             Utils.applyUpdate(operation, client);
 
             operation = createOpNode("system-property=" + OIDC_REQUEST_OBJECT_SIGNING_KEYSTORE_FILE, ModelDescriptionConstants.ADD);
