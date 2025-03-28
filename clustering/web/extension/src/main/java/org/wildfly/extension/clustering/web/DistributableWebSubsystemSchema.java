@@ -46,15 +46,15 @@ public enum DistributableWebSubsystemSchema implements PersistentSubsystemSchema
         return builder(DistributableWebResourceDefinition.PATH, this.namespace).addAttributes(Attribute.stream(DistributableWebResourceDefinition.Attribute.class))
                 .addChild(this.getInfinispanSessionManagementResourceXMLBuilder())
                 .addChild(this.getHotRodSessionManagementResourceXMLBuilder())
-                .addChild(builder(InfinispanUserManagementResourceDefinition.WILDCARD_PATH).addAttributes(Attribute.stream(InfinispanUserManagementResourceDefinition.Attribute.class)))
-                .addChild(builder(HotRodUserManagementResourceDefinition.WILDCARD_PATH).addAttributes(Attribute.stream(HotRodUserManagementResourceDefinition.Attribute.class)))
+                .addChild(builder(InfinispanUserManagementResourceDefinition.WILDCARD_PATH).addAttributes(InfinispanUserManagementResourceDefinition.CACHE_ATTRIBUTE_GROUP.getAttributes().stream()))
+                .addChild(builder(HotRodUserManagementResourceDefinition.WILDCARD_PATH).addAttributes(HotRodUserManagementResourceDefinition.CACHE_ATTRIBUTE_GROUP.getAttributes().stream()))
                 .addChild(builder(LocalRoutingProviderResourceDefinition.PATH).setXmlElementName("local-routing"))
-                .addChild(builder(InfinispanRoutingProviderResourceDefinition.PATH).addAttributes(Attribute.stream(InfinispanRoutingProviderResourceDefinition.Attribute.class)).setXmlElementName("infinispan-routing"))
+                .addChild(builder(InfinispanRoutingProviderResourceDefinition.PATH).addAttributes(InfinispanRoutingProviderResourceDefinition.CACHE_ATTRIBUTE_GROUP.getAttributes().stream()).setXmlElementName("infinispan-routing"))
                 .build();
     }
 
     private PersistentResourceXMLBuilder getInfinispanSessionManagementResourceXMLBuilder() {
-        PersistentResourceXMLBuilder builder = builder(InfinispanSessionManagementResourceDefinition.WILDCARD_PATH).addAttributes(Stream.concat(Attribute.stream(InfinispanSessionManagementResourceDefinition.Attribute.class), Attribute.stream(SessionManagementResourceDefinition.Attribute.class)));
+        PersistentResourceXMLBuilder builder = builder(InfinispanSessionManagementResourceDefinition.WILDCARD_PATH).addAttributes(Stream.concat(InfinispanSessionManagementResourceDefinition.CACHE_ATTRIBUTE_GROUP.getAttributes().stream(), Stream.concat(Attribute.stream(InfinispanSessionManagementResourceDefinition.Attribute.class), Attribute.stream(SessionManagementResourceDefinition.Attribute.class))));
         addAffinityChildren(builder).addChild(builder(PrimaryOwnerAffinityResourceDefinition.PATH).setXmlElementName("primary-owner-affinity"));
         if (this.namespace.since(DistributableWebSubsystemSchema.VERSION_2_0)) {
             builder.addChild(builder(RankedAffinityResourceDefinition.PATH).addAttributes(Attribute.stream(RankedAffinityResourceDefinition.Attribute.class)).setXmlElementName("ranked-affinity"));
@@ -63,7 +63,7 @@ public enum DistributableWebSubsystemSchema implements PersistentSubsystemSchema
     }
 
     private PersistentResourceXMLBuilder getHotRodSessionManagementResourceXMLBuilder() {
-        return addAffinityChildren(builder(HotRodSessionManagementResourceDefinition.WILDCARD_PATH).addAttributes(Stream.concat(Attribute.stream(HotRodSessionManagementResourceDefinition.Attribute.class), Attribute.stream(SessionManagementResourceDefinition.Attribute.class))));
+        return addAffinityChildren(builder(HotRodSessionManagementResourceDefinition.WILDCARD_PATH).addAttributes(Stream.concat(HotRodSessionManagementResourceDefinition.CACHE_ATTRIBUTE_GROUP.getAttributes().stream(), Stream.concat(Attribute.stream(HotRodSessionManagementResourceDefinition.Attribute.class), Attribute.stream(SessionManagementResourceDefinition.Attribute.class)))));
     }
 
     private static PersistentResourceXMLBuilder addAffinityChildren(PersistentResourceXMLBuilder builder) {
