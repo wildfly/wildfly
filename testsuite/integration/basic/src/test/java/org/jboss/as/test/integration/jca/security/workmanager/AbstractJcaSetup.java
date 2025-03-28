@@ -33,8 +33,6 @@ public abstract class AbstractJcaSetup extends SnapshotRestoreSetupTask {
     private void addWM(ModelControllerClient client) throws IOException {
         ModelNode addWMOperation = Operations.createAddOperation(getWorkManagerAddress().toModelNode());
         addWMOperation.get("name").set(getWorkManagerName());
-        if(getElytronEnabled() != null)
-            addWMOperation.get("elytron-enabled").set(getElytronEnabled());
         ModelNode response = execute(addWMOperation, client);
         Assert.assertEquals(response.toString(), SUCCESS, response.get(OUTCOME).asString());
     }
@@ -74,6 +72,4 @@ public abstract class AbstractJcaSetup extends SnapshotRestoreSetupTask {
     protected abstract String getWorkManagerName();
 
     protected abstract String getBootstrapContextName();
-
-    protected abstract Boolean getElytronEnabled();
 }

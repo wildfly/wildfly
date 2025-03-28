@@ -48,7 +48,6 @@ public class ComplexPropertiesParseUtils {
                 params.put("authentication-context", "HsqlAuthCtxt");
                 // fall thru!
             case ELYTRON:
-                params.put("elytron-enabled", "true");
                 break;
             case SECURITY_DOMAIN:
                 params.put("security-domain", "HsqlDbRealm");
@@ -202,11 +201,9 @@ public class ComplexPropertiesParseUtils {
                 params.put("elytron-enabled", "true");
                 break;
             case ELYTRON_AUTHENTICATION_CONTEXT:
-                params.put("elytron-enabled", "true");
                 params.put("authentication-context", "AuthCtxt");
                 break;
             case ELYTRON_AUTHENTICATION_CONTEXT_AND_APPLICATION:
-                params.put("elytron-enabled", "true");
                 params.put("authentication-context-and-application", "AuthCtxtAndApp");
                 break;
             default:

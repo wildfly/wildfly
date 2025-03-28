@@ -100,7 +100,6 @@ public class WildFlyActivationRaWithElytronAuthContextTestCase {
             ModelNode addConnectionDefinitionOperation = Operations.createAddOperation(connectionDefinitionAddress.toModelNode());
             addConnectionDefinitionOperation.get("class-name").set("org.jboss.as.test.integration.jca.rar.MultipleManagedConnectionFactoryWithSubjectVerification");
             addConnectionDefinitionOperation.get("jndi-name").set(CONN_DEF_JNDI_NAME);
-            addConnectionDefinitionOperation.get("elytron-enabled").set("true");
             addConnectionDefinitionOperation.get("authentication-context").set(AUTH_CONTEXT);
 
             ModelNode response = execute(addConnectionDefinitionOperation, client);

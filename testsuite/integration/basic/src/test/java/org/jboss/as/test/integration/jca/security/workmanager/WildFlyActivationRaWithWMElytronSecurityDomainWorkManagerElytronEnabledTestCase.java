@@ -145,11 +145,6 @@ public class WildFlyActivationRaWithWMElytronSecurityDomainWorkManagerElytronEna
         protected String getBootstrapContextName() {
             return BOOTSTRAP_CTX_NAME;
         }
-
-        @Override
-        protected Boolean getElytronEnabled() {
-            return true;
-        }
     }
 
     static class RaSetup extends AbstractRaSetup {
