@@ -13,6 +13,6 @@ import org.jboss.as.controller.transform.description.ResourceTransformationDescr
 public class ReplicatedCacheResourceTransformer extends SharedStateCacheResourceTransformer {
 
     ReplicatedCacheResourceTransformer(ResourceTransformationDescriptionBuilder parent) {
-        super(parent.addChildResource(ReplicatedCacheResourceDefinition.WILDCARD_PATH));
+        super(parent.addChildResource(CacheResourceRegistration.REPLICATED.getPathElement()));
     }
 }

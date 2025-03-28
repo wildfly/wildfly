@@ -13,6 +13,6 @@ import org.jboss.as.controller.transform.description.ResourceTransformationDescr
 public class CustomStoreResourceTransformer extends StoreResourceTransformer {
 
     CustomStoreResourceTransformer(ResourceTransformationDescriptionBuilder parent) {
-        super(parent.addChildResource(CustomStoreResourceDefinition.PATH));
+        super(parent.addChildResource(StoreResourceRegistration.CUSTOM.getPathElement()));
     }
 }

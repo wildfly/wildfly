@@ -13,6 +13,6 @@ import org.jboss.as.controller.transform.description.ResourceTransformationDescr
 public class InvalidationCacheResourceTransformer extends ClusteredCacheResourceTransformer {
 
     InvalidationCacheResourceTransformer(ResourceTransformationDescriptionBuilder parent) {
-        super(parent.addChildResource(InvalidationCacheResourceDefinition.WILDCARD_PATH));
+        super(parent.addChildResource(CacheResourceRegistration.INVALIDATION.getPathElement()));
     }
 }
