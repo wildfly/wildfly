@@ -8,6 +8,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.function.UnaryOperator;
 
+import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -17,7 +18,10 @@ import org.jboss.as.controller.ResourceDefinition;
 import org.jboss.as.controller.ResourceRegistration;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
+import org.jboss.as.controller.capability.RuntimeCapability;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.registry.RuntimePackageDependency;
 import org.jboss.as.server.mgmt.domain.ExtensibleHttpManagement;
 import org.jboss.as.version.Stability;
@@ -71,19 +75,9 @@ public class PrometheusRegistryDefinitionRegistrar implements ChildResourceDefin
 
         ResourceDescriptor description = ResourceDescriptor.builder(MicrometerSubsystemRegistrar.RESOLVER.createChildResolver(PATH))
             .addAttributes(ATTRIBUTES)
+            .withOperationTransformation(ModelDescriptionConstants.ADD, new AddHandler())
             .withRuntimeHandler(ResourceOperationRuntimeHandler.configureService(this))
-            .withOperationTransformation("add", new UnaryOperator<OperationStepHandler>() {
-                @Override
-                public OperationStepHandler apply(OperationStepHandler handler) {
-                    return (context, operation) -> {
-                        if (context.getProcessType().isHostController()) {
-                            throw MicrometerExtensionLogger.MICROMETER_LOGGER.prometheusNotSupportedOnHostControllers();
-                        }
-                        handler.execute(context, operation);
-                    };
-                }
-            })
-                .build();
+            .build();
         ManagementResourceRegistration resourceRegistration = parent.registerSubModel(
                 ResourceDefinition.builder(RESOURCE_REGISTRATION, description.getResourceDescriptionResolver()).build());
         if (resourceRegistration != null) {
@@ -111,5 +105,36 @@ public class PrometheusRegistryDefinitionRegistrar implements ChildResourceDefin
                 })
                 .asActive()
                 .build();
+    }
+
+    private static class AddHandler implements UnaryOperator<OperationStepHandler> {
+        @Override
+        public OperationStepHandler apply(OperationStepHandler operationStepHandler) {
+            return new AbstractAddStepHandler() {
+                @Override
+                public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
+                    if (context.getProcessType().isHostController()) {
+                        throw MicrometerExtensionLogger.MICROMETER_LOGGER.prometheusNotSupportedOnHostControllers();
+                    }
+                    operationStepHandler.execute(context, operation);
+                }
+
+                @Override
+                protected void recordCapabilitiesAndRequirements(OperationContext operationContext, ModelNode operation, Resource resource) throws OperationFailedException {
+                    super.recordCapabilitiesAndRequirements(operationContext, operation, resource);
+
+                    String context = CONTEXT.resolveModelAttribute(operationContext, operation).asString();
+
+                    if (context.startsWith("/")) {
+                        context = context.substring(1);
+                    }
+
+                    operationContext.registerCapability(
+                        RuntimeCapability.Builder.of("org.wildfly.management.context", true).build()
+                            .fromBaseCapability(context)
+                    );
+                }
+            };
+        }
     }
 }
