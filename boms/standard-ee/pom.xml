@@ -54,7 +54,17 @@
                 <artifactId>wildfly-ee-feature-pack-product-conf</artifactId>
                 <version>${ee.maven.version}</version>
             </dependency>
-
+            <dependency>
+                <groupId>org.glassfish</groupId>
+                <artifactId>jakarta.enterprise.concurrent</artifactId>
+                <version>${version.org.glassfish.jakarta.enterprise.concurrent}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
 
         </dependencies>
     </dependencyManagement>
