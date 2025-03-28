@@ -48,6 +48,11 @@
         </dependency>
 
         <dependency>
+            <groupId>org.glassfish.concurro</groupId>
+            <artifactId>concurro</artifactId>
+        </dependency>
+
+        <dependency>
             <groupId>org.hibernate.models</groupId>
             <artifactId>hibernate-models</artifactId>
         </dependency>
@@ -74,6 +79,11 @@
         <dependency>
             <groupId>org.wildfly.deployment</groupId>
             <artifactId>transformer</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>wildfly-concurrency-impl-31</artifactId>
         </dependency>
 
         <dependency>

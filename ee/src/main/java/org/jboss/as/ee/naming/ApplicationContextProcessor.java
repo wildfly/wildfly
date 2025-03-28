@@ -50,9 +50,19 @@ public class ApplicationContextProcessor implements DeploymentUnitProcessor {
                 .install();
         deploymentUnit.addToAttachmentList(org.jboss.as.server.deployment.Attachments.JNDI_DEPENDENCIES, appNameServiceName);
         deploymentUnit.putAttachment(Attachments.APPLICATION_CONTEXT_CONFIG, applicationContextServiceName);
+
+        // add a setup action for the naming context setup, this may be needed by CDI extensions that does java:app lookups
+        final InjectedEENamespaceContextSelector selector = new InjectedEENamespaceContextSelector();
+        phaseContext.requires(applicationContextServiceName, selector.getAppContextSupplier());
+        phaseContext.requires(ContextNames.JBOSS_CONTEXT_SERVICE_NAME, selector.getJbossContextSupplier());
+        phaseContext.requires(ContextNames.EXPORTED_CONTEXT_SERVICE_NAME, selector.getExportedContextSupplier());
+        phaseContext.requires(ContextNames.GLOBAL_CONTEXT_SERVICE_NAME, selector.getGlobalContextSupplier());
+        final JavaNamespaceSetup setupAction = new JavaNamespaceSetup(selector, deploymentUnit.getServiceName());
+        deploymentUnit.putAttachment(Attachments.JAVA_NAMESPACE_SETUP_ACTION, setupAction);
     }
 
     public void undeploy(DeploymentUnit deploymentUnit) {
         deploymentUnit.removeAttachment(Attachments.APPLICATION_CONTEXT_CONFIG);
+        deploymentUnit.removeAttachment(Attachments.JAVA_NAMESPACE_SETUP_ACTION);
     }
 }
