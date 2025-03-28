@@ -52,6 +52,7 @@ public abstract class AbstractConcurrencyImplementation implements ConcurrencyIm
         processorTarget.addDeploymentProcessor(EeExtension.SUBSYSTEM_NAME, Phase.PARSE, Phase.PARSE_RESOURCE_DEF_ANNOTATION_DATA_SOURCE, new ManagedScheduledExecutorDefinitionAnnotationProcessor());
         processorTarget.addDeploymentProcessor(EeExtension.SUBSYSTEM_NAME, Phase.PARSE, Phase.PARSE_RESOURCE_DEF_ANNOTATION_DATA_SOURCE, new ManagedThreadFactoryDefinitionAnnotationProcessor());
         processorTarget.addDeploymentProcessor(EeExtension.SUBSYSTEM_NAME, Phase.POST_MODULE, Phase.POST_MODULE_EE_CONCURRENT_CONTEXT, new EEConcurrentContextProcessor());
+        // TODO create Phase priorities
         processorTarget.addDeploymentProcessor(EeExtension.SUBSYSTEM_NAME, Phase.POST_MODULE, Phase.POST_MODULE_RESOURCE_DEF_XML_DATA_SOURCE, new ContextServiceDefinitionDescriptorProcessor());
         processorTarget.addDeploymentProcessor(EeExtension.SUBSYSTEM_NAME, Phase.POST_MODULE, Phase.POST_MODULE_RESOURCE_DEF_XML_DATA_SOURCE, new ManagedExecutorDefinitionDescriptorProcessor());
         processorTarget.addDeploymentProcessor(EeExtension.SUBSYSTEM_NAME, Phase.POST_MODULE, Phase.POST_MODULE_RESOURCE_DEF_XML_DATA_SOURCE, new ManagedScheduledExecutorDefinitionDescriptorProcessor());
