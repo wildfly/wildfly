@@ -11,6 +11,8 @@ import java.util.function.Supplier;
 import org.jboss.as.controller.ProcessStateNotifier;
 import org.jboss.as.controller.RequirementServiceBuilder;
 import org.jboss.as.controller.capability.CapabilityServiceSupport;
+import org.jboss.as.ee.component.Attachments;
+import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ee.concurrent.WildFlyContextService;
 import org.jboss.as.ee.concurrent.WildFlyManagedExecutorService;
 import org.jboss.as.ee.concurrent.adapter.ManagedScheduledExecutorServiceAdapter;
@@ -24,6 +26,7 @@ import org.jboss.as.naming.ManagedReference;
 import org.jboss.as.naming.ManagedReferenceFactory;
 import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
+import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.msc.inject.InjectionException;
 import org.jboss.msc.inject.Injector;
@@ -88,7 +91,15 @@ public class ManagedScheduledExecutorDefinitionInjectionSource extends ResourceD
                     resourceService.getContextServiceSupplier().set(() -> null);
                 }
             };
-            final String contextServiceRef = this.contextServiceRef == null || this.contextServiceRef.isEmpty() ? EEConcurrentDefaultBindingProcessor.COMP_DEFAULT_CONTEXT_SERVICE_JNDI_NAME : this.contextServiceRef;
+            final String contextServiceRef;
+            if (this.contextServiceRef == null || this.contextServiceRef.isEmpty() || this.contextServiceRef.equals(EEConcurrentDefaultBindingProcessor.COMP_DEFAULT_CONTEXT_SERVICE_JNDI_NAME)) {
+                // default context service, use the real name of the resource since java:comp may not exist (e.g. ear)
+                final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
+                final EEModuleDescription moduleDescription = deploymentUnit.getAttachment(Attachments.EE_MODULE_DESCRIPTION);
+                contextServiceRef = moduleDescription.getDefaultResourceJndiNames().getContextService();
+            } else {
+                contextServiceRef = this.contextServiceRef;
+            }
             final ContextNames.BindInfo contextServiceBindInfo = ContextNames.bindInfoForEnvEntry(context.getApplicationName(), context.getModuleName(), context.getComponentName(), !context.isCompUsesModule(), contextServiceRef);
             contextServiceBindInfo.setupLookupInjection(resourceServiceBuilder, contextServiceLookupInjector, phaseContext.getDeploymentUnit(), false);
             resourceServiceBuilder.install();

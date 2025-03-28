@@ -8,6 +8,8 @@ package org.jboss.as.ee.managedbean.processors;
 import static org.jboss.as.ee.subsystem.EeSubsystemRootResource.GLASSFISH_EL;
 import static org.jboss.as.ee.subsystem.EeSubsystemRootResource.JSON_API;
 import static org.jboss.as.ee.subsystem.EeSubsystemRootResource.WILDFLY_NAMING;
+
+import org.jboss.as.ee.concurrent.ConcurrencyImplementation;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -41,8 +43,7 @@ public class JavaEEDependencyProcessor implements DeploymentUnitProcessor {
             "jakarta.resource.api",
             "javax.rmi.api",
             "jakarta.xml.bind.api",
-            GLASSFISH_EL,
-            "org.glassfish.jakarta.enterprise.concurrent"
+            GLASSFISH_EL
     };
 
 
@@ -81,5 +82,8 @@ public class JavaEEDependencyProcessor implements DeploymentUnitProcessor {
         for (String moduleName : JAVA_EE_API_MODULES) {
             moduleSpecification.addSystemDependency(ModuleDependency.Builder.of(moduleLoader, moduleName).setOptional(true).setImportServices(true).build());
         }
+
+        // adds the Concurrency Implementation module
+        moduleSpecification.addSystemDependency(ModuleDependency.Builder.of(moduleLoader, ConcurrencyImplementation.INSTANCE.getJBossModuleName()).setOptional(true).setImportServices(true).build());
     }
 }
