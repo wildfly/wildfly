@@ -8,6 +8,7 @@ package org.jboss.as.ee.naming;
 import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.naming.ServiceBasedNamingStore;
 import org.jboss.as.naming.ValueManagedReferenceFactory;
+import org.jboss.as.naming.context.NamespaceContextSelector;
 import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.as.naming.service.BinderService;
 import org.jboss.as.naming.service.NamingStoreService;
@@ -50,9 +51,34 @@ public class ApplicationContextProcessor implements DeploymentUnitProcessor {
                 .install();
         deploymentUnit.addToAttachmentList(org.jboss.as.server.deployment.Attachments.JNDI_DEPENDENCIES, appNameServiceName);
         deploymentUnit.putAttachment(Attachments.APPLICATION_CONTEXT_CONFIG, applicationContextServiceName);
+
+        // CDI extensions that does java:app lookups, such as the one from Concurro 3.1, needs a setup action with a namespace selector
+        // If the module context processor didn't put the action then we need to put one 'ourselves'
+        if (!deploymentUnit.hasAttachment(Attachments.JAVA_NAMESPACE_SETUP_ACTION)) {
+            final InjectedEENamespaceContextSelector selector = new InjectedEENamespaceContextSelector();
+            phaseContext.requires(applicationContextServiceName, selector.getAppContextSupplier());
+            phaseContext.requires(ContextNames.JBOSS_CONTEXT_SERVICE_NAME, selector.getJbossContextSupplier());
+            phaseContext.requires(ContextNames.EXPORTED_CONTEXT_SERVICE_NAME, selector.getExportedContextSupplier());
+            phaseContext.requires(ContextNames.GLOBAL_CONTEXT_SERVICE_NAME, selector.getGlobalContextSupplier());
+            deploymentUnit.putAttachment(Attachments.JAVA_NAMESPACE_SETUP_ACTION, new ApplicationContextProcessorJavaNamespaceSetup(selector, deploymentUnit.getServiceName()));
+        }
     }
 
     public void undeploy(DeploymentUnit deploymentUnit) {
+        final JavaNamespaceSetup action = deploymentUnit.getAttachment(Attachments.JAVA_NAMESPACE_SETUP_ACTION);
+        if (action != null && action instanceof ApplicationContextProcessorJavaNamespaceSetup) {
+            // it is 'our' action, remove it
+            deploymentUnit.removeAttachment(Attachments.JAVA_NAMESPACE_SETUP_ACTION);
+        }
         deploymentUnit.removeAttachment(Attachments.APPLICATION_CONTEXT_CONFIG);
+    }
+
+    /**
+     * A private wrapper class, for us to identify when it's 'our' JavaNamespaceSetup action.
+     */
+    private static class ApplicationContextProcessorJavaNamespaceSetup extends JavaNamespaceSetup {
+        ApplicationContextProcessorJavaNamespaceSetup(NamespaceContextSelector namespaceSelector, ServiceName deploymentUnitServiceName) {
+            super(namespaceSelector, deploymentUnitServiceName);
+        }
     }
 }

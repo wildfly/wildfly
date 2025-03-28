@@ -1557,6 +1557,7 @@
                 <module>boms/preview-test</module>
                 <module>boms/preview-expansion</module>
                 <module>boms/preview-test-expansion</module>
+                <module>concurrency/impl-31</module>
                 <module>preview</module>
             </modules>
         </profile>
