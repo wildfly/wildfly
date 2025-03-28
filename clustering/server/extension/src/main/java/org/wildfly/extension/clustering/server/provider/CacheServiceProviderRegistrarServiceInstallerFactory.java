@@ -24,7 +24,7 @@ import org.wildfly.subsystem.service.ServiceInstaller;
  * Builds a cache-based {@link ServiceProviderRegistrationFactory} service.
  * @author Paul Ferraro
  */
-public class CacheServiceProviderRegistrarServiceInstallerFactory<T> extends ServiceProviderRegistrarServiceInstallerFactory<T> {
+public class CacheServiceProviderRegistrarServiceInstallerFactory<T> extends AbstractServiceProviderRegistrarServiceInstallerFactory<T> {
 
     @Override
     public ServiceInstaller apply(CapabilityServiceSupport support, BinaryServiceConfiguration configuration) {
