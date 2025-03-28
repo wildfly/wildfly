@@ -21,7 +21,7 @@ public class InfinispanExtensionTransformerRegistration implements ExtensionTran
 
     @Override
     public String getSubsystemName() {
-        return InfinispanExtension.SUBSYSTEM_NAME;
+        return InfinispanSubsystemResourceDefinitionRegistrar.REGISTRATION.getName();
     }
 
     @Override

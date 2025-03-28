@@ -14,6 +14,6 @@ import org.jboss.as.controller.transform.description.ResourceTransformationDescr
 public class ScatteredCacheResourceTransformer extends SegmentedCacheResourceTransformer {
 
     ScatteredCacheResourceTransformer(ResourceTransformationDescriptionBuilder parent) {
-        super(parent.addChildResource(ScatteredCacheResourceDefinition.WILDCARD_PATH));
+        super(parent.addChildResource(CacheResourceRegistration.SCATTERED.getPathElement()));
     }
 }

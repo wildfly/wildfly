@@ -20,6 +20,7 @@ import org.jboss.msc.service.ServiceName;
 import org.wildfly.subsystem.service.ServiceInstaller;
 
 /**
+ * Installs a binder service.
  * @author Paul Ferraro
  */
 public class BinderServiceInstaller implements ServiceInstaller {
@@ -38,6 +39,7 @@ public class BinderServiceInstaller implements ServiceInstaller {
         return this;
     }
 
+    @SuppressWarnings("deprecation")
     @Override
     public ServiceController<?> install(RequirementServiceTarget target) {
         String name = this.binding.getBindName();

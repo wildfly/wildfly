@@ -21,8 +21,8 @@ import org.jboss.staxmapper.XMLExtendedStreamReader;
  */
 public enum XMLAttribute {
 
-    CACHE(SingletonPolicyResourceDefinition.Attribute.CACHE),
-    CACHE_CONTAINER(SingletonPolicyResourceDefinition.Attribute.CACHE_CONTAINER),
+    CACHE(SingletonPolicyResourceDefinition.CACHE_ATTRIBUTE_GROUP::getCacheAttribute),
+    CACHE_CONTAINER(SingletonPolicyResourceDefinition.CACHE_ATTRIBUTE_GROUP::getContainerAttribute),
     DEFAULT(SingletonResourceDefinition.Attribute.DEFAULT),
     NAME(ModelDescriptionConstants.NAME),
     POSITION(SimpleElectionPolicyResourceDefinition.Attribute.POSITION),
