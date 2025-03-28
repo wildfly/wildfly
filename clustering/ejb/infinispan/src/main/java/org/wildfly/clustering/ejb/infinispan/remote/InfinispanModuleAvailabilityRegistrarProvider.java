@@ -58,7 +58,8 @@ public class InfinispanModuleAvailabilityRegistrarProvider implements ModuleAvai
         ServiceName serviceProviderRegistrarServiceName = configuration.resolveServiceName(ClusteringServiceDescriptor.SERVICE_PROVIDER_REGISTRAR);
         ServiceDependency<ServiceProviderRegistrar<Object, GroupMember>> serviceProviderRegistrar = ServiceDependency.on(serviceProviderRegistrarServiceName);
         // create an installer to install a well-known alias to that SPR
-        ServiceName aliasServiceName = ServiceName.of(ModuleAvailabilityRegistrarProvider.MODULE_AVAILABILITY_REGISTRAR_SERVICE_PROVIDER_REGISTRAR.getName());
+        // ServiceName aliasServiceName = ServiceName.of(ModuleAvailabilityRegistrarProvider.MODULE_AVAILABILITY_REGISTRAR_SERVICE_PROVIDER_REGISTRAR.getName());
+        ServiceName aliasServiceName = support.getCapabilityServiceName(ModuleAvailabilityRegistrarProvider.MODULE_AVAILABILITY_REGISTRAR_SERVICE_PROVIDER_REGISTRAR);
         installers.add(ServiceInstaller.builder(serviceProviderRegistrar).provides(aliasServiceName).build());
         return installers;
     }

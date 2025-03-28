@@ -38,14 +38,16 @@ public enum LocalModuleAvailabilityRegistrarProvider implements ModuleAvailabili
      */
     @Override
     public Iterable<ServiceInstaller> getServiceInstallers(CapabilityServiceSupport support) {
+        System.out.println("LocalModuleAvailabilityRegistrar: getServiceInstallers()");
         List<ServiceInstaller> installers = new LinkedList<>();
         // install an instance of ServiceProviderRegistrar to hold module availability information
         BinaryServiceConfiguration configuration = BinaryServiceConfiguration.of(ModelDescriptionConstants.LOCAL, "module-availability");
         new FilteredBinaryServiceInstallerProvider(Set.of(ClusteringServiceDescriptor.SERVICE_PROVIDER_REGISTRAR)).apply(support, configuration).forEach(installers::add);
         // add an alias service to a well-known name
-        ServiceName aliasServiceName = ServiceName.of(ModuleAvailabilityRegistrarProvider.MODULE_AVAILABILITY_REGISTRAR_SERVICE_PROVIDER_REGISTRAR.getName());
+        //ServiceName aliasServiceName = ServiceName.of(ModuleAvailabilityRegistrarProvider.MODULE_AVAILABILITY_REGISTRAR_SERVICE_PROVIDER_REGISTRAR.getName());
+        ServiceName aliasServiceName = support.getCapabilityServiceName(ModuleAvailabilityRegistrarProvider.MODULE_AVAILABILITY_REGISTRAR_SERVICE_PROVIDER_REGISTRAR);
         ServiceDependency<ServiceProviderRegistrar<Object, GroupMember>> serviceProviderRegistry = configuration.getServiceDependency(ClusteringServiceDescriptor.SERVICE_PROVIDER_REGISTRAR);
-        installers.add(ServiceInstaller.builder(serviceProviderRegistry).provides(aliasServiceName).build());
+        installers.add(ServiceInstaller.builder(serviceProviderRegistry).asActive().provides(aliasServiceName).build());
         return installers;
     }
 }
