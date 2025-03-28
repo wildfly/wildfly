@@ -888,7 +888,23 @@
             <url>${maven.repository.url}</url>
             <layout>default</layout>
         </repository>
+        <!-- FIXME WFLY-19560 temp, must be removed before merge -->
+        <repository>
+            <id>jakarta-staging</id>
+            <name>Jakarta Staging</name>
+            <url>https://jakarta.oss.sonatype.org/content/repositories/staging/</url>
+            <layout>default</layout>
+            <releases>
+                <enabled>true</enabled>
+                <updatePolicy>never</updatePolicy>
+            </releases>
+            <snapshots>
+                <enabled>false</enabled>
+                <updatePolicy>never</updatePolicy>
+            </snapshots>
+        </repository>
     </repositories>
+
 
     <pluginRepositories>
         <pluginRepository>
