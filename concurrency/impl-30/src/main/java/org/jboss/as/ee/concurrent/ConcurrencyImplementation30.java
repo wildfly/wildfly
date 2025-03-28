@@ -16,6 +16,11 @@ import java.util.concurrent.TimeUnit;
 public class ConcurrencyImplementation30 extends AbstractConcurrencyImplementation {
 
     @Override
+    public String getJBossModuleName() {
+        return "org.glassfish.jakarta.enterprise.concurrent";
+    }
+
+    @Override
     public WildFlyContextService newContextService(String name, ContextServiceTypesConfiguration contextServiceTypesConfiguration) {
         return new ContextServiceImpl(name, contextServiceTypesConfiguration);
     }

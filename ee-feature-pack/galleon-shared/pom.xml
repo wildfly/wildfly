@@ -1527,11 +1527,6 @@
 
         <dependency>
             <groupId>org.glassfish</groupId>
-            <artifactId>jakarta.enterprise.concurrent</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.glassfish</groupId>
             <artifactId>jakarta.faces</artifactId>
         </dependency>
 
@@ -3922,16 +3917,6 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-        </dependency>
-
-        <dependency>
-            <groupId>${ee.maven.groupId}</groupId>
-            <artifactId>wildfly-concurrency-impl-30</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>${ee.maven.groupId}</groupId>
-            <artifactId>wildfly-concurrency-spi</artifactId>
         </dependency>
 
         <dependency>
