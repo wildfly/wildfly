@@ -238,11 +238,7 @@ public class PhaseOnePersistenceUnitServiceImpl implements Service<PhaseOnePersi
             TwoPhaseBootstrapCapable twoPhaseBootstrapCapable = (TwoPhaseBootstrapCapable)persistenceProviderAdaptor;
             return twoPhaseBootstrapCapable.getBootstrap(pu, properties.getValue());
         } finally {
-            try {
-                persistenceProviderAdaptor.afterCreateContainerEntityManagerFactory(pu);
-            } finally {
-                pu.setAnnotationIndex(null);    // close reference to Annotation Index (only needed during call to createContainerEntityManagerFactory)
-            }
+            persistenceProviderAdaptor.afterCreateContainerEntityManagerFactory(pu);
         }
     }
 }

@@ -10,7 +10,6 @@ import static org.jboss.as.jpa.messages.JpaLogger.ROOT_LOGGER;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -22,7 +21,6 @@ import jakarta.persistence.spi.ClassTransformer;
 import jakarta.persistence.spi.PersistenceUnitTransactionType;
 import javax.sql.DataSource;
 
-import org.jboss.jandex.Index;
 import org.jipijapa.plugin.spi.PersistenceUnitMetadata;
 import org.jipijapa.plugin.spi.TempClassLoaderFactory;
 
@@ -98,8 +96,6 @@ public class PersistenceUnitMetadataImpl implements PersistenceUnitMetadata {
     private volatile TempClassLoaderFactory tempClassLoaderFactory;
 
     private volatile ClassLoader cachedTempClassLoader;
-
-    private volatile Map<URL, Index> annotationIndex;
 
     private final AtomicBoolean onlyCheckIfClassFileTransformerIsNeededOnce = new AtomicBoolean(false);
 
@@ -199,16 +195,6 @@ public class PersistenceUnitMetadataImpl implements PersistenceUnitMetadata {
     @Override
     public URL getPersistenceUnitRootUrl() {
         return persistenceUnitRootUrl;
-    }
-
-    @Override
-    public void setAnnotationIndex(Map<URL, Index> indexes) {
-        annotationIndex = indexes;
-    }
-
-    @Override
-    public Map<URL, Index> getAnnotationIndex() {
-        return annotationIndex;
     }
 
     @Override
