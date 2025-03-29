@@ -6,15 +6,15 @@ package org.jboss.as.clustering.jgroups.subsystem;
 
 import java.util.function.Function;
 
-import org.jboss.as.clustering.controller.Metric;
-import org.jboss.as.clustering.controller.MetricExecutor;
-import org.jboss.as.clustering.controller.MetricFunction;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.dmr.ModelNode;
-import org.jboss.msc.service.ServiceName;
 import org.jgroups.JChannel;
+import org.wildfly.clustering.jgroups.spi.JGroupsServiceDescriptor;
 import org.wildfly.service.capture.FunctionExecutor;
+import org.wildfly.subsystem.resource.executor.Metric;
+import org.wildfly.subsystem.resource.executor.MetricExecutor;
+import org.wildfly.subsystem.resource.executor.MetricFunction;
 import org.wildfly.subsystem.service.ServiceDependency;
 import org.wildfly.subsystem.service.capture.FunctionExecutorRegistry;
 
@@ -34,8 +34,7 @@ public class ChannelMetricExecutor implements MetricExecutor<JChannel> {
 
     @Override
     public ModelNode execute(OperationContext context, Metric<JChannel> metric) throws OperationFailedException {
-        ServiceName name = ChannelResourceDefinition.CHANNEL_CAPABILITY.getCapabilityServiceName(context.getCurrentAddress());
-        FunctionExecutor<JChannel> executor = this.executors.getExecutor(ServiceDependency.on(name));
+        FunctionExecutor<JChannel> executor = this.executors.getExecutor(ServiceDependency.on(JGroupsServiceDescriptor.CHANNEL, context.getCurrentAddressValue()));
         return (executor != null) ? executor.execute(new MetricFunction<>(Function.identity(), metric)) : null;
     }
 }
