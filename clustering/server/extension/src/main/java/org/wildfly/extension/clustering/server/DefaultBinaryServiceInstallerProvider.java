@@ -7,11 +7,9 @@ package org.wildfly.extension.clustering.server;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.BiFunction;
 import java.util.function.Function;
 
 import org.jboss.as.clustering.naming.BinderServiceInstaller;
-import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.as.naming.deployment.JndiName;
@@ -23,7 +21,7 @@ import org.wildfly.subsystem.service.ServiceInstaller;
 /**
  * @author Paul Ferraro
  */
-public class DefaultBinaryServiceInstallerProvider<T> implements BiFunction<CapabilityServiceSupport, BinaryServiceConfiguration, Iterable<ServiceInstaller>> {
+public class DefaultBinaryServiceInstallerProvider<T> implements Function<BinaryServiceConfiguration, Iterable<ServiceInstaller>> {
 
     private final BinaryServiceDescriptor<T> descriptor;
     private final Function<BinaryServiceConfiguration, JndiName> jndiNameFactory;
@@ -34,7 +32,7 @@ public class DefaultBinaryServiceInstallerProvider<T> implements BiFunction<Capa
     }
 
     @Override
-    public Iterable<ServiceInstaller> apply(CapabilityServiceSupport support, BinaryServiceConfiguration configuration) {
+    public Iterable<ServiceInstaller> apply(BinaryServiceConfiguration configuration) {
         ServiceName name = configuration.withChildName(null).resolveServiceName(this.descriptor);
         List<ServiceInstaller> installers = new ArrayList<>(2);
         installers.add(ServiceInstaller.builder(configuration.getServiceDependency(this.descriptor)).provides(name).build());

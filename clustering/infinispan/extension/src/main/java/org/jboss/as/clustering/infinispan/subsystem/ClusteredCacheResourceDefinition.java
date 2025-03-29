@@ -75,7 +75,7 @@ public class ClusteredCacheResourceDefinition extends CacheResourceDefinition {
         public ResourceDescriptor apply(ResourceDescriptor descriptor) {
             return this.configurator.apply(descriptor)
                     .addAttributes(Attribute.class)
-                    .addResourceCapabilityReference(ResourceCapabilityReference.builder(CACHE_CONFIGURATION_CAPABILITY, JGroupsTransportResourceDefinition.TRANSPORT_CHANNEL).withRequirementNameResolver(UnaryCapabilityNameResolver.PARENT).build())
+                    .addResourceCapabilityReference(ResourceCapabilityReference.builder(CACHE_CONFIGURATION_CAPABILITY, JGroupsTransportResourceDefinition.SERVICE_DESCRIPTOR).withRequirementNameResolver(UnaryCapabilityNameResolver.PARENT).build())
                     ;
         }
     }

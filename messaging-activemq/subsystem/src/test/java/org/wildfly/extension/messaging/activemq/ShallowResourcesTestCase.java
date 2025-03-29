@@ -175,7 +175,6 @@ public class ShallowResourcesTestCase extends AbstractSubsystemTest {
     private AdditionalInitialization createAdditionalInitialization() {
         return AdditionalInitialization.withCapabilities(RuntimeCapability.resolveCapabilityName(ClusteringServiceDescriptor.COMMAND_DISPATCHER_FACTORY, "ee"),
                 ClusteringServiceDescriptor.DEFAULT_COMMAND_DISPATCHER_FACTORY.getName(),
-//                ChannelFactory.DEFAULT_SERVICE_DESCRIPTOR.getName(),
                 Capabilities.ELYTRON_DOMAIN_CAPABILITY,
                 Capabilities.ELYTRON_DOMAIN_CAPABILITY + ".elytronDomain",
                 CredentialReference.CREDENTIAL_STORE_CAPABILITY + ".cs1",
