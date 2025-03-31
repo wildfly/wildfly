@@ -49,6 +49,7 @@ public enum DistributableWebDeploymentSchema implements XMLElementSchema<Distrib
     VERSION_2_0(2, 0),
     VERSION_3_0(3, 0),
     VERSION_4_0(4, 0),
+    VERSION_5_0(5, 0),
     ;
     private final VersionedNamespace<IntVersion, DistributableWebDeploymentSchema> namespace;
     private final XMLComponentFactory<MutableDistributableWebDeploymentConfiguration, Void> factory = XMLComponentFactory.newInstance(this);
@@ -117,7 +118,7 @@ public enum DistributableWebDeploymentSchema implements XMLElementSchema<Distrib
         List<XMLAttribute<MutableHotRodSessionManagementConfiguration, Void>> attributes = new LinkedList<>();
         attributes.add(factory.attribute(this.resolve("remote-cache-container")).withUsage(XMLAttribute.Use.REQUIRED).withConsumer(MutableHotRodSessionManagementConfiguration::setContainerName).build());
         attributes.add(factory.attribute(this.resolve("cache-configuration")).withConsumer(MutableHotRodSessionManagementConfiguration::setConfigurationName).build());
-        if (this.since(VERSION_4_0)) {
+        if (this.since(VERSION_4_0) || !this.since(VERSION_5_0)) {
             attributes.add(factory.attribute(this.resolve("expiration-thread-pool-size")).build());
         }
         XMLChoice<MutableHotRodSessionManagementConfiguration, Void> affinityChoice = this.affinityChoiceBuilder(factory).build();

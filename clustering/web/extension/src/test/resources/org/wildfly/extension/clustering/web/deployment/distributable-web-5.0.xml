@@ -5,5 +5,8 @@
   -->
 
 <distributable-web xmlns="urn:jboss:distributable-web:5.0">
-    <session-management name="database"/>
+    <session-management name="foo">
+        <immutable-class>java.util.Locale</immutable-class>
+        <immutable-class>java.util.UUID</immutable-class>
+    </session-management>
 </distributable-web>
