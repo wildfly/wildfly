@@ -39,7 +39,7 @@ import org.wildfly.extension.clustering.web.session.infinispan.InfinispanSession
  * @author Paul Ferraro
  */
 @RunWith(value = Parameterized.class)
-public class DistributableWebDeploymentXMLReaderTestCase {
+public class DistributableWebDeploymentSchemaTestCase {
     @Parameters
     public static Iterable<DistributableWebDeploymentSchema> parameters() {
         return EnumSet.allOf(DistributableWebDeploymentSchema.class);
@@ -47,7 +47,7 @@ public class DistributableWebDeploymentXMLReaderTestCase {
 
     private final DistributableWebDeploymentSchema schema;
 
-    public DistributableWebDeploymentXMLReaderTestCase(DistributableWebDeploymentSchema schema) {
+    public DistributableWebDeploymentSchemaTestCase(DistributableWebDeploymentSchema schema) {
         this.schema = schema;
     }
 
@@ -113,7 +113,7 @@ public class DistributableWebDeploymentXMLReaderTestCase {
     public void testHotRod() throws IOException, XMLStreamException {
         URL url = this.getClass().getResource(String.format("distributable-web-hotrod-%d.%d.xml", this.schema.getVersion().major(), this.schema.getVersion().minor()));
         XMLMapper mapper = XMLMapper.Factory.create();
-        mapper.registerRootElement(this.schema.getQualifiedName(), new DistributableWebDeploymentXMLReader(this.schema));
+        mapper.registerRootElement(this.schema.getQualifiedName(), this.schema);
         try (InputStream input = url.openStream()) {
             XMLStreamReader reader = XMLInputFactory.newInstance().createXMLStreamReader(input);
             MutableDistributableWebDeploymentConfiguration config = new MutableDistributableWebDeploymentConfiguration(PropertyReplacers.noop());
