@@ -34,4 +34,8 @@ public class MutableRankedRoutingConfiguration implements NarySessionAffinityCon
     public void setMaxMembers(int maxMembers) {
         this.maxMembers = maxMembers;
     }
+
+    public void setMaxMembers(String maxMembers) {
+        this.setMaxMembers(Integer.valueOf(maxMembers));
+    }
 }
