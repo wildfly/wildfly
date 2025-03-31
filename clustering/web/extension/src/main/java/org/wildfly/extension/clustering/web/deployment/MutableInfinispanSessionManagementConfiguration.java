@@ -5,20 +5,21 @@
 
 package org.wildfly.extension.clustering.web.deployment;
 
+import java.util.function.Consumer;
 import java.util.function.UnaryOperator;
 
-import org.wildfly.clustering.server.service.BinaryServiceConfiguration;
+import org.wildfly.extension.clustering.web.routing.infinispan.PrimaryOwnerRouteLocatorProvider;
 
 /**
  * @author Paul Ferraro
  */
-public class MutableInfinispanSessionManagementConfiguration extends MutableSessionManagementConfiguration implements BinaryServiceConfiguration {
+public class MutableInfinispanSessionManagementConfiguration extends MutableSessionManagementConfiguration {
 
     private String containerName;
     private String cacheName;
 
-    public MutableInfinispanSessionManagementConfiguration(UnaryOperator<String> replacer) {
-        super(replacer);
+    public MutableInfinispanSessionManagementConfiguration(UnaryOperator<String> replacer, Consumer<String> accumulator) {
+        super(replacer, accumulator, new PrimaryOwnerRouteLocatorProvider());
     }
 
     @Override
