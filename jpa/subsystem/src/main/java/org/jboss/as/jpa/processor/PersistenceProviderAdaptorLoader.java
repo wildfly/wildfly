@@ -87,6 +87,11 @@ public class PersistenceProviderAdaptorLoader {
         public void markPersistenceUnitAvailable(Object wrapperBeanManagerLifeCycle) {
 
         }
+
+        @Override
+        public void addClassFileTransformer(PersistenceUnitMetadata pu) {
+
+        }
     };
 
     /**

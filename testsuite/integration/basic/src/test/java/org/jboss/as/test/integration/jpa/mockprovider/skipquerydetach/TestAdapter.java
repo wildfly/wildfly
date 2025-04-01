@@ -77,7 +77,13 @@ public class TestAdapter implements PersistenceProviderAdaptor {
     @Override
     public void markPersistenceUnitAvailable(Object wrapperBeanManagerLifeCycle) {
 
+
     }
+    @Override
+    public void addClassFileTransformer(PersistenceUnitMetadata pu) {
+
+    }
+
 
     public static boolean wasInitialized() {
         return initialized;

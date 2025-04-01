@@ -35,7 +35,6 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
-import org.jipijapa.plugin.spi.EntityManagerFactoryBuilder;
 import org.jipijapa.plugin.spi.PersistenceProviderAdaptor;
 import org.jipijapa.plugin.spi.PersistenceProviderIntegratorAdaptor;
 import org.jipijapa.plugin.spi.PersistenceUnitMetadata;
@@ -58,7 +57,6 @@ public class PersistenceUnitServiceImpl implements Service<PersistenceUnitServic
     private final InjectedValue<DataSource> nonJtaDataSource = new InjectedValue<DataSource>();
     private final InjectedValue<ExecutorService> executorInjector = new InjectedValue<ExecutorService>();
     private final InjectedValue<BeanManager> beanManagerInjector = new InjectedValue<>();
-    private final InjectedValue<PhaseOnePersistenceUnitServiceImpl> phaseOnePersistenceUnitServiceInjectedValue = new InjectedValue<>();
 
     private static final String EE_NAMESPACE = BeanManager.class.getName().startsWith("javax") ? "javax" : "jakarta";
     private static final String CDI_BEAN_MANAGER = ".persistence.bean.manager";
@@ -126,7 +124,7 @@ public class PersistenceUnitServiceImpl implements Service<PersistenceUnitServic
                                 }
 
                                 try {
-                                    PhaseOnePersistenceUnitServiceImpl phaseOnePersistenceUnitService = phaseOnePersistenceUnitServiceInjectedValue.getOptionalValue();
+
                                     WritableServiceBasedNamingStore.pushOwner(deploymentUnitServiceName);
                                     Object wrapperBeanManagerLifeCycle=null;
 
@@ -136,48 +134,26 @@ public class PersistenceUnitServiceImpl implements Service<PersistenceUnitServic
                                         properties.put(EE_NAMESPACE + VALIDATOR_FACTORY, validatorFactory);
                                     }
 
-                                    // handle phase 2 of 2 of bootstrapping the persistence unit
-                                    if (phaseOnePersistenceUnitService != null) {
-                                        ROOT_LOGGER.startingPersistenceUnitService(2, pu.getScopedPersistenceUnitName());
-                                        // indicate that the second phase of bootstrapping the persistence unit has started
-                                        phaseOnePersistenceUnitService.setSecondPhaseStarted(true);
-                                        if (beanManagerInjector.getOptionalValue() != null) {
-                                            wrapperBeanManagerLifeCycle = phaseOnePersistenceUnitService.getBeanManagerLifeCycle();
-                                            // update the bean manager proxy to the actual Jakarta Contexts and Dependency Injection bean manager
-                                            proxyBeanManager = phaseOnePersistenceUnitService.getBeanManager();
-                                            proxyBeanManager.setDelegate(beanManagerInjector.getOptionalValue());
-                                        }
-                                        EntityManagerFactoryBuilder emfBuilder = phaseOnePersistenceUnitService.getEntityManagerFactoryBuilder();
+                                    ROOT_LOGGER.startingService("Persistence Unit", pu.getScopedPersistenceUnitName());
+                                    // start the persistence unit in one pass (1 of 1)
+                                    pu.setTempClassLoaderFactory(new TempClassLoaderFactoryImpl(classLoader));
+                                    pu.setJtaDataSource(jtaDataSource.getOptionalValue());
+                                    pu.setNonJtaDataSource(nonJtaDataSource.getOptionalValue());
 
-                                        // always pass the ValidatorFactory before starting the second phase of the
-                                        // persistence unit bootstrap.
-                                        if (validatorFactory != null) {
-                                            emfBuilder.withValidatorFactory(validatorFactory);
+                                    if (beanManagerInjector.getOptionalValue() != null) {
+                                        proxyBeanManager = new ProxyBeanManager();
+                                        proxyBeanManager.setDelegate(beanManagerInjector.getOptionalValue());
+                                        wrapperBeanManagerLifeCycle = persistenceProviderAdaptor.beanManagerLifeCycle(proxyBeanManager);
+                                        if (wrapperBeanManagerLifeCycle != null) {
+                                          // pass the wrapper object representing the bean manager life cycle object
+                                          properties.put(EE_NAMESPACE + CDI_BEAN_MANAGER, wrapperBeanManagerLifeCycle);
                                         }
-
-                                        // get the EntityManagerFactory from the second phase of the persistence unit bootstrap
-                                        entityManagerFactory = emfBuilder.build();
-                                    } else {
-                                        ROOT_LOGGER.startingService("Persistence Unit", pu.getScopedPersistenceUnitName());
-                                        // start the persistence unit in one pass (1 of 1)
-                                        pu.setTempClassLoaderFactory(new TempClassLoaderFactoryImpl(classLoader));
-                                        pu.setJtaDataSource(jtaDataSource.getOptionalValue());
-                                        pu.setNonJtaDataSource(nonJtaDataSource.getOptionalValue());
-
-                                        if (beanManagerInjector.getOptionalValue() != null) {
-                                            proxyBeanManager = new ProxyBeanManager();
-                                            proxyBeanManager.setDelegate(beanManagerInjector.getOptionalValue());
-                                            wrapperBeanManagerLifeCycle = persistenceProviderAdaptor.beanManagerLifeCycle(proxyBeanManager);
-                                            if (wrapperBeanManagerLifeCycle != null) {
-                                              // pass the wrapper object representing the bean manager life cycle object
-                                              properties.put(EE_NAMESPACE + CDI_BEAN_MANAGER, wrapperBeanManagerLifeCycle);
-                                            }
-                                            else {
-                                              properties.put(EE_NAMESPACE + CDI_BEAN_MANAGER, proxyBeanManager);
-                                            }
+                                        else {
+                                          properties.put(EE_NAMESPACE + CDI_BEAN_MANAGER, proxyBeanManager);
                                         }
-                                        entityManagerFactory = createContainerEntityManagerFactory();
                                     }
+                                    entityManagerFactory = createContainerEntityManagerFactory();
+
                                     persistenceUnitRegistry.add(getScopedPersistenceUnitName(), getValue());
                                     if(wrapperBeanManagerLifeCycle != null) {
                                         beanManagerAfterDeploymentValidation.register(persistenceProviderAdaptor, wrapperBeanManagerLifeCycle);
@@ -226,12 +202,7 @@ public class PersistenceUnitServiceImpl implements Service<PersistenceUnitServic
                             // run as security privileged action
                             @Override
                             public Void run() {
-
-                                if (phaseOnePersistenceUnitServiceInjectedValue.getOptionalValue() != null) {
-                                    ROOT_LOGGER.stoppingPersistenceUnitService(2, pu.getScopedPersistenceUnitName());
-                                } else {
-                                    ROOT_LOGGER.stoppingService("Persistence Unit", pu.getScopedPersistenceUnitName());
-                                }
+                                ROOT_LOGGER.stoppingService("Persistence Unit", pu.getScopedPersistenceUnitName());
                                 ClassLoader old = Thread.currentThread().getContextClassLoader();
                                 Thread.currentThread().setContextClassLoader(classLoader);
                                 if(javaNamespaceSetup != null) {
@@ -360,7 +331,4 @@ public class PersistenceUnitServiceImpl implements Service<PersistenceUnitServic
         }
     }
 
-    public Injector<PhaseOnePersistenceUnitServiceImpl> getPhaseOnePersistenceUnitServiceImplInjector() {
-        return phaseOnePersistenceUnitServiceInjectedValue;
-    }
 }

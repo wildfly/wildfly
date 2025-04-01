@@ -79,6 +79,11 @@ public class TestAdapter implements PersistenceProviderAdaptor {
 
     }
 
+    @Override
+    public void addClassFileTransformer(PersistenceUnitMetadata pu) {
+
+    }
+
     public static boolean wasInitialized() {
         return initialized;
     }

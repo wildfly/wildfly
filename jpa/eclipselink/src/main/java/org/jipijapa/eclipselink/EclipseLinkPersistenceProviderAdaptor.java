@@ -94,4 +94,10 @@ public class EclipseLinkPersistenceProviderAdaptor implements
 
     }
 
+    @Override
+    public void addClassFileTransformer(PersistenceUnitMetadata pu) {
+
+    }
+
+
 }

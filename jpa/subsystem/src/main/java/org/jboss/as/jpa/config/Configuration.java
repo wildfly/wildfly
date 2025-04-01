@@ -306,20 +306,6 @@ public class Configuration {
     }
 
     /**
-     * Determine if persistence unit can use application defined DataSource (e.g. DataSourceDefinition or resource ref).
-     *
-     * @param pu
-     * @return true if application defined DataSource can be used, false (default) if not.
-     */
-    public static boolean allowApplicationDefinedDatasource(PersistenceUnitMetadata pu) {
-        boolean result = false;
-        if (pu.getProperties().containsKey(Configuration.JPA_ALLOW_APPLICATION_DEFINED_DATASOURCE)) {
-            result = Boolean.parseBoolean(pu.getProperties().getProperty(Configuration.JPA_ALLOW_APPLICATION_DEFINED_DATASOURCE));
-        }
-        return result;
-    }
-
-    /**
      * Determine if the default data-source should be used
      *
      * @param pu

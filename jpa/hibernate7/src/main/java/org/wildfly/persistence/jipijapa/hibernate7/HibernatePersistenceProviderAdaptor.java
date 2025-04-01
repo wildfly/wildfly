@@ -10,17 +10,14 @@ import java.util.Properties;
 
 import jakarta.enterprise.inject.spi.BeanManager;
 import jakarta.persistence.SharedCacheMode;
-import jakarta.persistence.spi.PersistenceUnitInfo;
 import org.hibernate.cfg.AvailableSettings;
 import org.jipijapa.cache.spi.Classification;
 import org.jipijapa.event.impl.internal.Notification;
-import org.jipijapa.plugin.spi.EntityManagerFactoryBuilder;
 import org.jipijapa.plugin.spi.JtaManager;
 import org.jipijapa.plugin.spi.ManagementAdaptor;
 import org.jipijapa.plugin.spi.PersistenceProviderAdaptor;
 import org.jipijapa.plugin.spi.PersistenceUnitMetadata;
 import org.jipijapa.plugin.spi.Platform;
-import org.jipijapa.plugin.spi.TwoPhaseBootstrapCapable;
 import org.kohsuke.MetaInfServices;
 import org.wildfly.persistence.jipijapa.hibernate7.management.HibernateManagementAdaptor;
 import org.wildfly.persistence.jipijapa.hibernate7.service.WildFlyCustomJtaPlatform;
@@ -31,7 +28,7 @@ import org.wildfly.persistence.jipijapa.hibernate7.service.WildFlyCustomJtaPlatf
  * @author Scott Marlow
  */
 @MetaInfServices(PersistenceProviderAdaptor.class)
-public class HibernatePersistenceProviderAdaptor implements PersistenceProviderAdaptor, TwoPhaseBootstrapCapable {
+public class HibernatePersistenceProviderAdaptor implements PersistenceProviderAdaptor {
 
     public static final String NAMING_STRATEGY_JPA_COMPLIANT_IMPL = "org.hibernate.boot.model.naming.ImplicitNamingStrategyJpaCompliantImpl";
     private volatile Platform platform;
@@ -218,12 +215,10 @@ public class HibernatePersistenceProviderAdaptor implements PersistenceProviderA
         hibernateExtendedBeanManager.beanManagerIsAvailableForUse();
     }
 
-    /* start of TwoPhaseBootstrapCapable methods */
-
-    public EntityManagerFactoryBuilder getBootstrap(final PersistenceUnitInfo info, final Map map) {
-        return new TwoPhaseBootstrapImpl(info, map);
+    @Override
+    public void addClassFileTransformer(PersistenceUnitMetadata pu) {
+        pu.addTransformer(new WildFlyClassTransformer());
     }
 
-    /* end of TwoPhaseBootstrapCapable methods */
 }
 
