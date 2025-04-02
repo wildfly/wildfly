@@ -20,7 +20,6 @@ import java.util.Collection;
 
 import static org.wildfly.extension.vertx.VertxConstants.ATTR_OPTION_NAME;
 import static org.wildfly.extension.vertx.VertxConstants.ELEMENT_VERTX;
-import static org.wildfly.extension.vertx.VertxConstants.ELEMENT_VERTX;
 
 /**
  * This represents a Vert.x instance, and there is only one Vert.x instance can be defined in this subsystem.
@@ -54,6 +53,7 @@ public class VertxResourceDefinition extends PersistentResourceDefinition {
         protected void performRuntime(OperationContext context, ModelNode operation, Resource resource) throws OperationFailedException {
             final String optionName = operation.hasDefined(ATTR_OPTION_NAME) ? VertxAttributes.OPTION_NAME.resolveModelAttribute(context, operation).asString() : null;
             VertxProxyService.installService(context, optionName);
+            context.reloadRequired();
         }
 
     }
