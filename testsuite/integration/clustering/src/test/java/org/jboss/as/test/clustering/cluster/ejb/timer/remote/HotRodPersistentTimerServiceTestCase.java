@@ -50,7 +50,7 @@ public class HotRodPersistentTimerServiceTestCase extends AbstractTimerServiceTe
                             .add("/subsystem=infinispan/cache-container=ejb/invalidation-cache=hotrod-persistent/component=expiration:add(interval=0)")
                             .add("/subsystem=infinispan/cache-container=ejb/invalidation-cache=hotrod-persistent/component=locking:add(isolation=REPEATABLE_READ)")
                             .add("/subsystem=infinispan/cache-container=ejb/invalidation-cache=hotrod-persistent/component=transaction:add(mode=BATCH)")
-                            .add("/subsystem=infinispan/cache-container=ejb/invalidation-cache=hotrod-persistent/store=hotrod:add(remote-cache-container=ejb, cache-configuration=default, fetch-state=false, shared=true)")
+                            .add("/subsystem=infinispan/cache-container=ejb/invalidation-cache=hotrod-persistent/store=hotrod:add(remote-cache-container=ejb, cache-configuration=default, fetch-state=false, shared=true, segmented=false)")
                             .add("/subsystem=distributable-ejb/infinispan-timer-management=hotrod:add(cache-container=ejb, cache=hotrod-persistent, marshaller=PROTOSTREAM)")
                         .endBatch()
                         .build())
