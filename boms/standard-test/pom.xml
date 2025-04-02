@@ -349,6 +349,13 @@
                 <version>${version.org.wildfly.glow}</version>
             </dependency>
 
+            <dependency>
+                <groupId>org.htmlunit</groupId>
+                <artifactId>htmlunit</artifactId>
+                <version>${version.org.htmlunit}</version>
+                <scope>test</scope>
+            </dependency>
+
             <!-- The below BOM's are imported last as to not override any dependencies above -->
             <dependency>
                 <groupId>org.jboss.arquillian</groupId>
