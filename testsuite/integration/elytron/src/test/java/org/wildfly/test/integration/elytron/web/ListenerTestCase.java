@@ -199,7 +199,7 @@ public class ListenerTestCase extends ContainerResourceMgmtTestBase {
         // check that the connector is live
         String cURL = "http://" + url.getHost() + ":8181";
         String response = HttpRequest.get(cURL, 10, TimeUnit.SECONDS);
-        assertTrue("Invalid response: " + response, response.indexOf("JBoss") >= 0);
+        assertTrue("Invalid response: " + response, response.contains("Welcome"));
         removeListener(Listener.HTTP, 5000);
     }
 
@@ -215,7 +215,7 @@ public class ListenerTestCase extends ContainerResourceMgmtTestBase {
 
             HttpResponse hr = httpClient.execute(get);
             String response = EntityUtils.toString(hr.getEntity());
-            assertTrue("Invalid response: " + response, response.indexOf("JBoss") >= 0);
+            assertTrue("Invalid response: " + response, response.contains("Welcome"));
         } finally {
             removeListener(Listener.HTTPS);
         }
