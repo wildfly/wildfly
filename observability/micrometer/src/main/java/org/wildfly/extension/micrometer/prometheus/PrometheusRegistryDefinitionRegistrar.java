@@ -12,11 +12,14 @@ import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ResourceDefinition;
 import org.jboss.as.controller.ResourceRegistration;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
+import org.jboss.as.controller.capability.RuntimeCapability;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.RuntimePackageDependency;
 import org.jboss.as.server.mgmt.domain.ExtensibleHttpManagement;
@@ -71,19 +74,9 @@ public class PrometheusRegistryDefinitionRegistrar implements ChildResourceDefin
 
         ResourceDescriptor description = ResourceDescriptor.builder(MicrometerSubsystemRegistrar.RESOLVER.createChildResolver(PATH))
             .addAttributes(ATTRIBUTES)
+            .withOperationTransformation(ModelDescriptionConstants.ADD, new AddHandler())
             .withRuntimeHandler(ResourceOperationRuntimeHandler.configureService(this))
-            .withOperationTransformation("add", new UnaryOperator<OperationStepHandler>() {
-                @Override
-                public OperationStepHandler apply(OperationStepHandler handler) {
-                    return (context, operation) -> {
-                        if (context.getProcessType().isHostController()) {
-                            throw MicrometerExtensionLogger.MICROMETER_LOGGER.prometheusNotSupportedOnHostControllers();
-                        }
-                        handler.execute(context, operation);
-                    };
-                }
-            })
-                .build();
+            .build();
         ManagementResourceRegistration resourceRegistration = parent.registerSubModel(
                 ResourceDefinition.builder(RESOURCE_REGISTRATION, description.getResourceDescriptionResolver()).build());
         if (resourceRegistration != null) {
@@ -111,5 +104,30 @@ public class PrometheusRegistryDefinitionRegistrar implements ChildResourceDefin
                 })
                 .asActive()
                 .build();
+    }
+
+    private static class AddHandler implements UnaryOperator<OperationStepHandler> {
+        @Override
+        public OperationStepHandler apply(OperationStepHandler operationStepHandler) {
+            return (operationContext, operation) -> {
+                if (operationContext.getProcessType().isHostController()) {
+                    throw MicrometerExtensionLogger.MICROMETER_LOGGER.prometheusNotSupportedOnHostControllers();
+                }
+                operationStepHandler.execute(operationContext, operation);
+
+                ModelNode model = operationContext.readResource(PathAddress.EMPTY_ADDRESS, false).getModel();
+                String context = CONTEXT.resolveModelAttribute(operationContext, model).asString();
+
+                if (context.startsWith("/")) {
+                    context = context.substring(1);
+                }
+
+                operationContext.registerCapability(
+                    RuntimeCapability.Builder.of("org.wildfly.management.context", true).build()
+                        .fromBaseCapability(context)
+                );
+
+            };
+        }
     }
 }
