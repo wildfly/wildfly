@@ -71,7 +71,7 @@ compliance of WildFly Preview should check the https://github.com/wildfly/certif
 [wildfly-preview-ee11]
 === EE 11 Support in WildFly Preview
 
-The 32 release introduced a significant inflection in how we are using WildFly Preview. Beginning with this release we are starting to use WildFly Preview to provide a look at what we're doing for Jakarta EE 11 support.  EE 11 is not yet GA, and standard WildFly won't support EE 11 before the WildFly 36 release, at earliest. But there are milestone, release candidate and final releases of many EE 11 specs and implementations available, so we decided to provide those in WildFly Preview. This means for a number of EE APIs, WildFly Preview no long provides an EE 10 compatible implementation.
+The 32 release introduced a significant inflection in how we are using WildFly Preview. Beginning with this release we are starting to use WildFly Preview to provide a look at what we're doing for Jakarta EE 11 support.  EE 11 is not yet GA, and standard WildFly won't support EE 11 before the WildFly 37 release, at earliest. But there are milestone, release candidate and final releases of many EE 11 specs and implementations available, so we decided to provide those in WildFly Preview. This means for a number of EE APIs, WildFly Preview no long provides an EE 10 compatible implementation.
 
 However, for a number of specifications that are planning changes for EE 11 we are still offering the EE 10 variant. In future releases we'll shift those to the EE 11 variants.
 
