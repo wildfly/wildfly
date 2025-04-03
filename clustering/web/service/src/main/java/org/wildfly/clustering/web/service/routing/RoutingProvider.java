@@ -5,7 +5,6 @@
 
 package org.wildfly.clustering.web.service.routing;
 
-import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.wildfly.service.descriptor.NullaryServiceDescriptor;
 import org.wildfly.subsystem.service.ServiceDependency;
 import org.wildfly.subsystem.service.ServiceInstaller;
@@ -24,5 +23,5 @@ public interface RoutingProvider {
      * @param route the distinct route of the server
      * @return a service builder
      */
-    Iterable<ServiceInstaller> getServiceInstallers(CapabilityServiceSupport support, String serverName, ServiceDependency<String> route);
+    Iterable<ServiceInstaller> getServiceInstallers(String serverName, ServiceDependency<String> route);
 }

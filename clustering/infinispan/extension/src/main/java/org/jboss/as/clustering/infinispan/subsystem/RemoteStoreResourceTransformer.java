@@ -14,6 +14,6 @@ import org.jboss.as.controller.transform.description.ResourceTransformationDescr
 public class RemoteStoreResourceTransformer extends StoreResourceTransformer {
 
     RemoteStoreResourceTransformer(ResourceTransformationDescriptionBuilder parent) {
-        super(parent.addChildResource(RemoteStoreResourceDefinition.PATH));
+        super(parent.addChildResource(StoreResourceRegistration.REMOTE.getPathElement()));
     }
 }
