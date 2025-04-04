@@ -105,7 +105,6 @@ public class PersistenceUnitServiceHandler {
 
     private static final String ENTITYMANAGERFACTORY_JNDI_PROPERTY = "jboss.entity.manager.factory.jndi.name";
     private static final String ENTITYMANAGER_JNDI_PROPERTY = "jboss.entity.manager.jndi.name";
-    public static final ServiceName BEANMANAGER_NAME = ServiceName.of("beanmanager");
 
     private static final AttachmentKey<Map<String,PersistenceProviderAdaptor>> providerAdaptorMapKey = AttachmentKey.create(Map.class);
     public static final AttributeDefinition SCOPED_UNIT_NAME = new SimpleAttributeDefinitionBuilder("scoped-unit-name", ModelType.STRING, true).setStorageRuntime().build();
@@ -277,19 +276,16 @@ public class PersistenceUnitServiceHandler {
                         final boolean twoPhaseBootStrapCapable = (adaptor instanceof TwoPhaseBootstrapCapable) && Configuration.allowTwoPhaseBootstrap(pu);
 
                         if (startEarly) {
+                            if (Configuration.needClassFileTransformer(pu)) {
+                                adaptor.addClassFileTransformer(pu);
+                            }
+
                             if (twoPhaseBootStrapCapable) {
                                 deployPersistenceUnitPhaseOne(deploymentUnit, eeModuleDescription, serviceTarget,
                                         classLoader, pu, adaptor, integratorAdaptors);
                             }
-                            else if (false == Configuration.needClassFileTransformer(pu)) {
-                                // will start later when startEarly == false
-                                ROOT_LOGGER.tracef("persistence unit %s in deployment %s is configured to not need class transformer to be set, no class rewriting will be allowed",
-                                    pu.getPersistenceUnitName(), deploymentUnit.getName());
-                            }
                             else {
-                                // we need class file transformer to work, don't allow Jakarta Contexts and Dependency Injection bean manager to be access since that
-                                // could cause application classes to be loaded (workaround by setting jboss.as.jpa.classtransformer to false).  WFLY-1463
-                                final boolean allowCdiBeanManagerAccess = false;
+                                final boolean allowCdiBeanManagerAccess = true;
                                 deployPersistenceUnit(deploymentUnit, eeModuleDescription, serviceTarget,
                                         classLoader, pu, provider, adaptor, integratorAdaptors, allowCdiBeanManagerAccess);
                             }
@@ -297,14 +293,8 @@ public class PersistenceUnitServiceHandler {
                         else { // !startEarly
                             if (twoPhaseBootStrapCapable) {
                                 deployPersistenceUnitPhaseTwo(deploymentUnit, eeModuleDescription, serviceTarget, classLoader, pu, provider, adaptor, integratorAdaptors);
-                            } else if (false == Configuration.needClassFileTransformer(pu)) {
-                                final boolean allowCdiBeanManagerAccess = true;
-                                // PUs that have Configuration.JPA_CONTAINER_CLASS_TRANSFORMER = false will start during INSTALL phase
-                                deployPersistenceUnit(deploymentUnit, eeModuleDescription, serviceTarget,
-                                        classLoader, pu, provider, adaptor, integratorAdaptors, allowCdiBeanManagerAccess);
                             }
                         }
-
                     }
                     else {
                         ROOT_LOGGER.tracef("persistence unit %s in deployment %s is not container managed (%s is set to false)",
@@ -1076,9 +1066,9 @@ public class PersistenceUnitServiceHandler {
                     final PersistenceProviderAdaptor adaptor = getPersistenceProviderAdaptor(pu, persistenceProviderDeploymentHolder, phaseContext.getDeploymentUnit(), provider, platform);
                     final boolean twoPhaseBootStrapCapable = (adaptor instanceof TwoPhaseBootstrapCapable) && Configuration.allowTwoPhaseBootstrap(pu);
                     // only add the next phase dependency, if the persistence unit service is starting early.
-                    if( Configuration.needClassFileTransformer(pu) && !Configuration.allowApplicationDefinedDatasource(pu)) {
+                    if( !Configuration.allowApplicationDefinedDatasource(pu) && !Configuration.allowDefaultDataSourceUse(pu) && twoPhaseBootStrapCapable ) {
                         // wait until the persistence unit service is started before starting the next deployment phase
-                        phaseContext.addToAttachmentList(Attachments.NEXT_PHASE_DEPS, twoPhaseBootStrapCapable ? puServiceName.append(FIRST_PHASE) : puServiceName);
+                        phaseContext.addToAttachmentList(Attachments.NEXT_PHASE_DEPS, puServiceName.append(FIRST_PHASE) );
                     }
                 }
             }

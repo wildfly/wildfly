@@ -382,6 +382,9 @@ public class PersistenceUnitMetadataImpl implements PersistenceUnitMetadata {
 
     @Override
     public void addTransformer(ClassTransformer classTransformer) {
+        if(classTransformer.getClass().getName().contains("org.hibernate")) {
+            return;
+        }
         transformers.add(classTransformer);
         if (ROOT_LOGGER.isTraceEnabled()) {
             ROOT_LOGGER.tracef("added entity class transformer '%s' for '%s'",
