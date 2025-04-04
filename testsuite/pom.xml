@@ -160,13 +160,13 @@
         <surefire.jpda.args></surefire.jpda.args>
         <as.debug.port>8787</as.debug.port>
         <!-- The JPMS settings needed by the client side of a portion of the testsuite.
-             Defaults to ${modular.jdk.args} plus ${security.manager.props}, i.e. the standard list of recommended
+             Defaults to ${modular.jdk.args}, i.e. the standard list of recommended
              client side JPMS settings for users of our client-side libraries.
              If particular tests need additional settings to support client-side behavior
              in their test code, then this property should be overridden in as fine-grained
              a location as is practical; no more coarse-grained than the global config of
              the pom for the maven module that includes the test. -->
-        <modular.jdk.testsuite.args>${modular.jdk.args} ${security.manager.props}</modular.jdk.testsuite.args>
+        <modular.jdk.testsuite.args>${modular.jdk.args}</modular.jdk.testsuite.args>
         <surefire.system.args>${modular.jdk.testsuite.args} -Dorg.jboss.ejb.client.wildfly-testsuite-hack=true ${surefire.memory.args} ${surefire.jpda.args} -Djboss.dist=${jboss.dist} ${surefire.jacoco.args} -Dmaven.repo.local=${settings.localRepository}</surefire.system.args>
         <extra.server.jvm.args />
         <!-- needed for arquillian-byteman-extension -->

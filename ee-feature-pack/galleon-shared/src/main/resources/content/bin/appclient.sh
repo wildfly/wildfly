@@ -143,8 +143,10 @@ if $cygwin; then
 fi
 
 # Set default Security Manager configuration value
-setSecurityManagerDefault
-JAVA_OPTS="$JAVA_OPTS $SECURITY_MANAGER_CONFIG_OPTION"
+if [ "$SECMGR" = "true" ]; then
+    setSecurityManagerDefault
+    JAVA_OPTS="$JAVA_OPTS $SECURITY_MANAGER_CONFIG_OPTION"
+fi
 
 # Process the JAVA_OPTS failing if the java.security.manager is set.
 SECURITY_MANAGER_SET=`echo $JAVA_OPTS | $GREP "java\.security\.manager"`
