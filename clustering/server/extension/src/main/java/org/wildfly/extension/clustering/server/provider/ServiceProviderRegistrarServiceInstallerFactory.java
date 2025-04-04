@@ -1,24 +1,24 @@
-/*
- * Copyright The WildFly Authors
- * SPDX-License-Identifier: Apache-2.0
- */
 package org.wildfly.extension.clustering.server.provider;
 
-import org.wildfly.clustering.server.GroupMember;
-import org.wildfly.clustering.server.provider.ServiceProviderRegistrar;
+import org.jboss.as.controller.capability.CapabilityServiceSupport;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.kohsuke.MetaInfServices;
+import org.wildfly.clustering.server.service.BinaryServiceConfiguration;
 import org.wildfly.clustering.server.service.BinaryServiceInstallerFactory;
-import org.wildfly.clustering.server.service.ClusteringServiceDescriptor;
-import org.wildfly.service.descriptor.BinaryServiceDescriptor;
+import org.wildfly.subsystem.service.ServiceInstaller;
+
+import java.util.function.BiFunction;
 
 /**
- * Builds a cache-based {@link ServiceProviderRegistrationFactory} service.
+ * Configures a cache or local service provider registry.
  * @author Paul Ferraro
  */
-public abstract class ServiceProviderRegistrarServiceInstallerFactory<T> implements BinaryServiceInstallerFactory<ServiceProviderRegistrar<T, GroupMember>> {
+@MetaInfServices(BinaryServiceInstallerFactory.class)
+public class ServiceProviderRegistrarServiceInstallerFactory<T> extends AbstractServiceProviderRegistrarServiceInstallerFactory<T>{
 
-    @SuppressWarnings("unchecked")
     @Override
-    public BinaryServiceDescriptor<ServiceProviderRegistrar<T, GroupMember>> getServiceDescriptor() {
-        return (BinaryServiceDescriptor<ServiceProviderRegistrar<T, GroupMember>>) (BinaryServiceDescriptor<?>) ClusteringServiceDescriptor.SERVICE_PROVIDER_REGISTRAR;
+    public ServiceInstaller apply(CapabilityServiceSupport support, BinaryServiceConfiguration configuration) {
+        BiFunction<CapabilityServiceSupport, BinaryServiceConfiguration, ServiceInstaller> factory = configuration.getParentName().equals(ModelDescriptionConstants.LOCAL) ? new LocalServiceProviderRegistrarServiceInstallerFactory<>() : new CacheServiceProviderRegistrarServiceInstallerFactory<>();
+        return factory.apply(support, configuration);
     }
 }
