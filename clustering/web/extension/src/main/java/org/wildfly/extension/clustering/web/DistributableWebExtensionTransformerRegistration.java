@@ -22,7 +22,7 @@ public class DistributableWebExtensionTransformerRegistration implements Extensi
 
     @Override
     public String getSubsystemName() {
-        return DistributableWebExtension.SUBSYSTEM_NAME;
+        return DistributableWebSubsystemResourceDefinitionRegistrar.REGISTRATION.getName();
     }
 
     @Override
