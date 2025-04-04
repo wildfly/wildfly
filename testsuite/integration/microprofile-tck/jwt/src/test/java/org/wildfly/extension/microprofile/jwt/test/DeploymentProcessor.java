@@ -7,6 +7,7 @@ package org.wildfly.extension.microprofile.jwt.test;
 
 import static org.wildfly.testing.tools.deployments.DeploymentDescriptors.createPermissionsXmlAsset;
 
+import java.io.File;
 import java.io.FilePermission;
 import java.net.SocketPermission;
 import java.security.Permission;
@@ -57,7 +58,7 @@ public class DeploymentProcessor implements ApplicationArchiveProcessor {
 
             // This test class reads a temporary tck pem file
             if (testClass.getName().equals("org.eclipse.microprofile.jwt.tck.config.PublicKeyAsFileLocationURLTest")) {
-                permissions.add(new FilePermission(System.getProperty("user.dir") + "/target/*", "read"));
+                permissions.add(new FilePermission(System.getProperty("java.io.tmpdir") + File.separator + "-", "read"));
             }
 
             // Run the TCK with security manager
