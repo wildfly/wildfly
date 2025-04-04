@@ -13,6 +13,8 @@ import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
+import io.undertow.predicate.Predicate;
+import io.undertow.predicate.Predicates;
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.CapabilityServiceBuilder;
 import org.jboss.as.controller.ControlledProcessStateService;
@@ -20,8 +22,8 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ProcessType;
-import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.capability.RuntimeCapability;
+import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.server.mgmt.UndertowHttpManagementService;
 import org.jboss.as.server.mgmt.domain.HttpManagement;
 import org.jboss.as.server.suspend.SuspendController;
@@ -33,6 +35,7 @@ import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.msc.service.ServiceName;
 import org.wildfly.extension.requestcontroller.RequestController;
 import org.wildfly.extension.undertow.deployment.DefaultDeploymentMappingProvider;
+import org.wildfly.extension.undertow.logging.UndertowLogger;
 
 /**
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a> (c) 2013 Red Hat Inc.
@@ -68,6 +71,9 @@ final class HostAdd extends AbstractAddStepHandler {
         final boolean isDefaultHost = defaultServerName.equals(serverName) && name.equals(defaultHostName);
         final int defaultResponseCode = HostDefinition.DEFAULT_RESPONSE_CODE.resolveModelAttribute(context, model).asInt();
         final boolean enableConsoleRedirect = !HostDefinition.DISABLE_CONSOLE_REDIRECT.resolveModelAttribute(context, model).asBoolean();
+        final boolean activeReqTrackingEnabled = HostDefinition.ACTIVE_REQUEST_TRACKING_ENABLED.resolveModelAttribute(context, model).asBoolean();
+        final boolean statisticsEnabled = UndertowRootDefinition.STATISTICS_ENABLED.resolveModelAttribute(context, subsystemModel).asBoolean();
+
         Boolean queueRequestsOnStart = null;
 
         if (model.hasDefined(HostDefinition.QUEUE_REQUESTS_ON_START.getName())) {
@@ -117,6 +123,28 @@ final class HostAdd extends AbstractAddStepHandler {
                 sb.install();
             }
         }
+
+        if (activeReqTrackingEnabled) {
+            if (statisticsEnabled) {
+                Predicate predicate = null;
+                ModelNode predicateNode = HostDefinition.ACTIVE_REQUEST_TRACKING_PREDICATE.resolveModelAttribute(context, model);
+                if(predicateNode.isDefined()) {
+                    predicate = Predicates.parse(predicateNode.asString(), getClass().getClassLoader());
+                }
+                final CapabilityServiceBuilder<?> sb = context.getCapabilityServiceTarget()
+                        .addCapability(HostDefinition.ACTIVE_REQUEST_TRACKING_CAPABILITY);
+                final Consumer<ActiveRequestTrackerService> serviceConsumer =
+                        sb.provides(HostDefinition.ACTIVE_REQUEST_TRACKING_CAPABILITY,
+                        UndertowService.activeRequestTrackingServiceName(serverName, name));
+                final Supplier<Host> hostSupplier = sb.requiresCapability(Capabilities.CAPABILITY_HOST, Host.class, serverName, name);
+
+                sb.setInstance(new ActiveRequestTrackerService(serviceConsumer, hostSupplier, predicate));
+                sb.install();
+            } else {
+                UndertowLogger.ROOT_LOGGER.cannotEnableActiveRequestTracking();
+            }
+        }
+
     }
 
     private void addCommonHost(OperationContext context, List<String> aliases, String serverName, ServiceName virtualHostServiceName) {
