@@ -322,7 +322,7 @@
              on the dependency on the MicroProfile REST Client TCK POM.
          -->
         <version.org.testng.mp.rest.client>7.10.2</version.org.testng.mp.rest.client>
-        <version.org.wildfly.arquillian>5.1.0.Beta10</version.org.wildfly.arquillian>
+        <version.org.wildfly.arquillian>5.1.0.Beta11</version.org.wildfly.arquillian>
         <version.org.wildfly.extras.creaper>2.0.3</version.org.wildfly.extras.creaper>
         <legacy.version.org.wildfly.naming-client>1.0.17.Final</legacy.version.org.wildfly.naming-client>
 
