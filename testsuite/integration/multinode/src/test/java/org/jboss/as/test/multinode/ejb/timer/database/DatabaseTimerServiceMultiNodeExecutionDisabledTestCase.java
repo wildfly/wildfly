@@ -10,7 +10,9 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVICE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STEPS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
+import static org.jboss.as.test.shared.PermissionUtils.createPermissionsXmlAsset;
 
+import java.net.SocketPermission;
 import java.net.URI;
 import java.util.Collections;
 import java.util.List;
@@ -170,7 +172,10 @@ public class DatabaseTimerServiceMultiNodeExecutionDisabledTestCase {
         war.addAsResource(new StringAsset(nodeName), "node.txt");
         war.addAsWebInfResource(DatabaseTimerServiceMultiNodeExecutionDisabledTestCase.class.getPackage(), "jboss-ejb3.xml", "jboss-ejb3.xml");
         if (client) {
-            war.addAsManifestResource(DatabaseTimerServiceMultiNodeExecutionDisabledTestCase.class.getPackage(), "jboss-ejb-client.xml", "jboss-ejb-client.xml");
+            war.addAsManifestResource(DatabaseTimerServiceMultiNodeExecutionDisabledTestCase.class.getPackage(), "jboss-ejb-client.xml", "jboss-ejb-client.xml")
+            war.addAsManifestResource(
+                    createPermissionsXmlAsset(
+                            new SocketPermission("*:9092", "connect,resolve")), "permissions.xml");
         }
         return war;
     }
