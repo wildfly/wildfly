@@ -116,10 +116,12 @@ if "x%JBOSS_MODULEPATH%" == "x" (
   set  "JBOSS_MODULEPATH=%JBOSS_HOME%\modules"
 )
 
-setlocal EnableDelayedExpansion
-call "!DIRNAME!common.bat" :setSecurityManagerDefault
-set "JAVA_OPTS=!JAVA_OPTS! !SECURITY_MANAGER_CONFIG_OPTION!"
-setlocal DisableDelayedExpansion
+if "%SECMGR%" == "true" (
+    setlocal EnableDelayedExpansion
+    call "!DIRNAME!common.bat" :setSecurityManagerDefault
+    set "JAVA_OPTS=!JAVA_OPTS! !SECURITY_MANAGER_CONFIG_OPTION!"
+    setlocal DisableDelayedExpansion
+)
 
 rem Set the module options
 set "MODULE_OPTS="

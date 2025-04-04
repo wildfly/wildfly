@@ -137,7 +137,6 @@
             --add-opens=java.management/javax.management=ALL-UNNAMED
             --add-opens=java.naming/javax.naming=ALL-UNNAMED
         </modular.jdk.args>
-        <security.manager.props></security.manager.props>
 
         <!--
             See ChildFirstClassLoaderBuilder in model-test for the explanation of the org.jboss.model.test.cache.root and org.jboss.model.test.classpath.cache properties.
@@ -174,7 +173,7 @@
         <surefire.extra.args></surefire.extra.args>
         <surefire.jpda.args></surefire.jpda.args>
         <surefire.non-modular.system.args>-ea -Duser.region=US -Duser.language=en ${surefire.jpda.args} ${surefire.extra.args} ${surefire.jacoco.args}</surefire.non-modular.system.args>
-        <surefire.system.args>${modular.jdk.args} ${security.manager.props} ${surefire.non-modular.system.args}</surefire.system.args>
+        <surefire.system.args>${modular.jdk.args} ${surefire.non-modular.system.args}</surefire.system.args>
         <arquillian.servlet.protocol>Servlet 5.0</arquillian.servlet.protocol>
         <testLogToFile>true</testLogToFile>
         <maven.test.redirectTestOutputToFile>${testLogToFile}</maven.test.redirectTestOutputToFile>
@@ -1526,17 +1525,6 @@
             </modules>
         </profile>
 
-        <profile>
-            <id>jdk18</id>
-            <activation>
-                <jdk>[18,24)</jdk>
-            </activation>
-            <properties>
-                <security.manager.props>
-                    -Djava.security.manager=allow
-                </security.manager.props>
-            </properties>
-        </profile>
         <profile>
             <id>jdk23</id>
             <activation>
