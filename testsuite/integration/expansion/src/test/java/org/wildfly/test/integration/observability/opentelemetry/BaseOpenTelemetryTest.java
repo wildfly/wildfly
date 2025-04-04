@@ -6,6 +6,7 @@
 package org.wildfly.test.integration.observability.opentelemetry;
 
 import java.net.MalformedURLException;
+import java.util.List;
 
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.testcontainers.api.DockerRequired;
@@ -28,9 +29,10 @@ public abstract class BaseOpenTelemetryTest {
     @Testcontainer
     protected OpenTelemetryCollectorContainer otelCollector;
 
-    private static final String MP_CONFIG = "otel.sdk.disabled=false\n" +
-            // Lower the interval from 60 seconds to 100 millis
-            "otel.metric.export.interval=100";
+    private static final List<String> MP_CONFIG = List.of(
+        "otel.sdk.disabled=false",
+        // Lower the interval from 60 seconds to 100 millis
+        "otel.metric.export.interval=1000");
 
     static WebArchive buildBaseArchive(String name) {
         return ShrinkWrap
@@ -42,7 +44,7 @@ public abstract class BaseOpenTelemetryTest {
                 OtelMetricResource.class
             )
             .addPackage(JaegerResponse.class.getPackage())
-            .addAsManifestResource(new StringAsset(MP_CONFIG), "microprofile-config.properties")
+            .addAsManifestResource(new StringAsset(String.join("\n", MP_CONFIG)), "microprofile-config.properties")
             .addAsWebInfResource(CdiUtils.createBeansXml(), "beans.xml")
             ;
     }

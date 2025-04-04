@@ -5,39 +5,61 @@
 
 package org.wildfly.extension.opentelemetry.api;
 
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import javax.net.ssl.SSLContext;
 
 import io.smallrye.opentelemetry.api.OpenTelemetryConfig;
 import org.wildfly.service.descriptor.NullaryServiceDescriptor;
 
 public final class WildFlyOpenTelemetryConfig implements OpenTelemetryConfig {
+    private static final String EXPORTER_OTLP = "otlp";
+    private static final String EXPORTER_NONE = "none";
     public static NullaryServiceDescriptor<WildFlyOpenTelemetryConfig> SERVICE_DESCRIPTOR =
-            NullaryServiceDescriptor.of("org.wildfly.extension.opentelemetry.config",
-                WildFlyOpenTelemetryConfig.class);
+            NullaryServiceDescriptor.of("org.wildfly.extension.opentelemetry.config", WildFlyOpenTelemetryConfig.class);
 
-    public static final String OTEL_BSP_MAX_EXPORT_BATCH_SIZE = "otel.bsp.max.export.batch.size";
-    public static final String OTEL_BSP_MAX_QUEUE_SIZE = "otel.bsp.max.queue.size";
-    public static final String OTEL_BSP_SCHEDULE_DELAY = "otel.bsp.schedule.delay";
+    // General
+    public static final String OTEL_SDK_DISABLED = "otel.sdk.disabled";
+    public static final String OTEL_SERVICE_NAME = "otel.service.name";
+
+    // Exporters
+    public static final String OTEL_EXPORTER_OTLP_COMPRESSION = "otel.exporter.otlp.compression";
     public static final String OTEL_EXPORTER_OTLP_ENDPOINT = "otel.exporter.otlp.endpoint";
     public static final String OTEL_EXPORTER_OTLP_PROTOCOL = "otel.exporter.otlp.protocol";
     public static final String OTEL_EXPORTER_OTLP_TIMEOUT = "otel.exporter.otlp.timeout";
-    public static final String OTEL_LOGS_EXPORTER = "otel.logs.exporter";
-    public static final String OTEL_PROPAGATORS = "otel.propagators";
-    public static final String OTEL_METRICS_EXPORTER = "otel.metrics.exporter";
-    public static final String OTEL_SDK_DISABLED = "otel.sdk.disabled";
-    public static final String OTEL_SERVICE_NAME = "otel.service.name";
+
+    // Traces
     public static final String OTEL_TRACES_EXPORTER = "otel.traces.exporter";
+    public static final String OTEL_TRACES_MAX_EXPORT_BATCH_SIZE = "otel.bsp.max.export.batch.size";
+    public static final String OTEL_TRACES_MAX_QUEUE_SIZE = "otel.bsp.max.queue.size";
+    public static final String OTEL_TRACES_PROPAGATORS = "otel.propagators";
     public static final String OTEL_TRACES_SAMPLER = "otel.traces.sampler";
     public static final String OTEL_TRACES_SAMPLER_ARG = "otel.traces.sampler.arg";
+    public static final String OTEL_TRACES_SCHEDULE_DELAY = "otel.bsp.schedule.delay";
+
+    // Metrics
+    public static final String OTEL_METRICS_DEFAULT_HISTOGRAM_AGGREGATION = "otel.exporter.otlp.metrics.default.histogram.aggregation";
+    public static final String OTEL_METRICS_EXEMPLAR_FILTER = "otel.metrics.exemplar.filter";
+    public static final String OTEL_METRICS_EXPORTER = "otel.metrics.exporter";
+    public static final String OTEL_METRICS_TEMPORALITY_PREFERENCE = "otel.exporter.otlp.metrics.temporality.preference";
+    public static final String OTEL_METRIC_EXPORT_INTERVAL = "otel.metric.export.interval";
+
+    // Logging
+    public static final String OTEL_LOGS_MAX_EXPORT_BATCH_SIZE = "otel.blrp.max.export.batch.size";
+    public static final String OTEL_LOGS_MAX_QUEUE_SIZE = "otel.blrp.max.queue.size";
+    public static final String OTEL_LOGS_SCHEDULE_DELAY = "otel.blrp.schedule.delay";
+    public static final String OTEL_LOGS_EXPORTER = "otel.logs.exporter";
 
     private final Map<String, String> properties;
     private final boolean mpTelemetryInstalled;
+    private final SSLContext sslContext;
 
-    WildFlyOpenTelemetryConfig(Map<String, String> properties, boolean mpTelemetryInstalled) {
-        this.properties = Collections.unmodifiableMap(properties);
+    WildFlyOpenTelemetryConfig(Map<String, String> properties,
+                               boolean mpTelemetryInstalled,
+                               SSLContext sslContext) {
+        this.properties = properties;
         this.mpTelemetryInstalled = mpTelemetryInstalled;
+        this.sslContext = sslContext;
     }
 
     @Override
@@ -49,15 +71,27 @@ public final class WildFlyOpenTelemetryConfig implements OpenTelemetryConfig {
         return mpTelemetryInstalled;
     }
 
+    public SSLContext getSslContext() {
+        return sslContext;
+    }
+
     public static class Builder {
         final Map<String, String> properties = new HashMap<>();
         private boolean mpTelemetryInstalled;
+        private SSLContext sslContext;
 
         public Builder() {
             addValue(OTEL_EXPORTER_OTLP_PROTOCOL, "grpc");
-            addValue(OTEL_PROPAGATORS, "tracecontext,baggage");
+            addValue(OTEL_TRACES_PROPAGATORS, "tracecontext,baggage");
             addValue(OTEL_SDK_DISABLED, "false");
 
+            addValue(OTEL_TRACES_EXPORTER, EXPORTER_OTLP);
+            addValue(OTEL_LOGS_EXPORTER, EXPORTER_OTLP);
+            addValue(OTEL_METRICS_EXPORTER, EXPORTER_OTLP);
+        }
+
+        public WildFlyOpenTelemetryConfig build() {
+            return new WildFlyOpenTelemetryConfig(properties, mpTelemetryInstalled, sslContext);
         }
 
         public Builder setServiceName(String serviceName) {
@@ -66,12 +100,11 @@ public final class WildFlyOpenTelemetryConfig implements OpenTelemetryConfig {
         }
 
         public Builder setExporter(String exporter) {
-            if (!exporter.equals("otlp")) {
+            if (!exporter.equals(EXPORTER_OTLP)) {
                 throw new IllegalArgumentException("An unexpected exporter type was found: " + exporter);
             }
-            addValue(OTEL_TRACES_EXPORTER, exporter);
-            addValue(OTEL_LOGS_EXPORTER, exporter);
-            addValue(OTEL_METRICS_EXPORTER, exporter);
+
+            // Remove this?
 
             return this;
         }
@@ -86,23 +119,47 @@ public final class WildFlyOpenTelemetryConfig implements OpenTelemetryConfig {
             return this;
         }
 
-        public Builder setExportInterval(Long interval) {
-            addValue("otel.metric.export.interval", interval);
+        public Builder setCompression(String compression) {
+            addValue(OTEL_EXPORTER_OTLP_COMPRESSION, compression);
             return this;
         }
 
-        public Builder setBatchDelay(long delay) {
-            addValue(OTEL_BSP_SCHEDULE_DELAY, delay);
+        public Builder setMetricsExportInterval(Long interval) {
+            addValue(OTEL_METRIC_EXPORT_INTERVAL, interval);
+            return this;
+        }
+
+        public Builder setTracesEnabled(boolean enabled) {
+            addValue(OTEL_TRACES_EXPORTER, enabled ? EXPORTER_OTLP : EXPORTER_NONE);
+
+            return this;
+        }
+
+        public Builder setTracesExportInterval(long delay) {
+            addValue(OTEL_TRACES_SCHEDULE_DELAY, delay);
+            return this;
+        }
+
+        public Builder setLogsEnabled(boolean enabled) {
+            addValue(OTEL_LOGS_EXPORTER, enabled ? EXPORTER_OTLP : EXPORTER_NONE);
+
+            return this;
+        }
+
+        public Builder setLogsExportInterval(long delay) {
+            addValue(OTEL_LOGS_SCHEDULE_DELAY, delay);
             return this;
         }
 
         public Builder setMaxQueueSize(long maxQueueSize) {
-            addValue(OTEL_BSP_MAX_QUEUE_SIZE, maxQueueSize);
+            addValue(OTEL_TRACES_MAX_QUEUE_SIZE, maxQueueSize);
+            addValue(OTEL_LOGS_MAX_QUEUE_SIZE, maxQueueSize);
             return this;
         }
 
         public Builder setMaxExportBatchSize(long maxExportBatchSize) {
-            addValue(OTEL_BSP_MAX_EXPORT_BATCH_SIZE, maxExportBatchSize);
+            addValue(OTEL_TRACES_MAX_EXPORT_BATCH_SIZE, maxExportBatchSize);
+            addValue(OTEL_LOGS_MAX_EXPORT_BATCH_SIZE, maxExportBatchSize);
             return this;
         }
 
@@ -128,6 +185,27 @@ public final class WildFlyOpenTelemetryConfig implements OpenTelemetryConfig {
             return this;
         }
 
+        public Builder setMetricsEnabled(boolean enabled) {
+            addValue(OTEL_METRICS_EXPORTER, enabled ? EXPORTER_OTLP : EXPORTER_NONE);
+
+            return this;
+        }
+
+        public Builder setMetricsExemplarFilter(String filter) {
+            addValue(OTEL_METRICS_EXEMPLAR_FILTER, filter);
+            return this;
+        }
+
+        public Builder setMetricsTemporality(String preference) {
+            addValue(OTEL_METRICS_TEMPORALITY_PREFERENCE, preference);
+            return this;
+        }
+
+        public Builder setMetricsHistogramAggregation(String aggregation) {
+            addValue(OTEL_METRICS_DEFAULT_HISTOGRAM_AGGREGATION, aggregation);
+            return this;
+        }
+
         public Builder setInjectVertx(boolean injectVertx) {
             if (injectVertx) {
                 addValue("otel.exporter.vertx.cdi.identifier", "vertx");
@@ -140,8 +218,9 @@ public final class WildFlyOpenTelemetryConfig implements OpenTelemetryConfig {
             return this;
         }
 
-        public WildFlyOpenTelemetryConfig build() {
-            return new WildFlyOpenTelemetryConfig(properties, mpTelemetryInstalled);
+        public Builder setSslContext(SSLContext sslContext) {
+            this.sslContext = sslContext;
+            return this;
         }
 
         /**
