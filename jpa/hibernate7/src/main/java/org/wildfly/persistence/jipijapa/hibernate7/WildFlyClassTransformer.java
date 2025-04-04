@@ -1,3 +1,7 @@
+/*
+ * Copyright The WildFly Authors
+ * SPDX-License-Identifier: Apache-2.0
+ */
 package org.wildfly.persistence.jipijapa.hibernate7;
 
 import org.hibernate.bytecode.enhance.spi.DefaultEnhancementContext;
