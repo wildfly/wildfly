@@ -58,10 +58,6 @@
 
         <!-- External dependencies -->
         <dependency>
-            <groupId>org.jboss.msc</groupId>
-            <artifactId>jboss-msc</artifactId>
-        </dependency>
-        <dependency>
             <groupId>org.wildfly.clustering</groupId>
             <artifactId>wildfly-clustering-context</artifactId>
         </dependency>

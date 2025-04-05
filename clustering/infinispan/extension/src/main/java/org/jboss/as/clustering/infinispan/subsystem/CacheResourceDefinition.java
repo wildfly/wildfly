@@ -9,8 +9,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.function.BiFunction;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
@@ -34,7 +34,6 @@ import org.jboss.as.clustering.controller.ModulesServiceConfigurator;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.ResourceServiceHandler;
 import org.jboss.as.clustering.controller.SimpleResourceRegistrar;
-import org.jboss.as.clustering.controller.validation.ModuleIdentifierValidatorBuilder;
 import org.jboss.as.clustering.infinispan.cache.LazyCache;
 import org.jboss.as.clustering.naming.BinderServiceInstaller;
 import org.jboss.as.controller.AttributeDefinition;
@@ -45,9 +44,9 @@ import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.RequirementServiceBuilder;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.StringListAttributeDefinition;
-import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.operations.validation.ModuleNameValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -112,7 +111,7 @@ public class CacheResourceDefinition extends ChildResourceDefinition<ManagementR
         MODULES("modules") {
             @Override
             public StringListAttributeDefinition.Builder apply(StringListAttributeDefinition.Builder builder) {
-                return builder.setElementValidator(new ModuleIdentifierValidatorBuilder().configure(builder).build());
+                return builder.setElementValidator(ModuleNameValidator.INSTANCE);
             }
         },
         ;
@@ -232,8 +231,8 @@ public class CacheResourceDefinition extends ChildResourceDefinition<ManagementR
         installers.add(new BinderServiceInstaller(InfinispanBindingFactory.createCacheConfigurationBinding(configuration), CacheResourceDefinition.CACHE_CONFIGURATION_CAPABILITY.getCapabilityServiceName(address)));
         installers.add(new BinderServiceInstaller(InfinispanBindingFactory.createCacheBinding(configuration), lazyCacheServiceName));
 
-        Class<? extends BiFunction<CapabilityServiceSupport, BinaryServiceConfiguration, Iterable<ServiceInstaller>>> providerClass = this.mode.isClustered() ? ClusteredCacheServiceInstallerProvider.class : LocalCacheServiceInstallerProvider.class;
-        new ProvidedBinaryServiceInstallerProvider<>(providerClass, providerClass.getClassLoader()).apply(context.getCapabilityServiceSupport(), configuration).forEach(installers::add);
+        Class<? extends Function<BinaryServiceConfiguration, Iterable<ServiceInstaller>>> providerClass = this.mode.isClustered() ? ClusteredCacheServiceInstallerProvider.class : LocalCacheServiceInstallerProvider.class;
+        new ProvidedBinaryServiceInstallerProvider<>(providerClass, providerClass.getClassLoader()).apply(configuration).forEach(installers::add);
 
         return ResourceServiceInstaller.combine(installers);
     }
