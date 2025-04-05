@@ -8,16 +8,15 @@ package org.wildfly.clustering.server.service;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.ServiceLoader;
-import java.util.function.BiFunction;
+import java.util.function.Function;
 
-import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.wildfly.subsystem.service.ServiceInstaller;
 
 /**
  * Provides service installers of a given type.
  * @author Paul Ferraro
  */
-public class ProvidedBinaryServiceInstallerProvider<P extends BiFunction<CapabilityServiceSupport, BinaryServiceConfiguration, Iterable<ServiceInstaller>>> implements BiFunction<CapabilityServiceSupport, BinaryServiceConfiguration, Iterable<ServiceInstaller>> {
+public class ProvidedBinaryServiceInstallerProvider<P extends Function<BinaryServiceConfiguration, Iterable<ServiceInstaller>>> implements Function<BinaryServiceConfiguration, Iterable<ServiceInstaller>> {
 
     private final Class<P> providerType;
     private final ClassLoader loader;
@@ -28,7 +27,7 @@ public class ProvidedBinaryServiceInstallerProvider<P extends BiFunction<Capabil
     }
 
     @Override
-    public Iterable<ServiceInstaller> apply(CapabilityServiceSupport support, BinaryServiceConfiguration configuration) {
+    public Iterable<ServiceInstaller> apply(BinaryServiceConfiguration configuration) {
         Class<P> providerType = this.providerType;
         ClassLoader loader = this.loader;
         return new Iterable<> () {
@@ -46,7 +45,7 @@ public class ProvidedBinaryServiceInstallerProvider<P extends BiFunction<Capabil
                     @Override
                     public ServiceInstaller next() {
                         while (!this.installers.hasNext()) {
-                            this.installers = this.providers.next().apply(support, configuration).iterator();
+                            this.installers = this.providers.next().apply(configuration).iterator();
                         }
                         return this.installers.next();
                     }

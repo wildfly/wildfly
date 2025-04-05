@@ -5,8 +5,6 @@
 
 package org.wildfly.extension.clustering.singleton;
 
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -25,18 +23,9 @@ import org.wildfly.clustering.server.Registration;
  */
 public class SingletonPolicyResource extends ComplexResource implements Registrar<ServiceName> {
 
-    private static final String DEPLOYMENT_CHILD_TYPE = SingletonDeploymentResourceDefinition.WILDCARD_PATH.getKey();
-    private static final String SERVICE_CHILD_TYPE = SingletonServiceResourceDefinition.WILDCARD_PATH.getKey();
-
-    private static Map<String, ChildResourceProvider> createProviders() {
-        Map<String, ChildResourceProvider> providers = new HashMap<>();
-        providers.put(DEPLOYMENT_CHILD_TYPE, new SimpleChildResourceProvider(ConcurrentHashMap.newKeySet()));
-        providers.put(SERVICE_CHILD_TYPE, new SimpleChildResourceProvider(ConcurrentHashMap.newKeySet()));
-        return Collections.unmodifiableMap(providers);
-    }
-
     public SingletonPolicyResource(Resource resource) {
-        this(resource, createProviders());
+        this(resource, Map.of(SingletonRuntimeResourceRegistration.DEPLOYMENT.getPathElement().getKey(), new SimpleChildResourceProvider(ConcurrentHashMap.newKeySet()),
+                SingletonRuntimeResourceRegistration.SERVICE.getPathElement().getKey(), new SimpleChildResourceProvider(ConcurrentHashMap.newKeySet())));
     }
 
     private SingletonPolicyResource(Resource resource, Map<String, ChildResourceProvider> providers) {
@@ -45,10 +34,9 @@ public class SingletonPolicyResource extends ComplexResource implements Registra
 
     @Override
     public Registration register(ServiceName service) {
-        boolean deployment = Services.JBOSS_DEPLOYMENT.isParentOf(service);
-        String key = deployment ? DEPLOYMENT_CHILD_TYPE : SERVICE_CHILD_TYPE;
-        ChildResourceProvider provider = this.apply(key);
-        String value = (deployment ? SingletonDeploymentResourceDefinition.pathElement(service) : SingletonServiceResourceDefinition.pathElement(service)).getValue();
+        SingletonRuntimeResourceRegistration registration = Services.JBOSS_DEPLOYMENT.isParentOf(service) ? SingletonRuntimeResourceRegistration.DEPLOYMENT : SingletonRuntimeResourceRegistration.SERVICE;
+        ChildResourceProvider provider = this.apply(registration.getPathElement().getKey());
+        String value = registration.pathElement(service).getValue();
         provider.getChildren().add(value);
         return new Registration() {
             @Override

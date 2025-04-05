@@ -7,9 +7,6 @@ package org.wildfly.extension.clustering.singleton;
 
 import java.util.function.Function;
 
-import org.jboss.as.clustering.controller.Metric;
-import org.jboss.as.clustering.controller.MetricExecutor;
-import org.jboss.as.clustering.controller.MetricFunction;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.dmr.ModelNode;
@@ -17,6 +14,9 @@ import org.jboss.msc.service.ServiceName;
 import org.wildfly.clustering.singleton.Singleton;
 import org.wildfly.service.capture.FunctionExecutor;
 import org.wildfly.service.capture.FunctionExecutorRegistry;
+import org.wildfly.subsystem.resource.executor.Metric;
+import org.wildfly.subsystem.resource.executor.MetricExecutor;
+import org.wildfly.subsystem.resource.executor.MetricFunction;
 
 /**
  * Generic executor for singleton metrics.
