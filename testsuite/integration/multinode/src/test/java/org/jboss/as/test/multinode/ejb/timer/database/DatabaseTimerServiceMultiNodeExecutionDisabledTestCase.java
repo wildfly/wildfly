@@ -172,7 +172,7 @@ public class DatabaseTimerServiceMultiNodeExecutionDisabledTestCase {
         war.addAsResource(new StringAsset(nodeName), "node.txt");
         war.addAsWebInfResource(DatabaseTimerServiceMultiNodeExecutionDisabledTestCase.class.getPackage(), "jboss-ejb3.xml", "jboss-ejb3.xml");
         if (client) {
-            war.addAsManifestResource(DatabaseTimerServiceMultiNodeExecutionDisabledTestCase.class.getPackage(), "jboss-ejb-client.xml", "jboss-ejb-client.xml")
+            war.addAsManifestResource(DatabaseTimerServiceMultiNodeExecutionDisabledTestCase.class.getPackage(), "jboss-ejb-client.xml", "jboss-ejb-client.xml");
             war.addAsManifestResource(
                     createPermissionsXmlAsset(
                             new SocketPermission("*:9092", "connect,resolve")), "permissions.xml");
