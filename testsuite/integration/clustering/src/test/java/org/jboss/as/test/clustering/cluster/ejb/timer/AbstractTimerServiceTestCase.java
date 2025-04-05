@@ -72,9 +72,7 @@ public abstract class AbstractTimerServiceTestCase extends AbstractClusteringTes
     @Test
     public void test(@ArquillianResource(TimerServlet.class) @OperateOnDeployment(DEPLOYMENT_1) URL baseURL1, @ArquillianResource(TimerServlet.class) @OperateOnDeployment(DEPLOYMENT_2) URL baseURL2) throws IOException, URISyntaxException {
 
-        Map<String, URI> uris = new TreeMap<>();
-        uris.put(NODE_1, TimerServlet.createURI(baseURL1, this.moduleName));
-        uris.put(NODE_2, TimerServlet.createURI(baseURL2, this.moduleName));
+        Map<String, URI> uris = Map.of(NODE_1, TimerServlet.createURI(baseURL1, this.moduleName), NODE_2, TimerServlet.createURI(baseURL2, this.moduleName));
 
         List<Class<? extends TimerBean>> singleActionTimerBeanClasses = List.of(SingleActionPersistentTimerBean.class, SingleActionTransientTimerBean.class);
 

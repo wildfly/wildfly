@@ -22,7 +22,6 @@ public class JGroupsSubsystemResourceTransformer implements Function<ModelVersio
     public TransformationDescription apply(ModelVersion version) {
         ResourceTransformationDescriptionBuilder builder = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
 
-        new ChannelResourceTransformer(builder).accept(version);
         new StackResourceTransformer(builder).accept(version);
 
         return builder.build();
