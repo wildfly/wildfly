@@ -96,10 +96,8 @@ public class Server implements Service<Server> {
            if (!listener.isSecure()) {
                SocketBinding binding = listener.getBinding().get();
                SocketBinding redirectBinding = listener.getRedirectSocket() != null ? listener.getRedirectSocket().get() : null;
-               if (redirectBinding!=null) {
+               if (redirectBinding != null) {
                    securePortMappings.put(binding.getAbsolutePort(), redirectBinding.getAbsolutePort());
-               }else{
-                   securePortMappings.put(binding.getAbsolutePort(), -1);
                }
            }
        }
@@ -133,7 +131,8 @@ public class Server implements Service<Server> {
     }
 
     public int lookupSecurePort(final int unsecurePort) {
-        return securePortMappings.get(unsecurePort);
+        final Integer securePort = securePortMappings.get(unsecurePort);
+        return securePort != null ? securePort : -1;
     }
 
     public ServletContainerService getServletContainer() {
