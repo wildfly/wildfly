@@ -102,6 +102,8 @@ public class PersistenceUnitMetadataImpl implements PersistenceUnitMetadata {
     private volatile List<String> qualifierAnnotationNames = List.of();
     private volatile boolean isDuplicate;
 
+    private static final String ORG_HIBERNATE_ORM_PROVIDER_CLASS_ENHANCER_PACKAGE = "org.hibernate.";
+
     @Override
     public void setPersistenceUnitName(String name) {
         this.name = name;
@@ -384,7 +386,7 @@ public class PersistenceUnitMetadataImpl implements PersistenceUnitMetadata {
     public void addTransformer(ClassTransformer classTransformer) {
         // Do not add Hibernate ORM 6.x/7.x bytecode enhancement class transformers
         // (e.g. org.hibernate.jpa.internal.enhance.EnhancingClassTransformerImpl)
-        if(classTransformer.getClass().getName().startsWith("org.hibernate")) {
+        if(classTransformer.getClass().getName().startsWith(ORG_HIBERNATE_ORM_PROVIDER_CLASS_ENHANCER_PACKAGE)) {
             return;
         }
         transformers.add(classTransformer);
