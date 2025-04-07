@@ -1,0 +1,58 @@
+:_newdoc-version: 2.15.0
+:_template-generated: 2023-11-29
+:_mod-docs-content-type: PROCEDURE
+
+[id="creating-a-test-class-to-test-an-application_{context}"]
+= Creating a test class to test an application
+
+[role="_abstract"]
+Create an integration test that verifies that the application is deployed and running on {ProductShortName} on {cloudPlatform}, by checking that the HTTP GET of its web page returns 200 OK.
+
+In this procedure, _<application_home>_ refers to the directory that contains the `pom.xml` configuration file for the application.
+
+.Prerequisites
+
+* You have deployed your application on {ProductShortname}.
++
+For more information, see xref:deploying-an-application-to-the-server_default[Building and deploying an application to the server].
+
+* You have added the Maven dependencies required for tests.
++
+For more information, see xref:adding-the-maven-dependencies-required-for-junit-tests_testing-an-application-deployed-to-server[Adding the Maven dependencies and profile required for integration tests].
+
+.Procedure
+
+. Navigate to the _<application_home>_ directory.
+ 
+. Create a directory to store the test class.
++
+[source,options="nowrap"]
+----
+$ mkdir -p src/test/java/org/jboss/as/quickstarts/helloworld
+----
+
+. Navigate to the new directory.
++
+[source,options="nowrap"]
+----
+$ cd src/test/java/org/jboss/as/quickstarts/helloworld
+----
+
+. Create a Java class `HelloWorldServletIT.java` that tests the deployment.
++
+[source,java,options="nowrap"]
+----
+include::sources/HelloWorldServletIT.java[]
+----
+<1> The URL at which the application is running. This value is used if `sever.host` is undefined.
+<2> Create an HttpRequest instance for the application URI.
+<3> Create an HttpClient to send requests to and receive response from the application.
+<4> Get response from the application.
+<5> Test that the response received from the application is "200" indicating that the application is rechable.
+
+[role="_additional-resources"]
+.Next steps
+* To test an application deployed on a {ProductShortName} server running on bare metal, follow this procedure:
+** xref:testing-an-application-deployed-to-server-running-on-bare-metal_testing-an-application-deployed-to-server[Testing an application deployed on {ProductShortName} that is running on bare metal]
+* To test an application deployed on a {ProductShortName} server running on {cloudPlatform}, follow this procedure:
+** xref:testing-an-application-deployed-to-server-on-cloudplaform_testing-an-application-deployed-to-server[Testing an application deployed to {ProductShortName} on {cloudPlatform}]
