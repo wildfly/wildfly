@@ -73,8 +73,30 @@ final class FilterSpecClassResolverFilter implements Function<String, Boolean> {
                     + "!org.codehaus.groovy.runtime.ConvertedClosure;"
                     + "!org.codehaus.groovy.runtime.MethodClosure;"
                     + "!org.springframework.beans.factory.ObjectFactory;"
+                    + "!org.springframework.beans.factory.config.MethodInvokingFactoryBean;"
+                    + "!org.springframework.jndi.support.SimpleJndiBeanFactory;"
+                    + "!org.springframework.transaction.jta.JtaTransactionManager;"
                     + "!com.sun.org.apache.xalan.internal.xsltc.trax.TemplatesImpl;"
-                    + "!org.apache.xalan.xsltc.trax.TemplatesImpl";
+                    + "!org.apache.xalan.xsltc.trax.TemplatesImpl;"
+                    + "!bsh.XThis$Handler;"
+                    + "!com.mchange.v2.c3p0.PoolBackedDataSource;"
+                    + "!clojure.inspector.proxy$javax.swing.table.AbstractTableModel$ff19274a;"
+                    + "!org.apache.commons.fileupload.disk.DiskFileItem;"
+                    + "!org.apache.wicket.util.upload.DiskFileItem;"
+                    + "!org.hibernate.engine.spi.TypedValue;"
+                    + "!org.python.core.PyFunction;"
+                    + "!org.mozilla.javascript.NativeJavaObject;"
+                    + "!org.apache.myfaces.view.facelets.el.ValueExpressionMethodExpression;"
+                    + "!javax.swing.UIDefaults;"
+                    + "!javax.swing.UIDefaults$ProxyLazyValue;"
+                    + "!javax.swing.UIDefaults$TextAndMnemonicHashMap;"
+                    + "!sun.swing.SwingLazyValue;"
+                    + "!java.rmi.registry.Registry;"
+                    + "!java.rmi.server.UnicastRemoteObject;"
+                    + "!sun.rmi.server.UnicastRef;"
+                    + "!sun.rmi.server.UnicastRef2;"
+                    + "!org.aspectj.weaver.tools.cache.SimpleCache$StoreableCachingMap;"
+                    + "!org.jboss.as.connector.subsystems.datasources.WildFlyDataSource";
 
     private static final OperationContext.AttachmentKey<FilterSpecClassResolverFilter> ATTACHMENT_KEY =
             OperationContext.AttachmentKey.create(FilterSpecClassResolverFilter.class);
@@ -116,7 +138,9 @@ final class FilterSpecClassResolverFilter implements Function<String, Boolean> {
         if ("true".equalsIgnoreCase(disabled)) {
             return "";  // empty string disables filtering
         }
-        // This is an unsupported property to facilitate integration testing. It's use can be removed at any time.
+        // Allow external specification of the filter spec. This config mechanism may change incompatibly
+        // in a future major or minor release. Note that JBoss Marshalling also recognizes and reacts to the
+        // https://openjdk.org/jeps/290 configuration mechanisms.
         String spec = WildFlySecurityManager.getPropertyPrivileged("jboss.experimental.ejb.unmarshalling.filter.spec", null);
         if (spec != null) {
             return spec;
