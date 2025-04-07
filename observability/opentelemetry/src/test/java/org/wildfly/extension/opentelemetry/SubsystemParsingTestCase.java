@@ -10,7 +10,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 
 import java.io.IOException;
 import java.util.EnumSet;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import javax.xml.stream.XMLStreamException;
@@ -35,9 +34,11 @@ public class SubsystemParsingTestCase extends AbstractSubsystemSchemaTest<OpenTe
         return EnumSet.allOf(OpenTelemetrySubsystemSchema.class);
     }
 
-    public SubsystemParsingTestCase(OpenTelemetrySubsystemSchema schema) {
-        super(OpenTelemetryConfigurationConstants.SUBSYSTEM_NAME, new OpenTelemetrySubsystemExtension(), schema,
-                OpenTelemetrySubsystemSchema.CURRENT);
+    public SubsystemParsingTestCase(OpenTelemetrySubsystemSchema testSchema) {
+        super(OpenTelemetryConfigurationConstants.SUBSYSTEM_NAME, new OpenTelemetrySubsystemExtension(),
+            testSchema, OpenTelemetrySubsystemSchema.VERSION_2_0_PREVIEW);
+
+        System.err.println("Testing schema: " + testSchema.getNamespace());
     }
 
     @Test
@@ -65,24 +66,25 @@ public class SubsystemParsingTestCase extends AbstractSubsystemSchemaTest<OpenTe
         //Check that each operation has the correct content
         ModelNode addSubsystem = operations.get(0);
         Assert.assertEquals(ADD, addSubsystem.get(OP).asString());
-        Map<String, String> values = new HashMap<>();
-        values.put("service-name", "test-service");
-        values.put("exporter-type", "otlp");
-        values.put("endpoint", "http://localhost:4317");
-        values.put("span-processor-type", "batch");
-        values.put("batch-delay", "5000");
-        values.put("max-queue-size", "2048");
-        values.put("max-export-batch-size", "512");
-        values.put("export-timeout", "30000");
-        values.put("sampler-type", "on");
-        values.put("ratio", "0.75");
+        Map<String, String> values = Map.of(
+            "service-name", "test-service",
+            "exporter-type", "otlp",
+            "endpoint", "http://localhost:4317",
+            "span-processor-type", "batch",
+            "batch-delay", "5000",
+            "max-queue-size", "2048",
+            "max-export-batch-size", "512",
+            "export-timeout", "30000",
+            "sampler-type", "on",
+            "ratio", "0.75"
+        );
 
         for (Map.Entry<String, String> entry : values.entrySet()) {
             String key = entry.getKey();
             String value = entry.getValue();
 
             ModelNode node = addSubsystem.get(key);
-            Assert.assertEquals(node.getType(), ModelType.EXPRESSION);
+            Assert.assertEquals(ModelType.EXPRESSION, node.getType());
             Assert.assertEquals("${test." + key + ":" + value + "}", node.asString());
             Assert.assertEquals(value, node.asExpression().resolveString());
         }

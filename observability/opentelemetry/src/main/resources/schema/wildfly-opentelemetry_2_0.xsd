@@ -6,10 +6,10 @@
   -->
 
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
-           targetNamespace="urn:wildfly:opentelemetry:1.1"
-           xmlns="urn:wildfly:opentelemetry:1.1"
+           targetNamespace="urn:wildfly:opentelemetry:2.0"
+           xmlns="urn:wildfly:opentelemetry:2.0"
            elementFormDefault="qualified"
-           version="1.1">
+           version="2.0">
 
     <xs:element name="subsystem">
         <xs:complexType>
@@ -17,7 +17,7 @@
                 <xs:element name="exporter" minOccurs="0">
                     <xs:annotation>
                         <xs:documentation>
-                            Configures the exporter used to export traces
+                            Configures the exporter used to export signals
                         </xs:documentation>
                     </xs:annotation>
                     <xs:complexType>
@@ -62,7 +62,7 @@
                                 </xs:restriction>
                             </xs:simpleType>
                         </xs:attribute>
-                        <xs:attribute type="xs:integer" name="batch-delay" default="5000">
+                        <xs:attribute type="xs:integer" name="export-interval" default="5000">
                             <xs:annotation>
                                 <xs:documentation>
                                     The interval, in milliseconds, between two consecutive exports. Default is 5000.
