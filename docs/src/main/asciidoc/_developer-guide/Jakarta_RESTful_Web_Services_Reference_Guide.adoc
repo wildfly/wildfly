@@ -1,5 +1,5 @@
 [[Jakarta_RESTful_Web_Services_Reference_Guide]]
-= Jakarta RESTful Web Services Reference Guide
+= Jakarta RESTful Web Services Reference
 
 ifdef::env-github[]
 :tip-caption: :bulb:

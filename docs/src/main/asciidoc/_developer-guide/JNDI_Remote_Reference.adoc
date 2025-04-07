@@ -1,5 +1,5 @@
 [[JNDI_Remote_Reference]]
-= Remote JNDI Access
+== Remote JNDI Access
 
 ifdef::env-github[]
 :tip-caption: :bulb:
@@ -12,7 +12,7 @@ endif::[]
 WildFly supports two different types of remote JNDI.
 
 [[http-remoting]]
-== http-remoting:
+=== http-remoting:
 
 The `http-remoting:` protocol implementation is provided by JBoss Remote
 Naming project, and uses http upgrade to lookup items from the servers
@@ -54,7 +54,7 @@ relative to java:jboss/exported namespace, a lookup of an absolute JNDI
 name will fail.
 
 [[ejb]]
-== ejb:
+=== ejb:
 
 The ejb: namespace implementation is provided by the jboss-ejb-client
 library, and allows the lookup of EJB's using their application name,
