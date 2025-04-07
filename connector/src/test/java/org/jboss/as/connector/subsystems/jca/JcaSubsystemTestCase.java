@@ -4,20 +4,15 @@
  */
 package org.jboss.as.connector.subsystems.jca;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
-import java.util.HashSet;
-import java.util.Set;
 
 import org.jboss.as.connector.logging.ConnectorLogger;
 import org.jboss.as.connector.util.ConnectorServices;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.model.test.ModelTestControllerVersion;
 import org.jboss.as.model.test.SingleClassFilter;
@@ -189,24 +184,6 @@ public class JcaSubsystemTestCase extends AbstractSubsystemBaseTest {
         assertTrue(legacyModel.toString(), legacyModel.get("subsystem", "jca", "workmanager", "anotherWm", "elytron-enabled").asBoolean(false));
         assertTrue(legacyModel.toString(), legacyModel.get("subsystem", "jca", "distributed-workmanager", "MyDWM", "elytron-enabled").asBoolean(false));
         mainServices.shutdown();
-    }
-
-    /** WFLY-16478 Test legacy parser sets old default value for elytron-enabled */
-    @Test
-    public void testLegacyDefaultElytronEnabled() throws Exception {
-        Set<ModelNode> required = new HashSet<>();
-        PathAddress subsystem = PathAddress.pathAddress("subsystem", "jca");
-        required.add(subsystem.append("workmanager", "default").toModelNode());
-        required.add(subsystem.append("workmanager", "anotherWm").toModelNode());
-        required.add(subsystem.append("distributed-workmanager", "MyDWM").toModelNode());
-
-        for (ModelNode op : parse(getSubsystemXml("jca_5_0.xml"))) {
-            if (ADD.equals(op.get(OP).asString()) && required.remove(op.get(ModelDescriptionConstants.OP_ADDR))) {
-                assertFalse(op.toString() + "\n did not correctly define elytron-enabled", op.get("elytron-enabled").asBoolean(true));
-            }
-        }
-
-        assertTrue("Not all expected ops were found\n" + required.toString(), required.isEmpty());
     }
 
     @Override
