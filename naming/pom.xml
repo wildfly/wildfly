@@ -102,4 +102,18 @@
             <scope>test</scope>
         </dependency>
     </dependencies>
+
+    <profiles>
+        <profile>
+            <id>allow-security-manager</id>
+            <activation>
+                <jdk>[17,24)</jdk>
+            </activation>
+
+            <properties>
+                <!-- Required to enable the security manager for testing -->
+                <surefire.system.args>-Djava.security.manager=allow</surefire.system.args>
+            </properties>
+        </profile>
+    </profiles>
 </project>

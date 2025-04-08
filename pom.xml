@@ -137,7 +137,6 @@
             --add-opens=java.management/javax.management=ALL-UNNAMED
             --add-opens=java.naming/javax.naming=ALL-UNNAMED
         </modular.jdk.args>
-        <security.manager.props></security.manager.props>
 
         <!--
             See ChildFirstClassLoaderBuilder in model-test for the explanation of the org.jboss.model.test.cache.root and org.jboss.model.test.classpath.cache properties.
@@ -174,7 +173,7 @@
         <surefire.extra.args></surefire.extra.args>
         <surefire.jpda.args></surefire.jpda.args>
         <surefire.non-modular.system.args>-ea -Duser.region=US -Duser.language=en ${surefire.jpda.args} ${surefire.extra.args} ${surefire.jacoco.args}</surefire.non-modular.system.args>
-        <surefire.system.args>${modular.jdk.args} ${security.manager.props} ${surefire.non-modular.system.args}</surefire.system.args>
+        <surefire.system.args>${modular.jdk.args} ${surefire.non-modular.system.args}</surefire.system.args>
         <arquillian.servlet.protocol>Servlet 5.0</arquillian.servlet.protocol>
         <testLogToFile>true</testLogToFile>
         <maven.test.redirectTestOutputToFile>${testLogToFile}</maven.test.redirectTestOutputToFile>
@@ -322,7 +321,7 @@
              on the dependency on the MicroProfile REST Client TCK POM.
          -->
         <version.org.testng.mp.rest.client>7.10.2</version.org.testng.mp.rest.client>
-        <version.org.wildfly.arquillian>5.1.0.Beta10</version.org.wildfly.arquillian>
+        <version.org.wildfly.arquillian>5.1.0.Beta11</version.org.wildfly.arquillian>
         <version.org.wildfly.extras.creaper>2.0.3</version.org.wildfly.extras.creaper>
         <legacy.version.org.wildfly.naming-client>1.0.17.Final</legacy.version.org.wildfly.naming-client>
 
@@ -523,7 +522,7 @@
         <version.org.wildfly.clustering>6.0.1.Final</version.org.wildfly.clustering>
         <version.org.wildfly.core>28.0.0.Final</version.org.wildfly.core>
         <version.org.wildfly.http-client>2.1.0.Final</version.org.wildfly.http-client>
-        <version.org.wildfly.launcher>1.0.0.Final</version.org.wildfly.launcher>
+        <version.org.wildfly.launcher>1.0.2.Final</version.org.wildfly.launcher>
         <version.org.wildfly.mvc.krazo>1.0.0.Final</version.org.wildfly.mvc.krazo>
         <version.org.wildfly.vertx>1.0.2.Final</version.org.wildfly.vertx>
         <version.org.wildfly.naming-client>2.0.1.Final</version.org.wildfly.naming-client>
@@ -1526,17 +1525,6 @@
             </modules>
         </profile>
 
-        <profile>
-            <id>jdk18</id>
-            <activation>
-                <jdk>[18,24)</jdk>
-            </activation>
-            <properties>
-                <security.manager.props>
-                    -Djava.security.manager=allow
-                </security.manager.props>
-            </properties>
-        </profile>
         <profile>
             <id>jdk23</id>
             <activation>
