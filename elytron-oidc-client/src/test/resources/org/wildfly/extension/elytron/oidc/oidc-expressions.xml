@@ -75,8 +75,8 @@
         <connection-ttl-millis>${exp.connection-ttl-millis:1000}</connection-ttl-millis>
         <connection-timeout-millis>${exp.connection-timeout-millis:1000}</connection-timeout-millis>
         <token-signature-algorithm>${exp.token-signature-algorithm:HS256}</token-signature-algorithm>
+        <provider-jwt-claims-typ>${exp.provider-jwt-claims-typ:otherLogout}</provider-jwt-claims-typ>
     </provider>
-
     <secure-deployment name="myAppWithSecret-expressions.war">
         <realm>${exp.realm:main}</realm>
         <resource>${exp.resource:myAppId}</resource>
@@ -95,6 +95,7 @@
         <verify-token-audience>${exp.verify-token-audience:true}</verify-token-audience>
         <credential name="secret" secret="${exp.credential-secret:0aa31d98-e0aa-404c-b6e0-e771dba1e798}" />
         <redirect-rewrite-rule name="^/wsmain/api/(.*)$" replacement="${exp.rewrite-replacement:/api/$1/}" />
+        <provider-jwt-claims-typ>${exp.provider-jwt-claims-typ:otherLogout}</provider-jwt-claims-typ>
     </secure-deployment>
     <secure-deployment name="myAppWithJwt-expressions.war">
         <realm>${exp.realm:main}</realm>
@@ -235,6 +236,7 @@
         <request-object-signing-keystore-type>${exp.request-object-signing-keystore-type:JKS}</request-object-signing-keystore-type>
         <request-object-signing-keystore-password>${exp.request-object-signing-keystore-password:secret}</request-object-signing-keystore-password>
         <request-object-signing-key-password>${exp.request-object-signing-key-password:secret}</request-object-signing-key-password>
+        <provider-jwt-claims-typ>${exp.provider-jwt-claims-typ:otherLogout}</provider-jwt-claims-typ>
     </secure-server>
     <secure-server name="another-wildfly-console">
         <provider>${exp.provider:redhat-sso-expressions}</provider>

@@ -52,6 +52,7 @@ interface ElytronOidcDescriptionConstants {
     String POST_LOGOUT_REDIRECT_URI = "post-logout-redirect-uri";
     String PRINCIPAL_ATTRIBUTE = "principal-attribute";
     String PROVIDER = "provider";
+    String PROVIDER_JWT_CLAIMS_TYP = "provider-jwt-claims-typ";
     String PROVIDER_URL = "provider-url";
     String PROXY_URL = "proxy-url";
     String PUBLIC_CLIENT = "public-client";

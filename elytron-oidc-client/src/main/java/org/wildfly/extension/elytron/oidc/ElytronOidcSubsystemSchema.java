@@ -29,6 +29,7 @@ import static org.wildfly.extension.elytron.oidc.SecureDeploymentDefinition.LOGO
 import static org.wildfly.extension.elytron.oidc.SecureDeploymentDefinition.LOGOUT_PATH;
 import static org.wildfly.extension.elytron.oidc.SecureDeploymentDefinition.LOGOUT_SESSION_REQUIRED;
 import static org.wildfly.extension.elytron.oidc.ProviderAttributeDefinitions.PRINCIPAL_ATTRIBUTE;
+import static org.wildfly.extension.elytron.oidc.ProviderAttributeDefinitions.PROVIDER_JWT_CLAIMS_TYP;
 import static org.wildfly.extension.elytron.oidc.ProviderAttributeDefinitions.PROVIDER_URL;
 import static org.wildfly.extension.elytron.oidc.ProviderAttributeDefinitions.PROXY_URL;
 import static org.wildfly.extension.elytron.oidc.ProviderAttributeDefinitions.REALM_PUBLIC_KEY;
@@ -147,7 +148,8 @@ public enum ElytronOidcSubsystemSchema implements PersistentSubsystemSchema<Elyt
                 REQUEST_OBJECT_SIGNING_KEY_ALIAS, REQUEST_OBJECT_SIGNING_KEY_PASSWORD, REQUEST_OBJECT_SIGNING_KEYSTORE_TYPE};
 
         SimpleAttributeDefinition[] oidcLogoutChannelAttributes = {LOGOUT_PATH, LOGOUT_CALLBACK_PATH,
-                POST_LOGOUT_REDIRECT_URI, LOGOUT_SESSION_REQUIRED, BACK_CHANNEL_LOGOUT_SESSION_INVALIDATION_LIMIT};
+                POST_LOGOUT_REDIRECT_URI, LOGOUT_SESSION_REQUIRED, BACK_CHANNEL_LOGOUT_SESSION_INVALIDATION_LIMIT,
+                PROVIDER_JWT_CLAIMS_TYP};
 
         redirectRewriteRuleDefinitionBuilder.addAttribute(RedirectRewriteRuleDefinition.REPLACEMENT, SIMPLE_ATTRIBUTE_PARSER, SIMPLE_ATTRIBUTE_MARSHALLER);
         Stream.of(CredentialDefinition.ATTRIBUTES).forEach(attribute -> credentialDefinitionBuilder.addAttribute(attribute, SIMPLE_ATTRIBUTE_PARSER, SIMPLE_ATTRIBUTE_MARSHALLER));
@@ -161,6 +163,7 @@ public enum ElytronOidcSubsystemSchema implements PersistentSubsystemSchema<Elyt
         if (this.since(VERSION_4_0_PREVIEW) && this.enables(LOGOUT_PATH)) {
             Stream.of(oidcLogoutChannelAttributes).forEach(attribute -> secureDeploymentDefinitionBuilder.addAttribute(attribute, SIMPLE_ATTRIBUTE_PARSER, SIMPLE_ATTRIBUTE_MARSHALLER));
             Stream.of(oidcLogoutChannelAttributes).forEach(attribute -> secureServerDefinitionBuilder.addAttribute(attribute, SIMPLE_ATTRIBUTE_PARSER, SIMPLE_ATTRIBUTE_MARSHALLER));
+            Stream.of(new SimpleAttributeDefinition[] {PROVIDER_JWT_CLAIMS_TYP}).forEach(attribute -> providerDefinitionBuilder.addAttribute(attribute, SIMPLE_ATTRIBUTE_PARSER, SIMPLE_ATTRIBUTE_MARSHALLER));
         }
 
         if (this.since(VERSION_3_0_PREVIEW) && this.enables(AUTHENTICATION_REQUEST_FORMAT)) {

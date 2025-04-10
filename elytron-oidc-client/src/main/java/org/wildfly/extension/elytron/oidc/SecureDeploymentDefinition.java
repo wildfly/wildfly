@@ -9,8 +9,10 @@ import static org.jboss.as.server.security.SecurityMetaData.OPERATION_CONTEXT_AT
 import static org.jboss.as.server.security.VirtualDomainMarkerUtility.virtualDomainName;
 import static org.jboss.as.server.security.VirtualDomainUtil.VIRTUAL;
 import static org.jboss.as.web.common.VirtualHttpServerMechanismFactoryMarkerUtility.virtualMechanismFactoryName;
+import static org.wildfly.extension.elytron.oidc.ElytronOidcSubsystemSchema.VERSION_4_0_PREVIEW;
 import static org.wildfly.extension.elytron.oidc.ProviderAttributeDefinitions.AUTHENTICATION_REQUEST_FORMAT;
 import static org.wildfly.extension.elytron.oidc.ProviderAttributeDefinitions.DISABLE_TRUST_MANAGER;
+import static org.wildfly.extension.elytron.oidc.ProviderAttributeDefinitions.PROVIDER_JWT_CLAIMS_TYP;
 import static org.wildfly.extension.elytron.oidc.ProviderAttributeDefinitions.REQUEST_OBJECT_ENCRYPTION_ALG_VALUE;
 import static org.wildfly.extension.elytron.oidc.ProviderAttributeDefinitions.REQUEST_OBJECT_ENCRYPTION_ENC_VALUE;
 import static org.wildfly.extension.elytron.oidc.ProviderAttributeDefinitions.REQUEST_OBJECT_SIGNING_ALGORITHM;
@@ -211,7 +213,10 @@ class SecureDeploymentDefinition extends SimpleResourceDefinition {
         ALL_ATTRIBUTES.add(POST_LOGOUT_REDIRECT_URI);
         ALL_ATTRIBUTES.add(LOGOUT_SESSION_REQUIRED);
         ALL_ATTRIBUTES.add(BACK_CHANNEL_LOGOUT_SESSION_INVALIDATION_LIMIT);
-        for (SimpleAttributeDefinition attribute : ProviderAttributeDefinitions.ATTRIBUTES) {
+
+        SimpleAttributeDefinition[] providerAttributes = (VERSION_4_0_PREVIEW.getVersion().major() < ElytronOidcClientSubsystemModel.CURRENT.getVersion().getMajor()
+                ? ProviderAttributeDefinitions.ATTRIBUTES_VERSION_4_0 : ProviderAttributeDefinitions.ATTRIBUTES);
+        for (SimpleAttributeDefinition attribute : providerAttributes) {
             ALL_ATTRIBUTES.add(attribute);
         }
     }
@@ -240,6 +245,7 @@ class SecureDeploymentDefinition extends SimpleResourceDefinition {
         NON_DEFAULT_ATTRIBUTES.add(POST_LOGOUT_REDIRECT_URI);
         NON_DEFAULT_ATTRIBUTES.add(LOGOUT_SESSION_REQUIRED);
         NON_DEFAULT_ATTRIBUTES.add(BACK_CHANNEL_LOGOUT_SESSION_INVALIDATION_LIMIT);
+        NON_DEFAULT_ATTRIBUTES.add(PROVIDER_JWT_CLAIMS_TYP);
     }
 
     @Override
