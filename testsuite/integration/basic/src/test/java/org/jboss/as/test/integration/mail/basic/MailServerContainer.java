@@ -18,7 +18,11 @@ public class MailServerContainer extends GenericContainer<MailServerContainer> {
         super(DockerImageName.parse("apache/james:demo-3.8.0"));
         this.setExposedPorts(List.of(25, 110));
         this.waitStrategy = Wait.forLogMessage(".*AddUser command executed sucessfully.*", 3);
-        this.withCopyFileToContainer(MountableFile.forHostPath(confPath), "/root/conf/");
+        // WFLY-20553 Copying files to a directory that is also defined as a volume in the image
+        // was silently getting skipped on podman, this adds the files to a different location and
+        // a replacement startup.sh copies them into place.
+        this.withCopyFileToContainer(MountableFile.forHostPath(confPath + "testconf/"), "/root/testconf/");
+        this.withCopyFileToContainer(MountableFile.forHostPath(confPath + "script/"), "/root/");
     }
 
     public String getMailServerHost() {
