@@ -1,3 +1,4 @@
+<!-- don't merge this it's just a test PR ------------------->
 <p align="center">
   <a href="https://wildfly.org">
       <img src="logo/wildfly_logo.svg" alt="wildfly logo" title="wildlfy" width="600"/>
