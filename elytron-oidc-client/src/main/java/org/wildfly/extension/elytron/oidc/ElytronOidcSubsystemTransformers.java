@@ -15,6 +15,7 @@ import static org.wildfly.extension.elytron.oidc.ElytronOidcDescriptionConstants
 import static org.wildfly.extension.elytron.oidc.ElytronOidcDescriptionConstants.POST_LOGOUT_REDIRECT_URI;
 import static org.wildfly.extension.elytron.oidc.ElytronOidcDescriptionConstants.LOGOUT_SESSION_REQUIRED;
 import static org.wildfly.extension.elytron.oidc.ElytronOidcDescriptionConstants.LOGOUT_CALLBACK_PATH;
+import static org.wildfly.extension.elytron.oidc.ElytronOidcDescriptionConstants.PROVIDER_JWT_CLAIMS_TYP;
 import static org.wildfly.extension.elytron.oidc.ElytronOidcDescriptionConstants.PROVIDER;
 import static org.wildfly.extension.elytron.oidc.ElytronOidcDescriptionConstants.REALM;
 import static org.wildfly.extension.elytron.oidc.ElytronOidcDescriptionConstants.REQUEST_OBJECT_ENCRYPTION_ALG_VALUE;
@@ -193,6 +194,8 @@ public class ElytronOidcSubsystemTransformers implements ExtensionTransformerReg
                 .setDiscard(DiscardAttributeChecker.ALWAYS, LOGOUT_SESSION_REQUIRED)
                 .addRejectCheck(RejectAttributeChecker.DEFINED, BACK_CHANNEL_LOGOUT_SESSION_INVALIDATION_LIMIT)
                 .setDiscard(DiscardAttributeChecker.ALWAYS, BACK_CHANNEL_LOGOUT_SESSION_INVALIDATION_LIMIT)
+                .addRejectCheck(RejectAttributeChecker.DEFINED, PROVIDER_JWT_CLAIMS_TYP)
+                .setDiscard(DiscardAttributeChecker.ALWAYS, PROVIDER_JWT_CLAIMS_TYP)
                 .end();
 
         builder.addChildResource(PathElement.pathElement(SECURE_DEPLOYMENT))
@@ -207,6 +210,13 @@ public class ElytronOidcSubsystemTransformers implements ExtensionTransformerReg
                 .setDiscard(DiscardAttributeChecker.ALWAYS, LOGOUT_SESSION_REQUIRED)
                 .addRejectCheck(RejectAttributeChecker.DEFINED, BACK_CHANNEL_LOGOUT_SESSION_INVALIDATION_LIMIT)
                 .setDiscard(DiscardAttributeChecker.ALWAYS, BACK_CHANNEL_LOGOUT_SESSION_INVALIDATION_LIMIT)
+                .addRejectCheck(RejectAttributeChecker.DEFINED, PROVIDER_JWT_CLAIMS_TYP)
+                .setDiscard(DiscardAttributeChecker.ALWAYS, PROVIDER_JWT_CLAIMS_TYP)
+                .end();
+        builder.addChildResource(PathElement.pathElement(PROVIDER))
+                .getAttributeBuilder()
+                .addRejectCheck(RejectAttributeChecker.DEFINED, PROVIDER_JWT_CLAIMS_TYP)
+                .setDiscard(DiscardAttributeChecker.ALWAYS, PROVIDER_JWT_CLAIMS_TYP)
                 .end();
     }
 }

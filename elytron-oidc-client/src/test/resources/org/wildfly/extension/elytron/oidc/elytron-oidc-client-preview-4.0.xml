@@ -41,6 +41,10 @@
     <provider name="keycloak">
         <provider-url>http://localhost:8080/realms/WildFly</provider-url>
     </provider>
+    <provider name="notKeycloak">
+        <provider-url>http://localhost:8080/realms/WildFly</provider-url>
+        <provider-jwt-claims-typ>otherLogout</provider-jwt-claims-typ>
+    </provider>
     <secure-deployment name="myAppWithSecret.war">
         <realm>main</realm>
         <resource>myAppId</resource>
@@ -152,6 +156,7 @@
     </secure-server>
     <secure-server name="all-apps-oidc-logout">
         <provider>keycloak</provider>
+        <provider-jwt-claims-typ>otherLogout</provider-jwt-claims-typ>
         <client-id>wildfly-console</client-id>
         <logout-path>/myLogout</logout-path>
         <logout-callback-path>/logout/myCallback</logout-callback-path>
@@ -161,6 +166,16 @@
     </secure-server>
     <secure-deployment name="app-oidc-logout">
         <provider>keycloak</provider>
+        <client-id>wildfly-management</client-id>
+        <logout-path>/myLogout</logout-path>
+        <logout-callback-path>/logout/myCallback</logout-callback-path>
+        <post-logout-redirect-uri>http://localhost:8080/app/aCallback</post-logout-redirect-uri>
+        <logout-session-required>true</logout-session-required>
+        <back-channel-logout-session-invalidation-limit>20</back-channel-logout-session-invalidation-limit>
+    </secure-deployment>
+    <secure-deployment name="app-oidc-logout-claim-typ">
+        <provider>keycloak</provider>
+        <provider-jwt-claims-typ>otherLogout</provider-jwt-claims-typ>
         <client-id>wildfly-management</client-id>
         <logout-path>/myLogout</logout-path>
         <logout-callback-path>/logout/myCallback</logout-callback-path>

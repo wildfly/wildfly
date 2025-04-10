@@ -668,6 +668,23 @@
                     </xs:documentation>
                 </xs:annotation>
             </xs:element>
+            <xs:element name="provider-jwt-claims-typ" type="xs:string" minOccurs="0" maxOccurs="1">
+                <xs:annotation>
+                    <xs:documentation>
+                        <![CDATA[
+                        The logout specification defines the default (JWT) Logout Token "typ"
+                        string to be "logout+jwt".  If the OpenID Provider uses a different
+                        string, it can be specified with this element.
+
+                        This is an optional parameter.  If defined it can not be the empty string
+                        or null.
+
+                        Elytron checks for Keycloak's "typ", "Logout" in addition to "logout+jwt".
+
+                        ]]>
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
             <xs:element name="expose-token" type="xs:boolean" minOccurs="0" maxOccurs="1">
                 <xs:annotation>
                     <xs:documentation>
@@ -1022,6 +1039,23 @@
                     <xs:documentation>
                         <![CDATA[
                         The OpenID provider URL.
+                        ]]>
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="provider-jwt-claims-typ" type="xs:string" minOccurs="0" maxOccurs="1">
+                <xs:annotation>
+                    <xs:documentation>
+                        <![CDATA[
+                        The logout specification defines the default (JWT) Logout Token "typ"
+                        string to be "logout+jwt".  If the OpenID Provider uses a different
+                        string, it can be specified with this element.
+
+                        This is an optional parameter.  If defined it can not be the empty string
+                        or null.
+
+                        Elytron checks for Keycloak's "typ", "Logout" in addition to "logout+jwt".
+
                         ]]>
                     </xs:documentation>
                 </xs:annotation>
