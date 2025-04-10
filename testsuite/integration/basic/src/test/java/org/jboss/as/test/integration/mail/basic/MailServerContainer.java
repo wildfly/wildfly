@@ -15,7 +15,9 @@ import org.testcontainers.utility.MountableFile;
 public class MailServerContainer extends GenericContainer<MailServerContainer> {
 
     public MailServerContainer(String confPath) {
-        super(DockerImageName.parse("apache/james:demo-3.8.0"));
+        // When updating the image version the startup.sh script forked into this testsuite should
+        // be checked in case a sync is needed whilst retaining the lines added for this testsuite.
+        super(DockerImageName.parse("apache/james:demo-3.8.2"));
         this.setExposedPorts(List.of(25, 110));
         this.waitStrategy = Wait.forLogMessage(".*AddUser command executed sucessfully.*", 3);
         // WFLY-20553 Copying files to a directory that is also defined as a volume in the image
