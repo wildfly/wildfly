@@ -31,7 +31,7 @@ public class OperationSequencesTestCase extends OperationTestCaseBase {
 
         ModelNode addContainerOp = getCacheContainerAddOperation("maximal2");
         ModelNode removeContainerOp = getCacheContainerRemoveOperation("maximal2");
-        ModelNode addCacheOp = getCacheAddOperation("maximal2", LocalCacheResourceDefinition.WILDCARD_PATH.getKey(), "fred");
+        ModelNode addCacheOp = getCacheAddOperation("maximal2", CacheResourceRegistration.LOCAL.pathElement("fred"));
 
         // add a cache container
         ModelNode result = servicesA.executeOperation(addContainerOp);
@@ -63,7 +63,7 @@ public class OperationSequencesTestCase extends OperationTestCaseBase {
 
         ModelNode addContainerOp = getCacheContainerAddOperation("maximal2");
         ModelNode removeContainerOp = getCacheContainerRemoveOperation("maximal2");
-        ModelNode addCacheOp = getCacheAddOperation("maximal2", LocalCacheResourceDefinition.WILDCARD_PATH.getKey(), "fred");
+        ModelNode addCacheOp = getCacheAddOperation("maximal2", CacheResourceRegistration.LOCAL.pathElement("fred"));
 
         // add a cache container
         ModelNode result = servicesA.executeOperation(addContainerOp);
@@ -89,8 +89,8 @@ public class OperationSequencesTestCase extends OperationTestCaseBase {
         String subsystemXml = getSubsystemXml() ;
         KernelServices servicesA = this.createKernelServicesBuilder().setSubsystemXml(subsystemXml).build();
 
-        ModelNode addOp = getCacheAddOperation("maximal", LocalCacheResourceDefinition.WILDCARD_PATH.getKey(), "fred");
-        ModelNode removeOp = getCacheRemoveOperation("maximal", LocalCacheResourceDefinition.WILDCARD_PATH.getKey(), "fred");
+        ModelNode addOp = getCacheAddOperation("maximal", CacheResourceRegistration.LOCAL.pathElement("fred"));
+        ModelNode removeOp = getCacheRemoveOperation("maximal", CacheResourceRegistration.LOCAL.pathElement("fred"));
 
         // add a local cache
         ModelNode result = servicesA.executeOperation(addOp);
@@ -112,8 +112,8 @@ public class OperationSequencesTestCase extends OperationTestCaseBase {
         String subsystemXml = getSubsystemXml() ;
         KernelServices servicesA = this.createKernelServicesBuilder().setSubsystemXml(subsystemXml).build();
 
-        ModelNode addOp = getCacheAddOperation("maximal", LocalCacheResourceDefinition.WILDCARD_PATH.getKey(), "fred");
-        ModelNode removeOp = getCacheRemoveOperation("maximal", LocalCacheResourceDefinition.WILDCARD_PATH.getKey(), "fred");
+        ModelNode addOp = getCacheAddOperation("maximal", CacheResourceRegistration.LOCAL.pathElement("fred"));
+        ModelNode removeOp = getCacheRemoveOperation("maximal", CacheResourceRegistration.LOCAL.pathElement("fred"));
 
         // add a local cache
         ModelNode result = servicesA.executeOperation(addOp);
