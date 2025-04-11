@@ -7,24 +7,38 @@ package org.jboss.as.clustering.infinispan.subsystem.remote;
 
 import java.util.Collections;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.jboss.as.clustering.controller.ChildResourceProvider;
-import org.jboss.as.clustering.controller.ComplexResource;
-import org.jboss.as.clustering.controller.SimpleChildResourceProvider;
+import org.jboss.as.controller.registry.PlaceholderResource;
 import org.jboss.as.controller.registry.Resource;
 import org.wildfly.clustering.server.Registrar;
 import org.wildfly.clustering.server.Registration;
+import org.wildfly.subsystem.resource.ChildResourceProvider;
+import org.wildfly.subsystem.resource.DynamicResource;
 
 /**
+ * A dynamic resource for a remote cache container.
  * @author Paul Ferraro
  */
-public class RemoteCacheContainerResource extends ComplexResource implements Registrar<String> {
+public class RemoteCacheContainerResource extends DynamicResource implements Registrar<String> {
 
-    private static final String CHILD_TYPE = RemoteCacheResourceDefinition.WILDCARD_PATH.getKey();
+    private static final String CHILD_TYPE = RemoteCacheRuntimeResourceDefinitionRegistrar.REGISTRATION.getPathElement().getKey();
 
     public RemoteCacheContainerResource(Resource resource) {
-        this(resource, Collections.singletonMap(CHILD_TYPE, new SimpleChildResourceProvider(ConcurrentHashMap.newKeySet())));
+        this(resource, Collections.singletonMap(CHILD_TYPE, new ChildResourceProvider() {
+            private final Set<String> caches = ConcurrentHashMap.newKeySet();
+
+            @Override
+            public Resource getChild(String name) {
+                return this.caches.contains(name) ? PlaceholderResource.INSTANCE : null;
+            }
+
+            @Override
+            public Set<String> getChildren() {
+                return this.caches;
+            }
+        }));
     }
 
     private RemoteCacheContainerResource(Resource resource, Map<String, ChildResourceProvider> providers) {
