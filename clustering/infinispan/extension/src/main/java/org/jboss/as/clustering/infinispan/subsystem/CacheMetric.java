@@ -7,13 +7,13 @@ package org.jboss.as.clustering.infinispan.subsystem;
 import java.util.function.UnaryOperator;
 
 import org.infinispan.interceptors.impl.CacheMgmtInterceptor;
-import org.jboss.as.clustering.controller.Metric;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.client.helpers.MeasurementUnit;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
+import org.wildfly.subsystem.resource.executor.Metric;
 
 /**
  * Enumeration of management metrics for a cache.
@@ -146,7 +146,7 @@ public enum CacheMetric implements Metric<CacheMgmtInterceptor>, UnaryOperator<S
     }
 
     @Override
-    public AttributeDefinition getDefinition() {
+    public AttributeDefinition get() {
         return this.definition;
     }
 }

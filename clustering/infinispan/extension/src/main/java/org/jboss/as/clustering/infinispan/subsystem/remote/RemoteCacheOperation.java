@@ -6,19 +6,20 @@
 package org.jboss.as.clustering.infinispan.subsystem.remote;
 
 import org.infinispan.client.hotrod.jmx.RemoteCacheClientStatisticsMXBean;
-import org.jboss.as.clustering.controller.Operation;
-import org.jboss.as.clustering.infinispan.subsystem.InfinispanExtension;
+import org.jboss.as.clustering.infinispan.subsystem.InfinispanSubsystemResourceDefinitionRegistrar;
 import org.jboss.as.controller.ExpressionResolver;
 import org.jboss.as.controller.OperationDefinition;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
+import org.wildfly.subsystem.resource.executor.RuntimeOperation;
 
 /**
+ * Enumerates the runtime operations of a remote cache.
  * @author Paul Ferraro
  */
-public enum RemoteCacheOperation implements Operation<RemoteCacheClientStatisticsMXBean> {
+public enum RemoteCacheOperation implements RuntimeOperation<RemoteCacheClientStatisticsMXBean> {
 
     RESET_STATISTICS("reset-statistics", ModelType.UNDEFINED) {
         @Override
@@ -31,14 +32,14 @@ public enum RemoteCacheOperation implements Operation<RemoteCacheClientStatistic
     private final OperationDefinition definition;
 
     RemoteCacheOperation(String name, ModelType replyType) {
-        this.definition = new SimpleOperationDefinitionBuilder(name, InfinispanExtension.SUBSYSTEM_RESOLVER.createChildResolver(RemoteCacheResourceDefinition.WILDCARD_PATH))
+        this.definition = new SimpleOperationDefinitionBuilder(name, InfinispanSubsystemResourceDefinitionRegistrar.RESOLVER.createChildResolver(RemoteCacheRuntimeResourceDefinitionRegistrar.REGISTRATION.getPathElement()))
                 .setReplyType(replyType)
                 .setRuntimeOnly()
                 .build();
     }
 
     @Override
-    public OperationDefinition getDefinition() {
+    public OperationDefinition getOperationDefinition() {
         return this.definition;
     }
 }

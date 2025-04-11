@@ -8,19 +8,20 @@ package org.jboss.as.clustering.infinispan.subsystem.remote;
 import java.util.Map;
 
 import org.infinispan.client.hotrod.jmx.RemoteCacheManagerMXBean;
-import org.jboss.as.clustering.controller.Operation;
-import org.jboss.as.clustering.infinispan.subsystem.InfinispanExtension;
+import org.jboss.as.clustering.infinispan.subsystem.InfinispanSubsystemResourceDefinitionRegistrar;
 import org.jboss.as.controller.ExpressionResolver;
 import org.jboss.as.controller.OperationDefinition;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
+import org.wildfly.subsystem.resource.executor.RuntimeOperation;
 
 /**
+ * Enumerates the runtime operations of a remote Infinispan cluster.
  * @author Paul Ferraro
  */
-public enum RemoteClusterOperation implements Operation<Map.Entry<String, RemoteCacheManagerMXBean>> {
+public enum RemoteClusterOperation implements RuntimeOperation<Map.Entry<String, RemoteCacheManagerMXBean>> {
 
     SWITCH_CLUSTER("switch-cluster", ModelType.BOOLEAN) {
         @Override
@@ -33,14 +34,14 @@ public enum RemoteClusterOperation implements Operation<Map.Entry<String, Remote
     private final OperationDefinition definition;
 
     RemoteClusterOperation(String name, ModelType replyType) {
-        this.definition = new SimpleOperationDefinitionBuilder(name, InfinispanExtension.SUBSYSTEM_RESOLVER.createChildResolver(RemoteClusterResourceDefinition.WILDCARD_PATH))
+        this.definition = new SimpleOperationDefinitionBuilder(name, InfinispanSubsystemResourceDefinitionRegistrar.RESOLVER.createChildResolver(RemoteClusterResourceDefinitionRegistrar.REGISTRATION.getPathElement()))
                 .setReplyType(replyType)
                 .setRuntimeOnly()
                 .build();
     }
 
     @Override
-    public OperationDefinition getDefinition() {
+    public OperationDefinition getOperationDefinition() {
         return this.definition;
     }
 }
