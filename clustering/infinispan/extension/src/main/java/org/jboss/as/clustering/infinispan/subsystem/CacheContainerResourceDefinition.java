@@ -22,7 +22,6 @@ import org.jboss.as.clustering.controller.ResourceDefinitionProvider;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.ResourceServiceHandler;
 import org.jboss.as.clustering.controller.SimpleResourceRegistrar;
-import org.jboss.as.clustering.controller.validation.ModuleIdentifierValidatorBuilder;
 import org.jboss.as.clustering.infinispan.logging.InfinispanLogger;
 import org.jboss.as.clustering.naming.BinderServiceInstaller;
 import org.jboss.as.controller.AttributeDefinition;
@@ -35,6 +34,7 @@ import org.jboss.as.controller.StringListAttributeDefinition;
 import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.validation.EnumValidator;
+import org.jboss.as.controller.operations.validation.ModuleNameValidator;
 import org.jboss.as.controller.operations.validation.ParameterValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.dmr.ModelNode;
@@ -138,7 +138,7 @@ public class CacheContainerResourceDefinition extends ChildResourceDefinition<Ma
         MODULES("modules") {
             @Override
             public StringListAttributeDefinition.Builder apply(StringListAttributeDefinition.Builder builder) {
-                return builder.setElementValidator(new ModuleIdentifierValidatorBuilder().configure(builder).build());
+                return builder.setElementValidator(ModuleNameValidator.INSTANCE);
             }
         },
         ;
@@ -246,7 +246,7 @@ public class CacheContainerResourceDefinition extends ChildResourceDefinition<Ma
                 installers.add(new BinderServiceInstaller(InfinispanBindingFactory.createCacheConfigurationBinding(defaultConfiguration), DEFAULT_CACHE_CONFIGURATION_CAPABILITY.getCapabilityServiceName(address)));
             }
 
-            new ProvidedBinaryServiceInstallerProvider<>(DefaultCacheServiceInstallerProvider.class, DefaultCacheServiceInstallerProvider.class.getClassLoader()).apply(context.getCapabilityServiceSupport(), configuration).forEach(installers::add);
+            new ProvidedBinaryServiceInstallerProvider<>(DefaultCacheServiceInstallerProvider.class, DefaultCacheServiceInstallerProvider.class.getClassLoader()).apply(configuration).forEach(installers::add);
         }
 
         return ResourceServiceInstaller.combine(installers);

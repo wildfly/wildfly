@@ -20,7 +20,7 @@ public interface ProtocolConfiguration<P extends Protocol> {
 
     String getName();
 
-    P createProtocol(ProtocolStackConfiguration stackConfiguration);
+    P createProtocol(ChannelFactoryConfiguration configuration);
 
     default Map<String, SocketBinding> getSocketBindings() {
         return Map.of();

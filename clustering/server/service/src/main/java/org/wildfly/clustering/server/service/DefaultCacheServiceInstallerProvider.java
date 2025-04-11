@@ -5,15 +5,14 @@
 
 package org.wildfly.clustering.server.service;
 
-import java.util.function.BiFunction;
+import java.util.function.Function;
 
-import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.wildfly.subsystem.service.ServiceInstaller;
 
 /**
  * SPI for providing services on behalf of a default cache.
  * @author Paul Ferraro
  */
-public interface DefaultCacheServiceInstallerProvider extends BiFunction<CapabilityServiceSupport, BinaryServiceConfiguration, Iterable<ServiceInstaller>> {
+public interface DefaultCacheServiceInstallerProvider extends Function<BinaryServiceConfiguration, Iterable<ServiceInstaller>> {
 
 }

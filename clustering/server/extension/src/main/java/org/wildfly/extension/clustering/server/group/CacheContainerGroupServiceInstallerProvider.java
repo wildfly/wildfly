@@ -5,9 +5,6 @@
 
 package org.wildfly.extension.clustering.server.group;
 
-import java.util.Map;
-
-import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.kohsuke.MetaInfServices;
 import org.wildfly.clustering.server.Group;
 import org.wildfly.clustering.server.GroupMember;
@@ -24,7 +21,7 @@ public class CacheContainerGroupServiceInstallerProvider implements CacheContain
     private final UnaryServiceInstallerProvider<Group<GroupMember>> provider = new GroupServiceInstallerProvider(GroupServiceInstallerFactory.INSTANCE);
 
     @Override
-    public Iterable<ServiceInstaller> apply(CapabilityServiceSupport support, Map.Entry<String, String> entry) {
-        return this.provider.apply(support, entry.getKey());
+    public Iterable<ServiceInstaller> apply(String name, String context) {
+        return this.provider.apply(name);
     }
 }

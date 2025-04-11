@@ -7,7 +7,6 @@ package org.wildfly.clustering.ejb.remote;
 
 import java.util.List;
 
-import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.as.network.ClientMapping;
 import org.wildfly.service.descriptor.NullaryServiceDescriptor;
 import org.wildfly.subsystem.service.ServiceDependency;
@@ -21,5 +20,5 @@ import org.wildfly.subsystem.service.ServiceInstaller;
 public interface ClientMappingsRegistryProvider {
     NullaryServiceDescriptor<ClientMappingsRegistryProvider> SERVICE_DESCRIPTOR = NullaryServiceDescriptor.of("org.wildfly.clustering.ejb.client-mappings-registry-provider", ClientMappingsRegistryProvider.class);
 
-    Iterable<ServiceInstaller> getServiceInstallers(CapabilityServiceSupport support, String connectorName, ServiceDependency<List<ClientMapping>> clientMappings);
+    Iterable<ServiceInstaller> getServiceInstallers(String connectorName, ServiceDependency<List<ClientMapping>> clientMappings);
 }

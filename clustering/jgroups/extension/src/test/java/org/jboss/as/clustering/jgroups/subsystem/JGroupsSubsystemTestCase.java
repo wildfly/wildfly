@@ -5,6 +5,7 @@
 package org.jboss.as.clustering.jgroups.subsystem;
 
 import java.util.EnumSet;
+import java.util.List;
 
 import javax.xml.stream.XMLStreamException;
 
@@ -44,7 +45,7 @@ public class JGroupsSubsystemTestCase extends AbstractSubsystemSchemaTest<JGroup
     private final JGroupsSubsystemSchema schema;
 
     public JGroupsSubsystemTestCase(JGroupsSubsystemSchema schema) {
-        super(JGroupsExtension.SUBSYSTEM_NAME, new JGroupsExtension(), schema, JGroupsSubsystemSchema.CURRENT);
+        super(JGroupsSubsystemResourceDefinitionRegistrar.REGISTRATION.getName(), new JGroupsExtension(), schema, JGroupsSubsystemSchema.CURRENT);
         this.schema = schema;
     }
 
@@ -70,17 +71,10 @@ public class JGroupsSubsystemTestCase extends AbstractSubsystemSchemaTest<JGroup
     }
 
     @Override
-    protected org.jboss.as.subsystem.test.AdditionalInitialization createAdditionalInitialization() {
-        return new AdditionalInitialization()
-                .require(SocketBinding.SERVICE_DESCRIPTOR, "jgroups-tcp")
-                .require(SocketBinding.SERVICE_DESCRIPTOR, "jgroups-udp")
-                .require(SocketBinding.SERVICE_DESCRIPTOR, "some-binding")
-                .require(SocketBinding.SERVICE_DESCRIPTOR, "jgroups-diagnostics")
-                .require(SocketBinding.SERVICE_DESCRIPTOR, "jgroups-mping")
-                .require(SocketBinding.SERVICE_DESCRIPTOR, "jgroups-tcp-fd")
-                .require(SocketBinding.SERVICE_DESCRIPTOR, "jgroups-client-fd")
-                .require(OutboundSocketBinding.SERVICE_DESCRIPTOR, "node1")
-                .require(OutboundSocketBinding.SERVICE_DESCRIPTOR, "node2")
+    protected AdditionalInitialization createAdditionalInitialization() {
+        return new AdditionalInitialization(this.schema)
+                .require(SocketBinding.SERVICE_DESCRIPTOR, List.of("jgroups-tcp", "jgroups-udp", "some-binding", "some-other-binding", "jgroups-diagnostics", "jgroups-mping", "jgroups-tcp-fd", "jgroups-client-fd"))
+                .require(OutboundSocketBinding.SERVICE_DESCRIPTOR, List.of("node1", "node2"))
                 .require(CommonServiceDescriptor.KEY_STORE, "my-key-store")
                 .require(CommonServiceDescriptor.CREDENTIAL_STORE, "my-credential-store")
                 .require(CommonServiceDescriptor.DATA_SOURCE, "ExampleDS")
@@ -99,42 +93,42 @@ public class JGroupsSubsystemTestCase extends AbstractSubsystemSchemaTest<JGroup
 
         final KernelServices services = this.buildKernelServices();
 
-        ModelNode originalSubsystemModel = services.readWholeModel().get(JGroupsSubsystemResourceDefinition.PATH.getKeyValuePair());
-        ModelNode originalChannelModel = originalSubsystemModel.get(ChannelResourceDefinition.pathElement("ee").getKeyValuePair());
-        ModelNode originalForkModel = originalChannelModel.get(ForkResourceDefinition.pathElement("web").getKeyValuePair());
+        ModelNode originalSubsystemModel = services.readWholeModel().get(JGroupsSubsystemResourceDefinitionRegistrar.REGISTRATION.getPathElement().getKeyValuePair());
+        ModelNode originalChannelModel = originalSubsystemModel.get(JGroupsResourceRegistration.CHANNEL.pathElement("ee").getKeyValuePair());
+        ModelNode originalForkModel = originalChannelModel.get(JGroupsResourceRegistration.FORK.pathElement("web").getKeyValuePair());
 
         Assert.assertTrue(originalForkModel.isDefined());
         originalForkModel.protect();
-        Assert.assertTrue(0 < originalForkModel.get(ProtocolResourceDefinition.WILDCARD_PATH.getKey()).keys().size());
+        Assert.assertTrue(0 < originalForkModel.get(StackResourceDefinitionRegistrar.Component.PROTOCOL.getPathElement().getKey()).keys().size());
 
-        ModelNode originalStackModel = originalSubsystemModel.get(StackResourceDefinition.pathElement("maximal").getKeyValuePair());
+        ModelNode originalStackModel = originalSubsystemModel.get(JGroupsResourceRegistration.STACK.pathElement("maximal").getKeyValuePair());
         Assert.assertTrue(originalStackModel.isDefined());
         originalStackModel.protect();
 
 
-        final PathAddress subsystemAddress = PathAddress.pathAddress(JGroupsSubsystemResourceDefinition.PATH);
-        final PathAddress forkAddress = subsystemAddress.append(ChannelResourceDefinition.pathElement("ee")).append(ForkResourceDefinition.pathElement("web"));
-        final PathAddress stackAddress = subsystemAddress.append(StackResourceDefinition.pathElement("maximal"));
+        final PathAddress subsystemAddress = PathAddress.pathAddress(JGroupsSubsystemResourceDefinitionRegistrar.REGISTRATION.getPathElement());
+        final PathAddress forkAddress = subsystemAddress.append(JGroupsResourceRegistration.CHANNEL.pathElement("ee")).append(JGroupsResourceRegistration.FORK.pathElement("web"));
+        final PathAddress stackAddress = subsystemAddress.append(JGroupsResourceRegistration.STACK.pathElement("maximal"));
 
         //Check the fork protocols honour indexed adds by inserting a protocol at the start
-        ModelNode add = Util.createAddOperation(forkAddress.append(ProtocolResourceDefinition.pathElement("MERGE3")), 0);
+        ModelNode add = Util.createAddOperation(forkAddress.append(StackResourceDefinitionRegistrar.Component.PROTOCOL.pathElement("MERGE3")), 0);
         ModelTestUtils.checkOutcome(services.executeOperation(add));
 
-        ModelNode subsystemModel = services.readWholeModel().get(JGroupsSubsystemResourceDefinition.PATH.getKeyValuePair());
-        ModelNode channelModel = subsystemModel.get(ChannelResourceDefinition.pathElement("ee").getKeyValuePair());
-        ModelNode forkModel = channelModel.get(ForkResourceDefinition.pathElement("web").getKeyValuePair());
+        ModelNode subsystemModel = services.readWholeModel().get(JGroupsSubsystemResourceDefinitionRegistrar.REGISTRATION.getPathElement().getKeyValuePair());
+        ModelNode channelModel = subsystemModel.get(JGroupsResourceRegistration.CHANNEL.pathElement("ee").getKeyValuePair());
+        ModelNode forkModel = channelModel.get(JGroupsResourceRegistration.FORK.pathElement("web").getKeyValuePair());
 
-        Assert.assertEquals(originalForkModel.keys().size() + 1, forkModel.get(ProtocolResourceDefinition.WILDCARD_PATH.getKey()).keys().size());
-        Assert.assertEquals("MERGE3", forkModel.get(ProtocolResourceDefinition.WILDCARD_PATH.getKey()).keys().iterator().next());
+        Assert.assertEquals(originalForkModel.keys().size() + 1, forkModel.get(StackResourceDefinitionRegistrar.Component.PROTOCOL.getPathElement().getKey()).keys().size());
+        Assert.assertEquals("MERGE3", forkModel.get(StackResourceDefinitionRegistrar.Component.PROTOCOL.getPathElement().getKey()).keys().iterator().next());
 
-        //Check the stack protocols honour indexed adds by removing a protocol in the middle and readding it
-        ModelNode remove = Util.createRemoveOperation(stackAddress.append(ProtocolResourceDefinition.pathElement("FD")));
+        //Check the stack protocols honour indexed adds by removing a protocol in the middle and re-adding it
+        ModelNode remove = Util.createRemoveOperation(stackAddress.append(StackResourceDefinitionRegistrar.Component.PROTOCOL.pathElement("FD")));
         ModelTestUtils.checkOutcome(services.executeOperation(remove));
-        add = Util.createAddOperation(stackAddress.append(ProtocolResourceDefinition.pathElement("FD")), 3); //The original index of the FD protocol
+        add = Util.createAddOperation(stackAddress.append(StackResourceDefinitionRegistrar.Component.PROTOCOL.pathElement("FD")), 3); //The original index of the FD protocol
         ModelTestUtils.checkOutcome(services.executeOperation(add));
 
-        subsystemModel = services.readWholeModel().get(JGroupsSubsystemResourceDefinition.PATH.getKeyValuePair());
-        ModelNode stackModel = subsystemModel.get(StackResourceDefinition.pathElement("maximal").getKeyValuePair());
+        subsystemModel = services.readWholeModel().get(JGroupsSubsystemResourceDefinitionRegistrar.REGISTRATION.getPathElement().getKeyValuePair());
+        ModelNode stackModel = subsystemModel.get(JGroupsResourceRegistration.STACK.pathElement("maximal").getKeyValuePair());
         Assert.assertEquals(originalStackModel, stackModel);
     }
 }

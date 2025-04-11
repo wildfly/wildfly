@@ -9,7 +9,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
-import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.network.ClientMapping;
 import org.wildfly.clustering.ejb.infinispan.network.ClientMappingsRegistryEntryServiceInstallerFactory;
@@ -30,11 +29,11 @@ public enum LocalClientMappingsRegistryProvider implements ClientMappingsRegistr
     INSTANCE;
 
     @Override
-    public Iterable<ServiceInstaller> getServiceInstallers(CapabilityServiceSupport support, String connectorName, ServiceDependency<List<ClientMapping>> clientMappings) {
+    public Iterable<ServiceInstaller> getServiceInstallers(String connectorName, ServiceDependency<List<ClientMapping>> clientMappings) {
         BinaryServiceConfiguration configuration = BinaryServiceConfiguration.of(ModelDescriptionConstants.LOCAL, connectorName);
         List<ServiceInstaller> installers = new LinkedList<>();
         installers.add(new ClientMappingsRegistryEntryServiceInstallerFactory(clientMappings).apply(configuration));
-        new FilteredBinaryServiceInstallerProvider(Set.of(ClusteringServiceDescriptor.REGISTRY, ClusteringServiceDescriptor.REGISTRY_FACTORY)).apply(support, configuration).forEach(installers::add);
+        new FilteredBinaryServiceInstallerProvider(Set.of(ClusteringServiceDescriptor.REGISTRY, ClusteringServiceDescriptor.REGISTRY_FACTORY)).apply(configuration).forEach(installers::add);
         return installers;
     }
 }

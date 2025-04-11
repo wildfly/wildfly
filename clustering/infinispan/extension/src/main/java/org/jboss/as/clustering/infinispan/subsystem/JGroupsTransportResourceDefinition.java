@@ -33,14 +33,12 @@ import org.jboss.as.controller.client.helpers.MeasurementUnit;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
-import org.jgroups.JChannel;
+import org.wildfly.clustering.infinispan.service.InfinispanServiceDescriptor;
 import org.wildfly.clustering.jgroups.spi.ChannelFactory;
 import org.wildfly.clustering.jgroups.spi.ForkChannelFactory;
-import org.wildfly.clustering.jgroups.spi.ForkStackConfiguration;
-import org.wildfly.clustering.jgroups.spi.ProtocolStackConfiguration;
+import org.wildfly.clustering.jgroups.spi.ForkChannelFactoryConfiguration;
 import org.wildfly.clustering.server.service.CacheContainerServiceInstallerProvider;
 import org.wildfly.clustering.server.service.ProvidedBiServiceInstallerProvider;
-import org.wildfly.clustering.server.util.MapEntry;
 import org.wildfly.service.descriptor.UnaryServiceDescriptor;
 import org.wildfly.subsystem.resource.capability.CapabilityReference;
 import org.wildfly.subsystem.resource.capability.ResourceCapabilityReference;
@@ -59,16 +57,15 @@ public class JGroupsTransportResourceDefinition extends TransportResourceDefinit
 
     static final PathElement PATH = pathElement("jgroups");
 
-    static final UnaryServiceDescriptor<JChannel> TRANSPORT_CHANNEL = UnaryServiceDescriptor.of("org.wildfly.clustering.infinispan.cache-container.transport.channel", JChannel.class);
-
-    private static final RuntimeCapability<Void> CAPABILITY = RuntimeCapability.Builder.of(TRANSPORT_CHANNEL).setDynamicNameMapper(UnaryCapabilityNameResolver.PARENT).build();
+    static final UnaryServiceDescriptor<Void> SERVICE_DESCRIPTOR = UnaryServiceDescriptor.of(InfinispanServiceDescriptor.CACHE_CONTAINER_CONFIGURATION.getName() + ".transport.channel", Void.class);
+    private static final RuntimeCapability<Void> CAPABILITY = RuntimeCapability.Builder.of(SERVICE_DESCRIPTOR).setDynamicNameMapper(UnaryCapabilityNameResolver.PARENT).build();
 
     enum Attribute implements org.jboss.as.clustering.controller.Attribute, UnaryOperator<SimpleAttributeDefinitionBuilder> {
         CHANNEL("channel", ModelType.STRING, null) {
             @Override
             public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
                 return builder.setAllowExpression(false)
-                        .setCapabilityReference(CapabilityReference.builder(CAPABILITY, ChannelFactory.SERVICE_DESCRIPTOR).build())
+                        .setCapabilityReference(CapabilityReference.builder(CAPABILITY, ForkChannelFactory.SERVICE_DESCRIPTOR).build())
                         ;
             }
         },
@@ -122,22 +119,21 @@ public class JGroupsTransportResourceDefinition extends TransportResourceDefinit
         String containerName = containerAddress.getLastElement().getValue();
 
         long lockTimeout = LOCK_TIMEOUT.resolveModelAttribute(context, model).asLong();
-        String channel = CHANNEL.resolveModelAttribute(context, model).asStringOrNull();
+        String channelName = CHANNEL.resolveModelAttribute(context, model).asStringOrNull();
 
         List<ResourceServiceInstaller> installers = new LinkedList<>();
 
-        Function<ForkChannelFactory, TransportConfiguration> factory = new Function<>() {
+        ServiceDependency<TransportConfiguration> transport = ServiceDependency.on(ForkChannelFactory.SERVICE_DESCRIPTOR, channelName).map(new Function<>() {
             @Override
             public TransportConfiguration apply(ForkChannelFactory channelFactory) {
                 Properties properties = new Properties();
                 properties.put(JGroupsTransport.CHANNEL_CONFIGURATOR, new ChannelConfigurator(channelFactory, containerName));
-                ProtocolStackConfiguration stack = channelFactory.getProtocolStackConfiguration();
-                org.wildfly.clustering.jgroups.spi.TransportConfiguration.Topology topology = stack.getTransport().getTopology();
-                JChannel channel = channelFactory.getForkStackConfiguration().getChannel();
+                ForkChannelFactoryConfiguration configuration = channelFactory.getConfiguration();
+                org.wildfly.clustering.jgroups.spi.TransportConfiguration.Topology topology = configuration.getTransport().getTopology();
                 TransportConfigurationBuilder builder = new GlobalConfigurationBuilder().transport()
-                        .clusterName(channel.getClusterName())
+                        .clusterName(configuration.getChannel().getClusterName())
                         .distributedSyncTimeout(lockTimeout)
-                        .nodeName(channel.getName())
+                        .nodeName(configuration.getChannel().getName())
                         .transport(new JGroupsTransport())
                         .withProperties(properties)
                         ;
@@ -146,11 +142,10 @@ public class JGroupsTransportResourceDefinition extends TransportResourceDefinit
                 }
                 return builder.create();
             }
-        };
-        installers.add(CapabilityServiceInstaller.builder(TransportResourceDefinition.CAPABILITY, ServiceDependency.on(ChannelFactory.SERVICE_DESCRIPTOR, channel).map(ForkChannelFactory.class::cast).map(factory)).build());
-        installers.add(CapabilityServiceInstaller.builder(CAPABILITY, ServiceDependency.on(ChannelFactory.SERVICE_DESCRIPTOR, channel).map(ForkChannelFactory.class::cast).map(ForkChannelFactory::getForkStackConfiguration).map(ForkStackConfiguration::getChannel)).build());
+        });
+        installers.add(CapabilityServiceInstaller.builder(TransportResourceDefinition.CAPABILITY, transport).build());
 
-        new ProvidedBiServiceInstallerProvider<>(CacheContainerServiceInstallerProvider.class, CacheContainerServiceInstallerProvider.class.getClassLoader()).apply(context.getCapabilityServiceSupport(), MapEntry.of(containerName, channel)).forEach(installers::add);
+        new ProvidedBiServiceInstallerProvider<>(CacheContainerServiceInstallerProvider.class, CacheContainerServiceInstallerProvider.class.getClassLoader()).apply(containerName, channelName).forEach(installers::add);
 
         return ResourceServiceInstaller.combine(installers);
     }

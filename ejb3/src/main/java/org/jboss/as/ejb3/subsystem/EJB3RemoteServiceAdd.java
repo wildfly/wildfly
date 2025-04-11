@@ -23,7 +23,6 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.RequirementServiceTarget;
 import org.jboss.as.controller.ServiceNameFactory;
-import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.ejb3.logging.EjbLogger;
@@ -110,20 +109,16 @@ public class EJB3RemoteServiceAdd extends AbstractBoottimeAddStepHandler {
                     .requires(remotingConnectorInfo).build().install(context);
 
             ServiceDependency<ClientMappingsRegistryProvider> provider = getClientMappingsRegistryProvider(context, model);
-            CapabilityServiceSupport support = context.getCapabilityServiceSupport();
             ServiceInstaller installer = new ServiceInstaller() {
                 @Override
                 public ServiceController<?> install(RequirementServiceTarget target) {
-                    for (ServiceInstaller installer : provider.get().getServiceInstallers(support, connectorName,
-                            ServiceDependency.on(CLIENT_MAPPINGS, connectorName))) {
+                    for (ServiceInstaller installer : provider.get().getServiceInstallers(connectorName, ServiceDependency.on(CLIENT_MAPPINGS, connectorName))) {
                         ServiceController<?> controller = installer.install(target);
-                        ServiceName registryParentName = ServiceNameFactory
-                                .parseServiceName(ClusteringServiceDescriptor.REGISTRY.getName());
+                        ServiceName registryParentName = ServiceNameFactory.parseServiceName(ClusteringServiceDescriptor.REGISTRY.getName());
                         for (ServiceName providedName : controller.provides()) {
                             if (registryParentName.isParentOf(providedName)) {
                                 ServiceInstaller.builder(ServiceDependency.on(providedName))
-                                        .provides(ServiceNameFactory.resolveServiceName(
-                                                EJB3RemoteResourceDefinition.CLIENT_MAPPINGS_REGISTRY, connectorName))
+                                        .provides(ServiceNameFactory.resolveServiceName(EJB3RemoteResourceDefinition.CLIENT_MAPPINGS_REGISTRY, connectorName))
                                         .build().install(target);
                             }
                         }

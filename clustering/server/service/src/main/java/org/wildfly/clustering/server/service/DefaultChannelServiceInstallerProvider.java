@@ -5,15 +5,14 @@
 
 package org.wildfly.clustering.server.service;
 
-import java.util.function.BiFunction;
+import java.util.function.Function;
 
-import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.wildfly.subsystem.service.ServiceInstaller;
 
 /**
  * SPI for providing services on behalf of a default channel.
  * @author Paul Ferraro
  */
-public interface DefaultChannelServiceInstallerProvider extends BiFunction<CapabilityServiceSupport, String, Iterable<ServiceInstaller>> {
+public interface DefaultChannelServiceInstallerProvider extends Function<String, Iterable<ServiceInstaller>> {
 
 }

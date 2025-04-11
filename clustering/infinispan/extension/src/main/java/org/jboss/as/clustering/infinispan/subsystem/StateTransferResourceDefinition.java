@@ -16,8 +16,6 @@ import org.jboss.as.clustering.controller.ManagementResourceRegistration;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.ResourceServiceHandler;
 import org.jboss.as.clustering.controller.SimpleResourceRegistrar;
-import org.jboss.as.clustering.controller.validation.IntRangeValidatorBuilder;
-import org.jboss.as.clustering.controller.validation.LongRangeValidatorBuilder;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -26,6 +24,8 @@ import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.capability.BinaryCapabilityNameResolver;
 import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.client.helpers.MeasurementUnit;
+import org.jboss.as.controller.operations.validation.IntRangeValidator;
+import org.jboss.as.controller.operations.validation.LongRangeValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -53,13 +53,13 @@ public class StateTransferResourceDefinition extends ComponentResourceDefinition
         CHUNK_SIZE("chunk-size", ModelType.INT, new ModelNode(512)) {
             @Override
             public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
-                return builder.setValidator(new IntRangeValidatorBuilder().min(1).configure(builder).build());
+                return builder.setValidator(IntRangeValidator.POSITIVE);
             }
         },
         TIMEOUT("timeout", ModelType.LONG, new ModelNode(TimeUnit.MINUTES.toMillis(4))) {
             @Override
             public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
-                return builder.setValidator(new LongRangeValidatorBuilder().min(0).configure(builder).build())
+                return builder.setValidator(new LongRangeValidator(0))
                         .setMeasurementUnit(MeasurementUnit.MILLISECONDS)
                         ;
             }

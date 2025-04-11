@@ -24,7 +24,7 @@ import org.jgroups.protocols.TP;
 import org.jgroups.stack.Protocol;
 import org.wildfly.clustering.jgroups.spi.ChannelFactory;
 import org.wildfly.clustering.jgroups.spi.ProtocolConfiguration;
-import org.wildfly.clustering.jgroups.spi.ProtocolStackConfiguration;
+import org.wildfly.clustering.jgroups.spi.ChannelFactoryConfiguration;
 import org.wildfly.clustering.jgroups.spi.TransportConfiguration;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
@@ -34,14 +34,14 @@ import org.wildfly.security.manager.WildFlySecurityManager;
  */
 public class JChannelFactory implements ChannelFactory {
 
-    private final ProtocolStackConfiguration configuration;
+    private final ChannelFactoryConfiguration configuration;
 
-    public JChannelFactory(ProtocolStackConfiguration configuration) {
+    public JChannelFactory(ChannelFactoryConfiguration configuration) {
         this.configuration = configuration;
     }
 
     @Override
-    public ProtocolStackConfiguration getProtocolStackConfiguration() {
+    public ChannelFactoryConfiguration getConfiguration() {
         return this.configuration;
     }
 
