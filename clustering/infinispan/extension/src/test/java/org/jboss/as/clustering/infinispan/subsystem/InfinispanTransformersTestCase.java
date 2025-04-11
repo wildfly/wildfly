@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.jboss.as.clustering.controller.CommonServiceDescriptor;
-import org.jboss.as.clustering.infinispan.subsystem.remote.RemoteCacheContainerResourceDefinition;
+import org.jboss.as.clustering.infinispan.subsystem.remote.RemoteCacheContainerResourceDefinitionRegistrar;
 import org.jboss.as.clustering.subsystem.AdditionalInitialization;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathAddress;
@@ -101,7 +101,7 @@ public class InfinispanTransformersTestCase extends AbstractSubsystemTest {
     private final ModelVersion subsystemVersion;
 
     public InfinispanTransformersTestCase(ModelTestControllerVersion controllerVersion) {
-        super(InfinispanExtension.SUBSYSTEM_NAME, new InfinispanExtension());
+        super(InfinispanSubsystemResourceDefinitionRegistrar.REGISTRATION.getName(), new InfinispanExtension());
         this.controllerVersion = controllerVersion;
         this.subsystemVersion = VERSIONS.get(controllerVersion).getVersion();
     }
@@ -115,8 +115,8 @@ public class InfinispanTransformersTestCase extends AbstractSubsystemTest {
                 .require(CommonServiceDescriptor.SSL_CONTEXT, "hotrod-elytron")
                 .require(ForkChannelFactory.SERVICE_DESCRIPTOR, "maximal-channel")
                 .require(ForkChannelFactory.DEFAULT_SERVICE_DESCRIPTOR)
-                .require(TransactionResourceDefinition.LOCAL_TRANSACTION_PROVIDER)
-                .require(TransactionResourceDefinition.XA_RESOURCE_RECOVERY_REGISTRY)
+                .require(TransactionResourceDefinitionRegistrar.LOCAL_TRANSACTION_PROVIDER)
+                .require(TransactionResourceDefinitionRegistrar.XA_RESOURCE_RECOVERY_REGISTRY)
                 ;
     }
 
@@ -152,30 +152,29 @@ public class InfinispanTransformersTestCase extends AbstractSubsystemTest {
 
         ModelFixer fixer = model -> {
             if (InfinispanSubsystemModel.VERSION_16_0_0.requiresTransformation(this.subsystemVersion)) {
-                @SuppressWarnings("deprecation")
-                Map<String, List<PathElement>> containers = Map.ofEntries(Map.entry("minimal", List.of(DistributedCacheResourceDefinition.pathElement("dist"))),
-                        Map.entry("maximal", List.of(DistributedCacheResourceDefinition.pathElement("dist"), LocalCacheResourceDefinition.pathElement("local"), ReplicatedCacheResourceDefinition.pathElement("cache-with-jdbc-store"), ScatteredCacheResourceDefinition.pathElement("scattered"))));
+                Map<String, List<PathElement>> containers = Map.ofEntries(Map.entry("minimal", List.of(CacheResourceRegistration.DISTRIBUTED.pathElement("dist"))),
+                        Map.entry("maximal", List.of(CacheResourceRegistration.DISTRIBUTED.pathElement("dist"), CacheResourceRegistration.LOCAL.pathElement("local"), CacheResourceRegistration.REPLICATED.pathElement("cache-with-jdbc-store"), CacheResourceRegistration.SCATTERED.pathElement("scattered"))));
                 for (Map.Entry<String, List<PathElement>> entry : containers.entrySet()) {
-                    PathElement containerPath = CacheContainerResourceDefinition.pathElement(entry.getKey());
+                    PathElement containerPath = PathElement.pathElement(CacheContainerResourceDefinitionRegistrar.REGISTRATION.getPathElement().getKey(), entry.getKey());
                     ModelNode containerModel = model.get(containerPath.getKeyValuePair());
                     containerModel.get("module").set(new ModelNode());
                     for (PathElement cachePath : entry.getValue()) {
                         ModelNode cacheModel = containerModel.get(cachePath.getKey()).get(cachePath.getValue());
                         cacheModel.get("module").set(new ModelNode());
-                        if (cacheModel.hasDefined(HeapMemoryResourceDefinition.PATH.getKeyValuePair())) {
-                            ModelNode memoryModel = cacheModel.get(HeapMemoryResourceDefinition.PATH.getKeyValuePair());
+                        if (cacheModel.hasDefined(MemoryResourceRegistration.HEAP.getPathElement().getKeyValuePair())) {
+                            ModelNode memoryModel = cacheModel.get(MemoryResourceRegistration.HEAP.getPathElement().getKeyValuePair());
                             memoryModel.get("max-entries").set(new ModelNode());
                         }
-                        if (cacheModel.hasDefined(JDBCStoreResourceDefinition.PATH.getKeyValuePair())) {
-                            ModelNode storeModel = cacheModel.get(JDBCStoreResourceDefinition.PATH.getKeyValuePair());
+                        if (cacheModel.hasDefined(StoreResourceRegistration.JDBC.getPathElement().getKeyValuePair())) {
+                            ModelNode storeModel = cacheModel.get(StoreResourceRegistration.JDBC.getPathElement().getKeyValuePair());
                             storeModel.get("datasource").set(new ModelNode());
-                            if (storeModel.hasDefined(StringTableResourceDefinition.PATH.getKeyValuePair())) {
-                                ModelNode tableModel = storeModel.get(StringTableResourceDefinition.PATH.getKeyValuePair());
+                            if (storeModel.hasDefined(TableResourceDefinitionRegistrar.REGISTRATION.getPathElement().getKeyValuePair())) {
+                                ModelNode tableModel = storeModel.get(TableResourceDefinitionRegistrar.REGISTRATION.getPathElement().getKeyValuePair());
                                 tableModel.get("batch-size").set(new ModelNode());
                             }
                         }
                     }
-                    for (ScheduledThreadPoolResourceDefinition pool : EnumSet.allOf(ScheduledThreadPoolResourceDefinition.class)) {
+                    for (ScheduledThreadPool pool : EnumSet.allOf(ScheduledThreadPool.class)) {
                         if (containerModel.hasDefined(pool.getPathElement().getKeyValuePair())) {
                             ModelNode poolModel = containerModel.get(pool.getPathElement().getKeyValuePair());
                             poolModel.get("max-threads").set(new ModelNode());
@@ -192,14 +191,14 @@ public class InfinispanTransformersTestCase extends AbstractSubsystemTest {
         // Validate transformed model
         ModelNode legacyModel = services.readTransformedModel(this.subsystemVersion);
         if (InfinispanSubsystemModel.VERSION_18_0_0.requiresTransformation(this.subsystemVersion)) {
-            ModelNode subsystemModel = legacyModel.get(InfinispanSubsystemResourceDefinition.PATH.getKeyValuePair());
+            ModelNode subsystemModel = legacyModel.get(InfinispanSubsystemResourceDefinitionRegistrar.REGISTRATION.getPathElement().getKeyValuePair());
             // Verify module conversions to legacy module names
-            for (Property property : subsystemModel.get(CacheContainerResourceDefinition.WILDCARD_PATH.getKey()).asPropertyListOrEmpty()) {
-                List<ModelNode> modules = property.getValue().get(CacheContainerResourceDefinition.ListAttribute.MODULES.getName()).asListOrEmpty();
+            for (Property property : subsystemModel.get(CacheContainerResourceDefinitionRegistrar.REGISTRATION.getPathElement().getKey()).asPropertyListOrEmpty()) {
+                List<ModelNode> modules = property.getValue().get(CacheContainerResourceDefinitionRegistrar.MODULES.getName()).asListOrEmpty();
                 Assert.assertTrue(modules.stream().map(ModelNode::asString).noneMatch("org.wildfly.clustering.session.infinispan.embedded"::equals));
             }
-            for (Property property : subsystemModel.get(RemoteCacheContainerResourceDefinition.WILDCARD_PATH.getKey()).asPropertyList()) {
-                List<ModelNode> modules = property.getValue().get(RemoteCacheContainerResourceDefinition.ListAttribute.MODULES.getName()).asListOrEmpty();
+            for (Property property : subsystemModel.get(RemoteCacheContainerResourceDefinitionRegistrar.REGISTRATION.getPathElement().getKey()).asPropertyList()) {
+                List<ModelNode> modules = property.getValue().get(RemoteCacheContainerResourceDefinitionRegistrar.MODULES.getName()).asListOrEmpty();
                 Assert.assertTrue(modules.stream().map(ModelNode::asString).noneMatch("org.wildfly.clustering.session.infinispan.remote"::equals));
             }
         }
@@ -215,23 +214,23 @@ public class InfinispanTransformersTestCase extends AbstractSubsystemTest {
         List<ModelNode> operations = builder.parseXmlResource("infinispan-reject.xml");
 
         FailedOperationTransformationConfig config = new FailedOperationTransformationConfig();
-        PathAddress subsystemAddress = PathAddress.pathAddress(InfinispanSubsystemResourceDefinition.PATH);
-        PathAddress containerAddress = subsystemAddress.append(CacheContainerResourceDefinition.WILDCARD_PATH);
-        PathAddress remoteContainerAddress = subsystemAddress.append(RemoteCacheContainerResourceDefinition.WILDCARD_PATH);
+        PathAddress subsystemAddress = PathAddress.pathAddress(InfinispanSubsystemResourceDefinitionRegistrar.REGISTRATION.getPathElement());
+        PathAddress containerAddress = subsystemAddress.append(CacheContainerResourceDefinitionRegistrar.REGISTRATION.getPathElement());
+        PathAddress remoteContainerAddress = subsystemAddress.append(RemoteCacheContainerResourceDefinitionRegistrar.REGISTRATION.getPathElement());
         List<String> rejectedRemoteContainerAttributes = new LinkedList<>();
 
         if (InfinispanSubsystemModel.VERSION_16_0_0.requiresTransformation(this.subsystemVersion)) {
-            config.addFailedAttribute(containerAddress.append(ReplicatedCacheResourceDefinition.pathElement("repl"), PartitionHandlingResourceDefinition.PATH), new FailedOperationTransformationConfig.NewAttributesConfig(PartitionHandlingResourceDefinition.Attribute.MERGE_POLICY.getDefinition()));
-            config.addFailedAttribute(containerAddress.append(DistributedCacheResourceDefinition.pathElement("dist"), PartitionHandlingResourceDefinition.PATH), new FailedOperationTransformationConfig.NewAttributesConfig(PartitionHandlingResourceDefinition.Attribute.WHEN_SPLIT.getDefinition()));
+            config.addFailedAttribute(containerAddress.append(CacheResourceRegistration.REPLICATED.pathElement("repl"), ComponentResourceRegistration.PARTITION_HANDLING.getPathElement()), new FailedOperationTransformationConfig.NewAttributesConfig(PartitionHandlingResourceDefinitionRegistrar.MERGE_POLICY));
+            config.addFailedAttribute(containerAddress.append(CacheResourceRegistration.DISTRIBUTED.pathElement("dist"), ComponentResourceRegistration.PARTITION_HANDLING.getPathElement()), new FailedOperationTransformationConfig.NewAttributesConfig(PartitionHandlingResourceDefinitionRegistrar.WHEN_SPLIT));
         }
 
         if (InfinispanSubsystemModel.VERSION_15_0_0.requiresTransformation(this.subsystemVersion)) {
-            config.addFailedAttribute(containerAddress, new FailedOperationTransformationConfig.NewAttributesConfig(CacheContainerResourceDefinition.Attribute.MARSHALLER.getDefinition()));
-            rejectedRemoteContainerAttributes.add(RemoteCacheContainerResourceDefinition.Attribute.MARSHALLER.getName());
+            config.addFailedAttribute(containerAddress, new FailedOperationTransformationConfig.NewAttributesConfig(CacheContainerResourceDefinitionRegistrar.MARSHALLER));
+            rejectedRemoteContainerAttributes.add(CacheContainerResourceDefinitionRegistrar.MARSHALLER.getName());
         }
 
         if (InfinispanSubsystemModel.VERSION_14_0_0.requiresTransformation(this.subsystemVersion)) {
-            rejectedRemoteContainerAttributes.add(RemoteCacheContainerResourceDefinition.ListAttribute.MODULES.getName());
+            rejectedRemoteContainerAttributes.add(CacheContainerResourceDefinitionRegistrar.MODULES.getName());
         }
 
         if (!rejectedRemoteContainerAttributes.isEmpty()) {

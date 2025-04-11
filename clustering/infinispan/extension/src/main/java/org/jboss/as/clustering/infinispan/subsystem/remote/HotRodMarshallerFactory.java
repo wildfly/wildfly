@@ -18,6 +18,7 @@ import org.jboss.modules.Module;
 import org.jboss.modules.ModuleLoader;
 
 /**
+ * Enumerates factories for creating a HotRod marshaller.
  * @author Paul Ferraro
  */
 public enum HotRodMarshallerFactory implements BiFunction<ModuleLoader, List<Module>, Marshaller> {

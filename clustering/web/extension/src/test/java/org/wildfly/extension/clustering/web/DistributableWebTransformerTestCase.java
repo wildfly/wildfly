@@ -11,7 +11,7 @@ import java.util.List;
 import org.jboss.as.clustering.subsystem.AdditionalInitialization;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.PathElement;
 import org.jboss.as.model.test.FailedOperationTransformationConfig;
 import org.jboss.as.model.test.ModelTestControllerVersion;
 import org.jboss.as.model.test.ModelTestUtils;
@@ -44,7 +44,7 @@ public class DistributableWebTransformerTestCase extends AbstractSubsystemTest {
     private final ModelVersion version;
 
     public DistributableWebTransformerTestCase(ModelTestControllerVersion controller) {
-        super(DistributableWebExtension.SUBSYSTEM_NAME, new DistributableWebExtension());
+        super(DistributableWebSubsystemResourceDefinitionRegistrar.REGISTRATION.getName(), new DistributableWebExtension());
         this.controller = controller;
         this.version = this.getModelVersion().getVersion();
         this.additionalInitialization = new AdditionalInitialization()
@@ -169,11 +169,11 @@ public class DistributableWebTransformerTestCase extends AbstractSubsystemTest {
 
     private FailedOperationTransformationConfig createFailedOperationTransformationConfig() {
         FailedOperationTransformationConfig config = new FailedOperationTransformationConfig();
-        PathAddress subsystemAddress = PathAddress.pathAddress(ModelDescriptionConstants.SUBSYSTEM, DistributableWebExtension.SUBSYSTEM_NAME);
+        PathAddress subsystemAddress = PathAddress.pathAddress(DistributableWebSubsystemResourceDefinitionRegistrar.REGISTRATION.getPathElement());
 
         if (DistributableWebSubsystemModel.VERSION_3_0_0.requiresTransformation(this.version)) {
-            config.addFailedAttribute(subsystemAddress.append(InfinispanSessionManagementResourceDefinition.pathElement("protostream")), new FailedOperationTransformationConfig.NewAttributesConfig(SessionManagementResourceDefinition.Attribute.MARSHALLER.getName()));
-            config.addFailedAttribute(subsystemAddress.append(HotRodSessionManagementResourceDefinition.pathElement("remote-protostream")), new FailedOperationTransformationConfig.NewAttributesConfig(SessionManagementResourceDefinition.Attribute.MARSHALLER.getName()));
+            config.addFailedAttribute(subsystemAddress.append(PathElement.pathElement(SessionManagementResourceRegistration.INFINISPAN.getPathElement().getKey(), "protostream")), new FailedOperationTransformationConfig.NewAttributesConfig(SessionManagementResourceDefinitionRegistrar.MARSHALLER.getName()));
+            config.addFailedAttribute(subsystemAddress.append(PathElement.pathElement(SessionManagementResourceRegistration.HOTROD.getPathElement().getKey(), "remote-protostream")), new FailedOperationTransformationConfig.NewAttributesConfig(SessionManagementResourceDefinitionRegistrar.MARSHALLER.getName()));
         }
 
         return config;
