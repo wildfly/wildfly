@@ -3,35 +3,33 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package org.wildfly.clustering.web.undertow.routing;
-
-import java.util.function.UnaryOperator;
+package org.wildfly.extension.undertow.session;
 
 import org.jboss.as.web.session.RoutingSupport;
 import org.jboss.as.web.session.SessionIdentifierCodec;
 import org.jboss.as.web.session.SimpleRoutingSupport;
 
 /**
- * {@link SessionIdentifierCodec} that encodes the route determined by a {@link RouteLocator}.
+ * {@link SessionIdentifierCodec} that encodes/decodes a server identifier provided by a {@link SessionAffinityProvider}.
  * @author Paul Ferraro
  */
-public class DistributableSessionIdentifierCodec implements SessionIdentifierCodec {
+public class AffinitySessionIdentifierCodec implements SessionIdentifierCodec {
 
-    private final UnaryOperator<String> locator;
+    private final SessionAffinityProvider provider;
     private final RoutingSupport routing;
 
-    public DistributableSessionIdentifierCodec(UnaryOperator<String> locator) {
-        this(locator, new SimpleRoutingSupport());
+    public AffinitySessionIdentifierCodec(SessionAffinityProvider provider) {
+        this(provider, new SimpleRoutingSupport());
     }
 
-    public DistributableSessionIdentifierCodec(UnaryOperator<String> locator, RoutingSupport routing) {
-        this.locator = locator;
+    public AffinitySessionIdentifierCodec(SessionAffinityProvider provider, RoutingSupport routing) {
+        this.provider = provider;
         this.routing = routing;
     }
 
     @Override
     public CharSequence encode(CharSequence sessionId) {
-        String route = this.locator.apply(sessionId.toString());
+        String route = this.provider.getAffinity(sessionId.toString()).orElse(null);
         return (route != null) ? this.routing.format(sessionId, route) : sessionId;
     }
 

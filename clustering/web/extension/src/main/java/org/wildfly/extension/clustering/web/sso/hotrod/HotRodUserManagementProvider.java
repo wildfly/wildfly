@@ -19,7 +19,6 @@ import org.wildfly.clustering.infinispan.client.service.RemoteCacheConfiguration
 import org.wildfly.clustering.infinispan.client.service.RemoteCacheServiceInstallerFactory;
 import org.wildfly.clustering.server.service.BinaryServiceConfiguration;
 import org.wildfly.clustering.session.infinispan.remote.user.HotRodUserManagerFactory;
-import org.wildfly.clustering.web.service.WebDeploymentServiceDescriptor;
 import org.wildfly.clustering.web.service.user.DistributableUserManagementProvider;
 import org.wildfly.common.function.Functions;
 import org.wildfly.subsystem.service.ServiceDependency;
@@ -54,7 +53,7 @@ public class HotRodUserManagementProvider implements DistributableUserManagement
             @Override
             public void accept(RemoteCacheConfigurationBuilder builder) {
                 // Near caching not compatible with max-idle expiration.
-                builder.forceReturnValues(false).nearCacheMode(NearCacheMode.INVALIDATED).transactionMode(TransactionMode.NONE);
+                builder.forceReturnValues(false).nearCacheMode(NearCacheMode.DISABLED).transactionMode(TransactionMode.NONE);
                 if (templateName != null) {
                     builder.templateName(templateName);
                 } else {
@@ -75,7 +74,7 @@ public class HotRodUserManagementProvider implements DistributableUserManagement
             }
         };
         ServiceInstaller installer = ServiceInstaller.builder(HotRodUserManagerFactory::new, Functions.constantSupplier(cacheConfiguration))
-                .provides(ServiceNameFactory.resolveServiceName(WebDeploymentServiceDescriptor.USER_MANAGER_FACTORY, name))
+                .provides(ServiceNameFactory.resolveServiceName(DistributableUserManagementProvider.USER_MANAGER_FACTORY, name))
                 .requires(cache)
                 .build();
         return List.of(configurationInstaller, cacheInstaller, installer);
