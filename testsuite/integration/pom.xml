@@ -293,6 +293,16 @@
             <groupId>org.wildfly.security</groupId>
             <artifactId>wildfly-elytron-x500</artifactId>
         </dependency>
+
+        <!-- Indicate to maven that modules building the feature-pack archives are a dependency -->
+        <!-- Note: Used by wildfly-glow-arquillian-plugin/wildfly-maven-plugin – not an actual class path dependency -->
+        <dependency>
+            <groupId>${testsuite.ee.galleon.pack.groupId}</groupId>
+            <artifactId>${testsuite.ee.galleon.pack.artifactId}</artifactId>
+            <version>${testsuite.ee.galleon.pack.version}</version>
+            <scope>test</scope>
+            <type>zip</type>
+        </dependency>
     </dependencies>
 
 </project>
