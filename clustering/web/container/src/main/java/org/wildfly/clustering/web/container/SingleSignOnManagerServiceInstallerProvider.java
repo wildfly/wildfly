@@ -5,15 +5,16 @@
 
 package org.wildfly.clustering.web.container;
 
-import org.jboss.as.controller.OperationContext;
-import org.jboss.msc.service.ServiceName;
+import org.wildfly.security.http.util.sso.SingleSignOnManager;
+import org.wildfly.service.descriptor.UnaryServiceDescriptor;
 import org.wildfly.subsystem.service.ResourceServiceInstaller;
 
 /**
- * Container-specific single sign-on management provider for a security domain.
+ * Provides an installer of a service providing a single sign-on manager for a security domain.
  * @author Paul Ferraro
  */
-public interface SecurityDomainSingleSignOnManagementProvider {
+public interface SingleSignOnManagerServiceInstallerProvider {
+    UnaryServiceDescriptor<SingleSignOnManager> SINGLE_SIGN_ON_MANAGER = UnaryServiceDescriptor.of("org.wildfly.undertow.application-security-domain.sso.manager", SingleSignOnManager.class);
 
     /**
      * Returns a configurator for a service providing container-specific single sign-on management for a security domain.
@@ -21,5 +22,5 @@ public interface SecurityDomainSingleSignOnManagementProvider {
      * @param configuration the configuration of the security domain's single sign-on management
      * @return a configurator for a service providing a container-specific single sign-on management
      */
-    ResourceServiceInstaller getServiceInstaller(OperationContext context, ServiceName name, SecurityDomainSingleSignOnManagementConfiguration configuration);
+    ResourceServiceInstaller getServiceInstaller(SingleSignOnManagerConfiguration configuration);
 }
