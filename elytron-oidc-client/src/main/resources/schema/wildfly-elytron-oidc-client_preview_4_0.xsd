@@ -1498,7 +1498,7 @@
                 </xs:annotation>
             </xs:element>
 
-            <xs:element name="logout-path" type="xs:string" minOccurs="0">
+            <xs:element name="logout-path" type="xs:string" minOccurs="0" maxOccurs="1">
                 <xs:annotation>
                     <xs:documentation>
                         <![CDATA[
@@ -1513,7 +1513,7 @@
                     </xs:documentation>
                 </xs:annotation>
             </xs:element>
-            <xs:element name="logout-callback-path" type="xs:string" minOccurs="0">
+            <xs:element name="logout-callback-path" type="xs:string" minOccurs="0" maxOccurs="1">
                 <xs:annotation>
                     <xs:documentation>
                         <![CDATA[
@@ -1533,7 +1533,7 @@
                 </xs:annotation>
             </xs:element>
 
-            <xs:element name="post-logout-redirect-uri" type="xs:string" minOccurs="0">
+            <xs:element name="post-logout-redirect-uri" type="xs:string" minOccurs="0" maxOccurs="1">
                 <xs:annotation>
                     <xs:documentation>
                         <![CDATA[
@@ -1572,7 +1572,7 @@
             </xs:element>
 
             <xs:element name="back-channel-logout-session-invalidation-limit"
-                        type="xs:int" minOccurs="0">
+                        type="xs:int" minOccurs="0" maxOccurs="1">
                 <xs:annotation>
                     <xs:documentation>
                         <![CDATA[
