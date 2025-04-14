@@ -9,16 +9,16 @@ package org.jboss.as.web.session;
  *
  * @author Radoslav Husar
  */
-public class SimpleAffinityLocator implements AffinityLocator {
+public class SimpleSessionAffinityProvider implements SessionAffinityProvider {
 
     private final String route;
 
-    public SimpleAffinityLocator(String route) {
+    public SimpleSessionAffinityProvider(String route) {
         this.route = route;
     }
 
     @Override
-    public String locate(String sessionID) {
+    public String getAffinity(String sessionID) {
         return route;
     }
 
