@@ -69,13 +69,8 @@ public class AffinitySessionConfig implements SessionConfig {
         String route = this.affinityProvider.getAffinity(sessionId);
 
         if (route != null) {
-            if (url.equals(originalUrl)) {
-                // Rewritten URLs is unchanged -> use SessionCookieSource.COOKIE
-                return this.affinityConfigMap.get(SessionCookieSource.COOKIE).rewriteUrl(url, route);
-            } else {
-                // Rewritten URL is different from the original URL -> use SessionCookieSource.URL
-                return this.affinityConfigMap.get(SessionCookieSource.URL).rewriteUrl(url, route);
-            }
+            SessionCookieSource source = url.equals(originalUrl) ? SessionCookieSource.COOKIE : SessionCookieSource.URL;
+            return this.affinityConfigMap.get(source).rewriteUrl(url, route);
         }
 
         return url;

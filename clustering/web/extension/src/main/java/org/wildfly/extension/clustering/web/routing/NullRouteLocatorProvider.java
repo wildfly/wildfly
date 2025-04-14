@@ -5,12 +5,16 @@
 
 package org.wildfly.extension.clustering.web.routing;
 
-import org.jboss.as.server.deployment.DeploymentPhaseContext;
+import java.util.function.Supplier;
+import java.util.function.UnaryOperator;
+
 import org.wildfly.clustering.cache.function.Functions;
-import org.wildfly.clustering.server.deployment.DeploymentConfiguration;
 import org.wildfly.clustering.server.service.BinaryServiceConfiguration;
+import org.wildfly.clustering.web.service.deployment.WebDeploymentConfiguration;
+import org.wildfly.clustering.web.service.deployment.WebDeploymentServiceDescriptor;
 import org.wildfly.clustering.web.service.routing.RouteLocatorProvider;
 import org.wildfly.subsystem.service.DeploymentServiceInstaller;
+import org.wildfly.subsystem.service.ServiceInstaller;
 
 /**
  * @author Paul Ferraro
@@ -18,7 +22,10 @@ import org.wildfly.subsystem.service.DeploymentServiceInstaller;
 public class NullRouteLocatorProvider implements RouteLocatorProvider {
 
     @Override
-    public DeploymentServiceInstaller getServiceInstaller(DeploymentPhaseContext context, BinaryServiceConfiguration configuration, DeploymentConfiguration deployment) {
-        return RouteLocatorProvider.builder(Functions::nullOperator, deployment).build();
+    public DeploymentServiceInstaller getServiceInstaller(BinaryServiceConfiguration configuration, WebDeploymentConfiguration deployment) {
+        Supplier<UnaryOperator<String>> factory = Functions::nullOperator;
+        return ServiceInstaller.builder(factory)
+                .provides(WebDeploymentServiceDescriptor.ROUTE_LOCATOR.resolve(deployment.getDeploymentUnit()))
+                .build();
     }
 }
