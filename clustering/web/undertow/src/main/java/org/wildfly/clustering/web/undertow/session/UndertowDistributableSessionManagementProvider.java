@@ -24,7 +24,7 @@ import org.wildfly.clustering.web.container.SessionManagerFactoryConfiguration;
 import org.wildfly.clustering.web.container.WebDeploymentConfiguration;
 import org.wildfly.clustering.web.service.WebDeploymentServiceDescriptor;
 import org.wildfly.clustering.web.service.session.DistributableSessionManagementProvider;
-import org.wildfly.clustering.web.undertow.routing.DistributableAffinityLocator;
+import org.wildfly.clustering.web.undertow.routing.DistributableSessionAffinityProvider;
 import org.wildfly.clustering.web.undertow.routing.DistributableSessionIdentifierCodec;
 import org.wildfly.extension.undertow.CookieConfig;
 import org.wildfly.extension.undertow.session.AffinitySessionConfigWrapper;
@@ -73,7 +73,7 @@ public class UndertowDistributableSessionManagementProvider implements SessionMa
             public SessionConfigWrapper apply(CookieConfig config) {
                 UnaryOperator<String> routeLocator = locator.get();
                 SessionIdentifierCodec codec = new DistributableSessionIdentifierCodec(routeLocator);
-                return (config != null) ? new AffinitySessionConfigWrapper(config, new DistributableAffinityLocator(routeLocator)) : new CodecSessionConfigWrapper(codec);
+                return (config != null) ? new AffinitySessionConfigWrapper(config, new DistributableSessionAffinityProvider(routeLocator)) : new CodecSessionConfigWrapper(codec);
             }
         };
         DeploymentServiceInstaller wrapperFactoryInstaller = ServiceInstaller.builder(Supplier.of(wrapperFactory)).requires(locator).provides(name).build();

@@ -9,7 +9,7 @@ import java.util.Map;
 
 import io.undertow.server.HttpServerExchange;
 import io.undertow.server.session.SessionConfig;
-import org.jboss.as.web.session.AffinityLocator;
+import org.jboss.as.web.session.SessionAffinityProvider;
 
 /**
  * Decorates {@link SessionConfig} with affinity encoding into a separate a cookie.
@@ -20,12 +20,12 @@ public class AffinitySessionConfig implements SessionConfig {
 
     private final SessionConfig sessionConfig;
     private final Map<SessionCookieSource, SessionConfig> affinityConfigMap;
-    private final AffinityLocator locator;
+    private final SessionAffinityProvider affinityProvider;
 
-    public AffinitySessionConfig(SessionConfig sessionConfig, Map<SessionCookieSource, SessionConfig> affinityConfigMap, AffinityLocator locator) {
+    public AffinitySessionConfig(SessionConfig sessionConfig, Map<SessionCookieSource, SessionConfig> affinityConfigMap, SessionAffinityProvider affinityProvider) {
         this.sessionConfig = sessionConfig;
         this.affinityConfigMap = affinityConfigMap;
-        this.locator = locator;
+        this.affinityProvider = affinityProvider;
     }
 
     @Override
@@ -35,7 +35,7 @@ public class AffinitySessionConfig implements SessionConfig {
             this.sessionConfig.setSessionId(exchange, sessionId);
         }
 
-        String affinity = this.locator.locate(sessionId);
+        String affinity = this.affinityProvider.getAffinity(sessionId);
         if (affinity != null) {
             // Always write affinity for every request if using cookies!!
             this.sessionConfigInUse(exchange).setSessionId(exchange, affinity);
@@ -66,7 +66,7 @@ public class AffinitySessionConfig implements SessionConfig {
     @Override
     public String rewriteUrl(String originalUrl, String sessionId) {
         String url = this.sessionConfig.rewriteUrl(originalUrl, sessionId);
-        String route = this.locator.locate(sessionId);
+        String route = this.affinityProvider.getAffinity(sessionId);
 
         if (route != null) {
             if (url.equals(originalUrl)) {

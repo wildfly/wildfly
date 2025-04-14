@@ -10,7 +10,7 @@ import java.util.function.Supplier;
 
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.web.session.SessionIdentifierCodec;
-import org.jboss.as.web.session.SimpleAffinityLocator;
+import org.jboss.as.web.session.SimpleSessionAffinityProvider;
 import org.jboss.as.web.session.SimpleSessionIdentifierCodec;
 import org.jboss.msc.service.ServiceName;
 import org.wildfly.clustering.web.container.SessionManagementProvider;
@@ -51,7 +51,7 @@ public class NonDistributableSessionManagementProvider implements SessionManagem
             public SessionConfigWrapper apply(CookieConfig config) {
                 String route = server.get().getRoute();
                 SessionIdentifierCodec codec = new SimpleSessionIdentifierCodec(route);
-                return (config != null) ? new AffinitySessionConfigWrapper(config, new SimpleAffinityLocator(route)) : new CodecSessionConfigWrapper(codec);
+                return (config != null) ? new AffinitySessionConfigWrapper(config, new SimpleSessionAffinityProvider(route)) : new CodecSessionConfigWrapper(codec);
             }
         };
         return ServiceInstaller.builder(Functions.constantSupplier(wrapperFactory)).provides(name).requires(server).build();
