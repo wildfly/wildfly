@@ -5,10 +5,9 @@
 
 package org.wildfly.extension.clustering.web.session;
 
-import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
-import org.wildfly.clustering.server.deployment.DeploymentConfiguration;
 import org.wildfly.clustering.server.service.BinaryServiceConfiguration;
+import org.wildfly.clustering.web.service.deployment.WebDeploymentConfiguration;
 import org.wildfly.clustering.web.service.routing.RouteLocatorProvider;
 import org.wildfly.clustering.web.service.session.DistributableSessionManagementConfiguration;
 import org.wildfly.clustering.web.service.session.DistributableSessionManagementProvider;
@@ -30,8 +29,8 @@ public abstract class AbstractSessionManagementProvider implements Distributable
     }
 
     @Override
-    public DeploymentServiceInstaller getRouteLocatorServiceInstaller(DeploymentPhaseContext context, DeploymentConfiguration configuration) {
-        return this.getRouteLocatorProvider().getServiceInstaller(context, this.cacheConfiguration, configuration);
+    public DeploymentServiceInstaller getRouteLocatorServiceInstaller(WebDeploymentConfiguration configuration) {
+        return this.getRouteLocatorProvider().getServiceInstaller(this.cacheConfiguration, configuration);
     }
 
     @Override

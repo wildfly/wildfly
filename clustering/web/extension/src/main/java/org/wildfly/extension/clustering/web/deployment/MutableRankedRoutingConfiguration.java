@@ -8,22 +8,23 @@ package org.wildfly.extension.clustering.web.deployment;
 import org.wildfly.clustering.session.cache.affinity.NarySessionAffinityConfiguration;
 
 /**
+ * Mutable configuration for ranked routing.
  * @author Paul Ferraro
  */
 public class MutableRankedRoutingConfiguration implements NarySessionAffinityConfiguration {
     public static final String DEFAULT_DELIMITER = ".";
     public static final int DEFAULT_MAX_MEMBERS = 3;
 
-    private String delimter = DEFAULT_DELIMITER;
+    private String delimiter = DEFAULT_DELIMITER;
     private int maxMembers = DEFAULT_MAX_MEMBERS;
 
     @Override
     public String getDelimiter() {
-        return this.delimter;
+        return this.delimiter;
     }
 
     public void setDelimiter(String delimiter) {
-        this.delimter = delimiter;
+        this.delimiter = delimiter;
     }
 
     @Override

@@ -15,7 +15,6 @@ import org.wildfly.clustering.infinispan.service.CacheServiceInstaller;
 import org.wildfly.clustering.infinispan.service.InfinispanServiceDescriptor;
 import org.wildfly.clustering.server.service.BinaryServiceConfiguration;
 import org.wildfly.clustering.session.infinispan.embedded.user.InfinispanUserManagerFactory;
-import org.wildfly.clustering.web.service.WebDeploymentServiceDescriptor;
 import org.wildfly.clustering.web.service.user.DistributableUserManagementProvider;
 import org.wildfly.common.function.Functions;
 import org.wildfly.subsystem.service.ServiceDependency;
@@ -49,7 +48,7 @@ public class InfinispanUserManagementProvider implements DistributableUserManage
             }
         };
         ServiceInstaller installer = ServiceInstaller.builder(InfinispanUserManagerFactory::new, Functions.constantSupplier(cacheConfiguration))
-                .provides(ServiceNameFactory.resolveServiceName(WebDeploymentServiceDescriptor.USER_MANAGER_FACTORY, name))
+                .provides(ServiceNameFactory.resolveServiceName(DistributableUserManagementProvider.USER_MANAGER_FACTORY, name))
                 .requires(cache)
                 .build();
 

@@ -11,6 +11,7 @@ import java.util.function.UnaryOperator;
 import org.wildfly.extension.clustering.web.routing.infinispan.PrimaryOwnerRouteLocatorProvider;
 
 /**
+ * Mutable Infinispan session management configuration.
  * @author Paul Ferraro
  */
 public class MutableInfinispanSessionManagementConfiguration extends MutableSessionManagementConfiguration {

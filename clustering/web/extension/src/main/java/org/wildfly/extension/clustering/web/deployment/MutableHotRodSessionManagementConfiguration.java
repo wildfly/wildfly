@@ -11,6 +11,7 @@ import java.util.function.UnaryOperator;
 import org.wildfly.extension.clustering.web.routing.LocalRouteLocatorProvider;
 
 /**
+ * Mutable HotRod session management configuration.
  * @author Paul Ferraro
  */
 public class MutableHotRodSessionManagementConfiguration extends MutableSessionManagementConfiguration {

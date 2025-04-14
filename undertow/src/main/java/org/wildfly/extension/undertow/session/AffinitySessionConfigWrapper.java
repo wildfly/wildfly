@@ -14,7 +14,7 @@ import io.undertow.server.session.SessionConfig;
 import io.undertow.server.session.SessionCookieConfig;
 import io.undertow.servlet.api.Deployment;
 import io.undertow.servlet.api.SessionConfigWrapper;
-import org.jboss.as.web.session.SessionAffinityProvider;
+
 import org.wildfly.extension.undertow.CookieConfig;
 
 /**

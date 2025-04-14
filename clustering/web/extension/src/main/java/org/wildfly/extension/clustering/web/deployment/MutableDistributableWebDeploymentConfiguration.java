@@ -17,6 +17,7 @@ import org.jboss.metadata.property.PropertyReplacer;
 import org.wildfly.clustering.web.service.session.DistributableSessionManagementProvider;
 
 /**
+ * Mutable configuration for a distributable web deployment.
  * @author Paul Ferraro
  */
 public class MutableDistributableWebDeploymentConfiguration implements DistributableWebDeploymentConfiguration, UnaryOperator<String>, Consumer<String> {

@@ -17,7 +17,15 @@ import org.wildfly.clustering.session.SessionAttributePersistenceStrategy;
  */
 public interface DistributableSessionManagementConfiguration<M> {
 
+    /**
+     * Returns the strategy to be used by a session manager to persist session attributes.
+     * @return the strategy to be used by a session manager to persist session attributes.
+     */
     SessionAttributePersistenceStrategy getAttributePersistenceStrategy();
 
+    /**
+     * Returns a function that creates a marshaller for a given context.
+     * @return a function that creates a marshaller for a given context.
+     */
     Function<M, ByteBufferMarshaller> getMarshallerFactory();
 }

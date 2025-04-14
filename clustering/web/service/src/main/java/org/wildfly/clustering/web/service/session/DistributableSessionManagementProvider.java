@@ -7,10 +7,8 @@ package org.wildfly.clustering.web.service.session;
 
 import org.jboss.as.server.deployment.AttachmentKey;
 import org.jboss.as.server.deployment.AttachmentList;
-import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
-import org.wildfly.clustering.server.deployment.DeploymentConfiguration;
-import org.wildfly.clustering.session.SessionManagerFactoryConfiguration;
+import org.wildfly.clustering.web.service.deployment.WebDeploymentConfiguration;
 import org.wildfly.service.descriptor.NullaryServiceDescriptor;
 import org.wildfly.service.descriptor.UnaryServiceDescriptor;
 import org.wildfly.subsystem.service.DeploymentServiceInstaller;
@@ -36,11 +34,10 @@ public interface DistributableSessionManagementProvider {
 
     /**
      * Returns a {@link CapabilityServiceConfigurator} used to configure a service providing a {@link org.wildfly.clustering.web.routing.RouteLocator}.
-     * @param context a deployment phase context
      * @param configuration the configuration of a deployment
      * @return a service configurator
      */
-    DeploymentServiceInstaller getRouteLocatorServiceInstaller(DeploymentPhaseContext context, DeploymentConfiguration configuration);
+    DeploymentServiceInstaller getRouteLocatorServiceInstaller(WebDeploymentConfiguration configuration);
 
     DistributableSessionManagementConfiguration<DeploymentUnit> getSessionManagementConfiguration();
 }

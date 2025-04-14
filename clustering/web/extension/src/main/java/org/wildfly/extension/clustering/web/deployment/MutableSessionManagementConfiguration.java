@@ -19,6 +19,7 @@ import org.wildfly.extension.clustering.web.SessionGranularity;
 import org.wildfly.extension.clustering.web.SessionMarshallerFactory;
 
 /**
+ * A mutable session management configuration.
  * @author Paul Ferraro
  */
 public abstract class MutableSessionManagementConfiguration implements DistributableSessionManagementConfiguration<DeploymentUnit>, UnaryOperator<String>, Consumer<String>, BinaryServiceConfiguration {

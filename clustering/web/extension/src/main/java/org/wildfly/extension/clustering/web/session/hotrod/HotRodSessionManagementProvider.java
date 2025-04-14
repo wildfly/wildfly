@@ -14,7 +14,6 @@ import org.infinispan.client.hotrod.RemoteCache;
 import org.infinispan.client.hotrod.configuration.NearCacheMode;
 import org.infinispan.client.hotrod.configuration.RemoteCacheConfigurationBuilder;
 import org.infinispan.client.hotrod.configuration.TransactionMode;
-import org.jboss.as.controller.ServiceNameFactory;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.wildfly.clustering.cache.infinispan.remote.RemoteCacheConfiguration;
 import org.wildfly.clustering.infinispan.client.service.HotRodServiceDescriptor;
@@ -22,13 +21,13 @@ import org.wildfly.clustering.infinispan.client.service.RemoteCacheConfiguration
 import org.wildfly.clustering.infinispan.client.service.RemoteCacheServiceInstallerFactory;
 import org.wildfly.clustering.server.service.BinaryServiceConfiguration;
 import org.wildfly.clustering.session.SessionManagerFactory;
-import org.wildfly.clustering.session.SessionManagerFactoryConfiguration;
 import org.wildfly.clustering.session.infinispan.remote.HotRodSessionManagerFactory;
 import org.wildfly.clustering.session.spec.servlet.HttpSessionActivationListenerProvider;
 import org.wildfly.clustering.session.spec.servlet.HttpSessionProvider;
-import org.wildfly.clustering.web.service.WebDeploymentServiceDescriptor;
+import org.wildfly.clustering.web.service.deployment.WebDeploymentServiceDescriptor;
 import org.wildfly.clustering.web.service.routing.RouteLocatorProvider;
 import org.wildfly.clustering.web.service.session.DistributableSessionManagementConfiguration;
+import org.wildfly.clustering.web.service.session.SessionManagerFactoryConfiguration;
 import org.wildfly.common.function.Functions;
 import org.wildfly.extension.clustering.web.session.AbstractSessionManagementProvider;
 import org.wildfly.subsystem.service.DeploymentServiceInstaller;
@@ -89,7 +88,7 @@ public class HotRodSessionManagementProvider extends AbstractSessionManagementPr
             }
         };
         DeploymentServiceInstaller installer = ServiceInstaller.builder(factory)
-                .provides(ServiceNameFactory.resolveServiceName(WebDeploymentServiceDescriptor.SESSION_MANAGER_FACTORY, configuration.getDeploymentName()))
+                .provides(WebDeploymentServiceDescriptor.SESSION_MANAGER_FACTORY.resolve(configuration.getDeploymentUnit()))
                 .requires(cache)
                 .onStop(Functions.closingConsumer())
                 .build();

@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package org.wildfly.clustering.web.container;
+package org.wildfly.extension.undertow.deployment;
 
 import java.util.List;
 
@@ -12,7 +12,8 @@ import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.modules.Module;
 
 /**
- * Defines the configuration of a web deployment.
+ * Defines the configuration of a deployment.
+ * TODO Relocate to SPI module
  * @author Paul Ferraro
  */
 public interface WebDeploymentConfiguration {
@@ -22,6 +23,12 @@ public interface WebDeploymentConfiguration {
      * @return a server name
      */
     String getServerName();
+
+    /**
+     * Returns the target host name of this deployment
+     * @return a host name
+     */
+    String getHostName();
 
     /**
      * Returns the name of this deployment

@@ -24,7 +24,6 @@ import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.ResourceDefinition;
-import org.jboss.as.controller.ServiceNameFactory;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraintDefinition;
 import org.jboss.as.controller.capability.RuntimeCapability;
@@ -33,8 +32,8 @@ import org.jboss.as.controller.security.CredentialReference;
 import org.jboss.as.controller.security.CredentialReferenceWriteAttributeHandler;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
-import org.wildfly.clustering.web.container.SecurityDomainSingleSignOnManagementConfiguration;
-import org.wildfly.clustering.web.container.SecurityDomainSingleSignOnManagementProvider;
+import org.wildfly.clustering.web.container.SingleSignOnManagerConfiguration;
+import org.wildfly.clustering.web.container.SingleSignOnManagerServiceInstallerProvider;
 import org.wildfly.extension.undertow.logging.UndertowLogger;
 import org.wildfly.extension.undertow.sso.elytron.NonDistributableSingleSignOnManagementProvider;
 import org.wildfly.extension.undertow.sso.elytron.SingleSignOnIdentifierFactory;
@@ -89,7 +88,7 @@ public class ApplicationSecurityDomainSingleSignOnDefinition extends SingleSignO
         }
     }
 
-    private final SecurityDomainSingleSignOnManagementProvider provider = ServiceLoader.load(SecurityDomainSingleSignOnManagementProvider.class, SecurityDomainSingleSignOnManagementProvider.class.getClassLoader()).findFirst().orElse(NonDistributableSingleSignOnManagementProvider.INSTANCE);
+    private final SingleSignOnManagerServiceInstallerProvider provider = ServiceLoader.load(SingleSignOnManagerServiceInstallerProvider.class, SingleSignOnManagerServiceInstallerProvider.class.getClassLoader()).findFirst().orElse(NonDistributableSingleSignOnManagementProvider.INSTANCE);
 
     ApplicationSecurityDomainSingleSignOnDefinition(ResourceOperationRuntimeHandler parentHandler) {
         super(ResourceDefinition::builder, new BiFunction<>() {
@@ -112,7 +111,7 @@ public class ApplicationSecurityDomainSingleSignOnDefinition extends SingleSignO
         String securityDomainName = context.getCurrentAddress().getParent().getLastElement().getValue();
 
         Supplier<String> generator = new SingleSignOnIdentifierFactory();
-        SecurityDomainSingleSignOnManagementConfiguration configuration = new SecurityDomainSingleSignOnManagementConfiguration() {
+        SingleSignOnManagerConfiguration configuration = new SingleSignOnManagerConfiguration() {
             @Override
             public String getSecurityDomainName() {
                 return securityDomainName;
@@ -123,7 +122,7 @@ public class ApplicationSecurityDomainSingleSignOnDefinition extends SingleSignO
                 return generator;
             }
         };
-        ResourceServiceInstaller managerInstaller = this.provider.getServiceInstaller(context, ServiceNameFactory.resolveServiceName(SSO_MANAGER, securityDomainName), configuration);
+        ResourceServiceInstaller managerInstaller = this.provider.getServiceInstaller(configuration);
 
         ServiceDependency<SingleSignOnManager> manager = ServiceDependency.on(SSO_MANAGER, securityDomainName);
         ServiceDependency<KeyStore> keyStore = ServiceDependency.on(CommonServiceDescriptor.KEY_STORE, Attribute.KEY_STORE.resolveModelAttribute(context, model).asString());

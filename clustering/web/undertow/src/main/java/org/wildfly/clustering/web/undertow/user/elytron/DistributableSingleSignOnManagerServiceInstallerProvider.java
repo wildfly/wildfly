@@ -10,14 +10,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.ServiceLoader;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Consumer;
 
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.RequirementServiceTarget;
+import org.jboss.as.controller.ServiceNameFactory;
 import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.server.Services;
 import org.jboss.modules.ModuleLoader;
 import org.jboss.msc.service.ServiceController;
-import org.jboss.msc.service.ServiceName;
 import org.kohsuke.MetaInfServices;
 import org.wildfly.clustering.function.Supplier;
 import org.wildfly.clustering.marshalling.ByteBufferMarshaller;
@@ -27,13 +28,11 @@ import org.wildfly.clustering.marshalling.protostream.modules.ModuleClassLoaderM
 import org.wildfly.clustering.session.user.UserManager;
 import org.wildfly.clustering.session.user.UserManagerConfiguration;
 import org.wildfly.clustering.session.user.UserManagerFactory;
-import org.wildfly.clustering.web.container.SecurityDomainSingleSignOnManagementConfiguration;
-import org.wildfly.clustering.web.container.SecurityDomainSingleSignOnManagementProvider;
-import org.wildfly.clustering.web.service.WebDeploymentServiceDescriptor;
+import org.wildfly.clustering.web.container.SingleSignOnManagerConfiguration;
+import org.wildfly.clustering.web.container.SingleSignOnManagerServiceInstallerProvider;
 import org.wildfly.clustering.web.service.user.DistributableUserManagementProvider;
 import org.wildfly.clustering.web.service.user.LegacyDistributableUserManagementProviderFactory;
 import org.wildfly.clustering.web.undertow.logging.UndertowClusteringLogger;
-import org.wildfly.extension.undertow.Capabilities;
 import org.wildfly.security.auth.server.SecurityIdentity;
 import org.wildfly.security.cache.CachedIdentity;
 import org.wildfly.security.manager.WildFlySecurityManager;
@@ -45,27 +44,32 @@ import org.wildfly.subsystem.service.ServiceInstaller;
  * {@link org.wildfly.extension.undertow.session.SessionManagementProviderFactory} for Undertow using either the {@link org.wildfly.clustering.web.DistributableUserManagementProvider.DistributableSSOManagementProvider} for the given security domain, the default provider, or a legacy provider.
  * @author Paul Ferraro
  */
-@MetaInfServices(SecurityDomainSingleSignOnManagementProvider.class)
-public class UndertowSingleSignOnManagementProvider implements SecurityDomainSingleSignOnManagementProvider {
+@MetaInfServices(SingleSignOnManagerServiceInstallerProvider.class)
+public class DistributableSingleSignOnManagerServiceInstallerProvider implements SingleSignOnManagerServiceInstallerProvider {
 
     private final LegacyDistributableUserManagementProviderFactory legacyProviderFactory = ServiceLoader.load(LegacyDistributableUserManagementProviderFactory.class, LegacyDistributableUserManagementProviderFactory.class.getClassLoader()).findFirst().orElseThrow();
 
     @Override
-    public ResourceServiceInstaller getServiceInstaller(OperationContext context, ServiceName name, SecurityDomainSingleSignOnManagementConfiguration configuration) {
-        ServiceDependency<DistributableUserManagementProvider> provider = this.getUserManagementProvider(context, configuration.getSecurityDomainName());
+    public ResourceServiceInstaller getServiceInstaller(SingleSignOnManagerConfiguration configuration) {
         String securityDomainName = configuration.getSecurityDomainName();
-        ResourceServiceInstaller installer = ServiceInstaller.builder(new ServiceInstaller() {
+        ResourceServiceInstaller providerInstaller = new ResourceServiceInstaller() {
             @Override
-            public ServiceController<?> install(RequirementServiceTarget target) {
-                for (ServiceInstaller installer : provider.get().getServiceInstallers(securityDomainName)) {
-                    installer.install(target);
-                }
-                return null;
+            public Consumer<OperationContext> install(OperationContext context) {
+                ServiceDependency<DistributableUserManagementProvider> provider = DistributableSingleSignOnManagerServiceInstallerProvider.this.getUserManagementProvider(context, securityDomainName);
+                return ServiceInstaller.builder(new ServiceInstaller() {
+                    @Override
+                    public ServiceController<?> install(RequirementServiceTarget target) {
+                        for (ServiceInstaller installer : provider.get().getServiceInstallers(securityDomainName)) {
+                            installer.install(target);
+                        }
+                        return null;
+                    }
+                }, context.getCapabilityServiceSupport()).requires(provider).build().install(context);
             }
-        }, context.getCapabilityServiceSupport()).requires(provider).build();
+        };
 
         ServiceDependency<ModuleLoader> loader = ServiceDependency.on(Services.JBOSS_SERVICE_MODULE_LOADER);
-        ServiceDependency<UserManagerFactory<CachedIdentity, String, Map.Entry<String, URI>>> userManagerFactory = ServiceDependency.on(WebDeploymentServiceDescriptor.USER_MANAGER_FACTORY, securityDomainName);
+        ServiceDependency<UserManagerFactory<CachedIdentity, String, Map.Entry<String, URI>>> userManagerFactory = ServiceDependency.on(DistributableUserManagementProvider.USER_MANAGER_FACTORY, securityDomainName);
         UserManagerConfiguration<AtomicReference<SecurityIdentity>> userManagerConfiguration = new UserManagerConfiguration<>() {
             @Override
             public Supplier<String> getIdentifierFactory() {
@@ -89,17 +93,17 @@ public class UndertowSingleSignOnManagementProvider implements SecurityDomainSin
             }
         };
         ResourceServiceInstaller userManagerInstaller = ServiceInstaller.builder(DistributableSingleSignOnManager::new, factory)
-                .provides(name)
+                .provides(ServiceNameFactory.resolveServiceName(SingleSignOnManagerServiceInstallerProvider.SINGLE_SIGN_ON_MANAGER, securityDomainName))
                 .requires(List.of(loader, userManagerFactory))
                 .onStart(UserManager::start)
                 .onStop(UserManager::stop)
                 .build();
 
-        return ResourceServiceInstaller.combine(installer, userManagerInstaller);
+        return ResourceServiceInstaller.combine(providerInstaller, userManagerInstaller);
     }
 
-    private ServiceDependency<DistributableUserManagementProvider> getUserManagementProvider(OperationContext context, String securityDomainName) {
-        String securityDomainCapabilityName = RuntimeCapability.buildDynamicCapabilityName(Capabilities.CAPABILITY_APPLICATION_SECURITY_DOMAIN, securityDomainName);
+    ServiceDependency<DistributableUserManagementProvider> getUserManagementProvider(OperationContext context, String securityDomainName) {
+        String securityDomainCapabilityName = RuntimeCapability.buildDynamicCapabilityName("org.wildfly.undertow.application-security-domain", securityDomainName);
         if (context.hasOptionalCapability(RuntimeCapability.resolveCapabilityName(DistributableUserManagementProvider.SERVICE_DESCRIPTOR, securityDomainName), securityDomainCapabilityName, null)) {
             return ServiceDependency.on(DistributableUserManagementProvider.SERVICE_DESCRIPTOR, securityDomainName);
         } else if (context.hasOptionalCapability(DistributableUserManagementProvider.DEFAULT_SERVICE_DESCRIPTOR.getName(), securityDomainCapabilityName, null)) {

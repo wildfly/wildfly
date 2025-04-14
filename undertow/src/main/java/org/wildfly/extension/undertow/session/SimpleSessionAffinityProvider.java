@@ -2,10 +2,10 @@
  * Copyright The WildFly Authors
  * SPDX-License-Identifier: Apache-2.0
  */
-package org.jboss.as.web.session;
+package org.wildfly.extension.undertow.session;
 
 /**
- * Simple affinity locator implementation using static affinity.
+ * Simple session affinity provider using a fixed route.
  *
  * @author Radoslav Husar
  */
@@ -18,8 +18,7 @@ public class SimpleSessionAffinityProvider implements SessionAffinityProvider {
     }
 
     @Override
-    public String getAffinity(String sessionID) {
+    public String getAffinity(String sessionId) {
         return route;
     }
-
 }
