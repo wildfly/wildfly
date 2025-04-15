@@ -15,7 +15,7 @@
     </exports>
 
     <resources>
-        <artifact name="${org.wildfly:wildfly-undertow}"/>
+        <artifact name="${org.wildfly:wildfly-undertow-extension}"/>
     </resources>
 
     <dependencies>

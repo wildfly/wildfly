@@ -56,13 +56,7 @@
         </dependency>
         <dependency>
             <groupId>${ee.maven.groupId}</groupId>
-            <artifactId>wildfly-undertow</artifactId>
-            <exclusions>
-                <exclusion>
-                    <groupId>${ee.maven.groupId}</groupId>
-                    <artifactId>wildfly-clustering-common</artifactId>
-                </exclusion>
-            </exclusions>
+            <artifactId>wildfly-undertow-extension</artifactId>
         </dependency>
         <dependency>
             <groupId>${ee.maven.groupId}</groupId>
