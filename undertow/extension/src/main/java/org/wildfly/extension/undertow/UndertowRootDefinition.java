@@ -52,6 +52,7 @@ class UndertowRootDefinition extends SimpleResourceDefinition {
             RuntimeCapability.Builder.of(CAPABILITY_HTTP_INVOKER, false, PathHandler.class)
                     .build();
 
+    // TODO Deprecate this, it is redundant and can otherwise result in invalid configuration
     protected static final SimpleAttributeDefinition DEFAULT_SERVLET_CONTAINER =
             new SimpleAttributeDefinitionBuilder(Constants.DEFAULT_SERVLET_CONTAINER, ModelType.STRING, true)
                     .setRestartAllServices()
@@ -65,6 +66,7 @@ class UndertowRootDefinition extends SimpleResourceDefinition {
                     .setCapabilityReference(CapabilityReferenceRecorder.builder(UNDERTOW_CAPABILITY, Server.SERVICE_DESCRIPTOR).build())
                     .build();
 
+    // TODO Deprecate this, it is redundant and can otherwise result in invalid configuration
     protected static final SimpleAttributeDefinition DEFAULT_VIRTUAL_HOST =
                 new SimpleAttributeDefinitionBuilder(Constants.DEFAULT_VIRTUAL_HOST, ModelType.STRING, true)
                         .setRestartAllServices()
