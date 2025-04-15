@@ -11,7 +11,7 @@
 
     <parent>
         <groupId>org.wildfly</groupId>
-        <artifactId>wildfly-parent</artifactId>
+        <artifactId>wildfly-undertow</artifactId>
         <!--
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
@@ -19,14 +19,15 @@
         <version>37.0.0.Beta1-SNAPSHOT</version>
     </parent>
 
-    <artifactId>wildfly-undertow</artifactId>
-    <packaging>pom</packaging>
+    <artifactId>wildfly-undertow-spi</artifactId>
+    <packaging>jar</packaging>
 
-    <name>WildFly: Undertow modules</name>
+    <name>WildFly: Undertow SPI</name>
 
-    <modules>
-        <module>extension</module>
-        <module>spi</module>
-    </modules>
-
+    <dependencies>
+        <dependency>
+            <groupId>org.wildfly.core</groupId>
+            <artifactId>wildfly-subsystem</artifactId>
+        </dependency>
+    </dependencies>
 </project>

@@ -86,6 +86,10 @@
             <artifactId>wildfly-naming</artifactId>
         </dependency>
         <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>wildfly-undertow-spi</artifactId>
+        </dependency>
+        <dependency>
             <groupId>org.wildfly.core</groupId>
             <artifactId>wildfly-event-logger</artifactId>
         </dependency>
