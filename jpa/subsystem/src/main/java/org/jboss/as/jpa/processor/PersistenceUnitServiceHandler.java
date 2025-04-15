@@ -1022,6 +1022,9 @@ public class PersistenceUnitServiceHandler {
     private static void nextPhaseDependsOnPersistenceUnit(final DeploymentPhaseContext phaseContext, final Platform platform) throws DeploymentUnitProcessingException {
         final DeploymentUnit topDeploymentUnit = DeploymentUtils.getTopDeploymentUnit(phaseContext.getDeploymentUnit());
         final PersistenceUnitsInApplication persistenceUnitsInApplication = topDeploymentUnit.getAttachment(PersistenceUnitsInApplication.PERSISTENCE_UNITS_IN_APPLICATION);
+        if (persistenceUnitsInApplication == null) {
+            return;
+        }
         for(final PersistenceUnitMetadataHolder holder: persistenceUnitsInApplication.getPersistenceUnitHolders()) {
             for (final PersistenceUnitMetadata pu : holder.getPersistenceUnits()) {
                 String jpaContainerManaged = pu.getProperties().getProperty(Configuration.JPA_CONTAINER_MANAGED);
