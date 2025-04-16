@@ -44,11 +44,23 @@
 
     <modules>
         <module>hibernate6</module>
-        <module>hibernate7</module>
         <module>hibernatesearch</module>
         <module>subsystem</module>
         <module>spi</module>
         <module>eclipselink</module>
-
     </modules>
+
+    <profiles>
+        <profile>
+            <id>skip.preview</id>
+            <activation>
+                <property>
+                    <name>!no.preview.build</name>
+                </property>
+            </activation>
+            <modules>
+                <module>hibernate7</module>
+            </modules>
+        </profile>
+    </profiles>
 </project>
