@@ -23,6 +23,13 @@ public class SimpleServerSslContext extends AbstractConfigurableElement implemen
     private final String[] protocols;
     private final boolean needClientAuth;
     private final Boolean authenticationOptional;
+    private final int responseTimeout;
+    private final int cacheSize;
+    private final int cacheLifeTime;
+    private final String responderUri;
+    private final boolean responderOverride;
+    private final boolean ignoreExtension;
+    private boolean ocspStaplingEnabled = false;
 
     private SimpleServerSslContext(Builder builder) {
         super(builder);
@@ -32,6 +39,13 @@ public class SimpleServerSslContext extends AbstractConfigurableElement implemen
         this.protocols = builder.protocols;
         this.needClientAuth = builder.needClientAuth;
         this.authenticationOptional = builder.authenticationOptional;
+        this.ocspStaplingEnabled = builder.ocspStaplingEnabled;
+        this.responseTimeout = builder.responseTimeout;
+        this.cacheSize = builder.cacheSize;
+        this.cacheLifeTime = builder.cacheLifeTime;
+        this.responderUri = builder.responderUri;
+        this.responderOverride = builder.responderOverride;
+        this.ignoreExtension = builder.ignoreExtension;
     }
 
     @Override
@@ -54,6 +68,32 @@ public class SimpleServerSslContext extends AbstractConfigurableElement implemen
         }
         if (authenticationOptional != null) {
             sb.append("authentication-optional=").append(authenticationOptional).append(", ");
+        }
+        if (ocspStaplingEnabled) {
+            sb.append("ocsp-stapling={");
+            if(responseTimeout > 0) {
+                sb.append("response-timeout=").append(responseTimeout).append(", ");
+            }
+            if(cacheSize != 0) {
+                sb.append("cache-size=").append(cacheSize).append(", ");
+            }
+            if(cacheLifeTime > 0) {
+                sb.append("cache-life-time=").append(cacheLifeTime).append(", ");
+            }
+            if(StringUtils.isNotBlank(responderUri)) {
+                sb.append("responder-uri=\"").append(responderUri).append("\", ");
+            }
+            if(responderOverride) {
+                sb.append("responder-override=true, ");
+            } else {
+                sb.append("responder-override=false, ");
+            }
+            if(ignoreExtension) {
+                sb.append("ignore-extension=true, ");
+            } else {
+                sb.append("ignore-extension=false, ");
+            }
+            sb.append("}, ");
         }
         sb.append("need-client-auth=").append(needClientAuth).append(")");
         cli.sendLine(sb.toString());
@@ -83,6 +123,13 @@ public class SimpleServerSslContext extends AbstractConfigurableElement implemen
         private String[] protocols;
         private boolean needClientAuth;
         private Boolean authenticationOptional;
+        private int responseTimeout;
+        private int cacheSize;
+        private int cacheLifeTime;
+        private String responderUri;
+        private boolean responderOverride;
+        private boolean ignoreExtension;
+        private boolean ocspStaplingEnabled;
 
         private Builder() {
         }
@@ -114,6 +161,40 @@ public class SimpleServerSslContext extends AbstractConfigurableElement implemen
 
         public Builder withAuthenticationOptional(boolean authenticationOptional) {
             this.authenticationOptional = authenticationOptional;
+            return this;
+        }
+
+        public Builder withResponseTimeout(int responseTimeout) {
+            this.responseTimeout = responseTimeout;
+            return this;
+        }
+
+        public Builder withCacheSize(int cacheSize) {
+            this.cacheSize = cacheSize;
+            return this;
+        }
+
+        public Builder withCacheLifeTime(int cacheLifeTime) {
+            this.cacheLifeTime = cacheLifeTime;
+            return this;
+        }
+
+        public Builder withResponderUri(String responderUri) {
+            this.responderUri = responderUri;
+            return this;
+        }
+
+        public Builder withResponderOverride(boolean responderOverride) {
+            this.responderOverride = responderOverride;
+            return this;
+        }
+
+        public Builder withIgnoreExtension(boolean ignoreExtension) {
+            this.ignoreExtension = ignoreExtension;
+            return this;
+        }
+        public Builder withOcspStaplingEnabled(boolean ocspStaplingEnabled) {
+            this.ocspStaplingEnabled = ocspStaplingEnabled;
             return this;
         }
 
