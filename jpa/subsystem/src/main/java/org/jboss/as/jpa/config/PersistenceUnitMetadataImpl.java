@@ -379,6 +379,10 @@ public class PersistenceUnitMetadataImpl implements PersistenceUnitMetadata {
 
     @Override
     public void addTransformer(ClassTransformer classTransformer) {
+        if(classTransformer.getClass().getName().contains("org.hibernate")) {
+            ROOT_LOGGER.infof("ignoring entity class transformer from Hibernate ORM as we will instead use a WildFly prototype");
+            return;
+        }
         transformers.add(classTransformer);
         if (ROOT_LOGGER.isTraceEnabled()) {
             ROOT_LOGGER.tracef("added entity class transformer '%s' for '%s'",
