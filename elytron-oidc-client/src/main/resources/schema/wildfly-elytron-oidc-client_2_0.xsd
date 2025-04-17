@@ -799,21 +799,15 @@
                     </xs:documentation>
                 </xs:annotation>
             </xs:element>
-            <xs:element name="realm" type="xs:string" minOccurs="0" maxOccurs="1">
+            <xs:element ref="realm-or-provider" minOccurs="0" maxOccurs="1">
                 <xs:annotation>
                     <xs:documentation>
                         <![CDATA[
-                        The Keycloak realm to use for authentication.
-                        ]]>
-                    </xs:documentation>
-                </xs:annotation>
-            </xs:element>
-            <xs:element name="provider" type="xs:string" minOccurs="0" maxOccurs="1">
-                <xs:annotation>
-                    <xs:documentation>
-                        <![CDATA[
-                        The OpenID Connect provider to use for authentication.
-                        ]]>
+                         This reference attribute limits the user to specify either a "realm"
+                         or "provider" name.  If used, only one of the other is allowed.
+                         This is an XML construct to support the equivalent of xs:choice
+                         within a xs:all stmt.
+                       ]]>
                     </xs:documentation>
                 </xs:annotation>
             </xs:element>
@@ -1312,4 +1306,30 @@
             </xs:annotation>
         </xs:attribute>
     </xs:complexType>
+
+    <!--
+    A xs:choice can not be defined within a xs:all block.
+    The following statements allow for the equivalent functionality.
+    -->
+    <xs:element name="realm-or-provider" abstract="true"/>
+    <xs:element name="provider" type="xs:string" substitutionGroup="realm-or-provider">
+        <xs:annotation>
+            <xs:documentation>
+                <![CDATA[
+                        The name of the OpenID Connect "provider" defined to be used
+                        for authentication. (see element provider)
+                        ]]>
+            </xs:documentation>
+        </xs:annotation>
+    </xs:element>
+    <xs:element name="realm" type="xs:string" substitutionGroup="realm-or-provider">
+        <xs:annotation>
+            <xs:documentation>
+                <![CDATA[
+                        The name of the Keycloak "realm" defined to be used
+                        for authentication. (see element realm)
+                        ]]>
+            </xs:documentation>
+        </xs:annotation>
+    </xs:element>
 </xs:schema>
