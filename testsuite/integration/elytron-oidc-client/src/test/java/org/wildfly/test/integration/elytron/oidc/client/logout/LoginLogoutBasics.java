@@ -22,6 +22,11 @@ import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.ArrayList;
+import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.nio.charset.MalformedInputException;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
@@ -270,6 +275,40 @@ public class LoginLogoutBasics extends EnvSetupUtils {
         } finally {
             HttpClientUtils.closeQuietly(response);
         }
+    }
+
+    /**
+     * Check that the proper warning message is logged.
+     */
+    public boolean isWarningReported(String findString) {
+        List<String> lines = readServerLogLines();
+        for (String line : lines) {
+            if (line.contains(findString)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public List<String> readServerLogLines() {
+        String jbossHome = System.getProperty("jboss.install.dir");
+        String logPath = String.format("%s%sstandalone%slog%sserver.log", jbossHome,
+                (jbossHome.endsWith(File.separator) || jbossHome.endsWith("/")) ? "" : File.separator,
+                File.separator, File.separator);
+        logPath = logPath.replace('/', File.separatorChar);
+        try {
+            return Files.readAllLines(Paths.get(logPath)); // UTF8 is used by default
+        } catch (MalformedInputException e1) {
+            // some windows machines could accept only StandardCharsets.ISO_8859_1 encoding
+            try {
+                return Files.readAllLines(Paths.get(logPath), StandardCharsets.ISO_8859_1);
+            } catch (IOException e4) {
+                throw new RuntimeException("Server logs has not standard Charsets (UTF8 or ISO_8859_1)");
+            }
+        } catch (IOException e) {
+            // server.log file is not created, it is the same as server.log is empty
+        }
+        return new ArrayList<>();
     }
 
     public HttpResponse simulateClickingOnButton(HttpClient client, Form form, String username, String password, String buttonValue) throws IOException {

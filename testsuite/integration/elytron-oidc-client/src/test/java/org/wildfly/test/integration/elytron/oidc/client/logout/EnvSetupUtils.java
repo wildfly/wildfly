@@ -24,7 +24,6 @@ import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.test.shared.ServerReload;
 import org.jboss.dmr.ModelNode;
-import org.jboss.as.test.integration.security.common.AbstractSystemPropertiesServerSetupTask;
 import org.jboss.as.test.shared.ManagementServerSetupTask;
 import org.jboss.as.test.shared.TestSuiteEnvironment;
 import org.jboss.as.test.shared.util.AssumeTestGroupUtil;
@@ -60,6 +59,8 @@ public class EnvSetupUtils {
     private static final String OIDC_REQUEST_OBJECT_SIGNING_KEYSTORE_FILE = "oidc.request.object.signing.keystore.file";
     private static final String SECURE_DEPLOYMENT_ADDRESS = "subsystem="
             + ElytronOidcExtension.SUBSYSTEM_NAME + "/secure-deployment=";
+    private static final String PROVIDER_ADDRESS = "subsystem="
+            + ElytronOidcExtension.SUBSYSTEM_NAME + "/provider=";
 
 
     public static class KeycloakAndSubsystemSetup extends KeycloakSetup {
@@ -67,6 +68,7 @@ public class EnvSetupUtils {
         private static Map<String, KeycloakConfiguration.ClientAppType> APP_NAMES;
         private static Map<String, LogoutChannelPaths> APP_LOGOUT;
         private static boolean isOidcServerConfig = false;
+        private static String providerJwtClaimsTyp;
 
         public static void setKeycloakClients(Map<String, KeycloakConfiguration.ClientAppType> appNames) {
             APP_NAMES = appNames;
@@ -76,8 +78,17 @@ public class EnvSetupUtils {
             APP_LOGOUT = appLogout;
         }
 
-        public static void setOidcServerConfig(boolean flag){
+        public static void setOidcServerConfig(boolean flag) {
             isOidcServerConfig = flag;
+        }
+
+        /**
+         * @param value        The name of the logout claim typ for elytron to use
+         * @param providerFlag flags that a "provider" server config xml should be
+         *                     created and not a "secure-deployment" config xml
+         */
+        public static void setProviderJwtClaimsTyp(String value) {
+            providerJwtClaimsTyp = value;
         }
 
         public static ManagementClient mgtClient = null;
@@ -95,7 +106,7 @@ public class EnvSetupUtils {
 
             if (isOidcServerConfig) {
                 // oidc attributes set in server config file
-                addOidcServerConfig(managementClient);
+                addOidcServerDeploymentConfig(managementClient);
             }
 
             ModelControllerClient client = managementClient.getControllerClient();
@@ -180,6 +191,10 @@ public class EnvSetupUtils {
                                     logoutChannelUrls.frontChannelPath);
                         }
                         if (logoutChannelUrls.postLogoutRedirectPaths != null) {
+                            KeycloakConfiguration.setFrontChannelLogoutSessionRequired(
+                                    client, false);
+                            KeycloakConfiguration.setBackchannelLogoutSessionRequired(
+                                    client, true);
                             List<String> tmpList = new ArrayList<>();
                             for (String redirectPath : logoutChannelUrls.postLogoutRedirectPaths) {
                                 if (redirectPath.startsWith("http")) {
@@ -214,7 +229,7 @@ public class EnvSetupUtils {
             }
         }
 
-        private static void addOidcServerConfig(ManagementClient managementClient) throws Exception {
+        private static void addOidcServerDeploymentConfig(ManagementClient managementClient) throws Exception {
             ModelControllerClient client = managementClient.getControllerClient();
 
             for (String app : APP_NAMES.keySet()) {
@@ -233,8 +248,12 @@ public class EnvSetupUtils {
                 if (appLogout.frontChannelPath != null) {
                     operation.get(Oidc.LOGOUT_CALLBACK_PATH).set(appLogout.frontChannelPath);
                 }
-                if (appLogout.postLogoutRedirectPaths !=null) {
+                if (appLogout.postLogoutRedirectPaths != null) {
                     operation.get(Oidc.POST_LOGOUT_REDIRECT_URI).set(appLogout.postLogoutRedirectPaths.get(0));
+                }
+
+                if (providerJwtClaimsTyp != null) {
+                    operation.get("provider-jwt-claims-typ").set(providerJwtClaimsTyp);
                 }
 
                 Utils.applyUpdate(operation, client);
@@ -264,20 +283,6 @@ public class EnvSetupUtils {
             if (KEYCLOAK_CONTAINER != null) {
                 KEYCLOAK_CONTAINER.stop();
             }
-        }
-    }
-
-
-    // This class generates all CLI cmds that set the system properties.
-    static class WildFlySystemPropertiesSetupTask extends AbstractSystemPropertiesServerSetupTask {
-        private static SystemProperty[] sysProps;
-
-        public static void setLogoutSysProps(Map<String, String> map) {
-            sysProps = mapToSystemProperties(map);
-        }
-
-        protected SystemProperty[] getSystemProperties() {
-            return sysProps;
         }
     }
 
