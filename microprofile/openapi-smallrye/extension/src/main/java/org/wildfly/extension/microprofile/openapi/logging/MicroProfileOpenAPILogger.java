@@ -9,6 +9,7 @@ import static org.jboss.logging.Logger.Level.WARN;
 
 import java.io.IOException;
 import java.lang.invoke.MethodHandles;
+import java.util.Map;
 import java.util.Set;
 
 import org.jboss.logging.BasicLogger;
@@ -57,4 +58,12 @@ public interface MicroProfileOpenAPILogger extends BasicLogger {
     @LogMessage(level = INFO)
     @Message(id = 8, value = "MicroProfile OpenAPI documentation disabled for '%s'")
     void disabled(String deploymentName);
+
+    @LogMessage(level = WARN)
+    @Message(id = 9, value = "Ignoring deployment-specific property value for %s due to conflicts: %s")
+    void propertyValueConflicts(String propertyName, Map<String, String> conflicts);
+
+    @LogMessage(level = INFO)
+    @Message(id = 10, value = "Host configuration overrides deployment-specific property value for %s: %s")
+    void propertyValueOverride(String propertyName, String propertyValue);
 }

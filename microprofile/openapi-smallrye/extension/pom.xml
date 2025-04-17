@@ -21,13 +21,6 @@
     <name>WildFly: MicroProfile OpenAPI Extension With SmallRye</name>
 
     <dependencies>
-        <!-- Specification dependencies -->
-        <dependency>
-            <groupId>jakarta.ws.rs</groupId>
-            <artifactId>jakarta.ws.rs-api</artifactId>
-            <scope>provided</scope>
-        </dependency>
-
         <!-- Build-only dependencies -->
         <dependency>
             <groupId>org.kohsuke.metainf-services</groupId>
@@ -53,6 +46,14 @@
         <dependency>
             <groupId>${ee.maven.groupId}</groupId>
             <artifactId>wildfly-jaxrs</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>${ee.maven.groupId}</groupId>
+            <artifactId>wildfly-microprofile-openapi-smallrye-host</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>${ee.maven.groupId}</groupId>
+            <artifactId>wildfly-microprofile-openapi-smallrye-spi</artifactId>
         </dependency>
         <dependency>
             <groupId>${ee.maven.groupId}</groupId>
@@ -85,14 +86,6 @@
         <dependency>
             <groupId>org.jboss.metadata</groupId>
             <artifactId>jboss-metadata-web</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.jboss.resteasy</groupId>
-            <artifactId>resteasy-core</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.jboss.resteasy</groupId>
-            <artifactId>resteasy-core-spi</artifactId>
         </dependency>
         <dependency>
             <groupId>org.wildfly.core</groupId>

@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package org.wildfly.extension.microprofile.openapi.deployment;
+package org.wildfly.microprofile.openapi.host;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -14,7 +14,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Deque;
-import java.util.EnumMap;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -24,10 +23,14 @@ import java.util.function.Supplier;
 
 import jakarta.ws.rs.core.MediaType;
 
+import org.eclipse.microprofile.openapi.models.OpenAPI;
 import org.jboss.resteasy.util.AcceptParser;
 
-import io.smallrye.openapi.api.SmallRyeOpenAPI;
+import io.smallrye.openapi.api.OpenApiConfig;
 import io.smallrye.openapi.runtime.io.Format;
+import io.smallrye.openapi.runtime.io.IOContext;
+import io.smallrye.openapi.runtime.io.JsonIO;
+import io.smallrye.openapi.runtime.io.OpenAPIDefinitionIO;
 import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
 import io.undertow.util.HeaderMap;
@@ -57,11 +60,21 @@ public class OpenAPIHttpHandler implements HttpHandler {
         }
     }
 
-    private final Map<Format, Supplier<String>> formatters = new EnumMap<>(Format.class);
+    private final Supplier<OpenAPI> modelFactory;
+    private final OpenApiConfig config;
 
-    public OpenAPIHttpHandler(SmallRyeOpenAPI model) {
-        this.formatters.put(Format.JSON, model::toJSON);
-        this.formatters.put(Format.YAML, model::toYAML);
+    public OpenAPIHttpHandler(Supplier<OpenAPI> modelFactory, OpenApiConfig config) {
+        this.modelFactory = modelFactory;
+        this.config = config;
+    }
+
+    private String format(Format format) throws IOException {
+        return format(JsonIO.newInstance(this.config), this.modelFactory.get(), format);
+    }
+
+    private static <V, A extends V, O extends V, AB, OB> String format(JsonIO<V, A, O, AB, OB> jsonIO, OpenAPI model, Format format) throws IOException {
+        O jsonModel = new OpenAPIDefinitionIO<>(IOContext.forJson(jsonIO)).write(model).orElseThrow(IOException::new);
+        return jsonIO.toString(jsonModel, format);
     }
 
     @Override
@@ -105,7 +118,7 @@ public class OpenAPIHttpHandler implements HttpHandler {
             // Use format preferred by Accept header if unambiguous, otherwise determine format from query parameter
             Format format = (preferredTypes.size() == 1) ? ACCEPTED_TYPES.get(preferredTypes.get(0)) : parseFormatParameter(exchange);
 
-            byte[] result = this.formatters.get(format).get().getBytes(charset);
+            byte[] result = this.format(format).getBytes(charset);
 
             responseHeaders.put(Headers.CONTENT_TYPE, format.getMimeType());
             responseHeaders.put(Headers.CONTENT_LENGTH, result.length);

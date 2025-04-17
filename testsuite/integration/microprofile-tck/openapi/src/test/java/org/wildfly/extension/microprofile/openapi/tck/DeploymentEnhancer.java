@@ -13,19 +13,24 @@ import org.hamcrest.Matchers;
 import org.hamcrest.collection.IsEmptyCollection;
 import org.hamcrest.core.IsEqual;
 import org.hamcrest.internal.ReflectiveTypeFinder;
-import org.jboss.arquillian.container.test.spi.client.deployment.ApplicationArchiveProcessor;
-import org.jboss.arquillian.test.spi.TestClass;
+import org.jboss.arquillian.container.spi.event.container.BeforeDeploy;
+import org.jboss.arquillian.core.api.annotation.Observes;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.container.ManifestContainer;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 
-public class DeploymentProcessor implements ApplicationArchiveProcessor {
+/**
+ * Enhances testable and non-testable deployments.
+ * @author Paul Ferraro
+ */
+public class DeploymentEnhancer {
 
-    @Override
-    public void process(Archive<?> applicationArchive, TestClass testClass) {
-        if (applicationArchive instanceof WebArchive) {
+    public void beforeDeploy(@Observes BeforeDeploy event) {
+        Archive<?> archive = event.getDeployment().getArchive();
+        if (archive instanceof WebArchive) {
+            // Add dependency jar containing required hamcrest classes
             JavaArchive extensionsJar = ShrinkWrap.create(JavaArchive.class, "extension.jar");
 
             extensionsJar.addPackage(Matchers.class.getPackage());
@@ -33,12 +38,14 @@ public class DeploymentProcessor implements ApplicationArchiveProcessor {
             extensionsJar.addPackage(IsEqual.class.getPackage());
             extensionsJar.addPackage(ReflectiveTypeFinder.class.getPackage());
 
-            WebArchive war = (WebArchive) applicationArchive;
+            WebArchive war = (WebArchive) archive;
             war.addAsLibraries(extensionsJar);
+            // As of WFLY-20567, test assumptions require use of the root context
+            war.addAsWebInfResource(DeploymentEnhancer.class.getPackage(), "jboss-web.xml", "jboss-web.xml");
         }
 
-        if (applicationArchive instanceof ManifestContainer<?>) {
-            ManifestContainer<?> manifestContainer = (ManifestContainer<?>) applicationArchive;
+        if (archive instanceof ManifestContainer<?>) {
+            ManifestContainer<?> manifestContainer = (ManifestContainer<?>) archive;
 
             // Enable running the TCK with the security manager
             manifestContainer.addAsManifestResource(createPermissionsXmlAsset(

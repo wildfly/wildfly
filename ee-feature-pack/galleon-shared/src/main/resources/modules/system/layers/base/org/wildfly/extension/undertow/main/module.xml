@@ -43,6 +43,8 @@
         <!-- Allow dynamic loading of distributable session management provider -->
         <module name="org.wildfly.clustering.web.undertow" services="import" optional="true"/>
         <module name="org.wildfly.extension.request-controller" />
+        <!-- Allow dynamic loading of host service installer provider -->
+        <module name="org.wildfly.microprofile.openapi-smallrye.host" services="import" optional="true"/>
         <module name="org.jboss.as.controller"/>
         <module name="org.jboss.as.domain-management"/>
         <module name="org.jboss.as.ee"/>

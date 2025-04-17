@@ -25,6 +25,8 @@
 
     <modules>
         <module>extension</module>
+        <module>host</module>
+        <module>spi</module>
     </modules>
 
     <dependencyManagement>
@@ -38,5 +40,4 @@
             </dependency>
         </dependencies>
     </dependencyManagement>
-
 </project>
