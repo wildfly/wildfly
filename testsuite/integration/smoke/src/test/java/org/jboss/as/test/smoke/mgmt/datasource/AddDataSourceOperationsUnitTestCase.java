@@ -20,6 +20,7 @@ import org.jboss.as.test.integration.management.jca.DsMgmtTestBase;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
+import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Assert;
 import org.junit.Test;
@@ -42,7 +43,10 @@ public class AddDataSourceOperationsUnitTestCase extends DsMgmtTestBase{
     public static Archive<?> getDeployment() {
         return ShrinkWrap.create(JavaArchive.class, JDBC_DRIVER_NAME)
                 .addClass(TestDriver.class)
-                .addAsServiceProvider(Driver.class, TestDriver.class);
+                .addAsServiceProvider(Driver.class, TestDriver.class)
+                // simulate a driver that includes a main class, as WF would treat such a deployment
+                // as an appclient module. So see what happens.
+                .setManifest(new StringAsset("Main-Class: " + TestDriver.class.getName()));
     }
 
     @Test

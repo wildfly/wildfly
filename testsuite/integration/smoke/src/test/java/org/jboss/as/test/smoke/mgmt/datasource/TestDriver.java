@@ -66,4 +66,12 @@ public class TestDriver implements Driver {
     public Logger getParentLogger() throws SQLFeatureNotSupportedException {
         throw new SQLFeatureNotSupportedException();
     }
+
+    /**
+     * A no-op main method so this 'driver' can simulate real ones that have a main.
+     * @param args the args
+     */
+    public static void main(String[] args) {
+        // do nothing
+    }
 }
