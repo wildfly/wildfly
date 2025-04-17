@@ -61,7 +61,6 @@ import org.wildfly.common.function.Functions;
  */
 @ConfiguredBy(HotRodStoreConfiguration.class)
 public class HotRodStore<K, V> implements NonBlockingStore<K, V> {
-    private static final Set<Characteristic> CHARACTERISTICS = EnumSet.of(Characteristic.SHAREABLE, Characteristic.BULK_READ, Characteristic.EXPIRATION, Characteristic.SEGMENTABLE);
     private static final String DEFAULT_CONFIGURATION = "{\"distributed-cache\": { \"mode\": \"SYNC\" }}";
 
     private volatile RemoteCacheContainer container;
@@ -146,7 +145,8 @@ public class HotRodStore<K, V> implements NonBlockingStore<K, V> {
 
     @Override
     public Set<Characteristic> characteristics() {
-        return CHARACTERISTICS;
+        // N.B.  we must return a new, mutable instance, since this value may be modified by PersistenceManagerImpl
+        return EnumSet.of(Characteristic.SHAREABLE, Characteristic.BULK_READ, Characteristic.EXPIRATION, Characteristic.SEGMENTABLE);
     }
 
     @Override

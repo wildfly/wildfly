@@ -8,11 +8,12 @@ package org.jboss.as.clustering.infinispan.subsystem;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 
 /**
+ * Describes the resource transformations of a file store.
  * @author Paul Ferraro
  */
 public class FileStoreResourceTransformer extends StoreResourceTransformer {
 
     FileStoreResourceTransformer(ResourceTransformationDescriptionBuilder parent) {
-        super(parent.addChildResource(FileStoreResourceDefinition.PATH));
+        super(parent.addChildResource(StoreResourceRegistration.FILE.getPathElement()));
     }
 }

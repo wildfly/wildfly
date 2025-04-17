@@ -7,8 +7,8 @@ package org.wildfly.extension.clustering.web.session.infinispan;
 
 import java.util.List;
 import java.util.OptionalInt;
-import java.util.function.Consumer;
 import java.util.function.Supplier;
+import java.util.function.UnaryOperator;
 
 import org.infinispan.Cache;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
@@ -17,26 +17,25 @@ import org.infinispan.configuration.cache.PersistenceConfiguration;
 import org.infinispan.configuration.cache.StorageType;
 import org.infinispan.configuration.cache.StoreConfiguration;
 import org.infinispan.eviction.EvictionStrategy;
-import org.jboss.as.controller.ServiceNameFactory;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.wildfly.clustering.cache.infinispan.embedded.container.DataContainerConfigurationBuilder;
-import org.wildfly.clustering.infinispan.service.CacheServiceInstallerFactory;
+import org.wildfly.clustering.infinispan.service.CacheConfigurationServiceInstaller;
+import org.wildfly.clustering.infinispan.service.CacheServiceInstaller;
 import org.wildfly.clustering.infinispan.service.InfinispanServiceDescriptor;
-import org.wildfly.clustering.infinispan.service.TemplateConfigurationServiceInstallerFactory;
 import org.wildfly.clustering.server.infinispan.dispatcher.CacheContainerCommandDispatcherFactory;
 import org.wildfly.clustering.server.service.BinaryServiceConfiguration;
 import org.wildfly.clustering.server.service.ClusteringServiceDescriptor;
 import org.wildfly.clustering.session.SessionManagerFactory;
-import org.wildfly.clustering.session.SessionManagerFactoryConfiguration;
 import org.wildfly.clustering.session.infinispan.embedded.InfinispanSessionManagerFactory;
 import org.wildfly.clustering.session.infinispan.embedded.InfinispanSessionManagerFactoryConfiguration;
 import org.wildfly.clustering.session.infinispan.embedded.metadata.SessionMetaDataKey;
 import org.wildfly.clustering.session.spec.servlet.HttpSessionActivationListenerProvider;
 import org.wildfly.clustering.session.spec.servlet.HttpSessionProvider;
-import org.wildfly.clustering.web.service.WebDeploymentServiceDescriptor;
+import org.wildfly.clustering.web.service.deployment.WebDeploymentServiceDescriptor;
 import org.wildfly.clustering.web.service.routing.RouteLocatorProvider;
 import org.wildfly.clustering.web.service.session.DistributableSessionManagementConfiguration;
 import org.wildfly.clustering.web.service.session.DistributableSessionManagementProvider;
+import org.wildfly.clustering.web.service.session.SessionManagerFactoryConfiguration;
 import org.wildfly.common.function.Functions;
 import org.wildfly.extension.clustering.web.session.AbstractSessionManagementProvider;
 import org.wildfly.subsystem.service.DeploymentServiceInstaller;
@@ -51,17 +50,18 @@ import jakarta.servlet.ServletContext;
  */
 public class InfinispanSessionManagementProvider extends AbstractSessionManagementProvider {
 
-    public InfinispanSessionManagementProvider(DistributableSessionManagementConfiguration<DeploymentUnit> configuration, BinaryServiceConfiguration cacheConfiguration, Supplier<RouteLocatorProvider> locatorProviderFactory) {
-        super(configuration, cacheConfiguration, locatorProviderFactory);
+    public InfinispanSessionManagementProvider(DistributableSessionManagementConfiguration<DeploymentUnit> configuration, BinaryServiceConfiguration cacheConfiguration, RouteLocatorProvider locatorProvider) {
+        super(configuration, cacheConfiguration, locatorProvider);
     }
 
     @Override
     public <C> DeploymentServiceInstaller getSessionManagerFactoryServiceInstaller(SessionManagerFactoryConfiguration<C> configuration) {
-        BinaryServiceConfiguration deploymentCacheConfiguration = this.getCacheConfiguration().withChildName(configuration.getDeploymentName());
+        BinaryServiceConfiguration templateCacheConfiguration = this.getCacheConfiguration();
+        BinaryServiceConfiguration deploymentCacheConfiguration = templateCacheConfiguration.withChildName(configuration.getDeploymentName());
 
-        Consumer<ConfigurationBuilder> configurator = new Consumer<>() {
+        UnaryOperator<ConfigurationBuilder> configurator = new UnaryOperator<>() {
             @Override
-            public void accept(ConfigurationBuilder builder) {
+            public ConfigurationBuilder apply(ConfigurationBuilder builder) {
                 // Ensure expiration is not enabled on cache
                 ExpirationConfiguration expiration = builder.expiration().create();
                 if ((expiration.lifespan() >= 0) || (expiration.maxIdle() >= 0)) {
@@ -84,10 +84,11 @@ public class InfinispanSessionManagementProvider extends AbstractSessionManageme
                 if (size.isEmpty() && persistence.passivation() && persistence.stores().stream().allMatch(StoreConfiguration::purgeOnStartup)) {
                     builder.persistence().passivation(false).clearStores();
                 }
+                return builder;
             }
         };
-        DeploymentServiceInstaller configurationInstaller = new TemplateConfigurationServiceInstallerFactory(configurator).apply(this.getCacheConfiguration(), deploymentCacheConfiguration);
-        DeploymentServiceInstaller cacheInstaller = CacheServiceInstallerFactory.INSTANCE.apply(deploymentCacheConfiguration);
+        DeploymentServiceInstaller configurationInstaller = new CacheConfigurationServiceInstaller(deploymentCacheConfiguration, CacheConfigurationServiceInstaller.fromTemplate(templateCacheConfiguration).map(configurator));
+        DeploymentServiceInstaller cacheInstaller = new CacheServiceInstaller(deploymentCacheConfiguration);
 
         ServiceDependency<CacheContainerCommandDispatcherFactory> commandDispatcherFactory = deploymentCacheConfiguration.getServiceDependency(ClusteringServiceDescriptor.COMMAND_DISPATCHER_FACTORY).map(CacheContainerCommandDispatcherFactory.class::cast);
         ServiceDependency<Cache<?, ?>> cache = deploymentCacheConfiguration.getServiceDependency(InfinispanServiceDescriptor.CACHE);
@@ -110,7 +111,7 @@ public class InfinispanSessionManagementProvider extends AbstractSessionManageme
             }
         };
         DeploymentServiceInstaller installer = ServiceInstaller.builder(factory)
-                .provides(ServiceNameFactory.resolveServiceName(WebDeploymentServiceDescriptor.SESSION_MANAGER_FACTORY, configuration.getDeploymentName()))
+                .provides(WebDeploymentServiceDescriptor.SESSION_MANAGER_FACTORY.resolve(configuration.getDeploymentUnit()))
                 .requires(List.of(cache, commandDispatcherFactory))
                 .onStop(Functions.closingConsumer())
                 .build();

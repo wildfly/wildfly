@@ -10,12 +10,11 @@ import java.util.List;
 import org.infinispan.Cache;
 import org.jboss.as.controller.ServiceNameFactory;
 import org.wildfly.clustering.cache.infinispan.embedded.EmbeddedCacheConfiguration;
-import org.wildfly.clustering.infinispan.service.CacheServiceInstallerFactory;
+import org.wildfly.clustering.infinispan.service.CacheConfigurationServiceInstaller;
+import org.wildfly.clustering.infinispan.service.CacheServiceInstaller;
 import org.wildfly.clustering.infinispan.service.InfinispanServiceDescriptor;
-import org.wildfly.clustering.infinispan.service.TemplateConfigurationServiceInstallerFactory;
 import org.wildfly.clustering.server.service.BinaryServiceConfiguration;
 import org.wildfly.clustering.session.infinispan.embedded.user.InfinispanUserManagerFactory;
-import org.wildfly.clustering.web.service.WebDeploymentServiceDescriptor;
 import org.wildfly.clustering.web.service.user.DistributableUserManagementProvider;
 import org.wildfly.common.function.Functions;
 import org.wildfly.subsystem.service.ServiceDependency;
@@ -37,8 +36,8 @@ public class InfinispanUserManagementProvider implements DistributableUserManage
     public Iterable<ServiceInstaller> getServiceInstallers(String name) {
         BinaryServiceConfiguration configuration = this.configuration.withChildName(name);
 
-        ServiceInstaller configurationInstaller = new TemplateConfigurationServiceInstallerFactory().apply(this.configuration, configuration);
-        ServiceInstaller cacheInstaller = CacheServiceInstallerFactory.INSTANCE.apply(configuration);
+        ServiceInstaller configurationInstaller = new CacheConfigurationServiceInstaller(configuration, CacheConfigurationServiceInstaller.fromTemplate(this.configuration));
+        ServiceInstaller cacheInstaller = new CacheServiceInstaller(configuration);
 
         ServiceDependency<Cache<?, ?>> cache = configuration.getServiceDependency(InfinispanServiceDescriptor.CACHE);
         EmbeddedCacheConfiguration cacheConfiguration = new EmbeddedCacheConfiguration() {
@@ -49,7 +48,7 @@ public class InfinispanUserManagementProvider implements DistributableUserManage
             }
         };
         ServiceInstaller installer = ServiceInstaller.builder(InfinispanUserManagerFactory::new, Functions.constantSupplier(cacheConfiguration))
-                .provides(ServiceNameFactory.resolveServiceName(WebDeploymentServiceDescriptor.USER_MANAGER_FACTORY, name))
+                .provides(ServiceNameFactory.resolveServiceName(DistributableUserManagementProvider.USER_MANAGER_FACTORY, name))
                 .requires(cache)
                 .build();
 
