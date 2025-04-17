@@ -5,24 +5,24 @@
 
 package org.jboss.as.clustering.infinispan.subsystem;
 
-import java.util.Collections;
 import java.util.Map;
 
-import org.jboss.as.clustering.controller.ChildResourceProvider;
-import org.jboss.as.clustering.controller.ComplexResource;
 import org.jboss.as.controller.registry.Resource;
 import org.wildfly.clustering.server.Registrar;
 import org.wildfly.clustering.server.Registration;
+import org.wildfly.subsystem.resource.ChildResourceProvider;
+import org.wildfly.subsystem.resource.DynamicResource;
 
 /**
+ * A dynamic resource implementation for a cache container.
  * @author Paul Ferraro
  */
-public class CacheContainerResource extends ComplexResource implements Registrar<String> {
+public class CacheContainerResource extends DynamicResource implements Registrar<String> {
 
-    private static final String CHILD_TYPE = CacheRuntimeResourceDefinition.WILDCARD_PATH.getKey();
+    private static final String CHILD_TYPE = CacheRuntimeResourceDefinitionRegistrar.REGISTRATION.getPathElement().getKey();
 
     public CacheContainerResource(Resource resource) {
-        this(resource, Collections.singletonMap(CHILD_TYPE, new CacheRuntimeResourceProvider()));
+        this(resource, Map.of(CHILD_TYPE, new CacheRuntimeResourceProvider()));
     }
 
     private CacheContainerResource(Resource resource, Map<String, ChildResourceProvider> providers) {

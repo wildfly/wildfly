@@ -17,6 +17,7 @@ import org.jboss.modules.Module;
 import org.jboss.modules.ModuleLoader;
 
 /**
+ * Enumerates factories for creating Infinispan marshallers.
  * @author Paul Ferraro
  */
 public enum InfinispanMarshallerFactory implements BiFunction<ModuleLoader, List<Module>, Marshaller> {
