@@ -7,7 +7,6 @@ package org.wildfly.extension.microprofile.openapi.deployment;
 
 import static org.wildfly.extension.microprofile.openapi.logging.MicroProfileOpenAPILogger.LOGGER;
 
-import java.io.IOException;
 import java.net.InetAddress;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -23,7 +22,6 @@ import java.util.stream.Collectors;
 
 import io.smallrye.openapi.api.SmallRyeOpenAPI;
 import io.smallrye.openapi.runtime.scanner.spi.AnnotationScanner;
-import io.smallrye.openapi.spi.OASFactoryResolverImpl;
 import io.undertow.servlet.api.DeploymentInfo;
 
 import org.eclipse.microprofile.config.Config;
@@ -32,7 +30,6 @@ import org.eclipse.microprofile.openapi.OASFilter;
 import org.eclipse.microprofile.openapi.models.OpenAPI;
 import org.eclipse.microprofile.openapi.models.info.Info;
 import org.eclipse.microprofile.openapi.models.servers.Server;
-import org.eclipse.microprofile.openapi.spi.OASFactoryResolver;
 import org.jboss.as.controller.ServiceNameFactory;
 import org.jboss.as.network.ClientMapping;
 import org.jboss.as.network.SocketBinding;
@@ -46,31 +43,27 @@ import org.jboss.jandex.IndexView;
 import org.jboss.metadata.javaee.spec.DescriptionGroupMetaData;
 import org.jboss.metadata.web.jboss.JBossWebMetaData;
 import org.jboss.modules.Module;
-import org.jboss.vfs.VirtualFile;
 import org.wildfly.extension.undertow.Host;
 import org.wildfly.extension.undertow.UndertowListener;
 import org.wildfly.extension.undertow.UndertowService;
 import org.wildfly.extension.undertow.deployment.UndertowDeploymentInfoService;
+import org.wildfly.microprofile.openapi.OpenAPIProvider;
 import org.wildfly.security.manager.WildFlySecurityManager;
+import org.wildfly.service.Installer.StartWhen;
 import org.wildfly.subsystem.service.DeploymentServiceInstaller;
 import org.wildfly.subsystem.service.ServiceDependency;
 import org.wildfly.subsystem.service.ServiceInstaller;
 
 /**
- * Configures a service that provides an OpenAPI model for a deployment.
+ * Installs a service that provides an OpenAPI model provider for a deployment.
  * @author Paul Ferraro
  */
-public class OpenAPIModelServiceInstaller implements DeploymentServiceInstaller {
+public class DeploymentOpenAPIProviderServiceInstaller implements DeploymentServiceInstaller {
     private static final Set<String> REQUISITE_LISTENERS = Collections.singleton("http");
 
-    static {
-        // Set the static OASFactoryResolver eagerly avoiding the need perform TCCL service loading later
-        OASFactoryResolver.setInstance(new OASFactoryResolverImpl());
-    }
+    private final DeploymentOpenAPIModelConfiguration configuration;
 
-    private final OpenAPIModelConfiguration configuration;
-
-    public OpenAPIModelServiceInstaller(OpenAPIModelConfiguration configuration) {
+    public DeploymentOpenAPIProviderServiceInstaller(DeploymentOpenAPIModelConfiguration configuration) {
         this.configuration = configuration;
     }
 
@@ -78,7 +71,6 @@ public class OpenAPIModelServiceInstaller implements DeploymentServiceInstaller 
     public void install(DeploymentPhaseContext context) {
         DeploymentUnit unit = context.getDeploymentUnit();
         String deploymentName = unit.getName();
-        VirtualFile root = unit.getAttachment(Attachments.DEPLOYMENT_ROOT).getRoot();
         // Convert org.jboss.as.server.deployment.annotation.CompositeIndex to org.jboss.jandex.CompositeIndex
         Collection<Index> indexes = new ArrayList<>(unit.getAttachment(Attachments.COMPOSITE_ANNOTATION_INDEX).getIndexes());
         if (unit.getParent() != null) {
@@ -93,31 +85,23 @@ public class OpenAPIModelServiceInstaller implements DeploymentServiceInstaller 
         Module module = unit.getAttachment(Attachments.MODULE);
         JBossWebMetaData metaData = unit.getAttachment(WarMetaData.ATTACHMENT_KEY).getMergedJBossWebMetaData();
         Config config = this.configuration.getMicroProfileConfig();
+        Function<String, URL> resourceResolver = this.configuration.getResourceResolver();
         boolean useRelativeServerURLs = this.configuration.useRelativeServerURLs();
         String serverName = this.configuration.getServerName();
         String hostName = this.configuration.getHostName();
+        String modelName = this.configuration.getModelName();
 
         ServiceDependency<Host> host = ServiceDependency.on(Host.SERVICE_DESCRIPTOR, serverName, hostName);
         ServiceDependency<DeploymentInfo> deploymentInfo = ServiceDependency.on(UndertowService.deploymentServiceName(unit.getServiceName()).append(UndertowDeploymentInfoService.SERVICE_NAME));
 
-        Supplier<SmallRyeOpenAPI> factory = new Supplier<>() {
+        Supplier<OpenAPI> factory = new Supplier<>() {
             @Override
-            public SmallRyeOpenAPI get() {
+            public OpenAPI get() {
                 return SmallRyeOpenAPI.builder()
                         .withApplicationClassLoader(module.getClassLoader())
                         .withConfig(config)
                         .withIndex(index)
-                        .withResourceLocator(new Function<>() {
-                            @Override
-                            public URL apply(String path) {
-                                try {
-                                    VirtualFile file = root.getChild(path);
-                                    return file.exists() ? file.toURL() : null;
-                                } catch (IOException e) {
-                                    throw new IllegalArgumentException(e);
-                                }
-                            }
-                        })
+                        .withResourceLocator(resourceResolver)
                         .withScannerClassLoader(WildFlySecurityManager.getClassLoaderPrivileged(AnnotationScanner.class))
                         .addFilter(new OASFilter() {
                             @Override
@@ -140,13 +124,17 @@ public class OpenAPIModelServiceInstaller implements DeploymentServiceInstaller 
                                     info.setDescription(description);
                                 }
 
-                                List<UndertowListener> listeners = host.get().getServer().getListeners();
+                                Collection<UndertowListener> listeners = host.get().getServer().getListeners();
+
+                                if (listeners.stream().map(UndertowListener::getProtocol).noneMatch(REQUISITE_LISTENERS::contains)) {
+                                    LOGGER.requiredListenersNotFound(host.get().getServer().getName(), REQUISITE_LISTENERS);
+                                }
 
                                 if (model.getServers() == null) {
                                     // Generate Server entries if none exist
                                     String contextPath = deploymentInfo.get().getContextPath();
                                     if (useRelativeServerURLs) {
-                                        model.setServers(Collections.singletonList(OASFactory.createServer().url(contextPath)));
+                                        model.setServers(List.of(OASFactory.createServer().url(contextPath)));
                                     } else {
                                         int aliases = host.get().getAllAliases().size();
                                         int size = 0;
@@ -182,18 +170,14 @@ public class OpenAPIModelServiceInstaller implements DeploymentServiceInstaller 
                                         model.setServers(servers);
                                     }
                                 }
-
-                                if (listeners.stream().map(UndertowListener::getProtocol).noneMatch(REQUISITE_LISTENERS::contains)) {
-                                    LOGGER.requiredListenersNotFound(host.get().getServer().getName(), REQUISITE_LISTENERS);
-                                }
                             }
-                        })
-                        .build();
+                        }).build().model();
             }
         };
-        ServiceInstaller.builder(factory)
-                .provides(ServiceNameFactory.resolveServiceName(OpenAPIModelConfiguration.SERVICE_DESCRIPTOR, serverName, hostName, this.configuration.getPath()))
+        ServiceInstaller.builder(OpenAPIProvider::of, factory)
+                .provides(ServiceNameFactory.resolveServiceName(OpenAPIProvider.SERVICE_DESCRIPTOR, serverName, hostName, modelName))
                 .requires(List.of(host, deploymentInfo))
+                .startWhen(StartWhen.INSTALLED)
                 .build()
                 .install(context);
     }
