@@ -401,6 +401,17 @@
                 <module>aggregator-base</module>
                 <module>integration</module>
             </modules>
+            <dependencies>
+                <!-- Include a dependency on the build demander because in concurrent builds the order
+                     of items in the 'modules' element doesn't ensure earlier modules are
+                     built before later ones. So use a dependency make sure it is executed. -->
+                <dependency>
+                    <groupId>${ee.maven.groupId}</groupId>
+                    <artifactId>wildfly-ts-build-demander-base</artifactId>
+                    <version>${ee.maven.version}</version>
+                    <type>pom</type>
+                </dependency>
+            </dependencies>
         </profile>
         <profile>
             <id>expansion-server-tests</id>
@@ -411,6 +422,17 @@
                 <module>aggregator-expansion</module>
                 <module>integration</module>
             </modules>
+            <dependencies>
+                <!-- Include a dependency on the build demander because in concurrent builds the order
+                     of items in the 'modules' element doesn't ensure earlier modules are
+                     built before later ones. So use a dependency make sure it is executed. -->
+                <dependency>
+                    <groupId>${full.maven.groupId}</groupId>
+                    <artifactId>wildfly-ts-build-demander-expansion</artifactId>
+                    <version>${full.maven.version}</version>
+                    <type>pom</type>
+                </dependency>
+            </dependencies>
         </profile>
         <profile>
             <id>preview-server-tests</id>
@@ -420,6 +442,17 @@
                 <module>aggregator-preview</module>
                 <module>integration</module>
             </modules>
+            <dependencies>
+                <!-- Include a dependency on the build demander because in concurrent builds the order
+                     of items in the 'modules' element doesn't ensure earlier modules are
+                     built before later ones. So use a dependency make sure it is executed. -->
+                <dependency>
+                    <groupId>${project.groupId}</groupId>
+                    <artifactId>wildfly-ts-build-demander-preview</artifactId>
+                    <version>${project.version}</version>
+                    <type>pom</type>
+                </dependency>
+            </dependencies>
         </profile>
         <!-- These execute in all feature pack contexts, so declare them here instead
              of repeating this in the aggregator modules -->
