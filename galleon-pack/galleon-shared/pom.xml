@@ -560,6 +560,14 @@
             <groupId>${full.maven.groupId}</groupId>
             <artifactId>wildfly-microprofile-openapi-smallrye-extension</artifactId>
         </dependency>
+        <dependency>
+            <groupId>${full.maven.groupId}</groupId>
+            <artifactId>wildfly-microprofile-openapi-smallrye-host</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>${full.maven.groupId}</groupId>
+            <artifactId>wildfly-microprofile-openapi-smallrye-spi</artifactId>
+        </dependency>
 
         <dependency><groupId>${full.maven.groupId}</groupId><artifactId>wildfly-opentelemetry</artifactId></dependency>
         <dependency><groupId>${full.maven.groupId}</groupId><artifactId>wildfly-opentelemetry-api</artifactId></dependency>
