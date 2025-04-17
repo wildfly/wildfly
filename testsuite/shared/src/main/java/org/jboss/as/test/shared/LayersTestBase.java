@@ -173,6 +173,7 @@ public abstract class LayersTestBase {
      */
     public static final String[] NOT_REFERENCED_WILDFLY_EE = {
             // Only injected by logging in 'wildfly-ee', but referenced in 'wildfly' and 'wildfly-preview'
+            "org.wildfly.extension.microprofile.openapi-smallrye",
     };
 
 

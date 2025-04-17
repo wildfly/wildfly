@@ -60,6 +60,10 @@
         </dependency>
         <dependency>
             <groupId>${ee.maven.groupId}</groupId>
+            <artifactId>wildfly-undertow-spi</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>${ee.maven.groupId}</groupId>
             <artifactId>wildfly-web-common</artifactId>
         </dependency>
 

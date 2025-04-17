@@ -18,5 +18,8 @@
     <dependencies>
         <module name="org.wildfly.service"/>
         <module name="org.wildfly.subsystem"/>
+
+        <!-- Provides host services -->
+        <module name="org.wildfly.extension.microprofile.openapi-smallrye" optional="true" services="import"/>
     </dependencies>
 </module>

@@ -31,11 +31,8 @@ import org.wildfly.extension.undertow.UndertowExtension;
  * Encapsulates the {@link OpenAPIModelConfiguration} for a deployment.
  * @author Paul Ferraro
  */
-public class DeploymentUnitOpenAPIModelConfiguration implements OpenAPIModelConfiguration {
+public class OpenAPIDeploymentUnitModelConfiguration implements OpenAPIDeploymentModelConfiguration {
 
-    private static final String ENABLED = "mp.openapi.extensions.enabled";
-    private static final String PATH = "mp.openapi.extensions.path";
-    private static final String DEFAULT_PATH = "/openapi";
     private static final String RELATIVE_SERVER_URLS = "mp.openapi.extensions.servers.relative";
     private static final Map<Format, List<String>> STATIC_FILES = new EnumMap<>(Format.class);
     static {
@@ -56,10 +53,12 @@ public class DeploymentUnitOpenAPIModelConfiguration implements OpenAPIModelConf
     private final String serverName;
     private final String hostName;
     private final String path;
+    private final String modelName;
     private final Function<String, URL> resolver;
     private final boolean relativeServerURLs;
 
-    DeploymentUnitOpenAPIModelConfiguration(DeploymentUnit unit) {
+    OpenAPIDeploymentUnitModelConfiguration(DeploymentUnit unit) {
+        this.modelName = unit.getName();
         this.config = ConfigProvider.getConfig(unit.getAttachment(Attachments.MODULE).getClassLoader());
         this.enabled = this.config.getOptionalValue(ENABLED, Boolean.class).orElse(Boolean.TRUE);
         VirtualFile root = unit.getAttachment(Attachments.DEPLOYMENT_ROOT).getRoot();
@@ -81,7 +80,7 @@ public class DeploymentUnitOpenAPIModelConfiguration implements OpenAPIModelConf
         this.hostName = model.get(DeploymentDefinition.VIRTUAL_HOST.getName()).asString();
         this.path = this.config.getOptionalValue(PATH, String.class).orElse(DEFAULT_PATH);
         if (!this.path.equals(DEFAULT_PATH)) {
-            MicroProfileOpenAPILogger.LOGGER.nonStandardEndpoint(unit.getName(), this.path, DEFAULT_PATH);
+            MicroProfileOpenAPILogger.LOGGER.nonStandardEndpoint(this.modelName, this.path, DEFAULT_PATH);
         }
         this.relativeServerURLs = this.config.getOptionalValue(RELATIVE_SERVER_URLS, Boolean.class).orElse(Boolean.TRUE);
     }
@@ -109,6 +108,11 @@ public class DeploymentUnitOpenAPIModelConfiguration implements OpenAPIModelConf
     @Override
     public String getHostName() {
         return this.hostName;
+    }
+
+    @Override
+    public String getModelName() {
+        return this.modelName;
     }
 
     @Override
