@@ -19,11 +19,11 @@ import io.smallrye.openapi.runtime.io.Format;
 
 import org.eclipse.microprofile.config.Config;
 import org.eclipse.microprofile.config.ConfigProvider;
+import org.eclipse.microprofile.openapi.OASConfig;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.dmr.ModelNode;
 import org.jboss.vfs.VirtualFile;
-import org.wildfly.extension.microprofile.openapi.logging.MicroProfileOpenAPILogger;
 import org.wildfly.extension.undertow.DeploymentDefinition;
 import org.wildfly.extension.undertow.UndertowExtension;
 
@@ -31,12 +31,9 @@ import org.wildfly.extension.undertow.UndertowExtension;
  * Encapsulates the {@link OpenAPIModelConfiguration} for a deployment.
  * @author Paul Ferraro
  */
-public class DeploymentUnitOpenAPIModelConfiguration implements OpenAPIModelConfiguration {
+public class DeploymentUnitOpenAPIModelConfiguration implements DeploymentOpenAPIModelConfiguration {
 
-    private static final String ENABLED = "mp.openapi.extensions.enabled";
-    private static final String PATH = "mp.openapi.extensions.path";
-    private static final String DEFAULT_PATH = "/openapi";
-    private static final String RELATIVE_SERVER_URLS = "mp.openapi.extensions.servers.relative";
+    private static final String RELATIVE_SERVER_URLS = "servers.relative";
     private static final Map<Format, List<String>> STATIC_FILES = new EnumMap<>(Format.class);
     static {
         // Order resource names by search order
@@ -50,18 +47,15 @@ public class DeploymentUnitOpenAPIModelConfiguration implements OpenAPIModelConf
                 "/WEB-INF/classes/META-INF/openapi.json"));
     }
 
-    private final boolean enabled;
     private final Config config;
     private final Optional<URL> staticFile;
     private final String serverName;
     private final String hostName;
-    private final String path;
+    private final String modelName;
     private final Function<String, URL> resolver;
-    private final boolean relativeServerURLs;
 
     DeploymentUnitOpenAPIModelConfiguration(DeploymentUnit unit) {
         this.config = ConfigProvider.getConfig(unit.getAttachment(Attachments.MODULE).getClassLoader());
-        this.enabled = this.config.getOptionalValue(ENABLED, Boolean.class).orElse(Boolean.TRUE);
         VirtualFile root = unit.getAttachment(Attachments.DEPLOYMENT_ROOT).getRoot();
         this.resolver = new Function<>() {
             @Override
@@ -79,16 +73,7 @@ public class DeploymentUnitOpenAPIModelConfiguration implements OpenAPIModelConf
         ModelNode model = unit.getAttachment(Attachments.DEPLOYMENT_RESOURCE_SUPPORT).getDeploymentSubsystemModel(UndertowExtension.SUBSYSTEM_NAME);
         this.serverName = model.get(DeploymentDefinition.SERVER.getName()).asString();
         this.hostName = model.get(DeploymentDefinition.VIRTUAL_HOST.getName()).asString();
-        this.path = this.config.getOptionalValue(PATH, String.class).orElse(DEFAULT_PATH);
-        if (!this.path.equals(DEFAULT_PATH)) {
-            MicroProfileOpenAPILogger.LOGGER.nonStandardEndpoint(unit.getName(), this.path, DEFAULT_PATH);
-        }
-        this.relativeServerURLs = this.config.getOptionalValue(RELATIVE_SERVER_URLS, Boolean.class).orElse(Boolean.TRUE);
-    }
-
-    @Override
-    public boolean isEnabled() {
-        return this.enabled;
+        this.modelName = unit.getName();
     }
 
     @Override
@@ -112,8 +97,8 @@ public class DeploymentUnitOpenAPIModelConfiguration implements OpenAPIModelConf
     }
 
     @Override
-    public String getPath() {
-        return this.path;
+    public String getModelName() {
+        return this.modelName;
     }
 
     @Override
@@ -123,6 +108,6 @@ public class DeploymentUnitOpenAPIModelConfiguration implements OpenAPIModelConf
 
     @Override
     public boolean useRelativeServerURLs() {
-        return this.relativeServerURLs;
+        return this.config.getOptionalValue(OASConfig.EXTENSIONS_PREFIX + RELATIVE_SERVER_URLS, Boolean.class).orElse(Boolean.TRUE);
     }
 }
