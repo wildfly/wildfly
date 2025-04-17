@@ -5,7 +5,6 @@
 
 package org.wildfly.extension.clustering.singleton;
 
-import org.jboss.as.clustering.controller.Metric;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
@@ -14,6 +13,7 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.wildfly.clustering.server.GroupMember;
 import org.wildfly.clustering.singleton.Singleton;
+import org.wildfly.subsystem.resource.executor.Metric;
 
 /**
  * Metrics for singleton deployments and services.
@@ -55,7 +55,7 @@ public enum SingletonMetric implements Metric<Singleton> {
     }
 
     @Override
-    public AttributeDefinition getDefinition() {
+    public AttributeDefinition get() {
         return this.definition;
     }
 }

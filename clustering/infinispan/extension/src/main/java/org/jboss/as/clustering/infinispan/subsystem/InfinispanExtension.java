@@ -4,12 +4,11 @@
  */
 package org.jboss.as.clustering.infinispan.subsystem;
 
-
-import org.jboss.as.clustering.controller.SubsystemExtension;
 import org.jboss.as.controller.Extension;
-import org.jboss.as.controller.descriptions.ParentResourceDescriptionResolver;
-import org.jboss.as.controller.descriptions.SubsystemResourceDescriptionResolver;
 import org.kohsuke.MetaInfServices;
+import org.wildfly.subsystem.SubsystemConfiguration;
+import org.wildfly.subsystem.SubsystemExtension;
+import org.wildfly.subsystem.SubsystemPersistence;
 
 /**
  * Extension that registers the Infinispan subsystem.
@@ -20,10 +19,7 @@ import org.kohsuke.MetaInfServices;
 @MetaInfServices(Extension.class)
 public class InfinispanExtension extends SubsystemExtension<InfinispanSubsystemSchema> {
 
-    public static final String SUBSYSTEM_NAME = "infinispan";
-    public static final ParentResourceDescriptionResolver SUBSYSTEM_RESOLVER = new SubsystemResourceDescriptionResolver(SUBSYSTEM_NAME, InfinispanExtension.class);
-
     public InfinispanExtension() {
-        super(SUBSYSTEM_NAME, InfinispanSubsystemModel.CURRENT, InfinispanSubsystemResourceDefinition::new, InfinispanSubsystemSchema.CURRENT, new InfinispanSubsystemXMLWriter());
+        super(SubsystemConfiguration.of(InfinispanSubsystemResourceDefinitionRegistrar.REGISTRATION.getName(), InfinispanSubsystemModel.CURRENT, InfinispanSubsystemResourceDefinitionRegistrar::new),  SubsystemPersistence.of(InfinispanSubsystemSchema.CURRENT));
     }
 }
