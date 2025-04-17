@@ -1,0 +1,23 @@
+<?xml version="1.1" encoding="UTF-8"?>
+<!--
+    Copyright The WildFly Authors
+    SPDX-License-Identifier: Apache-2.0
+-->
+<jboss:ejb-jar xmlns:jboss="urn:jboss:jakartaee:1.0"
+               xmlns="https://jakarta.ee/xml/ns/jakartaee"
+               xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+               xmlns:ci="urn:container-interceptors:1.0"
+               xsi:schemaLocation="urn:jboss:jakartaee:1.0 https://www.jboss.org/schema/jbossas/jboss-ejb3-4_0.xsd
+                 https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/ejb-jar_4_0.xsd"
+               version="4.0">
+
+    <assembly-descriptor>
+        <ci:container-interceptors>
+            <interceptor-binding>
+                <ejb-name>*</ejb-name>
+                <interceptor-class>org.jboss.as.test.integration.ejb.interceptor.serverside.ContainerInterceptor
+                </interceptor-class>
+            </interceptor-binding>
+        </ci:container-interceptors>
+    </assembly-descriptor>
+</jboss:ejb-jar>

@@ -59,6 +59,8 @@ public class ServerInterceptorsTestCase {
         JavaArchive jar = ShrinkWrap.create(JavaArchive.class, "test-server-interceptor.jar");
         jar.addPackage(ServerInterceptorsTestCase.class.getPackage());
         jar.addPackage(AbstractServerInterceptorsSetupTask.class.getPackage());
+        //WFLY-20557 adding container interceptors to make sure there is no conflict between them and server ones
+        jar.addAsManifestResource(ServerInterceptorsTestCase.class.getPackage(), "jboss-ejb3.xml", "jboss-ejb3.xml");
         jar.addAsManifestResource(new StringAsset("Dependencies: org.jboss.as.controller-client," +
                 "org.jboss.dmr," + "org.jboss.remoting\n"), "MANIFEST.MF");
         jar.addAsManifestResource(createPermissionsXmlAsset(
