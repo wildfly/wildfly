@@ -17,6 +17,7 @@ import org.jboss.as.server.DeploymentProcessorTarget;
 import org.jboss.as.server.deployment.Phase;
 import org.wildfly.extension.microprofile.openapi.deployment.OpenAPIDependencyProcessor;
 import org.wildfly.extension.microprofile.openapi.deployment.OpenAPIDocumentProcessor;
+import org.wildfly.service.descriptor.NullaryServiceDescriptor;
 import org.wildfly.subsystem.resource.ManagementResourceRegistrar;
 import org.wildfly.subsystem.resource.ManagementResourceRegistrationContext;
 import org.wildfly.subsystem.resource.ResourceDescriptor;
@@ -31,7 +32,8 @@ public class MicroProfileOpenAPISubsystemRegistrar implements SubsystemResourceD
     static final SubsystemResourceRegistration REGISTRATION = SubsystemResourceRegistration.of("microprofile-openapi-smallrye");
     static final ParentResourceDescriptionResolver SUBSYSTEM_RESOLVER = new SubsystemResourceDescriptionResolver(REGISTRATION.getName(), MicroProfileOpenAPISubsystemRegistrar.class);
 
-    private static final RuntimeCapability<Void> CAPABILITY = RuntimeCapability.Builder.of("org.wildfly.microprofile.openapi")
+    public static final NullaryServiceDescriptor<Void> SERVICE_DESCRIPTOR = NullaryServiceDescriptor.of("org.wildfly.microprofile.openapi", Void.class);
+    private static final RuntimeCapability<Void> CAPABILITY = RuntimeCapability.Builder.of(SERVICE_DESCRIPTOR)
             .addRequirements("org.wildfly.microprofile.config")
             .build();
 
