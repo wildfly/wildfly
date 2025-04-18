@@ -15,7 +15,7 @@
     </exports>
 
     <resources>
-        <artifact name="${org.wildfly:wildfly-undertow}"/>
+        <artifact name="${org.wildfly:wildfly-undertow-extension}"/>
     </resources>
 
     <dependencies>
@@ -77,6 +77,7 @@
         <module name="org.wildfly.common" optional="true"/>
         <module name="org.wildfly.service"/>
         <module name="org.wildfly.subsystem"/>
+        <module name="org.wildfly.undertow.spi"/>
     </dependencies>
 
 </module>

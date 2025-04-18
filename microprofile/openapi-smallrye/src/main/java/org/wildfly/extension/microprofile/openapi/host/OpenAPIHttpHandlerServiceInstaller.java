@@ -3,45 +3,48 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package org.wildfly.extension.microprofile.openapi.deployment;
+package org.wildfly.extension.microprofile.openapi.host;
 
 import static org.wildfly.extension.microprofile.openapi.logging.MicroProfileOpenAPILogger.LOGGER;
 
 import java.util.List;
 
-import io.smallrye.openapi.api.SmallRyeOpenAPI;
+import io.smallrye.openapi.api.OpenApiConfig;
 
-import org.jboss.as.server.deployment.DeploymentPhaseContext;
+import org.jboss.as.controller.RequirementServiceTarget;
+import org.jboss.msc.service.ServiceController;
+import org.wildfly.extension.microprofile.openapi.model.OpenAPIProvider;
 import org.wildfly.extension.undertow.Host;
-import org.wildfly.subsystem.service.DeploymentServiceInstaller;
 import org.wildfly.subsystem.service.ServiceDependency;
 import org.wildfly.subsystem.service.ServiceInstaller;
 
 /**
- * Service that registers the OpenAPI HttpHandler.
+ * Installs a service that registers HttpHandler for the OpenAPI endpoint of a host.
  * @author Paul Ferraro
  * @author Michael Edgar
  */
-public class OpenAPIHttpHandlerServiceInstaller implements DeploymentServiceInstaller {
+public class OpenAPIHttpHandlerServiceInstaller implements ServiceInstaller {
 
-    private final OpenAPIEndpointConfiguration configuration;
+    private final OpenAPIModelConfiguration configuration;
 
-    public OpenAPIHttpHandlerServiceInstaller(OpenAPIEndpointConfiguration configuration) {
+    public OpenAPIHttpHandlerServiceInstaller(OpenAPIModelConfiguration configuration) {
         this.configuration = configuration;
     }
 
     @Override
-    public void install(DeploymentPhaseContext context) {
+    public ServiceController<?> install(RequirementServiceTarget target) {
         String serverName = this.configuration.getServerName();
         String hostName = this.configuration.getHostName();
+        String modelName = this.configuration.getModelName();
         String path = this.configuration.getPath();
+        OpenApiConfig configuration = this.configuration.getConfiguration();
         ServiceDependency<Host> host = ServiceDependency.on(Host.SERVICE_DESCRIPTOR, serverName, hostName);
-        ServiceDependency<SmallRyeOpenAPI> model = ServiceDependency.on(OpenAPIModelConfiguration.SERVICE_DESCRIPTOR, serverName, hostName, path);
+        ServiceDependency<OpenAPIProvider> provider = ServiceDependency.on(OpenAPIProvider.SERVICE_DESCRIPTOR, serverName, hostName, modelName);
 
         Runnable start = new Runnable() {
             @Override
             public void run() {
-                host.get().registerHandler(path, new OpenAPIHttpHandler(model.get()));
+                host.get().registerHandler(path, new OpenAPIHttpHandler(provider.get(), configuration));
                 LOGGER.endpointRegistered(path, host.get().getName());
             }
         };
@@ -52,10 +55,9 @@ public class OpenAPIHttpHandlerServiceInstaller implements DeploymentServiceInst
                 LOGGER.endpointUnregistered(path, host.get().getName());
             }
         };
-        ServiceInstaller.builder(start, stop)
-            .requires(List.of(host, model))
-            .asActive()
+        return ServiceInstaller.builder(start, stop).asPassive()
+            .requires(List.of(host, provider))
             .build()
-            .install(context);
+            .install(target);
     }
 }
