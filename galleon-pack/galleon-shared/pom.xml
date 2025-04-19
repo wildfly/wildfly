@@ -567,7 +567,7 @@
 
         <dependency>
             <groupId>${full.maven.groupId}</groupId>
-            <artifactId>wildfly-microprofile-openapi-smallrye</artifactId>
+            <artifactId>wildfly-microprofile-openapi-smallrye-extension</artifactId>
         </dependency>
 
         <dependency><groupId>${full.maven.groupId}</groupId><artifactId>wildfly-opentelemetry</artifactId></dependency>
