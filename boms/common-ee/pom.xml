@@ -4088,6 +4088,12 @@
                 <groupId>org.opensaml</groupId>
                 <artifactId>opensaml-profile-api</artifactId>
                 <version>${version.org.opensaml.opensaml}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>io.dropwizard.metrics</groupId>
+                        <artifactId>metrics-core</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
             <dependency>
                 <groupId>org.opensaml</groupId>
@@ -4099,6 +4105,10 @@
                 <artifactId>opensaml-saml-impl</artifactId>
                 <version>${version.org.opensaml.opensaml}</version>
                 <exclusions>
+                    <exclusion>
+                        <groupId>io.dropwizard.metrics</groupId>
+                        <artifactId>metrics-core</artifactId>
+                    </exclusion>
                     <exclusion>
                         <groupId>org.apache.velocity</groupId>
                         <artifactId>velocity</artifactId>
