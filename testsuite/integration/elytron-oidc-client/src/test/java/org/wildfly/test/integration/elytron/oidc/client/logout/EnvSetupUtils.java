@@ -10,6 +10,7 @@ import static org.jboss.as.test.integration.management.util.ModelUtil.createOpNo
 import static org.wildfly.test.integration.elytron.oidc.client.KeycloakConfiguration.KEYSTORE_FILE_NAME;
 import static org.wildfly.test.integration.elytron.oidc.client.KeycloakConfiguration.KEYSTORE_CLASSPATH;
 import static org.wildfly.test.integration.elytron.oidc.client.KeycloakConfiguration.getRealmRepresentation;
+import static org.wildfly.test.integration.elytron.oidc.client.logout.Constants.NO_CALLBACK;
 
 import io.restassured.RestAssured;
 
@@ -179,33 +180,41 @@ public class EnvSetupUtils {
                                     client, false);
                             KeycloakConfiguration.setBackchannelLogoutSessionRequired(
                                     client, true);
-                            KeycloakConfiguration.setBackchannelLogoutUrl(client,
-                                    logoutChannelUrls.backChannelPath);
+                            if (!NO_CALLBACK.equals(logoutChannelUrls.backChannelPath)) {
+                                KeycloakConfiguration.setBackchannelLogoutUrl(client,
+                                        logoutChannelUrls.backChannelPath);
+                            }
                         }
                         if (logoutChannelUrls.frontChannelPath != null) {
                             KeycloakConfiguration.setBackchannelLogoutSessionRequired(
                                     client, false);
                             KeycloakConfiguration.setFrontChannelLogoutSessionRequired(
                                     client, true);
-                            KeycloakConfiguration.setFrontChannelLogoutUrl(client,
-                                    logoutChannelUrls.frontChannelPath);
+                            if (!NO_CALLBACK.equals(logoutChannelUrls.frontChannelPath)) {
+                                KeycloakConfiguration.setFrontChannelLogoutUrl(client,
+                                        logoutChannelUrls.frontChannelPath);
+                            }
                         }
                         if (logoutChannelUrls.postLogoutRedirectPaths != null) {
                             KeycloakConfiguration.setFrontChannelLogoutSessionRequired(
                                     client, false);
                             KeycloakConfiguration.setBackchannelLogoutSessionRequired(
                                     client, true);
+
                             List<String> tmpList = new ArrayList<>();
                             for (String redirectPath : logoutChannelUrls.postLogoutRedirectPaths) {
-                                if (redirectPath.startsWith("http")) {
-                                    tmpList.add(redirectPath);
-                                } else {
-                                    tmpList.add("http://" + CLIENT_HOST_NAME + ":" + CLIENT_PORT
-                                            + "/" + client.getClientId() + redirectPath);
+                                if (!NO_CALLBACK.equals(redirectPath)) {
+                                    if (redirectPath.startsWith("http")) {
+                                        tmpList.add(redirectPath);
+                                    } else {
+                                        tmpList.add("http://" + CLIENT_HOST_NAME + ":" + CLIENT_PORT
+                                                + "/" + client.getClientId() + redirectPath);
+                                    }
                                 }
                             }
-
-                            KeycloakConfiguration.setPostLogoutRedirectUris(client, tmpList);
+                            if (!tmpList.isEmpty()) {
+                                KeycloakConfiguration.setPostLogoutRedirectUris(client, tmpList);
+                            }
                         }
                     }
                 }

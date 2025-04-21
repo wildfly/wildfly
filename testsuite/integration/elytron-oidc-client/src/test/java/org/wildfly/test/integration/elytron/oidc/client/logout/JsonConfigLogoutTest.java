@@ -6,6 +6,7 @@ package org.wildfly.test.integration.elytron.oidc.client.logout;
 
 import static org.junit.Assume.assumeTrue;
 import static org.wildfly.test.integration.elytron.oidc.client.logout.Constants.BACK_CHANNEL_LOGOUT_APP;
+import static org.wildfly.test.integration.elytron.oidc.client.logout.Constants.BACK_CHANNEL_LOGOUT_APP_TWO;
 import static org.wildfly.test.integration.elytron.oidc.client.logout.Constants.FRONT_CHANNEL_LOGOUT_APP;
 import static org.wildfly.test.integration.elytron.oidc.client.logout.Constants.RP_INITIATED_LOGOUT_APP;
 import static org.wildfly.test.integration.elytron.oidc.client.logout.Constants.SIGN_IN_TO_YOUR_ACCOUNT;
@@ -91,7 +92,6 @@ public class JsonConfigLogoutTest extends LoginLogoutBasics {
             + EnvSetupUtils.CLIENT_PORT + "/" + BACK_CHANNEL_LOGOUT_APP
             + SimpleSecuredServlet.SERVLET_PATH + Constants.LOGOUT_CALLBACK_PATH_VALUE;
 
-    private static final String BACK_CHANNEL_LOGOUT_APP_TWO = BACK_CHANNEL_LOGOUT_APP+"Two";
     private static final String BACK_CHANNEL_LOGOUT_URL_TWO = "http://"
             + EnvSetupUtils.HOST_TESTCONTAINERS_INTERNAL + ":"
             + EnvSetupUtils.CLIENT_PORT + "/" + BACK_CHANNEL_LOGOUT_APP_TWO
