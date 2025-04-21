@@ -8,6 +8,7 @@ import static org.junit.Assume.assumeTrue;
 import static org.wildfly.test.integration.elytron.oidc.client.logout.Constants.BACK_CHANNEL_LOGOUT_APP;
 import static org.wildfly.test.integration.elytron.oidc.client.logout.Constants.BACK_CHANNEL_LOGOUT_APP_TWO;
 import static org.wildfly.test.integration.elytron.oidc.client.logout.Constants.FRONT_CHANNEL_LOGOUT_APP;
+import static org.wildfly.test.integration.elytron.oidc.client.logout.Constants.NO_CALLBACK;
 import static org.wildfly.test.integration.elytron.oidc.client.logout.Constants.RP_INITIATED_LOGOUT_APP;
 import static org.wildfly.test.integration.elytron.oidc.client.logout.Constants.SIGN_IN_TO_YOUR_ACCOUNT;
 import static org.wildfly.test.integration.elytron.oidc.client.logout.Constants.WEB_XML;
@@ -48,16 +49,17 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.junit.Ignore;
 
 /*  Test OIDC logout.  Logout configuration attributes
     are passed to Elytron via oidc.json file attributes.
  */
 @RunWith(Arquillian.class)
 @RunAsClient
-@ServerSetup({ ServerConfigLogoutTest.PreviewStabilitySetupTask.class,
+@ServerSetup({ JsonConfigLogoutNoCallbackTest.PreviewStabilitySetupTask.class,
         EnvSetupUtils.KeycloakAndSubsystemSetup.class,
         EnvSetupUtils.WildFlyServerSetupTask.class})
-public class ServerConfigLogoutTest extends LoginLogoutBasics {
+public class JsonConfigLogoutNoCallbackTest extends LoginLogoutBasics {
 
     @ArquillianResource
     protected static Deployer deployer;
@@ -77,30 +79,11 @@ public class ServerConfigLogoutTest extends LoginLogoutBasics {
         super.setHttpClient(httpClient);
     }
 
-    public ServerConfigLogoutTest() {
+    public JsonConfigLogoutNoCallbackTest() {
         super(Stability.PREVIEW);
     }
 
     //-------------- test configuration data ---------------
-    private static final String POST_LOGOUT_PATH_VALUE = "http://"
-            + EnvSetupUtils.CLIENT_HOST_NAME + ":"
-            + EnvSetupUtils.CLIENT_PORT + "/" + RP_INITIATED_LOGOUT_APP
-            + SimplePostLogoutServlet.POST_LOGOUT_PATH;
-
-    private static final String BACK_CHANNEL_LOGOUT_URL = "http://"
-            + EnvSetupUtils.HOST_TESTCONTAINERS_INTERNAL + ":"
-            + EnvSetupUtils.CLIENT_PORT + "/" + BACK_CHANNEL_LOGOUT_APP
-            + SimpleSecuredServlet.SERVLET_PATH + Constants.LOGOUT_CALLBACK_PATH_VALUE;
-
-    private static final String BACK_CHANNEL_LOGOUT_URL_TWO = "http://"
-            + EnvSetupUtils.HOST_TESTCONTAINERS_INTERNAL + ":"
-            + EnvSetupUtils.CLIENT_PORT + "/" + BACK_CHANNEL_LOGOUT_APP_TWO
-            + SimpleSecuredServlet.SERVLET_PATH + Constants.LOGOUT_CALLBACK_PATH_VALUE;
-
-    private static final String FRONT_CHANNEL_LOGOUT_URL = "http://"
-            + EnvSetupUtils.HOST_TESTCONTAINERS_INTERNAL + ":"
-            + EnvSetupUtils.CLIENT_PORT + "/" + FRONT_CHANNEL_LOGOUT_APP
-            + SecuredFrontChannelServlet.SERVLET_PATH + Constants.LOGOUT_CALLBACK_PATH_VALUE;
 
     // These are the oidc logout URL paths that are registered with Keycloak.
     // The path of the URL must be the same as the system properties registered above.
@@ -108,15 +91,15 @@ public class ServerConfigLogoutTest extends LoginLogoutBasics {
     static {
         APP_LOGOUT= new HashMap<String, LoginLogoutBasics.LogoutChannelPaths>();
         APP_LOGOUT.put(RP_INITIATED_LOGOUT_APP, new LoginLogoutBasics.LogoutChannelPaths(
-                null,null, List.of(POST_LOGOUT_PATH_VALUE)) );
+                null,null, List.of(NO_CALLBACK)) );
         APP_LOGOUT.put(BACK_CHANNEL_LOGOUT_APP, new LoginLogoutBasics.LogoutChannelPaths(
-                BACK_CHANNEL_LOGOUT_URL,null, null) );
+                NO_CALLBACK, null, null) );
         APP_LOGOUT.put(BACK_CHANNEL_LOGOUT_APP_TWO, new LoginLogoutBasics.LogoutChannelPaths(
-                BACK_CHANNEL_LOGOUT_URL_TWO,null, null) );
+                NO_CALLBACK,null, null) );
         APP_LOGOUT.put(FRONT_CHANNEL_LOGOUT_APP, new LoginLogoutBasics.LogoutChannelPaths(
-                null,FRONT_CHANNEL_LOGOUT_URL, null) );
+                null, NO_CALLBACK, null) );
         EnvSetupUtils.KeycloakAndSubsystemSetup.setLogoutUrlPaths(APP_LOGOUT);
-        EnvSetupUtils.KeycloakAndSubsystemSetup.setOidcServerConfig(true);
+        EnvSetupUtils.KeycloakAndSubsystemSetup.setOidcServerConfig(false);
     }
 
     // These are the application names registered as Keycloak clients.
@@ -134,15 +117,16 @@ public class ServerConfigLogoutTest extends LoginLogoutBasics {
 
     //-------------- Test components ---------------------
 
-    private static final Package packageName = ServerConfigLogoutTest.class.getPackage();
+    private static final Package packageName = JsonConfigLogoutNoCallbackTest.class.getPackage();
 
     @Deployment(name = RP_INITIATED_LOGOUT_APP, managed = false, testable = false)
     public static WebArchive createRpInitiatedAuthServerUrlDeployment() {
         return ShrinkWrap.create(WebArchive.class, RP_INITIATED_LOGOUT_APP + ".war")
                 .addClasses(SimpleServlet.class)
                 .addClasses(SimpleSecuredServlet.class)
-                .addClasses(SimplePostLogoutServlet.class)
                 .addAsWebInfResource(packageName, WEB_XML, "web.xml")
+                .addAsWebInfResource(packageName,
+                        RP_INITIATED_LOGOUT_APP+"-oidc.json", "oidc.json")
                 ;
     }
 
@@ -152,6 +136,8 @@ public class ServerConfigLogoutTest extends LoginLogoutBasics {
                 .addClasses(SimpleServlet.class)
                 .addClasses(SimpleSecuredServlet.class)
                 .addAsWebInfResource(packageName, WEB_XML, "web.xml")
+                .addAsWebInfResource(packageName,
+                        BACK_CHANNEL_LOGOUT_APP+"-oidc.json", "oidc.json")
                 ;
         return war;
     }
@@ -162,6 +148,8 @@ public class ServerConfigLogoutTest extends LoginLogoutBasics {
                 .addClasses(SimpleServlet.class)
                 .addClasses(SimpleSecuredServlet.class)
                 .addAsWebInfResource(packageName, WEB_XML, "web.xml")
+                .addAsWebInfResource(packageName,
+                        BACK_CHANNEL_LOGOUT_APP_TWO+"-oidc.json", "oidc.json")
                 ;
         return war;
     }
@@ -176,7 +164,7 @@ public class ServerConfigLogoutTest extends LoginLogoutBasics {
                         FRONT_CHANNEL_LOGOUT_APP+"-oidc.json", "oidc.json")
                 ;
     }
-
+    @Ignore // todo re-enable test when keycloak is returning logout token
     @Test
     //  Test checks that RPInitiated Logout can be completed
     //  via a GET to the OP.
@@ -186,7 +174,7 @@ public class ServerConfigLogoutTest extends LoginLogoutBasics {
 
             loginToApp(RP_INITIATED_LOGOUT_APP);
             assertUserLoggedIn(RP_INITIATED_LOGOUT_APP, SimpleServlet.RESPONSE_BODY);
-            logoutOfKeycloak(RP_INITIATED_LOGOUT_APP, SimplePostLogoutServlet.RESPONSE_BODY);
+            logoutOfKeycloak(RP_INITIATED_LOGOUT_APP, YOU_ARE_LOGGED_OUT);
             assertUserLoggedOut(RP_INITIATED_LOGOUT_APP, SIGN_IN_TO_YOUR_ACCOUNT);
 
         } finally {
@@ -240,7 +228,6 @@ public class ServerConfigLogoutTest extends LoginLogoutBasics {
             deployer.deploy(BACK_CHANNEL_LOGOUT_APP_TWO);
             deployer.deploy(BACK_CHANNEL_LOGOUT_APP);
             loginToApp(BACK_CHANNEL_LOGOUT_APP);
-            loginToApp(BACK_CHANNEL_LOGOUT_APP_TWO);
 
             assertUserLoggedIn(BACK_CHANNEL_LOGOUT_APP, "GOOD");
             assertUserLoggedIn(BACK_CHANNEL_LOGOUT_APP_TWO, "GOOD");
@@ -255,14 +242,13 @@ public class ServerConfigLogoutTest extends LoginLogoutBasics {
         }
     }
 
-
     //-------------- Server Setup -------------------------
     public static class PreviewStabilitySetupTask extends StabilityServerSetupSnapshotRestoreTasks.Preview {
         @Override
         protected void doSetup(ManagementClient managementClient) throws Exception {
             // Write a system property so the model gets stored with a lower stability level.
             // This is to make sure we can reload back to the higher level from the snapshot
-            LoginLogoutBasics.addSystemProperty(managementClient, ServerConfigLogoutTest.class);
+            LoginLogoutBasics.addSystemProperty(managementClient, JsonConfigLogoutNoCallbackTest.class);
         }
     }
 }
