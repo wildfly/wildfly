@@ -525,7 +525,7 @@
         <version.org.wildfly.core>28.0.0.Final</version.org.wildfly.core>
         <version.org.wildfly.http-client>2.1.0.Final</version.org.wildfly.http-client>
         <version.org.wildfly.launcher>1.0.2.Final</version.org.wildfly.launcher>
-        <version.org.wildfly.mvc.krazo>1.0.0.Final</version.org.wildfly.mvc.krazo>
+        <version.org.wildfly.mvc.krazo>1.0.1.Final</version.org.wildfly.mvc.krazo>
         <version.org.wildfly.vertx>1.0.2.Final</version.org.wildfly.vertx>
         <version.org.wildfly.naming-client>2.0.1.Final</version.org.wildfly.naming-client>
         <version.org.wildfly.security.elytron-tests-common>2.4.2.Final</version.org.wildfly.security.elytron-tests-common>
