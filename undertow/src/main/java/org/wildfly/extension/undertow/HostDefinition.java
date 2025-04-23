@@ -12,12 +12,12 @@ import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.AttributeMarshaller;
 import org.jboss.as.controller.AttributeParser;
 import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.StringListAttributeDefinition;
 import org.jboss.as.controller.capability.RuntimeCapability;
+import org.jboss.as.controller.capability.UnaryCapabilityNameResolver;
 import org.jboss.as.controller.operations.validation.IntRangeValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
@@ -26,6 +26,10 @@ import org.jboss.as.web.host.WebHost;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.wildfly.extension.undertow.filters.FilterRefDefinition;
+import org.wildfly.subsystem.resource.ManagementResourceRegistrar;
+import org.wildfly.subsystem.resource.ResourceDescriptor;
+import org.wildfly.subsystem.resource.capability.ResourceCapabilityReference;
+import org.wildfly.subsystem.resource.operation.ResourceOperationRuntimeHandler;
 
 /**
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a> (c) 2013 Red Hat Inc.
@@ -68,19 +72,25 @@ class HostDefinition extends SimpleResourceDefinition {
 
     static final Collection<AttributeDefinition> ATTRIBUTES = List.of(ALIAS, DEFAULT_WEB_MODULE, DEFAULT_RESPONSE_CODE, DISABLE_CONSOLE_REDIRECT, QUEUE_REQUESTS_ON_START);
 
+    private final ResourceDescriptor descriptor;
+
     HostDefinition() {
-        super(new SimpleResourceDefinition.Parameters(PATH_ELEMENT, UndertowExtension.getResolver(PATH_ELEMENT.getKey()))
-                .setAddHandler(HostAdd.INSTANCE)
-                .setRemoveHandler(new HostRemove())
-                .addCapabilities(HOST_CAPABILITY, WebHost.CAPABILITY)
-        );
+        this(ResourceDescriptor.builder(UndertowExtension.getResolver(PATH_ELEMENT.getKey()))
+                .addAttributes(ATTRIBUTES)
+                .addCapabilities(List.of(HOST_CAPABILITY, WebHost.CAPABILITY))
+                .withRuntimeHandler(ResourceOperationRuntimeHandler.configureService(HostServiceConfigurator.INSTANCE))
+                .addResourceCapabilityReference(ResourceCapabilityReference.builder(HOST_CAPABILITY, Server.SERVICE_DESCRIPTOR).withRequirementNameResolver(UnaryCapabilityNameResolver.PARENT).build())
+                .build());
+    }
+
+    private HostDefinition(ResourceDescriptor descriptor) {
+        super(new SimpleResourceDefinition.Parameters(PATH_ELEMENT, descriptor.getResourceDescriptionResolver()));
+        this.descriptor = descriptor;
     }
 
     @Override
-    public void registerAttributes(ManagementResourceRegistration registration) {
-        for (AttributeDefinition attribute : ATTRIBUTES) {
-            registration.registerReadWriteAttribute(attribute, null, ReloadRequiredWriteAttributeHandler.INSTANCE);
-        }
+    public void registerOperations(ManagementResourceRegistration registration) {
+        ManagementResourceRegistrar.of(this.descriptor).register(registration);
     }
 
     @Override
