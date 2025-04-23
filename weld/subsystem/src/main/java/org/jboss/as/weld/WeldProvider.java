@@ -77,9 +77,8 @@ public class WeldProvider implements CDIProvider {
         public BeanManager getBeanManager() {
             checkContainerState(container);
             final String callerName = getCallingClassName();
-            if (callerName.startsWith("org.glassfish.soteria")
-                    || callerName.startsWith("org.eclipse.krazo")) {
-                //the Jakarta Security and Jakarta MVC RIs use CDI.current() to perform bean lookup, however
+            if (callerName.startsWith("org.eclipse.krazo")) {
+                //the Jakarta MVC RI uses CDI.current() to perform bean lookup, however
                 //as it is part of the container its bean archive does not have visibility to deployment beans
                 //we use this code path to enable it to get the bean manager of the current module
                 //so it can look up the deployment beans it needs to work
