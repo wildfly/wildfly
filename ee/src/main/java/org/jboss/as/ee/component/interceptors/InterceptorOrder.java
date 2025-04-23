@@ -153,6 +153,9 @@ public class InterceptorOrder {
         public static final int INVALID_METHOD_EXCEPTION = 0x230;
         public static final int STARTUP_AWAIT_INTERCEPTOR = 0x248;
         public static final int SINGLETON_CONTAINER_MANAGED_CONCURRENCY_INTERCEPTOR = 0x240;
+        // Allows users to specify server specific "server interceptors" in the ejb3 subsystem which run
+        // before the user application specific "container interceptors"
+        public static final int USER_SPECIFIC_SERVER_INTERCEPTORS = 0x245;
         // Allows users to specify user application specific "container interceptors" which run before the
         // other JBoss specific container interceptors like the security interceptor
         public static final int USER_APP_SPECIFIC_CONTAINER_INTERCEPTORS = 0x249;
