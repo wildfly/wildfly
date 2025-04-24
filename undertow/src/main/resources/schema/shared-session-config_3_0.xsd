@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+            xmlns:jakartaee="https://jakarta.ee/xml/ns/jakartaee"
+            targetNamespace="urn:jboss:shared-session-config:3.0"
+            xmlns="urn:jboss:shared-session-config:3.0"
+            elementFormDefault="qualified"
+            attributeFormDefault="unqualified"
+            version="3.0">
+    <xs:import namespace="https://jakarta.ee/xml/ns/jakartaee" schemaLocation="https://jakarta.ee/xml/ns/jakartaee/web-common_6_0.xsd"/>
+
+    <!-- Root element -->
+    <xs:element name="shared-session-config" type="sharedSessionType">
+        <xs:annotation>
+            <xs:documentation>
+                Root element for the shared session config. If this is present in the root of
+                an ear then all war's deployed in the ear will share a single session manager.
+            </xs:documentation>
+        </xs:annotation>
+    </xs:element>
+
+    <xs:complexType name="sharedSessionType">
+        <xs:all>
+            <xs:element name="distributable" type="jakartaee:emptyType" minOccurs="0"/>
+            <xs:element name="max-active-sessions" type="xs:string" minOccurs="0"/>
+            <xs:element name="session-config" type="jakartaee:session-configType" minOccurs="0"/>
+        </xs:all>
+    </xs:complexType>
+</xs:schema>
