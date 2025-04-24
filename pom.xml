@@ -63,8 +63,6 @@
         <ee.maven.groupId>${project.groupId}</ee.maven.groupId>
         <ee.maven.version>${project.version}</ee.maven.version>
         <product.docs.server.version>36</product.docs.server.version>
-        <!-- A short variant of product.release.version used in 'startsWith' tests done by dist verification logic -->
-        <verifier.product.release.version>${product.docs.server.version}.0</verifier.product.release.version>
         <!-- The Galleon channel for the minor version with which this branch is associated.  -->
         <galleon.minor.channel>${product.docs.server.version}.0</galleon.minor.channel>
 
