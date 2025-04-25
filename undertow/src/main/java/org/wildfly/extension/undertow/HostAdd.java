@@ -89,10 +89,9 @@ final class HostAdd extends AbstractAddStepHandler {
             hostConsumer = csb.provides(HostDefinition.HOST_CAPABILITY);
         }
         final Supplier<Server> sSupplier = csb.requires(Server.SERVICE_DESCRIPTOR, serverName);
-        final Supplier<UndertowService> usSupplier = csb.requiresCapability(Capabilities.CAPABILITY_UNDERTOW, UndertowService.class);
         final Supplier<ControlledProcessStateService> cpssSupplier = csb.requires(ControlledProcessStateService.SERVICE_NAME);
         final Supplier<SuspendController> scSupplier = csb.requires(context.getCapabilityServiceName(Capabilities.REF_SUSPEND_CONTROLLER, SuspendController.class));
-        csb.setInstance(new Host(hostConsumer, sSupplier, usSupplier, cpssSupplier, scSupplier, name, aliases == null ? new LinkedList<>(): aliases, defaultWebModule, defaultResponseCode, queueRequestsOnStart));
+        csb.setInstance(new Host(hostConsumer, sSupplier, cpssSupplier, scSupplier, name, aliases == null ? new LinkedList<>(): aliases, defaultWebModule, defaultResponseCode, queueRequestsOnStart));
         csb.setInitialMode(Mode.ON_DEMAND);
         csb.install();
 

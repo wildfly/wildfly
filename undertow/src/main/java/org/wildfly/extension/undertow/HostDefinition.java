@@ -34,9 +34,7 @@ class HostDefinition extends SimpleResourceDefinition {
     static final PathElement PATH_ELEMENT = PathElement.pathElement(Constants.HOST);
     public static final String DEFAULT_WEB_MODULE_DEFAULT = "ROOT.war";
 
-    static final RuntimeCapability<Void> HOST_CAPABILITY = RuntimeCapability.Builder.of(Host.SERVICE_DESCRIPTOR)
-            .addRequirements(Capabilities.CAPABILITY_UNDERTOW)
-            .build();
+    static final RuntimeCapability<Void> HOST_CAPABILITY = RuntimeCapability.Builder.of(Host.SERVICE_DESCRIPTOR).build();
 
     static final StringListAttributeDefinition ALIAS = new StringListAttributeDefinition.Builder(Constants.ALIAS)
             .setRequired(false)
