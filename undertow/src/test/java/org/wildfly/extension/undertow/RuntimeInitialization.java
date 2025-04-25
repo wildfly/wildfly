@@ -13,7 +13,8 @@ import java.util.function.Supplier;
 
 import javax.net.ssl.SSLContext;
 
-import org.jboss.as.controller.ControlledProcessStateService;
+import org.jboss.as.controller.ControlledProcessState;
+import org.jboss.as.controller.ProcessStateNotifier;
 import org.jboss.as.controller.RunningMode;
 import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.as.naming.service.NamingStoreService;
@@ -26,11 +27,11 @@ import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
-import org.jboss.msc.service.StartContext;
-import org.jboss.msc.service.StopContext;
+import org.mockito.Mockito;
 import org.wildfly.extension.io.IOServices;
 import org.wildfly.extension.io.WorkerService;
 import org.wildfly.security.auth.server.HttpAuthenticationFactory;
+import org.wildfly.service.ServiceInstaller;
 import org.xnio.OptionMap;
 import org.xnio.Options;
 import org.xnio.Xnio;
@@ -112,7 +113,9 @@ class RuntimeInitialization extends DefaultInitialization {
                             Xnio.getInstance().createWorkerBuilder().populateFromOptions(OptionMap.builder().set(Options.WORKER_IO_THREADS, 2).getMap())));
             builder2.install();
 
-            target.addService(ControlledProcessStateService.SERVICE_NAME).setInstance(new NullService()).install();
+            ProcessStateNotifier notifier = Mockito.mock(ProcessStateNotifier.class);
+            Mockito.doReturn(ControlledProcessState.State.RUNNING).when(notifier).getCurrentState();
+            ServiceInstaller.builder(notifier).provides(ServiceName.parse(ProcessStateNotifier.SERVICE_DESCRIPTOR.getName())).build().install(target);
 
             // ListenerRegistry.Listener listener = new ListenerRegistry.Listener("http", "default", "default",
             // InetSocketAddress.createUnresolved("localhost",8080));
@@ -139,20 +142,4 @@ class RuntimeInitialization extends DefaultInitialization {
             e.printStackTrace();
         }
     }
-
-    private static final class NullService implements org.jboss.msc.service.Service<ControlledProcessStateService> {
-        @Override
-        public void start(StartContext context) {
-
-        }
-
-        @Override
-        public void stop(StopContext context) {
-
-        }
-
-        @Override
-        public ControlledProcessStateService getValue() throws IllegalStateException, IllegalArgumentException {
-            return null;
-        }
-    }}
+}
