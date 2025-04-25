@@ -15,10 +15,10 @@ import java.util.function.Supplier;
 
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.CapabilityServiceBuilder;
-import org.jboss.as.controller.ControlledProcessStateService;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.ProcessStateNotifier;
 import org.jboss.as.controller.ProcessType;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.capability.RuntimeCapability;
@@ -89,9 +89,9 @@ final class HostAdd extends AbstractAddStepHandler {
             hostConsumer = csb.provides(HostDefinition.HOST_CAPABILITY);
         }
         final Supplier<Server> sSupplier = csb.requires(Server.SERVICE_DESCRIPTOR, serverName);
-        final Supplier<ControlledProcessStateService> cpssSupplier = csb.requires(ControlledProcessStateService.SERVICE_NAME);
+        final Supplier<ProcessStateNotifier> processStateNotifier = csb.requires(ProcessStateNotifier.SERVICE_DESCRIPTOR);
         final Supplier<SuspendController> scSupplier = csb.requires(context.getCapabilityServiceName(Capabilities.REF_SUSPEND_CONTROLLER, SuspendController.class));
-        csb.setInstance(new Host(hostConsumer, sSupplier, cpssSupplier, scSupplier, name, aliases == null ? new LinkedList<>(): aliases, defaultWebModule, defaultResponseCode, queueRequestsOnStart));
+        csb.setInstance(new Host(hostConsumer, sSupplier, processStateNotifier, scSupplier, name, aliases == null ? new LinkedList<>(): aliases, defaultWebModule, defaultResponseCode, queueRequestsOnStart));
         csb.setInitialMode(Mode.ON_DEMAND);
         csb.install();
 
