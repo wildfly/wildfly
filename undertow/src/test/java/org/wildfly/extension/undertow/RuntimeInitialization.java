@@ -22,6 +22,7 @@ import org.jboss.as.remoting.HttpListenerRegistryService;
 import org.jboss.as.server.Services;
 import org.jboss.as.server.moduleservice.ServiceModuleLoader;
 import org.jboss.as.server.suspend.SuspendController;
+import org.jboss.as.server.suspend.SuspendableActivityRegistry;
 import org.jboss.msc.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
@@ -89,8 +90,9 @@ class RuntimeInitialization extends DefaultInitialization {
         try {
             SSLContext sslContext = SSLContext.getDefault();
 
-            ServiceBuilder<?> builder = target.addService();
-            builder.setInstance(Service.newInstance(builder.provides(ServiceName.parse(Capabilities.REF_SUSPEND_CONTROLLER)), new SuspendController())).install();
+            SuspendController suspendController = new SuspendController();
+            ServiceInstaller.builder(suspendController).provides(ServiceName.parse(SuspendableActivityRegistry.SERVICE_DESCRIPTOR.getName())).build().install(target);
+
             target.addService(Services.JBOSS_SERVICE_MODULE_LOADER).setInstance(new ServiceModuleLoader(null)).install();
             target.addService(ContextNames.JAVA_CONTEXT_SERVICE_NAME).setInstance(new NamingStoreService()).install();
             target.addService(ContextNames.JBOSS_CONTEXT_SERVICE_NAME).setInstance(new NamingStoreService()).install();
