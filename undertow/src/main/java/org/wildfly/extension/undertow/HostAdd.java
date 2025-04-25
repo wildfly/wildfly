@@ -25,6 +25,7 @@ import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.server.mgmt.UndertowHttpManagementService;
 import org.jboss.as.server.mgmt.domain.HttpManagement;
 import org.jboss.as.server.suspend.SuspendController;
+import org.jboss.as.server.suspend.SuspendableActivityRegistry;
 import org.jboss.as.web.host.CommonWebServer;
 import org.jboss.as.web.host.WebHost;
 import org.jboss.dmr.ModelNode;
@@ -90,8 +91,8 @@ final class HostAdd extends AbstractAddStepHandler {
         }
         final Supplier<Server> sSupplier = csb.requires(Server.SERVICE_DESCRIPTOR, serverName);
         final Supplier<ProcessStateNotifier> processStateNotifier = csb.requires(ProcessStateNotifier.SERVICE_DESCRIPTOR);
-        final Supplier<SuspendController> scSupplier = csb.requires(context.getCapabilityServiceName(Capabilities.REF_SUSPEND_CONTROLLER, SuspendController.class));
-        csb.setInstance(new Host(hostConsumer, sSupplier, processStateNotifier, scSupplier, name, aliases == null ? new LinkedList<>(): aliases, defaultWebModule, defaultResponseCode, queueRequestsOnStart));
+        final Supplier<SuspendableActivityRegistry> activityRegistry = csb.requires(context.getCapabilityServiceName(Capabilities.REF_SUSPEND_CONTROLLER, SuspendController.class));
+        csb.setInstance(new Host(hostConsumer, sSupplier, processStateNotifier, activityRegistry, name, aliases == null ? new LinkedList<>(): aliases, defaultWebModule, defaultResponseCode, queueRequestsOnStart));
         csb.setInitialMode(Mode.ON_DEMAND);
         csb.install();
 
