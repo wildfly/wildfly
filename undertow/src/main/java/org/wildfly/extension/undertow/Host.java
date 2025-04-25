@@ -65,7 +65,6 @@ public class Host implements Service<Host>, FilterLocation {
 
     private final Consumer<Host> serviceConsumer;
     private final Supplier<Server> server;
-    private final Supplier<UndertowService> undertowService;
     private final Supplier<ControlledProcessStateService> controlledProcessStateService;
     private final Supplier<SuspendController> suspendController;
     private final PathHandler pathHandler = new PathHandler();
@@ -103,12 +102,11 @@ public class Host implements Service<Host>, FilterLocation {
         }
     };
 
-    public Host(final Consumer<Host> serviceConsumer, final Supplier<Server> server, final Supplier<UndertowService> undertowService,
+    public Host(final Consumer<Host> serviceConsumer, final Supplier<Server> server,
             final Supplier<ControlledProcessStateService> controlledProcessStateService, final Supplier<SuspendController> suspendController,
             final String name, final List<String> aliases, final String defaultWebModule, final int defaultResponseCode, final Boolean queueRequestsOnStart ) {
         this.serviceConsumer = serviceConsumer;
         this.server = server;
-        this.undertowService = undertowService;
         this.controlledProcessStateService = controlledProcessStateService;
         this.suspendController = suspendController;
         this.name = name;
@@ -284,13 +282,13 @@ public class Host implements Service<Host>, FilterLocation {
         registerHandler(path, handler);
         deployments.add(deployment);
         UndertowLogger.ROOT_LOGGER.registerWebapp(path, getServer().getName());
-        undertowService.get().fireEvent(listener -> listener.onDeploymentStart(deployment, Host.this));
+        server.get().getUndertowService().fireEvent(listener -> listener.onDeploymentStart(deployment, Host.this));
     }
 
     public void unregisterDeployment(final Deployment deployment) {
         DeploymentInfo deploymentInfo = deployment.getDeploymentInfo();
         String path = getDeployedContextPath(deploymentInfo);
-        undertowService.get().fireEvent(listener -> listener.onDeploymentStop(deployment, Host.this));
+        server.get().getUndertowService().fireEvent(listener -> listener.onDeploymentStop(deployment, Host.this));
         unregisterHandler(path);
         deployments.remove(deployment);
         UndertowLogger.ROOT_LOGGER.unregisterWebapp(path, getServer().getName());
@@ -299,13 +297,13 @@ public class Host implements Service<Host>, FilterLocation {
     void registerLocation(String path) {
         String realPath = path.startsWith("/") ? path : "/" + path;
         locations.put(realPath, null);
-        undertowService.get().fireEvent(listener -> listener.onDeploymentStart(realPath, Host.this));
+        server.get().getUndertowService().fireEvent(listener -> listener.onDeploymentStart(realPath, Host.this));
     }
 
     void unregisterLocation(String path) {
         String realPath = path.startsWith("/") ? path : "/" + path;
         locations.remove(realPath);
-        undertowService.get().fireEvent(listener -> listener.onDeploymentStop(realPath, Host.this));
+        server.get().getUndertowService().fireEvent(listener -> listener.onDeploymentStop(realPath, Host.this));
     }
 
     public void registerHandler(String path, HttpHandler handler) {
@@ -328,13 +326,13 @@ public class Host implements Service<Host>, FilterLocation {
     void registerLocation(LocationService location) {
         locations.put(location.getLocationPath(), location);
         registerHandler(location.getLocationPath(), location.getLocationHandler());
-        undertowService.get().fireEvent(listener -> listener.onDeploymentStart(location.getLocationPath(), Host.this));
+        server.get().getUndertowService().fireEvent(listener -> listener.onDeploymentStart(location.getLocationPath(), Host.this));
     }
 
     void unregisterLocation(LocationService location) {
         locations.remove(location.getLocationPath());
         unregisterHandler(location.getLocationPath());
-        undertowService.get().fireEvent(listener -> listener.onDeploymentStop(location.getLocationPath(), Host.this));
+        server.get().getUndertowService().fireEvent(listener -> listener.onDeploymentStop(location.getLocationPath(), Host.this));
     }
 
     public Set<String> getLocations() {
