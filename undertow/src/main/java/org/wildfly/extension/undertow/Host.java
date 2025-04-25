@@ -40,7 +40,7 @@ import io.undertow.servlet.api.DeploymentInfo;
 import io.undertow.util.CopyOnWriteMap;
 import io.undertow.util.Methods;
 import org.jboss.as.controller.ControlledProcessState;
-import org.jboss.as.controller.ControlledProcessStateService;
+import org.jboss.as.controller.ProcessStateNotifier;
 import org.jboss.as.server.suspend.ServerActivity;
 import org.jboss.as.server.suspend.ServerActivityCallback;
 import org.jboss.as.server.suspend.SuspendController;
@@ -65,7 +65,7 @@ public class Host implements Service<Host>, FilterLocation {
 
     private final Consumer<Host> serviceConsumer;
     private final Supplier<Server> server;
-    private final Supplier<ControlledProcessStateService> controlledProcessStateService;
+    private final Supplier<ProcessStateNotifier> processStateNotifier;
     private final Supplier<SuspendController> suspendController;
     private final PathHandler pathHandler = new PathHandler();
     private final Set<String> allAliases;
@@ -103,11 +103,11 @@ public class Host implements Service<Host>, FilterLocation {
     };
 
     public Host(final Consumer<Host> serviceConsumer, final Supplier<Server> server,
-            final Supplier<ControlledProcessStateService> controlledProcessStateService, final Supplier<SuspendController> suspendController,
+            final Supplier<ProcessStateNotifier> processStateNotifier, final Supplier<SuspendController> suspendController,
             final String name, final List<String> aliases, final String defaultWebModule, final int defaultResponseCode, final Boolean queueRequestsOnStart ) {
         this.serviceConsumer = serviceConsumer;
         this.server = server;
-        this.controlledProcessStateService = controlledProcessStateService;
+        this.processStateNotifier = processStateNotifier;
         this.suspendController = suspendController;
         this.name = name;
         this.defaultWebModule = defaultWebModule;
@@ -134,9 +134,8 @@ public class Host implements Service<Host>, FilterLocation {
         } else {
             defaultHandler.setSuspended(true);
         }
-        ControlledProcessStateService controlledProcessStateService = this.controlledProcessStateService.get();
-        //may be null for tests
-        if(controlledProcessStateService != null && controlledProcessStateService.getCurrentState() == ControlledProcessState.State.STARTING) {
+        ProcessStateNotifier processStateNotifier = this.processStateNotifier.get();
+        if (processStateNotifier.getCurrentState() == ControlledProcessState.State.STARTING) {
             // Non-graceful is ControlledProcessState.State.STARTING && SuspendController.State.RUNNING. We know from above
             // that we are STARTING, so we just need to check that state of the SuspendController
             boolean nonGraceful = state == SuspendController.State.RUNNING;
@@ -152,10 +151,10 @@ public class Host implements Service<Host>, FilterLocation {
                 }
 
                 gateHandlerWrapper = new GateHandlerWrapper(statusCode);
-                controlledProcessStateService.addPropertyChangeListener(new PropertyChangeListener() {
+                processStateNotifier.addPropertyChangeListener(new PropertyChangeListener() {
                     @Override
                     public void propertyChange(PropertyChangeEvent evt) {
-                        controlledProcessStateService.removePropertyChangeListener(this);
+                        processStateNotifier.removePropertyChangeListener(this);
                         if (gateHandlerWrapper != null) {
                             gateHandlerWrapper.open();
                             gateHandlerWrapper = null;
