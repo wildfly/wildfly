@@ -7,6 +7,7 @@ package org.wildfly.extension.undertow;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.ServiceLoader;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
@@ -139,6 +140,12 @@ public enum HostServiceConfigurator implements ResourceServiceConfigurator {
                 }
             });
         }
+
+        // Install any provided services
+        for (HostServiceInstallerProvider provider : ServiceLoader.load(HostServiceInstallerProvider.class, HostServiceInstallerProvider.class.getClassLoader())) {
+            installers.add(provider.getServiceInstaller(serverName, name));
+        }
+
         return ResourceServiceInstaller.combine(installers);
     }
 }
