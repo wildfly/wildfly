@@ -53,7 +53,7 @@ class RuntimeInitialization extends DefaultInitialization {
     }
 
     private void record(ServiceTarget target, ServiceName name, ServiceController.Mode mode) {
-        ServiceBuilder<?> builder = target.addService(name.append("test-recorder"));
+        ServiceBuilder<?> builder = target.addService();
         this.values.put(name, builder.requires(name));
         builder.setInstance(Service.NULL).setInitialMode(mode).install();
     }
@@ -138,7 +138,6 @@ class RuntimeInitialization extends DefaultInitialization {
         } catch (NoSuchAlgorithmException e) {
             e.printStackTrace();
         }
-
     }
 
     private static final class NullService implements org.jboss.msc.service.Service<ControlledProcessStateService> {
