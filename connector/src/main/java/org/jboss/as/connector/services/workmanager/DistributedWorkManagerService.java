@@ -22,7 +22,6 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
-import org.jboss.threads.BlockingExecutor;
 import org.wildfly.clustering.server.dispatcher.CommandDispatcherFactory;
 
 /**
@@ -67,13 +66,13 @@ public final class DistributedWorkManagerService implements Service<NamedDistrib
 
         this.value.setTransport(transport);
 
-        BlockingExecutor longRunning = (BlockingExecutor) executorLong.getOptionalValue();
+        Executor longRunning = executorLong.getOptionalValue();
         if (longRunning != null) {
             this.value.setLongRunningThreadPool(longRunning);
-            this.value.setShortRunningThreadPool(new StatisticsExecutorImpl((BlockingExecutor) executorShort.getValue()));
+            this.value.setShortRunningThreadPool(new StatisticsExecutorImpl(executorShort.getValue()));
         } else {
-            this.value.setLongRunningThreadPool(new StatisticsExecutorImpl((BlockingExecutor) executorShort.getValue()));
-            this.value.setShortRunningThreadPool(new StatisticsExecutorImpl((BlockingExecutor) executorShort.getValue()));
+            this.value.setLongRunningThreadPool(new StatisticsExecutorImpl(executorShort.getValue()));
+            this.value.setShortRunningThreadPool(new StatisticsExecutorImpl(executorShort.getValue()));
 
         }
 

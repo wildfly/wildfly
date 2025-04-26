@@ -10,6 +10,7 @@ import static org.junit.Assert.fail;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.Executor;
 
 import org.jboss.as.connector.services.workmanager.StatisticsExecutorImpl;
 import org.jboss.as.connector.subsystems.datasources.WildFlyDataSource;
@@ -19,7 +20,6 @@ import org.jboss.jca.core.connectionmanager.ConnectionManager;
 import org.jboss.jca.core.connectionmanager.pool.api.Pool;
 import org.jboss.jca.core.connectionmanager.pool.mcp.ManagedConnectionPool;
 import org.jboss.jca.core.util.Injection;
-import org.jboss.threads.BlockingExecutor;
 
 /**
  * Utility class for Jakarta Connectors integration test
@@ -151,7 +151,7 @@ public class JcaTestsUtil {
      * @return WrapperDataSource instance, <code>null</code> if not found
      */
     public static WrapperDataSource extractWrapperDatasource(WildFlyDataSource wfds) {
-        Class clazz = wfds.getClass();
+        Class<?> clazz = wfds.getClass();
         try {
             Field delegate = clazz.getDeclaredField("delegate");
             delegate.setAccessible(true);
@@ -163,17 +163,17 @@ public class JcaTestsUtil {
     }
 
     /**
-     * Extract BlockingExecutor from StatisticsExecutorImpl by using reflection
+     * Extract the backing, "real" executor from StatisticsExecutorImpl by using reflection
      *
-     * @param sei
-     * @return BlockingExecutor instance, <code>null</code> if not found
+     * @param sei the {@code StatisticsExecutorImpl}
+     * @return {@code Executor} instance, <code>null</code> if not found
      */
-    public static BlockingExecutor extractBlockingExecutor(StatisticsExecutorImpl sei) {
-        Class clazz = sei.getClass();
+    public static Executor extractRealExecutor(StatisticsExecutorImpl sei) {
+        Class<?> clazz = sei.getClass();
         try {
             Field delegate = clazz.getDeclaredField("realExecutor");
             delegate.setAccessible(true);
-            return (BlockingExecutor) delegate.get(sei);
+            return (Executor) delegate.get(sei);
         } catch (Throwable t) {
             fail(t.getMessage());
         }

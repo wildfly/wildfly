@@ -21,7 +21,6 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
-import org.jboss.threads.BlockingExecutor;
 
 /**
  * A WorkManager Service.
@@ -59,13 +58,13 @@ public final class WorkManagerService implements Service<NamedWorkManager> {
     public void start(StartContext context) throws StartException {
         ROOT_LOGGER.debugf("Starting Jakarta Connectors WorkManager: ", value.getName());
 
-        BlockingExecutor longRunning = (BlockingExecutor) executorLong.getOptionalValue();
+        Executor longRunning = executorLong.getOptionalValue();
         if (longRunning != null) {
             this.value.setLongRunningThreadPool(longRunning);
-            this.value.setShortRunningThreadPool(new StatisticsExecutorImpl((BlockingExecutor) executorShort.getValue()));
+            this.value.setShortRunningThreadPool(new StatisticsExecutorImpl(executorShort.getValue()));
         } else {
-            this.value.setLongRunningThreadPool(new StatisticsExecutorImpl((BlockingExecutor) executorShort.getValue()));
-            this.value.setShortRunningThreadPool(new StatisticsExecutorImpl((BlockingExecutor) executorShort.getValue()));
+            this.value.setLongRunningThreadPool(new StatisticsExecutorImpl(executorShort.getValue()));
+            this.value.setShortRunningThreadPool(new StatisticsExecutorImpl(executorShort.getValue()));
 
         }
 
