@@ -63,7 +63,6 @@ class HostDefinition extends SimpleResourceDefinition {
             .build();
     static final SimpleAttributeDefinition QUEUE_REQUESTS_ON_START = new SimpleAttributeDefinitionBuilder("queue-requests-on-start", ModelType.BOOLEAN, true)
             .setRestartAllServices()
-            .setDefaultValue(ModelNode.TRUE)
             .setAllowExpression(true)
             .build();
 
