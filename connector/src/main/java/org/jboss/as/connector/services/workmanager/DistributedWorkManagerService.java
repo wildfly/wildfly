@@ -68,7 +68,7 @@ public final class DistributedWorkManagerService implements Service<NamedDistrib
 
         Executor longRunning = executorLong.getOptionalValue();
         if (longRunning != null) {
-            this.value.setLongRunningThreadPool(longRunning);
+            this.value.setLongRunningThreadPool(new StatisticsExecutorImpl(longRunning));
             this.value.setShortRunningThreadPool(new StatisticsExecutorImpl(executorShort.getValue()));
         } else {
             this.value.setLongRunningThreadPool(new StatisticsExecutorImpl(executorShort.getValue()));
