@@ -8,7 +8,10 @@ import java.util.Set;
 
 /**
  * Interface for gaining remote access to the ModuleAvailabilityRegistrar ServiceProviderRegistry contents.
+ *
+ * @author Richard Achmatowicz
  */
 public interface ModuleAvailabilityRegistrarRetriever {
     Set<String> getServices() ;
+    Set<String> getProviders(Object service) ;
 }

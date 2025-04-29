@@ -4,7 +4,7 @@
  */
 package org.jboss.as.ejb3.remote;
 
-import org.jboss.as.ejb3.deployment.DeploymentModuleIdentifier;
+import org.jboss.ejb.client.EJBModuleIdentifier;
 import org.wildfly.clustering.server.GroupMember;
 
 import java.util.List;
@@ -20,13 +20,13 @@ public interface ModuleAvailabilityRegistrarListener {
     /*
      * Provides a map of available modules, and the nodes they reside on, which are deployed on servers in a cluster.
      */
-    void modulesAvailable(Map<DeploymentModuleIdentifier, List<GroupMember>> modules) ;
+    void modulesAvailable(Map<EJBModuleIdentifier, List<GroupMember>> modules) ;
 
     /*
      * Provides a map of unavailable modules, and the nodes they are no longer reside on,which have been undeployed on
      * servers in a cluster.
      */
-    void modulesUnavailable(Map<DeploymentModuleIdentifier, List<GroupMember>> modules) ;
+    void modulesUnavailable(Map<EJBModuleIdentifier, List<GroupMember>> modules) ;
 
 }
 
