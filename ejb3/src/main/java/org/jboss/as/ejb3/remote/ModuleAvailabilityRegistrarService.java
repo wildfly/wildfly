@@ -125,13 +125,47 @@ public class ModuleAvailabilityRegistrarService implements ModuleAvailabilityReg
 
     // the ModuleAvailabilityRegistrar listener interface
 
+    /**
+     * Return the set of modules currently deployed in the cluster
+     * @return a set of EJBModuleIdentifier instances representing each module
+     */
+    @Override
+    public Set<EJBModuleIdentifier> getServices() {
+        Set<EJBModuleIdentifier> services = new HashSet();
+        for (Object service : serviceRegistrar.getServices()) {
+            services.add((EJBModuleIdentifier) service);
+        }
+        return services;
+    }
+
+    /**
+     * Return the set of providers (nodes) on which this module is deployed.
+     * @param service the deployment identifier
+     * @return the set of proeviders
+     */
+    @Override
+    public Set<GroupMember> getProviders(EJBModuleIdentifier service) {
+        return serviceRegistrar.getProviders(service);
+    }
+
+    /**
+     * Add a listener which will receive updates on changes in which modules are deployed in a cluster.
+     *
+     * @param listener
+     */
     @Override
     public void addListener(final ModuleAvailabilityRegistrarListener listener) {
         synchronized (this) {
             moduleAvailabilityListeners.add(listener);
         }
+        listener.listenerAdded(this);
     }
 
+    /**
+     * Remove a listener receiving receive updates on changes in which modules are deployed in a cluster.
+     *
+     * @param listener
+     */
     @Override
     public void removeListener(final ModuleAvailabilityRegistrarListener listener) {
         synchronized (this) {
