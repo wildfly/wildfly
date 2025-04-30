@@ -385,8 +385,8 @@ public class PersistenceUnitMetadataImpl implements PersistenceUnitMetadata {
     @Override
     public void addTransformer(ClassTransformer classTransformer) {
         // WFLY-19694 Do not add Hibernate ORM 6.x/7.x bytecode enhancement class transformers
-        // (e.g. org.hibernate.jpa.internal.enhance.EnhancingClassTransformerImpl) 
-        // which were already added earlier via org.jboss.as.jpa.hibernate.WildFlyClassTransformer 
+        // (e.g. org.hibernate.jpa.internal.enhance.EnhancingClassTransformerImpl)
+        // which were already added earlier via org.jboss.as.jpa.hibernate.WildFlyClassTransformer
         // or org.wildfly.persistence.jipijapa.hibernate7.WildFlyClassTransformer
         if(classTransformer.getClass().getName().startsWith(ORG_HIBERNATE_ORM_PROVIDER_CLASS_ENHANCER_PACKAGE)) {
             return;
