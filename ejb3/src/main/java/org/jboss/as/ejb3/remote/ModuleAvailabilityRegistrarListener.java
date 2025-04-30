@@ -18,15 +18,20 @@ import java.util.Map;
 public interface ModuleAvailabilityRegistrarListener {
 
     /*
+     * Called when a new listener is added.
+     */
+    void listenerAdded(final ModuleAvailabilityRegistrar registrar) ;
+
+    /*
      * Provides a map of available modules, and the nodes they reside on, which are deployed on servers in a cluster.
      */
-    void modulesAvailable(Map<EJBModuleIdentifier, List<GroupMember>> modules) ;
+    void modulesAvailable(final Map<EJBModuleIdentifier, List<GroupMember>> modules) ;
 
     /*
      * Provides a map of unavailable modules, and the nodes they are no longer reside on,which have been undeployed on
      * servers in a cluster.
      */
-    void modulesUnavailable(Map<EJBModuleIdentifier, List<GroupMember>> modules) ;
+    void modulesUnavailable(final Map<EJBModuleIdentifier, List<GroupMember>> modules) ;
 
 }
 
