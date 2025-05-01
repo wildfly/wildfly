@@ -5,22 +5,24 @@
 
 package org.wildfly.clustering.server.service;
 
-import org.jboss.as.controller.AttributeDefinition;
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationFailedException;
+import java.util.AbstractMap;
+import java.util.Map;
+
 import org.jboss.as.controller.ServiceNameFactory;
-import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceName;
 import org.wildfly.service.descriptor.BinaryServiceDescriptor;
 import org.wildfly.service.descriptor.UnaryServiceDescriptor;
-import org.wildfly.subsystem.resource.ResourceModelResolver;
 import org.wildfly.subsystem.service.ServiceDependency;
 
 /**
- * Encapsulates a configuration tuple.
+ * Encapsulates the configuration of a service described by a tuple.
  * @author Paul Ferraro
  */
 public interface BinaryServiceConfiguration {
+    default Map.Entry<String, String> getName() {
+        return new AbstractMap.SimpleImmutableEntry<>(this.getParentName(), this.getChildName());
+    }
+
     String getParentName();
     String getChildName();
 
@@ -54,17 +56,6 @@ public interface BinaryServiceConfiguration {
             @Override
             public String getChildName() {
                 return childName;
-            }
-        };
-    }
-
-    static ResourceModelResolver<BinaryServiceConfiguration> resolver(AttributeDefinition containerAttribute, AttributeDefinition cacheAttribute) {
-        return new ResourceModelResolver<>() {
-            @Override
-            public BinaryServiceConfiguration resolve(OperationContext context, ModelNode model) throws OperationFailedException {
-                String containerName = containerAttribute.resolveModelAttribute(context, model).asString();
-                String cacheName = cacheAttribute.resolveModelAttribute(context, model).asStringOrNull();
-                return of(containerName, cacheName);
             }
         };
     }

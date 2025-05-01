@@ -13,6 +13,6 @@ import jakarta.ejb.TimerConfig;
 public class AbstractSingleActionTimerBean extends AbstractManualTimerBean {
 
     public AbstractSingleActionTimerBean(boolean persistent) {
-        super(service -> service.createSingleActionTimer(1000, new TimerConfig("single", persistent)));
+        super(service -> service.createSingleActionTimer(1800, new TimerConfig("single", persistent)));
     }
 }

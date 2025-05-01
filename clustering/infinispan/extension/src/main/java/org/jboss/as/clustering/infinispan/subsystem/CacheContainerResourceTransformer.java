@@ -16,8 +16,6 @@ import org.jboss.as.controller.transform.description.AttributeConverter;
 import org.jboss.as.controller.transform.description.DiscardAttributeChecker;
 import org.jboss.as.controller.transform.description.RejectAttributeChecker;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
-import org.jboss.as.clustering.infinispan.subsystem.CacheContainerResourceDefinition.Attribute;
-import org.jboss.as.clustering.infinispan.subsystem.CacheContainerResourceDefinition.ListAttribute;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -29,7 +27,7 @@ public class CacheContainerResourceTransformer implements Consumer<ModelVersion>
     private final ResourceTransformationDescriptionBuilder builder;
 
     CacheContainerResourceTransformer(ResourceTransformationDescriptionBuilder parent) {
-        this.builder = parent.addChildResource(CacheContainerResourceDefinition.WILDCARD_PATH);
+        this.builder = parent.addChildResource(CacheContainerResourceDefinitionRegistrar.REGISTRATION.getPathElement());
     }
 
     @SuppressWarnings("deprecation")
@@ -48,8 +46,8 @@ public class CacheContainerResourceTransformer implements Consumer<ModelVersion>
         }
         if (InfinispanSubsystemModel.VERSION_15_0_0.requiresTransformation(version)) {
             this.builder.getAttributeBuilder()
-                    .setDiscard(DiscardAttributeChecker.DEFAULT_VALUE, Attribute.MARSHALLER.getDefinition())
-                    .addRejectCheck(new RejectAttributeChecker.SimpleAcceptAttributeChecker(Attribute.MARSHALLER.getDefinition().getDefaultValue()), Attribute.MARSHALLER.getDefinition())
+                    .setDiscard(DiscardAttributeChecker.DEFAULT_VALUE, CacheContainerResourceDefinitionRegistrar.MARSHALLER)
+                    .addRejectCheck(new RejectAttributeChecker.SimpleAcceptAttributeChecker(CacheContainerResourceDefinitionRegistrar.MARSHALLER.getDefaultValue()), CacheContainerResourceDefinitionRegistrar.MARSHALLER)
                     .end();
         }
 
@@ -66,7 +64,7 @@ public class CacheContainerResourceTransformer implements Consumer<ModelVersion>
                         }
                     }
                 }
-            }, ListAttribute.MODULES.getDefinition())
+            }, CacheContainerResourceDefinitionRegistrar.MODULES)
             .end();
         }
 

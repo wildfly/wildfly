@@ -8,11 +8,12 @@ package org.jboss.as.clustering.infinispan.subsystem;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 
 /**
+ * Describes resource transformations for an invalidation cache.
  * @author Paul Ferraro
  */
 public class InvalidationCacheResourceTransformer extends ClusteredCacheResourceTransformer {
 
     InvalidationCacheResourceTransformer(ResourceTransformationDescriptionBuilder parent) {
-        super(parent.addChildResource(InvalidationCacheResourceDefinition.WILDCARD_PATH));
+        super(parent.addChildResource(CacheResourceRegistration.INVALIDATION.getPathElement()));
     }
 }

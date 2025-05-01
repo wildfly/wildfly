@@ -54,6 +54,7 @@
         <module name="org.reactivestreams"/>
         <module name="org.wildfly.clustering.cache.infinispan.common"/>
         <module name="org.wildfly.clustering.cache.infinispan.embedded"/>
+        <module name="org.wildfly.clustering.cache.spi"/>
         <module name="org.wildfly.clustering.context"/>
         <module name="org.wildfly.clustering.infinispan.client.api"/>
         <module name="org.wildfly.clustering.infinispan.client.service"/>

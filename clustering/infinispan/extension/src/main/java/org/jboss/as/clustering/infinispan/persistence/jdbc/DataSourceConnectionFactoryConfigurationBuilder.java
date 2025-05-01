@@ -5,8 +5,6 @@
 
 package org.jboss.as.clustering.infinispan.persistence.jdbc;
 
-import java.util.function.Supplier;
-
 import javax.sql.DataSource;
 
 import org.infinispan.commons.configuration.Combine;
@@ -15,7 +13,6 @@ import org.infinispan.configuration.global.GlobalConfiguration;
 import org.infinispan.persistence.jdbc.common.configuration.AbstractJdbcStoreConfigurationBuilder;
 import org.infinispan.persistence.jdbc.common.configuration.AbstractJdbcStoreConfigurationChildBuilder;
 import org.infinispan.persistence.jdbc.common.configuration.ConnectionFactoryConfigurationBuilder;
-import org.wildfly.common.function.Functions;
 
 /**
  * Builds a {@link DataSourceConnectionFactoryConfiguration}.
@@ -23,14 +20,14 @@ import org.wildfly.common.function.Functions;
  */
 public class DataSourceConnectionFactoryConfigurationBuilder<S extends AbstractJdbcStoreConfigurationBuilder<?, S>> extends AbstractJdbcStoreConfigurationChildBuilder<S> implements ConnectionFactoryConfigurationBuilder<DataSourceConnectionFactoryConfiguration> {
 
-    private volatile Supplier<DataSource> dependency;
+    private volatile DataSource dataSource;
 
     public DataSourceConnectionFactoryConfigurationBuilder(AbstractJdbcStoreConfigurationBuilder<?, S> builder) {
         super(builder);
     }
 
-    public DataSourceConnectionFactoryConfigurationBuilder<S> setDataSourceDependency(Supplier<DataSource> dependency) {
-        this.dependency = dependency;
+    public DataSourceConnectionFactoryConfigurationBuilder<S> setDataSource(DataSource dataSource) {
+        this.dataSource = dataSource;
         return this;
     }
 
@@ -46,12 +43,12 @@ public class DataSourceConnectionFactoryConfigurationBuilder<S extends AbstractJ
 
     @Override
     public DataSourceConnectionFactoryConfiguration create() {
-        return new DataSourceConnectionFactoryConfiguration(this.dependency.get());
+        return new DataSourceConnectionFactoryConfiguration(this.dataSource);
     }
 
     @Override
     public DataSourceConnectionFactoryConfigurationBuilder<S> read(DataSourceConnectionFactoryConfiguration template, Combine combine) {
-        this.dependency = Functions.constantSupplier(template.getDataSource());
+        this.dataSource = template.getDataSource();
         return this;
     }
 

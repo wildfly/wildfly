@@ -37,7 +37,7 @@ public class RegistryServiceInstallerFactory implements BinaryServiceInstallerFa
                 return registryFactory.get().createRegistry(registryEntry.get());
             }
         };
-        return ServiceInstaller.builder(factory)
+        return ServiceInstaller.builder(factory).blocking()
                 .onStop(Functions.closingConsumer())
                 .provides(configuration.resolveServiceName(this.getServiceDescriptor()))
                 .requires(List.of(registryFactory, registryEntry))

@@ -35,9 +35,11 @@ import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
+import org.wildfly.clustering.infinispan.service.InfinispanCacheConfigurationAttributeGroup;
 import org.wildfly.clustering.server.Registrar;
 import org.wildfly.clustering.server.Registration;
 import org.wildfly.clustering.server.service.BinaryServiceConfiguration;
+import org.wildfly.clustering.server.service.CacheConfigurationAttributeGroup;
 import org.wildfly.clustering.singleton.Singleton;
 import org.wildfly.clustering.singleton.compat.SingletonServiceTargetFactory;
 import org.wildfly.clustering.singleton.election.SingletonElectionListener;
@@ -49,8 +51,6 @@ import org.wildfly.clustering.singleton.service.SingletonServiceController;
 import org.wildfly.clustering.singleton.service.SingletonServiceTarget;
 import org.wildfly.service.capture.ServiceValueExecutorRegistry;
 import org.wildfly.service.capture.ServiceValueRegistry;
-import org.wildfly.subsystem.resource.ResourceModelResolver;
-import org.wildfly.subsystem.resource.capability.CapabilityReferenceRecorder;
 import org.wildfly.subsystem.resource.operation.ResourceOperationRuntimeHandler;
 import org.wildfly.subsystem.service.ResourceServiceConfigurator;
 import org.wildfly.subsystem.service.ResourceServiceInstaller;
@@ -68,26 +68,10 @@ public class SingletonPolicyResourceDefinition extends ChildResourceDefinition<M
     static PathElement pathElement(String value) {
         return PathElement.pathElement("singleton-policy", value);
     }
-
     private static final RuntimeCapability<Void> SERVICE_TARGET_FACTORY = RuntimeCapability.Builder.of(ServiceTargetFactory.SERVICE_DESCRIPTOR).build();
+    static final CacheConfigurationAttributeGroup CACHE_ATTRIBUTE_GROUP = new InfinispanCacheConfigurationAttributeGroup(SERVICE_TARGET_FACTORY);
 
     enum Attribute implements org.jboss.as.clustering.controller.Attribute, UnaryOperator<SimpleAttributeDefinitionBuilder> {
-        CACHE_CONTAINER("cache-container", ModelType.STRING) {
-            @Override
-            public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
-                return builder.setRequired(true)
-                        .setCapabilityReference(CapabilityReferenceRecorder.builder(SERVICE_TARGET_FACTORY, org.wildfly.clustering.singleton.service.SingletonServiceTargetFactory.DEFAULT_SERVICE_DESCRIPTOR).build())
-                        ;
-            }
-        },
-        CACHE("cache", ModelType.STRING) {
-            @Override
-            public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
-                return builder.setRequired(false)
-                        .setCapabilityReference(CapabilityReferenceRecorder.builder(SERVICE_TARGET_FACTORY, org.wildfly.clustering.singleton.service.SingletonServiceTargetFactory.SERVICE_DESCRIPTOR).withParentAttribute(CACHE_CONTAINER.getDefinition()).build())
-                        ;
-            }
-        },
         QUORUM("quorum", ModelType.INT) {
             @Override
             public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
@@ -118,7 +102,6 @@ public class SingletonPolicyResourceDefinition extends ChildResourceDefinition<M
     }
 
     private final ServiceValueExecutorRegistry<Singleton> registry = ServiceValueExecutorRegistry.newInstance();
-    private final ResourceModelResolver<BinaryServiceConfiguration> resolver = BinaryServiceConfiguration.resolver(Attribute.CACHE_CONTAINER.getDefinition(), Attribute.CACHE.getDefinition());
 
     @Override
     public ManagementResourceRegistration register(ManagementResourceRegistration parent) {
@@ -126,6 +109,7 @@ public class SingletonPolicyResourceDefinition extends ChildResourceDefinition<M
 
         ResourceDescriptor descriptor = new ResourceDescriptor(this.getResourceDescriptionResolver())
                 .addAttributes(Attribute.class)
+                .addAttributes(CACHE_ATTRIBUTE_GROUP.getAttributes())
                 .addCapabilities(List.of(SERVICE_TARGET_FACTORY))
                 .addRequiredSingletonChildren(SimpleElectionPolicyResourceDefinition.PATH)
                 .setResourceTransformation(SingletonPolicyResource::new)
@@ -147,7 +131,7 @@ public class SingletonPolicyResourceDefinition extends ChildResourceDefinition<M
     @Override
     public ResourceServiceInstaller configure(OperationContext context, ModelNode model) throws OperationFailedException {
         String name = context.getCurrentAddressValue();
-        BinaryServiceConfiguration configuration = this.resolver.resolve(context, model);
+        BinaryServiceConfiguration configuration = CACHE_ATTRIBUTE_GROUP.resolve(context, model);
         int quorum = Attribute.QUORUM.resolveModelAttribute(context, model).asInt();
 
         ServiceDependency<SingletonElectionPolicy> electionPolicy = ServiceDependency.on(SingletonElectionPolicy.SERVICE_DESCRIPTOR, name);

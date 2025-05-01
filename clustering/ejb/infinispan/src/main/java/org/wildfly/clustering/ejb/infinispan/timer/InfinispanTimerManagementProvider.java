@@ -7,8 +7,8 @@ package org.wildfly.clustering.ejb.infinispan.timer;
 
 import java.util.List;
 import java.util.OptionalInt;
-import java.util.function.Consumer;
 import java.util.function.Supplier;
+import java.util.function.UnaryOperator;
 
 import org.infinispan.Cache;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
@@ -27,9 +27,9 @@ import org.wildfly.clustering.ejb.timer.TimerManagementProvider;
 import org.wildfly.clustering.ejb.timer.TimerManagerFactoryConfiguration;
 import org.wildfly.clustering.ejb.timer.TimerRegistry;
 import org.wildfly.clustering.ejb.timer.TimerServiceConfiguration;
-import org.wildfly.clustering.infinispan.service.CacheServiceInstallerFactory;
+import org.wildfly.clustering.infinispan.service.CacheConfigurationServiceInstaller;
+import org.wildfly.clustering.infinispan.service.CacheServiceInstaller;
 import org.wildfly.clustering.infinispan.service.InfinispanServiceDescriptor;
-import org.wildfly.clustering.infinispan.service.TemplateConfigurationServiceInstallerFactory;
 import org.wildfly.clustering.marshalling.ByteBufferMarshaller;
 import org.wildfly.clustering.server.infinispan.dispatcher.CacheContainerCommandDispatcherFactory;
 import org.wildfly.clustering.server.service.BinaryServiceConfiguration;
@@ -41,7 +41,7 @@ import org.wildfly.subsystem.service.ServiceInstaller;
 /**
  * @author Paul Ferraro
  */
-public class InfinispanTimerManagementProvider implements TimerManagementProvider, Consumer<ConfigurationBuilder> {
+public class InfinispanTimerManagementProvider implements TimerManagementProvider, UnaryOperator<ConfigurationBuilder> {
 
     private final TimerManagementConfiguration configuration;
     private final BinaryServiceConfiguration cacheConfiguration;
@@ -55,8 +55,8 @@ public class InfinispanTimerManagementProvider implements TimerManagementProvide
     public <I> Iterable<ServiceInstaller> getTimerManagerFactoryServiceInstallers(ServiceName name, TimerManagerFactoryConfiguration<I> configuration) {
         BinaryServiceConfiguration timerManagerCacheConfiguration = this.cacheConfiguration.withChildName(configuration.getTimerServiceConfiguration().getName());
 
-        ServiceInstaller cacheConfigurationInstaller = new TemplateConfigurationServiceInstallerFactory(this).apply(this.cacheConfiguration, timerManagerCacheConfiguration);
-        ServiceInstaller cacheInstaller = CacheServiceInstallerFactory.INSTANCE.apply(timerManagerCacheConfiguration);
+        ServiceInstaller cacheConfigurationInstaller = new CacheConfigurationServiceInstaller(timerManagerCacheConfiguration, CacheConfigurationServiceInstaller.fromTemplate(this.cacheConfiguration).map(this));
+        ServiceInstaller cacheInstaller = new CacheServiceInstaller(timerManagerCacheConfiguration);
 
         ServiceDependency<CacheContainerCommandDispatcherFactory> commandDispatcherFactory = timerManagerCacheConfiguration.getServiceDependency(ClusteringServiceDescriptor.COMMAND_DISPATCHER_FACTORY).map(CacheContainerCommandDispatcherFactory.class::cast);
         ServiceDependency<Cache<?, ?>> cache = timerManagerCacheConfiguration.getServiceDependency(InfinispanServiceDescriptor.CACHE);
@@ -105,7 +105,7 @@ public class InfinispanTimerManagementProvider implements TimerManagementProvide
     }
 
     @Override
-    public void accept(ConfigurationBuilder builder) {
+    public ConfigurationBuilder apply(ConfigurationBuilder builder) {
         // Ensure expiration is not enabled on cache
         ExpirationConfiguration expiration = builder.expiration().create();
         if ((expiration.lifespan() >= 0) || (expiration.maxIdle() >= 0)) {
@@ -121,7 +121,7 @@ public class InfinispanTimerManagementProvider implements TimerManagementProvide
             builder.addModule(DataContainerConfigurationBuilder.class).evictable(TimerMetaDataKey.class::isInstance);
         }
 
-        builder.transaction().transactionMode(TransactionMode.TRANSACTIONAL).transactionManagerLookup(() -> EmbeddedTransactionManager.getInstance()).lockingMode(LockingMode.PESSIMISTIC).locking().isolationLevel(IsolationLevel.REPEATABLE_READ);
-        builder.persistence().passivation(false);
+        builder.transaction().transactionMode(TransactionMode.TRANSACTIONAL).transactionManagerLookup(EmbeddedTransactionManager::getInstance).lockingMode(LockingMode.PESSIMISTIC).locking().isolationLevel(IsolationLevel.REPEATABLE_READ);
+        return builder;
     }
 }

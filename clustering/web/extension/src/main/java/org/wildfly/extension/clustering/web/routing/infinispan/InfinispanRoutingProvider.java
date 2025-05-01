@@ -8,11 +8,11 @@ package org.wildfly.extension.clustering.web.routing.infinispan;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
-import java.util.function.Consumer;
+import java.util.function.UnaryOperator;
 
 import org.infinispan.configuration.cache.ConfigurationBuilder;
-import org.wildfly.clustering.infinispan.service.CacheServiceInstallerFactory;
-import org.wildfly.clustering.infinispan.service.TemplateConfigurationServiceInstallerFactory;
+import org.wildfly.clustering.infinispan.service.CacheConfigurationServiceInstaller;
+import org.wildfly.clustering.infinispan.service.CacheServiceInstaller;
 import org.wildfly.clustering.server.service.BinaryServiceConfiguration;
 import org.wildfly.clustering.server.service.ClusteringServiceDescriptor;
 import org.wildfly.clustering.server.service.FilteredBinaryServiceInstallerProvider;
@@ -29,9 +29,9 @@ import org.wildfly.subsystem.service.ServiceInstaller;
 public class InfinispanRoutingProvider extends LocalRoutingProvider {
 
     private final BinaryServiceConfiguration configuration;
-    private final Consumer<ConfigurationBuilder> configurator;
+    private final UnaryOperator<ConfigurationBuilder> configurator;
 
-    public InfinispanRoutingProvider(BinaryServiceConfiguration configuration, Consumer<ConfigurationBuilder> configurator) {
+    public InfinispanRoutingProvider(BinaryServiceConfiguration configuration, UnaryOperator<ConfigurationBuilder> configurator) {
         this.configuration = configuration;
         this.configurator = configurator;
     }
@@ -45,8 +45,8 @@ public class InfinispanRoutingProvider extends LocalRoutingProvider {
                 .provides(serverConfiguration.resolveServiceName(ClusteringServiceDescriptor.REGISTRY_ENTRY))
                 .build());
 
-        installers.add(new TemplateConfigurationServiceInstallerFactory(this.configurator).apply(this.configuration, serverConfiguration));
-        installers.add(CacheServiceInstallerFactory.INSTANCE.apply(serverConfiguration));
+        installers.add(new CacheConfigurationServiceInstaller(serverConfiguration, CacheConfigurationServiceInstaller.fromTemplate(this.configuration).map(this.configurator)));
+        installers.add(new CacheServiceInstaller(serverConfiguration));
 
         new FilteredBinaryServiceInstallerProvider(Set.of(ClusteringServiceDescriptor.REGISTRY, ClusteringServiceDescriptor.REGISTRY_FACTORY)).apply(serverConfiguration).forEach(installers::add);
 

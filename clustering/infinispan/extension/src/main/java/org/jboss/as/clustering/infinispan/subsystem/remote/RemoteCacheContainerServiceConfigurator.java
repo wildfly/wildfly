@@ -17,6 +17,7 @@ import org.jboss.as.clustering.infinispan.logging.InfinispanLogger;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.server.Services;
 import org.jboss.dmr.ModelNode;
 import org.jboss.modules.ModuleLoader;
@@ -36,6 +37,8 @@ import org.wildfly.subsystem.service.capability.CapabilityServiceInstaller;
 public enum RemoteCacheContainerServiceConfigurator implements ResourceServiceConfigurator {
     INSTANCE;
 
+    static final RuntimeCapability<Void> CAPABILITY = RuntimeCapability.Builder.of(HotRodServiceDescriptor.REMOTE_CACHE_CONTAINER).build();
+
     @Override
     public ResourceServiceInstaller configure(OperationContext context, ModelNode model) throws OperationFailedException {
         String name = context.getCurrentAddressValue();
@@ -45,12 +48,7 @@ public enum RemoteCacheContainerServiceConfigurator implements ResourceServiceCo
 
         Registrar<String> registrar = (RemoteCacheContainerResource) context.readResource(PathAddress.EMPTY_ADDRESS);
 
-        Supplier<RemoteCacheManager> factory = new Supplier<>() {
-            @Override
-            public RemoteCacheManager get() {
-                return new RemoteCacheManager(configuration.get());
-            }
-        };
+        Supplier<RemoteCacheManager> factory = configuration.map(RemoteCacheContainerServiceConfigurator::createRemoteCacheManager);
         Consumer<RemoteCacheManager> start = new Consumer<>() {
             @Override
             public void accept(RemoteCacheManager manager) {
@@ -71,10 +69,14 @@ public enum RemoteCacheContainerServiceConfigurator implements ResourceServiceCo
                 return new ManagedRemoteCacheContainer(manager, name, loader.get(), registrar);
             }
         };
-        return CapabilityServiceInstaller.builder(RemoteCacheContainerResourceDefinition.REMOTE_CACHE_CONTAINER, wrapper, factory).blocking()
+        return CapabilityServiceInstaller.builder(CAPABILITY, wrapper, factory).blocking()
                 .onStart(start)
                 .onStop(stop)
                 .requires(List.of(configuration, loader))
                 .build();
+    }
+
+    static RemoteCacheManager createRemoteCacheManager(Configuration configuration) {
+        return new RemoteCacheManager(configuration, false);
     }
 }

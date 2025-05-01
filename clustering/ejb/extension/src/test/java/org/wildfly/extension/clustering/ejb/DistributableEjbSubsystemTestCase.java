@@ -66,8 +66,8 @@ public class DistributableEjbSubsystemTestCase extends AbstractSubsystemSchemaTe
 
         // add a new bean-management instance
         ModelNode anotherBeanManagementProvider = Util.createAddOperation(anotherBeanManagementProviderAddress);
-        anotherBeanManagementProvider.get(InfinispanBeanManagementResourceDefinition.Attribute.CACHE_CONTAINER.getName()).set("foo");
-        anotherBeanManagementProvider.get(InfinispanBeanManagementResourceDefinition.Attribute.CACHE.getName()).set("bar");
+        anotherBeanManagementProvider.get(InfinispanBeanManagementResourceDefinition.CACHE_ATTRIBUTE_GROUP.getContainerAttribute().getName()).set("foo");
+        anotherBeanManagementProvider.get(InfinispanBeanManagementResourceDefinition.CACHE_ATTRIBUTE_GROUP.getCacheAttribute().getName()).set("bar");
         anotherBeanManagementProvider.get(BeanManagementResourceDefinition.Attribute.MAX_ACTIVE_BEANS.getName()).set(11);
         ModelNode addResponse = ks.executeOperation(anotherBeanManagementProvider);
         assertEquals(addResponse.toString(), ModelDescriptionConstants.SUCCESS, addResponse.get(ModelDescriptionConstants.OUTCOME).asString());
@@ -99,8 +99,8 @@ public class DistributableEjbSubsystemTestCase extends AbstractSubsystemSchemaTe
 
         // add a new client-mappings-registry instance
         ModelNode addInfinispanClientMappingsRegistryProvider = Util.createAddOperation(infinispanClientMappingsRegistryProviderAddress);
-        addInfinispanClientMappingsRegistryProvider.get(InfinispanClientMappingsRegistryProviderResourceDefinition.Attribute.CACHE_CONTAINER.getName()).set("foo");
-        addInfinispanClientMappingsRegistryProvider.get(InfinispanClientMappingsRegistryProviderResourceDefinition.Attribute.CACHE.getName()).set("bar");
+        addInfinispanClientMappingsRegistryProvider.get(InfinispanClientMappingsRegistryProviderResourceDefinition.CACHE_ATTRIBUTE_GROUP.getContainerAttribute().getName()).set("foo");
+        addInfinispanClientMappingsRegistryProvider.get(InfinispanClientMappingsRegistryProviderResourceDefinition.CACHE_ATTRIBUTE_GROUP.getCacheAttribute().getName()).set("bar");
         ModelNode addResponse = ks.executeOperation(addInfinispanClientMappingsRegistryProvider);
         assertEquals(addResponse.toString(), ModelDescriptionConstants.SUCCESS, addResponse.get(ModelDescriptionConstants.OUTCOME).asString());
 

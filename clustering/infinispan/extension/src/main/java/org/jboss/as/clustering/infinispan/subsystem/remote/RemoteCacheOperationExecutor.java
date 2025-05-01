@@ -6,22 +6,23 @@
 package org.jboss.as.clustering.infinispan.subsystem.remote;
 
 import org.infinispan.client.hotrod.jmx.RemoteCacheClientStatisticsMXBean;
-import org.jboss.as.clustering.controller.Operation;
-import org.jboss.as.clustering.controller.OperationExecutor;
-import org.jboss.as.clustering.controller.OperationFunction;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.dmr.ModelNode;
 import org.wildfly.clustering.infinispan.client.RemoteCacheContainer;
 import org.wildfly.clustering.infinispan.client.service.HotRodServiceDescriptor;
 import org.wildfly.service.capture.FunctionExecutor;
+import org.wildfly.subsystem.resource.executor.RuntimeOperation;
+import org.wildfly.subsystem.resource.executor.RuntimeOperationExecutor;
+import org.wildfly.subsystem.resource.executor.RuntimeOperationFunction;
 import org.wildfly.subsystem.service.ServiceDependency;
 import org.wildfly.subsystem.service.capture.FunctionExecutorRegistry;
 
 /**
+ * Executor for remote cache runtime operations.
  * @author Paul Ferraro
  */
-public class RemoteCacheOperationExecutor implements OperationExecutor<RemoteCacheClientStatisticsMXBean> {
+public class RemoteCacheOperationExecutor implements RuntimeOperationExecutor<RemoteCacheClientStatisticsMXBean> {
 
     private final FunctionExecutorRegistry<RemoteCacheContainer> executors;
 
@@ -30,9 +31,9 @@ public class RemoteCacheOperationExecutor implements OperationExecutor<RemoteCac
     }
 
     @Override
-    public ModelNode execute(OperationContext context, ModelNode op, Operation<RemoteCacheClientStatisticsMXBean> operation) throws OperationFailedException {
+    public ModelNode execute(OperationContext context, ModelNode op, RuntimeOperation<RemoteCacheClientStatisticsMXBean> operation) throws OperationFailedException {
         String containerName = context.getCurrentAddress().getParent().getLastElement().getValue();
         FunctionExecutor<RemoteCacheContainer> executor = this.executors.getExecutor(ServiceDependency.on(HotRodServiceDescriptor.REMOTE_CACHE_CONTAINER, containerName));
-        return (executor != null) ? executor.execute(new OperationFunction<>(context, op, new RemoteCacheClientStatisticsFactory(context.getCurrentAddressValue()), operation)) : null;
+        return (executor != null) ? executor.execute(new RuntimeOperationFunction<>(context, op, new RemoteCacheClientStatisticsFactory(context.getCurrentAddressValue()), operation)) : null;
     }
 }

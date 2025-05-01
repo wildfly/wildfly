@@ -118,7 +118,7 @@ public abstract class ElectionPolicyResourceDefinition extends ChildResourceDefi
         List<Consumer<RequirementServiceBuilder<?>>> dependencies = new ArrayList<>(socketBindingPreferences.size());
         if (!socketBindingPreferences.isEmpty()) {
             Resource policy = context.readResourceFromRoot(context.getCurrentAddress().getParent(), false);
-            String containerName = SingletonPolicyResourceDefinition.Attribute.CACHE_CONTAINER.resolveModelAttribute(context, policy.getModel()).asString();
+            String containerName = SingletonPolicyResourceDefinition.CACHE_ATTRIBUTE_GROUP.getContainerAttribute().resolveModelAttribute(context, policy.getModel()).asString();
             UnaryServiceDescriptor<JChannel> containerTransportChannel = UnaryServiceDescriptor.of("org.wildfly.clustering.infinispan.transport.channel", JChannel.class);
             if (context.hasOptionalCapability(containerTransportChannel, containerName, CAPABILITY, Attribute.SOCKET_BINDING_PREFERENCES.getDefinition())) {
                 ServiceDependency<JChannel> channel = ServiceDependency.on(containerTransportChannel, containerName);

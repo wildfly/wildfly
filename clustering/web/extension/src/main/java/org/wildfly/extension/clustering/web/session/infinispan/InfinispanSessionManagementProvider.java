@@ -7,8 +7,8 @@ package org.wildfly.extension.clustering.web.session.infinispan;
 
 import java.util.List;
 import java.util.OptionalInt;
-import java.util.function.Consumer;
 import java.util.function.Supplier;
+import java.util.function.UnaryOperator;
 
 import org.infinispan.Cache;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
@@ -20,9 +20,9 @@ import org.infinispan.eviction.EvictionStrategy;
 import org.jboss.as.controller.ServiceNameFactory;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.wildfly.clustering.cache.infinispan.embedded.container.DataContainerConfigurationBuilder;
-import org.wildfly.clustering.infinispan.service.CacheServiceInstallerFactory;
+import org.wildfly.clustering.infinispan.service.CacheConfigurationServiceInstaller;
+import org.wildfly.clustering.infinispan.service.CacheServiceInstaller;
 import org.wildfly.clustering.infinispan.service.InfinispanServiceDescriptor;
-import org.wildfly.clustering.infinispan.service.TemplateConfigurationServiceInstallerFactory;
 import org.wildfly.clustering.server.infinispan.dispatcher.CacheContainerCommandDispatcherFactory;
 import org.wildfly.clustering.server.service.BinaryServiceConfiguration;
 import org.wildfly.clustering.server.service.ClusteringServiceDescriptor;
@@ -57,11 +57,12 @@ public class InfinispanSessionManagementProvider extends AbstractSessionManageme
 
     @Override
     public <C> DeploymentServiceInstaller getSessionManagerFactoryServiceInstaller(SessionManagerFactoryConfiguration<C> configuration) {
-        BinaryServiceConfiguration deploymentCacheConfiguration = this.getCacheConfiguration().withChildName(configuration.getDeploymentName());
+        BinaryServiceConfiguration templateCacheConfiguration = this.getCacheConfiguration();
+        BinaryServiceConfiguration deploymentCacheConfiguration = templateCacheConfiguration.withChildName(configuration.getDeploymentName());
 
-        Consumer<ConfigurationBuilder> configurator = new Consumer<>() {
+        UnaryOperator<ConfigurationBuilder> configurator = new UnaryOperator<>() {
             @Override
-            public void accept(ConfigurationBuilder builder) {
+            public ConfigurationBuilder apply(ConfigurationBuilder builder) {
                 // Ensure expiration is not enabled on cache
                 ExpirationConfiguration expiration = builder.expiration().create();
                 if ((expiration.lifespan() >= 0) || (expiration.maxIdle() >= 0)) {
@@ -84,10 +85,11 @@ public class InfinispanSessionManagementProvider extends AbstractSessionManageme
                 if (size.isEmpty() && persistence.passivation() && persistence.stores().stream().allMatch(StoreConfiguration::purgeOnStartup)) {
                     builder.persistence().passivation(false).clearStores();
                 }
+                return builder;
             }
         };
-        DeploymentServiceInstaller configurationInstaller = new TemplateConfigurationServiceInstallerFactory(configurator).apply(this.getCacheConfiguration(), deploymentCacheConfiguration);
-        DeploymentServiceInstaller cacheInstaller = CacheServiceInstallerFactory.INSTANCE.apply(deploymentCacheConfiguration);
+        DeploymentServiceInstaller configurationInstaller = new CacheConfigurationServiceInstaller(deploymentCacheConfiguration, CacheConfigurationServiceInstaller.fromTemplate(templateCacheConfiguration).map(configurator));
+        DeploymentServiceInstaller cacheInstaller = new CacheServiceInstaller(deploymentCacheConfiguration);
 
         ServiceDependency<CacheContainerCommandDispatcherFactory> commandDispatcherFactory = deploymentCacheConfiguration.getServiceDependency(ClusteringServiceDescriptor.COMMAND_DISPATCHER_FACTORY).map(CacheContainerCommandDispatcherFactory.class::cast);
         ServiceDependency<Cache<?, ?>> cache = deploymentCacheConfiguration.getServiceDependency(InfinispanServiceDescriptor.CACHE);
