@@ -16,6 +16,7 @@ import io.undertow.servlet.api.SessionConfigWrapper;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.web.session.SessionIdentifierCodec;
 import org.jboss.msc.service.ServiceName;
+import org.wildfly.clustering.function.Supplier;
 import org.wildfly.clustering.server.immutable.Immutability;
 import org.wildfly.clustering.session.SessionManagerFactory;
 import org.wildfly.clustering.web.container.SessionManagementProvider;
@@ -25,7 +26,6 @@ import org.wildfly.clustering.web.service.WebDeploymentServiceDescriptor;
 import org.wildfly.clustering.web.service.session.DistributableSessionManagementProvider;
 import org.wildfly.clustering.web.undertow.routing.DistributableAffinityLocator;
 import org.wildfly.clustering.web.undertow.routing.DistributableSessionIdentifierCodec;
-import org.wildfly.common.function.Functions;
 import org.wildfly.extension.undertow.CookieConfig;
 import org.wildfly.extension.undertow.session.AffinitySessionConfigWrapper;
 import org.wildfly.extension.undertow.session.CodecSessionConfigWrapper;
@@ -76,7 +76,7 @@ public class UndertowDistributableSessionManagementProvider implements SessionMa
                 return (config != null) ? new AffinitySessionConfigWrapper(config, new DistributableAffinityLocator(routeLocator)) : new CodecSessionConfigWrapper(codec);
             }
         };
-        DeploymentServiceInstaller wrapperFactoryInstaller = ServiceInstaller.builder(Functions.constantSupplier(wrapperFactory)).requires(locator).provides(name).build();
+        DeploymentServiceInstaller wrapperFactoryInstaller = ServiceInstaller.builder(Supplier.of(wrapperFactory)).requires(locator).provides(name).build();
 
         return DeploymentServiceInstaller.combine(locatorInstaller, wrapperFactoryInstaller);
     }

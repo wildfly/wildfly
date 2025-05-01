@@ -20,9 +20,9 @@
         <module name="java.sql"/>
 
         <module name="org.jboss.marshalling"/>
+        <module name="org.wildfly.clustering.function"/>
         <module name="org.wildfly.clustering.marshalling.api"/>
         <module name="org.wildfly.clustering.marshalling.spi"/>
-        <module name="org.wildfly.common"/>
         <module name="org.wildfly.security.elytron-private"/>
     </dependencies>
 </module>

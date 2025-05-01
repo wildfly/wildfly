@@ -40,6 +40,7 @@
         <module name="org.wildfly.clustering.ejb.cache" services="import"/>
         <module name="org.wildfly.clustering.ejb.client" services="import"/>
         <module name="org.wildfly.clustering.ejb.spi"/>
+        <module name="org.wildfly.clustering.function"/>
         <module name="org.wildfly.clustering.infinispan.embedded.service"/>
         <module name="org.wildfly.clustering.marshalling.api"/>
         <module name="org.wildfly.clustering.marshalling.protostream"/>

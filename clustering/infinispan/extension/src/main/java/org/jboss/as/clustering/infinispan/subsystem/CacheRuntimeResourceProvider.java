@@ -15,7 +15,7 @@ import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ResourceRegistration;
 import org.jboss.as.controller.registry.PlaceholderResource;
 import org.jboss.as.controller.registry.Resource;
-import org.wildfly.clustering.cache.function.Functions;
+import org.wildfly.clustering.function.Function;
 import org.wildfly.subsystem.resource.ChildResourceProvider;
 import org.wildfly.subsystem.resource.DynamicResource;
 
@@ -26,7 +26,9 @@ import org.wildfly.subsystem.resource.DynamicResource;
 public class CacheRuntimeResourceProvider implements ChildResourceProvider {
 
     private static final Map<String, Resource> COMPONENTS = EnumSet.of(ComponentResourceRegistration.LOCKING, ComponentResourceRegistration.PARTITION_HANDLING, ComponentResourceRegistration.PERSISTENCE, ComponentResourceRegistration.TRANSACTION)
-            .stream().map(ResourceRegistration::getPathElement).collect(Collectors.toMap(PathElement::getValue, Functions.constantFunction(PlaceholderResource.INSTANCE)));
+            .stream()
+            .map(ResourceRegistration::getPathElement)
+            .collect(Collectors.toMap(PathElement::getValue, Function.of(PlaceholderResource.INSTANCE)));
 
     private static final ChildResourceProvider COMPONENT_PROVIDER = new ChildResourceProvider() {
         @Override

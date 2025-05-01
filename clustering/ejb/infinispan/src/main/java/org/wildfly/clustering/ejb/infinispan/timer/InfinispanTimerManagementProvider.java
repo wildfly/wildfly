@@ -7,7 +7,6 @@ package org.wildfly.clustering.ejb.infinispan.timer;
 
 import java.util.List;
 import java.util.OptionalInt;
-import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
 
 import org.infinispan.Cache;
@@ -27,6 +26,7 @@ import org.wildfly.clustering.ejb.timer.TimerManagementProvider;
 import org.wildfly.clustering.ejb.timer.TimerManagerFactoryConfiguration;
 import org.wildfly.clustering.ejb.timer.TimerRegistry;
 import org.wildfly.clustering.ejb.timer.TimerServiceConfiguration;
+import org.wildfly.clustering.function.Supplier;
 import org.wildfly.clustering.infinispan.service.CacheConfigurationServiceInstaller;
 import org.wildfly.clustering.infinispan.service.CacheServiceInstaller;
 import org.wildfly.clustering.infinispan.service.InfinispanServiceDescriptor;
@@ -34,7 +34,6 @@ import org.wildfly.clustering.marshalling.ByteBufferMarshaller;
 import org.wildfly.clustering.server.infinispan.dispatcher.CacheContainerCommandDispatcherFactory;
 import org.wildfly.clustering.server.service.BinaryServiceConfiguration;
 import org.wildfly.clustering.server.service.ClusteringServiceDescriptor;
-import org.wildfly.common.function.Functions;
 import org.wildfly.subsystem.service.ServiceDependency;
 import org.wildfly.subsystem.service.ServiceInstaller;
 
@@ -77,7 +76,7 @@ public class InfinispanTimerManagementProvider implements TimerManagementProvide
             }
 
             @Override
-            public Supplier<I> getIdentifierFactory() {
+            public java.util.function.Supplier<I> getIdentifierFactory() {
                 return configuration.getIdentifierFactory();
             }
 
@@ -97,7 +96,7 @@ public class InfinispanTimerManagementProvider implements TimerManagementProvide
                 return commandDispatcherFactory.get();
             }
         };
-        ServiceInstaller factoryInstaller = ServiceInstaller.builder(Functions.constantSupplier(new InfinispanTimerManagerFactory<>(factoryConfiguration)))
+        ServiceInstaller factoryInstaller = ServiceInstaller.builder(Supplier.of(new InfinispanTimerManagerFactory<>(factoryConfiguration)))
                 .provides(name)
                 .requires(List.of(commandDispatcherFactory, cache))
                 .build();

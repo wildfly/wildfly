@@ -15,6 +15,7 @@ import java.util.Set;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.CompletionStage;
+import java.util.function.Supplier;
 
 import jakarta.resource.spi.work.DistributableWork;
 import jakarta.resource.spi.work.WorkException;
@@ -33,8 +34,6 @@ import org.wildfly.clustering.server.Registration;
 import org.wildfly.clustering.server.dispatcher.CommandDispatcher;
 import org.wildfly.clustering.server.dispatcher.CommandDispatcherFactory;
 import org.wildfly.clustering.server.util.BlockingExecutor;
-import org.wildfly.common.function.ExceptionRunnable;
-import org.wildfly.common.function.ExceptionSupplier;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
@@ -127,28 +126,32 @@ public class CommandDispatcherTransport extends AbstractRemoteTransport<GroupMem
     private Object sendMessage(GroupMember physicalAddress, Request request, Object... parameters) throws WorkException {
         TransportCommand<?> command = createCommand(request, parameters);
         CommandDispatcher<GroupMember, CommandDispatcherTransport> dispatcher = this.dispatcher;
-        ExceptionSupplier<Optional<Object>, WorkException> task = new ExceptionSupplier<>() {
+        Supplier<Optional<Object>> task = new Supplier<>() {
             @Override
-            public Optional<Object> get() throws WorkException {
+            public Optional<Object> get() {
                 try {
                     CompletionStage<?> response = dispatcher.dispatchToMember(command, physicalAddress);
                     return Optional.ofNullable(response.toCompletableFuture().join());
                 } catch (CancellationException e) {
                     return Optional.empty();
-                } catch (IOException | CompletionException e) {
-                    throw new WorkException(e);
+                } catch (IOException e) {
+                    throw new CompletionException(e);
                 }
             }
         };
-        Optional<Object> value = this.executor.execute(task).orElse(null);
-        return value != null ? value.orElse(null) : null;
+        try {
+            Optional<Object> value = this.executor.execute(task).orElse(null);
+            return value != null ? value.orElse(null) : null;
+        } catch (CompletionException e) {
+            throw new WorkException(e.getCause());
+        }
     }
 
     private void broadcast(TransportCommand<Void> command) throws WorkException {
         CommandDispatcher<GroupMember, CommandDispatcherTransport> dispatcher = this.dispatcher;
-        ExceptionRunnable<WorkException> task = new ExceptionRunnable<>() {
+        Runnable task = new Runnable() {
             @Override
-            public void run() throws WorkException {
+            public void run() {
                 try {
                     for (Map.Entry<GroupMember, CompletionStage<Void>> entry : dispatcher.dispatchToGroup(command).entrySet()) {
                         // Verify that command executed successfully on all nodes
@@ -156,16 +159,18 @@ public class CommandDispatcherTransport extends AbstractRemoteTransport<GroupMem
                             entry.getValue().toCompletableFuture().join();
                         } catch (CancellationException e) {
                             // Ignore
-                        } catch (CompletionException e) {
-                            throw new WorkException(e);
                         }
                     }
                 } catch (IOException e) {
-                    throw new WorkException(e);
+                    throw new CompletionException(e);
                 }
             }
         };
-        this.executor.execute(task);
+        try {
+            this.executor.execute(task);
+        } catch (CompletionException e) {
+            throw new WorkException(e.getCause());
+        }
     }
 
     private static TransportCommand<?> createCommand(Request request, Object... parameters) {

@@ -11,7 +11,6 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.StampedLock;
-import java.util.function.Consumer;
 import java.util.function.LongConsumer;
 
 import io.undertow.UndertowMessages;
@@ -23,12 +22,12 @@ import io.undertow.server.session.SessionManagerStatistics;
 import io.undertow.util.AttachmentKey;
 
 import org.wildfly.clustering.cache.batch.Batch;
+import org.wildfly.clustering.function.Consumer;
 import org.wildfly.clustering.session.IdentifierMarshaller;
 import org.wildfly.clustering.session.Session;
 import org.wildfly.clustering.session.SessionManager;
 import org.wildfly.clustering.web.undertow.UndertowIdentifierSerializerProvider;
 import org.wildfly.clustering.web.undertow.logging.UndertowClusteringLogger;
-import org.wildfly.common.function.Functions;
 
 /**
  * Adapts a distributable {@link SessionManager} to an Undertow {@link io.undertow.server.session.SessionManager}.
@@ -268,7 +267,7 @@ public class DistributableSessionManager implements UndertowSessionManager, Long
             return null;
         }
         Session<Map<String, Object>> session = this.manager.getDetachedSession(sessionId);
-        return session.isValid() ? new DistributableSession(this, session, new SimpleSessionConfig(sessionId), Batch.factory().get().suspend(), Functions.discardingConsumer(), null) : null;
+        return session.isValid() ? new DistributableSession(this, session, new SimpleSessionConfig(sessionId), Batch.factory().get().suspend(), Consumer.empty(), null) : null;
     }
 
     @Override
