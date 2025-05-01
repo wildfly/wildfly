@@ -521,7 +521,7 @@
         <version.org.opensaml.opensaml>4.3.2</version.org.opensaml.opensaml>
         <version.org.ow2.asm>9.7.1</version.org.ow2.asm>
         <version.org.reactivestreams>1.0.4</version.org.reactivestreams>
-        <version.org.wildfly.clustering>6.0.1.Final</version.org.wildfly.clustering>
+        <version.org.wildfly.clustering>6.0.4.Final</version.org.wildfly.clustering>
         <version.org.wildfly.core>28.0.1.Final</version.org.wildfly.core>
         <version.org.wildfly.http-client>2.1.0.Final</version.org.wildfly.http-client>
         <version.org.wildfly.launcher>1.0.2.Final</version.org.wildfly.launcher>
