@@ -184,6 +184,11 @@ public class ResteasyAttributeTestCase {
             }
             return new ModelNode(sb.toString());
         }
+
+        @Override
+        protected long timeout() {
+            return 20L;
+        }
     }
     /**
      * Define the deployment
