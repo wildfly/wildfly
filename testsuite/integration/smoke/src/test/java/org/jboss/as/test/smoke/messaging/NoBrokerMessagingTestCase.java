@@ -55,6 +55,11 @@ public class NoBrokerMessagingTestCase {
                 logger.error("Failed to remove the /subsystem=messaging-activemq/server=default resource.", e);
             }
         }
+
+        @Override
+        protected long timeout() {
+            return 60L;
+        }
     }
 
     @Deployment
