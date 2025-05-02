@@ -10,13 +10,13 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.jboss.as.arquillian.container.ManagementClient;
-import org.jboss.as.arquillian.setup.SnapshotServerSetupTask;
 import org.jboss.as.controller.client.helpers.ClientConstants;
 import org.jboss.as.controller.client.helpers.Operations;
 import org.jboss.as.controller.client.helpers.Operations.CompositeOperationBuilder;
+import org.jboss.as.test.shared.ExtendedSnapshotServerSetupTask;
 import org.jboss.dmr.ModelNode;
 
-public class EnableLRAExtensionsSetupTask extends SnapshotServerSetupTask {
+public class EnableLRAExtensionsSetupTask extends ExtendedSnapshotServerSetupTask {
     private static final String MODULE_LRA_PARTICIPANT = "org.wildfly.extension.microprofile.lra-participant";
     private static final String MODULE_LRA_COORDINATOR = "org.wildfly.extension.microprofile.lra-coordinator";
     private static final String SUBSYSTEM_LRA_PARTICIPANT = "microprofile-lra-participant";
