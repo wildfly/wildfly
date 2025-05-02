@@ -15,10 +15,10 @@ import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
-import org.jboss.as.arquillian.setup.SnapshotServerSetupTask;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.client.helpers.Operations;
 import org.jboss.as.test.integration.common.HttpRequest;
+import org.jboss.as.test.shared.ExtendedSnapshotServerSetupTask;
 import org.jboss.as.test.shared.TimeoutUtil;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
@@ -42,7 +42,7 @@ public class NoBrokerMessagingTestCase {
     @ArquillianResource
     private URL url;
 
-    static class SetupTask extends SnapshotServerSetupTask {
+    static class SetupTask extends ExtendedSnapshotServerSetupTask {
 
         private static final Logger logger = Logger.getLogger(NoBrokerMessagingTestCase.SetupTask.class);
 
@@ -55,6 +55,11 @@ public class NoBrokerMessagingTestCase {
             } catch (OperationExecutionException e) {
                 logger.error("Failed to remove the /subsystem=messaging-activemq/server=default resource.", e);
             }
+        }
+
+        @Override
+        protected long timeout() {
+            return 60L;
         }
     }
 

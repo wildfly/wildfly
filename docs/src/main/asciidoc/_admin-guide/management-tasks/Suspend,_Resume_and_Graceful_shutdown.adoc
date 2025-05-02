@@ -117,12 +117,23 @@ is suspending. They will be restarted from that checkpoint when the
 server returns to running mode.
 * *EE Concurrency* - The server will wait for all active jobs to finish.
 All jobs that have already been queued will be skipped.
-* *Transactions* - The transaction subsystem waits for all running
-transactions to finish while the server is suspending. During that time
-the server refuses to start any new transaction. But any in-flight
-transaction will be serviced - e.g. the server will accept any
-incoming remote call which carries the context of a transaction already
-started at the suspending server.
+
+* *Transactions* - While the server is suspending, the transaction subsystem
+waits for all _in-flight_ and _in-doubt_ transactions to reach a terminal state.
+During that time the server refuses to start any new transaction.
+However, transactions already in progress continue to be serviced;
+e.g. the server will accept any incoming remote call
+which carries the context of a transaction already started at the suspending server.
+
+[NOTE]
+====
+Heuristic transactions do not delay a graceful shutdown.
+However, they are reported through the standard logging mechanisms and
+require manual reconciliation after the server has shut down.
+====
+
+WARNING: In cloud environments, where pods are ephemeral and logs are not retained, specify a persistent and secure location for saving the object store and report logs.
+--
 
 [[transactions-and-Jakarta-Enterprise-Beans]]
 === Transactions and Jakarta Enterprise Beans

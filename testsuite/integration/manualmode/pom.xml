@@ -576,7 +576,7 @@
                         <byteman.host>${node0}</byteman.host>
                         <byteman.port>${byteman.port}</byteman.port>
                         <byteman.policy>${byteman.policy}</byteman.policy>
-                        <jvm.args>${jvm.args.ip.server} ${modular.jdk.args} -Dmaven.repo.local=${settings.localRepository}</jvm.args>
+                        <jvm.args>${jvm.args.ip.server} ${modular.jdk.args} ${narayana.server.jvm.args} -Dmaven.repo.local=${settings.localRepository}</jvm.args>
                         <server.jvm2.args>${surefire.system.args} ${jvm.args.ip} -Djboss.bind.address=${node1} -Djboss.bind.address.management=${node1} -Djboss.bind.address.unsecure=${node1} -Dnode0=${node0} -Dnode1=${node1} ${modular.jdk.args}</server.jvm2.args>
                         <arquillian.launch>manual-mode</arquillian.launch>
                         <jboss.config.file.name>standalone-ha.xml</jboss.config.file.name>

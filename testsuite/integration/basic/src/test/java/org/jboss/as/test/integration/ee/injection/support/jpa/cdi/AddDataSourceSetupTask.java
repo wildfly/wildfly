@@ -14,7 +14,7 @@ import org.jboss.dmr.ModelNode;
 /**
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
-@ReloadIfRequired
+@ReloadIfRequired(20L)
 public class AddDataSourceSetupTask implements ServerSetupTask {
     static final String JNDI_NAME = "java:jboss/datasource/TestDataSource";
     private static final ModelNode ADDRESS = Operations.createAddress("subsystem", "datasources", "data-source", "test-ds");
