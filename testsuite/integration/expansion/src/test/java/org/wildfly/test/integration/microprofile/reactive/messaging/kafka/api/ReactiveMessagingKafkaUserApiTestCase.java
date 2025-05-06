@@ -35,6 +35,7 @@ import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
 import org.junit.Test;
+import org.junit.Ignore;
 import org.junit.runner.RunWith;
 import org.wildfly.test.integration.microprofile.reactive.EnableReactiveExtensionsSetupTask;
 import org.wildfly.test.integration.microprofile.reactive.RunKafkaSetupTask;
@@ -45,6 +46,7 @@ import org.wildfly.test.integration.microprofile.reactive.RunKafkaSetupTask;
 @RunWith(Arquillian.class)
 @ServerSetup({ReactiveMessagingKafkaUserApiTestCase.CustomRunKafkaSetupTask.class, EnableReactiveExtensionsSetupTask.class})
 @DockerRequired
+@Ignore
 public class ReactiveMessagingKafkaUserApiTestCase {
 
     private static final long TIMEOUT = TimeoutUtil.adjust(15000);

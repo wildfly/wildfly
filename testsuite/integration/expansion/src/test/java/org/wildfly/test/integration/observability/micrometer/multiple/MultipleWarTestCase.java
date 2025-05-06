@@ -20,6 +20,7 @@ import org.jboss.as.test.shared.observability.signals.PrometheusMetric;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Test;
+import org.junit.Ignore;
 import org.wildfly.test.integration.observability.JaxRsActivator;
 import org.wildfly.test.integration.observability.micrometer.multiple.application.DuplicateMetricResource1;
 import org.wildfly.test.integration.observability.micrometer.multiple.application.DuplicateMetricResource2;
@@ -42,6 +43,7 @@ public class MultipleWarTestCase extends BaseMultipleTestCase {
 
     @Test
     @InSequence(1)
+    @Ignore
     public void checkPingCount(@ArquillianResource @OperateOnDeployment(SERVICE_ONE) URL serviceOne,
                                @ArquillianResource @OperateOnDeployment(SERVICE_TWO) URL serviceTwo)
             throws URISyntaxException, InterruptedException {

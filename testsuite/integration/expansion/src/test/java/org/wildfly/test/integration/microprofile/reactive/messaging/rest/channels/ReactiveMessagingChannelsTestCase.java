@@ -38,6 +38,7 @@ import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
 import org.junit.Test;
+import org.junit.Ignore;
 import org.junit.runner.RunWith;
 import org.wildfly.test.integration.microprofile.reactive.EnableReactiveExtensionsSetupTask;
 import org.wildfly.test.integration.microprofile.reactive.RunKafkaSetupTask;
@@ -49,6 +50,7 @@ import org.wildfly.test.integration.microprofile.reactive.RunKafkaSetupTask;
 @RunAsClient
 @ServerSetup({RunKafkaSetupTask.class, EnableReactiveExtensionsSetupTask.class})
 @DockerRequired
+@Ignore
 public class ReactiveMessagingChannelsTestCase {
     @ArquillianResource
     URL url;

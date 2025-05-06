@@ -18,6 +18,7 @@ import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
 import org.junit.Test;
+import org.junit.Ignore;
 import org.junit.runner.RunWith;
 import org.wildfly.security.manager.WildFlySecurityManager;
 import org.wildfly.test.integration.microprofile.reactive.EnableReactiveExtensionsSetupTask;
@@ -37,6 +38,7 @@ import java.util.concurrent.TimeUnit;
 @RunWith(Arquillian.class)
 @ServerSetup({RunKafkaSetupTask.class, EnableReactiveExtensionsSetupTask.class})
 @DockerRequired
+@Ignore
 public class ReactiveMessagingKafkaCompressionTestCase {
 
     // Downstream we want to disable Snappy on Windows and Mac

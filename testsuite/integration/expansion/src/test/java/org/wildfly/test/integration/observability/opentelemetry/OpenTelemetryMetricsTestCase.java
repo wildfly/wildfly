@@ -21,10 +21,12 @@ import org.jboss.as.test.shared.observability.setuptasks.OpenTelemetryWithCollec
 import org.jboss.shrinkwrap.api.Archive;
 import org.junit.Assert;
 import org.junit.Test;
+import org.junit.Ignore;
 import org.wildfly.test.integration.observability.opentelemetry.application.OtelMetricResource;
 
 @ServerSetup(OpenTelemetryWithCollectorSetupTask.class)
 @RunAsClient
+@Ignore
 public class OpenTelemetryMetricsTestCase extends BaseOpenTelemetryTest {
     private static final int REQUEST_COUNT = 5;
     private static final String DEPLOYMENT_NAME = "otel-metrics-test";

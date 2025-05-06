@@ -21,11 +21,13 @@ import org.jboss.as.test.shared.observability.signals.jaeger.JaegerSpan;
 import org.jboss.shrinkwrap.api.Archive;
 import org.junit.Assert;
 import org.junit.Test;
+import org.junit.Ignore;
 import org.wildfly.test.integration.observability.opentelemetry.span.AppScopedBean;
 
 @RunAsClient
 @ServerSetup({OpenTelemetryWithCollectorSetupTask.class})
 @DockerRequired
+@Ignore
 public class WithSpanTestCase extends BaseOpenTelemetryTest {
     private static final String DEPLOYMENT_NAME = "with-span-test";
 

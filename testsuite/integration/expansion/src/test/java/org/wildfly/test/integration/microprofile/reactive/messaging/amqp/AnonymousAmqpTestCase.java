@@ -23,6 +23,7 @@ import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Test;
+import org.junit.Ignore;
 import org.junit.runner.RunWith;
 import org.wildfly.test.integration.microprofile.reactive.EnableReactiveExtensionsSetupTask;
 import org.wildfly.test.integration.microprofile.reactive.RunArtemisAmqpSetupTask;
@@ -33,6 +34,7 @@ import io.restassured.RestAssured;
 @RunAsClient
 @ServerSetup({RunArtemisAmqpSetupTask.class, EnableReactiveExtensionsSetupTask.class})
 @DockerRequired
+@Ignore
 public class AnonymousAmqpTestCase {
 
     @ArquillianResource

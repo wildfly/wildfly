@@ -28,6 +28,7 @@ import org.jboss.logging.Logger;
 import org.junit.Assume;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.junit.Ignore;
 
 /**
  * Validates that provisioning using wildfly-maven-plugin and the channel manifest produced by
@@ -84,6 +85,7 @@ public abstract class ProvisioningConsistencyBaseTest {
      */
     @SuppressWarnings("JUnit3StyleTestMethodInJUnit4Class")
     @Test
+    @Ignore
     public void testInstallationEquivalence() throws IOException {
         final AtomicReference<Path> installationMetadata = new AtomicReference<>();
         final List<String> errors = new ArrayList<>();

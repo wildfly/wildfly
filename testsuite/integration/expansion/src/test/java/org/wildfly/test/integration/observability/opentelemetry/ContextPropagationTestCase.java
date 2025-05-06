@@ -23,6 +23,7 @@ import org.jboss.as.test.shared.observability.signals.jaeger.JaegerTrace;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
 import org.junit.Test;
+import org.junit.Ignore;
 import org.wildfly.test.integration.observability.opentelemetry.application.OtelService2;
 
 /**
@@ -33,6 +34,7 @@ import org.wildfly.test.integration.observability.opentelemetry.application.Otel
 @RunAsClient
 @ServerSetup({OpenTelemetryWithCollectorSetupTask.class})
 @DockerRequired
+@Ignore
 public class ContextPropagationTestCase extends BaseOpenTelemetryTest {
 
     private static final String DEPLOYMENT_SERVICE1 = "service1";

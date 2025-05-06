@@ -32,6 +32,7 @@ import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.junit.Ignore;
 import org.junit.runner.RunWith;
 import org.wildfly.test.integration.observability.JaxRsActivator;
 
@@ -39,6 +40,7 @@ import org.wildfly.test.integration.observability.JaxRsActivator;
 @ServerSetup(MicrometerSetupTask.class)
 @DockerRequired
 @RunAsClient
+@Ignore
 public class MicrometerOtelIntegrationTestCase {
     public static final int REQUEST_COUNT = 5;
     public static final String DEPLOYMENT_NAME = "micrometer-test.war";

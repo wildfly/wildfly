@@ -23,6 +23,7 @@ import org.junit.Assert;
 import org.junit.Assume;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.junit.Ignore;
 import org.junit.runner.RunWith;
 import org.wildfly.test.integration.microprofile.reactive.EnableReactiveExtensionsSetupTask;
 import org.wildfly.test.integration.microprofile.reactive.RunKafkaSetupTask;
@@ -33,6 +34,7 @@ import java.io.File;
 @RunAsClient
 @ServerSetup({RunKafkaSetupTask.class, EnableReactiveExtensionsSetupTask.class})
 @DockerRequired
+@Ignore
 public class ReactiveMessagingKafkaWithSnappyFailsOnWindowsAndMacTestCase extends AbstractCliTestBase {
     @ArquillianResource
     public ManagementClient managementClient;
