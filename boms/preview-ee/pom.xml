@@ -31,6 +31,7 @@
     <name>WildFly Preview: Dependency Management (Base Dependencies)</name>
 
     <properties>
+        <version.com.fasterxml.classmate>1.7.0</version.com.fasterxml.classmate>
         <version.jakarta.annotation.jakarta-annotation-api>3.0.0</version.jakarta.annotation.jakarta-annotation-api>
         <version.jakarta.authentication.jakarta-authentication-api>3.1.0</version.jakarta.authentication.jakarta-authentication-api>
         <version.jakarta.authorization.jakarta-authorization-api>3.0.0</version.jakarta.authorization.jakarta-authorization-api>
