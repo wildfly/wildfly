@@ -28,7 +28,7 @@ public class DistributableWebSubsystemTestCase extends AbstractSubsystemSchemaTe
     }
 
     public DistributableWebSubsystemTestCase(DistributableWebSubsystemSchema schema) {
-        super(DistributableWebExtension.SUBSYSTEM_NAME, new DistributableWebExtension(), schema, DistributableWebSubsystemSchema.CURRENT);
+        super(DistributableWebSubsystemResourceDefinitionRegistrar.REGISTRATION.getName(), new DistributableWebExtension(), schema, DistributableWebSubsystemSchema.CURRENT);
     }
 
     @Override
