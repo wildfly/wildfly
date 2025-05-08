@@ -20,8 +20,7 @@ import org.wildfly.subsystem.service.ServiceDependency;
 import org.wildfly.subsystem.service.ServiceInstaller;
 
 /**
- * A local client mappings registry provider implementation.
- *
+ * A local provider of services providing a client-mappings registry.
  * @author Paul Ferraro
  * @author Richard Achmatowicz
  */
