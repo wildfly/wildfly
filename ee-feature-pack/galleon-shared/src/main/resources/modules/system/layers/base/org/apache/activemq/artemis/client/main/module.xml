@@ -18,6 +18,7 @@
         <module name="java.management.rmi"/>
         <module name="java.naming"/>
         <module name="java.rmi"/>
+        <module name="java.xml"/>
         <module name="org.apache.activemq.artemis.commons"/>
         <!-- export is required to get  access to InVMConnectorFactory -->
         <module name="org.apache.activemq.artemis" optional="true" export="true"/>
