@@ -9,15 +9,19 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.EnumSet;
+import java.util.List;
 
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 
+import org.assertj.core.api.Assertions;
 import org.jboss.as.web.session.SharedSessionManagerConfig;
 import org.jboss.metadata.property.PropertyReplacers;
+import org.jboss.metadata.web.spec.AttributeValueMetaData;
+import org.jboss.metadata.web.spec.CookieConfigMetaData;
+import org.jboss.metadata.web.spec.SessionConfigMetaData;
 import org.jboss.staxmapper.XMLMapper;
-import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -50,9 +54,20 @@ public class SharedSessionConfigXMLReaderTestCase {
             SharedSessionManagerConfig config = new SharedSessionManagerConfig();
             mapper.parseDocument(config, reader);
 
-            Assert.assertTrue(config.isDistributable());
-            Assert.assertEquals(10, config.getMaxActiveSessions().intValue());
-            Assert.assertEquals("/", config.getSessionConfig().getCookieConfig().getPath());
+            Assertions.assertThat(config.isDistributable()).isTrue();
+            Assertions.assertThat(config.getMaxActiveSessions()).isEqualTo(10);
+            Assertions.assertThat(config.getSessionConfig()).isNotNull()
+                    .extracting(SessionConfigMetaData::getCookieConfig).isNotNull()
+                    .returns("/", CookieConfigMetaData::getPath);
+            List<AttributeValueMetaData> attributes =config.getSessionConfig().getCookieConfig().getAttributes();
+            if (this.schema.since(SharedSessionConfigSchema.VERSION_3_0)) {
+                Assertions.assertThat(attributes).singleElement()
+                        .returns("SameSite", AttributeValueMetaData::getAttributeName)
+                        .returns("None", AttributeValueMetaData::getAttributeValue)
+                        ;
+            } else {
+                Assertions.assertThat(attributes).isNull();
+            }
         } finally {
             mapper.unregisterRootAttribute(this.schema.getQualifiedName());
         }
