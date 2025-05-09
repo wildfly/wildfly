@@ -173,6 +173,7 @@ public abstract class LayersTestBase {
      */
     public static final String[] NOT_REFERENCED_WILDFLY_EE = {
             // Only injected by logging in 'wildfly-ee', but referenced in 'wildfly' and 'wildfly-preview'
+            "org.wildfly.extension.microprofile.openapi-smallrye.host",
     };
 
 
@@ -200,9 +201,6 @@ public abstract class LayersTestBase {
             "org.eclipse.microprofile.lra.api",
             // Extension not included in the default config
             "org.wildfly.extension.microprofile.openapi-smallrye",
-            "org.eclipse.microprofile.openapi.api",
-            "io.smallrye.openapi",
-            "com.fasterxml.jackson.dataformat.jackson-dataformat-yaml",
             // Extension not included in the default config
             "org.wildfly.extension.microprofile.reactive-messaging-smallrye",
             // Extension not included in the default config
@@ -233,6 +231,7 @@ public abstract class LayersTestBase {
             // Extension not included in the default config
             "org.wildfly.extension.micrometer",
             "org.wildfly.micrometer.deployment",
+            "org.wildfly.microprofile.openapi-smallrye.host",
             "io.micrometer",
             "io.prometheus",
             "io.opentelemetry.proto",

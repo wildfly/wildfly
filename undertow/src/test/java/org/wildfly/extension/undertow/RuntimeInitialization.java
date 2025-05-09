@@ -13,7 +13,8 @@ import java.util.function.Supplier;
 
 import javax.net.ssl.SSLContext;
 
-import org.jboss.as.controller.ControlledProcessStateService;
+import org.jboss.as.controller.ControlledProcessState;
+import org.jboss.as.controller.ProcessStateNotifier;
 import org.jboss.as.controller.RunningMode;
 import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.as.naming.service.NamingStoreService;
@@ -21,16 +22,17 @@ import org.jboss.as.remoting.HttpListenerRegistryService;
 import org.jboss.as.server.Services;
 import org.jboss.as.server.moduleservice.ServiceModuleLoader;
 import org.jboss.as.server.suspend.SuspendController;
+import org.jboss.as.server.suspend.SuspendableActivityRegistry;
 import org.jboss.msc.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
-import org.jboss.msc.service.StartContext;
-import org.jboss.msc.service.StopContext;
+import org.mockito.Mockito;
 import org.wildfly.extension.io.IOServices;
 import org.wildfly.extension.io.WorkerService;
 import org.wildfly.security.auth.server.HttpAuthenticationFactory;
+import org.wildfly.service.ServiceInstaller;
 import org.xnio.OptionMap;
 import org.xnio.Options;
 import org.xnio.Xnio;
@@ -53,7 +55,7 @@ class RuntimeInitialization extends DefaultInitialization {
     }
 
     private void record(ServiceTarget target, ServiceName name, ServiceController.Mode mode) {
-        ServiceBuilder<?> builder = target.addService(name.append("test-recorder"));
+        ServiceBuilder<?> builder = target.addService();
         this.values.put(name, builder.requires(name));
         builder.setInstance(Service.NULL).setInitialMode(mode).install();
     }
@@ -88,8 +90,9 @@ class RuntimeInitialization extends DefaultInitialization {
         try {
             SSLContext sslContext = SSLContext.getDefault();
 
-            ServiceBuilder<?> builder = target.addService();
-            builder.setInstance(Service.newInstance(builder.provides(ServiceName.parse(Capabilities.REF_SUSPEND_CONTROLLER)), new SuspendController())).install();
+            SuspendController suspendController = new SuspendController();
+            ServiceInstaller.builder(suspendController).provides(ServiceName.parse(SuspendableActivityRegistry.SERVICE_DESCRIPTOR.getName())).build().install(target);
+
             target.addService(Services.JBOSS_SERVICE_MODULE_LOADER).setInstance(new ServiceModuleLoader(null)).install();
             target.addService(ContextNames.JAVA_CONTEXT_SERVICE_NAME).setInstance(new NamingStoreService()).install();
             target.addService(ContextNames.JBOSS_CONTEXT_SERVICE_NAME).setInstance(new NamingStoreService()).install();
@@ -112,7 +115,9 @@ class RuntimeInitialization extends DefaultInitialization {
                             Xnio.getInstance().createWorkerBuilder().populateFromOptions(OptionMap.builder().set(Options.WORKER_IO_THREADS, 2).getMap())));
             builder2.install();
 
-            target.addService(ControlledProcessStateService.SERVICE_NAME).setInstance(new NullService()).install();
+            ProcessStateNotifier notifier = Mockito.mock(ProcessStateNotifier.class);
+            Mockito.doReturn(ControlledProcessState.State.RUNNING).when(notifier).getCurrentState();
+            ServiceInstaller.builder(notifier).provides(ServiceName.parse(ProcessStateNotifier.SERVICE_DESCRIPTOR.getName())).build().install(target);
 
             // ListenerRegistry.Listener listener = new ListenerRegistry.Listener("http", "default", "default",
             // InetSocketAddress.createUnresolved("localhost",8080));
@@ -138,22 +143,5 @@ class RuntimeInitialization extends DefaultInitialization {
         } catch (NoSuchAlgorithmException e) {
             e.printStackTrace();
         }
-
     }
-
-    private static final class NullService implements org.jboss.msc.service.Service<ControlledProcessStateService> {
-        @Override
-        public void start(StartContext context) {
-
-        }
-
-        @Override
-        public void stop(StopContext context) {
-
-        }
-
-        @Override
-        public ControlledProcessStateService getValue() throws IllegalStateException, IllegalArgumentException {
-            return null;
-        }
-    }}
+}
