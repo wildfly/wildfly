@@ -8,23 +8,23 @@ package org.wildfly.extension.clustering.singleton;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
 
-import org.jboss.as.clustering.controller.ChildResourceDefinition;
-import org.jboss.as.clustering.controller.ManagementResourceRegistration;
-import org.jboss.as.clustering.controller.ResourceDescriptor;
-import org.jboss.as.clustering.controller.ResourceServiceHandler;
-import org.jboss.as.clustering.controller.SimpleResourceRegistrar;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.ResourceDefinition;
+import org.jboss.as.controller.ResourceRegistration;
 import org.jboss.as.controller.ServiceNameFactory;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.capability.RuntimeCapability;
+import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.operations.validation.IntRangeValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
+import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.msc.service.DelegatingServiceBuilder;
@@ -51,6 +51,10 @@ import org.wildfly.clustering.singleton.service.SingletonServiceController;
 import org.wildfly.clustering.singleton.service.SingletonServiceTarget;
 import org.wildfly.service.capture.ServiceValueExecutorRegistry;
 import org.wildfly.service.capture.ServiceValueRegistry;
+import org.wildfly.subsystem.resource.ChildResourceDefinitionRegistrar;
+import org.wildfly.subsystem.resource.ManagementResourceRegistrar;
+import org.wildfly.subsystem.resource.ManagementResourceRegistrationContext;
+import org.wildfly.subsystem.resource.ResourceDescriptor;
 import org.wildfly.subsystem.resource.operation.ResourceOperationRuntimeHandler;
 import org.wildfly.subsystem.service.ResourceServiceConfigurator;
 import org.wildfly.subsystem.service.ResourceServiceInstaller;
@@ -58,71 +62,46 @@ import org.wildfly.subsystem.service.ServiceDependency;
 import org.wildfly.subsystem.service.capability.CapabilityServiceInstaller;
 
 /**
- * Definition of a singleton policy resource.
+ * Registers a resource definition for a singleton policy.
  * @author Paul Ferraro
  */
-public class SingletonPolicyResourceDefinition extends ChildResourceDefinition<ManagementResourceRegistration> implements ResourceServiceConfigurator {
+public class SingletonPolicyResourceDefinitionRegistrar implements ChildResourceDefinitionRegistrar, ResourceServiceConfigurator {
 
-    static final PathElement WILDCARD_PATH = pathElement(PathElement.WILDCARD_VALUE);
+    static final ResourceRegistration REGISTRATION = ResourceRegistration.of(PathElement.pathElement("singleton-policy"));
 
-    static PathElement pathElement(String value) {
-        return PathElement.pathElement("singleton-policy", value);
-    }
-    private static final RuntimeCapability<Void> SERVICE_TARGET_FACTORY = RuntimeCapability.Builder.of(ServiceTargetFactory.SERVICE_DESCRIPTOR).build();
-    static final CacheConfigurationAttributeGroup CACHE_ATTRIBUTE_GROUP = new InfinispanCacheConfigurationAttributeGroup(SERVICE_TARGET_FACTORY);
+    private static final RuntimeCapability<Void> CAPABILITY = RuntimeCapability.Builder.of(ServiceTargetFactory.SERVICE_DESCRIPTOR).build();
 
-    enum Attribute implements org.jboss.as.clustering.controller.Attribute, UnaryOperator<SimpleAttributeDefinitionBuilder> {
-        QUORUM("quorum", ModelType.INT) {
-            @Override
-            public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
-                return builder.setRequired(false)
-                        .setAllowExpression(true)
-                        .setDefaultValue(new ModelNode(1))
-                        .setValidator(IntRangeValidator.POSITIVE)
-                        ;
-            }
-        },
-        ;
-        private final AttributeDefinition definition;
-
-        Attribute(String name, ModelType type) {
-            this.definition = this.apply(new SimpleAttributeDefinitionBuilder(name, type))
-                    .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
-                    .build();
-        }
-
-        @Override
-        public AttributeDefinition getDefinition() {
-            return this.definition;
-        }
-    }
-
-    SingletonPolicyResourceDefinition() {
-        super(WILDCARD_PATH, SingletonExtension.SUBSYSTEM_RESOLVER.createChildResolver(WILDCARD_PATH));
-    }
+    static final CacheConfigurationAttributeGroup CACHE_ATTRIBUTE_GROUP = new InfinispanCacheConfigurationAttributeGroup(CAPABILITY);
+    static final AttributeDefinition QUORUM = new SimpleAttributeDefinitionBuilder("quorum", ModelType.INT)
+            .setRequired(false)
+            .setAllowExpression(true)
+            .setDefaultValue(new ModelNode(1))
+            .setValidator(IntRangeValidator.POSITIVE)
+            .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
+            .build();
 
     private final ServiceValueExecutorRegistry<Singleton> registry = ServiceValueExecutorRegistry.newInstance();
 
     @Override
-    public ManagementResourceRegistration register(ManagementResourceRegistration parent) {
-        ManagementResourceRegistration registration = parent.registerSubModel(this);
-
-        ResourceDescriptor descriptor = new ResourceDescriptor(this.getResourceDescriptionResolver())
-                .addAttributes(Attribute.class)
+    public ManagementResourceRegistration register(ManagementResourceRegistration parent, ManagementResourceRegistrationContext context) {
+        ResourceDescriptionResolver resolver = SingletonSubsystemResourceDefinitionRegistrar.RESOLVER.createChildResolver(REGISTRATION.getPathElement());
+        ResourceDescriptor descriptor = ResourceDescriptor.builder(resolver)
+                .addCapability(CAPABILITY)
                 .addAttributes(CACHE_ATTRIBUTE_GROUP.getAttributes())
-                .addCapabilities(List.of(SERVICE_TARGET_FACTORY))
-                .addRequiredSingletonChildren(SimpleElectionPolicyResourceDefinition.PATH)
-                .setResourceTransformation(SingletonPolicyResource::new)
-                ;
-        ResourceOperationRuntimeHandler handler = ResourceOperationRuntimeHandler.configureService(this);
-        new SimpleResourceRegistrar(descriptor, ResourceServiceHandler.of(handler)).register(registration);
+                .addAttributes(List.of(QUORUM))
+                .requireSingletonChildResource(ElectionPolicyResourceRegistration.SIMPLE)
+                .withRuntimeHandler(ResourceOperationRuntimeHandler.configureService(this))
+                .withResourceTransformation(SingletonPolicyResource::new)
+                .build();
+        ManagementResourceRegistration registration = parent.registerSubModel(ResourceDefinition.builder(REGISTRATION, resolver).build());
+        ManagementResourceRegistrar.of(descriptor).register(registration);
 
-        new RandomElectionPolicyResourceDefinition().register(registration);
-        new SimpleElectionPolicyResourceDefinition().register(registration);
+        new RandomElectionPolicyResourceDefinitionRegistrar().register(registration, context);
+        new SimpleElectionPolicyResourceDefinitionRegistrar().register(registration, context);
 
-        if (registration.isRuntimeOnlyRegistrationValid()) {
-            new SingletonDeploymentResourceDefinition(this.registry).register(registration);
-            new SingletonServiceResourceDefinition(this.registry).register(registration);
+        if (context.isRuntimeOnlyRegistrationValid()) {
+            new SingletonDeploymentResourceDefinitionRegistrar(this.registry).register(registration, context);
+            new SingletonServiceResourceDefinitionRegistrar(this.registry).register(registration, context);
         }
 
         return registration;
@@ -132,56 +111,63 @@ public class SingletonPolicyResourceDefinition extends ChildResourceDefinition<M
     public ResourceServiceInstaller configure(OperationContext context, ModelNode model) throws OperationFailedException {
         String name = context.getCurrentAddressValue();
         BinaryServiceConfiguration configuration = CACHE_ATTRIBUTE_GROUP.resolve(context, model);
-        int quorum = Attribute.QUORUM.resolveModelAttribute(context, model).asInt();
+        int quorum = QUORUM.resolveModelAttribute(context, model).asInt();
 
         ServiceDependency<SingletonElectionPolicy> electionPolicy = ServiceDependency.on(SingletonElectionPolicy.SERVICE_DESCRIPTOR, name);
         ServiceDependency<SingletonServiceTargetFactory> targetFactory = configuration.getServiceDependency(org.wildfly.clustering.singleton.service.SingletonServiceTargetFactory.SERVICE_DESCRIPTOR).map(SingletonServiceTargetFactory.class::cast);
         ServiceValueRegistry<Singleton> registry = this.registry;
         Registrar<ServiceName> registrar = (SingletonPolicyResource) context.readResource(PathAddress.EMPTY_ADDRESS);
 
-        SingletonServiceTargetFactory serviceTargetFactory = new SingletonServiceTargetFactory() {
+        Supplier<SingletonServiceTargetFactory> factory = targetFactory.map(new UnaryOperator<>() {
             @Override
-            public SingletonServiceTarget createSingletonServiceTarget(ServiceTarget target) {
-                SingletonServiceTarget singletonTarget = targetFactory.get().createSingletonServiceTarget(target);
-                return new ConfiguredSingletonServiceTarget(singletonTarget, builder -> builder.withElectionPolicy(electionPolicy.get()).requireQuorum(quorum), registrar, registry);
-            }
+            public SingletonServiceTargetFactory apply(SingletonServiceTargetFactory factory) {
+                return new SingletonServiceTargetFactory() {
+                    private final SingletonElectionPolicy policy = electionPolicy.get();
 
-            @Deprecated
-            @Override
-            public SingletonServiceConfigurator createSingletonServiceConfigurator(ServiceName name) {
-                org.wildfly.clustering.singleton.compat.SingletonServiceConfigurator configurator = targetFactory.get().createSingletonServiceConfigurator(name)
-                        .withElectionPolicy(electionPolicy.get())
-                        .requireQuorum(quorum)
-                        ;
-                return new SingletonServiceConfigurator(configurator, registrar, registry);
-            }
+                    @Override
+                    public SingletonServiceTarget createSingletonServiceTarget(ServiceTarget target) {
+                        SingletonServiceTarget singletonTarget = factory.createSingletonServiceTarget(target);
+                        return new ConfiguredSingletonServiceTarget(singletonTarget, builder -> builder.withElectionPolicy(this.policy).requireQuorum(quorum), registrar, registry);
+                    }
 
-            @Deprecated
-            @Override
-            public <T> org.wildfly.clustering.singleton.compat.SingletonServiceBuilder<T> createSingletonServiceBuilder(ServiceName name, org.jboss.msc.service.Service<T> service) {
-                org.wildfly.clustering.singleton.compat.SingletonServiceBuilder<T> builder = targetFactory.get().createSingletonServiceBuilder(name, service)
-                        .withElectionPolicy(electionPolicy.get())
-                        .requireQuorum(quorum)
-                        ;
-                return new LegacySingletonServiceBuilder<>(builder, registrar, registry);
-            }
+                    @Deprecated
+                    @Override
+                    public SingletonServiceConfigurator createSingletonServiceConfigurator(ServiceName name) {
+                        org.wildfly.clustering.singleton.compat.SingletonServiceConfigurator configurator = factory.createSingletonServiceConfigurator(name)
+                                .withElectionPolicy(this.policy)
+                                .requireQuorum(quorum)
+                                ;
+                        return new SingletonServiceConfigurator(configurator, registrar, registry);
+                    }
 
-            @Deprecated
-            @Override
-            public <T> org.wildfly.clustering.singleton.compat.SingletonServiceBuilder<T> createSingletonServiceBuilder(ServiceName name, org.jboss.msc.service.Service<T> primaryService, org.jboss.msc.service.Service<T> backupService) {
-                org.wildfly.clustering.singleton.compat.SingletonServiceBuilder<T> builder = targetFactory.get().createSingletonServiceBuilder(name, primaryService, backupService)
-                        .withElectionPolicy(electionPolicy.get())
-                        .requireQuorum(quorum)
-                        ;
-                return new LegacySingletonServiceBuilder<>(builder, registrar, registry);
-            }
+                    @Deprecated
+                    @Override
+                    public <T> org.wildfly.clustering.singleton.compat.SingletonServiceBuilder<T> createSingletonServiceBuilder(ServiceName name, org.jboss.msc.service.Service<T> service) {
+                        org.wildfly.clustering.singleton.compat.SingletonServiceBuilder<T> builder = factory.createSingletonServiceBuilder(name, service)
+                                .withElectionPolicy(this.policy)
+                                .requireQuorum(quorum)
+                                ;
+                        return new LegacySingletonServiceBuilder<>(builder, registrar, registry);
+                    }
 
-            @Override
-            public String toString() {
-                return name;
+                    @Deprecated
+                    @Override
+                    public <T> org.wildfly.clustering.singleton.compat.SingletonServiceBuilder<T> createSingletonServiceBuilder(ServiceName name, org.jboss.msc.service.Service<T> primaryService, org.jboss.msc.service.Service<T> backupService) {
+                        org.wildfly.clustering.singleton.compat.SingletonServiceBuilder<T> builder = factory.createSingletonServiceBuilder(name, primaryService, backupService)
+                                .withElectionPolicy(this.policy)
+                                .requireQuorum(quorum)
+                                ;
+                        return new LegacySingletonServiceBuilder<>(builder, registrar, registry);
+                    }
+
+                    @Override
+                    public String toString() {
+                        return name;
+                    }
+                };
             }
-        };
-        return CapabilityServiceInstaller.builder(SERVICE_TARGET_FACTORY, serviceTargetFactory)
+        });
+        return CapabilityServiceInstaller.builder(CAPABILITY, factory)
                 .requires(List.of(electionPolicy, targetFactory))
                 .provides(ServiceNameFactory.resolveServiceName(SingletonPolicy.SERVICE_DESCRIPTOR, name))
                 .provides(ServiceNameFactory.resolveServiceName(org.wildfly.clustering.singleton.SingletonPolicy.SERVICE_DESCRIPTOR, name))
