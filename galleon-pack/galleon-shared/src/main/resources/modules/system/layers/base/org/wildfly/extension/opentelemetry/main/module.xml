@@ -33,6 +33,7 @@
         <module name="org.jboss.as.ee"/>
         <module name="org.jboss.as.network"/>
         <module name="org.jboss.as.server"/>
+        <module name="org.jboss.as.version"/>
         <module name="org.jboss.as.web-common"/>
         <module name="org.jboss.as.weld.common"/>
         <module name="org.jboss.logging"/>
@@ -43,7 +44,10 @@
         <module name="org.jboss.weld.api"/>
         <module name="org.jboss.weld.spi"/>
 
-        <module name="org.wildfly.security.manager"/>
+        <module name="org.wildfly.security.elytron-private"/>
+
+        <module name="org.wildfly.service"/>
         <module name="org.wildfly.subsystem"/>
+        <module name="org.wildfly.security.manager"/>
     </dependencies>
 </module>
