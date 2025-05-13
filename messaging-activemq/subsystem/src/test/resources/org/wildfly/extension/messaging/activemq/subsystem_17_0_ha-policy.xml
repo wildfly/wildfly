@@ -1,0 +1,95 @@
+<subsystem xmlns="urn:jboss:domain:messaging-activemq:17.0">
+    <server name="ha-policy-live-only-scale-down-discovery-group">
+        <live-only>
+            <scale-down enabled="${scale-down.enabled:true}"
+                        cluster-name="${scale-down.cluster-name:mycluster}"
+                        group-name="${scale-down.group-name:mygroup}"
+                        discovery-group="groupC"
+                        commit-interval="${scale-down.commit-interval:1000}"/>
+        </live-only>
+    </server>
+    <server name="ha-policy-live-only-scale-down-connectors">
+        <live-only>
+            <scale-down enabled="${scale-down.enabled:true}"
+                        cluster-name="${scale-down.cluster-name:mycluster}"
+                        group-name="${scale-down.group-name:mygroup}"
+                        connectors="netty in-vm"
+                        commit-interval="${scale-down.commit-interval:1000}"/>
+        </live-only>
+    </server>
+    <server name="ha-policy-replication-primary">
+        <replication-primary
+                cluster-name="${replication-primary.cluster-name:mycluster}"
+                group-name="${replication-primary.cluster-name:mygroup}"
+                check-for-live-server="${replication-primary.check-for-live-server:false}"
+                initial-replication-sync-timeout="${replication-primary.initial-replication-sync-timeout:1234}"/>
+    </server>
+    <server name="ha-policy-replication-secondary">
+        <replication-secondary
+                cluster-name="${replication-secondary.cluster-name:mycluster}"
+                group-name="${replication-secondary.cluster-name:mygroup}"
+                allow-failback="${replication-secondary.allow-failback:true}"
+                initial-replication-sync-timeout="${replication-primary.initial-replication-sync-timeout:1234}"
+                restart-backup="${replication-secondary.restart-backup:true}"
+                max-saved-replicated-journal-size="${replication-secondary.max-saved-replicated-journal-size:24}">
+            <scale-down enabled="${replication-secondary-scale-down.enabled:true}"
+                        cluster-name="${replication-secondary-scale-down.cluster-name:mycluster}"
+                        group-name="${replication-secondary-scale-down.group-name:mygroup}"
+                        connectors="netty"
+                        commit-interval="${replication-secondary-scale-down.commit-interval:1000}"/>
+        </replication-secondary>
+    </server>
+    <server name="ha-policy-replication-colocated">
+        <replication-colocated request-backup="${replication-colocated.request-backup:false}"
+                               backup-request-retries="${replication-colocated.backup-request-retries:-1}"
+                               backup-request-retry-interval="${replication-colocated.backup-request-retry-interval:5098}"
+                               max-backups="${replication-colocated.max-backups:5}"
+                               backup-port-offset="${replication-colocated.backup-port-offset:500}"
+                               excluded-connectors="netty">
+            <primary cluster-name="${replication-colocated-primary.cluster-name:mycluster}"
+                    group-name="${replication-colocated-primary.cluster-name:mygroup}"
+                    check-for-live-server="${replication-colocated-primary.check-for-live-server:false}" />
+            <secondary cluster-name="${replication-colocated-secondary.cluster-name:mycluster}"
+                   group-name="${replication-colocated-secondary.cluster-name:mygroup}"
+                   allow-failback="${replication-colocated-secondary.allow-failback:true}"
+                   initial-replication-sync-timeout="${replication-colocated-secondary.initial-replication-sync-timeout:1234}"
+                   restart-backup="${replication-colocated-secondary.restart-backup:true}"
+                   max-saved-replicated-journal-size="${replication-colocated-secondary.max-saved-replicated-journal-size:24}">
+                <scale-down enabled="${replication-colocated-secondary-scale-down.enabled:true}"
+                            cluster-name="${replication-colocated-secondary-scale-down.cluster-name:mycluster}"
+                            group-name="${replication-colocated-secondary-scale-down.group-name:mygroup}"
+                            connectors="netty"/>
+            </secondary>
+        </replication-colocated>
+    </server>
+    <server name="ha-policy-shared-store-primary">
+        <shared-store-primary failover-on-server-shutdown="${shared-store-primary.failover-on-server-shutdown:true}" />
+    </server>
+    <server name="ha-policy-shared-store-secondary">
+        <shared-store-secondary allow-failback="${shared-store-secondary.allow-failback:false}"
+                            failover-on-server-shutdown="${shared-store-secondary.failover-on-server-shutdown:true}"
+                            restart-backup="${shared-store-secondary.restart-backup:false}">
+            <scale-down enabled="${shared-store-secondary-scale-down.enabled:true}"
+                        cluster-name="${shared-store-secondary-scale-down.cluster-name:mycluster}"
+                        group-name="${shared-store-secondary-secondary-scale-down.group-name:mygroup}"
+                        connectors="netty" />
+        </shared-store-secondary>
+    </server>
+    <server name="ha-policy-shared-store-colocated">
+        <shared-store-colocated request-backup="${shared-store-colocated.request-backup:false}"
+                                backup-request-retries="${shared-store-colocated.backup-request-retries:-1}"
+                                backup-request-retry-interval="${shared-store-colocated.backup-request-retry-interval:5098}"
+                                max-backups="${shared-store-colocated.max-backups:5}"
+                                backup-port-offset="${shared-store-colocated.backup-port-offset:500}">
+            <primary failover-on-server-shutdown="${shared-store-colocated-primary.failover-on-server-shutdown:true}" />
+            <secondary allow-failback="${shared-store-colocated-secondary.allow-failback:false}"
+                   failover-on-server-shutdown="${shared-store-colocated-secondary.failover-on-server-shutdown:true}"
+                   restart-backup="${shared-store-colocated-secondary.restart-backup:false}">
+                <scale-down enabled="${shared-store-colocated-secondary-scale-down.enabled:true}"
+                            cluster-name="${shared-store-colocated-secondary-scale-down.cluster-name:mycluster}"
+                            group-name="${shared-store-colocated-secondary-secondary-scale-down.group-name:mygroup}"
+                            connectors="netty" />
+            </secondary>
+        </shared-store-colocated>
+    </server>
+</subsystem>
