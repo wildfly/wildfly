@@ -23,6 +23,7 @@ import org.jboss.as.controller.ResourceRegistration;
 import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.dmr.ModelNode;
 import org.wildfly.clustering.context.DefaultThreadFactory;
+import org.wildfly.service.Installer.StartWhen;
 import org.wildfly.subsystem.resource.ResourceDescriptor;
 import org.wildfly.subsystem.service.ServiceDependency;
 import org.wildfly.subsystem.service.capability.CapabilityServiceInstaller;
@@ -50,7 +51,7 @@ public class ScheduledThreadPoolResourceDefinitionRegistrar extends Configuratio
 
             @Override
             public CapabilityServiceInstaller.Builder<ThreadPoolConfiguration, ThreadPoolConfiguration> apply(CapabilityServiceInstaller.Builder<ThreadPoolConfiguration, ThreadPoolConfiguration> builder) {
-                return builder.asPassive();
+                return builder.startWhen(StartWhen.AVAILABLE);
             }
         });
         this.minThreads = pool.getMinThreads();

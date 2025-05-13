@@ -54,6 +54,7 @@ import org.wildfly.clustering.jgroups.spi.ForkChannelFactory;
 import org.wildfly.clustering.jgroups.spi.ForkChannelFactoryConfiguration;
 import org.wildfly.clustering.jgroups.spi.JGroupsServiceDescriptor;
 import org.wildfly.common.function.Functions;
+import org.wildfly.service.Installer.StartWhen;
 import org.wildfly.subsystem.resource.ChildResourceDefinitionRegistrar;
 import org.wildfly.subsystem.resource.ManagementResourceRegistrar;
 import org.wildfly.subsystem.resource.ManagementResourceRegistrationContext;
@@ -104,7 +105,7 @@ public abstract class AbstractChannelResourceDefinitionRegistrar<C extends Chann
                     .requires(List.of(configuration))
                     .blocking()
                     .onStop(stop)
-                    .asPassive()
+                    .startWhen(StartWhen.AVAILABLE)
                     .build();
         }
 

@@ -26,6 +26,7 @@ import org.jboss.dmr.ModelNode;
 import org.wildfly.clustering.infinispan.service.InfinispanServiceDescriptor;
 import org.wildfly.clustering.jgroups.spi.ForkChannelFactory;
 import org.wildfly.clustering.jgroups.spi.ForkChannelFactoryConfiguration;
+import org.wildfly.service.Installer.StartWhen;
 import org.wildfly.service.descriptor.UnaryServiceDescriptor;
 import org.wildfly.subsystem.resource.ResourceDescriptor;
 import org.wildfly.subsystem.resource.capability.CapabilityReference;
@@ -61,7 +62,7 @@ public class JGroupsTransportResourceDefinitionRegistrar extends TransportResour
             @Override
             public CapabilityServiceInstaller.Builder<TransportConfiguration, TransportConfiguration> apply(CapabilityServiceInstaller.Builder<TransportConfiguration, TransportConfiguration> builder) {
                 // Allow cache manager to auto-start when the channel starts
-                return builder.asPassive();
+                return builder.startWhen(StartWhen.AVAILABLE);
             }
         });
     }

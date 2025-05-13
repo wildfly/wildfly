@@ -10,6 +10,7 @@ import java.util.function.Function;
 import org.jboss.as.controller.ServiceNameFactory;
 import org.wildfly.clustering.server.dispatcher.CommandDispatcherFactory;
 import org.wildfly.clustering.server.service.ClusteringServiceDescriptor;
+import org.wildfly.service.Installer.StartWhen;
 import org.wildfly.subsystem.service.ServiceDependency;
 import org.wildfly.subsystem.service.ServiceInstaller;
 
@@ -23,7 +24,7 @@ public enum GroupServiceInstallerFactory implements Function<String, ServiceInst
     public ServiceInstaller apply(String name) {
         return ServiceInstaller.builder(ServiceDependency.on(ClusteringServiceDescriptor.COMMAND_DISPATCHER_FACTORY, name).map(CommandDispatcherFactory::getGroup))
                 .provides(ServiceNameFactory.resolveServiceName(ClusteringServiceDescriptor.GROUP, name))
-                .asPassive()
+                .startWhen(StartWhen.AVAILABLE)
                 .build();
     }
 }
