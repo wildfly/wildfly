@@ -57,7 +57,7 @@ public class SharedSessionConfigXMLReader implements XMLElementReader<SharedSess
                     break;
                 }
                 case "session-config": {
-                    result.setSessionConfig(SessionConfigMetaDataParser.parse(reader, this.replacer));
+                    result.setSessionConfig(new SessionConfigMetaDataParser(this.schema.getServletVersion()).parse(reader, this.replacer));
                     break;
                 }
                 case "distributable": {
