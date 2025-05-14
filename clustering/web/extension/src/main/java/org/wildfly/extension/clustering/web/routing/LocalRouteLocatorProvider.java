@@ -5,11 +5,8 @@
 
 package org.wildfly.extension.clustering.web.routing;
 
-import java.util.function.Supplier;
-import java.util.function.UnaryOperator;
-
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
-import org.wildfly.clustering.cache.function.Functions;
+import org.wildfly.clustering.function.UnaryOperator;
 import org.wildfly.clustering.server.deployment.DeploymentConfiguration;
 import org.wildfly.clustering.server.service.BinaryServiceConfiguration;
 import org.wildfly.clustering.web.service.routing.RouteLocatorProvider;
@@ -23,13 +20,7 @@ public class LocalRouteLocatorProvider implements RouteLocatorProvider {
 
     @Override
     public ServiceInstaller getServiceInstaller(DeploymentPhaseContext context, BinaryServiceConfiguration configuration, DeploymentConfiguration deployment) {
-        ServiceDependency<String> localRoute = ServiceDependency.on(LocalRoutingProvider.LOCAL_ROUTE, deployment.getServerName());
-        Supplier<UnaryOperator<String>> factory = new Supplier<>() {
-            @Override
-            public UnaryOperator<String> get() {
-                return Functions.constantOperator(localRoute.get());
-            }
-        };
-        return RouteLocatorProvider.builder(factory, deployment).requires(localRoute).build();
+        ServiceDependency<String> route = ServiceDependency.on(LocalRoutingProvider.LOCAL_ROUTE, deployment.getServerName());
+        return RouteLocatorProvider.builder(route.map(UnaryOperator::of), deployment).requires(route).build();
     }
 }

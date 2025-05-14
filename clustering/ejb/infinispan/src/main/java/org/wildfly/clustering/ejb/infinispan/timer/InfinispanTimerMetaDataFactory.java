@@ -5,11 +5,9 @@
 
 package org.wildfly.clustering.ejb.infinispan.timer;
 
-import static org.wildfly.clustering.cache.function.Functions.constantFunction;
-import static org.wildfly.common.function.Functions.discardingConsumer;
-
 import java.time.Duration;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
@@ -30,6 +28,9 @@ import org.wildfly.clustering.ejb.cache.timer.TimerMetaDataFactory;
 import org.wildfly.clustering.ejb.cache.timer.TimerMetaDataKey;
 import org.wildfly.clustering.ejb.timer.ImmutableTimerMetaData;
 import org.wildfly.clustering.ejb.timer.TimerMetaData;
+import org.wildfly.clustering.function.Consumer;
+import org.wildfly.clustering.function.Function;
+import org.wildfly.clustering.function.Supplier;
 import org.wildfly.clustering.server.offset.OffsetValue;
 
 /**
@@ -43,6 +44,7 @@ public class InfinispanTimerMetaDataFactory<I, C> implements TimerMetaDataFactor
     private final Cache<TimerMetaDataKey<I>, RemappableTimerMetaDataEntry<C>> writeCache;
     private final Cache<TimerMetaDataKey<I>, RemappableTimerMetaDataEntry<C>> removeCache;
     private final TimerMetaDataConfiguration<C> config;
+    private final Supplier<CompletionStage<RemappableTimerMetaDataEntry<C>>> completed = Supplier.of(CompletableFuture.completedStage(null));
 
     public InfinispanTimerMetaDataFactory(InfinispanTimerMetaDataConfiguration<C> config) {
         this.config = config;
@@ -59,8 +61,9 @@ public class InfinispanTimerMetaDataFactory<I, C> implements TimerMetaDataFactor
         TimerIndex index = entry.getValue();
         // Create index, if necessary
         CompletionStage<I> existingIndex = (index != null) ? this.indexCache.putIfAbsentAsync(new InfinispanTimerIndexKey(index), id) : CompletableFuture.completedStage(null);
+        Supplier<CompletionStage<RemappableTimerMetaDataEntry<C>>> createTimerMetaData = () -> this.writeCache.putAsync(new InfinispanTimerMetaDataKey<>(id), metaData).thenApply(Function.of(metaData));
         // If a timer with the same index already exists, return null;
-        return existingIndex.thenCompose(indexId -> (indexId == null) ? this.writeCache.putAsync(new InfinispanTimerMetaDataKey<>(id), metaData).thenApply(constantFunction(metaData)) : CompletableFuture.completedStage(null));
+        return existingIndex.thenCompose(Function.of(createTimerMetaData).orDefault(Objects::isNull, this.completed));
     }
 
     @Override
@@ -75,7 +78,7 @@ public class InfinispanTimerMetaDataFactory<I, C> implements TimerMetaDataFactor
 
     @Override
     public CompletionStage<Void> removeAsync(I id) {
-        return this.removeCache.removeAsync(new InfinispanTimerMetaDataKey<>(id)).thenAccept(discardingConsumer());
+        return this.removeCache.removeAsync(new InfinispanTimerMetaDataKey<>(id)).thenAccept(Consumer.empty());
     }
 
     @Override

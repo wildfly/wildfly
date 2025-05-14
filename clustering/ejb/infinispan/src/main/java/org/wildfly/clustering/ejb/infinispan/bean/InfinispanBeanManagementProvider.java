@@ -7,8 +7,6 @@ package org.wildfly.clustering.ejb.infinispan.bean;
 import java.util.List;
 import java.util.Map;
 import java.util.OptionalInt;
-import java.util.function.Supplier;
-import java.util.function.UnaryOperator;
 
 import org.infinispan.Cache;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
@@ -36,6 +34,9 @@ import org.wildfly.clustering.ejb.cache.bean.DefaultBeanGroupManagerConfiguratio
 import org.wildfly.clustering.ejb.infinispan.logging.InfinispanEjbLogger;
 import org.wildfly.clustering.infinispan.service.CacheConfigurationServiceInstaller;
 import org.wildfly.clustering.infinispan.service.CacheServiceInstaller;
+import org.wildfly.clustering.function.Consumer;
+import org.wildfly.clustering.function.Supplier;
+import org.wildfly.clustering.function.UnaryOperator;
 import org.wildfly.clustering.infinispan.service.InfinispanServiceDescriptor;
 import org.wildfly.clustering.marshalling.ByteBufferMarshalledValueFactory;
 import org.wildfly.clustering.marshalling.ByteBufferMarshaller;
@@ -45,7 +46,7 @@ import org.wildfly.clustering.server.Registration;
 import org.wildfly.clustering.server.infinispan.dispatcher.CacheContainerCommandDispatcherFactory;
 import org.wildfly.clustering.server.service.BinaryServiceConfiguration;
 import org.wildfly.clustering.server.service.ClusteringServiceDescriptor;
-import org.wildfly.common.function.Functions;
+import org.wildfly.service.Installer.StartWhen;
 import org.wildfly.subsystem.service.ServiceDependency;
 import org.wildfly.subsystem.service.ServiceInstaller;
 
@@ -134,9 +135,9 @@ public class InfinispanBeanManagementProvider<K, V extends BeanInstance<K>> impl
             }
         };
         ServiceInstaller groupListenerInstaller = ServiceInstaller.builder(groupListener)
-                .onStop(Functions.closingConsumer())
+                .onStop(Consumer.close())
                 .requires(ServiceDependency.on(groupManagerServiceName))
-                .asPassive()
+                .startWhen(StartWhen.AVAILABLE)
                 .build();
 
         return List.of(cacheConfigurationInstaller, cacheInstaller, groupManagerInstaller, groupListenerInstaller);
@@ -175,7 +176,7 @@ public class InfinispanBeanManagementProvider<K, V extends BeanInstance<K>> impl
                 return beanGroupManager.get();
             }
         };
-        return ServiceInstaller.builder(Functions.constantSupplier(new InfinispanBeanManagerFactory<>(configuration)))
+        return ServiceInstaller.builder(Supplier.of(new InfinispanBeanManagerFactory<>(configuration)))
                 .provides(name)
                 .requires(List.of(cache, dispatcherFactory, beanGroupManager))
                 .build();

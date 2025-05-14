@@ -21,11 +21,11 @@
         <module name="org.infinispan.commons"/>
         <module name="org.infinispan.core"/>
         <module name="org.infinispan.protostream"/>
-        <module name="org.jboss.logging"/>
-        <module name="org.wildfly.clustering.context"/>
         <module name="org.wildfly.clustering.cache.infinispan.common"/>
         <module name="org.wildfly.clustering.cache.infinispan.embedded" services="import"/>
         <module name="org.wildfly.clustering.cache.spi" services="import"/>
+        <module name="org.wildfly.clustering.context"/>
+        <module name="org.wildfly.clustering.function"/>
         <module name="org.wildfly.clustering.marshalling.protostream"/>
         <module name="org.wildfly.clustering.marshalling.spi"/>
         <module name="org.wildfly.clustering.server.api"/>
@@ -36,6 +36,5 @@
         <module name="org.wildfly.clustering.session.cache" services="import"/>
         <module name="org.wildfly.clustering.session.spec.spi"/>
         <module name="org.wildfly.clustering.session.spi"/>
-        <module name="org.wildfly.common"/>
     </dependencies>
 </module>

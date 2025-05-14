@@ -7,6 +7,8 @@ package org.wildfly.clustering.web.undertow.session;
 import java.time.Duration;
 import java.util.Map;
 import java.util.ServiceLoader;
+import java.util.concurrent.CompletionException;
+import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
@@ -21,7 +23,6 @@ import org.wildfly.clustering.session.SessionManagerConfiguration;
 import org.wildfly.clustering.session.SessionManagerFactory;
 import org.wildfly.clustering.web.container.SessionManagerFactoryConfiguration;
 import org.wildfly.clustering.web.undertow.IdentifierFactoryAdapter;
-import org.wildfly.common.function.ExceptionBiFunction;
 
 import io.undertow.server.HttpServerExchange;
 import io.undertow.server.session.SessionListeners;
@@ -79,12 +80,30 @@ public class DistributableSessionManagerFactory implements io.undertow.servlet.a
         info.addThreadSetupAction(new ThreadSetupHandler() {
             @Override
             public <T, C> Action<T, C> create(Action<T, C> action) {
-                ExceptionBiFunction<HttpServerExchange, C, T, Exception> actionCaller = action::call;
-                ExceptionBiFunction<HttpServerExchange, C, T, Exception> contextualActionCaller = contextualizer.contextualize(actionCaller);
+                BiFunction<HttpServerExchange, C, T> actionCaller = new BiFunction<>() {
+                    @Override
+                    public T apply(HttpServerExchange exchange, C context) {
+                        try {
+                            return action.call(exchange, context);
+                        } catch (RuntimeException e) {
+                            // Avoid unnecessary wrapping
+                            throw e;
+                        } catch (Exception e) {
+                            // Wrap as unchecked exception
+                            throw new CompletionException(e);
+                        }
+                    }
+                };
+                BiFunction<HttpServerExchange, C, T> contextualActionCaller = contextualizer.contextualize(actionCaller);
                 return new Action<>() {
                     @Override
                     public T call(HttpServerExchange exchange, C context) throws Exception {
-                        return contextualActionCaller.apply(exchange, context);
+                        try {
+                            return contextualActionCaller.apply(exchange, context);
+                        } catch (CompletionException e) {
+                            // Unwrap checked exception
+                            throw (Exception) e.getCause();
+                        }
                     }
                 };
             }

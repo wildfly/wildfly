@@ -32,6 +32,7 @@
         <module name="org.jboss.msc"/>
         <module name="org.wildfly.clustering.cache.spi"/>
         <module name="org.wildfly.clustering.context"/>
+        <module name="org.wildfly.clustering.function"/>
         <module name="org.wildfly.clustering.marshalling.jboss"/>
         <module name="org.wildfly.clustering.marshalling.protostream"/>
         <module name="org.wildfly.clustering.marshalling.spi"/>
@@ -41,7 +42,6 @@
         <module name="org.wildfly.clustering.session.spi"/>
         <module name="org.wildfly.clustering.web.container"/>
         <module name="org.wildfly.clustering.web.service"/>
-        <module name="org.wildfly.common"/>
         <module name="org.wildfly.extension.undertow"/>
         <module name="org.wildfly.security.elytron-base"/>
         <module name="org.wildfly.security.elytron-private"/>

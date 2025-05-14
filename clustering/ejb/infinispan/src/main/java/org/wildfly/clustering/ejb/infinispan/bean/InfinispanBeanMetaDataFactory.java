@@ -5,9 +5,6 @@
 
 package org.wildfly.clustering.ejb.infinispan.bean;
 
-import static org.wildfly.clustering.cache.function.Functions.constantFunction;
-import static org.wildfly.common.function.Functions.discardingConsumer;
-
 import java.time.Instant;
 import java.util.concurrent.CompletionStage;
 
@@ -27,6 +24,8 @@ import org.wildfly.clustering.ejb.cache.bean.DefaultBeanMetaDataEntry;
 import org.wildfly.clustering.ejb.cache.bean.DefaultImmutableBeanMetaData;
 import org.wildfly.clustering.ejb.cache.bean.MutableBeanMetaDataEntry;
 import org.wildfly.clustering.ejb.cache.bean.RemappableBeanMetaDataEntry;
+import org.wildfly.clustering.function.Consumer;
+import org.wildfly.clustering.function.Function;
 import org.wildfly.clustering.server.offset.OffsetValue;
 
 /**
@@ -55,7 +54,7 @@ public class InfinispanBeanMetaDataFactory<K> implements BeanMetaDataFactory<K, 
     @Override
     public CompletionStage<RemappableBeanMetaDataEntry<K>> createValueAsync(BeanInstance<K> instance, K groupId) {
         RemappableBeanMetaDataEntry<K> entry = new DefaultBeanMetaDataEntry<>(this.beanName, groupId);
-        return this.writeOnlyCache.putAsync(new InfinispanBeanMetaDataKey<>(instance.getId()), entry).thenApply(constantFunction(entry));
+        return this.writeOnlyCache.putAsync(new InfinispanBeanMetaDataKey<>(instance.getId()), entry).thenApply(Function.of(entry));
     }
 
     @Override
@@ -70,7 +69,7 @@ public class InfinispanBeanMetaDataFactory<K> implements BeanMetaDataFactory<K, 
 
     @Override
     public CompletionStage<Void> removeAsync(K id) {
-        return this.writeOnlyCache.removeAsync(new InfinispanBeanMetaDataKey<>(id)).thenAccept(discardingConsumer());
+        return this.writeOnlyCache.removeAsync(new InfinispanBeanMetaDataKey<>(id)).thenAccept(Consumer.empty());
     }
 
     @Override

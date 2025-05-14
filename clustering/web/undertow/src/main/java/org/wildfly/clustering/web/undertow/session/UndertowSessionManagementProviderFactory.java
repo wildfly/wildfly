@@ -5,9 +5,9 @@
 
 package org.wildfly.clustering.web.undertow.session;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.ServiceLoader;
-import java.util.stream.Collectors;
 
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
@@ -15,7 +15,6 @@ import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.metadata.web.jboss.ReplicationConfig;
 import org.jboss.modules.Module;
 import org.kohsuke.MetaInfServices;
-import org.wildfly.clustering.cache.function.Functions;
 import org.wildfly.clustering.server.immutable.Immutability;
 import org.wildfly.clustering.web.container.SessionManagementProvider;
 import org.wildfly.clustering.web.service.session.DistributableSessionManagementProvider;
@@ -48,7 +47,15 @@ public class UndertowSessionManagementProviderFactory implements SessionManageme
             provider = this.legacyFactory.createSessionManagerProvider(unit, config);
         }
         Module module = unit.getAttachment(Attachments.MODULE);
-        List<String> immutableClasses = unit.getAttachmentList(DistributableSessionManagementProvider.IMMUTABILITY_ATTACHMENT_KEY);
-        return new UndertowDistributableSessionManagementProvider(provider, Immutability.classes(immutableClasses.stream().map(Functions.quiet(module.getClassLoader()::loadClass, IllegalArgumentException::new)).collect(Collectors.toList())));
+        List<String> immutableClassNames = unit.getAttachmentList(DistributableSessionManagementProvider.IMMUTABILITY_ATTACHMENT_KEY);
+        List<Class<?>> immutableClasses = new ArrayList<>(immutableClassNames.size());
+        try {
+            for (String immutableClassName : immutableClassNames) {
+                immutableClasses.add(module.getClassLoader().loadClass(immutableClassName));
+            }
+            return new UndertowDistributableSessionManagementProvider(provider, Immutability.classes(immutableClasses));
+        } catch (ClassNotFoundException e) {
+            throw new IllegalArgumentException(e);
+        }
     }
 }

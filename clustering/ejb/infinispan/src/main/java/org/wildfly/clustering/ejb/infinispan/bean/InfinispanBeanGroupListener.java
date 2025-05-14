@@ -21,9 +21,9 @@ import org.wildfly.clustering.cache.infinispan.embedded.listener.PrePassivateBlo
 import org.wildfly.clustering.ejb.bean.BeanInstance;
 import org.wildfly.clustering.ejb.cache.bean.BeanGroupKey;
 import org.wildfly.clustering.ejb.infinispan.logging.InfinispanEjbLogger;
+import org.wildfly.clustering.function.Consumer;
 import org.wildfly.clustering.marshalling.MarshalledValue;
 import org.wildfly.clustering.server.Registration;
-import org.wildfly.common.function.Functions;
 
 /**
  * @author Paul Ferraro
@@ -48,8 +48,8 @@ public class InfinispanBeanGroupListener<K, V extends BeanInstance<K>, C> implem
 
     @Override
     public void close() {
-        Optional.ofNullable(this.postActivateListenerRegistration).ifPresent(Functions.closingConsumer());
-        Optional.ofNullable(this.prePassivateListenerRegistration).ifPresent(Functions.closingConsumer());
+        Optional.ofNullable(this.postActivateListenerRegistration).ifPresent(Consumer.close());
+        Optional.ofNullable(this.prePassivateListenerRegistration).ifPresent(Consumer.close());
     }
 
     void postActivate(BeanGroupKey<K> key, MarshalledValue<Map<K, V>, C> value) {

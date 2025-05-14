@@ -60,4 +60,9 @@ public class ClassLoaderThreadFactory implements org.jgroups.util.ThreadFactory 
     public void renameThread(String base_name, Thread thread) {
         this.factory.renameThread(base_name, thread);
     }
+
+    @Override
+    public boolean useVirtualThreads() {
+        return this.factory.useVirtualThreads();
+    }
 }

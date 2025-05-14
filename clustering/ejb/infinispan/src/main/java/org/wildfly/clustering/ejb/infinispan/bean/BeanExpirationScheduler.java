@@ -16,7 +16,6 @@ import org.wildfly.clustering.cache.batch.Batch;
 import org.wildfly.clustering.context.DefaultThreadFactory;
 import org.wildfly.clustering.server.expiration.ExpirationMetaData;
 import org.wildfly.clustering.server.infinispan.CacheContainerGroup;
-import org.wildfly.clustering.server.infinispan.expiration.ExpirationMetaDataFunction;
 import org.wildfly.clustering.server.infinispan.scheduler.AbstractCacheEntryScheduler;
 import org.wildfly.clustering.ejb.bean.Bean;
 import org.wildfly.clustering.ejb.bean.BeanExpirationConfiguration;
@@ -73,7 +72,7 @@ public class BeanExpirationScheduler<K, V extends BeanInstance<K>, M> extends Ab
     }
 
     private BeanExpirationScheduler(Scheduler<K, Instant> scheduler, BeanFactory<K, V, M> factory) {
-        super(scheduler.map(ExpirationMetaDataFunction.INSTANCE));
+        super(scheduler.map(ExpirationMetaData::getExpirationTime));
         this.factory = factory.getMetaDataFactory();
     }
 
