@@ -45,12 +45,12 @@ public class ResourceAdaptersTransformersTestCase extends AbstractSubsystemBaseT
 
     @Override
     protected String getSubsystemXml() throws IOException {
-        return readResource("resource-adapters-transform_7_1.xml");
+        return readResource("resource-adapters-transform_7_2.xml");
     }
 
     @Override
     protected String getSubsystemXsdPath() {
-        return "schema/wildfly-resource-adapters_7_1.xsd";
+        return "schema/wildfly-resource-adapters_7_2.xsd";
     }
 
     /**
@@ -86,7 +86,7 @@ public class ResourceAdaptersTransformersTestCase extends AbstractSubsystemBaseT
      * @throws Exception if an error occurs during the kernel initialization or the subsystem transformation validation.
      */
     private void testTransformer(final ModelTestControllerVersion controllerVersion) throws Exception {
-        String subsystemXml = "resource-adapters-transform_7_1.xml";
+        String subsystemXml = "resource-adapters-transform_7_2.xml";
         ModelVersion modelVersion = getResourceAdapterModel(controllerVersion);
         KernelServicesBuilder builder = createKernelServicesBuilder(createAdditionalInitialization()).setSubsystemXmlResource(subsystemXml);
         KernelServices mainServices = initialKernelServices(builder, controllerVersion);
