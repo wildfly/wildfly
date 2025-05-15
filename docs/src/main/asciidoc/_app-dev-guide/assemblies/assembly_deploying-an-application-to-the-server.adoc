@@ -1,0 +1,44 @@
+include::../attributes.adoc[]
+
+ifdef::context[:parent-context-of-deploying-an-application-to-the-server: {context}]
+
+:_content-type: ASSEMBLY
+
+ifndef::context[]
+[id="deploying-an-application-to-the-server"]
+endif::[]
+ifdef::context[]
+[id="deploying-an-application-to-the-server_{context}"]
+endif::[]
+= Building and deploying an application to the server
+
+:context: deploying-an-application-to-the-server
+
+[role="_abstract"]
+You can deploy your application on a {ProductShortName} server running on bare metal or on {cloudPlatform}.
+
+To deploy your application on a {ProductShortName} server running on bare metal, follow this procedure:
+
+* xref:deploying-an-application-to-a-bare-metal-installation_deploying-an-application-to-the-server[Building and deploying an application to a bare metal installation]
+
+To deploy your application on a provisioned {ProductShortName} server, follow this procedure:
+
+* xref:deploying-an-application-to-a-provisioned-server_deploying-an-application-to-the-server[Building and deploying an application on a provisioned server]
+
+To deploy your application on a {ProductShortName} server running on {cloudPlatform}, follow these procedures:
+
+* xref:preparing-an-application-for-deployment-on-openshift_deploying-an-application-to-cloudplatform[Preparing an application for deployment on {cloudPlatform}]
+* xref:deploying-an-application-to-server-on-openshift-with-helm_deploying-an-application-to-cloudplatform[Building and deploying an application to {ProductShortname} on OpenShift with Helm]
+
+include::{pathToModules}/proc_deploying-an-application-to-a-bare-metal-installation.adoc[leveloffset=+1]
+
+include::{pathToModules}/proc_deploying-an-application-to-a-provisioned-server.adoc[leveloffset=+1]
+
+include::assembly_deploying-an-application-to-cloudplatform.adoc[leveloffset=+1]
+
+
+//include::con_application-deployment-options.adoc[leveloffset=+1]
+
+ifdef::parent-context-of-deploying-an-application-to-the-server[:context: {parent-context-of-deploying-an-application-to-the-server}]
+ifndef::parent-context-of-deploying-an-application-to-the-server[:!context:]
+
