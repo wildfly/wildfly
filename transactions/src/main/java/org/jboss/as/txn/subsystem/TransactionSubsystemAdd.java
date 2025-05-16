@@ -358,10 +358,8 @@ class TransactionSubsystemAdd extends AbstractBoottimeAddStepHandler {
 
         TransactionManagerService.addService(target);
         UserTransactionService.addService(target);
-        target.addService(TxnServices.JBOSS_TXN_USER_TRANSACTION_REGISTRY, new UserTransactionRegistryService())
-                .setInitialMode(Mode.ACTIVE).install();
+        UserTransactionRegistryService.addService(target);
         TransactionSynchronizationRegistryService.addService(target);
-
     }
 
     private void performCoreEnvironmentBootTime(OperationContext context, ModelNode coreEnvModel) throws OperationFailedException {
