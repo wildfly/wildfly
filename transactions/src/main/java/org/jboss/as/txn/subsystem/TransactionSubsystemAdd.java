@@ -401,8 +401,8 @@ class TransactionSubsystemAdd extends AbstractBoottimeAddStepHandler {
         final String recoveryStatusBindingName = TransactionSubsystemRootResourceDefinition.STATUS_BINDING.resolveModelAttribute(context, model).asString();
         final boolean recoveryListener = TransactionSubsystemRootResourceDefinition.RECOVERY_LISTENER.resolveModelAttribute(context, model).asBoolean();
 
-        final CapabilityServiceBuilder<?> recoveryManagerServiceServiceBuilder = serviceTarget.addCapability(XA_RESOURCE_RECOVERY_REGISTRY_CAPABILITY);
-        final Consumer<RecoveryManagerService> consumer = recoveryManagerServiceServiceBuilder.provides(XA_RESOURCE_RECOVERY_REGISTRY_CAPABILITY);
+        final CapabilityServiceBuilder<?> recoveryManagerServiceServiceBuilder = serviceTarget.addService();
+        final Consumer<RecoveryManagerService> consumer = recoveryManagerServiceServiceBuilder.provides(XA_RESOURCE_RECOVERY_REGISTRY_CAPABILITY, TxnServices.JBOSS_TXN_ARJUNA_RECOVERY_MANAGER);
         final Supplier<SocketBinding> recoveryBindingSupplier = recoveryManagerServiceServiceBuilder.requires(SocketBinding.SERVICE_DESCRIPTOR, recoveryBindingName);
         final Supplier<SocketBinding> statusBindingSupplier = recoveryManagerServiceServiceBuilder.requires(SocketBinding.SERVICE_DESCRIPTOR, recoveryStatusBindingName);
         final Supplier<SocketBindingManager> bindingManagerSupplier = recoveryManagerServiceServiceBuilder.requires(SocketBindingManager.SERVICE_DESCRIPTOR);
@@ -410,8 +410,6 @@ class TransactionSubsystemAdd extends AbstractBoottimeAddStepHandler {
         final Supplier<ProcessStateNotifier> processStateSupplier = recoveryManagerServiceServiceBuilder.requires(ProcessStateNotifier.SERVICE_DESCRIPTOR);
         recoveryManagerServiceServiceBuilder.requires(TxnServices.JBOSS_TXN_CORE_ENVIRONMENT);
         recoveryManagerServiceServiceBuilder.requires(TxnServices.JBOSS_TXN_ARJUNA_OBJECTSTORE_ENVIRONMENT);
-        recoveryManagerServiceServiceBuilder.addAliases(TxnServices.JBOSS_TXN_ARJUNA_RECOVERY_MANAGER);
-
 
         // add dependency on Jakarta Transactions environment bean
         for (final ServiceName dep : deps) {
@@ -483,6 +481,7 @@ class TransactionSubsystemAdd extends AbstractBoottimeAddStepHandler {
                 .addDependency(TxnServices.JBOSS_TXN_LOCAL_TRANSACTION_CONTEXT, LocalTransactionContext.class, contextXATerminatorService.getLocalTransactionContextInjector())
                 .setInitialMode(Mode.ACTIVE).install();
 
+        // TODO: refactor
         final ArjunaRecoveryManagerService recoveryManagerService = new ArjunaRecoveryManagerService(consumer, recoveryBindingSupplier, statusBindingSupplier, bindingManagerSupplier, suspendControllerSupplier, processStateSupplier, orbSupplier, recoveryListener, jts);
         recoveryManagerServiceServiceBuilder.setInstance(recoveryManagerService);
         recoveryManagerServiceServiceBuilder.install();
