@@ -305,8 +305,7 @@ class TransactionSubsystemAdd extends AbstractBoottimeAddStepHandler {
         tsrBuilder.install();
 
         // Install the UserTransactionAccessControlService
-        final UserTransactionAccessControlService lookupControlService = new UserTransactionAccessControlService();
-        context.getServiceTarget().addService(UserTransactionAccessControlService.SERVICE_NAME, lookupControlService).install();
+        UserTransactionAccessControlService.addService(context.getCapabilityServiceTarget());
 
         // Bind the UserTransaction into JNDI
         final UserTransactionBindingService userTransactionBindingService = new UserTransactionBindingService("UserTransaction");
