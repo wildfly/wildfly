@@ -81,7 +81,6 @@ import org.jboss.msc.Service;
 import org.jboss.msc.inject.InjectionException;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.ServiceBuilder;
-import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.remoting3.Endpoint;
 import org.jboss.tm.ExtendedJBossXATerminator;
@@ -502,24 +501,26 @@ class TransactionSubsystemAdd extends AbstractBoottimeAddStepHandler {
         } else {
             ContextTransactionManager.setGlobalDefaultTransactionTimeout(coordinatorDefaultTimeout);
         }
-        final ArjunaTransactionManagerService transactionManagerService = new ArjunaTransactionManagerService(coordinatorEnableStatistics, coordinatorDefaultTimeout, transactionStatusManagerEnable, jts);
-        final ServiceBuilder<com.arjuna.ats.jbossatx.jta.TransactionManagerService> transactionManagerServiceServiceBuilder = context.getServiceTarget().addService(TxnServices.JBOSS_TXN_ARJUNA_TRANSACTION_MANAGER, transactionManagerService);
+        final ServiceBuilder<?> sb = context.getCapabilityServiceTarget().addService();
+        final Consumer<com.arjuna.ats.jbossatx.jta.TransactionManagerService> txnManagerServiceConsumer = sb.provides(TxnServices.JBOSS_TXN_ARJUNA_TRANSACTION_MANAGER);
+        final Supplier<JBossXATerminator> xaTerminatorSupplier = sb.requires(TxnServices.JBOSS_TXN_XA_TERMINATOR);
+        final Supplier<UserTransactionRegistry> userTransactionRegistrySupplier = sb.requires(TxnServices.JBOSS_TXN_USER_TRANSACTION_REGISTRY);
         // add dependency on Jakarta Transactions environment bean service
-        transactionManagerServiceServiceBuilder.addDependency(TxnServices.JBOSS_TXN_JTA_ENVIRONMENT, JTAEnvironmentBean.class, transactionManagerService.getJTAEnvironmentBeanInjector());
+        final Supplier<JTAEnvironmentBean> jtaEnvironmentBeanSupplier = sb.requires(TxnServices.JBOSS_TXN_JTA_ENVIRONMENT);
 
         //if jts is enabled we need the ORB
+        Supplier<ORB> orbSupplier = null;
         if (jts) {
-            transactionManagerServiceServiceBuilder.addDependency(ServiceName.JBOSS.append("iiop-openjdk", "orb-service"), ORB.class, transactionManagerService.getOrbInjector());
-            transactionManagerServiceServiceBuilder.requires(CorbaNamingService.SERVICE_NAME);
+            orbSupplier = sb.requires(ServiceName.JBOSS.append("iiop-openjdk", "orb-service"));
+            sb.requires(CorbaNamingService.SERVICE_NAME);
         }
+        final ArjunaTransactionManagerService transactionManagerService = new ArjunaTransactionManagerService(txnManagerServiceConsumer, xaTerminatorSupplier, orbSupplier, userTransactionRegistrySupplier, jtaEnvironmentBeanSupplier, coordinatorEnableStatistics, coordinatorDefaultTimeout, transactionStatusManagerEnable, jts);
+        sb.setInstance(transactionManagerService);
 
-        transactionManagerServiceServiceBuilder.addDependency(TxnServices.JBOSS_TXN_XA_TERMINATOR, JBossXATerminator.class, transactionManagerService.getXaTerminatorInjector());
-        transactionManagerServiceServiceBuilder.addDependency(TxnServices.JBOSS_TXN_USER_TRANSACTION_REGISTRY, UserTransactionRegistry.class, transactionManagerService.getUserTransactionRegistry());
-        transactionManagerServiceServiceBuilder.requires(TxnServices.JBOSS_TXN_CORE_ENVIRONMENT);
-        transactionManagerServiceServiceBuilder.requires(TxnServices.JBOSS_TXN_ARJUNA_OBJECTSTORE_ENVIRONMENT);
-        transactionManagerServiceServiceBuilder.requires(XA_RESOURCE_RECOVERY_REGISTRY_CAPABILITY.getCapabilityServiceName());
-        transactionManagerServiceServiceBuilder.setInitialMode(Mode.ACTIVE);
-        transactionManagerServiceServiceBuilder.install();
+        sb.requires(TxnServices.JBOSS_TXN_CORE_ENVIRONMENT);
+        sb.requires(TxnServices.JBOSS_TXN_ARJUNA_OBJECTSTORE_ENVIRONMENT);
+        sb.requires(XA_RESOURCE_RECOVERY_REGISTRY_CAPABILITY.getCapabilityServiceName());
+        sb.install();
     }
 
     private void checkIfNodeIdentifierIsDefault(final OperationContext context, final ModelNode model) throws OperationFailedException {
