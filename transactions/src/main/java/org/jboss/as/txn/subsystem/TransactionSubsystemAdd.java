@@ -437,12 +437,13 @@ class TransactionSubsystemAdd extends AbstractBoottimeAddStepHandler {
             remotingTxnServiceSB.setInstance(remoteTransactionServiceService).install();
         }
 
-        if(context.hasOptionalCapability(UNDERTOW_HTTP_INVOKER_CAPABILITY_NAME, TRANSACTION_CAPABILITY.getName(), null)) {
-            final TransactionRemoteHTTPService remoteHTTPService = new TransactionRemoteHTTPService();
-            serviceTarget.addService(TxnServices.JBOSS_TXN_HTTP_REMOTE_TRANSACTION_SERVICE, remoteHTTPService)
-                .addDependency(TxnServices.JBOSS_TXN_LOCAL_TRANSACTION_CONTEXT, LocalTransactionContext.class, remoteHTTPService.getLocalTransactionContextInjectedValue())
-                .addDependency(context.getCapabilityServiceName(UNDERTOW_HTTP_INVOKER_CAPABILITY_NAME, PathHandler.class), PathHandler.class, remoteHTTPService.getPathHandlerInjectedValue())
-                    .install();
+        if (context.hasOptionalCapability(UNDERTOW_HTTP_INVOKER_CAPABILITY_NAME, TRANSACTION_CAPABILITY.getName(), null)) {
+            final CapabilityServiceBuilder<?> remoteHttpServiceSB = serviceTarget.addService();
+            final Consumer<TransactionRemoteHTTPService> httpServiceConsumer = remoteHttpServiceSB.provides(TxnServices.JBOSS_TXN_HTTP_REMOTE_TRANSACTION_SERVICE);
+            final Supplier<LocalTransactionContext> localTransactionContextSupplier = remoteHttpServiceSB.requires(TxnServices.JBOSS_TXN_LOCAL_TRANSACTION_CONTEXT);
+            final Supplier<PathHandler> pathHandlerSupplier = remoteHttpServiceSB.requiresCapability(UNDERTOW_HTTP_INVOKER_CAPABILITY_NAME, PathHandler.class);
+            final TransactionRemoteHTTPService remoteHTTPService = new TransactionRemoteHTTPService(httpServiceConsumer, localTransactionContextSupplier, pathHandlerSupplier);
+            remoteHttpServiceSB.setInstance(remoteHTTPService).install();
         }
 
         final String nodeIdentifier = TransactionSubsystemRootResourceDefinition.NODE_IDENTIFIER.resolveModelAttribute(context, model).asString();
