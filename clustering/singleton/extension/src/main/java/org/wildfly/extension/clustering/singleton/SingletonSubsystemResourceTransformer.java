@@ -13,9 +13,10 @@ import org.jboss.as.controller.transform.description.TransformationDescription;
 import org.jboss.as.controller.transform.description.TransformationDescriptionBuilder;
 
 /**
+ * Describes resource transformations for the subsystem subsystem.
  * @author Paul Ferraro
  */
-public class SingletonResourceTransformer implements Function<ModelVersion, TransformationDescription> {
+public class SingletonSubsystemResourceTransformer implements Function<ModelVersion, TransformationDescription> {
 
     private final ResourceTransformationDescriptionBuilder builder = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
 
