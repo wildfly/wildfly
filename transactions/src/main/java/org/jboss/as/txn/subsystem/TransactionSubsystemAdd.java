@@ -58,6 +58,7 @@ import org.jboss.as.server.suspend.SuspendController;
 import org.jboss.as.txn.deployment.TransactionDependenciesProcessor;
 import org.jboss.as.txn.deployment.TransactionJndiBindingProcessor;
 import org.jboss.as.txn.deployment.TransactionLeakRollbackProcessor;
+import org.jboss.as.txn.integration.JBossContextXATerminator;
 import org.jboss.as.txn.logging.TransactionLogger;
 import org.jboss.as.txn.service.ArjunaObjectStoreEnvironmentService;
 import org.jboss.as.txn.service.ArjunaRecoveryManagerService;
@@ -474,12 +475,12 @@ class TransactionSubsystemAdd extends AbstractBoottimeAddStepHandler {
         terminatorSB.setInstance(xaTerminatorService).install();
         extendedTerminatorSB.setInstance(extendedJBossXATerminatorService).install();
 
-        final JBossContextXATerminatorService contextXATerminatorService = new JBossContextXATerminatorService();
-        serviceTarget
-                .addService(TxnServices.JBOSS_TXN_CONTEXT_XA_TERMINATOR, contextXATerminatorService)
-                .addDependency(TxnServices.JBOSS_TXN_XA_TERMINATOR, JBossXATerminator.class, contextXATerminatorService.getJBossXATerminatorInjector())
-                .addDependency(TxnServices.JBOSS_TXN_LOCAL_TRANSACTION_CONTEXT, LocalTransactionContext.class, contextXATerminatorService.getLocalTransactionContextInjector())
-                .setInitialMode(Mode.ACTIVE).install();
+        final ServiceBuilder<?> xaTerminatorSB = serviceTarget.addService();
+        final Consumer<JBossContextXATerminator> contextXATerminatorConsumer = xaTerminatorSB.provides(TxnServices.JBOSS_TXN_CONTEXT_XA_TERMINATOR);
+        final Supplier<JBossXATerminator> jbossXATerminatorSupplier = xaTerminatorSB.requires(TxnServices.JBOSS_TXN_XA_TERMINATOR);
+        final Supplier<LocalTransactionContext> localTransactionContextSupplier = xaTerminatorSB.requires(TxnServices.JBOSS_TXN_LOCAL_TRANSACTION_CONTEXT);
+        final JBossContextXATerminatorService contextXATerminatorService = new JBossContextXATerminatorService(contextXATerminatorConsumer, jbossXATerminatorSupplier, localTransactionContextSupplier);
+        xaTerminatorSB.setInstance(contextXATerminatorService).install();
 
         // TODO: refactor
         final ArjunaRecoveryManagerService recoveryManagerService = new ArjunaRecoveryManagerService(consumer, recoveryBindingSupplier, statusBindingSupplier, bindingManagerSupplier, suspendControllerSupplier, processStateSupplier, orbSupplier, recoveryListener, jts);
