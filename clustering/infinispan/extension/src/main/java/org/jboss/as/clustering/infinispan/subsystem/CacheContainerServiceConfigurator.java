@@ -48,6 +48,7 @@ import org.wildfly.clustering.infinispan.service.InfinispanServiceDescriptor;
 import org.wildfly.clustering.server.Registrar;
 import org.wildfly.clustering.server.Registration;
 import org.wildfly.clustering.server.service.BinaryServiceConfiguration;
+import org.wildfly.service.Installer.StartWhen;
 import org.wildfly.subsystem.service.ResourceServiceConfigurator;
 import org.wildfly.subsystem.service.ResourceServiceInstaller;
 import org.wildfly.subsystem.service.ServiceDependency;
@@ -189,7 +190,7 @@ public class CacheContainerServiceConfigurator implements ResourceServiceConfigu
                 .requires(List.of(container, loader))
                 .onStart(start)
                 .onStop(stop)
-                .asPassive()
+                .startWhen(StartWhen.AVAILABLE)
                 .build();
         return ResourceServiceInstaller.combine(installer, binderInstaller);
     }

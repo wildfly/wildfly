@@ -34,6 +34,7 @@ import org.wildfly.clustering.server.jgroups.dispatcher.JChannelCommandDispatche
 import org.wildfly.clustering.server.jgroups.dispatcher.JChannelCommandDispatcherFactoryConfiguration;
 import org.wildfly.clustering.server.service.ClusteringServiceDescriptor;
 import org.wildfly.common.function.Functions;
+import org.wildfly.service.Installer.StartWhen;
 import org.wildfly.subsystem.service.ServiceDependency;
 import org.wildfly.subsystem.service.ServiceInstaller;
 
@@ -101,7 +102,7 @@ public enum ChannelCommandDispatcherFactoryServiceInstallerFactory implements Fu
                 .requires(List.of(channelFactory, moduleLoader))
                 .onStop(Functions.closingConsumer())
                 .blocking()
-                .asPassive()
+                .startWhen(StartWhen.AVAILABLE)
                 .build();
     }
 }

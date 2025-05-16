@@ -18,6 +18,7 @@ import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 import org.wildfly.clustering.jgroups.spi.ChannelFactory;
+import org.wildfly.service.Installer.StartWhen;
 import org.wildfly.subsystem.resource.ManagementResourceRegistrar;
 import org.wildfly.subsystem.resource.executor.RuntimeOperation;
 import org.wildfly.subsystem.service.ServiceDependency;
@@ -44,7 +45,7 @@ public class StackOperationHandler extends AbstractRuntimeOnlyHandler implements
         CompletableFuture<ChannelFactory> future = new CompletableFuture<>();
         ServiceController<?> controller = ServiceInstaller.builder(ServiceDependency.on(ChannelFactory.SERVICE_DESCRIPTOR, context.getCurrentAddressValue()))
                 .withCaptor(future::complete)
-                .asActive() // Force ChannelFactory service to start
+                .startWhen(StartWhen.INSTALLED) // Force ChannelFactory service to start
                 .build()
                 .install(context.getCapabilityServiceTarget());
         try {

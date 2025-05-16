@@ -55,6 +55,7 @@ import org.wildfly.common.function.Functions;
 import org.wildfly.extension.micrometer.otlp.OtlpRegistryDefinitionRegistrar;
 import org.wildfly.extension.micrometer.prometheus.PrometheusRegistryDefinitionRegistrar;
 import org.wildfly.extension.micrometer.registry.WildFlyCompositeRegistry;
+import org.wildfly.service.Installer.StartWhen;
 import org.wildfly.service.descriptor.NullaryServiceDescriptor;
 import org.wildfly.subsystem.resource.AttributeTranslation;
 import org.wildfly.subsystem.resource.ManagementResourceRegistrar;
@@ -197,7 +198,7 @@ public class MicrometerSubsystemRegistrar implements SubsystemResourceDefinition
             .onStart(MicrometerService::start)
             .onStop(Functions.closingConsumer())
             .withCaptor(captor::set) // capture the provided value
-            .asActive() // Start actively
+            .startWhen(StartWhen.INSTALLED)
             .build();
     }
 

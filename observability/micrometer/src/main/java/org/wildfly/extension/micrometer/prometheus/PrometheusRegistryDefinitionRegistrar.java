@@ -30,6 +30,7 @@ import org.wildfly.extension.micrometer.MicrometerConfigurationConstants;
 import org.wildfly.extension.micrometer.MicrometerExtensionLogger;
 import org.wildfly.extension.micrometer.MicrometerSubsystemRegistrar;
 import org.wildfly.extension.micrometer.registry.WildFlyCompositeRegistry;
+import org.wildfly.service.Installer.StartWhen;
 import org.wildfly.subsystem.resource.ChildResourceDefinitionRegistrar;
 import org.wildfly.subsystem.resource.ManagementResourceRegistrar;
 import org.wildfly.subsystem.resource.ManagementResourceRegistrationContext;
@@ -102,7 +103,7 @@ public class PrometheusRegistryDefinitionRegistrar implements ChildResourceDefin
                             }
                     );
                 })
-                .asActive()
+                .startWhen(StartWhen.INSTALLED)
                 .build();
     }
 

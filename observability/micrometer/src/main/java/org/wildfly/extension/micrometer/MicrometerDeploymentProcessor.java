@@ -25,6 +25,7 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.weld.WeldCapability;
 import org.wildfly.extension.micrometer.api.MicrometerCdiExtension;
 import org.wildfly.extension.micrometer.metrics.MetricRegistration;
+import org.wildfly.service.Installer.StartWhen;
 import org.wildfly.subsystem.service.ServiceDependency;
 import org.wildfly.subsystem.service.ServiceInstaller;
 
@@ -47,7 +48,7 @@ class MicrometerDeploymentProcessor implements DeploymentUnitProcessor {
         ServiceInstaller.builder(factory)
                 .requires(ServiceDependency.on(DeploymentCompleteServiceProcessor.serviceName(deploymentUnit.getServiceName())))
                 .requires(serviceDependency)
-                .asActive()
+                .startWhen(StartWhen.INSTALLED)
                 .onStop(MetricRegistration::unregister)
                 .build()
                 .install(phaseContext);

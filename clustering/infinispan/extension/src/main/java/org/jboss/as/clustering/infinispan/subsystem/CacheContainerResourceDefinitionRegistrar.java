@@ -68,6 +68,7 @@ import org.wildfly.clustering.server.service.ClusteringServiceDescriptor;
 import org.wildfly.clustering.server.service.DefaultCacheServiceInstallerProvider;
 import org.wildfly.clustering.server.service.ProvidedBinaryServiceInstallerProvider;
 import org.wildfly.clustering.singleton.service.SingletonServiceTargetFactory;
+import org.wildfly.service.Installer.StartWhen;
 import org.wildfly.service.descriptor.UnaryServiceDescriptor;
 import org.wildfly.subsystem.resource.ChildResourceDefinitionRegistrar;
 import org.wildfly.subsystem.resource.ManagementResourceRegistrar;
@@ -287,7 +288,7 @@ public class CacheContainerResourceDefinitionRegistrar implements ChildResourceD
             .requires(List.of(mbeanServer, loader, containerModules, transport, environment))
             .requires(pools.values())
             .requires(scheduledPools.values())
-            .asPassive()
+            .startWhen(StartWhen.AVAILABLE)
             .build());
 
         String defaultCache = DEFAULT_CACHE.resolveModelAttribute(context, model).asString(null);
