@@ -20,8 +20,7 @@ import org.jboss.as.network.SocketBindingManager;
 import org.jboss.as.server.suspend.SuspendController;
 import org.jboss.as.txn.logging.TransactionLogger;
 import org.jboss.as.txn.suspend.RecoverySuspendController;
-import org.jboss.msc.service.Service;
-import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.Service;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
@@ -46,13 +45,9 @@ import com.arjuna.orbportability.internal.utils.PostInitLoader;
  *
  * @author John Bailey
  * @author Scott Stark (sstark@redhat.com) (C) 2011 Red Hat Inc.
+ * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
-public class ArjunaRecoveryManagerService implements Service<RecoveryManagerService> {
-
-    /** @deprecated Use the "org.wildfly.transactions.xa-resource-recovery-registry" capability */
-    @Deprecated
-    @SuppressWarnings("deprecation")
-    public static final ServiceName SERVICE_NAME = TxnServices.JBOSS_TXN_ARJUNA_RECOVERY_MANAGER;
+public class ArjunaRecoveryManagerService implements Service {
 
     private final Consumer<RecoveryManagerService> consumer;
     private final Supplier<ORB> orbSupplier;
@@ -86,7 +81,7 @@ public class ArjunaRecoveryManagerService implements Service<RecoveryManagerServ
         this.jts = jts;
     }
 
-    public synchronized void start(StartContext context) throws StartException {
+    public void start(final StartContext context) throws StartException {
 
         // Recovery env bean
         final RecoveryEnvironmentBean recoveryEnvironmentBean = recoveryPropertyManager.getRecoveryEnvironmentBean();
@@ -166,7 +161,7 @@ public class ArjunaRecoveryManagerService implements Service<RecoveryManagerServ
         consumer.accept(recoveryManagerService);
     }
 
-    public synchronized void stop(StopContext context) {
+    public void stop(final StopContext context) {
         consumer.accept(null);
         suspendControllerSupplier.get().unRegisterActivity(recoverySuspendController);
         processStateSupplier.get().removePropertyChangeListener(recoverySuspendController);
@@ -178,10 +173,6 @@ public class ArjunaRecoveryManagerService implements Service<RecoveryManagerServ
         recoveryManagerService.destroy();
         recoveryManagerService = null;
         recoverySuspendController = null;
-    }
-
-    public synchronized RecoveryManagerService getValue() throws IllegalStateException, IllegalArgumentException {
-        return recoveryManagerService;
     }
 
 }
