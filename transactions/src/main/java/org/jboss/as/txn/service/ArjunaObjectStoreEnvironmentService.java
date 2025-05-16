@@ -8,37 +8,40 @@
  */
 package org.jboss.as.txn.service;
 
-import org.jboss.as.controller.services.path.PathManager;
-import org.jboss.msc.service.Service;
-import org.jboss.msc.service.StartContext;
-import org.jboss.msc.service.StartException;
-import org.jboss.msc.service.StopContext;
-import org.jboss.msc.value.InjectedValue;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 import com.arjuna.ats.arjuna.common.ObjectStoreEnvironmentBean;
 import com.arjuna.ats.internal.arjuna.objectstore.hornetq.HornetqJournalEnvironmentBean;
 import com.arjuna.common.internal.util.propertyservice.BeanPopulator;
 
+import org.jboss.as.controller.services.path.PathManager;
+import org.jboss.msc.Service;
+import org.jboss.msc.service.StartContext;
+import org.jboss.msc.service.StartException;
+import org.jboss.msc.service.StopContext;
+
 /**
  * Configures the {@link ObjectStoreEnvironmentBean}s using an injected path.
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
+ * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
-public class ArjunaObjectStoreEnvironmentService implements Service<Void> {
-
-    private final InjectedValue<PathManager> pathManagerInjector = new InjectedValue<PathManager>();
+public class ArjunaObjectStoreEnvironmentService implements Service {
+    private final Consumer<Class<Void>> serviceConsumer;
+    private final Supplier<PathManager> pathManagerSupplier;
     private final boolean useJournalStore;
     private final boolean enableAsyncIO;
     private final String path;
     private final String pathRef;
-
     private final boolean useJdbcStore;
     private final String dataSourceJndiName;
     private final JdbcStoreConfig jdbcSoreConfig;
-
     private volatile PathManager.Callback.Handle callbackHandle;
 
-    public ArjunaObjectStoreEnvironmentService(final boolean useJournalStore, final boolean enableAsyncIO, final String path, final String pathRef, final boolean useJdbcStore, final String dataSourceJndiName, final JdbcStoreConfig jdbcSoreConfig) {
+    public ArjunaObjectStoreEnvironmentService(final Consumer<Class<Void>> serviceConsumer, final Supplier<PathManager> pathManagerSupplier, final boolean useJournalStore, final boolean enableAsyncIO, final String path, final String pathRef, final boolean useJdbcStore, final String dataSourceJndiName, final JdbcStoreConfig jdbcSoreConfig) {
+        this.serviceConsumer = serviceConsumer;
+        this.pathManagerSupplier = pathManagerSupplier;
         this.useJournalStore = useJournalStore;
         this.enableAsyncIO = enableAsyncIO;
         this.path = path;
@@ -49,14 +52,9 @@ public class ArjunaObjectStoreEnvironmentService implements Service<Void> {
     }
 
     @Override
-    public Void getValue() throws IllegalStateException, IllegalArgumentException {
-        return null;
-    }
-
-    @Override
-    public void start(StartContext context) throws StartException {
-        callbackHandle = pathManagerInjector.getValue().registerCallback(pathRef, PathManager.ReloadServerCallback.create(), PathManager.Event.UPDATED, PathManager.Event.REMOVED);
-        String objectStoreDir = pathManagerInjector.getValue().resolveRelativePathEntry(path, pathRef);
+    public void start(final StartContext context) throws StartException {
+        callbackHandle = pathManagerSupplier.get().registerCallback(pathRef, PathManager.ReloadServerCallback.create(), PathManager.Event.UPDATED, PathManager.Event.REMOVED);
+        String objectStoreDir = pathManagerSupplier.get().resolveRelativePathEntry(path, pathRef);
 
          final ObjectStoreEnvironmentBean defaultActionStoreObjectStoreEnvironmentBean =
            BeanPopulator.getNamedInstance(ObjectStoreEnvironmentBean.class, null);
@@ -82,7 +80,7 @@ public class ArjunaObjectStoreEnvironmentService implements Service<Void> {
             BeanPopulator.getNamedInstance(ObjectStoreEnvironmentBean.class, "communicationStore");
         communicationStoreObjectStoreEnvironmentBean.setObjectStoreDir(objectStoreDir);
 
-        if(useJdbcStore) {
+        if (useJdbcStore) {
             defaultActionStoreObjectStoreEnvironmentBean.setObjectStoreType("com.arjuna.ats.internal.arjuna.objectstore.jdbc.JDBCStore");
             stateStoreObjectStoreEnvironmentBean.setObjectStoreType("com.arjuna.ats.internal.arjuna.objectstore.jdbc.JDBCStore");
             communicationStoreObjectStoreEnvironmentBean.setObjectStoreType("com.arjuna.ats.internal.arjuna.objectstore.jdbc.JDBCStore");
@@ -91,28 +89,20 @@ public class ArjunaObjectStoreEnvironmentService implements Service<Void> {
             stateStoreObjectStoreEnvironmentBean.setJdbcAccess("com.arjuna.ats.internal.arjuna.objectstore.jdbc.accessors.DataSourceJDBCAccess;datasourceName=" + dataSourceJndiName);
             communicationStoreObjectStoreEnvironmentBean.setJdbcAccess("com.arjuna.ats.internal.arjuna.objectstore.jdbc.accessors.DataSourceJDBCAccess;datasourceName=" + dataSourceJndiName);
 
-
             defaultActionStoreObjectStoreEnvironmentBean.setTablePrefix(jdbcSoreConfig.getActionTablePrefix());
             stateStoreObjectStoreEnvironmentBean.setTablePrefix(jdbcSoreConfig.getStateTablePrefix());
             communicationStoreObjectStoreEnvironmentBean.setTablePrefix(jdbcSoreConfig.getCommunicationTablePrefix());
 
-
             defaultActionStoreObjectStoreEnvironmentBean.setDropTable(jdbcSoreConfig.isActionDropTable());
             stateStoreObjectStoreEnvironmentBean.setDropTable(jdbcSoreConfig.isStateDropTable());
             communicationStoreObjectStoreEnvironmentBean.setDropTable(jdbcSoreConfig.isCommunicationDropTable());
-
         }
-
+        serviceConsumer.accept(Void.class);
     }
-
 
     @Override
-    public void stop(StopContext context) {
+    public void stop(final StopContext context) {
         callbackHandle.remove();
-    }
-
-    public InjectedValue<PathManager> getPathManagerInjector() {
-        return pathManagerInjector;
     }
 
     public static final class JdbcStoreConfig {

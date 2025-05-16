@@ -344,15 +344,17 @@ class TransactionSubsystemAdd extends AbstractBoottimeAddStepHandler {
 
         CapabilityServiceTarget target = context.getCapabilityServiceTarget();
         // Configure the ObjectStoreEnvironmentBeans
-        final ArjunaObjectStoreEnvironmentService objStoreEnvironmentService = new ArjunaObjectStoreEnvironmentService(useJournalStore, enableAsyncIO, objectStorePath, objectStorePathRef, useJdbcStore, dataSourceJndiName, confiBuilder.build());
-        ServiceBuilder<Void> builder = target.addService(TxnServices.JBOSS_TXN_ARJUNA_OBJECTSTORE_ENVIRONMENT, objStoreEnvironmentService);
-        builder.addDependency(PathManagerService.SERVICE_NAME, PathManager.class, objStoreEnvironmentService.getPathManagerInjector());
+        final ServiceBuilder<?> builder = target.addService();
+        final Consumer<Class<Void>> serviceConsumer = builder.provides(TxnServices.JBOSS_TXN_ARJUNA_OBJECTSTORE_ENVIRONMENT);
+        final Supplier<PathManager> pathManagerSupplier = builder.requires(PathManagerService.SERVICE_NAME);
+        final ArjunaObjectStoreEnvironmentService objStoreEnvironmentService = new ArjunaObjectStoreEnvironmentService(serviceConsumer, pathManagerSupplier, useJournalStore, enableAsyncIO, objectStorePath, objectStorePathRef, useJdbcStore, dataSourceJndiName, confiBuilder.build());
+        builder.setInstance(objStoreEnvironmentService);
         builder.requires(TxnServices.JBOSS_TXN_CORE_ENVIRONMENT);
         if (useJdbcStore) {
             final ContextNames.BindInfo bindInfo = ContextNames.bindInfoFor(dataSourceJndiName);
             builder.requires(bindInfo.getBinderServiceName());
         }
-        builder.setInitialMode(Mode.ACTIVE).install();
+        builder.install();
 
         TransactionManagerService.addService(target);
         UserTransactionService.addService(target);
