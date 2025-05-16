@@ -418,14 +418,14 @@ class TransactionSubsystemAdd extends AbstractBoottimeAddStepHandler {
 
         // Register WildFly transaction services - TODO: this should eventually be separated from the Narayana subsystem
         final int staleTransactionTime = TransactionSubsystemRootResourceDefinition.STALE_TRANSACTION_TIME.resolveModelAttribute(context, model).asInt();
-        final LocalTransactionContextService localTransactionContextService = new LocalTransactionContextService(staleTransactionTime);
-        serviceTarget.addService(TxnServices.JBOSS_TXN_LOCAL_TRANSACTION_CONTEXT, localTransactionContextService)
-                .addDependency(TxnServices.JBOSS_TXN_EXTENDED_JBOSS_XA_TERMINATOR, ExtendedJBossXATerminator.class, localTransactionContextService.getExtendedJBossXATerminatorInjector())
-                .addDependency(TxnServices.JBOSS_TXN_ARJUNA_TRANSACTION_MANAGER, com.arjuna.ats.jbossatx.jta.TransactionManagerService.class, localTransactionContextService.getTransactionManagerInjector())
-                .addDependency(XA_RESOURCE_RECOVERY_REGISTRY_CAPABILITY.getCapabilityServiceName(), XAResourceRecoveryRegistry.class, localTransactionContextService.getXAResourceRecoveryRegistryInjector())
-                .addDependency(ServerEnvironmentService.SERVICE_NAME, ServerEnvironment.class, localTransactionContextService.getServerEnvironmentInjector())
-                .setInitialMode(Mode.ACTIVE)
-                .install();
+        final ServiceBuilder<?> localTxnSB = serviceTarget.addService();
+        final Consumer<LocalTransactionContext> contextConsumer = localTxnSB.provides(TxnServices.JBOSS_TXN_LOCAL_TRANSACTION_CONTEXT);
+        final Supplier<ExtendedJBossXATerminator> extendedJBossXATerminatorSupplier = localTxnSB.requires(TxnServices.JBOSS_TXN_EXTENDED_JBOSS_XA_TERMINATOR);
+        final Supplier<com.arjuna.ats.jbossatx.jta.TransactionManagerService> transactionManagerSupplier = localTxnSB.requires(TxnServices.JBOSS_TXN_ARJUNA_TRANSACTION_MANAGER);
+        final Supplier<XAResourceRecoveryRegistry> xaResourceRecoveryRegistrySupplier = localTxnSB.requires(XA_RESOURCE_RECOVERY_REGISTRY_CAPABILITY.getCapabilityServiceName());
+        final Supplier<ServerEnvironment> serverEnvironmentSupplier = localTxnSB.requires(ServerEnvironmentService.SERVICE_NAME);
+        final LocalTransactionContextService localTransactionContextService = new LocalTransactionContextService(contextConsumer, extendedJBossXATerminatorSupplier, transactionManagerSupplier, xaResourceRecoveryRegistrySupplier, serverEnvironmentSupplier, staleTransactionTime);
+        localTxnSB.setInstance(localTransactionContextService).install();
 
         if (context.hasOptionalCapability(REMOTING_ENDPOINT_CAPABILITY_NAME, TRANSACTION_CAPABILITY.getName(),null)) {
             final RemotingTransactionServiceService remoteTransactionServiceService = new RemotingTransactionServiceService();
