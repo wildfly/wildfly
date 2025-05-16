@@ -20,10 +20,15 @@ import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
-import com.arjuna.ats.jbossatx.jta.RecoveryManagerService;
 import jakarta.transaction.TransactionSynchronizationRegistry;
 import jakarta.transaction.UserTransaction;
 
+import com.arjuna.ats.arjuna.common.CoreEnvironmentBean;
+import com.arjuna.ats.arjuna.utils.Process;
+import com.arjuna.ats.internal.arjuna.utils.UuidProcessId;
+import com.arjuna.ats.jbossatx.jta.RecoveryManagerService;
+import com.arjuna.ats.jta.common.JTAEnvironmentBean;
+import com.arjuna.ats.jts.common.jtsPropertyManager;
 import io.undertow.server.handlers.PathHandler;
 import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
@@ -86,10 +91,6 @@ import org.jboss.tm.usertx.UserTransactionRegistry;
 import org.omg.CORBA.ORB;
 import org.wildfly.common.function.Functions;
 import org.wildfly.iiop.openjdk.service.CorbaNamingService;
-
-import com.arjuna.ats.internal.arjuna.utils.UuidProcessId;
-import com.arjuna.ats.jta.common.JTAEnvironmentBean;
-import com.arjuna.ats.jts.common.jtsPropertyManager;
 import org.wildfly.transaction.client.ContextTransactionManager;
 import org.wildfly.transaction.client.LocalTransactionContext;
 
@@ -361,33 +362,35 @@ class TransactionSubsystemAdd extends AbstractBoottimeAddStepHandler {
     }
 
     private void performCoreEnvironmentBootTime(OperationContext context, ModelNode coreEnvModel) throws OperationFailedException {
-
         // Configure the core configuration.
         final String nodeIdentifier = TransactionSubsystemRootResourceDefinition.NODE_IDENTIFIER.resolveModelAttribute(context, coreEnvModel).asString();
+        final Supplier<String> nodeIdentifierSupplier = () -> nodeIdentifier;
         TransactionLogger.ROOT_LOGGER.debugf("nodeIdentifier=%s%n", nodeIdentifier);
-        final CapabilityServiceBuilder<?> builder = context.getCapabilityServiceTarget().addCapability(TRANSACTION_CAPABILITY);
+        final CapabilityServiceBuilder<?> builder = context.getCapabilityServiceTarget().addService();
         Supplier<SocketBinding> socketBindingSupplier =  Functions.constantSupplier(null);
 
-        String socketBindingName = null;
         if (!TransactionSubsystemRootResourceDefinition.PROCESS_ID_UUID.resolveModelAttribute(context, coreEnvModel).asBoolean(false)) {
-            socketBindingName = TransactionSubsystemRootResourceDefinition.PROCESS_ID_SOCKET_BINDING.resolveModelAttribute(context, coreEnvModel).asString();
+            final String socketBindingName = TransactionSubsystemRootResourceDefinition.PROCESS_ID_SOCKET_BINDING.resolveModelAttribute(context, coreEnvModel).asString();
             socketBindingSupplier = builder.requiresCapability(SOCKET_BINDING_CAPABILITY_NAME, SocketBinding.class, socketBindingName);
         }
 
-        final CoreEnvironmentService coreEnvironmentService = new CoreEnvironmentService(nodeIdentifier, socketBindingSupplier);
-
+        Supplier<Integer> portsSupplier = null;
+        Supplier<String> processImplClassSupplier = null;
+        Supplier<Process> processImplSupplier = null;
         if (TransactionSubsystemRootResourceDefinition.PROCESS_ID_UUID.resolveModelAttribute(context, coreEnvModel).asBoolean(false)) {
             // Use the UUID based id
-            UuidProcessId id = new UuidProcessId();
-            coreEnvironmentService.setProcessImplementation(id);
+            processImplSupplier = UuidProcessId::new;
         } else {
             // Use the socket process id
-            coreEnvironmentService.setProcessImplementationClassName(ProcessIdType.SOCKET.getClazz());
+            processImplClassSupplier = ProcessIdType.SOCKET::getClazz;
             int ports = TransactionSubsystemRootResourceDefinition.PROCESS_ID_SOCKET_MAX_PORTS.resolveModelAttribute(context, coreEnvModel).asInt();
-            coreEnvironmentService.setSocketProcessIdMaxPorts(ports);
+            portsSupplier = () -> ports;
         }
 
-        builder.setInstance(coreEnvironmentService).addAliases(TxnServices.JBOSS_TXN_CORE_ENVIRONMENT).setInitialMode(Mode.ACTIVE).install();
+        final Consumer<CoreEnvironmentBean> coreEnvironmentBeanConsumer = builder.provides(TRANSACTION_CAPABILITY, TxnServices.JBOSS_TXN_CORE_ENVIRONMENT);
+        final CoreEnvironmentService coreEnvironmentService = new CoreEnvironmentService(coreEnvironmentBeanConsumer, socketBindingSupplier, nodeIdentifierSupplier, portsSupplier, processImplClassSupplier, processImplSupplier);
+        builder.setInstance(coreEnvironmentService);
+        builder.install();
     }
 
     private void performRecoveryEnvBoottime(OperationContext context, ModelNode model, final boolean jts, List<ServiceName> deps) throws OperationFailedException {
