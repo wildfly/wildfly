@@ -448,28 +448,23 @@ class TransactionSubsystemAdd extends AbstractBoottimeAddStepHandler {
         }
 
         final String nodeIdentifier = TransactionSubsystemRootResourceDefinition.NODE_IDENTIFIER.resolveModelAttribute(context, model).asString();
-        // install Jakarta Transactions environment bean service
-        final JTAEnvironmentBeanService jtaEnvironmentBeanService = new JTAEnvironmentBeanService(nodeIdentifier);
-        serviceTarget.addService(TxnServices.JBOSS_TXN_JTA_ENVIRONMENT, jtaEnvironmentBeanService)
-                .setInitialMode(Mode.ACTIVE)
-                .install();
-
         final XATerminatorService xaTerminatorService;
         final ExtendedJBossXATerminatorService extendedJBossXATerminatorService;
 
+        // install Jakarta Transactions environment bean service
+        final ServiceBuilder<?> sb = serviceTarget.addService();
+        final Consumer<JTAEnvironmentBean> jtaEnvBeanConsumer = sb.provides(TxnServices.JBOSS_TXN_JTA_ENVIRONMENT);
+        final JTAEnvironmentBeanService jtaEnvironmentBeanService = new JTAEnvironmentBeanService(jtaEnvBeanConsumer, nodeIdentifier, jts);
+        sb.setInstance(jtaEnvironmentBeanService).install();
+
         Supplier<ORB> orbSupplier = null;
         if (jts) {
-            jtaEnvironmentBeanService.getValue()
-                .setTransactionManagerClassName(com.arjuna.ats.jbossatx.jts.TransactionManagerDelegate.class.getName());
-
             orbSupplier = recoveryManagerServiceServiceBuilder.requires(ServiceName.JBOSS.append("iiop-openjdk", "orb-service"));
 
             com.arjuna.ats.internal.jbossatx.jts.jca.XATerminator terminator = new com.arjuna.ats.internal.jbossatx.jts.jca.XATerminator();
             xaTerminatorService = new XATerminatorService(terminator);
             extendedJBossXATerminatorService = new ExtendedJBossXATerminatorService(terminator);
         } else {
-            jtaEnvironmentBeanService.getValue()
-                .setTransactionManagerClassName(com.arjuna.ats.jbossatx.jta.TransactionManagerDelegate.class.getName());
             com.arjuna.ats.internal.jbossatx.jta.jca.XATerminator terminator = new com.arjuna.ats.internal.jbossatx.jta.jca.XATerminator();
             xaTerminatorService = new XATerminatorService(terminator);
             extendedJBossXATerminatorService = new ExtendedJBossXATerminatorService(terminator);
