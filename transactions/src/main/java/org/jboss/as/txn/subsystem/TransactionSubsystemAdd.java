@@ -447,7 +447,6 @@ class TransactionSubsystemAdd extends AbstractBoottimeAddStepHandler {
         }
 
         final String nodeIdentifier = TransactionSubsystemRootResourceDefinition.NODE_IDENTIFIER.resolveModelAttribute(context, model).asString();
-        final XATerminatorService xaTerminatorService;
         final ExtendedJBossXATerminatorService extendedJBossXATerminatorService;
 
         // install Jakarta Transactions environment bean service
@@ -461,16 +460,16 @@ class TransactionSubsystemAdd extends AbstractBoottimeAddStepHandler {
             orbSupplier = recoveryManagerServiceServiceBuilder.requires(ServiceName.JBOSS.append("iiop-openjdk", "orb-service"));
 
             com.arjuna.ats.internal.jbossatx.jts.jca.XATerminator terminator = new com.arjuna.ats.internal.jbossatx.jts.jca.XATerminator();
-            xaTerminatorService = new XATerminatorService(terminator);
             extendedJBossXATerminatorService = new ExtendedJBossXATerminatorService(terminator);
         } else {
             com.arjuna.ats.internal.jbossatx.jta.jca.XATerminator terminator = new com.arjuna.ats.internal.jbossatx.jta.jca.XATerminator();
-            xaTerminatorService = new XATerminatorService(terminator);
             extendedJBossXATerminatorService = new ExtendedJBossXATerminatorService(terminator);
         }
 
-        serviceTarget.addService(TxnServices.JBOSS_TXN_XA_TERMINATOR, xaTerminatorService)
-                .setInitialMode(Mode.ACTIVE).install();
+        final ServiceBuilder<?> terminatorSB = serviceTarget.addService();
+        final Consumer<JBossXATerminator> terminatorConsumer = terminatorSB.provides(TxnServices.JBOSS_TXN_XA_TERMINATOR);
+        terminatorSB.setInstance(new XATerminatorService(terminatorConsumer, jts)).install();
+
         serviceTarget
                 .addService(TxnServices.JBOSS_TXN_EXTENDED_JBOSS_XA_TERMINATOR, extendedJBossXATerminatorService)
                 .setInitialMode(Mode.ACTIVE).install();
