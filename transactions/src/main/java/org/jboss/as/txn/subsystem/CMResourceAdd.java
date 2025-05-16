@@ -8,6 +8,9 @@ package org.jboss.as.txn.subsystem;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.txn.logging.TransactionLogger.ROOT_LOGGER;
 
+import java.util.function.Consumer;
+import java.util.function.Supplier;
+
 import com.arjuna.ats.jta.common.JTAEnvironmentBean;
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.OperationContext;
@@ -16,12 +19,13 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.txn.service.CMResourceService;
 import org.jboss.as.txn.service.TxnServices;
 import org.jboss.dmr.ModelNode;
-import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceBuilder;
 
 /**
  * the {@link AbstractAddStepHandler} implementations that add CM managed resource.
  *
  * @author Stefano Maestri (c) 2011 Red Hat Inc.
+ * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
 class CMResourceAdd extends AbstractAddStepHandler {
     static CMResourceAdd INSTANCE = new CMResourceAdd();
@@ -58,10 +62,10 @@ class CMResourceAdd extends AbstractAddStepHandler {
         final boolean immediateCleanup = CMResourceResourceDefinition.CM_TABLE_IMMEDIATE_CLEANUP.resolveModelAttribute(context, model).asBoolean();
         ROOT_LOGGER.debugf("adding commit-markable-resource: jndi-name=%s, table-name=%s, batch-size=%d, immediate-cleanup=%b", jndiName, tableName, batchSize, immediateCleanup);
 
-        CMResourceService service = new CMResourceService(jndiName, tableName, immediateCleanup, batchSize);
-        context.getServiceTarget().addService(TxnServices.JBOSS_TXN_CMR.append(jndiName), service)
-                .addDependency(TxnServices.JBOSS_TXN_JTA_ENVIRONMENT, JTAEnvironmentBean.class, service.getJTAEnvironmentBeanInjector())
-                .setInitialMode(ServiceController.Mode.ACTIVE)
-                .install();
+        final ServiceBuilder<?> sb = context.getCapabilityServiceTarget().addService();
+        final Consumer<Class<Void>> serviceConsumer = sb.provides(TxnServices.JBOSS_TXN_CMR.append(jndiName));
+        final Supplier<JTAEnvironmentBean> jtaEnvironmentBeanSupplier = sb.requires(TxnServices.JBOSS_TXN_JTA_ENVIRONMENT);
+        final CMResourceService service = new CMResourceService(serviceConsumer, jtaEnvironmentBeanSupplier, jndiName, tableName, immediateCleanup, batchSize);
+        sb.setInstance(service).install();
     }
 }
