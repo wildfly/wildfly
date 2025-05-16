@@ -93,6 +93,7 @@ import org.wildfly.common.function.Functions;
 import org.wildfly.iiop.openjdk.service.CorbaNamingService;
 import org.wildfly.transaction.client.ContextTransactionManager;
 import org.wildfly.transaction.client.LocalTransactionContext;
+import org.wildfly.transaction.client.provider.remoting.RemotingTransactionService;
 
 /**
  * Adds the transaction management subsystem.
@@ -428,13 +429,12 @@ class TransactionSubsystemAdd extends AbstractBoottimeAddStepHandler {
         localTxnSB.setInstance(localTransactionContextService).install();
 
         if (context.hasOptionalCapability(REMOTING_ENDPOINT_CAPABILITY_NAME, TRANSACTION_CAPABILITY.getName(),null)) {
-            final RemotingTransactionServiceService remoteTransactionServiceService = new RemotingTransactionServiceService();
-            serviceTarget.addCapability(REMOTE_TRANSACTION_SERVICE_CAPABILITY)
-                .setInstance(remoteTransactionServiceService)
-                .addDependency(TxnServices.JBOSS_TXN_LOCAL_TRANSACTION_CONTEXT, LocalTransactionContext.class, remoteTransactionServiceService.getLocalTransactionContextInjector())
-                .addDependency(context.getCapabilityServiceName(REMOTING_ENDPOINT_CAPABILITY_NAME, Endpoint.class), Endpoint.class, remoteTransactionServiceService.getEndpointInjector())
-                .setInitialMode(Mode.ACTIVE)
-                .install();
+            final CapabilityServiceBuilder<?> remotingTxnServiceSB = serviceTarget.addService();
+            final Consumer<RemotingTransactionService> remotingTxnServiceConsumer = remotingTxnServiceSB.provides(REMOTE_TRANSACTION_SERVICE_CAPABILITY);
+            final Supplier<LocalTransactionContext> localTransactionContextSupplier = remotingTxnServiceSB.requires(TxnServices.JBOSS_TXN_LOCAL_TRANSACTION_CONTEXT);
+            final Supplier<Endpoint> endpointSupplier = remotingTxnServiceSB.requiresCapability(REMOTING_ENDPOINT_CAPABILITY_NAME, Endpoint.class);
+            final RemotingTransactionServiceService remoteTransactionServiceService = new RemotingTransactionServiceService(remotingTxnServiceConsumer, localTransactionContextSupplier, endpointSupplier);
+            remotingTxnServiceSB.setInstance(remoteTransactionServiceService).install();
         }
 
         if(context.hasOptionalCapability(UNDERTOW_HTTP_INVOKER_CAPABILITY_NAME, TRANSACTION_CAPABILITY.getName(), null)) {
