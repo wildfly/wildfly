@@ -7,7 +7,7 @@ package org.jboss.as.txn.service;
 
 import jakarta.transaction.UserTransaction;
 
-import org.jboss.msc.service.Service;
+import org.jboss.msc.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
@@ -16,13 +16,15 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StopContext;
 import org.wildfly.transaction.client.LocalUserTransaction;
 
+import java.util.function.Consumer;
+
 /**
  * Service responsible for getting the {@link UserTransaction}.
  *
  * @author Thomas.Diesler@jboss.com
- * @since 29-Oct-2010
+ * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
-public class UserTransactionService implements Service<UserTransaction> {
+public class UserTransactionService implements Service {
     /** @deprecated Use the "org.wildfly.transactions.global-default-local-provider" capability to confirm existence of a local provider
      *              and org.wildfly.transaction.client.LocalTransactionContext to obtain a UserTransaction reference. */
     @Deprecated
@@ -30,30 +32,27 @@ public class UserTransactionService implements Service<UserTransaction> {
     /** Non-deprecated service name only for use within the subsystem */
     @SuppressWarnings("deprecation")
     public static final ServiceName INTERNAL_SERVICE_NAME = TxnServices.JBOSS_TXN_USER_TRANSACTION;
+    private final Consumer<UserTransaction> userTransactionConsumer;
 
-    private static final UserTransactionService INSTANCE = new UserTransactionService();
-
-    private UserTransactionService() {
-    }
-
-    public static ServiceController<UserTransaction> addService(final ServiceTarget target) {
-        ServiceBuilder<UserTransaction> serviceBuilder = target.addService(INTERNAL_SERVICE_NAME, INSTANCE);
-        serviceBuilder.requires(TxnServices.JBOSS_TXN_LOCAL_TRANSACTION_CONTEXT);
-        return serviceBuilder.install();
+    private UserTransactionService(final Consumer<UserTransaction> userTransactionConsumer) {
+        this.userTransactionConsumer = userTransactionConsumer;
     }
 
     @Override
     public void start(final StartContext startContext) {
-        // noop
+        userTransactionConsumer.accept(LocalUserTransaction.getInstance());
     }
 
     @Override
     public void stop(final StopContext stopContext) {
-        // noop
+        userTransactionConsumer.accept(null);
     }
 
-    @Override
-    public UserTransaction getValue() throws IllegalStateException {
-        return LocalUserTransaction.getInstance();
+    public static ServiceController<?> addService(final ServiceTarget target) {
+        final ServiceBuilder<?> sb = target.addService();
+        final Consumer<UserTransaction> userTransactionConsumer = sb.provides(INTERNAL_SERVICE_NAME);
+        sb.setInstance(new UserTransactionService(userTransactionConsumer));
+        sb.requires(TxnServices.JBOSS_TXN_LOCAL_TRANSACTION_CONTEXT);
+        return sb.install();
     }
 }
