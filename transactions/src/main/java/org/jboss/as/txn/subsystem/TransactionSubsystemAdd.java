@@ -307,13 +307,13 @@ class TransactionSubsystemAdd extends AbstractBoottimeAddStepHandler {
         UserTransactionAccessControlService.addService(context.getCapabilityServiceTarget());
 
         // Bind the UserTransaction into JNDI
-        final UserTransactionBindingService userTransactionBindingService = new UserTransactionBindingService("UserTransaction");
-        final ServiceBuilder<ManagedReferenceFactory> utBuilder = context.getServiceTarget().addService(ContextNames.JBOSS_CONTEXT_SERVICE_NAME.append("UserTransaction"), userTransactionBindingService);
-        utBuilder.addDependency(ContextNames.JBOSS_CONTEXT_SERVICE_NAME, ServiceBasedNamingStore.class, userTransactionBindingService.getNamingStoreInjector())
-                .addDependency(UserTransactionAccessControlService.SERVICE_NAME, UserTransactionAccessControlService.class, userTransactionBindingService.getUserTransactionAccessControlServiceInjector())
-                .addDependency(UserTransactionService.INTERNAL_SERVICE_NAME, UserTransaction.class,
-                        new ManagedReferenceInjector<UserTransaction>(userTransactionBindingService.getManagedObjectInjector()));
-        utBuilder.install();
+        final ServiceBuilder<?> sb = context.getCapabilityServiceTarget().addService(ContextNames.JBOSS_CONTEXT_SERVICE_NAME.append("UserTransaction"));
+        final Supplier<UserTransactionAccessControlService> accessControlServiceSupplier = sb.requires(UserTransactionAccessControlService.SERVICE_NAME);
+        final UserTransactionBindingService userTransactionBindingService = new UserTransactionBindingService(accessControlServiceSupplier, "UserTransaction");
+        sb.setInstance(userTransactionBindingService);
+        sb.addDependency(ContextNames.JBOSS_CONTEXT_SERVICE_NAME, ServiceBasedNamingStore.class, userTransactionBindingService.getNamingStoreInjector());
+        sb.addDependency(UserTransactionService.INTERNAL_SERVICE_NAME, UserTransaction.class, new ManagedReferenceInjector<>(userTransactionBindingService.getManagedObjectInjector()));
+        sb.install();
     }
 
     private void performObjectStoreBoottime(OperationContext context, ModelNode model) throws OperationFailedException {
