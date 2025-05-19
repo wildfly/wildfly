@@ -14,6 +14,7 @@ import static org.wildfly.extension.messaging.activemq.MessagingExtension.CONFIG
 import static org.wildfly.extension.messaging.activemq.MessagingExtension.CONFIGURATION_PRIMARY_PATH;
 import static org.wildfly.extension.messaging.activemq.MessagingExtension.CONFIGURATION_SECONDARY_PATH;
 import static org.wildfly.extension.messaging.activemq.MessagingExtension.CONFIGURATION_SLAVE_PATH;
+import static org.wildfly.extension.messaging.activemq.MessagingExtension.LIVE_ONLY_PATH;
 import static org.wildfly.extension.messaging.activemq.MessagingExtension.SERVER_PATH;
 import static org.wildfly.extension.messaging.activemq.MessagingExtension.REPLICATION_COLOCATED_PATH;
 import static org.wildfly.extension.messaging.activemq.MessagingExtension.REPLICATION_MASTER_PATH;
@@ -40,6 +41,7 @@ import org.jboss.as.controller.transform.description.DiscardAttributeChecker;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.as.controller.transform.description.TransformationDescriptionBuilder;
 import org.kohsuke.MetaInfServices;
+import org.wildfly.extension.messaging.activemq.ha.ScaleDownAttributes;
 import org.wildfly.extension.messaging.activemq.jms.ConnectionFactoryAttributes;
 
 /**
@@ -68,6 +70,9 @@ public class MessagingTransformerRegistration implements ExtensionTransformerReg
     }
 
     private static void registerTransformers_WF_36(ResourceTransformationDescriptionBuilder subsystem) {
+        rejectDefinedAttributeWithDefaultValue(subsystem.addChildResource(LIVE_ONLY_PATH), ScaleDownAttributes.SCALE_DOWN_COMMIT_INTERVAL);
+        rejectDefinedAttributeWithDefaultValue(subsystem.addChildResource(REPLICATION_SECONDARY_PATH), ScaleDownAttributes.SCALE_DOWN_COMMIT_INTERVAL);
+        rejectDefinedAttributeWithDefaultValue(subsystem.addChildResource(SHARED_STORE_SECONDARY_PATH), ScaleDownAttributes.SCALE_DOWN_COMMIT_INTERVAL);
     }
 
     private static void registerTransformers_WF_29(ResourceTransformationDescriptionBuilder subsystem) {

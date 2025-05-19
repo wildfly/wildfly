@@ -232,7 +232,8 @@ public class MessagingSubsystemParser_17_0 extends PersistentResourceXMLParser {
                                                         ScaleDownAttributes.SCALE_DOWN_CLUSTER_NAME,
                                                         ScaleDownAttributes.SCALE_DOWN_GROUP_NAME,
                                                         ScaleDownAttributes.SCALE_DOWN_DISCOVERY_GROUP,
-                                                        ScaleDownAttributes.SCALE_DOWN_CONNECTORS))
+                                                        ScaleDownAttributes.SCALE_DOWN_CONNECTORS,
+                                                        ScaleDownAttributes.SCALE_DOWN_COMMIT_INTERVAL))
                                 .addChild(builder(MessagingExtension.REPLICATION_PRIMARY_PATH)
                                                 .addAttributes(
                                                         HAAttributes.CLUSTER_NAME,
@@ -251,7 +252,8 @@ public class MessagingSubsystemParser_17_0 extends PersistentResourceXMLParser {
                                                         ScaleDownAttributes.SCALE_DOWN_CLUSTER_NAME,
                                                         ScaleDownAttributes.SCALE_DOWN_GROUP_NAME,
                                                         ScaleDownAttributes.SCALE_DOWN_DISCOVERY_GROUP,
-                                                        ScaleDownAttributes.SCALE_DOWN_CONNECTORS))
+                                                        ScaleDownAttributes.SCALE_DOWN_CONNECTORS,
+                                                        ScaleDownAttributes.SCALE_DOWN_COMMIT_INTERVAL))
                                 .addChild(builder(MessagingExtension.REPLICATION_COLOCATED_PATH)
                                                 .addAttributes(
                                                         HAAttributes.REQUEST_BACKUP,
@@ -278,7 +280,8 @@ public class MessagingSubsystemParser_17_0 extends PersistentResourceXMLParser {
                                                                         ScaleDownAttributes.SCALE_DOWN_CLUSTER_NAME,
                                                                         ScaleDownAttributes.SCALE_DOWN_GROUP_NAME,
                                                                         ScaleDownAttributes.SCALE_DOWN_DISCOVERY_GROUP,
-                                                                        ScaleDownAttributes.SCALE_DOWN_CONNECTORS)))
+                                                                        ScaleDownAttributes.SCALE_DOWN_CONNECTORS,
+                                                                        ScaleDownAttributes.SCALE_DOWN_COMMIT_INTERVAL)))
                                 .addChild(builder(MessagingExtension.SHARED_STORE_PRIMARY_PATH)
                                                 .addAttributes(
                                                         HAAttributes.FAILOVER_ON_SERVER_SHUTDOWN))
@@ -291,7 +294,8 @@ public class MessagingSubsystemParser_17_0 extends PersistentResourceXMLParser {
                                                         ScaleDownAttributes.SCALE_DOWN_CLUSTER_NAME,
                                                         ScaleDownAttributes.SCALE_DOWN_GROUP_NAME,
                                                         ScaleDownAttributes.SCALE_DOWN_DISCOVERY_GROUP,
-                                                        ScaleDownAttributes.SCALE_DOWN_CONNECTORS))
+                                                        ScaleDownAttributes.SCALE_DOWN_CONNECTORS,
+                                                        ScaleDownAttributes.SCALE_DOWN_COMMIT_INTERVAL))
                                 .addChild(builder(MessagingExtension.SHARED_STORE_COLOCATED_PATH)
                                                 .addAttributes(
                                                         HAAttributes.REQUEST_BACKUP,
@@ -311,7 +315,8 @@ public class MessagingSubsystemParser_17_0 extends PersistentResourceXMLParser {
                                                                         ScaleDownAttributes.SCALE_DOWN_CLUSTER_NAME,
                                                                         ScaleDownAttributes.SCALE_DOWN_GROUP_NAME,
                                                                         ScaleDownAttributes.SCALE_DOWN_DISCOVERY_GROUP,
-                                                                        ScaleDownAttributes.SCALE_DOWN_CONNECTORS)))
+                                                                        ScaleDownAttributes.SCALE_DOWN_CONNECTORS,
+                                                                        ScaleDownAttributes.SCALE_DOWN_COMMIT_INTERVAL)))
                                 .addChild(
                                         builder(MessagingExtension.BINDINGS_DIRECTORY_PATH)
                                                 .addAttributes(
