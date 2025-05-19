@@ -1,0 +1,46 @@
+:_newdoc-version: 2.15.0
+:_template-generated: 2023-11-6
+:_mod-docs-content-type: PROCEDURE
+
+[id="testing-an-application-deployed-to-server-on-cloudplaform_{context}"]
+= Testing an application deployed to {ProductShortname} on {cloudPlatform}
+
+[role="_abstract"]
+Test the application deployed to {ProductShortname} on {cloudPlatform}.
+
+.Prerequisites
+
+* You have created a test class.
++
+For more information, see xref:creating-a-test-class-to-test-an-application_testing-an-application-deployed-to-server[Creating a test class to test an application]
+
+.Procedure
+
+. Push the changes to your Git repository.
+
+. Navigate to the _<application_home>_ directory.
+. Run the test by using the `verify` command, activating the `integration-testing` profile and specifying the URL to the application.
++
+[source,options="nowrap",subs=attributes+]
+----
+$ mvn verify -Pintegration-testing -Dserver.host=https://$(oc get route {helm-app-name} --template='{{ .spec.host }}')
+----
++
+.Example output
+----
+[INFO] Running org.jboss.as.quickstarts.helloworld.HelloWorldServletIT
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.345 s -- in org.jboss.as.quickstarts.helloworld.HelloWorldServletIT
+[INFO] 
+[INFO] Results:
+[INFO] 
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0
+[INFO] 
+[INFO] 
+[INFO] --- maven-failsafe-plugin:3.2.2:verify (default) @ helloworld ---
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  2.984 s
+[INFO] Finished at: 2023-11-30T15:51:22+05:30
+[INFO] ------------------------------------------------------------------------
+----
