@@ -58,12 +58,16 @@ public class MessagingTransformerRegistration implements ExtensionTransformerReg
     @Override
     public void registerTransformers(SubsystemTransformerRegistration registration) {
         ChainedTransformationDescriptionBuilder builder = TransformationDescriptionBuilder.Factory.createChainedSubystemInstance(registration.getCurrentSubsystemVersion());
+        registerTransformers_WF_36(builder.createBuilder(MessagingExtension.VERSION_17_0_0, MessagingExtension.VERSION_16_0_0));
         registerTransformers_WF_29(builder.createBuilder(MessagingExtension.VERSION_16_0_0, MessagingExtension.VERSION_15_0_0));
         registerTransformers_WF_28(builder.createBuilder(MessagingExtension.VERSION_15_0_0, MessagingExtension.VERSION_14_0_0));
         registerTransformers_WF_27(builder.createBuilder(MessagingExtension.VERSION_14_0_0, MessagingExtension.VERSION_13_1_0));
         registerTransformers_WF_26_1(builder.createBuilder(MessagingExtension.VERSION_13_1_0, MessagingExtension.VERSION_13_0_0));
         builder.buildAndRegister(registration, new ModelVersion[]{MessagingExtension.VERSION_13_0_0, MessagingExtension.VERSION_13_1_0,
             MessagingExtension.VERSION_14_0_0, MessagingExtension.VERSION_15_0_0, MessagingExtension.VERSION_16_0_0});
+    }
+
+    private static void registerTransformers_WF_36(ResourceTransformationDescriptionBuilder subsystem) {
     }
 
     private static void registerTransformers_WF_29(ResourceTransformationDescriptionBuilder subsystem) {
@@ -74,7 +78,7 @@ public class MessagingTransformerRegistration implements ExtensionTransformerReg
 
     private static void registerTransformers_WF_28(ResourceTransformationDescriptionBuilder subsystem) {
         ResourceTransformationDescriptionBuilder server = subsystem.addChildResource(SERVER_PATH);
-                server.addChildResource(PathElement.pathElement(REMOTE_ACCEPTOR)).getAttributeBuilder()
+        server.addChildResource(PathElement.pathElement(REMOTE_ACCEPTOR)).getAttributeBuilder()
                 .addRejectCheck(DEFINED, CommonAttributes.SSL_CONTEXT)
                 .setDiscard(DiscardAttributeChecker.UNDEFINED, CommonAttributes.SSL_CONTEXT);
         server.addChildResource(PathElement.pathElement(HTTP_ACCEPTOR)).getAttributeBuilder()
@@ -93,7 +97,6 @@ public class MessagingTransformerRegistration implements ExtensionTransformerReg
         rejectDefinedAttributeWithDefaultValue(externaljmsqueue, ConnectionFactoryAttributes.External.ENABLE_AMQ1_PREFIX);
         ResourceTransformationDescriptionBuilder externaljmstopic = subsystem.addChildResource(MessagingExtension.EXTERNAL_JMS_TOPIC_PATH);
         rejectDefinedAttributeWithDefaultValue(externaljmstopic, ConnectionFactoryAttributes.External.ENABLE_AMQ1_PREFIX);
-
 
         ResourceTransformationDescriptionBuilder externalConnectionFactory = subsystem.addChildResource(MessagingExtension.CONNECTION_FACTORY_PATH);
         renameAttribute(externalConnectionFactory, DESERIALIZATION_BLACKLIST, DESERIALIZATION_BLOCKLIST);

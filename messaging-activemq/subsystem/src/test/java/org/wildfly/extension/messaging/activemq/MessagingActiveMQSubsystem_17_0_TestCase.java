@@ -1,22 +1,13 @@
 /*
- * Copyright 2020 Red Hat, Inc.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *   http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Copyright The WildFly Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
+
 package org.wildfly.extension.messaging.activemq;
 
 import static org.jboss.as.controller.PathElement.pathElement;
 import static org.jboss.as.model.test.ModelTestControllerVersion.EAP_7_4_0;
+import static org.jboss.as.model.test.ModelTestControllerVersion.EAP_8_0_0;
 import static org.junit.Assert.assertTrue;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.BRIDGE;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.DEFAULT;
@@ -56,20 +47,20 @@ import org.wildfly.clustering.server.service.ClusteringServiceDescriptor;
 import org.wildfly.clustering.server.service.LegacyClusteringServiceDescriptor;
 import org.wildfly.extension.messaging.activemq.jms.ConnectionFactoryAttributes;
 
-public class MessagingActiveMQSubsystem_16_0_TestCase extends AbstractSubsystemBaseTest {
+public class MessagingActiveMQSubsystem_17_0_TestCase extends AbstractSubsystemBaseTest {
 
-    public MessagingActiveMQSubsystem_16_0_TestCase() {
+    public MessagingActiveMQSubsystem_17_0_TestCase() {
         super(MessagingExtension.SUBSYSTEM_NAME, new MessagingExtension());
     }
 
     @Override
     protected String getSubsystemXml() throws IOException {
-        return readResource("subsystem_16_0.xml");
+        return readResource("subsystem_17_0.xml");
     }
 
     @Override
     protected String getSubsystemXsdPath() throws IOException {
-        return "schema/wildfly-messaging-activemq_16_0.xsd";
+        return "schema/wildfly-messaging-activemq_17_0.xsd";
     }
 
     @Override
@@ -78,11 +69,6 @@ public class MessagingActiveMQSubsystem_16_0_TestCase extends AbstractSubsystemB
         properties.put("messaging.cluster.user.name", "myClusterUser");
         properties.put("messaging.cluster.user.password", "myClusterPassword");
         return properties;
-    }
-
-    @Override
-    protected KernelServices standardSubsystemTest(String configId, boolean compareXml) throws Exception {
-        return super.standardSubsystemTest(configId, false);
     }
 
     @Test
@@ -117,12 +103,16 @@ public class MessagingActiveMQSubsystem_16_0_TestCase extends AbstractSubsystemB
     /////////////////////////////////////////
     @Test
     public void testHAPolicyConfiguration() throws Exception {
-        standardSubsystemTest("subsystem_16_0_ha-policy.xml");
+        standardSubsystemTest("subsystem_17_0_ha-policy.xml");
     }
 
     ///////////////////////
     // Transformers test //
     ///////////////////////
+    @Test
+    public void testTransformersWildfly35() throws Exception {
+        testTransformers(ModelTestControllerVersion.MASTER, MessagingExtension.VERSION_16_0_0);
+    }
     @Test
     public void testTransformersWildfly28() throws Exception {
         testTransformers(ModelTestControllerVersion.MASTER, MessagingExtension.VERSION_15_0_0);
@@ -144,6 +134,16 @@ public class MessagingActiveMQSubsystem_16_0_TestCase extends AbstractSubsystemB
     }
 
     @Test
+    public void testTransformersEAP_8_0_0() throws Exception {
+        testTransformers(EAP_8_0_0, MessagingExtension.VERSION_16_0_0);
+    }
+
+    @Test
+    public void testRejectingTransformersEAP_8_0_0() throws Exception {
+        testRejectingTransformers(EAP_8_0_0, MessagingExtension.VERSION_16_0_0);
+    }
+
+    @Test
     public void testTransformersEAP_7_4_0() throws Exception {
         testTransformers(EAP_7_4_0, MessagingExtension.VERSION_13_0_0);
     }
@@ -156,7 +156,7 @@ public class MessagingActiveMQSubsystem_16_0_TestCase extends AbstractSubsystemB
     private void testTransformers(ModelTestControllerVersion controllerVersion, ModelVersion messagingVersion) throws Exception {
         //Boot up empty controllers with the resources needed for the ops coming from the xml to work
         KernelServicesBuilder builder = createKernelServicesBuilder(createAdditionalInitialization())
-                .setSubsystemXmlResource("subsystem_16_0_transform.xml");
+                .setSubsystemXmlResource("subsystem_17_0_transform.xml");
         builder.createLegacyKernelServicesBuilder(createAdditionalInitialization(), controllerVersion, messagingVersion)
                 .addMavenResourceURL(getMessagingActiveMQGAV(controllerVersion))
                 .addMavenResourceURL(getActiveMQDependencies(controllerVersion))
@@ -193,7 +193,7 @@ public class MessagingActiveMQSubsystem_16_0_TestCase extends AbstractSubsystemB
         assertTrue(mainServices.isSuccessfulBoot());
         assertTrue(mainServices.getLegacyServices(messagingVersion).isSuccessfulBoot());
 
-        List<ModelNode> ops = builder.parseXmlResource("subsystem_16_0_reject_transform.xml");
+        List<ModelNode> ops = builder.parseXmlResource("subsystem_17_0_reject_transform.xml");
 //        System.out.println("ops = " + ops);
         PathAddress subsystemAddress = PathAddress.pathAddress(SUBSYSTEM_PATH);
 
