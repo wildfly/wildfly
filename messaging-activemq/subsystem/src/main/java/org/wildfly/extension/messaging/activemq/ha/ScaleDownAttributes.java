@@ -51,11 +51,13 @@ public class ScaleDownAttributes {
             .setRestartAllServices()
             .build();
 
-    public static final SimpleAttributeDefinition SCALE_DOWN_GROUP_NAME = SimpleAttributeDefinitionBuilder.create("scale-down-group-name", STRING)
+    public static final AttributeDefinition SCALE_DOWN_CONNECTORS = new StringListAttributeDefinition.Builder(SCALE_DOWN_CONNECTORS_STR)
             .setAttributeGroup(CommonAttributes.SCALE_DOWN)
-            .setXmlName(CommonAttributes.GROUP_NAME)
+            .setXmlName(CommonAttributes.CONNECTORS)
+            .setAlternatives(SCALE_DOWN_DISCOVERY_GROUP_STR)
             .setRequired(false)
-            .setAllowExpression(true)
+            .setAttributeMarshaller(AttributeMarshaller.STRING_LIST)
+            .setAttributeParser(AttributeParser.STRING_LIST)
             .setRestartAllServices()
             .build();
 
@@ -67,13 +69,11 @@ public class ScaleDownAttributes {
             .setRestartAllServices()
             .build();
 
-    public static final AttributeDefinition SCALE_DOWN_CONNECTORS = new StringListAttributeDefinition.Builder(SCALE_DOWN_CONNECTORS_STR)
+    public static final SimpleAttributeDefinition SCALE_DOWN_GROUP_NAME = SimpleAttributeDefinitionBuilder.create("scale-down-group-name", STRING)
             .setAttributeGroup(CommonAttributes.SCALE_DOWN)
-            .setXmlName(CommonAttributes.CONNECTORS)
-            .setAlternatives(SCALE_DOWN_DISCOVERY_GROUP_STR)
+            .setXmlName(CommonAttributes.GROUP_NAME)
             .setRequired(false)
-            .setAttributeMarshaller(AttributeMarshaller.STRING_LIST)
-            .setAttributeParser(AttributeParser.STRING_LIST)
+            .setAllowExpression(true)
             .setRestartAllServices()
             .build();
 
