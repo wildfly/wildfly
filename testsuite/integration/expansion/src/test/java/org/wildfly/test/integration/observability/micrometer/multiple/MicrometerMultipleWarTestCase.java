@@ -4,7 +4,7 @@
  */
 package org.wildfly.test.integration.observability.micrometer.multiple;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -24,7 +24,7 @@ import org.wildfly.test.integration.observability.JaxRsActivator;
 import org.wildfly.test.integration.observability.micrometer.multiple.application.DuplicateMetricResource1;
 import org.wildfly.test.integration.observability.micrometer.multiple.application.DuplicateMetricResource2;
 
-public class MultipleWarTestCase extends BaseMultipleTestCase {
+public class MicrometerMultipleWarTestCase extends BaseMicrometerMultipleTestCase {
     @Deployment(name = SERVICE_ONE, order = 1, testable = false)
     public static WebArchive createDeployment1() {
         return ShrinkWrap.create(WebArchive.class, SERVICE_ONE + ".war")
@@ -49,7 +49,7 @@ public class MultipleWarTestCase extends BaseMultipleTestCase {
         makeRequests(new URI(String.format("%s/%s", serviceTwo, DuplicateMetricResource2.TAG)));
 
         otelCollector.assertMetrics(prometheusMetrics -> {
-            List<PrometheusMetric> results = getMetricsByName(prometheusMetrics,
+            List<PrometheusMetric> results = otelCollector.getMetricsByName(prometheusMetrics,
                     DuplicateMetricResource1.METER_NAME + "_total"); // Adjust for Prometheus naming conventions
 
             assertEquals(2, results.size());
