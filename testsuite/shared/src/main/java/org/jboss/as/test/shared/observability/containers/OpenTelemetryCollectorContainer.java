@@ -91,6 +91,21 @@ public class OpenTelemetryCollectorContainer extends BaseContainer<OpenTelemetry
     }
 
     /**
+     * Given a list of <code>PrometheusMetric</code> instances, return a sublist whose key matches <code>key</code>. Note
+     * that the key name must match the Prometheus conventions (see <a href="https://prometheus.io/docs/practices/naming/">
+     * here</a> for details.
+     * @param metrics List of PrometheusMetrics to filter.
+     * @param key The name of the metric to find
+     * @return a sublist of <code>metrics</code> that matches <code>key</code>
+     */
+    public List<PrometheusMetric> getMetricsByName(List<PrometheusMetric> metrics, String key) {
+        return metrics.stream()
+            .filter(m -> Objects.equals(m.getKey(), key))
+            .toList();
+    }
+
+
+    /**
      * Continually evaluates assertions provided in a consumer until the state obtained from the Jaeger endpoint
      * matches the expected state or until a timeout elapses. By default, polls the collector every second for 30 seconds.
      * Returns snapshot of the Jaeger traces that passed the assertions; typically ignored.

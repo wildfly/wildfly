@@ -59,7 +59,7 @@ public class OpenTelemetryMetricsTestCase extends BaseOpenTelemetryTest {
     }
 
     // Request the published metrics from the OpenTelemetry Collector via the configured Prometheus exporter and check
-    // a few metrics to verify there existence
+    // a few metrics to verify their existence
     @Test
     @InSequence(3)
     public void getMetrics() throws InterruptedException {

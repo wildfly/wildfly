@@ -12,6 +12,7 @@ import java.util.List;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.test.api.ArquillianResource;
+import org.jboss.as.test.shared.observability.signals.PrometheusMetric;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
@@ -19,16 +20,15 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.wildfly.test.integration.observability.micrometer.multiple.application.DuplicateMetricResource1;
 import org.wildfly.test.integration.observability.micrometer.multiple.application.DuplicateMetricResource2;
-import org.jboss.as.test.shared.observability.signals.PrometheusMetric;
 
-public class EarDeploymentTestCase extends BaseMultipleTestCase {
+public class MicrometerEarDeploymentTestCase extends BaseMicrometerMultipleTestCase {
     protected static final String ENTERPRISE_APP = "enterprise-app";
 
     @Deployment(name = ENTERPRISE_APP, testable = false)
     public static EnterpriseArchive createDeployment() {
         return ShrinkWrap.create(EnterpriseArchive.class, ENTERPRISE_APP + ".ear")
-                .addAsModule(MultipleWarTestCase.createDeployment1())
-                .addAsModule(MultipleWarTestCase.createDeployment2())
+                .addAsModule(MicrometerMultipleWarTestCase.createDeployment1())
+                .addAsModule(MicrometerMultipleWarTestCase.createDeployment2())
                 .setApplicationXML(new StringAsset("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
                         + "<application xmlns=\"https://jakarta.ee/xml/ns/jakartaee\" " +
                         "       xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" " +
@@ -56,7 +56,7 @@ public class EarDeploymentTestCase extends BaseMultipleTestCase {
 
 
         otelCollector.assertMetrics(prometheusMetrics -> {
-            List<PrometheusMetric> results = getMetricsByName(prometheusMetrics,
+            List<PrometheusMetric> results = otelCollector.getMetricsByName(prometheusMetrics,
                     DuplicateMetricResource1.METER_NAME + "_total"); // Adjust for Prometheus naming conventions
 
             Assert.assertEquals(2, results.size());
