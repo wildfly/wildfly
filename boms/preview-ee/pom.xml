@@ -59,7 +59,7 @@
         <version.org.hibernate>7.0.0.Beta5</version.org.hibernate>
         <version.org.hibernate.models>0.9.3</version.org.hibernate.models>
         <version.org.hibernate.search>8.0.0.Alpha1</version.org.hibernate.search>
-        <version.org.hibernate.validator>9.0.0.CR1</version.org.hibernate.validator>
+        <version.org.hibernate.validator>9.0.0.Final</version.org.hibernate.validator>
         <version.org.wildfly.security.jakarta.elytron-ee>4.0.0.Beta1</version.org.wildfly.security.jakarta.elytron-ee>
     </properties>
 
