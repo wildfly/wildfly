@@ -7,7 +7,7 @@
         <property name="jboss.api" value="private"/>
     </properties>
     <resources>
-        <artifact name="${io.opentelemetry:opentelemetry-exporter-otlp-common}"/>
+        <!-- No new artifacts. Module dependencies only -->
     </resources>
 
     <dependencies>

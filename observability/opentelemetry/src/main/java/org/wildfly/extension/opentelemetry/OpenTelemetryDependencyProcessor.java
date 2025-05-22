@@ -23,9 +23,9 @@ class OpenTelemetryDependencyProcessor implements DeploymentUnitProcessor {
     private static final String API_MODULE = "org.wildfly.extension.opentelemetry-api";
     private static final List<String> EXPORTED_MODULES = List.of(
         "io.opentelemetry.api",
-        "io.opentelemetry.api.events",
         "io.opentelemetry.context",
         "io.opentelemetry.exporter",
+        "io.opentelemetry.instrumentation.annotations",
         "io.opentelemetry.instrumentation.api",
         "io.opentelemetry.otlp",
         "io.opentelemetry.sdk",
