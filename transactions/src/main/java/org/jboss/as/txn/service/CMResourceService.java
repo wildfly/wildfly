@@ -9,29 +9,28 @@ import java.util.List;
 import java.util.Map;
 
 import com.arjuna.ats.jta.common.JTAEnvironmentBean;
-import org.jboss.msc.inject.Injector;
-import org.jboss.msc.service.Service;
+import org.jboss.msc.Service;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
-import org.jboss.msc.value.InjectedValue;
+
+import java.util.function.Supplier;
 
 /**
  * Sets up the CMR related properties in {@link JTAEnvironmentBean}
  *
  * @author Stefano Maestri
+ * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
-public class CMResourceService implements Service<Void> {
-
+public class CMResourceService implements Service {
+    private final Supplier<JTAEnvironmentBean> jtaEnvironmentBeanSupplier;
     private final String jndiName;
     private final String tableName;
     private final Boolean immediateCleanup;
     private final Integer batchSize;
 
-    private final InjectedValue<JTAEnvironmentBean> jtaEnvironmentBean = new InjectedValue<>();
-
-
-    public CMResourceService(String jndiName, String tableName, Boolean immediateCleanup, Integer batchSize) {
+    public CMResourceService(final Supplier<JTAEnvironmentBean> jtaEnvironmentBeanSupplier, final String jndiName, final String tableName, final Boolean immediateCleanup, final Integer batchSize) {
+        this.jtaEnvironmentBeanSupplier = jtaEnvironmentBeanSupplier;
         this.jndiName = jndiName;
         this.tableName = tableName;
         this.immediateCleanup = immediateCleanup;
@@ -40,8 +39,8 @@ public class CMResourceService implements Service<Void> {
 
 
     @Override
-    public void start(StartContext context) throws StartException {
-        final JTAEnvironmentBean jtaBean = jtaEnvironmentBean.getValue();
+    public void start(final StartContext context) throws StartException {
+        final JTAEnvironmentBean jtaBean = jtaEnvironmentBeanSupplier.get();
         synchronized (jtaBean) {
             List<String> connectableResourceJNDINames = jtaBean.getCommitMarkableResourceJNDINames();
             Map<String, String> connectableResourceTableNameMap = jtaBean.getCommitMarkableResourceTableNameMap();
@@ -61,8 +60,8 @@ public class CMResourceService implements Service<Void> {
     }
 
     @Override
-    public void stop(StopContext context) {
-        final JTAEnvironmentBean jtaBean = jtaEnvironmentBean.getValue();
+    public void stop(final StopContext context) {
+        final JTAEnvironmentBean jtaBean = jtaEnvironmentBeanSupplier.get();
         synchronized (jtaBean) {
             List<String> connectableResourceJNDINames = jtaBean.getCommitMarkableResourceJNDINames();
             Map<String, String> connectableResourceTableNameMap = jtaBean.getCommitMarkableResourceTableNameMap();
@@ -80,13 +79,4 @@ public class CMResourceService implements Service<Void> {
             jtaBean.setCommitMarkableResourceRecordDeleteBatchSizeMap(connectableResourceRecordDeleteBatchSizeMap);
         }
     }
-
-    @Override
-    public Void getValue() throws IllegalStateException, IllegalArgumentException {
-        return null;
-    }
-
-    public Injector<JTAEnvironmentBean> getJTAEnvironmentBeanInjector() {
-            return this.jtaEnvironmentBean;
-        }
 }
