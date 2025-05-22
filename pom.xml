@@ -279,7 +279,7 @@
         <version.dom4j>2.1.4</version.dom4j>
         <version.httpunit>1.7.3</version.httpunit>
         <legacy.version.io.netty>4.0.19.Final</legacy.version.io.netty>
-        <version.io.rest-assured>5.5.2</version.io.rest-assured>
+        <version.io.rest-assured>5.5.5</version.io.rest-assured>
         <legacy.version.jakarta.enterprise>2.0.2</legacy.version.jakarta.enterprise>
         <legacy.version.jakarta.inject.jakarta.inject-api>1.0.5</legacy.version.jakarta.inject.jakarta.inject-api>
         <version.jakarta.mvc>2.1.0</version.jakarta.mvc>
