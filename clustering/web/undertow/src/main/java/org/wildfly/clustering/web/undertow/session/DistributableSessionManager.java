@@ -202,7 +202,7 @@ public class DistributableSessionManager implements UndertowSessionManager, Long
             Batch batch = this.manager.getBatchFactory().get();
             try {
                 Session<Map<String, Object>> session = this.manager.findSession(id);
-                if (session == null) {
+                if ((session == null) || !session.isValid() || session.getMetaData().isExpired()) {
                     return null;
                 }
                 // Update session ID encoding
