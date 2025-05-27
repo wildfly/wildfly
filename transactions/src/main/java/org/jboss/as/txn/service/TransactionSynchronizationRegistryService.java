@@ -6,15 +6,17 @@ package org.jboss.as.txn.service;
 
 import static org.jboss.as.txn.subsystem.TransactionSubsystemRootResourceDefinition.TRANSACTION_SYNCHRONIZATION_REGISTRY_CAPABILITY;
 
+import java.util.function.Consumer;
+import java.util.function.Supplier;
+
 import jakarta.transaction.TransactionSynchronizationRegistry;
 
+import org.jboss.as.controller.CapabilityServiceBuilder;
 import org.jboss.as.controller.CapabilityServiceTarget;
 import org.jboss.msc.service.Service;
-import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StopContext;
-import org.jboss.msc.value.InjectedValue;
 
 /**
  * Service that exposes the TransactionSynchronizationRegistry
@@ -29,35 +31,38 @@ public class TransactionSynchronizationRegistryService implements Service<Transa
     /** Non-deprecated service name only for use within the subsystem */
     @SuppressWarnings("deprecation")
     public static final ServiceName INTERNAL_SERVICE_NAME = TxnServices.JBOSS_TXN_SYNCHRONIZATION_REGISTRY;
+    private final Consumer<TransactionSynchronizationRegistry> txnRegistryConsumer;
+    private final Supplier<com.arjuna.ats.jbossatx.jta.TransactionManagerService> arjunaTMSupplier;
+    private volatile TransactionSynchronizationRegistry registry;
 
-    private final InjectedValue<com.arjuna.ats.jbossatx.jta.TransactionManagerService> injectedArjunaTM = new InjectedValue<com.arjuna.ats.jbossatx.jta.TransactionManagerService>();
-
-
-    private TransactionSynchronizationRegistryService() {
-    }
-
-    public static void addService(final CapabilityServiceTarget target) {
-        TransactionSynchronizationRegistryService service = new TransactionSynchronizationRegistryService();
-        ServiceBuilder<?> serviceBuilder = target.addCapability(TRANSACTION_SYNCHRONIZATION_REGISTRY_CAPABILITY);
-        serviceBuilder.setInstance(service);
-        serviceBuilder.requires(TxnServices.JBOSS_TXN_LOCAL_TRANSACTION_CONTEXT);
-        serviceBuilder.addDependency(ArjunaTransactionManagerService.SERVICE_NAME, com.arjuna.ats.jbossatx.jta.TransactionManagerService.class, service.injectedArjunaTM);
-        serviceBuilder.addAliases(INTERNAL_SERVICE_NAME);
-        serviceBuilder.install();
+    private TransactionSynchronizationRegistryService(final Consumer<TransactionSynchronizationRegistry> txnRegistryConsumer,
+                                                      final Supplier<com.arjuna.ats.jbossatx.jta.TransactionManagerService> arjunaTMSupplier) {
+        this.txnRegistryConsumer = txnRegistryConsumer;
+        this.arjunaTMSupplier = arjunaTMSupplier;
     }
 
     @Override
     public void start(final StartContext startContext) {
-        // noop
+        registry = arjunaTMSupplier.get().getTransactionSynchronizationRegistry();
+        txnRegistryConsumer.accept(registry);
     }
 
     @Override
     public void stop(final StopContext stopContext) {
-        // noop
+        txnRegistryConsumer.accept(null);
     }
 
     @Override
-    public TransactionSynchronizationRegistry getValue() throws IllegalStateException {
-        return injectedArjunaTM.getValue().getTransactionSynchronizationRegistry();
+    public TransactionSynchronizationRegistry getValue() {
+        return registry;
+    }
+
+    public static void addService(final CapabilityServiceTarget target) {
+        final CapabilityServiceBuilder<?> sb = target.addService();
+        final Consumer<TransactionSynchronizationRegistry> txnRegistryConsumer = sb.provides(TRANSACTION_SYNCHRONIZATION_REGISTRY_CAPABILITY, INTERNAL_SERVICE_NAME);
+        final Supplier<com.arjuna.ats.jbossatx.jta.TransactionManagerService> arjunaTMSupplier = sb.requires(ArjunaTransactionManagerService.SERVICE_NAME);
+        sb.requires(TxnServices.JBOSS_TXN_LOCAL_TRANSACTION_CONTEXT);
+        sb.setInstance(new TransactionSynchronizationRegistryService(txnRegistryConsumer, arjunaTMSupplier));
+        sb.install();
     }
 }

@@ -5,11 +5,13 @@
 
 package org.jboss.as.txn.service;
 
-import org.jboss.msc.service.Service;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
+
+import org.jboss.msc.Service;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
-import org.jboss.msc.value.InjectedValue;
 import org.jboss.remoting3.Endpoint;
 import org.jboss.remoting3.Registration;
 import org.jboss.remoting3.ServiceRegistrationException;
@@ -20,41 +22,34 @@ import org.wildfly.transaction.client.provider.remoting.RemotingTransactionServi
  * The service providing the Remoting transaction service.
  *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
+ * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
-public final class RemotingTransactionServiceService implements Service<RemotingTransactionService> {
-    private final InjectedValue<LocalTransactionContext> localTransactionContextInjector = new InjectedValue<>();
-    private final InjectedValue<Endpoint> endpointInjector = new InjectedValue<>();
-
-    private volatile RemotingTransactionService value;
+public final class RemotingTransactionServiceService implements Service {
+    private final Consumer<RemotingTransactionService> remotingTxnServiceConsumer;
+    private final Supplier<LocalTransactionContext> localTransactionContextSupplier;
+    private final Supplier<Endpoint> endpointSupplier;
     private volatile Registration registration;
 
-    public RemotingTransactionServiceService() {
+    public RemotingTransactionServiceService(final Consumer<RemotingTransactionService> remotingTxnServiceConsumer,
+                                             final Supplier<LocalTransactionContext> localTransactionContextSupplier,
+                                             final Supplier<Endpoint> endpointSupplier) {
+        this.remotingTxnServiceConsumer = remotingTxnServiceConsumer;
+        this.localTransactionContextSupplier = localTransactionContextSupplier;
+        this.endpointSupplier = endpointSupplier;
     }
 
     public void start(final StartContext context) throws StartException {
-        final RemotingTransactionService remotingTransactionService = RemotingTransactionService.builder().setEndpoint(endpointInjector.getValue()).setTransactionContext(localTransactionContextInjector.getValue()).build();
+        final RemotingTransactionService remotingTransactionService = RemotingTransactionService.builder().setEndpoint(endpointSupplier.get()).setTransactionContext(localTransactionContextSupplier.get()).build();
         try {
             registration = remotingTransactionService.register();
         } catch (ServiceRegistrationException e) {
             throw new StartException(e);
         }
-        value = remotingTransactionService;
+        remotingTxnServiceConsumer.accept(remotingTransactionService);
     }
 
     public void stop(final StopContext context) {
-        value = null;
+        remotingTxnServiceConsumer.accept(null);
         registration.close();
-    }
-
-    public InjectedValue<LocalTransactionContext> getLocalTransactionContextInjector() {
-        return localTransactionContextInjector;
-    }
-
-    public InjectedValue<Endpoint> getEndpointInjector() {
-        return endpointInjector;
-    }
-
-    public RemotingTransactionService getValue() throws IllegalStateException, IllegalArgumentException {
-        return value;
     }
 }

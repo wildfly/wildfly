@@ -5,14 +5,14 @@
 
 package org.jboss.as.txn.service;
 
+import java.util.function.Supplier;
+
 import jakarta.transaction.UserTransaction;
 
 import org.jboss.as.naming.ContextListAndJndiViewManagedReferenceFactory;
 import org.jboss.as.naming.ManagedReference;
 import org.jboss.as.naming.ManagedReferenceFactory;
 import org.jboss.as.naming.service.BinderService;
-import org.jboss.msc.inject.Injector;
-import org.jboss.msc.value.InjectedValue;
 
 /**
  * A special type of {@link BinderService} used to bind {@link jakarta.transaction.UserTransaction} instances. This
@@ -21,13 +21,15 @@ import org.jboss.msc.value.InjectedValue;
  *
  * @author Jaikiran Pai
  * @author Eduardo Martins
+ * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
 public class UserTransactionBindingService extends BinderService {
 
-    private final InjectedValue<UserTransactionAccessControlService> accessControlService = new InjectedValue<UserTransactionAccessControlService>();
+    private final Supplier<UserTransactionAccessControlService> accessControlServiceSupplier;
 
-    public UserTransactionBindingService(final String name) {
+    public UserTransactionBindingService(final Supplier<UserTransactionAccessControlService> accessControlServiceSupplier, final String name) {
         super(name);
+        this.accessControlServiceSupplier = accessControlServiceSupplier;
     }
 
     @Override
@@ -51,14 +53,10 @@ public class UserTransactionBindingService extends BinderService {
 
             @Override
             public ManagedReference getReference() {
-                accessControlService.getValue().authorizeAccess();
+                accessControlServiceSupplier.get().authorizeAccess();
                 return value.getReference();
             }
         };
-    }
-
-    public Injector<UserTransactionAccessControlService> getUserTransactionAccessControlServiceInjector() {
-        return accessControlService;
     }
 
 }
