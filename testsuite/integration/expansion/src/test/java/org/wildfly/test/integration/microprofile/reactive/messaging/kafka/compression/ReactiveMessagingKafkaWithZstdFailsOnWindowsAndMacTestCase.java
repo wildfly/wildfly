@@ -17,8 +17,8 @@ import org.wildfly.test.integration.microprofile.reactive.RunKafkaSetupTask;
 @RunAsClient
 @ServerSetup({RunKafkaSetupTask.class, EnableReactiveExtensionsSetupTask.class})
 @DockerRequired
-public class ReactiveMessagingKafkaWithSnappyFailsOnWindowsAndMacTestCase extends AbstractReactiveMessagingKafkaWithNativeCompressionFailsOnWindowsAndMacTestCase {
-    public ReactiveMessagingKafkaWithSnappyFailsOnWindowsAndMacTestCase() {
-        super("microprofile-config-snappy.properties");
+public class ReactiveMessagingKafkaWithZstdFailsOnWindowsAndMacTestCase extends AbstractReactiveMessagingKafkaWithNativeCompressionFailsOnWindowsAndMacTestCase {
+    public ReactiveMessagingKafkaWithZstdFailsOnWindowsAndMacTestCase() {
+        super("microprofile-config-zstd.properties");
     }
 }
