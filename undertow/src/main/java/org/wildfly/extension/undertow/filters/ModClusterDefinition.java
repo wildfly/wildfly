@@ -306,10 +306,25 @@ public class ModClusterDefinition extends AbstractFilterDefinition {
             .setDefaultValue(new ModelNode(1L))
             .build();
 
+    public static final AttributeDefinition REUSE_X_FORWARDED_HEADER = new SimpleAttributeDefinitionBuilder(Constants.REUSE_X_FORWARDED_HEADER, ModelType.BOOLEAN)
+            .setRequired(false)
+            .setRestartAllServices()
+            .setAllowExpression(true)
+            .setDefaultValue(ModelNode.FALSE)
+            .build();
+
+    public static final AttributeDefinition REWRITE_HOST_HEADER = new SimpleAttributeDefinitionBuilder(Constants.REWRITE_HOST_HEADER, ModelType.BOOLEAN)
+            .setRequired(false)
+            .setRestartAllServices()
+            .setAllowExpression(true)
+            .setDefaultValue(ModelNode.FALSE)
+            .build();
+
     public static final Collection<AttributeDefinition> ATTRIBUTES = List.of(MANAGEMENT_SOCKET_BINDING, ADVERTISE_SOCKET_BINDING, SECURITY_KEY, ADVERTISE_PROTOCOL,
             ADVERTISE_PATH, ADVERTISE_FREQUENCY, FAILOVER_STRATEGY, HEALTH_CHECK_INTERVAL, BROKEN_NODE_TIMEOUT, WORKER, MAX_REQUEST_TIME, MANAGEMENT_ACCESS_PREDICATE,
             CONNECTIONS_PER_THREAD, CACHED_CONNECTIONS_PER_THREAD, CONNECTION_IDLE_TIMEOUT, REQUEST_QUEUE_SIZE, SECURITY_REALM, SSL_CONTEXT, USE_ALIAS, ENABLE_HTTP2, MAX_AJP_PACKET_SIZE,
-            HTTP2_MAX_HEADER_LIST_SIZE, HTTP2_MAX_FRAME_SIZE, HTTP2_MAX_CONCURRENT_STREAMS, HTTP2_INITIAL_WINDOW_SIZE, HTTP2_HEADER_TABLE_SIZE, HTTP2_ENABLE_PUSH, MAX_RETRIES);
+            HTTP2_MAX_HEADER_LIST_SIZE, HTTP2_MAX_FRAME_SIZE, HTTP2_MAX_CONCURRENT_STREAMS, HTTP2_INITIAL_WINDOW_SIZE, HTTP2_HEADER_TABLE_SIZE, HTTP2_ENABLE_PUSH, MAX_RETRIES,
+            REUSE_X_FORWARDED_HEADER, REWRITE_HOST_HEADER);
 
     private final ServiceValueExecutorRegistry<ModCluster> registry = ServiceValueExecutorRegistry.newInstance();
 

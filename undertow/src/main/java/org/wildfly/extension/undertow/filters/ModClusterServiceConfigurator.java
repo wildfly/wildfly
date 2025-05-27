@@ -82,6 +82,8 @@ public class ModClusterServiceConfigurator extends ModClusterServiceNameProvider
     private volatile boolean useAlias;
     private volatile int maxRetries;
     private volatile FailoverStrategy failoverStrategy;
+    private volatile boolean reuseXForwardedHeader;
+    private volatile boolean rewriteHostHeader;
     private volatile Consumer<ModCluster> captor;
 
     ModClusterServiceConfigurator(PathAddress address) {
@@ -150,6 +152,8 @@ public class ModClusterServiceConfigurator extends ModClusterServiceNameProvider
         this.useAlias = ModClusterDefinition.USE_ALIAS.resolveModelAttribute(context, model).asBoolean();
         this.maxRetries = ModClusterDefinition.MAX_RETRIES.resolveModelAttribute(context, model).asInt();
         this.failoverStrategy = Enum.valueOf(FailoverStrategy.class, ModClusterDefinition.FAILOVER_STRATEGY.resolveModelAttribute(context, model).asString());
+        this.reuseXForwardedHeader = ModClusterDefinition.REUSE_X_FORWARDED_HEADER.resolveModelAttribute(context, model).asBoolean();
+        this.rewriteHostHeader = ModClusterDefinition.REWRITE_HOST_HEADER.resolveModelAttribute(context, model).asBoolean();
         return this;
     }
 
@@ -195,6 +199,8 @@ public class ModClusterServiceConfigurator extends ModClusterServiceNameProvider
                 .setUseAlias(this.useAlias)
                 .setRouteParsingStrategy(this.routeParsingStrategy)
                 .setRankedAffinityDelimiter(this.routeDelimiter)
+                .setReuseXForwarded(reuseXForwardedHeader)
+                .setRewriteHostHeader(rewriteHostHeader)
         ;
 
         if (this.failoverStrategy == FailoverStrategy.DETERMINISTIC) {
