@@ -21,6 +21,7 @@
 
     <dependencies>
         <module name="java.management"/>
+        <module name="java.sql"/>
         <module name="jakarta.resource.api"/>
         <module name="jakarta.transaction.api"/>
         <module name="org.jboss.staxmapper"/>

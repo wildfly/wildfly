@@ -58,6 +58,13 @@ import org.wildfly.transaction.client.provider.remoting.RemotingTransactionServi
  */
 public class TransactionSubsystemRootResourceDefinition extends SimpleResourceDefinition {
 
+    /**
+     * Represents the data source capability
+     *
+     * @see <a href="https://github.com/wildfly/wildfly-capabilities/blob/main/org/wildfly/data-source/capability.adoc">Capability documentation</a>
+     */
+    static final String DATA_SOURCE_CAPABILITY_NAME = "org.wildfly.data-source";
+
     static final RuntimeCapability<Void> TRANSACTION_CAPABILITY = RuntimeCapability.Builder.of("org.wildfly.transactions", Void.class)
             .build();
 
@@ -222,13 +229,20 @@ public class TransactionSubsystemRootResourceDefinition extends SimpleResourceDe
             .setDefaultValue(ModelNode.FALSE)
             .addAlternatives(CommonAttributes.USE_JOURNAL_STORE)
             .addAlternatives(CommonAttributes.USE_HORNETQ_STORE)
-            .setRequires(CommonAttributes.JDBC_STORE_DATASOURCE)
             .setFlags(AttributeAccess.Flag.RESTART_JVM)
             .setAllowExpression(false).build();
+    public static final SimpleAttributeDefinition JDBC_STORE_DATASOURCE_NAME = new SimpleAttributeDefinitionBuilder(CommonAttributes.JDBC_STORE_DATASOURCE_NAME, ModelType.STRING, true)
+            .setFlags(AttributeAccess.Flag.RESTART_JVM)
+            .setXmlName(Attribute.DATASOURCE_NAME.getLocalName())
+            .addAlternatives(CommonAttributes.JDBC_STORE_DATASOURCE)
+            .setCapabilityReference(DATA_SOURCE_CAPABILITY_NAME, TRANSACTION_CAPABILITY)
+            .build();
     public static final SimpleAttributeDefinition JDBC_STORE_DATASOURCE = new SimpleAttributeDefinitionBuilder(CommonAttributes.JDBC_STORE_DATASOURCE, ModelType.STRING, true)
             .setFlags(AttributeAccess.Flag.RESTART_JVM)
             .setXmlName(Attribute.DATASOURCE_JNDI_NAME.getLocalName())
-            .setAllowExpression(true).build();
+            .addAlternatives(CommonAttributes.JDBC_STORE_DATASOURCE_NAME)
+            .setAllowExpression(true)
+            .setDeprecated(ModelVersion.create(6)).build();
     public static final SimpleAttributeDefinition JDBC_ACTION_STORE_TABLE_PREFIX =
             new SimpleAttributeDefinitionBuilder(CommonAttributes.JDBC_ACTION_STORE_TABLE_PREFIX, ModelType.STRING, true)
             .setFlags(AttributeAccess.Flag.RESTART_JVM)
@@ -292,10 +306,11 @@ public class TransactionSubsystemRootResourceDefinition extends SimpleResourceDe
     static final AttributeDefinition[] add_attributes = new AttributeDefinition[] {
             BINDING, STATUS_BINDING, RECOVERY_LISTENER, NODE_IDENTIFIER, PROCESS_ID_UUID, PROCESS_ID_SOCKET_BINDING,
             PROCESS_ID_SOCKET_MAX_PORTS, STATISTICS_ENABLED, ENABLE_TSM_STATUS, DEFAULT_TIMEOUT, MAXIMUM_TIMEOUT,
-            OBJECT_STORE_RELATIVE_TO, OBJECT_STORE_PATH, JTS, USE_HORNETQ_STORE_PARAM, USE_JOURNAL_STORE_PARAM, USE_JDBC_STORE, JDBC_STORE_DATASOURCE,
-            JDBC_ACTION_STORE_DROP_TABLE, JDBC_ACTION_STORE_TABLE_PREFIX, JDBC_COMMUNICATION_STORE_DROP_TABLE,
-            JDBC_COMMUNICATION_STORE_TABLE_PREFIX, JDBC_STATE_STORE_DROP_TABLE, JDBC_STATE_STORE_TABLE_PREFIX,
-            JOURNAL_STORE_ENABLE_ASYNC_IO, ENABLE_STATISTICS, HORNETQ_STORE_ENABLE_ASYNC_IO, STALE_TRANSACTION_TIME
+            OBJECT_STORE_RELATIVE_TO, OBJECT_STORE_PATH, JTS, USE_HORNETQ_STORE_PARAM, USE_JOURNAL_STORE_PARAM, USE_JDBC_STORE,
+            JDBC_STORE_DATASOURCE, JDBC_STORE_DATASOURCE_NAME, JDBC_ACTION_STORE_DROP_TABLE, JDBC_ACTION_STORE_TABLE_PREFIX,
+            JDBC_COMMUNICATION_STORE_DROP_TABLE, JDBC_COMMUNICATION_STORE_TABLE_PREFIX, JDBC_STATE_STORE_DROP_TABLE,
+            JDBC_STATE_STORE_TABLE_PREFIX, JOURNAL_STORE_ENABLE_ASYNC_IO, ENABLE_STATISTICS, HORNETQ_STORE_ENABLE_ASYNC_IO,
+            STALE_TRANSACTION_TIME
     };
 
     static final AttributeDefinition[] attributes_1_2 = new AttributeDefinition[] {USE_JDBC_STORE, JDBC_STORE_DATASOURCE,
@@ -315,6 +330,7 @@ public class TransactionSubsystemRootResourceDefinition extends SimpleResourceDe
         attributesWithoutMutuals.remove(STATISTICS_ENABLED);
         attributesWithoutMutuals.remove(DEFAULT_TIMEOUT);
         attributesWithoutMutuals.remove(MAXIMUM_TIMEOUT);
+        attributesWithoutMutuals.remove(JDBC_STORE_DATASOURCE_NAME);
         attributesWithoutMutuals.remove(JDBC_STORE_DATASOURCE); // Remove these as it also needs special write handler
 
         attributesWithoutMutuals.remove(PROCESS_ID_UUID);
@@ -340,6 +356,7 @@ public class TransactionSubsystemRootResourceDefinition extends SimpleResourceDe
         resourceRegistration.registerReadWriteAttribute(MAXIMUM_TIMEOUT, null, new MaximumTimeoutHandler(MAXIMUM_TIMEOUT));
 
         // Register jdbc-store-datasource attribute
+        resourceRegistration.registerReadWriteAttribute(JDBC_STORE_DATASOURCE_NAME, null, new JdbcStoreDatasourceWriteHandler(JDBC_STORE_DATASOURCE_NAME));
         resourceRegistration.registerReadWriteAttribute(JDBC_STORE_DATASOURCE, null, new JdbcStoreDatasourceWriteHandler(JDBC_STORE_DATASOURCE));
 
         // Register mutual object store attributes
@@ -453,9 +470,9 @@ public class TransactionSubsystemRootResourceDefinition extends SimpleResourceDe
     }
 
     /**
-     * Validates that if use-jdbc-store is set, jdbc-store-datasource must be also set.
+     * Validates that if use-jdbc-store is set, jdbc-store-datasource-name or jdbc-store-datasource-name must be also set.
      *
-     * Must be added to both use-jdbc-store and jdbc-store-datasource fields.
+     * Must be added to use-jdbc-store, jdbc-store-datasource-name and jdbc-store-datasource fields.
      */
     private static class JdbcStoreValidationStep implements OperationStepHandler {
 
@@ -465,8 +482,8 @@ public class TransactionSubsystemRootResourceDefinition extends SimpleResourceDe
         public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
             ModelNode modelNode = context.readResource(PathAddress.EMPTY_ADDRESS).getModel();
             if (modelNode.hasDefined(USE_JDBC_STORE.getName()) && modelNode.get(USE_JDBC_STORE.getName()).asBoolean()
-                    && !modelNode.hasDefined(JDBC_STORE_DATASOURCE.getName())) {
-                throw TransactionLogger.ROOT_LOGGER.mustBeDefinedIfTrue(JDBC_STORE_DATASOURCE.getName(), USE_JDBC_STORE.getName());
+                    && !(modelNode.hasDefined(JDBC_STORE_DATASOURCE_NAME.getName()) || modelNode.hasDefined(JDBC_STORE_DATASOURCE.getName()))) {
+                throw TransactionLogger.ROOT_LOGGER.mustBeDefinedIfTrue(JDBC_STORE_DATASOURCE_NAME.getName() + " or " + JDBC_STORE_DATASOURCE.getName(), USE_JDBC_STORE.getName());
             }
         }
     }

@@ -3,7 +3,7 @@
   ~ SPDX-License-Identifier: Apache-2.0
   -->
 
-<subsystem xmlns="urn:jboss:domain:transactions:6.0">
+<subsystem xmlns="urn:jboss:domain:transactions:6.1">
     <core-environment>
         <process-id>
             <uuid/>
