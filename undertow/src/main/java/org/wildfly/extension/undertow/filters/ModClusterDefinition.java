@@ -49,6 +49,7 @@ import org.jboss.as.controller.operations.validation.IntRangeValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.network.SocketBinding;
+import org.jboss.as.version.Stability;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.msc.Service;
@@ -311,6 +312,7 @@ public class ModClusterDefinition extends AbstractFilterDefinition {
             .setRestartAllServices()
             .setAllowExpression(true)
             .setDefaultValue(ModelNode.FALSE)
+            .setStability(Stability.PREVIEW)
             .build();
 
     public static final AttributeDefinition REWRITE_HOST_HEADER = new SimpleAttributeDefinitionBuilder(Constants.REWRITE_HOST_HEADER, ModelType.BOOLEAN)
@@ -318,6 +320,7 @@ public class ModClusterDefinition extends AbstractFilterDefinition {
             .setRestartAllServices()
             .setAllowExpression(true)
             .setDefaultValue(ModelNode.FALSE)
+            .setStability(Stability.PREVIEW)
             .build();
 
     public static final Collection<AttributeDefinition> ATTRIBUTES = List.of(MANAGEMENT_SOCKET_BINDING, ADVERTISE_SOCKET_BINDING, SECURITY_KEY, ADVERTISE_PROTOCOL,
