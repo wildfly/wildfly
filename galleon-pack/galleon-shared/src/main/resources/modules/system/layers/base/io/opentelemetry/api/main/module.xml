@@ -10,15 +10,9 @@
     <resources>
         <artifact name="${io.opentelemetry:opentelemetry-api}"/>
         <artifact name="${io.opentelemetry:opentelemetry-api-incubator}"/>
-        <artifact name="${io.opentelemetry.instrumentation:opentelemetry-instrumentation-api}"/>
-        <artifact name="${io.opentelemetry.instrumentation:opentelemetry-instrumentation-api-incubator}"/>
-        <artifact name="${io.opentelemetry.instrumentation:opentelemetry-instrumentation-annotations}"/>
-        <artifact name="${io.opentelemetry.instrumentation:opentelemetry-instrumentation-annotations-support}"/>
-        <artifact name="${io.opentelemetry.instrumentation:opentelemetry-runtime-telemetry-java8}"/>
     </resources>
 
     <dependencies>
-        <module name="io.opentelemetry.api.events"/>
         <module name="io.opentelemetry.context"/>
         <module name="io.opentelemetry.instrumentation.annotations"/>
         <module name="io.opentelemetry.instrumentation.api"/>

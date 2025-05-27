@@ -16,7 +16,6 @@
 
     <dependencies>
         <module name="io.opentelemetry.api"/>
-        <module name="io.opentelemetry.api.events"/>
         <module name="io.opentelemetry.context"/>
         <module name="io.opentelemetry.exporter"/>
         <module name="io.opentelemetry.otlp"/>
