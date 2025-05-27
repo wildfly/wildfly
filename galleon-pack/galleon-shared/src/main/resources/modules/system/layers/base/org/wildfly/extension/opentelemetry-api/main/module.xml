@@ -21,6 +21,8 @@
         <module name="io.opentelemetry.exporter" />
         <module name="io.opentelemetry.sdk" />
         <module name="io.smallrye.opentelemetry" />
+        <module name="io.vertx.core"/>
+        <module name="io.netty.netty-handler"/>
 
         <module name="java.logging"/>
 

@@ -36,15 +36,20 @@ public class SubsystemTransformersTestCase extends AbstractSubsystemTest {
     @SuppressWarnings("SameParameterValue")
     private void testTransformation(final ModelTestControllerVersion controller) throws Exception {
         final ModelVersion version = getModelVersion(controller).getVersion();
-        final String subsystemXmlResource = String.format("transform-%d_%d_%d.xml", version.getMajor(), version.getMinor(), version.getMicro());
+        final String subsystemXmlResource = String.format("transform-%d_%d_%d.xml", version.getMajor(),
+            version.getMinor(), version.getMicro());
 
-        KernelServices services = this.buildKernelServices(readResource(subsystemXmlResource), controller, version, getDependencies(controller));
+        KernelServices services = this.buildKernelServices(readResource(subsystemXmlResource), controller, version,
+            getDependencies(controller));
 
         // check that both versions of the legacy model are the same and valid
         checkSubsystemModelTransformation(services, version, createModelFixer(version), false);
     }
 
-    private KernelServices buildKernelServices(String xml, ModelTestControllerVersion controllerVersion, ModelVersion version, String... mavenResourceURLs) throws Exception {
+    private KernelServices buildKernelServices(String xml,
+                                               ModelTestControllerVersion controllerVersion,
+                                               ModelVersion version,
+                                               String... mavenResourceURLs) throws Exception {
         KernelServicesBuilder builder = this.createKernelServicesBuilder(createAdditionalInitialization()).setSubsystemXml(xml);
 
         builder.createLegacyKernelServicesBuilder(createAdditionalInitialization(), controllerVersion, version)
@@ -54,7 +59,8 @@ public class SubsystemTransformersTestCase extends AbstractSubsystemTest {
 
         KernelServices services = builder.build();
         Assert.assertTrue(ModelTestControllerVersion.MASTER + " boot failed", services.isSuccessfulBoot());
-        Assert.assertTrue(controllerVersion.getMavenGavVersion() + " boot failed", services.getLegacyServices(version).isSuccessfulBoot());
+        Assert.assertTrue(controllerVersion.getMavenGavVersion() + " boot failed",
+            services.getLegacyServices(version).isSuccessfulBoot());
         return services;
     }
 
@@ -64,24 +70,20 @@ public class SubsystemTransformersTestCase extends AbstractSubsystemTest {
     }
 
     private static OpenTelemetrySubsystemModel getModelVersion(ModelTestControllerVersion controllerVersion) {
-        //noinspection SwitchStatementWithTooFewBranches
-        switch (controllerVersion) {
-            case EAP_XP_4:
-                return OpenTelemetrySubsystemModel.VERSION_1_0_0;
-            default:
-                throw new IllegalArgumentException();
-        }
+        return switch (controllerVersion) {
+            case EAP_XP_4 -> OpenTelemetrySubsystemModel.VERSION_1_0_0;
+            case EAP_XP_5 -> OpenTelemetrySubsystemModel.VERSION_1_1_0;
+            default -> throw new IllegalArgumentException();
+        };
     }
 
     private static String[] getDependencies(ModelTestControllerVersion version) {
-        //noinspection SwitchStatementWithTooFewBranches
-        switch (version) {
-            case EAP_XP_4:
-                return new String[] {
-                        String.format("org.jboss.eap:wildfly-opentelemetry:%s", version.getMavenGavVersion())
-                };
-        }
-        throw new IllegalArgumentException();
+        return switch (version) {
+            case EAP_XP_4, EAP_XP_5 -> new String[]{
+                String.format("org.jboss.eap:wildfly-opentelemetry:%s", version.getMavenGavVersion())
+            };
+            default -> throw new IllegalArgumentException();
+        };
     }
 
     private static ModelFixer createModelFixer(ModelVersion version) {

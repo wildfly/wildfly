@@ -30,7 +30,9 @@ class OpenTelemetryDependencyProcessor implements DeploymentUnitProcessor {
         "io.opentelemetry.otlp",
         "io.opentelemetry.sdk",
         "io.opentelemetry.semconv",
-        "io.smallrye.opentelemetry"
+        "io.smallrye.opentelemetry",
+        "io.vertx.core",
+        "io.netty.netty-handler"
     );
 
     @Override

@@ -327,6 +327,11 @@
         </dependency>
         <dependency>
             <groupId>io.opentelemetry</groupId>
+            <artifactId>opentelemetry-sdk-logs</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.opentelemetry</groupId>
             <artifactId>opentelemetry-sdk-trace</artifactId>
             <scope>test</scope>
         </dependency>
@@ -348,9 +353,9 @@
         <dependency>
             <groupId>${full.maven.groupId}</groupId>
             <artifactId>wildfly-opentelemetry-api</artifactId>
+            <version>${project.version}</version>
             <scope>test</scope>
         </dependency>
-
         <!-- Other test dependencies -->
         <dependency>
             <groupId>io.rest-assured</groupId>
@@ -403,7 +408,11 @@
             <scope>test</scope>
         </dependency>
 
-
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>wildfly-opentelemetry</artifactId>
+            <scope>test</scope>
+        </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>wildfly-microprofile-reactive-messaging-config</artifactId>

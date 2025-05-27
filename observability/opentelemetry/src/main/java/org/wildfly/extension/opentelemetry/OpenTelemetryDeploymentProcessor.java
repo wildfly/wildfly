@@ -26,10 +26,10 @@ import org.wildfly.extension.opentelemetry.api.OpenTelemetryCdiExtension;
 import org.wildfly.extension.opentelemetry.api.WildFlyOpenTelemetryConfig;
 
 class OpenTelemetryDeploymentProcessor implements DeploymentUnitProcessor {
-    private final Supplier<WildFlyOpenTelemetryConfig> openTelemetryConfig;
+    private final Supplier<WildFlyOpenTelemetryConfig> configSupplier;
 
-    public OpenTelemetryDeploymentProcessor(Supplier<WildFlyOpenTelemetryConfig> openTelemetryConfig) {
-        this.openTelemetryConfig = openTelemetryConfig;
+    public OpenTelemetryDeploymentProcessor(Supplier<WildFlyOpenTelemetryConfig> configSupplier) {
+        this.configSupplier = configSupplier;
     }
 
     @Override
@@ -51,14 +51,20 @@ class OpenTelemetryDeploymentProcessor implements DeploymentUnitProcessor {
                 return;
             }
 
-            Map<String, String> config = new HashMap<>(openTelemetryConfig.get().properties());
-            if (!config.containsKey(WildFlyOpenTelemetryConfig.OTEL_SERVICE_NAME)) {
-                config.put(WildFlyOpenTelemetryConfig.OTEL_SERVICE_NAME, getServiceName(deploymentUnit));
+            WildFlyOpenTelemetryConfig config = configSupplier.get();
+            Map<String, String> properties = new HashMap<>(config.properties());
+            if (!properties.containsKey(WildFlyOpenTelemetryConfig.OTEL_SERVICE_NAME)) {
+                properties.put(WildFlyOpenTelemetryConfig.OTEL_SERVICE_NAME, getServiceName(deploymentUnit));
             }
+//
+//            if (config.isTlsEnabled()) {
+//                config.setSslContext(getSSLContext(deploymentPhaseContext, config.getSslContextName()));
+//            }
 
             weldCapability.registerExtensionInstance(
-                    new OpenTelemetryCdiExtension(!openTelemetryConfig.get().isMpTelemetryInstalled(), config), deploymentUnit);
+                    new OpenTelemetryCdiExtension(!config.isMpTelemetryInstalled(), config), deploymentUnit);
             weldCapability.registerExtensionInstance(new OpenTelemetryExtension(), deploymentUnit);
+
         } catch (CapabilityServiceSupport.NoSuchCapabilityException e) {
             // We should not be here since the subsystem depends on weld capability. Just in case ...
             throw OTEL_LOGGER.deploymentRequiresCapability(deploymentPhaseContext.getDeploymentUnit().getName(),
@@ -73,4 +79,16 @@ class OpenTelemetryDeploymentProcessor implements DeploymentUnitProcessor {
         }
         return serviceName;
     }
+
+//    private SSLContext getSSLContext(DeploymentPhaseContext deploymentPhaseContext, String name) {
+//        var serviceRegistry = deploymentPhaseContext.getDeploymentUnit().getServiceRegistry();
+//        var serviceName = ServiceName.of("org", "wildfly", "security", "ssl-context").append(name);
+//        var controller = (ServiceController<SSLContext>) serviceRegistry.getService(serviceName);
+//
+//        if (controller == null) {
+//            throw OTEL_LOGGER.noElytronSSLContext(name);
+//        }
+//
+//        return controller.getValue();
+//    }
 }
