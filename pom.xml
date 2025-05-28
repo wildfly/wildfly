@@ -380,7 +380,7 @@
         <version.io.reactivex.rxjava3>3.1.10</version.io.reactivex.rxjava3>
         <version.io.smallrye.open-api>4.0.9</version.io.smallrye.open-api>
         <version.io.smallrye.reactive-utils>2.6.0</version.io.smallrye.reactive-utils>
-        <version.io.smallrye.smallrye-common>2.10.0</version.io.smallrye.smallrye-common>
+        <version.io.smallrye.smallrye-common>2.12.0</version.io.smallrye.smallrye-common>
         <version.io.smallrye.smallrye-config>3.12.4</version.io.smallrye.smallrye-config>
         <version.io.smallrye.smallrye-fault-tolerance>6.9.1</version.io.smallrye.smallrye-fault-tolerance>
         <version.io.smallrye.smallrye-health>4.2.0</version.io.smallrye.smallrye-health>
