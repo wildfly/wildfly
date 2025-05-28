@@ -26,7 +26,7 @@ public class SingletonSubsystemTestCase extends AbstractSubsystemSchemaTest<Sing
     }
 
     public SingletonSubsystemTestCase(SingletonSubsystemSchema schema) {
-        super(SingletonExtension.SUBSYSTEM_NAME, new SingletonExtension(), schema, SingletonSubsystemSchema.CURRENT);
+        super(SingletonSubsystemResourceDefinitionRegistrar.REGISTRATION.getName(), new SingletonExtension(), schema, SingletonSubsystemSchema.CURRENT);
     }
 
     @Override

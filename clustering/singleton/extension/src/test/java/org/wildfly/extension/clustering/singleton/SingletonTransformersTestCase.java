@@ -43,7 +43,7 @@ public class SingletonTransformersTestCase extends AbstractSubsystemTest {
     private final ModelVersion version;
 
     public SingletonTransformersTestCase(ModelTestControllerVersion controller) {
-        super(SingletonExtension.SUBSYSTEM_NAME, new SingletonExtension());
+        super(SingletonSubsystemResourceDefinitionRegistrar.REGISTRATION.getName(), new SingletonExtension());
 
         this.controller = controller;
         this.version = this.getModelVersion().getVersion();
