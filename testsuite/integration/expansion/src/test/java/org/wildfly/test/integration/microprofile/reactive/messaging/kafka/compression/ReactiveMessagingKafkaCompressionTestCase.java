@@ -19,6 +19,7 @@ import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.wildfly.microprofile.reactive.messaging.config.kafka.ssl.context.KafkaClientCustomizer;
 import org.wildfly.security.manager.WildFlySecurityManager;
 import org.wildfly.test.integration.microprofile.reactive.EnableReactiveExtensionsSetupTask;
 import org.wildfly.test.integration.microprofile.reactive.RunKafkaSetupTask;
@@ -42,29 +43,30 @@ public class ReactiveMessagingKafkaCompressionTestCase {
     // Downstream we want to disable Snappy on Windows and Mac
     // This setting should match that in KafkaClientCustomizer.DISABLE_SNAPPY_ON_WINDOWS_AND_MAC
     // I don't want to depend on that module from here
-    static final boolean DISABLE_SNAPPY_ON_WINDOWS_AND_MAC = false;
+    static final boolean DISABLE_NATIVE_COMPRESSION_ON_WINDOWS_AND_MAC =
+            KafkaClientCustomizer.DISABLE_NATIVE_COMPRESSION_ON_WINDOWS_AND_MAC;
 
     private static final long TIMEOUT = TimeoutUtil.adjust(15000);
 
     @Inject
     CompressionMessagingBean bean;
 
-    static boolean isSnappyEnabled() {
+    static boolean isNativeCompressionEnabled() {
         String os = WildFlySecurityManager.getPropertyPrivileged("os.name", "x").toLowerCase(Locale.ENGLISH);
         boolean runningOnWindowsOrMac = os.startsWith("windows") || os.startsWith("mac os");
-        return  !runningOnWindowsOrMac || !DISABLE_SNAPPY_ON_WINDOWS_AND_MAC;
+        return  !runningOnWindowsOrMac || !DISABLE_NATIVE_COMPRESSION_ON_WINDOWS_AND_MAC;
     }
 
     @Deployment
     public static WebArchive getDeployment() {
-        boolean enableSnappy = isSnappyEnabled();
-        String mpConfigFile = enableSnappy ? "microprofile-config.properties" : "microprofile-config-no-snappy.properties";
+        boolean enableSnappy = isNativeCompressionEnabled();
+        String mpConfigFile = enableSnappy ? "microprofile-config.properties" : "microprofile-config-no-native-compression.properties";
         return getDeploymentInternal(mpConfigFile);
     }
 
-    static WebArchive getDeploymentWithSnappyEnabled() {
+    static WebArchive getDeploymentWithNativeCompressionEnabled(String propertiesFileName) {
         // Don't choose here whether to use Snappy or not
-        return getDeploymentInternal("microprofile-config.properties");
+        return getDeploymentInternal(propertiesFileName);
     }
 
     static WebArchive getDeploymentInternal(String mpConfigFile) {
