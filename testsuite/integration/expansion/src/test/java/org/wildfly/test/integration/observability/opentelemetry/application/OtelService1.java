@@ -33,7 +33,7 @@ public class OtelService1 {
 
     @GET
     public String sayHello(@QueryParam("name") String name) {
-        final Span span = tracer.spanBuilder("Saying hello from server1").startSpan();
+        final Span span = tracer.spanBuilder("Saying hello from service 1").startSpan();
         try (Scope scope = span.makeCurrent()) {
             span.addEvent("some-event");
             span.setAttribute("name", name);
@@ -46,7 +46,7 @@ public class OtelService1 {
     @GET
     @Path("contextProp1")
     public Response contextProp1() throws URISyntaxException {
-        final Span span = tracer.spanBuilder("Handling contextProp1 request from server1").startSpan();
+        final Span span = tracer.spanBuilder("Handling contextProp1 request from service 1").startSpan();
         try (Scope scope = span.makeCurrent()) {
             span.setAttribute("method_called", "contextProp1");
             span.addEvent("The method contextProp1 was called");
