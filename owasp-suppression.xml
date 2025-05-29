@@ -119,9 +119,9 @@
     <!-- CVE-2016-2141 is regarding red hat jgroups used in wildfly, while jgroups-aws is addon to jgroups that allows clustering of s3 service in aws  -->
     <suppress>
         <notes><![CDATA[
-       file name: jgroups-aws-3.0.0.Final.jar
+       file name: jgroups-aws-3.0.1.Final.jar
        ]]></notes>
-        <packageUrl regex="true">^pkg:maven/org\.jgroups\.aws/jgroups\-aws@3.0.0.Final$</packageUrl>
+        <packageUrl regex="true">^pkg:maven/org\.jgroups\.aws/jgroups\-aws@3.0.1.Final$</packageUrl>
         <cve>CVE-2016-2141</cve>
     </suppress>
 
@@ -287,7 +287,7 @@
         <notes><![CDATA[
         file name: lucene-*-9.8.0.jar
         ]]></notes>
-        <packageUrl regex="true">^pkg:maven/org\.apache\.lucene/lucene-(?!replicator).*@9\.8\.0$</packageUrl>
+        <packageUrl regex="true">^pkg:maven/org\.apache\.lucene/lucene-(?!replicator).*@9\.11\.1$</packageUrl>
         <cve>CVE-2024-45772</cve>
     </suppress>
 
@@ -308,6 +308,9 @@
    ]]></notes>
         <filePath regex="true">.*\bwildfly-elytron-tool\.jar</filePath>
         <cve>CVE-2022-1278</cve>
+        <cve>CVE-2019-3894</cve>
+        <cve>CVE-2020-10718</cve>
+        <cve>CVE-2020-10740</cve>
     </suppress>
 
     <suppress>
@@ -316,6 +319,9 @@
    ]]></notes>
         <filePath regex="true">.*\bjboss-cli-client\.jar</filePath>
         <cve>CVE-2022-1278</cve>
+        <cve>CVE-2019-3894</cve>
+        <cve>CVE-2020-10718</cve>
+        <cve>CVE-2020-10740</cve>
     </suppress>
 
     <suppress>
@@ -361,6 +367,86 @@
         <cve>CVE-2024-43709</cve>
         <cve>CVE-2024-23450</cve>
         <cve>CVE-2024-23444</cve>
+    </suppress>
+
+    <!-- CVEs is in infinispan not WildFly extension-->
+    <suppress>
+        <notes><![CDATA[
+   file name: wildfly-clustering-session-infinispan-remote-6.0.1.Final.jar
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org\.wildfly\.clustering/wildfly-clustering-session-infinispan-remote@6\.0\.1\.Final$</packageUrl>
+        <cve>CVE-2016-0750</cve>
+        <cve>CVE-2017-15089</cve>
+        <cve>CVE-2019-10158</cve>
+        <cve>CVE-2019-10174</cve>
+        <cve>CVE-2020-10718</cve>
+        <cve>CVE-2020-10740</cve>
+        <cve>CVE-2022-1278</cve>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[
+   file name: wildfly-clustering-session-infinispan-embedded-6.0.1.Final.jar
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org\.wildfly\.clustering/wildfly-clustering-session-infinispan-embedded@6\.0\.1\.Final$</packageUrl>
+        <cve>CVE-2016-0750</cve>
+        <cve>CVE-2017-15089</cve>
+        <cve>CVE-2019-10158</cve>
+        <cve>CVE-2019-10174</cve>
+        <cve>CVE-2020-10718</cve>
+        <cve>CVE-2020-10740</cve>
+        <cve>CVE-2022-1278</cve>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[
+   file name: wildfly-clustering-server-infinispan-6.0.1.Final.jar
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org\.wildfly\.clustering/wildfly-clustering-server-infinispan@6\.0\.1\.Final$</packageUrl>
+        <cve>CVE-2016-0750</cve>
+        <cve>CVE-2017-15089</cve>
+        <cve>CVE-2019-10158</cve>
+        <cve>CVE-2019-10174</cve>
+        <cve>CVE-2020-10718</cve>
+        <cve>CVE-2020-10740</cve>
+        <cve>CVE-2022-1278</cve>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[
+   file name: wildfly-clustering-cache-infinispan-remote-6.0.1.Final.jar
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org\.wildfly\.clustering/wildfly-clustering-cache-infinispan-remote@6\.0\.1\.Final$</packageUrl>
+        <cve>CVE-2016-0750</cve>
+        <cve>CVE-2017-15089</cve>
+        <cve>CVE-2019-10158</cve>
+        <cve>CVE-2019-10174</cve>
+        <cve>CVE-2020-10718</cve>
+        <cve>CVE-2020-10740</cve>
+        <cve>CVE-2022-1278</cve>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[
+   file name: wildfly-clustering-cache-infinispan-embedded-6.0.1.Final.jar
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org\.wildfly\.clustering/wildfly-clustering-cache-infinispan-embedded@6\.0\.1\.Final$</packageUrl>
+        <cve>CVE-2016-0750</cve>
+        <cve>CVE-2017-15089</cve>
+        <cve>CVE-2019-10158</cve>
+        <cve>CVE-2019-10174</cve>
+        <cve>CVE-2020-10718</cve>
+        <cve>CVE-2020-10740</cve>
+        <cve>CVE-2022-1278</cve>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[
+   file name: wildfly-clustering-cache-infinispan-common-6.0.1.Final.jar
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org\.wildfly\.clustering/wildfly-clustering-cache-infinispan-common@6\.0\.1\.Final$</packageUrl>
+        <cve>CVE-2016-0750</cve>
+        <cve>CVE-2017-15089</cve>
+        <cve>CVE-2019-10158</cve>
+        <cve>CVE-2019-10174</cve>
+        <cve>CVE-2020-10718</cve>
+        <cve>CVE-2020-10740</cve>
+        <cve>CVE-2022-1278</cve>
     </suppress>
     <!-- ___End of Wildfly-dist suppressions___ -->
 </suppressions>
