@@ -366,7 +366,7 @@
                             <!-- include security: elytron  -->
                             <dependency>
                                 <groupId>org.wildfly.security</groupId>
-                                <artifactId>wildfly-elytron</artifactId>
+                                <artifactId>wildfly-elytron-all</artifactId>
                             </dependency>
                             <!-- include web services -->
                             <dependency>
