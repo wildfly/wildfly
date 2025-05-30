@@ -264,7 +264,7 @@
         <version.org.wildfly.licenses.plugin>2.4.2.Final</version.org.wildfly.licenses.plugin>
         <version.org.wildfly.plugin>5.1.0.Final</version.org.wildfly.plugin>
         <version.org.wildfly.unstable.annotation.api>1.0.2.Final</version.org.wildfly.unstable.annotation.api>
-        <version.org.wildfly.wildfly-channel-plugin>1.0.20</version.org.wildfly.wildfly-channel-plugin>
+        <version.org.wildfly.wildfly-channel-plugin>1.0.25</version.org.wildfly.wildfly-channel-plugin>
         <version.verifier.plugin>1.1</version.verifier.plugin>
         <version.xml.plugin>1.0.2</version.xml.plugin>
 
@@ -1371,6 +1371,12 @@
                     <groupId>org.wildfly</groupId>
                     <artifactId>wildfly-channel-maven-plugin</artifactId>
                     <version>${version.org.wildfly.wildfly-channel-plugin}</version>
+                    <configuration>
+                        <doNotDowngrade>true</doNotDowngrade>
+                        <ignoreStreams>org.apache.maven:*,org.apache.maven.resolver:*,org.codehaus.plexus:*</ignoreStreams>
+                        <injectRepositories>false</injectRepositories>
+                        <ignorePropertiesPrefixedWith>legacy.</ignorePropertiesPrefixedWith>
+                    </configuration>
                 </plugin>
             </plugins>
         </pluginManagement>
