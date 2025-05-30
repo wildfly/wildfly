@@ -19,6 +19,7 @@ interface ElytronOidcDescriptionConstants {
     String AUTH_SERVER_URL = "auth-server-url";
     String AUTHENTICATION_REQUEST_FORMAT = "authentication-request-format";
     String AUTODETECT_BEARER_ONLY = "autodetect-bearer-only";
+    String BACK_CHANNEL_LOGOUT_SESSION_INVALIDATION_LIMIT = "back-channel-logout-session-invalidation-limit";
     String BEARER_ONLY = "bearer-only";
     String CLIENT_ID = "client-id";
     String CLIENT_KEY_ALIAS = "client-key-alias";
@@ -42,11 +43,16 @@ interface ElytronOidcDescriptionConstants {
     String ENABLE_CORS = "enable-cors";
     String EXPOSE_TOKEN = "expose-token";
     String IGNORE_OAUTH_QUERY_PARAMTER = "ignore-oauth-query-parameter";
+    String LOGOUT_CALLBACK_PATH = "logout-callback-path";
+    String LOGOUT_PATH = "logout-path";
+    String LOGOUT_SESSION_REQUIRED ="logout-session-required";
     String MIN_TIME_BETWEEN_JWKS_REQUESTS = "min-time-between-jwks-requests";
     String OAUTH2 = "oauth2";
     String PATTERN = "pattern";
+    String POST_LOGOUT_REDIRECT_URI = "post-logout-redirect-uri";
     String PRINCIPAL_ATTRIBUTE = "principal-attribute";
     String PROVIDER = "provider";
+    String PROVIDER_JWT_CLAIMS_TYP = "provider-jwt-claims-typ";
     String PROVIDER_URL = "provider-url";
     String PROXY_URL = "proxy-url";
     String PUBLIC_CLIENT = "public-client";
