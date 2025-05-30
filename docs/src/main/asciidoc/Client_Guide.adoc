@@ -44,6 +44,8 @@ Alternatively, the `wildfly.config.url` system property can also be specified to
 
 include::_client-guide/authentication-client.adoc[]
 
+include::_client-guide/encrypted_expression-client.adoc[]
+
 include::_client-guide/jboss-ejb-client.adoc[]
 
 include::_client-guide/Remoting_Client_Configuration.adoc[]
