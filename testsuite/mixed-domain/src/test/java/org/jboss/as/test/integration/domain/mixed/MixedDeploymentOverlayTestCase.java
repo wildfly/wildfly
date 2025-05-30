@@ -58,7 +58,6 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.exporter.ZipExporter;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.jboss.threads.AsyncFuture;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -109,7 +108,7 @@ public class MixedDeploymentOverlayTestCase {
         overlayPath = new File(tccl.getResource("helloWorld/index_fr.html").toURI()).toPath();
         ModelNode result;
         try (InputStream is = webArchive.as(ZipExporter.class).exportAsInputStream()){
-            AsyncFuture<ModelNode> future = primaryClient.executeAsync(addDeployment(is), null);
+            Future<ModelNode> future = primaryClient.executeAsync(addDeployment(is), null);
             result = awaitSimpleOperationExecution(future);
         }
         assertTrue(Operations.isSuccessfulOutcome(result));
@@ -253,13 +252,13 @@ public class MixedDeploymentOverlayTestCase {
     }
 
     private void executeAsyncForResult(DomainClient client, ModelNode op) {
-        AsyncFuture<ModelNode> future = client.executeAsync(op, null);
+        Future<ModelNode> future = client.executeAsync(op, null);
         ModelNode response = awaitSimpleOperationExecution(future);
         assertTrue(response.toJSONString(true), Operations.isSuccessfulOutcome(response));
     }
 
     private void executeAsyncForFailure(DomainClient client, ModelNode op, String failureDescription) {
-        AsyncFuture<ModelNode> future = client.executeAsync(op, null);
+        Future<ModelNode> future = client.executeAsync(op, null);
         ModelNode response = awaitSimpleOperationExecution(future);
         assertFalse(response.toJSONString(true), Operations.isSuccessfulOutcome(response));
         assertThat(Operations.getFailureDescription(response).asString(), containsString(failureDescription));
@@ -292,7 +291,7 @@ public class MixedDeploymentOverlayTestCase {
         ModelNode operation = Operations.createReadResourceOperation(address.toModelNode());
         operation.get(INCLUDE_RUNTIME).set(true);
         operation.get(INCLUDE_DEFAULTS).set(true);
-        AsyncFuture<ModelNode> future = primaryClient.executeAsync(operation, null);
+        Future<ModelNode> future = primaryClient.executeAsync(operation, null);
         ModelNode result = awaitSimpleOperationExecution(future);
         assertTrue(Operations.isSuccessfulOutcome(result));
         return Operations.readResult(result);
