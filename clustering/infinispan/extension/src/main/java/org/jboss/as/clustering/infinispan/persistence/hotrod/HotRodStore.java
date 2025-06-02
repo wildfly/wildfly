@@ -61,7 +61,16 @@ import org.wildfly.common.function.Functions;
  */
 @ConfiguredBy(HotRodStoreConfiguration.class)
 public class HotRodStore<K, V> implements NonBlockingStore<K, V> {
-    private static final String DEFAULT_CONFIGURATION = "{\"distributed-cache\": { \"mode\": \"SYNC\" }}";
+    private static final String DEFAULT_CONFIGURATION = """
+{
+    "distributed-cache": {
+        "mode" : "SYNC",
+        "transaction" : {
+            "mode" : "NON_XA",
+            "locking" : "PESSIMISTIC"
+        }
+    }
+}""";
 
     private volatile RemoteCacheContainer container;
     private volatile AtomicReferenceArray<RemoteCache<Object, MarshalledValue>> caches;
