@@ -85,7 +85,7 @@ public class InfinispanBeanMetaDataFactory<K> implements BeanMetaDataFactory<K, 
     @Override
     public BeanMetaData<K> createBeanMetaData(K id, RemappableBeanMetaDataEntry<K> entry) {
         OffsetValue<Instant> lastAccess = (this.mutatorFactory != null) ? entry.getLastAccess().rebase() : entry.getLastAccess();
-        CacheEntryMutator mutator = (this.mutatorFactory != null) ? this.mutatorFactory.createMutator(new InfinispanBeanMetaDataKey<>(id), lastAccess) : CacheEntryMutator.NO_OP;
+        Runnable mutator = (this.mutatorFactory != null) ? this.mutatorFactory.createMutator(new InfinispanBeanMetaDataKey<>(id), lastAccess) : CacheEntryMutator.EMPTY;
         return new DefaultBeanMetaData<>((this.mutatorFactory != null) ? new MutableBeanMetaDataEntry<>(entry, lastAccess) : entry, this.expiration, mutator);
     }
 }

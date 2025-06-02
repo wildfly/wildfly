@@ -97,7 +97,7 @@ public class DefaultBeanGroupManager<K, V extends BeanInstance<K>, C> implements
             if (group.isEmpty()) {
                 this.remover.remove(group.getId());
             } else {
-                group.mutate();
+                group.run();
             }
         }
     }

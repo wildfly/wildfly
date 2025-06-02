@@ -16,7 +16,6 @@ import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.reset;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
@@ -851,15 +850,28 @@ public class DistributableSessionTestCase {
         verify(listener).attributeRemoved(session, attributeName, attributeValue);
         verify(batch).close();
         verify(this.closeTask).accept(exchange);
+    }
 
-        reset(this.session, this.closeTask);
+    @Test
+    public void invalidateInvalid() {
+        String sessionId = "session";
+        HttpServerExchange exchange = new HttpServerExchange(null);
+        Batch batch = mock(Batch.class);
 
+        doReturn(this.metaData).when(this.session).getMetaData();
+        doReturn(false).when(this.metaData).isNew();
+        doReturn(sessionId).when(this.session).getId();
+
+        io.undertow.server.session.Session session = new DistributableSession(this.manager, this.session, this.config, this.suspendedBatch, this.closeTask, this.statistics);
+
+        doReturn(batch).when(this.suspendedBatch).resume();
+        doReturn(false).when(this.session).isValid();
         doThrow(IllegalStateException.class).when(this.session).invalidate();
 
         assertThrows(IllegalStateException.class, () -> session.invalidate(exchange));
 
-        verify(batch, times(2)).close();
-        verify(this.session).close();
+        verify(this.config).clearSession(exchange, sessionId);
+        verify(batch).close();
         verify(this.closeTask).accept(exchange);
     }
 

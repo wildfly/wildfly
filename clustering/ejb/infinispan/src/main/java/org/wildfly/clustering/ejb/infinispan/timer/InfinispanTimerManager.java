@@ -144,7 +144,7 @@ public class InfinispanTimerManager<I, C> implements TimerManager<I> {
 
         Consumer<CacheStreamFilter<Map.Entry<TimerMetaDataKey<I>, RemappableTimerMetaDataEntry<C>>>> scheduleTask = new CacheEntriesTask<>(this.cache, TimerCacheEntryFilter.META_DATA_ENTRY.cast(), localScheduler::schedule);
         org.wildfly.clustering.function.Consumer<I> cancel = localScheduler::cancel;
-        Consumer<CacheStreamFilter<TimerMetaDataKey<I>>> cancelTask = new CacheKeysTask<>(this.cache, TimerCacheKeyFilter.META_DATA_KEY, cancel.map(Key::getId));
+        Consumer<CacheStreamFilter<TimerMetaDataKey<I>>> cancelTask = new CacheKeysTask<>(this.cache, TimerCacheKeyFilter.META_DATA_KEY, cancel.compose(Key::getId));
 
         this.schedulerListenerRegistration.set(new SchedulerTopologyChangeListener<>(this.cache, scheduleTask, cancelTask).register());
 
