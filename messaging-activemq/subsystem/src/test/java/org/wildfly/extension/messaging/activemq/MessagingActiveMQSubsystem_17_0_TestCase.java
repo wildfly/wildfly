@@ -2,7 +2,6 @@
  * Copyright The WildFly Authors
  * SPDX-License-Identifier: Apache-2.0
  */
-
 package org.wildfly.extension.messaging.activemq;
 
 import static org.jboss.as.controller.PathElement.pathElement;
@@ -20,6 +19,7 @@ import static org.wildfly.extension.messaging.activemq.MessagingExtension.ADDRES
 import static org.wildfly.extension.messaging.activemq.MessagingExtension.BRIDGE_PATH;
 import static org.wildfly.extension.messaging.activemq.MessagingExtension.EXTERNAL_JMS_QUEUE_PATH;
 import static org.wildfly.extension.messaging.activemq.MessagingExtension.EXTERNAL_JMS_TOPIC_PATH;
+import static org.wildfly.extension.messaging.activemq.MessagingExtension.LIVE_ONLY_PATH;
 import static org.wildfly.extension.messaging.activemq.MessagingExtension.SERVER_PATH;
 import static org.wildfly.extension.messaging.activemq.MessagingExtension.SUBSYSTEM_PATH;
 
@@ -45,6 +45,7 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.wildfly.clustering.server.service.ClusteringServiceDescriptor;
 import org.wildfly.clustering.server.service.LegacyClusteringServiceDescriptor;
+import org.wildfly.extension.messaging.activemq.ha.ScaleDownAttributes;
 import org.wildfly.extension.messaging.activemq.jms.ConnectionFactoryAttributes;
 
 public class MessagingActiveMQSubsystem_17_0_TestCase extends AbstractSubsystemBaseTest {
@@ -113,6 +114,7 @@ public class MessagingActiveMQSubsystem_17_0_TestCase extends AbstractSubsystemB
     public void testTransformersWildfly35() throws Exception {
         testTransformers(ModelTestControllerVersion.MASTER, MessagingExtension.VERSION_16_0_0);
     }
+
     @Test
     public void testTransformersWildfly28() throws Exception {
         testTransformers(ModelTestControllerVersion.MASTER, MessagingExtension.VERSION_15_0_0);
@@ -135,12 +137,12 @@ public class MessagingActiveMQSubsystem_17_0_TestCase extends AbstractSubsystemB
 
     @Test
     public void testTransformersEAP_8_0_0() throws Exception {
-        testTransformers(EAP_8_0_0, MessagingExtension.VERSION_16_0_0);
+        testTransformers(EAP_8_0_0, MessagingExtension.VERSION_15_0_0);
     }
 
     @Test
     public void testRejectingTransformersEAP_8_0_0() throws Exception {
-        testRejectingTransformers(EAP_8_0_0, MessagingExtension.VERSION_16_0_0);
+        testRejectingTransformers(EAP_8_0_0, MessagingExtension.VERSION_15_0_0);
     }
 
     @Test
@@ -171,7 +173,9 @@ public class MessagingActiveMQSubsystem_17_0_TestCase extends AbstractSubsystemB
         checkSubsystemModelTransformation(mainServices, messagingVersion, (ModelNode modelNode) -> {
             ModelNode legacyModel = modelNode.clone();
             if (modelNode.hasDefined("server", "default", "address-setting", "test", "page-size-bytes")) {
+                ModelNode defaultValues = modelNode.get("server", "default", "address-setting", "#").clone();
                 int legacyNodeValue = modelNode.get("server", "default", "address-setting", "test", "page-size-bytes").asInt();
+                defaultValues.get("page-size-bytes").set(legacyNodeValue);
                 legacyModel.get("server", "default", "address-setting", "test", "page-size-bytes").set(legacyNodeValue);
             }
             return legacyModel;
@@ -196,21 +200,23 @@ public class MessagingActiveMQSubsystem_17_0_TestCase extends AbstractSubsystemB
         List<ModelNode> ops = builder.parseXmlResource("subsystem_17_0_reject_transform.xml");
 //        System.out.println("ops = " + ops);
         PathAddress subsystemAddress = PathAddress.pathAddress(SUBSYSTEM_PATH);
-
         FailedOperationTransformationConfig config = new FailedOperationTransformationConfig();
-        config.addFailedAttribute(subsystemAddress.append(EXTERNAL_JMS_QUEUE_PATH),
-                new FailedOperationTransformationConfig.NewAttributesConfig(ConnectionFactoryAttributes.External.ENABLE_AMQ1_PREFIX));
-        config.addFailedAttribute(subsystemAddress.append(EXTERNAL_JMS_TOPIC_PATH),
-                new FailedOperationTransformationConfig.NewAttributesConfig(ConnectionFactoryAttributes.External.ENABLE_AMQ1_PREFIX));
-        config.addFailedAttribute(subsystemAddress.append(SERVER_PATH, BRIDGE_PATH), new FailedOperationTransformationConfig.NewAttributesConfig(BridgeDefinition.ROUTING_TYPE));
-        config.addFailedAttribute(subsystemAddress.append(SERVER_PATH), new FailedOperationTransformationConfig.NewAttributesConfig(
-                ServerDefinition.ADDRESS_QUEUE_SCAN_PERIOD
-        ));
+        if (!ModelTestControllerVersion.EAP_8_0_0.equals(controllerVersion)) {
+            config.addFailedAttribute(subsystemAddress.append(EXTERNAL_JMS_QUEUE_PATH),
+                    new FailedOperationTransformationConfig.NewAttributesConfig(ConnectionFactoryAttributes.External.ENABLE_AMQ1_PREFIX));
+            config.addFailedAttribute(subsystemAddress.append(EXTERNAL_JMS_TOPIC_PATH),
+                    new FailedOperationTransformationConfig.NewAttributesConfig(ConnectionFactoryAttributes.External.ENABLE_AMQ1_PREFIX));
+            config.addFailedAttribute(subsystemAddress.append(SERVER_PATH, BRIDGE_PATH), new FailedOperationTransformationConfig.NewAttributesConfig(BridgeDefinition.ROUTING_TYPE));
+            config.addFailedAttribute(subsystemAddress.append(SERVER_PATH), new FailedOperationTransformationConfig.NewAttributesConfig(
+                    ServerDefinition.ADDRESS_QUEUE_SCAN_PERIOD
+            ));
 
-        config.addFailedAttribute(subsystemAddress.append(SERVER_PATH, pathElement(CommonAttributes.REMOTE_CONNECTOR)), new FailedOperationTransformationConfig.NewAttributesConfig(CommonAttributes.SSL_CONTEXT));
-        config.addFailedAttribute(subsystemAddress.append(SERVER_PATH, pathElement(CommonAttributes.HTTP_CONNECTOR)), new FailedOperationTransformationConfig.NewAttributesConfig(CommonAttributes.SSL_CONTEXT));
-        config.addFailedAttribute(subsystemAddress.append(SERVER_PATH, pathElement(CommonAttributes.REMOTE_ACCEPTOR)), new FailedOperationTransformationConfig.NewAttributesConfig(CommonAttributes.SSL_CONTEXT));
-        config.addFailedAttribute(subsystemAddress.append(SERVER_PATH, pathElement(CommonAttributes.HTTP_ACCEPTOR)), new FailedOperationTransformationConfig.NewAttributesConfig(CommonAttributes.SSL_CONTEXT));
+            config.addFailedAttribute(subsystemAddress.append(SERVER_PATH, pathElement(CommonAttributes.REMOTE_CONNECTOR)), new FailedOperationTransformationConfig.NewAttributesConfig(CommonAttributes.SSL_CONTEXT));
+            config.addFailedAttribute(subsystemAddress.append(SERVER_PATH, pathElement(CommonAttributes.HTTP_CONNECTOR)), new FailedOperationTransformationConfig.NewAttributesConfig(CommonAttributes.SSL_CONTEXT));
+            config.addFailedAttribute(subsystemAddress.append(SERVER_PATH, pathElement(CommonAttributes.REMOTE_ACCEPTOR)), new FailedOperationTransformationConfig.NewAttributesConfig(CommonAttributes.SSL_CONTEXT));
+            config.addFailedAttribute(subsystemAddress.append(SERVER_PATH, pathElement(CommonAttributes.HTTP_ACCEPTOR)), new FailedOperationTransformationConfig.NewAttributesConfig(CommonAttributes.SSL_CONTEXT));
+        }
+        config.addFailedAttribute(subsystemAddress.append(SERVER_PATH, LIVE_ONLY_PATH), new FailedOperationTransformationConfig.NewAttributesConfig(ScaleDownAttributes.SCALE_DOWN_COMMIT_INTERVAL));
         config.addFailedAttribute(subsystemAddress.append(SERVER_PATH, ADDRESS_SETTING_PATH), new FailedOperationTransformationConfig.NewAttributesConfig(AddressSettingDefinition.MAX_READ_PAGE_BYTES));
         ModelTestUtils.checkFailedTransformedBootOperations(mainServices, messagingVersion, ops, config);
         mainServices.shutdown();

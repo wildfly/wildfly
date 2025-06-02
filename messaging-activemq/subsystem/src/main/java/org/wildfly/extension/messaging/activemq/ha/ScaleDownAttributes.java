@@ -2,10 +2,10 @@
  * Copyright The WildFly Authors
  * SPDX-License-Identifier: Apache-2.0
  */
-
 package org.wildfly.extension.messaging.activemq.ha;
 
 import static org.jboss.dmr.ModelType.BOOLEAN;
+import static org.jboss.dmr.ModelType.INT;
 import static org.jboss.dmr.ModelType.STRING;
 
 import java.util.ArrayList;
@@ -25,6 +25,7 @@ import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.StringListAttributeDefinition;
 import org.jboss.dmr.ModelNode;
 import org.wildfly.extension.messaging.activemq.CommonAttributes;
+import org.wildfly.extension.messaging.activemq.InfiniteOrPositiveValidators;
 
 /**
  * @author <a href="http://jmesnil.net/">Jeff Mesnil</a> (c) 2014 Red Hat inc.
@@ -51,6 +52,17 @@ public class ScaleDownAttributes {
             .setRestartAllServices()
             .build();
 
+    public static final AttributeDefinition SCALE_DOWN_COMMIT_INTERVAL = SimpleAttributeDefinitionBuilder.create("scale-down-commit-interval", INT)
+            .setAttributeGroup(CommonAttributes.SCALE_DOWN)
+            .setXmlName("commit-interval")
+            .setDefaultValue(new ModelNode().set(-1))
+            .setCorrector(InfiniteOrPositiveValidators.NEGATIVE_VALUE_CORRECTOR)
+            .setValidator(InfiniteOrPositiveValidators.INT_INSTANCE)
+            .setRequired(false)
+            .setAllowExpression(true)
+            .setRestartAllServices()
+            .build();
+
     public static final AttributeDefinition SCALE_DOWN_CONNECTORS = new StringListAttributeDefinition.Builder(SCALE_DOWN_CONNECTORS_STR)
             .setAttributeGroup(CommonAttributes.SCALE_DOWN)
             .setXmlName(CommonAttributes.CONNECTORS)
@@ -61,7 +73,7 @@ public class ScaleDownAttributes {
             .setRestartAllServices()
             .build();
 
-    public static final SimpleAttributeDefinition SCALE_DOWN_DISCOVERY_GROUP =  SimpleAttributeDefinitionBuilder.create(SCALE_DOWN_DISCOVERY_GROUP_STR, STRING)
+    public static final SimpleAttributeDefinition SCALE_DOWN_DISCOVERY_GROUP = SimpleAttributeDefinitionBuilder.create(SCALE_DOWN_DISCOVERY_GROUP_STR, STRING)
             .setAttributeGroup(CommonAttributes.SCALE_DOWN)
             .setXmlName(CommonAttributes.DISCOVERY_GROUP)
             .setRequired(false)
@@ -77,12 +89,13 @@ public class ScaleDownAttributes {
             .setRestartAllServices()
             .build();
 
-    public static final Collection<AttributeDefinition> SCALE_DOWN_ATTRIBUTES =  Collections.unmodifiableList(Arrays.asList(
+    public static final Collection<AttributeDefinition> SCALE_DOWN_ATTRIBUTES = Collections.unmodifiableList(Arrays.asList(
             SCALE_DOWN,
             SCALE_DOWN_CLUSTER_NAME,
             SCALE_DOWN_GROUP_NAME,
             SCALE_DOWN_DISCOVERY_GROUP,
-            SCALE_DOWN_CONNECTORS
+            SCALE_DOWN_CONNECTORS,
+            SCALE_DOWN_COMMIT_INTERVAL
     ));
 
     static ScaleDownConfiguration addScaleDownConfiguration(OperationContext context, ModelNode model) throws OperationFailedException {
@@ -112,6 +125,8 @@ public class ScaleDownAttributes {
             List<String> connectorNames = new ArrayList<>(connectors.keys());
             scaleDownConfiguration.setConnectors(connectorNames);
         }
+        ModelNode commitInterval = SCALE_DOWN_COMMIT_INTERVAL.resolveModelAttribute(context, model);
+        scaleDownConfiguration.setCommitInterval(commitInterval.asInt());
         return scaleDownConfiguration;
     }
 }

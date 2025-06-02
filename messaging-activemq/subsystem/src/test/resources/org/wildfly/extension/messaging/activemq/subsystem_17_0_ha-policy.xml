@@ -4,7 +4,8 @@
             <scale-down enabled="${scale-down.enabled:true}"
                         cluster-name="${scale-down.cluster-name:mycluster}"
                         group-name="${scale-down.group-name:mygroup}"
-                        discovery-group="groupC"/>
+                        discovery-group="groupC"
+                        commit-interval="${scale-down.commit-interval:1000}"/>
         </live-only>
     </server>
     <server name="ha-policy-live-only-scale-down-connectors">
@@ -12,7 +13,8 @@
             <scale-down enabled="${scale-down.enabled:true}"
                         cluster-name="${scale-down.cluster-name:mycluster}"
                         group-name="${scale-down.group-name:mygroup}"
-                        connectors="netty in-vm"/>
+                        connectors="netty in-vm"
+                        commit-interval="${scale-down.commit-interval:1000}"/>
         </live-only>
     </server>
     <server name="ha-policy-replication-primary">
@@ -33,7 +35,8 @@
             <scale-down enabled="${replication-secondary-scale-down.enabled:true}"
                         cluster-name="${replication-secondary-scale-down.cluster-name:mycluster}"
                         group-name="${replication-secondary-scale-down.group-name:mygroup}"
-                        connectors="netty"/>
+                        connectors="netty"
+                        commit-interval="${replication-secondary-scale-down.commit-interval:1000}"/>
         </replication-secondary>
     </server>
     <server name="ha-policy-replication-colocated">

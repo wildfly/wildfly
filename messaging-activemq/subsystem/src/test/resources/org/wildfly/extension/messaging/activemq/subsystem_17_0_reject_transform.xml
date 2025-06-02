@@ -284,4 +284,13 @@
     <server name="other">
         <replication-primary />
     </server>
+    <server name="ha-policy-live-only-scale-down-connectors">
+        <live-only>
+            <scale-down enabled="true"
+                        cluster-name="mycluster"
+                        group-name="mygroup"
+                        connectors="netty in-vm"
+                        commit-interval="1000"/>
+        </live-only>
+    </server>
 </subsystem>

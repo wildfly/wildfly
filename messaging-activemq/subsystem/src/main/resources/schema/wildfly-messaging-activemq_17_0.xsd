@@ -810,6 +810,7 @@
         <xs:attribute name="group-name" type="xs:string" use="optional" />
         <xs:attribute name="discovery-group" type="xs:string" use="optional" />
         <xs:attribute name="connectors" type="xs:string" use="optional" />
+        <xs:attribute name="commit-interval" type="xs:int" use="optional" />
     </xs:complexType>
 
     <xs:complexType name="replication-primaryType">
