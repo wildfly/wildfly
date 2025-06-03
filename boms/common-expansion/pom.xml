@@ -693,39 +693,6 @@
                     </exclusion>
                 </exclusions>
             </dependency>
-            <dependency>
-                <groupId>io.prometheus</groupId>
-                <artifactId>prometheus-metrics-shaded-protobuf</artifactId>
-                <version>${version.io.prometheus}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>io.prometheus</groupId>
-                <artifactId>simpleclient</artifactId>
-                <version>${version.io.prometheus.client}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>io.prometheus</groupId>
-                <artifactId>simpleclient_common</artifactId>
-                <version>${version.io.prometheus.client}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
 
             <dependency>
                 <groupId>io.smallrye</groupId>
