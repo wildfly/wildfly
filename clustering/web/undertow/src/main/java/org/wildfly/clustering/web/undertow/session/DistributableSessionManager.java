@@ -6,12 +6,10 @@ package org.wildfly.clustering.web.undertow.session;
 
 import java.util.Collections;
 import java.util.Map;
-import java.util.OptionalLong;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.StampedLock;
-import java.util.function.LongConsumer;
 
 import io.undertow.UndertowMessages;
 import io.undertow.server.HttpServerExchange;
@@ -33,7 +31,7 @@ import org.wildfly.clustering.web.undertow.logging.UndertowClusteringLogger;
  * Adapts a distributable {@link SessionManager} to an Undertow {@link io.undertow.server.session.SessionManager}.
  * @author Paul Ferraro
  */
-public class DistributableSessionManager implements UndertowSessionManager, LongConsumer {
+public class DistributableSessionManager implements UndertowSessionManager {
 
     private static final IdentifierMarshaller IDENTIFIER_MARSHALLER = new UndertowIdentifierSerializerProvider().getMarshaller();
 
@@ -43,10 +41,10 @@ public class DistributableSessionManager implements UndertowSessionManager, Long
     private final SessionManager<Map<String, Object>> manager;
     private final RecordableSessionManagerStatistics statistics;
     private final StampedLock lifecycleLock = new StampedLock();
+    private final AtomicLong lifecycleStamp = new AtomicLong(0L);
 
     // Matches io.undertow.server.session.InMemorySessionManager
     private volatile int defaultSessionTimeout = 30 * 60;
-    private volatile OptionalLong lifecycleStamp = OptionalLong.empty();
 
     public DistributableSessionManager(DistributableSessionManagerConfiguration config) {
         this.deploymentName = config.getDeploymentName();
@@ -67,7 +65,10 @@ public class DistributableSessionManager implements UndertowSessionManager, Long
 
     @Override
     public synchronized void start() {
-        this.lifecycleStamp.ifPresent(this);
+        long stamp = this.lifecycleStamp.getAndSet(0L);
+        if (StampedLock.isWriteLockStamp(stamp)) {
+            this.lifecycleLock.unlockWrite(stamp);
+        }
         this.manager.start();
         if (this.statistics != null) {
             this.statistics.reset();
@@ -75,22 +76,11 @@ public class DistributableSessionManager implements UndertowSessionManager, Long
     }
 
     @Override
-    public void accept(long stamp) {
-        this.lifecycleLock.unlock(stamp);
-        this.lifecycleStamp = OptionalLong.empty();
-    }
-
-    @Override
     public synchronized void stop() {
-        if (this.lifecycleStamp.isEmpty()) {
-            try {
-                long stamp = this.lifecycleLock.tryWriteLock(60, TimeUnit.SECONDS);
-                if (stamp != 0) {
-                    this.lifecycleStamp = OptionalLong.of(stamp);
-                }
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-            }
+        try {
+            this.lifecycleStamp.set(this.lifecycleLock.tryWriteLock(60, TimeUnit.SECONDS));
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
         }
         this.manager.stop();
     }
@@ -98,7 +88,7 @@ public class DistributableSessionManager implements UndertowSessionManager, Long
     private Consumer<HttpServerExchange> getSessionCloseTask() {
         StampedLock lock = this.lifecycleLock;
         long stamp = lock.tryReadLock();
-        if (stamp == 0L) {
+        if (!StampedLock.isReadLockStamp(stamp)) {
             throw UndertowClusteringLogger.ROOT_LOGGER.sessionManagerStopped();
         }
         AttachmentKey<io.undertow.server.session.Session> key = this.key;
@@ -109,8 +99,8 @@ public class DistributableSessionManager implements UndertowSessionManager, Long
                 try {
                     // Ensure we only unlock once.
                     long stamp = stampRef.getAndSet(0L);
-                    if (stamp != 0L) {
-                        lock.unlock(stamp);
+                    if (StampedLock.isReadLockStamp(stamp)) {
+                        lock.unlockRead(stamp);
                     }
                 } finally {
                     if (exchange != null) {
@@ -202,7 +192,7 @@ public class DistributableSessionManager implements UndertowSessionManager, Long
             Batch batch = this.manager.getBatchFactory().get();
             try {
                 Session<Map<String, Object>> session = this.manager.findSession(id);
-                if (session == null) {
+                if ((session == null) || !session.isValid() || session.getMetaData().isExpired()) {
                     return null;
                 }
                 // Update session ID encoding
