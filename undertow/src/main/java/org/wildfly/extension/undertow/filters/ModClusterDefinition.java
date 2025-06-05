@@ -76,7 +76,7 @@ public class ModClusterDefinition extends AbstractFilterDefinition {
             .setAllowExpression(true)
             .setRequired(true)
             .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.SOCKET_BINDING_REF)
-            .setCapabilityReference(CapabilityReference.builder(Capability.MOD_CLUSTER_FILTER_CAPABILITY.getDefinition(), SocketBinding.SERVICE_DESCRIPTOR).build())
+            .setCapabilityReference(CapabilityReference.builder(FilterCapabilities.FILTER_CAPABILITY.getDefinition(), SocketBinding.SERVICE_DESCRIPTOR).build())
             .setRestartAllServices()
             .build();
 
@@ -84,7 +84,7 @@ public class ModClusterDefinition extends AbstractFilterDefinition {
             .setAllowExpression(true)
             .setRequired(false)
             .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.SOCKET_BINDING_REF)
-            .setCapabilityReference(CapabilityReference.builder(Capability.MOD_CLUSTER_FILTER_CAPABILITY.getDefinition(), SocketBinding.SERVICE_DESCRIPTOR).build())
+            .setCapabilityReference(CapabilityReference.builder(FilterCapabilities.FILTER_CAPABILITY.getDefinition(), SocketBinding.SERVICE_DESCRIPTOR).build())
             .setRestartAllServices()
             .build();
 
