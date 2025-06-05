@@ -33,9 +33,10 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.wildfly.test.integration.observability.JaxRsActivator;
+import org.wildfly.test.stabilitylevel.StabilityServerSetupSnapshotRestoreTasks;
 
 @RunWith(Arquillian.class)
-@ServerSetup({MicrometerSetupTask.class})
+@ServerSetup({StabilityServerSetupSnapshotRestoreTasks.Community.class, MicrometerSetupTask.class})
 @DockerRequired
 @RunAsClient
 public class ConflictingPrometheusContextTestCase {
