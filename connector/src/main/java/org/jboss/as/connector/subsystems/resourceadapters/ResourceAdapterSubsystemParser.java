@@ -369,7 +369,8 @@ public final class ResourceAdapterSubsystemParser implements XMLStreamConstants,
             streamWriter.writeEndElement();
         }
 
-        if (conDef.hasDefined(APPLICATION.getName()) || conDef.hasDefined(SECURITY_DOMAIN.getName())
+        if (conDef.hasDefined(AUTHENTICATION_CONTEXT.getName()) || conDef.hasDefined(AUTHENTICATION_CONTEXT_AND_APPLICATION.getName())
+                || conDef.hasDefined(APPLICATION.getName()) || conDef.hasDefined(SECURITY_DOMAIN.getName())
                 || conDef.hasDefined(SECURITY_DOMAIN_AND_APPLICATION.getName())
                 || conDef.hasDefined(ELYTRON_ENABLED.getName())) {
             streamWriter.writeStartElement(ConnectionDefinition.Tag.SECURITY.getLocalName());
