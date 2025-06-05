@@ -54,6 +54,6 @@ class LocationDefinition extends PersistentResourceDefinition {
 
     @Override
     public List<? extends PersistentResourceDefinition> getChildren() {
-        return List.of(new FilterRefDefinition());
+        return List.of(new FilterRefDefinition(false));
     }
 }
