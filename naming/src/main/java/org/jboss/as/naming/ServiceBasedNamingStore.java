@@ -63,7 +63,12 @@ public class ServiceBasedNamingStore implements NamingStore {
             return new NamingContext(EMPTY_NAME, this, null);
         }
         final ServiceName lookupName = buildServiceName(name);
-        Object obj = lookup(name.toString(), lookupName, dereference);
+        Object obj;
+        try {
+            obj = lookup(name.toString(), lookupName, dereference);
+        } catch (NamingException e) {
+            obj = null;
+        }
         if (obj == null) {
             final ServiceName lower = boundServices.lower(lookupName);
             if (lower != null && lower.isParentOf(lookupName)) {
