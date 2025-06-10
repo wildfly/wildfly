@@ -15,9 +15,6 @@
         <artifact name="${io.prometheus:prometheus-metrics-exposition-formats}"/>
         <artifact name="${io.prometheus:prometheus-metrics-model}"/>
         <artifact name="${io.prometheus:prometheus-metrics-config}"/>
-        <artifact name="${io.prometheus:prometheus-metrics-shaded-protobuf}"/>
-        <artifact name="${io.prometheus:simpleclient}"/>
-        <artifact name="${io.prometheus:simpleclient_common}"/>
     </resources>
 
     <dependencies>
