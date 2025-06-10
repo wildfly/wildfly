@@ -28,7 +28,7 @@ import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
-import org.jboss.arquillian.testcontainers.api.DockerRequired;
+import org.jboss.arquillian.testcontainers.api.TestcontainersRequired;
 import org.jboss.as.arquillian.api.ContainerResource;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.container.ManagementClient;
@@ -49,7 +49,7 @@ import org.wildfly.test.stabilitylevel.StabilityServerSetupSnapshotRestoreTasks;
 
 @RunWith(Arquillian.class)
 @ServerSetup({StabilityServerSetupSnapshotRestoreTasks.Community.class, PrometheusSetupTask.class})
-@DockerRequired
+@TestcontainersRequired
 @RunAsClient
 public class MicrometerPrometheusTestCase {
     private static final int REQUEST_COUNT = 5;

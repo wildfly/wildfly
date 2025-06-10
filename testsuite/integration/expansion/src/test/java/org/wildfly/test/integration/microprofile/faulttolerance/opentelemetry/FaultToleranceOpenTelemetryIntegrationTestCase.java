@@ -14,7 +14,7 @@ import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
-import org.jboss.arquillian.testcontainers.api.DockerRequired;
+import org.jboss.arquillian.testcontainers.api.TestcontainersRequired;
 import org.jboss.arquillian.testcontainers.api.Testcontainer;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.test.integration.common.HttpRequest;
@@ -41,7 +41,7 @@ import org.wildfly.test.integration.microprofile.faulttolerance.micrometer.deplo
  */
 @RunWith(Arquillian.class)
 @RunAsClient
-@DockerRequired
+@TestcontainersRequired
 // This test case does not use Micrometer *but* we enable it to verify CompoundMetricsProvider functionality in WF
 @ServerSetup({OpenTelemetryWithCollectorSetupTask.class, MicrometerSetupTask.class})
 public class FaultToleranceOpenTelemetryIntegrationTestCase {

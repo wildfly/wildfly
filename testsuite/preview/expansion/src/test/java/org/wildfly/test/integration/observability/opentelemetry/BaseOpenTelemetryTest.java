@@ -6,7 +6,7 @@
 package org.wildfly.test.integration.observability.opentelemetry;
 
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.arquillian.testcontainers.api.DockerRequired;
+import org.jboss.arquillian.testcontainers.api.TestcontainersRequired;
 import org.jboss.arquillian.testcontainers.api.Testcontainer;
 import org.jboss.as.test.shared.CdiUtils;
 import org.jboss.as.test.shared.TestSuiteEnvironment;
@@ -24,7 +24,7 @@ import java.net.MalformedURLException;
 // This is copied from testsuite/integration/microprofile/src/test/java/org/wildfly/test/integration/observability/opentelemetry/BaseOpenTelemetryTest.java
 // this will be removed once promoted to ts/integ/mp
 @RunWith(Arquillian.class)
-@DockerRequired
+@TestcontainersRequired
 public abstract class BaseOpenTelemetryTest {
     @Testcontainer
     protected OpenTelemetryCollectorContainer otelCollector;

@@ -15,7 +15,7 @@ import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
-import org.jboss.arquillian.testcontainers.api.DockerRequired;
+import org.jboss.arquillian.testcontainers.api.TestcontainersRequired;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.api.ServerSetupTask;
 import org.jboss.as.test.integration.common.HttpRequest;
@@ -37,7 +37,7 @@ import org.wildfly.test.integration.microprofile.faulttolerance.micrometer.deplo
 @RunWith(Arquillian.class)
 @RunAsClient
 @ServerSetup(MicrometerSetupTask.class)
-@DockerRequired
+@TestcontainersRequired
 public class MultipleDeploymentMetricsTestCase {
 
     public static final String DEPLOYMENT_1 = "deployment-1";

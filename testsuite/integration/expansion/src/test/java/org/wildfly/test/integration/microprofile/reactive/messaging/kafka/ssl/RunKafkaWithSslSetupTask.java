@@ -14,7 +14,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
 
 import io.smallrye.reactive.messaging.kafka.companion.KafkaCompanion;
-import org.jboss.arquillian.testcontainers.api.DockerRequired;
+import org.jboss.arquillian.testcontainers.api.TestcontainersRequired;
 import org.jboss.as.arquillian.api.ServerSetupTask;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.testcontainers.containers.GenericContainer;
@@ -26,7 +26,7 @@ import org.wildfly.test.integration.microprofile.reactive.KeystoreUtil;
 /**
  * @author <a href="mailto:kabir.khan@jboss.com">Kabir Khan</a>
  */
-@DockerRequired
+@TestcontainersRequired
 public class RunKafkaWithSslSetupTask implements ServerSetupTask {
     volatile GenericContainer container;
     volatile KafkaCompanion companion;

@@ -7,7 +7,7 @@ package org.jboss.as.test.shared.observability.setuptasks;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STATISTICS_ENABLED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 
-import org.jboss.arquillian.testcontainers.api.DockerRequired;
+import org.jboss.arquillian.testcontainers.api.TestcontainersRequired;
 import org.jboss.arquillian.testcontainers.api.Testcontainer;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.client.helpers.Operations;
@@ -19,7 +19,7 @@ import org.jboss.dmr.ModelNode;
  * Sets up a functioning Micrometer subsystem configuration. Requires functioning Docker environment! Tests using this
  * are expected to call AssumeTestGroupUtil.assumeDockerAvailable(); in a @BeforeClass.
  */
-@DockerRequired
+@TestcontainersRequired
 public class MicrometerSetupTask extends AbstractSetupTask {
     private static final ModelNode micrometerExtension = Operations.createAddress("extension", "org.wildfly.extension.micrometer");
     private static final ModelNode micrometerSubsystem = Operations.createAddress("subsystem", "micrometer");

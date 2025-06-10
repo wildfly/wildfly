@@ -11,7 +11,7 @@ import jakarta.ws.rs.client.ClientBuilder;
 import jakarta.ws.rs.client.WebTarget;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.arquillian.testcontainers.api.DockerRequired;
+import org.jboss.arquillian.testcontainers.api.TestcontainersRequired;
 import org.jboss.arquillian.testcontainers.api.Testcontainer;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.test.shared.observability.containers.OpenTelemetryCollectorContainer;
@@ -21,7 +21,7 @@ import org.junit.runner.RunWith;
 
 @RunWith(Arquillian.class)
 @ServerSetup(MicrometerSetupTask.class)
-@DockerRequired
+@TestcontainersRequired
 @RunAsClient
 public abstract class BaseMicrometerMultipleTestCase {
     protected static final String SERVICE_ONE = "service-one";

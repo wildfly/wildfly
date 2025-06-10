@@ -13,7 +13,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Map;
 
-import org.jboss.arquillian.testcontainers.api.DockerRequired;
+import org.jboss.arquillian.testcontainers.api.TestcontainersRequired;
 import org.jboss.as.arquillian.api.ServerSetupTask;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.PathAddress;
@@ -33,7 +33,7 @@ import org.testcontainers.utility.MountableFile;
  *
  * @author <a href="mailto:kabir.khan@jboss.com">Kabir Khan</a>
  */
-@DockerRequired
+@TestcontainersRequired
 public class RunArtemisAmqpSetupTask implements ServerSetupTask {
     private static GenericContainer<?> container;
     private volatile boolean copyKeystore = false;

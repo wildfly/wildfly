@@ -14,7 +14,7 @@ import jakarta.ws.rs.core.Response;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.InSequence;
-import org.jboss.arquillian.testcontainers.api.DockerRequired;
+import org.jboss.arquillian.testcontainers.api.TestcontainersRequired;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.test.shared.observability.setuptasks.OpenTelemetryWithCollectorSetupTask;
 import org.jboss.as.test.shared.observability.signals.PrometheusMetric;
@@ -36,7 +36,7 @@ import org.wildfly.test.integration.observability.opentelemetry.application.Otel
  */
 @RunAsClient
 @ServerSetup({OpenTelemetryWithCollectorSetupTask.class})
-@DockerRequired
+@TestcontainersRequired
 public class OpenTelemetryMultipleWarTestCase extends BaseOpenTelemetryTest {
     protected static final String SERVICE_ONE = "service-one";
     protected static final String SERVICE_TWO = "service-two";

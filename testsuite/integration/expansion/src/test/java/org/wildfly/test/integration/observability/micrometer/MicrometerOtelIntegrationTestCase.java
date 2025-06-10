@@ -19,7 +19,7 @@ import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.junit.InSequence;
 import org.jboss.arquillian.test.api.ArquillianResource;
-import org.jboss.arquillian.testcontainers.api.DockerRequired;
+import org.jboss.arquillian.testcontainers.api.TestcontainersRequired;
 import org.jboss.arquillian.testcontainers.api.Testcontainer;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.test.shared.observability.containers.OpenTelemetryCollectorContainer;
@@ -37,7 +37,7 @@ import org.wildfly.test.integration.observability.JaxRsActivator;
 
 @RunWith(Arquillian.class)
 @ServerSetup(MicrometerSetupTask.class)
-@DockerRequired
+@TestcontainersRequired
 @RunAsClient
 public class MicrometerOtelIntegrationTestCase {
     public static final int REQUEST_COUNT = 5;
