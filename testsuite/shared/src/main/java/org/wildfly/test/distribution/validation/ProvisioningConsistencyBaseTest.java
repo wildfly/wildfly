@@ -24,6 +24,7 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicReference;
 
+import org.jboss.as.test.shared.IntermittentFailure;
 import org.jboss.logging.Logger;
 import org.junit.Assume;
 import org.junit.BeforeClass;
@@ -70,7 +71,18 @@ public abstract class ProvisioningConsistencyBaseTest {
      * externally given through the jboss.dist Maven property.
      */
     @BeforeClass
-    public static void assumeJbossDistIsNotExternallySet() throws IOException {
+    public static void assumeCompatibleEnvironment() throws IOException {
+        assumeJbossDistIsNotExternallySet();
+        assumeNotS390();
+    }
+
+    private static void assumeNotS390() {
+        if ("s390x".equalsIgnoreCase(System.getProperty("os.arch"))) {
+            IntermittentFailure.thisTestIsFailingIntermittently("WFLY-20543");
+        }
+    }
+
+    private static void assumeJbossDistIsNotExternallySet() throws IOException {
         Path jbossDist = new File(System.getProperty("jboss.dist")).getCanonicalFile().toPath();
         Path defaultJbossDist = SOURCE_HOME.resolve(System.getProperty("build.output.dir"));
         Assume.assumeTrue(jbossDist.equals(defaultJbossDist));
