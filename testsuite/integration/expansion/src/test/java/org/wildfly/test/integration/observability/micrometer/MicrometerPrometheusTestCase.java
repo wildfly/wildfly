@@ -45,9 +45,10 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.wildfly.test.integration.observability.JaxRsActivator;
 import org.wildfly.test.integration.observability.setuptask.PrometheusSetupTask;
+import org.wildfly.test.stabilitylevel.StabilityServerSetupSnapshotRestoreTasks;
 
 @RunWith(Arquillian.class)
-@ServerSetup({PrometheusSetupTask.class})
+@ServerSetup({StabilityServerSetupSnapshotRestoreTasks.Community.class, PrometheusSetupTask.class})
 @DockerRequired
 @RunAsClient
 public class MicrometerPrometheusTestCase {
