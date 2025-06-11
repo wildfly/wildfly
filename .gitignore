@@ -21,6 +21,8 @@ target
 *.iws
 .idea/*
 !.idea/icon.png
+# ignore vscode files
+.vscode/*
 # ignore NetBeans files
 nbactions.xml
 nb-configuration.xml
