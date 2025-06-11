@@ -461,7 +461,7 @@
         <version.org.eclipse.angus.angus-activation>2.0.2</version.org.eclipse.angus.angus-activation>
         <version.org.eclipse.angus.angus-mail>2.0.4</version.org.eclipse.angus.angus-mail>
         <version.org.eclipse.jdt>3.33.0</version.org.eclipse.jdt>
-        <version.org.eclipse.microprofile>7.0</version.org.eclipse.microprofile>
+        <version.org.eclipse.microprofile>7.1</version.org.eclipse.microprofile>
         <version.org.eclipse.microprofile.config.api>3.1</version.org.eclipse.microprofile.config.api>
         <version.org.eclipse.microprofile.fault-tolerance.api>4.1.2</version.org.eclipse.microprofile.fault-tolerance.api>
         <version.org.eclipse.microprofile.health.api>4.0.1</version.org.eclipse.microprofile.health.api>
@@ -471,7 +471,7 @@
         <version.org.eclipse.microprofile.reactive-messaging.api>3.0.1</version.org.eclipse.microprofile.reactive-messaging.api>
         <version.org.eclipse.microprofile.reactive-streams-operators.api>3.0.1</version.org.eclipse.microprofile.reactive-streams-operators.api>
         <version.org.eclipse.microprofile.rest.client.api>4.0</version.org.eclipse.microprofile.rest.client.api>
-        <version.org.eclipse.microprofile.telemetry>2.0.1</version.org.eclipse.microprofile.telemetry>
+        <version.org.eclipse.microprofile.telemetry>2.1</version.org.eclipse.microprofile.telemetry>
         <version.org.eclipse.persistence.eclipselink>4.0.7</version.org.eclipse.persistence.eclipselink>
         <version.org.eclipse.yasson>3.0.4</version.org.eclipse.yasson>
         <version.org.elasticsearch.client.rest-client>8.15.4</version.org.elasticsearch.client.rest-client>
