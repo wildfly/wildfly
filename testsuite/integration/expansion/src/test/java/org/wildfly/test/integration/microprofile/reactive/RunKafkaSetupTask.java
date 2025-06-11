@@ -12,13 +12,13 @@ import java.util.Collections;
 import java.util.Map;
 
 import io.smallrye.reactive.messaging.kafka.companion.KafkaCompanion;
-import org.jboss.arquillian.testcontainers.api.DockerRequired;
+import org.jboss.arquillian.testcontainers.api.TestcontainersRequired;
 import org.jboss.as.arquillian.api.ServerSetupTask;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.testcontainers.kafka.KafkaContainer;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
-@DockerRequired
+@TestcontainersRequired
 public class RunKafkaSetupTask implements ServerSetupTask {
     volatile KafkaContainer container;
     volatile KafkaCompanion companion;

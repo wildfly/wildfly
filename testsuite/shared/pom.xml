@@ -268,7 +268,7 @@
         <dependency>
             <groupId>org.jboss.arquillian</groupId>
             <artifactId>arquillian-testcontainers</artifactId>
-            <version>1.0.0.Alpha1</version>
+            <version>${version.org.jboss.arquillian.testcontainers}</version>
             <scope>compile</scope>
         </dependency>
 

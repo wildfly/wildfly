@@ -6,12 +6,12 @@ package org.jboss.as.test.shared.observability.containers;
 
 import java.util.List;
 
-import org.jboss.arquillian.testcontainers.api.DockerRequired;
+import org.jboss.arquillian.testcontainers.api.TestcontainersRequired;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.Network;
 import org.testcontainers.utility.DockerImageName;
 
-@DockerRequired
+@TestcontainersRequired
 public abstract class BaseContainer<SELF extends GenericContainer<SELF>> extends GenericContainer<SELF> {
     private final String containerName;
 

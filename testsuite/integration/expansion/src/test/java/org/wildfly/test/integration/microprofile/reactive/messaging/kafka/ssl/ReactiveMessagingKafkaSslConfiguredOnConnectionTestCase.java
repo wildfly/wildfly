@@ -17,7 +17,7 @@ import jakarta.inject.Inject;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.arquillian.testcontainers.api.DockerRequired;
+import org.jboss.arquillian.testcontainers.api.TestcontainersRequired;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.api.ServerSetupTask;
 import org.jboss.as.test.shared.TimeoutUtil;
@@ -35,7 +35,7 @@ import org.wildfly.test.integration.microprofile.reactive.ConfigureElytronSslCon
  */
 @RunWith(Arquillian.class)
 @ServerSetup({RunKafkaWithSslSetupTask.class, EnableReactiveExtensionsSetupTask.class, ConfigureElytronSslContextSetupTask.class})
-@DockerRequired
+@TestcontainersRequired
 public class ReactiveMessagingKafkaSslConfiguredOnConnectionTestCase {
 
     private static final long TIMEOUT = TimeoutUtil.adjust(15000);

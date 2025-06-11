@@ -26,7 +26,7 @@ import org.apache.kafka.common.record.TimestampType;
 import org.eclipse.microprofile.reactive.messaging.Message;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.arquillian.testcontainers.api.DockerRequired;
+import org.jboss.arquillian.testcontainers.api.TestcontainersRequired;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.test.shared.CLIServerSetupTask;
 import org.jboss.as.test.shared.TimeoutUtil;
@@ -44,7 +44,7 @@ import org.wildfly.test.integration.microprofile.reactive.RunKafkaSetupTask;
  */
 @RunWith(Arquillian.class)
 @ServerSetup({ReactiveMessagingKafkaUserApiTestCase.CustomRunKafkaSetupTask.class, EnableReactiveExtensionsSetupTask.class})
-@DockerRequired
+@TestcontainersRequired
 public class ReactiveMessagingKafkaUserApiTestCase {
 
     private static final long TIMEOUT = TimeoutUtil.adjust(15000);

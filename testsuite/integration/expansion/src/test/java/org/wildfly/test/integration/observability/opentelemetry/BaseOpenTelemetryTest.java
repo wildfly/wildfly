@@ -8,7 +8,7 @@ package org.wildfly.test.integration.observability.opentelemetry;
 import java.net.MalformedURLException;
 
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.arquillian.testcontainers.api.DockerRequired;
+import org.jboss.arquillian.testcontainers.api.TestcontainersRequired;
 import org.jboss.arquillian.testcontainers.api.Testcontainer;
 import org.jboss.as.test.shared.CdiUtils;
 import org.jboss.as.test.shared.TestSuiteEnvironment;
@@ -23,7 +23,7 @@ import org.wildfly.test.integration.observability.opentelemetry.application.Otel
 import org.wildfly.test.integration.observability.opentelemetry.application.OtelService1;
 
 @RunWith(Arquillian.class)
-@DockerRequired
+@TestcontainersRequired
 public abstract class BaseOpenTelemetryTest {
     @Testcontainer
     protected OpenTelemetryCollectorContainer otelCollector;

@@ -7,7 +7,7 @@ package org.wildfly.test.integration.observability.opentelemetry;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.arquillian.testcontainers.api.DockerRequired;
+import org.jboss.arquillian.testcontainers.api.TestcontainersRequired;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.test.shared.observability.setuptasks.OpenTelemetryWithCollectorSetupTask;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
@@ -22,7 +22,7 @@ import org.junit.runner.RunWith;
 @RunWith(Arquillian.class)
 @ServerSetup({OpenTelemetryWithCollectorSetupTask.class, LoggingServerSetupTask.class})
 @RunAsClient
-@DockerRequired
+@TestcontainersRequired
 public class OpenTelemetryIntegrationWithoutVertxTestCase extends AbstractOpenTelemetryIntegrationTest {
 
     @Deployment(testable = false)

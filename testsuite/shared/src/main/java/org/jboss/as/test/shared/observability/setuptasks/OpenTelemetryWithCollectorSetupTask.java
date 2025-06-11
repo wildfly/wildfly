@@ -4,13 +4,13 @@
  */
 package org.jboss.as.test.shared.observability.setuptasks;
 
-import org.jboss.arquillian.testcontainers.api.DockerRequired;
+import org.jboss.arquillian.testcontainers.api.TestcontainersRequired;
 import org.jboss.arquillian.testcontainers.api.Testcontainer;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.test.shared.ServerReload;
 import org.jboss.as.test.shared.observability.containers.OpenTelemetryCollectorContainer;
 
-@DockerRequired
+@TestcontainersRequired
 public class OpenTelemetryWithCollectorSetupTask extends OpenTelemetrySetupTask {
 
     @Testcontainer

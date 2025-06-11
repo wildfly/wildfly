@@ -15,7 +15,7 @@ import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.InSequence;
 import org.jboss.arquillian.test.api.ArquillianResource;
-import org.jboss.arquillian.testcontainers.api.DockerRequired;
+import org.jboss.arquillian.testcontainers.api.TestcontainersRequired;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.test.shared.observability.setuptasks.OpenTelemetryWithCollectorSetupTask;
 import org.jboss.as.test.shared.observability.signals.jaeger.JaegerSpan;
@@ -32,7 +32,7 @@ import org.wildfly.test.integration.observability.opentelemetry.application.Otel
  */
 @RunAsClient
 @ServerSetup({OpenTelemetryWithCollectorSetupTask.class})
-@DockerRequired
+@TestcontainersRequired
 public class ContextPropagationTestCase extends BaseOpenTelemetryTest {
 
     private static final String DEPLOYMENT_SERVICE1 = "service1";
