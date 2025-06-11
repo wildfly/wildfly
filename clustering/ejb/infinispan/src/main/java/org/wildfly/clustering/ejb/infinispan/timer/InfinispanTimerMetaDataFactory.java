@@ -14,8 +14,7 @@ import java.util.concurrent.CompletionStage;
 
 import org.infinispan.Cache;
 import org.infinispan.context.Flag;
-import org.wildfly.clustering.cache.CacheEntryMutator;
-import org.wildfly.clustering.cache.infinispan.embedded.EmbeddedCacheEntryComputer;
+import org.wildfly.clustering.cache.CacheEntryMutatorFactory;
 import org.wildfly.clustering.ejb.cache.timer.DefaultImmutableTimerMetaData;
 import org.wildfly.clustering.ejb.cache.timer.DefaultTimerMetaData;
 import org.wildfly.clustering.ejb.cache.timer.MutableTimerMetaDataEntry;
@@ -44,6 +43,7 @@ public class InfinispanTimerMetaDataFactory<I, C> implements TimerMetaDataFactor
     private final Cache<TimerMetaDataKey<I>, RemappableTimerMetaDataEntry<C>> writeCache;
     private final Cache<TimerMetaDataKey<I>, RemappableTimerMetaDataEntry<C>> removeCache;
     private final TimerMetaDataConfiguration<C> config;
+    private final CacheEntryMutatorFactory<TimerMetaDataKey<I>, OffsetValue<Duration>> mutatorFactory;
     private final Supplier<CompletionStage<RemappableTimerMetaDataEntry<C>>> completed = Supplier.of(CompletableFuture.completedStage(null));
 
     public InfinispanTimerMetaDataFactory(InfinispanTimerMetaDataConfiguration<C> config) {
@@ -53,6 +53,7 @@ public class InfinispanTimerMetaDataFactory<I, C> implements TimerMetaDataFactor
         this.readForUpdateCache = config.getReadForUpdateCache();
         this.writeCache = config.getSilentWriteCache();
         this.removeCache = config.getCache();
+        this.mutatorFactory = config.getCacheEntryMutatorFactory(TimerMetaDataEntryFunction::new);
     }
 
     @Override
@@ -85,7 +86,7 @@ public class InfinispanTimerMetaDataFactory<I, C> implements TimerMetaDataFactor
     public TimerMetaData createTimerMetaData(I id, RemappableTimerMetaDataEntry<C> entry) {
         Duration lastTimeout = entry.getLastTimeout();
         OffsetValue<Duration> lastTimeoutOffset = OffsetValue.from(Optional.ofNullable(lastTimeout).orElse(Duration.ZERO));
-        CacheEntryMutator mutator = new EmbeddedCacheEntryComputer<>(this.writeCache, new InfinispanTimerMetaDataKey<>(id), new TimerMetaDataEntryFunction<>(lastTimeoutOffset));
+        Runnable mutator = this.mutatorFactory.createMutator(new InfinispanTimerMetaDataKey<>(id), lastTimeoutOffset);
         return new DefaultTimerMetaData<>(this.config, (lastTimeout != null) ? new MutableTimerMetaDataEntry<>(entry, lastTimeoutOffset) : entry, mutator);
     }
 

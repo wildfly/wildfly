@@ -15,6 +15,7 @@ import java.time.Instant;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -39,7 +40,7 @@ public class DistributableSession implements io.undertow.server.session.Session 
 
     private final UndertowSessionManager manager;
     private final SuspendedBatch suspendedBatch;
-    private final Consumer<HttpServerExchange> closeTask;
+    private final AtomicReference<Consumer<HttpServerExchange>> closeTask;
     private final Instant startTime;
     private final RecordableSessionManagerStatistics statistics;
 
@@ -49,7 +50,7 @@ public class DistributableSession implements io.undertow.server.session.Session 
         this.manager = manager;
         this.entry = Map.entry(session, config);
         this.suspendedBatch = suspendedBatch;
-        this.closeTask = closeTask;
+        this.closeTask = new AtomicReference<>(closeTask);
         this.startTime = session.getMetaData().isNew() ? session.getMetaData().getCreationTime() : Instant.now();
         this.statistics = statistics;
     }
@@ -61,22 +62,24 @@ public class DistributableSession implements io.undertow.server.session.Session 
 
     @Override
     public void requestDone(HttpServerExchange exchange) {
-        Session<Map<String, Object>> requestSession = this.entry.getKey();
-        try (Batch batch = this.suspendedBatch.resume()) {
-            // Ensure session is closed, even if invalid
-            try (Session<Map<String, Object>> session = requestSession) {
-                if (session.isValid()) {
-                    // According to §7.6 of the servlet specification:
-                    // The session is considered to be accessed when a request that is part of the session is first handled by the servlet container.
-                    session.getMetaData().setLastAccess(this.startTime, Instant.now());
+        Consumer<HttpServerExchange> closeTask = this.closeTask.getAndSet(null);
+        if (closeTask != null) {
+            try (Batch batch = this.suspendedBatch.resume()) {
+                // Ensure session is closed, even if invalid
+                try (Session<Map<String, Object>> session = this.entry.getKey()) {
+                    if (session.isValid()) {
+                        // According to §7.6 of the servlet specification:
+                        // The session is considered to be accessed when a request that is part of the session is first handled by the servlet container.
+                        session.getMetaData().setLastAccess(this.startTime, Instant.now());
+                    }
                 }
+            } catch (Throwable e) {
+                // Don't propagate exceptions at the stage, since response was already committed
+                UndertowClusteringLogger.ROOT_LOGGER.warn(e.getLocalizedMessage(), e);
+            } finally {
+                this.entry = Map.entry(this.entry.getKey(), new SimpleSessionConfig(this.entry.getKey().getId()));
+                closeTask.accept(exchange);
             }
-        } catch (Throwable e) {
-            // Don't propagate exceptions at the stage, since response was already committed
-            UndertowClusteringLogger.ROOT_LOGGER.warn(e.getLocalizedMessage(), e);
-        } finally {
-            this.entry = Map.entry(requestSession, new SimpleSessionConfig(requestSession.getId()));
-            this.closeTask.accept(exchange);
         }
     }
 
@@ -224,17 +227,20 @@ public class DistributableSession implements io.undertow.server.session.Session 
                 this.statistics.getInactiveSessionRecorder().record(session.getMetaData());
             }
         }
-        try (Batch batch = this.suspendedBatch.resume()) {
-            try (Session<Map<String, Object>> validSession = session) {
-                session.invalidate();
-            } finally {
-                if (exchange != null) {
-                    String id = session.getId();
-                    entry.getValue().clearSession(exchange, id);
+        Consumer<HttpServerExchange> closeTask = this.closeTask.getAndSet(null);
+        if (closeTask != null) {
+            try (Batch batch = this.suspendedBatch.resume()) {
+                try (Session<Map<String, Object>> validSession = session) {
+                    session.invalidate();
+                } finally {
+                    if (exchange != null) {
+                        String id = session.getId();
+                        entry.getValue().clearSession(exchange, id);
+                    }
                 }
+            } finally {
+                closeTask.accept(exchange);
             }
-        } finally {
-            this.closeTask.accept(exchange);
         }
     }
 
@@ -275,11 +281,14 @@ public class DistributableSession implements io.undertow.server.session.Session 
     private void closeIfInvalid(HttpServerExchange exchange, Session<Map<String, Object>> session) {
         if (!session.isValid()) {
             // If session was invalidated by a concurrent request, Undertow will not trigger Session.requestDone(...), so we need to close the session here
-            try {
-                session.close();
-            } finally {
-                // Ensure close task is run
-                this.closeTask.accept(exchange);
+            Consumer<HttpServerExchange> closeTask = this.closeTask.getAndSet(null);
+            if (closeTask != null) {
+                try {
+                    session.close();
+                } finally {
+                    // Ensure close task is run
+                    closeTask.accept(exchange);
+                }
             }
         }
     }

@@ -6,7 +6,6 @@
 package org.wildfly.clustering.ejb.cache.bean;
 
 import java.util.Map;
-import java.util.concurrent.CompletionStage;
 import java.util.function.Consumer;
 
 import org.wildfly.clustering.cache.CacheEntryMutator;
@@ -42,8 +41,8 @@ public class DefaultBeanGroup<K, V extends BeanInstance<K>> extends DefaultImmut
     }
 
     @Override
-    public CompletionStage<Void> mutateAsync() {
+    public void run() {
         this.prePassivateTask.accept(this.instances);
-        return this.mutator.mutateAsync();
+        this.mutator.run();
     }
 }
