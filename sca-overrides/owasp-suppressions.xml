@@ -244,24 +244,6 @@
       <packageUrl regex="true">^pkg:maven/io\.vertx/vertx-kafka-client@.*$</packageUrl>
       <cve>CVE-2024-8391</cve>
    </suppress>
-   <suppress until="2025-10-07">
-      <notes><![CDATA[
-      file name: lucene-core-9.11.1.jar
-
-      [WFLY-19821] Supress CVE-2024-45772 as we don't include the affected module.
-      ]]></notes>
-      <packageUrl regex="true">^pkg:maven/org\.apache\.lucene/lucene-.*@.*$</packageUrl>
-      <cve>CVE-2024-45772</cve>
-   </suppress>
-   <suppress until="2025-10-07">
-      <notes><![CDATA[
-      file name: velocity-engine-core-2.3.jar (shaded: commons-io:commons-io:2.8.0)
-
-      [WFLY-19822] Although some of commons-io is shaded in this affected class is not a part of the shading.
-      ]]></notes>
-      <packageUrl regex="true">^pkg:maven/commons-io/commons-io@.*$</packageUrl>
-      <vulnerabilityName>CVE-2024-47554</vulnerabilityName>
-   </suppress>
    <suppress until="2026-01-03">
       <notes><![CDATA[
       file name: mina-core-2.1.3.jar
@@ -308,14 +290,14 @@
       <cve>CVE-2021-21343</cve>
       <cve>CVE-2021-21348</cve>
    </suppress>
-   <suppress until="2026-01-27">
+   <suppress until="2026-06-11">
       <notes><![CDATA[
-      file name: undertow-core-2.3.18.Final.jar
+      file name: hal-console-3.7.12.Final-resources.jar
 
-      [WFLY-20339] Suppressing as triaged as not a securtity vulnerability.
+      [WFLY-20706] This was a generilsation of two previously fixed CVEs "CVE-2025-23366 and CVE-2024-10234" and so can be ignored as a duplicate.
       ]]></notes>
-      <packageUrl regex="true">^pkg:maven/io\.undertow/undertow-core@.*$</packageUrl>
-      <vulnerabilityName>CVE-2024-4109</vulnerabilityName>
+      <packageUrl regex="true">^pkg:maven/org\.jboss\.hal/hal-console@.*$</packageUrl>
+      <vulnerabilityName>CVE-2025-2901</vulnerabilityName>
    </suppress>
    <suppress until="2026-06-11">
       <notes><![CDATA[
