@@ -12,8 +12,6 @@ import org.jboss.as.threads.ManagedQueueExecutorService;
 import org.jboss.as.threads.ManagedQueuelessExecutorService;
 import org.jboss.as.threads.ManagedScheduledExecutorService;
 import org.jboss.jca.core.api.workmanager.StatisticsExecutor;
-import org.jboss.threads.JBossThreadPoolExecutor;
-import org.jboss.threads.management.ThreadPoolExecutorMBean;
 
 /**
  * A StatisticsExecutor implementation keeping track of numberOfFreeThreads
@@ -42,14 +40,6 @@ public class StatisticsExecutorImpl implements StatisticsExecutor {
 
     @Override
     public long getNumberOfFreeThreads() {
-        if (realExecutor instanceof JBossThreadPoolExecutor) {
-            return (long) ((JBossThreadPoolExecutor) realExecutor).getMaximumPoolSize()
-                    - ((JBossThreadPoolExecutor) realExecutor).getActiveCount();
-        }
-        if (realExecutor instanceof ThreadPoolExecutorMBean) {
-            return (long) ((ThreadPoolExecutorMBean) realExecutor).getMaxThreads()
-                    - ((ThreadPoolExecutorMBean) realExecutor).getCurrentThreadCount();
-        }
         if (realExecutor instanceof ManagedQueueExecutorService) {
             return (long) ((ManagedQueueExecutorService) realExecutor).getMaxThreads()
                     - ((ManagedQueueExecutorService) realExecutor).getCurrentThreadCount();
