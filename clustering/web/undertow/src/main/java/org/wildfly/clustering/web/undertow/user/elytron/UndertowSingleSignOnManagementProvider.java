@@ -10,7 +10,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.ServiceLoader;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.Supplier;
 
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.RequirementServiceTarget;
@@ -20,6 +19,7 @@ import org.jboss.modules.ModuleLoader;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.kohsuke.MetaInfServices;
+import org.wildfly.clustering.function.Supplier;
 import org.wildfly.clustering.marshalling.ByteBufferMarshaller;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamByteBufferMarshaller;
 import org.wildfly.clustering.marshalling.protostream.SerializationContextBuilder;
@@ -69,7 +69,7 @@ public class UndertowSingleSignOnManagementProvider implements SecurityDomainSin
         UserManagerConfiguration<AtomicReference<SecurityIdentity>> userManagerConfiguration = new UserManagerConfiguration<>() {
             @Override
             public Supplier<String> getIdentifierFactory() {
-                return configuration.getIdentifierGenerator();
+                return configuration.getIdentifierGenerator()::get;
             }
 
             @Override

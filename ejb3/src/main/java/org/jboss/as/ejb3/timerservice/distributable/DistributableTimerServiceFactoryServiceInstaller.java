@@ -10,7 +10,6 @@ import java.util.UUID;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
-import java.util.function.Supplier;
 
 import jakarta.ejb.TimerConfig;
 
@@ -36,6 +35,7 @@ import org.wildfly.clustering.ejb.timer.TimerManagerFactory;
 import org.wildfly.clustering.ejb.timer.TimerManagerFactoryConfiguration;
 import org.wildfly.clustering.ejb.timer.TimerRegistry;
 import org.wildfly.clustering.ejb.timer.TimerServiceConfiguration;
+import org.wildfly.clustering.function.Supplier;
 import org.wildfly.clustering.server.util.UUIDFactory;
 import org.wildfly.common.function.Functions;
 import org.wildfly.subsystem.service.ServiceDependency;
@@ -64,10 +64,10 @@ public class DistributableTimerServiceFactoryServiceInstaller implements Service
     private final ServiceName name;
     private final ManagedTimerServiceFactoryConfiguration factoryConfiguration;
     private final TimerServiceConfiguration configuration;
-    private final Supplier<TimerManagementProvider> provider;
+    private final java.util.function.Supplier<TimerManagementProvider> provider;
     private final Predicate<TimerConfig> filter;
 
-    public DistributableTimerServiceFactoryServiceInstaller(ServiceName name, ManagedTimerServiceFactoryConfiguration factoryConfiguration, TimerServiceConfiguration configuration, Supplier<TimerManagementProvider> provider, Predicate<TimerConfig> filter) {
+    public DistributableTimerServiceFactoryServiceInstaller(ServiceName name, ManagedTimerServiceFactoryConfiguration factoryConfiguration, TimerServiceConfiguration configuration, java.util.function.Supplier<TimerManagementProvider> provider, Predicate<TimerConfig> filter) {
         this.name = name;
         this.factoryConfiguration = factoryConfiguration;
         this.configuration = configuration;
