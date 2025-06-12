@@ -19,6 +19,6 @@ import org.wildfly.subsystem.SubsystemPersistence;
 public class MicroProfileOpenAPIExtension extends SubsystemExtension<MicroProfileOpenAPISubsystemSchema> {
 
     public MicroProfileOpenAPIExtension() {
-        super(SubsystemConfiguration.of(MicroProfileOpenAPISubsystemRegistrar.NAME, MicroProfileOpenAPISubsystemModel.CURRENT, MicroProfileOpenAPISubsystemRegistrar::new), SubsystemPersistence.of(MicroProfileOpenAPISubsystemSchema.CURRENT));
+        super(SubsystemConfiguration.of(MicroProfileOpenAPISubsystemRegistrar.REGISTRATION, MicroProfileOpenAPISubsystemModel.CURRENT, MicroProfileOpenAPISubsystemRegistrar::new), SubsystemPersistence.of(MicroProfileOpenAPISubsystemSchema.CURRENT));
     }
 }
