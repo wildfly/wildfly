@@ -257,7 +257,7 @@ public class DistributableSessionManager implements UndertowSessionManager {
             return null;
         }
         Session<Map<String, Object>> session = this.manager.getDetachedSession(sessionId);
-        return session.isValid() ? new DistributableSession(this, session, new SimpleSessionConfig(sessionId), Batch.factory().get().suspend(), Consumer.empty(), null) : null;
+        return session.isValid() ? new DistributableSession(this, session, new SimpleSessionConfig(sessionId), Batch.Factory.SIMPLE.get().suspend(), Consumer.empty(), null) : null;
     }
 
     @Override

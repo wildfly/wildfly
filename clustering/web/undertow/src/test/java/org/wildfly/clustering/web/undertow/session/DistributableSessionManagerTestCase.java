@@ -19,7 +19,6 @@ import static org.mockito.Mockito.when;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
-import java.util.function.Supplier;
 
 import io.undertow.UndertowOptions;
 import io.undertow.connector.ByteBufferPool;
@@ -35,11 +34,11 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.wildfly.clustering.cache.batch.Batch;
+import org.wildfly.clustering.function.Supplier;
 import org.wildfly.clustering.session.Session;
 import org.wildfly.clustering.session.SessionManager;
 import org.wildfly.clustering.session.SessionMetaData;
 import org.wildfly.clustering.session.SessionStatistics;
-import org.wildfly.common.function.Functions;
 import org.xnio.OptionMap;
 import org.xnio.StreamConnection;
 import org.xnio.channels.Configurable;
@@ -103,7 +102,7 @@ public class DistributableSessionManagerTestCase {
         ConduitStreamSinkChannel sinkChannel = new ConduitStreamSinkChannel(configurable, sinkConduit);
         StreamConnection stream = mock(StreamConnection.class);
         String id = "foo";
-        Supplier<String> identifierFactory = Functions.constantSupplier(id);
+        Supplier<String> identifierFactory = Supplier.of(id);
         int expectedTimeout = 10;
 
         this.adapter.setDefaultSessionTimeout(expectedTimeout);
@@ -143,7 +142,7 @@ public class DistributableSessionManagerTestCase {
         when(this.manager.getIdentifierFactory()).thenReturn(identifierFactory);
         when(identifierFactory.get()).thenReturn(sessionId);
         when(this.manager.createSession(sessionId)).thenReturn(session);
-        when(this.manager.getBatchFactory()).thenReturn(Functions.constantSupplier(batch));
+        when(this.manager.getBatchFactory()).thenReturn(Supplier.of(batch));
         when(session.getId()).thenReturn(sessionId);
         when(session.getMetaData()).thenReturn(metaData);
         when(metaData.isNew()).thenReturn(true);
@@ -175,7 +174,7 @@ public class DistributableSessionManagerTestCase {
 
         when(config.findSessionId(exchange)).thenReturn(sessionId);
         when(this.manager.createSession(sessionId)).thenReturn(session);
-        when(this.manager.getBatchFactory()).thenReturn(Functions.constantSupplier(batch));
+        when(this.manager.getBatchFactory()).thenReturn(Supplier.of(batch));
         when(session.getId()).thenReturn(sessionId);
         when(session.getMetaData()).thenReturn(metaData);
         when(metaData.isNew()).thenReturn(true);
@@ -204,7 +203,7 @@ public class DistributableSessionManagerTestCase {
 
         when(config.findSessionId(exchange)).thenReturn(sessionId);
         when(this.manager.createSession(sessionId)).thenReturn(null);
-        when(this.manager.getBatchFactory()).thenReturn(Functions.constantSupplier(batch));
+        when(this.manager.getBatchFactory()).thenReturn(Supplier.of(batch));
 
         IllegalStateException exception = null;
         try {
@@ -230,7 +229,7 @@ public class DistributableSessionManagerTestCase {
 
         when(config.findSessionId(exchange)).thenReturn(sessionId);
         when(this.manager.findSession(sessionId)).thenReturn(session);
-        when(this.manager.getBatchFactory()).thenReturn(Functions.constantSupplier(batch));
+        when(this.manager.getBatchFactory()).thenReturn(Supplier.of(batch));
         when(session.getId()).thenReturn(sessionId);
         when(session.isValid()).thenReturn(true);
         when(session.getMetaData()).thenReturn(metaData);
@@ -292,7 +291,7 @@ public class DistributableSessionManagerTestCase {
 
         when(config.findSessionId(exchange)).thenReturn(sessionId);
         when(this.manager.findSession(sessionId)).thenReturn(null);
-        when(this.manager.getBatchFactory()).thenReturn(Functions.constantSupplier(batch));
+        when(this.manager.getBatchFactory()).thenReturn(Supplier.of(batch));
 
         io.undertow.server.session.Session sessionAdapter = this.adapter.getSession(exchange, config);
 
@@ -313,7 +312,7 @@ public class DistributableSessionManagerTestCase {
 
         when(config.findSessionId(exchange)).thenReturn(sessionId);
         when(this.manager.findSession(sessionId)).thenReturn(session);
-        when(this.manager.getBatchFactory()).thenReturn(Functions.constantSupplier(batch));
+        when(this.manager.getBatchFactory()).thenReturn(Supplier.of(batch));
         when(session.getId()).thenReturn(sessionId);
         when(session.isValid()).thenReturn(false);
         when(session.getMetaData()).thenReturn(metaData);
@@ -341,7 +340,7 @@ public class DistributableSessionManagerTestCase {
 
         when(config.findSessionId(exchange)).thenReturn(sessionId);
         when(this.manager.findSession(sessionId)).thenReturn(session);
-        when(this.manager.getBatchFactory()).thenReturn(Functions.constantSupplier(batch));
+        when(this.manager.getBatchFactory()).thenReturn(Supplier.of(batch));
         when(session.getId()).thenReturn(sessionId);
         when(session.isValid()).thenReturn(true);
         when(session.getMetaData()).thenReturn(metaData);

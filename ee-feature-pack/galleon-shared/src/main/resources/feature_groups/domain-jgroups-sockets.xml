@@ -17,11 +17,6 @@
         <param name="port" value="7600"/>
     </feature>
     <feature spec="domain.socket-binding-group.socket-binding">
-        <param name="socket-binding" value="jgroups-tcp-fd"/>
-        <param name="interface" value="private"/>
-        <param name="port" value="57600"/>
-    </feature>
-    <feature spec="domain.socket-binding-group.socket-binding">
         <param name="socket-binding" value="jgroups-udp"/>
         <param name="interface" value="private"/>
         <param name="port" value="55200"/>
@@ -29,7 +24,7 @@
         <param name="multicast-port" value="45688"/>
     </feature>
     <feature spec="domain.socket-binding-group.socket-binding">
-        <param name="socket-binding" value="jgroups-udp-fd"/>
+        <param name="socket-binding" value="jgroups-fd"/>
         <param name="interface" value="private"/>
         <param name="port" value="54200"/>
     </feature>

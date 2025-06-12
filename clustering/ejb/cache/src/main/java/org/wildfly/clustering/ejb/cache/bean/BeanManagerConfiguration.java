@@ -15,7 +15,7 @@ import org.wildfly.clustering.server.GroupMember;
  * @param <K> the bean identifier type
  * @param <V> the bean instance type
  */
-public interface BeanManagerConfiguration<K, V extends BeanInstance<K>, M, GM extends GroupMember> extends  org.wildfly.clustering.ejb.bean.BeanManagerConfiguration<K, V>, BeanMetaDataFactoryConfiguration {
+public interface BeanManagerConfiguration<K, V extends BeanInstance<K>, M, GM extends GroupMember> extends org.wildfly.clustering.ejb.bean.BeanManagerConfiguration<K, V>, BeanMetaDataFactoryConfiguration {
     BeanFactory<K, V, M> getBeanFactory();
     Group<GM> getGroup();
 }
