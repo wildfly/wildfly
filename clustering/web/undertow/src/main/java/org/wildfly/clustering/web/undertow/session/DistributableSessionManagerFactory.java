@@ -10,19 +10,18 @@ import java.util.ServiceLoader;
 import java.util.concurrent.CompletionException;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
-import java.util.function.Supplier;
 
 import jakarta.servlet.ServletContext;
 
 import org.wildfly.clustering.cache.batch.BatchContextualizerFactory;
 import org.wildfly.clustering.context.Contextualizer;
 import org.wildfly.clustering.context.ContextualizerFactory;
+import org.wildfly.clustering.function.Supplier;
 import org.wildfly.clustering.session.ImmutableSession;
 import org.wildfly.clustering.session.SessionManager;
 import org.wildfly.clustering.session.SessionManagerConfiguration;
 import org.wildfly.clustering.session.SessionManagerFactory;
 import org.wildfly.clustering.web.container.SessionManagerFactoryConfiguration;
-import org.wildfly.clustering.web.undertow.IdentifierFactoryAdapter;
 
 import io.undertow.server.HttpServerExchange;
 import io.undertow.server.session.SessionListeners;
@@ -50,7 +49,7 @@ public class DistributableSessionManagerFactory implements io.undertow.servlet.a
         DeploymentInfo info = deployment.getDeploymentInfo();
         boolean statisticsEnabled = info.getMetricsCollector() != null;
         RecordableInactiveSessionStatistics inactiveSessionStatistics = statisticsEnabled ? new DistributableInactiveSessionStatistics() : null;
-        Supplier<String> factory = new IdentifierFactoryAdapter(info.getSessionIdGenerator());
+        Supplier<String> factory = info.getSessionIdGenerator()::createSessionId;
         // Session listeners are application-specific
         SessionListeners listeners = new SessionListeners();
         Consumer<ImmutableSession> expirationListener = new UndertowSessionExpirationListener(deployment, listeners, inactiveSessionStatistics);

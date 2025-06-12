@@ -5,8 +5,6 @@
 
 package org.wildfly.clustering.ejb.infinispan.timer;
 
-import java.util.function.Supplier;
-
 import org.infinispan.Cache;
 import org.wildfly.clustering.cache.CacheProperties;
 import org.wildfly.clustering.cache.batch.Batch;
@@ -17,6 +15,7 @@ import org.wildfly.clustering.ejb.timer.TimerManager;
 import org.wildfly.clustering.ejb.timer.TimerManagerConfiguration;
 import org.wildfly.clustering.ejb.timer.TimerManagerFactory;
 import org.wildfly.clustering.ejb.timer.TimerRegistry;
+import org.wildfly.clustering.function.Supplier;
 import org.wildfly.clustering.marshalling.ByteBufferMarshalledValueFactory;
 import org.wildfly.clustering.marshalling.ByteBufferMarshaller;
 import org.wildfly.clustering.marshalling.MarshalledValue;
