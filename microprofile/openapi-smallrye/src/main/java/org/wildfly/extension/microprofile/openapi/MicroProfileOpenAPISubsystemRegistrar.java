@@ -6,10 +6,9 @@ package org.wildfly.extension.microprofile.openapi;
 
 import java.util.function.Consumer;
 
-import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ResourceDefinition;
-import org.jboss.as.controller.ResourceRegistration;
 import org.jboss.as.controller.SubsystemRegistration;
+import org.jboss.as.controller.SubsystemResourceRegistration;
 import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.descriptions.ParentResourceDescriptionResolver;
 import org.jboss.as.controller.descriptions.SubsystemResourceDescriptionResolver;
@@ -29,9 +28,8 @@ import org.wildfly.subsystem.resource.SubsystemResourceDefinitionRegistrar;
  */
 public class MicroProfileOpenAPISubsystemRegistrar implements SubsystemResourceDefinitionRegistrar, Consumer<DeploymentProcessorTarget> {
 
-    static final String NAME = "microprofile-openapi-smallrye";
-    static final ParentResourceDescriptionResolver SUBSYSTEM_RESOLVER = new SubsystemResourceDescriptionResolver(NAME, MicroProfileOpenAPISubsystemRegistrar.class);
-    static final PathElement PATH = SubsystemResourceDefinitionRegistrar.pathElement(NAME);
+    static final SubsystemResourceRegistration REGISTRATION = SubsystemResourceRegistration.of("microprofile-openapi-smallrye");
+    static final ParentResourceDescriptionResolver SUBSYSTEM_RESOLVER = new SubsystemResourceDescriptionResolver(REGISTRATION.getName(), MicroProfileOpenAPISubsystemRegistrar.class);
 
     private static final RuntimeCapability<Void> CAPABILITY = RuntimeCapability.Builder.of("org.wildfly.microprofile.openapi")
             .addRequirements("org.wildfly.microprofile.config")
@@ -44,7 +42,7 @@ public class MicroProfileOpenAPISubsystemRegistrar implements SubsystemResourceD
                 .withDeploymentChainContributor(this)
                 .build();
 
-        ResourceDefinition definition = ResourceDefinition.builder(ResourceRegistration.of(PATH), descriptor.getResourceDescriptionResolver()).build();
+        ResourceDefinition definition = ResourceDefinition.builder(REGISTRATION, descriptor.getResourceDescriptionResolver()).build();
         ManagementResourceRegistration registration = parent.registerSubsystemModel(definition);
         ManagementResourceRegistrar.of(descriptor).register(registration);
         return registration;
@@ -52,7 +50,7 @@ public class MicroProfileOpenAPISubsystemRegistrar implements SubsystemResourceD
 
     @Override
     public void accept(DeploymentProcessorTarget target) {
-        target.addDeploymentProcessor(NAME, Phase.DEPENDENCIES, Phase.DEPENDENCIES_MICROPROFILE_OPENAPI, new OpenAPIDependencyProcessor());
-        target.addDeploymentProcessor(NAME, Phase.INSTALL, Phase.POST_MODULE_MICROPROFILE_OPENAPI, new OpenAPIDocumentProcessor());
+        target.addDeploymentProcessor(REGISTRATION.getName(), Phase.DEPENDENCIES, Phase.DEPENDENCIES_MICROPROFILE_OPENAPI, new OpenAPIDependencyProcessor());
+        target.addDeploymentProcessor(REGISTRATION.getName(), Phase.INSTALL, Phase.POST_MODULE_MICROPROFILE_OPENAPI, new OpenAPIDocumentProcessor());
     }
 }
