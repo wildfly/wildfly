@@ -22,14 +22,13 @@ embed-server --server-config=standalone-ha.xml
 /socket-binding-group=standard-sockets/remote-destination-outbound-socket-binding=node-3-bridge:add(host=${node2},port=7801)
 /socket-binding-group=standard-sockets/remote-destination-outbound-socket-binding=node-4-bridge:add(host=${node3},port=7901)
 /socket-binding-group=standard-sockets/socket-binding=jgroups-tcp-bridge:add(interface=private,port=7601)
-/socket-binding-group=standard-sockets/socket-binding=jgroups-tcp-fd-bridge:add(interface=private,port=57601)
+
 batch
 /subsystem=jgroups/stack=tcp-bridge:add
 /subsystem=jgroups/stack=tcp-bridge/transport=TCP:add(socket-binding=jgroups-tcp-bridge)
 /subsystem=jgroups/stack=tcp-bridge/protocol=RED:add
 /subsystem=jgroups/stack=tcp-bridge/protocol=TCPPING:add(socket-bindings=[node-1-bridge,node-2-bridge,node-3-bridge,node-4-bridge])
 /subsystem=jgroups/stack=tcp-bridge/protocol=MERGE3:add
-/subsystem=jgroups/stack=tcp-bridge/protocol=FD_SOCK2:add(socket-binding=jgroups-tcp-fd-bridge)
 /subsystem=jgroups/stack=tcp-bridge/protocol=FD_ALL3:add
 /subsystem=jgroups/stack=tcp-bridge/protocol=VERIFY_SUSPECT2:add
 /subsystem=jgroups/stack=tcp-bridge/protocol=pbcast.NAKACK2:add
@@ -70,7 +69,6 @@ embed-server --server-config=standalone-full-ha.xml
 /socket-binding-group=standard-sockets/remote-destination-outbound-socket-binding=node-3-bridge:add(host=${node2},port=7801)
 /socket-binding-group=standard-sockets/remote-destination-outbound-socket-binding=node-4-bridge:add(host=${node3},port=7901)
 /socket-binding-group=standard-sockets/socket-binding=jgroups-tcp-bridge:add(interface=private,port=7601)
-/socket-binding-group=standard-sockets/socket-binding=jgroups-tcp-fd-bridge:add(interface=private,port=57601)
 
 batch
 /subsystem=jgroups/stack=tcp-bridge:add
@@ -78,7 +76,6 @@ batch
 /subsystem=jgroups/stack=tcp-bridge/protocol=RED:add
 /subsystem=jgroups/stack=tcp-bridge/protocol=TCPPING:add(socket-bindings=[node-1-bridge,node-2-bridge,node-3-bridge,node-4-bridge])
 /subsystem=jgroups/stack=tcp-bridge/protocol=MERGE3:add
-/subsystem=jgroups/stack=tcp-bridge/protocol=FD_SOCK2:add(socket-binding=jgroups-tcp-fd-bridge)
 /subsystem=jgroups/stack=tcp-bridge/protocol=FD_ALL3:add
 /subsystem=jgroups/stack=tcp-bridge/protocol=VERIFY_SUSPECT2:add
 /subsystem=jgroups/stack=tcp-bridge/protocol=pbcast.NAKACK2:add
