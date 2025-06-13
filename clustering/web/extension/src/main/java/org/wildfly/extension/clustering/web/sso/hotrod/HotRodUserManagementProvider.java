@@ -6,10 +6,8 @@
 package org.wildfly.extension.clustering.web.sso.hotrod;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.function.Consumer;
 
-import org.infinispan.client.hotrod.DefaultTemplate;
 import org.infinispan.client.hotrod.RemoteCache;
 import org.infinispan.client.hotrod.configuration.NearCacheMode;
 import org.infinispan.client.hotrod.configuration.RemoteCacheConfigurationBuilder;
@@ -21,7 +19,6 @@ import org.wildfly.clustering.infinispan.client.service.RemoteCacheConfiguration
 import org.wildfly.clustering.infinispan.client.service.RemoteCacheServiceInstallerFactory;
 import org.wildfly.clustering.server.service.BinaryServiceConfiguration;
 import org.wildfly.clustering.session.infinispan.remote.user.HotRodUserManagerFactory;
-import org.wildfly.clustering.web.service.WebDeploymentServiceDescriptor;
 import org.wildfly.clustering.web.service.user.DistributableUserManagementProvider;
 import org.wildfly.common.function.Functions;
 import org.wildfly.subsystem.service.ServiceDependency;
@@ -31,6 +28,16 @@ import org.wildfly.subsystem.service.ServiceInstaller;
  * @author Paul Ferraro
  */
 public class HotRodUserManagementProvider implements DistributableUserManagementProvider {
+    private static final String DEFAULT_CONFIGURATION = """
+{
+    "distributed-cache": {
+        "mode" : "SYNC",
+        "transaction" : {
+            "mode" : "NON_XA",
+            "locking" : "PESSIMISTIC"
+        }
+    }
+}""";
 
     private final BinaryServiceConfiguration configuration;
 
@@ -40,11 +47,18 @@ public class HotRodUserManagementProvider implements DistributableUserManagement
 
     @Override
     public Iterable<ServiceInstaller> getServiceInstallers(String name) {
-        String templateName = Optional.ofNullable(this.configuration.getChildName()).orElse(DefaultTemplate.DIST_SYNC.getTemplateName());
+        String templateName = this.configuration.getChildName();
+
         Consumer<RemoteCacheConfigurationBuilder> configurator = new Consumer<>() {
             @Override
             public void accept(RemoteCacheConfigurationBuilder builder) {
-                builder.forceReturnValues(false).nearCacheMode(NearCacheMode.INVALIDATED).templateName(templateName).transactionMode(TransactionMode.NONE);
+                // Near caching not compatible with max-idle expiration.
+                builder.forceReturnValues(false).nearCacheMode(NearCacheMode.DISABLED).transactionMode(TransactionMode.NONE);
+                if (templateName != null) {
+                    builder.templateName(templateName);
+                } else {
+                    builder.configuration(DEFAULT_CONFIGURATION);
+                }
             }
         };
         BinaryServiceConfiguration configuration = this.configuration.withChildName(name);
@@ -60,7 +74,7 @@ public class HotRodUserManagementProvider implements DistributableUserManagement
             }
         };
         ServiceInstaller installer = ServiceInstaller.builder(HotRodUserManagerFactory::new, Functions.constantSupplier(cacheConfiguration))
-                .provides(ServiceNameFactory.resolveServiceName(WebDeploymentServiceDescriptor.USER_MANAGER_FACTORY, name))
+                .provides(ServiceNameFactory.resolveServiceName(DistributableUserManagementProvider.USER_MANAGER_FACTORY, name))
                 .requires(cache)
                 .build();
         return List.of(configurationInstaller, cacheInstaller, installer);
