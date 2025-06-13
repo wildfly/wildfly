@@ -480,7 +480,7 @@
         <version.org.jboss.genericjms>3.0.0.Final</version.org.jboss.genericjms>
         <version.org.jboss.hal.console>3.7.12.Final</version.org.jboss.hal.console>
         <version.org.jboss.iiop-client>2.0.1.Final</version.org.jboss.iiop-client>
-        <version.org.jboss.ironjacamar>3.0.13.Final</version.org.jboss.ironjacamar>
+        <version.org.jboss.ironjacamar>3.0.14.Final</version.org.jboss.ironjacamar>
         <version.org.jboss.jboss-transaction-spi>8.0.0.Final</version.org.jboss.jboss-transaction-spi>
         <version.org.jboss.metadata>16.1.0.Final</version.org.jboss.metadata>
         <version.org.jboss.mod_cluster>2.1.0.Final</version.org.jboss.mod_cluster>
