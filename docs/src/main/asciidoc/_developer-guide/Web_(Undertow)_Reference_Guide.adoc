@@ -1,5 +1,9 @@
 [[Web_Undertow_Reference_Guide]]
-= Sharing sessions between wars in an ear
+= Web (Undertow) Reference
+
+HTTP-based applications, including those that use the Jakarta Servlet, Jakarta Pages and Jakarta Standard Tag Libraries specifications, make use of WildFly's `undertow` subsystem. This reference covers aspects of the `undertow` subsystem behavior of interest to application developers.
+
+== Sharing sessions between wars in an ear
 
 ifdef::env-github[]
 :tip-caption: :bulb:
