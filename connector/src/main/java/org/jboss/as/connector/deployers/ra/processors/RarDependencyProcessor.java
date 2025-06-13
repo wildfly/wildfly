@@ -7,7 +7,7 @@ package org.jboss.as.connector.deployers.ra.processors;
 
 import org.jboss.as.connector.subsystems.resourceadapters.Capabilities;
 import org.jboss.as.connector.metadata.xmldescriptors.ConnectorXmlDescriptor;
-import org.jboss.as.connector.subsystems.resourceadapters.ResourceAdaptersSubsystemService;
+import org.jboss.as.connector.subsystems.resourceadapters.ConfiguredAdaptersService;
 import org.jboss.as.connector.util.ConnectorServices;
 import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.as.server.deployment.Attachments;
@@ -56,7 +56,7 @@ public class RarDependencyProcessor implements DeploymentUnitProcessor {
         moduleSpecification.addSystemDependency(ModuleDependency.Builder.of(moduleLoader, IRON_JACAMAR_IMPL_ID).setExport(true).build());
         moduleSpecification.addSystemDependency(ModuleDependency.Builder.of(moduleLoader, HIBERNATE_VALIDATOR_ID).setImportServices(true).build());
         if (support.hasCapability(Capabilities.RESOURCE_ADAPTERS_SUBSYSTEM_CAPABILITY_NAME)) {
-            phaseContext.addDeploymentDependency(ConnectorServices.RESOURCEADAPTERS_SUBSYSTEM_SERVICE, ResourceAdaptersSubsystemService.ATTACHMENT_KEY);
+            phaseContext.addDeploymentDependency(ConnectorServices.RESOURCEADAPTERS_CONFIGURED_ADAPTERS_SERVICE, ConfiguredAdaptersService.ATTACHMENT_KEY);
         }
     }
 }
