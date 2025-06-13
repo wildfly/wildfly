@@ -304,4 +304,13 @@
       <packageUrl regex="true">^pkg:maven/io\.undertow/undertow-core@.*$</packageUrl>
       <vulnerabilityName>CVE-2024-4109</vulnerabilityName>
    </suppress>
+   <suppress until="2026-06-11">
+      <notes><![CDATA[
+      file name: hal-console-3.7.12.Final-resources.jar
+
+      [WFLY-20706] This was a generalisation of two previously fixed CVEs "CVE-2025-23366 and CVE-2024-10234" and so can be ignored as a duplicate.
+      ]]></notes>
+      <packageUrl regex="true">^pkg:maven/org\.jboss\.hal/hal-console@.*$</packageUrl>
+      <vulnerabilityName>CVE-2025-2901</vulnerabilityName>
+   </suppress>
 </suppressions>
