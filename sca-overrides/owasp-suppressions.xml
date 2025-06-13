@@ -294,6 +294,19 @@
       <cve>CVE-2013-1880</cve>
       <cve>CVE-2010-0684</cve>
       <cve>CVE-2015-7559</cve>
+      <!-- XStream Not Part Of Module -->
+      <cve>CVE-2021-21345</cve>
+      <cve>CVE-2021-21344</cve>
+      <cve>CVE-2021-21346</cve>
+      <cve>CVE-2021-21347</cve>
+      <cve>CVE-2021-21350</cve>
+      <cve>CVE-2021-21342</cve>
+      <cve>CVE-2021-21351</cve>
+      <cve>CVE-2020-26217</cve>
+      <cve>CVE-2021-21349</cve>
+      <cve>CVE-2021-21341</cve>
+      <cve>CVE-2021-21343</cve>
+      <cve>CVE-2021-21348</cve>
    </suppress>
    <suppress until="2026-01-27">
       <notes><![CDATA[
