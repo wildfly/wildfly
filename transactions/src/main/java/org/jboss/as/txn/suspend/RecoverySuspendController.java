@@ -7,11 +7,14 @@ package org.jboss.as.txn.suspend;
 
 import com.arjuna.ats.jbossatx.jta.RecoveryManagerService;
 import org.jboss.as.controller.ControlledProcessState;
-import org.jboss.as.server.suspend.ServerActivity;
-import org.jboss.as.server.suspend.ServerActivityCallback;
+import org.jboss.as.server.suspend.ServerResumeContext;
+import org.jboss.as.server.suspend.ServerSuspendContext;
+import org.jboss.as.server.suspend.SuspendableActivity;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionStage;
 
 /**
  * Listens for notifications from a {@code SuspendController} and a {@code ProcessStateNotifier} and reacts
@@ -20,7 +23,7 @@ import java.beans.PropertyChangeListener;
  *
  * @author <a href="mailto:gytis@redhat.com">Gytis Trikleris</a>
  */
-public class RecoverySuspendController implements ServerActivity, PropertyChangeListener {
+public class RecoverySuspendController implements SuspendableActivity, PropertyChangeListener {
 
     private final RecoveryManagerService recoveryManagerService;
     private boolean suspended;
@@ -30,21 +33,21 @@ public class RecoverySuspendController implements ServerActivity, PropertyChange
         this.recoveryManagerService = recoveryManagerService;
     }
 
+    @Override
+    public CompletionStage<Void> prepare(ServerSuspendContext context) {
+        return COMPLETED;
+    }
+
     /**
      * {@link RecoveryManagerService#suspend() Suspends} the {@link RecoveryManagerService}.
      */
     @Override
-    public void preSuspend(ServerActivityCallback serverActivityCallback) {
+    public CompletionStage<Void> suspend(ServerSuspendContext context) {
         synchronized (this) {
             suspended = true;
         }
-        recoveryManagerService.suspend();
-        serverActivityCallback.done();
-    }
 
-    @Override
-    public void suspended(ServerActivityCallback serverActivityCallback) {
-        serverActivityCallback.done();
+        return CompletableFuture.runAsync(() -> recoveryManagerService.suspend(false, true));
     }
 
     /**
@@ -54,7 +57,7 @@ public class RecoverySuspendController implements ServerActivity, PropertyChange
      * the process state is running.
      */
     @Override
-    public void resume() {
+    public CompletionStage<Void> resume(ServerResumeContext context) {
         boolean doResume;
         synchronized (this) {
             suspended = false;
@@ -63,13 +66,15 @@ public class RecoverySuspendController implements ServerActivity, PropertyChange
         if (doResume) {
             resumeRecovery();
         }
+
+        return COMPLETED;
     }
 
     /**
      * Receives notifications from a {@code ProcessStateNotifier} to detect when the process has reached a
      * {@link ControlledProcessState.State#isRunning()}  running state}, reacting to them by
      * {@link RecoveryManagerService#resume() resuming} the {@link RecoveryManagerService} if we haven't been
-     * {@link #preSuspend(ServerActivityCallback) suspended}.
+     * {@link #suspend(ServerSuspendContext) suspended}.
      */
     @Override
     public void propertyChange(PropertyChangeEvent evt) {
