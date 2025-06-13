@@ -85,4 +85,11 @@ public interface PersistenceUnitMetadata extends PersistenceUnitInfo {
 
     boolean needsJPADelegatingClassFileTransformer();
 
+    void setScopeAnnotationName(String element);
+    public String getScopeAnnotationName();
+
+
+
+    void setQualifierAnnotationNames(List<String> qualifiers);
+    List<String> getQualifierAnnotationNames();
 }
