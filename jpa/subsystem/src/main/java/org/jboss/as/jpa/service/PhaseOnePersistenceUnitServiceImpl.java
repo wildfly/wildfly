@@ -11,12 +11,14 @@ import java.security.AccessControlContext;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.RejectedExecutionException;
 
 import jakarta.enterprise.inject.spi.BeanManager;
 import javax.sql.DataSource;
 
+import jakarta.persistence.EntityManagerFactory;
 import org.jboss.as.jpa.beanmanager.ProxyBeanManager;
 import org.jboss.as.jpa.classloader.TempClassLoaderFactoryImpl;
 import org.jboss.as.naming.WritableServiceBasedNamingStore;
@@ -57,6 +59,7 @@ public class PhaseOnePersistenceUnitServiceImpl implements Service<PhaseOnePersi
     private final Object wrapperBeanManagerLifeCycle;
 
     private volatile EntityManagerFactoryBuilder entityManagerFactoryBuilder;
+    private final CompletableFuture<EntityManagerFactory> futureEntityManagerFactory;
 
     private volatile boolean secondPhaseStarted = false;
 
@@ -65,13 +68,15 @@ public class PhaseOnePersistenceUnitServiceImpl implements Service<PhaseOnePersi
             final PersistenceUnitMetadata pu,
             final PersistenceProviderAdaptor persistenceProviderAdaptor,
             final ServiceName deploymentUnitServiceName,
-            final ProxyBeanManager proxyBeanManager) {
+            final ProxyBeanManager proxyBeanManager,
+            final CompletableFuture<EntityManagerFactory> futureEntityManagerFactory) {
         this.pu = pu;
         this.persistenceProviderAdaptor = persistenceProviderAdaptor;
         this.classLoader = classLoader;
         this.deploymentUnitServiceName = deploymentUnitServiceName;
         this.proxyBeanManager = proxyBeanManager;
         this.wrapperBeanManagerLifeCycle = proxyBeanManager != null ? persistenceProviderAdaptor.beanManagerLifeCycle(proxyBeanManager): null;
+        this.futureEntityManagerFactory = futureEntityManagerFactory;
     }
 
     @Override
@@ -225,6 +230,10 @@ public class PhaseOnePersistenceUnitServiceImpl implements Service<PhaseOnePersi
 
     public Object getBeanManagerLifeCycle() {
         return wrapperBeanManagerLifeCycle;
+    }
+
+    public CompletableFuture<EntityManagerFactory> getFutureEntityManagerFactory() {
+        return futureEntityManagerFactory;
     }
 
     /**
