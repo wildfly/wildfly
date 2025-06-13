@@ -86,6 +86,21 @@ public class JaxrsDependencyProcessor implements DeploymentUnitProcessor {
         addDependency(moduleSpecification, moduleLoader, JACKSON_DATATYPE_JDK8, true, false);
         addDependency(moduleSpecification, moduleLoader, JACKSON_DATATYPE_JSR310, true, false);
 
+        // Add modules which were previously added with export="true" in the module itself. It's better to explicitly
+        // add them here so they can be excluded vs exporting them in the module.
+
+        // These were previously exported on the org.jboss.resteasy.resteasy-jackson2-provider.
+        addDependency(moduleSpecification, moduleLoader, "com.fasterxml.jackson.core.jackson-annotations", true, false);
+        addDependency(moduleSpecification, moduleLoader, "com.fasterxml.jackson.core.jackson-core", true, false);
+        addDependency(moduleSpecification, moduleLoader, "com.fasterxml.jackson.core.jackson-databind", true, false);
+        addDependency(moduleSpecification, moduleLoader, "com.fasterxml.jackson.jakarta.jackson-jakarta-json-provider", true, false);
+
+        // These were perviously exported on the org.jboss.resteasy.resteasy-rxjava2 module.
+        addDependency(moduleSpecification, moduleLoader, "org.reactivestreams", true, false);
+        addDependency(moduleSpecification, moduleLoader, "io.reactivex.rxjava2.rxjava", true, false);
+
+        // End add exported modules
+
         final CapabilityServiceSupport support = deploymentUnit.getAttachment(Attachments.CAPABILITY_SERVICE_SUPPORT);
         if (support.hasCapability(WELD_CAPABILITY_NAME)) {
             final WeldCapability api = support.getOptionalCapabilityRuntimeAPI(WELD_CAPABILITY_NAME, WeldCapability.class).orElse(null);
