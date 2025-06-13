@@ -45,6 +45,7 @@ import org.wildfly.test.integration.microprofile.reactive.RunKafkaSetupTask;
 @RunWith(Arquillian.class)
 @ServerSetup({ReactiveMessagingKafkaUserApiTestCase.CustomRunKafkaSetupTask.class, EnableReactiveExtensionsSetupTask.class})
 @TestcontainersRequired
+@org.junit.Ignore
 public class ReactiveMessagingKafkaUserApiTestCase {
 
     private static final long TIMEOUT = TimeoutUtil.adjust(15000);

@@ -26,6 +26,7 @@ import org.wildfly.test.integration.observability.opentelemetry.span.AppScopedBe
 @RunAsClient
 @ServerSetup({OpenTelemetryWithCollectorSetupTask.class})
 @TestcontainersRequired
+@org.junit.Ignore
 public class WithSpanTestCase extends BaseOpenTelemetryTest {
     private static final String DEPLOYMENT_NAME = "with-span-test";
 

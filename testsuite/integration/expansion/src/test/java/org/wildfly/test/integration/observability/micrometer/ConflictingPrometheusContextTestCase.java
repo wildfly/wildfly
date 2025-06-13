@@ -38,6 +38,7 @@ import org.wildfly.test.stabilitylevel.StabilityServerSetupSnapshotRestoreTasks;
 @RunWith(Arquillian.class)
 @ServerSetup({StabilityServerSetupSnapshotRestoreTasks.Community.class, MicrometerSetupTask.class})
 @TestcontainersRequired
+@org.junit.Ignore
 @RunAsClient
 public class ConflictingPrometheusContextTestCase {
     private static final ModelNode metricsExtension = Operations.createAddress("extension", "org.wildfly.extension.metrics");

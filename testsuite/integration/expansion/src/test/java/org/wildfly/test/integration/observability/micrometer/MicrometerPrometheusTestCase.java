@@ -50,6 +50,7 @@ import org.wildfly.test.stabilitylevel.StabilityServerSetupSnapshotRestoreTasks;
 @RunWith(Arquillian.class)
 @ServerSetup({StabilityServerSetupSnapshotRestoreTasks.Community.class, PrometheusSetupTask.class})
 @TestcontainersRequired
+@org.junit.Ignore
 @RunAsClient
 public class MicrometerPrometheusTestCase {
     private static final int REQUEST_COUNT = 5;

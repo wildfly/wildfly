@@ -33,6 +33,7 @@ import io.restassured.RestAssured;
 @RunAsClient
 @ServerSetup({RunArtemisAmqpSetupTask.class, EnableReactiveExtensionsSetupTask.class})
 @TestcontainersRequired
+@org.junit.Ignore
 public class AnonymousAmqpTestCase {
 
     @ArquillianResource

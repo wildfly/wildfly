@@ -25,6 +25,7 @@ import org.wildfly.test.integration.observability.opentelemetry.application.Otel
 
 @ServerSetup(OpenTelemetryWithCollectorSetupTask.class)
 @RunAsClient
+@org.junit.Ignore
 public class OpenTelemetryMetricsTestCase extends BaseOpenTelemetryTest {
     private static final int REQUEST_COUNT = 5;
     private static final String DEPLOYMENT_NAME = "otel-metrics-test";

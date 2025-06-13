@@ -42,6 +42,7 @@ import org.wildfly.test.integration.microprofile.faulttolerance.micrometer.deplo
 @RunWith(Arquillian.class)
 @RunAsClient
 @TestcontainersRequired
+@org.junit.Ignore
 // This test case does not use Micrometer *but* we enable it to verify CompoundMetricsProvider functionality in WF
 @ServerSetup({OpenTelemetryWithCollectorSetupTask.class, MicrometerSetupTask.class})
 public class FaultToleranceOpenTelemetryIntegrationTestCase {

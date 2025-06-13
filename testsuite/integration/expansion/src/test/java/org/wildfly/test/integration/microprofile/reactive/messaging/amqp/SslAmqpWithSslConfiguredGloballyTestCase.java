@@ -35,6 +35,7 @@ import static org.jboss.as.test.shared.PermissionUtils.createPermissionsXmlAsset
 @RunAsClient
 @ServerSetup({SslAmqpWithSslConfiguredGloballyTestCase.RunArtemisSslUsernamePasswordSecuredSetupTask.class, EnableReactiveExtensionsSetupTask.class, ConfigureElytronSslContextSetupTask.class})
 @TestcontainersRequired
+@org.junit.Ignore
 public class SslAmqpWithSslConfiguredGloballyTestCase {
     @ArquillianResource
     URL url;

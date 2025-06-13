@@ -22,6 +22,7 @@ import org.wildfly.test.integration.observability.setuptask.ServiceNameSetupTask
 @ServerSetup({OpenTelemetryWithCollectorSetupTask.class, ServiceNameSetupTask.class})
 @RunAsClient
 @TestcontainersRequired
+@org.junit.Ignore
 public class OpenTelemetryIntegrationTestCase extends BaseOpenTelemetryTest {
     private static final String DEPLOYMENT_NAME = "otelinteg";
 

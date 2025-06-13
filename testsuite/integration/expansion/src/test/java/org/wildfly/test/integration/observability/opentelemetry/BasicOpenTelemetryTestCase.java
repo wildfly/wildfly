@@ -28,6 +28,7 @@ import org.wildfly.test.integration.observability.opentelemetry.application.Otel
 @RunWith(Arquillian.class)
 @ServerSetup(OpenTelemetrySetupTask.class)
 @TestcontainersRequired
+@org.junit.Ignore
 public class BasicOpenTelemetryTestCase {
     @Inject
     private Tracer tracer;

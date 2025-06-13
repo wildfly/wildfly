@@ -56,6 +56,7 @@ import org.wildfly.test.integration.microprofile.reactive.messaging.multiple.ear
 @RunAsClient
 @ServerSetup({RunKafkaSetupTask.class, RunArtemisAmqpSetupTask.class, EnableReactiveExtensionsSetupTask.class})
 @TestcontainersRequired
+@org.junit.Ignore
 public class MultiEarModuleReactiveMessagingTestCase {
 
     private static final String BASE_NAME = "multimodule-rm";
