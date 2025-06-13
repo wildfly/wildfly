@@ -348,7 +348,9 @@ public class PersistenceUnitServiceHandler {
                             PersistenceUnitRegistryImpl.INSTANCE,
                             deploymentUnit.getServiceName(), validatorFactory,
                             deploymentUnit.getAttachment(org.jboss.as.ee.naming.Attachments.JAVA_NAMESPACE_SETUP_ACTION),
-                            beanManagerAfterDeploymentValidation );
+                            beanManagerAfterDeploymentValidation,
+                            deploymentUnit.getAttachment(JpaAttachments.TRANSACTION_SYNCHRONIZATION_REGISTRY),
+                            ContextTransactionManager.getInstance());
 
             ServiceBuilder<PersistenceUnitService> builder = serviceTarget.addService(puServiceName, service);
             boolean useDefaultDataSource = Configuration.allowDefaultDataSourceUse(pu);
@@ -605,7 +607,9 @@ public class PersistenceUnitServiceHandler {
                     adaptor, integratorAdaptors, provider, PersistenceUnitRegistryImpl.INSTANCE,
                     deploymentUnit.getServiceName(), validatorFactory,
                     deploymentUnit.getAttachment(org.jboss.as.ee.naming.Attachments.JAVA_NAMESPACE_SETUP_ACTION),
-                    beanManagerAfterDeploymentValidation);
+                    beanManagerAfterDeploymentValidation,
+                    deploymentUnit.getAttachment(JpaAttachments.TRANSACTION_SYNCHRONIZATION_REGISTRY),
+                    ContextTransactionManager.getInstance());
             ServiceBuilder<PersistenceUnitService> builder = serviceTarget.addService(puServiceName, service);
             // the PU service has to depend on the JPAService which is responsible for setting up the necessary JPA infrastructure (like registering the cache EventListener(s))
             // @see https://issues.jboss.org/browse/WFLY-1531 for details
@@ -656,6 +660,7 @@ public class PersistenceUnitServiceHandler {
             final CapabilityServiceSupport support = deploymentUnit.getAttachment(Attachments.CAPABILITY_SERVICE_SUPPORT);
             if (support.hasCapability(WELD_CAPABILITY_NAME)) {
                 support.getOptionalCapabilityRuntimeAPI(WELD_CAPABILITY_NAME, WeldCapability.class).get()
+
                         .addBeanManagerService(deploymentUnit, builder, service.getBeanManagerInjector());
             }
 
@@ -693,6 +698,7 @@ public class PersistenceUnitServiceHandler {
     }
 
     private static void entityManagerBind(EEModuleDescription eeModuleDescription, ServiceTarget serviceTarget, final PersistenceUnitMetadata pu, ServiceName puServiceName, TransactionManager transactionManager, TransactionSynchronizationRegistry transactionSynchronizationRegistry) {
+
         if (pu.getProperties().containsKey(ENTITYMANAGER_JNDI_PROPERTY)) {
             String jndiName = pu.getProperties().get(ENTITYMANAGER_JNDI_PROPERTY).toString();
             final ContextNames.BindInfo bindingInfo;
