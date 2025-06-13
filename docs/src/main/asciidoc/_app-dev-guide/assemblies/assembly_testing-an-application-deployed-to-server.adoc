@@ -1,0 +1,51 @@
+:_newdoc-version: 2.15.0
+:_template-generated: 2023-11-6
+
+ifdef::context[:parent-context-of-testing-an-application-deployed-to-server: {context}]
+
+:_mod-docs-content-type: ASSEMBLY
+
+ifndef::context[]
+[id="testing-an-application-deployed-to-server"]
+endif::[]
+ifdef::context[]
+[id="testing-an-application-deployed-to-server_{context}"]
+endif::[]
+= Testing an application deployed on {ProductShortname}
+
+:context: testing-an-application-deployed-to-server
+
+[role="_abstract"]
+To ensure that the Hello World application deployed on {ProductShortName} is working, you can add integration tests.
+
+To add tests for an application deployed on a {ProductShortName} server running on bare metal, follow these procedures:
+
+* xref:adding-the-maven-dependencies-required-for-junit-tests_testing-an-application-deployed-to-server[Adding the Maven dependencies and profile required for integration tests]
+* xref:creating-a-test-class-to-test-an-application_testing-an-application-deployed-to-server[Creating a test class to test an application]
+* xref:testing-an-application-deployed-to-server-running-on-bare-metal_testing-an-application-deployed-to-server[Testing an application deployed on {ProductShortName} that is running on bare metal]
+
+To add tests for an application deployed on a provisioned {ProductShortName} server, follow these procedures:
+
+* xref:adding-the-maven-dependencies-required-for-junit-tests_testing-an-application-deployed-to-server[Adding the Maven dependencies and profile required for integration tests]
+* xref:creating-a-test-class-to-test-an-application_testing-an-application-deployed-to-server[Creating a test class to test an application]
+* xref:testing-an-application-deployed-on-a-provisioned-server_testing-an-application-deployed-to-server[Testing an application deployed on a provisioned server]
+
+To add tests for an application deployed on a {ProductShortName} server running on {cloudPlatform}, follow these procedures:
+
+* xref:adding-the-maven-dependencies-required-for-junit-tests_testing-an-application-deployed-to-server[Adding the Maven dependencies and profile required for integration tests]
+* xref:creating-a-test-class-to-test-an-application_testing-an-application-deployed-to-server[Creating a test class to test an application]
+* xref:testing-an-application-deployed-to-server-on-cloudplaform_testing-an-application-deployed-to-server[Testing an application deployed to {ProductShortName} on {cloudPlatform}]
+
+include::{pathToModules}/proc_adding-the-maven-dependencies-required-for-junit-tests.adoc[leveloffset=+1]
+
+include::{pathToModules}/proc_creating-a-test-class-to-test-an-application.adoc[leveloffset=+1]
+
+include::{pathToModules}/proc_testing-an-application-deployed-to-server-running-on-bare-metal.adoc[leveloffset=+1]
+
+include::{pathToModules}/proc_testing-an-application-deployed-on-a-provisioned-server.adoc[leveloffset=+1]
+
+include::{pathToModules}/proc_testing-an-application-deployed-to-server-on-cloudplaform.adoc[leveloffset=+1]
+
+ifdef::parent-context-of-testing-an-application-deployed-to-server[:context: {parent-context-of-testing-an-application-deployed-to-server}]
+ifndef::parent-context-of-testing-an-application-deployed-to-server[:!context:]
+

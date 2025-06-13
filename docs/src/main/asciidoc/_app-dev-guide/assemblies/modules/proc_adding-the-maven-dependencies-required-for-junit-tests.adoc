@@ -1,0 +1,88 @@
+:_newdoc-version: 2.15.0
+:_template-generated: 2023-11-6
+:_mod-docs-content-type: PROCEDURE
+
+[id="adding-the-maven-dependencies-required-for-junit-tests_{context}"]
+= Adding the Maven dependencies and profile required for integration tests
+
+[role="_abstract"]
+To create integration tests for your applications, add the required Maven dependencies.
+
+.Prerequisites
+
+* You have created a Maven project.
++
+For more information, see xref:creating-a-maven-project-for-a-hello-world-application_default[Creating a Maven project for a Hello World application].
+
+.Procedure
+
+. Define the following properties in the `pom.xml` configuration file:
++
+[source,xml,options="nowrap",subs="attributes+"]
+----
+<properties>
+    ...
+    <version.plugin.failsafe>3.2.2</version.plugin.failsafe>
+</properties>
+----
+
+. Add the dependency required for tests.
++
+[source,xml,options="nowrap"]
+----
+<project>
+    ...
+    <dependencies>
+        ...
+        <dependency>
+           <groupId>junit</groupId>
+           <artifactId>junit</artifactId>
+           <scope>test</scope>
+        </dependency>
+    </dependencies>
+</project>
+----
+
+. Define a profile to add the plug-ins required for integration tests.
++
+[source,xml,options="nowrap"]
+----
+<project>
+    ...
+    <profiles>
+        ...
+        <profile>
+            <id>integration-testing</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-failsafe-plugin</artifactId> <!--1-->
+                        <version>${version.plugin.failsafe}</version>
+                        <configuration>
+                            <includes>
+                                <include>**/HelloWorldServletIT</include>       <!--2-->
+                            </includes>
+                        </configuration>
+                        <executions>
+                            <execution>
+                               <goals>
+                                   <goal>integration-test</goal>
+                                   <goal>verify</goal>
+                               </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
+</project>
+----
+<1> Maven plug-in for running integration tests.
+<2> The name of the Java class that tests the application.
+
+[role="_additional-resources"]
+.Next steps
+
+* xref:creating-a-test-class-to-test-an-application_testing-an-application-deployed-to-server[Creating a test class to test an application]
