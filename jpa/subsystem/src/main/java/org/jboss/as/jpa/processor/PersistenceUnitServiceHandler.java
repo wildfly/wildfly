@@ -15,6 +15,8 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 import jakarta.persistence.SynchronizationType;
 import jakarta.persistence.ValidationMode;
@@ -100,6 +102,12 @@ import org.wildfly.transaction.client.ContextTransactionManager;
  */
 public class PersistenceUnitServiceHandler {
 
+    /*
+       Attachment for a per-top-level-DeploymentUnit lock to prevent concurrent builds of
+       EntityManagerFactory instances associated with a deployment.
+     */
+    private static final AttachmentKey<Lock> CONCURRENT_START_ATTACHMENT = AttachmentKey.create(Lock.class);
+
     private static final String ENTITYMANAGERFACTORY_JNDI_PROPERTY = "jboss.entity.manager.factory.jndi.name";
     private static final String ENTITYMANAGER_JNDI_PROPERTY = "jboss.entity.manager.jndi.name";
     public static final ServiceName BEANMANAGER_NAME = ServiceName.of("beanmanager");
@@ -110,6 +118,7 @@ public class PersistenceUnitServiceHandler {
     private static final String EE_DEFAULT_DATASOURCE = "java:comp/DefaultDataSource";
 
     public static void deploy(DeploymentPhaseContext phaseContext, boolean startEarly, Platform platform) throws DeploymentUnitProcessingException {
+        attachConcurrentStartLock(phaseContext.getDeploymentUnit());
         handleWarDeployment(phaseContext, startEarly, platform);
         handleEarDeployment(phaseContext, startEarly, platform);
         handleJarDeployment(phaseContext, startEarly, platform);
@@ -205,6 +214,19 @@ public class PersistenceUnitServiceHandler {
                     ROOT_LOGGER.tracef("install persistence unit definitions for ear %s",
                             root != null ? root.getRootName() : "null");
                     addPuService(phaseContext, puList, startEarly, platform);
+                }
+            }
+        }
+    }
+
+    private static void attachConcurrentStartLock(DeploymentUnit deploymentUnit) {
+        if (JPADeploymentMarker.isJPADeployment(deploymentUnit)) {
+            DeploymentUnit du = deploymentUnit.getParent() == null ? deploymentUnit : deploymentUnit.getParent();
+            if (!du.hasAttachment(CONCURRENT_START_ATTACHMENT)) {
+                Lock existing = du.putAttachment(CONCURRENT_START_ATTACHMENT, new ReentrantLock());
+                if (existing != null) {
+                    // Restore it
+                    du.putAttachment(CONCURRENT_START_ATTACHMENT, existing);
                 }
             }
         }
@@ -348,7 +370,8 @@ public class PersistenceUnitServiceHandler {
                             PersistenceUnitRegistryImpl.INSTANCE,
                             deploymentUnit.getServiceName(), validatorFactory,
                             deploymentUnit.getAttachment(org.jboss.as.ee.naming.Attachments.JAVA_NAMESPACE_SETUP_ACTION),
-                            beanManagerAfterDeploymentValidation );
+                            beanManagerAfterDeploymentValidation,
+                            getPersistenceUnitStartLock(deploymentUnit));
 
             ServiceBuilder<PersistenceUnitService> builder = serviceTarget.addService(puServiceName, service);
             boolean useDefaultDataSource = Configuration.allowDefaultDataSourceUse(pu);
@@ -605,7 +628,8 @@ public class PersistenceUnitServiceHandler {
                     adaptor, integratorAdaptors, provider, PersistenceUnitRegistryImpl.INSTANCE,
                     deploymentUnit.getServiceName(), validatorFactory,
                     deploymentUnit.getAttachment(org.jboss.as.ee.naming.Attachments.JAVA_NAMESPACE_SETUP_ACTION),
-                    beanManagerAfterDeploymentValidation);
+                    beanManagerAfterDeploymentValidation,
+                    getPersistenceUnitStartLock(deploymentUnit));
             ServiceBuilder<PersistenceUnitService> builder = serviceTarget.addService(puServiceName, service);
             // the PU service has to depend on the JPAService which is responsible for setting up the necessary JPA infrastructure (like registering the cache EventListener(s))
             // @see https://issues.jboss.org/browse/WFLY-1531 for details
@@ -1044,6 +1068,11 @@ public class PersistenceUnitServiceHandler {
                 }
             }
         }
+    }
+
+    private static Lock getPersistenceUnitStartLock(DeploymentUnit deploymentUnit) {
+        DeploymentUnit du = deploymentUnit.getParent() == null ? deploymentUnit : deploymentUnit.getParent();
+        return du.getAttachment(CONCURRENT_START_ATTACHMENT);
     }
 
     static boolean isEarDeployment(final DeploymentUnit context) {

@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.RejectedExecutionException;
+import java.util.concurrent.locks.Lock;
 
 import jakarta.enterprise.inject.spi.BeanManager;
 import jakarta.persistence.EntityManagerFactory;
@@ -78,6 +79,7 @@ public class PersistenceUnitServiceImpl implements Service<PersistenceUnitServic
     private volatile EntityManagerFactory entityManagerFactory;
     private volatile ProxyBeanManager proxyBeanManager;
     private final SetupAction javaNamespaceSetup;
+    private final Lock puStartLock;
 
     public PersistenceUnitServiceImpl(
             final Map properties,
@@ -88,8 +90,10 @@ public class PersistenceUnitServiceImpl implements Service<PersistenceUnitServic
             final PersistenceProvider persistenceProvider,
             final PersistenceUnitRegistryImpl persistenceUnitRegistry,
             final ServiceName deploymentUnitServiceName,
-            final ValidatorFactory validatorFactory, SetupAction javaNamespaceSetup,
-            BeanManagerAfterDeploymentValidation beanManagerAfterDeploymentValidation) {
+            final ValidatorFactory validatorFactory,
+            final SetupAction javaNamespaceSetup,
+            final BeanManagerAfterDeploymentValidation beanManagerAfterDeploymentValidation,
+            final Lock persistenceUnitStartLock) {
         this.properties = properties;
         this.pu = pu;
         this.persistenceProviderAdaptor = persistenceProviderAdaptor;
@@ -101,6 +105,7 @@ public class PersistenceUnitServiceImpl implements Service<PersistenceUnitServic
         this.validatorFactory = validatorFactory;
         this.javaNamespaceSetup = javaNamespaceSetup;
         this.beanManagerAfterDeploymentValidation = beanManagerAfterDeploymentValidation;
+        this.puStartLock = persistenceUnitStartLock;
     }
 
     @Override
@@ -156,7 +161,12 @@ public class PersistenceUnitServiceImpl implements Service<PersistenceUnitServic
                                         }
 
                                         // get the EntityManagerFactory from the second phase of the persistence unit bootstrap
-                                        entityManagerFactory = emfBuilder.build();
+                                        puStartLock.lock();
+                                        try {
+                                            entityManagerFactory = emfBuilder.build();
+                                        } finally {
+                                            puStartLock.unlock();
+                                        }
                                     } else {
                                         ROOT_LOGGER.startingService("Persistence Unit", pu.getScopedPersistenceUnitName());
                                         // start the persistence unit in one pass (1 of 1)
@@ -351,7 +361,12 @@ public class PersistenceUnitServiceImpl implements Service<PersistenceUnitServic
         try {
             ROOT_LOGGER.tracef("calling createContainerEntityManagerFactory for pu=%s with integration properties=%s, application properties=%s",
                     pu.getScopedPersistenceUnitName(), properties, pu.getProperties());
-            return persistenceProvider.createContainerEntityManagerFactory(pu, properties);
+            puStartLock.lock();
+            try {
+                return persistenceProvider.createContainerEntityManagerFactory(pu, properties);
+            } finally {
+                puStartLock.unlock();
+            }
         } finally {
             persistenceProviderAdaptor.afterCreateContainerEntityManagerFactory(pu);
             for (PersistenceProviderIntegratorAdaptor adaptor : persistenceProviderIntegratorAdaptors) {
