@@ -757,4 +757,8 @@ public interface JpaLogger extends BasicLogger {
     @Message(id = 75, value="Illegal to call this method from injected, managed EntityManager")
     IllegalStateException illegalCallOnCloseMethod();
 
+    @LogMessage(level = INFO)
+    @Message(id = 76, value = "persistence.xml in application client %s deployment will not be deployed in server mode")
+    void ignoreAppclientPersistenceUnitsInServer(String deploymentName);
+
 }
