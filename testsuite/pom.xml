@@ -382,6 +382,13 @@
                    <artifactId>maven-install-plugin</artifactId>
                    <executions><execution><id>default-install</id><phase>none</phase></execution></executions>
                </plugin>
+
+                <!-- Don't sign - nothing to do. -->
+                <plugin>
+                    <groupId>org.wildfly</groupId>
+                    <artifactId>wildfly-maven-gpg-plugin</artifactId>
+                    <executions><execution><id>default</id><phase>none</phase></execution></executions>
+                </plugin>
             </plugins>
         </pluginManagement>
     </build>

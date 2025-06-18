@@ -65,6 +65,12 @@
                     <artifactId>maven-enforcer-plugin</artifactId>
                     <executions><execution><id>require-java17-build</id><goals><goal>enforce</goal></goals><phase>none</phase></execution></executions>
                 </plugin>
+
+                <plugin>
+                    <groupId>org.wildfly</groupId>
+                    <artifactId>wildfly-maven-gpg-plugin</artifactId>
+                    <executions><execution><id>default</id><phase>none</phase></execution></executions>
+                </plugin>
             </plugins>
         </pluginManagement>
     </build>
