@@ -199,7 +199,7 @@
                         <transport type="UDP" socket-binding="jgroups-udp"/>
                         <protocol type="PING"/>
                         <protocol type="MERGE3"/>
-                        <socket-protocol type="FD_SOCK" socket-binding="jgroups-udp-fd"/>
+                        <socket-protocol type="FD_SOCK2" socket-binding="jgroups-udp-fd"/>
                         <protocol type="FD_ALL"/>
                         <protocol type="VERIFY_SUSPECT"/>
                         <protocol type="pbcast.NAKACK2"/>
@@ -214,7 +214,6 @@
                         <transport type="TCP" socket-binding="jgroups-tcp"/>
                         <socket-protocol type="MPING" socket-binding="jgroups-mping"/>
                         <protocol type="MERGE3"/>
-                        <socket-protocol type="FD_SOCK" socket-binding="jgroups-tcp-fd"/>
                         <protocol type="FD_ALL"/>
                         <protocol type="VERIFY_SUSPECT"/>
                         <protocol type="pbcast.NAKACK2"/>
@@ -556,7 +555,7 @@
                         <transport type="UDP" socket-binding="jgroups-udp"/>
                         <protocol type="PING"/>
                         <protocol type="MERGE3"/>
-                        <socket-protocol type="FD_SOCK" socket-binding="jgroups-udp-fd"/>
+                        <socket-protocol type="FD_SOCK2" socket-binding="jgroups-udp-fd"/>
                         <protocol type="FD_ALL"/>
                         <protocol type="VERIFY_SUSPECT"/>
                         <protocol type="pbcast.NAKACK2"/>
@@ -571,7 +570,6 @@
                         <transport type="TCP" socket-binding="jgroups-tcp"/>
                         <socket-protocol type="MPING" socket-binding="jgroups-mping"/>
                         <protocol type="MERGE3"/>
-                        <socket-protocol type="FD_SOCK" socket-binding="jgroups-tcp-fd"/>
                         <protocol type="FD_ALL"/>
                         <protocol type="VERIFY_SUSPECT"/>
                         <protocol type="pbcast.NAKACK2"/>
@@ -844,7 +842,6 @@
             <socket-binding name="jgroups-diagnostics" port="0" multicast-address="224.0.75.75" multicast-port="7500"/>
             <socket-binding name="jgroups-mping" port="0" multicast-address="${jboss.default.multicast.address:230.0.0.4}" multicast-port="45700"/>
             <socket-binding name="jgroups-tcp" port="7600"/>
-            <socket-binding name="jgroups-tcp-fd" port="57600"/>
             <socket-binding name="jgroups-udp" port="55200" multicast-address="${jboss.default.multicast.address:230.0.0.4}" multicast-port="45688"/>
             <socket-binding name="jgroups-udp-fd" port="54200"/>
             <socket-binding name="modcluster" port="0" multicast-address="224.0.1.105" multicast-port="23364"/>
@@ -864,7 +861,6 @@
             <socket-binding name="jgroups-diagnostics" port="0" multicast-address="224.0.75.75" multicast-port="7500"/>
             <socket-binding name="jgroups-mping" port="0" multicast-address="${jboss.default.multicast.address:230.0.0.4}" multicast-port="45700"/>
             <socket-binding name="jgroups-tcp" port="7600"/>
-            <socket-binding name="jgroups-tcp-fd" port="57600"/>
             <socket-binding name="jgroups-udp" port="55200" multicast-address="${jboss.default.multicast.address:230.0.0.4}" multicast-port="45688"/>
             <socket-binding name="jgroups-udp-fd" port="54200"/>
             <socket-binding name="modcluster" port="0" multicast-address="224.0.1.105" multicast-port="23364"/>

@@ -5,6 +5,7 @@
 package org.jboss.as.clustering.jgroups.subsystem;
 
 import java.net.InetSocketAddress;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -20,6 +21,7 @@ import org.jboss.as.network.SocketBinding;
 import org.jboss.dmr.ModelNode;
 import org.jgroups.protocols.BasicTCP;
 import org.wildfly.clustering.jgroups.spi.ChannelFactoryConfiguration;
+import org.wildfly.clustering.jgroups.spi.ProtocolConfiguration;
 import org.wildfly.clustering.jgroups.spi.TransportConfiguration;
 import org.wildfly.subsystem.resource.ResourceDescriptor;
 import org.wildfly.subsystem.resource.capability.CapabilityReference;
@@ -69,6 +71,8 @@ public class SocketTransportResourceDefinitionRegistrar<T extends BasicTCP> exte
 
     @Override
     public ServiceDependency<TransportConfiguration<T>> resolve(OperationContext context, ModelNode model) throws OperationFailedException {
+        String stackName = context.getCurrentAddress().getParent().getLastElement().getValue();
+        boolean hasSocketBasedFailureDetectionProtocol = EnumSet.allOf(SocketProtocolResourceRegistration.class).stream().map(Enum::name).anyMatch(fd -> context.hasOptionalCapability(ProtocolConfiguration.SERVICE_DESCRIPTOR, stackName, fd, CAPABILITY, null));
         ServiceDependency<SocketBinding> clientSocketBinding = CLIENT_SOCKET_BINDING.resolve(context, model);
         return super.resolve(context, model).combine(clientSocketBinding, new BiFunction<>() {
             @Override
@@ -81,6 +85,12 @@ public class SocketTransportResourceDefinitionRegistrar<T extends BasicTCP> exte
                             InetSocketAddress clientSocketAddress = clientSocketBinding.getSocketAddress();
                             this.setValue(transport, "client_bind_addr", clientSocketAddress.getAddress());
                             this.setValue(transport, "client_bind_port", clientSocketAddress.getPort());
+                        }
+                        if (!hasSocketBasedFailureDetectionProtocol && (transport.getReaperInterval() <= 0) && (transport.getConnExpireTime() <= 0)) {
+                            // Auto-enable suspect events if the stack does not otherwise contain a socket-based failure-detection protocol
+                            // But do not auto-enable if connection reaping is configured.
+                            // See http://jgroups.org/manual5/index.html#_failure_detection_in_tcp_and_tcp_nio2
+                            transport.enableSuspectEvents(true);
                         }
                         return transport;
                     }
