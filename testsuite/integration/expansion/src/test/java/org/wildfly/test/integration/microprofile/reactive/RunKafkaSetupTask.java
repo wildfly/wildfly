@@ -5,6 +5,9 @@
 
 package org.wildfly.test.integration.microprofile.reactive;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYSTEM_PROPERTY;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
+
 import java.time.Duration;
 import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
@@ -15,11 +18,19 @@ import io.smallrye.reactive.messaging.kafka.companion.KafkaCompanion;
 import org.jboss.arquillian.testcontainers.api.DockerRequired;
 import org.jboss.as.arquillian.api.ServerSetupTask;
 import org.jboss.as.arquillian.container.ManagementClient;
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.operations.common.Util;
+import org.jboss.as.model.test.ModelTestUtils;
+import org.jboss.dmr.ModelNode;
 import org.testcontainers.kafka.KafkaContainer;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
 @DockerRequired
 public class RunKafkaSetupTask implements ServerSetupTask {
+
+    private static final PathElement BOOTSTRAP_SERVERS_PATH = PathElement.pathElement(SYSTEM_PROPERTY, "calculated.bootstrap.servers");
+
     volatile KafkaContainer container;
     volatile KafkaCompanion companion;
 
@@ -38,7 +49,12 @@ public class RunKafkaSetupTask implements ServerSetupTask {
 
         container.start();
 
-        companion = new KafkaCompanion("INTERNAL://localhost:9092");
+        String bootstrapServers = container.getBootstrapServers();
+        ModelNode op = Util.createAddOperation(PathAddress.pathAddress(BOOTSTRAP_SERVERS_PATH), Map.of(VALUE, new ModelNode(bootstrapServers)));
+        ModelNode result =  managementClient.getControllerClient().execute(op);
+        ModelTestUtils.checkOutcome(result);
+
+        companion = new KafkaCompanion("INTERNAL://" + bootstrapServers);
 
         Map<String, Integer> topicsAndPartitions = getTopicsAndPartitions();
         if (topicsAndPartitions == null || topicsAndPartitions.isEmpty()) {
@@ -66,6 +82,9 @@ public class RunKafkaSetupTask implements ServerSetupTask {
                 e.printStackTrace();
             }
         }
+
+        ModelNode op = Util.createRemoveOperation(PathAddress.pathAddress(BOOTSTRAP_SERVERS_PATH));
+        managementClient.getControllerClient().execute(op);
     }
 
 

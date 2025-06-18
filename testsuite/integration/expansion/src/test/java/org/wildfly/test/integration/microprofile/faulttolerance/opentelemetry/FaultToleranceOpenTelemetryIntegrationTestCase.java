@@ -100,7 +100,7 @@ public class FaultToleranceOpenTelemetryIntegrationTestCase {
                     .findFirst();
             Assert.assertTrue(prometheusMetric.isPresent());
             Assert.assertEquals(0, Integer.parseInt(prometheusMetric.get().getValue()), 0);
-        }, Duration.ofSeconds(70)); // n.b. this in ~2% of cases needs slightly more time on our CI given the asynchronicity
+        }, Duration.ofSeconds(120)); // n.b. this in ~2% of cases needs slightly more time on our CI given the asynchronicity
     }
 
 }

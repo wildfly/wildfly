@@ -5,6 +5,7 @@
 
 package org.wildfly.test.integration.microprofile.reactive;
 
+import com.google.common.net.InetAddresses;
 import org.jboss.logging.Logger;
 
 import java.io.BufferedReader;
@@ -20,6 +21,7 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class KeystoreUtil {
     private static final Logger log = Logger.getLogger(KeystoreUtil.class.getSimpleName());
@@ -42,6 +44,10 @@ public class KeystoreUtil {
     public static final String CLIENT_TRUSTSTORE_PWD = "clientts";
 
     public static void createKeystores() throws IOException {
+        createKeystores("localhost","127.0.0.1");
+    }
+
+    public static void createKeystores(String... subjectAlternativeNames) throws IOException {
         Files.createDirectories(KEY_STORE_DIRECTORY_PATH);
 
         //keytool -genkeypair -alias localhost -keyalg RSA -keysize 2048 -storetype PKCS12 -keystore server.keystore.p12 -validity 3650  -ext SAN=DNS:localhost,IP:127.0.0.1
@@ -56,7 +62,7 @@ public class KeystoreUtil {
         createKeyStoreWithCertificateCommand.addAll(
                 List.of("-dname", "CN=localhost, OU=Unknown, O=Unknown, L=Unknown, ST=Unknown, C=Unknown"));
         createKeyStoreWithCertificateCommand.addAll(List.of("-validity", "3650"));
-        createKeyStoreWithCertificateCommand.addAll(List.of("-ext", "SAN=DNS:localhost,IP:127.0.0.1"));
+        createKeyStoreWithCertificateCommand.addAll(List.of("-ext", generateSubjectAlternativeNameExtension(subjectAlternativeNames)));
         runKeytoolCommand(createKeyStoreWithCertificateCommand);
 
         Files.createFile(SERVER_KEYSTORE_CREDENTIALS_PATH);
@@ -132,5 +138,17 @@ public class KeystoreUtil {
                 return super.postVisitDirectory(dir, exc);
             }
         });
+    }
+
+    private static String generateSubjectAlternativeNameExtension(String... subjectAlternativeNames) {
+        String entries = Stream.of(subjectAlternativeNames)
+                .map(KeystoreUtil::mapToSubjectAlternativeNameEntry)
+                .collect(Collectors.joining(","));
+        return "SAN=" + entries;
+    }
+
+    private static String mapToSubjectAlternativeNameEntry(String subjectAlternativeName) {
+        String prefix = InetAddresses.isInetAddress(subjectAlternativeName) ? "IP:" : "DNS:";
+        return prefix + subjectAlternativeName;
     }
 }

@@ -21,6 +21,7 @@ import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.model.test.ModelTestUtils;
 import org.jboss.dmr.ModelNode;
+import org.testcontainers.DockerClientFactory;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.MountableFile;
@@ -41,6 +42,7 @@ public class RunArtemisAmqpSetupTask implements ServerSetupTask {
     private volatile String brokerXml = "messaging/amqp/broker.xml";
 
     private static final int AMQP_PORT = 5672;
+    private static final PathElement AMQP_HOST_PATH = PathElement.pathElement(SYSTEM_PROPERTY, "calculated.amqp.host");
     private static final PathElement AMQP_PORT_PATH = PathElement.pathElement(SYSTEM_PROPERTY, "calculated.amqp.port");
 
     public RunArtemisAmqpSetupTask() {
@@ -76,7 +78,7 @@ public class RunArtemisAmqpSetupTask implements ServerSetupTask {
                     "/home/jboss/config/broker.xml"
             );
             if (copyKeystore) {
-                KeystoreUtil.createKeystores();
+                KeystoreUtil.createKeystores(DockerClientFactory.instance().dockerHostIpAddress());
                 // Copy the keystore files to the expected container location
                 // The subclass should have configured the keystore in the broker.xml
                 container.withCopyFileToContainer(
@@ -91,6 +93,12 @@ public class RunArtemisAmqpSetupTask implements ServerSetupTask {
             int amqpPort = container.getMappedPort(AMQP_PORT);
             ModelNode op = Util.createAddOperation(PathAddress.pathAddress(AMQP_PORT_PATH), Map.of(VALUE, new ModelNode(amqpPort)));
             ModelNode result =  managementClient.getControllerClient().execute(op);
+            ModelTestUtils.checkOutcome(result);
+
+            // Set the calculated host as a property in the model
+            String amqpHost = container.getHost();
+            op = Util.createAddOperation(PathAddress.pathAddress(AMQP_HOST_PATH), Map.of(VALUE, new ModelNode(amqpHost)));
+            result =  managementClient.getControllerClient().execute(op);
             ModelTestUtils.checkOutcome(result);
         } catch (Exception e) {
             try {
@@ -107,6 +115,9 @@ public class RunArtemisAmqpSetupTask implements ServerSetupTask {
     public void tearDown(ManagementClient managementClient, String containerId) throws Exception {
         try {
             ModelNode op = Util.createRemoveOperation(PathAddress.pathAddress(AMQP_PORT_PATH));
+            managementClient.getControllerClient().execute(op);
+
+            op = Util.createRemoveOperation(PathAddress.pathAddress(AMQP_HOST_PATH));
             managementClient.getControllerClient().execute(op);
 
             if (container != null) {
