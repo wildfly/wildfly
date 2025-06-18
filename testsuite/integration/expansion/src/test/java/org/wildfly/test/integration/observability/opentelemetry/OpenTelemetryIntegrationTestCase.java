@@ -17,13 +17,11 @@ import org.jboss.as.test.shared.observability.setuptasks.OpenTelemetryWithCollec
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
 import org.junit.Test;
-import org.junit.Ignore;
 import org.wildfly.test.integration.observability.setuptask.ServiceNameSetupTask;
 
 @ServerSetup({OpenTelemetryWithCollectorSetupTask.class, ServiceNameSetupTask.class})
 @RunAsClient
 @DockerRequired
-@Ignore
 public class OpenTelemetryIntegrationTestCase extends BaseOpenTelemetryTest {
     private static final String DEPLOYMENT_NAME = "otelinteg";
 

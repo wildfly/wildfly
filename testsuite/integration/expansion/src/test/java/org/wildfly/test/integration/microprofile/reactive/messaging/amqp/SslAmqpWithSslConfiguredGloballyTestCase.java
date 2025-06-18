@@ -19,7 +19,6 @@ import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Test;
-import org.junit.Ignore;
 import org.junit.runner.RunWith;
 import org.wildfly.test.integration.microprofile.reactive.ConfigureElytronSslContextSetupTask;
 import org.wildfly.test.integration.microprofile.reactive.EnableReactiveExtensionsSetupTask;
@@ -36,7 +35,6 @@ import static org.jboss.as.test.shared.PermissionUtils.createPermissionsXmlAsset
 @RunAsClient
 @ServerSetup({SslAmqpWithSslConfiguredGloballyTestCase.RunArtemisSslUsernamePasswordSecuredSetupTask.class, EnableReactiveExtensionsSetupTask.class, ConfigureElytronSslContextSetupTask.class})
 @DockerRequired
-@Ignore
 public class SslAmqpWithSslConfiguredGloballyTestCase {
     @ArquillianResource
     URL url;

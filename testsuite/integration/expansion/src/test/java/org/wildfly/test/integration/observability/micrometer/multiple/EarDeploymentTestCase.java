@@ -17,7 +17,6 @@ import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.junit.Assert;
 import org.junit.Test;
-import org.junit.Ignore;
 import org.wildfly.test.integration.observability.micrometer.multiple.application.DuplicateMetricResource1;
 import org.wildfly.test.integration.observability.micrometer.multiple.application.DuplicateMetricResource2;
 import org.jboss.as.test.shared.observability.signals.PrometheusMetric;
@@ -50,7 +49,6 @@ public class EarDeploymentTestCase extends BaseMultipleTestCase {
     }
 
     @Test
-    @Ignore
     public void dataTest(@ArquillianResource @OperateOnDeployment(ENTERPRISE_APP) URL earUrl)
             throws URISyntaxException, InterruptedException {
         makeRequests(new URI(String.format("%s/%s/%s/%s", earUrl, ENTERPRISE_APP, SERVICE_ONE, DuplicateMetricResource1.TAG)));

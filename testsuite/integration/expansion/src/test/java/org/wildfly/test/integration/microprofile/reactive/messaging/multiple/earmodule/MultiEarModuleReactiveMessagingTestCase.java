@@ -39,7 +39,6 @@ import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
 import org.junit.Test;
-import org.junit.Ignore;
 import org.junit.runner.RunWith;
 import org.wildfly.test.integration.microprofile.reactive.EnableReactiveExtensionsSetupTask;
 import org.wildfly.test.integration.microprofile.reactive.RunArtemisAmqpSetupTask;
@@ -57,7 +56,6 @@ import org.wildfly.test.integration.microprofile.reactive.messaging.multiple.ear
 @RunAsClient
 @ServerSetup({RunKafkaSetupTask.class, RunArtemisAmqpSetupTask.class, EnableReactiveExtensionsSetupTask.class})
 @DockerRequired
-@Ignore
 public class MultiEarModuleReactiveMessagingTestCase {
 
     private static final String BASE_NAME = "multimodule-rm";

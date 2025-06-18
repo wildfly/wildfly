@@ -15,7 +15,6 @@ import org.jboss.as.test.shared.observability.containers.OpenTelemetryCollectorC
 import org.jboss.as.test.shared.observability.setuptasks.OpenTelemetryWithCollectorSetupTask;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.runner.RunWith;
-import org.junit.Ignore;
 import org.wildfly.test.integration.microprofile.reactive.EnableReactiveExtensionsSetupTask;
 import org.wildfly.test.integration.microprofile.reactive.RunKafkaSetupTask;
 
@@ -24,7 +23,6 @@ import org.wildfly.test.integration.microprofile.reactive.RunKafkaSetupTask;
 @RunAsClient
 @ServerSetup({OpenTelemetryWithCollectorSetupTask.class, EnableReactiveExtensionsSetupTask.class, RunKafkaSetupTask.class})
 @DockerRequired
-@Ignore
 public class KafkaReactiveMessagingAndOtelTestCase extends BaseReactiveMessagingAndOtelTest {
     @Testcontainer
     private OpenTelemetryCollectorContainer otelCollector;

@@ -45,7 +45,6 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.Ignore;
 import org.junit.runner.RunWith;
 import org.wildfly.test.integration.microprofile.reactive.EnableReactiveExtensionsSetupTask;
 import org.wildfly.test.integration.microprofile.reactive.RunArtemisAmqpSetupTask;
@@ -62,7 +61,6 @@ import org.wildfly.test.integration.microprofile.reactive.messaging.multiple.dep
 @RunAsClient
 @ServerSetup({RunKafkaSetupTask.class, RunArtemisAmqpSetupTask.class, EnableReactiveExtensionsSetupTask.class})
 @DockerRequired
-@Ignore
 public class MultiDeploymentReactiveMessagingTestCase extends AbstractCliTestBase {
 
     private static final String BASE_NAME = "multideployment-rm";

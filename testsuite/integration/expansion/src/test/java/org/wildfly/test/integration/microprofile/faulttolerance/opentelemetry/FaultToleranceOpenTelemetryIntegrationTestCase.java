@@ -29,7 +29,6 @@ import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.junit.Ignore;
 import org.wildfly.test.integration.microprofile.faulttolerance.micrometer.FaultToleranceMicrometerIntegrationTestCase;
 import org.wildfly.test.integration.microprofile.faulttolerance.micrometer.deployment.FaultTolerantApplication;
 
@@ -43,7 +42,6 @@ import org.wildfly.test.integration.microprofile.faulttolerance.micrometer.deplo
 @RunWith(Arquillian.class)
 @RunAsClient
 @DockerRequired
-@Ignore
 // This test case does not use Micrometer *but* we enable it to verify CompoundMetricsProvider functionality in WF
 @ServerSetup({OpenTelemetryWithCollectorSetupTask.class, MicrometerSetupTask.class})
 public class FaultToleranceOpenTelemetryIntegrationTestCase {
