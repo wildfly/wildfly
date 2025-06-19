@@ -12,10 +12,10 @@
     </resources>
 
     <dependencies>
-        <module name="com.fasterxml.jackson.core.jackson-annotations" export="true"/>
-        <module name="com.fasterxml.jackson.core.jackson-core" export="true"/>
-        <module name="com.fasterxml.jackson.core.jackson-databind" export="true"/>
-        <module name="com.fasterxml.jackson.jakarta.jackson-jakarta-json-provider" export="true"/>
+        <module name="com.fasterxml.jackson.core.jackson-annotations"/>
+        <module name="com.fasterxml.jackson.core.jackson-core"/>
+        <module name="com.fasterxml.jackson.core.jackson-databind"/>
+        <module name="com.fasterxml.jackson.jakarta.jackson-jakarta-json-provider"/>
         <module name="com.fasterxml.jackson.datatype.jackson-datatype-jdk8"/>
         <module name="com.fasterxml.jackson.datatype.jackson-datatype-jsr310"/>
         <module name="com.github.fge.json-patch"/>

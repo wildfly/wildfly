@@ -19,7 +19,7 @@
         <module name="jakarta.ws.rs.api"/>
         <module name="org.jboss.resteasy.resteasy-core"/>
         <module name="org.jboss.resteasy.resteasy-core-spi"/>
-        <module name="org.reactivestreams" export = "true" />
-        <module name="io.reactivex.rxjava2.rxjava" export="true" />
+        <module name="org.reactivestreams"/>
+        <module name="io.reactivex.rxjava2.rxjava"/>
     </dependencies>
 </module>
