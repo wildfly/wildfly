@@ -52,8 +52,8 @@ public class ReportDirectoryWriteHandler extends AbstractWriteAttributeHandler<V
         }
         final ServiceRegistry registry = context.getServiceRegistry(true);
 
-        final ServiceController<?> ejbNameServiceController = registry.getService(ConnectorServices.RESOURCEADAPTERS_SUBSYSTEM_SERVICE);
-        ResourceAdaptersSubsystemService service = (ResourceAdaptersSubsystemService) ejbNameServiceController.getValue();
+        final ServiceController<?> ejbNameServiceController = registry.getService(ConnectorServices.RESOURCEADAPTERS_REPORT_DIRECTORY_SERVICE);
+        ReportDirectoryService service = (ReportDirectoryService) ejbNameServiceController.getValue();
         service.setReportDirectory(reportDirectory);
     }
 }
