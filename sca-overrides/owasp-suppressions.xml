@@ -326,4 +326,15 @@
       <packageUrl regex="true">^pkg:maven/org\.jboss\.hal/hal-console@.*$</packageUrl>
       <vulnerabilityName>CVE-2025-2901</vulnerabilityName>
    </suppress>
+   <suppress>
+      <notes><![CDATA[
+      file name: org.eclipse.jgit-6.10.1.202505221210-r.jar
+
+      [WFLY-20741] This CVE is fixed in version 6.10.1
+ 
+      https://projects.eclipse.org/projects/technology.jgit/releases/6.10.1
+      ]]></notes>
+      <packageUrl regex="true">^pkg:maven/org\.eclipse\.jgit/org\.eclipse\.jgit.*@6\.10\.1.*$</packageUrl>
+      <cve>CVE-2025-4949</cve>
+   </suppress>
 </suppressions>
