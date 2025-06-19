@@ -46,6 +46,7 @@ public class LRAParticipantDeploymentDependencyProcessor implements DeploymentUn
         lraParticipantDependency.addImportFilter(PathFilters.getMetaInfFilter(), true);
         moduleSpecification.addSystemDependency(lraParticipantDependency);
         moduleSpecification.addSystemDependency(ModuleDependency.Builder.of(moduleLoader, "io.smallrye.jandex").setImportServices(true).build());
+        moduleSpecification.addSystemDependency(ModuleDependency.Builder.of(moduleLoader, "io.smallrye.stork").setImportServices(true).build());
         moduleSpecification.addSystemDependency(ModuleDependency.Builder.of(moduleLoader, "org.jboss.as.weld.common").setImportServices(true).build());
         moduleSpecification.addSystemDependency(ModuleDependency.Builder.of(moduleLoader, "org.jboss.resteasy.resteasy-cdi").setImportServices(true).build());
 
