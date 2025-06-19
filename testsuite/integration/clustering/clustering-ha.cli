@@ -40,8 +40,10 @@ batch
 /subsystem=jgroups/stack=tcp-bridge/protocol=FRAG4:add
 run-batch
 
-# UDP stack configuration
+# Remove UDP stack configuration
 /subsystem=jgroups/stack=udp:remove
+/socket-binding-group=standard-sockets/socket-binding=jgroups-udp:remove
+/socket-binding-group=standard-sockets/socket-binding=jgroups-udp-fd:remove
 
 # Logging configuration
 # Prepend node name to console log messages and disable color output
@@ -89,8 +91,10 @@ batch
 /subsystem=jgroups/stack=tcp-bridge/protocol=FRAG4:add
 run-batch
 
-# UDP stack configuration
+# Remove UDP stack configuration
 /subsystem=jgroups/stack=udp:remove
+/socket-binding-group=standard-sockets/socket-binding=jgroups-udp:remove
+/socket-binding-group=standard-sockets/socket-binding=jgroups-udp-fd:remove
 
 # Logging configuration
 # Prepend node name to console log messages and disable color output
