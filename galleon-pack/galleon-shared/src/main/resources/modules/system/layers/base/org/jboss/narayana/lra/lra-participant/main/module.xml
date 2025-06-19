@@ -30,6 +30,7 @@
     <!-- narayana-lra -->
     <module name="org.eclipse.microprofile.config.api"/>
     <module name="io.smallrye.config"/>
+    <module name="io.smallrye.stork"/>
 
     <!-- Required for proper creation of proxies for CDI beans originating from this module -->    
     <module name="org.jboss.weld.api"/>

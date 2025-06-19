@@ -64,6 +64,18 @@
       <artifactId>lra-proxy-api</artifactId>
     </dependency>
     <dependency>
+      <groupId>io.smallrye.stork</groupId>
+      <artifactId>stork-core</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>io.smallrye.stork</groupId>
+      <artifactId>stork-api</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>io.smallrye.stork</groupId>
+      <artifactId>stork-service-discovery-static-list</artifactId>
+    </dependency>
+    <dependency>
       <groupId>jakarta.ws.rs</groupId>
       <artifactId>jakarta.ws.rs-api</artifactId>
     </dependency>
