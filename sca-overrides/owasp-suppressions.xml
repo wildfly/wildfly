@@ -244,24 +244,6 @@
       <packageUrl regex="true">^pkg:maven/io\.vertx/vertx-kafka-client@.*$</packageUrl>
       <cve>CVE-2024-8391</cve>
    </suppress>
-   <suppress until="2025-10-07">
-      <notes><![CDATA[
-      file name: lucene-core-9.11.1.jar
-
-      [WFLY-19821] Supress CVE-2024-45772 as we don't include the affected module.
-      ]]></notes>
-      <packageUrl regex="true">^pkg:maven/org\.apache\.lucene/lucene-.*@.*$</packageUrl>
-      <cve>CVE-2024-45772</cve>
-   </suppress>
-   <suppress until="2025-10-07">
-      <notes><![CDATA[
-      file name: velocity-engine-core-2.3.jar (shaded: commons-io:commons-io:2.8.0)
-
-      [WFLY-19822] Although some of commons-io is shaded in this affected class is not a part of the shading.
-      ]]></notes>
-      <packageUrl regex="true">^pkg:maven/commons-io/commons-io@.*$</packageUrl>
-      <vulnerabilityName>CVE-2024-47554</vulnerabilityName>
-   </suppress>
    <suppress until="2026-01-03">
       <notes><![CDATA[
       file name: mina-core-2.1.3.jar
@@ -270,52 +252,6 @@
       ]]></notes>
       <packageUrl regex="true">^pkg:maven/org\.apache\.mina/mina-core@.*$</packageUrl>
       <vulnerabilityName>CVE-2024-52046</vulnerabilityName>
-   </suppress>
-   <suppress until="2026-01-06">
-      <notes><![CDATA[
-      file name: artemis-wildfly-integration-2.0.3.Final.jar (shaded: org.apache.activemq.tests:unit-tests:2.37.0)
-
-      [WFLY-20239] Suppress CVEs against ActiveMQ Classic as we use Artemis ActiveMQ.
-      ]]></notes>
-      <packageUrl regex="true">^pkg:maven/org\.apache\.activemq\.tests/.*@.*$</packageUrl>
-      <cve>CVE-2023-46604</cve>
-      <cve>CVE-2022-41678</cve>
-      <cve>CVE-2014-3576</cve>
-      <cve>CVE-2018-11775</cve>
-      <cve>CVE-2010-1244</cve>
-      <cve>CVE-2013-3060</cve>
-      <cve>CVE-2020-13947</cve>
-      <cve>CVE-2020-13920</cve>
-      <cve>CVE-2012-5784</cve>
-      <cve>CVE-2011-4905</cve>
-      <cve>CVE-2012-6551</cve>
-      <cve>CVE-2012-6092</cve>
-      <cve>CVE-2013-1879</cve>
-      <cve>CVE-2013-1880</cve>
-      <cve>CVE-2010-0684</cve>
-      <cve>CVE-2015-7559</cve>
-      <!-- XStream Not Part Of Module -->
-      <cve>CVE-2021-21345</cve>
-      <cve>CVE-2021-21344</cve>
-      <cve>CVE-2021-21346</cve>
-      <cve>CVE-2021-21347</cve>
-      <cve>CVE-2021-21350</cve>
-      <cve>CVE-2021-21342</cve>
-      <cve>CVE-2021-21351</cve>
-      <cve>CVE-2020-26217</cve>
-      <cve>CVE-2021-21349</cve>
-      <cve>CVE-2021-21341</cve>
-      <cve>CVE-2021-21343</cve>
-      <cve>CVE-2021-21348</cve>
-   </suppress>
-   <suppress until="2026-01-27">
-      <notes><![CDATA[
-      file name: undertow-core-2.3.18.Final.jar
-
-      [WFLY-20339] Suppressing as triaged as not a securtity vulnerability.
-      ]]></notes>
-      <packageUrl regex="true">^pkg:maven/io\.undertow/undertow-core@.*$</packageUrl>
-      <vulnerabilityName>CVE-2024-4109</vulnerabilityName>
    </suppress>
    <suppress until="2026-06-11">
       <notes><![CDATA[
