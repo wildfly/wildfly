@@ -117,8 +117,8 @@ public class HotRodStore<K, V> implements NonBlockingStore<K, V> {
         for (int i = 0; i < this.segments; ++i) {
             this.container.getConfiguration().addRemoteCache(this.segmentCacheName(i), configurator);
         }
-        // When unshared, add/removeSegments(...) will be triggered as needed.
-        return configuration.shared() ? this.addSegments(IntSets.immutableRangeSet(this.segments)) : CompletableFuture.completedStage(null);
+        // When segmented and unshared, add/removeSegments(...) will be triggered as needed.
+        return !configuration.segmented() || configuration.shared() ? this.addSegments(IntSets.immutableRangeSet(this.segments)) : CompletableFuture.completedStage(null);
     }
 
     @Override

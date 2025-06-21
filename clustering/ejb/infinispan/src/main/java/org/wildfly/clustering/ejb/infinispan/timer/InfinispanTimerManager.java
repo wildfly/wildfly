@@ -15,7 +15,6 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
-import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 import org.infinispan.Cache;
@@ -40,6 +39,7 @@ import org.wildfly.clustering.ejb.timer.TimeoutMetaData;
 import org.wildfly.clustering.ejb.timer.Timer;
 import org.wildfly.clustering.ejb.timer.TimerManager;
 import org.wildfly.clustering.ejb.timer.TimerRegistry;
+import org.wildfly.clustering.function.Supplier;
 import org.wildfly.clustering.marshalling.Marshaller;
 import org.wildfly.clustering.server.infinispan.CacheContainerGroup;
 import org.wildfly.clustering.server.infinispan.CacheContainerGroupMember;

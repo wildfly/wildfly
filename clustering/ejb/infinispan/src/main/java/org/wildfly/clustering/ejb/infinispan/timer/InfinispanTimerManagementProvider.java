@@ -76,7 +76,7 @@ public class InfinispanTimerManagementProvider implements TimerManagementProvide
             }
 
             @Override
-            public java.util.function.Supplier<I> getIdentifierFactory() {
+            public Supplier<I> getIdentifierFactory() {
                 return configuration.getIdentifierFactory();
             }
 

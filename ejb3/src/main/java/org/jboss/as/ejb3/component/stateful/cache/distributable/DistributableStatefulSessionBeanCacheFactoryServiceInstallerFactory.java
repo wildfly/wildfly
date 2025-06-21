@@ -8,7 +8,6 @@ package org.jboss.as.ejb3.component.stateful.cache.distributable;
 import java.time.Duration;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
-import java.util.function.Supplier;
 
 import org.jboss.as.ejb3.component.stateful.StatefulComponentDescription;
 import org.jboss.as.ejb3.component.stateful.cache.StatefulSessionBeanCache;
@@ -20,6 +19,7 @@ import org.wildfly.clustering.ejb.bean.BeanExpirationConfiguration;
 import org.wildfly.clustering.ejb.bean.BeanManager;
 import org.wildfly.clustering.ejb.bean.BeanManagerConfiguration;
 import org.wildfly.clustering.ejb.bean.BeanManagerFactory;
+import org.wildfly.clustering.function.Supplier;
 import org.wildfly.subsystem.service.ServiceDependency;
 import org.wildfly.subsystem.service.ServiceInstaller;
 
