@@ -70,7 +70,9 @@
                                             <directory>../preview/dist/target</directory>
                                             <includes>
                                                 <include>wildfly-preview-*.tar.gz</include>
+                                                <include>wildfly-preview-*.tar.gz.asc</include>
                                                 <include>wildfly-preview-*.zip</include>
+                                                <include>wildfly-preview-*.zip.asc</include>
                                             </includes>
                                             <excludes>
                                                 <exclude>*-src.*</exclude>
@@ -80,7 +82,9 @@
                                             <directory>../dist/target</directory>
                                             <includes>
                                                 <include>wildfly-*.tar.gz</include>
+                                                <include>wildfly-*.tar.gz.asc</include>
                                                 <include>wildfly-*.zip</include>
+                                                <include>wildfly-*.zip.asc</include>
                                             </includes>
                                         </resource>
                                     </resources>
