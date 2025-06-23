@@ -16,7 +16,7 @@ import jakarta.jms.Session;
 import jakarta.jms.TextMessage;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.test.integration.common.jms.JMSOperations;
 import org.jboss.as.test.jms.auxiliary.CreateQueueSetupTask;
@@ -25,16 +25,16 @@ import org.jboss.shrinkwrap.api.ArchivePaths;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * Basic Jakarta Messaging test using a customly created Jakarta Messaging queue
  *
  * @author <a href="jmartisk@redhat.com">Jan Martiska</a>
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @ServerSetup(CreateQueueSetupTask.class)
 public class SendToJMSQueueTest {
 
@@ -106,8 +106,8 @@ public class SendToJMSQueueTest {
         }
 
         // ASSERTIONS
-        Assert.assertTrue(receivedMessage instanceof TextMessage);
-        Assert.assertTrue(((TextMessage) receivedMessage).getText().equals(MESSAGE_TEXT));
+        Assertions.assertTrue(receivedMessage instanceof TextMessage);
+        Assertions.assertEquals(MESSAGE_TEXT, ((TextMessage) receivedMessage).getText());
     }
 
     @Test
@@ -173,15 +173,15 @@ public class SendToJMSQueueTest {
         }
 
         if (receivedMessage == null) {
-            Assert.fail("received null instead of a TextMessage");
+            Assertions.fail("received null instead of a TextMessage");
         }
-        Assert.assertTrue("received a " + receivedMessage.getClass().getName() + " instead of a TextMessage", receivedMessage instanceof TextMessage);
-        Assert.assertEquals("Hahaha!", ((TextMessage) receivedMessage).getText());
+        Assertions.assertTrue(receivedMessage instanceof TextMessage, "received a " + receivedMessage.getClass().getName() + " instead of a TextMessage");
+        Assertions.assertEquals("Hahaha!", ((TextMessage) receivedMessage).getText());
 
         if (receivedMessage2 != null) {
-            Assert.fail("redelivered=" + String.valueOf(receivedMessage2.getJMSRedelivered()) + ", text=" + ((TextMessage) receivedMessage).getText());
+            Assertions.fail("redelivered=" + String.valueOf(receivedMessage2.getJMSRedelivered()) + ", text=" + ((TextMessage) receivedMessage).getText());
         }
-        Assert.assertNull("Message should not have been re-delivered", receivedMessage2);
+        Assertions.assertNull(receivedMessage2, "Message should not have been re-delivered");
     }
 
     @Test
@@ -239,7 +239,7 @@ public class SendToJMSQueueTest {
             receivedMessage.acknowledge();
         } catch (Exception e) {
             e.printStackTrace();
-            Assert.fail(e.getMessage());
+            Assertions.fail(e.getMessage());
         } finally {
             if (consumerSession != null) {
                 consumerSession.close();
@@ -250,11 +250,11 @@ public class SendToJMSQueueTest {
         }
 
         if (receivedMessage == null) {
-            Assert.fail("Message should have been re-delivered, but subsequent attempt to receive it returned null");
+            Assertions.fail("Message should have been re-delivered, but subsequent attempt to receive it returned null");
         }
-        Assert.assertTrue("received a " + receivedMessage.getClass().getName() + " instead of a TextMessage", receivedMessage instanceof TextMessage);
-        Assert.assertEquals("Hello world!", ((TextMessage) receivedMessage).getText());
-        Assert.assertTrue("Redelivered header should have been set to true", receivedMessage.getJMSRedelivered());
+        Assertions.assertTrue(receivedMessage instanceof TextMessage, "received a " + receivedMessage.getClass().getName() + " instead of a TextMessage");
+        Assertions.assertEquals("Hello world!", ((TextMessage) receivedMessage).getText());
+        Assertions.assertTrue(receivedMessage.getJMSRedelivered(), "Redelivered header should have been set to true");
     }
 
 }

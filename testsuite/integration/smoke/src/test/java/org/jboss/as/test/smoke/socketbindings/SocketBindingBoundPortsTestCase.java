@@ -7,14 +7,14 @@ package org.jboss.as.test.smoke.socketbindings;
 import java.io.IOException;
 
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.as.arquillian.api.ContainerResource;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.client.helpers.ClientConstants;
 import org.jboss.dmr.ModelNode;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.*;
 
@@ -23,7 +23,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.*;
  *
  * @author Claudio Miranda
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @RunAsClient
 public class SocketBindingBoundPortsTestCase {
 
@@ -45,8 +45,8 @@ public class SocketBindingBoundPortsTestCase {
         operation.get(OP_ADDR).set(address);
         ModelNode response = execute(operation);
         ModelNode result = response.get(RESULT);
-        Assert.assertTrue("http socket binding is not set as bound.", result.get(BOUND).asBoolean());
-        Assert.assertEquals(8080, result.get(BOUND_PORT).asInt());
+        Assertions.assertTrue(result.get(BOUND).asBoolean(), "http socket binding is not set as bound.");
+        Assertions.assertEquals(8080, result.get(BOUND_PORT).asInt());
     }
 
     @Test
@@ -60,8 +60,8 @@ public class SocketBindingBoundPortsTestCase {
         operation.get(OP_ADDR).set(address);
         ModelNode response = execute(operation);
         ModelNode result = response.get(RESULT);
-        Assert.assertTrue("https socket binding is not set as bound.", result.get(BOUND).asBoolean());
-        Assert.assertEquals(8443, result.get(BOUND_PORT).asInt());
+        Assertions.assertTrue(result.get(BOUND).asBoolean(), "https socket binding is not set as bound.");
+        Assertions.assertEquals(8443, result.get(BOUND_PORT).asInt());
     }
 
     @Test
@@ -75,8 +75,8 @@ public class SocketBindingBoundPortsTestCase {
         operation.get(OP_ADDR).set(address);
         ModelNode response = execute(operation);
         ModelNode result = response.get(RESULT);
-        Assert.assertTrue("iiop socket binding is not set as bound.", result.get(BOUND).asBoolean());
-        Assert.assertEquals(3528, result.get(BOUND_PORT).asInt());
+        Assertions.assertTrue(result.get(BOUND).asBoolean(), "iiop socket binding is not set as bound.");
+        Assertions.assertEquals(3528, result.get(BOUND_PORT).asInt());
     }
 
     /**

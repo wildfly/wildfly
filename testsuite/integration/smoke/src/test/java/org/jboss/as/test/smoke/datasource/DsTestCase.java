@@ -18,20 +18,20 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.as.connector.subsystems.datasources.WildFlyDataSource;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  * @version $Revision: 1.1 $
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class DsTestCase {
     private static final String JNDI_NAME = "java:jboss/datasources/ExampleDS";
 
@@ -49,7 +49,7 @@ public class DsTestCase {
         DataSource ds = (DataSource) context.lookup(JNDI_NAME);
         Connection conn = ds.getConnection();
         ResultSet rs = conn.prepareStatement("select 1").executeQuery();
-        Assert.assertTrue(rs.next());
+        Assertions.assertTrue(rs.next());
         conn.close();
     }
 
@@ -91,7 +91,7 @@ public class DsTestCase {
             //use
             Connection conn = ds.getConnection();
             ResultSet rs = conn.prepareStatement("select 1").executeQuery();
-            Assert.assertTrue(rs.next());
+            Assertions.assertTrue(rs.next());
             conn.close();
         } finally {
             try {
