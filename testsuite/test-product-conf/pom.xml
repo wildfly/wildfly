@@ -16,7 +16,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>36.0.1.Final</version>
+        <version>36.0.1-1-PSI-SNAPSHOT</version>
         <relativePath>../../pom.xml</relativePath>
     </parent>
 
@@ -28,7 +28,7 @@
     <artifactId>wildfly-ee-feature-pack-product-conf</artifactId>
     <!-- This version is a deliberate value for this test-only artifact
          chosen to avoid interfering with the release artifact with the same GA.-->
-    <version>100000.0.1.TEST-SNAPSHOT</version>
+    <version>36.0.1-1-PSI-SNAPSHOT</version>
 
     <build>
         <plugins>
