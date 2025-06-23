@@ -404,5 +404,15 @@
         <packageUrl regex="true">^pkg:maven/org\.wildfly\.security\.jakarta/jakarta-client-resteasy@3\.1\.4\.Final$</packageUrl>
         <cve>CVE-2020-1695</cve>
     </suppress>
+
+    <!-- We use apache-kafka 3.9.1 -->
+    <suppress>
+        <notes><![CDATA[
+   file name: kafka-clients-3.9.0.jar
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org\.apache\.kafka/kafka-clients@.*$</packageUrl>
+        <cve>CVE-2025-27817</cve>
+        <cve>CVE-2025-27818</cve>
+    </suppress>
     <!-- ___End of Wildfly-dist suppressions___ -->
 </suppressions>
