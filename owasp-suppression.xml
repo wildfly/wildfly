@@ -229,10 +229,10 @@
     <!-- OpenID is not part of WildFly nor WildFly Elytron -->
     <suppress>
         <notes><![CDATA[
-   file name: wildfly-elytron-oidc-client-subsystem-36.0.0-*-PSI-SNAPSHOT.jar
+   file name: wildfly-elytron-oidc-client-subsystem-36.0.1-*-PSI-SNAPSHOT.jar
    ]]></notes>
         <packageUrl regex="true">
-            ^pkg:maven/org\.wildfly/wildfly\-elytron\-oidc\-client\-subsystem@36\.0\.0\-.*\-PSI.*$
+            ^pkg:maven/org\.wildfly/wildfly\-elytron\-oidc\-client\-subsystem@36\.0\.1\-.*\-PSI.*$
         </packageUrl>
         <cve>CVE-2007-1652</cve>
     </suppress>
@@ -374,9 +374,9 @@
     <!-- CVEs is in infinispan not WildFly extension-->
     <suppress>
         <notes><![CDATA[
-   file name: wildfly-clustering-*-6.0.1.Final.jar
+   file name: wildfly-clustering-*-6.0.4.Final.jar
    ]]></notes>
-        <packageUrl regex="true">^pkg:maven/org\.wildfly\.clustering/wildfly-clustering-.*@6\.0\.1\.Final$</packageUrl>
+        <packageUrl regex="true">^pkg:maven/org\.wildfly\.clustering/wildfly-clustering-.*@6\.0\.4\.Final$</packageUrl>
         <cve>CVE-2016-0750</cve>
         <cve>CVE-2017-15089</cve>
         <cve>CVE-2019-10158</cve>
