@@ -114,7 +114,7 @@ public class SuspendBatchletTestCase extends AbstractBatchTestCase {
     @Test
     public void testSuspendResume() throws Exception {
         final Properties jobProperties = new Properties();
-        jobProperties.setProperty("max.seconds", "10");
+        jobProperties.setProperty("max.seconds", Integer.toString(TimeoutUtil.adjust(10)));
         final JobOperator jobOperator = BatchRuntime.getJobOperator();
 
         long executionId = jobOperator.start("suspend-batchlet", jobProperties);
@@ -123,7 +123,7 @@ public class SuspendBatchletTestCase extends AbstractBatchTestCase {
         suspendServer();
 
         // check job is stopped
-        checkJobExecution(jobOperator, jobExecution, BatchStatus.STOPPED, "KO");
+        checkJobExecution(jobOperator, jobExecution, BatchStatus.STOPPED, "STOPPED");
 
         resumeServer();
 

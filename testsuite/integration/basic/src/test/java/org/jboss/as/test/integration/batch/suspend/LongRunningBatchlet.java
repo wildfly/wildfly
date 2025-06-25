@@ -5,9 +5,9 @@
 
 package org.jboss.as.test.integration.batch.suspend;
 
-import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
+
 import jakarta.batch.api.BatchProperty;
 import jakarta.batch.api.Batchlet;
 import jakarta.inject.Inject;
@@ -23,42 +23,50 @@ import jakarta.inject.Named;
 @Named
 public class LongRunningBatchlet implements Batchlet {
 
+    private static final int STOPPED = 0;
+    private static final int STARTED = 1;
+    private static final int COMPLETED = 2;
+
     @Inject
     @BatchProperty(name = "max.seconds")
     private Integer maxSeconds;
 
-    private static final AtomicBoolean success = new AtomicBoolean(false);
-    private static CountDownLatch latch = new CountDownLatch(0);
+    private static final AtomicInteger STATE = new AtomicInteger(STOPPED);
 
-    public static synchronized boolean isStarted() {
-        return latch.getCount() > 0;
+    public static boolean isStarted() {
+        return STATE.get() == STARTED;
     }
 
-    public static synchronized void success() throws Exception {
-        if (!success.compareAndSet(false, true)) {
-            throw new Exception("Called twice!");
+    public static void success() throws Exception {
+        if (!STATE.compareAndSet(STARTED, COMPLETED)) {
+            throw new AssertionError("An attempt was made to complete a job that has not been started.");
         }
-        latch.countDown();
-    }
-
-    public static synchronized void reset() throws Exception {
-        if (latch.getCount() > 0) {
-            throw new Exception("The job is not finished!");
-        }
-        success.set(false);
-        latch = new CountDownLatch(1);
     }
 
     @Override
     public String process() throws Exception {
-        reset();
-        latch.await(maxSeconds, TimeUnit.SECONDS);
-        String exitStatus = success.get()? "OK" : "KO";
-        return exitStatus;
+        if (!STATE.compareAndSet(STOPPED, STARTED)) {
+            throw new AssertionError("Cannot start a job that is not in the stopped state.");
+        }
+        final long timeout = TimeUnit.SECONDS.toMillis(maxSeconds);
+        final long start = System.currentTimeMillis();
+        long elapsed = 0;
+        while (elapsed < timeout) {
+            final int current = STATE.get();
+            if (current == COMPLETED) {
+                return "OK";
+            }
+            if (current == STOPPED) {
+                return "STOPPED";
+            }
+            TimeUnit.MILLISECONDS.sleep(50L);
+            elapsed = System.currentTimeMillis() - start;
+        }
+        return "TIMEOUT";
     }
 
     @Override
     public void stop() throws Exception {
-        latch.countDown();
+        STATE.set(STOPPED);
     }
 }
