@@ -90,12 +90,7 @@
         </dependency>
         <dependency>
             <groupId>org.wildfly.security</groupId>
-            <artifactId>wildfly-elytron</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.wildfly.security</groupId>
-            <artifactId>wildfly-elytron-jose-util</artifactId>
+            <artifactId>wildfly-elytron-http-oidc</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
