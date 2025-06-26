@@ -34,7 +34,10 @@ public class DistributableEjbTransformersTestCase extends AbstractSubsystemTest 
 
     @Parameters
     public static Iterable<ModelTestControllerVersion> parameters() {
-        return EnumSet.of(ModelTestControllerVersion.EAP_8_0_0);
+        return EnumSet.of(
+                ModelTestControllerVersion.EAP_8_0_0,
+                ModelTestControllerVersion.EAP_8_1_0
+        );
     }
 
     private final ModelTestControllerVersion controller;
@@ -51,35 +54,44 @@ public class DistributableEjbTransformersTestCase extends AbstractSubsystemTest 
         return String.format(pattern, this.controller.getMavenGavVersion());
     }
 
+    private String formatCoreArtifact(String pattern) {
+        return String.format(pattern, this.controller.getCoreVersion());
+    }
+
     private String formatSubsystemArtifact() {
         return formatArtifact("org.jboss.eap:wildfly-clustering-ejb-extension:%s");
     }
 
     private DistributableEjbSubsystemModel getModelVersion() {
-        switch (this.controller) {
-            case EAP_8_0_0:
-                return DistributableEjbSubsystemModel.VERSION_1_0_0;
-            default:
-                throw new IllegalArgumentException();
-        }
+        return switch (this.controller) {
+            case EAP_8_0_0, EAP_8_1_0 -> DistributableEjbSubsystemModel.VERSION_1_0_0;
+            default -> throw new IllegalArgumentException();
+        };
     }
 
     private String[] getDependencies() {
-        switch (this.controller) {
-            case EAP_8_0_0:
-                return new String[] {
-                        formatSubsystemArtifact(),
-                        formatArtifact("org.jboss.eap:wildfly-clustering-common:%s"),
-                        formatArtifact("org.jboss.eap:wildfly-clustering-ee-infinispan:%s"),
-                        formatArtifact("org.jboss.eap:wildfly-clustering-ejb-infinispan:%s"),
-                        formatArtifact("org.jboss.eap:wildfly-clustering-ejb-spi:%s"),
-                        formatArtifact("org.jboss.eap:wildfly-clustering-infinispan-embedded-service:%s"),
-                        formatArtifact("org.jboss.eap:wildfly-clustering-marshalling-spi:%s"),
-                        formatArtifact("org.jboss.eap:wildfly-clustering-service:%s"),
-                };
-            default:
-                throw new IllegalArgumentException();
-        }
+        return switch (this.controller) {
+            case EAP_8_0_0 -> new String[] {
+                    formatSubsystemArtifact(),
+                    formatArtifact("org.jboss.eap:wildfly-clustering-common:%s"),
+                    formatArtifact("org.jboss.eap:wildfly-clustering-ee-infinispan:%s"),
+                    formatArtifact("org.jboss.eap:wildfly-clustering-ejb-infinispan:%s"),
+                    formatArtifact("org.jboss.eap:wildfly-clustering-ejb-spi:%s"),
+                    formatArtifact("org.jboss.eap:wildfly-clustering-infinispan-embedded-service:%s"),
+                    formatArtifact("org.jboss.eap:wildfly-clustering-marshalling-spi:%s"),
+                    formatArtifact("org.jboss.eap:wildfly-clustering-service:%s"),
+            };
+            case EAP_8_1_0 -> new String[] {
+                    // TODO Replace these "org.jboss.eap" group when org.jboss.as.model.test.ModelTestControllerVersion.EAP_8_1_0 is updated
+                    formatArtifact("org.wildfly:wildfly-clustering-ejb-extension:%s"),
+                    formatArtifact("org.wildfly:wildfly-clustering-common:%s"),
+                    formatArtifact("org.wildfly:wildfly-clustering-ejb-spi:%s"),
+                    formatArtifact("org.wildfly:wildfly-clustering-infinispan-embedded-service:%s"),
+                    formatArtifact("org.wildfly:wildfly-clustering-server-service:%s"),
+                    formatCoreArtifact("org.wildfly.core:wildfly-subsystem:%s"),
+            };
+            default -> throw new IllegalArgumentException();
+        };
     }
 
     protected org.jboss.as.subsystem.test.AdditionalInitialization createAdditionalInitialization() {
