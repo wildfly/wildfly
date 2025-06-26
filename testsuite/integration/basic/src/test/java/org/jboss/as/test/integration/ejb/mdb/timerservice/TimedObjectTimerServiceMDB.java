@@ -26,7 +26,7 @@ public class TimedObjectTimerServiceMDB implements TimedObject , MessageListener
 
     private static final CountDownLatch latch = new CountDownLatch(1);
 
-    private static boolean timerServiceCalled = false;
+    private static volatile boolean timerServiceCalled = false;
 
     @Resource
     private TimerService timerService;
