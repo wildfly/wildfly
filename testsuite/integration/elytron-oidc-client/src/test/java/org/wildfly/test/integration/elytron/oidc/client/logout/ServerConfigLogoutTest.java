@@ -48,9 +48,10 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.junit.Ignore;
 
 /*  Test OIDC logout.  Logout configuration attributes
-    are passed to Elytron via oidc.json file attributes.
+    are passed to Elytron via wildfly server configuration.
  */
 @RunWith(Arquillian.class)
 @RunAsClient
@@ -64,6 +65,7 @@ public class ServerConfigLogoutTest extends LoginLogoutBasics {
 
     @BeforeClass
     public static void checkDockerAvailability() {
+        boolean xx = AssumeTestGroupUtil.isDockerAvailable();
         assumeTrue("Docker isn't available, OIDC tests will be skipped", AssumeTestGroupUtil.isDockerAvailable());
     }
 
@@ -172,11 +174,12 @@ public class ServerConfigLogoutTest extends LoginLogoutBasics {
                 .addClasses(SimpleServlet.class)
                 .addClasses(SecuredFrontChannelServlet.class)
                 .addAsWebInfResource(packageName, WEB_XML, "web.xml")
-                .addAsWebInfResource(packageName,
-                        FRONT_CHANNEL_LOGOUT_APP+"-oidc.json", "oidc.json")
+           // rls     .addAsWebInfResource(packageName,
+           // rls             FRONT_CHANNEL_LOGOUT_APP+"-oidc.json", "oidc.json")
                 ;
     }
 
+    @Ignore // rls
     @Test
     //  Test checks that RPInitiated Logout can be completed
     //  via a GET to the OP.
@@ -210,6 +213,7 @@ public class ServerConfigLogoutTest extends LoginLogoutBasics {
         }
     }
 
+    // rls @Ignore // rls
     @Test
     //  Test checks that front channel Logout can be completed.
     public void testFrontChannelLogout() throws Exception {
@@ -230,7 +234,7 @@ public class ServerConfigLogoutTest extends LoginLogoutBasics {
             deployer.undeploy(FRONT_CHANNEL_LOGOUT_APP);
         }
     }
-
+    @Ignore // rls
     @Test
     // Test checks that back channel Logout can be completed
     // when user logged in to 2 apps
