@@ -5,12 +5,9 @@
 
 package org.wildfly.extension.clustering.web.session;
 
-import java.util.function.Supplier;
-
-import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
-import org.wildfly.clustering.server.deployment.DeploymentConfiguration;
 import org.wildfly.clustering.server.service.BinaryServiceConfiguration;
+import org.wildfly.clustering.web.service.deployment.WebDeploymentConfiguration;
 import org.wildfly.clustering.web.service.routing.RouteLocatorProvider;
 import org.wildfly.clustering.web.service.session.DistributableSessionManagementConfiguration;
 import org.wildfly.clustering.web.service.session.DistributableSessionManagementProvider;
@@ -22,18 +19,18 @@ import org.wildfly.subsystem.service.DeploymentServiceInstaller;
 public abstract class AbstractSessionManagementProvider implements DistributableSessionManagementProvider {
 
     private final DistributableSessionManagementConfiguration<DeploymentUnit> configuration;
-    private final Supplier<RouteLocatorProvider> locatorProviderFactory;
     private final BinaryServiceConfiguration cacheConfiguration;
+    private final RouteLocatorProvider locatorProvider;
 
-    protected AbstractSessionManagementProvider(DistributableSessionManagementConfiguration<DeploymentUnit> configuration, BinaryServiceConfiguration cacheConfiguration, Supplier<RouteLocatorProvider> locatorProviderFactory) {
+    protected AbstractSessionManagementProvider(DistributableSessionManagementConfiguration<DeploymentUnit> configuration, BinaryServiceConfiguration cacheConfiguration, RouteLocatorProvider locatorProvider) {
         this.configuration = configuration;
-        this.locatorProviderFactory = locatorProviderFactory;
         this.cacheConfiguration = cacheConfiguration;
+        this.locatorProvider = locatorProvider;
     }
 
     @Override
-    public DeploymentServiceInstaller getRouteLocatorServiceInstaller(DeploymentPhaseContext context, DeploymentConfiguration configuration) {
-        return this.getRouteLocatorProvider().getServiceInstaller(context, this.cacheConfiguration, configuration);
+    public DeploymentServiceInstaller getRouteLocatorServiceInstaller(WebDeploymentConfiguration configuration) {
+        return this.getRouteLocatorProvider().getServiceInstaller(this.cacheConfiguration, configuration);
     }
 
     @Override
@@ -46,6 +43,6 @@ public abstract class AbstractSessionManagementProvider implements Distributable
     }
 
     public RouteLocatorProvider getRouteLocatorProvider() {
-        return this.locatorProviderFactory.get();
+        return this.locatorProvider;
     }
 }

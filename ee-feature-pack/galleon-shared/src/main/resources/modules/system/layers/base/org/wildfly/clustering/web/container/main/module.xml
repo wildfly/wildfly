@@ -16,10 +16,12 @@
 
     <dependencies>
         <module name="org.jboss.as.controller"/>
+        <module name="org.jboss.as.server"/>
         <module name="org.jboss.modules"/>
         <module name="org.jboss.msc"/>
         <!-- Allow dynamic loading of distributable session management and single sign-on providers -->
         <module name="org.wildfly.clustering.web.undertow" services="import" optional="true"/>
+        <module name="org.wildfly.security.elytron-base"/>
         <module name="org.wildfly.service"/>
         <module name="org.wildfly.subsystem"/>
     </dependencies>
