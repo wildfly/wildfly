@@ -321,8 +321,8 @@
         </dependency>
 
         <dependency>
-            <groupId>org.jboss.arquillian.junit</groupId>
-            <artifactId>arquillian-junit-container</artifactId>
+            <groupId>org.jboss.arquillian.junit5</groupId>
+            <artifactId>arquillian-junit5-container</artifactId>
             <scope>test</scope>
         </dependency>
 
@@ -366,6 +366,12 @@
             <groupId>org.jboss.spec.jakarta.xml.ws</groupId>
             <artifactId>jboss-jakarta-xml-ws-api_4.0_spec</artifactId>
             <scope>test</scope>
+        </dependency>
+
+        <dependency>
+           <groupId>org.junit.jupiter</groupId>
+           <artifactId>junit-jupiter</artifactId>
+           <scope>test</scope>
         </dependency>
 
         <dependency>
@@ -779,7 +785,7 @@
                                     </systemPropertyVariables>
                                 </configuration>
                             </execution>
-                            
+
                             <!-- Tests against the install with legacy sar support -->
                             <execution>
                                 <id>legacy-sar-layers.surefire</id>
@@ -806,7 +812,7 @@
                                     </includes>
                                 </configuration>
                             </execution>
-                            
+
                         </executions>
                     </plugin>
                 </plugins>
@@ -899,7 +905,7 @@
                 </plugins>
             </build>
         </profile>
-        
+
         <!-- Test against bootable jar -->
         <profile>
             <id>bootablejar.preview.profile</id>

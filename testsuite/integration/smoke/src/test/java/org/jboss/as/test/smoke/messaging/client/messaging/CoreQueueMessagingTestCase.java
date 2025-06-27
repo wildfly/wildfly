@@ -6,15 +6,15 @@
 package org.jboss.as.test.smoke.messaging.client.messaging;
 
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.as.arquillian.api.ContainerResource;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.test.integration.common.jms.JMSOperations;
 import org.jboss.as.test.integration.common.jms.JMSOperationsProvider;
 import org.jboss.as.test.shared.ServerReload;
-import org.junit.After;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 
 /**
@@ -23,7 +23,7 @@ import org.junit.runner.RunWith;
  * @author Emanuel Muckenhuber
  * @author Kabir Khan
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @RunAsClient
 public class CoreQueueMessagingTestCase {
 
@@ -46,7 +46,7 @@ public class CoreQueueMessagingTestCase {
 
 
 
-    @After
+    @AfterEach
     public void tearDown() throws Exception {
         JMSOperations jmsOperations = JMSOperationsProvider.getInstance(managementClient.getControllerClient());
         jmsOperations.removeCoreQueue(queueName);

@@ -20,7 +20,7 @@ import java.util.Properties;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.api.ServerSetupTask;
 import org.jboss.as.arquillian.container.ManagementClient;
@@ -34,9 +34,9 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 
 /**
@@ -47,7 +47,7 @@ import org.junit.runner.RunWith;
  * @author <a href="mailto:vrastsel@redhat.com">Vladimir Rastseluev</a>
  * @author Flavia Rainone
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @RunAsClient
 @ServerSetup(DataSourceOperationsUnitTestCase.ServerSetup.class)
 public class DataSourceOperationsUnitTestCase extends DsMgmtTestBase {
@@ -58,14 +58,14 @@ public class DataSourceOperationsUnitTestCase extends DsMgmtTestBase {
         public void setup(ManagementClient managementClient, String containerId) throws Exception {
             ModelNode authContextAdd = Util.createAddOperation(PathAddress.pathAddress("subsystem", "elytron").append("authentication-context", "HsqlAuthCtxt"));
             ModelNode response = managementClient.getControllerClient().execute(authContextAdd);
-            Assert.assertEquals(response.toString(), "success", response.get("outcome").asString());
+            Assertions.assertEquals("success", response.get("outcome").asString(), response.toString());
         }
 
         @Override
         public void tearDown(ManagementClient managementClient, String containerId) throws Exception {
             ModelNode authContextRemove = Util.createRemoveOperation(PathAddress.pathAddress("subsystem", "elytron").append("authentication-context", "HsqlAuthCtxt"));
             ModelNode response = managementClient.getControllerClient().execute(authContextRemove);
-            Assert.assertEquals(response.toString(), "success", response.get("outcome").asString());
+            Assertions.assertEquals("success", response.get("outcome").asString(), response.toString());
         }
     }
 
@@ -107,9 +107,9 @@ public class DataSourceOperationsUnitTestCase extends DsMgmtTestBase {
 
         remove(address);
 
-        Assert.assertNotNull("Reparsing failed:", newList);
+        Assertions.assertNotNull(newList, "Reparsing failed:");
 
-        Assert.assertNotNull(findNodeWithProperty(newList, "jndi-name", "java:jboss/datasources/MyNewDs"));
+        Assertions.assertNotNull(findNodeWithProperty(newList, "jndi-name", "java:jboss/datasources/MyNewDs"));
     }
 
 
@@ -276,12 +276,12 @@ public class DataSourceOperationsUnitTestCase extends DsMgmtTestBase {
 
         remove(address);
 
-        Assert.assertNotNull("Reparsing failed:", newList);
+        Assertions.assertNotNull(newList, "Reparsing failed:");
 
         // remove from xml too
         marshalAndReparseDsResources("xa-data-source");
 
-        Assert.assertNotNull(findNodeWithProperty(newList, "jndi-name", "java:jboss/datasources/" + jndiDsName));
+        Assertions.assertNotNull(findNodeWithProperty(newList, "jndi-name", "java:jboss/datasources/" + jndiDsName));
 
     }
 
@@ -300,11 +300,11 @@ public class DataSourceOperationsUnitTestCase extends DsMgmtTestBase {
         final ModelNode result = executeOperation(operation);
 
         final ModelNode result2 = result.get(0);
-        Assert.assertNotNull("There are no installed JDBC drivers", result2);
-        Assert.assertTrue("Name of JDBC driver is udefined", result2.hasDefined("driver-name"));
+        Assertions.assertNotNull(result2, "There are no installed JDBC drivers");
+        Assertions.assertTrue(result2.hasDefined("driver-name"), "Name of JDBC driver is udefined");
         if (!result2.hasDefined("deployment-name")) {//deployed drivers haven't these attributes
-            Assert.assertTrue("Module name of JDBC driver is udefined", result2.hasDefined("driver-module-name"));
-            Assert.assertTrue("Module slot of JDBC driver is udefined", result2.hasDefined("module-slot"));
+            Assertions.assertTrue(result2.hasDefined("driver-module-name"), "Module name of JDBC driver is udefined");
+            Assertions.assertTrue(result2.hasDefined("module-slot"), "Module slot of JDBC driver is udefined");
         }
     }
 
@@ -330,9 +330,9 @@ public class DataSourceOperationsUnitTestCase extends DsMgmtTestBase {
             operation.get("driver-name").set(h2DriverName);
 
             final ModelNode result = executeOperation(operation).get(0);
-            Assert.assertEquals(h2DriverName, result.get("driver-name").asString());
-            Assert.assertEquals("com.h2database.h2", result.get("driver-module-name").asString());
-            Assert.assertEquals("", result.get("driver-xa-datasource-class-name").asString());
+            Assertions.assertEquals(h2DriverName, result.get("driver-name").asString());
+            Assertions.assertEquals("com.h2database.h2", result.get("driver-module-name").asString());
+            Assertions.assertEquals("", result.get("driver-xa-datasource-class-name").asString());
         } finally {
             remove(addrAddH2DriverAddr);
         }
@@ -392,9 +392,9 @@ public class DataSourceOperationsUnitTestCase extends DsMgmtTestBase {
 
         remove(address);
 
-        Assert.assertNotNull("Reparsing failed:", newList);
+        Assertions.assertNotNull(newList, "Reparsing failed:");
 
-        Assert.assertNotNull(findNodeWithProperty(newList, "jndi-name", xaDsJndi));
+        Assertions.assertNotNull(findNodeWithProperty(newList, "jndi-name", xaDsJndi));
 
     }
 
@@ -474,18 +474,18 @@ public class DataSourceOperationsUnitTestCase extends DsMgmtTestBase {
 
         remove(address);
 
-        Assert.assertNotNull("Reparsing failed:", newList);
+        Assertions.assertNotNull(newList, "Reparsing failed:");
 
         ModelNode rightChild = findNodeWithProperty(newList, "jndi-name", complexDsJndi);
 
-        Assert.assertTrue("node:" + rightChild.asString() + ";\nparams" + params, checkModelParams(rightChild, params));
+        Assertions.assertTrue(checkModelParams(rightChild, params), "node:" + rightChild.asString() + ";\nparams" + params);
 
-        Assert.assertEquals(rightChild.asString(), "Property2", rightChild.get("valid-connection-checker-properties", "name").asString());
-        Assert.assertEquals(rightChild.asString(), "Property4", rightChild.get("exception-sorter-properties", "name").asString());
-        Assert.assertEquals(rightChild.asString(), "Property3", rightChild.get("stale-connection-checker-properties", "name").asString());
-        Assert.assertEquals(rightChild.asString(), "Property1", rightChild.get("reauth-plugin-properties", "name").asString());
+        Assertions.assertEquals("Property2", rightChild.get("valid-connection-checker-properties", "name").asString(), rightChild.asString());
+        Assertions.assertEquals("Property4", rightChild.get("exception-sorter-properties", "name").asString(), rightChild.asString());
+        Assertions.assertEquals("Property3", rightChild.get("stale-connection-checker-properties", "name").asString(), rightChild.asString());
+        Assertions.assertEquals("Property1", rightChild.get("reauth-plugin-properties", "name").asString(), rightChild.asString());
 
-        Assert.assertNotNull("connection-properties not propagated ", findNodeWithProperty(newList, "value", "UTF-8"));
+        Assertions.assertNotNull(findNodeWithProperty(newList, "value", "UTF-8"), "connection-properties not propagated ");
 
     }
 
@@ -569,20 +569,20 @@ public class DataSourceOperationsUnitTestCase extends DsMgmtTestBase {
 
         remove(address);
 
-        Assert.assertNotNull("Reparsing failed:", newList);
+        Assertions.assertNotNull(newList, "Reparsing failed:");
 
         ModelNode rightChild = findNodeWithProperty(newList, "jndi-name", complexXaDsJndi);
 
-        Assert.assertTrue("node:" + rightChild.asString() + ";\nparams" + params, checkModelParams(rightChild, params));
+        Assertions.assertTrue(checkModelParams(rightChild, params), "node:" + rightChild.asString() + ";\nparams" + params);
 
-        Assert.assertEquals(rightChild.asString(), "Property2", rightChild.get("valid-connection-checker-properties", "name").asString());
-        Assert.assertEquals(rightChild.asString(), "Property4", rightChild.get("exception-sorter-properties", "name").asString());
-        Assert.assertEquals(rightChild.asString(), "Property3", rightChild.get("stale-connection-checker-properties", "name").asString());
-        Assert.assertEquals(rightChild.asString(), "Property1", rightChild.get("reauth-plugin-properties", "name").asString());
-        Assert.assertEquals(rightChild.asString(), "Property5", rightChild.get("recovery-plugin-properties", "name").asString());
-        Assert.assertEquals(rightChild.asString(), "Property6", rightChild.get("recovery-plugin-properties", "name1").asString());
+        Assertions.assertEquals("Property2", rightChild.get("valid-connection-checker-properties", "name").asString(), rightChild.asString());
+        Assertions.assertEquals("Property4", rightChild.get("exception-sorter-properties", "name").asString(), rightChild.asString());
+        Assertions.assertEquals("Property3", rightChild.get("stale-connection-checker-properties", "name").asString(), rightChild.asString());
+        Assertions.assertEquals("Property1", rightChild.get("reauth-plugin-properties", "name").asString(), rightChild.asString());
+        Assertions.assertEquals("Property5", rightChild.get("recovery-plugin-properties", "name").asString(), rightChild.asString());
+        Assertions.assertEquals("Property6", rightChild.get("recovery-plugin-properties", "name1").asString(), rightChild.asString());
 
-        Assert.assertNotNull("xa-datasource-properties not propagated ", findNodeWithProperty(newList, "value", "jdbc:h2:mem:test"));
+        Assertions.assertNotNull(findNodeWithProperty(newList, "value", "jdbc:h2:mem:test"), "xa-datasource-properties not propagated ");
     }
 
     private List<ModelNode> marshalAndReparseDsResources(String childType) throws Exception {

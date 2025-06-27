@@ -6,8 +6,8 @@ package org.jboss.as.test.smoke.deployment.rar.tests.eardeployment;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -16,7 +16,7 @@ import java.nio.charset.StandardCharsets;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.test.integration.management.base.ContainerResourceMgmtTestBase;
@@ -29,15 +29,16 @@ import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.ResourceAdapterArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 
 /**
  * @author <a href="vrastsel@redhat.com">Vladimir Rastseluev</a>
  *         JBQA-5828 RAR inside EAR
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @RunAsClient
 public class EarDeploymentTestCase extends ContainerResourceMgmtTestBase {
 
@@ -91,7 +92,7 @@ public class EarDeploymentTestCase extends ContainerResourceMgmtTestBase {
 
     @Test
     public void testConfiguration() throws Throwable {
-        assertNotNull("Deployment metadata for ear not found", managementClient.getProtocolMetaData(deploymentName));
+        assertNotNull(managementClient.getProtocolMetaData(deploymentName), "Deployment metadata for ear not found");
 
         final ModelNode address = new ModelNode();
         address.add("deployment", deploymentName).add("subdeployment", subdeploymentName).add("subsystem", "resource-adapters");
