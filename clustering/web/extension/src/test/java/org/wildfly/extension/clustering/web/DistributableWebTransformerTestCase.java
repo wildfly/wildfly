@@ -62,16 +62,22 @@ public class DistributableWebTransformerTestCase extends AbstractSubsystemTest {
                 ;
     }
 
-    private String formatSubsystemArtifact() {
-        return this.formatArtifact("org.jboss.eap:wildfly-clustering-web-extension:%s");
+    private String formatArtifact(String artifactIdSegment) {
+        return this.getMavenGav(artifactIdSegment,false);
     }
 
-    private String formatArtifact(String pattern) {
-        return String.format(pattern, this.controller.getMavenGavVersion());
+    private String formatCoreArtifact(String artifactIdSegment) {
+        return this.getMavenGav(artifactIdSegment,true);
     }
 
-    private String formatCoreArtifact(String pattern) {
-        return String.format(pattern, this.controller.getCoreVersion());
+    // Workaround for org.jboss.as.model.test.ModelTestControllerVersion#getMavenGav(..)
+    private String getMavenGav(String artifactIdSegment, boolean isCoreArtifact) {
+        return String.format("%s:%s%s:%s",
+                isCoreArtifact ? this.controller.getCoreMavenGroupId() : this.controller.getMavenGroupId(),
+                this.controller.getArtifactIdPrefix(),
+                artifactIdSegment,
+                isCoreArtifact ? this.controller.getCoreVersion() : this.controller.getMavenGavVersion()
+        );
     }
 
     private DistributableWebSubsystemModel getModelVersion() {
@@ -85,46 +91,45 @@ public class DistributableWebTransformerTestCase extends AbstractSubsystemTest {
     private String[] getDependencies() {
         return switch (this.controller) {
             case EAP_7_4_0 -> new String[] {
-                    formatSubsystemArtifact(),
-                    formatArtifact("org.jboss.eap:wildfly-clustering-common:%s"),
-                    formatArtifact("org.jboss.eap:wildfly-clustering-ee-hotrod:%s"),
-                    formatArtifact("org.jboss.eap:wildfly-clustering-ee-infinispan:%s"),
-                    formatArtifact("org.jboss.eap:wildfly-clustering-ee-spi:%s"),
-                    formatArtifact("org.jboss.eap:wildfly-clustering-infinispan-client:%s"),
-                    formatArtifact("org.jboss.eap:wildfly-clustering-infinispan-spi:%s"),
-                    formatArtifact("org.jboss.eap:wildfly-clustering-marshalling-spi:%s"),
-                    formatArtifact("org.jboss.eap:wildfly-clustering-service:%s"),
-                    formatArtifact("org.jboss.eap:wildfly-clustering-web-container:%s"),
-                    formatArtifact("org.jboss.eap:wildfly-clustering-web-hotrod:%s"),
-                    formatArtifact("org.jboss.eap:wildfly-clustering-web-infinispan:%s"),
-                    formatArtifact("org.jboss.eap:wildfly-clustering-web-spi:%s"),
+                    formatArtifact("clustering-web-extension"),
+                    formatArtifact("clustering-common"),
+                    formatArtifact("clustering-ee-hotrod"),
+                    formatArtifact("clustering-ee-infinispan"),
+                    formatArtifact("clustering-ee-spi"),
+                    formatArtifact("clustering-infinispan-client"),
+                    formatArtifact("clustering-infinispan-spi"),
+                    formatArtifact("clustering-marshalling-spi"),
+                    formatArtifact("clustering-service"),
+                    formatArtifact("clustering-web-container"),
+                    formatArtifact("clustering-web-hotrod"),
+                    formatArtifact("clustering-web-infinispan"),
+                    formatArtifact("clustering-web-spi"),
             };
             case EAP_8_0_0 -> new String[] {
-                    formatSubsystemArtifact(),
-                    formatArtifact("org.jboss.eap:wildfly-clustering-common:%s"),
-                    formatArtifact("org.jboss.eap:wildfly-clustering-ee-hotrod:%s"),
-                    formatArtifact("org.jboss.eap:wildfly-clustering-ee-infinispan:%s"),
-                    formatArtifact("org.jboss.eap:wildfly-clustering-ee-spi:%s"),
-                    formatArtifact("org.jboss.eap:wildfly-clustering-infinispan-client-service:%s"),
-                    formatArtifact("org.jboss.eap:wildfly-clustering-infinispan-embedded-service:%s"),
-                    formatArtifact("org.jboss.eap:wildfly-clustering-marshalling-spi:%s"),
-                    formatArtifact("org.jboss.eap:wildfly-clustering-service:%s"),
-                    formatArtifact("org.jboss.eap:wildfly-clustering-web-container:%s"),
-                    formatArtifact("org.jboss.eap:wildfly-clustering-web-hotrod:%s"),
-                    formatArtifact("org.jboss.eap:wildfly-clustering-web-infinispan:%s"),
-                    formatArtifact("org.jboss.eap:wildfly-clustering-web-service:%s"),
-                    formatArtifact("org.jboss.eap:wildfly-clustering-web-spi:%s"),
+                    formatArtifact("clustering-web-extension"),
+                    formatArtifact("clustering-common"),
+                    formatArtifact("clustering-ee-hotrod"),
+                    formatArtifact("clustering-ee-infinispan"),
+                    formatArtifact("clustering-ee-spi"),
+                    formatArtifact("clustering-infinispan-client-service"),
+                    formatArtifact("clustering-infinispan-embedded-service"),
+                    formatArtifact("clustering-marshalling-spi"),
+                    formatArtifact("clustering-service"),
+                    formatArtifact("clustering-web-container"),
+                    formatArtifact("clustering-web-hotrod"),
+                    formatArtifact("clustering-web-infinispan"),
+                    formatArtifact("clustering-web-service"),
+                    formatArtifact("clustering-web-spi"),
             };
             case EAP_8_1_0 -> new String[] {
-                    // TODO Replace these "org.jboss.eap" group when org.jboss.as.model.test.ModelTestControllerVersion.EAP_8_1_0 is updated
-                    formatArtifact("org.wildfly:wildfly-clustering-common:%s"),
-                    formatArtifact("org.wildfly:wildfly-clustering-infinispan-client-service:%s"),
-                    formatArtifact("org.wildfly:wildfly-clustering-infinispan-embedded-service:%s"),
-                    formatArtifact("org.wildfly:wildfly-clustering-server-service:%s"),
-                    formatArtifact("org.wildfly:wildfly-clustering-web-extension:%s"),
-                    formatArtifact("org.wildfly:wildfly-clustering-web-service:%s"),
-                    formatCoreArtifact("org.wildfly.core:wildfly-service:%s"),
-                    formatCoreArtifact("org.wildfly.core:wildfly-subsystem:%s"),
+                    formatArtifact("clustering-web-extension"),
+                    formatArtifact("clustering-common"),
+                    formatArtifact("clustering-infinispan-client-service"),
+                    formatArtifact("clustering-infinispan-embedded-service"),
+                    formatArtifact("clustering-server-service"),
+                    formatArtifact("clustering-web-service"),
+                    formatCoreArtifact("service"),
+                    formatCoreArtifact("subsystem"),
             };
             default -> throw new IllegalArgumentException();
         };
