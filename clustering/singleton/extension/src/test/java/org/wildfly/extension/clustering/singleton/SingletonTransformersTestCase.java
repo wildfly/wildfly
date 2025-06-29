@@ -53,21 +53,27 @@ public class SingletonTransformersTestCase extends AbstractSubsystemTest {
         this.version = this.getModelVersion().getVersion();
     }
 
-    private String formatArtifact(String pattern) {
-        return String.format(pattern, this.controller.getMavenGavVersion());
+    private String formatArtifact(String artifactIdSegment) {
+        return this.getMavenGav(artifactIdSegment, false);
     }
 
-    private String formatCoreArtifact(String pattern) {
-        return String.format(pattern, this.controller.getCoreVersion());
+    private String formatCoreArtifact(String artifactIdSegment) {
+        return this.getMavenGav(artifactIdSegment, true);
     }
 
-    private String formatSubsystemArtifact() {
-        return formatArtifact("org.jboss.eap:wildfly-clustering-singleton-extension:%s");
+    // Workaround for org.jboss.as.model.test.ModelTestControllerVersion#getMavenGav(..)
+    private String getMavenGav(String artifactIdSegment, boolean isCoreArtifact) {
+        return String.format("%s:%s%s:%s",
+                isCoreArtifact ? this.controller.getCoreMavenGroupId() : this.controller.getMavenGroupId(),
+                this.controller.getArtifactIdPrefix(),
+                artifactIdSegment,
+                isCoreArtifact ? this.controller.getCoreVersion() : this.controller.getMavenGavVersion()
+        );
     }
 
     private SingletonSubsystemModel getModelVersion() {
         return switch (this.controller) {
-            case EAP_7_4_0, EAP_8_0_0, EAP_8_1_0-> SingletonSubsystemModel.VERSION_3_0_0;
+            case EAP_7_4_0, EAP_8_0_0, EAP_8_1_0 -> SingletonSubsystemModel.VERSION_3_0_0;
             default -> throw new IllegalArgumentException();
         };
     }
@@ -75,27 +81,26 @@ public class SingletonTransformersTestCase extends AbstractSubsystemTest {
     private String[] getDependencies() {
         return switch (this.controller) {
             case EAP_7_4_0 -> new String[] {
-                    formatSubsystemArtifact(),
-                    formatArtifact("org.jboss.eap:wildfly-clustering-api:%s"),
-                    formatArtifact("org.jboss.eap:wildfly-clustering-common:%s"),
-                    formatArtifact("org.jboss.eap:wildfly-clustering-server:%s"),
-                    formatArtifact("org.jboss.eap:wildfly-clustering-service:%s"),
-                    formatArtifact("org.jboss.eap:wildfly-clustering-singleton-api:%s"),
-                    formatArtifact("org.jboss.eap:wildfly-clustering-spi:%s"),
+                    formatArtifact("clustering-singleton-extension"),
+                    formatArtifact("clustering-api"),
+                    formatArtifact("clustering-common"),
+                    formatArtifact("clustering-server"),
+                    formatArtifact("clustering-service"),
+                    formatArtifact("clustering-singleton-api"),
+                    formatArtifact("clustering-spi"),
             };
             case EAP_8_0_0 -> new String[] {
-                    formatSubsystemArtifact(),
-                    formatArtifact("org.jboss.eap:wildfly-clustering-common:%s"),
-                    formatArtifact("org.jboss.eap:wildfly-clustering-service:%s"),
-                    formatArtifact("org.jboss.eap:wildfly-clustering-singleton-api:%s"),
+                    formatArtifact("clustering-singleton-extension"),
+                    formatArtifact("clustering-common"),
+                    formatArtifact("clustering-service"),
+                    formatArtifact("clustering-singleton-api"),
             };
             case EAP_8_1_0 -> new String[] {
-                    // TODO Replace these "org.jboss.eap" group when org.jboss.as.model.test.ModelTestControllerVersion.EAP_8_1_0 is updated
-                    formatArtifact("org.wildfly:wildfly-clustering-common:%s"),
-                    formatArtifact("org.wildfly:wildfly-clustering-server-service:%s"),
-                    formatArtifact("org.wildfly:wildfly-clustering-singleton-api:%s"),
-                    formatArtifact("org.wildfly:wildfly-clustering-singleton-extension:%s"),
-                    formatCoreArtifact("org.wildfly.core:wildfly-subsystem:%s"),
+                    formatArtifact("clustering-singleton-extension"),
+                    formatArtifact("clustering-common"),
+                    formatArtifact("clustering-server-service"),
+                    formatArtifact("clustering-singleton-api"),
+                    formatCoreArtifact("subsystem"),
             };
             default -> throw new IllegalArgumentException();
         };
