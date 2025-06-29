@@ -36,7 +36,11 @@ public class SingletonTransformersTestCase extends AbstractSubsystemTest {
 
     @Parameters
     public static Iterable<ModelTestControllerVersion> parameters() {
-        return EnumSet.of(ModelTestControllerVersion.EAP_7_4_0, ModelTestControllerVersion.EAP_8_0_0);
+        return EnumSet.of(
+                ModelTestControllerVersion.EAP_7_4_0,
+                ModelTestControllerVersion.EAP_8_0_0,
+                ModelTestControllerVersion.EAP_8_1_0
+        );
     }
 
     private final ModelTestControllerVersion controller;
@@ -49,49 +53,60 @@ public class SingletonTransformersTestCase extends AbstractSubsystemTest {
         this.version = this.getModelVersion().getVersion();
     }
 
-    private String formatArtifact(String pattern) {
-        return String.format(pattern, this.controller.getMavenGavVersion());
+    private String formatArtifact(String artifactIdSegment) {
+        return this.getMavenGav(artifactIdSegment, false);
     }
 
-    private String formatSubsystemArtifact() {
-        return formatArtifact("org.jboss.eap:wildfly-clustering-singleton-extension:%s");
+    private String formatCoreArtifact(String artifactIdSegment) {
+        return this.getMavenGav(artifactIdSegment, true);
+    }
+
+    // Workaround for org.jboss.as.model.test.ModelTestControllerVersion#getMavenGav(..)
+    private String getMavenGav(String artifactIdSegment, boolean isCoreArtifact) {
+        return String.format("%s:%s%s:%s",
+                isCoreArtifact ? this.controller.getCoreMavenGroupId() : this.controller.getMavenGroupId(),
+                this.controller.getArtifactIdPrefix(),
+                artifactIdSegment,
+                isCoreArtifact ? this.controller.getCoreVersion() : this.controller.getMavenGavVersion()
+        );
     }
 
     private SingletonSubsystemModel getModelVersion() {
-        switch (this.controller) {
-            case EAP_7_4_0:
-            case EAP_8_0_0:
-                return SingletonSubsystemModel.VERSION_3_0_0;
-            default:
-                throw new IllegalArgumentException();
-        }
+        return switch (this.controller) {
+            case EAP_7_4_0, EAP_8_0_0, EAP_8_1_0 -> SingletonSubsystemModel.VERSION_3_0_0;
+            default -> throw new IllegalArgumentException();
+        };
     }
 
     private String[] getDependencies() {
-        switch (this.controller) {
-            case EAP_7_4_0:
-                return new String[] {
-                        formatSubsystemArtifact(),
-                        formatArtifact("org.jboss.eap:wildfly-clustering-api:%s"),
-                        formatArtifact("org.jboss.eap:wildfly-clustering-common:%s"),
-                        formatArtifact("org.jboss.eap:wildfly-clustering-server:%s"),
-                        formatArtifact("org.jboss.eap:wildfly-clustering-service:%s"),
-                        formatArtifact("org.jboss.eap:wildfly-clustering-singleton-api:%s"),
-                        formatArtifact("org.jboss.eap:wildfly-clustering-spi:%s"),
-                };
-            case EAP_8_0_0:
-                return new String[] {
-                        formatSubsystemArtifact(),
-                        formatArtifact("org.jboss.eap:wildfly-clustering-common:%s"),
-                        formatArtifact("org.jboss.eap:wildfly-clustering-service:%s"),
-                        formatArtifact("org.jboss.eap:wildfly-clustering-singleton-api:%s"),
-                };
-            default:
-                throw new IllegalArgumentException();
-        }
+        return switch (this.controller) {
+            case EAP_7_4_0 -> new String[] {
+                    formatArtifact("clustering-singleton-extension"),
+                    formatArtifact("clustering-api"),
+                    formatArtifact("clustering-common"),
+                    formatArtifact("clustering-server"),
+                    formatArtifact("clustering-service"),
+                    formatArtifact("clustering-singleton-api"),
+                    formatArtifact("clustering-spi"),
+            };
+            case EAP_8_0_0 -> new String[] {
+                    formatArtifact("clustering-singleton-extension"),
+                    formatArtifact("clustering-common"),
+                    formatArtifact("clustering-service"),
+                    formatArtifact("clustering-singleton-api"),
+            };
+            case EAP_8_1_0 -> new String[] {
+                    formatArtifact("clustering-singleton-extension"),
+                    formatArtifact("clustering-common"),
+                    formatArtifact("clustering-server-service"),
+                    formatArtifact("clustering-singleton-api"),
+                    formatCoreArtifact("subsystem"),
+            };
+            default -> throw new IllegalArgumentException();
+        };
     }
 
-    @SuppressWarnings("deprecation")
+    @SuppressWarnings("removal")
     protected org.jboss.as.subsystem.test.AdditionalInitialization createAdditionalInitialization() {
         return new AdditionalInitialization()
                 .require(OutboundSocketBinding.SERVICE_DESCRIPTOR, "binding0")
