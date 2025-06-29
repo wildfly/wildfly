@@ -77,7 +77,6 @@
             <dependency>
                 <groupId>io.smallrye.common</groupId>
                 <artifactId>smallrye-common-annotation</artifactId>
-                <version>${version.io.smallrye.smallrye-common}</version>
                 <scope>test</scope>
             </dependency>
             <dependency>
