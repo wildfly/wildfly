@@ -32,6 +32,7 @@ import org.jboss.as.network.ManagedBinding;
 import org.jboss.as.network.SocketBinding;
 import org.jboss.as.network.SocketBindingManager;
 import org.jboss.as.server.suspend.SuspendController;
+import org.jboss.as.server.suspend.SuspendableActivityRegistry;
 import org.jboss.as.txn.logging.TransactionLogger;
 import org.jboss.as.txn.suspend.RecoverySuspendController;
 import org.jboss.msc.Service;
@@ -157,13 +158,13 @@ public class ArjunaRecoveryManagerService implements Service {
         }
         recoverySuspendController = new RecoverySuspendController(recoveryManagerService);
         processStateSupplier.get().addPropertyChangeListener(recoverySuspendController);
-        suspendControllerSupplier.get().registerActivity(recoverySuspendController);
+        suspendControllerSupplier.get().registerActivity(recoverySuspendController, SuspendableActivityRegistry.SuspendPriority.LAST);
         consumer.accept(recoveryManagerService);
     }
 
     public void stop(final StopContext context) {
         consumer.accept(null);
-        suspendControllerSupplier.get().unRegisterActivity(recoverySuspendController);
+        suspendControllerSupplier.get().unregisterActivity(recoverySuspendController);
         processStateSupplier.get().removePropertyChangeListener(recoverySuspendController);
         try {
             recoveryManagerService.stop();
