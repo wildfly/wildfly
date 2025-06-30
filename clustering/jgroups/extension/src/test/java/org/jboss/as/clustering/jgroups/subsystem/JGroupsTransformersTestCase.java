@@ -37,9 +37,11 @@ import org.junit.runners.Parameterized.Parameters;
 @RunWith(Parameterized.class)
 public class JGroupsTransformersTestCase extends AbstractSubsystemTest {
     private static final Map<ModelTestControllerVersion, JGroupsSubsystemModel> VERSIONS = new EnumMap<>(ModelTestControllerVersion.class);
+
     static {
         VERSIONS.put(ModelTestControllerVersion.EAP_7_4_0, JGroupsSubsystemModel.VERSION_8_0_0);
         VERSIONS.put(ModelTestControllerVersion.EAP_8_0_0, JGroupsSubsystemModel.VERSION_10_0_0);
+        VERSIONS.put(ModelTestControllerVersion.EAP_8_1_0, JGroupsSubsystemModel.VERSION_10_0_0);
     }
 
     @Parameters
@@ -57,33 +59,51 @@ public class JGroupsTransformersTestCase extends AbstractSubsystemTest {
     }
 
     private String[] getDependencies() {
-        switch (this.controllerVersion) {
-            case EAP_7_4_0:
-                return new String[] {
-                        this.formatArtifact("wildfly-clustering-jgroups-extension"),
-                        this.formatArtifact("wildfly-clustering-api"),
-                        this.formatArtifact("wildfly-clustering-common"),
-                        this.formatArtifact("wildfly-clustering-jgroups-spi"),
-                        this.formatArtifact("wildfly-clustering-server"),
-                        this.formatArtifact("wildfly-clustering-service"),
-                        this.formatArtifact("wildfly-clustering-spi"),
-                };
-            case EAP_8_0_0:
-                return new String[] {
-                        this.formatArtifact("wildfly-clustering-jgroups-extension"),
-                        this.formatArtifact("wildfly-clustering-common"),
-                        this.formatArtifact("wildfly-clustering-jgroups-spi"),
-                        this.formatArtifact("wildfly-clustering-server-service"),
-                        this.formatArtifact("wildfly-clustering-server-spi"),
-                        this.formatArtifact("wildfly-clustering-service"),
-                };
-            default:
-                throw new IllegalArgumentException();
-        }
+        return switch (this.controllerVersion) {
+            case EAP_7_4_0 -> new String[] {
+                    this.formatArtifact("clustering-jgroups-extension"),
+                    this.formatArtifact("clustering-api"),
+                    this.formatArtifact("clustering-common"),
+                    this.formatArtifact("clustering-jgroups-spi"),
+                    this.formatArtifact("clustering-server"),
+                    this.formatArtifact("clustering-service"),
+                    this.formatArtifact("clustering-spi"),
+            };
+            case EAP_8_0_0 -> new String[] {
+                    this.formatArtifact("clustering-jgroups-extension"),
+                    this.formatArtifact("clustering-common"),
+                    this.formatArtifact("clustering-jgroups-spi"),
+                    this.formatArtifact("clustering-server-service"),
+                    this.formatArtifact("clustering-server-spi"),
+                    this.formatArtifact("clustering-service"),
+            };
+            case EAP_8_1_0 -> new String[] {
+                    this.formatArtifact("clustering-jgroups-extension"),
+                    this.formatArtifact("clustering-common"),
+                    this.formatArtifact("clustering-jgroups-spi"),
+                    this.formatArtifact("clustering-server-service"),
+                    this.formatCoreArtifact("subsystem"),
+            };
+            default -> throw new IllegalArgumentException();
+        };
     }
 
-    private String formatArtifact(String artifactId) {
-        return String.format("%s:%s:%s", this.controllerVersion.getMavenGroupId(), artifactId, this.controllerVersion.getMavenGavVersion());
+    private String formatArtifact(String artifactIdSegment) {
+        return this.getMavenGav(artifactIdSegment, false);
+    }
+
+    private String formatCoreArtifact(String artifactIdSegment) {
+        return this.getMavenGav(artifactIdSegment, true);
+    }
+
+    // Workaround for org.jboss.as.model.test.ModelTestControllerVersion#getMavenGav(..)
+    private String getMavenGav(String artifactIdSegment, boolean isCoreArtifact) {
+        return String.format("%s:%s%s:%s",
+                isCoreArtifact ? this.controllerVersion.getCoreMavenGroupId() : this.controllerVersion.getMavenGroupId(),
+                this.controllerVersion.getArtifactIdPrefix(),
+                artifactIdSegment,
+                isCoreArtifact ? this.controllerVersion.getCoreVersion() : this.controllerVersion.getMavenGavVersion()
+        );
     }
 
     private static AdditionalInitialization createAdditionalInitialization() {
