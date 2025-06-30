@@ -200,10 +200,7 @@ public class EnvSetupUtils {
                                     client, false);
                             KeycloakConfiguration.setBackchannelLogoutSessionRequired(
                                     client, true);
-<<<<<<< Updated upstream
 
-=======
->>>>>>> Stashed changes
                             List<String> tmpList = new ArrayList<>();
                             for (String redirectPath : logoutChannelUrls.postLogoutRedirectPaths) {
                                 if (!NO_CALLBACK.equals(redirectPath)) {
