@@ -461,7 +461,7 @@
         <version.org.eclipse.yasson>3.0.4</version.org.eclipse.yasson>
         <version.org.elasticsearch.client.rest-client>8.15.4</version.org.elasticsearch.client.rest-client>
         <version.org.glassfish.expressly>5.0.0</version.org.glassfish.expressly>
-        <version.org.glassfish.jakarta.enterprise.concurrent>3.0.1</version.org.glassfish.jakarta.enterprise.concurrent>
+        <version.org.glassfish.jakarta.enterprise.concurrent>3.0.2</version.org.glassfish.jakarta.enterprise.concurrent>
         <version.org.glassfish.jaxb>4.0.5</version.org.glassfish.jaxb>
         <version.org.glassfish.jaxb.jaxb-xjc>${version.org.glassfish.jaxb}</version.org.glassfish.jaxb.jaxb-xjc>
         <version.org.glassfish.soteria>3.0.3</version.org.glassfish.soteria>
