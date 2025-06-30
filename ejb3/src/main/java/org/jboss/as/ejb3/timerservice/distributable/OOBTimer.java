@@ -22,10 +22,12 @@ import org.jboss.as.ejb3.timerservice.spi.ManagedTimerService;
 import org.jboss.as.ejb3.timerservice.spi.TimedObjectInvoker;
 import org.jboss.invocation.InterceptorContext;
 import org.wildfly.clustering.cache.batch.Batch;
-import org.wildfly.clustering.cache.batch.BatchContext;
 import org.wildfly.clustering.cache.batch.SuspendedBatch;
+import org.wildfly.clustering.context.Context;
 import org.wildfly.clustering.ejb.timer.Timer;
 import org.wildfly.clustering.ejb.timer.TimerManager;
+import org.wildfly.clustering.function.Consumer;
+import org.wildfly.clustering.function.Supplier;
 import org.wildfly.common.function.ExceptionConsumer;
 import org.wildfly.common.function.ExceptionFunction;
 
@@ -60,6 +62,7 @@ public class OOBTimer<I> implements ManagedTimer {
     private final TimerSynchronizationFactory<I> synchronizationFactory;
     private final Function<I, Timer<I>> fixedReader;
     private final Function<I, Timer<I>> dynamicReader;
+    private final Supplier<Context<Batch>> batchContextFactory;
 
     public OOBTimer(TimerManager<I> manager, I id, TimedObjectInvoker invoker, TimerSynchronizationFactory<I> synchronizationFactory) {
         this.manager = manager;
@@ -68,6 +71,14 @@ public class OOBTimer<I> implements ManagedTimer {
         this.synchronizationFactory = synchronizationFactory;
         this.fixedReader = manager::readTimer;
         this.dynamicReader = manager::getTimer;
+        this.batchContextFactory = this.manager.getBatchFactory().map(batch -> Context.of(batch, new Consumer<>() {
+            @Override
+            public void accept(Batch batch) {
+                if (!batch.getStatus().isClosed()) {
+                    batch.close();
+                }
+            }
+        }));
     }
 
     @Override
@@ -169,25 +180,25 @@ public class OOBTimer<I> implements ManagedTimer {
             SuspendedBatch suspendedBatch = existing.getValue();
             return function.apply(new DistributableTimer<>(this.manager, timer, suspendedBatch, this.invoker, this.synchronizationFactory));
         }
-        try (Batch batch = this.manager.getBatchFactory().get()) {
+        try (Context<Batch> batch = this.batchContextFactory.get()) {
             Timer<I> timer = reader.apply(this.id);
             if (timer == null) {
                 throw EjbLogger.ROOT_LOGGER.timerWasCanceled(this.id.toString());
             }
-            try (BatchContext<SuspendedBatch> context = batch.suspendWithContext()) {
+            try (Context<SuspendedBatch> context = batch.get().suspendWithContext()) {
                 return function.apply(new DistributableTimer<>(this.manager, timer, context.get(), this.invoker, this.synchronizationFactory));
             }
         }
     }
 
     private <E extends Exception> void invoke(ExceptionConsumer<ManagedTimer, E> consumer) throws E {
-        this.invokeDynamic(new ExceptionFunction<ManagedTimer, Void, E>() {
+        this.invoke(new ExceptionFunction<ManagedTimer, Void, E>() {
             @Override
             public Void apply(ManagedTimer timer) throws E {
                 consumer.accept(timer);
                 return null;
             }
-        });
+        }, this.dynamicReader);
     }
 
     @Override

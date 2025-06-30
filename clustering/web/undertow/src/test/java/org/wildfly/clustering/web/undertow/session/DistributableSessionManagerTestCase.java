@@ -12,6 +12,7 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
@@ -34,8 +35,8 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.wildfly.clustering.cache.batch.Batch;
-import org.wildfly.clustering.cache.batch.BatchContext;
 import org.wildfly.clustering.cache.batch.SuspendedBatch;
+import org.wildfly.clustering.context.Context;
 import org.wildfly.clustering.function.Supplier;
 import org.wildfly.clustering.session.Session;
 import org.wildfly.clustering.session.SessionManager;
@@ -139,7 +140,7 @@ public class DistributableSessionManagerTestCase {
         HttpServerExchange exchange = new HttpServerExchange(null);
         Batch batch = mock(Batch.class);
         SuspendedBatch suspendedBatch = mock(SuspendedBatch.class);
-        BatchContext<Batch> context = mock(BatchContext.class);
+        Context<Batch> context = mock(Context.class);
         SessionConfig config = mock(SessionConfig.class);
         Session<Map<String, Object>> session = mock(Session.class);
         SessionMetaData metaData = mock(SessionMetaData.class);
@@ -177,7 +178,7 @@ public class DistributableSessionManagerTestCase {
         HttpServerExchange exchange = new HttpServerExchange(null);
         Batch batch = mock(Batch.class);
         SuspendedBatch suspendedBatch = mock(SuspendedBatch.class);
-        BatchContext<Batch> context = mock(BatchContext.class);
+        Context<Batch> context = mock(Context.class);
         SessionConfig config = mock(SessionConfig.class);
         Session<Map<String, Object>> session = mock(Session.class);
         SessionMetaData metaData = mock(SessionMetaData.class);
@@ -215,7 +216,7 @@ public class DistributableSessionManagerTestCase {
         HttpServerExchange exchange = new HttpServerExchange(null);
         Batch batch = mock(Batch.class);
         SuspendedBatch suspendedBatch = mock(SuspendedBatch.class);
-        BatchContext<Batch> context = mock(BatchContext.class);
+        Context<Batch> context = mock(Context.class);
         SessionConfig config = mock(SessionConfig.class);
         String sessionId = "session";
 
@@ -246,7 +247,7 @@ public class DistributableSessionManagerTestCase {
         HttpServerExchange exchange = new HttpServerExchange(null);
         Batch batch = mock(Batch.class);
         SuspendedBatch suspendedBatch = mock(SuspendedBatch.class);
-        BatchContext<Batch> context = mock(BatchContext.class);
+        Context<Batch> context = mock(Context.class);
         SessionConfig config = mock(SessionConfig.class);
         Session<Map<String, Object>> session = mock(Session.class);
         SessionMetaData metaData = mock(SessionMetaData.class);
@@ -287,7 +288,7 @@ public class DistributableSessionManagerTestCase {
         SessionConfig config = mock(SessionConfig.class);
         Batch batch = mock(Batch.class);
         SuspendedBatch suspendedBatch = mock(SuspendedBatch.class);
-        BatchContext<Batch> context = mock(BatchContext.class);
+        Context<Batch> context = mock(Context.class);
 
         when(this.batchFactory.get()).thenReturn(batch);
         when(batch.suspend()).thenReturn(suspendedBatch);
@@ -310,7 +311,7 @@ public class DistributableSessionManagerTestCase {
         SessionConfig config = mock(SessionConfig.class);
         Batch batch = mock(Batch.class);
         SuspendedBatch suspendedBatch = mock(SuspendedBatch.class);
-        BatchContext<Batch> context = mock(BatchContext.class);
+        Context<Batch> context = mock(Context.class);
         String sessionId = "session+";
 
         when(this.batchFactory.get()).thenReturn(batch);
@@ -324,13 +325,16 @@ public class DistributableSessionManagerTestCase {
 
         assertNull(sessionAdapter);
 
+        verify(this.manager, never()).findSession(sessionId);
+        verify(batch).discard();
+        verify(batch).close();
+
         sessionAdapter = this.adapter.getSession(sessionId);
 
         assertNull(sessionAdapter);
 
         verify(this.manager, never()).findSession(sessionId);
-        verify(batch).discard();
-        verify(batch).close();
+        verify(batch, times(2)).close();
     }
 
     @Test
@@ -338,7 +342,7 @@ public class DistributableSessionManagerTestCase {
         HttpServerExchange exchange = new HttpServerExchange(null);
         Batch batch = mock(Batch.class);
         SuspendedBatch suspendedBatch = mock(SuspendedBatch.class);
-        BatchContext<Batch> context = mock(BatchContext.class);
+        Context<Batch> context = mock(Context.class);
         SessionConfig config = mock(SessionConfig.class);
         String sessionId = "session";
 
@@ -364,7 +368,7 @@ public class DistributableSessionManagerTestCase {
         HttpServerExchange exchange = new HttpServerExchange(null);
         Batch batch = mock(Batch.class);
         SuspendedBatch suspendedBatch = mock(SuspendedBatch.class);
-        BatchContext<Batch> context = mock(BatchContext.class);
+        Context<Batch> context = mock(Context.class);
         SessionConfig config = mock(SessionConfig.class);
         Session<Map<String, Object>> session = mock(Session.class);
         SessionMetaData metaData = mock(SessionMetaData.class);
@@ -398,7 +402,7 @@ public class DistributableSessionManagerTestCase {
         HttpServerExchange exchange = new HttpServerExchange(null);
         Batch batch = mock(Batch.class);
         SuspendedBatch suspendedBatch = mock(SuspendedBatch.class);
-        BatchContext<Batch> context = mock(BatchContext.class);
+        Context<Batch> context = mock(Context.class);
         SessionConfig config = mock(SessionConfig.class);
         Session<Map<String, Object>> session = mock(Session.class);
         SessionMetaData metaData = mock(SessionMetaData.class);

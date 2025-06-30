@@ -35,6 +35,7 @@
         <module name="org.jboss.staxmapper"/>
         <module name="org.jgroups"/>
         <module name="org.wildfly.clustering.context"/>
+        <module name="org.wildfly.clustering.function"/>
         <module name="org.wildfly.clustering.jgroups.spi"/>
         <module name="org.wildfly.clustering.server.api"/>
         <module name="org.wildfly.clustering.server.service"/>

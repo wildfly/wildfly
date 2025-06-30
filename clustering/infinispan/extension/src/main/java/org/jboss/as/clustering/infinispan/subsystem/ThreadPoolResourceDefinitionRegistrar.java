@@ -11,7 +11,6 @@ import java.util.Set;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 
 import org.infinispan.commons.executors.ExecutorFactory;
@@ -87,7 +86,7 @@ public class ThreadPoolResourceDefinitionRegistrar extends ScheduledThreadPoolRe
                 builder.setMaximumPoolSize(this.maxThreads);
                 builder.setGrowthResistance(0.0f);
                 builder.setMaximumQueueSize(this.queueLength);
-                builder.setKeepAliveTime(this.keepAlive, TimeUnit.MILLISECONDS);
+                builder.setKeepAliveTime(Duration.ofMillis(this.keepAlive));
 
                 EnhancedQueueExecutor enhancedQueueExecutor = builder.build();
                 enhancedQueueExecutor.setHandoffExecutor(new Executor() {
