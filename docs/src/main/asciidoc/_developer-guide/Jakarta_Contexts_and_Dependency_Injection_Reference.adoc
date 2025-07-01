@@ -1,5 +1,5 @@
 [[CDI_Reference]]
-= CDI Reference
+= Jakarta Contexts and Dependency Injection Reference
 
 ifdef::env-github[]
 :tip-caption: :bulb:

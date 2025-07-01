@@ -1,5 +1,5 @@
 [[Jakarta_Enterprise_Beans_3_Reference_Guide]]
-= Jakarta Enterprise Beans Reference Guide
+= Jakarta Enterprise Beans Reference
 
 ifdef::env-github[]
 :tip-caption: :bulb:

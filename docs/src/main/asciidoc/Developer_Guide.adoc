@@ -39,15 +39,11 @@ include::_developer-guide/Implicit_module_dependencies_for_deployments.adoc[]
 
 include::_developer-guide/Deployment_Descriptors_used_In_WildFly.adoc[]
 
-include::_developer-guide/Development_Guidelines_and_Recommended_Practices.adoc[]
-
 include::_developer-guide/Application_Client_Reference.adoc[]
 
-include::_developer-guide/Embedded_API.adoc[]
+include::_developer-guide/EE_Concurrency_Utilities.adoc[]
 
 include::_developer-guide/Jakarta_Contexts_and_Dependency_Injection_Reference.adoc[]
-
-include::_developer-guide/EE_Concurrency_Utilities.adoc[]
 
 include::_developer-guide/Jakarta_Data_Reference.adoc[]
 
@@ -55,15 +51,17 @@ include::_developer-guide/Jakarta_Enterprise_Beans_3_Reference_Guide.adoc[]
 
 include::_developer-guide/Jakarta_Persistence_Reference_Guide.adoc[]
 
+include::_developer-guide/Jakarta_RESTful_Web_Services_Reference_Guide.adoc[]
+
 include::_developer-guide/Jakarta_Transactions_Reference.adoc[]
+
+include::_developer-guide/Jakarta_XML_Web_Services_Reference_Guide.adoc[]
 
 include::_developer-guide/JNDI_Reference.adoc[]
 
-include::_developer-guide/Jakarta_RESTful_Web_Services_Reference_Guide.adoc[]
-
 include::_developer-guide/Web_(Undertow)_Reference_Guide.adoc[]
 
-include::_developer-guide/Jakarta_XML_Web_Services_Reference_Guide.adoc[]
+include::_developer-guide/Embedded_API.adoc[]
 
 include::_developer-guide/H2_Web_Console_Integration.adoc[]
 
@@ -72,7 +70,3 @@ include::_developer-guide/Migrated_to_WildFly_Example_Applications.adoc[]
 include::_developer-guide/Spring_applications_development_and_migration_guide.adoc[]
 
 include::_developer-guide/How_do_I_migrate_my_application_from_AS7_to_WildFly.adoc[]
-
-include::_developer-guide/How_do_I_migrate_my_application_from_WebLogic_to_WildFly.adoc[]
-
-include::_developer-guide/How_do_I_migrate_my_application_from_WebSphere_to_WildFly.adoc[]
