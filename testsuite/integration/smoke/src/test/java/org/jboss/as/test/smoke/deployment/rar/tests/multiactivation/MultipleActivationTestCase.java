@@ -4,15 +4,15 @@
  */
 package org.jboss.as.test.smoke.deployment.rar.tests.multiactivation;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import java.io.IOException;
 import java.util.List;
 import jakarta.annotation.Resource;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.connector.subsystems.resourceadapters.Namespace;
@@ -27,15 +27,16 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.ResourceAdapterArchive;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 
 /**
  * @author <a href="vrastsel@redhat.com">Vladimir Rastseluev</a>
  *         JBQA-5740 multiple resources deployment
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @ServerSetup(MultipleActivationTestCase.MultipleActivationTestCaseSetup.class)
 public class MultipleActivationTestCase {
 
@@ -101,11 +102,11 @@ public class MultipleActivationTestCase {
      */
     @Test
     public void testConfiguration() throws Throwable {
-        assertNotNull("CF1 not found", connectionFactory1);
-        assertNotNull("CF2 not found", connectionFactory2);
-        assertNotNull("AO1 not found", adminObject1);
-        assertNotNull("AO2 not found", adminObject2);
-        assertEquals("not equal AOs", adminObject1, adminObject2);
+        assertNotNull(connectionFactory1, "CF1 not found");
+        assertNotNull(connectionFactory2, "CF2 not found");
+        assertNotNull(adminObject1, "AO1 not found");
+        assertNotNull(adminObject2, "AO2 not found");
+        assertEquals(adminObject1, adminObject2, "not equal AOs");
     }
 
 }
