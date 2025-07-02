@@ -52,7 +52,7 @@ import org.junit.runner.RunWith;
 import org.junit.Ignore;
 
 /*  Test OIDC logout.  Logout configuration attributes
-    are passed to Elytron via oidc.json file attributes.
+    are passed to Elytron via wildfly server configuration.
  */
 @RunWith(Arquillian.class)
 @RunAsClient
