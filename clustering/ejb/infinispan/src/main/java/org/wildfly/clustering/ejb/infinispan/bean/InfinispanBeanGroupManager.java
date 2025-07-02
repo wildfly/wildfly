@@ -15,7 +15,6 @@ import org.wildfly.clustering.cache.CacheEntryMutator;
 import org.wildfly.clustering.cache.CacheEntryMutatorFactory;
 import org.wildfly.clustering.cache.CacheEntryRemover;
 import org.wildfly.clustering.cache.infinispan.embedded.EmbeddedCacheConfiguration;
-import org.wildfly.clustering.cache.infinispan.embedded.EmbeddedCacheEntryMutatorFactory;
 import org.wildfly.clustering.ejb.bean.BeanInstance;
 import org.wildfly.clustering.ejb.cache.bean.BeanGroupKey;
 import org.wildfly.clustering.function.Consumer;
@@ -37,9 +36,9 @@ public class InfinispanBeanGroupManager<K, V extends BeanInstance<K>, C> impleme
     private final CacheEntryMutatorFactory<BeanGroupKey<K>, MarshalledValue<Map<K, V>, C>> mutatorFactory;
 
     public InfinispanBeanGroupManager(EmbeddedCacheConfiguration configuration) {
-        this.cache = configuration.getCache();
+        this.cache = configuration.getWriteCache();
         this.removeCache = configuration.getWriteOnlyCache();
-        this.mutatorFactory = new EmbeddedCacheEntryMutatorFactory<>(configuration.getCache());
+        this.mutatorFactory = configuration.getCacheEntryMutatorFactory();
     }
 
     @Override

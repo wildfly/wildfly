@@ -180,6 +180,14 @@
         </dependency>
         <dependency>
             <groupId>org.wildfly.clustering</groupId>
+            <artifactId>wildfly-clustering-cache-infinispan-persistence-jdbc</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.wildfly.clustering</groupId>
+            <artifactId>wildfly-clustering-cache-infinispan-persistence-remote</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.wildfly.clustering</groupId>
             <artifactId>wildfly-clustering-marshalling-jboss</artifactId>
         </dependency>
         <dependency>

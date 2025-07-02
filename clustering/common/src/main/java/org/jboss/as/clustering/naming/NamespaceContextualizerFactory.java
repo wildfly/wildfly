@@ -12,6 +12,7 @@ import org.kohsuke.MetaInfServices;
 import org.wildfly.clustering.context.Context;
 import org.wildfly.clustering.context.Contextualizer;
 import org.wildfly.clustering.context.ContextualizerFactory;
+import org.wildfly.clustering.function.Consumer;
 
 /**
  * @author Paul Ferraro
@@ -22,11 +23,11 @@ public class NamespaceContextualizerFactory implements ContextualizerFactory {
     @Override
     public Contextualizer createContextualizer(ClassLoader loader) {
         NamespaceContextSelector selector = NamespaceContextSelector.getCurrentSelector();
-        return (selector != null) ? Contextualizer.withContextProvider(new Supplier<>() {
+        return (selector != null) ? Contextualizer.withContextProvider(new Supplier<Context<NamespaceContextSelector>>() {
             @Override
-            public Context get() {
+            public Context<NamespaceContextSelector> get() {
                 NamespaceContextSelector.pushCurrentSelector(selector);
-                return NamespaceContextSelector::popCurrentSelector;
+                return Context.of(selector, Consumer.run(NamespaceContextSelector::popCurrentSelector));
             }
         }) : Contextualizer.NONE;
     }
