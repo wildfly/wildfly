@@ -24,6 +24,7 @@ import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.test.shared.ServerReload;
 import org.jboss.as.test.shared.TestSuiteEnvironment;
+import org.jboss.as.test.shared.util.AssumeTestGroupUtil;
 import org.jboss.dmr.ModelNode;
 import org.junit.Assert;
 
@@ -49,6 +50,13 @@ public class MVCTestUtil {
 
         @Override
         public void setup(ManagementClient managementClient, String containerId) throws Exception {
+
+            // Provisioned servers already have the mvc-krazo subsystem
+            if (AssumeTestGroupUtil.isBootableJar() || AssumeTestGroupUtil.isWildFlyPreview()
+                    || System.getProperty("ts.layers") != null) {
+                return;
+            }
+
             executeForResult(managementClient.getControllerClient(),
                     Util.createAddOperation(PathAddress.pathAddress(EXTENSION, "org.wildfly.extension.mvc-krazo")));
             executeForResult(managementClient.getControllerClient(),
