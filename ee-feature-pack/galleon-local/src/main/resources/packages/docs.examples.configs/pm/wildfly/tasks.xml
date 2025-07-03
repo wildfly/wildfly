@@ -10,6 +10,7 @@
         <config model="standalone" name="standalone-core.xml" >
             <layers>
                 <include name="ee-core-profile-server"/>
+                <include name="web-console"/>
             </layers>
         </config>
         <config model="standalone" name="standalone-genericjms.xml">
@@ -67,9 +68,6 @@
                 <include name="management"/>
                 <include name="elytron"/>
             </layers>
-            <feature spec="core-service.management.management-interface.http-interface">
-                <param name="console-enabled" value="false"/>
-            </feature>
         </config>
         <config model="standalone" name="standalone-rts.xml">
             <layers>
