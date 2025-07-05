@@ -14,7 +14,7 @@ import io.undertow.server.session.SessionConfig;
 import io.undertow.server.session.SessionCookieConfig;
 import io.undertow.servlet.api.Deployment;
 import io.undertow.servlet.api.SessionConfigWrapper;
-import org.jboss.as.web.session.AffinityLocator;
+
 import org.wildfly.extension.undertow.CookieConfig;
 
 /**
@@ -25,10 +25,10 @@ import org.wildfly.extension.undertow.CookieConfig;
 public class AffinitySessionConfigWrapper implements SessionConfigWrapper {
 
     private final Map<SessionConfig.SessionCookieSource, SessionConfig> affinityConfigMap = new EnumMap<>(SessionConfig.SessionCookieSource.class);
-    private final AffinityLocator locator;
+    private final SessionAffinityProvider affinityProvider;
 
-    public AffinitySessionConfigWrapper(CookieConfig config, AffinityLocator locator) {
-        this.locator = locator;
+    public AffinitySessionConfigWrapper(CookieConfig config, SessionAffinityProvider affinityProvider) {
+        this.affinityProvider = affinityProvider;
 
         // Setup SessionCookieSource->SessionConfig mapping:
 
@@ -61,6 +61,6 @@ public class AffinitySessionConfigWrapper implements SessionConfigWrapper {
 
     @Override
     public SessionConfig wrap(SessionConfig sessionConfig, Deployment deployment) {
-        return new AffinitySessionConfig(sessionConfig, this.affinityConfigMap, this.locator);
+        return new AffinitySessionConfig(sessionConfig, this.affinityConfigMap, this.affinityProvider);
     }
 }

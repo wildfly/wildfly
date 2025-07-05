@@ -6,7 +6,6 @@
 package org.wildfly.extension.undertow.deployment;
 
 import java.time.Duration;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Optional;
 import java.util.OptionalInt;
@@ -22,28 +21,33 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.web.common.WarMetaData;
 import org.jboss.as.web.session.SharedSessionManagerConfig;
-import org.jboss.msc.service.ServiceName;
 import org.jboss.metadata.web.spec.SessionConfigMetaData;
-import org.wildfly.clustering.web.container.SessionManagementProvider;
+import org.wildfly.clustering.web.container.WebDeploymentServiceInstallerProvider;
 import org.wildfly.clustering.web.container.SessionManagerFactoryConfiguration;
 import org.wildfly.extension.undertow.ServletContainerService;
-import org.wildfly.extension.undertow.logging.UndertowLogger;
-import org.wildfly.extension.undertow.session.NonDistributableSessionManagementProvider;
-import org.wildfly.extension.undertow.session.SessionManagementProviderFactory;
+import org.wildfly.extension.undertow.session.NonDistributableWebDeploymentServiceInstallerProvider;
 
 /**
  * @author Stuart Douglas
  */
-public class SharedSessionManagerDeploymentProcessor implements DeploymentUnitProcessor, Function<SessionManagerFactoryConfiguration, SessionManagerFactory> {
+public class SharedSessionManagerDeploymentProcessor implements DeploymentUnitProcessor {
     private final String defaultServerName;
-    private final SessionManagementProviderFactory sessionManagementProviderFactory;
-    private final SessionManagementProvider nonDistributableSessionManagementProvider;
+    private final Optional<WebDeploymentServiceInstallerProvider> distributableServiceInstallerProvider;
+    private final NonDistributableWebDeploymentServiceInstallerProvider nonDistributableServiceInstallerProvider;
 
     public SharedSessionManagerDeploymentProcessor(String defaultServerName) {
         this.defaultServerName = defaultServerName;
-        Iterator<SessionManagementProviderFactory> factories = ServiceLoader.load(SessionManagementProviderFactory.class, SessionManagementProviderFactory.class.getClassLoader()).iterator();
-        this.sessionManagementProviderFactory = factories.hasNext() ? factories.next() : null;
-        this.nonDistributableSessionManagementProvider = new NonDistributableSessionManagementProvider(this);
+        this.nonDistributableServiceInstallerProvider = new NonDistributableWebDeploymentServiceInstallerProvider(new Function<>() {
+            @Override
+            public SessionManagerFactory apply(SessionManagerFactoryConfiguration configuration) {
+                String deploymentName = configuration.getDeploymentName();
+                OptionalInt maxActiveSessions = configuration.getMaxActiveSessions();
+                InMemorySessionManager manager = maxActiveSessions.isPresent() ? new InMemorySessionManager(deploymentName, maxActiveSessions.getAsInt()) : new InMemorySessionManager(deploymentName);
+                manager.setDefaultSessionTimeout((int) configuration.getDefaultSessionTimeout().getSeconds());
+                return new ImmediateSessionManagerFactory(manager);
+            }
+        });
+        this.distributableServiceInstallerProvider = ServiceLoader.load(WebDeploymentServiceInstallerProvider.class, WebDeploymentServiceInstallerProvider.class.getClassLoader()).findFirst();
     }
 
     @Override
@@ -60,12 +64,7 @@ public class SharedSessionManagerDeploymentProcessor implements DeploymentUnitPr
         ServletContainerService servletContainer = deploymentUnit.getAttachment(UndertowAttachments.SERVLET_CONTAINER_SERVICE);
         Integer defaultSessionTimeout = ((sessionConfig != null) && sessionConfig.getSessionTimeoutSet()) ? sessionConfig.getSessionTimeout() : (servletContainer != null) ? servletContainer.getDefaultSessionTimeout() : Integer.valueOf(30);
 
-        ServiceName deploymentServiceName = deploymentUnit.getServiceName();
-
-        ServiceName managerServiceName = deploymentServiceName.append(SharedSessionManagerConfig.SHARED_SESSION_MANAGER_SERVICE_NAME);
-        ServiceName affinityServiceName = deploymentServiceName.append(SharedSessionManagerConfig.SHARED_SESSION_AFFINITY_SERVICE_NAME);
-
-        SessionManagementProvider provider = this.getDistributableWebDeploymentProvider(phaseContext, sharedConfig);
+        WebDeploymentServiceInstallerProvider provider = sharedConfig.isDistributable() ? this.distributableServiceInstallerProvider.orElseGet(this.nonDistributableServiceInstallerProvider) : this.nonDistributableServiceInstallerProvider;
         SessionManagerFactoryConfiguration configuration = new SessionManagerFactoryConfiguration() {
             @Override
             public String getServerName() {
@@ -93,28 +92,7 @@ public class SharedSessionManagerDeploymentProcessor implements DeploymentUnitPr
                 return Duration.ofMinutes(defaultSessionTimeout);
             }
         };
-        provider.getSessionManagerFactoryServiceInstaller(managerServiceName, configuration).install(phaseContext);
-        provider.getSessionAffinityServiceInstaller(phaseContext, affinityServiceName, configuration).install(phaseContext);
-    }
-
-    @SuppressWarnings("deprecation")
-    private SessionManagementProvider getDistributableWebDeploymentProvider(DeploymentPhaseContext context, SharedSessionManagerConfig config) {
-        if (config.isDistributable()) {
-            if (this.sessionManagementProviderFactory != null) {
-                return this.sessionManagementProviderFactory.createSessionManagementProvider(context, config.getReplicationConfig());
-            }
-            // Fallback to non-distributable session manager if server does not support clustering
-            UndertowLogger.ROOT_LOGGER.clusteringNotSupported();
-        }
-        return this.nonDistributableSessionManagementProvider;
-    }
-
-    @Override
-    public SessionManagerFactory apply(SessionManagerFactoryConfiguration configuration) {
-        String deploymentName = configuration.getDeploymentName();
-        OptionalInt maxActiveSessions = configuration.getMaxActiveSessions();
-        InMemorySessionManager manager = maxActiveSessions.isPresent() ? new InMemorySessionManager(deploymentName, maxActiveSessions.getAsInt()) : new InMemorySessionManager(deploymentName);
-        manager.setDefaultSessionTimeout((int) configuration.getDefaultSessionTimeout().getSeconds());
-        return new ImmediateSessionManagerFactory(manager);
+        provider.getSessionManagerFactoryServiceInstaller(configuration).install(phaseContext);
+        provider.getSessionAffinityProviderServiceInstaller(configuration).install(phaseContext);
     }
 }

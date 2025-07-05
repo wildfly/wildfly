@@ -17,7 +17,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -35,7 +34,6 @@ import java.util.function.Supplier;
 import jakarta.security.jacc.PolicyConfiguration;
 
 import io.undertow.servlet.api.DeploymentInfo;
-import io.undertow.servlet.api.SessionConfigWrapper;
 import io.undertow.servlet.api.SessionManagerFactory;
 import io.undertow.servlet.core.InMemorySessionManagerFactory;
 
@@ -98,7 +96,7 @@ import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.vfs.VirtualFile;
-import org.wildfly.clustering.web.container.SessionManagementProvider;
+import org.wildfly.clustering.web.container.WebDeploymentServiceInstallerProvider;
 import org.wildfly.clustering.web.container.SessionManagerFactoryConfiguration;
 import org.wildfly.common.function.Functions;
 import org.wildfly.extension.io.IOServices;
@@ -106,7 +104,6 @@ import org.wildfly.extension.requestcontroller.ControlPoint;
 import org.wildfly.extension.requestcontroller.ControlPointService;
 import org.wildfly.extension.requestcontroller.RequestControllerActivationMarker;
 import org.wildfly.extension.undertow.Capabilities;
-import org.wildfly.extension.undertow.CookieConfig;
 import org.wildfly.extension.undertow.DeploymentDefinition;
 import org.wildfly.extension.undertow.Host;
 import org.wildfly.extension.undertow.ServletContainerService;
@@ -115,15 +112,15 @@ import org.wildfly.extension.undertow.UndertowService;
 import org.wildfly.extension.undertow.ApplicationSecurityDomainDefinition.Registration;
 import org.wildfly.extension.undertow.logging.UndertowLogger;
 import org.wildfly.extension.undertow.security.jacc.WarJACCDeployer;
-import org.wildfly.extension.undertow.session.NonDistributableSessionManagementProvider;
-import org.wildfly.extension.undertow.session.SessionManagementProviderFactory;
+import org.wildfly.extension.undertow.session.NonDistributableWebDeploymentServiceInstallerProvider;
+import org.wildfly.extension.undertow.session.SessionAffinityProvider;
 import org.wildfly.security.auth.server.SecurityDomain;
 import org.wildfly.security.http.HttpServerAuthenticationMechanismFactory;
 
 /**
  * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
-public class UndertowDeploymentProcessor implements DeploymentUnitProcessor, Function<SessionManagerFactoryConfiguration, SessionManagerFactory> {
+public class UndertowDeploymentProcessor implements DeploymentUnitProcessor {
 
     public static final String OLD_URI_PREFIX = "http://java.sun.com";
     public static final String NEW_URI_PREFIX = "http://xmlns.jcp.org";
@@ -141,8 +138,8 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor, Fun
         value is host name where deployment is bound to.
      */
     private final DefaultDeploymentMappingProvider defaultModuleMappingProvider;
-    private final SessionManagementProviderFactory sessionManagementProviderFactory;
-    private final SessionManagementProvider nonDistributableSessionManagementProvider;
+    private final Optional<WebDeploymentServiceInstallerProvider> distributableServiceInstallerProvider;
+    private final NonDistributableWebDeploymentServiceInstallerProvider nonDistributableServiceInstallerProvider;
 
     public UndertowDeploymentProcessor(String defaultHost, final String defaultContainer, String defaultServer, Predicate<String> mappedSecurityDomain) {
         this.defaultHost = defaultHost;
@@ -153,9 +150,14 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor, Fun
         this.defaultContainer = defaultContainer;
         this.defaultServer = defaultServer;
         this.mappedSecurityDomain = mappedSecurityDomain;
-        Iterator<SessionManagementProviderFactory> factories = ServiceLoader.load(SessionManagementProviderFactory.class, SessionManagementProviderFactory.class.getClassLoader()).iterator();
-        this.sessionManagementProviderFactory = factories.hasNext() ? factories.next() : null;
-        this.nonDistributableSessionManagementProvider = new NonDistributableSessionManagementProvider(this);
+        this.nonDistributableServiceInstallerProvider = new NonDistributableWebDeploymentServiceInstallerProvider(new Function<>() {
+            @Override
+            public SessionManagerFactory apply(SessionManagerFactoryConfiguration configuration) {
+                OptionalInt maxActiveSessions = configuration.getMaxActiveSessions();
+                return maxActiveSessions.isPresent() ? new InMemorySessionManagerFactory(maxActiveSessions.getAsInt()) : new InMemorySessionManagerFactory();
+            }
+        });
+        this.distributableServiceInstallerProvider = ServiceLoader.load(WebDeploymentServiceInstallerProvider.class, WebDeploymentServiceInstallerProvider.class.getClassLoader()).findFirst();
     }
 
     @Override
@@ -302,19 +304,18 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor, Fun
         Supplier<ControlPoint> controlPoint = RequestControllerActivationMarker.isRequestControllerEnabled(deploymentUnit) ? builder.requires(ControlPointService.serviceName(Optional.ofNullable(parentDeploymentUnit).orElse(deploymentUnit).getName(), UndertowExtension.SUBSYSTEM_NAME)) : null;
 
         SharedSessionManagerConfig sharedSessionManagerConfig = parentDeploymentUnit != null ? parentDeploymentUnit.getAttachment(SharedSessionManagerConfig.ATTACHMENT_KEY) : null;
-        ServiceName sessionManagerFactoryServiceName = (sharedSessionManagerConfig != null) ? parentDeploymentUnit.getServiceName().append(SharedSessionManagerConfig.SHARED_SESSION_MANAGER_SERVICE_NAME) : deploymentServiceName.append("session");
-        ServiceName sessionConfigWrapperFactoryServiceName = (sharedSessionManagerConfig != null) ? parentDeploymentUnit.getServiceName().append(SharedSessionManagerConfig.SHARED_SESSION_AFFINITY_SERVICE_NAME) : deploymentServiceName.append("affinity");
+        DeploymentUnit sessionDeploymentUnit = (sharedSessionManagerConfig != null) ? parentDeploymentUnit : deploymentUnit;
 
         ServletContainerService servletContainer = deploymentUnit.getAttachment(UndertowAttachments.SERVLET_CONTAINER_SERVICE);
-        Supplier<SessionManagerFactory> sessionManagerFactory = (servletContainer != null) ? builder.requires(sessionManagerFactoryServiceName) : null;
-        Supplier<Function<CookieConfig, SessionConfigWrapper>> sessionConfigWrapperFactory = (servletContainer != null) ? builder.requires(sessionConfigWrapperFactoryServiceName) : null;
+        Supplier<SessionManagerFactory> sessionManagerFactory = (servletContainer != null) ? builder.requires(WebDeploymentServiceDescriptor.SESSION_MANAGER_FACTORY.resolve(sessionDeploymentUnit)) : null;
+        Supplier<SessionAffinityProvider> sessionAffinityProvider = (servletContainer != null) ? builder.requires(WebDeploymentServiceDescriptor.SESSION_AFFINITY_PROVIDER.resolve(sessionDeploymentUnit)) : null;
 
         if ((servletContainer != null) && (sharedSessionManagerConfig == null)) {
             Integer maxActiveSessions = (metaData.getMaxActiveSessions() != null) ? metaData.getMaxActiveSessions() : servletContainer.getMaxSessions();
             SessionConfigMetaData sessionConfig = metaData.getSessionConfig();
             int defaultSessionTimeout = ((sessionConfig != null) && sessionConfig.getSessionTimeoutSet()) ? sessionConfig.getSessionTimeout() : servletContainer.getDefaultSessionTimeout();
 
-            SessionManagementProvider provider = this.getDistributableWebDeploymentProvider(phaseContext, metaData);
+            WebDeploymentServiceInstallerProvider provider = (metaData.getDistributable() != null) ? this.distributableServiceInstallerProvider.orElseGet(this.nonDistributableServiceInstallerProvider) : this.nonDistributableServiceInstallerProvider;
             SessionManagerFactoryConfiguration configuration = new SessionManagerFactoryConfiguration() {
                 @Override
                 public String getServerName() {
@@ -342,8 +343,8 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor, Fun
                     return Duration.ofMinutes(defaultSessionTimeout);
                 }
             };
-            provider.getSessionManagerFactoryServiceInstaller(sessionManagerFactoryServiceName, configuration).install(phaseContext);
-            provider.getSessionAffinityServiceInstaller(phaseContext, sessionConfigWrapperFactoryServiceName, configuration).install(phaseContext);
+            provider.getSessionManagerFactoryServiceInstaller(configuration).install(phaseContext);
+            provider.getSessionAffinityProviderServiceInstaller(configuration).install(phaseContext);
         }
 
         UndertowDeploymentInfoService undertowDeploymentInfoService = UndertowDeploymentInfoService.builder()
@@ -372,7 +373,7 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor, Fun
                 .setTempDir(warMetaData.getTempDir())
                 .setExternalResources(deploymentUnit.getAttachmentList(UndertowAttachments.EXTERNAL_RESOURCES))
                 .setAllowSuspendedRequests(deploymentUnit.getAttachmentList(UndertowAttachments.ALLOW_REQUEST_WHEN_SUSPENDED))
-                .createUndertowDeploymentInfoService(deploymentInfo, undertowService, sessionManagerFactory, sessionConfigWrapperFactory,
+                .createUndertowDeploymentInfoService(deploymentInfo, undertowService, sessionManagerFactory, sessionAffinityProvider,
                         servletContainerService, componentRegistryDependency, host, controlPoint, suspendController, serverEnvironment, securityDomain, mechanismFactorySupplier, applySecurityFunction);
         builder.setInstance(undertowDeploymentInfoService);
 
@@ -456,23 +457,6 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor, Fun
             throw UndertowLogger.ROOT_LOGGER.nullHostName();
         }
         return hostName;
-    }
-
-    @Override
-    public SessionManagerFactory apply(SessionManagerFactoryConfiguration configuration) {
-        OptionalInt maxActiveSessions = configuration.getMaxActiveSessions();
-        return maxActiveSessions.isPresent() ? new InMemorySessionManagerFactory(maxActiveSessions.getAsInt()) : new InMemorySessionManagerFactory();
-    }
-
-    private SessionManagementProvider getDistributableWebDeploymentProvider(DeploymentPhaseContext context, JBossWebMetaData metaData) {
-        if (metaData.getDistributable() != null) {
-            if (this.sessionManagementProviderFactory != null) {
-                return this.sessionManagementProviderFactory.createSessionManagementProvider(context, metaData.getReplicationConfig());
-            }
-            // Fallback to local session manager if server does not support clustering
-            UndertowLogger.ROOT_LOGGER.clusteringNotSupported();
-        }
-        return this.nonDistributableSessionManagementProvider;
     }
 
     static String pathNameOfDeployment(final DeploymentUnit deploymentUnit, final JBossWebMetaData metaData, final boolean isDefaultWebModule) {

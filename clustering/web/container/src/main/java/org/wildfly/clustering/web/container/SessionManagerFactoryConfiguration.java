@@ -7,19 +7,16 @@ package org.wildfly.clustering.web.container;
 import java.time.Duration;
 import java.util.OptionalInt;
 
-import org.jboss.as.server.deployment.Attachments;
-import org.jboss.as.server.deployment.DeploymentUnit;
-import org.jboss.modules.Module;
-
 /**
- * Defines the container configuration for a session manager factory of a deployment.
+ * Defines the configuration of a session manager factory for a web deployment.
  * @author Paul Ferraro
  */
 public interface SessionManagerFactoryConfiguration extends WebDeploymentConfiguration {
 
     /**
-     * Returns the maximum number of sessions that should be active at any given time.
-     * @return a positive integer; or null if there should be no limit to the number of active sessions.
+     * When present, returns the maximum number of sessions that should be active at any given time.
+     * If empty, the container imposes no limit on the number of active sessions.
+     * @return a positive integer, when present
      */
     OptionalInt getMaxActiveSessions();
 
@@ -28,15 +25,4 @@ public interface SessionManagerFactoryConfiguration extends WebDeploymentConfigu
      * @return the duration after which sessions will timeout.
      */
     Duration getDefaultSessionTimeout();
-
-    /**
-     * The deployment unit with which this session manager factory is to be associated.
-     * @return a deployment unit
-     */
-    DeploymentUnit getDeploymentUnit();
-
-    @Override
-    default Module getModule() {
-        return this.getDeploymentUnit().getAttachment(Attachments.MODULE);
-    }
 }
