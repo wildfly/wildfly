@@ -94,4 +94,6 @@ public interface ServletContainerService {
     boolean isPreservePathOnForward();
 
     boolean isOrphanSessionAllowed();
+
+    long getDefaultAsyncContextTimeout();
 }

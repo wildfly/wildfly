@@ -20,7 +20,9 @@ import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.client.helpers.MeasurementUnit;
 import org.jboss.as.controller.operations.validation.EnumValidator;
 import org.jboss.as.controller.operations.validation.IntRangeValidator;
+import org.jboss.as.controller.operations.validation.LongRangeValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
+import org.jboss.as.version.Stability;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
@@ -187,6 +189,16 @@ class ServletContainerDefinition extends PersistentResourceDefinition {
                     .setDefaultValue(ModelNode.FALSE)
                     .build();
 
+    static final AttributeDefinition DEFAULT_ASYNC_CONTEXT_TIMEOUT =
+            new SimpleAttributeDefinitionBuilder(Constants.DEFAULT_ASYNC_CONTEXT_TIMEOUT, ModelType.LONG)
+                    .setRequired(false)
+                    .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+                    .setAllowExpression(true)
+                    .setDefaultValue(new ModelNode(30000))
+                    .setValidator(new LongRangeValidator(0))
+                    .setStability(Stability.COMMUNITY)
+                    .build();
+
     static final Collection<AttributeDefinition> ATTRIBUTES = List.of(
             ALLOW_NON_STANDARD_WRAPPERS,
             DEFAULT_BUFFER_CACHE,
@@ -208,7 +220,8 @@ class ServletContainerDefinition extends PersistentResourceDefinition {
             FILE_CACHE_TIME_TO_LIVE,
             DEFAULT_COOKIE_VERSION,
             PRESERVE_PATH_ON_FORWARD,
-            ORPHAN_SESSION_ALLOWED);
+            ORPHAN_SESSION_ALLOWED,
+            DEFAULT_ASYNC_CONTEXT_TIMEOUT);
 
     ServletContainerDefinition() {
         super(new SimpleResourceDefinition.Parameters(PATH_ELEMENT, UndertowExtension.getResolver(PATH_ELEMENT.getKey()))
