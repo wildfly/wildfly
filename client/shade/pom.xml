@@ -387,7 +387,7 @@
                         <Bundle-SymbolicName>org.jboss.client</Bundle-SymbolicName>
                         <Bundle-Version>1.0</Bundle-Version>
                         <Bundle-Name>Jakarta Enterprise Beans and Jakarta Messaging client library</Bundle-Name>
-                        <Fragment-Host>org.openjdk.jmc.rjmx</Fragment-Host>
+                        <Fragment-Host>org.openjdk.jmc.rjmx.common</Fragment-Host>
                         <Export-Package>*</Export-Package>
                         <Automatic-Module-Name>org.jboss.client</Automatic-Module-Name>
                     </manifestEntries>
@@ -444,7 +444,7 @@
                                         <Bundle-SymbolicName>org.jboss.client</Bundle-SymbolicName>
                                         <Bundle-Version>1.0</Bundle-Version>
                                         <Bundle-Name>Jakarta Enterprise Beans and Jakarta Messaging client library</Bundle-Name>
-                                        <Fragment-Host>org.openjdk.jmc.rjmx</Fragment-Host>
+                                        <Fragment-Host>org.openjdk.jmc.rjmx.common</Fragment-Host>
                                         <Export-Package>*</Export-Package>
                                         <Automatic-Module-Name>org.jboss.client</Automatic-Module-Name>
                                     </manifestEntries>
