@@ -114,8 +114,8 @@ public class DefaultCacheContainer extends AbstractDelegatingEmbeddedCacheManage
         Configuration configuration = cache.getCacheConfiguration();
         CacheMode mode = configuration.clustering().cacheMode();
         boolean hasStore = configuration.persistence().usingStores();
-        // Bypass deployment-specific media types for local cache w/out a store or if using a non-ProtoStream marshaller
-        if ((!mode.isClustered() && !hasStore) || !this.cm.getCacheManagerConfiguration().serialization().marshaller().mediaType().equals(MediaTypes.WILDFLY_PROTOSTREAM.get())) {
+        // Bypass deployment-specific media types for heap-based local cache w/out a store or if using a non-ProtoStream marshaller
+        if ((!mode.isClustered() && !hasStore && configuration.memory().storage().canStoreReferences()) || !this.cm.getCacheManagerConfiguration().serialization().marshaller().mediaType().equals(MediaTypes.WILDFLY_PROTOSTREAM.get())) {
             return new DefaultCache<>(this, cache);
         }
         ClassLoader loader = WildFlySecurityManager.getCurrentContextClassLoaderPrivileged();
