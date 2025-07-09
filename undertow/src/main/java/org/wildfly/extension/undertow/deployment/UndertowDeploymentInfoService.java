@@ -395,16 +395,15 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
                 deploymentInfo.setMetricsCollector(new UndertowMetricsCollector());
             }
 
-            ControlPoint controlPoint = this.controlPoint != null ? this.controlPoint.get() : null;
+            ControlPoint controlPoint = (this.controlPoint != null) ? this.controlPoint.get() : null;
             if (controlPoint != null) {
-                deploymentInfo.addOuterHandlerChainWrapper(GlobalRequestControllerHandler.wrapper(controlPoint, allowSuspendedRequests));
+                new SuspendedServerHandlerWrapper(controlPoint, this.allowSuspendedRequests).apply(deploymentInfo);
             }
 
             deploymentInfoConsumer.accept(this.deploymentInfo = deploymentInfo);
         } finally {
             Thread.currentThread().setContextClassLoader(oldTccl);
         }
-
     }
 
     @Override
@@ -473,6 +472,13 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
         }
     }
 
+    private DeploymentInfo createDeploymentInfo() {
+        DeploymentInfo deployment = new DeploymentInfo();
+        ControlPoint controlPoint = this.controlPoint != null ? this.controlPoint.get() : null;
+        // GlobalRequestControllerListener must be registered before any application listeners
+        return (controlPoint != null) ? new SuspendedServerRequestListener(controlPoint).apply(deployment) : deployment;
+    }
+
     private DeploymentInfo createServletConfig() throws StartException {
         final ComponentRegistry componentRegistry = this.componentRegistry.get();
         try {
@@ -480,7 +486,7 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
                 mergedMetaData.resolveAnnotations();
             }
             mergedMetaData.resolveRunAs();
-            final DeploymentInfo d = new DeploymentInfo();
+            final DeploymentInfo d = this.createDeploymentInfo();
             d.setContextPath(contextPath);
             if (mergedMetaData.getDescriptionGroup() != null) {
                 d.setDisplayName(mergedMetaData.getDescriptionGroup().getDisplayName());
