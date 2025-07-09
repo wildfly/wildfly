@@ -23,8 +23,10 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicReference;
+import org.apache.commons.io.FileUtils;
+import static org.jboss.as.test.shared.FileUtils.computeHash;
+import static org.jboss.as.test.shared.FileUtils.unzipFile;
 
-import org.jboss.as.test.shared.IntermittentFailure;
 import org.jboss.logging.Logger;
 import org.junit.Assume;
 import org.junit.BeforeClass;
@@ -73,13 +75,6 @@ public abstract class ProvisioningConsistencyBaseTest {
     @BeforeClass
     public static void assumeCompatibleEnvironment() throws IOException {
         assumeJbossDistIsNotExternallySet();
-        assumeNotS390();
-    }
-
-    private static void assumeNotS390() {
-        if ("s390x".equalsIgnoreCase(System.getProperty("os.arch"))) {
-            IntermittentFailure.thisTestIsFailingIntermittently("WFLY-20543");
-        }
     }
 
     private static void assumeJbossDistIsNotExternallySet() throws IOException {
@@ -142,8 +137,13 @@ public abstract class ProvisioningConsistencyBaseTest {
                     File distFile = getDistFile(path, true, false, errors);
                     if (distFile != null) {
                         if (path.toFile().length() != distFile.length()) {
-                            errors.add(String.format("dist file for %s has an unexpected length: %d not %d",
-                                    path, distFile.length(), path.toFile().length()));
+                            log.trace("File size is different");
+                            // This can happen on some platforms for fat jar generated at provisioning time.
+                            // Check that the actual jar content is identical.
+                            if (!sameJarContent(path, distFile.toPath(), errors)) {
+                                errors.add(String.format("dist file for %s has an unexpected length: %d not %d",
+                                        path, distFile.length(), path.toFile().length()));
+                            }
                         }
                     }
                 }
@@ -170,11 +170,15 @@ public abstract class ProvisioningConsistencyBaseTest {
     }
 
     private File getDistFile(Path channelPath, boolean exists, boolean directory, List<String> errors) {
-        Path relative = CHANNEL_INSTALLATION.relativize(channelPath);
-        Path path = DIST_INSTALLATION.resolve(relative);
+        return getDistFile(CHANNEL_INSTALLATION, channelPath, DIST_INSTALLATION, exists, directory, errors);
+    }
+
+    private static File getDistFile(Path currentRoot, Path currentPath, Path distRoot, boolean exists, boolean directory, List<String> errors) {
+        Path relative = currentRoot.relativize(currentPath);
+        Path path = distRoot.resolve(relative);
         File test = path.toFile();
         File result = null;
-        if (DIST_INSTALLATION.equals(path)) {
+        if (distRoot.equals(path)) {
             assertTrue(path + " does not exist", test.exists());
             assertTrue(path + " is not a directory", test.isDirectory());
             result = test;
@@ -196,5 +200,90 @@ public abstract class ProvisioningConsistencyBaseTest {
             }
         }
         return result;
+    }
+
+    private static boolean sameJarContent(Path current, Path dist, List<String> errors) {
+        if (!dist.getFileName().toString().endsWith(".jar")) {
+            return false;
+        }
+        log.trace("Checking jar " + current);
+        Path tempFolder = null;
+        try {
+            tempFolder = Files.createTempDirectory("checkconsistency");
+            Path distUnzipped = tempFolder.resolve("dist");
+            Path currentUnzipped = tempFolder.resolve("current");
+            unzipFile(dist, distUnzipped);
+            unzipFile(current, currentUnzipped);
+            checkContent(currentUnzipped, distUnzipped, errors);
+            if(errors.isEmpty()) return true;
+        } catch (IOException ex) {
+            errors.add("Exception occurred when checking " + dist + " file content. " + ex);
+        } finally {
+            try {
+                if (tempFolder != null) {
+                    FileUtils.deleteDirectory(tempFolder.toFile());
+                }
+            } catch (IOException ex) {
+                throw new RuntimeException(ex);
+            }
+        }
+        return false;
+    }
+
+    private static void checkContent(Path currentRoot, Path dist, List<String> errors) throws IOException {
+        Files.walkFileTree(currentRoot, new FileVisitor<>() {
+            @Override
+            public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) {
+                log.trace("Testing " + dir);
+                if (dir.equals(currentRoot)) {
+                    File distRoot = getDistFile(currentRoot, dir, dist, true, true, errors);
+                    Set<String> channelChildren = new TreeSet<>(Arrays.asList(Objects.requireNonNull(dir.toFile().list())));
+                    Set<String> distChildren = new TreeSet<>(Arrays.asList(Objects.requireNonNull(distRoot.list())));
+                    assertEquals(dir.toString(), channelChildren, distChildren);
+                    return FileVisitResult.CONTINUE;
+                } else {
+                    File distDir = getDistFile(currentRoot, dir, dist, true, true, errors);
+                    if (distDir != null) {
+                        assertTrue(dir.toString(), Objects.deepEquals(dir.toFile().list(), distDir.list()));
+                        return FileVisitResult.CONTINUE;
+                    } else {
+                        return FileVisitResult.SKIP_SUBTREE;
+                    }
+                }
+            }
+
+            @Override
+            public FileVisitResult visitFile(Path path, BasicFileAttributes attrs) {
+                System.out.println("Checking " + path);
+                File distFile = getDistFile(currentRoot, path, dist, true, false, errors);
+                if (distFile == null) {
+                    errors.add(String.format("current file %s has not been found in %s",
+                            path, dist));
+                } else {
+                    try {
+                        String hash1 = computeHash(path);
+                        String hash2 = computeHash(distFile.toPath());
+                        if (!hash1.equals(hash2)) {
+                            errors.add(String.format("dist file for %s has an unexpected content",
+                                    path));
+                        }
+                    } catch (Exception ex) {
+                        errors.add(String.format("dist file for %s has an unexpected length: %d not %d",
+                                    path, distFile.length(), path.toFile().length()));
+                    }
+                }
+                return FileVisitResult.CONTINUE;
+            }
+
+            @Override
+            public FileVisitResult visitFileFailed(Path file, IOException exc) throws IOException {
+                throw exc;
+            }
+
+            @Override
+            public FileVisitResult postVisitDirectory(Path dir, IOException exc) {
+                return FileVisitResult.CONTINUE;
+            }
+        });
     }
 }
