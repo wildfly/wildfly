@@ -30,22 +30,27 @@ import org.wildfly.clustering.infinispan.service.InfinispanServiceDescriptor;
 /**
  * Transformer tests for distributable-web subsystem.
  * @author Paul Ferraro
+ * @author Radoslav Husar
  */
 @RunWith(value = Parameterized.class)
 public class DistributableWebTransformerTestCase extends AbstractSubsystemTest {
 
     @Parameters
     public static Iterable<ModelTestControllerVersion> parameters() {
-        return EnumSet.of(ModelTestControllerVersion.EAP_7_4_0, ModelTestControllerVersion.EAP_8_0_0);
+        return EnumSet.of(
+                ModelTestControllerVersion.EAP_7_4_0,
+                ModelTestControllerVersion.EAP_8_0_0,
+                ModelTestControllerVersion.EAP_8_1_0
+        );
     }
 
-    private final ModelTestControllerVersion controller;
+    private final ModelTestControllerVersion controllerVersion;
     private final org.jboss.as.subsystem.test.AdditionalInitialization additionalInitialization;
     private final ModelVersion version;
 
-    public DistributableWebTransformerTestCase(ModelTestControllerVersion controller) {
+    public DistributableWebTransformerTestCase(ModelTestControllerVersion controllerVersion) {
         super(DistributableWebSubsystemResourceDefinitionRegistrar.REGISTRATION.getName(), new DistributableWebExtension());
-        this.controller = controller;
+        this.controllerVersion = controllerVersion;
         this.version = this.getModelVersion().getVersion();
         this.additionalInitialization = new AdditionalInitialization()
                 .require(InfinispanServiceDescriptor.CACHE_CONTAINER, "foo")
@@ -57,63 +62,69 @@ public class DistributableWebTransformerTestCase extends AbstractSubsystemTest {
                 ;
     }
 
-    private String formatSubsystemArtifact() {
-        return this.formatArtifact("org.jboss.eap:wildfly-clustering-web-extension:%s");
-    }
-
-    private String formatArtifact(String pattern) {
-        return String.format(pattern, this.controller.getMavenGavVersion());
-    }
-
     private DistributableWebSubsystemModel getModelVersion() {
-        switch (this.controller) {
-            case EAP_7_4_0:
-                return DistributableWebSubsystemModel.VERSION_2_0_0;
-            case EAP_8_0_0:
-                return DistributableWebSubsystemModel.VERSION_4_0_0;
-            default:
-                throw new IllegalArgumentException();
-        }
+        return switch (this.controllerVersion) {
+            case EAP_7_4_0 -> DistributableWebSubsystemModel.VERSION_2_0_0;
+            case EAP_8_0_0, EAP_8_1_0 -> DistributableWebSubsystemModel.VERSION_4_0_0;
+            default -> throw new IllegalArgumentException();
+        };
     }
 
     private String[] getDependencies() {
-        switch (this.controller) {
-            case EAP_7_4_0:
-                return new String[] {
-                        formatSubsystemArtifact(),
-                        formatArtifact("org.jboss.eap:wildfly-clustering-common:%s"),
-                        formatArtifact("org.jboss.eap:wildfly-clustering-ee-hotrod:%s"),
-                        formatArtifact("org.jboss.eap:wildfly-clustering-ee-infinispan:%s"),
-                        formatArtifact("org.jboss.eap:wildfly-clustering-ee-spi:%s"),
-                        formatArtifact("org.jboss.eap:wildfly-clustering-infinispan-client:%s"),
-                        formatArtifact("org.jboss.eap:wildfly-clustering-infinispan-spi:%s"),
-                        formatArtifact("org.jboss.eap:wildfly-clustering-marshalling-spi:%s"),
-                        formatArtifact("org.jboss.eap:wildfly-clustering-service:%s"),
-                        formatArtifact("org.jboss.eap:wildfly-clustering-web-container:%s"),
-                        formatArtifact("org.jboss.eap:wildfly-clustering-web-hotrod:%s"),
-                        formatArtifact("org.jboss.eap:wildfly-clustering-web-infinispan:%s"),
-                        formatArtifact("org.jboss.eap:wildfly-clustering-web-spi:%s"),
-                };
-            case EAP_8_0_0:
-                return new String[] {
-                        formatSubsystemArtifact(),
-                        formatArtifact("org.jboss.eap:wildfly-clustering-common:%s"),
-                        formatArtifact("org.jboss.eap:wildfly-clustering-ee-hotrod:%s"),
-                        formatArtifact("org.jboss.eap:wildfly-clustering-ee-infinispan:%s"),
-                        formatArtifact("org.jboss.eap:wildfly-clustering-ee-spi:%s"),
-                        formatArtifact("org.jboss.eap:wildfly-clustering-infinispan-client-service:%s"),
-                        formatArtifact("org.jboss.eap:wildfly-clustering-infinispan-embedded-service:%s"),
-                        formatArtifact("org.jboss.eap:wildfly-clustering-marshalling-spi:%s"),
-                        formatArtifact("org.jboss.eap:wildfly-clustering-service:%s"),
-                        formatArtifact("org.jboss.eap:wildfly-clustering-web-container:%s"),
-                        formatArtifact("org.jboss.eap:wildfly-clustering-web-hotrod:%s"),
-                        formatArtifact("org.jboss.eap:wildfly-clustering-web-infinispan:%s"),
-                        formatArtifact("org.jboss.eap:wildfly-clustering-web-service:%s"),
-                        formatArtifact("org.jboss.eap:wildfly-clustering-web-spi:%s"),
-                };
-            default:
-                throw new IllegalArgumentException();
-        }
+        return switch (this.controllerVersion) {
+            case EAP_7_4_0 -> new String[] {
+                    createGAV("wildfly-clustering-web-extension"),
+                    createGAV("wildfly-clustering-common"),
+                    createGAV("wildfly-clustering-ee-hotrod"),
+                    createGAV("wildfly-clustering-ee-infinispan"),
+                    createGAV("wildfly-clustering-ee-spi"),
+                    createGAV("wildfly-clustering-infinispan-client"),
+                    createGAV("wildfly-clustering-infinispan-spi"),
+                    createGAV("wildfly-clustering-marshalling-spi"),
+                    createGAV("wildfly-clustering-service"),
+                    createGAV("wildfly-clustering-web-container"),
+                    createGAV("wildfly-clustering-web-hotrod"),
+                    createGAV("wildfly-clustering-web-infinispan"),
+                    createGAV("wildfly-clustering-web-spi"),
+            };
+            case EAP_8_0_0 -> new String[] {
+                    createGAV("wildfly-clustering-web-extension"),
+                    createGAV("wildfly-clustering-common"),
+                    createGAV("wildfly-clustering-ee-hotrod"),
+                    createGAV("wildfly-clustering-ee-infinispan"),
+                    createGAV("wildfly-clustering-ee-spi"),
+                    createGAV("wildfly-clustering-infinispan-client-service"),
+                    createGAV("wildfly-clustering-infinispan-embedded-service"),
+                    createGAV("wildfly-clustering-marshalling-spi"),
+                    createGAV("wildfly-clustering-service"),
+                    createGAV("wildfly-clustering-web-container"),
+                    createGAV("wildfly-clustering-web-hotrod"),
+                    createGAV("wildfly-clustering-web-infinispan"),
+                    createGAV("wildfly-clustering-web-service"),
+                    createGAV("wildfly-clustering-web-spi"),
+            };
+            case EAP_8_1_0 -> new String[] {
+                    createGAV("wildfly-clustering-web-extension"),
+                    createGAV("wildfly-clustering-common"),
+                    createGAV("wildfly-clustering-infinispan-client-service"),
+                    createGAV("wildfly-clustering-infinispan-embedded-service"),
+                    createGAV("wildfly-clustering-server-service"),
+                    createGAV("wildfly-clustering-web-service"),
+                    createCoreGAV("wildfly-service"),
+                    createCoreGAV("wildfly-subsystem"),
+            };
+            default -> throw new IllegalArgumentException();
+        };
+    }
+
+    // TODO Replace with variants from after wf-core upgrade https://issues.redhat.com/browse/WFCORE-7298
+    // n.b. workaround for https://issues.redhat.com/browse/WFCORE-7297
+    public String createGAV(String artifactId) {
+        return String.format("%s:%s:%s", this.controllerVersion.getMavenGroupId(), artifactId, this.controllerVersion.getMavenGavVersion());
+    }
+
+    public String createCoreGAV(String artifactId) {
+        return String.format("%s:%s:%s", this.controllerVersion.getCoreMavenGroupId(), artifactId, this.controllerVersion.getCoreVersion());
     }
 
     /**
@@ -128,7 +139,7 @@ public class DistributableWebTransformerTestCase extends AbstractSubsystemTest {
                 .setSubsystemXmlResource(subsystemXmlResource);
 
         // initialize the legacy services and add required jars
-        builder.createLegacyKernelServicesBuilder(this.additionalInitialization, this.controller, this.version)
+        builder.createLegacyKernelServicesBuilder(this.additionalInitialization, this.controllerVersion, this.version)
                 .addMavenResourceURL(this.getDependencies())
                 .addSingleChildFirstClass(AdditionalInitialization.class)
                 .skipReverseControllerCheck()
@@ -152,7 +163,7 @@ public class DistributableWebTransformerTestCase extends AbstractSubsystemTest {
         KernelServicesBuilder builder = createKernelServicesBuilder(this.additionalInitialization);
 
         // initialize the legacy services and add required jars
-        builder.createLegacyKernelServicesBuilder(this.additionalInitialization, this.controller, this.version)
+        builder.createLegacyKernelServicesBuilder(this.additionalInitialization, this.controllerVersion, this.version)
                 .addMavenResourceURL(this.getDependencies())
                 .addSingleChildFirstClass(AdditionalInitialization.class)
                 .dontPersistXml();
