@@ -75,12 +75,6 @@
                 <!-- Don't exclude all TCK dependencies, only specific ones that cause problems -->
             </dependency>
             <dependency>
-                <groupId>io.smallrye.common</groupId>
-                <artifactId>smallrye-common-annotation</artifactId>
-                <version>${version.io.smallrye.smallrye-common}</version>
-                <scope>test</scope>
-            </dependency>
-            <dependency>
                 <groupId>io.vertx</groupId>
                 <artifactId>vertx-core</artifactId>
                 <version>${version.io.vertx.vertx}</version>

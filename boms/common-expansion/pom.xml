@@ -800,37 +800,6 @@
             </dependency>
 
             <dependency>
-                <groupId>io.smallrye.common</groupId>
-                <artifactId>smallrye-common-annotation</artifactId>
-                <version>${version.io.smallrye.smallrye-common}</version>
-            </dependency>
-            <dependency>
-                <groupId>io.smallrye.common</groupId>
-                <artifactId>smallrye-common-classloader</artifactId>
-                <version>${version.io.smallrye.smallrye-common}</version>
-            </dependency>
-            <dependency>
-                <groupId>io.smallrye.common</groupId>
-                <artifactId>smallrye-common-constraint</artifactId>
-                <version>${version.io.smallrye.smallrye-common}</version>
-            </dependency>
-            <dependency>
-                <groupId>io.smallrye.common</groupId>
-                <artifactId>smallrye-common-expression</artifactId>
-                <version>${version.io.smallrye.smallrye-common}</version>
-            </dependency>
-            <dependency>
-                <groupId>io.smallrye.common</groupId>
-                <artifactId>smallrye-common-function</artifactId>
-                <version>${version.io.smallrye.smallrye-common}</version>
-            </dependency>
-            <dependency>
-                <groupId>io.smallrye.common</groupId>
-                <artifactId>smallrye-common-vertx-context</artifactId>
-                <version>${version.io.smallrye.smallrye-common}</version>
-            </dependency>
-
-            <dependency>
                 <groupId>io.smallrye.config</groupId>
                 <artifactId>smallrye-config</artifactId>
                 <version>${version.io.smallrye.smallrye-config}</version>
