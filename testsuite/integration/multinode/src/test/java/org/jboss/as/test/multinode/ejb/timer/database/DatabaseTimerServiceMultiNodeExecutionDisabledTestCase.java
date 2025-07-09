@@ -186,8 +186,8 @@ public class DatabaseTimerServiceMultiNodeExecutionDisabledTestCase {
         Context clientContext = getRemoteContext(clientClient);
         RemoteTimedBean clientBean = (RemoteTimedBean) clientContext.lookup(ARCHIVE_NAME + "/" + TimedObjectTimerServiceBean.class.getSimpleName() + "!" + RemoteTimedBean.class.getName());
 
-        clientBean.scheduleTimer(System.currentTimeMillis() + 100, "timer1");
-        Thread.sleep(200);
+        clientBean.scheduleTimer(System.currentTimeMillis() + 100, "timer-disabled");
+        Thread.sleep(1000);
         Assert.assertFalse(clientBean.hasTimerRun());
         clientContext.close();
 
@@ -195,7 +195,7 @@ public class DatabaseTimerServiceMultiNodeExecutionDisabledTestCase {
         List<TimerData> res = serverBean.collect(1);
         Assert.assertEquals(1, res.size());
         Assert.assertEquals("server", res.get(0).getNode());
-        Assert.assertEquals("timer1", res.get(0).getInfo());
+        Assert.assertEquals("timer-disabled", res.get(0).getInfo());
     }
 
 
