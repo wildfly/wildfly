@@ -50,8 +50,8 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 import org.wildfly.clustering.cache.batch.Batch;
-import org.wildfly.clustering.cache.batch.BatchContext;
 import org.wildfly.clustering.cache.batch.SuspendedBatch;
+import org.wildfly.clustering.context.Context;
 import org.wildfly.clustering.function.Supplier;
 import org.wildfly.clustering.session.ImmutableSessionMetaData;
 import org.wildfly.clustering.session.Session;
@@ -409,7 +409,7 @@ public class DistributableSessionTestCase {
 
     @Test
     public void getWebSocketChannelsSessionAttribute() {
-        this.getLocalContextSessionAttribute(DistributableSession.WEB_SOCKET_CHANNELS_ATTRIBUTE);
+        this.getLocalContextSessionAttribute(AbstractSession.WEB_SOCKET_CHANNELS_ATTRIBUTE);
     }
 
     private void getLocalContextSessionAttribute(String name) {
@@ -640,7 +640,7 @@ public class DistributableSessionTestCase {
 
     @Test
     public void setWebSocketChannelsSessionAttribute() {
-        this.setLocalContextSessionAttribute(DistributableSession.WEB_SOCKET_CHANNELS_ATTRIBUTE);
+        this.setLocalContextSessionAttribute(AbstractSession.WEB_SOCKET_CHANNELS_ATTRIBUTE);
     }
 
     private void setLocalContextSessionAttribute(String name) {
@@ -788,7 +788,7 @@ public class DistributableSessionTestCase {
 
     @Test
     public void removeWebSocketChannelsSessionAttribute() {
-        this.removeLocalContextSessionAttribute(DistributableSession.WEB_SOCKET_CHANNELS_ATTRIBUTE);
+        this.removeLocalContextSessionAttribute(AbstractSession.WEB_SOCKET_CHANNELS_ATTRIBUTE);
     }
 
     private void removeLocalContextSessionAttribute(String name) {
@@ -894,7 +894,7 @@ public class DistributableSessionTestCase {
 
         HttpServerExchange exchange = new HttpServerExchange(null);
         SessionConfig config = mock(SessionConfig.class);
-        BatchContext<Batch> context = mock(BatchContext.class);
+        Context<Batch> context = mock(Context.class);
         SessionManager<Map<String, Object>> manager = mock(SessionManager.class);
         Supplier<String> identifierFactory = mock(Supplier.class);
         Session<Map<String, Object>> newSession = mock(Session.class);
@@ -987,7 +987,7 @@ public class DistributableSessionTestCase {
 
         HttpServerExchange exchange = new HttpServerExchange(null);
         SessionConfig config = mock(SessionConfig.class);
-        BatchContext<Batch> context = mock(BatchContext.class);
+        Context<Batch> context = mock(Context.class);
         SessionManager<Map<String, Object>> manager = mock(SessionManager.class);
         Supplier<String> identifierFactory = mock(Supplier.class);
         Session<Map<String, Object>> newSession = mock(Session.class);

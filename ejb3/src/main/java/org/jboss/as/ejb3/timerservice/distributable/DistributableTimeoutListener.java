@@ -13,8 +13,8 @@ import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.timerservice.spi.ManagedTimer;
 import org.jboss.as.ejb3.timerservice.spi.TimedObjectInvoker;
 import org.wildfly.clustering.cache.batch.Batch;
-import org.wildfly.clustering.cache.batch.BatchContext;
 import org.wildfly.clustering.cache.batch.SuspendedBatch;
+import org.wildfly.clustering.context.Context;
 import org.wildfly.clustering.ejb.timer.TimeoutListener;
 import org.wildfly.clustering.ejb.timer.Timer;
 import org.wildfly.clustering.ejb.timer.TimerManager;
@@ -37,7 +37,7 @@ public class DistributableTimeoutListener<I> implements TimeoutListener<I> {
     @Override
     public void timeout(TimerManager<I> manager, Timer<I> timer) throws ExecutionException {
         try (Batch batch = manager.getBatchFactory().get()) {
-            try (BatchContext<SuspendedBatch> context = batch.suspendWithContext()) {
+            try (Context<SuspendedBatch> context = batch.suspendWithContext()) {
                 ManagedTimer managedTimer = new DistributableTimer<>(manager, timer, context.get(), this.invoker, this.synchronizationFactory);
                 try {
                     invoke(managedTimer);

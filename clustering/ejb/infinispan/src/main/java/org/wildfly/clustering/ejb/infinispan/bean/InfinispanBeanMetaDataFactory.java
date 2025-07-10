@@ -11,7 +11,6 @@ import java.util.concurrent.CompletionStage;
 import org.infinispan.Cache;
 import org.wildfly.clustering.cache.CacheEntryMutator;
 import org.wildfly.clustering.cache.CacheEntryMutatorFactory;
-import org.wildfly.clustering.cache.infinispan.embedded.EmbeddedCacheEntryComputerFactory;
 import org.wildfly.clustering.ejb.bean.BeanExpiration;
 import org.wildfly.clustering.ejb.bean.BeanInstance;
 import org.wildfly.clustering.ejb.bean.BeanMetaData;
@@ -47,7 +46,7 @@ public class InfinispanBeanMetaDataFactory<K> implements BeanMetaDataFactory<K, 
         this.readForUpdateCache = configuration.getReadForUpdateCache();
         this.tryReadForUpdateCache = configuration.getTryReadForUpdateCache();
         this.expiration = configuration.getExpiration();
-        this.mutatorFactory = (this.expiration != null) && !this.expiration.getTimeout().isZero() ? new EmbeddedCacheEntryComputerFactory<>(this.writeOnlyCache, BeanMetaDataEntryFunction::new) : null;
+        this.mutatorFactory = (this.expiration != null) && !this.expiration.getTimeout().isZero() ? configuration.getCacheEntryMutatorFactory(BeanMetaDataEntryFunction::new) : null;
         this.beanName = configuration.getBeanName();
     }
 
