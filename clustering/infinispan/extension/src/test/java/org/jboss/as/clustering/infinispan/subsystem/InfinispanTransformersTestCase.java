@@ -53,8 +53,11 @@ import org.wildfly.clustering.jgroups.spi.ForkChannelFactory;
 public class InfinispanTransformersTestCase extends AbstractSubsystemTest {
 
     private static final Map<ModelTestControllerVersion, InfinispanSubsystemModel> VERSIONS = new EnumMap<>(ModelTestControllerVersion.class);
+
     static {
         VERSIONS.put(ModelTestControllerVersion.EAP_7_4_0, InfinispanSubsystemModel.VERSION_14_0_0);
+        VERSIONS.put(ModelTestControllerVersion.EAP_8_0_0, InfinispanSubsystemModel.VERSION_17_1_0);
+        VERSIONS.put(ModelTestControllerVersion.EAP_8_1_0, InfinispanSubsystemModel.VERSION_19_0_0);
     }
 
     @Parameters
@@ -62,39 +65,81 @@ public class InfinispanTransformersTestCase extends AbstractSubsystemTest {
         return VERSIONS.keySet();
     }
 
-    private static String formatArtifact(String artifactId, ModelTestControllerVersion version) {
-        return String.format("%s:%s:%s", version.getMavenGroupId(), artifactId, version.getMavenGavVersion());
+    // TODO Replace with variants from after wf-core upgrade https://issues.redhat.com/browse/WFCORE-7298
+    // n.b. workaround for https://issues.redhat.com/browse/WFCORE-7297
+    public String createGAV(String artifactId) {
+        return String.format("%s:%s:%s", this.controllerVersion.getMavenGroupId(), artifactId, this.controllerVersion.getMavenGavVersion());
     }
 
-    private static String[] getDependencies(ModelTestControllerVersion version) {
-        switch (version) {
-            case EAP_7_4_0:
-                return new String[] {
-                        "org.jboss.spec.javax.transaction:jboss-transaction-api_1.3_spec:2.0.0.Final",
-                        "org.jboss.spec.javax.resource:jboss-connector-api_1.7_spec:2.0.0.Final",
-                        "org.infinispan:infinispan-commons:11.0.9.Final-redhat-00001",
-                        "org.infinispan:infinispan-core:11.0.9.Final-redhat-00001",
-                        "org.infinispan:infinispan-cachestore-jdbc:11.0.9.Final-redhat-00001",
-                        "org.infinispan:infinispan-client-hotrod:11.0.9.Final-redhat-00001",
-                        "org.jboss.spec.javax.resource:jboss-connector-api_1.7_spec:2.0.0.Final-redhat-00001",
-                        // Following are needed for InfinispanSubsystemInitialization
-                        formatArtifact("wildfly-clustering-api", version),
-                        formatArtifact("wildfly-clustering-common", version),
-                        formatArtifact("wildfly-clustering-infinispan-client", version),
-                        formatArtifact("wildfly-clustering-infinispan-extension", version),
-                        formatArtifact("wildfly-clustering-infinispan-spi", version),
-                        formatArtifact("wildfly-clustering-jgroups-extension", version),
-                        formatArtifact("wildfly-clustering-jgroups-spi", version),
-                        formatArtifact("wildfly-clustering-server", version),
-                        formatArtifact("wildfly-clustering-service", version),
-                        formatArtifact("wildfly-clustering-singleton-api", version),
-                        formatArtifact("wildfly-clustering-spi", version),
-                        formatArtifact("wildfly-connector", version),
-                };
-            default: {
-                throw new IllegalArgumentException();
-            }
-        }
+    public String createCoreGAV(String artifactId) {
+        return String.format("%s:%s:%s", this.controllerVersion.getCoreMavenGroupId(), artifactId, this.controllerVersion.getCoreVersion());
+    }
+
+    private String[] getDependencies(ModelTestControllerVersion version) {
+        return switch (version) {
+            case EAP_7_4_0 -> new String[] {
+                    "org.infinispan:infinispan-cachestore-jdbc:11.0.9.Final-redhat-00001",
+                    "org.infinispan:infinispan-client-hotrod:11.0.9.Final-redhat-00001",
+                    "org.infinispan:infinispan-commons:11.0.9.Final-redhat-00001",
+                    "org.infinispan:infinispan-core:11.0.9.Final-redhat-00001",
+                    "org.jboss.spec.javax.resource:jboss-connector-api_1.7_spec:2.0.0.Final",
+                    "org.jboss.spec.javax.resource:jboss-connector-api_1.7_spec:2.0.0.Final-redhat-00001",
+                    "org.jboss.spec.javax.transaction:jboss-transaction-api_1.3_spec:2.0.0.Final",
+                    // Following are needed for InfinispanSubsystemInitialization
+                    createGAV("wildfly-clustering-api"),
+                    createGAV("wildfly-clustering-common"),
+                    createGAV("wildfly-clustering-infinispan-client"),
+                    createGAV("wildfly-clustering-infinispan-extension"),
+                    createGAV("wildfly-clustering-infinispan-spi"),
+                    createGAV("wildfly-clustering-jgroups-extension"),
+                    createGAV("wildfly-clustering-jgroups-spi"),
+                    createGAV("wildfly-clustering-server"),
+                    createGAV("wildfly-clustering-service"),
+                    createGAV("wildfly-clustering-singleton-api"),
+                    createGAV("wildfly-clustering-spi"),
+                    createGAV("wildfly-connector"),
+            };
+            case EAP_8_0_0 -> new String[] {
+                    "org.infinispan:infinispan-cachestore-jdbc:14.0.27.Final-redhat-00001",
+                    "org.infinispan:infinispan-client-hotrod:14.0.27.Final-redhat-00001",
+                    "org.infinispan:infinispan-commons:14.0.27.Final-redhat-00001",
+                    "org.infinispan:infinispan-core:14.0.27.Final-redhat-00001",
+                    // Following are needed for InfinispanSubsystemInitialization
+                    createCoreGAV("wildfly-controller"),
+                    createGAV("wildfly-clustering-common"),
+                    createGAV("wildfly-clustering-infinispan-client-service"),
+                    createGAV("wildfly-clustering-infinispan-embedded-api"),
+                    createGAV("wildfly-clustering-infinispan-embedded-service"),
+                    createGAV("wildfly-clustering-infinispan-embedded-spi"),
+                    createGAV("wildfly-clustering-infinispan-extension"),
+                    createGAV("wildfly-clustering-jgroups-extension"),
+                    createGAV("wildfly-clustering-jgroups-spi"),
+                    createGAV("wildfly-clustering-server-service"),
+                    createGAV("wildfly-clustering-service"),
+                    createGAV("wildfly-clustering-singleton-api"),
+                    createGAV("wildfly-connector"),
+            };
+            case EAP_8_1_0 -> new String[] {
+                    // TODO replace with actual versions once EAP is released
+                    "org.infinispan:infinispan-cachestore-jdbc:15.0.11.Final",
+                    "org.infinispan:infinispan-client-hotrod:15.0.11.Final",
+                    "org.infinispan:infinispan-commons:15.0.11.Final",
+                    "org.infinispan:infinispan-core:15.0.11.Final",
+                    // Following are needed for InfinispanSubsystemInitialization
+                    createCoreGAV("wildfly-subsystem"),
+                    createGAV("wildfly-clustering-common"),
+                    createGAV("wildfly-clustering-infinispan-client-service"),
+                    createGAV("wildfly-clustering-infinispan-embedded-service"),
+                    createGAV("wildfly-clustering-infinispan-extension"),
+                    createGAV("wildfly-clustering-jgroups-extension"),
+                    createGAV("wildfly-clustering-jgroups-spi"),
+                    createGAV("wildfly-clustering-server-service"),
+                    createGAV("wildfly-clustering-service"),
+                    createGAV("wildfly-clustering-singleton-api"),
+                    createGAV("wildfly-connector"),
+            };
+            default -> throw new IllegalArgumentException();
+        };
     }
 
     private final ModelTestControllerVersion controllerVersion;
@@ -151,15 +196,17 @@ public class InfinispanTransformersTestCase extends AbstractSubsystemTest {
         KernelServices services = this.build(builder);
 
         ModelFixer fixer = model -> {
-            if (InfinispanSubsystemModel.VERSION_16_0_0.requiresTransformation(this.subsystemVersion)) {
-                Map<String, List<PathElement>> containers = Map.ofEntries(Map.entry("minimal", List.of(CacheResourceRegistration.DISTRIBUTED.pathElement("dist"))),
-                        Map.entry("maximal", List.of(CacheResourceRegistration.DISTRIBUTED.pathElement("dist"), CacheResourceRegistration.LOCAL.pathElement("local"), CacheResourceRegistration.REPLICATED.pathElement("cache-with-jdbc-store"), CacheResourceRegistration.SCATTERED.pathElement("scattered"))));
-                for (Map.Entry<String, List<PathElement>> entry : containers.entrySet()) {
-                    PathElement containerPath = PathElement.pathElement(CacheContainerResourceDefinitionRegistrar.REGISTRATION.getPathElement().getKey(), entry.getKey());
-                    ModelNode containerModel = model.get(containerPath.getKeyValuePair());
+            Map<String, List<PathElement>> containers = Map.ofEntries(Map.entry("minimal", List.of(CacheResourceRegistration.DISTRIBUTED.pathElement("dist"))),
+                    Map.entry("maximal", List.of(CacheResourceRegistration.DISTRIBUTED.pathElement("dist"), CacheResourceRegistration.LOCAL.pathElement("local"), CacheResourceRegistration.REPLICATED.pathElement("cache-with-jdbc-store"), CacheResourceRegistration.SCATTERED.pathElement("scattered"))));
+            for (Map.Entry<String, List<PathElement>> entry : containers.entrySet()) {
+                PathElement containerPath = PathElement.pathElement(CacheContainerResourceDefinitionRegistrar.REGISTRATION.getPathElement().getKey(), entry.getKey());
+                ModelNode containerModel = model.get(containerPath.getKeyValuePair());
+                if (InfinispanSubsystemModel.VERSION_16_0_0.requiresTransformation(this.subsystemVersion)) {
                     containerModel.get("module").set(new ModelNode());
-                    for (PathElement cachePath : entry.getValue()) {
-                        ModelNode cacheModel = containerModel.get(cachePath.getKey()).get(cachePath.getValue());
+                }
+                for (PathElement cachePath : entry.getValue()) {
+                    ModelNode cacheModel = containerModel.get(cachePath.getKey()).get(cachePath.getValue());
+                    if (InfinispanSubsystemModel.VERSION_16_0_0.requiresTransformation(this.subsystemVersion)) {
                         cacheModel.get("module").set(new ModelNode());
                         if (cacheModel.hasDefined(MemoryResourceRegistration.HEAP.getPathElement().getKeyValuePair())) {
                             ModelNode memoryModel = cacheModel.get(MemoryResourceRegistration.HEAP.getPathElement().getKeyValuePair());
@@ -174,6 +221,14 @@ public class InfinispanTransformersTestCase extends AbstractSubsystemTest {
                             }
                         }
                     }
+                    if (this.subsystemVersion.getMajor() > 14 && InfinispanSubsystemModel.VERSION_20_0_0.requiresTransformation(this.subsystemVersion)) {
+                        if (cacheModel.hasDefined(ComponentResourceRegistration.PARTITION_HANDLING.getPathElement().getKeyValuePair())) {
+                            ModelNode partitionHandlingModel = cacheModel.get(ComponentResourceRegistration.PARTITION_HANDLING.getPathElement().getKeyValuePair());
+                            partitionHandlingModel.get("enabled").set(new ModelNode());
+                        }
+                    }
+                }
+                if (InfinispanSubsystemModel.VERSION_16_0_0.requiresTransformation(this.subsystemVersion)) {
                     for (ScheduledThreadPool pool : EnumSet.allOf(ScheduledThreadPool.class)) {
                         if (containerModel.hasDefined(pool.getPathElement().getKeyValuePair())) {
                             ModelNode poolModel = containerModel.get(pool.getPathElement().getKeyValuePair());
