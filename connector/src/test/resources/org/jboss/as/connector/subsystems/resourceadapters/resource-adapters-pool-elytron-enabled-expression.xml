@@ -3,23 +3,23 @@
   ~ SPDX-License-Identifier: Apache-2.0
   -->
 
-<subsystem xmlns="urn:jboss:domain:resource-adapters:7.1">
+<subsystem xmlns="urn:jboss:domain:resource-adapters:7.2">
     <!--Optional:-->
     <resource-adapters>
         <!--1 or more repetitions:-->
         <resource-adapter id="myRA" statistics-enabled="${test.expr:true}">
             <!--Optional:-->
-            <module id="moduleID" slot="main    "/>
-            <!--Optional:-->
-            <bootstrap-context>${test.expr:bootstrapContext}</bootstrap-context>
+            <module id="moduleID" slot="main"/>
             <bean-validation-groups>
                 <!--1 or more repetitions:-->
                 <bean-validation-group>${test.expr:group}</bean-validation-group>
             </bean-validation-groups>
             <!--Optional:-->
-            <transaction-support>${test.expr:NoTransaction}</transaction-support>
+            <bootstrap-context>${test.expr:bootstrapContext}</bootstrap-context>
             <!--Zero or more repetitions:-->
             <config-property name="config1">${test.expr:value}</config-property>
+            <!--Optional:-->
+            <transaction-support>${test.expr:NoTransaction}</transaction-support>
             <workmanager>
                 <security enabled="${test.expr:true}">
                     <mapping-required>${test.expr:true}</mapping-required>
@@ -86,8 +86,9 @@
                             <!--Optional:-->
                             <credential-reference store="teststore" alias="${test.expr:myalias}"/>
                             <!--Optional:-->
-                            <elytron-enabled>${test.expr:true}</elytron-enabled>
                             <authentication-context>AnotherAuthenticationContext</authentication-context>
+                            <!--Optional:-->
+                            <elytron-enabled>${test.expr:true}</elytron-enabled>
                         </recover-credential>
                         <!--Optional:-->
                         <recover-plugin class-name="${test.expr:aClass}">
