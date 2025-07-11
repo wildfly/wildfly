@@ -6,6 +6,7 @@
 package org.jboss.as.jpa.puparser;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
 
@@ -37,11 +38,15 @@ public class PersistenceUnitXmlParser extends MetaDataElementParser {
     static {
         Version defaultVersion;
         try {
-            // Try and load a jakarta namespace Jakarta Persistence API class to see if we're EE 8 or a later EE
-            PersistenceUnitXmlParser.class.getClassLoader().loadClass("jakarta.persistence.SharedCacheMode");
-            defaultVersion = Version.JPA_3_0;
+            // Try and load a jakarta namespace Jakarta Persistence API class method that is only in EE 11 to see if we're using EE 11+ (e.g. WildFly Preview).
+            if (Arrays.stream(PersistenceUnitXmlParser.class.getClassLoader().loadClass("jakarta.persistence.spi.PersistenceUnitInfo").
+                    getMethods()).anyMatch( method -> method.getName().equals("getScopeAnnotationName"))) {
+                defaultVersion = Version.JPA_3_2;
+            } else {
+                defaultVersion = Version.JPA_3_0;
+            }
         } catch (Throwable t) {
-            defaultVersion = Version.JPA_2_2;
+            defaultVersion = Version.JPA_3_0;
         }
         DEFAULT_VERSION = defaultVersion;
     }
@@ -141,6 +146,7 @@ public class PersistenceUnitXmlParser extends MetaDataElementParser {
         List<String> classes = new ArrayList<String>(1);
         List<String> jarFiles = new ArrayList<String>(1);
         List<String> mappingFiles = new ArrayList<String>(1);
+        List<String> qualifiers = new ArrayList<String>(1);
         Properties properties = new Properties();
 
         // set defaults
@@ -236,6 +242,14 @@ public class PersistenceUnitXmlParser extends MetaDataElementParser {
                     pu.setValidationMode(ValidationMode.valueOf(validationMode));
                     break;
 
+                case SCOPE:     // Scope annotation class used for dependency injection.
+                                // See String PersistenceUnitInfo#getScopeAnnotationName
+                    pu.setScopeAnnotationName(getElement(reader, propertyReplacer));
+                    break;
+                case QUALIFIER: // Qualifier annotation class used for dependency injection.
+                                // See List<String> PersistenceUnitInfo#getQualifierAnnotationNames
+                    qualifiers.add(getElement(reader, propertyReplacer));
+                    break;
                 default:
                     throw unexpectedElement(reader);
             }
@@ -247,6 +261,7 @@ public class PersistenceUnitXmlParser extends MetaDataElementParser {
         pu.setJarFiles(jarFiles);
         pu.setMappingFiles(mappingFiles);
         pu.setProperties(properties);
+        pu.setQualifierAnnotationNames(qualifiers);
         return pu;
     }
 

@@ -18,9 +18,13 @@ import jakarta.enterprise.inject.spi.BeanManager;
 import jakarta.persistence.EntityManagerFactory;
 import jakarta.persistence.spi.PersistenceProvider;
 import javax.sql.DataSource;
+
+import jakarta.transaction.TransactionManager;
+import jakarta.transaction.TransactionSynchronizationRegistry;
 import jakarta.validation.ValidatorFactory;
 
 import org.jboss.as.jpa.beanmanager.BeanManagerAfterDeploymentValidation;
+import org.jboss.as.jpa.beanmanager.PersistenceIntegrationWithCDI;
 import org.jboss.as.jpa.beanmanager.ProxyBeanManager;
 import org.jboss.as.jpa.classloader.TempClassLoaderFactoryImpl;
 import org.jboss.as.jpa.spi.PersistenceUnitService;
@@ -60,9 +64,8 @@ public class PersistenceUnitServiceImpl implements Service<PersistenceUnitServic
     private final InjectedValue<BeanManager> beanManagerInjector = new InjectedValue<>();
     private final InjectedValue<PhaseOnePersistenceUnitServiceImpl> phaseOnePersistenceUnitServiceInjectedValue = new InjectedValue<>();
 
-    private static final String EE_NAMESPACE = BeanManager.class.getName().startsWith("javax") ? "javax" : "jakarta";
-    private static final String CDI_BEAN_MANAGER = ".persistence.bean.manager";
-    private static final String VALIDATOR_FACTORY = ".persistence.validation.factory";
+    private static final String CDI_BEAN_MANAGER = "jakarta.persistence.bean.manager";
+    private static final String VALIDATOR_FACTORY = "jakarta.persistence.validation.factory";
 
     private final Map properties;
     private final PersistenceProviderAdaptor persistenceProviderAdaptor;
@@ -78,6 +81,8 @@ public class PersistenceUnitServiceImpl implements Service<PersistenceUnitServic
     private volatile EntityManagerFactory entityManagerFactory;
     private volatile ProxyBeanManager proxyBeanManager;
     private final SetupAction javaNamespaceSetup;
+    private final TransactionSynchronizationRegistry transactionSynchronizationRegistry;
+    private final TransactionManager transactionManager;
 
     public PersistenceUnitServiceImpl(
             final Map properties,
@@ -89,7 +94,9 @@ public class PersistenceUnitServiceImpl implements Service<PersistenceUnitServic
             final PersistenceUnitRegistryImpl persistenceUnitRegistry,
             final ServiceName deploymentUnitServiceName,
             final ValidatorFactory validatorFactory, SetupAction javaNamespaceSetup,
-            BeanManagerAfterDeploymentValidation beanManagerAfterDeploymentValidation) {
+            BeanManagerAfterDeploymentValidation beanManagerAfterDeploymentValidation,
+            final TransactionSynchronizationRegistry transactionSynchronizationRegistry,
+            final TransactionManager transactionManager) {
         this.properties = properties;
         this.pu = pu;
         this.persistenceProviderAdaptor = persistenceProviderAdaptor;
@@ -101,6 +108,8 @@ public class PersistenceUnitServiceImpl implements Service<PersistenceUnitServic
         this.validatorFactory = validatorFactory;
         this.javaNamespaceSetup = javaNamespaceSetup;
         this.beanManagerAfterDeploymentValidation = beanManagerAfterDeploymentValidation;
+        this.transactionSynchronizationRegistry = transactionSynchronizationRegistry;
+        this.transactionManager = transactionManager;
     }
 
     @Override
@@ -133,7 +142,7 @@ public class PersistenceUnitServiceImpl implements Service<PersistenceUnitServic
                                     // as per Jakarta Persistence specification contract, always pass ValidatorFactory in via standard property before
                                     // creating container EntityManagerFactory
                                     if (validatorFactory != null) {
-                                        properties.put(EE_NAMESPACE + VALIDATOR_FACTORY, validatorFactory);
+                                        properties.put(VALIDATOR_FACTORY, validatorFactory);
                                     }
 
                                     // handle phase 2 of 2 of bootstrapping the persistence unit
@@ -170,10 +179,10 @@ public class PersistenceUnitServiceImpl implements Service<PersistenceUnitServic
                                             wrapperBeanManagerLifeCycle = persistenceProviderAdaptor.beanManagerLifeCycle(proxyBeanManager);
                                             if (wrapperBeanManagerLifeCycle != null) {
                                               // pass the wrapper object representing the bean manager life cycle object
-                                              properties.put(EE_NAMESPACE + CDI_BEAN_MANAGER, wrapperBeanManagerLifeCycle);
+                                              properties.put(CDI_BEAN_MANAGER, wrapperBeanManagerLifeCycle);
                                             }
                                             else {
-                                              properties.put(EE_NAMESPACE + CDI_BEAN_MANAGER, proxyBeanManager);
+                                              properties.put(CDI_BEAN_MANAGER, proxyBeanManager);
                                             }
                                         }
                                         entityManagerFactory = createContainerEntityManagerFactory();
@@ -182,6 +191,12 @@ public class PersistenceUnitServiceImpl implements Service<PersistenceUnitServic
                                     if(wrapperBeanManagerLifeCycle != null) {
                                         beanManagerAfterDeploymentValidation.register(persistenceProviderAdaptor, wrapperBeanManagerLifeCycle);
                                     }
+                                    if (proxyBeanManager != null && proxyBeanManager.delegate() != null) {
+                                        createCDIBeansForPersistence(proxyBeanManager.delegate(), entityManagerFactory, pu, classLoader);
+                                    } else if (proxyBeanManager != null) {
+                                        throw new IllegalStateException("ProxyBeanManager.delegate() is null"); // Don't merge this change.
+                                    }
+
                                     context.complete();
                                 } catch (Throwable t) {
                                     context.failed(new StartException(t));
@@ -195,6 +210,10 @@ public class PersistenceUnitServiceImpl implements Service<PersistenceUnitServic
                                     }
                                 }
                                 return null;
+                            }
+
+                            private void createCDIBeansForPersistence(BeanManager beanManager, EntityManagerFactory entityManagerFactory, PersistenceUnitMetadata pu, ClassLoader classLoader) {
+                                PersistenceIntegrationWithCDI.addBeans(beanManager, entityManagerFactory, pu, classLoader, transactionSynchronizationRegistry, transactionManager);
                             }
 
                         };
