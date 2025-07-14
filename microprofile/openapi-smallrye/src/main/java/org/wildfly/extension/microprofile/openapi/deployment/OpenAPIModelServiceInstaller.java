@@ -33,7 +33,6 @@ import org.eclipse.microprofile.openapi.models.OpenAPI;
 import org.eclipse.microprofile.openapi.models.info.Info;
 import org.eclipse.microprofile.openapi.models.servers.Server;
 import org.eclipse.microprofile.openapi.spi.OASFactoryResolver;
-import org.jboss.as.controller.ServiceNameFactory;
 import org.jboss.as.network.ClientMapping;
 import org.jboss.as.network.SocketBinding;
 import org.jboss.as.server.deployment.Attachments;
@@ -192,7 +191,7 @@ public class OpenAPIModelServiceInstaller implements DeploymentServiceInstaller 
             }
         };
         ServiceInstaller.builder(factory)
-                .provides(ServiceNameFactory.resolveServiceName(OpenAPIModelConfiguration.SERVICE_DESCRIPTOR, serverName, hostName, this.configuration.getPath()))
+                .provides(OpenAPIModelConfiguration.SERVICE_DESCRIPTOR, serverName, hostName, this.configuration.getPath())
                 .requires(List.of(host, deploymentInfo))
                 .build()
                 .install(context);

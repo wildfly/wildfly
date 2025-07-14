@@ -24,6 +24,6 @@ public class MicroProfileOpenAPISubsystemTestCase extends AbstractSubsystemSchem
     }
 
     public MicroProfileOpenAPISubsystemTestCase(MicroProfileOpenAPISubsystemSchema schema) {
-        super(MicroProfileOpenAPISubsystemRegistrar.NAME, new MicroProfileOpenAPIExtension(), schema, MicroProfileOpenAPISubsystemSchema.CURRENT);
+        super(MicroProfileOpenAPISubsystemRegistrar.REGISTRATION.getName(), new MicroProfileOpenAPIExtension(), schema, MicroProfileOpenAPISubsystemSchema.CURRENT);
     }
 }
