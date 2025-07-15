@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+
+<module xmlns="urn:jboss:module:1.9" name="org.wildfly.clustering.cache.infinispan.persistence.remote">
+
+    <properties>
+        <property name="jboss.api" value="private"/>
+    </properties>
+
+    <resources>
+        <artifact name="${org.wildfly.clustering:wildfly-clustering-cache-infinispan-persistence-remote}"/>
+    </resources>
+
+    <dependencies>
+        <module name="jakarta.transaction.api"/>
+
+        <module name="io.reactivex.rxjava3.rxjava"/>
+        <module name="org.infinispan.client.hotrod"/>
+        <module name="org.infinispan.commons"/>
+        <module name="org.infinispan.core"/>
+        <module name="org.reactivestreams"/>
+        <module name="org.wildfly.clustering.cache.infinispan.remote"/>
+        <module name="org.wildfly.clustering.cache.spi"/>
+        <module name="org.wildfly.clustering.context"/>
+        <module name="org.wildfly.clustering.function"/>
+    </dependencies>
+</module>

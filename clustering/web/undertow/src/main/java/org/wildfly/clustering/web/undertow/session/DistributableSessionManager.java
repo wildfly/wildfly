@@ -22,8 +22,8 @@ import io.undertow.util.AttachmentKey;
 
 import org.jboss.logging.Logger;
 import org.wildfly.clustering.cache.batch.Batch;
-import org.wildfly.clustering.cache.batch.BatchContext;
 import org.wildfly.clustering.cache.batch.SuspendedBatch;
+import org.wildfly.clustering.context.Context;
 import org.wildfly.clustering.function.Consumer;
 import org.wildfly.clustering.function.Function;
 import org.wildfly.clustering.function.Predicate;
@@ -49,7 +49,7 @@ public class DistributableSessionManager implements UndertowSessionManager {
     private static final Predicate<Session<Map<String, Object>>> EXISTING_SESSION = Objects::nonNull;
     private static final Predicate<Session<Map<String, Object>>> VALID_SESSION = Session::isValid;
     private static final Function<Session<Map<String, Object>>, SessionMetaData> SESSION_META_DATA = Session::getMetaData;
-    private static final Predicate<Session<Map<String, Object>>> ACTIVE_SESSION = Predicate.not(SessionMetaData::isExpired).map(SESSION_META_DATA);
+    private static final Predicate<Session<Map<String, Object>>> ACTIVE_SESSION = Predicate.not(SessionMetaData::isExpired).compose(SESSION_META_DATA);
     // If session exists, ensure it is valid and not expired
     private static final UnaryOperator<Session<Map<String, Object>>> VALIDATE_SESSION = UnaryOperator.<Session<Map<String, Object>>>identity().orDefault(EXISTING_SESSION.and(VALID_SESSION.and(ACTIVE_SESSION)), Supplier.of(null));
     private static final UnaryOperator<Session<Map<String, Object>>> REQUIRE_SESSION = UnaryOperator.<Session<Map<String, Object>>>identity().orDefault(EXISTING_SESSION, () -> {
@@ -182,7 +182,7 @@ public class DistributableSessionManager implements UndertowSessionManager {
         Map.Entry<SuspendedBatch, Consumer<HttpServerExchange>> entry = batchEntryFactory.get();
         SuspendedBatch suspendedBatch = entry.getKey();
         Consumer<HttpServerExchange> closeTask = entry.getValue();
-        try (BatchContext<Batch> context = suspendedBatch.resumeWithContext()) {
+        try (Context<Batch> context = suspendedBatch.resumeWithContext()) {
             Session<Map<String, Object>> session = sessionFactory.apply(config.findSessionId(exchange));
             if (session == null) {
                 return rollback(context, closeTask);
@@ -260,8 +260,10 @@ public class DistributableSessionManager implements UndertowSessionManager {
 
     @Override
     public io.undertow.server.session.Session getSession(String sessionId) {
-        Map.Entry<SuspendedBatch, Consumer<HttpServerExchange>> batchEntry = Map.entry(Batch.Factory.SIMPLE.get().suspend(), Consumer.empty());
-        return this.getSession(null, new SimpleSessionConfig(sessionId), Supplier.of(batchEntry), this.getDetachedSession);
+        try (Batch batch = this.manager.getBatchFactory().get()) {
+            Session<Map<String, Object>> session = this.getDetachedSession.apply(sessionId);
+            return (session != null) ? new DetachedDistributableSession(this, session, this.statistics) : null;
+        }
     }
 
     @Override

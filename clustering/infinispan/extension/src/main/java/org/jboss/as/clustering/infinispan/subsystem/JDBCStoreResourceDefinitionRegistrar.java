@@ -19,7 +19,6 @@ import org.infinispan.persistence.jdbc.configuration.TableManipulationConfigurat
 import org.infinispan.persistence.keymappers.TwoWayKey2StringMapper;
 import org.jboss.as.clustering.controller.CommonServiceDescriptor;
 import org.jboss.as.clustering.controller.EnumAttributeDefinition;
-import org.jboss.as.clustering.infinispan.persistence.jdbc.DataSourceConnectionFactoryConfigurationBuilder;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
@@ -27,6 +26,7 @@ import org.jboss.as.controller.RequirementServiceBuilder;
 import org.jboss.as.controller.ResourceRegistration;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelNode;
+import org.wildfly.clustering.cache.infinispan.persistence.jdbc.DataSourceConnectionFactoryConfigurationBuilder;
 import org.wildfly.clustering.server.service.BinaryServiceConfiguration;
 import org.wildfly.subsystem.resource.ManagementResourceRegistrationContext;
 import org.wildfly.subsystem.resource.ResourceDescriptor;

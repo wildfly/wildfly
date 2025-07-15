@@ -15,8 +15,8 @@ import org.jboss.as.ejb3.context.CurrentInvocationContext;
 import org.jboss.as.ejb3.timerservice.spi.ManagedTimer;
 import org.jboss.invocation.InterceptorContext;
 import org.wildfly.clustering.cache.batch.Batch;
-import org.wildfly.clustering.cache.batch.BatchContext;
 import org.wildfly.clustering.cache.batch.SuspendedBatch;
+import org.wildfly.clustering.context.Context;
 import org.wildfly.clustering.ejb.timer.Timer;
 
 /**
@@ -80,8 +80,8 @@ public class DistributableTimerSynchronizationFactory<I> implements TimerSynchro
             InterceptorContext interceptorContext = CurrentInvocationContext.get();
             ManagedTimer currentTimer = (interceptorContext != null) ? (ManagedTimer) interceptorContext.getTimer() : null;
 
-            try (BatchContext<Batch> context = this.suspendedBatch.resumeWithContext()) {
-                Supplier<Batch> batchFactory = ((currentTimer != null) && currentTimer.getId().equals(this.timer.getId().toString())) || !context.get().isActive() ? this.batchFactory : context;
+            try (Context<Batch> context = this.suspendedBatch.resumeWithContext()) {
+                Supplier<Batch> batchFactory = ((currentTimer != null) && currentTimer.getId().equals(this.timer.getId().toString())) || !context.get().getStatus().isActive() ? this.batchFactory : context;
                 try (Batch batch = batchFactory.get()) {
                     if (!this.timer.isCanceled()) {
                         if (status == Status.STATUS_COMMITTED) {

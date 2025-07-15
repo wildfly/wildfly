@@ -30,8 +30,8 @@ import org.jboss.as.ejb3.timerservice.spi.ManagedTimer;
 import org.jboss.as.ejb3.timerservice.spi.ManagedTimerService;
 import org.jboss.as.ejb3.timerservice.spi.TimedObjectInvoker;
 import org.wildfly.clustering.cache.batch.Batch;
-import org.wildfly.clustering.cache.batch.BatchContext;
 import org.wildfly.clustering.cache.batch.SuspendedBatch;
+import org.wildfly.clustering.context.Context;
 import org.wildfly.clustering.ejb.timer.ImmutableScheduleExpression;
 import org.wildfly.clustering.ejb.timer.ScheduleTimerConfiguration;
 import org.wildfly.clustering.ejb.timer.Timer;
@@ -101,7 +101,7 @@ public class DistributableTimer<I> implements ManagedTimer {
     public void cancel() {
         this.validateInvocationContext();
         Transaction transaction = ManagedTimerService.getActiveTransaction();
-        try (BatchContext<Batch> context = this.suspendedBatch.resumeWithContext()) {
+        try (Context<Batch> context = this.suspendedBatch.resumeWithContext()) {
             if (transaction != null) {
                 // Cancel timer on tx commit
                 // Reactivate timer on tx rollback
@@ -129,7 +129,7 @@ public class DistributableTimer<I> implements ManagedTimer {
     @Override
     public long getTimeRemaining() {
         this.validateInvocationContext();
-        try (BatchContext<Batch> context = this.suspendedBatch.resumeWithContext()) {
+        try (Context<Batch> context = this.suspendedBatch.resumeWithContext()) {
             Instant next = this.timer.getMetaData().getNextTimeout().orElseThrow(NoMoreTimeoutsException::new);
             return Duration.between(Instant.now(), next).toMillis();
         }
@@ -138,7 +138,7 @@ public class DistributableTimer<I> implements ManagedTimer {
     @Override
     public Date getNextTimeout() {
         this.validateInvocationContext();
-        try (BatchContext<Batch> context = this.suspendedBatch.resumeWithContext()) {
+        try (Context<Batch> context = this.suspendedBatch.resumeWithContext()) {
             Instant next = this.timer.getMetaData().getNextTimeout().orElseThrow(NoMoreTimeoutsException::new);
             return Date.from(next);
         }
@@ -147,7 +147,7 @@ public class DistributableTimer<I> implements ManagedTimer {
     @Override
     public Serializable getInfo() {
         this.validateInvocationContext();
-        try (BatchContext<Batch> context = this.suspendedBatch.resumeWithContext()) {
+        try (Context<Batch> context = this.suspendedBatch.resumeWithContext()) {
             return (Serializable) this.timer.getMetaData().getContext();
         }
     }
@@ -169,7 +169,7 @@ public class DistributableTimer<I> implements ManagedTimer {
         if (!this.timer.getMetaData().getType().isCalendar()) {
             throw EjbLogger.EJB3_TIMER_LOGGER.invalidTimerNotCalendarBaseTimer(this);
         }
-        try (BatchContext<Batch> context = this.suspendedBatch.resumeWithContext()) {
+        try (Context<Batch> context = this.suspendedBatch.resumeWithContext()) {
             ImmutableScheduleExpression expression = this.timer.getMetaData().getConfiguration(ScheduleTimerConfiguration.class).getScheduleExpression();
             ScheduleExpression result = new ScheduleExpression()
                     .second(expression.getSecond())
@@ -198,7 +198,7 @@ public class DistributableTimer<I> implements ManagedTimer {
     @Override
     public boolean isCalendarTimer() {
         this.validateInvocationContext();
-        try (BatchContext<Batch> context = this.suspendedBatch.resumeWithContext()) {
+        try (Context<Batch> context = this.suspendedBatch.resumeWithContext()) {
             return this.timer.getMetaData().getType().isCalendar();
         }
     }
@@ -206,7 +206,7 @@ public class DistributableTimer<I> implements ManagedTimer {
     @Override
     public boolean isPersistent() {
         this.validateInvocationContext();
-        try (BatchContext<Batch> context = this.suspendedBatch.resumeWithContext()) {
+        try (Context<Batch> context = this.suspendedBatch.resumeWithContext()) {
             return this.timer.getMetaData().isPersistent();
         }
     }
