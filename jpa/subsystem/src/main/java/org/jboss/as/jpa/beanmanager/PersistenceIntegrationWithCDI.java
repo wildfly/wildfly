@@ -6,6 +6,7 @@ import java.util.Properties;
 import java.util.Set;
 
 import jakarta.enterprise.context.spi.CreationalContext;
+import jakarta.enterprise.inject.spi.AfterBeanDiscovery;
 import jakarta.enterprise.inject.spi.AnnotatedType;
 import jakarta.enterprise.inject.spi.Bean;
 import jakarta.enterprise.inject.spi.BeanAttributes;
@@ -67,8 +68,15 @@ public class PersistenceIntegrationWithCDI {
     private static final String applicationScoped = "jakarta.enterprise.context.ApplicationScoped";
     private static final String dependentScoped = "jakarta.enterprise.context.Dependent";
 
-    public static void addBeans(BeanManager beanManager, EntityManagerFactory entityManagerFactory, PersistenceUnitMetadata persistenceUnitMetadata, ClassLoader classLoader, TransactionSynchronizationRegistry transactionSynchronizationRegistry, TransactionManager transactionManager) {
+    // include fields that are set late like TSR/TM/EMF
+    private volatile TransactionSynchronizationRegistry transactionSynchronizationRegistry;
+    private volatile TransactionManager transactionManager;
+    private volatile EntityManagerFactory entityManagerFactory;
+    private BeanManager beanManager = null;
+    private ClassLoader classLoader = null;
 
+    public void addBeans(AfterBeanDiscovery afterBeanDiscovery, PersistenceUnitMetadata persistenceUnitMetadata, ClassLoader classLoader) {
+        this.classLoader = classLoader;
         // determine the qualifiers to use for creating each bean
         List<String> qualifiers;
         if (persistenceUnitMetadata.getQualifierAnnotationNames().size() > 0) {
@@ -79,17 +87,17 @@ public class PersistenceIntegrationWithCDI {
 
 
         try {
-            entityManager(beanManager, persistenceUnitMetadata, entityManagerFactory, qualifiers, classLoader, transactionSynchronizationRegistry, transactionManager);
+            entityManager(afterBeanDiscovery, persistenceUnitMetadata, qualifiers, classLoader, transactionSynchronizationRegistry, transactionManager);
         } catch (InstantiationException | IllegalAccessException e) {
             throw new RuntimeException(e);
         }
     }
 
-    private static void entityManager(
-            BeanManager beanManager,
+    private void entityManager(
+            AfterBeanDiscovery afterBeanDiscovery,
             PersistenceUnitMetadata persistenceUnitMetadata,
-            EntityManagerFactory entityManagerFactory,
-            List<String> qualifiers, ClassLoader classLoader, TransactionSynchronizationRegistry transactionSynchronizationRegistry, TransactionManager transactionManager) throws InstantiationException, IllegalAccessException {
+            List<String> qualifiers,
+            ClassLoader classLoader, TransactionSynchronizationRegistry transactionSynchronizationRegistry, TransactionManager transactionManager) throws InstantiationException, IllegalAccessException {
         String scope = persistenceUnitMetadata.getScopeAnnotationName();
         if (scope == null || scope.isEmpty()) {
             scope = transactionScoped;
@@ -113,7 +121,7 @@ public class PersistenceIntegrationWithCDI {
         final Bean bean = beanManager.createBean(entityManagerBeanAttributes, TransactionScopedEntityManager.class, new ProducerFactory() {
             @Override
             public Producer createProducer(Bean bean) {
-                return new WrappingProducer(persistenceUnitMetadata, entityManagerFactory, transactionSynchronizationRegistry, transactionManager);
+                return new WrappingProducer(persistenceUnitMetadata, entityManagerFactory);
             }
         });
         // InjectionTarget<EntityManager> injectionTarget = beanManager.getInjectionTargetFactory(entityManagerAnnotatedType).createInjectionTarget(bean);
@@ -121,30 +129,47 @@ public class PersistenceIntegrationWithCDI {
 
     }
 
+    public TransactionSynchronizationRegistry getTransactionSynchronizationRegistry() {
+        return transactionSynchronizationRegistry;
+    }
 
-    private static class WrappingProducer<T> implements Producer<T> {
+    public void setTransactionSynchronizationRegistry(TransactionSynchronizationRegistry transactionSynchronizationRegistry) {
+        this.transactionSynchronizationRegistry = transactionSynchronizationRegistry;
+    }
 
-        private final PersistenceUnitMetadata persistenceUnitMetadata;
-        EntityManagerFactory entityManagerFactory;
-        TransactionSynchronizationRegistry transactionSynchronizationRegistry;
-        TransactionManager transactionManager;
+    public TransactionManager getTransactionManager() {
+        return transactionManager;
+    }
+
+    public void setTransactionManager(TransactionManager transactionManager) {
+        this.transactionManager = transactionManager;
+    }
+
+    public EntityManagerFactory getEntityManagerFactory() {
+        return entityManagerFactory;
+    }
+
+    public void setEntityManagerFactory(EntityManagerFactory entityManagerFactory) {
+        this.entityManagerFactory = entityManagerFactory;
+    }
+
+
+    private class WrappingProducer<T> implements Producer<T> {
+
+        final WrappingProducer<T> persistenceWrappingProducer = new WrappingProducer<T>(null, null);
 
         public WrappingProducer(
                 PersistenceUnitMetadata persistenceUnitMetadata,
-                EntityManagerFactory entityManagerFactory,
-                TransactionSynchronizationRegistry transactionSynchronizationRegistry,
-                TransactionManager transactionManager) {
-            this.persistenceUnitMetadata = persistenceUnitMetadata;
-            this.entityManagerFactory = entityManagerFactory;
-            this.transactionSynchronizationRegistry = transactionSynchronizationRegistry;
-            this.transactionManager = transactionManager;
+                EntityManagerFactory entityManagerFactory) {
+            //this.persistenceWrappingProducer.setPersistenceUnitMetadata(persistenceUnitMetadata);
+            //this.persistenceWrappingProducer.setEntityManagerFactory(entityManagerFactory);
         }
 
         @Override
         public T produce(CreationalContext<T> ctx) {
 
             return (T) new TransactionScopedEntityManager(
-                    persistenceUnitMetadata.getScopeAnnotationName(),
+                    "xxx",//persistenceUnitMetadata.getScopeAnnotationName(),
                     new Properties(),
                     entityManagerFactory,
                     SynchronizationType.SYNCHRONIZED,
@@ -156,11 +181,12 @@ public class PersistenceIntegrationWithCDI {
         @Override
         public void dispose(T instance) {
 
+            persistenceWrappingProducer.dispose(instance);
         }
 
         @Override
         public Set<InjectionPoint> getInjectionPoints() {
-            return Set.of();
+            return persistenceWrappingProducer.getInjectionPoints();
         }
     }
 }

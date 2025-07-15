@@ -24,7 +24,6 @@ import jakarta.transaction.TransactionSynchronizationRegistry;
 import jakarta.validation.ValidatorFactory;
 
 import org.jboss.as.jpa.beanmanager.BeanManagerAfterDeploymentValidation;
-import org.jboss.as.jpa.beanmanager.PersistenceIntegrationWithCDI;
 import org.jboss.as.jpa.beanmanager.ProxyBeanManager;
 import org.jboss.as.jpa.classloader.TempClassLoaderFactoryImpl;
 import org.jboss.as.jpa.spi.PersistenceUnitService;
@@ -213,7 +212,7 @@ public class PersistenceUnitServiceImpl implements Service<PersistenceUnitServic
                             }
 
                             private void createCDIBeansForPersistence(BeanManager beanManager, EntityManagerFactory entityManagerFactory, PersistenceUnitMetadata pu, ClassLoader classLoader) {
-                                PersistenceIntegrationWithCDI.addBeans(beanManager, entityManagerFactory, pu, classLoader, transactionSynchronizationRegistry, transactionManager);
+                                // PersistenceIntegrationWithCDI.addBeans(beanManager, entityManagerFactory, pu, classLoader, transactionSynchronizationRegistry, transactionManager);
                             }
 
                         };

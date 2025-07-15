@@ -36,6 +36,7 @@ import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ee.structure.DeploymentType;
 import org.jboss.as.ee.structure.DeploymentTypeMarker;
 import org.jboss.as.jpa.beanmanager.BeanManagerAfterDeploymentValidation;
+import org.jboss.as.jpa.beanmanager.IntegratePersistenceAfterBeanDiscovery;
 import org.jboss.as.jpa.beanmanager.ProxyBeanManager;
 import org.jboss.as.jpa.config.Configuration;
 import org.jboss.as.jpa.config.PersistenceProviderDeploymentHolder;
@@ -323,6 +324,7 @@ public class PersistenceUnitServiceHandler {
                 // Get the Jakarta Contexts and Dependency Injection enabled ValidatorFactory
                 validatorFactory = deploymentUnit.getAttachment(BeanValidationAttachments.VALIDATOR_FACTORY);
             }
+            IntegratePersistenceAfterBeanDiscovery integratePersistenceAfterBeanDiscovery = registerPersistenceAfterBeanDiscovery(deploymentUnit, capabilitySupport, pu);
             BeanManagerAfterDeploymentValidation beanManagerAfterDeploymentValidation = registerJPAEntityListenerRegister(deploymentUnit, capabilitySupport);
 
             final PersistenceAdaptorRemoval persistenceAdaptorRemoval = new PersistenceAdaptorRemoval(pu, adaptor);
@@ -467,6 +469,7 @@ public class PersistenceUnitServiceHandler {
             }
             if (partOfWeldDeployment) {
                 proxyBeanManager = new ProxyBeanManager();
+                registerPersistenceAfterBeanDiscovery(deploymentUnit, capabilitySupport, pu);
                 registerJPAEntityListenerRegister(deploymentUnit, support); // register Jakarta Contexts and Dependency Injection extension before WeldDeploymentProcessor, which is important for
                                                                             // EAR deployments that contain a WAR that has persistence units defined.
             }
@@ -584,6 +587,7 @@ public class PersistenceUnitServiceHandler {
                 // Get the Jakarta Contexts and Dependency Injection enabled ValidatorFactory
                 validatorFactory = deploymentUnit.getAttachment(BeanValidationAttachments.VALIDATOR_FACTORY);
             }
+            IntegratePersistenceAfterBeanDiscovery integratePersistenceAfterBeanDiscovery = registerPersistenceAfterBeanDiscovery(deploymentUnit, capabilitySupport, pu);
             BeanManagerAfterDeploymentValidation beanManagerAfterDeploymentValidation = registerJPAEntityListenerRegister(deploymentUnit, capabilitySupport);
             final PersistenceAdaptorRemoval persistenceAdaptorRemoval =  new PersistenceAdaptorRemoval(pu, adaptor);
             deploymentUnit.addToAttachmentList(REMOVAL_KEY, persistenceAdaptorRemoval);
@@ -1145,6 +1149,25 @@ public class PersistenceUnitServiceHandler {
     private static PersistenceProviderDeploymentHolder getPersistenceProviderDeploymentHolder(DeploymentUnit deploymentUnit) {
         deploymentUnit = DeploymentUtils.getTopDeploymentUnit(deploymentUnit);
         return deploymentUnit.getAttachment(JpaAttachments.DEPLOYED_PERSISTENCE_PROVIDER);
+    }
+
+    private static IntegratePersistenceAfterBeanDiscovery registerPersistenceAfterBeanDiscovery(DeploymentUnit deploymentUnit, CapabilityServiceSupport support, PersistenceUnitMetadata pu) {
+        deploymentUnit = DeploymentUtils.getTopDeploymentUnit(deploymentUnit);
+        if (support.hasCapability(WELD_CAPABILITY_NAME)) {
+            Optional<WeldCapability> weldCapability = support.getOptionalCapabilityRuntimeAPI(WELD_CAPABILITY_NAME, WeldCapability.class);
+
+            if (weldCapability.get().isPartOfWeldDeployment(deploymentUnit)) {
+                synchronized (deploymentUnit) {
+                    IntegratePersistenceAfterBeanDiscovery integratePersistenceAfterBeanDiscovery = deploymentUnit.getAttachment(JpaAttachments.AFTER_BEAN_DISCOVERY_ATTACHMENT_KEY);
+                    if (null == integratePersistenceAfterBeanDiscovery) {
+                        integratePersistenceAfterBeanDiscovery = new IntegratePersistenceAfterBeanDiscovery();
+                        integratePersistenceAfterBeanDiscovery.register(pu);
+                        deploymentUnit.putAttachment(JpaAttachments.AFTER_BEAN_DISCOVERY_ATTACHMENT_KEY, integratePersistenceAfterBeanDiscovery);
+                    }
+                }
+            }
+        }
+        return null;
     }
 
     private static BeanManagerAfterDeploymentValidation registerJPAEntityListenerRegister(DeploymentUnit deploymentUnit, CapabilityServiceSupport support) {
