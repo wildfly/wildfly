@@ -11,6 +11,7 @@ import java.security.PrivilegedAction;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.RejectedExecutionException;
 
@@ -76,6 +77,7 @@ public class PersistenceUnitServiceImpl implements Service<PersistenceUnitServic
     private final ServiceName deploymentUnitServiceName;
     private final ValidatorFactory validatorFactory;
     private final BeanManagerAfterDeploymentValidation beanManagerAfterDeploymentValidation;
+    private final CompletableFuture<EntityManagerFactory> futureEntityManagerFactory;
 
     private volatile EntityManagerFactory entityManagerFactory;
     private volatile ProxyBeanManager proxyBeanManager;
@@ -95,7 +97,8 @@ public class PersistenceUnitServiceImpl implements Service<PersistenceUnitServic
             final ValidatorFactory validatorFactory, SetupAction javaNamespaceSetup,
             BeanManagerAfterDeploymentValidation beanManagerAfterDeploymentValidation,
             final TransactionSynchronizationRegistry transactionSynchronizationRegistry,
-            final TransactionManager transactionManager) {
+            final TransactionManager transactionManager,
+            final CompletableFuture<EntityManagerFactory> futureEntityManagerFactory) {
         this.properties = properties;
         this.pu = pu;
         this.persistenceProviderAdaptor = persistenceProviderAdaptor;
@@ -109,6 +112,7 @@ public class PersistenceUnitServiceImpl implements Service<PersistenceUnitServic
         this.beanManagerAfterDeploymentValidation = beanManagerAfterDeploymentValidation;
         this.transactionSynchronizationRegistry = transactionSynchronizationRegistry;
         this.transactionManager = transactionManager;
+        this.futureEntityManagerFactory = futureEntityManagerFactory;
     }
 
     @Override
@@ -195,7 +199,9 @@ public class PersistenceUnitServiceImpl implements Service<PersistenceUnitServic
                                     } else if (proxyBeanManager != null) {
                                         throw new IllegalStateException("ProxyBeanManager.delegate() is null"); // Don't merge this change.
                                     }
-
+                                    if (futureEntityManagerFactory != null) {
+                                        futureEntityManagerFactory.complete(entityManagerFactory);
+                                    }
                                     context.complete();
                                 } catch (Throwable t) {
                                     context.failed(new StartException(t));

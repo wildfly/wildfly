@@ -1,9 +1,12 @@
 package org.jboss.as.jpa.beanmanager;
 
+import java.util.concurrent.CompletableFuture;
+
 import jakarta.enterprise.event.Observes;
 import jakarta.enterprise.inject.spi.AfterBeanDiscovery;
 import jakarta.enterprise.inject.spi.BeanManager;
 import jakarta.enterprise.inject.spi.Extension;
+import jakarta.persistence.EntityManagerFactory;
 import jakarta.transaction.TransactionManager;
 import jakarta.transaction.TransactionSynchronizationRegistry;
 import org.jipijapa.plugin.spi.PersistenceUnitMetadata;
@@ -15,16 +18,23 @@ import org.jipijapa.plugin.spi.PersistenceUnitMetadata;
  */
 public class IntegratePersistenceAfterBeanDiscovery implements Extension {
 
-    private PersistenceUnitMetadata persistenceUnitMetadata;
-    private TransactionManager transactionManager;
-    private TransactionSynchronizationRegistry transactionSynchronizationRegistry;
+    private volatile PersistenceUnitMetadata persistenceUnitMetadata;
+    private volatile TransactionManager transactionManager;
+    private volatile TransactionSynchronizationRegistry transactionSynchronizationRegistry;
+    private volatile CompletableFuture<EntityManagerFactory> futureEntityManagerFactory;
     void afterBeanDiscovery(@Observes AfterBeanDiscovery event, BeanManager manager) {
-        // PersistenceIntegrationWithCDI.addBeans();
-        System.out.println("xxx IntegratePersistenceAfterBeanDiscovery afterBeanDiscovery called from " + Thread.currentThread().getName() + " with classloader = " + Thread.currentThread().getContextClassLoader().getName());
+        try {
+            PersistenceIntegrationWithCDI.addBeans(event, persistenceUnitMetadata, transactionSynchronizationRegistry, transactionManager, futureEntityManagerFactory);
+        } catch (RuntimeException e) {
+            event.addDefinitionError(e);
+        }
     }
 
-    public void register(final PersistenceUnitMetadata persistenceUnitMetadata) {
+    public void register(final PersistenceUnitMetadata persistenceUnitMetadata, TransactionManager transactionManager, TransactionSynchronizationRegistry transactionSynchronizationRegistry, CompletableFuture<EntityManagerFactory> futureEntityManagerFactory) {
         this.persistenceUnitMetadata = persistenceUnitMetadata;
+        this.transactionManager = transactionManager;
+        this.transactionSynchronizationRegistry = transactionSynchronizationRegistry;
+        this.futureEntityManagerFactory = futureEntityManagerFactory;
     }
 
     /**
@@ -34,6 +44,11 @@ public class IntegratePersistenceAfterBeanDiscovery implements Extension {
         persistenceUnitMetadata = null;
         transactionManager = null;
         transactionSynchronizationRegistry = null;
+        if (futureEntityManagerFactory != null) {
+            // ensure other threads are released that are waiting for futureEntityManagerFactory to complete.
+            futureEntityManagerFactory.complete(null);
+        }
+        futureEntityManagerFactory = null;
     }
 
 }

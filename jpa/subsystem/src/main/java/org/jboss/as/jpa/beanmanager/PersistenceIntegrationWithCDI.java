@@ -2,24 +2,14 @@ package org.jboss.as.jpa.beanmanager;
 
 import java.lang.annotation.Annotation;
 import java.util.List;
-import java.util.Properties;
-import java.util.Set;
-
-import jakarta.enterprise.context.spi.CreationalContext;
+import java.util.concurrent.CompletableFuture;
 import jakarta.enterprise.inject.spi.AfterBeanDiscovery;
-import jakarta.enterprise.inject.spi.AnnotatedType;
-import jakarta.enterprise.inject.spi.Bean;
-import jakarta.enterprise.inject.spi.BeanAttributes;
-import jakarta.enterprise.inject.spi.BeanManager;
-import jakarta.enterprise.inject.spi.InjectionPoint;
-import jakarta.enterprise.inject.spi.Producer;
-import jakarta.enterprise.inject.spi.ProducerFactory;
-import jakarta.inject.Scope;
+import jakarta.enterprise.inject.spi.configurator.BeanConfigurator;
+import jakarta.inject.Qualifier;
+import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
-import jakarta.persistence.SynchronizationType;
 import jakarta.transaction.TransactionManager;
 import jakarta.transaction.TransactionSynchronizationRegistry;
-import org.jboss.as.jpa.container.TransactionScopedEntityManager;
 import org.jipijapa.plugin.spi.PersistenceUnitMetadata;
 
 /**
@@ -68,15 +58,12 @@ public class PersistenceIntegrationWithCDI {
     private static final String applicationScoped = "jakarta.enterprise.context.ApplicationScoped";
     private static final String dependentScoped = "jakarta.enterprise.context.Dependent";
 
-    // include fields that are set late like TSR/TM/EMF
-    private volatile TransactionSynchronizationRegistry transactionSynchronizationRegistry;
-    private volatile TransactionManager transactionManager;
-    private volatile EntityManagerFactory entityManagerFactory;
-    private BeanManager beanManager = null;
-    private ClassLoader classLoader = null;
 
-    public void addBeans(AfterBeanDiscovery afterBeanDiscovery, PersistenceUnitMetadata persistenceUnitMetadata, ClassLoader classLoader) {
-        this.classLoader = classLoader;
+    public static void addBeans(AfterBeanDiscovery afterBeanDiscovery, PersistenceUnitMetadata persistenceUnitMetadata, TransactionSynchronizationRegistry transactionSynchronizationRegistry, TransactionManager transactionManager, CompletableFuture<EntityManagerFactory> futureEntityManagerFactory) {
+
+        if (futureEntityManagerFactory == null) {
+            throw new IllegalStateException("futureEntityManagerFactory must be specified");
+        }
         // determine the qualifiers to use for creating each bean
         List<String> qualifiers;
         if (persistenceUnitMetadata.getQualifierAnnotationNames().size() > 0) {
@@ -87,106 +74,51 @@ public class PersistenceIntegrationWithCDI {
 
 
         try {
-            entityManager(afterBeanDiscovery, persistenceUnitMetadata, qualifiers, classLoader, transactionSynchronizationRegistry, transactionManager);
+            entityManager(afterBeanDiscovery, persistenceUnitMetadata, qualifiers, transactionSynchronizationRegistry, transactionManager, futureEntityManagerFactory);
         } catch (InstantiationException | IllegalAccessException e) {
             throw new RuntimeException(e);
         }
     }
 
-    private void entityManager(
+    private static void entityManager(
             AfterBeanDiscovery afterBeanDiscovery,
             PersistenceUnitMetadata persistenceUnitMetadata,
             List<String> qualifiers,
-            ClassLoader classLoader, TransactionSynchronizationRegistry transactionSynchronizationRegistry, TransactionManager transactionManager) throws InstantiationException, IllegalAccessException {
+            TransactionSynchronizationRegistry transactionSynchronizationRegistry,
+            TransactionManager transactionManager,
+            CompletableFuture<EntityManagerFactory> futureEntityManagerFactory) throws InstantiationException, IllegalAccessException {
+
         String scope = persistenceUnitMetadata.getScopeAnnotationName();
         if (scope == null || scope.isEmpty()) {
             scope = transactionScoped;
         }
-        AnnotatedType<TransactionScopedEntityManager> entityManagerAnnotatedType = beanManager.createAnnotatedType(TransactionScopedEntityManager.class);
-        BeanAttributes<TransactionScopedEntityManager> entityManagerBeanAttributes = beanManager.createBeanAttributes(entityManagerAnnotatedType);
+
+        // EntityManager setup
+        BeanConfigurator beanConfigurator = afterBeanDiscovery.addBean();
+        beanConfigurator.addType(EntityManager.class);
+
         try {
             if (!transactionScoped.equals(scope)) {
-                Class<? extends Annotation> annotation = classLoader.loadClass(scope).asSubclass(Annotation.class);
-                Annotation actualAnnotation = annotation.getAnnotation(Scope.class);
-                entityManagerBeanAttributes.getQualifiers().add(actualAnnotation);
+                Class<? extends Annotation> annotation = persistenceUnitMetadata.getClassLoader().loadClass(scope).asSubclass(Annotation.class);
+                // Annotation actualAnnotation = annotation.getAnnotation(Scope.class);
+                beanConfigurator.scope(annotation);
             }
             for (String qualifier : qualifiers) {
-                Class<? extends Annotation> annotation = classLoader.loadClass(qualifier).asSubclass(Annotation.class);
-                Annotation actualAnnotation = annotation.getAnnotation(jakarta.inject.Qualifier.class);
-                entityManagerBeanAttributes.getQualifiers().add(actualAnnotation);
+                Class<? extends Annotation> annotation = persistenceUnitMetadata.getClassLoader().loadClass(qualifier).asSubclass(Annotation.class);
+                Annotation actualAnnotation = annotation.getAnnotation(Qualifier.class);
+                beanConfigurator.addQualifier(actualAnnotation);
             }
+
+//            beanConfigurator.createWith(c -> {
+//                        T instance = injectionTarget.produce(c);
+//                        injectionTarget.inject(instance, c);
+//                        injectionTarget.postConstruct(instance);
+//                        return instance;
+//                    });
+
         } catch (ClassNotFoundException e) {
             throw new IllegalStateException(e);
         }
-        final Bean bean = beanManager.createBean(entityManagerBeanAttributes, TransactionScopedEntityManager.class, new ProducerFactory() {
-            @Override
-            public Producer createProducer(Bean bean) {
-                return new WrappingProducer(persistenceUnitMetadata, entityManagerFactory);
-            }
-        });
-        // InjectionTarget<EntityManager> injectionTarget = beanManager.getInjectionTargetFactory(entityManagerAnnotatedType).createInjectionTarget(bean);
-
-
     }
 
-    public TransactionSynchronizationRegistry getTransactionSynchronizationRegistry() {
-        return transactionSynchronizationRegistry;
-    }
-
-    public void setTransactionSynchronizationRegistry(TransactionSynchronizationRegistry transactionSynchronizationRegistry) {
-        this.transactionSynchronizationRegistry = transactionSynchronizationRegistry;
-    }
-
-    public TransactionManager getTransactionManager() {
-        return transactionManager;
-    }
-
-    public void setTransactionManager(TransactionManager transactionManager) {
-        this.transactionManager = transactionManager;
-    }
-
-    public EntityManagerFactory getEntityManagerFactory() {
-        return entityManagerFactory;
-    }
-
-    public void setEntityManagerFactory(EntityManagerFactory entityManagerFactory) {
-        this.entityManagerFactory = entityManagerFactory;
-    }
-
-
-    private class WrappingProducer<T> implements Producer<T> {
-
-        final WrappingProducer<T> persistenceWrappingProducer = new WrappingProducer<T>(null, null);
-
-        public WrappingProducer(
-                PersistenceUnitMetadata persistenceUnitMetadata,
-                EntityManagerFactory entityManagerFactory) {
-            //this.persistenceWrappingProducer.setPersistenceUnitMetadata(persistenceUnitMetadata);
-            //this.persistenceWrappingProducer.setEntityManagerFactory(entityManagerFactory);
-        }
-
-        @Override
-        public T produce(CreationalContext<T> ctx) {
-
-            return (T) new TransactionScopedEntityManager(
-                    "xxx",//persistenceUnitMetadata.getScopeAnnotationName(),
-                    new Properties(),
-                    entityManagerFactory,
-                    SynchronizationType.SYNCHRONIZED,
-                    transactionSynchronizationRegistry,
-                    transactionManager);
-
-        }
-
-        @Override
-        public void dispose(T instance) {
-
-            persistenceWrappingProducer.dispose(instance);
-        }
-
-        @Override
-        public Set<InjectionPoint> getInjectionPoints() {
-            return persistenceWrappingProducer.getInjectionPoints();
-        }
-    }
 }

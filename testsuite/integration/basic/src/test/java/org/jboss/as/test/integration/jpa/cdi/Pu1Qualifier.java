@@ -10,7 +10,7 @@ import static java.lang.annotation.ElementType.METHOD;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
 /**
- * Pu1Qualifier
+ * Associatiate Pu1Qualifier with persistence unit: pu1
  *
  * @author Scott Marlow
  */

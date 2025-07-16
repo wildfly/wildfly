@@ -15,7 +15,9 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 
+import jakarta.persistence.EntityManagerFactory;
 import jakarta.persistence.SynchronizationType;
 import jakarta.persistence.ValidationMode;
 import jakarta.persistence.spi.PersistenceProvider;
@@ -324,7 +326,6 @@ public class PersistenceUnitServiceHandler {
                 // Get the Jakarta Contexts and Dependency Injection enabled ValidatorFactory
                 validatorFactory = deploymentUnit.getAttachment(BeanValidationAttachments.VALIDATOR_FACTORY);
             }
-            IntegratePersistenceAfterBeanDiscovery integratePersistenceAfterBeanDiscovery = registerPersistenceAfterBeanDiscovery(deploymentUnit, capabilitySupport, pu);
             BeanManagerAfterDeploymentValidation beanManagerAfterDeploymentValidation = registerJPAEntityListenerRegister(deploymentUnit, capabilitySupport);
 
             final PersistenceAdaptorRemoval persistenceAdaptorRemoval = new PersistenceAdaptorRemoval(pu, adaptor);
@@ -344,7 +345,7 @@ public class PersistenceUnitServiceHandler {
             deploymentUnit.addToAttachmentList(Attachments.DEPLOYMENT_COMPLETE_SERVICES, puServiceName);
 
             deploymentUnit.addToAttachmentList(Attachments.WEB_DEPENDENCIES, puServiceName);
-
+            final CompletableFuture<EntityManagerFactory> futureEntityManagerFactory = new CompletableFuture<>();
             final PersistenceUnitServiceImpl service =
                     new PersistenceUnitServiceImpl(properties, classLoader, pu, adaptor, integratorAdaptors, provider,
                             PersistenceUnitRegistryImpl.INSTANCE,
@@ -352,7 +353,7 @@ public class PersistenceUnitServiceHandler {
                             deploymentUnit.getAttachment(org.jboss.as.ee.naming.Attachments.JAVA_NAMESPACE_SETUP_ACTION),
                             beanManagerAfterDeploymentValidation,
                             deploymentUnit.getAttachment(JpaAttachments.TRANSACTION_SYNCHRONIZATION_REGISTRY),
-                            ContextTransactionManager.getInstance());
+                            ContextTransactionManager.getInstance(), futureEntityManagerFactory);
 
             ServiceBuilder<PersistenceUnitService> builder = serviceTarget.addService(puServiceName, service);
             boolean useDefaultDataSource = Configuration.allowDefaultDataSourceUse(pu);
@@ -423,7 +424,7 @@ public class PersistenceUnitServiceHandler {
             addServerExecutorDependency(builder, service.getExecutorInjector());
 
             builder.install();
-
+            registerPersistenceAfterBeanDiscovery(deploymentUnit, capabilitySupport, pu, transactionManager, transactionSynchronizationRegistry, futureEntityManagerFactory);
             ROOT_LOGGER.tracef("added PersistenceUnitService for '%s'.  PU is ready for injector action.", puServiceName);
             addManagementConsole(deploymentUnit, pu, adaptor, persistenceAdaptorRemoval);
 
@@ -469,7 +470,6 @@ public class PersistenceUnitServiceHandler {
             }
             if (partOfWeldDeployment) {
                 proxyBeanManager = new ProxyBeanManager();
-                registerPersistenceAfterBeanDiscovery(deploymentUnit, capabilitySupport, pu);
                 registerJPAEntityListenerRegister(deploymentUnit, support); // register Jakarta Contexts and Dependency Injection extension before WeldDeploymentProcessor, which is important for
                                                                             // EAR deployments that contain a WAR that has persistence units defined.
             }
@@ -546,7 +546,7 @@ public class PersistenceUnitServiceHandler {
             addServerExecutorDependency(builder, service.getExecutorInjector());
 
             builder.install();
-
+            registerPersistenceAfterBeanDiscovery(deploymentUnit, capabilitySupport, pu, null, null, null);
             ROOT_LOGGER.tracef("added PersistenceUnitService (phase 1 of 2) for '%s'.  PU is ready for injector action.", puServiceName);
         } catch (ServiceRegistryException e) {
             throw JpaLogger.ROOT_LOGGER.failedToAddPersistenceUnit(e, pu.getPersistenceUnitName());
@@ -587,7 +587,6 @@ public class PersistenceUnitServiceHandler {
                 // Get the Jakarta Contexts and Dependency Injection enabled ValidatorFactory
                 validatorFactory = deploymentUnit.getAttachment(BeanValidationAttachments.VALIDATOR_FACTORY);
             }
-            IntegratePersistenceAfterBeanDiscovery integratePersistenceAfterBeanDiscovery = registerPersistenceAfterBeanDiscovery(deploymentUnit, capabilitySupport, pu);
             BeanManagerAfterDeploymentValidation beanManagerAfterDeploymentValidation = registerJPAEntityListenerRegister(deploymentUnit, capabilitySupport);
             final PersistenceAdaptorRemoval persistenceAdaptorRemoval =  new PersistenceAdaptorRemoval(pu, adaptor);
             deploymentUnit.addToAttachmentList(REMOVAL_KEY, persistenceAdaptorRemoval);
@@ -606,14 +605,14 @@ public class PersistenceUnitServiceHandler {
             deploymentUnit.addToAttachmentList(Attachments.DEPLOYMENT_COMPLETE_SERVICES, puServiceName);
 
             deploymentUnit.addToAttachmentList(Attachments.WEB_DEPENDENCIES, puServiceName);
-
+            final CompletableFuture<EntityManagerFactory> futureEntityManagerFactory = new CompletableFuture<>();
             final PersistenceUnitServiceImpl service = new PersistenceUnitServiceImpl(properties, classLoader, pu,
                     adaptor, integratorAdaptors, provider, PersistenceUnitRegistryImpl.INSTANCE,
                     deploymentUnit.getServiceName(), validatorFactory,
                     deploymentUnit.getAttachment(org.jboss.as.ee.naming.Attachments.JAVA_NAMESPACE_SETUP_ACTION),
                     beanManagerAfterDeploymentValidation,
                     deploymentUnit.getAttachment(JpaAttachments.TRANSACTION_SYNCHRONIZATION_REGISTRY),
-                    ContextTransactionManager.getInstance());
+                    ContextTransactionManager.getInstance(), futureEntityManagerFactory);
             ServiceBuilder<PersistenceUnitService> builder = serviceTarget.addService(puServiceName, service);
             // the PU service has to depend on the JPAService which is responsible for setting up the necessary JPA infrastructure (like registering the cache EventListener(s))
             // @see https://issues.jboss.org/browse/WFLY-1531 for details
@@ -692,7 +691,7 @@ public class PersistenceUnitServiceHandler {
             addServerExecutorDependency(builder, service.getExecutorInjector());
 
             builder.install();
-
+            // registerPersistenceAfterBeanDiscovery(deploymentUnit, capabilitySupport, pu, transactionManager, transactionSynchronizationRegistry, futureEntityManagerFactory);
             ROOT_LOGGER.tracef("added PersistenceUnitService (phase 2 of 2) for '%s'.  PU is ready for injector action.", puServiceName);
             addManagementConsole(deploymentUnit, pu, adaptor, persistenceAdaptorRemoval);
 
@@ -1151,7 +1150,7 @@ public class PersistenceUnitServiceHandler {
         return deploymentUnit.getAttachment(JpaAttachments.DEPLOYED_PERSISTENCE_PROVIDER);
     }
 
-    private static IntegratePersistenceAfterBeanDiscovery registerPersistenceAfterBeanDiscovery(DeploymentUnit deploymentUnit, CapabilityServiceSupport support, PersistenceUnitMetadata pu) {
+    private static IntegratePersistenceAfterBeanDiscovery registerPersistenceAfterBeanDiscovery(DeploymentUnit deploymentUnit, CapabilityServiceSupport support, PersistenceUnitMetadata pu, TransactionManager transactionManager, TransactionSynchronizationRegistry transactionSynchronizationRegistry, CompletableFuture<EntityManagerFactory> futureEntityManagerFactory) {
         deploymentUnit = DeploymentUtils.getTopDeploymentUnit(deploymentUnit);
         if (support.hasCapability(WELD_CAPABILITY_NAME)) {
             Optional<WeldCapability> weldCapability = support.getOptionalCapabilityRuntimeAPI(WELD_CAPABILITY_NAME, WeldCapability.class);
@@ -1161,8 +1160,12 @@ public class PersistenceUnitServiceHandler {
                     IntegratePersistenceAfterBeanDiscovery integratePersistenceAfterBeanDiscovery = deploymentUnit.getAttachment(JpaAttachments.AFTER_BEAN_DISCOVERY_ATTACHMENT_KEY);
                     if (null == integratePersistenceAfterBeanDiscovery) {
                         integratePersistenceAfterBeanDiscovery = new IntegratePersistenceAfterBeanDiscovery();
-                        integratePersistenceAfterBeanDiscovery.register(pu);
+                        integratePersistenceAfterBeanDiscovery.register(pu, transactionManager, transactionSynchronizationRegistry, futureEntityManagerFactory);
                         deploymentUnit.putAttachment(JpaAttachments.AFTER_BEAN_DISCOVERY_ATTACHMENT_KEY, integratePersistenceAfterBeanDiscovery);
+                        weldCapability.get().registerExtensionInstance(integratePersistenceAfterBeanDiscovery, deploymentUnit);
+                    } else {
+                        // TODO: if needed patch in the passed transactionManager, transactionSynchronizationRegistry, futureEntityManagerFactory to integratePersistenceAfterBeanDiscovery
+                        integratePersistenceAfterBeanDiscovery.register(pu, transactionManager, transactionSynchronizationRegistry, futureEntityManagerFactory);
                     }
                 }
             }
