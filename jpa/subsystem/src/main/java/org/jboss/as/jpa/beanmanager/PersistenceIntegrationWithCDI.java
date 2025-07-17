@@ -1,14 +1,16 @@
 package org.jboss.as.jpa.beanmanager;
 
 import java.lang.annotation.Annotation;
+import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.Method;
+import java.lang.reflect.Proxy;
+import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
 import jakarta.enterprise.inject.spi.AfterBeanDiscovery;
 import jakarta.enterprise.inject.spi.configurator.BeanConfigurator;
-import jakarta.inject.Qualifier;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
 import jakarta.persistence.SynchronizationType;
@@ -99,8 +101,8 @@ public class PersistenceIntegrationWithCDI {
         }
 
         // EntityManager setup
-        BeanConfigurator beanConfigurator = afterBeanDiscovery.addBean();
-        beanConfigurator.addType(EntityManager.class);
+        BeanConfigurator<EntityManager> beanConfigurator = afterBeanDiscovery.addBean();
+        beanConfigurator.addTransitiveTypeClosure(EntityManager.class);
 
         try {
 
@@ -109,22 +111,48 @@ public class PersistenceIntegrationWithCDI {
             beanConfigurator.scope(scopeAnnotation);
 
             for (String qualifier : qualifiers) {
-                beanConfigurator.addQualifier(persistenceUnitMetadata.getClassLoader().loadClass(qualifier).getAnnotation(Qualifier.class));
+                final Class<? extends Annotation> qualifierType = persistenceUnitMetadata.getClassLoader()
+                        .loadClass(qualifier)
+                        .asSubclass(Annotation.class);
+                beanConfigurator.addQualifier(ScopeProxy.createProxy(qualifierType));
             }
             Class<?> entityManagerClass = EntityManager.class;
             beanConfigurator.beanClass(entityManagerClass);
             // TransactionScopedEntityManager(String puScopedName, Map properties, EntityManagerFactory emf, SynchronizationType synchronizationType, TransactionSynchronizationRegistry transactionSynchronizationRegistry, TransactionManager transactionManager) {
-            beanConfigurator.createWith(c -> {
+            beanConfigurator.produceWith(c -> {
                         try {
-                            return new TransactionScopedEntityManager(persistenceUnitMetadata.getScopedPersistenceUnitName(), Map.of(), futureEntityManagerFactory.get(), SynchronizationType.SYNCHRONIZED, transactionSynchronizationRegistry, transactionManager);
+                            return new TransactionScopedEntityManager(persistenceUnitMetadata.getScopedPersistenceUnitName(), new HashMap<>(), futureEntityManagerFactory.get(), SynchronizationType.SYNCHRONIZED, transactionSynchronizationRegistry, transactionManager);
                         } catch (InterruptedException | ExecutionException e) {
                             throw new RuntimeException(e);
                         }
                     }
-            );
+            ).disposeWith((em, instance) -> em.close());
         } catch (ClassNotFoundException e) {
             throw new IllegalStateException(e);
         }
     }
+
+    private record ScopeProxy(Class<? extends Annotation> annotationType) implements InvocationHandler {
+
+        @Override
+            public Object invoke(final Object proxy, final Method method, final Object[] args) throws Throwable {
+                if (method.getName().equals("annotationType")) {
+                    return annotationType;
+                }
+                if (method.getName().equals("equals") && args != null && args.length == 1) {
+                    return annotationType.getName().equals(args[0].getClass().getName());
+                }
+                if (method.getName().equals("hashCode") && (args == null || args.length == 0)) {
+                    return annotationType.hashCode();
+                }
+                // This should likely not be used, but we'll se it just in case
+                return method.getDefaultValue();
+            }
+
+            @SuppressWarnings("unchecked")
+            static <T extends Annotation> T createProxy(final Class<T> annotationType) {
+                return (T) Proxy.newProxyInstance(annotationType.getClassLoader(), new Class[] {annotationType}, new ScopeProxy(annotationType));
+            }
+        }
 
 }
