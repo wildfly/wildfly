@@ -109,7 +109,6 @@ public class PersistenceIntegrationWithCDI {
             beanConfigurator.scope(scopeAnnotation);
 
             for (String qualifier : qualifiers) {
-                // beanConfigurator.addQualifier(persistenceUnitMetadata.getClassLoader().loadClass(qualifier).asSubclass(Annotation.class).getAnnotation(Qualifier.class));
                 beanConfigurator.addQualifier(persistenceUnitMetadata.getClassLoader().loadClass(qualifier).getAnnotation(Qualifier.class));
             }
             Class<?> entityManagerClass = EntityManager.class;
