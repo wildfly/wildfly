@@ -5,7 +5,6 @@
 
 package org.wildfly.extension.undertow.handlers;
 
-import java.util.Collections;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
@@ -15,7 +14,6 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StopContext;
 import org.wildfly.extension.requestcontroller.ControlPoint;
 import org.wildfly.extension.requestcontroller.RequestController;
-import org.wildfly.extension.undertow.deployment.GlobalRequestControllerHandler;
 import org.wildfly.extension.undertow.logging.UndertowLogger;
 
 /**
@@ -44,7 +42,7 @@ public final class HandlerService implements Service<HttpHandler> {
         UndertowLogger.ROOT_LOGGER.tracef("starting handler: %s", httpHandler);
         if (requestController != null) {
             controlPoint = requestController.get().getControlPoint("org.wildfly.extension.undertow.handlers", name);
-            realHandler = new GlobalRequestControllerHandler(httpHandler, controlPoint, Collections.emptyList());
+            realHandler = new GlobalRequestControllerHandler(httpHandler, controlPoint);
         } else {
             realHandler = httpHandler;
         }
