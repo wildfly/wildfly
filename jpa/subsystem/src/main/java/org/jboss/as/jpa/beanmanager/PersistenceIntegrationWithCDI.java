@@ -2,12 +2,16 @@ package org.jboss.as.jpa.beanmanager;
 
 import java.lang.annotation.Annotation;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+
 import jakarta.enterprise.inject.spi.AfterBeanDiscovery;
 import jakarta.enterprise.inject.spi.configurator.BeanConfigurator;
 import jakarta.inject.Qualifier;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
+import jakarta.persistence.SynchronizationType;
 import jakarta.transaction.TransactionManager;
 import jakarta.transaction.TransactionSynchronizationRegistry;
 import org.jboss.as.jpa.container.TransactionScopedEntityManager;
@@ -99,26 +103,26 @@ public class PersistenceIntegrationWithCDI {
         beanConfigurator.addType(EntityManager.class);
 
         try {
-            if (!transactionScoped.equals(scope)) {
-                Class<? extends Annotation> annotation = persistenceUnitMetadata.getClassLoader().loadClass(scope).asSubclass(Annotation.class);
-                // Annotation actualAnnotation = annotation.getAnnotation(Scope.class);
-                beanConfigurator.scope(annotation);
-            }
+
+            Class<? extends Annotation> scopeAnnotation = persistenceUnitMetadata.getClassLoader().loadClass(scope).asSubclass(Annotation.class);
+            // Annotation actualAnnotation = annotation.getAnnotation(Scope.class);
+            beanConfigurator.scope(scopeAnnotation);
+
             for (String qualifier : qualifiers) {
-                Class<? extends Annotation> annotation = persistenceUnitMetadata.getClassLoader().loadClass(qualifier).asSubclass(Annotation.class);
-                Annotation actualAnnotation = annotation.getAnnotation(Qualifier.class);
-                beanConfigurator.addQualifier(actualAnnotation);
+                // beanConfigurator.addQualifier(persistenceUnitMetadata.getClassLoader().loadClass(qualifier).asSubclass(Annotation.class).getAnnotation(Qualifier.class));
+                beanConfigurator.addQualifier(persistenceUnitMetadata.getClassLoader().loadClass(qualifier).getAnnotation(Qualifier.class));
             }
-            Class<?> transactionScopedEntityManager = TransactionScopedEntityManager.class;
-            beanConfigurator.beanClass(transactionScopedEntityManager);
-
-//            beanConfigurator.createWith(c -> {
-//                        T instance = injectionTarget.produce(c);
-//                        injectionTarget.inject(instance, c);
-//                        injectionTarget.postConstruct(instance);
-//                        return instance;
-//                    });
-
+            Class<?> entityManagerClass = EntityManager.class;
+            beanConfigurator.beanClass(entityManagerClass);
+            // TransactionScopedEntityManager(String puScopedName, Map properties, EntityManagerFactory emf, SynchronizationType synchronizationType, TransactionSynchronizationRegistry transactionSynchronizationRegistry, TransactionManager transactionManager) {
+            beanConfigurator.createWith(c -> {
+                        try {
+                            return new TransactionScopedEntityManager(persistenceUnitMetadata.getScopedPersistenceUnitName(), Map.of(), futureEntityManagerFactory.get(), SynchronizationType.SYNCHRONIZED, transactionSynchronizationRegistry, transactionManager);
+                        } catch (InterruptedException | ExecutionException e) {
+                            throw new RuntimeException(e);
+                        }
+                    }
+            );
         } catch (ClassNotFoundException e) {
             throw new IllegalStateException(e);
         }
