@@ -77,7 +77,7 @@ public class PersistenceUnitServiceImpl implements Service<PersistenceUnitServic
     private final ServiceName deploymentUnitServiceName;
     private final ValidatorFactory validatorFactory;
     private final BeanManagerAfterDeploymentValidation beanManagerAfterDeploymentValidation;
-    private final CompletableFuture<EntityManagerFactory> futureEntityManagerFactory;
+    private volatile CompletableFuture<EntityManagerFactory> futureEntityManagerFactory;
 
     private volatile EntityManagerFactory entityManagerFactory;
     private volatile ProxyBeanManager proxyBeanManager;
@@ -169,6 +169,8 @@ public class PersistenceUnitServiceImpl implements Service<PersistenceUnitServic
 
                                         // get the EntityManagerFactory from the second phase of the persistence unit bootstrap
                                         entityManagerFactory = emfBuilder.build();
+                                        // get the futureEntityManagerFactory from the first phase of the persistence unit bootstrap
+                                        futureEntityManagerFactory = phaseOnePersistenceUnitService.getFutureEntityManagerFactory();
                                     } else {
                                         ROOT_LOGGER.startingService("Persistence Unit", pu.getScopedPersistenceUnitName());
                                         // start the persistence unit in one pass (1 of 1)

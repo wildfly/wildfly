@@ -491,8 +491,8 @@ public class PersistenceUnitServiceHandler {
             deploymentUnit.addToAttachmentList(Attachments.DEPLOYMENT_COMPLETE_SERVICES, puServiceName);
 
             deploymentUnit.addToAttachmentList(Attachments.WEB_DEPENDENCIES, puServiceName);
-
-            final PhaseOnePersistenceUnitServiceImpl service = new PhaseOnePersistenceUnitServiceImpl(classLoader, pu, adaptor, deploymentUnit.getServiceName(), proxyBeanManager);
+            final CompletableFuture<EntityManagerFactory> futureEntityManagerFactory = new CompletableFuture<>();
+            final PhaseOnePersistenceUnitServiceImpl service = new PhaseOnePersistenceUnitServiceImpl(classLoader, pu, adaptor, deploymentUnit.getServiceName(), proxyBeanManager, futureEntityManagerFactory);
             service.getPropertiesInjector().inject(properties);
             ServiceBuilder<PhaseOnePersistenceUnitServiceImpl> builder = serviceTarget.addService(puServiceName, service);
 
@@ -546,7 +546,8 @@ public class PersistenceUnitServiceHandler {
             addServerExecutorDependency(builder, service.getExecutorInjector());
 
             builder.install();
-            registerPersistenceAfterBeanDiscovery(deploymentUnit, capabilitySupport, pu, null, null, null);
+
+            registerPersistenceAfterBeanDiscovery(deploymentUnit, capabilitySupport, pu, null, null, futureEntityManagerFactory);
             ROOT_LOGGER.tracef("added PersistenceUnitService (phase 1 of 2) for '%s'.  PU is ready for injector action.", puServiceName);
         } catch (ServiceRegistryException e) {
             throw JpaLogger.ROOT_LOGGER.failedToAddPersistenceUnit(e, pu.getPersistenceUnitName());
@@ -605,14 +606,14 @@ public class PersistenceUnitServiceHandler {
             deploymentUnit.addToAttachmentList(Attachments.DEPLOYMENT_COMPLETE_SERVICES, puServiceName);
 
             deploymentUnit.addToAttachmentList(Attachments.WEB_DEPENDENCIES, puServiceName);
-            final CompletableFuture<EntityManagerFactory> futureEntityManagerFactory = new CompletableFuture<>();
+
             final PersistenceUnitServiceImpl service = new PersistenceUnitServiceImpl(properties, classLoader, pu,
                     adaptor, integratorAdaptors, provider, PersistenceUnitRegistryImpl.INSTANCE,
                     deploymentUnit.getServiceName(), validatorFactory,
                     deploymentUnit.getAttachment(org.jboss.as.ee.naming.Attachments.JAVA_NAMESPACE_SETUP_ACTION),
                     beanManagerAfterDeploymentValidation,
                     deploymentUnit.getAttachment(JpaAttachments.TRANSACTION_SYNCHRONIZATION_REGISTRY),
-                    ContextTransactionManager.getInstance(), futureEntityManagerFactory);
+                    ContextTransactionManager.getInstance(), null);
             ServiceBuilder<PersistenceUnitService> builder = serviceTarget.addService(puServiceName, service);
             // the PU service has to depend on the JPAService which is responsible for setting up the necessary JPA infrastructure (like registering the cache EventListener(s))
             // @see https://issues.jboss.org/browse/WFLY-1531 for details
@@ -691,7 +692,8 @@ public class PersistenceUnitServiceHandler {
             addServerExecutorDependency(builder, service.getExecutorInjector());
 
             builder.install();
-            // registerPersistenceAfterBeanDiscovery(deploymentUnit, capabilitySupport, pu, transactionManager, transactionSynchronizationRegistry, futureEntityManagerFactory);
+
+            // skip registerPersistenceAfterBeanDiscovery call as was done in phase 1 of 2
             ROOT_LOGGER.tracef("added PersistenceUnitService (phase 2 of 2) for '%s'.  PU is ready for injector action.", puServiceName);
             addManagementConsole(deploymentUnit, pu, adaptor, persistenceAdaptorRemoval);
 

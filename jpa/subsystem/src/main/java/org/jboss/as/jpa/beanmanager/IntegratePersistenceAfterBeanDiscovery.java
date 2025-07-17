@@ -37,6 +37,10 @@ public class IntegratePersistenceAfterBeanDiscovery implements Extension {
         this.futureEntityManagerFactory = futureEntityManagerFactory;
     }
 
+    public CompletableFuture<EntityManagerFactory> getFutureEntityManagerFactory() {
+        return futureEntityManagerFactory;
+    }
+
     /**
      * deploymentComplete() should be called when deployment is complete.
      */

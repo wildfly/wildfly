@@ -10,6 +10,7 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
 import jakarta.transaction.TransactionManager;
 import jakarta.transaction.TransactionSynchronizationRegistry;
+import org.jboss.as.jpa.container.TransactionScopedEntityManager;
 import org.jipijapa.plugin.spi.PersistenceUnitMetadata;
 
 /**
@@ -62,7 +63,7 @@ public class PersistenceIntegrationWithCDI {
     public static void addBeans(AfterBeanDiscovery afterBeanDiscovery, PersistenceUnitMetadata persistenceUnitMetadata, TransactionSynchronizationRegistry transactionSynchronizationRegistry, TransactionManager transactionManager, CompletableFuture<EntityManagerFactory> futureEntityManagerFactory) {
 
         if (futureEntityManagerFactory == null) {
-            throw new IllegalStateException("futureEntityManagerFactory must be specified");
+            throw new IllegalStateException("futureEntityManagerFactory must be specified earlier");
         }
         // determine the qualifiers to use for creating each bean
         List<String> qualifiers;
@@ -108,6 +109,8 @@ public class PersistenceIntegrationWithCDI {
                 Annotation actualAnnotation = annotation.getAnnotation(Qualifier.class);
                 beanConfigurator.addQualifier(actualAnnotation);
             }
+            Class<?> transactionScopedEntityManager = TransactionScopedEntityManager.class;
+            beanConfigurator.beanClass(transactionScopedEntityManager);
 
 //            beanConfigurator.createWith(c -> {
 //                        T instance = injectionTarget.produce(c);
