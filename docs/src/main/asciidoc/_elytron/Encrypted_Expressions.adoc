@@ -62,7 +62,7 @@ result is returned for the same key.  This is because a unique initialisation ve
 Once the `expression=encryption` resource has been defined the `create-expression` management operation can be called to generate an expression using the referenced
 secret key.
 
-WARNING: When using management operations to create expressions from a `clear-text` string remember to disable the history in the CLI first otherwise the clear text string will be cached.
+WARNING: When using management operations to create expressions from a `clear-text` string, remember to xref:Admin_Guide.adoc#command-history[disable the history in the CLI] first; otherwise the clear text string will be cached. If xref:Admin_Guide.adoc#Audit_logging[management audit logging] is enabled, the clear text string will be recorded in the audit log, unless logging is first disabled, e.g. by setting the xref:Admin_Guide.adoc#audit-logging-logger-configuration[audit logger's `enabled` attribute] to `false`. If local access to the credential store is available, these problems can be avoided by using <<encrypt-command-line-tool, using the `elytron-tool` command line tool to create the expression>>.
 
 In these examples the `expression=encryption` resource has been configured to use the default prefix.
 
@@ -94,6 +94,7 @@ When using the `create-expression` operation the `resolver` attribute can be omm
 
 In both cases the resulting expression can be used on any attribute of a resource which supports the use of expressions.
 
+[[encrypt-command-line-tool]]
 === Command Line Tool
 
 Once a credential store has been populated with a secret key the `credential-store` command of the `elytron-tool` can also be used to create the encrypted string to include in an expression.
