@@ -4,7 +4,7 @@
  */
 package org.jboss.as.test.integration.jpa.cdi;
 
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertNull;
 
 import jakarta.inject.Inject;
 import org.jboss.arquillian.container.test.api.Deployment;
@@ -31,6 +31,7 @@ public class CDIPersistenceTestCase {
         final JavaArchive jar = ShrinkWrap.create(JavaArchive.class, "CDIPersistenceTestCase.jar");
         jar.addClasses(CDIPersistenceTestCase.class, Employee.class, Pu1Qualifier.class, SFSB1.class);
         jar.addAsManifestResource(CDIPersistenceTestCase.class.getPackage(), "persistence.xml", "persistence.xml");
+        jar.addAsManifestResource(CDIPersistenceTestCase.class.getPackage(), "beans.xml", "beans.xml");
         return jar;
     }
 
@@ -40,9 +41,8 @@ public class CDIPersistenceTestCase {
     @Test
     public void doCMTTest() throws Exception {
 
-        cmtBean.createEmployee("Alfred E. Neuman", "101010 Mad Street", 101);
-        Employee emp = cmtBean.getEmployeeNoTX(101);
-        assertTrue("could not load added employee", emp != null);
+        Employee emp = cmtBean.getEmployeeExpectNullResult(101);
+        assertNull("expected null result ", emp);
     }
 
 

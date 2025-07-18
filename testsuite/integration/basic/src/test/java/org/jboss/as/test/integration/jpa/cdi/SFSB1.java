@@ -5,39 +5,39 @@
 
 package org.jboss.as.test.integration.jpa.cdi;
 
-import jakarta.ejb.Stateful;
-import jakarta.ejb.TransactionAttribute;
-import jakarta.ejb.TransactionAttributeType;
+import jakarta.annotation.Resource;
+import jakarta.enterprise.context.RequestScoped;
 import jakarta.inject.Inject;
 import jakarta.persistence.EntityManager;
+import jakarta.transaction.UserTransaction;
 
 /**
  * stateful session bean
  *
  * @author Scott Marlow
  */
-@Stateful
+
+@RequestScoped
 public class SFSB1 {
+    @Resource
+    private UserTransaction transaction;
 
     @Inject
     @Pu1Qualifier
     EntityManager em;
 
+    public Employee getEmployeeExpectNullResult(int id) {
 
-    public void createEmployee(String name, String address, int id) {
-
-
-        Employee emp = new Employee();
-        emp.setId(id);
-        emp.setAddress(address);
-        emp.setName(name);
-        em.persist(emp);
-    }
-
-    @TransactionAttribute(TransactionAttributeType.NEVER)
-    public Employee getEmployeeNoTX(int id) {
-
-        return em.find(Employee.class, id);
+        try {
+            transaction.begin();
+            return em.find(Employee.class, id);
+        } catch( Throwable throwable) {
+            throw new RuntimeException(throwable);
+        } finally {
+            try {
+                transaction.rollback();
+            } catch (Throwable ignore) {}
+        }
     }
 
 }

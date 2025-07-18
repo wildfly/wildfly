@@ -6,16 +6,11 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.util.HashMap;
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
 
 import jakarta.enterprise.inject.spi.AfterBeanDiscovery;
 import jakarta.enterprise.inject.spi.configurator.BeanConfigurator;
 import jakarta.persistence.EntityManager;
-import jakarta.persistence.EntityManagerFactory;
 import jakarta.persistence.SynchronizationType;
-import jakarta.transaction.TransactionManager;
-import jakarta.transaction.TransactionSynchronizationRegistry;
 import org.jboss.as.jpa.container.TransactionScopedEntityManager;
 import org.jipijapa.plugin.spi.PersistenceUnitMetadata;
 
@@ -66,11 +61,8 @@ public class PersistenceIntegrationWithCDI {
     private static final String dependentScoped = "jakarta.enterprise.context.Dependent";
 
 
-    public static void addBeans(AfterBeanDiscovery afterBeanDiscovery, PersistenceUnitMetadata persistenceUnitMetadata, TransactionSynchronizationRegistry transactionSynchronizationRegistry, TransactionManager transactionManager, CompletableFuture<EntityManagerFactory> futureEntityManagerFactory) {
+    public static void addBeans(AfterBeanDiscovery afterBeanDiscovery, PersistenceUnitMetadata persistenceUnitMetadata, IntegrationWithCDIBag integrationWithCDIBag) {
 
-        if (futureEntityManagerFactory == null) {
-            throw new IllegalStateException("futureEntityManagerFactory must be specified earlier");
-        }
         // determine the qualifiers to use for creating each bean
         List<String> qualifiers;
         if (persistenceUnitMetadata.getQualifierAnnotationNames().size() > 0) {
@@ -79,9 +71,8 @@ public class PersistenceIntegrationWithCDI {
             qualifiers = defaultQualifier;
         }
 
-
         try {
-            entityManager(afterBeanDiscovery, persistenceUnitMetadata, qualifiers, transactionSynchronizationRegistry, transactionManager, futureEntityManagerFactory);
+            entityManager(afterBeanDiscovery, persistenceUnitMetadata, qualifiers, integrationWithCDIBag);
         } catch (InstantiationException | IllegalAccessException e) {
             throw new RuntimeException(e);
         }
@@ -91,9 +82,7 @@ public class PersistenceIntegrationWithCDI {
             AfterBeanDiscovery afterBeanDiscovery,
             PersistenceUnitMetadata persistenceUnitMetadata,
             List<String> qualifiers,
-            TransactionSynchronizationRegistry transactionSynchronizationRegistry,
-            TransactionManager transactionManager,
-            CompletableFuture<EntityManagerFactory> futureEntityManagerFactory) throws InstantiationException, IllegalAccessException {
+            IntegrationWithCDIBag integrationWithCDIBag) throws InstantiationException, IllegalAccessException {
 
         String scope = persistenceUnitMetadata.getScopeAnnotationName();
         if (scope == null || scope.isEmpty()) {
@@ -120,11 +109,7 @@ public class PersistenceIntegrationWithCDI {
             beanConfigurator.beanClass(entityManagerClass);
             // TransactionScopedEntityManager(String puScopedName, Map properties, EntityManagerFactory emf, SynchronizationType synchronizationType, TransactionSynchronizationRegistry transactionSynchronizationRegistry, TransactionManager transactionManager) {
             beanConfigurator.produceWith(c -> {
-                        try {
-                            return new TransactionScopedEntityManager(persistenceUnitMetadata.getScopedPersistenceUnitName(), new HashMap<>(), futureEntityManagerFactory.get(), SynchronizationType.SYNCHRONIZED, transactionSynchronizationRegistry, transactionManager);
-                        } catch (InterruptedException | ExecutionException e) {
-                            throw new RuntimeException(e);
-                        }
+                        return new TransactionScopedEntityManager(persistenceUnitMetadata.getScopedPersistenceUnitName(), new HashMap<>(), integrationWithCDIBag.getEntityManagerFactory(), SynchronizationType.SYNCHRONIZED, integrationWithCDIBag.getTransactionSynchronizationRegistry(), integrationWithCDIBag.getTransactionManager());
                     }
             ).disposeWith((em, instance) -> em.close());
         } catch (ClassNotFoundException e) {
