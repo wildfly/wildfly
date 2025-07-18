@@ -29,5 +29,6 @@ include::components/Failover_Security_Realm.adoc[]
 include::components/Filesystem_Security_Realm.adoc[]
 include::components/JAAS_Security_Realm.adoc[]
 include::components/JDBC_Security_Realm.adoc[]
+include::components/Brute_Force_Detection.adoc[]
 
 :leveloffset: -1
