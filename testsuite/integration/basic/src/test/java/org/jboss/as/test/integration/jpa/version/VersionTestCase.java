@@ -63,7 +63,7 @@ public class VersionTestCase {
      */
     @Test
     public void testVersion() throws Exception {
-        SFSB1 sfsb1 = lookup("SFSB1", SFSB1.class);
+        SFSB1 sfsb1 = lookup("RequestScopedTestBean", SFSB1.class);
         // tx1 will create the employee
         sfsb1.createEmployee("Sally", "1 home street", 1);
 

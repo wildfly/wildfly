@@ -70,7 +70,7 @@ public class SessionFactoryTestCase {
     // specified jndi name) functionality.
     @Test
     public void testHibernateSessionFactoryName() throws Exception {
-        SFSB1 sfsb1 = lookup("SFSB1", SFSB1.class);
+        SFSB1 sfsb1 = lookup("RequestScopedTestBean", SFSB1.class);
         sfsb1.createEmployee("Sally", "1 home street", 1);
 
         // check if we can look up the Hibernate session factory that should of been bound because of

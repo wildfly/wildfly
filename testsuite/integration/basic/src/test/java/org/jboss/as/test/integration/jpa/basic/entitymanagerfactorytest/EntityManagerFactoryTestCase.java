@@ -65,7 +65,7 @@ public class EntityManagerFactoryTestCase {
      */
     @Test
     public void testEntityManagerFactoryName() throws Exception {
-        SFSB1 sfsb1 = lookup("SFSB1", SFSB1.class);
+        SFSB1 sfsb1 = lookup("RequestScopedTestBean", SFSB1.class);
         sfsb1.createEmployee("Sally", "1 home street", 1);
 
         EntityManagerFactory emf = rawLookup("myEMF", EntityManagerFactory.class);
@@ -82,7 +82,7 @@ public class EntityManagerFactoryTestCase {
      */
     @Test
     public void testEntityManagerName() throws Exception {
-        SFSB1 sfsb1 = lookup("SFSB1", SFSB1.class);
+        SFSB1 sfsb1 = lookup("RequestScopedTestBean", SFSB1.class);
         sfsb1.createEmployee("Sharon", "304 Bubbles Lane", 2);
 
         EntityManager em = rawLookup("java:/Manager1", EntityManager.class);

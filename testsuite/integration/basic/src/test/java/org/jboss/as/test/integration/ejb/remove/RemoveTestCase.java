@@ -53,7 +53,7 @@ public class RemoveTestCase {
      */
     @Test
     public void testRemoveDestroysBean() throws Exception {
-        SFSB1 sfsb1 = lookup("SFSB1", SFSB1.class);
+        SFSB1 sfsb1 = lookup("RequestScopedTestBean", SFSB1.class);
         sfsb1.done();   // first call is expected to work
         try {
             sfsb1.done();   // second call is expected to fail since we are calling a destroyed bean
@@ -73,7 +73,7 @@ public class RemoveTestCase {
      */
     @Test
     public void testRemoveDestroysBeanWhichDeniesRemoval() throws Exception {
-        SFSB1 sfsb1 = lookup("SFSB1", SFSB1.class);
+        SFSB1 sfsb1 = lookup("RequestScopedTestBean", SFSB1.class);
         sfsb1.doneAndDenyDestruction();   // first call is expected to work
         try {
             sfsb1.doneAndDenyDestruction();   // second call is expected to fail since we are calling a destroyed bean

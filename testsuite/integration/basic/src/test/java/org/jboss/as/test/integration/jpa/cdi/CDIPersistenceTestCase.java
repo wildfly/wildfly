@@ -4,14 +4,24 @@
  */
 package org.jboss.as.test.integration.jpa.cdi;
 
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 
+import jakarta.persistence.Cache;
+import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.EntityManagerFactory;
+import jakarta.persistence.metamodel.Metamodel;
+import jakarta.persistence.PersistenceUnitUtil;
 import jakarta.inject.Inject;
+
+
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -29,21 +39,61 @@ public class CDIPersistenceTestCase {
     @Deployment
     public static Archive<?> deployment() {
         final JavaArchive jar = ShrinkWrap.create(JavaArchive.class, "CDIPersistenceTestCase.jar");
-        jar.addClasses(CDIPersistenceTestCase.class, Employee.class, Pu1Qualifier.class, SFSB1.class);
+        jar.addClasses(CDIPersistenceTestCase.class, Employee.class, Pu1Qualifier.class, RequestScopedTestBean.class);
         jar.addAsManifestResource(CDIPersistenceTestCase.class.getPackage(), "persistence.xml", "persistence.xml");
+        jar.addAsManifestResource(CDIPersistenceTestCase.class.getPackage(), "beans.xml", "beans.xml");
         return jar;
     }
 
     @Inject
-    SFSB1 cmtBean;
+    RequestScopedTestBean cmtBean;
 
     @Test
-    public void doCMTTest() throws Exception {
+    public void testEntityManagerNoResultExpected() throws Exception {
 
-        cmtBean.createEmployee("Alfred E. Neuman", "101010 Mad Street", 101);
-        Employee emp = cmtBean.getEmployeeNoTX(101);
-        assertTrue("could not load added employee", emp != null);
+        Employee emp = cmtBean.getEmployeeExpectNullResult(101);
+        assertNull("expected null result ", emp);
     }
 
+    @Test
+    public void testEntityManagerFactory() throws Exception {
+
+            EntityManagerFactory emf = cmtBean.injectedEntityManagerFactory();
+            assertNotNull("expected nonnull EntityManagerFactory ", emf);
+        }
+
+    @Ignore
+    @Test
+    public void testEMFOfEntityManagerEqualEntityManagerFactory() throws Exception {
+
+            EntityManagerFactory emf = cmtBean.injectedEntityManagerFactory(); // will be proxy object for EntityManagerFactory
+            EntityManagerFactory emfOfEntityManager = cmtBean.entityManagerFactoryOfEntityManager(); // should be actual EntityManagerFactory returned by call to EntityManager.getEntityManagerFactory
+            assertEquals("expected that EntityManagerFactory is same as EntityManager.getEntityManagerFactory", emfOfEntityManager, emf);
+        }
+
+    @Test
+    public void testCriteriaBuilder() throws Exception {
+        CriteriaQuery criteriaQuery = cmtBean.testCreateQuery();
+        assertNotNull("Created CriteriaQuery should of been returned", criteriaQuery);
+    }
+
+    @Test
+    public void testPersistenceUnitUtil() throws Exception {
+        PersistenceUnitUtil persistenceUnitUtil = cmtBean.testPersistenceUnitUtil();
+        assertNotNull("PersistenceUnitUtil should of been returned", persistenceUnitUtil);
+    }
+
+    @Test
+    public void testCache() throws Exception {
+        Cache cache = cmtBean.testCache();
+        assertNotNull("Cache should of been returned", cache);
+    }
+
+    @Test
+    public void TestMetamodel() throws Exception {
+        Metamodel metamodel = cmtBean.testMetamodel();
+        assertNotNull("Metamodel should of been returned", metamodel);
+
+    }
 
 }

@@ -102,7 +102,7 @@ public class TxTimeoutTestCase {
     public void test_positiveTxTimeoutTest() throws Exception {
         TestEntityManager.clearState();
         assertFalse("entity manager state is not reset", TestEntityManager.getClosedByReaperThread());
-        SFSB1 sfsb1 = lookup("ejbjar/SFSB1", SFSB1.class);
+        SFSB1 sfsb1 = lookup("ejbjar/RequestScopedTestBean", SFSB1.class);
         sfsb1.createEmployee("Wily", "1 Appletree Lane", 10);
         assertFalse("entity manager should be closed by application thread but was closed by TX Reaper thread",
                 TestEntityManager.getClosedByReaperThread());
