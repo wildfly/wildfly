@@ -34,52 +34,61 @@ public class DistributableEjbTransformersTestCase extends AbstractSubsystemTest 
 
     @Parameters
     public static Iterable<ModelTestControllerVersion> parameters() {
-        return EnumSet.of(ModelTestControllerVersion.EAP_8_0_0);
+        return EnumSet.of(
+                ModelTestControllerVersion.EAP_8_0_0,
+                ModelTestControllerVersion.EAP_8_1_0
+        );
     }
 
-    private final ModelTestControllerVersion controller;
+    private final ModelTestControllerVersion controllerVersion;
     private final ModelVersion version;
 
-    public DistributableEjbTransformersTestCase(ModelTestControllerVersion controller) {
+    public DistributableEjbTransformersTestCase(ModelTestControllerVersion controllerVersion) {
         super(DistributableEjbSubsystemResourceDefinitionRegistrar.REGISTRATION.getName(), new DistributableEjbExtension());
 
-        this.controller = controller;
+        this.controllerVersion = controllerVersion;
         this.version = this.getModelVersion().getVersion();
     }
 
-    private String formatArtifact(String pattern) {
-        return String.format(pattern, this.controller.getMavenGavVersion());
-    }
-
-    private String formatSubsystemArtifact() {
-        return formatArtifact("org.jboss.eap:wildfly-clustering-ejb-extension:%s");
-    }
-
     private DistributableEjbSubsystemModel getModelVersion() {
-        switch (this.controller) {
-            case EAP_8_0_0:
-                return DistributableEjbSubsystemModel.VERSION_1_0_0;
-            default:
-                throw new IllegalArgumentException();
-        }
+        return switch (this.controllerVersion) {
+            case EAP_8_0_0, EAP_8_1_0 -> DistributableEjbSubsystemModel.VERSION_1_0_0;
+            default -> throw new IllegalArgumentException();
+        };
     }
 
     private String[] getDependencies() {
-        switch (this.controller) {
-            case EAP_8_0_0:
-                return new String[] {
-                        formatSubsystemArtifact(),
-                        formatArtifact("org.jboss.eap:wildfly-clustering-common:%s"),
-                        formatArtifact("org.jboss.eap:wildfly-clustering-ee-infinispan:%s"),
-                        formatArtifact("org.jboss.eap:wildfly-clustering-ejb-infinispan:%s"),
-                        formatArtifact("org.jboss.eap:wildfly-clustering-ejb-spi:%s"),
-                        formatArtifact("org.jboss.eap:wildfly-clustering-infinispan-embedded-service:%s"),
-                        formatArtifact("org.jboss.eap:wildfly-clustering-marshalling-spi:%s"),
-                        formatArtifact("org.jboss.eap:wildfly-clustering-service:%s"),
-                };
-            default:
-                throw new IllegalArgumentException();
-        }
+        return switch (this.controllerVersion) {
+            case EAP_8_0_0 -> new String[] {
+                    createGAV("wildfly-clustering-ejb-extension"),
+                    createGAV("wildfly-clustering-common"),
+                    createGAV("wildfly-clustering-ee-infinispan"),
+                    createGAV("wildfly-clustering-ejb-infinispan"),
+                    createGAV("wildfly-clustering-ejb-spi"),
+                    createGAV("wildfly-clustering-infinispan-embedded-service"),
+                    createGAV("wildfly-clustering-marshalling-spi"),
+                    createGAV("wildfly-clustering-service"),
+            };
+            case EAP_8_1_0 -> new String[] {
+                    createGAV("wildfly-clustering-ejb-extension"),
+                    createGAV("wildfly-clustering-common"),
+                    createGAV("wildfly-clustering-ejb-spi"),
+                    createGAV("wildfly-clustering-infinispan-embedded-service"),
+                    createGAV("wildfly-clustering-server-service"),
+                    createCoreGAV("wildfly-subsystem"),
+            };
+            default -> throw new IllegalArgumentException();
+        };
+    }
+
+    // TODO Replace with variants from after wf-core upgrade https://issues.redhat.com/browse/WFCORE-7298
+    // n.b. workaround for https://issues.redhat.com/browse/WFCORE-7297
+    public String createGAV(String artifactId) {
+        return String.format("%s:%s:%s", this.controllerVersion.getMavenGroupId(), artifactId, this.controllerVersion.getMavenGavVersion());
+    }
+
+    public String createCoreGAV(String artifactId) {
+        return String.format("%s:%s:%s", this.controllerVersion.getCoreMavenGroupId(), artifactId, this.controllerVersion.getCoreVersion());
     }
 
     protected org.jboss.as.subsystem.test.AdditionalInitialization createAdditionalInitialization() {
@@ -94,7 +103,7 @@ public class DistributableEjbTransformersTestCase extends AbstractSubsystemTest 
     public void testTransformation() throws Exception {
         String subsystemXmlResource = String.format("distributable-ejb-transform-%s.xml", this.version);
 
-        KernelServices services = this.buildKernelServices(subsystemXmlResource, this.controller, this.version, this.getDependencies());
+        KernelServices services = this.buildKernelServices(subsystemXmlResource, this.controllerVersion, this.version, this.getDependencies());
 
         checkSubsystemModelTransformation(services, this.version, null, false);
     }
@@ -105,7 +114,7 @@ public class DistributableEjbTransformersTestCase extends AbstractSubsystemTest 
         KernelServicesBuilder builder = createKernelServicesBuilder();
 
         // initialize the legacy services
-        builder.createLegacyKernelServicesBuilder(this.createAdditionalInitialization(), controller, version)
+        builder.createLegacyKernelServicesBuilder(this.createAdditionalInitialization(), controllerVersion, version)
                 .addSingleChildFirstClass(AdditionalInitialization.class)
                 .addMavenResourceURL(this.getDependencies())
         ;
