@@ -28,6 +28,11 @@
         <module name="org.jboss.resteasy.resteasy-client" services="import"/>
         <module name="org.jboss.resteasy.resteasy-core" services="import"/>
         <module name="org.jboss.resteasy.resteasy-core-spi"/>
+        <!-- The org.jboss.resteasy.microprofile.client.CdiPropertyInjector uses Weld via reflection and requires these
+        dependencies. -->
+        <module name="org.jboss.weld.api"/>
+        <module name="org.jboss.weld.core"/>
+        <module name="org.jboss.weld.spi"/>
         <module name="org.reactivestreams"/>
     </dependencies>
 </module>
