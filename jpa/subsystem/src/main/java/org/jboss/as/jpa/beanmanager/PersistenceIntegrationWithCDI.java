@@ -17,6 +17,7 @@ import jakarta.enterprise.inject.spi.configurator.BeanConfigurator;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.SynchronizationType;
 import org.jboss.as.jpa.container.TransactionScopedEntityManager;
+import org.jboss.as.jpa.messages.JpaLogger;
 import org.jipijapa.plugin.spi.PersistenceUnitMetadata;
 
 /**
@@ -79,7 +80,7 @@ public class PersistenceIntegrationWithCDI {
         try {
             entityManager(afterBeanDiscovery, persistenceUnitMetadata, qualifiers, integrationWithCDIBag);
         } catch (InstantiationException | IllegalAccessException e) {
-            throw new RuntimeException(e);
+            throw JpaLogger.ROOT_LOGGER.cannotAddBeans(e, persistenceUnitMetadata.getScopedPersistenceUnitName());
         }
     }
 
@@ -118,7 +119,7 @@ public class PersistenceIntegrationWithCDI {
                     }
             ).disposeWith((em, instance) -> em.close());
         } catch (ClassNotFoundException e) {
-            throw new IllegalStateException(e);
+            throw JpaLogger.ROOT_LOGGER.classNotFound(e, persistenceUnitMetadata.getScopedPersistenceUnitName());
         }
     }
 

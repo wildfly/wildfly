@@ -12,6 +12,6 @@
             <property name="PersistenceUnitName" value="pu1"/>
         </properties>
         <qualifier>org.jboss.as.test.integration.jpa.cdi.Pu1Qualifier</qualifier>
-        <scope>jakarta.enterprise.context.ApplicationScoped</scope>
+        <scope>jakarta.transaction.TransactionScoped</scope>
     </persistence-unit>
 </persistence>

@@ -761,4 +761,9 @@ public interface JpaLogger extends BasicLogger {
     @Message(id = 76, value = "persistence.xml in application client %s deployment will not be deployed in server mode")
     void ignoreAppclientPersistenceUnitsInServer(String deploymentName);
 
+    @Message(id = 77, value = "Cannot setup Persistence/CDI integration for %s")
+    RuntimeException cannotAddBeans(@Cause ReflectiveOperationException cause, String scopedPersistenceUnitName);
+
+    @Message(id = 78, value = "Cannot setup Persistence/CDI integration for %s")
+    IllegalAccessException classNotFound(@Cause ClassNotFoundException cause, String scopedPersistenceUnitName);
 }

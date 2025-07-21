@@ -205,8 +205,6 @@ public class PersistenceUnitServiceImpl implements Service<PersistenceUnitServic
                                     }
                                     if (proxyBeanManager != null && proxyBeanManager.delegate() != null) {
                                         createCDIBeansForPersistence(proxyBeanManager.delegate(), entityManagerFactory, pu, classLoader);
-                                    } else if (proxyBeanManager != null) {
-                                        throw new IllegalStateException("ProxyBeanManager.delegate() is null"); // Don't merge this change.
                                     }
                                     context.complete();
                                 } catch (Throwable t) {
