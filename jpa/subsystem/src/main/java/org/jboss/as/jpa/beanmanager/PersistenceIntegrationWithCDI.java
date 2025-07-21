@@ -15,7 +15,9 @@ import java.util.List;
 import jakarta.enterprise.inject.spi.AfterBeanDiscovery;
 import jakarta.enterprise.inject.spi.configurator.BeanConfigurator;
 import jakarta.persistence.EntityManager;
+import jakarta.persistence.EntityManagerFactory;
 import jakarta.persistence.SynchronizationType;
+import jakarta.persistence.criteria.CriteriaBuilder;
 import org.jboss.as.jpa.container.TransactionScopedEntityManager;
 import org.jboss.as.jpa.messages.JpaLogger;
 import org.jipijapa.plugin.spi.PersistenceUnitMetadata;
@@ -79,6 +81,8 @@ public class PersistenceIntegrationWithCDI {
 
         try {
             entityManager(afterBeanDiscovery, persistenceUnitMetadata, qualifiers, integrationWithCDIBag);
+            entityManagerFactory(afterBeanDiscovery, persistenceUnitMetadata, qualifiers, integrationWithCDIBag);
+            criteriaBuilder(afterBeanDiscovery, persistenceUnitMetadata, qualifiers, integrationWithCDIBag);
         } catch (InstantiationException | IllegalAccessException e) {
             throw JpaLogger.ROOT_LOGGER.cannotAddBeans(e, persistenceUnitMetadata.getScopedPersistenceUnitName());
         }
@@ -102,7 +106,6 @@ public class PersistenceIntegrationWithCDI {
         try {
 
             Class<? extends Annotation> scopeAnnotation = persistenceUnitMetadata.getClassLoader().loadClass(scope).asSubclass(Annotation.class);
-            // Annotation actualAnnotation = annotation.getAnnotation(Scope.class);
             beanConfigurator.scope(scopeAnnotation);
 
             for (String qualifier : qualifiers) {
@@ -113,11 +116,81 @@ public class PersistenceIntegrationWithCDI {
             }
             Class<?> entityManagerClass = EntityManager.class;
             beanConfigurator.beanClass(entityManagerClass);
-            // TransactionScopedEntityManager(String puScopedName, Map properties, EntityManagerFactory emf, SynchronizationType synchronizationType, TransactionSynchronizationRegistry transactionSynchronizationRegistry, TransactionManager transactionManager) {
             beanConfigurator.produceWith(c -> {
                         return new TransactionScopedEntityManager(persistenceUnitMetadata.getScopedPersistenceUnitName(), new HashMap<>(), integrationWithCDIBag.getEntityManagerFactory(), SynchronizationType.SYNCHRONIZED, integrationWithCDIBag.getTransactionSynchronizationRegistry(), integrationWithCDIBag.getTransactionManager());
                     }
-            ).disposeWith((em, instance) -> em.close());
+            ).disposeWith((em, instance) -> em.close());  // TODO: validate that container-managed entity manager manages when close is called.
+        } catch (ClassNotFoundException e) {
+            throw JpaLogger.ROOT_LOGGER.classNotFound(e, persistenceUnitMetadata.getScopedPersistenceUnitName());
+        }
+    }
+
+    private static void entityManagerFactory(
+            AfterBeanDiscovery afterBeanDiscovery,
+            PersistenceUnitMetadata persistenceUnitMetadata,
+            List<String> qualifiers,
+            IntegrationWithCDIBag integrationWithCDIBag) throws InstantiationException, IllegalAccessException {
+
+        String scope = applicationScoped;
+
+        // EntityManagerFactory setup
+        BeanConfigurator<EntityManagerFactory> beanConfigurator = afterBeanDiscovery.addBean();
+        beanConfigurator.addTransitiveTypeClosure(EntityManagerFactory.class);
+        beanConfigurator.name(persistenceUnitMetadata.getPersistenceUnitName());
+
+        try {
+
+            Class<? extends Annotation> scopeAnnotation = persistenceUnitMetadata.getClassLoader().loadClass(scope).asSubclass(Annotation.class);
+            beanConfigurator.scope(scopeAnnotation);
+
+            for (String qualifier : qualifiers) {
+                final Class<? extends Annotation> qualifierType = persistenceUnitMetadata.getClassLoader()
+                        .loadClass(qualifier)
+                        .asSubclass(Annotation.class);
+                // beanConfigurator.addQualifier(qualifierType);
+                beanConfigurator.addQualifier(ScopeProxy.createProxy(qualifierType));
+
+            }
+            Class<?> entityManagerFactoryClass = EntityManagerFactory.class;
+            beanConfigurator.beanClass(entityManagerFactoryClass);
+            beanConfigurator.produceWith(c -> {
+                        return integrationWithCDIBag.getEntityManagerFactory();
+                    }
+            );
+        } catch (ClassNotFoundException e) {
+            throw JpaLogger.ROOT_LOGGER.classNotFound(e, persistenceUnitMetadata.getScopedPersistenceUnitName());
+        }
+    }
+
+    private static void criteriaBuilder(
+            AfterBeanDiscovery afterBeanDiscovery,
+            PersistenceUnitMetadata persistenceUnitMetadata,
+            List<String> qualifiers,
+            IntegrationWithCDIBag integrationWithCDIBag) throws InstantiationException, IllegalAccessException {
+
+        String scope = dependentScoped;
+
+        BeanConfigurator<CriteriaBuilder> beanConfigurator = afterBeanDiscovery.addBean();
+        beanConfigurator.addTransitiveTypeClosure(CriteriaBuilder.class);
+
+        try {
+
+            Class<? extends Annotation> scopeAnnotation = persistenceUnitMetadata.getClassLoader().loadClass(scope).asSubclass(Annotation.class);
+            beanConfigurator.scope(scopeAnnotation);
+
+            for (String qualifier : qualifiers) {
+                final Class<? extends Annotation> qualifierType = persistenceUnitMetadata.getClassLoader()
+                        .loadClass(qualifier)
+                        .asSubclass(Annotation.class);
+                // beanConfigurator.addQualifier(qualifierType);
+                beanConfigurator.addQualifier(ScopeProxy.createProxy(qualifierType));
+            }
+            Class<?> criteriaBuilderClass = CriteriaBuilder.class;
+            beanConfigurator.beanClass(criteriaBuilderClass);
+            beanConfigurator.produceWith(c -> {
+                        return integrationWithCDIBag.getEntityManagerFactory().getCriteriaBuilder();
+                    }
+            );
         } catch (ClassNotFoundException e) {
             throw JpaLogger.ROOT_LOGGER.classNotFound(e, persistenceUnitMetadata.getScopedPersistenceUnitName());
         }
