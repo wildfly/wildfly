@@ -117,9 +117,15 @@ public class PersistenceIntegrationWithCDI {
             Class<?> entityManagerClass = EntityManager.class;
             beanConfigurator.beanClass(entityManagerClass);
             beanConfigurator.produceWith(c -> {
-                        return new TransactionScopedEntityManager(persistenceUnitMetadata.getScopedPersistenceUnitName(), new HashMap<>(), integrationWithCDIBag.getEntityManagerFactory(), SynchronizationType.SYNCHRONIZED, integrationWithCDIBag.getTransactionSynchronizationRegistry(), integrationWithCDIBag.getTransactionManager());
+                        return new TransactionScopedEntityManager(
+                                persistenceUnitMetadata.getScopedPersistenceUnitName(),
+                                new HashMap<>(),
+                                integrationWithCDIBag.getEntityManagerFactory(),
+                                SynchronizationType.SYNCHRONIZED,
+                                integrationWithCDIBag.getTransactionSynchronizationRegistry(),
+                                integrationWithCDIBag.getTransactionManager());
                     }
-            ).disposeWith((em, instance) -> em.close());  // TODO: validate that container-managed entity manager manages when close is called.
+            );
         } catch (ClassNotFoundException e) {
             throw JpaLogger.ROOT_LOGGER.classNotFound(e, persistenceUnitMetadata.getScopedPersistenceUnitName());
         }
