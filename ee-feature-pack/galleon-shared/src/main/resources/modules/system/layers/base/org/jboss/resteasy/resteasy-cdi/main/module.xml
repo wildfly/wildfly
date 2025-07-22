@@ -23,6 +23,7 @@
         <module name="jakarta.validation.api"/>
         <module name="org.jboss.resteasy.resteasy-core"/>
         <module name="org.jboss.resteasy.resteasy-core-spi"/>
+        <module name="org.jboss.weld.api"/>
         <module name="org.jboss.weld.core"/>
         <module name="org.jboss.weld.spi"/>
         <module name="org.jboss.logging"/>
