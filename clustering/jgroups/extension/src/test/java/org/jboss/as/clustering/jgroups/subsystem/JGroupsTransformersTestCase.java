@@ -37,9 +37,11 @@ import org.junit.runners.Parameterized.Parameters;
 @RunWith(Parameterized.class)
 public class JGroupsTransformersTestCase extends AbstractSubsystemTest {
     private static final Map<ModelTestControllerVersion, JGroupsSubsystemModel> VERSIONS = new EnumMap<>(ModelTestControllerVersion.class);
+
     static {
         VERSIONS.put(ModelTestControllerVersion.EAP_7_4_0, JGroupsSubsystemModel.VERSION_8_0_0);
         VERSIONS.put(ModelTestControllerVersion.EAP_8_0_0, JGroupsSubsystemModel.VERSION_10_0_0);
+        VERSIONS.put(ModelTestControllerVersion.EAP_8_1_0, JGroupsSubsystemModel.VERSION_10_0_0);
     }
 
     @Parameters
@@ -57,33 +59,43 @@ public class JGroupsTransformersTestCase extends AbstractSubsystemTest {
     }
 
     private String[] getDependencies() {
-        switch (this.controllerVersion) {
-            case EAP_7_4_0:
-                return new String[] {
-                        this.formatArtifact("wildfly-clustering-jgroups-extension"),
-                        this.formatArtifact("wildfly-clustering-api"),
-                        this.formatArtifact("wildfly-clustering-common"),
-                        this.formatArtifact("wildfly-clustering-jgroups-spi"),
-                        this.formatArtifact("wildfly-clustering-server"),
-                        this.formatArtifact("wildfly-clustering-service"),
-                        this.formatArtifact("wildfly-clustering-spi"),
-                };
-            case EAP_8_0_0:
-                return new String[] {
-                        this.formatArtifact("wildfly-clustering-jgroups-extension"),
-                        this.formatArtifact("wildfly-clustering-common"),
-                        this.formatArtifact("wildfly-clustering-jgroups-spi"),
-                        this.formatArtifact("wildfly-clustering-server-service"),
-                        this.formatArtifact("wildfly-clustering-server-spi"),
-                        this.formatArtifact("wildfly-clustering-service"),
-                };
-            default:
-                throw new IllegalArgumentException();
-        }
+        return switch (this.controllerVersion) {
+            case EAP_7_4_0 -> new String[] {
+                    this.createGAV("wildfly-clustering-jgroups-extension"),
+                    this.createGAV("wildfly-clustering-api"),
+                    this.createGAV("wildfly-clustering-common"),
+                    this.createGAV("wildfly-clustering-jgroups-spi"),
+                    this.createGAV("wildfly-clustering-server"),
+                    this.createGAV("wildfly-clustering-service"),
+                    this.createGAV("wildfly-clustering-spi"),
+            };
+            case EAP_8_0_0 -> new String[] {
+                    this.createGAV("wildfly-clustering-jgroups-extension"),
+                    this.createGAV("wildfly-clustering-common"),
+                    this.createGAV("wildfly-clustering-jgroups-spi"),
+                    this.createGAV("wildfly-clustering-server-service"),
+                    this.createGAV("wildfly-clustering-server-spi"),
+                    this.createGAV("wildfly-clustering-service"),
+            };
+            case EAP_8_1_0 -> new String[] {
+                    this.createGAV("wildfly-clustering-jgroups-extension"),
+                    this.createGAV("wildfly-clustering-common"),
+                    this.createGAV("wildfly-clustering-jgroups-spi"),
+                    this.createGAV("wildfly-clustering-server-service"),
+                    this.createCoreGAV("wildfly-subsystem"),
+            };
+            default -> throw new IllegalArgumentException();
+        };
     }
 
-    private String formatArtifact(String artifactId) {
+    // TODO Replace with variants from after wf-core upgrade https://issues.redhat.com/browse/WFCORE-7298
+    // n.b. workaround for https://issues.redhat.com/browse/WFCORE-7297
+    public String createGAV(String artifactId) {
         return String.format("%s:%s:%s", this.controllerVersion.getMavenGroupId(), artifactId, this.controllerVersion.getMavenGavVersion());
+    }
+
+    public String createCoreGAV(String artifactId) {
+        return String.format("%s:%s:%s", this.controllerVersion.getCoreMavenGroupId(), artifactId, this.controllerVersion.getCoreVersion());
     }
 
     private static AdditionalInitialization createAdditionalInitialization() {
