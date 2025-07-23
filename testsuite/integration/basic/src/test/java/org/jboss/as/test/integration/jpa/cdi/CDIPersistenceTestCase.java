@@ -8,8 +8,11 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 
+import jakarta.persistence.Cache;
 import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.EntityManagerFactory;
+import jakarta.persistence.metamodel.Metamodel;
+import jakarta.persistence.PersistenceUnitUtil;
 import jakarta.inject.Inject;
 
 
@@ -72,6 +75,25 @@ public class CDIPersistenceTestCase {
     public void testCriteriaBuilder() throws Exception {
         CriteriaQuery criteriaQuery = cmtBean.testCreateQuery();
         assertNotNull("Created CriteriaQuery should of been returned", criteriaQuery);
+    }
+
+    @Test
+    public void testPersistenceUnitUtil() throws Exception {
+        PersistenceUnitUtil persistenceUnitUtil = cmtBean.testPersistenceUnitUtil();
+        assertNotNull("PersistenceUnitUtil should of been returned", persistenceUnitUtil);
+    }
+
+    @Test
+    public void testCache() throws Exception {
+        Cache cache = cmtBean.testCache();
+        assertNotNull("Cache should of been returned", cache);
+    }
+
+    @Test
+    public void TestMetamodel() throws Exception {
+        Metamodel metamodel = cmtBean.testMetamodel();
+        assertNotNull("Metamodel should of been returned", metamodel);
+
     }
 
 }
