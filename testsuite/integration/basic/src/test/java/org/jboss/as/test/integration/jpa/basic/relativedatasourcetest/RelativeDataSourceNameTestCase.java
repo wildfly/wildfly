@@ -39,7 +39,7 @@ public class RelativeDataSourceNameTestCase {
         return jar;
     }
 
-    @EJB(mappedName = "java:global/" + ARCHIVE_NAME + "/SFSB1")
+    @EJB(mappedName = "java:global/" + ARCHIVE_NAME + "/RequestScopedTestBean")
     private SFSB1 sfsb1;
 
     @Test

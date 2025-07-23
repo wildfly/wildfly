@@ -18,13 +18,13 @@ import jakarta.persistence.PersistenceUnitUtil;
 import jakarta.transaction.UserTransaction;
 
 /**
- * stateful session bean
+ * test bean
  *
  * @author Scott Marlow
  */
 
 @RequestScoped
-public class SFSB1 {
+public class RequestScopedTestBean {
     @Resource
     private UserTransaction transaction;
 

@@ -69,7 +69,7 @@ public class CfgFileTestCase {
 
     @Test
     public void testEntityManagerInvocation() throws Exception {
-        SFSB1 sfsb1 = lookup("SFSB1", SFSB1.class);
+        SFSB1 sfsb1 = lookup("RequestScopedTestBean", SFSB1.class);
         sfsb1.getEmployeeNoTX(1);
     }
 }

@@ -68,7 +68,7 @@ public class JPABeanValidationTestCase {
      */
     @Test
     public void testSuccessfulBeanValidation() throws Exception {
-        SFSB1 sfsb1 = lookup("SFSB1", SFSB1.class);
+        SFSB1 sfsb1 = lookup("RequestScopedTestBean", SFSB1.class);
         sfsb1.createEmployee("name", "address", 1);
     }
 
@@ -79,7 +79,7 @@ public class JPABeanValidationTestCase {
      */
     @Test
     public void testFailingBeanValidationNullAddress() throws Exception {
-        SFSB1 sfsb1 = lookup("SFSB1", SFSB1.class);
+        SFSB1 sfsb1 = lookup("RequestScopedTestBean", SFSB1.class);
         try {
             sfsb1.createEmployee("name", null, 2);
             fail("should of thrown validation error for null address in Employee entity");

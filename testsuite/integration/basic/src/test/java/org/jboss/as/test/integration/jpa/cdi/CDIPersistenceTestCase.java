@@ -39,14 +39,14 @@ public class CDIPersistenceTestCase {
     @Deployment
     public static Archive<?> deployment() {
         final JavaArchive jar = ShrinkWrap.create(JavaArchive.class, "CDIPersistenceTestCase.jar");
-        jar.addClasses(CDIPersistenceTestCase.class, Employee.class, Pu1Qualifier.class, SFSB1.class);
+        jar.addClasses(CDIPersistenceTestCase.class, Employee.class, Pu1Qualifier.class, RequestScopedTestBean.class);
         jar.addAsManifestResource(CDIPersistenceTestCase.class.getPackage(), "persistence.xml", "persistence.xml");
         jar.addAsManifestResource(CDIPersistenceTestCase.class.getPackage(), "beans.xml", "beans.xml");
         return jar;
     }
 
     @Inject
-    SFSB1 cmtBean;
+    RequestScopedTestBean cmtBean;
 
     @Test
     public void testEntityManagerNoResultExpected() throws Exception {
