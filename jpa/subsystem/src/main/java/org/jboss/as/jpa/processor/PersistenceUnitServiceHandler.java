@@ -37,7 +37,7 @@ import org.jboss.as.ee.structure.DeploymentType;
 import org.jboss.as.ee.structure.DeploymentTypeMarker;
 import org.jboss.as.jpa.beanmanager.BeanManagerAfterDeploymentValidation;
 import org.jboss.as.jpa.beanmanager.IntegratePersistenceAfterBeanDiscovery;
-import org.jboss.as.jpa.beanmanager.IntegrationWithCDIBag;
+import org.jboss.as.jpa.beanmanager.IntegrationWithCDIBagImpl;
 import org.jboss.as.jpa.beanmanager.ProxyBeanManager;
 import org.jboss.as.jpa.config.Configuration;
 import org.jboss.as.jpa.config.PersistenceProviderDeploymentHolder;
@@ -344,7 +344,7 @@ public class PersistenceUnitServiceHandler {
             deploymentUnit.addToAttachmentList(Attachments.DEPLOYMENT_COMPLETE_SERVICES, puServiceName);
 
             deploymentUnit.addToAttachmentList(Attachments.WEB_DEPENDENCIES, puServiceName);
-            IntegrationWithCDIBag integrationWithCDIBag = registerPersistenceAfterBeanDiscovery(deploymentUnit, capabilitySupport, pu, transactionManager, transactionSynchronizationRegistry);
+            IntegrationWithCDIBagImpl integrationWithCDIBag = registerPersistenceAfterBeanDiscovery(deploymentUnit, capabilitySupport, pu, transactionManager, transactionSynchronizationRegistry);
             final PersistenceUnitServiceImpl service =
                     new PersistenceUnitServiceImpl(properties, classLoader, pu, adaptor, integratorAdaptors, provider,
                             PersistenceUnitRegistryImpl.INSTANCE,
@@ -490,7 +490,7 @@ public class PersistenceUnitServiceHandler {
             deploymentUnit.addToAttachmentList(Attachments.DEPLOYMENT_COMPLETE_SERVICES, puServiceName);
 
             deploymentUnit.addToAttachmentList(Attachments.WEB_DEPENDENCIES, puServiceName);
-            IntegrationWithCDIBag integrationWithCDIBag = registerPersistenceAfterBeanDiscovery(deploymentUnit, capabilitySupport, pu, null, null);
+            IntegrationWithCDIBagImpl integrationWithCDIBag = registerPersistenceAfterBeanDiscovery(deploymentUnit, capabilitySupport, pu, null, null);
             final PhaseOnePersistenceUnitServiceImpl service = new PhaseOnePersistenceUnitServiceImpl(classLoader, pu, adaptor, deploymentUnit.getServiceName(), proxyBeanManager, integrationWithCDIBag);
             service.getPropertiesInjector().inject(properties);
             ServiceBuilder<PhaseOnePersistenceUnitServiceImpl> builder = serviceTarget.addService(puServiceName, service);
@@ -1152,7 +1152,7 @@ public class PersistenceUnitServiceHandler {
         return deploymentUnit.getAttachment(JpaAttachments.DEPLOYED_PERSISTENCE_PROVIDER);
     }
 
-    private static IntegrationWithCDIBag registerPersistenceAfterBeanDiscovery(DeploymentUnit deploymentUnit, CapabilityServiceSupport support, PersistenceUnitMetadata pu, TransactionManager transactionManager, TransactionSynchronizationRegistry transactionSynchronizationRegistry) {
+    private static IntegrationWithCDIBagImpl registerPersistenceAfterBeanDiscovery(DeploymentUnit deploymentUnit, CapabilityServiceSupport support, PersistenceUnitMetadata pu, TransactionManager transactionManager, TransactionSynchronizationRegistry transactionSynchronizationRegistry) {
         deploymentUnit = DeploymentUtils.getTopDeploymentUnit(deploymentUnit);
         if (support.hasCapability(WELD_CAPABILITY_NAME)) {
             Optional<WeldCapability> weldCapability = support.getOptionalCapabilityRuntimeAPI(WELD_CAPABILITY_NAME, WeldCapability.class);

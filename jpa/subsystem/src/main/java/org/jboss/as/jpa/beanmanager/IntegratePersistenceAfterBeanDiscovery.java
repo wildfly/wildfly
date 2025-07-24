@@ -1,3 +1,8 @@
+/*
+ * Copyright The WildFly Authors
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 package org.jboss.as.jpa.beanmanager;
 
 import jakarta.enterprise.event.Observes;
@@ -14,10 +19,10 @@ import org.jipijapa.plugin.spi.PersistenceUnitMetadata;
 public class IntegratePersistenceAfterBeanDiscovery implements Extension {
 
     private volatile PersistenceUnitMetadata persistenceUnitMetadata;
-    private final IntegrationWithCDIBag integrationWithCDIBag = new IntegrationWithCDIBag();
+    private final IntegrationWithCDIBagImpl integrationWithCDIBag = new IntegrationWithCDIBagImpl();
     void afterBeanDiscovery(@Observes AfterBeanDiscovery event, BeanManager manager) {
         try {
-            PersistenceIntegrationWithCDI.addBeans(event, persistenceUnitMetadata, integrationWithCDIBag);
+            new PersistenceIntegrationWithCDI().addBeans(event, persistenceUnitMetadata, integrationWithCDIBag);
         } catch (RuntimeException e) {
             event.addDefinitionError(e);
         }
@@ -27,7 +32,7 @@ public class IntegratePersistenceAfterBeanDiscovery implements Extension {
         this.persistenceUnitMetadata = persistenceUnitMetadata;
     }
 
-    public IntegrationWithCDIBag getIntegrationWithCDIBag() {
+    public IntegrationWithCDIBagImpl getIntegrationWithCDIBag() {
         return integrationWithCDIBag;
     }
 

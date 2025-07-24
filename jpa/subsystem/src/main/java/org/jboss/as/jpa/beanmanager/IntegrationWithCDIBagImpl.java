@@ -8,13 +8,14 @@ package org.jboss.as.jpa.beanmanager;
 import jakarta.persistence.EntityManagerFactory;
 import jakarta.transaction.TransactionManager;
 import jakarta.transaction.TransactionSynchronizationRegistry;
+import org.jipijapa.plugin.spi.IntegrationWithCDIBag;
 
 /**
- * IntegrationWithCDIBag
+ * IntegrationWithCDIBagImpl
  *
  * @author Scott Marlow
  */
-public class IntegrationWithCDIBag {
+public class IntegrationWithCDIBagImpl implements IntegrationWithCDIBag {
 
     private volatile EntityManagerFactory entityManagerFactory;
     private volatile TransactionManager transactionManager;

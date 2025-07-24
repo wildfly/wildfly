@@ -24,7 +24,7 @@ import jakarta.transaction.TransactionSynchronizationRegistry;
 import jakarta.validation.ValidatorFactory;
 
 import org.jboss.as.jpa.beanmanager.BeanManagerAfterDeploymentValidation;
-import org.jboss.as.jpa.beanmanager.IntegrationWithCDIBag;
+import org.jboss.as.jpa.beanmanager.IntegrationWithCDIBagImpl;
 import org.jboss.as.jpa.beanmanager.ProxyBeanManager;
 import org.jboss.as.jpa.classloader.TempClassLoaderFactoryImpl;
 import org.jboss.as.jpa.spi.PersistenceUnitService;
@@ -83,7 +83,7 @@ public class PersistenceUnitServiceImpl implements Service<PersistenceUnitServic
     private final SetupAction javaNamespaceSetup;
     private final TransactionSynchronizationRegistry transactionSynchronizationRegistry;
     private final TransactionManager transactionManager;
-    private final IntegrationWithCDIBag integrationWithCDIBag;
+    private final IntegrationWithCDIBagImpl integrationWithCDIBag;
 
     public PersistenceUnitServiceImpl(
             final Map properties,
@@ -98,7 +98,7 @@ public class PersistenceUnitServiceImpl implements Service<PersistenceUnitServic
             BeanManagerAfterDeploymentValidation beanManagerAfterDeploymentValidation,
             final TransactionSynchronizationRegistry transactionSynchronizationRegistry,
             final TransactionManager transactionManager,
-            final IntegrationWithCDIBag integrationWithCDIBag
+            final IntegrationWithCDIBagImpl integrationWithCDIBag
             ) {
         this.properties = properties;
         this.pu = pu;

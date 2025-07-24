@@ -23,7 +23,9 @@ import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.metamodel.Metamodel;
 import org.jboss.as.jpa.container.TransactionScopedEntityManager;
 import org.jboss.as.jpa.messages.JpaLogger;
+import org.jipijapa.plugin.spi.IntegrationWithCDIBag;
 import org.jipijapa.plugin.spi.PersistenceUnitMetadata;
+import org.jipijapa.plugin.spi.SchemaManagerBeanCreator;
 
 /**
  * PersistenceIntegrationWithCDI will setup Persistence/CDI integration as mentioned in jakarta.ee/specifications/platform/11/jakarta-platform-spec-11.0#a441
@@ -70,8 +72,8 @@ public class PersistenceIntegrationWithCDI {
     private static final String transactionScoped = "jakarta.transaction.TransactionScoped";
     private static final String applicationScoped = "jakarta.enterprise.context.ApplicationScoped";
     protected static final String dependentScoped = "jakarta.enterprise.context.Dependent";
-    // TODO: add check for running EE 11 or WildFly Preview
-    public static void addBeans(AfterBeanDiscovery afterBeanDiscovery, PersistenceUnitMetadata persistenceUnitMetadata, IntegrationWithCDIBag integrationWithCDIBag) {
+
+    public void addBeans(AfterBeanDiscovery afterBeanDiscovery, PersistenceUnitMetadata persistenceUnitMetadata, IntegrationWithCDIBag integrationWithCDIBag) {
 
         // determine the qualifiers to use for creating each bean
         List<String> qualifiers;
@@ -87,14 +89,15 @@ public class PersistenceIntegrationWithCDI {
             criteriaBuilder(afterBeanDiscovery, persistenceUnitMetadata, qualifiers, integrationWithCDIBag);
             persistenceUnitUtil(afterBeanDiscovery, persistenceUnitMetadata, qualifiers, integrationWithCDIBag);
             cache(afterBeanDiscovery, persistenceUnitMetadata, qualifiers, integrationWithCDIBag);
-            Persistence32.schemaManager(afterBeanDiscovery, persistenceUnitMetadata, qualifiers, integrationWithCDIBag);
             metamodel(afterBeanDiscovery, persistenceUnitMetadata, qualifiers, integrationWithCDIBag);
+            // the schemaManager bean will only be created if running with Persistence 3.2/Jakarta EE 11
+            SchemaManagerBeanCreator.getInstance().schemaManager(afterBeanDiscovery, persistenceUnitMetadata, qualifiers, integrationWithCDIBag);
         } catch (InstantiationException | IllegalAccessException e) {
             throw JpaLogger.ROOT_LOGGER.cannotAddBeans(e, persistenceUnitMetadata.getScopedPersistenceUnitName());
         }
     }
 
-    private static void entityManager(
+    private void entityManager(
             AfterBeanDiscovery afterBeanDiscovery,
             PersistenceUnitMetadata persistenceUnitMetadata,
             List<String> qualifiers,
@@ -136,7 +139,7 @@ public class PersistenceIntegrationWithCDI {
         }
     }
 
-    private static void entityManagerFactory(
+    private void entityManagerFactory(
             AfterBeanDiscovery afterBeanDiscovery,
             PersistenceUnitMetadata persistenceUnitMetadata,
             List<String> qualifiers,
@@ -170,7 +173,7 @@ public class PersistenceIntegrationWithCDI {
         }
     }
 
-    private static void criteriaBuilder(
+    private void criteriaBuilder(
             AfterBeanDiscovery afterBeanDiscovery,
             PersistenceUnitMetadata persistenceUnitMetadata,
             List<String> qualifiers,
@@ -204,7 +207,7 @@ public class PersistenceIntegrationWithCDI {
         }
     }
 
-    private static void persistenceUnitUtil(
+    private void persistenceUnitUtil(
             AfterBeanDiscovery afterBeanDiscovery,
             PersistenceUnitMetadata persistenceUnitMetadata,
             List<String> qualifiers,
@@ -236,7 +239,7 @@ public class PersistenceIntegrationWithCDI {
         }
     }
 
-    private static void cache(
+    private void cache(
         AfterBeanDiscovery afterBeanDiscovery,
         PersistenceUnitMetadata persistenceUnitMetadata,
         List<String> qualifiers,
@@ -269,7 +272,7 @@ public class PersistenceIntegrationWithCDI {
 }
 
 
-    private static void metamodel(
+    private void metamodel(
             AfterBeanDiscovery afterBeanDiscovery,
             PersistenceUnitMetadata persistenceUnitMetadata,
             List<String> qualifiers,
@@ -300,6 +303,8 @@ public class PersistenceIntegrationWithCDI {
             throw JpaLogger.ROOT_LOGGER.classNotFound(e, persistenceUnitMetadata.getScopedPersistenceUnitName());
         }
     }
+
+
     protected record ScopeProxy(Class<? extends Annotation> annotationType) implements InvocationHandler {
 
         @Override
