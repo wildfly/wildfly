@@ -66,7 +66,7 @@ public class JdbcDriverRemove extends AbstractRemoveStepHandler {
         final Module module;
 
         try {
-            moduleId = ModuleIdentifierUtil.canonicalModuleIdentifier(moduleName);
+            moduleId = ModuleIdentifierUtil.parseCanonicalModuleIdentifier(moduleName);
             module = Module.getCallerModuleLoader().loadModule(moduleId);
         } catch (ModuleNotFoundException e) {
             context.getFailureDescription().set(ConnectorLogger.ROOT_LOGGER.missingDependencyInModuleDriver(moduleName, e.getMessage()));

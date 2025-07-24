@@ -63,7 +63,7 @@ public class ExpressionFilterDefinition extends SimpleFilterDefinition {
         if (moduleName != null) {
             try {
                 ModuleLoader moduleLoader = Module.getBootModuleLoader();
-                Module filterModule = moduleLoader.loadModule(ModuleIdentifierUtil.canonicalModuleIdentifier(moduleName));
+                Module filterModule = moduleLoader.loadModule(ModuleIdentifierUtil.parseCanonicalModuleIdentifier(moduleName));
                 loader = filterModule.getClassLoader();
             } catch (ModuleLoadException e) {
                 throw UndertowLogger.ROOT_LOGGER.couldNotLoadHandlerFromModule(expression, moduleName, e);

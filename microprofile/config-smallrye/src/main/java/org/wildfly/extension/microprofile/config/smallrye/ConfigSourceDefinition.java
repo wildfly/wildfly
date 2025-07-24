@@ -5,7 +5,7 @@
 
 package org.wildfly.extension.microprofile.config.smallrye;
 
-import static org.jboss.as.controller.ModuleIdentifierUtil.canonicalModuleIdentifier;
+import static org.jboss.as.controller.ModuleIdentifierUtil.parseCanonicalModuleIdentifier;
 
 import static org.jboss.as.controller.SimpleAttributeDefinitionBuilder.create;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FILESYSTEM_PATH;
@@ -121,7 +121,7 @@ class ConfigSourceDefinition extends PersistentResourceDefinition {
         String className = classModel.get(NAME).asString();
         String moduleName = classModel.get(MODULE).asString();
         try {
-            Module module = Module.getCallerModuleLoader().loadModule(canonicalModuleIdentifier(moduleName));
+            Module module = Module.getCallerModuleLoader().loadModule(parseCanonicalModuleIdentifier(moduleName));
             Class<?> clazz = module.getClassLoader().loadClass(className);
             return clazz;
         } catch (Exception e) {

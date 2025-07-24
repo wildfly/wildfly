@@ -5,7 +5,7 @@
 
 package org.jboss.as.naming;
 
-import static org.jboss.as.controller.ModuleIdentifierUtil.canonicalModuleIdentifier;
+import static org.jboss.as.controller.ModuleIdentifierUtil.parseCanonicalModuleIdentifier;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationHandler;
@@ -101,7 +101,7 @@ public class ExternalContextObjectFactory implements ObjectFactory {
             Constructor ctor = initialContextClass.getConstructor(Hashtable.class);
             loadedContext = (Context) ctor.newInstance(newEnvironment);
         } else {
-            Module module = Module.getBootModuleLoader().loadModule(canonicalModuleIdentifier(initialContextModule));
+            Module module = Module.getBootModuleLoader().loadModule(parseCanonicalModuleIdentifier(initialContextModule));
             loader = module.getClassLoader();
             final ClassLoader currentClassLoader = WildFlySecurityManager.getCurrentContextClassLoaderPrivileged();
             try {
