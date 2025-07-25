@@ -44,7 +44,7 @@ public class PersistenceProviderLoader {
      * Note: side effect of saving loaded persistence providers to static api in jakarta.persistence.spi.PersistenceProvider.
      */
     public static List<PersistenceProvider> loadProviderModuleByName(String moduleName) throws ModuleLoadException {
-        moduleName = ModuleIdentifierUtil.canonicalModuleIdentifier(moduleName);
+        moduleName = ModuleIdentifierUtil.parseCanonicalModuleIdentifier(moduleName);
         final ModuleLoader moduleLoader = Module.getBootModuleLoader();
         Module module = moduleLoader.loadModule(moduleName);
         final ServiceLoader<PersistenceProvider> serviceLoader =

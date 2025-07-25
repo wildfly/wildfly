@@ -99,7 +99,7 @@ public class JSFMetadataProcessor implements DeploymentUnitProcessor {
                 String implModId = JSFModuleIdFactory.getInstance().getImplModId(version);
 
                 // Now compare the canonical module identifier (which doesn't include "main" as the slot)
-                String canonicalModId = ModuleIdentifierUtil.canonicalModuleIdentifier(implModId);
+                String canonicalModId = ModuleIdentifierUtil.parseCanonicalModuleIdentifier(implModId);
                 // Check if the canonical module identifier is for the "main" slot
                 if (canonicalModId != null && !canonicalModId.contains(":")) {
                     setContextParameterIfAbsent(

@@ -28,7 +28,7 @@ class SecurityActions {
 
     static ModuleClassLoader getModuleClassLoader(final String moduleSpec) throws ModuleLoadException {
         ModuleLoader loader = Module.getCallerModuleLoader();
-        final Module module = loader.loadModule(ModuleIdentifierUtil.canonicalModuleIdentifier(moduleSpec));
+        final Module module = loader.loadModule(ModuleIdentifierUtil.parseCanonicalModuleIdentifier(moduleSpec));
         GetModuleClassLoaderAction action = new GetModuleClassLoaderAction(module);
         return WildFlySecurityManager.isChecking() ? doPrivileged(action) : action.run();
     }
