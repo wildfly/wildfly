@@ -8,7 +8,6 @@
         <property name="jboss.api" value="private"/>
     </properties>
     <resources>
-        <!-- TODO preview module will instead pack org.wildfly:wildfly-concurrency-impl-31 -->
         <artifact name="${org.wildfly:wildfly-concurrency-impl-30}"/>
         <artifact name="${org.wildfly:wildfly-concurrency-spi}"/>
     </resources>
