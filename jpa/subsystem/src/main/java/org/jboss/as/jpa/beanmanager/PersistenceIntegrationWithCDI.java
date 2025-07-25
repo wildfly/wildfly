@@ -91,7 +91,7 @@ public class PersistenceIntegrationWithCDI {
             cache(afterBeanDiscovery, persistenceUnitMetadata, qualifiers, integrationWithCDIBag);
             metamodel(afterBeanDiscovery, persistenceUnitMetadata, qualifiers, integrationWithCDIBag);
             // the schemaManager bean will only be created if running with Persistence 3.2/Jakarta EE 11
-            SchemaManagerBeanCreator.getInstance().schemaManager(afterBeanDiscovery, persistenceUnitMetadata, qualifiers, integrationWithCDIBag);
+            SchemaManagerBeanCreator.getImplementation(PersistenceIntegrationWithCDI.class.getClassLoader()).schemaManager(afterBeanDiscovery, persistenceUnitMetadata, qualifiers, integrationWithCDIBag);
         } catch (InstantiationException | IllegalAccessException e) {
             throw JpaLogger.ROOT_LOGGER.cannotAddBeans(e, persistenceUnitMetadata.getScopedPersistenceUnitName());
         }

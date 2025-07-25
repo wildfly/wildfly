@@ -18,23 +18,25 @@ public interface SchemaManagerBeanCreator {
     default void schemaManager(AfterBeanDiscovery afterBeanDiscovery, PersistenceUnitMetadata persistenceUnitMetadata, List<String> qualifiers, IntegrationWithCDIBag integrationWithCDIBag) throws IllegalAccessException {
     }
 
-    static SchemaManagerBeanCreator getImplementation() {
+    static SchemaManagerBeanCreator instance = null;
 
-        String schemaManagerBeanCreatorImpl = "org.jboss.as.jpa.beanmanager.Persistence32";
-        try {
-            return (SchemaManagerBeanCreator) SchemaManagerBeanCreator.class.getClassLoader().loadClass(schemaManagerBeanCreatorImpl).newInstance();
-        } catch (InstantiationException | IllegalAccessException | ClassNotFoundException ignore) {
-            // ignore exception on return no-op implementation
+    static SchemaManagerBeanCreator getImplementation(ClassLoader persistenceSubSystemClassLoader) {
+        if (instance == null) {
+            synchronized (SchemaManagerBeanCreator.class) {
+                if (instance == null) {
+                    String schemaManagerBeanCreatorImpl = "org.jboss.as.jpa.beanmanager.Persistence32";
+                    try {
+                        return (SchemaManagerBeanCreator) persistenceSubSystemClassLoader.loadClass(schemaManagerBeanCreatorImpl).newInstance();
+                    } catch (InstantiationException | IllegalAccessException | ClassNotFoundException ignore) {
+                        // ignore exception on return no-op implementation
+                    }
+
+                    // return a no-op implementation
+                    return new SchemaManagerBeanCreator() {
+                    };
+                }
+            }
         }
-
-        // return a no-op implementation
-        return new SchemaManagerBeanCreator() {
-        };
-    }
-
-    static SchemaManagerBeanCreator instance = getImplementation();
-
-    static SchemaManagerBeanCreator getInstance() {
         return instance;
     }
 
