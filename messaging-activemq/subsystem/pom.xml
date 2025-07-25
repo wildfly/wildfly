@@ -118,7 +118,7 @@
                 </exclusion>
                 <exclusion>
                     <groupId>org.jline</groupId>
-                    <artifactId>jline</artifactId>
+                    <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>
