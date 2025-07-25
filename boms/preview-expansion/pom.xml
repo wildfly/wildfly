@@ -61,7 +61,15 @@
                 <artifactId>wildfly-vertx-feature-pack-content</artifactId>
                 <version>${version.org.wildfly.vertx}</version>
                 <type>pom</type>
-                <scope>import</scope>
+                <!-- TODO when a version with https://github.com/wildfly-extras/wildfly-vertx-feature-pack/issues/57
+                     fixed is integrated, uncomment this import scope and remove the following explicit
+                     declaration of wildfly-vertx-extension. (But keep the wildfly-vertx-feature-pack-content zip!) -->
+                <!--<scope>import</scope>-->
+            </dependency>
+            <dependency>
+                <groupId>org.wildfly.extras.vertx</groupId>
+                <artifactId>wildfly-vertx-extension</artifactId>
+                <version>${version.org.wildfly.vertx}</version>
             </dependency>
             <dependency>
                 <groupId>org.wildfly.extras.vertx</groupId>
