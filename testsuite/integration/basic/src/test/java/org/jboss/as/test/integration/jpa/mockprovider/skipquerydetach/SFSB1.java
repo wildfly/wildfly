@@ -55,12 +55,12 @@ public class SFSB1 {
         }
         query.getSingleResult();
         if(TestEntityManager.getInvocations().contains("close")) {
-            return "invalid state, entity manager was closed before SFSB1 bean call completed, " +
+            return "invalid state, entity manager was closed before RequestScopedTestBean bean call completed, " +
                     "which means that 'wildfly.jpa.skipquerydetach=true' couldn't work, as the " +
                     "persistence context was closed too early";
         }
         if(TestEntityManager.getInvocations().contains("clear")) {
-            return "invalid state, entity manager was cleared (detached) before SFSB1 bean call completed, " +
+            return "invalid state, entity manager was cleared (detached) before RequestScopedTestBean bean call completed, " +
                     "which means that 'wildfly.jpa.skipquerydetach=true' didn't work";
         }
         return null;  // success
@@ -85,7 +85,7 @@ public class SFSB1 {
         }
         query.getSingleResult();
         if(TestEntityManager.getInvocations().contains("close")) {
-            return "invalid state, entity manager was closed before SFSB1 bean call completed, " +
+            return "invalid state, entity manager was closed before RequestScopedTestBean bean call completed, " +
                     "which means that 'wildfly.jpa.skipquerydetach=false' couldn't work, as the " +
                     "persistence context was closed too early";
         }

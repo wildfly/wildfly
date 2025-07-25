@@ -66,7 +66,7 @@ public class ClassFileTransformerTestCase {
 
     @Test
     public void testhibernate_ejb_use_class_enhancer() throws Exception {
-        SFSB1 sfsb1 = lookup("SFSB1", SFSB1.class);
+        SFSB1 sfsb1 = lookup("RequestScopedTestBean", SFSB1.class);
         sfsb1.createEmployee("Kelly Smith", "Watford, England", 10);
         sfsb1.createEmployee("Alex Scott", "London, England", 20);
         Employee emp = sfsb1.getEmployeeNoTX(10);

@@ -74,7 +74,7 @@ public class JPA2LCTestCase {
     @Test
     @InSequence(1)
     public void testMultipleNonTXTransactionalEntityManagerInvocations() throws Exception {
-        SFSB1 sfsb1 = lookup("SFSB1", SFSB1.class);
+        SFSB1 sfsb1 = lookup("RequestScopedTestBean", SFSB1.class);
         sfsb1.createEmployee("Kelly Smith", "Watford, England", 1000);
         sfsb1.createEmployee("Alex Scott", "London, England", 2000);
         sfsb1.getEmployeeNoTX(1000);

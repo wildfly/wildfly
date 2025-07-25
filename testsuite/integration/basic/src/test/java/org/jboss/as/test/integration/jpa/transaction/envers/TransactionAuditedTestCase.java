@@ -59,7 +59,7 @@ public class TransactionAuditedTestCase {
 
         try {
 
-            SFSB1 sfsb1 = lookup("SFSB1", SFSB1.class);
+            SFSB1 sfsb1 = lookup("RequestScopedTestBean", SFSB1.class);
             Employee emp = sfsb1.createEmployeeTx("Madhumita", "1 home street", 1);
 
             sfsb1.updateEmployeeTx("40 Patrice Lumumby", emp);
@@ -82,7 +82,7 @@ public class TransactionAuditedTestCase {
     @Test
     public void testAuditingOverTransactionRollback() throws Exception {
 
-        SFSB1 sfsb1 = lookup("SFSB1", SFSB1.class);
+        SFSB1 sfsb1 = lookup("RequestScopedTestBean", SFSB1.class);
         Employee emp = null;
         try {
 

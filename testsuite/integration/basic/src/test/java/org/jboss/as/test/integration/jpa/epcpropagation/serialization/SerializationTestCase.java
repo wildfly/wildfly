@@ -54,7 +54,7 @@ public class SerializationTestCase {
 
     @Test
     public void testSerialization() throws Exception {
-        SFSB1 sfsb1 = lookup("SFSB1", SFSB1.class);
+        SFSB1 sfsb1 = lookup("RequestScopedTestBean", SFSB1.class);
         sfsb1.createEmployeeNoTx("name", "address", 100);
         byte[] serialized = sfsb1.getSerializedXPC();
 

@@ -84,7 +84,7 @@ public class SkipquerydetachTestCase {
     public void test_withSkipQueryDetachEnabled() throws NamingException {
         SFSB1 sfsb1 = (SFSB1)iniCtx.lookup("java:module/" + SFSB1.class.getSimpleName());
         try {
-            assertNotNull("EJB injection of SFSB1 failed",sfsb1);
+            assertNotNull("EJB injection of RequestScopedTestBean failed",sfsb1);
             assertNull(sfsb1.queryWithSkipQueryDetachEnabled());
         } finally {
             TestAdapter.clearInitialized();
@@ -99,7 +99,7 @@ public class SkipquerydetachTestCase {
         SFSB1 sfsb1 = (SFSB1)iniCtx.lookup("java:module/" + SFSB1.class.getSimpleName());
 
         try {
-            assertNotNull("EJB injection of SFSB1 failed",sfsb1);
+            assertNotNull("EJB injection of RequestScopedTestBean failed",sfsb1);
             assertNull(sfsb1.queryWithSkipQueryDetachDisabled());
         } finally {
             TestAdapter.clearInitialized();
