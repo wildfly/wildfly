@@ -34,6 +34,10 @@ public class RequestScopedTestBean {
     EntityManagerFactory emf;
 
     @Inject
+    @Pu2Qualifier
+    EntityManagerFactory emf2;
+
+    @Inject
     @Pu1Qualifier
     CriteriaBuilder criteriaBuilder;
 

@@ -19,6 +19,10 @@ public interface SchemaManagerBeanCreator {
     }
 
     static SchemaManagerBeanCreator getImplementation(Class schemaManagerCreatorClass) {
+        if (schemaManagerCreatorClass == null) {
+            return new SchemaManagerBeanCreator() {
+                        };
+        }
         try {
             return (SchemaManagerBeanCreator) schemaManagerCreatorClass.newInstance();
         } catch (InstantiationException | IllegalAccessException e) {
