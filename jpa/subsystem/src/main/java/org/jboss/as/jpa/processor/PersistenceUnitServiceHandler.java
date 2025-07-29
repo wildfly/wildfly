@@ -1153,6 +1153,7 @@ public class PersistenceUnitServiceHandler {
     }
 
     private static IntegrationWithCDIBagImpl registerPersistenceAfterBeanDiscovery(DeploymentUnit deploymentUnit, CapabilityServiceSupport support, PersistenceUnitMetadata pu, TransactionManager transactionManager, TransactionSynchronizationRegistry transactionSynchronizationRegistry) {
+        IntegrationWithCDIBagImpl result = null;
         deploymentUnit = DeploymentUtils.getTopDeploymentUnit(deploymentUnit);
         if (support.hasCapability(WELD_CAPABILITY_NAME)) {
             Optional<WeldCapability> weldCapability = support.getOptionalCapabilityRuntimeAPI(WELD_CAPABILITY_NAME, WeldCapability.class);
@@ -1162,20 +1163,16 @@ public class PersistenceUnitServiceHandler {
                     IntegratePersistenceAfterBeanDiscovery integratePersistenceAfterBeanDiscovery = deploymentUnit.getAttachment(JpaAttachments.AFTER_BEAN_DISCOVERY_ATTACHMENT_KEY);
                     if (null == integratePersistenceAfterBeanDiscovery) {
                         integratePersistenceAfterBeanDiscovery = new IntegratePersistenceAfterBeanDiscovery();
-                        integratePersistenceAfterBeanDiscovery.register(pu);
                         deploymentUnit.putAttachment(JpaAttachments.AFTER_BEAN_DISCOVERY_ATTACHMENT_KEY, integratePersistenceAfterBeanDiscovery);
                         weldCapability.get().registerExtensionInstance(integratePersistenceAfterBeanDiscovery, deploymentUnit);
-                        return integratePersistenceAfterBeanDiscovery.getIntegrationWithCDIBag();
-                    } else {
-                        integratePersistenceAfterBeanDiscovery.getIntegrationWithCDIBag().setTransactionManager(transactionManager);
-                        integratePersistenceAfterBeanDiscovery.getIntegrationWithCDIBag().setTransactionSynchronizationRegistry(transactionSynchronizationRegistry);
-                        integratePersistenceAfterBeanDiscovery.register(pu);
-                        return integratePersistenceAfterBeanDiscovery.getIntegrationWithCDIBag();
                     }
+                    result = integratePersistenceAfterBeanDiscovery.register(pu);
+                    result.setTransactionManager(transactionManager);
+                    result.setTransactionSynchronizationRegistry(transactionSynchronizationRegistry);
                 }
             }
         }
-        return null;
+        return result;
     }
 
     private static BeanManagerAfterDeploymentValidation registerJPAEntityListenerRegister(DeploymentUnit deploymentUnit, CapabilityServiceSupport support) {

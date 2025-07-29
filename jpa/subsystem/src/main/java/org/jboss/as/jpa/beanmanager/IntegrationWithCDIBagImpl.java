@@ -9,6 +9,7 @@ import jakarta.persistence.EntityManagerFactory;
 import jakarta.transaction.TransactionManager;
 import jakarta.transaction.TransactionSynchronizationRegistry;
 import org.jipijapa.plugin.spi.IntegrationWithCDIBag;
+import org.jipijapa.plugin.spi.PersistenceUnitMetadata;
 
 /**
  * IntegrationWithCDIBagImpl
@@ -20,6 +21,7 @@ public class IntegrationWithCDIBagImpl implements IntegrationWithCDIBag {
     private volatile EntityManagerFactory entityManagerFactory;
     private volatile TransactionManager transactionManager;
     private volatile TransactionSynchronizationRegistry transactionSynchronizationRegistry;
+    private volatile PersistenceUnitMetadata persistenceUnitMetadata;
 
     public EntityManagerFactory getEntityManagerFactory() {
         return entityManagerFactory;
@@ -43,5 +45,13 @@ public class IntegrationWithCDIBagImpl implements IntegrationWithCDIBag {
 
     public void setTransactionSynchronizationRegistry(TransactionSynchronizationRegistry transactionSynchronizationRegistry) {
         this.transactionSynchronizationRegistry = transactionSynchronizationRegistry;
+    }
+
+    public PersistenceUnitMetadata getPersistenceUnitMetadata() {
+        return persistenceUnitMetadata;
+    }
+
+    public void setPersistenceUnitMetadata(PersistenceUnitMetadata persistenceUnitMetadata) {
+        this.persistenceUnitMetadata = persistenceUnitMetadata;
     }
 }

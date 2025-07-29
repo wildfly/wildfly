@@ -32,7 +32,7 @@ public class CDIPersistenceSchemaManagerTestCase {
     @Deployment
     public static Archive<?> deployment() {
         final JavaArchive jar = ShrinkWrap.create(JavaArchive.class, "CDIPersistenceSchemaManagerTestCase.jar");
-        jar.addClasses(CDIPersistenceSchemaManagerTestCase.class, Employee.class, Pu1Qualifier.class, RequestScopedTestBean.class);
+        jar.addClasses(CDIPersistenceSchemaManagerTestCase.class, Employee.class, Pu1Qualifier.class, Pu2Qualifier.class, RequestScopedTestBean.class);
         jar.addAsManifestResource(CDIPersistenceSchemaManagerTestCase.class.getPackage(), "persistence.xml", "persistence.xml");
         jar.addAsManifestResource(CDIPersistenceSchemaManagerTestCase.class.getPackage(), "beans.xml", "beans.xml");
         return jar;

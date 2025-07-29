@@ -5,6 +5,8 @@
 
 package org.jboss.as.jpa.beanmanager;
 
+import java.util.concurrent.CopyOnWriteArrayList;
+
 import jakarta.enterprise.event.Observes;
 import jakarta.enterprise.inject.spi.AfterBeanDiscovery;
 import jakarta.enterprise.inject.spi.BeanManager;
@@ -17,23 +19,28 @@ import org.jipijapa.plugin.spi.PersistenceUnitMetadata;
  * @author Scott Marlow
  */
 public class IntegratePersistenceAfterBeanDiscovery implements Extension {
+    private final CopyOnWriteArrayList<IntegrationWithCDIBagImpl> copyOnWriteArrayList = new CopyOnWriteArrayList();
+    private volatile boolean afterBeanDiscoveryEventRanAlready = false;
 
-    private volatile PersistenceUnitMetadata persistenceUnitMetadata;
-    private final IntegrationWithCDIBagImpl integrationWithCDIBag = new IntegrationWithCDIBagImpl();
     void afterBeanDiscovery(@Observes AfterBeanDiscovery event, BeanManager manager) {
+        afterBeanDiscoveryEventRanAlready = true;
         try {
-            new PersistenceIntegrationWithCDI().addBeans(event, persistenceUnitMetadata, integrationWithCDIBag);
+            for (IntegrationWithCDIBagImpl integrationWithCDIBag: copyOnWriteArrayList) {
+                new PersistenceIntegrationWithCDI().addBeans(event, integrationWithCDIBag.getPersistenceUnitMetadata(), integrationWithCDIBag);
+            }
         } catch (RuntimeException e) {
             event.addDefinitionError(e);
         }
     }
 
-    public void register(final PersistenceUnitMetadata persistenceUnitMetadata) {
-        this.persistenceUnitMetadata = persistenceUnitMetadata;
-    }
-
-    public IntegrationWithCDIBagImpl getIntegrationWithCDIBag() {
+    public IntegrationWithCDIBagImpl register(final PersistenceUnitMetadata persistenceUnitMetadata) {
+        if (afterBeanDiscoveryEventRanAlready) {
+            throw new IllegalStateException("IntegratePersistenceAfterBeanDiscovery cannot register " + persistenceUnitMetadata.getScopedPersistenceUnitName() + " as " +
+                    "jakarta.enterprise.inject.spi.AfterBeanDiscovery already ran for the deployment.");
+        }
+        final IntegrationWithCDIBagImpl integrationWithCDIBag = new IntegrationWithCDIBagImpl();
+        integrationWithCDIBag.setPersistenceUnitMetadata(persistenceUnitMetadata);
+        copyOnWriteArrayList.add(integrationWithCDIBag);
         return integrationWithCDIBag;
     }
-
 }

@@ -13,8 +13,14 @@
         <jta-data-source>java:jboss/datasources/ExampleDS</jta-data-source>
         <properties>
             <property name="hibernate.hbm2ddl.auto" value="create-drop"/>
-            <property name="PersistenceUnitName" value="pu1"/>
         </properties>
         <qualifier>org.wildfly.test.preview.persistence.cdi.Pu1Qualifier</qualifier>
+    </persistence-unit>
+    <persistence-unit name="pu2">
+        <jta-data-source>java:jboss/datasources/ExampleDS</jta-data-source>
+        <properties>
+            <property name="hibernate.hbm2ddl.auto" value="create-drop"/>
+        </properties>
+        <qualifier>org.wildfly.test.preview.persistence.cdi.Pu2Qualifier</qualifier>
     </persistence-unit>
 </persistence>
