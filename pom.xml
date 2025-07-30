@@ -66,6 +66,11 @@
         <!-- The Galleon channel for the minor version with which this branch is associated.  -->
         <galleon.minor.channel>${product.docs.server.version}.0</galleon.minor.channel>
 
+
+        <!-- Repository Deployment Settings -->
+        <nexus.repository.staging>wildfly-staging</nexus.repository.staging>
+        <nexus.staging.tag>wildfly-${project.version}</nexus.staging.tag>
+
         <!-- Galleon -->
         <galleon.fork.embedded>true</galleon.fork.embedded>
         <galleon.log.time>true</galleon.log.time>
@@ -1290,6 +1295,13 @@
                     <groupId>org.wildfly</groupId>
                     <artifactId>wildfly-maven-gpg-plugin</artifactId>
                     <version>${version.org.wildfly.wildfly-maven-gpg-plugin}</version>
+                    <configuration>
+                        <useAgent>true</useAgent>
+                        <gpgArguments>
+                            <arg>--pinentry-mode</arg>
+                            <arg>${gpg.pinEntryMode}</arg>
+                        </gpgArguments>
+                    </configuration>
                 </plugin>
                 <plugin>
                     <groupId>org.jboss.galleon</groupId>
@@ -1538,44 +1550,6 @@
                 <module>boms/preview-test-expansion</module>
                 <module>preview</module>
             </modules>
-        </profile>
-
-        <!--
-            Override the jboss-parent gpg-sign profile to disable
-            use of the Apache maven-gpg-plugin.
-        -->
-        <profile>
-            <id>gpg-sign</id>
-            <build>
-                <plugins>
-                    <!-- Disable the plugin from jboss-parent -->
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-gpg-plugin</artifactId>
-                        <executions>
-                            <execution>
-                                <id>default</id>
-                                <phase>none</phase>
-                            </execution>
-                        </executions>
-                    </plugin>
-                    <!-- Use the WildFly workaround variant -->
-                    <plugin>
-                        <groupId>org.wildfly</groupId>
-                        <artifactId>wildfly-maven-gpg-plugin</artifactId>
-                        <configuration>
-                            <useAgent>true</useAgent>
-                        </configuration>
-                        <executions>
-                            <execution>
-                                <goals>
-                                    <goal>sign</goal>
-                                </goals>
-                            </execution>
-                        </executions>
-                    </plugin>
-                </plugins>
-            </build>
         </profile>
 
         <profile>
