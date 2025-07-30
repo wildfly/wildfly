@@ -26,6 +26,7 @@
 
     <name>WildFly: Parent Aggregator</name>
     <description>WildFly: Parent Aggregator</description>
+    <url>https://wildfly.org</url>
 
     <licenses>
         <license>
@@ -40,6 +41,15 @@
         <developerConnection>scm:git:${jboss.as.scm.connection}</developerConnection>
         <url>${jboss.as.scm.url}</url>
     </scm>
+
+    <developers>
+        <developer>
+            <id>wildfly.org</id>
+            <name>WildFly Community</name>
+            <organization>wildfly.org</organization>
+            <organizationUrl>http://wildfly.org</organizationUrl>
+        </developer>
+    </developers>
 
     <properties>
         <!-- Release Info.
