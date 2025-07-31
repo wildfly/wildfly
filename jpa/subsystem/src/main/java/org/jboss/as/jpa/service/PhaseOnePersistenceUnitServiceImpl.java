@@ -17,6 +17,7 @@ import java.util.concurrent.RejectedExecutionException;
 import jakarta.enterprise.inject.spi.BeanManager;
 import javax.sql.DataSource;
 
+import org.jboss.as.jpa.beanmanager.IntegrationWithCDIBagImpl;
 import org.jboss.as.jpa.beanmanager.ProxyBeanManager;
 import org.jboss.as.jpa.classloader.TempClassLoaderFactoryImpl;
 import org.jboss.as.naming.WritableServiceBasedNamingStore;
@@ -55,6 +56,7 @@ public class PhaseOnePersistenceUnitServiceImpl implements Service<PhaseOnePersi
     private final ServiceName deploymentUnitServiceName;
     private final ProxyBeanManager proxyBeanManager;
     private final Object wrapperBeanManagerLifeCycle;
+    private final IntegrationWithCDIBagImpl integrationWithCDIBag;
 
     private volatile EntityManagerFactoryBuilder entityManagerFactoryBuilder;
 
@@ -65,13 +67,15 @@ public class PhaseOnePersistenceUnitServiceImpl implements Service<PhaseOnePersi
             final PersistenceUnitMetadata pu,
             final PersistenceProviderAdaptor persistenceProviderAdaptor,
             final ServiceName deploymentUnitServiceName,
-            final ProxyBeanManager proxyBeanManager) {
+            final ProxyBeanManager proxyBeanManager,
+            final IntegrationWithCDIBagImpl integrationWithCDIBag) {
         this.pu = pu;
         this.persistenceProviderAdaptor = persistenceProviderAdaptor;
         this.classLoader = classLoader;
         this.deploymentUnitServiceName = deploymentUnitServiceName;
         this.proxyBeanManager = proxyBeanManager;
         this.wrapperBeanManagerLifeCycle = proxyBeanManager != null ? persistenceProviderAdaptor.beanManagerLifeCycle(proxyBeanManager): null;
+        this.integrationWithCDIBag = integrationWithCDIBag;
     }
 
     @Override
@@ -225,6 +229,10 @@ public class PhaseOnePersistenceUnitServiceImpl implements Service<PhaseOnePersi
 
     public Object getBeanManagerLifeCycle() {
         return wrapperBeanManagerLifeCycle;
+    }
+
+    public IntegrationWithCDIBagImpl getIntegrationWithCDIBag() {
+        return integrationWithCDIBag;
     }
 
     /**

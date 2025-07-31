@@ -60,7 +60,7 @@ public class DataSourceDefinitionJPATestCase {
     @Test
     @InSequence(1)
     public void testMultipleNonTXTransactionalEntityManagerInvocations() throws Exception {
-        SFSB1 sfsb1 = lookup("SFSB1", SFSB1.class);
+        SFSB1 sfsb1 = lookup("RequestScopedTestBean", SFSB1.class);
         sfsb1.getEmployeeNoTX(1);   // For each call in, we will use a transactional entity manager
         // that isn't running in a transaction.  So, a new underlying
         // entity manager will be obtained.  The is to ensure that we don't blow up.
@@ -71,7 +71,7 @@ public class DataSourceDefinitionJPATestCase {
     @Test
     @InSequence(2)
     public void testQueryNonTXTransactionalEntityManagerInvocations() throws Exception {
-        SFSB1 sfsb1 = lookup("SFSB1", SFSB1.class);
+        SFSB1 sfsb1 = lookup("RequestScopedTestBean", SFSB1.class);
         String name = sfsb1.queryEmployeeNameNoTX(1);
         assertEquals("Query should of thrown NoResultException, which we indicate by returning 'success'", "success", name);
     }
@@ -82,7 +82,7 @@ public class DataSourceDefinitionJPATestCase {
     @Test
     @InSequence(3)
     public void testQueryNonTXTransactionalDetach() throws Exception {
-        SFSB1 sfsb1 = lookup("SFSB1", SFSB1.class);
+        SFSB1 sfsb1 = lookup("RequestScopedTestBean", SFSB1.class);
         sfsb1.createEmployee("Jill", "54 Country Lane", 2);
         Employee employee = sfsb1.queryEmployeeNoTX(2);
         assertNotNull(employee);
@@ -101,7 +101,7 @@ public class DataSourceDefinitionJPATestCase {
     public void testTransactionRequiredException() throws Exception {
         Throwable error = null;
         try {
-            SFSB1 sfsb1 = lookup("SFSB1", SFSB1.class);
+            SFSB1 sfsb1 = lookup("RequestScopedTestBean", SFSB1.class);
             sfsb1.createEmployeeNoTx("Sally", "1 home street", 1);
         } catch (TransactionRequiredException e) {
             error = e;

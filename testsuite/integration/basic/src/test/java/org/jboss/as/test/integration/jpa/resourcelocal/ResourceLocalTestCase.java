@@ -58,7 +58,7 @@ public class ResourceLocalTestCase {
      */
     @Test
     public void flushOutSideTransaction() throws NamingException {
-        SFSB1 sfsb1 = lookup("SFSB1", SFSB1.class);
+        SFSB1 sfsb1 = lookup("RequestScopedTestBean", SFSB1.class);
         try {
             sfsb1.flushWithNoTx();
         } catch (EJBException e) {
@@ -69,7 +69,7 @@ public class ResourceLocalTestCase {
 
     @Test
     public void testResourceLocalRollback() throws Exception {
-        SFSB1 sfsb1 = lookup("SFSB1", SFSB1.class);
+        SFSB1 sfsb1 = lookup("RequestScopedTestBean", SFSB1.class);
         sfsb1.createEmployeeNoJTATransaction("Bob", "Home", 1);
         Employee emp = sfsb1.getEmployeeNoTX(1);
         Assert.assertEquals("Bob", emp.getName());

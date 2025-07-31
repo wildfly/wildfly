@@ -72,7 +72,7 @@ public class TransactionTestCase {
     @Test
     @InSequence(1)
     public void testMultipleNonTXTransactionalEntityManagerInvocations() throws Exception {
-        SFSB1 sfsb1 = lookup("SFSB1", SFSB1.class);
+        SFSB1 sfsb1 = lookup("RequestScopedTestBean", SFSB1.class);
         sfsb1.getEmployeeNoTX(1);   // For each call in, we will use a transactional entity manager
         // that isn't running in a transaction.  So, a new underlying
         // entity manager will be obtained.  The is to ensure that we don't blow up.
@@ -83,7 +83,7 @@ public class TransactionTestCase {
     @Test
     @InSequence(2)
     public void testQueryNonTXTransactionalEntityManagerInvocations() throws Exception {
-        SFSB1 sfsb1 = lookup("SFSB1", SFSB1.class);
+        SFSB1 sfsb1 = lookup("RequestScopedTestBean", SFSB1.class);
         String name = sfsb1.queryEmployeeNameNoTX(1);
         assertEquals("Query should of thrown NoResultException, which we indicate by returning 'success'", "success", name);
     }
@@ -94,7 +94,7 @@ public class TransactionTestCase {
     @Test
     @InSequence(3)
     public void testQueryNonTXTransactionalDetach() throws Exception {
-        SFSB1 sfsb1 = lookup("SFSB1", SFSB1.class);
+        SFSB1 sfsb1 = lookup("RequestScopedTestBean", SFSB1.class);
         sfsb1.createEmployee("Jill", "54 Country Lane", 2);
         Employee employee = sfsb1.queryEmployeeNoTX(2);
         assertNotNull(employee);
@@ -113,7 +113,7 @@ public class TransactionTestCase {
     public void testTransactionRequiredException() throws Exception {
         Throwable error = null;
         try {
-            SFSB1 sfsb1 = lookup("SFSB1", SFSB1.class);
+            SFSB1 sfsb1 = lookup("RequestScopedTestBean", SFSB1.class);
             sfsb1.createEmployeeNoTx("Sally", "1 home street", 1);
         } catch (TransactionRequiredException e) {
             error = e;
@@ -199,7 +199,7 @@ public class TransactionTestCase {
     @InSequence(8)
     public void testUnsynchronized() throws Exception {
         UnsynchronizedSFSB unsynchronizedSFSB = lookup("UnsynchronizedSFSB", UnsynchronizedSFSB.class);
-        SFSB1 sfsb1 = lookup("SFSB1", SFSB1.class);
+        SFSB1 sfsb1 = lookup("RequestScopedTestBean", SFSB1.class);
 
         // create entity in UNSYNCHRONIZED persistence context which shouldn't be stored in the database until after em.joinTransaction()
         Employee employee = unsynchronizedSFSB.createAndFind("New England Revolution", "Gillette Stadium", 50);
@@ -231,7 +231,7 @@ public class TransactionTestCase {
     @InSequence(9)
     public void testUnsynchronizedXPC() throws Exception {
         UnsynchronizedSFSBXPC unsynchronizedSFSBXPC = lookup("UnsynchronizedSFSBXPC", UnsynchronizedSFSBXPC.class);
-        SFSB1 sfsb1 = lookup("SFSB1", SFSB1.class);
+        SFSB1 sfsb1 = lookup("RequestScopedTestBean", SFSB1.class);
 
         // create entity in UNSYNCHRONIZED persistence context which shouldn't be stored in the database until after em.joinTransaction()
         Employee employee = unsynchronizedSFSBXPC.createAndFind("Tom Jones", "Singer", 500);
@@ -245,7 +245,7 @@ public class TransactionTestCase {
     @Test
     @InSequence(10)
     public void testQueryNonTXTransactionalDetachIsDeferred() throws Exception {
-        SFSB1 sfsb1 = lookup("SFSB1", SFSB1.class);
+        SFSB1 sfsb1 = lookup("RequestScopedTestBean", SFSB1.class);
         sfsb1.createEmployee("Mad", "368 Mad Country Lane", 204);
         assertTrue("expecting that lazily fetched association is still attached, so that we can verify its lazy fetched collection size of one", sfsb1.isLazyAssociationAccessibleWithDeferredDetach(204));
     }
@@ -281,7 +281,7 @@ public class TransactionTestCase {
     @Test
     @InSequence(12)
     public void testQueryLazyFetch() throws Exception {
-        SFSB1 sfsb1 = lookup("SFSB1", SFSB1.class);
+        SFSB1 sfsb1 = lookup("RequestScopedTestBean", SFSB1.class);
         Company company = sfsb1.createEmployee("Mad", "57343 LazilyFetched Lane", 205);
         boolean lazyProxy = false;
         Class<?>[] interfaces = company.getClass().getInterfaces();
