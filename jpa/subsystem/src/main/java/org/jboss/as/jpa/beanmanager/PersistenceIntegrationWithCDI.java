@@ -160,10 +160,16 @@ public class PersistenceIntegrationWithCDI {
         // EntityManagerFactory setup
         BeanConfigurator<EntityManagerFactory> beanConfigurator = afterBeanDiscovery.addBean();
         beanConfigurator.addTransitiveTypeClosure(EntityManagerFactory.class);
-        // specify the bean name as our internal persistence unit that is scoped to the EE module/submodule level.
+        // TODO: we cannot yet add the bean name for the EntityManagerFactory bean for each persistence unit when they
+        // * may be duplicated within different EE modules/submodules.  https://github.com/jakartaee/platform/issues/1135 is the
+        // * EE 12 tracker.
+        // Uncomment the following block and update when this TODO is addressed.
+        /**
         String beanName = persistenceUnitMetadata.getScopedPersistenceUnitName().replace("#",".");
-        JpaLogger.ROOT_LOGGER.createEntityManagerFactoryBean(beanName, persistenceUnitMetadata.getPersistenceUnitName());
+        JpaLogger.ROOT_LOGGER.infof("Creating EntityManagerFactory CDI bean named %s for accessing persistence unit %s",
+                beanName, persistenceUnitMetadata.getPersistenceUnitName());
         beanConfigurator.name(beanName);
+         **/
 
         try {
             Class<? extends Annotation> scopeAnnotation = persistenceUnitMetadata.getClassLoader().loadClass(scope).asSubclass(Annotation.class);
