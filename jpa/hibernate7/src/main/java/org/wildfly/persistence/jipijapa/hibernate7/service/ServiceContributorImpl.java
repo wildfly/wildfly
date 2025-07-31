@@ -7,6 +7,7 @@ package org.wildfly.persistence.jipijapa.hibernate7.service;
 import static org.wildfly.persistence.jipijapa.hibernate7.JpaLogger.JPA_LOGGER;
 
 import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
+import org.hibernate.internal.util.cache.InternalCacheFactory;
 import org.hibernate.service.spi.ServiceContributor;
 import org.kohsuke.MetaInfServices;
 
@@ -61,5 +62,13 @@ public class ServiceContributorImpl implements ServiceContributor {
             JPA_LOGGER.tracef("ServiceContributorImpl#contribute adding ORM initiator for 2lc region factory");
             serviceRegistryBuilder.addInitiator(new WildFlyCustomRegionFactoryInitiator());
         }
+
+        //Now customize the Hibernate "internal cache": this is a component used for internal needs
+        //(it's NOT the second level cache). ORM integrators such as WildFly are encouraged to inject
+        //a better implementation than the one included by default.
+        //WildFly happens to already pack Caffeine, which is an excellent choice so that's what it will use.
+        //This setting is not user configurable.
+        serviceRegistryBuilder.addService(InternalCacheFactory.class, new WildFlyCustomInternalCacheFactory());
     }
+
 }
