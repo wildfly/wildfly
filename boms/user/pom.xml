@@ -87,6 +87,78 @@
                 <module>tools</module>
             </modules>
         </profile>
+
+        <!--
+             Modules in this tree attach an artifact (bom-pom.xml) under a different
+             Maven GA from the module's GA.
+             1) Disable the jboss-parent pom's jboss-release profile use of maven-gpg-plugin
+             for this one as it can't handle that; we need to use wildfly-maven-gpg-plugin
+             to deal with this.
+             2) Work around the nxrm3-maven-plugin's staging-deploy mojo's inability to directly
+             POST these artifacts to the remote repository.
+        -->
+        <profile>
+            <id>jboss-release</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-gpg-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>gpg-sign</id>
+                                <phase>none</phase>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.wildfly</groupId>
+                        <artifactId>wildfly-maven-gpg-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>gpg-sign</id>
+                                <goals>
+                                    <goal>sign</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.sonatype.plugins</groupId>
+                        <artifactId>nxrm3-maven-plugin</artifactId>
+                        <extensions>true</extensions>
+                        <executions>
+                            <!--
+                                 The staging-deploy mojo can't deal with directly deploying this project's artifacts
+                                 to a remote repo, because different artifacts have different maven GAs.
+                                 So, we configure it to stage locally, and then in a subsequent execution we upload.
+                                 The local staging writes a proper repo file layout, which the upload mojo
+                                 uses to determine the GAV info for what it uploads.
+                            -->
+                            <execution>
+                                <id>nexus-deploy</id>
+                                <configuration>
+                                    <stageLocally>true</stageLocally>
+                                    <altStagingDirectory>${project.build.directory}/nexus-staging</altStagingDirectory>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>nexus-upload</id>
+                                <phase>deploy</phase>
+                                <goals>
+                                    <goal>upload</goal>
+                                </goals>
+                                <configuration>
+                                    <altStagingDirectory>${project.build.directory}/nexus-staging</altStagingDirectory>
+                                    <repository>${nexus.repository.staging}</repository>
+                                    <tag>${nexus.staging.tag}</tag>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
     </profiles>
 
 </project>
