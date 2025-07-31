@@ -85,6 +85,12 @@
         </dependency>
 
         <dependency>
+            <groupId>com.github.ben-manes.caffeine</groupId>
+            <artifactId>caffeine</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
             <groupId>org.infinispan</groupId>
             <artifactId>infinispan-hibernate-cache-spi</artifactId>
             <scope>provided</scope>
