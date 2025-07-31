@@ -292,13 +292,6 @@
                     <skip>true</skip>
                 </configuration>
             </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-javadoc-plugin</artifactId>
-                <configuration>
-                    <skip>true</skip>
-                </configuration>
-            </plugin>
             <!-- Use keytool plugin to create server keystore for testing -->
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
