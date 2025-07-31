@@ -160,7 +160,10 @@ public class PersistenceIntegrationWithCDI {
         // EntityManagerFactory setup
         BeanConfigurator<EntityManagerFactory> beanConfigurator = afterBeanDiscovery.addBean();
         beanConfigurator.addTransitiveTypeClosure(EntityManagerFactory.class);
-        beanConfigurator.name(persistenceUnitMetadata.getPersistenceUnitName());
+        // specify the bean name as our internal persistence unit that is scoped to the EE module/submodule level.
+        String beanName = persistenceUnitMetadata.getScopedPersistenceUnitName().replace("#",".");
+        JpaLogger.ROOT_LOGGER.createEntityManagerFactoryBean(beanName, persistenceUnitMetadata.getPersistenceUnitName());
+        beanConfigurator.name(beanName);
 
         try {
             Class<? extends Annotation> scopeAnnotation = persistenceUnitMetadata.getClassLoader().loadClass(scope).asSubclass(Annotation.class);

@@ -766,4 +766,8 @@ public interface JpaLogger extends BasicLogger {
 
     @Message(id = 78, value = "Cannot setup Persistence/CDI integration for %s")
     IllegalAccessException classNotFound(@Cause ClassNotFoundException cause, String scopedPersistenceUnitName);
+
+    @LogMessage(level = INFO)
+    @Message(id = 79, value = "Creating EntityManagerFactory CDI bean named %s for accessing persistence unit %s")
+    void createEntityManagerFactoryBean(String beanName, String persistenceUnitName);
 }
