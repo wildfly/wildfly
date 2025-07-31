@@ -1416,21 +1416,6 @@
                     <groupId>org.asciidoctor</groupId>
                     <artifactId>asciidoctor-maven-plugin</artifactId>
                     <version>${version.asciidoctor.plugin}</version>
-                    <configuration>
-                        <attributes>
-                            <source-highlighter>coderay</source-highlighter>
-                            <icons>font</icons>
-                            <pagenums></pagenums>
-                            <version>${project.version}</version>
-                            <idprefix></idprefix>
-                            <idseparator>-</idseparator>
-                            <allow-uri-read>true</allow-uri-read>
-                            <wildflyVersion>${product.docs.server.version}</wildflyVersion>
-                            <revnumber>${project.version}</revnumber>
-                            <revdate>${maven.build.timestamp}</revdate>
-                            <organization>${project.organization.name}</organization>
-                        </attributes>
-                    </configuration>
                 </plugin>
                 <plugin>
                     <groupId>org.wildfly.glow</groupId>
