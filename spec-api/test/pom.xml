@@ -31,6 +31,16 @@
           <skip>true</skip>
         </configuration>
       </plugin>
+      <plugin>
+          <groupId>org.sonatype.plugins</groupId>
+          <artifactId>nxrm3-maven-plugin</artifactId>
+          <executions>
+              <execution>
+                  <id>nexus-deploy</id>
+                  <phase>none</phase>
+              </execution>
+          </executions>
+      </plugin>
     </plugins>
   </build>
 </project>

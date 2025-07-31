@@ -30,18 +30,57 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>default-jar</id>
+                        <phase>none</phase>
+                    </execution>
+                    <execution>
+                        <id>jar</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                        <configuration>
+                            <!-- This archive only has the manifest we generate. Turn off WARNs about that -->
+                            <skipIfEmpty>false</skipIfEmpty>
+                            <archive>
+                                <manifestEntries>
+                                    <JBoss-Product-Release-Name>${ee.dist.product.release.name}</JBoss-Product-Release-Name>
+                                    <JBoss-Product-Release-Version>${ee.dist.product.release.version}</JBoss-Product-Release-Version>
+                                    <JBoss-Product-Stability>community</JBoss-Product-Stability>
+                                    <JBoss-Product-Minimum-Stability>experimental</JBoss-Product-Minimum-Stability>
+                                </manifestEntries>
+                            </archive>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>empty-javadoc-jar</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                        <configuration>
+                            <classifier>javadoc</classifier>
+                            <classesDirectory>${project.basedir}/javadoc</classesDirectory>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-source-plugin</artifactId>
                 <configuration>
-                    <!-- This archive only has the manifest we generate. Turn off WARNs about that -->
-                    <skipIfEmpty>false</skipIfEmpty>
-                    <archive>
-                        <manifestEntries>
-                            <JBoss-Product-Release-Name>${ee.dist.product.release.name}</JBoss-Product-Release-Name>
-                            <JBoss-Product-Release-Version>${ee.dist.product.release.version}</JBoss-Product-Release-Version>
-                            <JBoss-Product-Stability>community</JBoss-Product-Stability>
-                            <JBoss-Product-Minimum-Stability>experimental</JBoss-Product-Minimum-Stability>
-                        </manifestEntries>
-                    </archive>
+                  <includePom>true</includePom>
                 </configuration>
+                <executions>
+                    <execution>
+                        <id>attach-sources</id>
+                        <goals>
+                            <goal>jar-no-fork</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>
