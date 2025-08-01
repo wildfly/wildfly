@@ -2853,18 +2853,6 @@
 
             <dependency>
                 <groupId>org.glassfish</groupId>
-                <artifactId>jakarta.enterprise.concurrent</artifactId>
-                <version>${version.org.glassfish.jakarta.enterprise.concurrent}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-
-            <dependency>
-                <groupId>org.glassfish</groupId>
                 <artifactId>jakarta.faces</artifactId>
                 <version>${version.jakarta.faces}</version>
                 <exclusions>
