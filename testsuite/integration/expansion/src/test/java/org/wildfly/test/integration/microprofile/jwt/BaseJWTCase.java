@@ -7,10 +7,13 @@ package org.wildfly.test.integration.microprofile.jwt;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static org.wildfly.test.integration.microprofile.jwt.TokenUtil.createKeySupplier;
 import static org.wildfly.test.integration.microprofile.jwt.TokenUtil.generateJWT;
 
 import java.net.URL;
 import java.nio.file.Paths;
+import java.security.PrivateKey;
+import java.util.function.Supplier;
 
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
@@ -41,35 +44,44 @@ public abstract class BaseJWTCase {
     private static final String AUTHORIZATION = "Authorization";
     private static final String BEARER = "Bearer";
 
-    private final CloseableHttpClient httpClient = HttpClientBuilder.create().build();
+    private static final CloseableHttpClient httpClient = HttpClientBuilder.create().build();
 
     @ArquillianResource
     private URL deploymentUrl;
 
     @Test
     public void testAuthorizationRequired() throws Exception {
+        testAuthorizationRequired(deploymentUrl);
+    }
+
+    public static void testAuthorizationRequired(URL deploymentUrl) throws Exception {
         HttpGet httpGet = new HttpGet(deploymentUrl.toString() + ROOT_PATH + SUBSCRIPTION);
-        CloseableHttpResponse httpResponse = httpClient.execute(httpGet);
-
-        assertEquals("Authorization required", 403, httpResponse.getStatusLine().getStatusCode());
-
-        httpResponse.close();
+        try (CloseableHttpResponse httpResponse = httpClient.execute(httpGet)) {
+            assertEquals("Authorization required", 403, httpResponse.getStatusLine().getStatusCode());
+        }
     }
 
     @Test
     public void testAuthorized() throws Exception {
-        String jwtToken = generateJWT(Paths.get(KEY_LOCATION.toURI()).toAbsolutePath().toString(), PRINCIPAL_NAME, DATE, ECHOER_GROUP, SUBSCRIBER_GROUP);
+        testJWTCall(createKeySupplier(Paths.get(KEY_LOCATION.toURI()).toAbsolutePath().toString()),
+            deploymentUrl, true);
+    }
+
+    public static void testJWTCall(Supplier<PrivateKey> keySupplier, URL deploymentUrl, boolean expectAuthorized) throws Exception {
+        String jwtToken = generateJWT(keySupplier, PRINCIPAL_NAME, DATE, ECHOER_GROUP, SUBSCRIBER_GROUP);
 
         HttpGet httpGet = new HttpGet(deploymentUrl.toString() + ROOT_PATH + SUBSCRIPTION);
         httpGet.addHeader(AUTHORIZATION, BEARER + " " + jwtToken);
 
-        CloseableHttpResponse httpResponse = httpClient.execute(httpGet);
-
-        assertEquals("Successful call", 200, httpResponse.getStatusLine().getStatusCode());
-        String body = EntityUtils.toString(httpResponse.getEntity());
-        assertTrue("Call was authenticated", body.contains(PRINCIPAL_NAME));
-
-        httpResponse.close();
+        try (CloseableHttpResponse httpResponse = httpClient.execute(httpGet)) {
+            if (expectAuthorized) {
+                assertEquals("Successful call", 200, httpResponse.getStatusLine().getStatusCode());
+                String body = EntityUtils.toString(httpResponse.getEntity());
+                assertTrue("Call was authenticated", body.contains(PRINCIPAL_NAME));
+            } else {
+                assertEquals("Authentication required", 401, httpResponse.getStatusLine().getStatusCode());
+            }
+        }
     }
 
 }
