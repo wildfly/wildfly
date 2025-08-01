@@ -7,6 +7,7 @@ package org.wildfly.test.integration.microprofile.jwt.propagation;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static org.wildfly.test.integration.microprofile.jwt.TokenUtil.createKeySupplier;
 import static org.wildfly.test.integration.microprofile.jwt.TokenUtil.generateJWT;
 
 import java.net.URL;
@@ -36,6 +37,7 @@ import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.wildfly.test.integration.microprofile.jwt.App;
 import org.wildfly.test.integration.microprofile.jwt.BaseJWTCase;
 
 /**
@@ -310,7 +312,8 @@ public class JWTIdentityPropagationTestCase {
     }
 
     private void testInvokeEJB(String rootPath, String principalName, String expectedMessage) throws Exception {
-        String jwtToken = generateJWT(Paths.get(KEY_LOCATION.toURI()).toAbsolutePath().toString(), principalName, DATE, ECHOER_GROUP, SUBSCRIBER_GROUP);
+        String jwtToken = generateJWT(createKeySupplier(Paths.get(KEY_LOCATION.toURI()).toAbsolutePath().toString()),
+                            principalName, DATE, ECHOER_GROUP, SUBSCRIBER_GROUP);
 
         HttpGet httpGet = new HttpGet(deploymentUrl.toString() + rootPath + SUBSCRIPTION);
         httpGet.addHeader(AUTHORIZATION, BEARER + " " + jwtToken);
