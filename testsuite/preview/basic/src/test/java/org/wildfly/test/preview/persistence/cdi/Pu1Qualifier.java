@@ -1,4 +1,9 @@
-package org.jboss.as.test.integration.jpa.cdi;
+/*
+ * Copyright The WildFly Authors
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+package org.wildfly.test.preview.persistence.cdi;
 
 import jakarta.inject.Qualifier;
 import java.lang.annotation.Documented;

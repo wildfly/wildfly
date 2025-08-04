@@ -155,8 +155,7 @@ public class PersistenceUnitSearch {
 
             // get number of persistence units that are marked as default
             for (PersistenceUnitMetadata persistenceUnit : holder.getPersistenceUnits()) {
-                String defaultPU = persistenceUnit.getProperties().getProperty(Configuration.JPA_DEFAULT_PERSISTENCE_UNIT);
-                if(Boolean.TRUE.toString().equals(defaultPU)) {
+                if(Configuration.isDefaultPersistenceUnit(persistenceUnit)) {
                     numberOfDefaultPersistenceUnits++;
                 }
             }
@@ -180,8 +179,7 @@ public class PersistenceUnitSearch {
     private static String defaultPersistenceUnitName(String persistenceUnitName, PersistenceUnitMetadataHolder holder) {
         if ((persistenceUnitName == null || persistenceUnitName.length() == 0)) {
             for (PersistenceUnitMetadata persistenceUnit : holder.getPersistenceUnits()) {
-                String defaultPU = persistenceUnit.getProperties().getProperty(Configuration.JPA_DEFAULT_PERSISTENCE_UNIT);
-                if(Boolean.TRUE.toString().equals(defaultPU)) {
+                if(Configuration.isDefaultPersistenceUnit(persistenceUnit)) {
                     persistenceUnitName = persistenceUnit.getPersistenceUnitName();
                 }
             }

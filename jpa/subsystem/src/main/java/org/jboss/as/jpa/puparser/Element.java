@@ -34,7 +34,7 @@ public enum Element {
     VALIDATIONMODE("validation-mode"),
     VERSION("version"),
     QUALIFIER("qualifier"),
-    SCOPE( "scope")
+    SCOPE("scope")
     ;
 
     private final String name;

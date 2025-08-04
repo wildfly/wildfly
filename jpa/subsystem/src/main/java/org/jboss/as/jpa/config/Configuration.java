@@ -441,4 +441,8 @@ public class Configuration {
         return result;
     }
 
+    public static boolean isDefaultPersistenceUnit(PersistenceUnitMetadata persistenceUnit) {
+        String defaultPU = persistenceUnit.getProperties().getProperty(Configuration.JPA_DEFAULT_PERSISTENCE_UNIT);
+        return true == Boolean.parseBoolean(defaultPU);
+    }
 }
