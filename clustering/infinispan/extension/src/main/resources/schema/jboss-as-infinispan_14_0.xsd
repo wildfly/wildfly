@@ -504,7 +504,10 @@
         </xs:attribute>
         <xs:attribute name="segmented" type="xs:boolean" default="true">
             <xs:annotation>
-                <xs:documentation>If true, purges this cache store when it starts up.</xs:documentation>
+                <xs:documentation>
+                  Indicates whether a cache stores to store data in hash space segments or not, with the cache's
+                  "segments" attribute defining the number of segments.
+                </xs:documentation>
             </xs:annotation>
         </xs:attribute>
     </xs:complexType>
