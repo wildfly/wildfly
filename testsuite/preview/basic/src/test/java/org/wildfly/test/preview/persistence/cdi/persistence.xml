@@ -4,19 +4,23 @@
   ~ SPDX-License-Identifier: Apache-2.0
   -->
 
-<persistence xmlns="http://java.sun.com/xml/ns/persistence" version="2.2">
+<persistence xmlns="https://jakarta.ee/xml/ns/persistence"
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             xsi:schemaLocation="https://jakarta.ee/xml/ns/persistence
+        https://jakarta.ee/xml/ns/persistence/persistence_3_2.xsd"
+             version="3.2">
     <persistence-unit name="pu1">
         <jta-data-source>java:jboss/datasources/ExampleDS</jta-data-source>
         <properties>
             <property name="hibernate.hbm2ddl.auto" value="create-drop"/>
         </properties>
-        <qualifier>org.jboss.as.test.integration.jpa.cdi.Pu1Qualifier</qualifier>
+        <qualifier>org.wildfly.test.preview.persistence.cdi.Pu1Qualifier</qualifier>
     </persistence-unit>
     <persistence-unit name="pu2">
         <jta-data-source>java:jboss/datasources/ExampleDS</jta-data-source>
         <properties>
             <property name="hibernate.hbm2ddl.auto" value="create-drop"/>
         </properties>
-        <qualifier>org.jboss.as.test.integration.jpa.cdi.Pu2Qualifier</qualifier>
+        <qualifier>org.wildfly.test.preview.persistence.cdi.Pu2Qualifier</qualifier>
     </persistence-unit>
 </persistence>

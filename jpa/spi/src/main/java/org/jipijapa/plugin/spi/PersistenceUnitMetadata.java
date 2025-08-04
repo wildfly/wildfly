@@ -92,4 +92,8 @@ public interface PersistenceUnitMetadata extends PersistenceUnitInfo {
 
     void setQualifierAnnotationNames(List<String> qualifiers);
     List<String> getQualifierAnnotationNames();
+
+    boolean isDuplicate();
+
+    void setDuplicate(boolean b);
 }
