@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package org.jboss.as.test.integration.jpa.cdi;
+package org.wildfly.test.preview.persistence.cdi;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;

@@ -60,6 +60,7 @@
             </activation>
             <modules>
                 <module>hibernate7</module>
+                <module>persistence-cdi-extension</module>
             </modules>
         </profile>
     </profiles>

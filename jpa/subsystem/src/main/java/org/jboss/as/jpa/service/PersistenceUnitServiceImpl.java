@@ -11,7 +11,6 @@ import java.security.PrivilegedAction;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.RejectedExecutionException;
 
@@ -25,6 +24,7 @@ import jakarta.transaction.TransactionSynchronizationRegistry;
 import jakarta.validation.ValidatorFactory;
 
 import org.jboss.as.jpa.beanmanager.BeanManagerAfterDeploymentValidation;
+import org.jboss.as.jpa.beanmanager.IntegrationWithCDIBagImpl;
 import org.jboss.as.jpa.beanmanager.ProxyBeanManager;
 import org.jboss.as.jpa.classloader.TempClassLoaderFactoryImpl;
 import org.jboss.as.jpa.spi.PersistenceUnitService;
@@ -77,13 +77,13 @@ public class PersistenceUnitServiceImpl implements Service<PersistenceUnitServic
     private final ServiceName deploymentUnitServiceName;
     private final ValidatorFactory validatorFactory;
     private final BeanManagerAfterDeploymentValidation beanManagerAfterDeploymentValidation;
-    private volatile CompletableFuture<EntityManagerFactory> futureEntityManagerFactory;
 
     private volatile EntityManagerFactory entityManagerFactory;
     private volatile ProxyBeanManager proxyBeanManager;
     private final SetupAction javaNamespaceSetup;
     private final TransactionSynchronizationRegistry transactionSynchronizationRegistry;
     private final TransactionManager transactionManager;
+    private final IntegrationWithCDIBagImpl integrationWithCDIBag;
 
     public PersistenceUnitServiceImpl(
             final Map properties,
@@ -98,7 +98,8 @@ public class PersistenceUnitServiceImpl implements Service<PersistenceUnitServic
             BeanManagerAfterDeploymentValidation beanManagerAfterDeploymentValidation,
             final TransactionSynchronizationRegistry transactionSynchronizationRegistry,
             final TransactionManager transactionManager,
-            final CompletableFuture<EntityManagerFactory> futureEntityManagerFactory) {
+            final IntegrationWithCDIBagImpl integrationWithCDIBag
+            ) {
         this.properties = properties;
         this.pu = pu;
         this.persistenceProviderAdaptor = persistenceProviderAdaptor;
@@ -112,7 +113,7 @@ public class PersistenceUnitServiceImpl implements Service<PersistenceUnitServic
         this.beanManagerAfterDeploymentValidation = beanManagerAfterDeploymentValidation;
         this.transactionSynchronizationRegistry = transactionSynchronizationRegistry;
         this.transactionManager = transactionManager;
-        this.futureEntityManagerFactory = futureEntityManagerFactory;
+        this.integrationWithCDIBag = integrationWithCDIBag;
     }
 
     @Override
@@ -169,8 +170,11 @@ public class PersistenceUnitServiceImpl implements Service<PersistenceUnitServic
 
                                         // get the EntityManagerFactory from the second phase of the persistence unit bootstrap
                                         entityManagerFactory = emfBuilder.build();
-                                        // get the futureEntityManagerFactory from the first phase of the persistence unit bootstrap
-                                        futureEntityManagerFactory = phaseOnePersistenceUnitService.getFutureEntityManagerFactory();
+                                        if (phaseOnePersistenceUnitService.getIntegrationWithCDIBag() != null) {
+                                            phaseOnePersistenceUnitService.getIntegrationWithCDIBag().setEntityManagerFactory(entityManagerFactory);
+                                            phaseOnePersistenceUnitService.getIntegrationWithCDIBag().setTransactionManager(transactionManager);
+                                            phaseOnePersistenceUnitService.getIntegrationWithCDIBag().setTransactionSynchronizationRegistry(transactionSynchronizationRegistry);
+                                        }
                                     } else {
                                         ROOT_LOGGER.startingService("Persistence Unit", pu.getScopedPersistenceUnitName());
                                         // start the persistence unit in one pass (1 of 1)
@@ -191,6 +195,9 @@ public class PersistenceUnitServiceImpl implements Service<PersistenceUnitServic
                                             }
                                         }
                                         entityManagerFactory = createContainerEntityManagerFactory();
+                                        if (integrationWithCDIBag != null) {
+                                            integrationWithCDIBag.setEntityManagerFactory(entityManagerFactory);
+                                        }
                                     }
                                     persistenceUnitRegistry.add(getScopedPersistenceUnitName(), getValue());
                                     if(wrapperBeanManagerLifeCycle != null) {
@@ -198,11 +205,6 @@ public class PersistenceUnitServiceImpl implements Service<PersistenceUnitServic
                                     }
                                     if (proxyBeanManager != null && proxyBeanManager.delegate() != null) {
                                         createCDIBeansForPersistence(proxyBeanManager.delegate(), entityManagerFactory, pu, classLoader);
-                                    } else if (proxyBeanManager != null) {
-                                        throw new IllegalStateException("ProxyBeanManager.delegate() is null"); // Don't merge this change.
-                                    }
-                                    if (futureEntityManagerFactory != null) {
-                                        futureEntityManagerFactory.complete(entityManagerFactory);
                                     }
                                     context.complete();
                                 } catch (Throwable t) {
@@ -220,7 +222,7 @@ public class PersistenceUnitServiceImpl implements Service<PersistenceUnitServic
                             }
 
                             private void createCDIBeansForPersistence(BeanManager beanManager, EntityManagerFactory entityManagerFactory, PersistenceUnitMetadata pu, ClassLoader classLoader) {
-                                // PersistenceIntegrationWithCDI.addBeans(beanManager, entityManagerFactory, pu, classLoader, transactionSynchronizationRegistry, transactionManager);
+                                // no-op stub
                             }
 
                         };
