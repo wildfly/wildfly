@@ -171,7 +171,7 @@ public class PersistenceIntegrationWithCDI {
          beanName, persistenceUnitMetadata.getPersistenceUnitName());
          beanConfigurator.name(beanName);
          **/
-
+        beanConfigurator.name(persistenceUnitMetadata.getPersistenceUnitName());
         try {
             Class<? extends Annotation> scopeAnnotation = persistenceUnitMetadata.getClassLoader().loadClass(scope).asSubclass(Annotation.class);
             beanConfigurator.scope(scopeAnnotation);
