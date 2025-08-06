@@ -11,6 +11,7 @@ import static org.jboss.as.weld.Capabilities.WELD_CAPABILITY_NAME;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -118,6 +119,33 @@ public class PersistenceUnitServiceHandler {
 
         if( startEarly) {
             nextPhaseDependsOnPersistenceUnit(phaseContext, platform);
+            checkForDuplicates(phaseContext, platform);
+        }
+    }
+
+    // mark all duplicate persistence unit definitions
+    private static void checkForDuplicates(DeploymentPhaseContext phaseContext, Platform platform) {
+        final DeploymentUnit topDeploymentUnit = DeploymentUtils.getTopDeploymentUnit(phaseContext.getDeploymentUnit());
+        final PersistenceUnitsInApplication persistenceUnitsInApplication = topDeploymentUnit.getAttachment(PersistenceUnitsInApplication.PERSISTENCE_UNITS_IN_APPLICATION);
+        ArrayList<String> duplicateList = new ArrayList<>();
+        HashSet<String> uniqueList = new HashSet(persistenceUnitsInApplication.getCount());
+        for(final PersistenceUnitMetadataHolder holder: persistenceUnitsInApplication.getPersistenceUnitHolders()) {
+            for (final PersistenceUnitMetadata pu : holder.getPersistenceUnits()) {
+                if (uniqueList.contains(pu.getPersistenceUnitName())) {
+                    duplicateList.add(pu.getPersistenceUnitName());
+                } else {
+                    uniqueList.add(pu.getPersistenceUnitName());
+                }
+            }
+        }
+        if (duplicateList.size() > 0) {
+            for(final PersistenceUnitMetadataHolder holder: persistenceUnitsInApplication.getPersistenceUnitHolders()) {
+                for (final PersistenceUnitMetadata pu : holder.getPersistenceUnits()) {
+                    if (duplicateList.contains(pu.getPersistenceUnitName())) {
+                        pu.setDuplicate(true);
+                    }
+                }
+            }
         }
     }
 

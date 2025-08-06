@@ -100,6 +100,8 @@ public class PersistenceUnitMetadataImpl implements PersistenceUnitMetadata {
     private final AtomicBoolean onlyCheckIfClassFileTransformerIsNeededOnce = new AtomicBoolean(false);
     private volatile String scopeAnnotationName="";
     private volatile List<String> qualifierAnnotationNames = List.of();
+    private volatile boolean isDuplicate;
+
     @Override
     public void setPersistenceUnitName(String name) {
         this.name = name;
@@ -436,6 +438,16 @@ public class PersistenceUnitMetadataImpl implements PersistenceUnitMetadata {
     @Override
     public List<String> getQualifierAnnotationNames() {
         return qualifierAnnotationNames;
+    }
+
+    @Override
+    public boolean isDuplicate() {
+        return isDuplicate;
+    }
+
+    @Override
+    public void setDuplicate(boolean b) {
+        this.isDuplicate = b;
     }
 
 }

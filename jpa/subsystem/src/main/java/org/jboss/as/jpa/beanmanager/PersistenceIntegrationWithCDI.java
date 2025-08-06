@@ -161,17 +161,16 @@ public class PersistenceIntegrationWithCDI {
         // EntityManagerFactory setup
         BeanConfigurator<EntityManagerFactory> beanConfigurator = afterBeanDiscovery.addBean();
         beanConfigurator.addTransitiveTypeClosure(EntityManagerFactory.class);
-        // TODO: we cannot yet add the bean name for the EntityManagerFactory bean for each persistence unit when they
-        // * may be duplicated within different EE modules/submodules.  https://github.com/jakartaee/platform/issues/1135 is the
-        // * EE 12 tracker.
-        // Uncomment the following block and update when this TODO is addressed.
         /**
          String beanName = persistenceUnitMetadata.getScopedPersistenceUnitName().replace("#",".");
          JpaLogger.ROOT_LOGGER.infof("Creating EntityManagerFactory CDI bean named %s for accessing persistence unit %s",
          beanName, persistenceUnitMetadata.getPersistenceUnitName());
          beanConfigurator.name(beanName);
          **/
-        beanConfigurator.name(persistenceUnitMetadata.getPersistenceUnitName());
+        // Ensure that we do not get "WELD-001414: Bean name is ambiguous" deployment failure with duplicate persistence units in a deployment.
+        if (! persistenceUnitMetadata.isDuplicate()) {
+            beanConfigurator.name(persistenceUnitMetadata.getPersistenceUnitName());
+        }
         try {
             Class<? extends Annotation> scopeAnnotation = persistenceUnitMetadata.getClassLoader().loadClass(scope).asSubclass(Annotation.class);
             beanConfigurator.scope(scopeAnnotation);
