@@ -63,39 +63,29 @@ public class SingletonTransformersTestCase extends AbstractSubsystemTest {
     private String[] getDependencies() {
         return switch (this.controllerVersion) {
             case EAP_7_4_0 -> new String[] {
-                    createGAV("wildfly-clustering-singleton-extension"),
-                    createGAV("wildfly-clustering-api"),
-                    createGAV("wildfly-clustering-common"),
-                    createGAV("wildfly-clustering-server"),
-                    createGAV("wildfly-clustering-service"),
-                    createGAV("wildfly-clustering-singleton-api"),
-                    createGAV("wildfly-clustering-spi"),
+                    this.controllerVersion.createGAV("wildfly-clustering-singleton-extension"),
+                    this.controllerVersion.createGAV("wildfly-clustering-api"),
+                    this.controllerVersion.createGAV("wildfly-clustering-common"),
+                    this.controllerVersion.createGAV("wildfly-clustering-server"),
+                    this.controllerVersion.createGAV("wildfly-clustering-service"),
+                    this.controllerVersion.createGAV("wildfly-clustering-singleton-api"),
+                    this.controllerVersion.createGAV("wildfly-clustering-spi"),
             };
             case EAP_8_0_0 -> new String[] {
-                    createGAV("wildfly-clustering-singleton-extension"),
-                    createGAV("wildfly-clustering-common"),
-                    createGAV("wildfly-clustering-service"),
-                    createGAV("wildfly-clustering-singleton-api"),
+                    this.controllerVersion.createGAV("wildfly-clustering-singleton-extension"),
+                    this.controllerVersion.createGAV("wildfly-clustering-common"),
+                    this.controllerVersion.createGAV("wildfly-clustering-service"),
+                    this.controllerVersion.createGAV("wildfly-clustering-singleton-api"),
             };
             case EAP_8_1_0 -> new String[] {
-                    createGAV("wildfly-clustering-singleton-extension"),
-                    createGAV("wildfly-clustering-common"),
-                    createGAV("wildfly-clustering-server-service"),
-                    createGAV("wildfly-clustering-singleton-api"),
-                    createCoreGAV("wildfly-subsystem"),
+                    this.controllerVersion.createGAV("wildfly-clustering-singleton-extension"),
+                    this.controllerVersion.createGAV("wildfly-clustering-common"),
+                    this.controllerVersion.createGAV("wildfly-clustering-server-service"),
+                    this.controllerVersion.createGAV("wildfly-clustering-singleton-api"),
+                    this.controllerVersion.createCoreGAV("wildfly-subsystem"),
             };
             default -> throw new IllegalArgumentException();
         };
-    }
-
-    // TODO Replace with variants from after wf-core upgrade https://issues.redhat.com/browse/WFCORE-7298
-    // n.b. workaround for https://issues.redhat.com/browse/WFCORE-7297
-    public String createGAV(String artifactId) {
-        return String.format("%s:%s:%s", this.controllerVersion.getMavenGroupId(), artifactId, this.controllerVersion.getMavenGavVersion());
-    }
-
-    public String createCoreGAV(String artifactId) {
-        return String.format("%s:%s:%s", this.controllerVersion.getCoreMavenGroupId(), artifactId, this.controllerVersion.getCoreVersion());
     }
 
     @SuppressWarnings("removal")

@@ -61,41 +61,31 @@ public class JGroupsTransformersTestCase extends AbstractSubsystemTest {
     private String[] getDependencies() {
         return switch (this.controllerVersion) {
             case EAP_7_4_0 -> new String[] {
-                    this.createGAV("wildfly-clustering-jgroups-extension"),
-                    this.createGAV("wildfly-clustering-api"),
-                    this.createGAV("wildfly-clustering-common"),
-                    this.createGAV("wildfly-clustering-jgroups-spi"),
-                    this.createGAV("wildfly-clustering-server"),
-                    this.createGAV("wildfly-clustering-service"),
-                    this.createGAV("wildfly-clustering-spi"),
+                    this.controllerVersion.createGAV("wildfly-clustering-jgroups-extension"),
+                    this.controllerVersion.createGAV("wildfly-clustering-api"),
+                    this.controllerVersion.createGAV("wildfly-clustering-common"),
+                    this.controllerVersion.createGAV("wildfly-clustering-jgroups-spi"),
+                    this.controllerVersion.createGAV("wildfly-clustering-server"),
+                    this.controllerVersion.createGAV("wildfly-clustering-service"),
+                    this.controllerVersion.createGAV("wildfly-clustering-spi"),
             };
             case EAP_8_0_0 -> new String[] {
-                    this.createGAV("wildfly-clustering-jgroups-extension"),
-                    this.createGAV("wildfly-clustering-common"),
-                    this.createGAV("wildfly-clustering-jgroups-spi"),
-                    this.createGAV("wildfly-clustering-server-service"),
-                    this.createGAV("wildfly-clustering-server-spi"),
-                    this.createGAV("wildfly-clustering-service"),
+                    this.controllerVersion.createGAV("wildfly-clustering-jgroups-extension"),
+                    this.controllerVersion.createGAV("wildfly-clustering-common"),
+                    this.controllerVersion.createGAV("wildfly-clustering-jgroups-spi"),
+                    this.controllerVersion.createGAV("wildfly-clustering-server-service"),
+                    this.controllerVersion.createGAV("wildfly-clustering-server-spi"),
+                    this.controllerVersion.createGAV("wildfly-clustering-service"),
             };
             case EAP_8_1_0 -> new String[] {
-                    this.createGAV("wildfly-clustering-jgroups-extension"),
-                    this.createGAV("wildfly-clustering-common"),
-                    this.createGAV("wildfly-clustering-jgroups-spi"),
-                    this.createGAV("wildfly-clustering-server-service"),
-                    this.createCoreGAV("wildfly-subsystem"),
+                    this.controllerVersion.createGAV("wildfly-clustering-jgroups-extension"),
+                    this.controllerVersion.createGAV("wildfly-clustering-common"),
+                    this.controllerVersion.createGAV("wildfly-clustering-jgroups-spi"),
+                    this.controllerVersion.createGAV("wildfly-clustering-server-service"),
+                    this.controllerVersion.createCoreGAV("wildfly-subsystem"),
             };
             default -> throw new IllegalArgumentException();
         };
-    }
-
-    // TODO Replace with variants from after wf-core upgrade https://issues.redhat.com/browse/WFCORE-7298
-    // n.b. workaround for https://issues.redhat.com/browse/WFCORE-7297
-    public String createGAV(String artifactId) {
-        return String.format("%s:%s:%s", this.controllerVersion.getMavenGroupId(), artifactId, this.controllerVersion.getMavenGavVersion());
-    }
-
-    public String createCoreGAV(String artifactId) {
-        return String.format("%s:%s:%s", this.controllerVersion.getCoreMavenGroupId(), artifactId, this.controllerVersion.getCoreVersion());
     }
 
     private static AdditionalInitialization createAdditionalInitialization() {
