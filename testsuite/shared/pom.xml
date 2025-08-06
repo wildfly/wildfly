@@ -25,6 +25,12 @@
 
     <name>WildFly Test Suite: Shared</name>
 
+    <properties>
+        <!-- Don't try to deploy the module -->
+        <maven.deploy.skip>true</maven.deploy.skip>
+        <skipNexusStagingDeployMojo>true</skipNexusStagingDeployMojo>
+    </properties>
+
     <dependencyManagement>
         <dependencies>
             <dependency>

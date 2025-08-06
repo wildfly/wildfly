@@ -26,6 +26,12 @@
     <description>Tests for the layer metadata rules</description>
     <packaging>jar</packaging>
 
+    <properties>
+        <!-- Don't try to deploy the module -->
+        <maven.deploy.skip>true</maven.deploy.skip>
+        <skipNexusStagingDeployMojo>true</skipNexusStagingDeployMojo>
+    </properties>
+
     <dependencies>
         <dependency>
             <groupId>${ee.maven.groupId}</groupId>
