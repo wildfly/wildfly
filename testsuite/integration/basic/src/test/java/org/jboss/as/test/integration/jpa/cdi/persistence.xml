@@ -9,7 +9,6 @@
         <jta-data-source>java:jboss/datasources/ExampleDS</jta-data-source>
         <properties>
             <property name="hibernate.hbm2ddl.auto" value="create-drop"/>
-            <property name="PersistenceUnitName" value="pu1"/>
         </properties>
         <qualifier>org.jboss.as.test.integration.jpa.cdi.Pu1Qualifier</qualifier>
     </persistence-unit>
@@ -17,7 +16,6 @@
         <jta-data-source>java:jboss/datasources/ExampleDS</jta-data-source>
         <properties>
             <property name="hibernate.hbm2ddl.auto" value="create-drop"/>
-            <property name="PersistenceUnitName" value="pu1"/>
         </properties>
         <qualifier>org.jboss.as.test.integration.jpa.cdi.Pu2Qualifier</qualifier>
     </persistence-unit>
