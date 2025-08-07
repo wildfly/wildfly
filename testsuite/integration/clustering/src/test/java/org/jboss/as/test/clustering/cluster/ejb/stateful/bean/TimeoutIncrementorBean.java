@@ -15,7 +15,7 @@ import jakarta.ejb.Stateful;
 import jakarta.ejb.StatefulTimeout;
 
 @Stateful
-@StatefulTimeout(value = 1, unit = TimeUnit.SECONDS)
+@StatefulTimeout(value = 2, unit = TimeUnit.SECONDS)
 public class TimeoutIncrementorBean implements Incrementor {
     private final AtomicInteger count = new AtomicInteger(0);
     private volatile boolean active = false;
