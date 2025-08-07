@@ -159,7 +159,6 @@ class IIOPRootDefinition extends PersistentResourceDefinition {
             .addAccessConstraint(IIOP_SECURITY_DEF)
             .setValidator(LENGTH_VALIDATOR)
             .setAlternatives(Constants.SECURITY_SECURITY_DOMAIN)
-            .setRequires(Constants.CLIENT_SSL_CONTEXT)
             .setCapabilityReference(Capabilities.SSL_CONTEXT_CAPABILITY, IIOP_CAPABILITY)
             .build();
 
@@ -170,7 +169,6 @@ class IIOPRootDefinition extends PersistentResourceDefinition {
             .addAccessConstraint(IIOP_SECURITY_DEF)
             .setValidator(LENGTH_VALIDATOR)
             .setAlternatives(Constants.SECURITY_SECURITY_DOMAIN)
-            .setRequires(Constants.SERVER_SSL_CONTEXT)
             .setCapabilityReference(Capabilities.SSL_CONTEXT_CAPABILITY, IIOP_CAPABILITY)
             .build();
 
