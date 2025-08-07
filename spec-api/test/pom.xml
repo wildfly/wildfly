@@ -34,12 +34,9 @@
       <plugin>
           <groupId>org.sonatype.plugins</groupId>
           <artifactId>nxrm3-maven-plugin</artifactId>
-          <executions>
-              <execution>
-                  <id>nexus-deploy</id>
-                  <phase>none</phase>
-              </execution>
-          </executions>
+          <configuration>
+              <skipNexusStagingDeployMojo>true</skipNexusStagingDeployMojo>
+          </configuration>
       </plugin>
     </plugins>
   </build>
