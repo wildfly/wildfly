@@ -96,4 +96,9 @@ public class CDIPersistenceTestCase {
 
     }
 
+    @Test
+    public void TestGetEntityManagerFactoryByPuName() throws Exception {
+        EntityManagerFactory emf = cmtBean.getEntityManagerFactoryByPuName();
+        assertNotNull("EntityManagerFactory bean should of been named with persistence unit name", emf);
+    }
 }

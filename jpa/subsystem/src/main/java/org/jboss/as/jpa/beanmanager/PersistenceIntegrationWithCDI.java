@@ -12,6 +12,7 @@ import java.lang.reflect.Proxy;
 import java.util.HashMap;
 import java.util.List;
 
+import jakarta.enterprise.inject.literal.NamedLiteral;
 import jakarta.enterprise.inject.spi.AfterBeanDiscovery;
 import jakarta.enterprise.inject.spi.configurator.BeanConfigurator;
 import jakarta.persistence.Cache;
@@ -161,17 +162,19 @@ public class PersistenceIntegrationWithCDI {
         // EntityManagerFactory setup
         BeanConfigurator<EntityManagerFactory> beanConfigurator = afterBeanDiscovery.addBean();
         beanConfigurator.addTransitiveTypeClosure(EntityManagerFactory.class);
-        /**
-         String beanName = persistenceUnitMetadata.getScopedPersistenceUnitName().replace("#",".");
-         JpaLogger.ROOT_LOGGER.infof("Creating EntityManagerFactory CDI bean named %s for accessing persistence unit %s",
-         beanName, persistenceUnitMetadata.getPersistenceUnitName());
-         beanConfigurator.name(beanName);
-         **/
-        // Ensure that we do not get "WELD-001414: Bean name is ambiguous" deployment failure with duplicate persistence units in a deployment.
-        if (! persistenceUnitMetadata.isDuplicate()) {
-            beanConfigurator.name(persistenceUnitMetadata.getPersistenceUnitName());
-        }
+
         try {
+            /**
+             String beanName = persistenceUnitMetadata.getScopedPersistenceUnitName().replace("#",".");
+             JpaLogger.ROOT_LOGGER.infof("Creating EntityManagerFactory CDI bean named %s for accessing persistence unit %s",
+             beanName, persistenceUnitMetadata.getPersistenceUnitName());
+             beanConfigurator.name(beanName);
+             **/
+            // Ensure that we do not get "WELD-001414: Bean name is ambiguous" deployment failure with duplicate persistence units in a deployment.
+            if (!persistenceUnitMetadata.isDuplicate()) {
+                beanConfigurator.name(persistenceUnitMetadata.getPersistenceUnitName());
+                beanConfigurator.addQualifier(NamedLiteral.of(persistenceUnitMetadata.getPersistenceUnitName()));
+            }
             Class<? extends Annotation> scopeAnnotation = persistenceUnitMetadata.getClassLoader().loadClass(scope).asSubclass(Annotation.class);
             beanConfigurator.scope(scopeAnnotation);
 
