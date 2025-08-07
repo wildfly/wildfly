@@ -32,8 +32,8 @@ while IFS= read -r line; do
   fi
 
   if [[ "$line" =~ ^\+[^+] ]]; then
-    # Ignore lines in the test directories
-    if [[ "$CURRENT_FILE" != *"src/test/"* && "$CURRENT_FILE" != *"testsuite/"* && "$CURRENT_FILE" != *"check_logging.sh"* ]]; then
+    # Ignore lines in the docs and test directories
+    if [[ "$CURRENT_FILE" != *"docs/"* && "$CURRENT_FILE" != *"src/test/"* && "$CURRENT_FILE" != *"testsuite/"* && "$CURRENT_FILE" != *"check_logging.sh"* ]]; then
       # Check for any of the patterns, ensuring "//" doesn't precede them
       for pattern in "${PATTERNS[@]}"; do
         if [[ "$line" == *"$pattern"* ]]; then
