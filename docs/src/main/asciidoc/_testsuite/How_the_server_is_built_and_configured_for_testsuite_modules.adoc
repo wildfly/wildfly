@@ -56,7 +56,7 @@ Which invokes
         <exclude name="**/bundles/**"/>
     </fileset>
 </copy>
- 
+
 <!-- overwrite with configs from test-configs and apply property filtering -->
 <copy todir="@{output.dir}/@{name}" overwrite="true" failonerror="false">
     <fileset dir="@{test.configs.dir}/@{name}"/>

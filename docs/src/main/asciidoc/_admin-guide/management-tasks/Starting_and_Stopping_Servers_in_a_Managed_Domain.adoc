@@ -23,8 +23,8 @@ First of all, get to know which `servers` are configured on a particular
    "outcome" => "success",
    "result" => ["local"]
 }
- 
- 
+
+
 [domain@localhost:9990 /] /host=local:read-children-names(child-type=server-config)
 {
    "outcome" => "success",

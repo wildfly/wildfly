@@ -93,7 +93,7 @@ automatic dependency on each other. This behaviour is controlled via the
 
 [source,xml,options="nowrap"]
 ----
-<subsystem xmlns="urn:jboss:domain:ee:1.0" >            
+<subsystem xmlns="urn:jboss:domain:ee:1.0" >
   <ear-subdeployments-isolated>false</ear-subdeployments-isolated>
 </subsystem>
 ----
@@ -254,10 +254,10 @@ following XML:
 
 [source,xml,options="nowrap"]
 ----
-<subsystem xmlns="urn:jboss:domain:ee:1.0" >            
+<subsystem xmlns="urn:jboss:domain:ee:1.0" >
   <global-modules>
-    <module name="org.javassist" slot="main" />            
-  </global-modules> 
+    <module name="org.javassist" slot="main" />
+  </global-modules>
 </subsystem>
 ----
 

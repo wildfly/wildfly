@@ -472,17 +472,17 @@ to what's shown below.
 [source,options="nowrap"]
 ----
 =========================================================================
- 
+
   JBoss Bootstrap Environment
- 
+
   JBOSS_HOME: /opt/wildfly-10.0.0.Final
- 
+
   JAVA: java
- 
+
   JAVA_OPTS:  -server -Xms64m -Xmx512m -Djava.net.preferIPv4Stack=true -Djboss.modules.system.pkgs=com.yourkit,org.jboss.byteman -Djava.awt.headless=true
- 
+
 =========================================================================
- 
+
 11:46:11,161 INFO  [org.jboss.modules] (main) JBoss Modules version 1.5.1.Final
 11:46:11,331 INFO  [org.jboss.msc] (main) JBoss MSC version 1.2.6.Final
 11:46:11,391 INFO  [org.jboss.as] (MSC service thread 1-6) WFLYSRV0049: WildFly 10.0.0.Final (WildFly Core 2.0.10.Final) starting
@@ -699,21 +699,21 @@ H2 datasource configuration is shown below.
                 <password>sa</password>
             </security>
         </datasource>
-        <xa-datasource jndi-name="java:jboss/datasources/ExampleXADS" pool-name="ExampleXADS">
-           <driver>h2</driver>
-           <xa-datasource-property name="URL">jdbc:h2:mem:test</xa-datasource-property>
+        <xa-datasource jndi-name="java:jboss/datasources/ExampleXADS" pool-name="ExampleXADS">
+           <driver>h2</driver>
+           <xa-datasource-property name="URL">jdbc:h2:mem:test</xa-datasource-property>
            <xa-pool>
                 <min-pool-size>10</min-pool-size>
                 <max-pool-size>20</max-pool-size>
                 <prefill>true</prefill>
            </xa-pool>
-           <security>
-                <user-name>sa</user-name>
-                <password>sa</password>
-           </security>
-        </xa-datasource>
+           <security>
+                <user-name>sa</user-name>
+                <password>sa</password>
+           </security>
+        </xa-datasource>
         <drivers>
-            <driver name="h2" module="com.h2database.h2">
+            <driver name="h2" module="com.h2database.h2">
                 <xa-datasource-class>org.h2.jdbcx.JdbcDataSource</xa-datasource-class>
             </driver>
         </drivers>

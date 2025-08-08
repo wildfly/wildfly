@@ -22,8 +22,8 @@ $ ./bin/jboss-cli.sh --connect controller=IP_ADDRESS
 [standalone@IP_ADDRESS:9990 /] /system-property=foo:add(value=bar)
 [standalone@IP_ADDRESS:9990 /] /system-property=foo:read-resource
 {
-    "outcome" => "success",
-    "result" => {"value" => "bar"}
+    "outcome" => "success",
+    "result" => {"value" => "bar"}
 }
 [standalone@IP_ADDRESS:9990 /] /system-property=foo:remove
 {"outcome" => "success"}

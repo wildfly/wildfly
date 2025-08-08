@@ -388,7 +388,7 @@ be used to boot the server.
         addOp.get("address").add("subsystem", "mysubsystem");
         addOp.get("operation").set("add");
         operationList.add(addOp);
- 
+
         for (int i = 0; i < reader.getAttributeCount(); i++) {
             final String value = reader.getAttributeValue(i);
             final String attribute = reader.getAttributeLocalName(i);
@@ -396,7 +396,7 @@ be used to boot the server.
                 FOO_AD.parseAndSetParameter(value, addOp, reader);
             } else ....
         }
- 
+
         ... more parsing
     }
 ----
@@ -428,7 +428,7 @@ model:
         ModelNode model = resource.getModel();
         // Store the value of any 'foo' param to the model's 'foo' attribute
         FOO_AD.validateAndSet(operation, model);
- 
+
         ... do other stuff
     }
 ----
@@ -468,7 +468,7 @@ more on what this means):
         context.addStep(new OperationStepHandler() {
             @Override
             public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
- 
+
                 // Get the Resource targetted by this operation
                 Resource resource = context.readResource(PathAddress.EMPTY_ADDRESS);
                 ModelNode model = resource.getModel();
@@ -476,7 +476,7 @@ more on what this means):
                 int foo = FOO_AD.resolveModelAttribute(context, model).asInt();
                
                 Service<XyZ> service = new MyService(foo);
- 
+
                 ... do other stuff, like install 'service' with MSC
     }
         }, Stage.RUNTIME);
@@ -522,7 +522,7 @@ marshaling code, and `AttributeDefinition` will be used.
     @Override
     public void writeContent(XMLExtendedStreamWriter writer, SubsystemMarshallingContext context) throws XMLStreamException {
         context.startSubsystemElement(Namespace.CURRENT.getUriString(), false);
- 
+
         ModelNode subsystemModel = context.getModelNode();
         // we persist foo as an xml attribute
         FOO_AD.marshalAsAttribute(subsystemModel, writer);
@@ -1125,11 +1125,11 @@ registers one or more `DeploymentUnitProcessor` s.
     @Override
     public void performBoottime(OperationContext context, ModelNode operation, final Resource resource)
             throws OperationFailedException {
- 
+
         context.addStep(new AbstractDeploymentChainStep() {
             @Override
             protected void execute(DeploymentProcessorTarget processorTarget) {
- 
+
                 processorTarget.addDeploymentProcessor(RequestControllerExtension.SUBSYSTEM_NAME, Phase.STRUCTURE, Phase.STRUCTURE_GLOBAL_REQUEST_CONTROLLER, new RequestControllerDeploymentUnitProcessor());
             }
         }, OperationContext.Stage.RUNTIME);

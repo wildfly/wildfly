@@ -113,9 +113,9 @@ in an implementation of the
 ----
 static ModelControllerClient createClient(final InetAddress host, final int port,
                   final String username, final char[] password, final String securityRealmName) {
- 
+
     final CallbackHandler callbackHandler = new CallbackHandler() {
- 
+
         public void handle(Callback[] callbacks) throws IOException, UnsupportedCallbackException {
             for (Callback current : callbacks) {
                 if (current instanceof NameCallback) {
@@ -133,7 +133,7 @@ static ModelControllerClient createClient(final InetAddress host, final int port
             }
         }
     };
- 
+
     return ModelControllerClient.Factory.create(host, port, callbackHandler);
 }
 ----
@@ -158,11 +158,11 @@ the resource description] for the web subsystem's HTTP connector:
 ----
 ModelNode op = new ModelNode();
 op.get("operation").set("read-resource-description");
- 
+
 ModelNode address = op.get("address");
 address.add("subsystem", "web");
 address.add("connector", "http");
- 
+
 op.get("recursive").set(true);
 op.get("operations").set(true);
 ----

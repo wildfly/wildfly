@@ -52,9 +52,9 @@ which has the following class:
 ----
 @Stateless
 public class MySuperDuperBean {
- 
+
 ...
- 
+
 }
 ----
 
@@ -85,13 +85,13 @@ that are always added |Dependencies that are added if a trigger
 condition is met |Trigger which leads to the implicit module dependency
 being added
 
-|Core Server |java.se org.jboss.vfs|  | 
+|Core Server |java.se org.jboss.vfs|  |
 
-|Batch Subsystem |jakarta.batch.api |  | implicit
+|Batch Subsystem |jakarta.batch.api |  | implicit
 
-|EE Subsystem |javaee.api |  | 
+|EE Subsystem |javaee.api |  |
 
-|Jakarta Enterprise Beans 3 subsystem |  |javaee.api |The presence of ejb-jar.xml (in valid
+|Jakarta Enterprise Beans 3 subsystem |  |javaee.api |The presence of ejb-jar.xml (in valid
 locations in the deployment, as specified by spec) or the presence of
 annotation based Jakarta Enterprise Beans (ex: @Stateless, @Stateful, @MessageDriven etc)
 
@@ -134,19 +134,19 @@ org.jboss.as.jpa org.hibernate |The presence of an @PersistenceUnit or
 <persistence-context-ref> in a deployment descriptor..
 
 |Logging Subsystem |org.jboss.logging org.apache.commons.logging
- org.apache.logging.log4j.api org.slf4j org.jboss.logging.jul-to-slf4j-stub |  | 
+ org.apache.logging.log4j.api org.slf4j org.jboss.logging.jul-to-slf4j-stub |  |
 
-|SAR Subsystem |  |org.jboss.logging org.jboss.modules |The deployment
+|SAR Subsystem |  |org.jboss.logging org.jboss.modules |The deployment
 is a SAR archive
 
-|Security Subsystem |org.picketbox |  | 
+|Security Subsystem |org.picketbox |  |
 
-|Web Subsystem |  |javaee.api jakarta.faces.api jakarta.faces.impl org.hibernate.validator org.jboss.as.web org.jboss.logging |The deployment is a WAR archive. Jakarta Faces
+|Web Subsystem |  |javaee.api jakarta.faces.api jakarta.faces.impl org.hibernate.validator org.jboss.as.web org.jboss.logging |The deployment is a WAR archive. Jakarta Faces
 is only added if used. Multiple version options exist for Jakarta Faces.
 
-|Web Services Subsystem |org.jboss.ws.api org.jboss.ws.spi |  | 
+|Web Services Subsystem |org.jboss.ws.api org.jboss.ws.spi |  |
 
-|Weld (CDI) Subsystem |  |jakarta.persistence.api javaee.api org.javassist
+|Weld (CDI) Subsystem |  |jakarta.persistence.api javaee.api org.javassist
 org.jboss.interceptor org.jboss.as.weld org.jboss.logging
 org.jboss.weld.core org.jboss.weld.api org.jboss.weld.spi |If a
 beans.xml file is detected in the deployment

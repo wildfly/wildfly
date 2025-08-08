@@ -150,7 +150,7 @@ EntityManager em;
 
 ----
 JPA 2.2 specification section 7.6.3.1
- 
+
 If a stateful session bean instantiates a stateful session bean (executing in the same EJB container instance) which also has such an extended persistence context with the same synchronization type, the extended persistence context of the first stateful session bean is inherited by the second stateful session bean and bound to it, and this rule recursively applies independently of whether transactions are active or not at the point of the creation of the stateful session beans. If the stateful session beans differ in declared synchronization type, the EJBException is thrown by the container.  If the persistence context has been inherited by any stateful session beans, the container does not close the persistence context until all such stateful session beans have been removed or otherwise destroyed.
 
 ----
@@ -223,7 +223,7 @@ database table row.
 @PersistenceContext EntityManager em;
 Integer bomPk = getIndexKeyValue();
 BillOfMaterials bom = em.find(BillOfMaterials.class, bomPk); // read existing table row into BillOfMaterials class
- 
+
 BillOfMaterials createdBom = new BillOfMaterials("...");     // create new entity
 em.persist(createdBom);  // createdBom is now managed and will be saved to database when the current JTA transaction completes
 ----
@@ -308,21 +308,21 @@ category. You need to change the console-handler level from *INFO* to
 <subsystem xmlns="urn:jboss:domain:logging:1.0">
      <console-handler name="CONSOLE">
       <level name="TRACE" />
-      ...
+      ...
      </console-handler>
- 
+
      </periodic-rotating-file-handler>
      <logger category="com.arjuna">
-        <level name="WARN" />
-     </logger>
- 
+        <level name="WARN" />
+     </logger>
+
      <logger category="org.jboss.as.jpa">
-        <level name="TRACE" />
-     </logger>
- 
+        <level name="TRACE" />
+     </logger>
+
      <logger category="org.apache.tomcat.util.modeler">
-        <level name="WARN" />
-     </logger>
+        <level name="WARN" />
+     </logger>
      ...
 ----
 
@@ -333,7 +333,7 @@ and add spy="true" to the datasource.
 ----
 <datasource jndi-name="java:jboss/datasources/..." pool-name="..." enabled="true" spy="true">
 <logger category="jboss.jdbc.spy">
-  <level name="TRACE"/>
+  <level name="TRACE"/>
 </logger>
 ----
 
@@ -346,28 +346,28 @@ org.infinispan:*
 <subsystem xmlns="urn:jboss:domain:logging:1.0">
      <console-handler name="CONSOLE">
       <level name="TRACE" />
-      ...
+      ...
      </console-handler>
- 
+
      </periodic-rotating-file-handler>
      <logger category="com.arjuna">
-        <level name="WARN" />
-     </logger>
- 
+        <level name="WARN" />
+     </logger>
+
      <logger category="org.hibernate.SQL">
-        <level name="TRACE" />
-     </logger>
- 
+        <level name="TRACE" />
+     </logger>
+
      <logger category="org.hibernate">
-        <level name="TRACE" />
-     </logger>
-      <logger category="org.infinispan">
-        <level name="TRACE" />
-     </logger>
- 
+        <level name="TRACE" />
+     </logger>
+      <logger category="org.infinispan">
+        <level name="TRACE" />
+     </logger>
+
      <logger category="org.apache.tomcat.util.modeler">
-        <level name="WARN" />
-     </logger>
+        <level name="WARN" />
+     </logger>
      ...
 ----
 
@@ -451,29 +451,29 @@ like:
 [source,xml,options="nowrap"]
 ----
  <cache-container name="hibernate" module="org.infinispan.hibernate-cache" default-cache="immutable-entity">
-    <local-cache name="entity">
-        <transaction mode="NONE"/>
-        <eviction max-entries="-1"/>
-        <expiration max-idle="120000"/>
-    </local-cache>
-    <local-cache name="immutable-entity">
-        <transaction mode="NONE"/>
-        <eviction max-entries="-1"/>
-        <expiration max-idle="120000"/>
-    </local-cache>
-    <local-cache name="local-query">
-        <eviction max-entries="-1"/>
-        <expiration max-idle="300000"/>
-    </local-cache>
-    <local-cache name="pending-puts">
-        <transaction mode="NONE"/>
-        <eviction strategy="NONE"/>
-        <expiration max-idle="60000"/>
-    </local-cache>
-    <local-cache name="timestamps">
-        <transaction mode="NONE"/>
-        <eviction strategy="NONE"/>
-    </local-cache>
+    <local-cache name="entity">
+        <transaction mode="NONE"/>
+        <eviction max-entries="-1"/>
+        <expiration max-idle="120000"/>
+    </local-cache>
+    <local-cache name="immutable-entity">
+        <transaction mode="NONE"/>
+        <eviction max-entries="-1"/>
+        <expiration max-idle="120000"/>
+    </local-cache>
+    <local-cache name="local-query">
+        <eviction max-entries="-1"/>
+        <expiration max-idle="300000"/>
+    </local-cache>
+    <local-cache name="pending-puts">
+        <transaction mode="NONE"/>
+        <eviction strategy="NONE"/>
+        <expiration max-idle="60000"/>
+    </local-cache>
+    <local-cache name="timestamps">
+        <transaction mode="NONE"/>
+        <eviction strategy="NONE"/>
+    </local-cache>
 </cache-container>
 ----
 
@@ -482,11 +482,11 @@ Persistence.xml to use the above custom settings:
 [source,xml,options="nowrap"]
 ----
 <properties>
-    <property name="hibernate.cache.use_second_level_cache" value="true"/>
-    <property name="hibernate.cache.use_query_cache" value="true"/>
-    <property name="hibernate.cache.infinispan.immutable-entity.cfg" value="immutable-entity"/>
-    <property name="hibernate.cache.infinispan.timestamps.cfg" value="timestamps"/>
-    <property name="hibernate.cache.infinispan.pending-puts.cfg" value="pending-puts"/>
+    <property name="hibernate.cache.use_second_level_cache" value="true"/>
+    <property name="hibernate.cache.use_query_cache" value="true"/>
+    <property name="hibernate.cache.infinispan.immutable-entity.cfg" value="immutable-entity"/>
+    <property name="hibernate.cache.infinispan.timestamps.cfg" value="timestamps"/>
+    <property name="hibernate.cache.infinispan.pending-puts.cfg" value="pending-puts"/>
 </properties>
 ----
 
@@ -549,31 +549,31 @@ that depends on EclipseLink, to deploy on WildFly.
 [source,xml,options="nowrap"]
 ----
  <module xmlns="urn:jboss:module:1.9" name="org.eclipse.persistence">
-    <resources>
-        <resource-root path="jipijapa-eclipselink-31.0.0.Final.jar"/>
+    <resources>
+        <resource-root path="jipijapa-eclipselink-31.0.0.Final.jar"/>
         <resource-root path="eclipselink.jar">
            <filter>
               <exclude path="jakarta/**" />
            </filter>
         </resource-root>
-    </resources>
- 
-    <dependencies>
-        <module name="java.logging"/>
-        <module name="java.management"/>
-        <module name="java.naming"/>
-        <module name="jakarta.annotation.api"/>
-        <module name="jakarta.enterprise.api"/>
-        <module name="jakarta.json.api" optional="true"/>
-        <module name="jakarta.persistence.api"/>
-        <module name="jakarta.transaction.api"/>
-        <module name="jakarta.validation.api"/>
-        <module name="jakarta.xml.bind.api"/>
-        <module name="org.antlr"/>
-        <module name="org.jboss.as.jpa.spi"/>
-        <module name="org.jboss.logging"/>
-        <module name="org.jboss.vfs"/>
-    </dependencies>
+    </resources>
+
+    <dependencies>
+        <module name="java.logging"/>
+        <module name="java.management"/>
+        <module name="java.naming"/>
+        <module name="jakarta.annotation.api"/>
+        <module name="jakarta.enterprise.api"/>
+        <module name="jakarta.json.api" optional="true"/>
+        <module name="jakarta.persistence.api"/>
+        <module name="jakarta.transaction.api"/>
+        <module name="jakarta.validation.api"/>
+        <module name="jakarta.xml.bind.api"/>
+        <module name="org.antlr"/>
+        <module name="org.jboss.as.jpa.spi"/>
+        <module name="org.jboss.logging"/>
+        <module name="org.jboss.vfs"/>
+    </dependencies>
 </module>
 ----
 
@@ -621,9 +621,9 @@ EntityManagerFactorys.
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 @Stateful public class MyStatefulBean ... {
-   @PersistenceContext(unitName="crm") Session session1;
-   @PersistenceContext(unitName="crm2", type=EXTENDED) Session extendedpc;
-   @PersistenceUnit(unitName="crm") SessionFactory factory;
+   @PersistenceContext(unitName="crm") Session session1;
+   @PersistenceContext(unitName="crm2", type=EXTENDED) Session extendedpc;
+   @PersistenceUnit(unitName="crm") SessionFactory factory;
 }
 ----
 
@@ -699,9 +699,9 @@ name |Is set to the application name + persistence unit name
 across all application deployments on the AS instance).  
 This replaces the `hibernate.ejb.entitymanager_factory_name` property which is no longer supported.
 
-|hibernate.query.jpaql_strict_compliance=true | 
+|hibernate.query.jpaql_strict_compliance=true |
 
-|hibernate.auto_quote_keyword=false | 
+|hibernate.auto_quote_keyword=false |
 
 |hibernate.implicit_naming_strategy=org.hibernate.boot.model.naming.ImplicitNamingStrategyJpaCompliantImpl |
 
@@ -866,20 +866,20 @@ persistence.xml
 ----
 <?xml version="1.0" encoding="UTF-8"?>
 <persistence version="2.0"
-   xmlns="http://java.sun.com/xml/ns/persistence" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-   xsi:schemaLocation="
-        http://java.sun.com/xml/ns/persistence
-        http://java.sun.com/xml/ns/persistence/persistence_2_0.xsd">
-   <persistence-unit name="myPU">
-      <!-- If you are running in a production environment, add a managed
-         data source, the example data source is just for proofs of concept! -->
-      <jta-data-source>java:jboss/datasources/ExampleDS</jta-data-source>
-      <properties>
-         <!-- Bind entity manager factory to JNDI at java:jboss/myEntityManagerFactory -->
-         <property name="jboss.entity.manager.factory.jndi.name" value="java:jboss/myEntityManagerFactory" />
+   xmlns="http://java.sun.com/xml/ns/persistence" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+   xsi:schemaLocation="
+        http://java.sun.com/xml/ns/persistence
+        http://java.sun.com/xml/ns/persistence/persistence_2_0.xsd">
+   <persistence-unit name="myPU">
+      <!-- If you are running in a production environment, add a managed
+         data source, the example data source is just for proofs of concept! -->
+      <jta-data-source>java:jboss/datasources/ExampleDS</jta-data-source>
+      <properties>
+         <!-- Bind entity manager factory to JNDI at java:jboss/myEntityManagerFactory -->
+         <property name="jboss.entity.manager.factory.jndi.name" value="java:jboss/myEntityManagerFactory" />
          <property name="jboss.entity.manager.jndi.name" value="java:/myEntityManager"/>
-       </properties>
-   </persistence-unit>
+       </properties>
+   </persistence-unit>
 </persistence>
 ----
 
@@ -891,7 +891,7 @@ public class ExampleSFSB {
     Context context = new InitialContext();
     jakarta.persistence.EntityManager entityManager = (jakarta.persistence.EntityManager) context.lookup("java:/myEntityManager");
     SomeEntity someEntity = new SomeEntity();
-    someEntity.setName(name);    entityManager.persist(name);
+    someEntity.setName(name);    entityManager.persist(name);
   }
 }
 ----

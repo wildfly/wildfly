@@ -270,7 +270,7 @@ Use a `RuntimeCapability.Builder` to create one.
 class MyResourceDefinition extends SimpleResourceDefinition {
     
     static final RuntimeCapability<Void> FOO_CAPABILITY = RuntimeCapability.Builder.of("com.example.foo").build();
- 
+
     . . .
 }
 ----
@@ -312,11 +312,11 @@ instantiate an instance of that API:
 [source,java,options="nowrap"]
 ----
 public class JTSCapability {
- 
+
     static final JTSCapability INSTANCE = new JTSCapability();
- 
+
     private JTSCapability() {}
- 
+
     /**
      * Gets the names of the {@link org.omg.PortableInterceptor.ORBInitializer} implementations that should be included
      * as part of the {@link org.omg.CORBA.ORB#init(String[], java.util.Properties) initialization of an ORB}.
@@ -376,7 +376,7 @@ capabilities provided by resources of this type.
 class MyResourceDefinition extends SimpleResourceDefinition {
     
     . . .
- 
+
     MyResourceDefinition() {
         super(new SimpleResourceDefinition.Parameters(PATH, RESOLVER)
             .setAddHandler(MyAddHandler.INSTANCE)
@@ -430,9 +430,9 @@ Here's an example for a statically named capability:
 [source,java,options="nowrap"]
 ----
 class MyAddHandler extends AbstractAddStepHandler() {
- 
+
     . . .
- 
+
     @Override
     protected void performRuntime(final OperationContext context, final ModelNode operation, 
                                   final Resource resource) throws OperationFailedException {
@@ -450,9 +450,9 @@ from the `OperationContext` and use that when getting the service name:
 [source,java,options="nowrap"]
 ----
 class MyAddHandler extends AbstractAddStepHandler() {
- 
+
     . . .
- 
+
     @Override
     protected void performRuntime(final OperationContext context, final ModelNode operation, 
                                   final Resource resource) throws OperationFailedException {
@@ -524,16 +524,16 @@ dynamically named socket-binding capability:
 [source,java,options="nowrap"]
 ----
 public class ConnectorResource extends SimpleResourceDefinition {
- 
+
     . . .
- 
+
     static final String SOCKET_CAPABILITY_NAME = "org.wildfly.network.socket-binding";
     static final RuntimeCapability<Void> CONNECTOR_CAPABILITY =
             RuntimeCapability.Builder.of("org.wildfly.remoting.connector", true)
                     .build();
- 
+
     . . .
- 
+
     static final SimpleAttributeDefinition SOCKET_BINDING = 
             new SimpleAttributeDefinitionBuilder(CommonAttributes.SOCKET_BINDING, ModelType.STRING, false)
                 .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.SOCKET_BINDING_REF)
@@ -607,17 +607,17 @@ In this case, use `OperationContext.hasOptionalCapability` in your
 [source,java,options="nowrap"]
 ----
     protected void performRuntime(final OperationContext context, final ModelNode operation, final ModelNode model) throws OperationFailedException {
- 
+
         ServiceName myServiceName = MyResource.FOO_CAPABILITY.getCapabilityServiceName();
         Service<DataSource> myService = createService(context, model);
         ServiceBuilder<DataSource> builder = context.getTarget().addService(myServiceName, myService);
- 
+
         // Inject a "Bar" into our "Foo" if bar capability is present
         if (context.hasOptionalCapability("com.example.bar", MyResource.FOO_CAPABILITY.getName(), null) {
             ServiceName barServiceName = context.getCapabilityServiceName("com.example.bar", Bar.class);
             builder.addDependency(barServiceName, Bar.class, myService.getBarInjector());
         } 
- 
+
         builder.install();        
     }
 ----
@@ -653,9 +653,9 @@ to the `DeploymentPhaseContext`:
 [source,java,options="nowrap"]
 ----
 class MyDUP implements DeploymentUntiProcessor {
- 
+
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
- 
+
         AttachmentKey<CapabilityServiceSupport> key = org.jboss.as.server.deployment.Attachments.DEPLOYMENT_COMPLETE_SERVICES;
         CapabilityServiceSupport capSvcSupport = phaseContext.getAttachment(key);
 ----

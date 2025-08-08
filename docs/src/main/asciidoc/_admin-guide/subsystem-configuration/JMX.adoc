@@ -27,9 +27,9 @@ import javax.management.MBeanServerConnection;
 import javax.management.remote.JMXConnector;
 import javax.management.remote.JMXConnectorFactory;
 import javax.management.remote.JMXServiceURL;
- 
+
 public class JMXExample {
- 
+
     public static void main(String[] args) throws Exception {
         //Get a connection to the WildFly MBean server on localhost
         String host = "localhost";
@@ -39,11 +39,11 @@ public class JMXExample {
         JMXServiceURL serviceURL = new JMXServiceURL(urlString);
         JMXConnector jmxConnector = JMXConnectorFactory.connect(serviceURL, null);
         MBeanServerConnection connection = jmxConnector.getMBeanServerConnection();
- 
+
         //Invoke on the WildFly MBean server
         int count = connection.getMBeanCount();
         System.out.println(count);
-        jmxConnector.close();
+        jmxConnector.close();
     }
 }
 ----

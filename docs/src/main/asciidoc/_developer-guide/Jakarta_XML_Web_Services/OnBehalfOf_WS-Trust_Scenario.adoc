@@ -121,10 +121,10 @@ simple web service definition.
 [source,java,options="nowrap"]
 ----
 package org.jboss.test.ws.jaxws.samples.wsse.policy.trust.onbehalfof;
- 
+
 import jakarta.jws.WebMethod;
 import jakarta.jws.WebService;
- 
+
 @WebService
 (
    targetNamespace = "http://www.jboss.org/jbossws/ws-extensions/onbehalfofwssecuritypolicy"
@@ -152,7 +152,7 @@ user. Method setupService performs the requisite configuration setup.
 [source,java,options="nowrap"]
 ----
 package org.jboss.test.ws.jaxws.samples.wsse.policy.trust.onbehalfof;
- 
+
 import org.apache.cxf.Bus;
 import org.apache.cxf.BusFactory;
 import org.apache.cxf.annotations.EndpointProperties;
@@ -161,14 +161,14 @@ import org.apache.cxf.ws.security.SecurityConstants;
 import org.apache.cxf.ws.security.trust.STSClient;
 import org.jboss.test.ws.jaxws.samples.wsse.policy.trust.service.ServiceIface;
 import org.jboss.test.ws.jaxws.samples.wsse.policy.trust.shared.WSTrustAppUtils;
- 
+
 import jakarta.jws.WebService;
 import jakarta.xml.ws.BindingProvider;
 import jakarta.xml.ws.Service;
 import java.net.*;
 import java.util.Map;
 import javax.xml.namespace.QName;
- 
+
 @WebService
 (
    portName = "OnBehalfOfServicePort",
@@ -177,28 +177,28 @@ import javax.xml.namespace.QName;
    targetNamespace = "http://www.jboss.org/jbossws/ws-extensions/onbehalfofwssecuritypolicy",
    endpointInterface = "org.jboss.test.ws.jaxws.samples.wsse.policy.trust.onbehalfof.OnBehalfOfServiceIface"
 )
- 
+
 @EndpointProperties(value = {
       @EndpointProperty(key = "ws-security.signature.username", value = "myactaskey"),
       @EndpointProperty(key = "ws-security.signature.properties", value =  "actasKeystore.properties"),
       @EndpointProperty(key = "ws-security.encryption.properties", value = "actasKeystore.properties"),
       @EndpointProperty(key = "ws-security.callback-handler", value = "org.jboss.test.ws.jaxws.samples.wsse.policy.trust.onbehalfof.OnBehalfOfCallbackHandler")
 })
- 
+
 public class OnBehalfOfServiceImpl implements OnBehalfOfServiceIface
 {
    public String sayHello() {
       try {
- 
+
          ServiceIface proxy = setupService();
          return "OnBehalfOf " + proxy.sayHello();
- 
+
       } catch (MalformedURLException e) {
          e.printStackTrace();
       }
       return null;
    }
- 
+
    /**
     *
     * @return
@@ -207,19 +207,19 @@ public class OnBehalfOfServiceImpl implements OnBehalfOfServiceIface
    private  ServiceIface setupService()throws MalformedURLException {
       ServiceIface proxy = null;
       Bus bus = BusFactory.newInstance().createBus();
- 
+
       try {
          BusFactory.setThreadDefaultBus(bus);
- 
+
          final String serviceURL = "http://" + WSTrustAppUtils.getServerHost() + ":8080/jaxws-samples-wsse-policy-trust/SecurityService";
          final QName serviceName = new QName("http://www.jboss.org/jbossws/ws-extensions/wssecuritypolicy", "SecurityService");
          final URL wsdlURL = new URL(serviceURL + "?wsdl");
          Service service = Service.create(wsdlURL, serviceName);
          proxy = (ServiceIface) service.getPort(ServiceIface.class);
- 
+
          Map<String, Object> ctx = ((BindingProvider) proxy).getRequestContext();
          ctx.put(SecurityConstants.CALLBACK_HANDLER, new OnBehalfOfCallbackHandler());
- 
+
          ctx.put(SecurityConstants.SIGNATURE_PROPERTIES,
             Thread.currentThread().getContextClassLoader().getResource(
             "actasKeystore.properties" ));
@@ -228,7 +228,7 @@ public class OnBehalfOfServiceImpl implements OnBehalfOfServiceIface
             Thread.currentThread().getContextClassLoader().getResource(
             "../../META-INF/clientKeystore.properties" ));
          ctx.put(SecurityConstants.ENCRYPT_USERNAME, "myservicekey");
- 
+
          STSClient stsClient = new STSClient(bus);
          Map<String, Object> props = stsClient.getProperties();
          props.put(SecurityConstants.USERNAME, "bob");
@@ -238,16 +238,16 @@ public class OnBehalfOfServiceImpl implements OnBehalfOfServiceIface
             Thread.currentThread().getContextClassLoader().getResource(
             "actasKeystore.properties" ));
          props.put(SecurityConstants.STS_TOKEN_USE_CERT_FOR_KEYINFO, "true");
- 
+
          ctx.put(SecurityConstants.STS_CLIENT, stsClient);
- 
+
       } finally {
          bus.shutdown(true);
       }
- 
+
       return proxy;
    }
- 
+
 }
 ----
 
@@ -264,18 +264,18 @@ user, alice.
 [source,java,options="nowrap"]
 ----
  package org.jboss.test.ws.jaxws.samples.wsse.policy.trust.onbehalfof;
- 
+
 import org.jboss.wsf.stack.cxf.extensions.security.PasswordCallbackHandler;
 import java.util.HashMap;
 import java.util.Map;
- 
+
 public class OnBehalfOfCallbackHandler extends PasswordCallbackHandler {
- 
+
    public OnBehalfOfCallbackHandler()
    {
       super(getInitMap());
    }
- 
+
    private static Map<String, String> getInitMap()
    {
       Map<String, String> passwords = new HashMap<String, String>();
@@ -284,7 +284,7 @@ public class OnBehalfOfCallbackHandler extends PasswordCallbackHandler {
       passwords.put("bob", "trombone");
       return passwords;
    }
- 
+
 }
 ----
 
@@ -322,15 +322,15 @@ final QName serviceName = new QName("http://www.jboss.org/jbossws/ws-extensions/
 final URL wsdlURL = new URL(serviceURL + "?wsdl");
 Service service = Service.create(wsdlURL, serviceName);
 OnBehalfOfServiceIface proxy = (OnBehalfOfServiceIface) service.getPort(OnBehalfOfServiceIface.class);
- 
- 
+
+
 Bus bus = BusFactory.newInstance().createBus();
 try {
- 
+
     BusFactory.setThreadDefaultBus(bus);
- 
+
     Map<String, Object> ctx = proxy.getRequestContext();
- 
+
     ctx.put(SecurityConstants.CALLBACK_HANDLER, new ClientCallbackHandler());
     ctx.put(SecurityConstants.ENCRYPT_PROPERTIES,
         Thread.currentThread().getContextClassLoader().getResource(
@@ -340,17 +340,17 @@ try {
         Thread.currentThread().getContextClassLoader().getResource(
         "META-INF/clientKeystore.properties"));
     ctx.put(SecurityConstants.SIGNATURE_USERNAME, "myclientkey");
- 
+
     // user and password OnBehalfOf user
     // UsernameTokenCallbackHandler will extract this information when called
     ctx.put(SecurityConstants.USERNAME,"alice");
     ctx.put(SecurityConstants.PASSWORD, "clarinet");
- 
+
     STSClient stsClient = new STSClient(bus);
- 
+
     // Providing the STSClient the mechanism to create the claims contents for OnBehalfOf
     stsClient.setOnBehalfOf(new UsernameTokenCallbackHandler());
- 
+
     Map<String, Object> props = stsClient.getProperties();
     props.put(SecurityConstants.CALLBACK_HANDLER, new ClientCallbackHandler());
     props.put(SecurityConstants.ENCRYPT_PROPERTIES,
@@ -362,9 +362,9 @@ try {
         Thread.currentThread().getContextClassLoader().getResource(
         "META-INF/clientKeystore.properties"));
     props.put(SecurityConstants.STS_TOKEN_USE_CERT_FOR_KEYINFO, "true");
- 
+
     ctx.put(SecurityConstants.STS_CLIENT, stsClient);
- 
+
 } finally {
     bus.shutdown(true);
 }

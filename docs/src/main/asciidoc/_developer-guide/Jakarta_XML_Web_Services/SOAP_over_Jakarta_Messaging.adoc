@@ -42,13 +42,13 @@ the queues [2]
 [source,xml,options="nowrap"]
 ----
 <wsdl:definitions name="HelloWorldService" targetNamespace="http://org.jboss.ws/jaxws/cxf/jms"
-  xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
-  xmlns:tns="http://org.jboss.ws/jaxws/cxf/jms"
-  xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
-  xmlns:soapjms="http://www.w3.org/2010/soapjms/"
-  xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
+  xmlns:tns="http://org.jboss.ws/jaxws/cxf/jms"
+  xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
+  xmlns:soapjms="http://www.w3.org/2010/soapjms/"
+  xmlns:xsd="http://www.w3.org/2001/XMLSchema">
 ...
- 
+
 <wsdl:binding name="HelloWorldServiceSoapBinding" type="tns:HelloWorld">
   <soap:binding style="document" transport="http://www.w3.org/2010/soapjms/"/> <!-- 3 -->
   <wsdl:operation name="echo">
@@ -191,9 +191,9 @@ annotation to refer to the consumed contract:
 [source,java,options="nowrap"]
 ----
 package org.jboss.test.ws.jaxws.cxf.jms;
- 
+
 import jakarta.jws.WebService;
- 
+
 @WebService
 (
    portName = "HelloWorldImplPort",
@@ -329,15 +329,15 @@ receiver.setMessageListener(responseListener);
 con.start();
 TextMessage message = session.createTextMessage(reqMessage);
 message.setJMSReplyTo(resQueue);
- 
+
 //setup SOAP-over-JMS properties...
 message.setStringProperty("SOAPJMS_contentType", "text/xml");
 message.setStringProperty("SOAPJMS_requestURI", "jms:queue:testQueue");
- 
+
 QueueSender sender = session.createSender(reqQueue);
 sender.send(message);
 sender.close();
- 
+
 ...
 ----
 
@@ -446,9 +446,9 @@ implement the same service endpoint interface:
 [source,java,options="nowrap"]
 ----
 package org.jboss.test.ws.jaxws.cxf.jms_http;
- 
+
 import jakarta.jws.WebService;
- 
+
 @WebService
 (
    portName = "HelloWorldImplPort",
@@ -470,9 +470,9 @@ public class HelloWorldImpl implements HelloWorld
 [source,java,options="nowrap"]
 ----
 package org.jboss.test.ws.jaxws.cxf.jms_http;
- 
+
 import jakarta.jws.WebService;
- 
+
 @WebService
 (
    portName = "HttpHelloWorldImplPort",
@@ -553,7 +553,7 @@ try
 {
    QName serviceName = new QName("http://org.jboss.ws/jaxws/cxf/jms", "HelloWorldService");
    Service service = Service.create(wsdlUrl, serviceName);
- 
+
    //JMS test
    HelloWorld proxy = (HelloWorld) service.getPort(new QName("http://org.jboss.ws/jaxws/cxf/jms", "HelloWorldImplPort"), HelloWorld.class);
    setupProxy(proxy);

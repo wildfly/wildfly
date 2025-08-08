@@ -152,11 +152,11 @@ An example server group definition is as follows:
 [source,xml,options="nowrap"]
 ----
 <server-group name="main-server-group" profile="default">
-    <socket-binding-group ref="standard-sockets"/>
-    <deployments>
-        <deployment name="foo.war_v1" runtime-name="foo.war" />
-        <deployment name="bar.ear" runtime-name="bar.ear" />
-    </deployments>
+    <socket-binding-group ref="standard-sockets"/>
+    <deployments>
+        <deployment name="foo.war_v1" runtime-name="foo.war" />
+        <deployment name="bar.ear" runtime-name="bar.ear" />
+    </deployments>
 </server-group>
 ----
 

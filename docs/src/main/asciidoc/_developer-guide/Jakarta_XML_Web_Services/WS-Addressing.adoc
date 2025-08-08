@@ -86,11 +86,11 @@ WS-Addressing is enforced through `@Addressing` annotation and no
 [source,java,options="nowrap"]
 ----
 package org.jboss.test.ws.jaxws.samples.wsa;
- 
+
 import jakarta.jws.WebService;
 import jakarta.xml.ws.soap.Addressing;
 import org.jboss.logging.Logger;
- 
+
 @WebService
 (
    portName = "AddressingServicePort",
@@ -102,7 +102,7 @@ import org.jboss.logging.Logger;
 public class ServiceImpl implements ServiceIface
 {
    private Logger log = Logger.getLogger(this.getClass());
- 
+
    public String sayHello(String name)
    {
       return "Hello " + name + "!";
@@ -121,7 +121,7 @@ like this:
     <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
     <wsaw:UsingAddressing wsdl:required="true"/>
     <wsp:PolicyReference URI="#AddressingServiceSoapBinding_WSAM_Addressing_Policy"/>
- 
+
     <wsdl:operation name="sayHello">
       <soap:operation soapAction="" style="document"/>
       <wsdl:input name="sayHello">
@@ -131,7 +131,7 @@ like this:
         <soap:body use="literal"/>
       </wsdl:output>
     </wsdl:operation>
- 
+
   </wsdl:binding>
   <wsdl:service name="AddressingService">
     <wsdl:port binding="tns:AddressingServiceSoapBinding" name="AddressingServicePort">

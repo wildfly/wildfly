@@ -256,15 +256,15 @@ your local one (typically in .m2/settings.xml).
 
 [source,xml,options="nowrap"]
 ----
-   <mirror>
-      <id>eap6-mirror-setting</id>
-      <mirrorOf>
-         *,!central-eap6,!central-eap6-plugins,!jboss-public-eap6,!jboss-public-eap6-plugins
-      </mirrorOf>
-      <name>Mirror Settings for EAP 6 build</name>
-      <url>file:///opt/jboss/eap6-maven-repo</url>
-    </mirror>
-  </mirrors>
+   <mirror>
+      <id>eap6-mirror-setting</id>
+      <mirrorOf>
+         *,!central-eap6,!central-eap6-plugins,!jboss-public-eap6,!jboss-public-eap6-plugins
+      </mirrorOf>
+      <name>Mirror Settings for EAP 6 build</name>
+      <url>file:///opt/jboss/eap6-maven-repo</url>
+    </mirror>
+  </mirrors>
 ----
 
 \2) Build EAP. You won't use the resulting EAP build, though. The
@@ -292,7 +292,7 @@ would run:
 
 |-Ddebug |AS instances run by Arquillian |8787 |-Das.debug.port=...
 
-|-Djpda |alias for -Ddebug |  | 
+|-Djpda |alias for -Ddebug |  |
 
 |-DdebugClient |Test JVMs (currently Surefire) |5050
 |-Ddebug.port.surefire=...
@@ -306,9 +306,9 @@ would run:
 [source,java,options="nowrap"]
 ----
 ./integration-tests.sh install -DdebugClient -Ddebug.port.surefire=4040
- 
+
 ...
- 
+
 -------------------------------------------------------
  T E S T S
 -------------------------------------------------------
@@ -318,9 +318,9 @@ Listening for transport dt_socket at address: 4040
 [source,options="nowrap"]
 ----
 ./integration-tests.sh install -DdebugClient -Ddebug.port.surefire
- 
+
 ...
- 
+
 -------------------------------------------------------
  T E S T S
 -------------------------------------------------------
@@ -411,7 +411,7 @@ and the following defaults, overridable by respective parameter:
 
 [cols=",,,",options="header"]
 |=======================================================================
-|Parameter |IPv4 default |IPv6 default | 
+|Parameter |IPv4 default |IPv6 default |
 
 |-Dnode0 |127.0.0.1 |::1 |Single-node tests.
 

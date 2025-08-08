@@ -146,7 +146,7 @@ application:
 [source,xml,options="nowrap"]
 ----
 <jboss xmlns="urn:jboss:1.0">
-    <weld xmlns="urn:jboss:weld:1.0" non-portable-mode="true" />
+    <weld xmlns="urn:jboss:weld:1.0" non-portable-mode="true" />
 </jboss>
 ----
 

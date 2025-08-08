@@ -84,8 +84,8 @@ or, respectively:
 [source,xml,options="nowrap"]
 ----
 <persistence-unit-ref>
-    <persistence-unit-ref-name>persistence/petclinic-emf</persistence-unit-ref-name>
-    <persistence-unit-name>petclinic</persistence-unit-name>
+    <persistence-unit-ref-name>persistence/petclinic-emf</persistence-unit-ref-name>
+    <persistence-unit-name>petclinic</persistence-unit-name>
 </persistence-unit-ref>
 ----
 
@@ -94,7 +94,7 @@ to be looked up in JNDI, as follows:
 
 [source,xml,options="nowrap"]
 ----
-<jee:jndi-lookup id="entityManager" jndi-name="java:comp/env/persistence/petclinic-em" 
+<jee:jndi-lookup id="entityManager" jndi-name="java:comp/env/persistence/petclinic-em"
             expected-type="jakarta.persistence.EntityManager"/>
 ----
 
@@ -102,7 +102,7 @@ or
 
 [source,xml,options="nowrap"]
 ----
-<jee:jndi-lookup id="entityManagerFactory" jndi-name="java:comp/env/persistence/petclinic-emf" 
+<jee:jndi-lookup id="entityManagerFactory" jndi-name="java:comp/env/persistence/petclinic-emf"
             expected-type="jakarta.persistence.EntityManagerFactory"/>
 ----
 
@@ -145,9 +145,9 @@ META-INF/jpa-persistence.xml, the corresponding definition can be:
 
 [source,xml,options="nowrap"]
 ----
-<bean id="entityManagerFactory" class="org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean"> 
-       <property name="persistenceXmlLocation" value="classpath*:META-INF/jpa-persistence.xml"/> 
-       <!-- other definitions -->
+<bean id="entityManagerFactory" class="org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean">
+       <property name="persistenceXmlLocation" value="classpath*:META-INF/jpa-persistence.xml"/>
+       <!-- other definitions -->
 </bean>
 ----
 

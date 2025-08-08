@@ -50,9 +50,9 @@ Consider this example:
 [source,java,options="nowrap"]
 ----
 public class MyApplication {
- 
+
     public static void main(String args[]) {
- 
+
         final javax.naming.Context ctxOne = new javax.naming.InitialContext();
         final MyBeanInterface beanOne = ctxOne.lookup("ejb:app/module/distinct/bean!interface");
         beanOne.doSomething();
@@ -82,21 +82,21 @@ code:
 [source,java,options="nowrap"]
 ----
 public class MyApplication {
- 
+
     public static void main(String args[]) {
- 
+
         // let's say we want to use "foo" security credential while connecting to the AS7 server for invoking on this bean instance
         final javax.naming.Context ctxOne = new javax.naming.InitialContext();
         final MyBeanInterface beanOne = ctxOne.lookup("ejb:app/module/distinct/bean!interface");
         beanOne.doSomething();
         ...
- 
+
         // let's say we want to use "bar" security credential while connecting to the AS7 server for invoking on this bean instance
         final javax.naming.Context ctxTwo = new javax.naming.InitialContext();
         final MyBeanInterface beanTwo = ctxTwo.lookup("ejb:app/module/distinct/bean!interface");
         beanTwo.doSomething();
         ...
- 
+
     }
 }
 ----
@@ -138,9 +138,9 @@ Consider the following example:
 [source,java,options="nowrap"]
 ----
 public class MyApplication {
- 
+
     public static void main(String args[]) {
- 
+
         // let's say we want to use "foo" security credential while connecting to the AS7 server for invoking on this bean instance
         final Properties ejbClientContextPropsOne = getPropsForEJBClientContextOne():
         final javax.naming.Context ctxOne = new javax.naming.InitialContext(ejbClientContextPropsOne);
@@ -148,8 +148,8 @@ public class MyApplication {
         beanOne.doSomething();
         ...
         closeContext(ctxOne); // read on the entire article to understand more about closing scoped EJB client contexts
- 
-        // let's say we want to use "bar" security credential while connecting to the AS7 server for invoking on this bean instance
+
+        // let's say we want to use "bar" security credential while connecting to the AS7 server for invoking on this bean instance
         final Properties ejbClientContextPropsTwo = getPropsForEJBClientContextTwo():
         final javax.naming.Context ctxTwo = new javax.naming.InitialContext(ejbClientContextPropsTwo);
         final MyBeanInterface beanTwo = ctxTwo.lookup("ejb:app/module/distinct/bean!interface");
@@ -368,7 +368,7 @@ try {
     } catch (Throwable t) {
         // log and ignore
     }
- 
+
 }
 ----
 
@@ -437,7 +437,7 @@ void doEJBInvocation() {
     ... // do some other work
     bean.keepDoingSomething();
 }
- 
+
 MyBean lookupEJB() {
     final Properties props = new Properties();
     // mark it for scoped EJB client context
