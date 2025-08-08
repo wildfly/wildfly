@@ -78,7 +78,7 @@ public class SubsystemTransformersTestCase extends AbstractSubsystemTest {
         switch (version) {
             case EAP_XP_4:
                 return new String[] {
-                        String.format("org.jboss.eap:wildfly-opentelemetry:%s", version.getMavenGavVersion())
+                        version.createGAV("wildfly-opentelemetry")
                 };
         }
         throw new IllegalArgumentException();

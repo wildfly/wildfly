@@ -140,10 +140,10 @@ public class JcaSubsystemTestCase extends AbstractSubsystemBaseTest {
         //Get the model and the persisted xml from the first controller
         final ModelNode model = services.readWholeModel();
 
-        PathAddress subystem = PathAddress.pathAddress("subsystem", "jca");
-        PathAddress dwm1 = subystem.append("distributed-workmanager", "dwm1");
+        PathAddress subsystem = PathAddress.pathAddress("subsystem", "jca");
+        PathAddress dwm1 = subsystem.append("distributed-workmanager", "dwm1");
         PathAddress threads1 = dwm1.append("short-running-threads","dwm1");
-        PathAddress dwm2 = subystem.append("distributed-workmanager", "dwm2");
+        PathAddress dwm2 = subsystem.append("distributed-workmanager", "dwm2");
         PathAddress threads2 = dwm2.append("short-running-threads","dwm2");
 
         ModelNode composite = Util.createEmptyOperation("composite", PathAddress.EMPTY_ADDRESS);
@@ -193,14 +193,13 @@ public class JcaSubsystemTestCase extends AbstractSubsystemBaseTest {
 
     private KernelServices initialKernelServices(KernelServicesBuilder builder, ModelTestControllerVersion controllerVersion, final ModelVersion modelVersion) throws Exception {
         LegacyKernelServicesInitializer initializer = builder.createLegacyKernelServicesBuilder(createAdditionalInitialization(), controllerVersion, modelVersion);
-        String mavenGroupId = controllerVersion.getMavenGroupId();
-        String artifactId = "wildfly-connector";
-        initializer.addMavenResourceURL(mavenGroupId + ":" + artifactId + ":" + controllerVersion.getMavenGavVersion())
-                .addMavenResourceURL(mavenGroupId + ":wildfly-clustering-api:" + controllerVersion.getMavenGavVersion())
-                .addMavenResourceURL(mavenGroupId + ":wildfly-clustering-common:" + controllerVersion.getMavenGavVersion())
-                .addMavenResourceURL(mavenGroupId + ":wildfly-clustering-service:" + controllerVersion.getMavenGavVersion())
-                .addMavenResourceURL(mavenGroupId + ":wildfly-clustering-spi:" + controllerVersion.getMavenGavVersion())
-                .addMavenResourceURL("org.wildfly.core:wildfly-threads:" + controllerVersion.getCoreVersion())
+        initializer
+                .addMavenResourceURL(controllerVersion.createGAV("wildfly-connector"))
+                .addMavenResourceURL(controllerVersion.createGAV("wildfly-clustering-api"))
+                .addMavenResourceURL(controllerVersion.createGAV("wildfly-clustering-common"))
+                .addMavenResourceURL(controllerVersion.createGAV("wildfly-clustering-service"))
+                .addMavenResourceURL(controllerVersion.createGAV("wildfly-clustering-spi"))
+                .addMavenResourceURL(controllerVersion.createCoreGAV("wildfly-threads"))
                 .setExtensionClassName("org.jboss.as.connector.subsystems.jca.JcaExtension")
                 .excludeFromParent(SingleClassFilter.createFilter(ConnectorLogger.class));
         KernelServices mainServices = builder.build();
