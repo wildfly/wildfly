@@ -174,6 +174,8 @@ public class PersistenceIntegrationWithCDI {
             if (!persistenceUnitMetadata.isDuplicate()) {
                 beanConfigurator.name(persistenceUnitMetadata.getPersistenceUnitName());
                 beanConfigurator.addQualifier(NamedLiteral.of(persistenceUnitMetadata.getPersistenceUnitName()));
+            } else {
+                JpaLogger.ROOT_LOGGER.willNotNameEntityManagerFactoryBean(persistenceUnitMetadata.getScopedPersistenceUnitName(), persistenceUnitMetadata.getPersistenceUnitName());
             }
             Class<? extends Annotation> scopeAnnotation = persistenceUnitMetadata.getClassLoader().loadClass(scope).asSubclass(Annotation.class);
             beanConfigurator.scope(scopeAnnotation);

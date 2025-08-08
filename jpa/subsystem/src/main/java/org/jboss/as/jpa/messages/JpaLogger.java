@@ -769,4 +769,8 @@ public interface JpaLogger extends BasicLogger {
 
     @Message(id = 79, value = "IntegratePersistenceAfterBeanDiscovery cannot register persistence unit %s as jakarta.enterprise.inject.spi.AfterBeanDiscovery event already ran for %s.")
     IllegalStateException afterBeanDiscoveryEventRanAlready(String persistenceUnitName, String scopedPersistenceUnitName);
+
+    @LogMessage(level = INFO)
+    @Message(id = 80, value = "EntityManagerFactory CDI bean (for %s) will not have persistence unit name.  In order for the EntityManagerFactory CDI bean to be named remove duplicate copies of persistence unit %s.")
+    void willNotNameEntityManagerFactoryBean(String scopedPersistenceUnitName, String persistenceUnitName);
 }
