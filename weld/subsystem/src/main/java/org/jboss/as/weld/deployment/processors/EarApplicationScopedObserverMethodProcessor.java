@@ -5,6 +5,8 @@
 
 package org.jboss.as.weld.deployment.processors;
 
+import jakarta.enterprise.event.Shutdown;
+import jakarta.enterprise.event.Startup;
 import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.as.ee.structure.DeploymentType;
 import org.jboss.as.ee.structure.DeploymentTypeMarker;
@@ -26,15 +28,11 @@ import jakarta.enterprise.context.BeforeDestroyed;
 import jakarta.enterprise.context.Destroyed;
 import jakarta.enterprise.context.Initialized;
 import jakarta.enterprise.event.Observes;
-import jakarta.enterprise.event.Reception;
-import jakarta.enterprise.event.TransactionPhase;
 import jakarta.enterprise.inject.spi.Extension;
 import jakarta.enterprise.inject.spi.ObserverMethod;
 import jakarta.enterprise.inject.spi.ProcessObserverMethod;
 import java.lang.annotation.Annotation;
-import java.lang.reflect.Type;
 import java.util.List;
-import java.util.Set;
 
 import static org.jboss.as.weld.Capabilities.WELD_CAPABILITY_NAME;
 
@@ -69,62 +67,48 @@ public class EarApplicationScopedObserverMethodProcessor implements DeploymentUn
             this.deploymentUnit = deploymentUnit;
         }
 
-        public <Object, X> void processObserverMethod(@Observes ProcessObserverMethod<Object, X> event) {
+        public void processLifecycleObserverMethod(@Observes ProcessObserverMethod<Object, ?> event) {
             final ObserverMethod<Object> method = event.getObserverMethod();
             for (Annotation a : method.getObservedQualifiers()) {
                 // only process @Initialized(ApplicationScoped.class), @BeforeDestroyed(ApplicationScoped.class) and @Destroyed(ApplicationScoped.class)
                 if ((a instanceof Initialized && ((Initialized) a).value().equals(ApplicationScoped.class)) || (a instanceof BeforeDestroyed && ((BeforeDestroyed) a).value().equals(ApplicationScoped.class)) || (a instanceof Destroyed && ((Destroyed) a).value().equals(ApplicationScoped.class))) {
-                    // if there are setup actions for the bean's class deployable unit wrap the observer method
-                    final DeploymentUnit beanDeploymentUnit = getBeanDeploymentUnit(method.getBeanClass().getName());
-                    if (beanDeploymentUnit != null) {
-                        final List<SetupAction> setupActions = WeldDeploymentProcessor.getSetupActions(beanDeploymentUnit);
-                        if (!setupActions.isEmpty()) {
-                            event.setObserverMethod(new ObserverMethod<Object>() {
-                                @Override
-                                public Class<?> getBeanClass() {
-                                    return method.getBeanClass();
-                                }
+                    enrichObserverMethod(event, method);
+                }
+            }
+        }
 
-                                @Override
-                                public Type getObservedType() {
-                                    return method.getObservedType();
-                                }
+        public void processStartupObserverMethod(@Observes ProcessObserverMethod<Startup, ?> event) {
+            // process all obs. methods with Startup type
+            enrichObserverMethod(event, event.getObserverMethod());
+        }
 
-                                @Override
-                                public Set<Annotation> getObservedQualifiers() {
-                                    return method.getObservedQualifiers();
-                                }
+        public void processShutdownObserverMethod(@Observes ProcessObserverMethod<Shutdown, ?> event) {
+            // process all obs. methods with Shutdown type
+            enrichObserverMethod(event, event.getObserverMethod());
+        }
 
-                                @Override
-                                public Reception getReception() {
-                                    return method.getReception();
+        private <T> void enrichObserverMethod(ProcessObserverMethod<T, ?> event, ObserverMethod<T> method) {
+            // if there are setup actions for the bean's class deployable unit wrap the observer method
+            final DeploymentUnit beanDeploymentUnit = getBeanDeploymentUnit(method.getBeanClass().getName());
+            if (beanDeploymentUnit != null) {
+                final List<SetupAction> setupActions = WeldDeploymentProcessor.getSetupActions(beanDeploymentUnit);
+                if (!setupActions.isEmpty()) {
+                    event.configureObserverMethod().notifyWith(eventContext -> {
+                        try {
+                            for (SetupAction action : setupActions) {
+                                action.setup(null);
+                            }
+                            method.notify(eventContext.getEvent());
+                        } finally {
+                            for (SetupAction action : setupActions) {
+                                try {
+                                    action.teardown(null);
+                                } catch (Exception e) {
+                                    WeldLogger.DEPLOYMENT_LOGGER.exceptionClearingThreadState(e);
                                 }
-
-                                @Override
-                                public TransactionPhase getTransactionPhase() {
-                                    return method.getTransactionPhase();
-                                }
-
-                                @Override
-                                public void notify(Object event) {
-                                    try {
-                                        for (SetupAction action : setupActions) {
-                                            action.setup(null);
-                                        }
-                                        method.notify(event);
-                                    } finally {
-                                        for (SetupAction action : setupActions) {
-                                            try {
-                                                action.teardown(null);
-                                            } catch (Exception e) {
-                                                WeldLogger.DEPLOYMENT_LOGGER.exceptionClearingThreadState(e);
-                                            }
-                                        }
-                                    }
-                                }
-                            });
+                            }
                         }
-                    }
+                    });
                 }
             }
         }
