@@ -77,16 +77,10 @@
         <galleon.minor.channel>${product.docs.server.version}.0</galleon.minor.channel>
 
         <!-- Repository Deployment Settings -->
-        <nexus.serverId>jboss</nexus.serverId>
-        <nexus.repository.release>releases</nexus.repository.release>
         <nexus.repository.staging>wildfly-staging</nexus.repository.staging>
-        <nexus.repository.url>https://repository.jboss.org/nexus/</nexus.repository.url>
         <nexus.staging.tag>wildfly-${project.version}</nexus.staging.tag>
         <!-- Nexus staging repository URL used to retrieve test component releases -->
         <nexus.repository.staging.url>${nexus.repository.url}repository/${nexus.repository.staging}</nexus.repository.staging.url>
-
-        <!-- maven-gpg-plugin -->
-        <gpg.pinEntryMode>loopback</gpg.pinEntryMode>
 
         <!-- Galleon -->
         <galleon.fork.embedded>true</galleon.fork.embedded>
@@ -274,8 +268,6 @@
          -->
         <version.ant.junit>1.10.15</version.ant.junit>
         <version.asciidoctor.plugin>2.2.6</version.asciidoctor.plugin>
-        <version.gpg.plugin>3.2.8</version.gpg.plugin>
-        <version.nxrm3.plugin>1.0.7</version.nxrm3.plugin>
         <version.org.jacoco>0.8.12</version.org.jacoco>
         <version.org.jboss.galleon>6.0.4.Final</version.org.jboss.galleon>
         <version.org.jboss.wildscribe>3.1.0.Final</version.org.jboss.wildscribe>
@@ -1306,18 +1298,6 @@
                     <version>${version.help.plugin}</version>
                 </plugin>
                 <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-gpg-plugin</artifactId>
-                    <version>${version.gpg.plugin}</version>
-                    <configuration>
-                        <useAgent>true</useAgent>
-                        <gpgArguments>
-                            <arg>--pinentry-mode</arg>
-                            <arg>${gpg.pinEntryMode}</arg>
-                        </gpgArguments>
-                    </configuration>
-                </plugin>
-                <plugin>
                     <groupId>org.wildfly</groupId>
                     <artifactId>wildfly-maven-gpg-plugin</artifactId>
                     <version>${version.org.wildfly.wildfly-maven-gpg-plugin}</version>
@@ -1333,31 +1313,6 @@
                     <groupId>org.jboss.galleon</groupId>
                     <artifactId>galleon-maven-plugin</artifactId>
                     <version>${version.org.jboss.galleon}</version>
-                </plugin>
-                <plugin>
-                    <groupId>org.sonatype.plugins</groupId>
-                    <artifactId>nxrm3-maven-plugin</artifactId>
-                    <version>${version.nxrm3.plugin}</version>
-                    <configuration>
-                        <serverId>${nexus.serverId}</serverId>
-                        <nexusUrl>${nexus.repository.url}</nexusUrl>
-                    </configuration>
-                    <executions>
-                        <execution>
-                            <id>nexus-move</id>
-                            <configuration>
-                                <repository>${nexus.repository.staging}</repository>
-                                <destinationRepository>${nexus.repository.release}</destinationRepository>
-                                <tag>${nexus.staging.tag}</tag>
-                            </configuration>
-                        </execution>
-                        <execution>
-                            <id>nexus-delete</id>
-                            <configuration>
-                                <tag>${nexus.staging.tag}</tag>
-                            </configuration>
-                        </execution>
-                    </executions>
                 </plugin>
                 <plugin>
                     <groupId>org.wildfly.galleon-plugins</groupId>
@@ -1463,53 +1418,6 @@
 
     <!-- Profiles -->
     <profiles>
-        <profile>
-            <id>jboss-release</id>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-deploy-plugin</artifactId>
-                        <executions>
-                            <execution>
-                                <id>default-deploy</id>
-                                <phase>none</phase>
-                            </execution>
-                        </executions>
-                    </plugin>
-                    <plugin>
-                        <groupId>org.sonatype.plugins</groupId>
-                        <artifactId>nxrm3-maven-plugin</artifactId>
-                        <extensions>true</extensions>
-                        <executions>
-                            <execution>
-                                <id>nexus-deploy</id>
-                                <phase>deploy</phase>
-                                <goals>
-                                    <goal>staging-deploy</goal>
-                                </goals>
-                                <configuration>
-                                    <repository>${nexus.repository.staging}</repository>
-                                    <tag>${nexus.staging.tag}</tag>
-                                </configuration>
-                            </execution>
-                        </executions>
-                    </plugin>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-gpg-plugin</artifactId>
-                        <executions>
-                            <execution>
-                                <id>gpg-sign</id>
-                                <goals>
-                                    <goal>sign</goal>
-                                </goals>
-                            </execution>
-                        </executions>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
 
         <profile>
             <id>base.build</id>
