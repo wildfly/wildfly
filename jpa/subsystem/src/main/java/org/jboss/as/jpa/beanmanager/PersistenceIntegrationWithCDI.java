@@ -104,8 +104,8 @@ public class PersistenceIntegrationWithCDI {
             metamodel(afterBeanDiscovery, persistenceUnitMetadata, qualifiers, integrationWithCDIBag);
             // the schemaManager bean will only be created if running with Persistence 3.2/Jakarta EE 11
             schemaManagerBeanCreator.schemaManager(afterBeanDiscovery, persistenceUnitMetadata, qualifiers, integrationWithCDIBag);
-        } catch (InstantiationException | IllegalAccessException e) {
-            throw JpaLogger.ROOT_LOGGER.cannotAddBeans(e, persistenceUnitMetadata.getScopedPersistenceUnitName());
+        } catch (ClassNotFoundException e) {
+            throw JpaLogger.ROOT_LOGGER.classNotFound(e, persistenceUnitMetadata.getScopedPersistenceUnitName());
         }
     }
 
@@ -113,7 +113,7 @@ public class PersistenceIntegrationWithCDI {
             AfterBeanDiscovery afterBeanDiscovery,
             PersistenceUnitMetadata persistenceUnitMetadata,
             List<String> qualifiers,
-            IntegrationWithCDIBag integrationWithCDIBag) throws InstantiationException, IllegalAccessException {
+            IntegrationWithCDIBag integrationWithCDIBag) throws ClassNotFoundException {
 
         String scope = persistenceUnitMetadata.getScopeAnnotationName();
         if (scope == null || scope.isEmpty()) {
@@ -124,38 +124,35 @@ public class PersistenceIntegrationWithCDI {
         BeanConfigurator<EntityManager> beanConfigurator = afterBeanDiscovery.addBean();
         beanConfigurator.addTransitiveTypeClosure(EntityManager.class);
 
-        try {
-            Class<? extends Annotation> scopeAnnotation = persistenceUnitMetadata.getClassLoader().loadClass(scope).asSubclass(Annotation.class);
-            beanConfigurator.scope(scopeAnnotation);
 
-            for (String qualifier : qualifiers) {
-                final Class<? extends Annotation> qualifierType = persistenceUnitMetadata.getClassLoader()
-                        .loadClass(qualifier)
-                        .asSubclass(Annotation.class);
-                beanConfigurator.addQualifier(ScopeProxy.createProxy(qualifierType));
-            }
-            Class<?> entityManagerClass = EntityManager.class;
-            beanConfigurator.beanClass(entityManagerClass);
-            beanConfigurator.produceWith(c -> {
-                        return new TransactionScopedEntityManager(
-                                persistenceUnitMetadata.getScopedPersistenceUnitName(),
-                                new HashMap<>(),
-                                integrationWithCDIBag.getEntityManagerFactory(),
-                                SynchronizationType.SYNCHRONIZED,
-                                integrationWithCDIBag.getTransactionSynchronizationRegistry(),
-                                integrationWithCDIBag.getTransactionManager());
-                    }
-            );
-        } catch (ClassNotFoundException e) {
-            throw JpaLogger.ROOT_LOGGER.classNotFound(e, persistenceUnitMetadata.getScopedPersistenceUnitName());
+        Class<? extends Annotation> scopeAnnotation = persistenceUnitMetadata.getClassLoader().loadClass(scope).asSubclass(Annotation.class);
+        beanConfigurator.scope(scopeAnnotation);
+
+        for (String qualifier : qualifiers) {
+            final Class<? extends Annotation> qualifierType = persistenceUnitMetadata.getClassLoader()
+                    .loadClass(qualifier)
+                    .asSubclass(Annotation.class);
+            beanConfigurator.addQualifier(ScopeProxy.createProxy(qualifierType));
         }
+        Class<?> entityManagerClass = EntityManager.class;
+        beanConfigurator.beanClass(entityManagerClass);
+        beanConfigurator.produceWith(c -> {
+                    return new TransactionScopedEntityManager(
+                            persistenceUnitMetadata.getScopedPersistenceUnitName(),
+                            new HashMap<>(),
+                            integrationWithCDIBag.getEntityManagerFactory(),
+                            SynchronizationType.SYNCHRONIZED,
+                            integrationWithCDIBag.getTransactionSynchronizationRegistry(),
+                            integrationWithCDIBag.getTransactionManager());
+                }
+        );
     }
 
     private void entityManagerFactory(
             AfterBeanDiscovery afterBeanDiscovery,
             PersistenceUnitMetadata persistenceUnitMetadata,
             List<String> qualifiers,
-            IntegrationWithCDIBag integrationWithCDIBag) throws InstantiationException, IllegalAccessException {
+            IntegrationWithCDIBag integrationWithCDIBag) throws ClassNotFoundException {
 
         String scope = applicationScoped;
 
@@ -163,52 +160,47 @@ public class PersistenceIntegrationWithCDI {
         BeanConfigurator<EntityManagerFactory> beanConfigurator = afterBeanDiscovery.addBean();
         beanConfigurator.addTransitiveTypeClosure(EntityManagerFactory.class);
 
-        try {
-            /**
-             String beanName = persistenceUnitMetadata.getScopedPersistenceUnitName().replace("#",".");
-             JpaLogger.ROOT_LOGGER.infof("Creating EntityManagerFactory CDI bean named %s for accessing persistence unit %s",
-             beanName, persistenceUnitMetadata.getPersistenceUnitName());
-             beanConfigurator.name(beanName);
-             **/
-            // Ensure that we do not get "WELD-001414: Bean name is ambiguous" deployment failure with duplicate persistence units in a deployment.
-            if (!persistenceUnitMetadata.isDuplicate()) {
-                beanConfigurator.name(persistenceUnitMetadata.getPersistenceUnitName());
-                beanConfigurator.addQualifier(NamedLiteral.of(persistenceUnitMetadata.getPersistenceUnitName()));
-            } else {
-                JpaLogger.ROOT_LOGGER.willNotNameEntityManagerFactoryBean(persistenceUnitMetadata.getScopedPersistenceUnitName(), persistenceUnitMetadata.getPersistenceUnitName());
-            }
-            Class<? extends Annotation> scopeAnnotation = persistenceUnitMetadata.getClassLoader().loadClass(scope).asSubclass(Annotation.class);
-            beanConfigurator.scope(scopeAnnotation);
 
-            for (String qualifier : qualifiers) {
-                final Class<? extends Annotation> qualifierType = persistenceUnitMetadata.getClassLoader()
-                        .loadClass(qualifier)
-                        .asSubclass(Annotation.class);
-                beanConfigurator.addQualifier(ScopeProxy.createProxy(qualifierType));
-            }
-            Class<?> entityManagerFactoryClass = EntityManagerFactory.class;
-            beanConfigurator.beanClass(entityManagerFactoryClass);
-            beanConfigurator.produceWith(c -> {
-                        return integrationWithCDIBag.getEntityManagerFactory();
-                    }
-            );
-        } catch (ClassNotFoundException e) {
-            throw JpaLogger.ROOT_LOGGER.classNotFound(e, persistenceUnitMetadata.getScopedPersistenceUnitName());
+        /**
+         String beanName = persistenceUnitMetadata.getScopedPersistenceUnitName().replace("#",".");
+         JpaLogger.ROOT_LOGGER.infof("Creating EntityManagerFactory CDI bean named %s for accessing persistence unit %s",
+         beanName, persistenceUnitMetadata.getPersistenceUnitName());
+         beanConfigurator.name(beanName);
+         **/
+        // Ensure that we do not get "WELD-001414: Bean name is ambiguous" deployment failure with duplicate persistence units in a deployment.
+        if (!persistenceUnitMetadata.isDuplicate()) {
+            beanConfigurator.name(persistenceUnitMetadata.getPersistenceUnitName());
+            beanConfigurator.addQualifier(NamedLiteral.of(persistenceUnitMetadata.getPersistenceUnitName()));
+        } else {
+            JpaLogger.ROOT_LOGGER.willNotNameEntityManagerFactoryBean(persistenceUnitMetadata.getScopedPersistenceUnitName(), persistenceUnitMetadata.getPersistenceUnitName());
         }
+        Class<? extends Annotation> scopeAnnotation = persistenceUnitMetadata.getClassLoader().loadClass(scope).asSubclass(Annotation.class);
+        beanConfigurator.scope(scopeAnnotation);
+
+        for (String qualifier : qualifiers) {
+            final Class<? extends Annotation> qualifierType = persistenceUnitMetadata.getClassLoader()
+                    .loadClass(qualifier)
+                    .asSubclass(Annotation.class);
+            beanConfigurator.addQualifier(ScopeProxy.createProxy(qualifierType));
+        }
+        Class<?> entityManagerFactoryClass = EntityManagerFactory.class;
+        beanConfigurator.beanClass(entityManagerFactoryClass);
+        beanConfigurator.produceWith(c -> {
+                    return integrationWithCDIBag.getEntityManagerFactory();
+                }
+        );
     }
 
     private void criteriaBuilder(
             AfterBeanDiscovery afterBeanDiscovery,
             PersistenceUnitMetadata persistenceUnitMetadata,
             List<String> qualifiers,
-            IntegrationWithCDIBag integrationWithCDIBag) throws InstantiationException, IllegalAccessException {
+            IntegrationWithCDIBag integrationWithCDIBag) throws ClassNotFoundException {
 
         String scope = dependentScoped;
 
         BeanConfigurator<CriteriaBuilder> beanConfigurator = afterBeanDiscovery.addBean();
         beanConfigurator.addTransitiveTypeClosure(CriteriaBuilder.class);
-
-        try {
 
             Class<? extends Annotation> scopeAnnotation = persistenceUnitMetadata.getClassLoader().loadClass(scope).asSubclass(Annotation.class);
             beanConfigurator.scope(scopeAnnotation);
@@ -226,55 +218,51 @@ public class PersistenceIntegrationWithCDI {
                         return integrationWithCDIBag.getEntityManagerFactory().getCriteriaBuilder();
                     }
             );
-        } catch (ClassNotFoundException e) {
-            throw JpaLogger.ROOT_LOGGER.classNotFound(e, persistenceUnitMetadata.getScopedPersistenceUnitName());
-        }
+
     }
 
     private void persistenceUnitUtil(
             AfterBeanDiscovery afterBeanDiscovery,
             PersistenceUnitMetadata persistenceUnitMetadata,
             List<String> qualifiers,
-            IntegrationWithCDIBag integrationWithCDIBag) throws InstantiationException, IllegalAccessException {
+            IntegrationWithCDIBag integrationWithCDIBag) throws ClassNotFoundException {
 
         String scope = dependentScoped;
 
         BeanConfigurator<PersistenceUnitUtil> beanConfigurator = afterBeanDiscovery.addBean();
         beanConfigurator.addTransitiveTypeClosure(PersistenceUnitUtil.class);
 
-        try {
-            Class<? extends Annotation> scopeAnnotation = persistenceUnitMetadata.getClassLoader().loadClass(scope).asSubclass(Annotation.class);
-            beanConfigurator.scope(scopeAnnotation);
 
-            for (String qualifier : qualifiers) {
-                final Class<? extends Annotation> qualifierType = persistenceUnitMetadata.getClassLoader()
-                        .loadClass(qualifier)
-                        .asSubclass(Annotation.class);
-                beanConfigurator.addQualifier(ScopeProxy.createProxy(qualifierType));
-            }
-            Class<?> persistenceUnitUtilClass = PersistenceUnitUtil.class;
-            beanConfigurator.beanClass(persistenceUnitUtilClass);
-            beanConfigurator.produceWith(c -> {
-                        return integrationWithCDIBag.getEntityManagerFactory().getPersistenceUnitUtil();
-                    }
-            );
-        } catch (ClassNotFoundException e) {
-            throw JpaLogger.ROOT_LOGGER.classNotFound(e, persistenceUnitMetadata.getScopedPersistenceUnitName());
+        Class<? extends Annotation> scopeAnnotation = persistenceUnitMetadata.getClassLoader().loadClass(scope).asSubclass(Annotation.class);
+        beanConfigurator.scope(scopeAnnotation);
+
+        for (String qualifier : qualifiers) {
+            final Class<? extends Annotation> qualifierType = persistenceUnitMetadata.getClassLoader()
+                    .loadClass(qualifier)
+                    .asSubclass(Annotation.class);
+            beanConfigurator.addQualifier(ScopeProxy.createProxy(qualifierType));
         }
+        Class<?> persistenceUnitUtilClass = PersistenceUnitUtil.class;
+        beanConfigurator.beanClass(persistenceUnitUtilClass);
+        beanConfigurator.produceWith(c -> {
+                    return integrationWithCDIBag.getEntityManagerFactory().getPersistenceUnitUtil();
+                }
+        );
+
     }
 
     private void cache(
             AfterBeanDiscovery afterBeanDiscovery,
             PersistenceUnitMetadata persistenceUnitMetadata,
             List<String> qualifiers,
-            IntegrationWithCDIBag integrationWithCDIBag) throws InstantiationException, IllegalAccessException {
+            IntegrationWithCDIBag integrationWithCDIBag) throws ClassNotFoundException {
 
         String scope = dependentScoped;
 
         BeanConfigurator<Cache> beanConfigurator = afterBeanDiscovery.addBean();
         beanConfigurator.addTransitiveTypeClosure(Cache.class);
 
-        try {
+
             Class<? extends Annotation> scopeAnnotation = persistenceUnitMetadata.getClassLoader().loadClass(scope).asSubclass(Annotation.class);
             beanConfigurator.scope(scopeAnnotation);
 
@@ -290,9 +278,7 @@ public class PersistenceIntegrationWithCDI {
                         return integrationWithCDIBag.getEntityManagerFactory().getCache();
                     }
             );
-        } catch (ClassNotFoundException e) {
-            throw JpaLogger.ROOT_LOGGER.classNotFound(e, persistenceUnitMetadata.getScopedPersistenceUnitName());
-        }
+
     }
 
 
@@ -300,14 +286,13 @@ public class PersistenceIntegrationWithCDI {
             AfterBeanDiscovery afterBeanDiscovery,
             PersistenceUnitMetadata persistenceUnitMetadata,
             List<String> qualifiers,
-            IntegrationWithCDIBag integrationWithCDIBag) throws InstantiationException, IllegalAccessException {
+            IntegrationWithCDIBag integrationWithCDIBag) throws ClassNotFoundException {
 
         String scope = dependentScoped;
 
         BeanConfigurator<Metamodel> beanConfigurator = afterBeanDiscovery.addBean();
         beanConfigurator.addTransitiveTypeClosure(Metamodel.class);
 
-        try {
             Class<? extends Annotation> scopeAnnotation = persistenceUnitMetadata.getClassLoader().loadClass(scope).asSubclass(Annotation.class);
             beanConfigurator.scope(scopeAnnotation);
 
@@ -323,9 +308,6 @@ public class PersistenceIntegrationWithCDI {
                         return integrationWithCDIBag.getEntityManagerFactory().getMetamodel();
                     }
             );
-        } catch (ClassNotFoundException e) {
-            throw JpaLogger.ROOT_LOGGER.classNotFound(e, persistenceUnitMetadata.getScopedPersistenceUnitName());
-        }
     }
 
 

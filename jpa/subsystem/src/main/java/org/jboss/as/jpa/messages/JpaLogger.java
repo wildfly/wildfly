@@ -762,15 +762,12 @@ public interface JpaLogger extends BasicLogger {
     void ignoreAppclientPersistenceUnitsInServer(String deploymentName);
 
     @Message(id = 77, value = "Cannot setup Persistence/CDI integration for %s")
-    RuntimeException cannotAddBeans(@Cause ReflectiveOperationException cause, String scopedPersistenceUnitName);
+    RuntimeException classNotFound(@Cause ClassNotFoundException cause, String scopedPersistenceUnitName);
 
-    @Message(id = 78, value = "Cannot setup Persistence/CDI integration for %s")
-    IllegalAccessException classNotFound(@Cause ClassNotFoundException cause, String scopedPersistenceUnitName);
-
-    @Message(id = 79, value = "IntegratePersistenceAfterBeanDiscovery cannot register persistence unit %s as jakarta.enterprise.inject.spi.AfterBeanDiscovery event already ran for %s.")
+    @Message(id = 78, value = "IntegratePersistenceAfterBeanDiscovery cannot register persistence unit %s as jakarta.enterprise.inject.spi.AfterBeanDiscovery event already ran for %s.")
     IllegalStateException afterBeanDiscoveryEventRanAlready(String persistenceUnitName, String scopedPersistenceUnitName);
 
     @LogMessage(level = INFO)
-    @Message(id = 80, value = "EntityManagerFactory CDI bean (for %s) will not have persistence unit name.  In order for the EntityManagerFactory CDI bean to be named remove duplicate copies of persistence unit %s.")
+    @Message(id = 79, value = "EntityManagerFactory CDI bean (for %s) will not have persistence unit name.  In order for the EntityManagerFactory CDI bean to be named remove duplicate copies of persistence unit %s.")
     void willNotNameEntityManagerFactoryBean(String scopedPersistenceUnitName, String persistenceUnitName);
 }

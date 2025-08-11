@@ -15,13 +15,13 @@ import jakarta.enterprise.inject.spi.AfterBeanDiscovery;
  * @author Scott Marlow
  */
 public interface SchemaManagerBeanCreator {
-    default void schemaManager(AfterBeanDiscovery afterBeanDiscovery, PersistenceUnitMetadata persistenceUnitMetadata, List<String> qualifiers, IntegrationWithCDIBag integrationWithCDIBag) throws IllegalAccessException {
+    default void schemaManager(AfterBeanDiscovery afterBeanDiscovery, PersistenceUnitMetadata persistenceUnitMetadata, List<String> qualifiers, IntegrationWithCDIBag integrationWithCDIBag) throws ClassNotFoundException {
     }
 
     static SchemaManagerBeanCreator getImplementation(Class schemaManagerCreatorClass) {
         if (schemaManagerCreatorClass == null) {
             return new SchemaManagerBeanCreator() {
-                        };
+            };
         }
         try {
             return (SchemaManagerBeanCreator) schemaManagerCreatorClass.newInstance();

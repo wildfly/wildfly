@@ -17,9 +17,9 @@
         <module name="java.logging"/>
         <!-- PersistenceUnitInfo needs javax.sql.DataSource -->
         <module name="java.sql" export="true"/>
-        <!-- Persistence integration with CDI needs the following three modules --> 
-         <module name="org.jboss.weld.core"/>
-         <module name="org.jboss.weld.spi"/>
-         <module name="org.jboss.weld.api"/>
+        <!-- Persistence integration with CDI needs the following three modules -->
+        <module name="org.jboss.weld.core"/>
+        <module name="org.jboss.weld.spi"/>
+        <module name="org.jboss.weld.api"/>
     </dependencies>
 </module>
