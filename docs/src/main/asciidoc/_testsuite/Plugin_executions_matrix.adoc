@@ -15,113 +15,113 @@ x! - runs but should not.
 
 [cols=",,,,,,,,,,",options="header"]
 |=======================================================================
-|  |TS |integ |smoke |basic |clust |iiop |comp |domain |bench |stress
+|  |TS |integ |smoke |basic |clust |iiop |comp |domain |bench |stress
 
 |initialize | | | | | | | | | |
 
 |maven-help-plugin |xx |x |x |x |x |x |x |x |x |x
 
-|properties-maven-plugin:write-project-properties |x |  |  |  |  |  | 
-|  |  |
+|properties-maven-plugin:write-project-properties |x |  |  |  |  |  |
+|  |  |
 
-|maven-antrun-plugin:1.6:run (banner) |  |  |  |  |  |  |  |  |  | 
+|maven-antrun-plugin:1.6:run (banner) |  |  |  |  |  |  |  |  |  |
 
 |process-resources | | | | | | | | | |
 
-|maven-resources-plugin:2.5:resources (default-resources) |xx |  |  | 
-|  |  |  |  |  | 
+|maven-resources-plugin:2.5:resources (default-resources) |xx |  |  |
+|  |  |  |  |  |
 
-|maven-dependency-plugin:2.3:copy (copy-annotations-endorsed) |xx! |  | 
-|  |  |  |  |  |  | 
+|maven-dependency-plugin:2.3:copy (copy-annotations-endorsed) |xx! |  |
+|  |  |  |  |  |  |
 
 |compile | | | | | | | | | |
 
-|maven-compiler-plugin:2.3.2:compile (default-compile) |xx |  |  |  | 
-|  |  |  |  | 
+|maven-compiler-plugin:2.3.2:compile (default-compile) |xx |  |  |  |
+|  |  |  |  |
 
 |generate-test-resources | | | | | | | | | |
 
 |maven-resources-plugin:2.5:copy-resources (build-jbossas.server) |xx!
-|  |  |  |  |  |  |  |  | 
+|  |  |  |  |  |  |  |  |
 
-|Should be: |x |  |  |  |  |  |  |  |  | 
+|Should be: |x |  |  |  |  |  |  |  |  |
 
-|maven-resources-plugin:2.5:copy-resources (ts.copy-jbossas) |  |x |  | 
-|  |  |  |  |  | 
+|maven-resources-plugin:2.5:copy-resources (ts.copy-jbossas) |  |x |  |
+|  |  |  |  |  |
 
-|maven-resources-plugin:2.5:copy-resources (ts.copy-jbossas.groups) | 
-|x |x |x |? |? |? |! |  | 
+|maven-resources-plugin:2.5:copy-resources (ts.copy-jbossas.groups) |
+|x |x |x |? |? |? |! |  |
 
-|Should be: |  |xx |x |x |x |x |x |x |x |x
+|Should be: |  |xx |x |x |x |x |x |x |x |x
 
 |process-test-resources | | | | | | | | | |
 
-|maven-resources-plugin:2.5:testResources (default-testResources) |xx | 
-|  |  |  |  |  |  |  | 
+|maven-resources-plugin:2.5:testResources (default-testResources) |xx |
+|  |  |  |  |  |  |  |
 
-|maven-antrun-plugin:1.6:run (build-smoke.server) |  |  |x |  |  |  | 
-|  |  | 
+|maven-antrun-plugin:1.6:run (build-smoke.server) |  |  |x |  |  |  |
+|  |  |
 
-|maven-antrun-plugin:1.6:run (prepare-jars-basic-integration.server) | 
-|  |  |x |  |  |  |  |  | 
+|maven-antrun-plugin:1.6:run (prepare-jars-basic-integration.server) |
+|  |  |x |  |  |  |  |  |
 
-|maven-antrun-plugin:1.6:run (build-clustering.server) |  |  |  |  |x
-|x!? |  |  |  | 
+|maven-antrun-plugin:1.6:run (build-clustering.server) |  |  |  |  |x
+|x!? |  |  |  |
 
 |test-compile | | | | | | | | | |
 
-|maven-compiler-plugin:2.3.2:testCompile (default-testCompile) |xx |  | 
-|  |  |  |  |  |  | 
+|maven-compiler-plugin:2.3.2:testCompile (default-testCompile) |xx |  |
+|  |  |  |  |  |  |
 
 |xml-maven-plugin:1.0:transform (update-ip-addresses-jbossas.server) |x
-|  |  |  |  |  |  |  |  | 
+|  |  |  |  |  |  |  |  |
 
-|maven-antrun-plugin:1.6:run (build-jars) |  |  |  |  |  |  |x |  |  | 
+|maven-antrun-plugin:1.6:run (build-jars) |  |  |  |  |  |  |x |  |  |
 
 |test | | | | | | | | | |
 
-|maven-surefire-plugin:2.10:test (smoke-full.surefire) |  |  |  |  |  | 
-|  |  |  | 
+|maven-surefire-plugin:2.10:test (smoke-full.surefire) |  |  |  |  |  |
+|  |  |  |
 
-|maven-surefire-plugin:2.10:test (smoke-web.surefire) |  |  |  |  |  | 
-|  |  |  | 
+|maven-surefire-plugin:2.10:test (smoke-web.surefire) |  |  |  |  |  |
+|  |  |  |
 
-|maven-surefire-plugin:2.10:test (default-test) |  |  |  |  |x |x |x |x
-|  | 
-
-|maven-surefire-plugin:2.10:test
-(basic-integration-default-full.surefire) |  |  |  |x |  |  |  |  |  | 
+|maven-surefire-plugin:2.10:test (default-test) |  |  |  |  |x |x |x |x
+|  |
 
 |maven-surefire-plugin:2.10:test
-(basic-integration-default-web.surefire) |  |  |  |x |  |  |  |  |  | 
+(basic-integration-default-full.surefire) |  |  |  |x |  |  |  |  |  |
 
-|maven-surefire-plugin:2.10:test (basic-integration-2nd.surefire) |  | 
-|  |x |  |  |  |  |  | 
+|maven-surefire-plugin:2.10:test
+(basic-integration-default-web.surefire) |  |  |  |x |  |  |  |  |  |
+
+|maven-surefire-plugin:2.10:test (basic-integration-2nd.surefire) |  |
+|  |x |  |  |  |  |  |
 
 |maven-surefire-plugin:2.10:test (tests-clust-multi-node-unm...surefire)
-|  |  |  |  |x |  |  |  |  | 
+|  |  |  |  |x |  |  |  |  |
 
 |maven-surefire-plugin:2.10:test (tests-clustering-single-node.surefire)
-|  |  |  |  |x |  |  |  |  | 
+|  |  |  |  |x |  |  |  |  |
 
 |maven-surefire-plugin:2.10:test (tests-clustering-multi-node.surefire)
-|  |  |  |  |x |  |  |  |  | 
+|  |  |  |  |x |  |  |  |  |
 
-|maven-surefire-plugin:2.10:test (tests-iiop-multi-node.surefire) |  | 
-|  |  |  |x |  |  |  | 
+|maven-surefire-plugin:2.10:test (tests-iiop-multi-node.surefire) |  |
+|  |  |  |x |  |  |  |
 
 |package | | | | | | | | | |
 
-|maven-jar-plugin:2.3.1:jar (default-jar) |xx! |  |  |  |  |  |  |  | 
-| 
+|maven-jar-plugin:2.3.1:jar (default-jar) |xx! |  |  |  |  |  |  |  |
+|
 
-|maven-source-plugin:2.1.2:jar-no-fork (attach-sources) |x |  |  |  | 
-|  |  |  |  | 
+|maven-source-plugin:2.1.2:jar-no-fork (attach-sources) |x |  |  |  |
+|  |  |  |  |
 
 |install | | | | | | | | | |
 
-|maven-install-plugin:2.3.1:install (default-install) |xx! |  |  |  | 
-|  |  |  |  | 
+|maven-install-plugin:2.3.1:install (default-install) |xx! |  |  |  |
+|  |  |  |  |
 
-|  |TS |integ |smoke |basic |clust |iiop |comp |domain |bench |stress
+|  |TS |integ |smoke |basic |clust |iiop |comp |domain |bench |stress
 |=======================================================================

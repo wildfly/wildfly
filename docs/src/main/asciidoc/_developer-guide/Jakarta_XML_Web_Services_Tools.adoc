@@ -71,7 +71,7 @@ This can be as simple as creating a single class:
 [source,java,options="nowrap"]
 ----
 package echo;
- 
+
 @jakarta.jws.WebService
 public class Echo
 {
@@ -146,12 +146,12 @@ _web.xml_ needs to be created:
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://java.sun.com/xml/ns/j2ee http://java.sun.com/xml/ns/j2ee/web-app_2_4.xsd"
   version="2.4">
- 
+
   <servlet>
     <servlet-name>Echo</servlet-name>
     <servlet-class>echo.Echo</servlet-class>
   </servlet>
- 
+
   <servlet-mapping>
     <servlet-name>Echo</servlet-name>
     <url-pattern>/Echo</url-pattern>
@@ -244,7 +244,7 @@ public interface Echo {
     public String echo(
         @WebParam(name = "arg0", targetNamespace = "")
         String arg0);
- 
+
 }
 ----
 
@@ -254,14 +254,14 @@ class, which can now be written, using the above interface.
 [source,java,options="nowrap"]
 ----
 package echo;
- 
+
 @jakarta.jws.WebService(endpointInterface="echo.Echo")
 public class EchoImpl implements Echo
 {
    public String echo(String arg0)
    {
       return arg0;
-   }
+   }
 }
 ----
 
@@ -341,34 +341,34 @@ obtained from.
 public class EchoService extends Service
 {
     private final static URL ECHOSERVICE_WSDL_LOCATION;
- 
+
     static {
         URL url = null;
         try
         {
-           url = new URL("http://localhost:8080/echo/Echo?wsdl");
-        }
+           url = new URL("http://localhost:8080/echo/Echo?wsdl");
+        }
         catch (MalformedURLException e)
         {
-           e.printStackTrace();
+           e.printStackTrace();
         }
         ECHOSERVICE_WSDL_LOCATION = url;
     }
- 
+
     public EchoService(URL wsdlLocation, QName serviceName)
     {
-         super(wsdlLocation, serviceName);
+         super(wsdlLocation, serviceName);
     }
- 
+
     public EchoService()
     {
          super(ECHOSERVICE_WSDL_LOCATION, new QName("http://echo/", "EchoService"));
     }
- 
+
     @WebEndpoint(name = "EchoPort")
     public Echo getEchoPort()
     {
-         return (Echo)super.getPort(new QName("http://echo/", "EchoPort"), Echo.class);
+         return (Echo)super.getPort(new QName("http://echo/", "EchoPort"), Echo.class);
     }
 }
 ----
@@ -393,17 +393,17 @@ All that is left to do, is write and compile the client:
 [source,java,options="nowrap"]
 ----
 import echo.*;
- 
+
 public class EchoClient
 {
    public static void main(String args[])
    {
       if (args.length != 1)
       {
-          System.err.println("usage: EchoClient <message>");
-          System.exit(1);
-      }
- 
+          System.err.println("usage: EchoClient <message>");
+          System.exit(1);
+      }
+
       EchoService service = new EchoService();
       Echo echo = service.getEchoPort();
       System.out.println("Server said: " + echo.echo(args[0]));
@@ -418,12 +418,12 @@ setting the _ENDPOINT_ADDRESS_PROPERTY_ as shown below:
 ----
 EchoService service = new EchoService();
       Echo echo = service.getEchoPort();
- 
+
       /* Set NEW Endpoint Location */
       String endpointURL = "http://NEW_ENDPOINT_URL";
       BindingProvider bp = (BindingProvider)echo;
       bp.getRequestContext().put(BindingProvider.ENDPOINT_ADDRESS_PROPERTY, endpointURL);
- 
+
       System.out.println("Server said: " + echo.echo(args0));
 ----
 

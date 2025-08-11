@@ -218,12 +218,12 @@ AuthenticationConfiguration adminConfig =
       .useRealm("ManagementRealm")
       .useName("administrator")
       .usePassword("password1!");
- 
+
 //create your authentication context
 AuthenticationContext context = AuthenticationContext.empty();
 context = context.with(MatchRule.ALL.matchHost("127.0.0.1"), adminConfig);
- 
- 
+
+
 //create your runnable for establishing a connection
 Runnable runnable =
     new Runnable() {
@@ -235,7 +235,7 @@ Runnable runnable =
         }
       }
     };
- 
+
 //use your authentication context to run your client
 context.run(runnable);
 ----
@@ -253,12 +253,12 @@ AuthenticationConfiguration adminConfig =
       .useRealm("ManagementRealm")
       .useName("administrator")
       .usePassword("/Nym2s/dssMrabfdIGsZfQ==", null, null, "100", "12345678", null);
- 
+
 //create your authentication context
 AuthenticationContext context = AuthenticationContext.empty();
 context = context.with(MatchRule.ALL.matchHost("127.0.0.1"), adminConfig);
- 
- 
+
+
 //create your runnable for establishing a connection
 Runnable runnable =
     new Runnable() {
@@ -270,7 +270,7 @@ Runnable runnable =
         }
       }
     };
- 
+
 //use your authentication context to run your client
 context.run(runnable);
 ----
@@ -287,7 +287,7 @@ AuthenticationConfiguration commonConfig =
       .useProviders(() -> new Provider[] { new WildFlyElytronProvider() })
       .allowSaslMechanisms("DIGEST-MD5")
       .useRealm("ManagementRealm");
- 
+
 AuthenticationConfiguration administrator =
     commonConfig
       .useName("administrator")
@@ -298,8 +298,8 @@ AuthenticationConfiguration monitor =
     commonConfig
       .useName("monitor")
       .usePassword("password1!");
- 
- 
+
+
 //create your authentication context
 AuthenticationContext context = AuthenticationContext.empty();
 context = context.with(MatchRule.ALL.matchHost("127.0.0.1"), administrator);
@@ -398,7 +398,7 @@ Runnable runnable =
         }
       }
     };
- 
+
 // run runnable directly
 runnable.run();
 ----

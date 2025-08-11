@@ -64,7 +64,7 @@ security settings are provided in the comments in the listing below.
              xmlns:wsx="http://schemas.xmlsoap.org/ws/2004/09/mex"
              xmlns:sp="http://docs.oasis-open.org/ws-sx/ws-securitypolicy/200702"
              xmlns:t="http://docs.oasis-open.org/ws-sx/ws-trust/200512">
- 
+
   <types>
     <xsd:schema>
       <xsd:import namespace="http://www.jboss.org/jbossws/ws-extensions/bearerwssecuritypolicy"
@@ -83,7 +83,7 @@ security settings are provided in the comments in the listing below.
       <output message="tns:sayHelloResponse"/>
     </operation>
   </portType>
- 
+
 <!--
         The wsp:PolicyReference binds the security requirments on all the endpoints.
         The wsp:Policy wsu:Id="#TransportSAML2BearerPolicy" element is defined later in this file.
@@ -101,7 +101,7 @@ security settings are provided in the comments in the listing below.
       </output>
     </operation>
   </binding>
- 
+
 <!--
   The soap:address has been defined to use JBoss's https port, 8443.  This is
   set in conjunction with the sp:TransportBinding policy for https.
@@ -111,8 +111,8 @@ security settings are provided in the comments in the listing below.
       <soap:address location="https://@jboss.bind.address@:8443/jaxws-samples-wsse-policy-trust-bearer/BearerService"/>
     </port>
   </service>
- 
- 
+
+
   <wsp:Policy wsu:Id="TransportSAML2BearerPolicy">
     <wsp:ExactlyOne>
       <wsp:All>
@@ -124,7 +124,7 @@ security settings are provided in the comments in the listing below.
         <wsam:Addressing wsp:Optional="false">
           <wsp:Policy />
         </wsam:Addressing>
- 
+
 <!--
   The sp:TransportBinding element indicates that security is provided by the
   message exchange transport medium, https.  WS-Security policy specification
@@ -163,7 +163,7 @@ security settings are provided in the comments in the listing below.
             <sp:IncludeTimestamp />
           </wsp:Policy>
         </sp:TransportBinding>
- 
+
 <!--
   The sp:SignedSupportingTokens element causes the supporting tokens
   to be signed using the primary token that is used to sign the message.
@@ -177,7 +177,7 @@ security settings are provided in the comments in the listing below.
   sp:IncludeToken="http://docs.oasis-open.org/ws-sx/ws-securitypolicy/200702/IncludeToken/AlwaysToRecipient">
   attribute instructs the runtime to include the initiator's public key
   with every message sent to the recipient.
- 
+
   The sp:RequestSecurityTokenTemplate element directs that all of the
   children of this element will be copied directly into the body of the
   RequestSecurityToken (RST) message that is sent to the STS when the
@@ -207,7 +207,7 @@ security settings are provided in the comments in the listing below.
                     EndpointName="UT_Port">stsns:SecurityTokenService</wsaw:ServiceName>
                 </wsaws:Metadata>
               </sp:Issuer>
- 
+
             </sp:IssuedToken>
           </wsp:Policy>
         </sp:SignedSupportingTokens>
@@ -240,7 +240,7 @@ security settings are provided in the comments in the listing below.
       </wsp:All>
     </wsp:ExactlyOne>
   </wsp:Policy>
- 
+
 </definitions>
 ----
 
@@ -266,10 +266,10 @@ straight forward web service definition.
 [source,java,options="nowrap"]
 ----
 package org.jboss.test.ws.jaxws.samples.wsse.policy.trust.bearer;
- 
+
 import jakarta.jws.WebMethod;
 import jakarta.jws.WebService;
- 
+
 @WebService
 (
    targetNamespace = "http://www.jboss.org/jbossws/ws-extensions/bearerwssecuritypolicy"
@@ -313,12 +313,12 @@ information is still required.
 [source,java,options="nowrap"]
 ----
 package org.jboss.test.ws.jaxws.samples.wsse.policy.trust.bearer;
- 
+
 import org.apache.cxf.annotations.EndpointProperties;
 import org.apache.cxf.annotations.EndpointProperty;
- 
+
 import jakarta.jws.WebService;
- 
+
 @WebService
 (
    portName = "BearerServicePort",
@@ -461,16 +461,16 @@ alice=friend
   xmlns:wst="http://docs.oasis-open.org/ws-sx/ws-trust/200512"
   xmlns:xs="http://www.w3.org/2001/XMLSchema"
   xmlns:wsam="http://www.w3.org/2007/05/addressing/metadata">
- 
+
   <wsdl:types>
     <xs:schema elementFormDefault="qualified"
                targetNamespace='http://docs.oasis-open.org/ws-sx/ws-trust/200512'>
- 
+
       <xs:element name='RequestSecurityToken'
                   type='wst:AbstractRequestSecurityTokenType'/>
       <xs:element name='RequestSecurityTokenResponse'
                   type='wst:AbstractRequestSecurityTokenType'/>
- 
+
       <xs:complexType name='AbstractRequestSecurityTokenType'>
         <xs:sequence>
           <xs:any namespace='##any' processContents='lax' minOccurs='0'
@@ -488,7 +488,7 @@ alice=friend
                       maxOccurs='unbounded'/>
         </xs:sequence>
       </xs:complexType>
- 
+
       <xs:element name='RequestSecurityTokenResponseCollection'
                   type='wst:RequestSecurityTokenResponseCollectionType'/>
       <xs:complexType name='RequestSecurityTokenResponseCollectionType'>
@@ -498,10 +498,10 @@ alice=friend
         </xs:sequence>
         <xs:anyAttribute namespace='##other' processContents='lax'/>
       </xs:complexType>
- 
+
     </xs:schema>
   </wsdl:types>
- 
+
   <!-- WS-Trust defines the following GEDs -->
   <wsdl:message name="RequestSecurityTokenMsg">
     <wsdl:part name="request" element="wst:RequestSecurityToken"/>
@@ -518,7 +518,7 @@ alice=friend
     <wsdl:part name="responseCollection"
                element="wst:RequestSecurityTokenResponseCollection"/>
   </wsdl:message>
- 
+
   <!-- This portType an example of a Requestor (or other) endpoint that
   Accepts SOAP-based challenges from a Security Token Service -->
   <wsdl:portType name="WSSecurityRequestor">
@@ -527,7 +527,7 @@ alice=friend
       <wsdl:output message="tns:RequestSecurityTokenResponseMsg"/>
     </wsdl:operation>
   </wsdl:portType>
- 
+
   <!-- This portType is an example of an STS supporting full protocol -->
   <!--
       The wsdl:portType and data types are XML elements defined by the
@@ -581,7 +581,7 @@ alice=friend
       <wsdl:output message="tns:RequestSecurityTokenResponseCollectionMsg"/>
     </wsdl:operation>
   </wsdl:portType>
- 
+
   <!-- This portType is an example of an endpoint that accepts
   Unsolicited RequestSecurityTokenResponse messages -->
   <wsdl:portType name="SecurityTokenResponseService">
@@ -589,7 +589,7 @@ alice=friend
       <wsdl:input message="tns:RequestSecurityTokenResponseMsg"/>
     </wsdl:operation>
   </wsdl:portType>
- 
+
   <!--
       The wsp:PolicyReference binds the security requirments on all the STS endpoints.
       The wsp:Policy wsu:Id="UT_policy" element is later in this file.
@@ -667,14 +667,14 @@ alice=friend
       </wsdl:output>
     </wsdl:operation>
   </wsdl:binding>
- 
+
   <wsdl:service name="SecurityTokenService">
     <wsdl:port name="UT_Port" binding="tns:UT_Binding">
       <soap:address location="http://localhost:8080/SecurityTokenService/UT"/>
     </wsdl:port>
   </wsdl:service>
- 
- 
+
+
   <wsp:Policy wsu:Id="UT_policy">
     <wsp:ExactlyOne>
       <wsp:All>
@@ -742,7 +742,7 @@ alice=friend
             <sp:OnlySignEntireHeadersAndBody/>
           </wsp:Policy>
         </sp:SymmetricBinding>
- 
+
         <!--
             The sp:SignedSupportingTokens element declares that the security header
             of messages must contain a sp:UsernameToken and the token must be signed.
@@ -797,7 +797,7 @@ alice=friend
       </wsp:All>
     </wsp:ExactlyOne>
   </wsp:Policy>
- 
+
   <wsp:Policy wsu:Id="Input_policy">
     <wsp:ExactlyOne>
       <wsp:All>
@@ -822,7 +822,7 @@ alice=friend
       </wsp:All>
     </wsp:ExactlyOne>
   </wsp:Policy>
- 
+
   <wsp:Policy wsu:Id="Output_policy">
     <wsp:ExactlyOne>
       <wsp:All>
@@ -847,7 +847,7 @@ alice=friend
       </wsp:All>
     </wsp:ExactlyOne>
   </wsp:Policy>
- 
+
 </wsdl:definitions>
 ----
 
@@ -919,7 +919,7 @@ http://coheigea.blogspot.it/2011/10/apache-cxf-sts-documentation-part-iv.html[he
 [source,java,options="nowrap"]
 ----
 package org.jboss.test.ws.jaxws.samples.wsse.policy.trust.stsbearer;
- 
+
 import org.apache.cxf.annotations.EndpointProperties;
 import org.apache.cxf.annotations.EndpointProperty;
 import org.apache.cxf.sts.StaticSTSProperties;
@@ -928,12 +928,12 @@ import org.apache.cxf.sts.service.ServiceMBean;
 import org.apache.cxf.sts.service.StaticService;
 import org.apache.cxf.sts.token.provider.SAMLTokenProvider;
 import org.apache.cxf.ws.security.sts.provider.SecurityTokenServiceProvider;
- 
+
 import jakarta.xml.ws.WebServiceProvider;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
- 
+
 @WebServiceProvider(serviceName = "SecurityTokenService",
       portName = "UT_Port",
       targetNamespace = "http://docs.oasis-open.org/ws-sx/ws-trust/200512/",
@@ -946,11 +946,11 @@ import java.util.List;
 })
 public class SampleSTSBearer extends SecurityTokenServiceProvider
 {
- 
+
    public SampleSTSBearer() throws Exception
    {
       super();
- 
+
       StaticSTSProperties props = new StaticSTSProperties();
       props.setSignatureCryptoProperties("stsKeystore.properties");
       props.setSignatureUsername("mystskey");
@@ -958,7 +958,7 @@ public class SampleSTSBearer extends SecurityTokenServiceProvider
       props.setEncryptionCryptoProperties("stsKeystore.properties");
       props.setEncryptionUsername("myservicekey");
       props.setIssuer("DoubleItSTSIssuer");
- 
+
       List<ServiceMBean> services = new LinkedList<ServiceMBean>();
       StaticService service = new StaticService();
       service.setEndpoints(Arrays.asList(
@@ -967,7 +967,7 @@ public class SampleSTSBearer extends SecurityTokenServiceProvider
          "https://\\[0:0:0:0:0:0:0:1\\]:(\\d)*/jaxws-samples-wsse-policy-trust-bearer/BearerService"
       ));
       services.add(service);
- 
+
       TokenIssueOperation issueOperation = new TokenIssueOperation();
       issueOperation.getTokenProviders().add(new SAMLTokenProvider());
       issueOperation.setServices(services);
@@ -988,19 +988,19 @@ for the message signature.
 [source,java,options="nowrap"]
 ----
 package org.jboss.test.ws.jaxws.samples.wsse.policy.trust.stsbearer;
- 
+
 import org.jboss.wsf.stack.cxf.extensions.security.PasswordCallbackHandler;
- 
+
 import java.util.HashMap;
 import java.util.Map;
- 
+
 public class STSBearerCallbackHandler extends PasswordCallbackHandler
 {
    public STSBearerCallbackHandler()
    {
       super(getInitMap());
    }
- 
+
    private static Map<String, String> getInitMap()
    {
       Map<String, String> passwords = new HashMap<String, String>();
@@ -1083,13 +1083,13 @@ ActAs and OnBehalfOf examples.
 [source,java,options="nowrap"]
 ----
   String serviceURL = "https://" + getServerHost() + ":8443/jaxws-samples-wsse-policy-trust-bearer/BearerService";
- 
+
   final QName serviceName = new QName("http://www.jboss.org/jbossws/ws-extensions/bearerwssecuritypolicy", "BearerService");
   Service service = Service.create(new URL(serviceURL + "?wsdl"), serviceName);
   BearerIface proxy = (BearerIface) service.getPort(BearerIface.class);
- 
+
   Map<String, Object> ctx = ((BindingProvider)proxy).getRequestContext();
- 
+
   // set the security related configuration information for the service "request"
   ctx.put(SecurityConstants.CALLBACK_HANDLER, new ClientCallbackHandler());
   ctx.put(SecurityConstants.SIGNATURE_PROPERTIES,
@@ -1100,7 +1100,7 @@ ActAs and OnBehalfOf examples.
     "META-INF/clientKeystore.properties"));
   ctx.put(SecurityConstants.SIGNATURE_USERNAME, "myclientkey");
   ctx.put(SecurityConstants.ENCRYPT_USERNAME, "myservicekey");
- 
+
   //-- Configuration settings that will be transfered to the STSClient
   // "alice" is the name provided for the WSS Username. Her password will
   // be retreived from the ClientCallbackHander by the STSClient.
@@ -1115,7 +1115,7 @@ ActAs and OnBehalfOf examples.
     Thread.currentThread().getContextClassLoader().getResource(
     "META-INF/clientKeystore.properties"));
   ctx.put(SecurityConstants.STS_TOKEN_USE_CERT_FOR_KEYINFO + ".it", "true");
- 
+
   proxy.sayHello();
 ----
 
@@ -1135,15 +1135,15 @@ jbossws-users.properties.
 [source,java,options="nowrap"]
 ----
 package org.jboss.test.ws.jaxws.samples.wsse.policy.trust.shared;
- 
+
 import java.io.IOException;
 import javax.security.auth.callback.Callback;
 import javax.security.auth.callback.CallbackHandler;
 import javax.security.auth.callback.UnsupportedCallbackException;
 import org.apache.ws.security.WSPasswordCallback;
- 
+
 public class ClientCallbackHandler implements CallbackHandler {
- 
+
     public void handle(Callback[] callbacks) throws IOException,
             UnsupportedCallbackException {
         for (int i = 0; i < callbacks.length; i++) {

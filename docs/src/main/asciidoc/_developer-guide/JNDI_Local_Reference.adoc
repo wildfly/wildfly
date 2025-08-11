@@ -148,7 +148,7 @@ An example standalone.xml might look like:
   <bindings>
     <simple name="java:global/a" value="100" type="int" />
     <simple name="java:global/jbossDocs" value="https://docs.jboss.org" type="java.net.URL" />
-    <object-factory name="java:global/b" module="com.acme" class="org.acme.MyObjectFactory" />
+    <object-factory name="java:global/b" module="com.acme" class="org.acme.MyObjectFactory" />
     <external-context name="java:global/federation/ldap/example" class="javax.naming.directory.InitialDirContext" cache="true">
       <environment>
         <property name="java.naming.factory.initial" value="com.sun.jndi.ldap.LdapCtxFactory" />
@@ -188,10 +188,10 @@ to use `@Resource` injection:
 ----
   @Resource(lookup = "java:global/mystring")
   private String myString;
- 
+
   @Resource(name = "hello")
   private String hello;
- 
+
   @Resource
   ManagedExecutorService executor;
 ----

@@ -91,7 +91,7 @@ the *name* of the `pooled-connection-factory resource`
 [source,java,options="nowrap"]
 ----
 import org.jboss.ejb3.annotation.ResourceAdapter;
- 
+
   @ResourceAdapter("remote-artemis")
   @MessageDriven(name = "MyMDB", activationConfig = {
     ...

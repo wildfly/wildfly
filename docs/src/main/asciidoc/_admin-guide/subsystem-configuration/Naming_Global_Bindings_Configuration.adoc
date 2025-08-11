@@ -164,7 +164,7 @@ the XML example above:
 [source,options="nowrap"]
 ----
 /subsystem=naming/binding=java\:global\/federation\/ldap\/example:add(binding-type=external-context, cache=true, class=javax.naming.directory.InitialDirContext, environment=[java.naming.factory.initial=com.sun.jndi.ldap.LdapCtxFactory, java.naming.provider.url=ldap\:\/\/ldap.example.com\:389, java.naming.security.authentication=simple, java.naming.security.principal=uid\=admin\,ou\=system, java.naming.security.credentials= secret])
- 
+
 /subsystem=naming/binding=java\:global\/federation\/ldap\/example:remove
 ----
 

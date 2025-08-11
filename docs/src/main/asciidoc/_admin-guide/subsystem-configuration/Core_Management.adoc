@@ -32,50 +32,50 @@ For example let's create a simple listener :
 [source,java,options="nowrap"]
 ----
  public class SimpleListener implements ProcessStateListener {
- 
-    private File file;
-    private FileWriter fileWriter;
-    private ProcessStateListenerInitParameters parameters;
- 
-    @Override
-    public void init(ProcessStateListenerInitParameters parameters) {
-        this.parameters = parameters;
-        this.file = new File(parameters.getInitProperties().get("file"));
-        try {
-            fileWriter = new FileWriter(file, true);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
- 
-    @Override
-    public void cleanup() {
-        try {
-            fileWriter.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        } finally {
-            fileWriter = null;
-        }
-    }
- 
-    @Override
-    public void runtimeConfigurationStateChanged(RuntimeConfigurationStateChangeEvent evt) {
-        try {
-            fileWriter.write(String.format("%s %s %s %s\n", parameters.getProcessType(), parameters.getRunningMode(), evt.getOldState(), evt.getNewState()));
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
- 
-    @Override
-    public void runningStateChanged(RunningStateChangeEvent evt) {
-        try {
-            fileWriter.write(String.format("%s %s %s %s\n", parameters.getProcessType(), parameters.getRunningMode(), evt.getOldState(), evt.getNewState()));
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
+
+    private File file;
+    private FileWriter fileWriter;
+    private ProcessStateListenerInitParameters parameters;
+
+    @Override
+    public void init(ProcessStateListenerInitParameters parameters) {
+        this.parameters = parameters;
+        this.file = new File(parameters.getInitProperties().get("file"));
+        try {
+            fileWriter = new FileWriter(file, true);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    public void cleanup() {
+        try {
+            fileWriter.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            fileWriter = null;
+        }
+    }
+
+    @Override
+    public void runtimeConfigurationStateChanged(RuntimeConfigurationStateChangeEvent evt) {
+        try {
+            fileWriter.write(String.format("%s %s %s %s\n", parameters.getProcessType(), parameters.getRunningMode(), evt.getOldState(), evt.getNewState()));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    public void runningStateChanged(RunningStateChangeEvent evt) {
+        try {
+            fileWriter.write(String.format("%s %s %s %s\n", parameters.getProcessType(), parameters.getRunningMode(), evt.getOldState(), evt.getNewState()));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 }
 ----
 

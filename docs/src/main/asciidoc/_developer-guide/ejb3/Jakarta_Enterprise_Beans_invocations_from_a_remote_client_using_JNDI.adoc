@@ -48,14 +48,14 @@ business interface. Here's the code:
 [source,java,options="nowrap"]
 ----
 package org.jboss.as.quickstarts.ejb.remote.stateless;
- 
+
 /**
  * @author Jaikiran Pai
  */
 public interface RemoteCalculator {
- 
+
     int add(int a, int b);
- 
+
     int subtract(int a, int b);
 }
 ----
@@ -63,22 +63,22 @@ public interface RemoteCalculator {
 [source,java,options="nowrap"]
 ----
 package org.jboss.as.quickstarts.ejb.remote.stateless;
- 
+
 import jakarta.ejb.Remote;
 import jakarta.ejb.Stateless;
- 
+
 /**
  * @author Jaikiran Pai
  */
 @Stateless
 @Remote(RemoteCalculator.class)
 public class CalculatorBean implements RemoteCalculator {
- 
+
     @Override
     public int add(int a, int b) {
         return a + b;
     }
- 
+
     @Override
     public int subtract(int a, int b) {
         return a - b;
@@ -89,16 +89,16 @@ public class CalculatorBean implements RemoteCalculator {
 [source,java,options="nowrap"]
 ----
 package org.jboss.as.quickstarts.ejb.remote.stateful;
- 
+
 /**
  * @author Jaikiran Pai
  */
 public interface RemoteCounter {
- 
+
     void increment();
- 
+
     void decrement();
- 
+
     int getCount();
 }
 ----
@@ -106,29 +106,29 @@ public interface RemoteCounter {
 [source,java,options="nowrap"]
 ----
 package org.jboss.as.quickstarts.ejb.remote.stateful;
- 
+
 import jakarta.ejb.Remote;
 import jakarta.ejb.Stateful;
- 
+
 /**
  * @author Jaikiran Pai
  */
 @Stateful
 @Remote(RemoteCounter.class)
 public class CounterBean implements RemoteCounter {
- 
+
     private int count = 0;
- 
+
     @Override
     public void increment() {
         this.count++;
     }
- 
+
     @Override
     public void decrement() {
         this.count--;
     }
- 
+
     @Override
     public int getCount() {
         return this.count;
@@ -158,19 +158,19 @@ invokes on a stateless bean:
 [source,java,options="nowrap"]
 ----
 package org.jboss.as.quickstarts.ejb.remote.client;
- 
+
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import java.security.Security;
 import java.util.Hashtable;
- 
+
 import org.jboss.as.quickstarts.ejb.remote.stateful.CounterBean;
 import org.jboss.as.quickstarts.ejb.remote.stateful.RemoteCounter;
 import org.jboss.as.quickstarts.ejb.remote.stateless.CalculatorBean;
 import org.jboss.as.quickstarts.ejb.remote.stateless.RemoteCalculator;
 import org.jboss.sasl.JBossSaslProvider;
- 
+
 /**
  * A sample program which acts a remote client for a EJB deployed on WildFly 10 server.
  * This program shows how to lookup stateful and stateless beans via JNDI and then invoke on them
@@ -178,15 +178,15 @@ import org.jboss.sasl.JBossSaslProvider;
  * @author Jaikiran Pai
  */
 public class RemoteEJBClient {
- 
+
     public static void main(String[] args) throws Exception {
         // Invoke a stateless bean
         invokeStatelessBean();
- 
+
         // Invoke a stateful bean
         invokeStatefulBean();
     }
- 
+
     /**
      * Looks up a stateless bean and invokes on it
      *
@@ -215,7 +215,7 @@ public class RemoteEJBClient {
             throw new RuntimeException("Remote stateless calculator returned an incorrect difference " + difference + " ,expected difference was " + (num1 - num2));
         }
     }
- 
+
     /**
      * Looks up a stateful bean and invokes on it
      *
@@ -241,7 +241,7 @@ public class RemoteEJBClient {
             System.out.println("Count after decrement is " + statefulRemoteCounter.getCount());
         }
     }
- 
+
     /**
      * Looks up and returns the proxy to remote stateless calculator bean
      *
@@ -272,7 +272,7 @@ public class RemoteEJBClient {
         // let's do the lookup
         return (RemoteCalculator) context.lookup("ejb:" + appName + "/" + moduleName + "/" + distinctName + "/" + beanName + "!" + viewClassName);
     }
- 
+
     /**
      * Looks up and returns the proxy to remote stateful counter bean
      *
@@ -500,13 +500,13 @@ contain the following properties:
 ....
 endpoint.name=client-endpoint
 remote.connectionprovider.create.options.org.xnio.Options.SSL_ENABLED=false
- 
+
 remote.connections=default
- 
+
 remote.connection.default.host=10.20.30.40
 remote.connection.default.port = 8080
 remote.connection.default.connect.options.org.xnio.Options.SASL_POLICY_NOANONYMOUS=false
- 
+
 remote.connection.default.username=appuser
 remote.connection.default.password=apppassword
 ....
@@ -612,13 +612,13 @@ properties for each of those:
 
 ....
 remote.connectionprovider.create.options.org.xnio.Options.SSL_ENABLED=false
- 
+
 remote.connections=one, two
- 
+
 remote.connection.one.host=localhost
 remote.connection.one.port=6999
 remote.connection.one.connect.options.org.xnio.Options.SASL_POLICY_NOANONYMOUS=false
- 
+
 remote.connection.two.host=localhost
 remote.connection.two.port=7999
 remote.connection.two.connect.options.org.xnio.Options.SASL_POLICY_NOANONYMOUS=false

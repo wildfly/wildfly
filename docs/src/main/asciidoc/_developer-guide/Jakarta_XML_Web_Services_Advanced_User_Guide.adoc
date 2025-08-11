@@ -294,7 +294,7 @@ on server side
 ----
 import jakarta.jws.WebService;
 import org.apache.cxf.annotations.SchemaValidation;
- 
+
 @WebService(...)
 @SchemaValidation
 public class ValidatingHelloImpl implements Hello {

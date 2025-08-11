@@ -451,7 +451,7 @@ xmlns="http://www.jboss.com/xml/ns/javaee"
 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 version="1.2"
 xsi:schemaLocation="http://www.jboss.com/xml/ns/javaee">
- 
+
 <property>
 <name>cxf.interceptors.in</name>
 <value>org.jboss.test.ws.jaxws.cxf.interceptors.BusInterceptor</value>
@@ -479,7 +479,7 @@ xmlns="http://www.jboss.com/xml/ns/javaee"
 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 version="1.2"
 xsi:schemaLocation="http://www.jboss.com/xml/ns/javaee">
- 
+
 <property>
 <name>cxf.features</name>
 <value>org.apache.cxf.feature.FastInfosetFeature</value>
@@ -611,9 +611,9 @@ that would have been created by
 ----
 import org.Bar;
 import org.Foo;
- 
+
 ...
- 
+
 Foo foo = new Foo();
 foo.setPar(34);
 Bar bar = new Bar();
@@ -639,12 +639,12 @@ programmatically modified using the Apache CXF API as follows:
 import org.apache.cxf.frontend.ClientProxy;
 import org.apache.cxf.transport.http.HTTPConduit;
 import org.apache.cxf.transports.http.configuration.HTTPClientPolicy;
- 
+
 //set chunking threshold before using a Jakarta XML Web Services port client
 ...
 HTTPConduit conduit = (HTTPConduit)ClientProxy.getClient(port).getConduit();
 HTTPClientPolicy client = conduit.getClient();
- 
+
 client.setChunkingThreshold(8192);
 ...
 ----

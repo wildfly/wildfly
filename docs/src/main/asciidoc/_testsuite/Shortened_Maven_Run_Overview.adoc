@@ -28,7 +28,7 @@ Run this script on the output of the AS7 testsuite run:
 ##  filter only interesting lines - plugin executions and modules separators,
 ##  plus Test runs summaries,
 ##  and remove the boring plugins like enforcer etc.
- 
+
 cat $1 \
  | egrep ' --- |Building| ---------|Tests run: | T E S T S' \
  | grep -v 'Time elapsed'
@@ -56,20 +56,20 @@ ondra@ondra-redhat: ~/work/AS7/ozizka-as7 $  ./integration-tests.sh clean instal
 [INFO] --- maven-dependency-plugin:2.3:copy (copy-annotations-endorsed) @ jboss-as-testsuite ---
               Copies org.jboss.spec.javax.annotation:jboss-annotations-api_1.1_spec to ${project.build.directory}/endorsed .
               Inherited - needed for compilation of all submodules.
- 
+
 [INFO] --- maven-resources-plugin:2.5:copy-resources (build-jbossas.server) @ jboss-as-testsuite ---
               Copies ${jboss.home} to target/jbossas .  TODO: Should be jboss.dist.
- 
+
 [INFO] --- xml-maven-plugin:1.0:transform (update-ip-addresses-jbossas.server) @ jboss-as-testsuite ---
               Changes IP addresses used in server config files -
               applies ${xslt.scripts.dir}/changeIPAddresses.xsl on ${basedir}/target/jbossas/standalone/configuration/standalone-*.xml
               Currently inherited, IMO should not be.
- 
+
 [INFO] --- maven-source-plugin:2.1.2:jar-no-fork (attach-sources) @ jboss-as-testsuite ---
               TODO: Remove
- 
+
 [INFO] --- maven-install-plugin:2.3.1:install (default-install) @ jboss-as-testsuite ---
- 
+
 [INFO] ------------------------------------------------------------------------
 [INFO] Building JBoss Application Server Test Suite: Integration Aggregator 7.1.0.CR1-SNAPSHOT
 [INFO] ------------------------------------------------------------------------
@@ -95,11 +95,11 @@ ondra@ondra-redhat: ~/work/AS7/ozizka-as7 $  ./integration-tests.sh clean instal
 [INFO] --- maven-resources-plugin:2.5:testResources (default-testResources) @ jboss-as-testsuite-integration-smoke ---
 [INFO] --- xml-maven-plugin:1.0:transform (update-ip-addresses-jbossas.server) @ jboss-as-testsuite-integration-smoke ---
               TODO: Remove
- 
+
 [INFO] --- maven-antrun-plugin:1.6:run (build-smoke.server) @ jboss-as-testsuite-integration-smoke ---
      [echo] Building AS instance "smoke" from /home/ondra/work/EAP/EAP6-DR9 to /home/ondra/work/AS7/ozizka-as7/testsuite/integration/smoke/target
               TODO: Should be running one level above!
- 
+
 [INFO] --- maven-compiler-plugin:2.3.2:testCompile (default-testCompile) @ jboss-as-testsuite-integration-smoke ---
 [INFO] --- maven-surefire-plugin:2.10:test (smoke-full.surefire) @ jboss-as-testsuite-integration-smoke ---
  T E S T S

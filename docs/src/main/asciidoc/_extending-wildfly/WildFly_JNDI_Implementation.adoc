@@ -79,7 +79,7 @@ to a ServiceTarget:
 
 [source,java,options="nowrap"]
 ----
- 
+
    /**
      * Binds a new entry to JNDI.
      * @param serviceTarget the binder service's target
@@ -87,15 +87,15 @@ to a ServiceTarget:
      * @param value the new JNDI entry's value
      */
     private ServiceController<?> bind(ServiceTarget serviceTarget, String name, Object value) {
-        
+
  // the bind info object provides MSC service names to use when creating the binder service
         final ContextNames.BindInfo bindInfo = ContextNames.bindInfoFor(name);
         final BinderService binderService = new BinderService(bindInfo.getBindName());
-        
+
  // the entry's value is provided by a managed reference factory,
         // since the value may need to be obtained on lookup (e.g. EJB reference)
         final ManagedReferenceFactory managedReferenceFactory = new ImmediateManagedReferenceFactory(value);
-        
+
  return serviceTarget
                 // add binder service to specified target
                 .addService(bindInfo.getBinderServiceName(), binderService)
@@ -123,12 +123,12 @@ Using the new high level API, it's as simple as:
 ----
 // bind an immediate value
 ContextNames.bindInfoFor("java:comp/ORB").bind(serviceTarget, this.orb);
- 
- 
+
+
 // bind value from another JNDI entry (an alias/linkref)
 ContextNames.bindInfoFor("java:global/x").bind(serviceTarget, new JndiName("java:jboss/x"));
- 
- 
+
+
 // bind value obtained from a MSC service
 ContextNames.bindInfoFor("java:global/z").bind(serviceTarget, serviceName);
 ----
@@ -155,35 +155,35 @@ or not. An example of a deployment processor adding a binding:
 [source,java,options="nowrap"]
 ----
 public class ModuleNameBindingProcessor implements DeploymentUnitProcessor {
- 
+
     // jndi name objects are immutable
     private static final JndiName JNDI_NAME_java_module_ModuleName = new JndiName("java:module/ModuleName");
- 
+
     @Override
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
-        
+
  final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
         // skip deployment unit if it's the top level EAR
         if (DeploymentTypeMarker.isType(DeploymentType.EAR, deploymentUnit)) {
             return;
         }
-        
+
  // the module's description is in the DUs attachments
         final EEModuleDescription moduleDescription = deploymentUnit
                 .getAttachment(org.jboss.as.ee.component.Attachments.EE_MODULE_DESCRIPTION);
         if (moduleDescription == null) {
             return;
         }
-        
+
  // add the java:module/ModuleName binding
         // the value's injection source for an immediate available value
         final InjectionSource injectionSource = new ImmediateInjectionSource(moduleDescription.getModuleName());
-        
+
  // add the binding configuration to the module's description bindings configurations
         moduleDescription.getBindingConfigurations()
                 .addDeploymentBinding(new BindingConfiguration(JNDI_NAME_java_module_ModuleName, injectionSource));
     }
- 
+
     //...
 }
 ----
@@ -203,7 +203,7 @@ components in a module:
 
 [source,java,options="nowrap"]
 ----
-     
+
 moduleDescription.getBindingConfigurations().addPlatformBindingToAllComponents(bindingConfiguration);
 ----
 
@@ -242,7 +242,7 @@ processors for both XML descriptor and annotations, an example for each:
  * @author Eduardo Martins
  */
 public class AdministeredObjectDefinitionDescriptorProcessor extends ResourceDefinitionDescriptorProcessor {
- 
+
     @Override
     protected void processEnvironment(RemoteEnvironment environment, ResourceDefinitionInjectionSources injectionSources) throws DeploymentUnitProcessingException {
         final AdministeredObjectsMetaData metaDatas = environment.getAdministeredObjects();
@@ -252,7 +252,7 @@ public class AdministeredObjectDefinitionDescriptorProcessor extends ResourceDef
             }
         }
     }
- 
+
     private ResourceDefinitionInjectionSource getResourceDefinitionInjectionSource(final AdministeredObjectMetaData metaData) {
         final String name = metaData.getName();
         final String className = metaData.getClassName();
@@ -265,7 +265,7 @@ public class AdministeredObjectDefinitionDescriptorProcessor extends ResourceDef
         resourceDefinitionInjectionSource.addProperties(metaData.getProperties());
         return resourceDefinitionInjectionSource;
     }
- 
+
 }
 ----
 
@@ -280,20 +280,20 @@ and
  * @author Eduardo Martins
  */
 public class AdministeredObjectDefinitionAnnotationProcessor extends ResourceDefinitionAnnotationProcessor {
- 
+
     private static final DotName ANNOTATION_NAME = DotName.createSimple(AdministeredObjectDefinition.class.getName());
     private static final DotName COLLECTION_ANNOTATION_NAME = DotName.createSimple(AdministeredObjectDefinitions.class.getName());
- 
+
     @Override
     protected DotName getAnnotationDotName() {
         return ANNOTATION_NAME;
     }
- 
+
     @Override
     protected DotName getAnnotationCollectionDotName() {
         return COLLECTION_ANNOTATION_NAME;
     }
- 
+
     @Override
     protected ResourceDefinitionInjectionSource processAnnotation(AnnotationInstance annotationInstance) throws DeploymentUnitProcessingException {
         final String name = AnnotationElement.asRequiredString(annotationInstance, AnnotationElement.NAME);
@@ -309,7 +309,7 @@ public class AdministeredObjectDefinitionAnnotationProcessor extends ResourceDef
                 AdministeredObjectDefinitionInjectionSource.PROPERTIES));
         return directAdministeredObjectInjectionSource;
     }
- 
+
 }
 ----
 

@@ -102,7 +102,7 @@ service endpoint, targetNamespace, portType, binding name, and service.
             <soap:address location="http://@jboss.bind.address@:8080/jaxws-samples-wsse-policy-trust-actas/ActAsService"/>
         </port>
     </service>
- 
+
 </definitions>
 ----
 
@@ -115,10 +115,10 @@ web service definition.
 [source,java,options="nowrap"]
 ----
 package org.jboss.test.ws.jaxws.samples.wsse.policy.trust.actas;
- 
+
 import jakarta.jws.WebMethod;
 import jakarta.jws.WebService;
- 
+
 @WebService
 (
    targetNamespace = "http://www.jboss.org/jbossws/ws-extensions/actaswssecuritypolicy"
@@ -146,7 +146,7 @@ Method setupService performs the requisite configuration setup.
 [source,java,options="nowrap"]
 ----
 package org.jboss.test.ws.jaxws.samples.wsse.policy.trust.actas;
- 
+
 import org.apache.cxf.Bus;
 import org.apache.cxf.BusFactory;
 import org.apache.cxf.annotations.EndpointProperties;
@@ -155,7 +155,7 @@ import org.apache.cxf.ws.security.SecurityConstants;
 import org.apache.cxf.ws.security.trust.STSClient;
 import org.jboss.test.ws.jaxws.samples.wsse.policy.trust.service.ServiceIface;
 import org.jboss.test.ws.jaxws.samples.wsse.policy.trust.shared.WSTrustAppUtils;
- 
+
 import jakarta.jws.WebService;
 import javax.xml.namespace.QName;
 import jakarta.xml.ws.BindingProvider;
@@ -163,7 +163,7 @@ import jakarta.xml.ws.Service;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Map;
- 
+
 @WebService
 (
    portName = "ActAsServicePort",
@@ -172,14 +172,14 @@ import java.util.Map;
    targetNamespace = "http://www.jboss.org/jbossws/ws-extensions/actaswssecuritypolicy",
    endpointInterface = "org.jboss.test.ws.jaxws.samples.wsse.policy.trust.actas.ActAsServiceIface"
 )
- 
+
 @EndpointProperties(value = {
       @EndpointProperty(key = "ws-security.signature.username", value = "myactaskey"),
       @EndpointProperty(key = "ws-security.signature.properties", value =  "actasKeystore.properties"),
       @EndpointProperty(key = "ws-security.encryption.properties", value = "actasKeystore.properties"),
       @EndpointProperty(key = "ws-security.callback-handler", value = "org.jboss.test.ws.jaxws.samples.wsse.policy.trust.actas.ActAsCallbackHandler")
 })
- 
+
 public class ActAsServiceImpl implements ActAsServiceIface
 {
    public String sayHello() {
@@ -191,30 +191,30 @@ public class ActAsServiceImpl implements ActAsServiceIface
       }
       return null;
    }
- 
+
    private  ServiceIface setupService()throws MalformedURLException {
       ServiceIface proxy = null;
       Bus bus = BusFactory.newInstance().createBus();
- 
+
       try {
          BusFactory.setThreadDefaultBus(bus);
- 
+
          final String serviceURL = "http://" + WSTrustAppUtils.getServerHost() + ":8080/jaxws-samples-wsse-policy-trust/SecurityService";
          final QName serviceName = new QName("http://www.jboss.org/jbossws/ws-extensions/wssecuritypolicy", "SecurityService");
          final URL wsdlURL = new URL(serviceURL + "?wsdl");
          Service service = Service.create(wsdlURL, serviceName);
          proxy = (ServiceIface) service.getPort(ServiceIface.class);
- 
+
          Map<String, Object> ctx = ((BindingProvider) proxy).getRequestContext();
          ctx.put(SecurityConstants.CALLBACK_HANDLER, new ActAsCallbackHandler());
- 
+
          ctx.put(SecurityConstants.SIGNATURE_PROPERTIES,
             Thread.currentThread().getContextClassLoader().getResource("actasKeystore.properties" ));
          ctx.put(SecurityConstants.SIGNATURE_USERNAME, "myactaskey" );
          ctx.put(SecurityConstants.ENCRYPT_PROPERTIES,
             Thread.currentThread().getContextClassLoader().getResource("../../META-INF/clientKeystore.properties" ));
          ctx.put(SecurityConstants.ENCRYPT_USERNAME, "myservicekey");
- 
+
          STSClient stsClient = new STSClient(bus);
          Map<String, Object> props = stsClient.getProperties();
          props.put(SecurityConstants.USERNAME, "alice");
@@ -223,16 +223,16 @@ public class ActAsServiceImpl implements ActAsServiceIface
          props.put(SecurityConstants.STS_TOKEN_PROPERTIES,
             Thread.currentThread().getContextClassLoader().getResource("actasKeystore.properties" ));
          props.put(SecurityConstants.STS_TOKEN_USE_CERT_FOR_KEYINFO, "true");
- 
+
          ctx.put(SecurityConstants.STS_CLIENT, stsClient);
- 
+
       } finally {
          bus.shutdown(true);
       }
- 
+
       return proxy;
    }
- 
+
 }
 ----
 
@@ -248,18 +248,18 @@ passwords for this service, myactaskey and the "actas" user, alice.
 [source,java,options="nowrap"]
 ----
 package org.jboss.test.ws.jaxws.samples.wsse.policy.trust.actas;
- 
+
 import org.jboss.wsf.stack.cxf.extensions.security.PasswordCallbackHandler;
 import java.util.HashMap;
 import java.util.Map;
- 
+
 public class ActAsCallbackHandler extends PasswordCallbackHandler {
- 
+
    public ActAsCallbackHandler()
    {
       super(getInitMap());
    }
- 
+
    private static Map<String, String> getInitMap()
    {
       Map<String, String> passwords = new HashMap<String, String>();
@@ -280,7 +280,7 @@ the properly formated element.
 [source,java,options="nowrap"]
 ----
 package org.jboss.test.ws.jaxws.samples.wsse.policy.trust.shared;
- 
+
 import org.apache.cxf.helpers.DOMUtils;
 import org.apache.cxf.message.Message;
 import org.apache.cxf.ws.security.SecurityConstants;
@@ -292,13 +292,13 @@ import org.w3c.dom.Node;
 import org.w3c.dom.Element;
 import org.w3c.dom.ls.DOMImplementationLS;
 import org.w3c.dom.ls.LSSerializer;
- 
+
 import javax.security.auth.callback.Callback;
 import javax.security.auth.callback.CallbackHandler;
 import javax.security.auth.callback.UnsupportedCallbackException;
 import java.io.IOException;
 import java.util.Map;
- 
+
 /**
 * A utility to provide the 3 different input parameter types for jaxws property
 * "ws-security.sts.token.act-as" and "ws-security.sts.token.on-behalf-of".
@@ -307,16 +307,16 @@ import java.util.Map;
 * in SecurityConstants.  It creates a wss UsernameToken to be used as the
 * delegation token.
 */
- 
+
 public class UsernameTokenCallbackHandler implements CallbackHandler {
- 
+
    public void handle(Callback[] callbacks)
       throws IOException, UnsupportedCallbackException {
       for (int i = 0; i < callbacks.length; i++) {
          if (callbacks[i] instanceof DelegationCallback) {
             DelegationCallback callback = (DelegationCallback) callbacks[i];
             Message message = callback.getCurrentMessage();
- 
+
             String username =
                (String)message.getContextualProperty(SecurityConstants.USERNAME);
             String password =
@@ -337,7 +337,7 @@ public class UsernameTokenCallbackHandler implements CallbackHandler {
          }
       }
    }
- 
+
    /**
     * Provide UsernameToken as a string.
     * @param ctx
@@ -354,7 +354,7 @@ public class UsernameTokenCallbackHandler implements CallbackHandler {
       }
       return result;
    }
- 
+
    /**
     *
     * @param username
@@ -370,7 +370,7 @@ public class UsernameTokenCallbackHandler implements CallbackHandler {
       }
       return result;
    }
- 
+
    /**
     * Provide UsernameToken as a DOM Element.
     * @param ctx
@@ -388,7 +388,7 @@ public class UsernameTokenCallbackHandler implements CallbackHandler {
       }
       return result;
    }
- 
+
    /**
     *
     * @param username
@@ -405,27 +405,27 @@ public class UsernameTokenCallbackHandler implements CallbackHandler {
       }
       return result;
    }
- 
+
    private UsernameToken createWSSEUsernameToken(String username, String password, Document doc) {
- 
+
       UsernameToken usernameToken = new UsernameToken(true, doc,
          (password == null)? null: WSConstants.PASSWORD_TEXT);
       usernameToken.setName(username);
       usernameToken.addWSUNamespace();
       usernameToken.addWSSENamespace();
       usernameToken.setID("id-" + username);
- 
+
       if (password != null){
          usernameToken.setPassword(password);
       }
- 
+
       return usernameToken;
    }
- 
- 
+
+
    private String toString(Node node) {
       String str = null;
- 
+
       if (node != null) {
          DOMImplementationLS lsImpl = (DOMImplementationLS)
             node.getOwnerDocument().getImplementation().getFeature("LS", "3.0");
@@ -435,7 +435,7 @@ public class UsernameTokenCallbackHandler implements CallbackHandler {
       }
       return str;
    }
- 
+
 }
 ----
 
@@ -498,13 +498,13 @@ the token delegation request of the ActAs on OnBehalfOf user.
 [source,java,options="nowrap"]
 ----
 package org.jboss.test.ws.jaxws.samples.wsse.policy.trust.sts;
- 
+
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
- 
+
 import jakarta.xml.ws.WebServiceProvider;
- 
+
 import org.apache.cxf.annotations.EndpointProperties;
 import org.apache.cxf.annotations.EndpointProperty;
 import org.apache.cxf.interceptor.InInterceptors;
@@ -518,7 +518,7 @@ import org.apache.cxf.sts.token.provider.SAMLTokenProvider;
 import org.apache.cxf.sts.token.validator.SAMLTokenValidator;
 import org.apache.cxf.sts.token.validator.UsernameTokenValidator;
 import org.apache.cxf.ws.security.sts.provider.SecurityTokenServiceProvider;
- 
+
 @WebServiceProvider(serviceName = "SecurityTokenService",
       portName = "UT_Port",
       targetNamespace = "http://docs.oasis-open.org/ws-sx/ws-trust/200512/",
@@ -536,30 +536,30 @@ public class SampleSTS extends SecurityTokenServiceProvider
    public SampleSTS() throws Exception
    {
       super();
- 
+
       StaticSTSProperties props = new StaticSTSProperties();
       props.setSignatureCryptoProperties("stsKeystore.properties");
       props.setSignatureUsername("mystskey");
       props.setCallbackHandlerClass(STSCallbackHandler.class.getName());
       props.setIssuer("DoubleItSTSIssuer");
- 
+
       List<ServiceMBean> services = new LinkedList<ServiceMBean>();
       StaticService service = new StaticService();
       service.setEndpoints(Arrays.asList(
          "http://localhost:(\\d)*/jaxws-samples-wsse-policy-trust/SecurityService",
          "http://\\[::1\\]:(\\d)*/jaxws-samples-wsse-policy-trust/SecurityService",
          "http://\\[0:0:0:0:0:0:0:1\\]:(\\d)*/jaxws-samples-wsse-policy-trust/SecurityService",
- 
+
          "http://localhost:(\\d)*/jaxws-samples-wsse-policy-trust-actas/ActAsService",
          "http://\\[::1\\]:(\\d)*/jaxws-samples-wsse-policy-trust-actas/ActAsService",
          "http://\\[0:0:0:0:0:0:0:1\\]:(\\d)*/jaxws-samples-wsse-policy-trust-actas/ActAsService",
- 
+
          "http://localhost:(\\d)*/jaxws-samples-wsse-policy-trust-onbehalfof/OnBehalfOfService",
          "http://\\[::1\\]:(\\d)*/jaxws-samples-wsse-policy-trust-onbehalfof/OnBehalfOfService",
          "http://\\[0:0:0:0:0:0:0:1\\]:(\\d)*/jaxws-samples-wsse-policy-trust-onbehalfof/OnBehalfOfService"
       ));
       services.add(service);
- 
+
       TokenIssueOperation issueOperation = new TokenIssueOperation();
       issueOperation.setServices(services);
       issueOperation.getTokenProviders().add(new SAMLTokenProvider());
@@ -568,11 +568,11 @@ public class SampleSTS extends SecurityTokenServiceProvider
       // added for OnBehalfOf and ActAs
       issueOperation.getDelegationHandlers().add(new UsernameTokenDelegationHandler());
       issueOperation.setStsProperties(props);
- 
+
       TokenValidateOperation validateOperation = new TokenValidateOperation();
       validateOperation.getTokenValidators().add(new SAMLTokenValidator());
       validateOperation.setStsProperties(props);
- 
+
       this.setIssueOperation(issueOperation);
       this.setValidateOperation(validateOperation);
    }
@@ -588,19 +588,19 @@ the ActAs example.
 [source,java,options="nowrap"]
 ----
 package org.jboss.test.ws.jaxws.samples.wsse.policy.trust.sts;
- 
+
 import java.util.HashMap;
 import java.util.Map;
- 
+
 import org.jboss.wsf.stack.cxf.extensions.security.PasswordCallbackHandler;
- 
+
 public class STSCallbackHandler extends PasswordCallbackHandler
 {
    public STSCallbackHandler()
    {
       super(getInitMap());
    }
- 
+
    private static Map<String, String> getInitMap()
    {
       Map<String, String> passwords = new HashMap<String, String>();
@@ -644,13 +644,13 @@ final QName serviceName = new QName("http://www.jboss.org/jbossws/ws-extensions/
 final URL wsdlURL = new URL(serviceURL + "?wsdl");
 Service service = Service.create(wsdlURL, serviceName);
 ActAsServiceIface proxy = (ActAsServiceIface) service.getPort(ActAsServiceIface.class);
- 
+
 Bus bus = BusFactory.newInstance().createBus();
 try {
     BusFactory.setThreadDefaultBus(bus);
- 
+
     Map<String, Object> ctx = proxy.getRequestContext();
- 
+
     ctx.put(SecurityConstants.CALLBACK_HANDLER, new ClientCallbackHandler());
     ctx.put(SecurityConstants.ENCRYPT_PROPERTIES,
         Thread.currentThread().getContextClassLoader().getResource(
@@ -660,12 +660,12 @@ try {
         Thread.currentThread().getContextClassLoader().getResource(
         "META-INF/clientKeystore.properties"));
     ctx.put(SecurityConstants.SIGNATURE_USERNAME, "myclientkey");
- 
+
     // Generate the ActAs element contents and pass to the STSClient as a string
     UsernameTokenCallbackHandler ch = new UsernameTokenCallbackHandler();
     String str = ch.getUsernameTokenString("alice","clarinet");
     ctx.put(SecurityConstants.STS_TOKEN_ACT_AS, str);
- 
+
     STSClient stsClient = new STSClient(bus);
     Map<String, Object> props = stsClient.getProperties();
     props.put(SecurityConstants.USERNAME, "bob");
@@ -679,7 +679,7 @@ try {
         Thread.currentThread().getContextClassLoader().getResource(
         "META-INF/clientKeystore.properties"));
     props.put(SecurityConstants.STS_TOKEN_USE_CERT_FOR_KEYINFO, "true");
- 
+
     ctx.put(SecurityConstants.STS_CLIENT, stsClient);
 } finally {
     bus.shutdown(true);
