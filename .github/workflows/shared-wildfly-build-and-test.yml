@@ -19,7 +19,7 @@
 #    strategy:
 #      fail-fast: false
 #    steps:
-#      - uses: actions/checkout@v4
+#      - uses: actions/checkout@v5
 #      - name: Set up JDK
 #        uses: actions/setup-java@v4
 #        with:
@@ -99,7 +99,7 @@ jobs:
         os: ${{ fromJson(inputs.os) }}
         java: ${{ fromJson(inputs.java-versions) }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           repository: wildfly/wildfly
           ref: '${{ inputs.ref }}'
