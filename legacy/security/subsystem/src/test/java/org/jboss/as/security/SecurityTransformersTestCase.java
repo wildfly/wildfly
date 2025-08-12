@@ -72,13 +72,10 @@ public class SecurityTransformersTestCase extends AbstractSubsystemBaseTest {
 
     private void testTransformers(ModelTestControllerVersion controllerVersion) throws Exception {
         ModelVersion version = ModelVersion.create(2, 0, 0);
+        String wildflySecurityGAV = controllerVersion.createGAV("wildfly-security");
 
-        final String artifactId = "wildfly-security";
-
-        String mavenGav = String.format("%s:%s:%s", controllerVersion.getMavenGroupId(), artifactId, controllerVersion.getMavenGavVersion());
-
-        testTransformers(controllerVersion, version, mavenGav);
-        testReject(controllerVersion, version, mavenGav);
+        testTransformers(controllerVersion, version, wildflySecurityGAV);
+        testReject(controllerVersion, version, wildflySecurityGAV);
     }
 
     private void testReject(ModelTestControllerVersion controllerVersion, ModelVersion targetVersion, String mavenGAV) throws Exception {

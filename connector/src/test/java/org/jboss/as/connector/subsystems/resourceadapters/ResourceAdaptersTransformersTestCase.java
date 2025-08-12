@@ -141,11 +141,10 @@ public class ResourceAdaptersTransformersTestCase extends AbstractSubsystemBaseT
     private KernelServices initialKernelServices(KernelServicesBuilder builder, ModelTestControllerVersion controllerVersion) throws Exception {
         String mavenGroupId = controllerVersion.getMavenGroupId();
         ModelVersion modelVersion = getResourceAdapterModel(controllerVersion);
-        String artifactId = "wildfly-connector";
 
         LegacyKernelServicesInitializer initializer = builder.createLegacyKernelServicesBuilder(createAdditionalInitialization(), controllerVersion, modelVersion);
 
-        initializer.addMavenResourceURL(mavenGroupId + ":" + artifactId + ":" + controllerVersion.getMavenGavVersion()) // Adds the resource adapter subsystem package
+        initializer.addMavenResourceURL(controllerVersion.createGAV("wildfly-connector")) // Adds the resource adapter subsystem package
                 .addMavenResourceURL("org.jboss.spec.javax.resource:jboss-connector-api_1.7_spec:2.0.0.Final-redhat-00001") // The 6.0.0 subsystem on EAP 7.4.0 uses the javax prefix
                 .setExtensionClassName("org.jboss.as.connector.subsystems.resourceadapters.ResourceAdaptersExtension") // Adds the transformer registration
                 .skipReverseControllerCheck()
