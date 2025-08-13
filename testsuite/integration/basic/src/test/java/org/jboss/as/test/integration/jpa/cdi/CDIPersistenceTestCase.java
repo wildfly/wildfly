@@ -10,6 +10,7 @@ import static org.junit.Assert.assertNull;
 
 import jakarta.persistence.Cache;
 import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
 import jakarta.persistence.metamodel.Metamodel;
 import jakarta.persistence.PersistenceUnitUtil;
@@ -90,15 +91,21 @@ public class CDIPersistenceTestCase {
     }
 
     @Test
-    public void TestMetamodel() throws Exception {
+    public void testMetamodel() throws Exception {
         Metamodel metamodel = cmtBean.testMetamodel();
         assertNotNull("Metamodel should of been returned", metamodel);
 
     }
 
     @Test
-    public void TestGetEntityManagerFactoryByPuName() throws Exception {
+    public void testGetEntityManagerFactoryByPuName() throws Exception {
         EntityManagerFactory emf = cmtBean.getEntityManagerFactoryByPuName();
         assertNotNull("EntityManagerFactory bean should of been named with persistence unit name", emf);
+    }
+
+    @Test
+    public void testEmApplicationExistingProducer() throws Exception {
+        EntityManager emApplicationExistingProducer = cmtBean.getEmApplicationExistingProducer();
+        assertNotNull("Legacy producer didn't produce the EntityManager instance", emApplicationExistingProducer);
     }
 }

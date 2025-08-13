@@ -5,6 +5,7 @@
 
 package org.jboss.as.test.integration.jpa.cdi;
 
+import jakarta.enterprise.inject.Produces;
 import jakarta.enterprise.context.RequestScoped;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
@@ -14,6 +15,7 @@ import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
 import jakarta.persistence.metamodel.Metamodel;
+import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.PersistenceUnitUtil;
 import jakarta.transaction.Transactional;
 
@@ -25,6 +27,10 @@ import jakarta.transaction.Transactional;
 
 @RequestScoped
 public class RequestScopedTestBean {
+
+    @Produces
+    @PersistenceContext(unitName = "pu2")
+    private EntityManager emApplicationExistingProducer;
 
     @Inject
     @Pu1Qualifier
@@ -87,6 +93,10 @@ public class RequestScopedTestBean {
 
     public Cache testCache() {
         return cache;
+    }
+
+    public EntityManager getEmApplicationExistingProducer() {
+        return emApplicationExistingProducer;
     }
 
     public Metamodel testMetamodel() {
