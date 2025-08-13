@@ -22,6 +22,12 @@
   <name>WildFly: Validation Tests for Exported Jakarta EE Specification APIs</name>
   <description>Validation Tests for Jakarta EE Specification APIs exported by the Application Server</description>
 
+    <properties>
+        <!-- Don't try to deploy the module -->
+        <maven.deploy.skip>true</maven.deploy.skip>
+        <skipNexusStagingDeployMojo>true</skipNexusStagingDeployMojo>
+    </properties>
+
   <build>
     <plugins>
       <plugin>
@@ -30,16 +36,6 @@
           <!-- we want unused and wildcard imports in this case, so lets skip checkstyle -->
           <skip>true</skip>
         </configuration>
-      </plugin>
-      <plugin>
-          <groupId>org.sonatype.plugins</groupId>
-          <artifactId>nxrm3-maven-plugin</artifactId>
-          <executions>
-              <execution>
-                  <id>nexus-deploy</id>
-                  <phase>none</phase>
-              </execution>
-          </executions>
       </plugin>
     </plugins>
   </build>
