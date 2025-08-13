@@ -52,7 +52,7 @@
                     <version>${version.org.wildfly.bom-builder-plugin}</version>
                     <configuration>
                         <!-- configuration common to all user BOMs -->
-                        <licenses>true</licenses>
+                        <generateLicenses>true</generateLicenses>
                         <includeRepositories>
                             <id>jboss-public-repository-group</id>
                         </includeRepositories>

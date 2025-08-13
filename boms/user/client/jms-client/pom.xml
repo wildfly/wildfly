@@ -67,18 +67,18 @@
                             <goal>build-bom</goal>
                         </goals>
                         <configuration>
-                            <parent>
+                            <bomParent>
                                 <groupId>org.jboss</groupId>
                                 <artifactId>jboss-parent</artifactId>
                                 <relativePath/>
-                            </parent>
+                            </bomParent>
                             <bomGroupId>${bomGroupId}</bomGroupId>
                             <bomArtifactId>${bomArtifactIdPrefix}-jms-client-bom</bomArtifactId>
                             <bomVersion>${project.version}</bomVersion>
                             <bomName>${full.dist.product.release.name} BOMs: JMS Client</bomName>
                             <bomDescription>This artifact provides a bill of materials (BOM) for JMS client usage.</bomDescription>
                             <bomWithDependencies>true</bomWithDependencies>
-                            <licenses>true</licenses>
+                            <generateLicenses>true</generateLicenses>
                             <inheritExclusions>UNMANAGED</inheritExclusions>
                             <channels>
                                 <channel>
