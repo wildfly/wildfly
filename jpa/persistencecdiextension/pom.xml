@@ -20,9 +20,9 @@
         <version>38.0.0.Beta1-SNAPSHOT</version>
     </parent>
 
-    <artifactId>schemamanagerbeancreator</artifactId>
+    <artifactId>persistencecdiextension</artifactId>
 
-    <name>WildFly: Persistence 3.2 SchemaManager CDI Bean creator</name>
+    <name>WildFly: Persistence 3.2 PersistenceCdiExtension service implementation</name>
 
     <properties>
         <!-- Use the standard WildFly dependency set -->
@@ -91,6 +91,10 @@
         <dependency>
             <groupId>org.wildfly</groupId>
             <artifactId>wildfly-jpa</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>jakarta.inject</groupId>
+            <artifactId>jakarta.inject-api</artifactId>
         </dependency>
 
     </dependencies>

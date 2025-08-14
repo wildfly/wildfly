@@ -60,7 +60,7 @@
             </activation>
             <modules>
                 <module>hibernate7</module>
-                <module>schemamanagerbeancreator</module>
+                <module>persistencecdiextension</module>
             </modules>
         </profile>
     </profiles>

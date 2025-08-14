@@ -222,7 +222,7 @@ public class PersistenceUnitServiceImpl implements Service<PersistenceUnitServic
                             }
 
                             private void createCDIBeansForPersistence(BeanManager beanManager, EntityManagerFactory entityManagerFactory, PersistenceUnitMetadata pu, ClassLoader classLoader) {
-                                // PersistenceIntegrationWithCDI.addBeans(beanManager, entityManagerFactory, pu, classLoader, transactionSynchronizationRegistry, transactionManager);
+                                // no-op stub
                             }
 
                         };

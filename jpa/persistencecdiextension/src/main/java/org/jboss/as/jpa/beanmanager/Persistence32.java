@@ -24,7 +24,7 @@ public class Persistence32 implements SchemaManagerBeanCreator {
 
     @Override
     public void schemaManager(AfterBeanDiscovery afterBeanDiscovery, PersistenceUnitMetadata persistenceUnitMetadata, List<String> qualifiers, IntegrationWithCDIBag integrationWithCDIBag) throws ClassNotFoundException {
-        String scope = PersistenceIntegrationWithCDI.dependentScoped;
+        String scope = IntegratePersistenceAfterBeanDiscovery.dependentScoped;
 
         BeanConfigurator<SchemaManager> beanConfigurator = afterBeanDiscovery.addBean();
         beanConfigurator.addTransitiveTypeClosure(SchemaManager.class);
@@ -38,7 +38,7 @@ public class Persistence32 implements SchemaManagerBeanCreator {
                     .loadClass(qualifier)
                     .asSubclass(Annotation.class);
             // beanConfigurator.addQualifier(qualifierType);
-            beanConfigurator.addQualifier(PersistenceIntegrationWithCDI.ScopeProxy.createProxy(qualifierType));
+            beanConfigurator.addQualifier(IntegratePersistenceAfterBeanDiscovery.ScopeProxy.createProxy(qualifierType));
         }
         Class<?> schemaManagerClass = SchemaManager.class;
         beanConfigurator.beanClass(schemaManagerClass);

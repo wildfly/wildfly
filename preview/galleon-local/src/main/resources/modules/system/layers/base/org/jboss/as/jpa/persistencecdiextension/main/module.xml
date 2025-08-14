@@ -5,7 +5,7 @@
   ~ SPDX-License-Identifier: Apache-2.0
   -->
 
-<module xmlns="urn:jboss:module:1.9" name="org.jboss.as.jpa">
+<module xmlns="urn:jboss:module:1.9" name="org.jboss.as.jpa.persistencecdiextension">
 
     <properties>
         <property name="jboss.api" value="private"/>
@@ -16,8 +16,8 @@
     </exports>
 
     <resources>
-        <artifact name="${org.wildfly:wildfly-jpa}"/>
         <artifact name="${org.wildfly:persistencecdiextension}"/>
+        
     </resources>
 
     <dependencies>
@@ -41,7 +41,6 @@
         <!-- optional because guarded by ejb3 capability -->
         <module name="org.jboss.as.ejb3" optional="true"/>
         <module name="org.jboss.as.jpa.spi"/>
-        <module name="org.jboss.as.jpa.persistencecdiextension" services="import"/>
         <module name="org.jboss.as.naming"/>
         <module name="org.wildfly.security.elytron-private"/>
         <module name="org.jboss.as.server"/>

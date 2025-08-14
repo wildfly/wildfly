@@ -11,9 +11,12 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.util.HashMap;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
+import jakarta.enterprise.event.Observes;
 import jakarta.enterprise.inject.literal.NamedLiteral;
 import jakarta.enterprise.inject.spi.AfterBeanDiscovery;
+import jakarta.enterprise.inject.spi.BeanManager;
 import jakarta.enterprise.inject.spi.configurator.BeanConfigurator;
 import jakarta.persistence.Cache;
 import jakarta.persistence.EntityManager;
@@ -29,7 +32,7 @@ import org.jipijapa.plugin.spi.PersistenceUnitMetadata;
 import org.jipijapa.plugin.spi.SchemaManagerBeanCreator;
 
 /**
- * PersistenceIntegrationWithCDI will setup Persistence/CDI integration as mentioned in jakarta.ee/specifications/platform/11/jakarta-platform-spec-11.0#a441
+ * IntegratePersistenceAfterBeanDiscovery will setup Persistence/CDI integration as mentioned in jakarta.ee/specifications/platform/11/jakarta-platform-spec-11.0#a441
  * <p>
  * Obtaining an Entity Manager using CDI:
  * A Jakarta EE container must feature built-integration of Jakarta Persistence with the CDI bean manager, allowing injection of a container-managed
@@ -67,7 +70,35 @@ import org.jipijapa.plugin.spi.SchemaManagerBeanCreator;
  *
  * @author Scott Marlow
  */
-public class PersistenceIntegrationWithCDI {
+
+public class IntegratePersistenceAfterBeanDiscovery implements PersistenceCdiExtension {
+    private final CopyOnWriteArrayList<IntegrationWithCDIBagImpl> copyOnWriteArrayList = new CopyOnWriteArrayList();
+    private volatile boolean afterBeanDiscoveryEventRanAlready = false;
+
+    void afterBeanDiscovery(@Observes AfterBeanDiscovery event, BeanManager manager) {
+        afterBeanDiscoveryEventRanAlready = true;
+        try {
+            for (IntegrationWithCDIBagImpl integrationWithCDIBag: copyOnWriteArrayList) {
+                addBeans(event, integrationWithCDIBag.getPersistenceUnitMetadata(), integrationWithCDIBag);
+            }
+        } catch (RuntimeException e) {
+            event.addDefinitionError(e);
+        } finally {
+            copyOnWriteArrayList.clear();
+        }
+    }
+
+    public IntegrationWithCDIBagImpl register(final PersistenceUnitMetadata persistenceUnitMetadata) {
+
+        if (afterBeanDiscoveryEventRanAlready) {
+            // this should never happen but still check just in case
+            throw JpaLogger.ROOT_LOGGER.afterBeanDiscoveryEventRanAlready(persistenceUnitMetadata.getPersistenceUnitName(), persistenceUnitMetadata.getScopedPersistenceUnitName());
+        }
+        final IntegrationWithCDIBagImpl integrationWithCDIBag = new IntegrationWithCDIBagImpl();
+        integrationWithCDIBag.setPersistenceUnitMetadata(persistenceUnitMetadata);
+        copyOnWriteArrayList.add(integrationWithCDIBag);
+        return integrationWithCDIBag;
+    }
 
     private static final List defaultQualifier = List.of("jakarta.enterprise.inject.Default");
     private static final String transactionScoped = "jakarta.transaction.TransactionScoped";
@@ -78,7 +109,7 @@ public class PersistenceIntegrationWithCDI {
     static {
         Class schemaManagerCreatorClass1;
         try {
-            schemaManagerCreatorClass1 = PersistenceIntegrationWithCDI.class.getClassLoader().loadClass("org.jboss.as.jpa.beanmanager.Persistence32");
+            schemaManagerCreatorClass1 = IntegratePersistenceAfterBeanDiscovery.class.getClassLoader().loadClass("org.jboss.as.jpa.beanmanager.Persistence32");
         } catch (ClassNotFoundException ignore) {
             schemaManagerCreatorClass1 = null;
         }
@@ -333,5 +364,6 @@ public class PersistenceIntegrationWithCDI {
             return (T) Proxy.newProxyInstance(annotationType.getClassLoader(), new Class[]{annotationType}, new ScopeProxy(annotationType));
         }
     }
+
 
 }

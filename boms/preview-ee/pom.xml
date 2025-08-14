@@ -836,7 +836,7 @@
 
             <dependency>
                 <groupId>${project.groupId}</groupId>
-                <artifactId>schemamanagerbeancreator</artifactId>
+                <artifactId>persistencecdiextension</artifactId>
                 <version>${project.version}</version>
                 <exclusions>
                     <exclusion>

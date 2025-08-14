@@ -16,6 +16,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
+import java.util.ServiceLoader;
 
 import jakarta.persistence.SynchronizationType;
 import jakarta.persistence.ValidationMode;
@@ -37,8 +38,8 @@ import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ee.structure.DeploymentType;
 import org.jboss.as.ee.structure.DeploymentTypeMarker;
 import org.jboss.as.jpa.beanmanager.BeanManagerAfterDeploymentValidation;
-import org.jboss.as.jpa.beanmanager.IntegratePersistenceAfterBeanDiscovery;
 import org.jboss.as.jpa.beanmanager.IntegrationWithCDIBagImpl;
+import org.jboss.as.jpa.beanmanager.PersistenceCdiExtension;
 import org.jboss.as.jpa.beanmanager.ProxyBeanManager;
 import org.jboss.as.jpa.config.Configuration;
 import org.jboss.as.jpa.config.PersistenceProviderDeploymentHolder;
@@ -1181,22 +1182,38 @@ public class PersistenceUnitServiceHandler {
     }
 
     private static IntegrationWithCDIBagImpl registerPersistenceAfterBeanDiscovery(DeploymentUnit deploymentUnit, CapabilityServiceSupport support, PersistenceUnitMetadata pu, TransactionManager transactionManager, TransactionSynchronizationRegistry transactionSynchronizationRegistry) {
-        IntegrationWithCDIBagImpl result = null;
         deploymentUnit = DeploymentUtils.getTopDeploymentUnit(deploymentUnit);
+        IntegrationWithCDIBagImpl result = null;
         if (support.hasCapability(WELD_CAPABILITY_NAME)) {
             Optional<WeldCapability> weldCapability = support.getOptionalCapabilityRuntimeAPI(WELD_CAPABILITY_NAME, WeldCapability.class);
 
             if (weldCapability.get().isPartOfWeldDeployment(deploymentUnit)) {
                 synchronized (deploymentUnit) {
-                    IntegratePersistenceAfterBeanDiscovery integratePersistenceAfterBeanDiscovery = deploymentUnit.getAttachment(JpaAttachments.AFTER_BEAN_DISCOVERY_ATTACHMENT_KEY);
-                    if (null == integratePersistenceAfterBeanDiscovery) {
-                        integratePersistenceAfterBeanDiscovery = new IntegratePersistenceAfterBeanDiscovery();
-                        deploymentUnit.putAttachment(JpaAttachments.AFTER_BEAN_DISCOVERY_ATTACHMENT_KEY, integratePersistenceAfterBeanDiscovery);
-                        weldCapability.get().registerExtensionInstance(integratePersistenceAfterBeanDiscovery, deploymentUnit);
+                    final Module module = deploymentUnit.getAttachment(Attachments.MODULE);
+
+                    PersistenceCdiExtension persistenceCdiExtension = deploymentUnit.getAttachment(JpaAttachments.AFTER_BEAN_DISCOVERY_ATTACHMENT_KEY);
+                    if (null == persistenceCdiExtension) {
+                        // For WildFly Preview try loading a PersistenceCdiExtensionService (WildFly will not have this service).
+                        ServiceLoader<PersistenceCdiExtension> persistenceCdiExtensionService = module.loadService(PersistenceCdiExtension.class);
+                        if (persistenceCdiExtensionService == null) {
+                            return null;
+                        }
+                        for (PersistenceCdiExtension service: persistenceCdiExtensionService) {
+                            if (persistenceCdiExtension != null) {
+                                throw new RuntimeException("internal error: found more than one PersistenceCdiExtension services");  // TODO add to logger
+                            }
+                            persistenceCdiExtension = service;
+                        }
+                        if (persistenceCdiExtension != null) {
+                            deploymentUnit.putAttachment(JpaAttachments.AFTER_BEAN_DISCOVERY_ATTACHMENT_KEY, persistenceCdiExtension);
+                            weldCapability.get().registerExtensionInstance(persistenceCdiExtension, deploymentUnit);
+                        }
                     }
-                    result = integratePersistenceAfterBeanDiscovery.register(pu);
-                    result.setTransactionManager(transactionManager);
-                    result.setTransactionSynchronizationRegistry(transactionSynchronizationRegistry);
+                    if ( persistenceCdiExtension != null) {
+                        result = persistenceCdiExtension.register(pu);
+                        result.setTransactionManager(transactionManager);
+                        result.setTransactionSynchronizationRegistry(transactionSynchronizationRegistry);
+                    }
                 }
             }
         }
