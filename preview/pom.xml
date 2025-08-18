@@ -32,6 +32,7 @@
     </properties>
 
     <modules>
+        <module>../concurrency/impl-31</module>
         <module>channel</module>
         <module>feature-pack</module>
         <module>galleon-local</module>
