@@ -6,11 +6,6 @@ package org.wildfly.test.integration.observability.micrometer.multiple;
 
 import static org.junit.Assert.assertEquals;
 
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.URL;
-import java.util.List;
-
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.junit.InSequence;
@@ -20,9 +15,13 @@ import org.jboss.as.test.shared.observability.signals.PrometheusMetric;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Test;
-import org.wildfly.test.integration.observability.JaxRsActivator;
 import org.wildfly.test.integration.observability.micrometer.multiple.application.DuplicateMetricResource1;
 import org.wildfly.test.integration.observability.micrometer.multiple.application.DuplicateMetricResource2;
+
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.util.List;
 
 public class MicrometerMultipleWarTestCase extends BaseMicrometerMultipleTestCase {
     @Deployment(name = SERVICE_ONE, order = 1, testable = false)

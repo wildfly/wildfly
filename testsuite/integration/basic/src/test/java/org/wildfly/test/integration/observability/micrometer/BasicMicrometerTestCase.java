@@ -4,8 +4,8 @@
  */
 package org.wildfly.test.integration.observability.micrometer;
 
-import io.micrometer.core.instrument.MeterRegistry;
 import jakarta.inject.Inject;
+import io.micrometer.core.instrument.MeterRegistry;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.testcontainers.api.TestcontainersRequired;
@@ -18,7 +18,7 @@ import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.wildfly.test.integration.observability.JaxRsActivator;
+import org.wildfly.test.integration.observability.micrometer.multiple.JaxRsActivator;
 
 
 @RunWith(Arquillian.class)
