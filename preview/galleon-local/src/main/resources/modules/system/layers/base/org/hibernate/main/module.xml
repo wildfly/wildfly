@@ -5,7 +5,7 @@
   ~ SPDX-License-Identifier: Apache-2.0
   -->
 
-<!-- Represents Hibernate ORM 6  -->
+<!-- Represents Hibernate ORM 7 -->
 <module xmlns="urn:jboss:module:1.9" name="org.hibernate">
 
     <resources>
