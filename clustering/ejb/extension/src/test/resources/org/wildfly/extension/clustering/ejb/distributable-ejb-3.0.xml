@@ -7,7 +7,7 @@
     <bean-management default="default">
         <infinispan-bean-management name="default" cache-container="foo" cache="bar" max-active-beans="${exp.max-active-beans:10000}" idle-threshold="${exp.idle-threshold:PT10M}"/>
     </bean-management>
-    <local-client-mappings-registry/>
+    <local-ejb-client-services/>
     <infinispan-timer-management name="distributed" cache-container="foo" cache="bar" max-active-timers="${exp.max-active-distributed-timers:100}" idle-threshold="${exp.idle-threshold:PT10M}"/>
     <infinispan-timer-management name="transient" cache-container="foo" cache="bar" max-active-timers="${exp.max-active-transient-timers:1000}"/>
 </subsystem>

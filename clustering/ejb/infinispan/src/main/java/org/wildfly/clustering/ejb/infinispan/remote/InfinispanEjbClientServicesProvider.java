@@ -5,15 +5,10 @@
 
 package org.wildfly.clustering.ejb.infinispan.remote;
 
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Set;
-import java.util.function.UnaryOperator;
-
 import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.jboss.as.network.ClientMapping;
 import org.wildfly.clustering.ejb.infinispan.network.ClientMappingsRegistryEntryServiceInstallerFactory;
-import org.wildfly.clustering.ejb.remote.ClientMappingsRegistryProvider;
+import org.wildfly.clustering.ejb.remote.EjbClientServicesProvider;
 import org.wildfly.clustering.infinispan.service.CacheConfigurationServiceInstaller;
 import org.wildfly.clustering.infinispan.service.CacheServiceInstaller;
 import org.wildfly.clustering.server.service.BinaryServiceConfiguration;
@@ -22,26 +17,31 @@ import org.wildfly.clustering.server.service.FilteredBinaryServiceInstallerProvi
 import org.wildfly.subsystem.service.ServiceDependency;
 import org.wildfly.subsystem.service.ServiceInstaller;
 
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Set;
+import java.util.function.UnaryOperator;
+
 /**
- * The non-legacy version of the client mappings registry provider, used when the distributable-ejb subsystem is present.
+ * The non-legacy version of the EJB client services provider, used when the distributable-ejb subsystem is present.
  *
  * @author Paul Ferraro
  * @author Richard Achmatowicz
  */
-public class InfinispanClientMappingsRegistryProvider implements ClientMappingsRegistryProvider {
+public class InfinispanEjbClientServicesProvider implements EjbClientServicesProvider {
 
     private final BinaryServiceConfiguration configuration;
     private final UnaryOperator<ConfigurationBuilder> configurator;
 
     /**
-     * Creates an instance of the Infinispan-based client mappings registry provider, for local or distribute use, based on a cache-service abstraction.
+     * Creates an instance of the Infinispan-based EJB client services provider, for local or distribute use, based on a cache-service abstraction.
      * @param configuration a cache configuration
      */
-    public InfinispanClientMappingsRegistryProvider(BinaryServiceConfiguration configuration) {
+    public InfinispanEjbClientServicesProvider(BinaryServiceConfiguration configuration) {
         this(configuration, UnaryOperator.identity());
     }
 
-    InfinispanClientMappingsRegistryProvider(BinaryServiceConfiguration configuration, UnaryOperator<ConfigurationBuilder> configurator) {
+    InfinispanEjbClientServicesProvider(BinaryServiceConfiguration configuration, UnaryOperator<ConfigurationBuilder> configurator) {
         this.configuration = configuration;
         this.configurator = configurator;
     }
