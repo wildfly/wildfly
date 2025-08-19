@@ -7,8 +7,8 @@ package org.wildfly.extension.clustering.ejb;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.dmr.ModelNode;
-import org.wildfly.clustering.ejb.infinispan.remote.InfinispanClientMappingsRegistryProvider;
-import org.wildfly.clustering.ejb.remote.ClientMappingsRegistryProvider;
+import org.wildfly.clustering.ejb.infinispan.remote.InfinispanEjbClientServicesProvider;
+import org.wildfly.clustering.ejb.remote.EjbClientServicesProvider;
 import org.wildfly.clustering.infinispan.service.InfinispanCacheConfigurationAttributeGroup;
 import org.wildfly.clustering.server.service.CacheConfigurationAttributeGroup;
 import org.wildfly.subsystem.resource.ResourceDescriptor;
@@ -18,12 +18,12 @@ import org.wildfly.subsystem.resource.ResourceDescriptor;
  * @author Paul Ferraro
  * @author Richard Achmatowicz
  */
-public class InfinispanClientMappingsRegistryProviderResourceDefinitionRegistrar extends ClientMappingsRegistryProviderResourceDefinitionRegistrar {
+public class InfinispanEjbClientServicesProviderResourceDefinitionRegistrar extends EjbClientServicesProviderResourceDefinitionRegistrar {
 
     static final CacheConfigurationAttributeGroup CACHE_ATTRIBUTE_GROUP = new InfinispanCacheConfigurationAttributeGroup(CAPABILITY);
 
-    InfinispanClientMappingsRegistryProviderResourceDefinitionRegistrar() {
-        super(ClientMappingsRegistryProviderResourceRegistration.INFINISPAN);
+    InfinispanEjbClientServicesProviderResourceDefinitionRegistrar() {
+        super(EjbClientServicesProviderResourceRegistration.INFINISPAN);
     }
 
     @Override
@@ -32,7 +32,7 @@ public class InfinispanClientMappingsRegistryProviderResourceDefinitionRegistrar
     }
 
     @Override
-    public ClientMappingsRegistryProvider resolve(OperationContext context, ModelNode model) throws OperationFailedException {
-        return new InfinispanClientMappingsRegistryProvider(CACHE_ATTRIBUTE_GROUP.resolve(context, model));
+    public EjbClientServicesProvider resolve(OperationContext context, ModelNode model) throws OperationFailedException {
+        return new InfinispanEjbClientServicesProvider(CACHE_ATTRIBUTE_GROUP.resolve(context, model));
     }
 }

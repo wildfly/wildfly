@@ -3238,7 +3238,7 @@ public interface EjbLogger extends BasicLogger {
 
     @LogMessage(level = WARN)
     @Message(id = 531, value = "No client mappings registry provider found for %s; using legacy provider based on static configuration")
-    void legacyClientMappingsRegistryProviderInUse(String name);
+    void legacyEjbClientServicesProviderInUse(String name);
 
     @LogMessage(level = WARN)
     @Message(id = 532, value = "Database detected from configuration is: '%s'. If this is incorrect, please specify the correct database.")
