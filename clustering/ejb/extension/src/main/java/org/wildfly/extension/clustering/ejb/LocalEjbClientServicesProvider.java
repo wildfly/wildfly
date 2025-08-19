@@ -12,7 +12,7 @@ import java.util.Set;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.network.ClientMapping;
 import org.wildfly.clustering.ejb.infinispan.network.ClientMappingsRegistryEntryServiceInstallerFactory;
-import org.wildfly.clustering.ejb.remote.ClientMappingsRegistryProvider;
+import org.wildfly.clustering.ejb.remote.EjbClientServicesProvider;
 import org.wildfly.clustering.server.service.BinaryServiceConfiguration;
 import org.wildfly.clustering.server.service.ClusteringServiceDescriptor;
 import org.wildfly.clustering.server.service.FilteredBinaryServiceInstallerProvider;
@@ -24,7 +24,7 @@ import org.wildfly.subsystem.service.ServiceInstaller;
  * @author Paul Ferraro
  * @author Richard Achmatowicz
  */
-public enum LocalClientMappingsRegistryProvider implements ClientMappingsRegistryProvider {
+public enum LocalEjbClientServicesProvider implements EjbClientServicesProvider {
     INSTANCE;
 
     @Override
