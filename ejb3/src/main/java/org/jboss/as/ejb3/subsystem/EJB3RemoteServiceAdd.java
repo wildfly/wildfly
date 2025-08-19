@@ -36,8 +36,8 @@ import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.remoting3.Endpoint;
 import org.jboss.remoting3.RemotingOptions;
-import org.wildfly.clustering.ejb.remote.ClientMappingsRegistryProvider;
-import org.wildfly.clustering.ejb.remote.LegacyClientMappingsRegistryProviderFactory;
+import org.wildfly.clustering.ejb.remote.EjbClientServicesProvider;
+import org.wildfly.clustering.ejb.remote.LegacyEjbClientServicesProviderFactory;
 import org.wildfly.clustering.infinispan.service.InfinispanServiceDescriptor;
 import org.wildfly.clustering.server.service.ClusteringServiceDescriptor;
 import org.wildfly.common.function.Functions;
@@ -60,10 +60,10 @@ import org.xnio.Options;
  */
 public class EJB3RemoteServiceAdd extends AbstractBoottimeAddStepHandler {
 
-    private static final LegacyClientMappingsRegistryProviderFactory LEGACY_PROVIDER_FACTORY = ServiceLoader
-            .load(LegacyClientMappingsRegistryProviderFactory.class,
-                    LegacyClientMappingsRegistryProviderFactory.class.getClassLoader())
+    private static final LegacyEjbClientServicesProviderFactory LEGACY_EJB_CLIENT_SERVICES_PROVIDER_FACTORY = ServiceLoader
+            .load(LegacyEjbClientServicesProviderFactory.class, LegacyEjbClientServicesProviderFactory.class.getClassLoader())
             .findFirst().orElse(null);
+
     @SuppressWarnings("unchecked")
     private static final UnaryServiceDescriptor<List<ClientMapping>> CLIENT_MAPPINGS = UnaryServiceDescriptor
             .of("org.wildfly.ejb.remote.client-mappings", (Class<List<ClientMapping>>) (Class<?>) List.class);
@@ -108,7 +108,8 @@ public class EJB3RemoteServiceAdd extends AbstractBoottimeAddStepHandler {
                     .provides(ServiceNameFactory.resolveServiceName(CLIENT_MAPPINGS, connectorName))
                     .requires(remotingConnectorInfo).build().install(context);
 
-            ServiceDependency<ClientMappingsRegistryProvider> provider = getClientMappingsRegistryProvider(context, model);
+            ServiceDependency<EjbClientServicesProvider> provider = getEjbClientServicesProvider(context, model);
+            // define a ServiceInstaller to install the EJB client services via their provider
             ServiceInstaller installer = new ServiceInstaller() {
                 @Override
                 public ServiceController<?> install(RequirementServiceTarget target) {
@@ -188,15 +189,16 @@ public class EJB3RemoteServiceAdd extends AbstractBoottimeAddStepHandler {
     }
 
     /*
-     * Return a client mappings registry provider, used to provide base clustering abstractions for the client mappings
-     * registries. The preference for obtaining the provider is: - use a client mappings registry provider defined in the
-     * distributable-ejb subsystem and installed as a service - otherwise, use the legacy provider loaded from the classpath
+     * Return an EJB client services provider, used to provide base clustering abstractions for the EJB client services.
+     * The preference for obtaining the provider is:
+     * - use an EJB client services provider defined in the distributable-ejb subsystem and installed as a service
+     * - otherwise, use the legacy provider loaded from the classpath
      */
-    private static ServiceDependency<ClientMappingsRegistryProvider> getClientMappingsRegistryProvider(OperationContext context,
-            ModelNode model) throws OperationFailedException {
-        if (context.hasOptionalCapability(ClientMappingsRegistryProvider.SERVICE_DESCRIPTOR,
+    private static ServiceDependency<EjbClientServicesProvider> getEjbClientServicesProvider(OperationContext context,
+                                                                                             ModelNode model) throws OperationFailedException {
+        if (context.hasOptionalCapability(EjbClientServicesProvider.SERVICE_DESCRIPTOR,
                 EJB3RemoteResourceDefinition.EJB_REMOTE_CAPABILITY, null)) {
-            return ServiceDependency.on(ClientMappingsRegistryProvider.SERVICE_DESCRIPTOR);
+            return ServiceDependency.on(EjbClientServicesProvider.SERVICE_DESCRIPTOR);
         }
         String clusterName = EJB3RemoteResourceDefinition.CLIENT_MAPPINGS_CLUSTER_NAME.resolveModelAttribute(context, model)
                 .asString();
@@ -204,8 +206,8 @@ public class EJB3RemoteServiceAdd extends AbstractBoottimeAddStepHandler {
                 RuntimeCapability.resolveCapabilityName(InfinispanServiceDescriptor.CACHE_CONTAINER, clusterName),
                 EJB3RemoteResourceDefinition.EJB_REMOTE_CAPABILITY_NAME,
                 EJB3RemoteResourceDefinition.CLIENT_MAPPINGS_CLUSTER_NAME.getName());
-        EjbLogger.ROOT_LOGGER.legacyClientMappingsRegistryProviderInUse(clusterName);
-        return ServiceDependency.of(LEGACY_PROVIDER_FACTORY.createClientMappingsRegistryProvider(clusterName));
+        EjbLogger.ROOT_LOGGER.legacyEjbClientServicesProviderInUse(clusterName);
+        return ServiceDependency.of(LEGACY_EJB_CLIENT_SERVICES_PROVIDER_FACTORY.createEjbClientServicesProvider(clusterName));
     }
 
     /**

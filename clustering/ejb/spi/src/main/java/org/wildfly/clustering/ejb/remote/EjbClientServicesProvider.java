@@ -5,20 +5,20 @@
 
 package org.wildfly.clustering.ejb.remote;
 
-import java.util.List;
-
 import org.jboss.as.network.ClientMapping;
 import org.wildfly.service.descriptor.NullaryServiceDescriptor;
 import org.wildfly.subsystem.service.ServiceDependency;
 import org.wildfly.subsystem.service.ServiceInstaller;
 
+import java.util.List;
+
 /**
- * interface defining ClientMappingsRegistryProvider instances, used to install configured client-mappings registry services.
+ * interface defining EjbClientServicesProvider instances, used to install configured EJB client services.
  *
  * @author Paul Ferraro
  */
-public interface ClientMappingsRegistryProvider {
-    NullaryServiceDescriptor<ClientMappingsRegistryProvider> SERVICE_DESCRIPTOR = NullaryServiceDescriptor.of("org.wildfly.clustering.ejb.client-mappings-registry-provider", ClientMappingsRegistryProvider.class);
+public interface EjbClientServicesProvider {
+    NullaryServiceDescriptor<EjbClientServicesProvider> SERVICE_DESCRIPTOR = NullaryServiceDescriptor.of("org.wildfly.clustering.ejb.ejb-client-services-provider", EjbClientServicesProvider.class);
 
     Iterable<ServiceInstaller> getServiceInstallers(String connectorName, ServiceDependency<List<ClientMapping>> clientMappings);
 }

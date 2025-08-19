@@ -5,8 +5,6 @@
 
 package org.wildfly.clustering.ejb.infinispan.remote;
 
-import java.util.function.UnaryOperator;
-
 import org.infinispan.configuration.cache.CacheMode;
 import org.infinispan.configuration.cache.ClusteringConfigurationBuilder;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
@@ -14,9 +12,11 @@ import org.infinispan.configuration.cache.StorageType;
 import org.infinispan.eviction.EvictionStrategy;
 import org.kohsuke.MetaInfServices;
 import org.wildfly.clustering.cache.infinispan.embedded.container.DataContainerConfigurationBuilder;
-import org.wildfly.clustering.ejb.remote.ClientMappingsRegistryProvider;
-import org.wildfly.clustering.ejb.remote.LegacyClientMappingsRegistryProviderFactory;
+import org.wildfly.clustering.ejb.remote.EjbClientServicesProvider;
+import org.wildfly.clustering.ejb.remote.LegacyEjbClientServicesProviderFactory;
 import org.wildfly.clustering.server.service.BinaryServiceConfiguration;
+
+import java.util.function.UnaryOperator;
 
 /**
  * Factory for creating legacy version of the InfinispanClientMappingsRegistryProvider
@@ -24,12 +24,12 @@ import org.wildfly.clustering.server.service.BinaryServiceConfiguration;
  * @author Richard Achmatowicz
  */
 @Deprecated
-@MetaInfServices(LegacyClientMappingsRegistryProviderFactory.class)
-public class LegacyInfinispanClientMappingsRegistryProviderFactory implements LegacyClientMappingsRegistryProviderFactory, UnaryOperator<ConfigurationBuilder> {
+@MetaInfServices(LegacyEjbClientServicesProviderFactory.class)
+public class LegacyInfinispanEjbClientServicesProviderFactory implements LegacyEjbClientServicesProviderFactory, UnaryOperator<ConfigurationBuilder> {
 
     @Override
-    public ClientMappingsRegistryProvider createClientMappingsRegistryProvider(String clusterName) {
-        return new InfinispanClientMappingsRegistryProvider(BinaryServiceConfiguration.of(clusterName, null), this);
+    public EjbClientServicesProvider createEjbClientServicesProvider(String clusterName) {
+        return new InfinispanEjbClientServicesProvider(BinaryServiceConfiguration.of(clusterName, null), this);
     }
 
     @Override
