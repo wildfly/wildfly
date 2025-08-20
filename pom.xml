@@ -370,7 +370,7 @@
         <version.io.github.resilience4j>2.2.0</version.io.github.resilience4j>
         <version.io.grpc>1.70.0</version.io.grpc>
         <version.io.micrometer>1.14.5</version.io.micrometer>
-        <version.io.netty>4.1.119.Final</version.io.netty>
+        <version.io.netty>4.1.124.Final</version.io.netty>
         <version.io.opentelemetry.instrumentation>2.8.0</version.io.opentelemetry.instrumentation>
         <version.io.opentelemetry.opentelemetry-semconv>1.25.0-alpha</version.io.opentelemetry.opentelemetry-semconv>
         <version.io.opentelemetry.opentelemetry>1.42.1</version.io.opentelemetry.opentelemetry>
@@ -427,7 +427,7 @@
         <version.org.apache.activemq.artemis>2.40.0</version.org.apache.activemq.artemis>
         <version.org.apache.activemq.artemis.native>2.0.0</version.org.apache.activemq.artemis.native>
         <version.org.apache.avro>1.12.0</version.org.apache.avro>
-        <version.org.apache.cxf>4.0.8</version.org.apache.cxf>
+        <version.org.apache.cxf>4.0.9</version.org.apache.cxf>
         <version.org.apache.cxf.xjcplugins>4.0.1</version.org.apache.cxf.xjcplugins>
         <version.org.apache.httpcomponents.httpasyncclient>4.1.5</version.org.apache.httpcomponents.httpasyncclient>
         <version.org.apache.james.apache-mime4j>0.8.12</version.org.apache.james.apache-mime4j>
@@ -446,7 +446,7 @@
         <version.org.codehaus.woodstox.woodstox-core>7.0.0</version.org.codehaus.woodstox.woodstox-core>
         <version.org.cryptacular>1.2.5</version.org.cryptacular>
         <version.org.eclipse.angus.angus-activation>2.0.2</version.org.eclipse.angus.angus-activation>
-        <version.org.eclipse.angus.angus-mail>2.0.3</version.org.eclipse.angus.angus-mail>
+        <version.org.eclipse.angus.angus-mail>2.0.4</version.org.eclipse.angus.angus-mail>
         <version.org.eclipse.jdt>3.33.0</version.org.eclipse.jdt>
         <version.org.eclipse.microprofile>7.0</version.org.eclipse.microprofile>
         <version.org.eclipse.microprofile.config.api>3.1</version.org.eclipse.microprofile.config.api>
