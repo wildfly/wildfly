@@ -22,7 +22,6 @@ import org.jboss.as.ee.structure.DeploymentTypeMarker;
 import org.jboss.as.ejb3.component.EJBComponent;
 import org.jboss.as.ejb3.component.EJBComponentDescription;
 import org.jboss.as.ejb3.component.EJBViewDescription;
-import org.jboss.as.ejb3.deployment.DeploymentModuleIdentifier;
 import org.jboss.as.ejb3.deployment.DeploymentRepository;
 import org.jboss.as.ejb3.deployment.DeploymentRepositoryService;
 import org.jboss.as.ejb3.deployment.EjbDeploymentInformation;
@@ -32,6 +31,7 @@ import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
+import org.jboss.ejb.client.EJBModuleIdentifier;
 import org.jboss.metadata.ejb.spec.MethodInterfaceType;
 import org.jboss.modules.Module;
 import org.jboss.msc.service.ServiceBuilder;
@@ -65,7 +65,7 @@ public class DeploymentRepositoryProcessor implements DeploymentUnitProcessor {
         String applicationName = eeModuleDescription.getEarApplicationName();
         // if it's not a .ear deployment then set app name to empty string
         applicationName = applicationName == null ? "" : applicationName;
-        final DeploymentModuleIdentifier identifier = new DeploymentModuleIdentifier(applicationName, eeModuleDescription.getModuleName(), eeModuleDescription.getDistinctName());
+        final EJBModuleIdentifier moduleId = new EJBModuleIdentifier(applicationName, eeModuleDescription.getModuleName(), eeModuleDescription.getDistinctName());
 
         final Collection<ComponentDescription> componentDescriptions = eeModuleDescription.getComponentDescriptions();
         final Map<String, EjbDeploymentInformation> deploymentInformationMap = new HashMap<String, EjbDeploymentInformation>();
@@ -109,16 +109,17 @@ public class DeploymentRepositoryProcessor implements DeploymentUnitProcessor {
         }
 
         final StartupCountdown countdown = deploymentUnit.getAttachment(Attachments.STARTUP_COUNTDOWN);
-        final ModuleDeployment deployment = new ModuleDeployment(identifier, deploymentInformationMap);
+        final ModuleDeployment deployment = new ModuleDeployment(moduleId, deploymentInformationMap);
         ServiceName moduleDeploymentService = deploymentUnit.getServiceName().append(ModuleDeployment.SERVICE_NAME);
         final ServiceBuilder<ModuleDeployment> builder = phaseContext.getServiceTarget().addService(moduleDeploymentService, deployment);
         for (Map.Entry<ServiceName, InjectedValue<?>> entry : injectedValues.entrySet()) {
             builder.addDependency(entry.getKey(), Object.class, (InjectedValue<Object>) entry.getValue());
         }
         builder.addDependency(DeploymentRepositoryService.SERVICE_NAME, DeploymentRepository.class, deployment.getDeploymentRepository());
+
         builder.install();
 
-        final ModuleDeployment.ModuleDeploymentStartService deploymentStart = new ModuleDeployment.ModuleDeploymentStartService(identifier, countdown);
+        final ModuleDeployment.ModuleDeploymentStartService deploymentStart = new ModuleDeployment.ModuleDeploymentStartService(moduleId, countdown);
         final ServiceBuilder<Void> startBuilder = phaseContext.getServiceTarget().addService(deploymentUnit.getServiceName().append(ModuleDeployment.START_SERVICE_NAME), deploymentStart);
         for (final ServiceName componentStartService : componentStartServices) {
             startBuilder.requires(componentStartService);
