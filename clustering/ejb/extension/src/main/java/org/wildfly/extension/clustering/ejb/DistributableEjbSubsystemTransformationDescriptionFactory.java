@@ -17,7 +17,7 @@ public enum DistributableEjbSubsystemTransformationDescriptionFactory implements
 
     public TransformationDescription apply(ModelVersion version) {
         ResourceTransformationDescriptionBuilder builder = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
-        if (DistributableEjbSubsystemModel.VERSION_1_0_0.requiresTransformation(version)) {
+        if (DistributableEjbSubsystemModel.VERSION_2_0_0.requiresTransformation(version)) {
             // the name of the child addressable resource in the model
             builder.addChildRedirection(PathElement.pathElement("ejb-client-services"), PathElement.pathElement("client-mappings-registry"));
         }
