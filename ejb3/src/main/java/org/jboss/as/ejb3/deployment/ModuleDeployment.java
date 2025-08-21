@@ -6,6 +6,7 @@
 package org.jboss.as.ejb3.deployment;
 
 import org.jboss.as.ee.component.deployers.StartupCountdown;
+import org.jboss.ejb.client.EJBModuleIdentifier;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
@@ -26,18 +27,18 @@ public class ModuleDeployment implements Service<ModuleDeployment> {
     public static final ServiceName SERVICE_NAME = ServiceName.of("moduleDeploymentRuntimeInformation");
     public static final ServiceName START_SERVICE_NAME = ServiceName.of("moduleDeploymentRuntimeInformationStart");
 
-    private final DeploymentModuleIdentifier identifier;
+    private final EJBModuleIdentifier moduleId;
     private final InjectedValue<DeploymentRepository> deploymentRepository = new InjectedValue<DeploymentRepository>();
     private final Map<String, EjbDeploymentInformation> ejbs;
 
-    public ModuleDeployment(DeploymentModuleIdentifier identifier, Map<String, EjbDeploymentInformation> ejbs) {
-        this.identifier = identifier;
+    public ModuleDeployment(EJBModuleIdentifier moduleId, Map<String, EjbDeploymentInformation> ejbs) {
+        this.moduleId = moduleId;
         this.ejbs = Collections.unmodifiableMap(ejbs);
     }
 
 
-    public DeploymentModuleIdentifier getIdentifier() {
-        return identifier;
+    public EJBModuleIdentifier getIdentifier() {
+        return moduleId;
     }
 
     public Map<String, EjbDeploymentInformation> getEjbs() {
@@ -50,12 +51,12 @@ public class ModuleDeployment implements Service<ModuleDeployment> {
 
     @Override
     public void start(StartContext context) throws StartException {
-        deploymentRepository.getValue().add(identifier, ModuleDeployment.this);
+        deploymentRepository.getValue().add(moduleId, ModuleDeployment.this);
     }
 
     @Override
     public void stop(StopContext context) {
-        deploymentRepository.getValue().remove(identifier);
+        deploymentRepository.getValue().remove(moduleId);
     }
 
     @Override
@@ -68,12 +69,12 @@ public class ModuleDeployment implements Service<ModuleDeployment> {
      */
     public static final class ModuleDeploymentStartService implements Service<Void> {
 
-        private final DeploymentModuleIdentifier identifier;
+        private final EJBModuleIdentifier moduleId;
         private final InjectedValue<DeploymentRepository> deploymentRepository = new InjectedValue<DeploymentRepository>();
         private final StartupCountdown countdown;
 
-        public ModuleDeploymentStartService(DeploymentModuleIdentifier identifier, StartupCountdown countdown) {
-            this.identifier = identifier;
+        public ModuleDeploymentStartService(EJBModuleIdentifier moduleId, StartupCountdown countdown) {
+            this.moduleId = moduleId;
             this.countdown = countdown;
         }
 
@@ -82,7 +83,7 @@ public class ModuleDeployment implements Service<ModuleDeployment> {
             Runnable action = new Runnable() {
                 @Override
                 public void run() {
-                    deploymentRepository.getValue().startDeployment(identifier);
+                    deploymentRepository.getValue().startDeployment(moduleId);
                 }
             };
             if (countdown == null) action.run();
