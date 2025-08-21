@@ -4,8 +4,10 @@
  */
 package org.wildfly.extension.clustering.ejb;
 
+import org.jboss.as.clustering.controller.SimpleAliasEntry;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ResourceDefinition;
 import org.jboss.as.controller.ResourceRegistration;
 import org.jboss.as.controller.capability.RuntimeCapability;
@@ -52,6 +54,8 @@ public abstract class EjbClientServicesProviderResourceDefinitionRegistrar imple
         ResourceDescriptionResolver resolver = DistributableEjbSubsystemResourceDefinitionRegistrar.RESOLVER.createChildResolver(this.registration.getPathElement(), EjbClientServicesProviderResourceRegistration.WILDCARD.getPathElement());
         ResourceDescriptor descriptor = this.apply(ResourceDescriptor.builder(resolver)).build();
         ManagementResourceRegistration registration = parent.registerSubModel(ResourceDefinition.builder(this.registration, descriptor.getResourceDescriptionResolver()).build());
+        // register an alias from this resource to the legacy resource name client-mappings-registry
+        parent.registerAlias(PathElement.pathElement("client-mappings-registry", this.registration.getPathElement().getValue()), new SimpleAliasEntry(registration));
         ManagementResourceRegistrar.of(descriptor).register(registration);
         return registration;
     }

@@ -54,7 +54,8 @@ public class DistributableEjbTransformersTestCase extends AbstractSubsystemTest 
 
     private DistributableEjbSubsystemModel getModelVersion() {
         return switch (this.controllerVersion) {
-            case EAP_8_0_0, EAP_8_1_0 -> DistributableEjbSubsystemModel.VERSION_1_0_0;
+            case EAP_8_0_0 -> DistributableEjbSubsystemModel.VERSION_1_0_0;
+            case EAP_8_1_0 -> DistributableEjbSubsystemModel.VERSION_1_0_0;
             default -> throw new IllegalArgumentException();
         };
     }
@@ -118,7 +119,8 @@ public class DistributableEjbTransformersTestCase extends AbstractSubsystemTest 
         Assert.assertTrue(legacyServices.isSuccessfulBoot());
 
         // test failed operations involving backups
-        List<ModelNode> xmlOps = builder.parseXmlResource("distributable-ejb-reject.xml");
+        String rejectionsXmlResource = String.format("distributable-ejb-reject-%s.xml", this.version);
+        List<ModelNode> xmlOps = builder.parseXmlResource(rejectionsXmlResource);
         ModelTestUtils.checkFailedTransformedBootOperations(services, version, xmlOps, createFailedOperationConfig(version));
     }
 
@@ -130,7 +132,13 @@ public class DistributableEjbTransformersTestCase extends AbstractSubsystemTest 
             config.addFailedAttribute(subsystemAddress.append(PathElement.pathElement(BeanManagementResourceRegistration.INFINISPAN.getPathElement().getKey(), "default")), new FailedOperationTransformationConfig.NewAttributesConfig(BeanManagementResourceDefinitionRegistrar.IDLE_THRESHOLD));
             config.addFailedAttribute(subsystemAddress.append(PathElement.pathElement(InfinispanTimerManagementResourceDefinitionRegistrar.REGISTRATION.getPathElement().getKey(), "distributed")), new FailedOperationTransformationConfig.NewAttributesConfig(InfinispanTimerManagementResourceDefinitionRegistrar.IDLE_THRESHOLD));
         }
+        //
+        PathAddress ejbClientServicesAddress = subsystemAddress.append(PathElement.pathElement("ejb-client-services", "local"));
 
+        if (DistributableEjbSubsystemModel.VERSION_1_0_0.requiresTransformation(version)) {
+            // reject the use of ejb-client-services child resource as it does not exist in 1_0_0
+            config.addFailedAttribute(ejbClientServicesAddress, FailedOperationTransformationConfig.REJECTED_RESOURCE);
+        }
         return config;
     }
 
