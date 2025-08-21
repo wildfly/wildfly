@@ -5,8 +5,6 @@
 
 package org.jboss.as.ejb3.subsystem;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
-
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -27,11 +25,15 @@ import org.jboss.as.network.ClientMapping;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.wildfly.clustering.server.GroupMember;
+import org.wildfly.clustering.server.provider.ServiceProviderRegistrar;
 import org.wildfly.clustering.server.registry.Registry;
+import org.wildfly.service.descriptor.NullaryServiceDescriptor;
 import org.wildfly.service.descriptor.UnaryServiceDescriptor;
 import org.wildfly.subsystem.resource.capability.CapabilityReference;
 
 import java.util.List;
+
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 
 /**
  * A {@link org.jboss.as.controller.ResourceDefinition} for the EJB remote service
@@ -51,6 +53,9 @@ public class EJB3RemoteResourceDefinition extends SimpleResourceDefinition {
 
     @SuppressWarnings("unchecked")
     static final UnaryServiceDescriptor<Registry<GroupMember, String, List<ClientMapping>>> CLIENT_MAPPINGS_REGISTRY = UnaryServiceDescriptor.of("org.wildfly.ejb.remote.client-mappings-registry", (Class<Registry<GroupMember, String, List<ClientMapping>>>) (Class<?>) Registry.class);
+
+    @SuppressWarnings("unchecked")
+    public static final NullaryServiceDescriptor<ServiceProviderRegistrar<Object, GroupMember>> MODULE_AVAILABILITY_REGISTRAR_SERVICE_PROVIDER_REGISTRAR = NullaryServiceDescriptor.of("org.wildfly.ejb.remote.module-availability-registrar-service-provider-registrar", (Class<ServiceProviderRegistrar<Object, GroupMember>>) (Class<?>) ServiceProviderRegistrar.class);
 
     static final RuntimeCapability<Void> EJB_REMOTE_CAPABILITY = RuntimeCapability.Builder.of(EJB_REMOTE_CAPABILITY_NAME)
             .setServiceType(Void.class)
