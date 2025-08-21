@@ -3255,4 +3255,8 @@ public interface EjbLogger extends BasicLogger {
 
     @Message(id = 536, value = "Unsupported EJB receiver protocol %s")
     IllegalArgumentException unsupportedEJBReceiverProtocol(String uriScheme);
+
+    @LogMessage(level = WARN)
+    @Message(id = 537, value = "No client services provider found for Jakarta Enterprise Beans; using non-clustered provider based on static configuration")
+    void nonClusteredEjbClientServicesProviderInUse();
 }
