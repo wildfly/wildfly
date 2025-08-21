@@ -17,6 +17,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ConcurrentHashMap;
@@ -35,9 +36,7 @@ import org.jboss.as.ejb3.component.interceptors.CancellationFlag;
 import org.jboss.as.ejb3.component.session.SessionBeanComponent;
 import org.jboss.as.ejb3.component.stateful.StatefulSessionComponent;
 import org.jboss.as.ejb3.component.stateless.StatelessSessionComponent;
-import org.jboss.as.ejb3.deployment.DeploymentModuleIdentifier;
 import org.jboss.as.ejb3.deployment.DeploymentRepository;
-import org.jboss.as.ejb3.deployment.DeploymentRepositoryListener;
 import org.jboss.as.ejb3.deployment.EjbDeploymentInformation;
 import org.jboss.as.ejb3.deployment.ModuleDeployment;
 import org.jboss.as.ejb3.logging.EjbLogger;
@@ -72,6 +71,8 @@ import org.wildfly.security.auth.server.SecurityIdentity;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
+ * An implementation of Association to be used when deployments are available.
+ *
  * @author <a href="mailto:tadamski@redhat.com">Tomasz Adamski</a>
  * @author <a href="mailto:jbaesner@redhat.com">Joerg Baesner</a>
  * @author <a href="mailto:rachmato@ibm.com">Richard Achmatowicz</a>
@@ -86,15 +87,17 @@ final class DeploymentsAssociationImpl implements Association, AutoCloseable {
         }
     };
     private final DeploymentRepository deploymentRepository;
+    private final ModuleAvailabilityRegistrar moduleAvailabilityRegistrar;
     private final Map<Integer, ClusterTopologyRegistrar> clusterTopologyRegistrars;
     private final Executor executor;
 
-    DeploymentsAssociationImpl(final DeploymentRepository deploymentRepository, final Executor executor, final List<Map.Entry<ProtocolSocketBinding, Registry<GroupMember, String, List<ClientMapping>>>> clientMappingRegistries) {
+    DeploymentsAssociationImpl(final DeploymentRepository deploymentRepository, final Executor executor, final ModuleAvailabilityRegistrar moduleAvailabilityRegistrar, final List<Map.Entry<ProtocolSocketBinding, Registry<GroupMember, String, List<ClientMapping>>>> clientMappingRegistries) {
         if (EjbLogger.DEPLOYMENT_LOGGER.isTraceEnabled())
             EjbLogger.DEPLOYMENT_LOGGER.trace("Calling DeploymentsAssociationImpl.<init>");
 
         this.deploymentRepository = deploymentRepository;
         this.executor = executor;
+        this.moduleAvailabilityRegistrar = moduleAvailabilityRegistrar;
         this.clusterTopologyRegistrars = clientMappingRegistries.isEmpty() ? Collections.emptyMap() : new HashMap<>(clientMappingRegistries.size());
         for (Map.Entry<ProtocolSocketBinding, Registry<GroupMember, String, List<ClientMapping>>> entry : clientMappingRegistries) {
             this.clusterTopologyRegistrars.put(entry.getKey().getSocketBinding().getSocketAddress().getPort(), new ClusterTopologyRegistrar(entry.getValue()));
@@ -321,8 +324,8 @@ final class DeploymentsAssociationImpl implements Association, AutoCloseable {
     @Override
     @NotNull
     public CancelHandle receiveSessionOpenRequest(@NotNull final SessionOpenRequest sessionOpenRequest) {
-        if (EjbLogger.DEPLOYMENT_LOGGER.isTraceEnabled())
-            EjbLogger.DEPLOYMENT_LOGGER.trace("DeploymentsAssociationImpl: Calling receiveSessionOpenRequest");
+        if (EjbLogger.EJB3_INVOCATION_LOGGER.isTraceEnabled())
+            EjbLogger.EJB3_INVOCATION_LOGGER.trace("DeploymentsAssociationImpl: Calling receiveSessionOpenRequest");
 
         final EJBIdentifier ejbIdentifier = sessionOpenRequest.getEJBIdentifier();
         final String appName = ejbIdentifier.getAppName();
@@ -411,71 +414,94 @@ final class DeploymentsAssociationImpl implements Association, AutoCloseable {
         if (EjbLogger.DEPLOYMENT_LOGGER.isTraceEnabled())
             EjbLogger.DEPLOYMENT_LOGGER.trace("DeploymentsAssociationImpl: Calling registerModuleAvailabilityListener");
 
-        final DeploymentRepositoryListener listener = new DeploymentRepositoryListener() {
-            @Override
-            public void listenerAdded(final DeploymentRepository repository) {
-                List<EJBModuleIdentifier> list = new ArrayList<>();
+        final ModuleAvailabilityRegistrarListener listener = new ModuleAvailabilityRegistrarListener() {
+            // TODO: need to fix this referece - came from server environment
+            String currentNode = System.getProperty("jboss.node.name");
 
-                if (!repositoryIsSuspended()) {
+            @Override
+            public void listenerAdded(final ModuleAvailabilityRegistrar registrar) {
+                List<EJBModuleIdentifier> list = new ArrayList<>();
+                if (EjbLogger.DEPLOYMENT_LOGGER.isTraceEnabled())
+                    EjbLogger.DEPLOYMENT_LOGGER.tracef("ModuleAvailabilityRegistrarListener: listenerAdded(%s) (repository suspended = %s, modules %s)", currentNode, deploymentRepository.isSuspended(), registrar.getServices());
+
+                if (!deploymentRepository.isSuspended()) {
+                    if (EjbLogger.DEPLOYMENT_LOGGER.isTraceEnabled())
+                        EjbLogger.DEPLOYMENT_LOGGER.trace("ModuleAvailabilityRegistrarListener: Contacting registrar for services");
+
                     // only send out the initial list if the deployment repository (i.e. the server + clean transaction state) is not in a suspended state
-                    for (DeploymentModuleIdentifier deploymentModuleIdentifier : repository.getModules().keySet()) {
-                        EJBModuleIdentifier ejbModuleIdentifier = toModuleIdentifier(deploymentModuleIdentifier);
-                        list.add(ejbModuleIdentifier);
+                    for (EJBModuleIdentifier moduleId : moduleAvailabilityRegistrar.getServices()) {
+                        // for each service, add to the list of we are in the providers set
+                        Optional<GroupMember> localProvider = moduleAvailabilityRegistrar.getProviders(moduleId).stream().filter(provider -> (provider.getName().equals(currentNode))).findAny();
+                        if (!localProvider.isEmpty()) {
+                            list.add(moduleId);
+                        }
                     }
-                    EjbLogger.EJB3_INVOCATION_LOGGER.debugf("Sending initial module availability to connecting client: server is not suspended");
+                    if (EjbLogger.DEPLOYMENT_LOGGER.isTraceEnabled())
+                        EjbLogger.DEPLOYMENT_LOGGER.trace("ModuleAvailabilityRegistrarListener: Sending initial module availability to connecting client: server is not suspended");
                 } else {
                     // send out empty list if the deploymentRepository is suspended
-                    EjbLogger.EJB3_INVOCATION_LOGGER.debugf("Sending empty initial module availability to connecting client: server is suspended");
+                    if (EjbLogger.DEPLOYMENT_LOGGER.isTraceEnabled())
+                        EjbLogger.DEPLOYMENT_LOGGER.trace("ModuleAvailabilityRegistrarListener: Sending empty initial module availability to connecting client: server is suspended");
                 }
+                // this may need to be true instead of !list.isEmpty(), we we need to send a topology
+                if (!list.isEmpty()) {
+                    if (EjbLogger.DEPLOYMENT_LOGGER.isTraceEnabled())
+                        EjbLogger.DEPLOYMENT_LOGGER.tracef("ModuleAvailabilityRegistrarListener: listenerAdded (%s): sending modules %s to client", currentNode, list);
 
-                moduleAvailabilityListener.moduleAvailable(list);
+                    EjbLogger.EJB3_INVOCATION_LOGGER.debugf("listenerAdded (%s): sending modules %s to client", currentNode, list);
+                    moduleAvailabilityListener.moduleAvailable(list);
+                }
             }
 
             @Override
-            public void deploymentAvailable(final DeploymentModuleIdentifier deployment, final ModuleDeployment moduleDeployment) {
+            public void modulesAvailable(Map<EJBModuleIdentifier, List<GroupMember>> modules) {
+                if (EjbLogger.DEPLOYMENT_LOGGER.isTraceEnabled())
+                    EjbLogger.DEPLOYMENT_LOGGER.tracef("ModuleAvailabilityRegistrarListener: modulesAvailable(%s): called, modules %s", currentNode, modules.keySet());
+                List<EJBModuleIdentifier> list = new ArrayList<>();
+                for (Map.Entry<EJBModuleIdentifier, List<GroupMember>> entry : modules.entrySet()) {
+                    EJBModuleIdentifier moduleId = entry.getKey();
+                    Optional<GroupMember> localProvider = entry.getValue().stream().filter(provider -> (provider.getName().equals(currentNode))).findAny();
+                    if (!localProvider.isEmpty()) {
+                        list.add(moduleId);
+                    }
+                }
+                if (!list.isEmpty()) {
+                    if (EjbLogger.DEPLOYMENT_LOGGER.isTraceEnabled())
+                        EjbLogger.DEPLOYMENT_LOGGER.tracef("ModuleAvailabilityRegistrarListener: modulesAvailable(%s): sending modules %s to client", currentNode, list);
+                    moduleAvailabilityListener.moduleAvailable(list);
+                }
             }
 
             @Override
-            public void deploymentStarted(final DeploymentModuleIdentifier deployment, final ModuleDeployment moduleDeployment) {
-                // only send out moduleAvailability until module has started (WFLY-13009)
-                moduleAvailabilityListener.moduleAvailable(Collections.singletonList(toModuleIdentifier(deployment)));
+            public void modulesUnavailable(Map<EJBModuleIdentifier, List<GroupMember>> modules) {
+                if (EjbLogger.DEPLOYMENT_LOGGER.isTraceEnabled())
+                    EjbLogger.DEPLOYMENT_LOGGER.tracef("ModuleAvailabilityRegistrarListener: modulesUnavailable(%s): calling with modules %s", currentNode, modules.keySet());
+                List<EJBModuleIdentifier> list = new ArrayList<>();
+                for (Map.Entry<EJBModuleIdentifier, List<GroupMember>> entry : modules.entrySet()) {
+                    EJBModuleIdentifier moduleId = entry.getKey();
+                    Optional<GroupMember> localProvider = entry.getValue().stream().filter(provider -> (provider.getName().equals(currentNode))).findAny();
+                    if (!localProvider.isEmpty()) {
+                        list.add(moduleId);
+                    }
+                }
+                if (!list.isEmpty()) {
+                    if (EjbLogger.DEPLOYMENT_LOGGER.isTraceEnabled())
+                        EjbLogger.DEPLOYMENT_LOGGER.tracef("ModuleAvailabilityRegistrarListener: modulesUnavailable(%s): sending modules %s to client", currentNode, list);
+                    moduleAvailabilityListener.moduleUnavailable(list);
+                }
             }
-
-            @Override
-            public void deploymentRemoved(final DeploymentModuleIdentifier deployment) {
-                moduleAvailabilityListener.moduleUnavailable(Collections.singletonList(toModuleIdentifier(deployment)));
-            }
-
-            @Override
-            public void deploymentSuspended(DeploymentModuleIdentifier deployment) {
-                moduleAvailabilityListener.moduleUnavailable(Collections.singletonList(toModuleIdentifier(deployment)));
-            }
-
-            @Override
-            public void deploymentResumed(DeploymentModuleIdentifier deployment) {
-                moduleAvailabilityListener.moduleAvailable(Collections.singletonList(toModuleIdentifier(deployment)));
-            }
-
-            private boolean repositoryIsSuspended() {
-                return deploymentRepository.isSuspended();
-            }
-
         };
-        deploymentRepository.addListener(listener);
-        return () -> deploymentRepository.removeListener(listener);
-    }
-
-    static EJBModuleIdentifier toModuleIdentifier(final DeploymentModuleIdentifier identifier) {
-        return new EJBModuleIdentifier(identifier.getApplicationName(), identifier.getModuleName(), identifier.getDistinctName());
+        moduleAvailabilityRegistrar.addListener(listener);
+        return () -> moduleAvailabilityRegistrar.removeListener(listener);
     }
 
     private EjbDeploymentInformation findEJB(final String appName, final String moduleName, final String distinctName, final String beanName) {
-        final DeploymentModuleIdentifier ejbModule = new DeploymentModuleIdentifier(appName, moduleName, distinctName);
-        final Map<DeploymentModuleIdentifier, ModuleDeployment> modules = this.deploymentRepository.getStartedModules();
+        final EJBModuleIdentifier moduleId = new EJBModuleIdentifier(appName, moduleName, distinctName);
+        final Map<EJBModuleIdentifier, ModuleDeployment> modules = this.deploymentRepository.getStartedModules();
         if (modules == null || modules.isEmpty()) {
             return null;
         }
-        final ModuleDeployment moduleDeployment = modules.get(ejbModule);
+        final ModuleDeployment moduleDeployment = modules.get(moduleId);
         if (moduleDeployment == null) {
             return null;
         }
