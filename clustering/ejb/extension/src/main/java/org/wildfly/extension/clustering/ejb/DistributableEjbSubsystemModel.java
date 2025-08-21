@@ -15,8 +15,9 @@ import org.jboss.as.controller.SubsystemModel;
 public enum DistributableEjbSubsystemModel implements SubsystemModel {
 
     VERSION_1_0_0(1, 0, 0), // WildFly 27-present, EAP 8.0
+    VERSION_2_0_0(2, 0, 0), // WildFly 38
     ;
-    public static final DistributableEjbSubsystemModel CURRENT = VERSION_1_0_0;
+    public static final DistributableEjbSubsystemModel CURRENT = VERSION_2_0_0;
 
     private final ModelVersion version;
 

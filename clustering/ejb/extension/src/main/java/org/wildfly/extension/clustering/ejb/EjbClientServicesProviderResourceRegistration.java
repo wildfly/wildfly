@@ -19,7 +19,7 @@ public enum EjbClientServicesProviderResourceRegistration implements ResourceReg
     private final PathElement path;
 
     EjbClientServicesProviderResourceRegistration(String value) {
-        this.path = PathElement.pathElement("client-mappings-registry", value);
+        this.path = PathElement.pathElement("ejb-client-services", value);
     }
 
     @Override
