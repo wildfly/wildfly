@@ -14,6 +14,7 @@ import org.wildfly.subsystem.service.ServiceDependency;
 import org.wildfly.subsystem.service.ServiceInstaller;
 
 /**
+ * Used to create a configured ServiceInstaller for the local variant of the ServiceProviderRegistrar clustering abstraction.
  * @author Paul Ferraro
  */
 public class LocalServiceProviderRegistrarServiceInstallerFactory<T> extends AbstractServiceProviderRegistrarServiceInstallerFactory<T> {

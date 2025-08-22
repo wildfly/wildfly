@@ -4,17 +4,6 @@
  */
 package org.jboss.as.ejb3.subsystem;
 
-import static org.jboss.as.ejb3.subsystem.EJB3RemoteResourceDefinition.CONNECTOR_CAPABILITY_NAME;
-
-import java.net.Inet4Address;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-import java.util.List;
-import java.util.ServiceLoader;
-import java.util.concurrent.Executor;
-import java.util.function.Consumer;
-import java.util.function.Supplier;
-
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.CapabilityServiceBuilder;
@@ -28,6 +17,7 @@ import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.remote.AssociationService;
 import org.jboss.as.ejb3.remote.EJBRemoteConnectorService;
+import org.jboss.as.ejb3.remote.ModuleAvailabilityRegistrarServiceInstaller;
 import org.jboss.as.network.ClientMapping;
 import org.jboss.as.network.ProtocolSocketBinding;
 import org.jboss.dmr.ModelNode;
@@ -49,6 +39,17 @@ import org.wildfly.transaction.client.provider.remoting.RemotingTransactionServi
 import org.xnio.Option;
 import org.xnio.OptionMap;
 import org.xnio.Options;
+
+import java.net.Inet4Address;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.util.List;
+import java.util.ServiceLoader;
+import java.util.concurrent.Executor;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
+
+import static org.jboss.as.ejb3.subsystem.EJB3RemoteResourceDefinition.CONNECTOR_CAPABILITY_NAME;
 
 /**
  * A {@link AbstractAddStepHandler} to handle the add operation for the Jakarta Enterprise Beans remote service, in the Jakarta
@@ -98,6 +99,10 @@ public class EJB3RemoteServiceAdd extends AbstractBoottimeAddStepHandler {
         final boolean executeInWorker = EJB3RemoteResourceDefinition.EXECUTE_IN_WORKER.resolveModelAttribute(context, model)
                 .asBoolean();
 
+
+        // get the provder of ServiceInstallers for EjbClientServices
+        ServiceDependency<EjbClientServicesProvider> ejbClientServicesProvider = getEjbClientServicesProvider(context, model);
+
         // for each connector specified, we need to set up a client-mappings cache
         for (ModelNode connectorNameNode : connectorNameNodes) {
             String connectorName = connectorNameNode.asString();
@@ -108,12 +113,11 @@ public class EJB3RemoteServiceAdd extends AbstractBoottimeAddStepHandler {
                     .provides(ServiceNameFactory.resolveServiceName(CLIENT_MAPPINGS, connectorName))
                     .requires(remotingConnectorInfo).build().install(context);
 
-            ServiceDependency<EjbClientServicesProvider> provider = getEjbClientServicesProvider(context, model);
-            // define a ServiceInstaller to install the EJB client services via their provider
+            // define a ServiceInstaller to install the EJB client services via their ejbClientServicesProvider
             ServiceInstaller installer = new ServiceInstaller() {
                 @Override
                 public ServiceController<?> install(RequirementServiceTarget target) {
-                    for (ServiceInstaller installer : provider.get().getServiceInstallers(connectorName, ServiceDependency.on(CLIENT_MAPPINGS, connectorName))) {
+                    for (ServiceInstaller installer : ejbClientServicesProvider.get().getClientMappingsRegistryServiceInstallers(connectorName, ServiceDependency.on(CLIENT_MAPPINGS, connectorName))) {
                         ServiceController<?> controller = installer.install(target);
                         ServiceName registryParentName = ServiceNameFactory.parseServiceName(ClusteringServiceDescriptor.REGISTRY.getName());
                         for (ServiceName providedName : controller.provides()) {
@@ -127,9 +131,24 @@ public class EJB3RemoteServiceAdd extends AbstractBoottimeAddStepHandler {
                     return null;
                 }
             };
-            ServiceInstaller.builder(installer, context.getCapabilityServiceSupport()).requires(provider).build()
+            ServiceInstaller.builder(installer, context.getCapabilityServiceSupport()).requires(ejbClientServicesProvider).build()
                     .install(context);
         }
+
+        // set up a ServiceProviderRegistrar to support module availability updates via a ModuleAvailabilityRegistrar
+        ServiceInstaller installer = new ServiceInstaller() {
+            @Override
+            public ServiceController<?> install(RequirementServiceTarget target) {
+                for (ServiceInstaller installer : ejbClientServicesProvider.get().getModuleAvailabilityRegistrarServiceInstallers()) {
+                    ServiceController<?> controller = installer.install(target);
+                }
+                return null;
+            }
+        };
+        ServiceInstaller.builder(installer, context.getCapabilityServiceSupport()).requires(ejbClientServicesProvider).build().install(context);
+
+        // install the ModuleAvailabilityRegistrar service
+        new ModuleAvailabilityRegistrarServiceInstaller().install(context);
 
         final OptionMap channelCreationOptions = this.getChannelCreationOptions(context);
         // Install the Jakarta Enterprise Beans remoting connector service which will listen for client connections on the
