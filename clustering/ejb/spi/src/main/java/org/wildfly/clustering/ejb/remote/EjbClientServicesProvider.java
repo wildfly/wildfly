@@ -6,6 +6,8 @@
 package org.wildfly.clustering.ejb.remote;
 
 import org.jboss.as.network.ClientMapping;
+import org.wildfly.clustering.server.GroupMember;
+import org.wildfly.clustering.server.provider.ServiceProviderRegistrar;
 import org.wildfly.service.descriptor.NullaryServiceDescriptor;
 import org.wildfly.subsystem.service.ServiceDependency;
 import org.wildfly.subsystem.service.ServiceInstaller;
@@ -20,5 +22,9 @@ import java.util.List;
 public interface EjbClientServicesProvider {
     NullaryServiceDescriptor<EjbClientServicesProvider> SERVICE_DESCRIPTOR = NullaryServiceDescriptor.of("org.wildfly.clustering.ejb.ejb-client-services-provider", EjbClientServicesProvider.class);
 
-    Iterable<ServiceInstaller> getServiceInstallers(String connectorName, ServiceDependency<List<ClientMapping>> clientMappings);
+    // TODO: where should these ServiceDescriptors live? This one assigns an alias which is set up in the installer
+    NullaryServiceDescriptor<ServiceProviderRegistrar<Object, GroupMember>> MODULE_AVAILABILITY_REGISTRAR_SERVICE_PROVIDER_REGISTRAR = NullaryServiceDescriptor.of("org.wildfly.ejb.remote.module-availability-registrar-service-provider-registrar", (Class<ServiceProviderRegistrar<Object, GroupMember>>) (Class<?>) ServiceProviderRegistrar.class);
+
+    Iterable<ServiceInstaller> getClientMappingsRegistryServiceInstallers(String connectorName, ServiceDependency<List<ClientMapping>> clientMappings);
+    Iterable<ServiceInstaller> getModuleAvailabilityRegistrarServiceInstallers();
 }
