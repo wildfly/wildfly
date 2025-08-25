@@ -60,13 +60,13 @@
                             <goal>build-bom</goal>
                         </goals>
                         <configuration>
-                            <parent>
+                            <bomParent>
                                 <!-- parent is the BOM built by parent builder -->
                                 <groupId>${bomGroupId}</groupId>
                                 <artifactId>${bomArtifactIdPrefix}-ee</artifactId>
                                 <version>${project.version}</version>
                                 <relativePath/>
-                            </parent>
+                            </bomParent>
                             <bomGroupId>${bomGroupId}</bomGroupId>
                             <bomArtifactId>${bomArtifactIdPrefix}-ee-with-tools</bomArtifactId>
                             <bomVersion>${project.version}</bomVersion>
