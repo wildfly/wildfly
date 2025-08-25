@@ -6,13 +6,16 @@
 package org.wildfly.test.preview.persistence.cdi;
 
 import jakarta.enterprise.context.RequestScoped;
+import jakarta.enterprise.inject.Produces;
 import jakarta.inject.Inject;
+import jakarta.inject.Named;
 import jakarta.persistence.Cache;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
 import jakarta.persistence.metamodel.Metamodel;
+import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.PersistenceUnitUtil;
 import jakarta.persistence.SchemaManager;
 import jakarta.transaction.Transactional;
@@ -26,6 +29,10 @@ import jakarta.transaction.Transactional;
 @RequestScoped
 public class RequestScopedTestBean {
 
+    @Produces
+    @PersistenceContext(unitName = "pu2")
+    private EntityManager emApplicationExistingProducer;
+
     @Inject
     @Pu1Qualifier
     EntityManager em;
@@ -33,6 +40,14 @@ public class RequestScopedTestBean {
     @Inject
     @Pu1Qualifier
     EntityManagerFactory emf;
+
+    @Inject
+    @Pu2Qualifier
+    EntityManagerFactory emf2;
+
+    @Inject
+    @Named("pu1")
+    EntityManagerFactory entityManagerFactoryByPuName;
 
     @Inject
     @Pu1Qualifier
@@ -68,6 +83,10 @@ public class RequestScopedTestBean {
             return emf;
     }
 
+    public EntityManagerFactory getEntityManagerFactoryByPuName() {
+        return entityManagerFactoryByPuName;
+    }
+
     public CriteriaQuery<Object> testCreateQuery() {
         return criteriaBuilder.createQuery();
     }
@@ -78,6 +97,10 @@ public class RequestScopedTestBean {
 
     public Cache testCache() {
         return cache;
+    }
+
+    public EntityManager getEmApplicationExistingProducer() {
+        return emApplicationExistingProducer;
     }
 
     public Metamodel testMetamodel() {

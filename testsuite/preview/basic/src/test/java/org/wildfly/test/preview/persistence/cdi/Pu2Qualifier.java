@@ -16,7 +16,7 @@ import java.lang.annotation.Target;
 import jakarta.inject.Qualifier;
 
 /**
- * Associatiate Pu1Qualifier with persistence unit: pu1
+ * Associatiate Pu2Qualifier with persistence unit: pu1
  *
  * @author Scott Marlow
  */
