@@ -11,6 +11,7 @@ import static org.jboss.as.jpa.messages.JpaLogger.ROOT_LOGGER;
 import java.security.PrivilegedAction;
 
 import jakarta.persistence.EntityManager;
+import jakarta.transaction.Status;
 import jakarta.transaction.Synchronization;
 import jakarta.transaction.SystemException;
 import jakarta.transaction.Transaction;
@@ -19,7 +20,6 @@ import jakarta.transaction.TransactionSynchronizationRegistry;
 
 import org.jboss.as.jpa.container.ExtendedEntityManager;
 import org.jboss.as.jpa.messages.JpaLogger;
-import org.jboss.tm.TxUtils;
 import org.wildfly.transaction.client.AbstractTransaction;
 import org.wildfly.transaction.client.AssociationListener;
 import org.wildfly.transaction.client.ContextTransactionManager;
@@ -32,9 +32,14 @@ import org.wildfly.transaction.client.ContextTransactionManager;
 public class TransactionUtil {
     public static boolean isInTx(TransactionManager transactionManager) {
         Transaction tx = getTransaction(transactionManager);
-        if (tx == null || !TxUtils.isActive(tx))
+        if ( tx == null) {
             return false;
-        return true;
+        }
+        try {
+            return tx.getStatus() == Status.STATUS_ACTIVE || tx.getStatus() == Status.STATUS_MARKED_ROLLBACK;
+        } catch (SystemException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     /**
