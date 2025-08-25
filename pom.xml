@@ -82,6 +82,8 @@
         <nexus.repository.staging>wildfly-staging</nexus.repository.staging>
         <nexus.repository.url>https://repository.jboss.org/nexus/</nexus.repository.url>
         <nexus.staging.tag>wildfly-${project.version}</nexus.staging.tag>
+        <!-- Nexus staging repository URL used to retrieve test component releases -->
+        <nexus.repository.staging.url>${nexus.repository.url}repository/${nexus.repository.staging}</nexus.repository.staging.url>
 
         <!-- maven-gpg-plugin -->
         <gpg.pinEntryMode>loopback</gpg.pinEntryMode>
@@ -2033,7 +2035,7 @@
                 <repository>
                     <id>jboss-staging-repository-group</id>
                     <name>JBoss Staging Repository Group</name>
-                    <url>https://repository.jboss.org/nexus/content/groups/staging/</url>
+                    <url>${nexus.repository.staging.url}</url>
                     <layout>default</layout>
                 </repository>
             </repositories>
@@ -2041,7 +2043,7 @@
                 <pluginRepository>
                     <id>jboss-staging-repository-group</id>
                     <name>JBoss Staging Repository Group</name>
-                    <url>https://repository.jboss.org/nexus/content/groups/staging/</url>
+                    <url>${nexus.repository.staging.url}</url>
                     <layout>default</layout>
                 </pluginRepository>
             </pluginRepositories>
