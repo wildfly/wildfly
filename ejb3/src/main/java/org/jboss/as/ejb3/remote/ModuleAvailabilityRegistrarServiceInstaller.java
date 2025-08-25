@@ -7,9 +7,10 @@ package org.jboss.as.ejb3.remote;
 import org.jboss.as.controller.RequirementServiceTarget;
 import org.jboss.as.ejb3.deployment.DeploymentRepository;
 import org.jboss.as.ejb3.deployment.DeploymentRepositoryService;
-import org.wildfly.clustering.ejb.remote.EjbClientServicesProvider;
 import org.jboss.as.server.suspend.SuspendableActivityRegistry;
 import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceName;
+import org.wildfly.clustering.ejb.remote.EjbClientServicesProvider;
 import org.wildfly.clustering.server.GroupMember;
 import org.wildfly.clustering.server.provider.ServiceProviderRegistrar;
 import org.wildfly.subsystem.service.ServiceDependency;
@@ -30,7 +31,15 @@ public class ModuleAvailabilityRegistrarServiceInstaller implements ServiceInsta
         ServiceDependency<SuspendableActivityRegistry> activityRegistry = ServiceDependency.on(SuspendableActivityRegistry.SERVICE_DESCRIPTOR);
         // NOTE: choose the correct builder to avoid service installation issues (need a supplier builder here)
         return ServiceInstaller.builder(() -> new ModuleAvailabilityRegistrarService(activityRegistry, serviceProviderRegistrar, deploymentRepository))
+                // this service performs blocking operations
+                .blocking()
+                .onStart(ModuleAvailabilityRegistrarService::start)
+                .onStop(ModuleAvailabilityRegistrarService::stop)
                 .requires(List.of(deploymentRepository, serviceProviderRegistrar, activityRegistry))
+                // doesn't need a name but give it one anyway for debugging
+                .provides(ServiceName.parse("org.jboss.as.ejb3.remote.module-availability-registrar-service"))
+                // TODO: this service ideally is ON_DEMAND and made available upn deployment of one or more EJBs
+                .asActive()
                 .build()
                 .install(target);
     }
