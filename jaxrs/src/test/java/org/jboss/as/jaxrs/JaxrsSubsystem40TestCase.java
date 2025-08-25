@@ -91,9 +91,9 @@ public class JaxrsSubsystem40TestCase extends AbstractSubsystemBaseTest {
 
         KernelServicesBuilder builder = createKernelServicesBuilder(createAdditionalInitialization());
         builder.createLegacyKernelServicesBuilder(createAdditionalInitialization(), controllerVersion, subsystemModelVersion)
-                .addMavenResourceURL(String.format("%s:wildfly-threads:%s", controllerVersion.getCoreMavenGroupId(), controllerVersion.getCoreVersion()))
-                .dontPersistXml()
-                .addMavenResourceURL(String.format("%s:wildfly-jaxrs:%s", controllerVersion.getMavenGroupId(), controllerVersion.getMavenGavVersion()));
+                .addMavenResourceURL(controllerVersion.createCoreGAV("wildfly-threads"))
+                .addMavenResourceURL(controllerVersion.createGAV("wildfly-jaxrs"))
+                .dontPersistXml();
         KernelServices kernelServices = builder.build();
         assertTrue(kernelServices.isSuccessfulBoot());
         assertTrue(kernelServices.getLegacyServices(subsystemModelVersion).isSuccessfulBoot());

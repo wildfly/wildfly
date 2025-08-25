@@ -115,12 +115,7 @@ public class DatasourcesSubsystemTestCase extends AbstractSubsystemBaseTest {
 
     private KernelServices initialKernelServices(KernelServicesBuilder builder, ModelTestControllerVersion controllerVersion, final ModelVersion modelVersion) throws Exception {
         LegacyKernelServicesInitializer initializer = builder.createLegacyKernelServicesBuilder(createAdditionalInitialization(), controllerVersion, modelVersion);
-        String mavenGroupId = controllerVersion.getMavenGroupId();
-        String artifactId = "wildfly-connector";
-        if (controllerVersion.isEap() && controllerVersion.getMavenGavVersion().equals(controllerVersion.getCoreVersion())) { // EAP 6
-            artifactId = "jboss-as-connector";
-        }
-        initializer.addMavenResourceURL(mavenGroupId + ":" + artifactId + ":" + controllerVersion.getMavenGavVersion());
+        initializer.addMavenResourceURL(controllerVersion.createGAV("wildfly-connector"));
         initializer.addMavenResourceURL("org.jboss.ironjacamar:ironjacamar-spec-api:1.0.28.Final")
                 .addMavenResourceURL("org.jboss.ironjacamar:ironjacamar-common-api:1.0.28.Final")
                 .setExtensionClassName("org.jboss.as.connector.subsystems.datasources.DataSourcesExtension")

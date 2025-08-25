@@ -114,7 +114,7 @@ public class WeldSubsystemTestCase extends AbstractSubsystemBaseTest {
         }
         LegacyKernelServicesInitializer legacyInitializer =
                 builder.createLegacyKernelServicesBuilder(AdditionalInitialization.MANAGEMENT, ModelTestControllerVersion.EAP_7_4_0, modelVersion)
-                .addMavenResourceURL("org.jboss.eap:wildfly-weld:" + ModelTestControllerVersion.EAP_7_4_0.getMavenGavVersion())
+                .addMavenResourceURL(ModelTestControllerVersion.EAP_7_4_0.createGAV("wildfly-weld"))
                 .addParentFirstClassPattern("org.jboss.msc.*")
                 .addParentFirstClassPattern("org.jboss.msc.service.*")
                 .dontPersistXml();

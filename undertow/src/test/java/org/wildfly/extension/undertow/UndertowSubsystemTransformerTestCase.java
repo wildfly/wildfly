@@ -46,12 +46,14 @@ public class UndertowSubsystemTransformerTestCase extends AbstractSubsystemTest 
     }
 
     private void addDependencies(LegacyKernelServicesInitializer initializer) throws ClassNotFoundException, IOException {
-        initializer.addMavenResourceURL(String.format("%s:wildfly-undertow:%s", this.controllerVersion.getMavenGroupId(), this.controllerVersion.getMavenGavVersion()));
-        initializer.addMavenResourceURL(String.format("%s:wildfly-web-common:%s", this.controllerVersion.getMavenGroupId(), this.controllerVersion.getMavenGavVersion()));
-        initializer.addMavenResourceURL(String.format("%s:wildfly-clustering-common:%s", this.controllerVersion.getMavenGroupId(), this.controllerVersion.getMavenGavVersion()));
-        initializer.addMavenResourceURL(String.format("%s:wildfly-clustering-web-container:%s", this.controllerVersion.getMavenGroupId(), this.controllerVersion.getMavenGavVersion()));
-        initializer.addParentFirstClassPattern("org.jboss.msc.service.ServiceName");
-        initializer.addParentFirstClassPattern("org.jboss.as.clustering.controller.CapabilityServiceConfigurator");
+        initializer
+                .addMavenResourceURL(this.controllerVersion.createGAV("wildfly-undertow"))
+                .addMavenResourceURL(this.controllerVersion.createGAV("wildfly-web-common"))
+                .addMavenResourceURL(this.controllerVersion.createGAV("wildfly-clustering-common"))
+                .addMavenResourceURL(this.controllerVersion.createGAV("wildfly-clustering-web-container"))
+                .addParentFirstClassPattern("org.jboss.msc.service.ServiceName")
+                .addParentFirstClassPattern("org.jboss.as.clustering.controller.CapabilityServiceConfigurator")
+        ;
         switch (this.controllerVersion) {
             case EAP_7_4_0:
                 initializer.addMavenResourceURL("io.undertow:undertow-core:2.2.5.Final");
