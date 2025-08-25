@@ -6,13 +6,17 @@
 package org.wildfly.test.integration.microprofile.jwt;
 
 import java.io.FileInputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.security.KeyFactory;
+import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
+import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.util.Base64;
 import java.util.UUID;
+import java.util.function.Supplier;
 
 import com.nimbusds.jose.JOSEObjectType;
 import com.nimbusds.jose.JWSAlgorithm;
@@ -28,7 +32,11 @@ import jakarta.json.JsonObjectBuilder;
 
 public class TokenUtil {
 
-    private static PrivateKey loadPrivateKey(final String fileName) throws Exception {
+    public static Supplier<PrivateKey> createKeySupplier(final String fileName) {
+        return () -> loadPrivateKey(fileName);
+    }
+
+    private static PrivateKey loadPrivateKey(final String fileName) {
         try (InputStream is = new FileInputStream(fileName)) {
             byte[] contents = new byte[4096];
             int length = is.read(contents);
@@ -42,12 +50,14 @@ public class TokenUtil {
             KeyFactory keyFactory = KeyFactory.getInstance("RSA");
 
             return keyFactory.generatePrivate(keySpec);
+        } catch (IOException | NoSuchAlgorithmException | InvalidKeySpecException e) {
+            throw new IllegalStateException("Unable to load PrivateKey", e);
         }
     }
 
-    public static String generateJWT(final String keyLocation, final String principal, final String birthdate,
+    public static String generateJWT(final Supplier<PrivateKey> keySupplier, final String principal, final String birthdate,
             final String... groups) throws Exception {
-        PrivateKey privateKey = loadPrivateKey(keyLocation);
+        PrivateKey privateKey = keySupplier.get();
 
         JWSSigner signer = new RSASSASigner(privateKey);
         JsonArrayBuilder groupsBuilder = Json.createArrayBuilder();
