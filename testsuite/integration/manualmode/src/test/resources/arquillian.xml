@@ -508,7 +508,6 @@
                 <property name="javaHome">${container.java.home}</property>
             </configuration>
         </container>
-
         <container qualifier="wildfly-multi-channel" default="false" mode="manual">
             <configuration>
                 <!-- Arquillian validates all configs before running any test,
