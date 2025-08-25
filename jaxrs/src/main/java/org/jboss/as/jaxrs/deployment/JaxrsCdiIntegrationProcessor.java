@@ -40,6 +40,7 @@ public class JaxrsCdiIntegrationProcessor implements DeploymentUnitProcessor {
             return;
         }
 
+        // Only a WAR can be a Jakarta REST deployment, ignore other deployment types.
         if (!DeploymentTypeMarker.isType(DeploymentType.WAR, deploymentUnit)) {
             return;
         }
@@ -51,7 +52,12 @@ public class JaxrsCdiIntegrationProcessor implements DeploymentUnitProcessor {
             final CapabilityServiceSupport support = deploymentUnit.getAttachment(Attachments.CAPABILITY_SERVICE_SUPPORT);
             if (support.hasCapability(WELD_CAPABILITY_NAME)) {
                 final WeldCapability api = support.getOptionalCapabilityRuntimeAPI(WELD_CAPABILITY_NAME, WeldCapability.class).orElse(null);
-                if (api != null && api.isWeldDeployment(deploymentUnit)) {
+
+                // If Weld is available, check if this is part of a Weld deployment. In the case of an EAR, the WAR
+                // itself may not be a bean archive. However, an EJB module might be, and we will need to enable CDI
+                // for these cases. This is consistent with what the JaxrsComponentDeployer does when determining how
+                // the resources will be looked up in RESTEasy.
+                if (api != null && api.isPartOfWeldDeployment(deploymentUnit)) {
                     // don't set this param if Jakarta Contexts and Dependency Injection is not in classpath
                     module.getClassLoader().loadClass(CDI_INJECTOR_FACTORY_CLASS);
                     JAXRS_LOGGER.debug("Found Jakarta Contexts and Dependency Injection, adding injector factory class");
