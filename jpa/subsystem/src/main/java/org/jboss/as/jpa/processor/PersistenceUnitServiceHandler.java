@@ -1200,7 +1200,8 @@ public class PersistenceUnitServiceHandler {
                         }
                         for (PersistenceCdiExtension service: persistenceCdiExtensionService) {
                             if (persistenceCdiExtension != null) {
-                                throw new RuntimeException("internal error: found more than one PersistenceCdiExtension services");  // TODO add to logger
+                                // This is an internal error check that shouldn't happen.
+                                throw JpaLogger.ROOT_LOGGER.foundMoreThanOneCdiExtensionService(PersistenceCdiExtension.class, module.getClassLoader());
                             }
                             persistenceCdiExtension = service;
                         }
