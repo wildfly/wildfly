@@ -55,6 +55,7 @@ public class ModuleAvailabilityRegistrarService implements ModuleAvailabilityReg
 
     private final List<ModuleAvailabilityRegistrarListener> listeners = new ArrayList<>();
     private final Map<DeploymentModuleIdentifier, ServiceProviderRegistration<Object, GroupMember>> registrations = new HashMap<>();
+    private boolean started;
 
     /**
      * Create an instance of a ModuleAvailabilityRegistrar which reflects the content of a given DepoymentRepository.
@@ -70,6 +71,7 @@ public class ModuleAvailabilityRegistrarService implements ModuleAvailabilityReg
 
         this.activity = new ModuleAvailabilityRegistrarSuspendableActivity();
         this.deploymentRepositoryListener = new ModuleAvailabilityRegistrarDeploymentRepositoryListener();
+        this.started = false;
         EjbLogger.ROOT_LOGGER.info("ModuleAvailabilityRegistrarService : <init>");
     }
 
@@ -77,7 +79,7 @@ public class ModuleAvailabilityRegistrarService implements ModuleAvailabilityReg
     @Override
     public boolean isStarted() {
         // how to check started
-        return true;
+        return started;
     }
 
     @Override
@@ -93,16 +95,21 @@ public class ModuleAvailabilityRegistrarService implements ModuleAvailabilityReg
 
         // register as a ServerActivity
         registry.registerActivity(this.activity);
+        // mark the service as started
+        this.started = true;
     }
 
     @Override
     public void stop() {
         EjbLogger.ROOT_LOGGER.info("Stopping ModuleAvailabilityRegistrarService");
-        // unregister as a listener of the DeploymentRepository
-        deploymentRepository.removeListener(this.deploymentRepositoryListener);
+        // mark the service as stopped
+        this.started = false;
 
         // unregister as a ServerActivity
         registry.unregisterActivity(this.activity);
+
+        // unregister as a listener of the DeploymentRepository
+        deploymentRepository.removeListener(this.deploymentRepositoryListener);
 
         // nullify the depenedencies
         this.registry = null;
