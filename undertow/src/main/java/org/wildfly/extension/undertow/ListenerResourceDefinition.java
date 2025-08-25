@@ -49,6 +49,7 @@ import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.as.network.SocketBinding;
+import org.jboss.as.version.Stability;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.msc.service.ServiceController;
@@ -165,6 +166,8 @@ abstract class ListenerResourceDefinition extends PersistentResourceDefinition {
     static final OptionAttributeDefinition REQUEST_PARSE_TIMEOUT = OptionAttributeDefinition.builder("request-parse-timeout", UndertowOptions.REQUEST_PARSE_TIMEOUT).setMeasurementUnit(MeasurementUnit.MILLISECONDS).setRequired(false).setAllowExpression(true).build();
     static final OptionAttributeDefinition RFC6265_COOKIE_VALIDATION = OptionAttributeDefinition.builder("rfc6265-cookie-validation", UndertowOptions.ENABLE_RFC6265_COOKIE_VALIDATION).setDefaultValue(ModelNode.FALSE).setRequired(false).setAllowExpression(true).build();
     static final OptionAttributeDefinition ALLOW_UNESCAPED_CHARACTERS_IN_URL = OptionAttributeDefinition.builder("allow-unescaped-characters-in-url", UndertowOptions.ALLOW_UNESCAPED_CHARACTERS_IN_URL).setDefaultValue(ModelNode.FALSE).setRequired(false).setAllowExpression(true).build();
+    static final OptionAttributeDefinition WEB_SOCKET_READ_TIMEOUT = OptionAttributeDefinition.builder(Constants.WEB_SOCKET_READ_TIMEOUT, Options.READ_TIMEOUT).setAllowExpression(true).setMeasurementUnit(MeasurementUnit.MILLISECONDS).setValidator(new LongRangeValidator(0, Long.MAX_VALUE, true, true)).setRequired(false).setStability(Stability.PREVIEW).build();
+    static final OptionAttributeDefinition WEB_SOCKET_WRITE_TIMEOUT = OptionAttributeDefinition.builder(Constants.WEB_SOCKET_WRITE_TIMEOUT, Options.WRITE_TIMEOUT).setAllowExpression(true).setMeasurementUnit(MeasurementUnit.MILLISECONDS).setValidator(new LongRangeValidator(0, Long.MAX_VALUE, true, true)).setRequired(false).setStability(Stability.PREVIEW).build();
 
     public enum ConnectorStat {
         REQUEST_COUNT(new SimpleAttributeDefinitionBuilder("request-count", ModelType.LONG)
@@ -228,7 +231,7 @@ abstract class ListenerResourceDefinition extends PersistentResourceDefinition {
             ALLOW_EQUALS_IN_COOKIE_VALUE, NO_REQUEST_TIMEOUT, REQUEST_PARSE_TIMEOUT, RFC6265_COOKIE_VALIDATION,
             ALLOW_UNESCAPED_CHARACTERS_IN_URL);
 
-    static final Collection<OptionAttributeDefinition> SOCKET_OPTIONS = List.of(BACKLOG, RECEIVE_BUFFER, SEND_BUFFER, KEEP_ALIVE, READ_TIMEOUT, WRITE_TIMEOUT, MAX_CONNECTIONS);
+    static final Collection<OptionAttributeDefinition> SOCKET_OPTIONS = List.of(BACKLOG, RECEIVE_BUFFER, SEND_BUFFER, KEEP_ALIVE, READ_TIMEOUT, WRITE_TIMEOUT, MAX_CONNECTIONS, WEB_SOCKET_READ_TIMEOUT, WEB_SOCKET_WRITE_TIMEOUT);
     private static final Collection<AttributeDefinition> SIMPLE_ATTRIBUTES = List.of(SOCKET_BINDING, WORKER, BUFFER_POOL, ENABLED, RESOLVE_PEER_ADDRESS, DISALLOWED_METHODS, SECURE);
 
     static final Collection<AttributeDefinition> ATTRIBUTES = collectAttributes();

@@ -41,14 +41,25 @@ public class UndertowExtensionTransformerRegistration implements ExtensionTransf
             ModelVersion version = model.getVersion();
             ResourceTransformationDescriptionBuilder subsystem = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
 
-            ResourceTransformationDescriptionBuilder server = subsystem.addChildResource(ServerDefinition.PATH_ELEMENT);
+            final ResourceTransformationDescriptionBuilder server = subsystem.addChildResource(ServerDefinition.PATH_ELEMENT);
             for (PathElement listenerPath : Set.of(HttpListenerResourceDefinition.PATH_ELEMENT, HttpsListenerResourceDefinition.PATH_ELEMENT)) {
-                if (UndertowSubsystemModel.VERSION_13_0_0.requiresTransformation(version)) {
-                    server.addChildResource(listenerPath).getAttributeBuilder()
-                        .setValueConverter(AttributeConverter.DEFAULT_VALUE, ListenerResourceDefinition.WRITE_TIMEOUT, ListenerResourceDefinition.READ_TIMEOUT)
-                        .end();
+                final ResourceTransformationDescriptionBuilder listenerResource = server.addChildResource(listenerPath);
+                final AttributeTransformationDescriptionBuilder listenerAttributeTransformer = listenerResource.getAttributeBuilder();
+
+                if (UndertowSubsystemModel.VERSION_15_0_0.requiresTransformation(version)) {
+                    listenerAttributeTransformer.setDiscard(DiscardAttributeChecker.UNDEFINED, ListenerResourceDefinition.WEB_SOCKET_READ_TIMEOUT);
+                    listenerAttributeTransformer.addRejectCheck(RejectAttributeChecker.DEFINED, ListenerResourceDefinition.WEB_SOCKET_READ_TIMEOUT);
+                    listenerAttributeTransformer.setDiscard(DiscardAttributeChecker.UNDEFINED, ListenerResourceDefinition.WEB_SOCKET_WRITE_TIMEOUT);
+                    listenerAttributeTransformer.addRejectCheck(RejectAttributeChecker.DEFINED, ListenerResourceDefinition.WEB_SOCKET_WRITE_TIMEOUT);
                 }
+
+                if (UndertowSubsystemModel.VERSION_13_0_0.requiresTransformation(version)) {
+                    listenerAttributeTransformer
+                        .setValueConverter(AttributeConverter.DEFAULT_VALUE, ListenerResourceDefinition.WRITE_TIMEOUT, ListenerResourceDefinition.READ_TIMEOUT);
+                }
+                listenerAttributeTransformer.end();
             }
+
 
             if (UndertowSubsystemModel.VERSION_14_0_0.requiresTransformation(version)) {
                 final ResourceTransformationDescriptionBuilder handlers = subsystem.addChildResource(HandlerDefinitions.PATH_ELEMENT);
