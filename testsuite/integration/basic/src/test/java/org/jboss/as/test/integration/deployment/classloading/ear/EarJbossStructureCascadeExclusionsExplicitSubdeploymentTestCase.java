@@ -15,15 +15,15 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 @RunWith(Arquillian.class)
-public class EarJbossStructureCascadeExclusionsTestCase {
+public class EarJbossStructureCascadeExclusionsExplicitSubdeploymentTestCase {
 
     @Deployment
     public static Archive<?> deploy() {
-        WebArchive war = ShrinkWrap.create(WebArchive.class, "test.war");
-        war.addClasses(TestAA.class, EarJbossStructureCascadeExclusionsTestCase.class);
+        WebArchive explicitWar = ShrinkWrap.create(WebArchive.class, "explicit.war");
+        explicitWar.addClasses(TestAA.class, EarJbossStructureCascadeExclusionsExplicitSubdeploymentTestCase.class);
 
         EnterpriseArchive ear = ShrinkWrap.create(EnterpriseArchive.class);
-        ear.addAsModule(war);
+        ear.addAsModule(explicitWar);
         //test the 1.3 structure parser cascade exclusions
         ear.addAsManifestResource(new StringAsset(
                         "<jboss-deployment-structure xmlns=\"urn:jboss:deployment-structure:1.3\">" +
@@ -33,7 +33,7 @@ public class EarJbossStructureCascadeExclusionsTestCase {
                         "      <module name=\"org.jboss.logging\" />" +
                         "   </exclusions>" +
                         "</deployment>" +
-                        "<sub-deployment name=\"test.war\">" +
+                        "<sub-deployment name=\"explicit.war\">" +
                         "   <dependencies>" +
                         "       <module name=\"org.jboss.classfilewriter\" />" +
                         "   </dependencies>" +
