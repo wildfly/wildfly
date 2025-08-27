@@ -4,16 +4,16 @@
  */
 package org.jboss.as.test.clustering.cluster.ejb.moduleavailability.bean;
 
-import java.util.Set;
-import java.util.HashSet;
-
 import jakarta.ejb.EJB;
 import jakarta.ejb.Remote;
 import jakarta.ejb.Stateless;
-
 import org.jboss.ejb.client.EJBModuleIdentifier;
+import org.jboss.logging.Logger;
 import org.wildfly.clustering.server.GroupMember;
 import org.wildfly.clustering.server.provider.ServiceProviderRegistrar;
+
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * A stateless bean which provides remote access to the ServiceProviderRegistrar instance of the ModuleAvaiabilityRegistrar
@@ -25,6 +25,9 @@ import org.wildfly.clustering.server.provider.ServiceProviderRegistrar;
 @Remote(ModuleAvailabilityRegistrarRetriever.class)
 public class ModuleAvailabilityRegistrarRetrieverBean implements ModuleAvailabilityRegistrarRetriever {
 
+    // shotr logger name
+    protected static final Logger log = Logger.getLogger(ModuleAvailabilityRegistrarRetriever.class.getSimpleName());
+
     @EJB
     ServiceProviderRegistrar<Object, GroupMember> registrar;
 
@@ -35,7 +38,7 @@ public class ModuleAvailabilityRegistrarRetrieverBean implements ModuleAvailabil
     @Override
     public Set<String> getServices() {
         Set<String> deployedModules = new HashSet();
-        System.out.println("Calling getServices()");
+        log.info("Calling getServices()");
         for (Object module : registrar.getServices()) {
             // cast each registered service to EJBModuleIdentifier
             String moduleId = ((EJBModuleIdentifier) module).toString();
@@ -52,7 +55,7 @@ public class ModuleAvailabilityRegistrarRetrieverBean implements ModuleAvailabil
     @Override
     public Set<String> getProviders(Object service) {
         Set<String> providers = new HashSet();
-        System.out.println("Calling getProviders(" + ((EJBModuleIdentifier) service)  + ")");
+        log.infof("Calling getProviders(%s)\n", ((EJBModuleIdentifier) service));
         for (GroupMember member : registrar.getProviders(service)) {
             providers.add(member.getName());
         }
