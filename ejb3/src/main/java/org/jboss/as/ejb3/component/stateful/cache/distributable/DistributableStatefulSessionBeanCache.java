@@ -5,6 +5,7 @@
 
 package org.jboss.as.ejb3.component.stateful.cache.distributable;
 
+import java.util.Map;
 import java.util.concurrent.TimeoutException;
 import java.util.function.Supplier;
 
@@ -21,6 +22,7 @@ import org.wildfly.clustering.cache.batch.SuspendedBatch;
 import org.wildfly.clustering.context.Context;
 import org.wildfly.clustering.ejb.bean.Bean;
 import org.wildfly.clustering.ejb.bean.BeanManager;
+import org.wildfly.clustering.function.Consumer;
 
 /**
  * A distributable stateful session bean cache.
@@ -72,21 +74,23 @@ public class DistributableStatefulSessionBeanCache<K, V extends StatefulSessionB
             CURRENT_GROUP.set(UNSET);
         }
         try {
-            // Batch is not closed here - it will be closed by the StatefulSessionBean
-            SuspendedBatch suspended = this.manager.getBatchFactory().get().suspend();
-            try (Context<Batch> batch = suspended.resumeWithContext()) {
-                // This will invoke createStatefulBean() for nested beans
-                // Nested beans will share the same group identifier
-                V instance = this.factory.createInstance();
-                K id = instance.getId();
-                if (CURRENT_GROUP.get() == UNSET) {
-                    CURRENT_GROUP.set(id);
-                }
+            Map.Entry<V, SuspendedBatch> entry = this.createInstance();
+            // This will invoke createStatefulBean() for nested beans
+            // Nested beans will share the same group identifier
+            V instance = entry.getKey();
+            SuspendedBatch batch = entry.getValue();
+            K id = instance.getId();
+            if (CURRENT_GROUP.get() == UNSET) {
+                CURRENT_GROUP.set(id);
+            }
+            try (Context<Batch> context = batch.resumeWithContext()) {
                 @SuppressWarnings("unchecked")
                 Bean<K, V> bean = this.manager.createBean(instance, (K) CURRENT_GROUP.get());
-                return new DistributableStatefulSessionBean<>(bean, suspended);
+                return new DistributableStatefulSessionBean<>(bean, batch);
             } catch (RuntimeException | Error e) {
-                this.rollback(suspended::resume);
+                try (Context<Batch> context = batch.resumeWithContext()) {
+                    rollback(context);
+                }
                 throw e;
             }
         } finally {
@@ -96,29 +100,48 @@ public class DistributableStatefulSessionBeanCache<K, V extends StatefulSessionB
         }
     }
 
+    private Map.Entry<V, SuspendedBatch> createInstance() {
+        SuspendedBatch batch = this.manager.getBatchFactory().get().suspend();
+        try (Context<Batch> context = batch.resumeWithContext()) {
+            // This will invoke createStatefulBean() for nested beans
+            // Nested beans will share the same group identifier and batch context
+            return Map.entry(this.factory.createInstance(), batch);
+        }
+    }
+
     @Override
     public StatefulSessionBean<K, V> findStatefulSessionBean(K id) {
         // Batch is not closed here - it will be closed by the StatefulSessionBean
         SuspendedBatch suspended = this.manager.getBatchFactory().get().suspend();
-        try (Context<Batch> batch = suspended.resumeWithContext()) {
+        try (Context<Batch> context = suspended.resumeWithContext()) {
             // TODO WFLY-14167 Cache lookup timeout should reflect @AccessTimeout of associated bean/invocation
             Bean<K, V> bean = this.manager.findBean(id);
-            return (bean != null) ? new DistributableStatefulSessionBean<>(bean, suspended) : this.rollback(batch);
+            return (bean != null) ? new DistributableStatefulSessionBean<>(bean, suspended) : this.close(context);
         } catch (TimeoutException e) {
             throw new ConcurrentAccessTimeoutException(e.getMessage());
         } catch (RuntimeException | Error e) {
-            this.rollback(suspended::resume);
+            try (Context<Batch> batch = suspended.resumeWithContext()) {
+                rollback(batch);
+            }
             throw e;
         }
     }
 
-    private StatefulSessionBean<K, V> rollback(Supplier<Batch> batchProvider) {
+    private StatefulSessionBean<K, V> close(Supplier<Batch> batch) {
+        close(batch, Consumer.empty());
+        return null;
+    }
+
+    private static void rollback(Supplier<Batch> batch) {
+        close(batch, Batch::discard);
+    }
+
+    private static void close(Supplier<Batch> batchProvider, Consumer<Batch> action) {
         try (Batch batch = batchProvider.get()) {
-            batch.discard();
+            action.accept(batch);
         } catch (RuntimeException | Error e) {
             EjbLogger.EJB3_INVOCATION_LOGGER.warn(e.getLocalizedMessage(), e);
         }
-        return null;
     }
 
     @Override
