@@ -41,6 +41,7 @@ import org.jboss.modules.ModuleLoader;
 import org.wildfly.clustering.cache.infinispan.embedded.marshall.EncoderRegistry;
 import org.wildfly.clustering.cache.infinispan.marshalling.MarshalledValueTranscoder;
 import org.wildfly.clustering.cache.infinispan.marshalling.MediaTypes;
+import org.wildfly.clustering.cache.infinispan.marshalling.UserMarshaller;
 import org.wildfly.clustering.marshalling.ByteBufferMarshalledKeyFactory;
 import org.wildfly.clustering.marshalling.ByteBufferMarshalledValueFactory;
 import org.wildfly.clustering.marshalling.ByteBufferMarshaller;
@@ -137,11 +138,11 @@ public class DefaultCacheContainer extends AbstractDelegatingEmbeddedCacheManage
                 ByteBufferMarshaller marshaller = this.marshallerFactory.createByteBufferMarshaller(this.loader, List.of(WildFlySecurityManager.doUnchecked(action)));
                 if (registerKeyMediaType) {
                     MarshalledValueFactory<ByteBufferMarshaller> keyFactory = new ByteBufferMarshalledKeyFactory(marshaller);
-                    registry.registerTranscoder(new MarshalledValueTranscoder<>(keyType, keyFactory));
+                    registry.registerTranscoder(new MarshalledValueTranscoder<>(keyType, keyFactory, new UserMarshaller(keyType, marshaller)));
                 }
                 if (registerValueMediaType) {
                     MarshalledValueFactory<ByteBufferMarshaller> valueFactory = new ByteBufferMarshalledValueFactory(marshaller);
-                    registry.registerTranscoder(new MarshalledValueTranscoder<>(valueType, valueFactory));
+                    registry.registerTranscoder(new MarshalledValueTranscoder<>(valueType, valueFactory, new UserMarshaller(valueType, marshaller)));
                 }
             }
             AdvancedCache<K, V> advancedCache = cache.getAdvancedCache();
