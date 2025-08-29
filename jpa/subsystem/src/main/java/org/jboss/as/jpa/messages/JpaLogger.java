@@ -761,4 +761,16 @@ public interface JpaLogger extends BasicLogger {
     @Message(id = 76, value = "persistence.xml in application client %s deployment will not be deployed in server mode")
     void ignoreAppclientPersistenceUnitsInServer(String deploymentName);
 
+    @Message(id = 77, value = "Cannot setup Persistence/CDI integration for %s")
+    RuntimeException classNotFound(@Cause ClassNotFoundException cause, String scopedPersistenceUnitName);
+
+    @Message(id = 78, value = "IntegratePersistenceAfterBeanDiscovery cannot register persistence unit %s as jakarta.enterprise.inject.spi.AfterBeanDiscovery event already ran for %s.")
+    IllegalStateException afterBeanDiscoveryEventRanAlready(String persistenceUnitName, String scopedPersistenceUnitName);
+
+    @LogMessage(level = INFO)
+    @Message(id = 79, value = "EntityManagerFactory CDI bean (for %s) will not have persistence unit name.  In order for the EntityManagerFactory CDI bean to be named remove duplicate copies of persistence unit %s.")
+    void willNotNameEntityManagerFactoryBean(String scopedPersistenceUnitName, String persistenceUnitName);
+
+    @Message(id = 80, value = "found more than one %s service for application deployment %s")
+    RuntimeException foundMoreThanOneCdiExtensionService(Class<?> serviceClassName, ClassLoader module);
 }
