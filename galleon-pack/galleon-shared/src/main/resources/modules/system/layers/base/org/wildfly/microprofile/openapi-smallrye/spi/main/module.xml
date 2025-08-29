@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+
+<module xmlns="urn:jboss:module:1.9" name="org.wildfly.microprofile.openapi-smallrye.spi">
+
+    <properties>
+        <property name="jboss.api" value="private"/>
+    </properties>
+
+    <resources>
+        <artifact name="${org.wildfly:wildfly-microprofile-openapi-smallrye-spi}"/>
+    </resources>
+
+    <dependencies>
+        <module name="io.smallrye.openapi"/>
+
+        <module name="org.eclipse.microprofile.config.api"/>
+        <module name="org.eclipse.microprofile.openapi.api"/>
+
+        <module name="org.wildfly.service"/>
+    </dependencies>
+</module>
