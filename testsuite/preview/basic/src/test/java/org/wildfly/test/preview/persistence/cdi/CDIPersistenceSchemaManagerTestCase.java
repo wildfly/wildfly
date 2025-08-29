@@ -7,6 +7,7 @@ package org.wildfly.test.preview.persistence.cdi;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 import jakarta.persistence.Cache;
 import jakarta.persistence.criteria.CriteriaQuery;
@@ -115,5 +116,11 @@ public class CDIPersistenceSchemaManagerTestCase {
         assertNotNull("Legacy producer didn't produce the EntityManager instance", emApplicationExistingProducer);
     }
 
+    @Test
+    public void testDefaultPersistenceUnit() throws Exception {
+        EntityManagerFactory emf = cmtBean.getDefaultEntityManagerFactory();
+        assertNotNull("Correct default persistence unit is injected that has property \"wildfly.jpa.default-unit\" set to true", emf);
+        assertTrue("Default persistence unit name should be defaultPersistenceUnit", emf.getName().contains("defaultPersistenceUnit"));
+    }
 
 }

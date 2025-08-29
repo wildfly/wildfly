@@ -69,6 +69,10 @@ public class RequestScopedTestBean {
     @Pu1Qualifier
     SchemaManager schemaManager;
 
+    // The persistence unit with persistence unit hint "wildfly.jpa.default-unit" set to true should be the default persistence unit that is injected.
+    @Inject
+    EntityManagerFactory defaultEntityManagerFactory;
+
     @Transactional
     public Employee getEmployeeExpectNullResult(int id) {
         return em.find(Employee.class, id);
@@ -110,4 +114,9 @@ public class RequestScopedTestBean {
     public SchemaManager testSchemaManager() {
         return schemaManager;
     }
+
+    public EntityManagerFactory getDefaultEntityManagerFactory() {
+        return defaultEntityManagerFactory;
+    }
+
 }

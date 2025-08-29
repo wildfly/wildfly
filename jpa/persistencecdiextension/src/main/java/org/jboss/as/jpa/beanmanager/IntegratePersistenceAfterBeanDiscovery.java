@@ -9,6 +9,7 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -25,6 +26,7 @@ import jakarta.persistence.PersistenceUnitUtil;
 import jakarta.persistence.SynchronizationType;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.metamodel.Metamodel;
+import org.jboss.as.jpa.config.Configuration;
 import org.jboss.as.jpa.container.TransactionScopedEntityManager;
 import org.jboss.as.jpa.messages.JpaLogger;
 import org.jipijapa.plugin.spi.IntegrationWithCDIBag;
@@ -78,9 +80,7 @@ public class IntegratePersistenceAfterBeanDiscovery implements PersistenceCdiExt
     void afterBeanDiscovery(@Observes AfterBeanDiscovery event, BeanManager manager) {
         afterBeanDiscoveryEventRanAlready = true;
         try {
-            for (IntegrationWithCDIBagImpl integrationWithCDIBag: copyOnWriteArrayList) {
-                addBeans(event, integrationWithCDIBag.getPersistenceUnitMetadata(), integrationWithCDIBag);
-            }
+            addBeans(event);
         } catch (RuntimeException e) {
             event.addDefinitionError(e);
         } finally {
@@ -116,27 +116,35 @@ public class IntegratePersistenceAfterBeanDiscovery implements PersistenceCdiExt
         schemaManagerBeanCreator = SchemaManagerBeanCreator.getImplementation(schemaManagerCreatorClass1);
     }
 
-    public void addBeans(AfterBeanDiscovery afterBeanDiscovery, PersistenceUnitMetadata persistenceUnitMetadata, IntegrationWithCDIBag integrationWithCDIBag) {
+    public void addBeans(AfterBeanDiscovery afterBeanDiscovery) {
+        boolean onePersistenceUnit = copyOnWriteArrayList.size() == 1;
+        for (IntegrationWithCDIBagImpl integrationWithCDIBag: copyOnWriteArrayList) {
+            PersistenceUnitMetadata persistenceUnitMetadata = integrationWithCDIBag.getPersistenceUnitMetadata();
 
-        // determine the qualifiers to use for creating each bean
-        List<String> qualifiers;
-        if (persistenceUnitMetadata.getQualifierAnnotationNames().size() > 0) {
-            qualifiers = persistenceUnitMetadata.getQualifierAnnotationNames();
-        } else {
-            qualifiers = defaultQualifier;
-        }
+            // determine the qualifiers to use for creating each bean
+            List<String> qualifiers = Collections.emptyList();
+            if (persistenceUnitMetadata.getQualifierAnnotationNames().size() > 0) {
+                qualifiers = persistenceUnitMetadata.getQualifierAnnotationNames();
+            } else {
+                // mark the only default persistence unit as default.
+                // With multiple persistence units, mark the one with hint "wildfly.jpa.default-unit" set to true.
+                if (onePersistenceUnit || Configuration.isDefaultPersistenceUnit(persistenceUnitMetadata)) {
+                    qualifiers = defaultQualifier;
+                }
+            }
 
-        try {
-            entityManager(afterBeanDiscovery, persistenceUnitMetadata, qualifiers, integrationWithCDIBag);
-            entityManagerFactory(afterBeanDiscovery, persistenceUnitMetadata, qualifiers, integrationWithCDIBag);
-            criteriaBuilder(afterBeanDiscovery, persistenceUnitMetadata, qualifiers, integrationWithCDIBag);
-            persistenceUnitUtil(afterBeanDiscovery, persistenceUnitMetadata, qualifiers, integrationWithCDIBag);
-            cache(afterBeanDiscovery, persistenceUnitMetadata, qualifiers, integrationWithCDIBag);
-            metamodel(afterBeanDiscovery, persistenceUnitMetadata, qualifiers, integrationWithCDIBag);
-            // the schemaManager bean will only be created if running with Persistence 3.2/Jakarta EE 11
-            schemaManagerBeanCreator.schemaManager(afterBeanDiscovery, persistenceUnitMetadata, qualifiers, integrationWithCDIBag);
-        } catch (ClassNotFoundException e) {
-            throw JpaLogger.ROOT_LOGGER.classNotFound(e, persistenceUnitMetadata.getScopedPersistenceUnitName());
+            try {
+                entityManager(afterBeanDiscovery, persistenceUnitMetadata, qualifiers, integrationWithCDIBag);
+                entityManagerFactory(afterBeanDiscovery, persistenceUnitMetadata, qualifiers, integrationWithCDIBag);
+                criteriaBuilder(afterBeanDiscovery, persistenceUnitMetadata, qualifiers, integrationWithCDIBag);
+                persistenceUnitUtil(afterBeanDiscovery, persistenceUnitMetadata, qualifiers, integrationWithCDIBag);
+                cache(afterBeanDiscovery, persistenceUnitMetadata, qualifiers, integrationWithCDIBag);
+                metamodel(afterBeanDiscovery, persistenceUnitMetadata, qualifiers, integrationWithCDIBag);
+                // the schemaManager bean will only be created if running with Persistence 3.2/Jakarta EE 11
+                schemaManagerBeanCreator.schemaManager(afterBeanDiscovery, persistenceUnitMetadata, qualifiers, integrationWithCDIBag);
+            } catch (ClassNotFoundException e) {
+                throw JpaLogger.ROOT_LOGGER.classNotFound(e, persistenceUnitMetadata.getScopedPersistenceUnitName());
+            }
         }
     }
 
