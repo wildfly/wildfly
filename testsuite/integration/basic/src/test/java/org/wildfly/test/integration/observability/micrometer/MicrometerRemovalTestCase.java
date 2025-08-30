@@ -4,12 +4,6 @@
  */
 package org.wildfly.test.integration.observability.micrometer;
 
-import java.io.File;
-import java.io.IOException;
-import java.time.Duration;
-import java.util.ArrayList;
-import java.util.List;
-
 import org.apache.commons.io.input.Tailer;
 import org.apache.commons.io.input.TailerListener;
 import org.jboss.arquillian.container.test.api.RunAsClient;
@@ -24,6 +18,12 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.wildfly.plugin.tools.OperationExecutionException;
 import org.wildfly.plugin.tools.server.ServerManager;
+
+import java.io.File;
+import java.io.IOException;
+import java.time.Duration;
+import java.util.ArrayList;
+import java.util.List;
 
 @RunWith(Arquillian.class)
 @RunAsClient

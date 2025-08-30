@@ -4,7 +4,7 @@
  */
 package org.wildfly.test.integration.observability.opentelemetry;
 
-import static org.wildfly.test.integration.observability.setuptask.ServiceNameSetupTask.SERVICE_NAME;
+import static org.jboss.as.test.shared.observability.setuptasks.ServiceNameSetupTask.SERVICE_NAME;
 
 import jakarta.ws.rs.client.Client;
 import jakarta.ws.rs.client.ClientBuilder;
@@ -14,10 +14,10 @@ import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.testcontainers.api.TestcontainersRequired;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.test.shared.observability.setuptasks.OpenTelemetryWithCollectorSetupTask;
+import org.jboss.as.test.shared.observability.setuptasks.ServiceNameSetupTask;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
 import org.junit.Test;
-import org.wildfly.test.integration.observability.setuptask.ServiceNameSetupTask;
 
 @ServerSetup({OpenTelemetryWithCollectorSetupTask.class, ServiceNameSetupTask.class})
 @RunAsClient
