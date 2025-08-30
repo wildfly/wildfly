@@ -185,7 +185,7 @@ public class DistributableSessionManager implements UndertowSessionManager {
         try (Context<Batch> context = suspendedBatch.resumeWithContext()) {
             Session<Map<String, Object>> session = sessionFactory.apply(config.findSessionId(exchange));
             if (session == null) {
-                return rollback(context, closeTask);
+                return close(context, closeTask);
             }
             // Apply session ID encoding
             config.setSessionId(exchange, session.getId());
@@ -201,20 +201,30 @@ public class DistributableSessionManager implements UndertowSessionManager {
             }
             return result;
         } catch (RuntimeException | Error e) {
-            rollback(suspendedBatch::resume, closeTask);
+            try (Context<Batch> context = suspendedBatch.resumeWithContext()) {
+                rollback(context, closeTask);
+            }
             throw e;
         }
     }
 
-    private static io.undertow.server.session.Session rollback(java.util.function.Supplier<Batch> batchProvider, Consumer<HttpServerExchange> closeTask) {
+    private static void rollback(java.util.function.Supplier<Batch> batchProvider, Consumer<HttpServerExchange> closeTask) {
+        close(batchProvider, Batch::discard, closeTask);
+    }
+
+    private static io.undertow.server.session.Session close(java.util.function.Supplier<Batch> batchProvider, Consumer<HttpServerExchange> closeTask) {
+        close(batchProvider, Consumer.empty(), closeTask);
+        return null;
+    }
+
+    private static void close(java.util.function.Supplier<Batch> batchProvider, Consumer<Batch> batchTask, Consumer<HttpServerExchange> closeTask) {
         try (Batch batch = batchProvider.get()) {
-            batch.discard();
+            batchTask.accept(batch);
         } catch (RuntimeException | Error e) {
             LOGGER.error(e.getLocalizedMessage(), e);
         } finally {
             closeTask.accept(null);
         }
-        return null;
     }
 
     private Map.Entry<SuspendedBatch, Consumer<HttpServerExchange>> createBatchEntry() {

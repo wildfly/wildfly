@@ -14,6 +14,7 @@ import org.jboss.logging.Logger;
 import org.wildfly.clustering.cache.batch.Batch;
 import org.wildfly.clustering.cache.batch.SuspendedBatch;
 import org.wildfly.clustering.context.Context;
+import org.wildfly.clustering.function.Consumer;
 import org.wildfly.clustering.session.user.User;
 import org.wildfly.clustering.session.user.UserManager;
 import org.wildfly.security.auth.server.SecurityIdentity;
@@ -43,7 +44,9 @@ public class DistributableSingleSignOnManager implements SingleSignOnManager {
             user.getTransientContext().set(identity);
             return new DistributableSingleSignOn(user, suspended);
         } catch (RuntimeException | Error e) {
-            rollback(suspended::resume);
+            try (Context<Batch> context = suspended.resumeWithContext()) {
+                rollback(context);
+            }
             throw e;
         }
     }
@@ -54,19 +57,29 @@ public class DistributableSingleSignOnManager implements SingleSignOnManager {
         SuspendedBatch suspended = this.manager.getBatchFactory().get().suspend();
         try (Context<Batch> context = suspended.resumeWithContext()) {
             User<CachedIdentity, AtomicReference<SecurityIdentity>, String, Map.Entry<String, URI>> user = this.manager.findUser(id);
-            return (user != null) ? new DistributableSingleSignOn(user, suspended) : rollback(context);
+            return (user != null) ? new DistributableSingleSignOn(user, suspended) : close(context);
         } catch (RuntimeException | Error e) {
-            rollback(suspended::resume);
+            try (Context<Batch> context = suspended.resumeWithContext()) {
+                rollback(context);
+            }
             throw e;
         }
     }
 
-    private static SingleSignOn rollback(Supplier<Batch> batchProvider) {
+    private static SingleSignOn close(Supplier<Batch> batchProvider) {
+        close(batchProvider, Consumer.empty());
+        return null;
+    }
+
+    private static void rollback(Supplier<Batch> batchProvider) {
+        close(batchProvider, Batch::discard);
+    }
+
+    private static void close(Supplier<Batch> batchProvider, Consumer<Batch> batchTask) {
         try (Batch batch = batchProvider.get()) {
-            batch.discard();
+            batchTask.accept(batch);
         } catch (RuntimeException | Error e) {
             LOGGER.error(e.getLocalizedMessage(), e);
         }
-        return null;
     }
 }

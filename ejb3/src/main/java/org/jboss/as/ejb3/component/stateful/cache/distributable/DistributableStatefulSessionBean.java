@@ -12,6 +12,7 @@ import org.jboss.as.ejb3.component.stateful.cache.StatefulSessionBean;
 import org.jboss.as.ejb3.component.stateful.cache.StatefulSessionBeanInstance;
 import org.wildfly.clustering.cache.batch.Batch;
 import org.wildfly.clustering.cache.batch.SuspendedBatch;
+import org.wildfly.clustering.context.Context;
 import org.wildfly.clustering.ejb.bean.Bean;
 import org.wildfly.common.function.Functions;
 
@@ -79,17 +80,22 @@ public class DistributableStatefulSessionBean<K, V extends StatefulSessionBeanIn
     }
 
     private void remove(Consumer<V> removeTask) {
-        try (Batch batch = this.batch.resume()) {
-            this.bean.remove(removeTask);
+        try (Context<Batch> context = this.batch.resumeWithContext()) {
+            try (Batch batch = context.get()) {
+                this.bean.remove(removeTask);
+            }
         }
     }
 
     @Override
     public void close() {
         if (this.bean.isValid()) {
-            try (Batch batch = this.batch.resume()) {
-                this.bean.getMetaData().setLastAccessTime(Instant.now());
-                this.bean.close();
+            try (Context<Batch> context = this.batch.resumeWithContext()) {
+                try (Batch batch = context.get()) {
+                    try (Bean<K, V> bean = this.bean) {
+                        this.bean.getMetaData().setLastAccessTime(Instant.now());
+                    }
+                }
             }
         }
     }

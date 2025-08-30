@@ -16,6 +16,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import org.wildfly.clustering.cache.batch.Batch;
 import org.wildfly.clustering.cache.batch.SuspendedBatch;
 import org.wildfly.clustering.context.Context;
+import org.wildfly.clustering.function.Consumer;
 import org.wildfly.clustering.session.user.User;
 import org.wildfly.clustering.session.user.UserSessions;
 import org.wildfly.security.auth.server.SecurityIdentity;
@@ -93,18 +94,22 @@ public class DistributableSingleSignOn implements SingleSignOn {
     @Override
     public void invalidate() {
         // In some cases, Elytron neglects to close invalidated SSO, so close it here
-        if (this.closed.compareAndSet(false, true)) {
-            try (Batch batch = this.suspendedBatch.resume()) {
-                this.user.invalidate();
-            }
-        }
+        this.close(User::invalidate);
     }
 
     @Override
     public void close() {
+        this.close(Consumer.empty());
+    }
+
+    private void close(Consumer<User<CachedIdentity, AtomicReference<SecurityIdentity>, String, Map.Entry<String, URI>>> action) {
         if (this.closed.compareAndSet(false, true)) {
-            try (Batch batch = this.suspendedBatch.resume()) {
-                this.user.close();
+            try (Context<Batch> context = this.suspendedBatch.resumeWithContext()) {
+                try (Batch batch = context.get()) {
+                    try (User<CachedIdentity, AtomicReference<SecurityIdentity>, String, Map.Entry<String, URI>> user = this.user) {
+                        action.accept(user);
+                    }
+                }
             }
         }
     }
