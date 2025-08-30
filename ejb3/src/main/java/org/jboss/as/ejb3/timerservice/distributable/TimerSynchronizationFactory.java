@@ -6,11 +6,9 @@
 package org.jboss.as.ejb3.timerservice.distributable;
 
 import java.util.function.Consumer;
-import java.util.function.Supplier;
 
 import jakarta.transaction.Synchronization;
 
-import org.wildfly.clustering.cache.batch.Batch;
 import org.wildfly.clustering.cache.batch.SuspendedBatch;
 import org.wildfly.clustering.ejb.timer.Timer;
 
@@ -22,8 +20,8 @@ import org.wildfly.clustering.ejb.timer.Timer;
  */
 public interface TimerSynchronizationFactory<I> {
 
-    Synchronization createActivateSynchronization(Timer<I> timer, Supplier<Batch> batchFactory, SuspendedBatch suspendedBatch);
-    Synchronization createCancelSynchronization(Timer<I> timer, Supplier<Batch> batchFactory, SuspendedBatch suspendedBatch);
+    Synchronization createActivateSynchronization(Timer<I> timer, SuspendedBatch suspendedBatch);
+    Synchronization createCancelSynchronization(Timer<I> timer, SuspendedBatch suspendedBatch);
 
     Consumer<Timer<I>> getActivateTask();
     Consumer<Timer<I>> getCancelTask();

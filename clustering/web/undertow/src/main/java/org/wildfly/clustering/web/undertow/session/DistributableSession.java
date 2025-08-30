@@ -55,21 +55,23 @@ public class DistributableSession extends AbstractSession {
         Consumer<HttpServerExchange> closeTask = this.closeTask.getAndSet(null);
         if (closeTask != null) {
             Session<Map<String, Object>> currentSession = this.get();
-            try (Batch batch = this.suspendedBatch.resume()) {
-                // Ensure session is closed, even if invalid
-                try (Session<Map<String, Object>> session = currentSession) {
-                    if (session.isValid()) {
-                        // According to §7.6 of the servlet specification:
-                        // The session is considered to be accessed when a request that is part of the session is first handled by the servlet container.
-                        session.getMetaData().setLastAccess(this.startTime, Instant.now());
+            try (Context<Batch> context = this.suspendedBatch.resumeWithContext()) {
+                try (Batch batch = context.get()) {
+                    // Ensure session is closed, even if invalid
+                    try (Session<Map<String, Object>> session = currentSession) {
+                        if (session.isValid()) {
+                            // According to §7.6 of the servlet specification:
+                            // The session is considered to be accessed when a request that is part of the session is first handled by the servlet container.
+                            session.getMetaData().setLastAccess(this.startTime, Instant.now());
+                        }
                     }
+                } catch (Throwable e) {
+                    // Don't propagate exceptions at the stage, since response was already committed
+                    UndertowClusteringLogger.ROOT_LOGGER.warn(e.getLocalizedMessage(), e);
+                } finally {
+                    this.reference.set(Map.entry(currentSession, new SimpleSessionConfig(currentSession.getId())));
+                    closeTask.accept(exchange);
                 }
-            } catch (Throwable e) {
-                // Don't propagate exceptions at the stage, since response was already committed
-                UndertowClusteringLogger.ROOT_LOGGER.warn(e.getLocalizedMessage(), e);
-            } finally {
-                this.reference.set(Map.entry(currentSession, new SimpleSessionConfig(currentSession.getId())));
-                closeTask.accept(exchange);
             }
         }
     }
@@ -172,17 +174,18 @@ public class DistributableSession extends AbstractSession {
         }
         Consumer<HttpServerExchange> closeTask = this.closeTask.getAndSet(null);
         if (closeTask != null) {
-            try (Batch batch = this.suspendedBatch.resume()) {
-                try (Session<Map<String, Object>> validSession = session) {
-                    session.invalidate();
-                } finally {
-                    if (exchange != null) {
-                        String id = session.getId();
-                        entry.getValue().clearSession(exchange, id);
+            try (Context<Batch> context = this.suspendedBatch.resumeWithContext()) {
+                try (Batch batch = context.get()) {
+                    try (Session<Map<String, Object>> validSession = session) {
+                        session.invalidate();
+                    } finally {
+                        if (exchange != null) {
+                            entry.getValue().clearSession(exchange, session.getId());
+                        }
                     }
+                } finally {
+                    closeTask.accept(exchange);
                 }
-            } finally {
-                closeTask.accept(exchange);
             }
         }
     }
@@ -222,13 +225,15 @@ public class DistributableSession extends AbstractSession {
     }
 
     private void closeIfInvalid(HttpServerExchange exchange) {
+        // If session was invalidated by a concurrent request, Undertow will not trigger Session.requestDone(...), so we need to close the session here
         Session<Map<String, Object>> session = this.get();
         if (!session.isValid()) {
-            // If session was invalidated by a concurrent request, Undertow will not trigger Session.requestDone(...), so we need to close the session here
             Consumer<HttpServerExchange> closeTask = this.closeTask.getAndSet(null);
             if (closeTask != null) {
-                try {
-                    session.close();
+                try (Context<Batch> context = this.suspendedBatch.resumeWithContext()) {
+                    try (Batch batch = context.get()) {
+                        session.close();
+                    }
                 } finally {
                     // Ensure close task is run
                     closeTask.accept(exchange);
