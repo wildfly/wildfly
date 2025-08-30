@@ -65,16 +65,6 @@ public class InfinispanTransformersTestCase extends AbstractSubsystemTest {
         return VERSIONS.keySet();
     }
 
-    // TODO Replace with variants from after wf-core upgrade https://issues.redhat.com/browse/WFCORE-7298
-    // n.b. workaround for https://issues.redhat.com/browse/WFCORE-7297
-    public String createGAV(String artifactId) {
-        return String.format("%s:%s:%s", this.controllerVersion.getMavenGroupId(), artifactId, this.controllerVersion.getMavenGavVersion());
-    }
-
-    public String createCoreGAV(String artifactId) {
-        return String.format("%s:%s:%s", this.controllerVersion.getCoreMavenGroupId(), artifactId, this.controllerVersion.getCoreVersion());
-    }
-
     private String[] getDependencies(ModelTestControllerVersion version) {
         return switch (version) {
             case EAP_7_4_0 -> new String[] {
@@ -86,18 +76,18 @@ public class InfinispanTransformersTestCase extends AbstractSubsystemTest {
                     "org.jboss.spec.javax.resource:jboss-connector-api_1.7_spec:2.0.0.Final-redhat-00001",
                     "org.jboss.spec.javax.transaction:jboss-transaction-api_1.3_spec:2.0.0.Final",
                     // Following are needed for InfinispanSubsystemInitialization
-                    createGAV("wildfly-clustering-api"),
-                    createGAV("wildfly-clustering-common"),
-                    createGAV("wildfly-clustering-infinispan-client"),
-                    createGAV("wildfly-clustering-infinispan-extension"),
-                    createGAV("wildfly-clustering-infinispan-spi"),
-                    createGAV("wildfly-clustering-jgroups-extension"),
-                    createGAV("wildfly-clustering-jgroups-spi"),
-                    createGAV("wildfly-clustering-server"),
-                    createGAV("wildfly-clustering-service"),
-                    createGAV("wildfly-clustering-singleton-api"),
-                    createGAV("wildfly-clustering-spi"),
-                    createGAV("wildfly-connector"),
+                    this.controllerVersion.createGAV("wildfly-clustering-api"),
+                    this.controllerVersion.createGAV("wildfly-clustering-common"),
+                    this.controllerVersion.createGAV("wildfly-clustering-infinispan-client"),
+                    this.controllerVersion.createGAV("wildfly-clustering-infinispan-extension"),
+                    this.controllerVersion.createGAV("wildfly-clustering-infinispan-spi"),
+                    this.controllerVersion.createGAV("wildfly-clustering-jgroups-extension"),
+                    this.controllerVersion.createGAV("wildfly-clustering-jgroups-spi"),
+                    this.controllerVersion.createGAV("wildfly-clustering-server"),
+                    this.controllerVersion.createGAV("wildfly-clustering-service"),
+                    this.controllerVersion.createGAV("wildfly-clustering-singleton-api"),
+                    this.controllerVersion.createGAV("wildfly-clustering-spi"),
+                    this.controllerVersion.createGAV("wildfly-connector"),
             };
             case EAP_8_0_0 -> new String[] {
                     "org.infinispan:infinispan-cachestore-jdbc:14.0.27.Final-redhat-00001",
@@ -105,19 +95,19 @@ public class InfinispanTransformersTestCase extends AbstractSubsystemTest {
                     "org.infinispan:infinispan-commons:14.0.27.Final-redhat-00001",
                     "org.infinispan:infinispan-core:14.0.27.Final-redhat-00001",
                     // Following are needed for InfinispanSubsystemInitialization
-                    createCoreGAV("wildfly-controller"),
-                    createGAV("wildfly-clustering-common"),
-                    createGAV("wildfly-clustering-infinispan-client-service"),
-                    createGAV("wildfly-clustering-infinispan-embedded-api"),
-                    createGAV("wildfly-clustering-infinispan-embedded-service"),
-                    createGAV("wildfly-clustering-infinispan-embedded-spi"),
-                    createGAV("wildfly-clustering-infinispan-extension"),
-                    createGAV("wildfly-clustering-jgroups-extension"),
-                    createGAV("wildfly-clustering-jgroups-spi"),
-                    createGAV("wildfly-clustering-server-service"),
-                    createGAV("wildfly-clustering-service"),
-                    createGAV("wildfly-clustering-singleton-api"),
-                    createGAV("wildfly-connector"),
+                    this.controllerVersion.createCoreGAV("wildfly-controller"),
+                    this.controllerVersion.createGAV("wildfly-clustering-common"),
+                    this.controllerVersion.createGAV("wildfly-clustering-infinispan-client-service"),
+                    this.controllerVersion.createGAV("wildfly-clustering-infinispan-embedded-api"),
+                    this.controllerVersion.createGAV("wildfly-clustering-infinispan-embedded-service"),
+                    this.controllerVersion.createGAV("wildfly-clustering-infinispan-embedded-spi"),
+                    this.controllerVersion.createGAV("wildfly-clustering-infinispan-extension"),
+                    this.controllerVersion.createGAV("wildfly-clustering-jgroups-extension"),
+                    this.controllerVersion.createGAV("wildfly-clustering-jgroups-spi"),
+                    this.controllerVersion.createGAV("wildfly-clustering-server-service"),
+                    this.controllerVersion.createGAV("wildfly-clustering-service"),
+                    this.controllerVersion.createGAV("wildfly-clustering-singleton-api"),
+                    this.controllerVersion.createGAV("wildfly-connector"),
             };
             case EAP_8_1_0 -> new String[] {
                     // TODO replace with actual versions once EAP is released
@@ -126,17 +116,17 @@ public class InfinispanTransformersTestCase extends AbstractSubsystemTest {
                     "org.infinispan:infinispan-commons:15.0.11.Final",
                     "org.infinispan:infinispan-core:15.0.11.Final",
                     // Following are needed for InfinispanSubsystemInitialization
-                    createCoreGAV("wildfly-subsystem"),
-                    createGAV("wildfly-clustering-common"),
-                    createGAV("wildfly-clustering-infinispan-client-service"),
-                    createGAV("wildfly-clustering-infinispan-embedded-service"),
-                    createGAV("wildfly-clustering-infinispan-extension"),
-                    createGAV("wildfly-clustering-jgroups-extension"),
-                    createGAV("wildfly-clustering-jgroups-spi"),
-                    createGAV("wildfly-clustering-server-service"),
-                    createGAV("wildfly-clustering-service"),
-                    createGAV("wildfly-clustering-singleton-api"),
-                    createGAV("wildfly-connector"),
+                    this.controllerVersion.createCoreGAV("wildfly-subsystem"),
+                    this.controllerVersion.createGAV("wildfly-clustering-common"),
+                    this.controllerVersion.createGAV("wildfly-clustering-infinispan-client-service"),
+                    this.controllerVersion.createGAV("wildfly-clustering-infinispan-embedded-service"),
+                    this.controllerVersion.createGAV("wildfly-clustering-infinispan-extension"),
+                    this.controllerVersion.createGAV("wildfly-clustering-jgroups-extension"),
+                    this.controllerVersion.createGAV("wildfly-clustering-jgroups-spi"),
+                    this.controllerVersion.createGAV("wildfly-clustering-server-service"),
+                    this.controllerVersion.createGAV("wildfly-clustering-service"),
+                    this.controllerVersion.createGAV("wildfly-clustering-singleton-api"),
+                    this.controllerVersion.createGAV("wildfly-connector"),
             };
             default -> throw new IllegalArgumentException();
         };

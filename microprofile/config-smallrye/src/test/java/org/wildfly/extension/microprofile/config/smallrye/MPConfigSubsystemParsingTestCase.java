@@ -54,13 +54,6 @@ public class MPConfigSubsystemParsingTestCase extends AbstractSubsystemBaseTest 
         testRejectingTransformers(ModelTestControllerVersion.EAP_XP_4, VERSION_1_1_0);
     }
 
-    private static String getMicroProfileConfigSmallryeGAV(ModelTestControllerVersion version) {
-        if (version.isEap()) {
-            return "org.jboss.eap:wildfly-microprofile-config-smallrye:" + version.getMavenGavVersion();
-        }
-        return "org.wildfly:wildfly-microprofile-config-smallrye:" + version.getMavenGavVersion();
-    }
-
     @Override
     protected AdditionalInitialization createAdditionalInitialization() {
         return AdditionalInitialization.withCapabilities(
@@ -71,7 +64,7 @@ public class MPConfigSubsystemParsingTestCase extends AbstractSubsystemBaseTest 
         //Boot up empty controllers with the resources needed for the ops coming from the xml to work
         KernelServicesBuilder builder = createKernelServicesBuilder(createAdditionalInitialization());
         builder.createLegacyKernelServicesBuilder(createAdditionalInitialization(), controllerVersion, microprofileConfigVersion)
-                .addMavenResourceURL(getMicroProfileConfigSmallryeGAV(controllerVersion))
+                .addMavenResourceURL(controllerVersion.createGAV("wildfly-microprofile-config-smallrye"))
                 .skipReverseControllerCheck()
                 .dontPersistXml();
 

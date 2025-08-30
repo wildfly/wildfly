@@ -112,7 +112,7 @@ public class ElytronOidcClientSubsystemTransformerTestCase extends AbstractSubsy
 
         builder.createLegacyKernelServicesBuilder(AdditionalInitialization.withCapabilities(
                 RuntimeCapability.buildDynamicCapabilityName("org.wildfly.security", "elytron")), controllerVersion, version)
-                .addMavenResourceURL(String.format("%s:wildfly-elytron-oidc-client-subsystem:%s", controllerVersion.getMavenGroupId(), controllerVersion.getMavenGavVersion()))
+                .addMavenResourceURL(controllerVersion.createGAV("wildfly-elytron-oidc-client-subsystem"))
                 .skipReverseControllerCheck()
                 .addParentFirstClassPattern("org.jboss.as.controller.logging.ControllerLogger*")
                 .addParentFirstClassPattern("org.jboss.as.controller.PathAddress")
@@ -134,7 +134,7 @@ public class ElytronOidcClientSubsystemTransformerTestCase extends AbstractSubsy
         KernelServicesBuilder builder = this.createKernelServicesBuilder(new DefaultInitializer(this.getSubsystemSchema().getStability()))
                 .setSubsystemXmlResource("elytron-oidc-client-transform.xml");
         builder.createLegacyKernelServicesBuilder(AdditionalInitialization.ADMIN_ONLY_HC, controllerVersion, version)
-                .addMavenResourceURL(String.format("%s:wildfly-elytron-oidc-client-subsystem:%s", controllerVersion.getMavenGroupId(), controllerVersion.getMavenGavVersion()))
+                .addMavenResourceURL(controllerVersion.createGAV("wildfly-elytron-oidc-client-subsystem"))
                 .skipReverseControllerCheck()
                 .addParentFirstClassPattern("org.jboss.as.controller.logging.ControllerLogger*")
                 .addParentFirstClassPattern("org.jboss.as.controller.PathAddress")
