@@ -43,6 +43,18 @@ public class KernelDeploymentParsingProcessor implements DeploymentUnitProcessor
     private final XMLMapper xmlMapper = XMLElementSchema.createXMLMapper(EnumSet.allOf(BeanDeploymentSchema.class));
     private final XMLInputFactory inputFactory = XMLInputFactory.newInstance();
 
+    public KernelDeploymentParsingProcessor() {
+        setIfSupported(inputFactory, XMLInputFactory.SUPPORT_DTD, Boolean.FALSE);
+        setIfSupported(inputFactory, XMLInputFactory.IS_SUPPORTING_EXTERNAL_ENTITIES, false);
+        //NoopXMLResolver resolver not in deps, neither XMLInputFactoryUtil
+    }
+
+    private void setIfSupported(final XMLInputFactory inputFactory, final String property, final Object value) {
+        if (inputFactory.isPropertySupported(property)) {
+            inputFactory.setProperty(property, value);
+        }
+    }
+
     /**
      * Process a deployment for jboss-beans.xml files.
      * Will parse the xml file and attach a configuration discovered during processing.

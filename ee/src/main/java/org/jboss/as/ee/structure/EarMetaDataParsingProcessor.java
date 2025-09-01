@@ -26,6 +26,7 @@ import org.jboss.metadata.parser.util.NoopXMLResolver;
 import org.jboss.metadata.property.PropertyReplacer;
 import org.jboss.vfs.VFSUtils;
 import org.jboss.vfs.VirtualFile;
+import org.wildfly.common.xml.XMLInputFactoryUtil;
 
 /**
  * Deployment processor responsible for parsing the application.xml file of an ear.
@@ -78,7 +79,7 @@ public class EarMetaDataParsingProcessor implements DeploymentUnitProcessor {
         InputStream inputStream = null;
         try {
             inputStream = applicationXmlFile.openStream();
-            final XMLInputFactory inputFactory = XMLInputFactory.newInstance();
+            final XMLInputFactory inputFactory = XMLInputFactoryUtil.create();
             inputFactory.setXMLResolver(NoopXMLResolver.create());
             XMLStreamReader xmlReader = inputFactory.createXMLStreamReader(inputStream);
             return EarMetaDataParser.INSTANCE.parse(xmlReader, propertyReplacer);
@@ -100,7 +101,7 @@ public class EarMetaDataParsingProcessor implements DeploymentUnitProcessor {
         InputStream inputStream = null;
         try {
             inputStream = applicationXmlFile.openStream();
-            final XMLInputFactory inputFactory = XMLInputFactory.newInstance();
+            final XMLInputFactory inputFactory = XMLInputFactoryUtil.create();
             inputFactory.setXMLResolver(NoopXMLResolver.create());
             XMLStreamReader xmlReader = inputFactory.createXMLStreamReader(inputStream);
             return JBossAppMetaDataParser.INSTANCE.parse(xmlReader, propertyReplacer);
