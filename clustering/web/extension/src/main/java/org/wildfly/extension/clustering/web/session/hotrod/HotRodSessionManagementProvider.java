@@ -10,10 +10,13 @@ import java.util.function.Supplier;
 
 import jakarta.servlet.ServletContext;
 
+import org.infinispan.client.hotrod.DataFormat;
 import org.infinispan.client.hotrod.RemoteCache;
 import org.infinispan.client.hotrod.configuration.NearCacheMode;
 import org.infinispan.client.hotrod.configuration.RemoteCacheConfigurationBuilder;
 import org.infinispan.client.hotrod.configuration.TransactionMode;
+import org.infinispan.commons.dataconversion.MediaType;
+import org.infinispan.commons.marshall.Marshaller;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.wildfly.clustering.cache.infinispan.remote.RemoteCacheConfiguration;
 import org.wildfly.clustering.infinispan.client.service.HotRodServiceDescriptor;
@@ -42,6 +45,14 @@ public class HotRodSessionManagementProvider extends AbstractSessionManagementPr
 {
     "distributed-cache": {
         "mode" : "SYNC",
+        "encoding" : {
+            "key" : {
+                "media-type" : "application/octet-stream"
+            },
+            "value" : {
+                "media-type" : "application/octet-stream"
+            }
+        },
         "transaction" : {
             "mode" : "NON_XA",
             "locking" : "PESSIMISTIC"
@@ -78,7 +89,13 @@ public class HotRodSessionManagementProvider extends AbstractSessionManagementPr
             @SuppressWarnings("unchecked")
             @Override
             public <CK, CV> RemoteCache<CK, CV> getCache() {
-                return (RemoteCache<CK, CV>) cache.get();
+                RemoteCache<CK, CV> result = (RemoteCache<CK, CV>) cache.get();
+                Marshaller marshaller = result.getRemoteCacheContainer().getMarshaller();
+                DataFormat format = DataFormat.builder()
+                        .keyType(MediaType.APPLICATION_OBJECT).keyMarshaller(marshaller)
+                        .valueType(MediaType.APPLICATION_OBJECT).valueMarshaller(marshaller)
+                        .build();
+                return result.withDataFormat(format);
             }
         };
         Supplier<SessionManagerFactory<ServletContext, C>> factory = new Supplier<>() {

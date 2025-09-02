@@ -25,8 +25,8 @@ import jakarta.transaction.Transaction;
 import org.jboss.as.ejb3.component.EJBComponent;
 import org.jboss.as.ejb3.component.EJBComponentDescription;
 import org.jboss.as.ejb3.logging.EjbLogger;
+import org.jboss.as.ejb3.timerservice.AbstractManagedTimer;
 import org.jboss.as.ejb3.timerservice.TimerHandleImpl;
-import org.jboss.as.ejb3.timerservice.spi.ManagedTimer;
 import org.jboss.as.ejb3.timerservice.spi.ManagedTimerService;
 import org.jboss.as.ejb3.timerservice.spi.TimedObjectInvoker;
 import org.wildfly.clustering.cache.batch.Batch;
@@ -42,7 +42,7 @@ import org.wildfly.clustering.ejb.timer.TimerManager;
  * @author Paul Ferraro
  * @param <I> the timer identifier type
  */
-public class DistributableTimer<I> implements ManagedTimer {
+public class DistributableTimer<I> extends AbstractManagedTimer {
 
     private final TimerManager<I> manager;
     private final Timer<I> timer;
@@ -51,6 +51,7 @@ public class DistributableTimer<I> implements ManagedTimer {
     private final TimerSynchronizationFactory<I> synchronizationFactory;
 
     public DistributableTimer(TimerManager<I> manager, Timer<I> timer, SuspendedBatch suspendedBatch, TimedObjectInvoker invoker, TimerSynchronizationFactory<I> synchronizationFactory) {
+        super(invoker.getTimedObjectId(), timer.getId().toString());
         this.manager = manager;
         this.timer = timer;
         this.suspendedBatch = suspendedBatch;
@@ -106,23 +107,28 @@ public class DistributableTimer<I> implements ManagedTimer {
                 // Cancel timer on tx commit
                 // Reactivate timer on tx rollback
                 this.timer.suspend();
-                try {
-                    transaction.registerSynchronization(this.synchronizationFactory.createCancelSynchronization(this.timer, this.manager.getBatchFactory(), this.suspendedBatch));
-                } catch (RollbackException e) {
-                    // getActiveTransaction() would have returned null
-                    throw new IllegalStateException(e);
-                } catch (SystemException e) {
-                    context.get().discard();
-                    throw new EJBException(e);
-                }
+                this.registerSynchronization(transaction, this.timer);
                 @SuppressWarnings("unchecked")
                 Set<I> inactiveTimers = (Set<I>) this.invoker.getComponent().getTransactionSynchronizationRegistry().getResource(this.manager);
                 if (inactiveTimers != null) {
                     inactiveTimers.remove(this.timer.getId());
                 }
             } else {
-                this.synchronizationFactory.getCancelTask().accept(this.timer);
+                try (Batch batch = context.get()) {
+                    this.synchronizationFactory.getCancelTask().accept(this.timer);
+                }
             }
+        }
+    }
+
+    private void registerSynchronization(Transaction transaction, Timer<I> timer) {
+        @SuppressWarnings("resource") // Closed via synchronization
+        Batch batch = this.manager.getBatchFactory().get();
+        try (Context<SuspendedBatch> context = batch.suspendWithContext()) {
+            transaction.registerSynchronization(this.synchronizationFactory.createCancelSynchronization(timer, context.get()));
+        } catch (RollbackException | SystemException e) {
+            batch.close();
+            throw new EJBException(e);
         }
     }
 
@@ -209,21 +215,5 @@ public class DistributableTimer<I> implements ManagedTimer {
         try (Context<Batch> context = this.suspendedBatch.resumeWithContext()) {
             return this.timer.getMetaData().isPersistent();
         }
-    }
-
-    @Override
-    public int hashCode() {
-        return this.timer.hashCode();
-    }
-
-    @Override
-    public boolean equals(Object object) {
-        if (!(object instanceof ManagedTimer)) return false;
-        return this.getId().equals(((ManagedTimer) object).getId());
-    }
-
-    @Override
-    public String toString() {
-        return this.getId();
     }
 }
