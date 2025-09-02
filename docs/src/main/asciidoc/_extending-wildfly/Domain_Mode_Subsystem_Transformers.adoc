@@ -229,24 +229,24 @@ registering the subsystem you will typically see something like:
 [source,java,options="nowrap"]
 ----
 public class SomeExtension implements Extension {
- 
+
     private static final String SUBSYSTEM_NAME = "my-subsystem"'
- 
+
     private static final int MANAGEMENT_API_MAJOR_VERSION = 2;
     private static final int MANAGEMENT_API_MINOR_VERSION = 0;
     private static final int MANAGEMENT_API_MICRO_VERSION = 0;
- 
+
     /**
      * {@inheritDoc}
      * @see org.jboss.as.controller.Extension#initialize(org.jboss.as.controller.ExtensionContext)
      */
     @Override
     public void initialize(ExtensionContext context) {
- 
+
         // IMPORTANT: Management API version != xsd version! Not all Management API changes result in XSD changes
         SubsystemRegistration registration = context.registerSubsystem(SUBSYSTEM_NAME, MANAGEMENT_API_MAJOR_VERSION,
                 MANAGEMENT_API_MINOR_VERSION, MANAGEMENT_API_MICRO_VERSION);
- 
+
         //Register the resource definitions
         ....
     }
@@ -746,10 +746,10 @@ Loaded legacy resource descriptions
 Loading resource descriptions for currently running STANDALONE...
 Loaded current resource descriptions
 Starting comparison of the current....
- 
+
 ======= Comparing core models ======
 -- SNIP --
- 
+
 ======= Comparing subsystem models ======
 -- SNIP --
 ======= Resource root address: ["subsystem" => "remoting"] - Current version: 2.0.0; legacy version: 1.2.0 =======
@@ -763,7 +763,7 @@ Missing parameters for operation 'add' in current: []; missing in legacy [protoc
 --- Problems for relative address to root []:
 Missing attributes in current: []; missing in legacy [require-bean-descriptor, non-portable-mode]
 Missing parameters for operation 'add' in current: []; missing in legacy [require-bean-descriptor, non-portable-mode]
- 
+
 Done comparison of STANDALONE!
 ----
 
@@ -812,13 +812,13 @@ transformation in this way.
 [source,java,options="nowrap"]
 ----
 public class SomeExtension implements Extension {
- 
+
     private static final String SUBSYSTEM_NAME = "my-subsystem"'
- 
+
     private static final int MANAGEMENT_API_MAJOR_VERSION = 2;
     private static final int MANAGEMENT_API_MINOR_VERSION = 0;
     private static final int MANAGEMENT_API_MICRO_VERSION = 0;
- 
+
     @Override
     public void initialize(ExtensionContext context) {
         SubsystemRegistration registration = context.registerSubsystem(SUBSYSTEM_NAME, MANAGEMENT_API_MAJOR_VERSION,
@@ -826,24 +826,24 @@ public class SomeExtension implements Extension {
         //Register the resource definitions
         ....
     }
- 
+
     static void registerTransformers(final SubsystemRegistration subsystem) {
         registerTransformers_1_1_0(subsystem);
         registerTransformers_1_2_0(subsystem);
     }
- 
+
     /**
      * Registers transformers from the current version to ModelVersion 1.1.0
      */
     private static void registerTransformers_1_1_0(final SubsystemRegistration subsystem) {
         final ModelVersion version = ModelVersion.create(1, 1, 0);
- 
+
         //The default resource transformer forwards all operations
         final TransformersSubRegistration registration = subsystem.registerModelTransformers(version, ResourceTransformer.DEFAULT);
         final TransformersSubRegistration child = registration.registerSubResource(PathElement.pathElement("child"));
         //We can do more things on the TransformersSubRegistation instances
- 
- 
+
+
         registerRelayTransformers(stack);
     }
 ----
@@ -874,12 +874,12 @@ this has ModelVersion 2.0.0).
                 .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(false, false, new ModelNode(true)),
                         WeldResourceDefinition.NON_PORTABLE_MODE_ATTRIBUTE, WeldResourceDefinition.REQUIRE_BEAN_DESCRIPTOR_ATTRIBUTE)
                 .addRejectCheck(new RejectAttributeChecker.DefaultRejectAttributeChecker() {
- 
+
                     @Override
                     public String getRejectionLogMessage(Map<String, ModelNode> attributes) {
                         return WeldMessages.MESSAGES.rejectAttributesMustBeTrue(attributes.keySet());
                     }
- 
+
                     @Override
                     protected boolean rejectAttribute(PathAddress address, String attributeName, ModelNode attributeValue,
                             TransformationContext context) {
@@ -1094,7 +1094,7 @@ the child resource.
     //We are interested in /subsystem-my-subsystem/some-child=*/another-level
     ResourceTransformationDescriptionBuilder anotherBuilder =
        childBuilder.addChildResource(PathElement.pathElement("another-level"));
- 
+
     //Use anotherBuilder to add child-resource and/or attribute transformation
     ....
 ----
@@ -1250,7 +1250,7 @@ quite simple:
 [source,java,options="nowrap"]
 ----
 public interface DiscardAttributeChecker {
- 
+
     /**
      * Returns {@code true} if the attribute should be discarded if expressions are used
      *
@@ -1713,7 +1713,7 @@ which the `AttributeConverter` has been registered
 [source,java,options="nowrap"]
 ----
 public interface AttributeConverter {
- 
+
     /**
      * Converts an operation parameter
      *
@@ -1779,7 +1779,7 @@ it to secondary HCs using the legacy model:
                       }
                   }
           };
- 
+
      attributeBuilder.
           .setValueConverter(secondsToMs , "timeout")
 ----
@@ -1909,13 +1909,13 @@ like:
 [source,java,options="nowrap"]
 ----
 public class SomeExtension implements Extension {
- 
+
     private static final String SUBSYSTEM_NAME = "my-subsystem"'
- 
+
     private static final int MANAGEMENT_API_MAJOR_VERSION = 1;
     private static final int MANAGEMENT_API_MINOR_VERSION = 1;
     private static final int MANAGEMENT_API_MICRO_VERSION = 0;
- 
+
     @Override
     public void initialize(ExtensionContext context) {
         SubsystemRegistration registration = context.registerSubsystem(SUBSYSTEM_NAME, MANAGEMENT_API_MAJOR_VERSION,
@@ -1923,11 +1923,11 @@ public class SomeExtension implements Extension {
         //Register the resource definitions
         ....
     }
- 
+
     private void registerTransformers(final SubsystemRegistration subsystem) {
         registerTransformers_1_0_0(subsystem);
     }
- 
+
     /**
      * Registers transformers from the current version to ModelVersion 1.0.0
      */
@@ -1948,13 +1948,13 @@ transforming to 1.1.0, we bump the model version to 2.0.0:
 [source,java,options="nowrap"]
 ----
 public class SomeExtension implements Extension {
- 
+
     private static final String SUBSYSTEM_NAME = "my-subsystem"'
- 
+
     private static final int MANAGEMENT_API_MAJOR_VERSION = 2;
     private static final int MANAGEMENT_API_MINOR_VERSION = 0;
     private static final int MANAGEMENT_API_MICRO_VERSION = 0;
- 
+
     @Override
     public void initialize(ExtensionContext context) {
         SubsystemRegistration registration = context.registerSubsystem(SUBSYSTEM_NAME, MANAGEMENT_API_MAJOR_VERSION,
@@ -1989,7 +1989,7 @@ where we reject any defined occurrances of our new attribute `new-attr`:
         registerTransformers_1_0_0(subsystem);
         registerTransformers_1_1_0(subsystem);
     }
- 
+
     /**
      * Registers transformers from the current version to ModelVersion 1.1.0
      */
@@ -2041,24 +2041,24 @@ transformation across one version delta.
     private void registerTransformers(SubsystemRegistration subsystem) {
         ModelVersion version1_1_0 = ModelVersion.create(1, 1, 0);
         ModelVersion version1_0_0 = ModelVersion.create(1, 0, 0);
- 
+
         ChainedTransformationDescriptionBuilder chainedBuilder =
               TransformationDescriptionBuilder.Factory.createChainedSubystemInstance(subsystem.getSubsystemVersion());
- 
+
         //Differences between the current version and 1.1.0
         ResourceTransformationDescriptionBuilder builder110 =
             chainedBuilder.create(subsystem.getSubsystemVersion(), version1_1_0);
         builder110.getAttributeBuilder()
             .addRejectCheck(RejectAttributeChecker.DEFINED, "new-attr")
             .end();
- 
+
         //Differences between the 1.1.0 and 1.0.0
         ResourceTransformationDescriptionBuilder builder100 =
             chainedBuilder.create(subsystem.getSubsystemVersion(), version1_0_0);
         builder110.getAttributeBuilder()
             .addRejectCheck(RejectAttributeChecker.DEFINED, "attr1")
             .end();
- 
+
         chainedBuilder.buildAndRegister(subsystem, new ModelVersion[]{version1_0_0, version1_1_0});
 ----
 
@@ -2127,7 +2127,7 @@ public class ThreadsSubsystemTestCase extends AbstractSubsystemBaseTest {
     public ThreadsSubsystemTestCase() {
         super(ThreadsExtension.SUBSYSTEM_NAME, new ThreadsExtension());
     }
- 
+
     @Override
     protected String getSubsystemXml() throws IOException {
         return readResource("threads-subsystem-1_1.xml");
@@ -2163,15 +2163,15 @@ To test a configuration xxx
         //Use the non-runtime version of the extension which will happen on the HC
         KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT)
                 .setSubsystemXmlResource(subsystemXml);
- 
+
         final PathAddress subsystemAddress = PathAddress.pathAddress(PathElement.pathElement(SUBSYSTEM, mainSubsystemName));
- 
+
         // Add legacy subsystems
         builder.createLegacyKernelServicesBuilder(null, controllerVersion, modelVersion)
                 .addOperationValidationResolve("add", subsystemAddress.append(PathElement.pathElement("thread-factory")))
                 .addMavenResourceURL("org.jboss.as:jboss-as-threads:" + controllerVersion.getMavenGavVersion())
                 .excludeFromParent(SingleClassFilter.createFilter(ThreadsLogger.class));
- 
+
         KernelServices mainServices = builder.build();
         KernelServices legacyServices = mainServices.getLegacyServices(modelVersion);
         Assert.assertNotNull(legacyServices);
@@ -2243,11 +2243,11 @@ a temporary test (make sure that you adjust `controllerVersion` and
         ModelTestControllerVersion controllerVersion = ModelTestControllerVersion.V7_1_2_FINAL;
         ModelVersion modelVersion = ModelVersion.create(1, 0, 0);
         KernelServicesBuilder builder = createKernelServicesBuilder(null);
- 
+
         builder.createLegacyKernelServicesBuilder(null, controllerVersion, modelVersion)
             .addMavenResourceURL("org.jboss.as:jboss-as-threads:" + controllerVersion.getMavenGavVersion());
         KernelServices services = builder.build();
- 
+
         generateLegacySubsystemResourceRegistrationDmr(services, modelVersion);
     }
 ----
@@ -2271,26 +2271,26 @@ resource and attribute where expressions were not allowed.
     public void testRejectExpressionsAS712() throws Exception {
         testRejectExpressions_1_0_0(ModelTestControllerVersion.V7_1_2_FINAL);
     }
- 
+
     private void testRejectExpressions_1_0_0(ModelTestControllerVersion controllerVersion) throws Exception {
         // create builder for current subsystem version
         KernelServicesBuilder builder = createKernelServicesBuilder(createAdditionalInitialization());
- 
+
         // create builder for legacy subsystem version
         ModelVersion version_1_0_0 = ModelVersion.create(1, 0, 0);
         builder.createLegacyKernelServicesBuilder(null, controllerVersion, version_1_0_0)
                 .addMavenResourceURL("org.jboss.as:jboss-as-threads:" + controllerVersion.getMavenGavVersion())
                 .excludeFromParent(SingleClassFilter.createFilter(ThreadsLogger.class));
- 
+
         KernelServices mainServices = builder.build();
         KernelServices legacyServices = mainServices.getLegacyServices(version_1_0_0);
- 
+
         Assert.assertNotNull(legacyServices);
         Assert.assertTrue("main services did not boot", mainServices.isSuccessfulBoot());
         Assert.assertTrue(legacyServices.isSuccessfulBoot());
- 
+
         List<ModelNode> xmlOps = builder.parseXmlResource("expressions.xml");
- 
+
         ModelTestUtils.checkFailedTransformedBootOperations(mainServices, version_1_0_0, xmlOps, getConfig());
     }
 ----
@@ -2435,14 +2435,14 @@ this attribute:
     private void registerTransformers_1_2(SubsystemRegistration registration) {
         TransformationDescription.Tools.register(get1_2_0_1_3_0Description(), registration, VERSION_1_2);
     }
- 
+
     private static TransformationDescription get1_2_0_1_3_0Description() {
         ResourceTransformationDescriptionBuilder builder = ResourceTransformationDescriptionBuilder.Factory.createSubsystemInstance();
         protocolTransform(builder.addChildResource(RemoteOutboundConnectionResourceDefinition.ADDRESS)
                 .getAttributeBuilder());
         return builder.build();
     }
- 
+
     private static AttributeTransformationDescriptionBuilder protocolTransform(AttributeTransformationDescriptionBuilder builder) {
         builder.setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(new ModelNode(Protocol.REMOTE.toString())), RemoteOutboundConnectionResourceDefinition.PROTOCOL)
                 .addRejectCheck(RejectAttributeChecker.DEFINED, RemoteOutboundConnectionResourceDefinition.PROTOCOL);
@@ -2516,12 +2516,12 @@ WeldExtension:
                 .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(false, false, new ModelNode(true)),
                         WeldResourceDefinition.NON_PORTABLE_MODE_ATTRIBUTE, WeldResourceDefinition.REQUIRE_BEAN_DESCRIPTOR_ATTRIBUTE)
                 .addRejectCheck(new RejectAttributeChecker.DefaultRejectAttributeChecker() {
- 
+
                     @Override
                     public String getRejectionLogMessage(Map<String, ModelNode> attributes) {
                         return WeldMessages.MESSAGES.rejectAttributesMustBeTrue(attributes.keySet());
                     }
- 
+
                     @Override
                     protected boolean rejectAttribute(PathAddress address, String attributeName, ModelNode attributeValue,
                             TransformationContext context) {
@@ -2641,7 +2641,7 @@ convert a value we need an instance of `AttributeConverter`.
 [source,java,options="nowrap"]
 ----
     static class CapacityCheckerAndConverter extends DefaultCheckersAndConverter {
- 
+
         static final CapacityCheckerAndConverter INSTANCE = new CapacityCheckerAndConverter();
 ----
 
@@ -2655,7 +2655,7 @@ We should not discard so `isValueDiscardable()` from
             //Not used for discard
             return false;
         }
- 
+
         @Override
         public String getRejectionLogMessage(Map<String, ModelNode> attributes) {
             return ModClusterMessages.MESSAGES.capacityIsExpressionOrGreaterThanIntegerMaxValue(attributes.get(CAPACITY.getName()));
@@ -2692,8 +2692,8 @@ And then finally we do the conversion:
                 attributeValue.set((int)converted.longValue());
             }
         }
- 
- 
+
+
         private Long convert(ModelNode attributeValue) {
             if (attributeValue.isDefined() && !checkForExpression(attributeValue)) {
                 double raw = attributeValue.asDouble();
@@ -2703,11 +2703,11 @@ And then finally we do the conversion:
             }
             return null;
         }
- 
+
         private boolean isIntegerValue(double raw) {
             return raw == Double.valueOf(Math.round(raw)).doubleValue();
         }
- 
+
     }
 ----
 

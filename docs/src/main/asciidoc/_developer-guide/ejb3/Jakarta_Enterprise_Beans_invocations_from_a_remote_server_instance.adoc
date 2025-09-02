@@ -35,8 +35,8 @@ which is within a myapp.ear. Here's how it would look:
 myapp.ear
 |
 |---- myejb.jar
-|        |
-|        |---- <org.myapp.ejb.*> // EJB classes
+|        |
+|        |---- <org.myapp.ejb.*> // EJB classes
 ----
 
 [NOTE]
@@ -54,28 +54,28 @@ as follows:
 [source,java,options="nowrap"]
 ----
 package org.myapp.ejb;
- 
+
 public interface Greeter {
-    
-    String greet(String user);
+
+    String greet(String user);
 }
 ----
 
 [source,java,options="nowrap"]
 ----
 package org.myapp.ejb;
- 
+
 import jakarta.ejb.Remote;
 import jakarta.ejb.Stateless;
- 
+
 @Stateless
 @Remote (Greeter.class)
 public class GreeterBean implements Greeter {
- 
-    @Override
-    public String greet(String user) {
-        return "Hello " + user + ", have a pleasant day!";
-    }
+
+    @Override
+    public String greet(String user) {
+        return "Hello " + user + ", have a pleasant day!";
+    }
 }
 ----
 
@@ -108,12 +108,12 @@ questions/output as follows:
 [source,shell,options="nowrap"]
 ----
 jpai@jpai-laptop:bin$ ./add-user.sh
- 
+
 What type of user do you wish to add?
 &nbsp;a) Management User (mgmt-users.properties)
 &nbsp;b) Application User (application-users.properties)
 (a): b
- 
+
 Enter the details of the new user to add.
 Realm (ApplicationRealm) :
 Username : ejb
@@ -326,9 +326,9 @@ configuration will be created in the remoting subsystem:
             <outbound-connections>
                 <remote-outbound-connection name="remote-ejb-connection" outbound-socket-binding-ref="remote-ejb" authentication-context="ejb-context">
                     <properties>
-                        <property name="SASL_POLICY_NOANONYMOUS" value="false"/>
-                        <property name="SSL_ENABLED" value="false"/>
-                    </properties>
+                        <property name="SASL_POLICY_NOANONYMOUS" value="false"/>
+                        <property name="SSL_ENABLED" value="false"/>
+                    </properties>
                 </remote-outbound-connection>
             </outbound-connections>
         </subsystem>
@@ -352,14 +352,14 @@ client application packaging will look like:
 client-app.ear
 |
 |--- META-INF
-|        |
-|        |--- jboss-ejb-client.xml
+|        |
+|        |--- jboss-ejb-client.xml
 |
 |--- web.war
-|        |
-|        |--- WEB-INF/classes
-|        |        |
-|        |        |---- <org.myapp.FooServlet> // classes in the web app
+|        |
+|        |--- WEB-INF/classes
+|        |        |
+|        |        |---- <org.myapp.FooServlet> // classes in the web app
 ----
 
 In the client application we'll use a servlet which invokes on the bean
@@ -424,7 +424,7 @@ other components (like EJB) too. So let's see how it looks like:
 import javax.naming.Context;
 import java.util.Hashtable;
 import javax.naming.InitialContext;
- 
+
 ...
 public void invokeOnBean() {
         try {
@@ -433,15 +433,15 @@ public void invokeOnBean() {
             props.put(Context.URL_PKG_PREFIXES, "org.jboss.ejb.client.naming");
             // create the InitialContext
             final Context context = new javax.naming.InitialContext(props);
- 
+
             // Lookup the Greeter bean using the ejb: namespace syntax which is explained here https://docs.jboss.org/author/display/AS71/EJB+invocations+from+a+remote+client+using+JNDI
             final Greeter bean = (Greeter) context.lookup("ejb:" + "myapp" + "/" + "myejb" + "/" + "" + "/" + "GreeterBean" + "!" + org.myapp.ejb.Greeter.class.getName());
- 
+
    // invoke on the bean
    final String greeting = bean.greet("Tom");
- 
+
             System.out.println("Received greeting: " + greeting);
- 
+
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

@@ -70,7 +70,7 @@ public class UndertowHandlersDeploymentProcessor implements DeploymentUnitProces
             try {
                 ClassLoader cl = module.getClassLoader();
                 if (hander.getModule() != null) {
-                    Module handlerModule = deploymentUnit.getAttachment(Attachments.SERVICE_MODULE_LOADER).loadModule(ModuleIdentifierUtil.canonicalModuleIdentifier(hander.getModule()));
+                    Module handlerModule = deploymentUnit.getAttachment(Attachments.SERVICE_MODULE_LOADER).loadModule(ModuleIdentifierUtil.parseCanonicalModuleIdentifier(hander.getModule()));
                     cl = handlerModule.getClassLoader();
 
                 }

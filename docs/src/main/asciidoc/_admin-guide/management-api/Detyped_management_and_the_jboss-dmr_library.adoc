@@ -154,9 +154,9 @@ Not all type conversions are possible:
 bsh % node.set("A string");
 bsh % print(node.asInt());
 // Error: // Uncaught Exception: Method Invocation node.asInt : at Line: 20 : in file: <unknown file> : node .asInt ( )
- 
+
 Target exception: java.lang.NumberFormatException: For input string: "A string"
- 
+
 java.lang.NumberFormatException: For input string: "A string"
  at java.lang.NumberFormatException.forInputString(NumberFormatException.java:48)
  at java.lang.Integer.parseInt(Integer.java:449)
@@ -209,9 +209,9 @@ Use the `protect()` method to make a `ModelNode` immutable:
 bsh % clone.protect();
 bsh % clone.set("A different string");
 // Error: // Uncaught Exception: Method Invocation clone.set : at Line: 15 : in file: <unknown file> : clone .set ( "A different string" )
- 
+
 Target exception: java.lang.UnsupportedOperationException
- 
+
 java.lang.UnsupportedOperationException
  at org.jboss.dmr.ModelNode.checkProtect(ModelNode.java:1441)
  at org.jboss.dmr.ModelNode.set(ModelNode.java:351)
@@ -338,9 +338,9 @@ some non-list type, you cannot use the `add` method:
 ----
 bsh % node.add(5);
 // Error: // Uncaught Exception: Method Invocation node.add : at Line: 18 : in file: <unknown file> : node .add ( 5 )
- 
+
 Target exception: java.lang.IllegalArgumentException
- 
+
 java.lang.IllegalArgumentException
  at org.jboss.dmr.ModelValue.addChild(ModelValue.java:120)
  at org.jboss.dmr.ModelNode.add(ModelNode.java:1007)

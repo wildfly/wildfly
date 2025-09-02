@@ -6,7 +6,7 @@
 package org.jboss.as.test.smoke.jms;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.test.integration.common.jms.JMSOperations;
 import org.jboss.as.test.jms.auxiliary.CreateQueueSetupTask;
@@ -17,15 +17,15 @@ import org.jboss.shrinkwrap.api.ArchivePaths;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import jakarta.ejb.EJB;
 import java.util.concurrent.CountDownLatch;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  * Test of fix for WFLY-9762.
@@ -36,7 +36,7 @@ import static org.junit.Assert.assertEquals;
  *
  * @author <a href="jondruse@redhat.com">Jiri Ondrusek</a>
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @ServerSetup(CreateQueueSetupTask.class)
 public class SendToQueueIgnoreJTATest {
 
@@ -50,7 +50,7 @@ public class SendToQueueIgnoreJTATest {
 
     private CountDownLatch latch;
 
-    @Before
+    @BeforeEach
     public void setMessageReceived() {
         latch = new CountDownLatch(1);
         jmsListener.setLatch(latch);

@@ -18,10 +18,10 @@ public interface RoutingProvider {
     NullaryServiceDescriptor<RoutingProvider> INFINISPAN_SERVICE_DESCRIPTOR = NullaryServiceDescriptor.of("org.wildfly.clustering.web.infinispan-routing-provider", RoutingProvider.class);
 
     /**
-     * Builds the server dependencies to be made available to every deployment.
+     * Returns a number of installers of services, one of which will provide a {@link RoutingProvider} for the server identified by the specified name.
      * @param serverName the name of the server
-     * @param route the distinct route of the server
-     * @return a service builder
+     * @param route a dependency on a service providing the server route.
+     * @return a number of service installers
      */
     Iterable<ServiceInstaller> getServiceInstallers(String serverName, ServiceDependency<String> route);
 }

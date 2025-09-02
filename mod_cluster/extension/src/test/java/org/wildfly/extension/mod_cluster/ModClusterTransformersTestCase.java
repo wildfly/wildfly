@@ -32,7 +32,11 @@ public class ModClusterTransformersTestCase extends AbstractSubsystemTest {
 
     @Parameters
     public static Iterable<ModelTestControllerVersion> parameters() {
-        return EnumSet.of(ModelTestControllerVersion.EAP_7_4_0, ModelTestControllerVersion.EAP_8_0_0);
+        return EnumSet.of(
+                ModelTestControllerVersion.EAP_7_4_0,
+                ModelTestControllerVersion.EAP_8_0_0,
+                ModelTestControllerVersion.EAP_8_1_0
+        );
     }
 
     ModelTestControllerVersion version;
@@ -47,31 +51,37 @@ public class ModClusterTransformersTestCase extends AbstractSubsystemTest {
     }
 
     private static ModClusterSubsystemModel getModelVersion(ModelTestControllerVersion controllerVersion) {
-        switch (controllerVersion) {
-            case EAP_7_4_0:
-                return ModClusterSubsystemModel.VERSION_7_0_0;
-            case EAP_8_0_0:
-                return ModClusterSubsystemModel.VERSION_8_0_0;
-        }
-        throw new IllegalArgumentException();
+        return switch (controllerVersion) {
+            case EAP_7_4_0 -> ModClusterSubsystemModel.VERSION_7_0_0;
+            case EAP_8_0_0, EAP_8_1_0 -> ModClusterSubsystemModel.VERSION_8_0_0;
+            default -> throw new IllegalArgumentException();
+        };
     }
 
     private static String[] getDependencies(ModelTestControllerVersion version) {
-        switch (version) {
-            case EAP_7_4_0:
-                return new String[] {
-                        formatArtifact("org.jboss.eap:wildfly-mod_cluster-extension:%s", version),
-                        "org.jboss.mod_cluster:mod_cluster-core:1.4.3.Final-redhat-00002",
-                        formatArtifact("org.jboss.eap:wildfly-clustering-common:%s", version),
-                };
-            case EAP_8_0_0:
-                return new String[] {
-                        formatArtifact("org.jboss.eap:wildfly-mod_cluster-extension:%s", version),
-                        "org.jboss.mod_cluster:mod_cluster-core:2.0.1.Final-redhat-00001",
-                        formatArtifact("org.jboss.eap:wildfly-clustering-common:%s", version),
-                };
-        }
-        throw new IllegalArgumentException();
+        return switch (version) {
+            case EAP_7_4_0 -> new String[] {
+                    formatArtifact("org.jboss.eap:wildfly-mod_cluster-extension:%s", version),
+                    "org.jboss.mod_cluster:mod_cluster-core:1.4.3.Final-redhat-00002",
+                    formatArtifact("org.jboss.eap:wildfly-clustering-common:%s", version),
+            };
+            case EAP_8_0_0 -> new String[] {
+                    formatArtifact("org.jboss.eap:wildfly-mod_cluster-extension:%s", version),
+                    "org.jboss.mod_cluster:mod_cluster-core:2.0.1.Final-redhat-00001",
+                    formatArtifact("org.jboss.eap:wildfly-clustering-common:%s", version),
+            };
+            case EAP_8_1_0 -> new String[] {
+                    // TODO Replace with "org.jboss.eap" when org.jboss.as.model.test.ModelTestControllerVersion.EAP_8_1_0 is updated
+                    formatArtifact("org.wildfly:wildfly-mod_cluster-extension:%s", version),
+                    //formatArtifact("org.jboss.eap:wildfly-mod_cluster-extension:%s", version),
+                    // TODO Replace with -redhat version of the artifact when org.jboss.as.model.test.ModelTestControllerVersion.EAP_8_1_0 is updated
+                    "org.jboss.mod_cluster:mod_cluster-core:2.1.0.Final",
+                    // TODO Replace with "org.jboss.eap" when org.jboss.as.model.test.ModelTestControllerVersion.EAP_8_1_0 is updated
+                    formatArtifact("org.wildfly:wildfly-clustering-common:%s", version),
+                    //formatArtifact("org.jboss.eap:wildfly-clustering-common:%s", version),
+            };
+            default -> throw new IllegalArgumentException();
+        };
     }
 
     @Test

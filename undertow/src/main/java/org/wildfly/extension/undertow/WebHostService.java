@@ -16,6 +16,7 @@ import io.undertow.servlet.api.DeploymentManager;
 import io.undertow.servlet.api.ServletContainer;
 import io.undertow.servlet.api.ServletInfo;
 import io.undertow.servlet.util.ImmediateInstanceFactory;
+
 import org.jboss.as.web.host.ServletBuilder;
 import org.jboss.as.web.host.WebDeploymentBuilder;
 import org.jboss.as.web.host.WebDeploymentController;
@@ -25,7 +26,8 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StopContext;
 import org.wildfly.extension.requestcontroller.ControlPoint;
 import org.wildfly.extension.requestcontroller.RequestController;
-import org.wildfly.extension.undertow.deployment.GlobalRequestControllerHandler;
+import org.wildfly.extension.undertow.deployment.SuspendedServerRequestListener;
+import org.wildfly.extension.undertow.deployment.SuspendedServerHandlerWrapper;
 
 /**
  * Implementation of WebHost from common web, service starts with few more dependencies than default Host
@@ -51,6 +53,11 @@ final class WebHostService implements Service<WebHost>, WebHost {
     @Override
     public WebDeploymentController addWebDeployment(final WebDeploymentBuilder webDeploymentBuilder) {
         DeploymentInfo d = new DeploymentInfo();
+
+        if (this.controlPoint != null) {
+            new SuspendedServerRequestListener(this.controlPoint).apply(d);
+        }
+
         d.setDeploymentName(webDeploymentBuilder.getContextRoot());
         d.setContextPath(webDeploymentBuilder.getContextRoot());
         d.setClassLoader(webDeploymentBuilder.getClassLoader());
@@ -73,8 +80,8 @@ final class WebHostService implements Service<WebHost>, WebHost {
             d.addServlet(s);
         }
 
-        if (controlPoint != null) {
-            d.addOuterHandlerChainWrapper(GlobalRequestControllerHandler.wrapper(controlPoint, webDeploymentBuilder.getAllowRequestPredicates()));
+        if (this.controlPoint != null) {
+            new SuspendedServerHandlerWrapper(this.controlPoint, webDeploymentBuilder.getAllowRequestPredicates()).apply(d);
         }
 
         return new WebDeploymentControllerImpl(d);

@@ -16,7 +16,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>37.0.0.Beta1-SNAPSHOT</version>
+        <version>38.0.0.Beta1-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
@@ -42,6 +42,18 @@
                 <artifactId>asciidoctor-maven-plugin</artifactId>
                 <configuration>
                     <attributes>
+                        <!-- TODO Validate the need for these that were pulled out of wildfly-parent -->
+                        <source-highlighter>coderay</source-highlighter>
+                        <icons>font</icons>
+                        <pagenums></pagenums>
+                        <version>${project.version}</version>
+                        <idprefix></idprefix>
+                        <idseparator>-</idseparator>
+                        <allow-uri-read>true</allow-uri-read>
+                        <revnumber>${project.version}</revnumber>
+                        <revdate>${maven.build.timestamp}</revdate>
+                        <organization>${project.organization.name}</organization>
+                        <!-- end TODO -->
                         <!-- Attributes to use in the asciidoc source files. Please leave in alphabetical order -->
                         <appservername>${full.dist.product.release.name}</appservername>
                         <oracle-javadoc>https://docs.oracle.com/en/java/javase/17/docs/api</oracle-javadoc>
@@ -148,6 +160,16 @@
                             <goal>generate-site</goal>
                         </goals>
                         <phase>package</phase>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.sonatype.plugins</groupId>
+                <artifactId>nxrm3-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>nexus-deploy</id>
+                        <phase>none</phase>
                     </execution>
                 </executions>
             </plugin>

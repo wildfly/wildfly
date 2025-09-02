@@ -6,8 +6,8 @@
 package org.jboss.as.clustering.jgroups;
 
 import org.jgroups.util.ThreadFactory;
-import org.wildfly.clustering.context.ContextClassLoaderReference;
 import org.wildfly.clustering.context.Contextualizer;
+import org.wildfly.clustering.context.ThreadContextClassLoaderReference;
 
 /**
  * {@link ThreadFactory} decorator that associates a specific class loader to created threads.
@@ -15,13 +15,11 @@ import org.wildfly.clustering.context.Contextualizer;
  */
 public class ClassLoaderThreadFactory implements org.jgroups.util.ThreadFactory {
     private final ThreadFactory factory;
-    private final ClassLoader targetLoader;
     private final Contextualizer contextualizer;
 
     public ClassLoaderThreadFactory(ThreadFactory factory, ClassLoader targetLoader) {
         this.factory = factory;
-        this.targetLoader = targetLoader;
-        this.contextualizer = Contextualizer.withContextProvider(ContextClassLoaderReference.INSTANCE.provide(targetLoader));
+        this.contextualizer = Contextualizer.withContextProvider(ThreadContextClassLoaderReference.CURRENT.provide(targetLoader));
     }
 
     @Override
@@ -31,9 +29,7 @@ public class ClassLoaderThreadFactory implements org.jgroups.util.ThreadFactory 
 
     @Override
     public Thread newThread(final Runnable runner, String name) {
-        Thread thread = this.factory.newThread(this.contextualizer.contextualize(runner), name);
-        ContextClassLoaderReference.INSTANCE.accept(thread, this.targetLoader);
-        return thread;
+        return this.factory.newThread(this.contextualizer.contextualize(runner), name);
     }
 
     @Override

@@ -81,7 +81,7 @@ You need to reload or restart your server and you should see the
 following trace in your server console :
 
 ....
-INFO  [org.apache.activemq.artemis.core.server] (ServerService Thread Pool -- 64) AMQ221013: Using NIO Journal
+INFO  [org.apache.activemq.artemis.core.server] (ServerService Thread Pool -- 64) AMQ221013: Using NIO Journal
 ....
 
 [[aio-issue-on-wildfly-9]]
@@ -105,5 +105,5 @@ You need to reload or restart your server and you see the following
 trace in your server console :
 
 ....
-INFO  [org.hornetq.core.server] (ServerService Thread Pool -- 64) HQ221013: Using NIO Journal
+INFO  [org.hornetq.core.server] (ServerService Thread Pool -- 64) HQ221013: Using NIO Journal
 ....

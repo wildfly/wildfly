@@ -73,26 +73,26 @@ The datasource itself is defined within the subsystem _datasources_:
                 <password>sa</password>
             </security>
         </datasource>
-        <xa-datasource jndi-name="java:jboss/datasources/ExampleXADS" pool-name="ExampleXADS">
-           <driver>h2</driver>
-           <xa-datasource-property name="URL">jdbc:h2:mem:test</xa-datasource-property>
+        <xa-datasource jndi-name="java:jboss/datasources/ExampleXADS" pool-name="ExampleXADS">
+           <driver>h2</driver>
+           <xa-datasource-property name="URL">jdbc:h2:mem:test</xa-datasource-property>
            <xa-pool>
                 <min-pool-size>10</min-pool-size>
                 <max-pool-size>20</max-pool-size>
                 <prefill>true</prefill>
            </xa-pool>
-           <security>
-                <user-name>sa</user-name>
-                <password>sa</password>
-           </security>
-        </xa-datasource>
+           <security>
+                <user-name>sa</user-name>
+                <password>sa</password>
+           </security>
+        </xa-datasource>
         <drivers>
-            <driver name="h2" module="com.h2database.h2">
+            <driver name="h2" module="com.h2database.h2">
                 <xa-datasource-class>org.h2.jdbcx.JdbcDataSource</xa-datasource-class>
             </driver>
         </drivers>
   </datasources>
- 
+
 </subsystem>
 ----
 
@@ -134,13 +134,13 @@ You can easily query the same information through the CLI:
         }}
     }
 }
- 
- 
+
+
 [standalone@localhost:9990 /] /subsystem=datasources:installed-drivers-list
 {
-    "outcome" => "success",
-    "result" => [{
-        "driver-name" => "h2",
+    "outcome" => "success",
+    "result" => [{
+        "driver-name" => "h2",
         "datasource-class-info" => [{"org.h2.jdbcx.JdbcDataSource" => {
             "URL" => "java.lang.String",
             "description" => "java.lang.String",
@@ -149,15 +149,15 @@ You can easily query the same information through the CLI:
             "url" => "java.lang.String",
             "user" => "java.lang.String"
         }}],
-        "deployment-name" => undefined,
-        "driver-module-name" => "com.h2database.h2",
-        "module-slot" => "main",
-        "driver-xa-datasource-class-name" => "org.h2.jdbcx.JdbcDataSource",
-        "driver-class-name" => "org.h2.Driver",
-        "driver-major-version" => 1,
-        "driver-minor-version" => 3,
-        "jdbc-compliant" => true
-    }]
+        "deployment-name" => undefined,
+        "driver-module-name" => "com.h2database.h2",
+        "module-slot" => "main",
+        "driver-xa-datasource-class-name" => "org.h2.jdbcx.JdbcDataSource",
+        "driver-class-name" => "org.h2.Driver",
+        "driver-major-version" => 1,
+        "driver-minor-version" => 3,
+        "jdbc-compliant" => true
+    }]
 }
 ----
 
@@ -175,31 +175,31 @@ The CLI offers a set of commands to create and modify datasources:
 [source,options="nowrap"]
 ----
 [standalone@localhost:9990 /] data-source --help
- 
+
 SYNOPSIS
-  data-source --help [--properties | --commands] |
-              (--name=<resource_id> (--<property>=<value>)*) |
-              (<command> --name=<resource_id> (--<parameter>=<value>)*)
-              [--headers={<operation_header> (;<operation_header>)*}]
+  data-source --help [--properties | --commands] |
+              (--name=<resource_id> (--<property>=<value>)*) |
+              (<command> --name=<resource_id> (--<parameter>=<value>)*)
+              [--headers={<operation_header> (;<operation_header>)*}]
 DESCRIPTION
-  The command is used to manage resources of type /subsystem=datasources/data-source.
+  The command is used to manage resources of type /subsystem=datasources/data-source.
 [...]
- 
- 
+
+
 [standalone@localhost:9990 /] xa-data-source --help
- 
+
 SYNOPSIS
-  xa-data-source --help [--properties | --commands] |
-                 (--name=<resource_id> (--<property>=<value>)*) |
-                 (<command> --name=<resource_id> (--<parameter>=<value>)*)
-                 [--headers={<operation_header> (;<operation_header>)*}]
- 
+  xa-data-source --help [--properties | --commands] |
+                 (--name=<resource_id> (--<property>=<value>)*) |
+                 (<command> --name=<resource_id> (--<parameter>=<value>)*)
+                 [--headers={<operation_header> (;<operation_header>)*}]
+
 DESCRIPTION
-  The command is used to manage resources of type /subsystem=datasources/xa-data-source.
- 
+  The command is used to manage resources of type /subsystem=datasources/xa-data-source.
+
 RESOURCE DESCRIPTION
-  A JDBC XA data-source configuration
- 
+  A JDBC XA data-source configuration
+
 [...]
 ----
 

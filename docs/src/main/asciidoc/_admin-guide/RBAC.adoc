@@ -626,7 +626,7 @@ configured-requires-write       undefined BOOLEAN
 default-requires-addressable    false     BOOLEAN
 default-requires-read           false     BOOLEAN
 default-requires-write          true      BOOLEAN
- 
+
 CHILD      MIN-OCCURS MAX-OCCURS
 applies-to n/a        n/a
 ----
@@ -886,7 +886,7 @@ For example, the mail subsystem provides such a classification:
 ATTRIBUTE              VALUE     TYPE
 configured-application undefined BOOLEAN
 default-application    false     BOOLEAN
- 
+
 CHILD      MIN-OCCURS MAX-OCCURS
 applies-to n/a        n/a
 ----

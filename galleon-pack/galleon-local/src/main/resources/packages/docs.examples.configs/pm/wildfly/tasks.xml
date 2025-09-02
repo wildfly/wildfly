@@ -11,6 +11,7 @@
             <layers>
                 <include name="ee-core-profile-server"/>
                 <include name="microprofile-platform"/>
+                <include name="web-console"/>
             </layers>
         </config>
     </example-configs>

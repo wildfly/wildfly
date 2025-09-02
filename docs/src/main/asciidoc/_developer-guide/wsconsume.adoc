@@ -296,7 +296,7 @@ the following attributes:
 |sourcedestdir |The output directory for Java source. |value of destdir
 
 |target |The Jakarta XML Web Services specification target. Allowed values are 2.0, 2.1
-and 2.2 | 
+and 2.2 |
 
 |verbose |Enables more informational output about command progress.
 |false
@@ -328,7 +328,7 @@ Also, the following nested elements are supported:
 |=================================================
 |Element |Description |Default
 |binding |A Jakarta XML Web Services or Jakarta XML Binding binding file |none
-|jvmarg |Allows setting of custom jvm arguments | 
+|jvmarg |Allows setting of custom jvm arguments |
 |=================================================
 
 [[examples-wsconsume-2]]

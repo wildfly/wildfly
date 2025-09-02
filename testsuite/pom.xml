@@ -61,7 +61,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>37.0.0.Beta1-SNAPSHOT</version>
+        <version>38.0.0.Beta1-SNAPSHOT</version>
     </parent>
 
     <artifactId>wildfly-testsuite</artifactId>
@@ -382,6 +382,22 @@
                    <artifactId>maven-install-plugin</artifactId>
                    <executions><execution><id>default-install</id><phase>none</phase></execution></executions>
                </plugin>
+
+                <!-- Don't sign - nothing to do. -->
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-gpg-plugin</artifactId>
+                    <configuration><skip>true</skip></configuration>
+                </plugin>
+
+                <!-- Don't deploy -->
+                <plugin>
+                    <groupId>org.sonatype.plugins</groupId>
+                    <artifactId>nxrm3-maven-plugin</artifactId>
+                    <configuration>
+                        <skipNexusStagingDeployMojo>true</skipNexusStagingDeployMojo>
+                    </configuration>
+                </plugin>
             </plugins>
         </pluginManagement>
     </build>

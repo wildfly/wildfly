@@ -57,7 +57,7 @@ try {
 } catch(Exception lookupError) {
     throw new ServletException("Couldn't find CustomerManager bean", lookupError);
 }
- 
+
 try {
     productManager = (ProductManager) context.lookup("OrderManagerApp/ProductManagerBean/local");
 } catch(Exception lookupError) {
@@ -71,10 +71,10 @@ Example of how this is now coded in WildFly:
 ----
 @EJB(lookup="java:app/OrderManagerEJB/DistributionCenterManagerBean!services.ejb.DistributionCenterManager")
 private DistributionCenterManager distributionCenterManager;
- 
+
 @EJB(lookup="java:app/OrderManagerEJB/CustomerManagerBean!services.ejb.CustomerManager")
 private CustomerManager customerManager;
- 
+
 @EJB(lookup="java:app/OrderManagerEJB/ProductManagerBean!services.ejb.ProductManager")
 private ProductManager productManager;
 ----

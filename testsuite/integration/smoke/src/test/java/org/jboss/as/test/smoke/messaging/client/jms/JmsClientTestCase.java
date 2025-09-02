@@ -6,10 +6,10 @@
 package org.jboss.as.test.smoke.messaging.client.jms;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static jakarta.jms.Session.AUTO_ACKNOWLEDGE;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -29,22 +29,22 @@ import jakarta.jms.TextMessage;
 import javax.naming.Context;
 
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.as.arquillian.api.ContainerResource;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.test.integration.common.jms.JMSOperations;
 import org.jboss.as.test.integration.common.jms.JMSOperationsProvider;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * Demo using the AS management API to create and destroy a Jakarta Messaging queue.
  *
  * @author Emanuel Muckenhuber
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @RunAsClient
 public class JmsClientTestCase {
 
@@ -57,13 +57,13 @@ public class JmsClientTestCase {
     @ContainerResource
     private ManagementClient managementClient;
 
-    @Before
+    @BeforeEach
     public void setUp() throws IOException {
         JMSOperations jmsOperations = JMSOperationsProvider.getInstance(managementClient);
         jmsOperations.createJmsQueue(QUEUE_NAME, EXPORTED_QUEUE_NAME);
     }
 
-    @After
+    @AfterEach
     public void tearDown() throws IOException {
         JMSOperations jmsOperations = JMSOperationsProvider.getInstance(managementClient);
         jmsOperations.removeJmsQueue(QUEUE_NAME);

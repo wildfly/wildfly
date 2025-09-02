@@ -66,23 +66,23 @@ Some other examples:
 [source,xml,options="nowrap"]
 ----
 <interface name="global">
-   <!-- Use the wildcard address -->
-   <any-address/>
+   <!-- Use the wildcard address -->
+   <any-address/>
 </interface>
- 
+
 <interface name="external">
-   <nic name="eth0"/>
+   <nic name="eth0"/>
 </interface>
- 
+
 <interface name="default">
-   <!-- Match any interface/address on the right subnet if it's
-        up, supports multicast and isn't point-to-point -->
-   <subnet-match value="192.168.0.0/16"/>
-   <up/>
-   <multicast/>
-   <not>
-      <point-to-point/>
-   </not>
+   <!-- Match any interface/address on the right subnet if it's
+        up, supports multicast and isn't point-to-point -->
+   <subnet-match value="192.168.0.0/16"/>
+   <up/>
+   <multicast/>
+   <not>
+      <point-to-point/>
+   </not>
 </interface>
 ----
 
@@ -117,12 +117,12 @@ logical name:
 ----
 <socket-binding-group name="standard-sockets" default-interface="public">
   <socket-binding name="management-http" interface="management" port="${jboss.management.http.port:9990}"/>
-  <socket-binding name="management-https" interface="management" port="${jboss.management.https.port:9993}"/>
-  <socket-binding name="ajp" port="${jboss.ajp.port:8009}"/>
-  <socket-binding name="http" port="${jboss.http.port:8080}"/>
-  <socket-binding name="https" port="${jboss.https.port:8443}"/>
-  <socket-binding name="txn-recovery-environment" port="4712"/>
-  <socket-binding name="txn-status-manager" port="4713"/>
+  <socket-binding name="management-https" interface="management" port="${jboss.management.https.port:9993}"/>
+  <socket-binding name="ajp" port="${jboss.ajp.port:8009}"/>
+  <socket-binding name="http" port="${jboss.http.port:8080}"/>
+  <socket-binding name="https" port="${jboss.https.port:8443}"/>
+  <socket-binding name="txn-recovery-environment" port="4712"/>
+  <socket-binding name="txn-status-manager" port="4713"/>
 </socket-binding-group>
 ----
 

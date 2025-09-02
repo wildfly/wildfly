@@ -16,7 +16,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>37.0.0.Beta1-SNAPSHOT</version>
+        <version>38.0.0.Beta1-SNAPSHOT</version>
     </parent>
 
     <artifactId>wildfly-ee-feature-pack-galleon-shared</artifactId>
@@ -2860,6 +2860,26 @@
         <dependency>
             <groupId>org.wildfly.clustering</groupId>
             <artifactId>wildfly-clustering-cache-infinispan-embedded</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>org.wildfly.clustering</groupId>
+            <artifactId>wildfly-clustering-cache-infinispan-persistence-jdbc</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>org.wildfly.clustering</groupId>
+            <artifactId>wildfly-clustering-cache-infinispan-persistence-remote</artifactId>
             <exclusions>
                 <exclusion>
                     <groupId>*</groupId>

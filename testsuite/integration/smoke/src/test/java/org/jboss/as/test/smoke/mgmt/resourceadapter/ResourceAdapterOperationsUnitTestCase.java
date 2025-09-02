@@ -21,7 +21,7 @@ import java.util.Map;
 import java.util.Properties;
 
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.as.connector.subsystems.resourceadapters.Namespace;
 import org.jboss.as.connector.subsystems.resourceadapters.ResourceAdapterSubsystemParser;
 import org.jboss.as.controller.client.ModelControllerClient;
@@ -31,12 +31,12 @@ import org.jboss.as.test.integration.management.jca.ConnectionSecurityType;
 import org.jboss.as.test.integration.management.util.MgmtOperationException;
 import org.jboss.as.test.shared.TestSuiteEnvironment;
 import org.jboss.dmr.ModelNode;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * Resource adapter operation unit test.
@@ -44,7 +44,7 @@ import org.junit.runner.RunWith;
  * @author <a href="mailto:vrastsel@redhat.com">Vladimir Rastseluev</a>
  * @author Flavia Rainone
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @RunAsClient
 public class ResourceAdapterOperationsUnitTestCase extends ContainerResourceMgmtTestBase {
     private static final Deque<ModelNode> REMOVE_ADDRESSES = new LinkedList<>();
@@ -58,7 +58,7 @@ public class ResourceAdapterOperationsUnitTestCase extends ContainerResourceMgmt
         RAR_ADDRESS = address;
     }
 
-    @BeforeClass
+    @BeforeAll
     public static void configureElytron() throws Exception {
         try (ModelControllerClient client = TestSuiteEnvironment.getModelControllerClient()) {
             addAuth(client, "AuthCtxt");
@@ -66,7 +66,7 @@ public class ResourceAdapterOperationsUnitTestCase extends ContainerResourceMgmt
         }
     }
 
-    @AfterClass
+    @AfterAll
     public static void removeElytronConfig() throws Exception {
         try (ModelControllerClient client = TestSuiteEnvironment.getModelControllerClient()) {
             ModelNode address;
@@ -76,7 +76,7 @@ public class ResourceAdapterOperationsUnitTestCase extends ContainerResourceMgmt
         }
     }
 
-    @After
+    @AfterEach
     public void removeRar() throws IOException {
         // Don't let failure in one test leave cruft behind to break the rest
         try {
@@ -224,43 +224,42 @@ public class ResourceAdapterOperationsUnitTestCase extends ContainerResourceMgmt
 
         remove(address);
 
-        Assert.assertNotNull(newList);
+        Assertions.assertNotNull(newList);
 
         ModelNode node = findNodeWithProperty(newList, "archive", "some.rar");
-        Assert.assertNotNull("There is no archive element:" + newList, node);
-        Assert.assertTrue("compare failed, node:"+node.asString()+"\nparams:"+params,checkModelParams(node,params));
-        Assert.assertEquals("beanvalidationgroups element is incorrect:" + node.get("beanvalidationgroups").asString(),
-                "[\"Class0\",\"Class00\"]", node.get("beanvalidationgroups").asString());
+        Assertions.assertNotNull(node, "There is no archive element:" + newList);
+        Assertions.assertTrue(checkModelParams(node,params),"compare failed, node:"+node.asString()+"\nparams:"+params);
+        Assertions.assertEquals("[\"Class0\",\"Class00\"]", node.get("beanvalidationgroups").asString(), "beanvalidationgroups element is incorrect:" + node.get("beanvalidationgroups").asString());
 
         node = findNodeWithProperty(newList, "jndi-name", "java:jboss/name1");
-        Assert.assertNotNull("There is no connection jndi-name element:" + newList, node);
-        Assert.assertTrue("compare failed, node:"+node.asString()+"\nparams:"+conParams,checkModelParams(node,conParams));
+        Assertions.assertNotNull(node, "There is no connection jndi-name element:" + newList);
+        Assertions.assertTrue(checkModelParams(node,conParams),"compare failed, node:"+node.asString()+"\nparams:"+conParams);
 
         node = findNodeWithProperty(newList, "jndi-name", "java:jboss/Name3");
-        Assert.assertNotNull("There is no admin jndi-name element:" + newList, node);
-        Assert.assertTrue("compare failed, node:" + node.asString() + "\nparams:" + admParams,
-                checkModelParams(node, admParams));
+        Assertions.assertNotNull(node, "There is no admin jndi-name element:" + newList);
+        Assertions.assertTrue(checkModelParams(node, admParams),
+                "compare failed, node:" + node.asString() + "\nparams:" + admParams);
 
         node = findNodeWithProperty(newList, "value", "D");
-        Assert.assertNotNull("There is no admin-object config-property element:" + newList, node);
+        Assertions.assertNotNull(node, "There is no admin-object config-property element:" + newList);
 
         Map<String, ModelNode> parseChildren = getChildren(node.get("address"));
-        Assert.assertEquals("Pool2", parseChildren.get("admin-objects").asString());
-        Assert.assertEquals("Property", parseChildren.get("config-properties").asString());
+        Assertions.assertEquals("Pool2", parseChildren.get("admin-objects").asString());
+        Assertions.assertEquals("Property", parseChildren.get("config-properties").asString());
 
         node = findNodeWithProperty(newList, "value", "A");
-        Assert.assertNotNull("There is no resource-adapter config-property element:" + newList, node);
+        Assertions.assertNotNull(node, "There is no resource-adapter config-property element:" + newList);
 
         parseChildren = getChildren(node.get("address"));
-        Assert.assertEquals("some.rar", parseChildren.get("resource-adapter").asString());
-        Assert.assertEquals("Property", parseChildren.get("config-properties").asString());
+        Assertions.assertEquals("some.rar", parseChildren.get("resource-adapter").asString());
+        Assertions.assertEquals("Property", parseChildren.get("config-properties").asString());
 
         node = findNodeWithProperty(newList, "value", "B");
-        Assert.assertNotNull("There is no connection config-property element:" + newList, node);
+        Assertions.assertNotNull(node, "There is no connection config-property element:" + newList);
 
         parseChildren = getChildren(node.get("address"));
-        Assert.assertEquals("Pool1", parseChildren.get("connection-definitions").asString());
-        Assert.assertEquals("Property", parseChildren.get("config-properties").asString());
+        Assertions.assertEquals("Pool1", parseChildren.get("connection-definitions").asString());
+        Assertions.assertEquals("Property", parseChildren.get("config-properties").asString());
     }
 
     public List<ModelNode> marshalAndReparseRaResources(final String childType) throws Exception {

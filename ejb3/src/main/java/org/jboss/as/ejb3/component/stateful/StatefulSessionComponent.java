@@ -12,7 +12,6 @@ import java.time.Duration;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
-import java.util.function.Supplier;
 
 import jakarta.ejb.ConcurrentAccessException;
 import jakarta.ejb.ConcurrentAccessTimeoutException;
@@ -51,6 +50,7 @@ import org.jboss.invocation.InterceptorFactory;
 import org.jboss.invocation.InterceptorFactoryContext;
 import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
+import org.wildfly.clustering.function.Supplier;
 import org.wildfly.extension.requestcontroller.ControlPoint;
 import org.wildfly.extension.requestcontroller.RunResult;
 import org.wildfly.security.manager.WildFlySecurityManager;
@@ -88,7 +88,7 @@ public class StatefulSessionComponent extends SessionBeanComponent implements St
     private Interceptor postActivateInterceptor;
     private final Map<EJBBusinessMethod, AccessTimeoutDetails> methodAccessTimeouts;
     private final DefaultAccessTimeoutService defaultAccessTimeoutProvider;
-    private final Supplier<StatefulSessionBeanCacheFactory<SessionID, StatefulSessionComponentInstance>> cacheFactory;
+    private final java.util.function.Supplier<StatefulSessionBeanCacheFactory<SessionID, StatefulSessionComponentInstance>> cacheFactory;
     private final InterceptorFactory ejb2XRemoveMethod;
     private Interceptor ejb2XRemoveMethodInterceptor;
 

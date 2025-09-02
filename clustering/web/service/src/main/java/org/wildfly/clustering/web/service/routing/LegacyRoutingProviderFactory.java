@@ -11,5 +11,9 @@ package org.wildfly.clustering.web.service.routing;
  */
 @Deprecated
 public interface LegacyRoutingProviderFactory {
+    /**
+     * Fabricates a routing provider in the absence of proper routing configuration.
+     * @return a routing provider
+     */
     RoutingProvider createRoutingProvider();
 }

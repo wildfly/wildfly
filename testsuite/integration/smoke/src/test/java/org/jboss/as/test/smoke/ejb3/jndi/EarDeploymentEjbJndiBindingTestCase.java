@@ -9,14 +9,14 @@ import javax.naming.Context;
 import javax.naming.InitialContext;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.exporter.ZipExporter;
 import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * Tests that the session beans are bound to all the jndi binding names mandated by the Enterprise Beans 3.1 spec, when the Jakarta Enterprise Beans are
@@ -24,7 +24,7 @@ import org.junit.runner.RunWith;
  *
  * @author Jaikiran Pai
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class EarDeploymentEjbJndiBindingTestCase {
 
     /**
@@ -94,27 +94,27 @@ public class EarDeploymentEjbJndiBindingTestCase {
         // global bindings
         // 1. local business interface
         Echo localBusinessInterface = (Echo) ctx.lookup(JAVA_GLOBAL_NAMESPACE_PREFIX + APP_NAME + "/" + MODULE_NAME + "/" + ejbName + "!" + Echo.class.getName());
-        Assert.assertNotNull("Null object returned for local business interface lookup in java:global namespace", localBusinessInterface);
+        Assertions.assertNotNull(localBusinessInterface, "Null object returned for local business interface lookup in java:global namespace");
         // 2. no-interface view
         SampleSLSB noInterfaceView = (SampleSLSB) ctx.lookup(JAVA_GLOBAL_NAMESPACE_PREFIX + APP_NAME + "/" + MODULE_NAME + "/" + ejbName + "!" + SampleSLSB.class.getName());
-        Assert.assertNotNull("Null object returned for no-interface view lookup in java:global namespace", noInterfaceView);
+        Assertions.assertNotNull(noInterfaceView, "Null object returned for no-interface view lookup in java:global namespace");
 
 
         // app bindings
         // 1. local business interface
         Echo localBusinessInterfaceInAppNamespace = (Echo) ctx.lookup(JAVA_APP_NAMESPACE_PREFIX + MODULE_NAME + "/" + ejbName + "!" + Echo.class.getName());
-        Assert.assertNotNull("Null object returned for local business interface lookup in java:app namespace", localBusinessInterfaceInAppNamespace);
+        Assertions.assertNotNull(localBusinessInterfaceInAppNamespace, "Null object returned for local business interface lookup in java:app namespace");
         // 2. no-interface view
         SampleSLSB noInterfaceViewInAppNamespace = (SampleSLSB) ctx.lookup(JAVA_APP_NAMESPACE_PREFIX + MODULE_NAME + "/" + ejbName + "!" + SampleSLSB.class.getName());
-        Assert.assertNotNull("Null object returned for no-interface view lookup in java:app namespace", noInterfaceViewInAppNamespace);
+        Assertions.assertNotNull(noInterfaceViewInAppNamespace, "Null object returned for no-interface view lookup in java:app namespace");
 
         // module bindings
         // 1. local business interface
         Echo localBusinessInterfaceInModuleNamespace = (Echo) ctx.lookup(JAVA_MODULE_NAMESPACE_PREFIX + ejbName + "!" + Echo.class.getName());
-        Assert.assertNotNull("Null object returned for local business interface lookup in java:module namespace", localBusinessInterfaceInModuleNamespace);
+        Assertions.assertNotNull(localBusinessInterfaceInModuleNamespace, "Null object returned for local business interface lookup in java:module namespace");
         // 2. no-interface view
         SampleSLSB noInterfaceViewInModuleNamespace = (SampleSLSB) ctx.lookup(JAVA_MODULE_NAMESPACE_PREFIX + ejbName + "!" + SampleSLSB.class.getName());
-        Assert.assertNotNull("Null object returned for no-interface view lookup in java:module namespace", noInterfaceViewInModuleNamespace);
+        Assertions.assertNotNull(noInterfaceViewInModuleNamespace, "Null object returned for no-interface view lookup in java:module namespace");
 
     }
 
@@ -130,17 +130,17 @@ public class EarDeploymentEjbJndiBindingTestCase {
         // global bindings
         // 1. remote business interface
         RemoteEcho remoteBusinessInterface = (RemoteEcho) ctx.lookup(JAVA_GLOBAL_NAMESPACE_PREFIX + APP_NAME + "/" + MODULE_NAME + "/" + ejbName + "!" + RemoteEcho.class.getName());
-        Assert.assertNotNull("Null object returned for remote business interface lookup in java:global namespace", remoteBusinessInterface);
+        Assertions.assertNotNull(remoteBusinessInterface, "Null object returned for remote business interface lookup in java:global namespace");
 
         // app bindings
         // 1. remote business interface
         RemoteEcho remoteBusinessInterfaceInAppNamespace = (RemoteEcho) ctx.lookup(JAVA_APP_NAMESPACE_PREFIX + MODULE_NAME + "/" + ejbName + "!" + RemoteEcho.class.getName());
-        Assert.assertNotNull("Null object returned for remote business interface lookup in java:app namespace", remoteBusinessInterfaceInAppNamespace);
+        Assertions.assertNotNull(remoteBusinessInterfaceInAppNamespace, "Null object returned for remote business interface lookup in java:app namespace");
 
         // module bindings
         // 1. remote business interface
         RemoteEcho remoteBusinessInterfaceInModuleNamespace = (RemoteEcho) ctx.lookup(JAVA_MODULE_NAMESPACE_PREFIX + ejbName + "!" + RemoteEcho.class.getName());
-        Assert.assertNotNull("Null object returned for remote business interface lookup in java:module namespace", remoteBusinessInterfaceInModuleNamespace);
+        Assertions.assertNotNull(remoteBusinessInterfaceInModuleNamespace, "Null object returned for remote business interface lookup in java:module namespace");
 
     }
 
@@ -156,27 +156,27 @@ public class EarDeploymentEjbJndiBindingTestCase {
         // global bindings
         // 1. local business interface
         Echo localBusinessInterface = (Echo) ctx.lookup(JAVA_GLOBAL_NAMESPACE_PREFIX + APP_NAME + "/" + MODULE_NAME + "/" + ejbName + "!" + Echo.class.getName());
-        Assert.assertNotNull("Null object returned for local business interface lookup in java:global namespace", localBusinessInterface);
+        Assertions.assertNotNull(localBusinessInterface, "Null object returned for local business interface lookup in java:global namespace");
         // 2. no-interface view
         SampleSFSB noInterfaceView = (SampleSFSB) ctx.lookup(JAVA_GLOBAL_NAMESPACE_PREFIX + APP_NAME + "/" + MODULE_NAME + "/" + ejbName + "!" + SampleSFSB.class.getName());
-        Assert.assertNotNull("Null object returned for no-interface view lookup in java:global namespace", noInterfaceView);
+        Assertions.assertNotNull(noInterfaceView, "Null object returned for no-interface view lookup in java:global namespace");
 
 
         // app bindings
         // 1. local business interface
         Echo localBusinessInterfaceInAppNamespace = (Echo) ctx.lookup(JAVA_APP_NAMESPACE_PREFIX + MODULE_NAME + "/" + ejbName + "!" + Echo.class.getName());
-        Assert.assertNotNull("Null object returned for local business interface lookup in java:app namespace", localBusinessInterfaceInAppNamespace);
+        Assertions.assertNotNull(localBusinessInterfaceInAppNamespace, "Null object returned for local business interface lookup in java:app namespace");
         // 2. no-interface view
         SampleSFSB noInterfaceViewInAppNamespace = (SampleSFSB) ctx.lookup(JAVA_APP_NAMESPACE_PREFIX + MODULE_NAME + "/" + ejbName + "!" + SampleSFSB.class.getName());
-        Assert.assertNotNull("Null object returned for no-interface view lookup in java:app namespace", noInterfaceViewInAppNamespace);
+        Assertions.assertNotNull(noInterfaceViewInAppNamespace, "Null object returned for no-interface view lookup in java:app namespace");
 
         // module bindings
         // 1. local business interface
         Echo localBusinessInterfaceInModuleNamespace = (Echo) ctx.lookup(JAVA_MODULE_NAMESPACE_PREFIX + ejbName + "!" + Echo.class.getName());
-        Assert.assertNotNull("Null object returned for local business interface lookup in java:module namespace", localBusinessInterfaceInModuleNamespace);
+        Assertions.assertNotNull(localBusinessInterfaceInModuleNamespace, "Null object returned for local business interface lookup in java:module namespace");
         // 2. no-interface view
         SampleSFSB noInterfaceViewInModuleNamespace = (SampleSFSB) ctx.lookup(JAVA_MODULE_NAMESPACE_PREFIX + ejbName + "!" + SampleSFSB.class.getName());
-        Assert.assertNotNull("Null object returned for no-interface view lookup in java:module namespace", noInterfaceViewInModuleNamespace);
+        Assertions.assertNotNull(noInterfaceViewInModuleNamespace, "Null object returned for no-interface view lookup in java:module namespace");
 
     }
 
@@ -192,17 +192,17 @@ public class EarDeploymentEjbJndiBindingTestCase {
         // global bindings
         // 1. remote business interface
         RemoteEcho remoteBusinessInterface = (RemoteEcho) ctx.lookup(JAVA_GLOBAL_NAMESPACE_PREFIX + APP_NAME + "/" + MODULE_NAME + "/" + ejbName + "!" + RemoteEcho.class.getName());
-        Assert.assertNotNull("Null object returned for remote business interface lookup in java:global namespace", remoteBusinessInterface);
+        Assertions.assertNotNull(remoteBusinessInterface, "Null object returned for remote business interface lookup in java:global namespace");
 
         // app bindings
         // 1. remote business interface
         RemoteEcho remoteBusinessInterfaceInAppNamespace = (RemoteEcho) ctx.lookup(JAVA_APP_NAMESPACE_PREFIX + MODULE_NAME + "/" + ejbName + "!" + RemoteEcho.class.getName());
-        Assert.assertNotNull("Null object returned for remote business interface lookup in java:app namespace", remoteBusinessInterfaceInAppNamespace);
+        Assertions.assertNotNull(remoteBusinessInterfaceInAppNamespace, "Null object returned for remote business interface lookup in java:app namespace");
 
         // module bindings
         // 1. remote business interface
         RemoteEcho remoteBusinessInterfaceInModuleNamespace = (RemoteEcho) ctx.lookup(JAVA_MODULE_NAMESPACE_PREFIX + ejbName + "!" + RemoteEcho.class.getName());
-        Assert.assertNotNull("Null object returned for remote business interface lookup in java:module namespace", remoteBusinessInterfaceInModuleNamespace);
+        Assertions.assertNotNull(remoteBusinessInterfaceInModuleNamespace, "Null object returned for remote business interface lookup in java:module namespace");
 
     }
 

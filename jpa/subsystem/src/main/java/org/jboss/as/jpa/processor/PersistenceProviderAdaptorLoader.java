@@ -105,7 +105,7 @@ public class PersistenceProviderAdaptorLoader {
         }
 
         PersistenceProviderAdaptor persistenceProviderAdaptor=null;
-        adapterModule = ModuleIdentifierUtil.canonicalModuleIdentifier(adapterModule);
+        adapterModule = ModuleIdentifierUtil.parseCanonicalModuleIdentifier(adapterModule);
         Module module = moduleLoader.loadModule(adapterModule);
         final ServiceLoader<PersistenceProviderAdaptor> serviceLoader =
             module.loadService(PersistenceProviderAdaptor.class);
@@ -172,7 +172,7 @@ public class PersistenceProviderAdaptorLoader {
         final ModuleLoader moduleLoader = Module.getBootModuleLoader();
 
         List<PersistenceProviderIntegratorAdaptor> persistenceProviderAdaptors = new ArrayList<>();
-        adapterModule = ModuleIdentifierUtil.canonicalModuleIdentifier(adapterModule);
+        adapterModule = ModuleIdentifierUtil.parseCanonicalModuleIdentifier(adapterModule);
         Module module = moduleLoader.loadModule(adapterModule);
         final ServiceLoader<PersistenceProviderIntegratorAdaptor> serviceLoader =
                 module.loadService(PersistenceProviderIntegratorAdaptor.class);

@@ -1,0 +1,23 @@
+<?xml version="1.0" ?>
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+
+<layer-spec xmlns="urn:jboss:galleon:layer-spec:1.0" name="management">
+    <dependencies>
+        <layer name="elytron"/>
+    </dependencies>
+
+    <feature-group name="unsecured-management"/>
+
+    <feature spec="core-service.management.management-interface.http-interface">
+        <param name="console-enabled" value="false"/>
+        <param name="socket-binding" value="management-http"/>
+        <param name="http-authentication-factory" value="management-http-authentication"/>
+        <feature spec="core-service.management.management-interface.http-interface.http-upgrade">
+            <param name="sasl-authentication-factory" value="management-sasl-authentication"/>
+        </feature>
+    </feature>
+
+</layer-spec>

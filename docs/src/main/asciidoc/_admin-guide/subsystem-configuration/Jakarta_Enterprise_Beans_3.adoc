@@ -339,9 +339,9 @@ top level deployment with a META-INF/jboss-ejb-client.xml containing:
 [source,xml,options="nowrap"]
 ----
 <jboss-ejb-client xmlns="urn:jboss:ejb-client:1.0">
-    <client-context>
-        <ejb-receivers local-receiver-pass-by-value="false"/>
-    </client-context>
+    <client-context>
+        <ejb-receivers local-receiver-pass-by-value="false"/>
+    </client-context>
 </jboss-ejb-client>
 ----
 

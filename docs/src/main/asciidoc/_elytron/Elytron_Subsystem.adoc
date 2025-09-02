@@ -1084,9 +1084,9 @@ connect over _remote+http_.
 [source,xml,options="nowrap"]
 ----
 <jboss-cli xmlns="urn:jboss:cli:3.3">
- 
+
     <default-protocol use-legacy-override="true">remote+http</default-protocol>
- 
+
     <!-- The default controller to connect to when 'connect' command is executed w/o arguments -->
     <default-controller>
         <protocol>remote+http</protocol>

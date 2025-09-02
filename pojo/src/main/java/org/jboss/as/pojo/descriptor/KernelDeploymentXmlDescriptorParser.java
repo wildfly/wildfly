@@ -363,7 +363,7 @@ public class KernelDeploymentXmlDescriptorParser implements XMLElementReader<Par
 
             switch (attribute) {
                 case NAME:
-                    moduleConfig.setModuleName(ModuleIdentifierUtil.canonicalModuleIdentifier(attributeValue));
+                    moduleConfig.setModuleName(ModuleIdentifierUtil.parseCanonicalModuleIdentifier(attributeValue));
                     break;
                 default:
                     throw unexpectedAttribute(reader, i);

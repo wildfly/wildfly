@@ -79,7 +79,7 @@ annotation:
 ----
 import jakarta.jws.WebService;
 import org.apache.cxf.annotations.Policy;
- 
+
 @WebService(portName = "MyServicePort",
             serviceName = "MyService",
             name = "MyServiceIface",
@@ -140,7 +140,7 @@ annotation on a service endpoint interface:
 ----
 import jakarta.jws.WebService;
 import org.jboss.ws.api.annotation.PolicySets;
- 
+
 @WebService(name = "EndpointTwo", targetNamespace = "http://org.jboss.ws.jaxws.cxf/jbws3648")
 @PolicySets({"WS-RM_Policy_spec_example", "WS-SP-EX223_WSS11_Anonymous_X509_Sign_Encrypt", "WS-Addressing"})
 public interface EndpointTwo

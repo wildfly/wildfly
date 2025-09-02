@@ -5,7 +5,7 @@
 
 package org.wildfly.extension.messaging.activemq.jms.bridge;
 
-import static org.jboss.as.controller.ModuleIdentifierUtil.canonicalModuleIdentifier;
+import static org.jboss.as.controller.ModuleIdentifierUtil.parseCanonicalModuleIdentifier;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.RejectedExecutionException;
@@ -81,7 +81,7 @@ class JMSBridgeService implements Service<JMSBridge> {
     public void startBridge() throws Exception {
         final Module module;
         if (moduleName != null) {
-            module =  Module.getContextModuleLoader().loadModule(canonicalModuleIdentifier(moduleName));
+            module =  Module.getContextModuleLoader().loadModule(parseCanonicalModuleIdentifier(moduleName));
         } else {
             module = Module.forClass(JMSBridgeService.class);
         }

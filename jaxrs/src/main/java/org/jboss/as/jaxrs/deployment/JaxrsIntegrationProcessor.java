@@ -26,7 +26,6 @@ import org.jboss.as.ee.structure.DeploymentType;
 import org.jboss.as.ee.structure.DeploymentTypeMarker;
 import org.jboss.as.jaxrs.DeploymentRestResourcesDefintion;
 import org.jboss.as.jaxrs.Jackson2Annotations;
-import org.jboss.as.jaxrs.JacksonAnnotations;
 import org.jboss.as.jaxrs.JaxrsExtension;
 import org.jboss.as.jaxrs.JaxrsServerConfig;
 import org.jboss.as.server.deployment.Attachments;
@@ -290,12 +289,6 @@ public class JaxrsIntegrationProcessor implements DeploymentUnitProcessor {
     private boolean hasJacksonAnnotations(DeploymentUnit deploymentUnit) {
         final CompositeIndex index = deploymentUnit.getAttachment(Attachments.COMPOSITE_ANNOTATION_INDEX);
         for (Jackson2Annotations a : Jackson2Annotations.values())
-        {
-            if (checkAnnotation(a.getDotName(), index)) {
-                return true;
-            }
-        }
-        for (JacksonAnnotations a : JacksonAnnotations.values())
         {
             if (checkAnnotation(a.getDotName(), index)) {
                 return true;

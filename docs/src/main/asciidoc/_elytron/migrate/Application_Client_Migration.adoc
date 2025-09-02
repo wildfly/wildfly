@@ -97,10 +97,10 @@ provider can be specified directly in the client application's code:
 ----
 // create your authentication configuration
 AuthenticationConfiguration namingConfig = AuthenticationConfiguration.empty().useName("bob").usePassword("secret");
- 
+
 // create your authentication context
 AuthenticationContext context = AuthenticationContext.empty().with(MatchRule.ALL.matchHost("127.0.0.1"), namingConfig);
- 
+
 // create a callable that creates and uses an InitialContext
 Callable<Void> callable = () -> {
     Properties properties = new Properties();
@@ -111,7 +111,7 @@ Callable<Void> callable = () -> {
     ...
     return null;
 };
- 
+
 // use your authentication context to run your callable
 context.runCallable(callable);
 ----
@@ -151,7 +151,7 @@ Properties properties = new Properties();
 properties.put(Context.INITIAL_CONTEXT_FACTORY, "org.jboss.naming.remote.client.InitialContextFactory");
 properties.put(Context.URL_PKG_PREFIXES, "org.jboss.ejb.client.naming");
 InitialContext context = new InitialContext(properties);
- 
+
 // look up an EJB and invoke one of its methods
 RemoteCalculator statelessRemoteCalculator = (RemoteCalculator) context.lookup(
     "ejb:/ejb-remote-server-side//CalculatorBean!" + RemoteCalculator.class.getName());
@@ -208,7 +208,7 @@ follows:
 Properties properties = new Properties();
 properties.put(Context.INITIAL_CONTEXT_FACTORY, "org.wildfly.naming.client.WildFlyInitialContextFactory");
 InitialContext context = new InitialContext(properties);
- 
+
 // look up an EJB and invoke one of its methods (same as before)
 RemoteCalculator statelessRemoteCalculator = (RemoteCalculator) context.lookup(
     "ejb:/ejb-remote-server-side//CalculatorBean!" + RemoteCalculator.class.getName());
@@ -225,19 +225,19 @@ directly in the client application's code:
 ----
 // create your authentication configuration
 AuthenticationConfiguration ejbConfig = AuthenticationConfiguration.empty().useName("bob").usePassword("secret");
- 
+
 // create your authentication context
 AuthenticationContext context = AuthenticationContext.empty().with(MatchRule.ALL.matchHost("127.0.0.1"), ejbConfig);
- 
+
 // create a callable that invokes an EJB
 Callable<Void> callable = () -> {
- 
+
     // create an InitialContext
     Properties properties = new Properties();
     properties.put(Context.INITIAL_CONTEXT_FACTORY, "org.wildfly.naming.client.WildFlyInitialContextFactory");
     properties.put(Context.PROVIDER_URL, "remote+http://127.0.0.1:8080");
     InitialContext context = new InitialContext(properties);
- 
+
     // look up an EJB and invoke one of its methods (same as before)
     RemoteCalculator statelessRemoteCalculator = (RemoteCalculator) context.lookup(
         "ejb:/ejb-remote-server-side//CalculatorBean!" + RemoteCalculator.class.getName());
@@ -245,7 +245,7 @@ Callable<Void> callable = () -> {
     ...
     return null;
 };
- 
+
 // use your authentication context to run your callable
 context.runCallable(callable);
 ----

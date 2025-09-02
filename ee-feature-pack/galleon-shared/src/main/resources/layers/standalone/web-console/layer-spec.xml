@@ -13,6 +13,7 @@
     <dependencies>
         <layer name="management"/>
     </dependencies>
+    <feature-group name="management-console"/>
     <packages>
         <package name="org.jboss.as.console"/>
     </packages>

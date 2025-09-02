@@ -22,7 +22,7 @@ front-end. Each listener does reference a particular socket binding:
         "ajp-listener",
     ]
 }
- 
+
 [standalone@localhost:9999 /] /subsystem=undertow/server=default-server/ajp-listener=*:read-resource(recursive=true)
 {
     "outcome" => "success",

@@ -93,9 +93,9 @@ be added to classpath
 |verbose |Enables more informational output about command progress.
 |false
 
-|portSoapAddress |The generated port soap:address in the WSDL | 
+|portSoapAddress |The generated port soap:address in the WSDL |
 
-|endpointClass |Service Endpoint Implementation. | 
+|endpointClass |Service Endpoint Implementation. |
 |=======================================================================
 
 [[examples-wsprovide-1]]
@@ -216,12 +216,12 @@ following attributes:
 
 |genwsdl |Whether or not to generate WSDL. |false
 
-|address |The generated port soap:address in wsdl. | 
+|address |The generated port soap:address in wsdl. |
 
 |verbose |Enables more informational output about command progress.
 |false
 
-|sei |Service Endpoint Implementation. | 
+|sei |Service Endpoint Implementation. |
 
 |classpath |The classpath that contains the service endpoint
 implementation. |"."

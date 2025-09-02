@@ -59,7 +59,7 @@ policies (the latter is a requirement of the former):
   xmlns:tns="http://www.jboss.org/jbossws/ws-extensions/wsrm" xmlns:xsd="http://www.w3.org/2001/XMLSchema"
   xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
   xmlns:wsp="http://www.w3.org/2006/07/ws-policy">
- 
+
   <wsdl:types>
 <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:tns="http://www.jboss.org/jbossws/ws-extensions/wsrm"
   attributeFormDefault="unqualified" elementFormDefault="unqualified"
@@ -147,11 +147,11 @@ special in it:
 [source,java,options="nowrap"]
 ----
 package org.jboss.test.ws.jaxws.samples.wsrm.service;
- 
+
 import jakarta.jws.Oneway;
 import jakarta.jws.WebMethod;
 import jakarta.jws.WebService;
- 
+
 @WebService
 (
    name = "SimpleService",
@@ -167,7 +167,7 @@ public class SimpleServiceImpl
    {
       System.out.println("ping()");
    }
- 
+
    @WebMethod
    public String echo(String s)
    {
@@ -211,17 +211,17 @@ Here is an example:
 [source,java,options="nowrap"]
 ----
 package org.jboss.test.ws.jaxws.samples.wsrm.client;
- 
+
 //...
 import jakarta.xml.ws.Service;
 import org.apache.cxf.ws.rm.feature.RMFeature;
 import org.apache.cxf.ws.rm.manager.AcksPolicyType;
 import org.apache.cxf.ws.rm.manager.DestinationPolicyType;
 import org.jboss.test.ws.jaxws.samples.wsrm.generated.SimpleService;
- 
+
 // ...
 Service service = Service.create(wsdlURL, serviceName);
- 
+
 RMFeature feature = new RMFeature();
 RMAssertion rma = new RMAssertion();
 RMAssertion.BaseRetransmissionInterval bri = new RMAssertion.BaseRetransmissionInterval();
@@ -236,7 +236,7 @@ AcksPolicyType ap = new AcksPolicyType();
 ap.setIntraMessageThreshold(0);
 dp.setAcksPolicy(ap);
 feature.setDestinationPolicy(dp);
- 
+
 SimpleService proxy = (SimpleService)service.getPort(SimpleService.class, feature);
 proxy.echo("Hello World");
 ----
@@ -248,13 +248,13 @@ setting the obtained property in a client configuration:
 [source,java,options="nowrap"]
 ----
 package org.jboss.test.ws.jaxws.samples.wsrm.client;
- 
+
 import org.apache.cxf.ws.rm.feature.RMFeature;
 import org.apache.cxf.ws.rm.manager.AcksPolicyType;
 import org.apache.cxf.ws.rm.manager.DestinationPolicyType;
 import org.apache.cxf.ws.rmp.v200502.RMAssertion;
 import org.apache.cxf.ws.rmp.v200502.RMAssertion.AcknowledgementInterval;
- 
+
 public class CustomRMFeature extends RMFeature
 {
   public CustomRMFeature() {
@@ -281,10 +281,10 @@ public class CustomRMFeature extends RMFeature
 [source,xml,options="nowrap"]
 ----
 <?xml version="1.0" encoding="UTF-8"?>
- 
+
 <jaxws-config xmlns="urn:jboss:jbossws-jaxws-config:4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:javaee="http://java.sun.com/xml/ns/javaee"
 xsi:schemaLocation="urn:jboss:jbossws-jaxws-config:4.0 schema/jbossws-jaxws-config_4_0.xsd">
- 
+
 <client-config>
 <config-name>Custom Client Config</config-name>
 <property>
@@ -292,7 +292,7 @@ xsi:schemaLocation="urn:jboss:jbossws-jaxws-config:4.0 schema/jbossws-jaxws-conf
 <property-value>org.jboss.test.ws.jaxws.samples.wsrm.client.CustomRMFeature</property-value>
 </property>
 </client-config>
- 
+
 </jaxws-config>
 ----
 
@@ -302,11 +302,11 @@ xsi:schemaLocation="urn:jboss:jbossws-jaxws-config:4.0 schema/jbossws-jaxws-conf
 ----
 import org.jboss.ws.api.configuration.ClientConfigUtil;
 import org.jboss.ws.api.configuration.ClientConfigurer;
- 
+
 //...
 Service service = Service.create(wsdlURL, serviceName);
 SimpleService proxy = (SimpleService)service.getPort(SimpleService.class);
- 
+
 ClientConfigurer configurer = ClientConfigUtil.resolveClientConfigurer();
 configurer.setConfigProperties(proxy, "META-INF/jaxws-client-config.xml", "Custom Client Config");
 proxy.echo("Hello World!");

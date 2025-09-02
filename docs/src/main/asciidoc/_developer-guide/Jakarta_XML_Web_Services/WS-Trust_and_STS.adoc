@@ -273,7 +273,7 @@ listing below.
         sp:IncludeToken="http://docs.oasis-open.org/ws-sx/ws-securitypolicy/200702/IncludeToken/Never">
         attribute indicates that the initiator's public key will never be included
         in the reply messages.
- 
+
         The sp:WssX509V3Token10 element indicates that an X509 Version 3 token
         should be used in the message.
   -->
@@ -392,10 +392,10 @@ straight forward web service definition.
 [source,java,options="nowrap"]
 ----
 package org.jboss.test.ws.jaxws.samples.wsse.policy.trust.service;
- 
+
 import jakarta.jws.WebMethod;
 import jakarta.jws.WebService;
- 
+
 @WebService
 (
    targetNamespace = "http://www.jboss.org/jbossws/ws-extensions/wssecuritypolicy"
@@ -444,12 +444,12 @@ user's password for the certificates in the keystore file.
 [source,java,options="nowrap"]
 ----
 package org.jboss.test.ws.jaxws.samples.wsse.policy.trust.service;
- 
+
 import jakarta.jws.WebService;
- 
+
 import org.apache.cxf.annotations.EndpointProperties;
 import org.apache.cxf.annotations.EndpointProperty;
- 
+
 @WebService
 (
    portName = "SecurityServicePort",
@@ -487,20 +487,20 @@ skpass is the password for user myservicekey.
 [source,java,options="nowrap"]
 ----
  package org.jboss.test.ws.jaxws.samples.wsse.policy.trust.service;
- 
+
 import java.util.HashMap;
 import java.util.Map;
- 
+
 import org.jboss.wsf.stack.cxf.extensions.security.PasswordCallbackHandler;
- 
+
 public class ServerCallbackHandler extends PasswordCallbackHandler
 {
- 
+
    public ServerCallbackHandler()
    {
       super(getInitMap());
    }
- 
+
    private static Map<String, String> getInitMap()
    {
       Map<String, String> passwords = new HashMap<String, String>();
@@ -588,13 +588,13 @@ listing below.
     xmlns:wst="http://docs.oasis-open.org/ws-sx/ws-trust/200512"
     xmlns:xs="http://www.w3.org/2001/XMLSchema"
     xmlns:wsam="http://www.w3.org/2007/05/addressing/metadata">
- 
+
   <wsdl:types>
     <xs:schema elementFormDefault="qualified" targetNamespace='http://docs.oasis-open.org/ws-sx/ws-trust/200512'>
- 
+
       <xs:element name='RequestSecurityToken' type='wst:AbstractRequestSecurityTokenType' />
       <xs:element name='RequestSecurityTokenResponse' type='wst:AbstractRequestSecurityTokenType' />
- 
+
       <xs:complexType name='AbstractRequestSecurityTokenType' >
         <xs:sequence>
           <xs:any namespace='##any' processContents='lax' minOccurs='0' maxOccurs='unbounded' />
@@ -608,7 +608,7 @@ listing below.
           <xs:element name='RequestSecurityToken' type='wst:AbstractRequestSecurityTokenType' minOccurs='2' maxOccurs='unbounded'/>
         </xs:sequence>
       </xs:complexType>
- 
+
       <xs:element name='RequestSecurityTokenResponseCollection' type='wst:RequestSecurityTokenResponseCollectionType' />
       <xs:complexType name='RequestSecurityTokenResponseCollectionType' >
         <xs:sequence>
@@ -616,10 +616,10 @@ listing below.
         </xs:sequence>
         <xs:anyAttribute namespace='##other' processContents='lax' />
       </xs:complexType>
- 
+
     </xs:schema>
   </wsdl:types>
- 
+
   <!-- WS-Trust defines the following GEDs -->
   <wsdl:message name="RequestSecurityTokenMsg">
     <wsdl:part name="request" element="wst:RequestSecurityToken" />
@@ -636,7 +636,7 @@ listing below.
     <wsdl:part name="responseCollection"
             element="wst:RequestSecurityTokenResponseCollection"/>
   </wsdl:message>
- 
+
   <!-- This portType an example of a Requestor (or other) endpoint that
          Accepts SOAP-based challenges from a Security Token Service -->
   <wsdl:portType name="WSSecurityRequestor">
@@ -645,8 +645,8 @@ listing below.
       <wsdl:output message="tns:RequestSecurityTokenResponseMsg"/>
     </wsdl:operation>
   </wsdl:portType>
- 
- 
+
+
   <!-- This portType is an example of an STS supporting full protocol -->
 <!--
     The wsdl:portType and data types are XML elements defined by the
@@ -680,7 +680,7 @@ listing below.
       <wsdl:output message="tns:RequestSecurityTokenResponseCollectionMsg"/>
     </wsdl:operation>
   </wsdl:portType>
- 
+
   <!-- This portType is an example of an endpoint that accepts
          Unsolicited RequestSecurityTokenResponse messages -->
   <wsdl:portType name="SecurityTokenResponseService">
@@ -688,7 +688,7 @@ listing below.
       <wsdl:input message="tns:RequestSecurityTokenResponseMsg"/>
     </wsdl:operation>
   </wsdl:portType>
- 
+
 <!--
     The wsp:PolicyReference binds the security requirments on all the STS endpoints.
     The wsp:Policy wsu:Id="UT_policy" element is later in this file.
@@ -952,7 +952,7 @@ listing below.
          </wsp:All>
       </wsp:ExactlyOne>
    </wsp:Policy>
- 
+
 </wsdl:definitions>
 ----
 
@@ -1104,19 +1104,19 @@ the message signature.
 [source,java,options="nowrap"]
 ----
 package org.jboss.test.ws.jaxws.samples.wsse.policy.trust.sts;
- 
+
 import java.util.HashMap;
 import java.util.Map;
- 
+
 import org.jboss.wsf.stack.cxf.extensions.security.PasswordCallbackHandler;
- 
+
 public class STSCallbackHandler extends PasswordCallbackHandler
 {
    public STSCallbackHandler()
    {
       super(getInitMap());
    }
- 
+
    private static Map<String, String> getInitMap()
    {
       Map<String, String> passwords = new HashMap<String, String>();

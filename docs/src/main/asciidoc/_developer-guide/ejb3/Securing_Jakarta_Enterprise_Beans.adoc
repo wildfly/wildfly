@@ -30,14 +30,14 @@ example:
 [source,java,options="nowrap"]
 ----
 import org.jboss.ejb3.annotation.SecurityDomain;
- 
+
 import jakarta.ejb.Stateless;
- 
+
 @Stateless
 @SecurityDomain("other")
 ﻿public class MyBean ...
 {
-   ...
+   ...
 }
 ----
 
@@ -61,7 +61,7 @@ example of how the configuration will look like:
         xmlns:s="urn:security:1.1"
          xsi:schemaLocation="http://www.jboss.com/xml/ns/javaee http://www.jboss.org/j2ee/schema/jboss-ejb3-2_0.xsd http://java.sun.com/xml/ns/javaee http://www.jboss.org/j2ee/schema/jboss-ejb3-spec-2_0.xsd"
          version="3.1" impl-version="2.0">
- 
+
     <assembly-descriptor>
         <s:security>
    <!-- Even wildcard * is supported -->
@@ -90,7 +90,7 @@ Let's consider the following example bean:
 ----
 @Stateless
 public class FooBean {
- 
+
  @RolesAllowed("bar")
  public void doSomething() {
   ..
@@ -124,13 +124,13 @@ Consider this example bean:
 ----
 @Stateless
 public class FooBean {
- 
+
  @RolesAllowed("bar")
  public void doSomething() {
   ..
  }
- 
- 
+
+
  public void helloWorld() {
   ...
     }
@@ -159,7 +159,7 @@ deployment level as follows:
         xmlns:s="urn:security:1.1"
         xsi:schemaLocation="http://www.jboss.com/xml/ns/javaee http://www.jboss.org/j2ee/schema/jboss-ejb3-2_0.xsd http://java.sun.com/xml/ns/javaee http://www.jboss.org/j2ee/schema/jboss-ejb3-spec-2_0.xsd"
         version="3.1" impl-version="2.0">
- 
+
     <assembly-descriptor>
         <s:security>
    <!-- Even wildcard * is supported where * is equivalent to all EJBs in the deployment -->

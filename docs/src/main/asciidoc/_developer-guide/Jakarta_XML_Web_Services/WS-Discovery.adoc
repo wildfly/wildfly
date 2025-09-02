@@ -38,12 +38,12 @@ _WS-Discovery_:
 ----
 <webservices xmlns="http://www.jboss.com/xml/ns/javaee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   version="1.2" xsi:schemaLocation="http://www.jboss.com/xml/ns/javaee">
- 
+
   <property>
     <name>cxf.ws-discovery.enabled</name>
     <value>true</value>
   </property>
- 
+
 </webservices>
 ----
 

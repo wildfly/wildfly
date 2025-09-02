@@ -58,15 +58,15 @@ jobs:
       fail-fast: false
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Set up JDK ${{ inputs.jdk-distribution }} ${{ inputs.jdk-version }}
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           distribution: ${{ inputs.jdk-distribution }}
           java-version: ${{ inputs.jdk-version }}
           cache: 'maven'
       - name: Checkout eap-microprofile-test-suite
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           repository: ${{ inputs.mp-ts-repo }}
           ref: ${{ inputs.mp-ts-ref }}

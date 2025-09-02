@@ -29,8 +29,8 @@ Here is an example of the `logging` subsystem XML configuration:
    <console-handler name="CONSOLE" autoflush="true">
        <level name="DEBUG"/>
        <formatter>
-           <named-formatter name="COLOR-PATTERN"/>
-       </formatter>
+           <named-formatter name="COLOR-PATTERN"/>
+       </formatter>
    </console-handler>
    <periodic-rotating-file-handler name="FILE" autoflush="true">
        <formatter>
@@ -51,11 +51,11 @@ Here is an example of the `logging` subsystem XML configuration:
        </handlers>
    </root-logger>
    <formatter name="PATTERN">
-       <pattern-formatter pattern="%d{yyyy-MM-dd HH:mm:ss,SSS} %-5p [%c] (%t) %s%e%n"/>
-   </formatter>
-   <formatter name="COLOR-PATTERN">
-       <pattern-formatter pattern="%K{level}%d{HH:mm:ss,SSS} %-5p [%c] (%t) %s%e%n"/>
-   </formatter>
+       <pattern-formatter pattern="%d{yyyy-MM-dd HH:mm:ss,SSS} %-5p [%c] (%t) %s%e%n"/>
+   </formatter>
+   <formatter name="COLOR-PATTERN">
+       <pattern-formatter pattern="%K{level}%d{HH:mm:ss,SSS} %-5p [%c] (%t) %s%e%n"/>
+   </formatter>
 </subsystem>
 ----
 

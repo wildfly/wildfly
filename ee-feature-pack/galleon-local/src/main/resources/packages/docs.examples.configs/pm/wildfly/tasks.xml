@@ -10,6 +10,7 @@
         <config model="standalone" name="standalone-core.xml" >
             <layers>
                 <include name="ee-core-profile-server"/>
+                <include name="web-console"/>
             </layers>
         </config>
         <config model="standalone" name="standalone-genericjms.xml">
@@ -67,9 +68,6 @@
                 <include name="management"/>
                 <include name="elytron"/>
             </layers>
-            <feature spec="core-service.management.management-interface.http-interface">
-                <param name="console-enabled" value="false"/>
-            </feature>
         </config>
         <config model="standalone" name="standalone-rts.xml">
             <layers>
@@ -155,9 +153,6 @@
                         </feature>
                         <feature spec="subsystem.jgroups.stack.protocol">
                             <param name="protocol" value="MERGE3"/>
-                        </feature>
-                        <feature spec="subsystem.jgroups.stack.protocol.FD_SOCK2">
-                            <param name="socket-binding" value="jgroups-tcp-fd"/>
                         </feature>
                         <feature spec="subsystem.jgroups.stack.protocol">
                             <param name="protocol" value="FD_ALL3"/>
@@ -297,9 +292,6 @@
                         </feature>
                         <feature spec="subsystem.jgroups.stack.protocol">
                             <param name="protocol" value="MERGE3"/>
-                        </feature>
-                        <feature spec="subsystem.jgroups.stack.protocol.FD_SOCK2">
-                            <param name="socket-binding" value="jgroups-tcp-fd"/>
                         </feature>
                         <feature spec="subsystem.jgroups.stack.protocol">
                             <param name="protocol" value="FD_ALL3"/>
@@ -441,9 +433,6 @@
                         <feature spec="subsystem.jgroups.stack.protocol">
                             <param name="protocol" value="MERGE3"/>
                         </feature>
-                        <feature spec="subsystem.jgroups.stack.protocol.FD_SOCK2">
-                            <param name="socket-binding" value="jgroups-tcp-fd"/>
-                        </feature>
                         <feature spec="subsystem.jgroups.stack.protocol">
                             <param name="protocol" value="FD_ALL3"/>
                         </feature>
@@ -584,9 +573,6 @@
                         <feature spec="subsystem.jgroups.stack.protocol">
                             <param name="protocol" value="MERGE3"/>
                         </feature>
-                        <feature spec="subsystem.jgroups.stack.protocol.FD_SOCK2">
-                            <param name="socket-binding" value="jgroups-tcp-fd"/>
-                        </feature>
                         <feature spec="subsystem.jgroups.stack.protocol">
                             <param name="protocol" value="FD_ALL3"/>
                         </feature>
@@ -724,9 +710,6 @@
                         <feature spec="subsystem.jgroups.stack.protocol">
                             <param name="protocol" value="MERGE3"/>
                         </feature>
-                        <feature spec="subsystem.jgroups.stack.protocol.FD_SOCK2">
-                            <param name="socket-binding" value="jgroups-tcp-fd"/>
-                        </feature>
                         <feature spec="subsystem.jgroups.stack.protocol">
                             <param name="protocol" value="FD_ALL3"/>
                         </feature>
@@ -863,9 +846,6 @@
                         </feature>
                         <feature spec="subsystem.jgroups.stack.protocol">
                             <param name="protocol" value="MERGE3"/>
-                        </feature>
-                        <feature spec="subsystem.jgroups.stack.protocol.FD_SOCK2">
-                            <param name="socket-binding" value="jgroups-tcp-fd"/>
                         </feature>
                         <feature spec="subsystem.jgroups.stack.protocol">
                             <param name="protocol" value="FD_ALL3"/>

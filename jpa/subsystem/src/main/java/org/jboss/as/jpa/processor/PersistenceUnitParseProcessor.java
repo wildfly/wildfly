@@ -94,6 +94,11 @@ public class PersistenceUnitParseProcessor implements DeploymentUnitProcessor {
                 deploymentRoot.putAttachment(PersistenceUnitMetadataHolder.PERSISTENCE_UNITS, emptyholder);
                 addApplicationDependenciesOnProvider (deploymentUnit, emptyholder);
                 // if not in appclient container, do not deploy persistence units contained in appclient container archive
+                VirtualFile persistence_xml = deploymentRoot.getRoot().getChild(META_INF_PERSISTENCE_XML);
+                if (persistence_xml.exists() && persistence_xml.isFile() ) {
+                    // log that the (app client container) persistence.xml will be ignored since we are in server mode
+                    ROOT_LOGGER.ignoreAppclientPersistenceUnitsInServer(deploymentUnit.getName());
+                }
                 return;
             }
             // ordered list of PUs

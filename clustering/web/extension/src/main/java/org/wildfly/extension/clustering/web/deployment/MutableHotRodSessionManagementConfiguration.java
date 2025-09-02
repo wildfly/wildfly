@@ -5,14 +5,16 @@
 
 package org.wildfly.extension.clustering.web.deployment;
 
+import java.util.function.Consumer;
 import java.util.function.UnaryOperator;
 
-import org.wildfly.clustering.server.service.BinaryServiceConfiguration;
+import org.wildfly.extension.clustering.web.routing.LocalRouteLocatorProvider;
 
 /**
+ * Mutable HotRod session management configuration.
  * @author Paul Ferraro
  */
-public class MutableHotRodSessionManagementConfiguration extends MutableSessionManagementConfiguration implements BinaryServiceConfiguration {
+public class MutableHotRodSessionManagementConfiguration extends MutableSessionManagementConfiguration {
 
     private volatile String containerName;
     private volatile String configurationName;
@@ -21,8 +23,8 @@ public class MutableHotRodSessionManagementConfiguration extends MutableSessionM
      * Constructs a new HotRod session management configuration.
      * @param replacer a property replacer
      */
-    public MutableHotRodSessionManagementConfiguration(UnaryOperator<String> replacer) {
-        super(replacer);
+    public MutableHotRodSessionManagementConfiguration(UnaryOperator<String> replacer, Consumer<String> accumulator) {
+        super(replacer, accumulator, new LocalRouteLocatorProvider());
     }
 
     @Override

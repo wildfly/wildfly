@@ -13,5 +13,11 @@ import org.jboss.metadata.web.jboss.ReplicationConfig;
  */
 @Deprecated
 public interface LegacyDistributableSessionManagementProviderFactory {
+    /**
+     * Fabricates a session management provider from the specified legacy {@link ReplicationConfig} metadata.
+     * @param unit a deployment unit
+     * @param config a legacy replication-config metadata
+     * @return a session management provider
+     */
     DistributableSessionManagementProvider createSessionManagerProvider(DeploymentUnit unit, ReplicationConfig config);
 }

@@ -17,6 +17,8 @@ updates:
        # Only allow for patch release upgrades
       - dependency-name: '*'
         update-types: ['version-update:semver-major', 'version-update:semver-minor']
+      # WildFly Clustering updates are usually non-trivial
+      - dependency-name: 'org.wildfly.clustering:*'
       # Dependencies exclusive to Hibernate Search:
       # we'll only upgrade those when we upgrade to a newer version of Hibernate Search.
       - dependency-name: 'org.elasticsearch.client:*'

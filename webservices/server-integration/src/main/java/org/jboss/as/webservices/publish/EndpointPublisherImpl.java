@@ -204,7 +204,7 @@ public final class EndpointPublisherImpl implements EndpointPublisher {
             }
             deployment.setDocumentRoot(docBase);
             deployment.setClassLoader(unit.getAttachment(WSAttachmentKeys.CLASSLOADER_KEY));
-            deployment.addAllowedRequestPredicate(new AllowWSRequestPredicate());
+            deployment.addAllowedRequestPredicate(new AllowWSRequestPredicate(jbwebMD));
 
             addServlets(jbwebMD, deployment);
 

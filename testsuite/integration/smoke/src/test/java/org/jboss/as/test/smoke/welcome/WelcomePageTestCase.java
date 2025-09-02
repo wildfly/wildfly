@@ -4,8 +4,8 @@
  */
 package org.jboss.as.test.smoke.welcome;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.net.URL;
 
@@ -14,20 +14,20 @@ import org.htmlunit.html.DomNode;
 import org.htmlunit.html.DomNodeList;
 import org.htmlunit.html.HtmlPage;
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.as.test.shared.TestSuiteEnvironment;
 import org.jboss.as.test.shared.util.AssumeTestGroupUtil;
-import org.junit.Assume;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assumptions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * Test for the WildFly welcome page.
  * <p>
  * Verifies the title of the page and links to the documentation, quickstarts and the admin console.
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @RunAsClient
 public class WelcomePageTestCase {
 
@@ -37,12 +37,12 @@ public class WelcomePageTestCase {
     public static final String QUICKSTARTS_LINK_TEXT = "Quickstarts";
     public static final String ADMINISTRATION_CONSOLE_LINK_TEXT = "Administration Console";
 
-    @BeforeClass
+    @BeforeAll
     public static void requireSuitableInstallation() {
         // Slimmed servers and bootable jars do not include welcome content
-        Assume.assumeFalse(AssumeTestGroupUtil.isBootableJar() || System.getProperty("ts.layers") != null);
+        Assumptions.assumeFalse(AssumeTestGroupUtil.isBootableJar() || System.getProperty("ts.layers") != null);
         // standalone-microprofile.xml does not turn on the handler to server welcome content
-        Assume.assumeFalse(System.getProperty("ts.standalone.microprofile") != null);
+        Assumptions.assumeFalse(System.getProperty("ts.standalone.microprofile") != null);
     }
 
     @Test

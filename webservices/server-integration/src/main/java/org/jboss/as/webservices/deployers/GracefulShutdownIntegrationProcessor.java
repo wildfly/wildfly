@@ -12,6 +12,7 @@ import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.webservices.metadata.model.JAXWSDeployment;
+import org.jboss.as.webservices.util.ASHelper;
 import org.wildfly.extension.undertow.deployment.UndertowAttachments;
 
 import io.undertow.predicate.Predicate;
@@ -31,7 +32,7 @@ public class GracefulShutdownIntegrationProcessor implements DeploymentUnitProce
         final DeploymentUnit unit = phaseContext.getDeploymentUnit();
         final JAXWSDeployment wsDeployment = unit.getAttachment(JAXWS_ENDPOINTS_KEY);
         if (wsDeployment != null) {
-            Predicate predicate = new AllowWSRequestPredicate();
+            Predicate predicate = new AllowWSRequestPredicate(ASHelper.getJBossWebMetaData(unit));
             unit.putAttachment(ATTACHMENT_KEY, predicate);
             unit.addToAttachmentList(UndertowAttachments.ALLOW_REQUEST_WHEN_SUSPENDED, predicate);
         }

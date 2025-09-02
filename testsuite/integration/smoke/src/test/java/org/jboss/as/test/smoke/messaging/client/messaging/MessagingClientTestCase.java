@@ -17,7 +17,7 @@ import org.apache.activemq.artemis.api.core.client.ClientSessionFactory;
 import org.apache.activemq.artemis.core.remoting.impl.netty.NettyConnectorFactory;
 import org.apache.activemq.artemis.core.remoting.impl.netty.TransportConstants;
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.as.arquillian.api.ContainerResource;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.client.ModelControllerClient;
@@ -27,10 +27,10 @@ import org.jboss.as.test.integration.common.jms.JMSOperations;
 import org.jboss.as.test.integration.common.jms.JMSOperationsProvider;
 import org.jboss.as.test.shared.ServerReload;
 import org.jboss.dmr.ModelNode;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import jakarta.resource.spi.IllegalStateException;
 import java.io.IOException;
@@ -40,7 +40,7 @@ import java.util.Map;
 
 import static org.jboss.as.controller.client.helpers.ClientConstants.ADD;
 import static org.jboss.as.controller.client.helpers.ClientConstants.REMOVE_OPERATION;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 /**
  * Demo using the AS management API to create and destroy a Artemis core queue.
@@ -48,7 +48,7 @@ import static org.junit.Assert.assertNotNull;
  * @author Emanuel Muckenhuber
  * @author Kabir Khan
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @RunAsClient
 public class MessagingClientTestCase {
 
@@ -106,7 +106,7 @@ public class MessagingClientTestCase {
             session.start();
 
             ClientMessage messageReceived = messageConsumer.receive(1000);
-            assertNotNull("a message MUST have been received", messageReceived);
+            assertNotNull(messageReceived, "a message MUST have been received");
         } finally {
             if (session != null) {
                 session.close();
@@ -136,7 +136,7 @@ public class MessagingClientTestCase {
         return ActiveMQClient.createServerLocatorWithoutHA(configuration).createSessionFactory();
     }
 
-    @Before
+    @BeforeEach
     public void setup() throws Exception {
 
         createSocketBinding(managementClient.getControllerClient(), messagingSocketBindingName, messagingPort);
@@ -147,7 +147,7 @@ public class MessagingClientTestCase {
         ServerReload.reloadIfRequired(managementClient);
     }
 
-    @After
+    @AfterEach
     public void tearDown() throws Exception {
 
         JMSOperations jmsOperations = JMSOperationsProvider.getInstance(managementClient.getControllerClient());

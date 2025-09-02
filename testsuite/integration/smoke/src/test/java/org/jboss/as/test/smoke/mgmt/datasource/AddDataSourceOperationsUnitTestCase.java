@@ -13,7 +13,7 @@ import java.util.List;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.as.connector.subsystems.datasources.DataSourcesExtension;
 import org.jboss.as.connector.subsystems.datasources.Namespace;
 import org.jboss.as.test.integration.management.jca.DsMgmtTestBase;
@@ -22,9 +22,9 @@ import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * Datasource operation unit test.
@@ -32,7 +32,7 @@ import org.junit.runner.RunWith;
  * @author <a href="mailto:jeff.zhang@jboss.org">Jeff Zhang</a>
  * @author <a href="mailto:vrastsel@redhat.com">Vladimir Rastseluev</a>
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @RunAsClient
 
 public class AddDataSourceOperationsUnitTestCase extends DsMgmtTestBase{
@@ -78,9 +78,9 @@ public class AddDataSourceOperationsUnitTestCase extends DsMgmtTestBase{
 
         remove(address);
 
-        Assert.assertNotNull("Reparsing failed:",newList);
+        Assertions.assertNotNull(newList,"Reparsing failed:");
 
-        Assert.assertNotNull(findNodeWithProperty(newList,"jndi-name","java:jboss/datasources/MySqlDs"));
+        Assertions.assertNotNull(findNodeWithProperty(newList,"jndi-name","java:jboss/datasources/MySqlDs"));
    }
 
     private List<ModelNode> marshalAndReparseDsResources(String childType) throws Exception {

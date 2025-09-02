@@ -61,11 +61,11 @@ created with the following commands: -
 ----
 batch
 ./core-service=management/ldap-connection=MyLdapConnection:add(url="ldap://localhost:10389", search-dn="uid=admin,ou=system", search-credential="secret")
- 
+
 ./core-service=management/security-realm=LDAPRealm:add
 ./core-service=management/security-realm=LDAPRealm/authentication=ldap:add(connection="MyLdapConnection", username-attribute=uid, base-dn="ou=users,dc=group-to-principal,dc=wildfly,dc=org")
- 
- 
+
+
 ./core-service=management/security-realm=LDAPRealm/authorization=ldap:add(connection=MyLdapConnection)
 ./core-service=management/security-realm=LDAPRealm/authorization=ldap/username-to-dn=username-filter:add(attribute=uid, base-dn="ou=users,dc=group-to-principal,dc=wildfly,dc=org")
 ./core-service=management/security-realm=LDAPRealm/authorization=ldap/group-search=group-to-principal:add(base-dn="ou=groups,dc=group-to-principal,dc=wildfly,dc=org", iterative=true, prefer-original-connection=true, principal-attribute=uniqueMember, search-by=DISTINGUISHED_NAME, group-name=SIMPLE, group-name-attribute=uid)

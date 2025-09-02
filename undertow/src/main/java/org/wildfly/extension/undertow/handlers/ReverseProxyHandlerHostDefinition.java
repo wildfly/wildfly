@@ -52,7 +52,6 @@ import org.wildfly.extension.undertow.Capabilities;
 import org.wildfly.extension.undertow.Constants;
 import org.wildfly.extension.undertow.UndertowExtension;
 import org.wildfly.extension.undertow.UndertowSubsystemModel;
-import org.wildfly.extension.undertow.deployment.GlobalRequestControllerHandler;
 import org.wildfly.subsystem.resource.capability.CapabilityReferenceRecorder;
 import org.xnio.OptionMap;
 import org.xnio.Options;

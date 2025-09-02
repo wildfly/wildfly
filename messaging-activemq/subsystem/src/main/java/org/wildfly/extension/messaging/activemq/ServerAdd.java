@@ -4,7 +4,7 @@
  */
 package org.wildfly.extension.messaging.activemq;
 
-import static org.jboss.as.controller.ModuleIdentifierUtil.canonicalModuleIdentifier;
+import static org.jboss.as.controller.ModuleIdentifierUtil.parseCanonicalModuleIdentifier;
 
 import static org.wildfly.extension.messaging.activemq._private.MessagingLogger.ROOT_LOGGER;
 
@@ -718,7 +718,7 @@ class ServerAdd extends AbstractAddStepHandler {
             String className = classModel.get(NAME).asString();
             String moduleName = classModel.get(MODULE).asString();
             try {
-                Module module = Module.getCallerModuleLoader().loadModule(canonicalModuleIdentifier(moduleName));
+                Module module = Module.getCallerModuleLoader().loadModule(parseCanonicalModuleIdentifier(moduleName));
                 Class<?> clazz = module.getClassLoader().loadClass(className);
                 return clazz;
             } catch (Exception e) {

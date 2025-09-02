@@ -22,8 +22,8 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 public abstract class AbstractStabilityServerSetupTaskTest {
     private final Stability desiredStability;
@@ -48,14 +48,14 @@ public abstract class AbstractStabilityServerSetupTaskTest {
         ModelNode op = Util.getReadAttributeOperation(PathAddress.pathAddress(CORE_SERVICE, SERVER_ENVIRONMENT), STABILITY);
         ModelNode result = ManagementOperations.executeOperation(managementClient.getControllerClient(), op);
         Stability stability = Stability.fromString(result.asString());
-        Assert.assertEquals(desiredStability, stability);
+        Assertions.assertEquals(desiredStability, stability);
     }
 
     @Test
     public void testSystemPropertyWasSetByDoSetupCalls() throws Exception {
         ModelNode read = Util.getReadAttributeOperation(PathAddress.pathAddress(SYSTEM_PROPERTY, AbstractStabilityServerSetupTaskTest.class.getName()), VALUE);
         ModelNode result = ManagementOperations.executeOperation(managementClient.getControllerClient(), read);
-        Assert.assertEquals(this.getClass().getName(), result.asString());
+        Assertions.assertEquals(this.getClass().getName(), result.asString());
     }
 
 

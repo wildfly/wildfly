@@ -26,11 +26,11 @@ the `domain.xml` or `standalone.xml` file.
 [source,xml,options="nowrap"]
 ----
 <extensions>
-    [...]
-    <extension module="org.jboss.as.transactions"/>
-    <extension module="org.jboss.as.webservices" />
-    <extension module="org.jboss.as.weld" />
-    [...]
+    [...]
+    <extension module="org.jboss.as.transactions"/>
+    <extension module="org.jboss.as.webservices" />
+    <extension module="org.jboss.as.weld" />
+    [...]
     <extension module="org.wildfly.extension.undertow"/>
 </extensions>
 ----
@@ -174,7 +174,7 @@ address:
 [source,xml,options="nowrap"]
 ----
 <interface name="internal">
-   <nic name="eth1"/>
+   <nic name="eth1"/>
 </interface>
 ----
 

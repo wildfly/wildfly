@@ -16,7 +16,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>37.0.0.Beta1-SNAPSHOT</version>
+        <version>38.0.0.Beta1-SNAPSHOT</version>
         <relativePath>../../pom.xml</relativePath>
     </parent>
 
@@ -387,7 +387,7 @@
                         <Bundle-SymbolicName>org.jboss.client</Bundle-SymbolicName>
                         <Bundle-Version>1.0</Bundle-Version>
                         <Bundle-Name>Jakarta Enterprise Beans and Jakarta Messaging client library</Bundle-Name>
-                        <Fragment-Host>org.openjdk.jmc.rjmx</Fragment-Host>
+                        <Fragment-Host>org.openjdk.jmc.rjmx.common</Fragment-Host>
                         <Export-Package>*</Export-Package>
                         <Automatic-Module-Name>org.jboss.client</Automatic-Module-Name>
                     </manifestEntries>
@@ -444,13 +444,48 @@
                                         <Bundle-SymbolicName>org.jboss.client</Bundle-SymbolicName>
                                         <Bundle-Version>1.0</Bundle-Version>
                                         <Bundle-Name>Jakarta Enterprise Beans and Jakarta Messaging client library</Bundle-Name>
-                                        <Fragment-Host>org.openjdk.jmc.rjmx</Fragment-Host>
+                                        <Fragment-Host>org.openjdk.jmc.rjmx.common</Fragment-Host>
                                         <Export-Package>*</Export-Package>
                                         <Automatic-Module-Name>org.jboss.client</Automatic-Module-Name>
                                     </manifestEntries>
                                 </transformer>
                                 <transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
                             </transformers>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <!-- Doesn't work due to module, To fix 
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>attach-javadocs</id>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                        <configuration>
+                            <sourceFileExcludes>
+                              <exclude>**\/module-info.java</exclude>
+                            </sourceFileExcludes>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin> -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>empty-javadoc-jar</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                        <configuration>
+                            <classifier>javadoc</classifier>
+                            <classesDirectory>${project.basedir}/javadoc</classesDirectory>
                         </configuration>
                     </execution>
                 </executions>

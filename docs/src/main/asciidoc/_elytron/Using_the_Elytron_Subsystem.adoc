@@ -281,7 +281,7 @@ datasource in WildFly:
 [source,options="nowrap"]
 ----
 deploy /path/to/postgresql-9.4.1210.jar
- 
+
 data-source add --name=examplePostgresDS --jndi-name=java:jboss/examplePostgresDS --driver-name=postgresql-9.4.1210.jar  --connection-url=jdbc:postgresql://localhost:5432/postgresdb --user-name=postgresAdmin --password=mysecretpassword
 ----
 
@@ -352,12 +352,12 @@ dn: dc=wildfly,dc=org
 dc: wildfly
 objectClass: top
 objectClass: domain
- 
+
 dn: ou=Users,dc=wildfly,dc=org
 objectClass: organizationalUnit
 objectClass: top
 ou: Users
- 
+
 dn: uid=jsmith,ou=Users,dc=wildfly,dc=org
 objectClass: top
 objectClass: person
@@ -366,12 +366,12 @@ cn: John Smith
 sn: smith
 uid: jsmith
 userPassword: password123
- 
+
 dn: ou=Roles,dc=wildfly,dc=org
 objectclass: top
 objectclass: organizationalUnit
 ou: Roles
- 
+
 dn: cn=Admin,ou=Roles,dc=wildfly,dc=org
 objectClass: top
 objectClass: groupOfNames
@@ -1078,7 +1078,7 @@ Example update _http-authentication-factory_
        "process-state" => "reload-required"
    }
 }
- 
+
 reload
 ----
 
@@ -1094,7 +1094,7 @@ Example update _sasl-authentication-factory_
        "process-state" => "reload-required"
    }
 }
- 
+
 reload
 ----
 
@@ -1119,7 +1119,7 @@ sasl-authentication-factory.
 [source,options="nowrap"]
 ----
 /subsystem=elytron/sasl-authentication-factory=example-sasl-auth:list-add(name=mechanism-configurations, value={mechanism-name=JBOSS-LOCAL-USER, realm-mapper=local})
- 
+
 reload
 ----
 
@@ -1129,7 +1129,7 @@ reload
 [source,options="nowrap"]
 ----
 /subsystem=elytron/sasl-authentication-factory=example-sasl-auth:add(sasl-server-factory=configured,security-domain=exampleSD,mechanism-configurations=[{mechanism-name=DIGEST-MD5,mechanism-realm-configurations=[{realm-name=exampleManagementRealm}]},{mechanism-name=JBOSS-LOCAL-USER, realm-mapper=local}])
- 
+
 reload
 ----
 
@@ -1156,9 +1156,9 @@ reload
         "security-domain" => "ManagementDomain"
     }
 }
- 
+
 /subsystem=elytron/sasl-authentication-factory=temp-sasl-authentication:list-remove(name=mechanism-configurations,index=0)
- 
+
 reload
 ----
 
@@ -1956,7 +1956,7 @@ generate an example key pair:
 [source,options="nowrap"]
 ----
 /subsystem=elytron/key-manager=httpsKM:add(key-store=httpsKS,credential-reference={clear-text=secret})
- 
+
 /subsystem=elytron/server-ssl-context=httpsSSC:add(key-manager=httpsKM,protocols=["TLSv1.2"])
 ----
 
@@ -1969,7 +1969,7 @@ support. The example commands above uses _TLSv1.2_.
 [source,options="nowrap"]
 ----
 /core-service=management/management-interface=http-interface:write-attribute(name=ssl-context, value=httpsSSC)
- 
+
 /core-service=management/management-interface=http-interface:write-attribute(name=secure-socket-binding, value=management-https)
 ----
 
@@ -2113,9 +2113,9 @@ In the following example, we enter _validate=false_ in the _import-certificate_ 
 [source,options="nowrap"]
 ----
 /subsystem=elytron/key-manager=twoWayKM:add(key-store=twoWayKS,credential-reference={clear-text=secret})
- 
+
 /subsystem=elytron/trust-manager=twoWayTM:add(key-store=twoWayTS)
- 
+
 /subsystem=elytron/server-ssl-context=twoWaySSC:add(key-manager=twoWayKM,protocols=["TLSv1.2"],trust-manager=twoWayTM,want-client-auth=true,need-client-auth=true)
 ----
 
@@ -2128,7 +2128,7 @@ support. The example commands above uses _TLSv1.2_.
 [source,options="nowrap"]
 ----
 /core-service=management/management-interface=http-interface:write-attribute(name=ssl-context, value=twoWaySSC)
- 
+
 /core-service=management/management-interface=http-interface:write-attribute(name=secure-socket-binding, value=management-https)
 ----
 

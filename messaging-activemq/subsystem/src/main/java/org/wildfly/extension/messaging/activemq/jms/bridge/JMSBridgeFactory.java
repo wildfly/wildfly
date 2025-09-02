@@ -5,7 +5,7 @@
 
 package org.wildfly.extension.messaging.activemq.jms.bridge;
 
-import static org.jboss.as.controller.ModuleIdentifierUtil.canonicalModuleIdentifier;
+import static org.jboss.as.controller.ModuleIdentifierUtil.parseCanonicalModuleIdentifier;
 
 import java.util.Properties;
 import org.apache.activemq.artemis.jms.bridge.ConnectionFactoryFactory;
@@ -67,7 +67,7 @@ public class JMSBridgeFactory {
             // if a module is specified, use it to instantiate the JMSBridge to ensure its ExecutorService
             // will use the correct class loader to execute its threads
             if (moduleName != null) {
-                org.jboss.modules.Module module = org.jboss.modules.Module.getCallerModuleLoader().loadModule(canonicalModuleIdentifier(moduleName));
+                org.jboss.modules.Module module = org.jboss.modules.Module.getCallerModuleLoader().loadModule(parseCanonicalModuleIdentifier(moduleName));
                 WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(module.getClassLoader());
             }
             return new JMSBridgeImpl(sourceCff,

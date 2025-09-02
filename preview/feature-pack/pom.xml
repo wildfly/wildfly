@@ -16,7 +16,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>37.0.0.Beta1-SNAPSHOT</version>
+        <version>38.0.0.Beta1-SNAPSHOT</version>
     </parent>
     
     <artifactId>wildfly-preview-feature-pack</artifactId>
@@ -384,6 +384,14 @@
             <artifactId>wildfly-vertx-feature-pack-content</artifactId>
             <type>pom</type>
             <scope>provided</scope>
+            <exclusions>
+                <!-- TODO When a version with https://github.com/wildfly-extras/wildfly-vertx-feature-pack/issues/57
+                     fixed is integrated, remove this exclusion.  -->
+                <exclusion>
+                    <groupId>org.wildfly.galleon-plugins</groupId>
+                    <artifactId>transformer</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
     </dependencies>
 

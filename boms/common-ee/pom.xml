@@ -17,7 +17,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>37.0.0.Beta1-SNAPSHOT</version>
+        <version>38.0.0.Beta1-SNAPSHOT</version>
         <relativePath>../../pom.xml</relativePath>
     </parent>
 
@@ -1753,6 +1753,10 @@
                         <artifactId>javax.inject</artifactId>
                     </exclusion>
                     <exclusion>
+                        <groupId>org.apache.activemq</groupId>
+                        <artifactId>artemis-lockmanager-api</artifactId>
+                    </exclusion>
+                    <exclusion>
                         <groupId>org.apache.commons</groupId>
                         <artifactId>commons-lang3</artifactId>
                     </exclusion>
@@ -2013,6 +2017,10 @@
                     <exclusion>
                         <groupId>io.netty</groupId>
                         <artifactId>netty-codec</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.apache.activemq</groupId>
+                        <artifactId>artemis-lockmanager-api</artifactId>
                     </exclusion>
                     <exclusion>
                         <groupId>org.apache.geronimo.specs</groupId>

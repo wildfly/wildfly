@@ -212,7 +212,7 @@ using the `@EndpointConfig` annotation.
 ----
 import jakarta.jws.WebService;
 import org.jboss.ws.api.annotation.EndpointConfig;
- 
+
 @WebService
 (
    portName = "SecurityServicePort",
@@ -334,7 +334,7 @@ is omitted):
       <soap:address location="http://localhost:8080/jaxws-samples-wssePolicy-sign-encrypt"/>
     </port>
   </service>
- 
+
   <wsp:Policy wsu:Id="SecurityServiceSignThenEncryptPolicy" xmlns:sp="http://schemas.xmlsoap.org/ws/2005/07/securitypolicy">
     <wsp:ExactlyOne>
       <wsp:All>
@@ -397,10 +397,10 @@ then enriched with a `@EndpointConfig` annotation:
 [source,java,options="nowrap"]
 ----
 package org.jboss.test.ws.jaxws.samples.wsse.policy.basic;
- 
+
 import jakarta.jws.WebService;
 import org.jboss.ws.api.annotation.EndpointConfig;
- 
+
 @WebService
 (
    portName = "SecurityServicePort",
@@ -474,7 +474,7 @@ also provided:
 [source,java,options="nowrap"]
 ----
 package org.jboss.test.ws.jaxws.samples.wsse.policy.basic;
- 
+
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
@@ -482,15 +482,15 @@ import javax.security.auth.callback.Callback;
 import javax.security.auth.callback.CallbackHandler;
 import javax.security.auth.callback.UnsupportedCallbackException;
 import org.apache.ws.security.WSPasswordCallback;
- 
+
 public class KeystorePasswordCallback implements CallbackHandler {
    private Map<String, String> passwords = new HashMap<String, String>();
- 
+
    public KeystorePasswordCallback() {
       passwords.put("alice", "password");
       passwords.put("bob", "password");
    }
- 
+
    /**
     * It attempts to get the password from the private
     * alias/passwords map.
@@ -498,7 +498,7 @@ public class KeystorePasswordCallback implements CallbackHandler {
    public void handle(Callback[] callbacks) throws IOException, UnsupportedCallbackException {
       for (int i = 0; i < callbacks.length; i++) {
          WSPasswordCallback pc = (WSPasswordCallback)callbacks[i];
- 
+
          String pass = passwords.get(pc.getIdentifier());
          if (pass != null) {
             pc.setPassword(pass);
@@ -506,7 +506,7 @@ public class KeystorePasswordCallback implements CallbackHandler {
          }
       }
    }
- 
+
    /**
     * Add an alias/password pair to the callback mechanism.
     */
@@ -600,7 +600,7 @@ QName serviceName = new QName("http://www.jboss.org/jbossws/ws-extensions/wssecu
 URL wsdlURL = new URL(serviceURL + "?wsdl");
 Service service = Service.create(wsdlURL, serviceName);
 ServiceIface proxy = (ServiceIface)service.getPort(ServiceIface.class);
- 
+
 ((BindingProvider)proxy).getRequestContext().put(SecurityConstants.CALLBACK_HANDLER, new KeystorePasswordCallback());
 ((BindingProvider)proxy).getRequestContext().put(SecurityConstants.SIGNATURE_PROPERTIES,
      Thread.currentThread().getContextClassLoader().getResource("META-INF/alice.properties"));
@@ -608,7 +608,7 @@ ServiceIface proxy = (ServiceIface)service.getPort(ServiceIface.class);
      Thread.currentThread().getContextClassLoader().getResource("META-INF/alice.properties"));
 ((BindingProvider)proxy).getRequestContext().put(SecurityConstants.SIGNATURE_USERNAME, "alice");
 ((BindingProvider)proxy).getRequestContext().put(SecurityConstants.ENCRYPT_USERNAME, "bob");
- 
+
 proxy.sayHello();
 ----
 
@@ -751,7 +751,7 @@ proper WS-Security Policy:
       <soap:address location="http://localhost:8080/jaxws-samples-wsse-username-jaas"/>
     </port>
   </service>
- 
+
   <wsp:Policy wsu:Id="SecurityServiceUsernameUnsecureTransportPolicy">
         <wsp:ExactlyOne>
             <wsp:All>
@@ -767,7 +767,7 @@ proper WS-Security Policy:
             </wsp:All>
         </wsp:ExactlyOne>
     </wsp:Policy>
- 
+
 </definitions>
 ----
 
@@ -806,11 +806,11 @@ integration:
 [source,java,options="nowrap"]
 ----
 package org.jboss.test.ws.jaxws.samples.wsse.policy.jaas;
- 
+
 import jakarta.jws.WebService;
 import org.apache.cxf.interceptor.InInterceptors;
 import org.jboss.ws.api.annotation.EndpointConfig;
- 
+
 @WebService
 (
    portName = "SecurityServicePort",
@@ -830,7 +830,7 @@ public class ServiceImpl implements ServiceIface
    {
       return "Secure Hello World!";
    }
- 
+
    public String greetMe()
    {
       return "Greetings!";
@@ -844,20 +844,20 @@ deployment and deals with the roles cheks:
 [source,java,options="nowrap"]
 ----
 package org.jboss.test.ws.jaxws.samples.wsse.policy.jaas;
- 
+
 import java.util.HashMap;
 import java.util.Map;
 import org.apache.cxf.interceptor.security.SimpleAuthorizingInterceptor;
- 
+
 public class POJOEndpointAuthorizationInterceptor extends SimpleAuthorizingInterceptor
 {
- 
+
    public POJOEndpointAuthorizationInterceptor()
    {
       super();
       readRoles();
    }
- 
+
    private void readRoles()
    {
       //just an example, this might read from a configuration file or such
@@ -984,11 +984,11 @@ QName serviceName = new QName("http://www.jboss.org/jbossws/ws-extensions/wssecu
 URL wsdlURL = new URL(serviceURL + "?wsdl");
 Service service = Service.create(wsdlURL, serviceName);
 ServiceIface proxy = (ServiceIface)service.getPort(ServiceIface.class);
- 
+
 ((BindingProvider)proxy).getRequestContext().put(SecurityConstants.USERNAME, "kermit");
 ((BindingProvider)proxy).getRequestContext().put(SecurityConstants.CALLBACK_HANDLER,
       "org.jboss.test.ws.jaxws.samples.wsse.policy.jaas.UsernamePasswordCallback");
- 
+
 proxy.sayHello();
 ----
 
@@ -999,13 +999,13 @@ invocations:
 [source,java,options="nowrap"]
 ----
 package org.jboss.test.ws.jaxws.samples.wsse.policy.jaas;
- 
+
 import java.io.IOException;
 import javax.security.auth.callback.Callback;
 import javax.security.auth.callback.CallbackHandler;
 import javax.security.auth.callback.UnsupportedCallbackException;
 import org.apache.ws.security.WSPasswordCallback;
- 
+
 public class UsernamePasswordCallback implements CallbackHandler
 {
    public void handle(Callback[] callbacks) throws IOException, UnsupportedCallbackException
@@ -1037,26 +1037,26 @@ for Username Token over HTTPS:
 [source,xml,options="nowrap"]
 ----
 ...
- 
+
 <binding name="SecurityServicePortBinding" type="tns:ServiceIface">
-  <wsp:PolicyReference URI="#SecurityServiceBindingPolicy"/>
-  <soap:binding transport="http://schemas.xmlsoap.org/soap/http" style="document"/>
-  <operation name="sayHello">
-    <soap:operation soapAction=""/>
-    <input>
-      <soap:body use="literal"/>
-    </input>
-    <output>
-      <soap:body use="literal"/>
-    </output>
-  </operation>
+  <wsp:PolicyReference URI="#SecurityServiceBindingPolicy"/>
+  <soap:binding transport="http://schemas.xmlsoap.org/soap/http" style="document"/>
+  <operation name="sayHello">
+    <soap:operation soapAction=""/>
+    <input>
+      <soap:body use="literal"/>
+    </input>
+    <output>
+      <soap:body use="literal"/>
+    </output>
+  </operation>
 </binding>
 <service name="SecurityService">
    <port name="SecurityServicePort" binding="tns:SecurityServicePortBinding">
-      <soap:address location="https://localhost:8443/jaxws-samples-wsse-policy-username"/>
-   </port>
+      <soap:address location="https://localhost:8443/jaxws-samples-wsse-policy-username"/>
+   </port>
 </service>
- 
+
 <wsp:Policy wsu:Id="SecurityServiceBindingPolicy">
    <wsp:ExactlyOne>
       <wsp:All>
@@ -1122,7 +1122,7 @@ below:
       <servlet-name>TestService</servlet-name>
       <url-pattern>/*</url-pattern>
    </servlet-mapping>
- 
+
    <security-constraint>
     <web-resource-collection>
       <web-resource-name>TestService</web-resource-name>
