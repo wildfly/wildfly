@@ -301,7 +301,7 @@ public class DistributableSessionManagerTestCase {
 
         assertNull(sessionAdapter);
 
-        verify(batch).discard();
+        verify(batch, never()).discard();
         verify(batch).close();
     }
 
@@ -326,7 +326,7 @@ public class DistributableSessionManagerTestCase {
         assertNull(sessionAdapter);
 
         verify(this.manager, never()).findSession(sessionId);
-        verify(batch).discard();
+        verify(batch, never()).discard();
         verify(batch).close();
 
         sessionAdapter = this.adapter.getSession(sessionId);
@@ -334,6 +334,7 @@ public class DistributableSessionManagerTestCase {
         assertNull(sessionAdapter);
 
         verify(this.manager, never()).findSession(sessionId);
+        verify(batch, never()).discard();
         verify(batch, times(2)).close();
     }
 
@@ -359,7 +360,7 @@ public class DistributableSessionManagerTestCase {
 
         assertNull(sessionAdapter);
 
-        verify(batch).discard();
+        verify(batch, never()).discard();
         verify(batch).close();
     }
 
@@ -376,7 +377,6 @@ public class DistributableSessionManagerTestCase {
 
         when(this.batchFactory.get()).thenReturn(batch);
         when(batch.suspend()).thenReturn(suspendedBatch);
-        when(suspendedBatch.resume()).thenReturn(batch);
         when(suspendedBatch.resumeWithContext()).thenReturn(context);
         when(context.get()).thenReturn(batch);
         when(config.findSessionId(exchange)).thenReturn(sessionId);
@@ -393,7 +393,7 @@ public class DistributableSessionManagerTestCase {
 
         verifyNoInteractions(this.statistics);
 
-        verify(batch).discard();
+        verify(batch, never()).discard();
         verify(batch).close();
     }
 
@@ -427,7 +427,7 @@ public class DistributableSessionManagerTestCase {
 
         verifyNoInteractions(this.statistics);
 
-        verify(batch).discard();
+        verify(batch, never()).discard();
         verify(batch).close();
     }
 

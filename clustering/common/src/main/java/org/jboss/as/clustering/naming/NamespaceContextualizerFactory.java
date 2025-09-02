@@ -12,7 +12,6 @@ import org.kohsuke.MetaInfServices;
 import org.wildfly.clustering.context.Context;
 import org.wildfly.clustering.context.Contextualizer;
 import org.wildfly.clustering.context.ContextualizerFactory;
-import org.wildfly.clustering.function.Consumer;
 
 /**
  * @author Paul Ferraro
@@ -27,7 +26,7 @@ public class NamespaceContextualizerFactory implements ContextualizerFactory {
             @Override
             public Context<NamespaceContextSelector> get() {
                 NamespaceContextSelector.pushCurrentSelector(selector);
-                return Context.of(selector, Consumer.run(NamespaceContextSelector::popCurrentSelector));
+                return Context.of(selector, NamespaceContextSelector::popCurrentSelector);
             }
         }) : Contextualizer.NONE;
     }

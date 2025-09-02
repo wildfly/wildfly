@@ -16,6 +16,7 @@ import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.reset;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
@@ -45,9 +46,9 @@ import io.undertow.server.session.SessionListeners;
 import io.undertow.servlet.handlers.security.CachedAuthenticatedSessionHandler;
 import io.undertow.util.Protocols;
 
-import org.junit.After;
 import org.junit.Assert;
 import org.junit.Test;
+import org.junit.function.ThrowingRunnable;
 import org.mockito.ArgumentCaptor;
 import org.wildfly.clustering.cache.batch.Batch;
 import org.wildfly.clustering.cache.batch.SuspendedBatch;
@@ -79,11 +80,6 @@ public class DistributableSessionTestCase {
     private final Consumer<HttpServerExchange> closeTask = mock(Consumer.class);
     private final RecordableSessionManagerStatistics statistics = mock(RecordableSessionManagerStatistics.class);
 
-    @After
-    public void destroy() {
-        reset(this.metaData, this.manager, this.config, this.session, this.suspendedBatch, this.closeTask, this.statistics);
-    }
-
     @Test
     public void getId() {
         String id = "id";
@@ -112,11 +108,13 @@ public class DistributableSessionTestCase {
         io.undertow.server.session.Session session = new DistributableSession(this.manager, this.session, this.config, this.suspendedBatch, this.closeTask, this.statistics);
 
         HttpServerExchange exchange = new HttpServerExchange(null);
+        Context<Batch> context = mock(Context.class);
         Batch batch = mock(Batch.class);
         ArgumentCaptor<Instant> capturedLastAccessStartTime = ArgumentCaptor.forClass(Instant.class);
         ArgumentCaptor<Instant> capturedLastAccessEndTime = ArgumentCaptor.forClass(Instant.class);
 
-        doReturn(batch).when(this.suspendedBatch).resume();
+        doReturn(context).when(this.suspendedBatch).resumeWithContext();
+        doReturn(batch).when(context).get();
         doReturn(true).when(this.session).isValid();
         doNothing().when(this.metaData).setLastAccess(capturedLastAccessStartTime.capture(), capturedLastAccessEndTime.capture());
 
@@ -142,11 +140,13 @@ public class DistributableSessionTestCase {
         io.undertow.server.session.Session session = new DistributableSession(this.manager, this.session, this.config, this.suspendedBatch, this.closeTask, this.statistics);
 
         HttpServerExchange exchange = new HttpServerExchange(null);
+        Context<Batch> context = mock(Context.class);
         Batch batch = mock(Batch.class);
         ArgumentCaptor<Instant> capturedLastAccessStartTime = ArgumentCaptor.forClass(Instant.class);
         ArgumentCaptor<Instant> capturedLastAccessEndTime = ArgumentCaptor.forClass(Instant.class);
 
-        doReturn(batch).when(this.suspendedBatch).resume();
+        doReturn(context).when(this.suspendedBatch).resumeWithContext();
+        doReturn(batch).when(context).get();
         doReturn(true).when(this.session).isValid();
         doNothing().when(this.metaData).setLastAccess(capturedLastAccessStartTime.capture(), capturedLastAccessEndTime.capture());
 
@@ -174,9 +174,11 @@ public class DistributableSessionTestCase {
         verify(this.metaData).isNew();
 
         HttpServerExchange exchange = new HttpServerExchange(null);
+        Context<Batch> context = mock(Context.class);
         Batch batch = mock(Batch.class);
 
-        doReturn(batch).when(this.suspendedBatch).resume();
+        doReturn(context).when(this.suspendedBatch).resumeWithContext();
+        doReturn(batch).when(context).get();
         doReturn(false).when(this.session).isValid();
 
         session.requestDone(exchange);
@@ -194,6 +196,8 @@ public class DistributableSessionTestCase {
 
         io.undertow.server.session.Session session = new DistributableSession(this.manager, this.session, this.config, this.suspendedBatch, this.closeTask, this.statistics);
 
+        verify(this.session).getMetaData();
+
         Instant now = Instant.now();
 
         doReturn(now).when(this.metaData).getCreationTime();
@@ -202,17 +206,12 @@ public class DistributableSessionTestCase {
 
         assertEquals(now.toEpochMilli(), result);
 
+        verify(this.session, times(2)).getMetaData();
+        verifyNoMoreInteractions(this.session);
         verifyNoInteractions(this.suspendedBatch);
-        verify(this.session, never()).close();
-        verify(this.closeTask, never()).accept(null);
+        verifyNoInteractions(this.closeTask);
 
-        doThrow(IllegalStateException.class).when(this.session).getMetaData();
-
-        assertThrows(IllegalStateException.class, () -> session.getCreationTime());
-
-        verifyNoInteractions(this.suspendedBatch);
-        verify(this.session).close();
-        verify(this.closeTask).accept(null);
+        this.verifyInvalidMetaData(session, session::getCreationTime);
     }
 
     @Test
@@ -222,6 +221,8 @@ public class DistributableSessionTestCase {
 
         io.undertow.server.session.Session session = new DistributableSession(this.manager, this.session, this.config, this.suspendedBatch, this.closeTask, this.statistics);
 
+        verify(this.session).getMetaData();
+
         Instant now = Instant.now();
 
         doReturn(now).when(this.metaData).getLastAccessStartTime();
@@ -230,17 +231,12 @@ public class DistributableSessionTestCase {
 
         assertEquals(now.toEpochMilli(), result);
 
+        verify(this.session, times(2)).getMetaData();
+        verifyNoMoreInteractions(this.session);
         verifyNoInteractions(this.suspendedBatch);
-        verify(this.session, never()).close();
-        verify(this.closeTask, never()).accept(null);
+        verifyNoInteractions(this.closeTask);
 
-        doThrow(IllegalStateException.class).when(this.session).getMetaData();
-
-        assertThrows(IllegalStateException.class, () -> session.getLastAccessedTime());
-
-        verifyNoInteractions(this.suspendedBatch);
-        verify(this.session).close();
-        verify(this.closeTask).accept(null);
+        this.verifyInvalidMetaData(session, session::getLastAccessedTime);
     }
 
     @Test
@@ -250,6 +246,8 @@ public class DistributableSessionTestCase {
 
         io.undertow.server.session.Session session = new DistributableSession(this.manager, this.session, this.config, this.suspendedBatch, this.closeTask, this.statistics);
 
+        verify(this.session).getMetaData();
+
         long expected = 3600L;
 
         doReturn(Duration.ofSeconds(expected)).when(this.metaData).getTimeout();
@@ -258,17 +256,12 @@ public class DistributableSessionTestCase {
 
         assertEquals(expected, result);
 
+        verify(this.session, times(2)).getMetaData();
+        verifyNoMoreInteractions(this.session);
         verifyNoInteractions(this.suspendedBatch);
-        verify(this.session, never()).close();
-        verify(this.closeTask, never()).accept(null);
+        verifyNoInteractions(this.closeTask);
 
-        doThrow(IllegalStateException.class).when(this.session).getMetaData();
-
-        assertThrows(IllegalStateException.class, () -> session.getMaxInactiveInterval());
-
-        verifyNoInteractions(this.suspendedBatch);
-        verify(this.session).close();
-        verify(this.closeTask).accept(null);
+        this.verifyInvalidMetaData(session, session::getMaxInactiveInterval);
     }
 
     @Test
@@ -277,6 +270,8 @@ public class DistributableSessionTestCase {
         doReturn(false).when(this.metaData).isNew();
 
         io.undertow.server.session.Session session = new DistributableSession(this.manager, this.session, this.config, this.suspendedBatch, this.closeTask, this.statistics);
+
+        verify(this.session).getMetaData();
 
         int interval = 3600;
 
@@ -288,13 +283,7 @@ public class DistributableSessionTestCase {
         verify(this.session, never()).close();
         verify(this.closeTask, never()).accept(null);
 
-        doThrow(IllegalStateException.class).when(this.session).getMetaData();
-
-        assertThrows(IllegalStateException.class, () -> session.setMaxInactiveInterval(interval));
-
-        verifyNoInteractions(this.suspendedBatch);
-        verify(this.session).close();
-        verify(this.closeTask).accept(null);
+        this.verifyInvalidMetaData(session, () -> session.setMaxInactiveInterval(interval));
     }
 
     @Test
@@ -303,6 +292,8 @@ public class DistributableSessionTestCase {
         doReturn(false).when(this.metaData).isNew();
 
         io.undertow.server.session.Session session = new DistributableSession(this.manager, this.session, this.config, this.suspendedBatch, this.closeTask, this.statistics);
+
+        verify(this.session).getMetaData();
 
         Map<String, Object> attributes = mock(Map.class);
         Set<String> expected = Collections.singleton("name");
@@ -318,13 +309,7 @@ public class DistributableSessionTestCase {
         verify(this.session, never()).close();
         verify(this.closeTask, never()).accept(null);
 
-        doThrow(IllegalStateException.class).when(this.session).getAttributes();
-
-        assertThrows(IllegalStateException.class, () -> session.getAttributeNames());
-
-        verifyNoInteractions(this.suspendedBatch);
-        verify(this.session).close();
-        verify(this.closeTask).accept(null);
+        this.verifyInvalidAttributes(session, session::getAttributeNames);
     }
 
     @Test
@@ -333,6 +318,8 @@ public class DistributableSessionTestCase {
         doReturn(false).when(this.metaData).isNew();
 
         io.undertow.server.session.Session session = new DistributableSession(this.manager, this.session, this.config, this.suspendedBatch, this.closeTask, this.statistics);
+
+        verify(this.session).getMetaData();
 
         String name = "name";
 
@@ -350,13 +337,7 @@ public class DistributableSessionTestCase {
         verify(this.session, never()).close();
         verify(this.closeTask, never()).accept(null);
 
-        doThrow(IllegalStateException.class).when(this.session).getAttributes();
-
-        assertThrows(IllegalStateException.class, () -> session.getAttribute(name));
-
-        verifyNoInteractions(this.suspendedBatch);
-        verify(this.session).close();
-        verify(this.closeTask).accept(null);
+        this.verifyInvalidAttributes(session, () -> session.getAttribute(name));
     }
 
     @Test
@@ -365,6 +346,8 @@ public class DistributableSessionTestCase {
         doReturn(false).when(this.metaData).isNew();
 
         io.undertow.server.session.Session session = new DistributableSession(this.manager, this.session, this.config, this.suspendedBatch, this.closeTask, this.statistics);
+
+        verify(this.session).getMetaData();
 
         String name = CachedAuthenticatedSessionHandler.class.getName() + ".AuthenticatedSession";
 
@@ -398,13 +381,7 @@ public class DistributableSessionTestCase {
         verify(this.session, never()).close();
         verify(this.closeTask, never()).accept(null);
 
-        doThrow(IllegalStateException.class).when(this.session).getAttributes();
-
-        assertThrows(IllegalStateException.class, () -> session.getAttribute(name));
-
-        verifyNoInteractions(this.suspendedBatch);
-        verify(this.session).close();
-        verify(this.closeTask).accept(null);
+        this.verifyInvalidAttributes(session, () -> session.getAttribute(name));
     }
 
     @Test
@@ -439,6 +416,8 @@ public class DistributableSessionTestCase {
 
         io.undertow.server.session.Session session = new DistributableSession(this.manager, this.session, this.config, this.suspendedBatch, this.closeTask, this.statistics);
 
+        verify(this.session).getMetaData();
+
         String name = "name";
         Integer value = 1;
 
@@ -464,13 +443,7 @@ public class DistributableSessionTestCase {
         verify(this.session, never()).close();
         verify(this.closeTask, never()).accept(null);
 
-        doThrow(IllegalStateException.class).when(this.session).getAttributes();
-
-        assertThrows(IllegalStateException.class, () -> session.setAttribute(name, value));
-
-        verifyNoInteractions(this.suspendedBatch);
-        verify(this.session).close();
-        verify(this.closeTask).accept(null);
+        this.verifyInvalidAttributes(session, () -> session.setAttribute(name, value));
     }
 
     @Test
@@ -629,13 +602,7 @@ public class DistributableSessionTestCase {
         verify(this.session, never()).close();
         verify(this.closeTask, never()).accept(null);
 
-        doThrow(IllegalStateException.class).when(this.session).getAttributes();
-
-        assertThrows(IllegalStateException.class, () -> session.setAttribute(name, oldAuth));
-
-        verifyNoInteractions(this.suspendedBatch);
-        verify(this.session).close();
-        verify(this.closeTask).accept(null);
+        this.verifyInvalidAttributes(session, () -> session.setAttribute(name, oldAuth));
     }
 
     @Test
@@ -695,13 +662,7 @@ public class DistributableSessionTestCase {
         verify(this.session, never()).close();
         verify(this.closeTask, never()).accept(null);
 
-        doThrow(IllegalStateException.class).when(this.session).getAttributes();
-
-        assertThrows(IllegalStateException.class, () -> session.removeAttribute(name));
-
-        verifyNoInteractions(this.suspendedBatch);
-        verify(this.session).close();
-        verify(this.closeTask).accept(null);
+        this.verifyInvalidAttributes(session, () -> session.removeAttribute(name));
     }
 
     @Test
@@ -777,13 +738,7 @@ public class DistributableSessionTestCase {
         verify(this.session, never()).close();
         verify(this.closeTask, never()).accept(null);
 
-        doThrow(IllegalStateException.class).when(this.session).getAttributes();
-
-        assertThrows(IllegalStateException.class, () -> session.removeAttribute(name));
-
-        verifyNoInteractions(this.suspendedBatch);
-        verify(this.session).close();
-        verify(this.closeTask).accept(null);
+        this.verifyInvalidAttributes(session, () -> session.removeAttribute(name));
     }
 
     @Test
@@ -823,6 +778,7 @@ public class DistributableSessionTestCase {
 
         HttpServerExchange exchange = new HttpServerExchange(null);
 
+        Context<Batch> context = mock(Context.class);
         Batch batch = mock(Batch.class);
         SessionListener listener = mock(SessionListener.class);
         Map<String, Object> attributes = mock(Map.class);
@@ -839,7 +795,8 @@ public class DistributableSessionTestCase {
         doReturn(attributes).when(this.session).getAttributes();
         doReturn(Set.of(Map.entry("attribute", attributeValue))).when(attributes).entrySet();
         doReturn(recorder).when(this.statistics).getInactiveSessionRecorder();
-        doReturn(batch).when(this.suspendedBatch).resume();
+        doReturn(context).when(this.suspendedBatch).resumeWithContext();
+        doReturn(batch).when(context).get();
 
         session.invalidate(exchange);
 
@@ -856,6 +813,7 @@ public class DistributableSessionTestCase {
     public void invalidateInvalid() {
         String sessionId = "session";
         HttpServerExchange exchange = new HttpServerExchange(null);
+        Context<Batch> context = mock(Context.class);
         Batch batch = mock(Batch.class);
 
         doReturn(this.metaData).when(this.session).getMetaData();
@@ -864,7 +822,8 @@ public class DistributableSessionTestCase {
 
         io.undertow.server.session.Session session = new DistributableSession(this.manager, this.session, this.config, this.suspendedBatch, this.closeTask, this.statistics);
 
-        doReturn(batch).when(this.suspendedBatch).resume();
+        doReturn(context).when(this.suspendedBatch).resumeWithContext();
+        doReturn(batch).when(context).get();
         doReturn(false).when(this.session).isValid();
         doThrow(IllegalStateException.class).when(this.session).invalidate();
 
@@ -1031,8 +990,54 @@ public class DistributableSessionTestCase {
         verify(this.session).close();
         verify(this.closeTask).accept(exchange);
         verify(newSession).invalidate();
-        verify(this.suspendedBatch).resumeWithContext();
-        verify(context).close();
+        verify(this.suspendedBatch, times(2)).resumeWithContext();
+        verify(context, times(2)).close();
         verifyNoMoreInteractions(this.suspendedBatch);
+    }
+
+    void verifyInvalidMetaData(io.undertow.server.session.Session session, ThrowingRunnable action) {
+        this.verifyInvalidSession(session, action, Session::getMetaData);
+    }
+
+    void verifyInvalidAttributes(io.undertow.server.session.Session session, ThrowingRunnable action) {
+        this.verifyInvalidSession(session, action, Session::getAttributes);
+    }
+
+    void verifyInvalidSession(io.undertow.server.session.Session session, ThrowingRunnable action, Consumer<Session<Map<String, Object>>> verifiedAction) {
+        reset(this.session);
+
+        verifiedAction.accept(doThrow(IllegalStateException.class).when(this.session));
+        doReturn(true, false).when(this.session).isValid();
+
+        assertThrows(IllegalStateException.class, action);
+
+        // Session should not close, since it is still valid
+        verifiedAction.accept(verify(this.session));
+        verify(this.session).isValid();
+        verifyNoMoreInteractions(this.session);
+        verifyNoInteractions(this.suspendedBatch);
+        verifyNoInteractions(this.closeTask);
+
+        Context<Batch> context = mock(Context.class);
+        Batch batch = mock(Batch.class);
+
+        doReturn(context).when(this.suspendedBatch).resumeWithContext();
+        doReturn(batch).when(context).get();
+
+        assertThrows(IllegalStateException.class, action);
+
+        verifiedAction.accept(verify(this.session, times(2)));
+        verify(this.session, times(2)).isValid();
+        verify(this.session).close();
+        verify(batch).close();
+        verify(this.closeTask).accept(null);
+
+        assertThrows(IllegalStateException.class, action);
+
+        verifiedAction.accept(verify(this.session, times(3)));
+        verify(this.session, times(3)).isValid();
+        verifyNoMoreInteractions(this.session);
+        verifyNoMoreInteractions(batch);
+        verifyNoMoreInteractions(this.closeTask);
     }
 }
