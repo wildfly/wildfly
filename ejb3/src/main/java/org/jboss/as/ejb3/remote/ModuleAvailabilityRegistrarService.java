@@ -48,18 +48,18 @@ public class ModuleAvailabilityRegistrarService implements ModuleAvailabilityReg
     protected static final Logger log = Logger.getLogger(ModuleAvailabilityRegistrarService.class.getSimpleName());
 
     private final ServiceDependency<SuspendableActivityRegistry> activityRegistryDependency;
-    private final ServiceDependency<ServiceProviderRegistrar<Object, GroupMember>> serviceRegistrarDependency;
+    private final ServiceDependency<ServiceProviderRegistrar<EJBModuleIdentifier, GroupMember>> serviceRegistrarDependency;
     private final ServiceDependency<DeploymentRepository> repositoryDependency;
 
     private SuspendableActivityRegistry activityRegistry;
-    private ServiceProviderRegistrar<Object, GroupMember> serviceRegistrar;
+    private ServiceProviderRegistrar<EJBModuleIdentifier, GroupMember> serviceRegistrar;
     private DeploymentRepository deploymentRepository;
 
     private final DeploymentRepositoryListener deploymentRepositoryListener ;
     private final SuspendableActivity activity;
 
     private final List<ModuleAvailabilityRegistrarListener> moduleAvailabilityListeners = new ArrayList<>();
-    private final Map<EJBModuleIdentifier, ServiceProviderRegistration<Object, GroupMember>> registrations = new HashMap<>();
+    private final Map<EJBModuleIdentifier, ServiceProviderRegistration<EJBModuleIdentifier, GroupMember>> registrations = new HashMap<>();
 
     private boolean started;
 
@@ -70,7 +70,7 @@ public class ModuleAvailabilityRegistrarService implements ModuleAvailabilityReg
      * @param registrar            the ServiceProviderRegistrar instance used to store module availability information
      * @param registry             the suspendable activity registry to register our server activity with
      */
-    public ModuleAvailabilityRegistrarService(ServiceDependency<SuspendableActivityRegistry> activityRegistryDependency, ServiceDependency<ServiceProviderRegistrar<Object, GroupMember>> serviceRegistrarDependency, ServiceDependency<DeploymentRepository> repositoryDependency) {
+    public ModuleAvailabilityRegistrarService(ServiceDependency<SuspendableActivityRegistry> activityRegistryDependency, ServiceDependency<ServiceProviderRegistrar<EJBModuleIdentifier, GroupMember>> serviceRegistrarDependency, ServiceDependency<DeploymentRepository> repositoryDependency) {
         this.activityRegistryDependency = activityRegistryDependency;
         this.serviceRegistrarDependency = serviceRegistrarDependency;
         this.repositoryDependency = repositoryDependency;
@@ -136,8 +136,8 @@ public class ModuleAvailabilityRegistrarService implements ModuleAvailabilityReg
     public Set<EJBModuleIdentifier> getServices() {
         log.info("Calling getServices()");
         Set<EJBModuleIdentifier> services = new HashSet();
-        for (Object service : serviceRegistrar.getServices()) {
-            services.add((EJBModuleIdentifier)service);
+        for (EJBModuleIdentifier service : serviceRegistrar.getServices()) {
+            services.add(service);
         }
         log.infof("Called getServices(): result = %s\n", services);
         return services;
@@ -201,12 +201,12 @@ public class ModuleAvailabilityRegistrarService implements ModuleAvailabilityReg
             log.info("Preparing for suspend");
 
             // unregister all of the service providers we have registered
-            Iterator<Map.Entry<EJBModuleIdentifier,ServiceProviderRegistration<Object,GroupMember>>> iterator = registrations.entrySet().iterator();
+            Iterator<Map.Entry<EJBModuleIdentifier,ServiceProviderRegistration<EJBModuleIdentifier,GroupMember>>> iterator = registrations.entrySet().iterator();
             while (iterator.hasNext()) {
-                Map.Entry<EJBModuleIdentifier, ServiceProviderRegistration<Object, GroupMember>> entry = iterator.next();
+                Map.Entry<EJBModuleIdentifier, ServiceProviderRegistration<EJBModuleIdentifier, GroupMember>> entry = iterator.next();
                 EJBModuleIdentifier ejbModuleId = entry.getKey();
                 log.infof("Closing registration for module %s\n", ejbModuleId);
-                ServiceProviderRegistration<Object, GroupMember> registration = entry.getValue();
+                ServiceProviderRegistration<EJBModuleIdentifier, GroupMember> registration = entry.getValue();
                 registration.close();
                 iterator.remove();
             }
@@ -252,7 +252,7 @@ public class ModuleAvailabilityRegistrarService implements ModuleAvailabilityReg
                 if (registrations.get(ejbModuleId) == null) {
                     ModuleAvailabilityRegistrarServiceProviderListener serviceProviderListener = new ModuleAvailabilityRegistrarServiceProviderListener(ejbModuleId, moduleAvailabilityListeners);
                     log.infof("Opening registration for module %s\n" + ejbModuleId);
-                    ServiceProviderRegistration<Object, GroupMember> registration = serviceRegistrar.register(ejbModuleId, serviceProviderListener);
+                    ServiceProviderRegistration<EJBModuleIdentifier, GroupMember> registration = serviceRegistrar.register(ejbModuleId, serviceProviderListener);
                     // set the initial value of the providers
                     serviceProviderListener.setCurrentProviders(registration.getProviders());
                     // keep track of registrartions
@@ -371,7 +371,7 @@ public class ModuleAvailabilityRegistrarService implements ModuleAvailabilityReg
                 ModuleAvailabilityRegistrarServiceProviderListener serviceProviderListener = new ModuleAvailabilityRegistrarServiceProviderListener(ejbModuleId, moduleAvailabilityListeners);
 
                 // register the new service
-                ServiceProviderRegistration<Object, GroupMember> registration = serviceRegistrar.register(ejbModuleId, serviceProviderListener);
+                ServiceProviderRegistration<EJBModuleIdentifier, GroupMember> registration = serviceRegistrar.register(ejbModuleId, serviceProviderListener);
 
                 // set the initial value of the providers
                 serviceProviderListener.setCurrentProviders(registration.getProviders());
@@ -400,7 +400,7 @@ public class ModuleAvailabilityRegistrarService implements ModuleAvailabilityReg
             ModuleAvailabilityRegistrarServiceProviderListener serviceProviderListener = new ModuleAvailabilityRegistrarServiceProviderListener(ejbModuleId, moduleAvailabilityListeners);
 
             // register the new service
-            ServiceProviderRegistration<Object, GroupMember> registration = serviceRegistrar.register(ejbModuleId, serviceProviderListener);
+            ServiceProviderRegistration<EJBModuleIdentifier, GroupMember> registration = serviceRegistrar.register(ejbModuleId, serviceProviderListener);
 
             // set the initial value of the providers
             serviceProviderListener.setCurrentProviders(registration.getProviders());
@@ -434,7 +434,7 @@ public class ModuleAvailabilityRegistrarService implements ModuleAvailabilityReg
             EJBModuleIdentifier ejbModuleId = convertModuleIdentifier(deployment);
 
             // get hold of the deployment's service registration
-            ServiceProviderRegistration<Object, GroupMember> registration = registrations.remove(ejbModuleId);
+            ServiceProviderRegistration<EJBModuleIdentifier, GroupMember> registration = registrations.remove(ejbModuleId);
 
             // close the registrarion
             registration.close();
@@ -480,11 +480,11 @@ public class ModuleAvailabilityRegistrarService implements ModuleAvailabilityReg
      * @param a descriptive message of context
      * @param serviceRegistrar
      */
-    private void dumpServices(String message, ServiceProviderRegistrar<Object, GroupMember> serviceRegistrar) {
+    private void dumpServices(String message, ServiceProviderRegistrar<EJBModuleIdentifier, GroupMember> serviceRegistrar) {
         log.infof("Dumping service registrar contents for : %s\n" + message);
-        for (Object objectId: serviceRegistrar.getServices()) {
-            log.infof("Registered module: %s\n" + (EJBModuleIdentifier) objectId);
-            for (GroupMember m: serviceRegistrar.getProviders(objectId)) {
+        for (EJBModuleIdentifier moduleId: serviceRegistrar.getServices()) {
+            log.infof("Registered module: %s\n" + (EJBModuleIdentifier) moduleId);
+            for (GroupMember m: serviceRegistrar.getProviders(moduleId)) {
                 log.infof("Module provider: %s\n" + m);
             }
         }
