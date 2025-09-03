@@ -8,6 +8,7 @@ import org.jboss.as.controller.RequirementServiceTarget;
 import org.jboss.as.ejb3.deployment.DeploymentRepository;
 import org.jboss.as.ejb3.deployment.DeploymentRepositoryService;
 import org.jboss.as.server.suspend.SuspendableActivityRegistry;
+import org.jboss.ejb.client.EJBModuleIdentifier;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.wildfly.clustering.ejb.remote.EjbClientServicesProvider;
@@ -27,7 +28,8 @@ public class ModuleAvailabilityRegistrarServiceInstaller implements ServiceInsta
     @Override
     public ServiceController<?> install(RequirementServiceTarget target) {
         ServiceDependency<DeploymentRepository> deploymentRepository = ServiceDependency.on(DeploymentRepositoryService.SERVICE_NAME);
-        ServiceDependency<ServiceProviderRegistrar<Object, GroupMember>> serviceProviderRegistrar = ServiceDependency.on(EjbClientServicesProvider.MODULE_AVAILABILITY_REGISTRAR_SERVICE_PROVIDER_REGISTRAR);
+        ServiceDependency<ServiceProviderRegistrar<EJBModuleIdentifier, GroupMember>> serviceProviderRegistrar =
+                ServiceDependency.on(EjbClientServicesProvider.MODULE_AVAILABILITY_REGISTRAR_SERVICE_PROVIDER_REGISTRAR).map(ServiceProviderRegistrar.class::cast);
         ServiceDependency<SuspendableActivityRegistry> activityRegistry = ServiceDependency.on(SuspendableActivityRegistry.SERVICE_DESCRIPTOR);
         // NOTE: choose the correct builder to avoid service installation issues (need a supplier builder here)
         return ServiceInstaller.builder(() -> new ModuleAvailabilityRegistrarService(activityRegistry, serviceProviderRegistrar, deploymentRepository))
