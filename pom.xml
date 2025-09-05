@@ -72,7 +72,7 @@
         <ee.dist.product.release.version>${full.dist.product.release.version}</ee.dist.product.release.version>
         <ee.maven.groupId>${project.groupId}</ee.maven.groupId>
         <ee.maven.version>${project.version}</ee.maven.version>
-        <product.docs.server.version>36</product.docs.server.version>
+        <product.docs.server.version>38</product.docs.server.version>
         <!-- The Galleon channel for the minor version with which this branch is associated.  -->
         <galleon.minor.channel>${product.docs.server.version}.0</galleon.minor.channel>
 
