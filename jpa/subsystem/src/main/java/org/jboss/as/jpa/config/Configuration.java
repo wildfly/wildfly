@@ -443,6 +443,6 @@ public class Configuration {
 
     public static boolean isDefaultPersistenceUnit(PersistenceUnitMetadata persistenceUnit) {
         String defaultPU = persistenceUnit.getProperties().getProperty(Configuration.JPA_DEFAULT_PERSISTENCE_UNIT);
-        return (Boolean.TRUE.toString().equals(defaultPU));
+        return true == Boolean.parseBoolean(defaultPU);
     }
 }

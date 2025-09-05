@@ -17,5 +17,7 @@
         <module name="java.logging"/>
         <!-- PersistenceUnitInfo needs javax.sql.DataSource -->
         <module name="java.sql" export="true"/>
+        <!-- Persistence integration with CDI needs the following CDI API -->
+        <module name="jakarta.enterprise.api"/>
     </dependencies>
 </module>

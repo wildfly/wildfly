@@ -88,6 +88,7 @@ public class IntegratePersistenceAfterBeanDiscovery implements PersistenceCdiExt
         }
     }
 
+    @Override
     public IntegrationWithCDIBagImpl register(final PersistenceUnitMetadata persistenceUnitMetadata) {
 
         if (afterBeanDiscoveryEventRanAlready) {
@@ -116,6 +117,7 @@ public class IntegratePersistenceAfterBeanDiscovery implements PersistenceCdiExt
         schemaManagerBeanCreator = SchemaManagerBeanCreator.getImplementation(schemaManagerCreatorClass1);
     }
 
+    @Override
     public void addBeans(AfterBeanDiscovery afterBeanDiscovery) {
         boolean onePersistenceUnit = copyOnWriteArrayList.size() == 1;
         for (IntegrationWithCDIBagImpl integrationWithCDIBag: copyOnWriteArrayList) {
