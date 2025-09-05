@@ -29,6 +29,7 @@ public final class JdbcDriverDeploymentProcessor implements DeploymentUnitProces
     private static final String JAR_SUFFIX = ".jar";
     private static final String JDBC_DRIVER_CONFIG_FILE = "META-INF/services/java.sql.Driver";
     private static final String JDK_SECURITY_JGSS_ID = "jdk.security.jgss";
+    private static final String JDK_NET = "jdk.net";
 
     public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
@@ -52,6 +53,7 @@ public final class JdbcDriverDeploymentProcessor implements DeploymentUnitProces
 
         if (javaSqlDriverDetected) {
             moduleSpecification.addSystemDependency(ModuleDependency.Builder.of(moduleLoader, JDK_SECURITY_JGSS_ID).build());
+            moduleSpecification.addSystemDependency(ModuleDependency.Builder.of(moduleLoader, JDK_NET).build());
         }
     }
 
