@@ -171,7 +171,7 @@ public class JBeretSubsystemParsingTestCase extends AbstractBatchTestCase {
                 .dontPersistXml();
         try {
             BatchSubsystemExtension.class.getClassLoader().loadClass("javax" + ".batch.operations.JobStartException");
-            kernelServicesInitializer.addMavenResourceURL("org.jboss.eap:wildfly-batch-jberet:" + controllerVersion.getMavenGavVersion());
+            kernelServicesInitializer.addMavenResourceURL(controllerVersion.createGAV("wildfly-batch-jberet"));
         } catch (ClassNotFoundException e) {
             kernelServicesInitializer.addMavenResourceURL("org.wildfly:wildfly-batch-jberet-jakarta:26.0.0.Final");
         }
