@@ -42,6 +42,16 @@ import org.jboss.wsf.spi.metadata.jms.JMSEndpointsMetaData;
  */
 public final class WSIntegrationProcessorJAXWS_JMS implements DeploymentUnitProcessor {
 
+    private static final String APACHE_CXF_JMS_PROTOCOLS = "vm,tcp,nio,ssl,http,https,ws,wss";
+    private static final String JBOSS_REMOTING_JMS_PROTOCOLS = "remote,remote+tls,remoting,remote+http,remote+https,http-remoting,https-remoting";
+
+    static {
+        // Ensuring Remoting over JMS is properly configured before Apache CXF is initialized
+        if (System.getProperty("jms.protocols") == null) {
+            System.setProperty("jms.protocols", APACHE_CXF_JMS_PROTOCOLS + "," + JBOSS_REMOTING_JMS_PROTOCOLS);
+        }
+    }
+
     private static final String WSDL_LOCATION = "wsdlLocation";
     private static final String PORT_NAME = "portName";
     private static final String SERVICE_NAME = "serviceName";
