@@ -27,7 +27,7 @@ import org.wildfly.clustering.infinispan.service.InfinispanServiceDescriptor;
 import org.wildfly.subsystem.resource.capability.CapabilityReferenceRecorder;
 
 /**
- * Definies a CacheFactoryBuilder instance which, during deployment, is used to configure, build and install a CacheFactory for the SFSB being deployed.
+ * Defines a CacheFactoryBuilder instance which, during deployment, is used to configure, build and install a CacheFactory for the SFSB being deployed.
  * The CacheFactory produces bean caches which are distributable and have passivation enabled. Used to support CacheFactoryResourceDefinition.
  *
  * @author Paul Ferraro

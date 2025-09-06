@@ -67,8 +67,8 @@
     <in-vm-remote-interface-invocation pass-by-value="false"/>
     <default-distinct-name value="myname"/>
     <default-security-domain value="domain"/>
-    <default-missing-method-permissions-deny-access value="false" />
+    <default-missing-method-permissions-deny-access value="false"/>
     <disable-default-ejb-permissions value="false"/>
-    <statistics enabled="${ejb.enable-statistics:true}" />
-    <enable-graceful-txn-shutdown value="false" />
+    <statistics enabled="${ejb.enable-statistics:true}"/>
+    <enable-graceful-txn-shutdown value="false"/>
 </subsystem>
