@@ -8,7 +8,7 @@ package org.jboss.as.test.clustering.cluster.web.persistence;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.TargetsContainer;
 import org.jboss.as.arquillian.api.ServerSetup;
-import org.jboss.as.test.shared.CLIServerSetupTask;
+import org.jboss.as.test.shared.ManagementServerSetupTask;
 import org.jboss.shrinkwrap.api.Archive;
 
 /**
@@ -45,13 +45,16 @@ public class FineDatabasePersistenceWebFailoverTestCase extends AbstractDatabase
         super(DEPLOYMENT_NAME);
     }
 
-    public static class ServerSetupTask extends CLIServerSetupTask {
+    public static class ServerSetupTask extends ManagementServerSetupTask {
         public ServerSetupTask() {
-            this.builder.node(THREE_NODES)
-                    .setup("/subsystem=distributable-web/infinispan-session-management=database:add(cache-container=web, cache=database-persistence, granularity=ATTRIBUTE)")
-                    .setup("/subsystem=distributable-web/infinispan-session-management=database/affinity=local:add()")
-                    .teardown("/subsystem=distributable-web/infinispan-session-management=database:remove")
-                    ;
+            super(NODE_1_2_3, createContainerConfigurationBuilder()
+                .setupScript(createScriptBuilder()
+                        .add("/subsystem=distributable-web/infinispan-session-management=database:add(cache-container=web, cache=database-persistence, granularity=ATTRIBUTE)")
+                        .build())
+                .tearDownScript(createScriptBuilder()
+                        .add("/subsystem=distributable-web/infinispan-session-management=database:remove")
+                        .build())
+                .build());
         }
     }
 }

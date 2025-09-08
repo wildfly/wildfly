@@ -13,7 +13,7 @@ import org.jboss.as.test.clustering.ClusterDatabaseTestUtil;
 import org.jboss.as.test.clustering.cluster.web.AbstractWebFailoverTestCase;
 import org.jboss.as.test.clustering.single.web.Mutable;
 import org.jboss.as.test.clustering.single.web.SimpleServlet;
-import org.jboss.as.test.shared.CLIServerSetupTask;
+import org.jboss.as.test.shared.ManagementServerSetupTask;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
@@ -53,14 +53,26 @@ public abstract class AbstractDatabasePersistenceWebFailoverTestCase extends Abs
         ClusterDatabaseTestUtil.stopH2();
     }
 
-    public static class ServerSetupTask extends CLIServerSetupTask {
+    public static class ServerSetupTask extends ManagementServerSetupTask {
         public ServerSetupTask() {
-            this.builder.node(THREE_NODES)
-                    .setup("/subsystem=datasources/data-source=web-sessions-ds:add(jndi-name=\"java:jboss/datasources/web-sessions-ds\", enabled=true, use-java-context=true, connection-url=\"jdbc:h2:tcp://localhost:%s/./web-sessions;VARIABLE_BINARY=TRUE\", driver-name=h2", DB_PORT)
-                    .setup("/subsystem=infinispan/cache-container=web/invalidation-cache=database-persistence:add")
-                    .setup("/subsystem=infinispan/cache-container=web/invalidation-cache=database-persistence/store=jdbc:add(data-source=web-sessions-ds, shared=true)")
-                    .teardown("/subsystem=infinispan/cache-container=web/invalidation-cache=database-persistence:remove")
-                    .teardown("/subsystem=datasources/data-source=web-sessions-ds:remove");
+            super(NODE_1_2_3, createContainerConfigurationBuilder()
+                    .setupScript(createScriptBuilder()
+                            .startBatch()
+                                .add("/subsystem=datasources/data-source=web-sessions:add(jndi-name=\"java:jboss/datasources/web-sessions-ds\", enabled=true, use-java-context=true, connection-url=\"jdbc:h2:tcp://localhost:%s/./web-sessions;VARIABLE_BINARY=TRUE\", driver-name=h2", DB_PORT)
+                                .add("/subsystem=infinispan/cache-container=web/invalidation-cache=database-persistence:add")
+                                .add("/subsystem=infinispan/cache-container=web/invalidation-cache=database-persistence/component=expiration:add(interval=0)")
+                                .add("/subsystem=infinispan/cache-container=web/invalidation-cache=database-persistence/component=locking:add(isolation=REPEATABLE_READ)")
+                                .add("/subsystem=infinispan/cache-container=web/invalidation-cache=database-persistence/component=transaction:add(mode=BATCH)")
+                                .add("/subsystem=infinispan/cache-container=web/invalidation-cache=database-persistence/store=jdbc:add(data-source=web-sessions, shared=true)")
+                            .endBatch()
+                            .build())
+                    .tearDownScript(createScriptBuilder()
+                            .startBatch()
+                                .add("/subsystem=infinispan/cache-container=web/invalidation-cache=database-persistence:remove")
+                                .add("/subsystem=datasources/data-source=web-sessions:remove")
+                            .endBatch()
+                            .build())
+                    .build());
         }
     }
 }

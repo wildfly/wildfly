@@ -113,7 +113,7 @@ public abstract class AbstractWebFailoverTestCase extends AbstractClusteringTest
                 Assert.assertEquals(value++, Integer.parseInt(response.getFirstHeader(SimpleServlet.VALUE_HEADER).getValue()));
                 Map.Entry<String, String> entry = parseSessionRoute(response);
 
-                if (!this.cacheMode.needsStateTransfer()) {
+                if (!this.cacheMode.isClustered()) {
                     Assert.assertNotNull(entry);
                     Assert.assertEquals(NODE_2, entry.getValue());
                     lastOwner = entry.getValue();
@@ -129,7 +129,7 @@ public abstract class AbstractWebFailoverTestCase extends AbstractClusteringTest
                 Assert.assertEquals(value++, Integer.parseInt(response.getFirstHeader(SimpleServlet.VALUE_HEADER).getValue()));
                 Map.Entry<String, String> entry = parseSessionRoute(response);
 
-                if (!this.cacheMode.needsStateTransfer()) {
+                if (!this.cacheMode.isClustered()) {
                     Assert.assertNotNull(entry);
                     Assert.assertEquals(NODE_3, entry.getValue());
                     lastOwner = entry.getValue();
@@ -174,7 +174,7 @@ public abstract class AbstractWebFailoverTestCase extends AbstractClusteringTest
                 Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
                 Assert.assertEquals(value++, Integer.parseInt(response.getFirstHeader(SimpleServlet.VALUE_HEADER).getValue()));
                 Map.Entry<String, String> entry = parseSessionRoute(response);
-                if (!this.cacheMode.needsStateTransfer()) {
+                if (!this.cacheMode.isClustered()) {
                     Assert.assertNotNull(entry);
                     Assert.assertEquals(NODE_3, entry.getValue());
                 } else {
@@ -197,7 +197,7 @@ public abstract class AbstractWebFailoverTestCase extends AbstractClusteringTest
                 Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
                 Assert.assertEquals(value++, Integer.parseInt(response.getFirstHeader(SimpleServlet.VALUE_HEADER).getValue()));
                 Map.Entry<String, String> entry = parseSessionRoute(response);
-                if (!this.cacheMode.needsStateTransfer()) {
+                if (!this.cacheMode.isClustered()) {
                     Assert.assertNotNull(entry);
                     Assert.assertEquals(NODE_2, entry.getValue());
                 } else if (entry != null) {
@@ -220,7 +220,7 @@ public abstract class AbstractWebFailoverTestCase extends AbstractClusteringTest
                 Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
                 Assert.assertEquals(value++, Integer.parseInt(response.getFirstHeader(SimpleServlet.VALUE_HEADER).getValue()));
                 Map.Entry<String, String> entry = parseSessionRoute(response);
-                if (!this.cacheMode.needsStateTransfer()) {
+                if (!this.cacheMode.isClustered()) {
                     Assert.assertNotNull(entry);
                     Assert.assertEquals(NODE_3, entry.getValue());
                 } else {
@@ -262,7 +262,7 @@ public abstract class AbstractWebFailoverTestCase extends AbstractClusteringTest
                 Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
                 Assert.assertEquals(value++, Integer.parseInt(response.getFirstHeader(SimpleServlet.VALUE_HEADER).getValue()));
                 Map.Entry<String, String> entry = parseSessionRoute(response);
-                if (!this.cacheMode.needsStateTransfer()) {
+                if (!this.cacheMode.isClustered()) {
                     Assert.assertNotNull(entry);
                     Assert.assertEquals(NODE_3, entry.getValue());
                 } else {
@@ -295,7 +295,7 @@ public abstract class AbstractWebFailoverTestCase extends AbstractClusteringTest
                 Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
                 Assert.assertEquals(value++, Integer.parseInt(response.getFirstHeader(SimpleServlet.VALUE_HEADER).getValue()));
                 Map.Entry<String, String> entry = parseSessionRoute(response);
-                if (!this.cacheMode.needsStateTransfer()) {
+                if (!this.cacheMode.isClustered()) {
                     Assert.assertNotNull(entry);
                     Assert.assertEquals(NODE_1, entry.getValue());
                 } else if (entry != null) {

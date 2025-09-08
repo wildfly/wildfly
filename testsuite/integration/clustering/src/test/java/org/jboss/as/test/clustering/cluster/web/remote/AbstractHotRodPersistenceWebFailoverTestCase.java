@@ -12,7 +12,7 @@ import org.jboss.as.test.clustering.InfinispanServerUtil;
 import org.jboss.as.test.clustering.cluster.web.AbstractWebFailoverTestCase;
 import org.jboss.as.test.clustering.single.web.Mutable;
 import org.jboss.as.test.clustering.single.web.SimpleServlet;
-import org.jboss.as.test.shared.CLIServerSetupTask;
+import org.jboss.as.test.shared.ManagementServerSetupTask;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
@@ -43,13 +43,22 @@ public abstract class AbstractHotRodPersistenceWebFailoverTestCase extends Abstr
         super(deploymentName, CacheMode.INVALIDATION_SYNC, TransactionMode.NON_TRANSACTIONAL);
     }
 
-    public static class ServerSetupTask extends CLIServerSetupTask {
+    public static class ServerSetupTask extends ManagementServerSetupTask {
         public ServerSetupTask() {
-            this.builder.node(THREE_NODES)
-                    .setup("/subsystem=infinispan/cache-container=web/invalidation-cache=hotrod-persistence:add")
-                    .setup("/subsystem=infinispan/cache-container=web/invalidation-cache=hotrod-persistence/store=hotrod:add(remote-cache-container=web, cache-configuration=default, shared=true)")
-                    .teardown("/subsystem=infinispan/cache-container=web/invalidation-cache=hotrod-persistence:remove")
-                    ;
+            super(NODE_1_2_3, createContainerConfigurationBuilder()
+                    .setupScript(createScriptBuilder()
+                            .startBatch()
+                                .add("/subsystem=infinispan/cache-container=web/invalidation-cache=hotrod-persistence:add")
+                                .add("/subsystem=infinispan/cache-container=web/invalidation-cache=hotrod-persistence/component=expiration:add(interval=0)")
+                                .add("/subsystem=infinispan/cache-container=web/invalidation-cache=hotrod-persistence/component=locking:add(isolation=REPEATABLE_READ)")
+                                .add("/subsystem=infinispan/cache-container=web/invalidation-cache=hotrod-persistence/component=transaction:add(mode=BATCH)")
+                                .add("/subsystem=infinispan/cache-container=web/invalidation-cache=hotrod-persistence/store=hotrod:add(remote-cache-container=web, cache-configuration=default, shared=true)")
+                            .endBatch()
+                            .build())
+                    .tearDownScript(createScriptBuilder()
+                            .add("/subsystem=infinispan/cache-container=web/invalidation-cache=hotrod-persistence:remove")
+                            .build())
+                    .build());
         }
     }
 }
