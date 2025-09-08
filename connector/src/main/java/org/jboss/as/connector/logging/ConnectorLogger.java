@@ -372,8 +372,8 @@ public interface ConnectorLogger extends BasicLogger {
      * @param moduleName the module name.
      * @return the message.
      */
-    @Message(id = 41, value = "Failed to load module for driver [%s]")
-    String failedToLoadModuleDriver(String moduleName);
+    @Message(id = 41, value = "Failed to load driver module [%s]. %s, cause of failure [%s]")
+    String failedToLoadModuleDriver(String moduleName, String moduleLocation, String cause);
 
     /**
      * Creates an exception indicating a failure to match the pool.
