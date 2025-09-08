@@ -17,7 +17,7 @@
 
     <resources>
         <artifact name="${org.wildfly:wildfly-jpa}"/>
-        <artifact name="${org.wildfly:persistencecdiextension}"/>
+        <artifact name="${org.wildfly:persistence-cdi-extension}"/>
     </resources>
 
     <dependencies>
@@ -41,7 +41,7 @@
         <!-- optional because guarded by ejb3 capability -->
         <module name="org.jboss.as.ejb3" optional="true"/>
         <module name="org.jboss.as.jpa.spi"/>
-        <module name="org.jboss.as.jpa.persistencecdiextension" services="import"/>
+        <module name="org.wildfly.persistence.cdi.extension" services="import"/>
         <module name="org.jboss.as.naming"/>
         <module name="org.wildfly.security.elytron-private"/>
         <module name="org.jboss.as.server"/>

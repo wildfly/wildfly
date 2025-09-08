@@ -5,7 +5,7 @@
   ~ SPDX-License-Identifier: Apache-2.0
   -->
 
-<module xmlns="urn:jboss:module:1.9" name="org.jboss.as.jpa.persistencecdiextension">
+<module xmlns="urn:jboss:module:1.9" name="org.wildfly.persistence.cdi.extension">
 
     <properties>
         <property name="jboss.api" value="private"/>
@@ -16,7 +16,7 @@
     </exports>
 
     <resources>
-        <artifact name="${org.wildfly:persistencecdiextension}"/>
+        <artifact name="${org.wildfly:persistence-cdi-extension}"/>
         
     </resources>
 
