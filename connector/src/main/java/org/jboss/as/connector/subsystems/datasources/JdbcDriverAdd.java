@@ -87,7 +87,8 @@ public class JdbcDriverAdd extends AbstractAddStepHandler {
         } catch (ModuleNotFoundException e) {
             throw new OperationFailedException(ConnectorLogger.ROOT_LOGGER.missingDependencyInModuleDriver(moduleName, e.getMessage()), e);
         } catch (ModuleLoadException e) {
-            throw new OperationFailedException(ConnectorLogger.ROOT_LOGGER.failedToLoadModuleDriver(moduleName), e);
+            throw new OperationFailedException(ConnectorLogger.ROOT_LOGGER.failedToLoadModuleDriver(moduleName, e.getLocalizedMessage(),
+                    e.getCause() != null ? e.getCause().getLocalizedMessage() : "-"), e);
         }
 
         if (dataSourceClassName != null) {
