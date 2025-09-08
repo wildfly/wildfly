@@ -106,7 +106,6 @@ public class IntegratePersistenceAfterBeanDiscovery implements PersistenceCdiExt
     private static final String applicationScoped = "jakarta.enterprise.context.ApplicationScoped";
     protected static final String dependentScoped = "jakarta.enterprise.context.Dependent";
 
-    @Override
     public void addBeans(AfterBeanDiscovery afterBeanDiscovery) {
         boolean onePersistenceUnit = copyOnWriteArrayList.size() == 1;
         for (IntegrationWithCDIBagImpl integrationWithCDIBag : copyOnWriteArrayList) {

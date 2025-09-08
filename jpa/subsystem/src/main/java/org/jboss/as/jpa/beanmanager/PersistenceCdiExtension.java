@@ -5,7 +5,6 @@
 
 package org.jboss.as.jpa.beanmanager;
 
-import jakarta.enterprise.inject.spi.AfterBeanDiscovery;
 import jakarta.enterprise.inject.spi.Extension;
 import org.jipijapa.plugin.spi.PersistenceUnitMetadata;
 
@@ -16,5 +15,4 @@ import org.jipijapa.plugin.spi.PersistenceUnitMetadata;
  */
 public interface PersistenceCdiExtension extends Extension {
     IntegrationWithCDIBagImpl register(final PersistenceUnitMetadata persistenceUnitMetadata);
-    void addBeans(AfterBeanDiscovery afterBeanDiscovery);
 }

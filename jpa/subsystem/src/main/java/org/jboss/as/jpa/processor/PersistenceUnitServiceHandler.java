@@ -120,16 +120,16 @@ public class PersistenceUnitServiceHandler {
 
         if( startEarly) {
             nextPhaseDependsOnPersistenceUnit(phaseContext, platform);
-            checkForDuplicates(phaseContext, platform);
+            checkForDuplicates(phaseContext);
         }
     }
 
     // mark all duplicate persistence unit definitions
-    private static void checkForDuplicates(DeploymentPhaseContext phaseContext, Platform platform) {
+    private static void checkForDuplicates(DeploymentPhaseContext phaseContext) {
         final DeploymentUnit topDeploymentUnit = DeploymentUtils.getTopDeploymentUnit(phaseContext.getDeploymentUnit());
         final PersistenceUnitsInApplication persistenceUnitsInApplication = topDeploymentUnit.getAttachment(PersistenceUnitsInApplication.PERSISTENCE_UNITS_IN_APPLICATION);
         ArrayList<String> duplicateList = new ArrayList<>();
-        HashSet<String> uniqueList = new HashSet(persistenceUnitsInApplication.getCount());
+        HashSet<String> uniqueList = new HashSet<>(persistenceUnitsInApplication.getCount());
         for(final PersistenceUnitMetadataHolder holder: persistenceUnitsInApplication.getPersistenceUnitHolders()) {
             for (final PersistenceUnitMetadata pu : holder.getPersistenceUnits()) {
                 if (uniqueList.contains(pu.getPersistenceUnitName())) {
@@ -1188,7 +1188,7 @@ public class PersistenceUnitServiceHandler {
             Optional<WeldCapability> weldCapability = support.getOptionalCapabilityRuntimeAPI(WELD_CAPABILITY_NAME, WeldCapability.class);
 
             if (weldCapability.get().isPartOfWeldDeployment(deploymentUnit)) {
-                synchronized (deploymentUnit) {
+                synchronized (deploymentUnit) { // protect against multiple subdeployment threads registering the persistenceCdiExtension at same time
                     final Module module = deploymentUnit.getAttachment(Attachments.MODULE);
 
                     PersistenceCdiExtension persistenceCdiExtension = deploymentUnit.getAttachment(JpaAttachments.AFTER_BEAN_DISCOVERY_ATTACHMENT_KEY);

@@ -20,7 +20,7 @@
         <version>38.0.0.Beta1-SNAPSHOT</version>
     </parent>
 
-    <artifactId>persistence-cdi-extension</artifactId>
+    <artifactId>persistencecdiextension</artifactId>
 
     <name>WildFly: Persistence 3.2 PersistenceCdiExtension service implementation</name>
 

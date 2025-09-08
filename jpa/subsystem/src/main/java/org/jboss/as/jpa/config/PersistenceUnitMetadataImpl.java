@@ -432,7 +432,7 @@ public class PersistenceUnitMetadataImpl implements PersistenceUnitMetadata {
 
     @Override
     public void setQualifierAnnotationNames(List<String> qualifierAnnotationNames) {
-        this.qualifierAnnotationNames = qualifierAnnotationNames;
+        this.qualifierAnnotationNames = List.copyOf(qualifierAnnotationNames);
     }
 
     @Override
