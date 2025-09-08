@@ -198,17 +198,21 @@ public class ModuleAvailabilityRegistrarService implements ModuleAvailabilityReg
          */
         @Override
         public CompletionStage<Void> prepare(ServerSuspendContext context) {
-            log.info("Preparing for suspend");
+            log.infof("Preparing for suspend - context: isStarting = %s, isStopping = %s\n", context.isStarting(), context.isStopping());
 
-            // unregister all of the service providers we have registered
-            Iterator<Map.Entry<EJBModuleIdentifier,ServiceProviderRegistration<EJBModuleIdentifier,GroupMember>>> iterator = registrations.entrySet().iterator();
-            while (iterator.hasNext()) {
-                Map.Entry<EJBModuleIdentifier, ServiceProviderRegistration<EJBModuleIdentifier, GroupMember>> entry = iterator.next();
-                EJBModuleIdentifier ejbModuleId = entry.getKey();
-                log.infof("Closing registration for module %s\n", ejbModuleId);
-                ServiceProviderRegistration<EJBModuleIdentifier, GroupMember> registration = entry.getValue();
-                registration.close();
-                iterator.remove();
+            if (!context.isStopping()) {
+                log.info("Server not stopping - performing prapare actions");
+
+                // unregister all of the service providers we have registered
+                Iterator<Map.Entry<EJBModuleIdentifier, ServiceProviderRegistration<EJBModuleIdentifier, GroupMember>>> iterator = registrations.entrySet().iterator();
+                while (iterator.hasNext()) {
+                    Map.Entry<EJBModuleIdentifier, ServiceProviderRegistration<EJBModuleIdentifier, GroupMember>> entry = iterator.next();
+                    EJBModuleIdentifier ejbModuleId = entry.getKey();
+                    log.infof("Closing registration for module %s\n", ejbModuleId);
+                    ServiceProviderRegistration<EJBModuleIdentifier, GroupMember> registration = entry.getValue();
+                    registration.close();
+                    iterator.remove();
+                }
             }
             log.info("Prepared for suspend");
             return SuspendableActivity.COMPLETED;
@@ -222,8 +226,13 @@ public class ModuleAvailabilityRegistrarService implements ModuleAvailabilityReg
          */
         @Override
         public CompletionStage<Void> suspend(ServerSuspendContext context) {
-            log.info("Suspended");
+            log.infof("Suspending - context: isStarting = %s, isStopping = %s\n", context.isStarting(), context.isStopping());
             // available if necessary
+            if (!context.isStopping()) {
+                log.info("Server not stopping - performing suspend actions");
+                // guard against peforming actions in susoend while server stopping
+            }
+            log.info("Suspended");
             return SuspendableActivity.COMPLETED;
         }
 
@@ -239,24 +248,29 @@ public class ModuleAvailabilityRegistrarService implements ModuleAvailabilityReg
          */
         @Override
         public CompletionStage<Void> resume(ServerResumeContext context) {
-            log.info("Resuming");
-            // interrogate the deployment repository and register the current deployments
-            Map<DeploymentModuleIdentifier, ModuleDeployment> deployedModules = deploymentRepository.getModules();
+            log.infof("Resuming - context: isStarting = %s\n", context.isStarting());
 
-            // create one service entry for each module
-            for (DeploymentModuleIdentifier deploymentModuleId : deployedModules.keySet()) {
-                // convert DeploymentModuleIdentifier to EJBModuleIdentifier before stashing into SPR
-                EJBModuleIdentifier ejbModuleId = convertModuleIdentifier(deploymentModuleId);
+            if (!context.isStarting()) {
+                log.info("Server not starting - performing resume actions");
 
-                // only register modules that do not already have a local registration entry
-                if (registrations.get(ejbModuleId) == null) {
-                    ModuleAvailabilityRegistrarServiceProviderListener serviceProviderListener = new ModuleAvailabilityRegistrarServiceProviderListener(ejbModuleId, moduleAvailabilityListeners);
-                    log.infof("Opening registration for module %s\n" + ejbModuleId);
-                    ServiceProviderRegistration<EJBModuleIdentifier, GroupMember> registration = serviceRegistrar.register(ejbModuleId, serviceProviderListener);
-                    // set the initial value of the providers
-                    serviceProviderListener.setCurrentProviders(registration.getProviders());
-                    // keep track of registrartions
-                    registrations.putIfAbsent(ejbModuleId, registration);
+                // interrogate the deployment repository and register the current deployments
+                Map<DeploymentModuleIdentifier, ModuleDeployment> deployedModules = deploymentRepository.getModules();
+
+                // create one service entry for each module
+                for (DeploymentModuleIdentifier deploymentModuleId : deployedModules.keySet()) {
+                    // convert DeploymentModuleIdentifier to EJBModuleIdentifier before stashing into SPR
+                    EJBModuleIdentifier ejbModuleId = convertModuleIdentifier(deploymentModuleId);
+
+                    // only register modules that do not already have a local registration entry
+                    if (registrations.get(ejbModuleId) == null) {
+                        ModuleAvailabilityRegistrarServiceProviderListener serviceProviderListener = new ModuleAvailabilityRegistrarServiceProviderListener(ejbModuleId, moduleAvailabilityListeners);
+                        log.infof("Opening registration for module %s\n" + ejbModuleId);
+                        ServiceProviderRegistration<EJBModuleIdentifier, GroupMember> registration = serviceRegistrar.register(ejbModuleId, serviceProviderListener);
+                        // set the initial value of the providers
+                        serviceProviderListener.setCurrentProviders(registration.getProviders());
+                        // keep track of registrartions
+                        registrations.putIfAbsent(ejbModuleId, registration);
+                    }
                 }
             }
             log.info("Resumed");
