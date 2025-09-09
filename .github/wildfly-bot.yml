@@ -150,7 +150,7 @@ wildfly:
       directories:
         - microprofile/lra
         - testsuite/integration/microprofile-tck/lra
-      notify: [ xstefank ]
+      notify: [ xstefank, marcosgopen ]
       
     - id: microprofile-openapi
       directories:
