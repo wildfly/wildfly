@@ -84,7 +84,7 @@ public class RequestScopedTestBean {
     }
 
     public EntityManagerFactory injectedEntityManagerFactory() {
-            return emf;
+        return emf;
     }
 
     public EntityManagerFactory getEntityManagerFactoryByPuName() {
