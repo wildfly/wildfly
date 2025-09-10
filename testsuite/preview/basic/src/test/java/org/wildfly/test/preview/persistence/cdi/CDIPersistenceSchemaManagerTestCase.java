@@ -23,7 +23,6 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -53,7 +52,7 @@ public class CDIPersistenceSchemaManagerTestCase {
     @Test
     public void TestSchemaManager() throws Exception {
         SchemaManager schemaManager = cmtBean.testSchemaManager();
-        assertNotNull("SchemaManager should of been returned", schemaManager);
+        assertNotNull("expected nonnull SchemaManager", schemaManager);
     }
 
     @Test
@@ -70,13 +69,12 @@ public class CDIPersistenceSchemaManagerTestCase {
             assertNotNull("expected nonnull EntityManagerFactory ", emf);
         }
 
-    @Ignore
     @Test
     public void testEMFOfEntityManagerEqualEntityManagerFactory() throws Exception {
 
             EntityManagerFactory emf = cmtBean.injectedEntityManagerFactory(); // will be proxy object for EntityManagerFactory
             EntityManagerFactory emfOfEntityManager = cmtBean.entityManagerFactoryOfEntityManager(); // should be actual EntityManagerFactory returned by call to EntityManager.getEntityManagerFactory
-            assertEquals("expected that EntityManagerFactory is same as EntityManager.getEntityManagerFactory", emfOfEntityManager, emf);
+            assertEquals("expected that EntityManagerFactory.getName() (persistence unit name) is same as EntityManager.getEntityManagerFactory.getName()", emfOfEntityManager.getName(), emf.getName());
         }
 
     @Test

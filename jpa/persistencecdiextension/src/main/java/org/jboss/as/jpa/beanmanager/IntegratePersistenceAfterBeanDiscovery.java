@@ -162,8 +162,7 @@ public class IntegratePersistenceAfterBeanDiscovery implements PersistenceCdiExt
                     .asSubclass(Annotation.class);
             beanConfigurator.addQualifier(ScopeProxy.createProxy(qualifierType));
         }
-        Class<?> entityManagerClass = EntityManager.class;
-        beanConfigurator.beanClass(entityManagerClass);
+        beanConfigurator.beanClass(EntityManager.class);
         beanConfigurator.produceWith(c -> {
                     return new TransactionScopedEntityManager(
                             persistenceUnitMetadata.getScopedPersistenceUnitName(),
@@ -204,8 +203,7 @@ public class IntegratePersistenceAfterBeanDiscovery implements PersistenceCdiExt
                     .asSubclass(Annotation.class);
             beanConfigurator.addQualifier(ScopeProxy.createProxy(qualifierType));
         }
-        Class<?> entityManagerFactoryClass = EntityManagerFactory.class;
-        beanConfigurator.beanClass(entityManagerFactoryClass);
+        beanConfigurator.beanClass(EntityManagerFactory.class);
         beanConfigurator.produceWith(c -> {
                     return integrationWithCDIBag.getEntityManagerFactory();
                 }
@@ -233,8 +231,8 @@ public class IntegratePersistenceAfterBeanDiscovery implements PersistenceCdiExt
             // beanConfigurator.addQualifier(qualifierType);
             beanConfigurator.addQualifier(ScopeProxy.createProxy(qualifierType));
         }
-        Class<?> criteriaBuilderClass = CriteriaBuilder.class;
-        beanConfigurator.beanClass(criteriaBuilderClass);
+
+        beanConfigurator.beanClass(CriteriaBuilder.class);
         beanConfigurator.produceWith(c -> {
                     return integrationWithCDIBag.getEntityManagerFactory().getCriteriaBuilder();
                 }
@@ -263,8 +261,7 @@ public class IntegratePersistenceAfterBeanDiscovery implements PersistenceCdiExt
                     .asSubclass(Annotation.class);
             beanConfigurator.addQualifier(ScopeProxy.createProxy(qualifierType));
         }
-        Class<?> persistenceUnitUtilClass = PersistenceUnitUtil.class;
-        beanConfigurator.beanClass(persistenceUnitUtilClass);
+        beanConfigurator.beanClass(PersistenceUnitUtil.class);
         beanConfigurator.produceWith(c -> {
                     return integrationWithCDIBag.getEntityManagerFactory().getPersistenceUnitUtil();
                 }
@@ -293,8 +290,7 @@ public class IntegratePersistenceAfterBeanDiscovery implements PersistenceCdiExt
                     .asSubclass(Annotation.class);
             beanConfigurator.addQualifier(ScopeProxy.createProxy(qualifierType));
         }
-        Class<?> cacheClass = Cache.class;
-        beanConfigurator.beanClass(cacheClass);
+        beanConfigurator.beanClass(Cache.class);
         beanConfigurator.produceWith(c -> {
                     return integrationWithCDIBag.getEntityManagerFactory().getCache();
                 }
@@ -323,8 +319,7 @@ public class IntegratePersistenceAfterBeanDiscovery implements PersistenceCdiExt
                     .asSubclass(Annotation.class);
             beanConfigurator.addQualifier(ScopeProxy.createProxy(qualifierType));
         }
-        Class<?> metamodelClass = Metamodel.class;
-        beanConfigurator.beanClass(metamodelClass);
+        beanConfigurator.beanClass(Metamodel.class);
         beanConfigurator.produceWith(c -> {
                     return integrationWithCDIBag.getEntityManagerFactory().getMetamodel();
                 }
@@ -350,8 +345,7 @@ public class IntegratePersistenceAfterBeanDiscovery implements PersistenceCdiExt
             // beanConfigurator.addQualifier(qualifierType);
             beanConfigurator.addQualifier(IntegratePersistenceAfterBeanDiscovery.ScopeProxy.createProxy(qualifierType));
         }
-        Class<?> schemaManagerClass = SchemaManager.class;
-        beanConfigurator.beanClass(schemaManagerClass);
+        beanConfigurator.beanClass(SchemaManager.class);
         beanConfigurator.produceWith(c -> {
                     return integrationWithCDIBag.getEntityManagerFactory().getSchemaManager();
                 }
