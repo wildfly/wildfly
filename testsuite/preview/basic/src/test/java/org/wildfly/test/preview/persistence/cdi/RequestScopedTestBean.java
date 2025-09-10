@@ -8,7 +8,6 @@ package org.wildfly.test.preview.persistence.cdi;
 import jakarta.enterprise.context.RequestScoped;
 import jakarta.enterprise.inject.Produces;
 import jakarta.inject.Inject;
-import jakarta.inject.Named;
 import jakarta.persistence.Cache;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
@@ -46,10 +45,6 @@ public class RequestScopedTestBean {
     EntityManagerFactory emf2;
 
     @Inject
-    @Named("pu1")
-    EntityManagerFactory entityManagerFactoryByPuName;
-
-    @Inject
     @Pu1Qualifier
     CriteriaBuilder criteriaBuilder;
 
@@ -85,10 +80,6 @@ public class RequestScopedTestBean {
 
     public EntityManagerFactory injectedEntityManagerFactory() {
         return emf;
-    }
-
-    public EntityManagerFactory getEntityManagerFactoryByPuName() {
-        return entityManagerFactoryByPuName;
     }
 
     public CriteriaQuery<Object> testCreateQuery() {

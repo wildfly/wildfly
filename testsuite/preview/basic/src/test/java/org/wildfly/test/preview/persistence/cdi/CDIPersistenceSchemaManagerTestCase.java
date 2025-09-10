@@ -103,12 +103,6 @@ public class CDIPersistenceSchemaManagerTestCase {
     }
 
     @Test
-    public void testGetEntityManagerFactoryByPuName() throws Exception {
-        EntityManagerFactory emf = cmtBean.getEntityManagerFactoryByPuName();
-        assertNotNull("EntityManagerFactory bean should of been named with persistence unit name", emf);
-    }
-
-    @Test
     public void testEmApplicationExistingProducer() throws Exception {
         EntityManager emApplicationExistingProducer = cmtBean.getEmApplicationExistingProducer();
         assertNotNull("Legacy producer didn't produce the EntityManager instance", emApplicationExistingProducer);

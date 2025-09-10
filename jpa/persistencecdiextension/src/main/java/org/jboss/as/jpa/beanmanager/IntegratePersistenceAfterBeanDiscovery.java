@@ -15,7 +15,6 @@ import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import jakarta.enterprise.event.Observes;
-import jakarta.enterprise.inject.literal.NamedLiteral;
 import jakarta.enterprise.inject.spi.AfterBeanDiscovery;
 import jakarta.enterprise.inject.spi.BeanManager;
 import jakarta.enterprise.inject.spi.configurator.BeanConfigurator;
@@ -190,7 +189,6 @@ public class IntegratePersistenceAfterBeanDiscovery implements PersistenceCdiExt
         // Ensure that we do not get "WELD-001414: Bean name is ambiguous" deployment failure with duplicate persistence units in a deployment.
         if (!persistenceUnitMetadata.isDuplicate()) {
             beanConfigurator.name(persistenceUnitMetadata.getPersistenceUnitName());
-            beanConfigurator.addQualifier(NamedLiteral.of(persistenceUnitMetadata.getPersistenceUnitName()));
         } else {
             JpaLogger.ROOT_LOGGER.willNotNameEntityManagerFactoryBean(persistenceUnitMetadata.getScopedPersistenceUnitName(), persistenceUnitMetadata.getPersistenceUnitName());
         }
@@ -331,7 +329,7 @@ public class IntegratePersistenceAfterBeanDiscovery implements PersistenceCdiExt
             PersistenceUnitMetadata persistenceUnitMetadata,
             List<String> qualifiers,
             IntegrationWithCDIBagImpl integrationWithCDIBag) throws ClassNotFoundException {
-        String scope = IntegratePersistenceAfterBeanDiscovery.dependentScoped;
+        String scope = dependentScoped;
         BeanConfigurator<SchemaManager> beanConfigurator = afterBeanDiscovery.addBean();
         beanConfigurator.addTransitiveTypeClosure(SchemaManager.class);
 
