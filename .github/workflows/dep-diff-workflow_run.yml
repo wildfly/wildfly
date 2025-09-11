@@ -55,7 +55,7 @@ jobs:
           echo "new_files=${tmp}" >> $GITHUB_OUTPUT
 
       - name: Check versions
-        uses: wildfly/dep-tree-diff@master
+        uses: wildfly/dep-tree-diff@main
         with:
           pr: ${{ steps.prepare.outputs.pr }}
           token: '${{ secrets.GITHUB_TOKEN }}'
