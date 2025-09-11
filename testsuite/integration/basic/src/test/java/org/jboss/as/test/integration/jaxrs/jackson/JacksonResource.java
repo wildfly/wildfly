@@ -39,4 +39,11 @@ public class JacksonResource {
     public Optional<String> optional() {
         return Optional.of("optional string");
     }
+
+    @GET
+    @Path("named")
+    @Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
+    public NamedEntity named() {
+        return new NamedEntity(1L, "Jackson");
+    }
 }

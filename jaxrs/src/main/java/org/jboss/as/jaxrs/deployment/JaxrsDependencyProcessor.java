@@ -90,14 +90,14 @@ public class JaxrsDependencyProcessor implements DeploymentUnitProcessor {
         // add them here so they can be excluded vs exporting them in the module.
 
         // These were previously exported on the org.jboss.resteasy.resteasy-jackson2-provider.
-        addDependency(moduleSpecification, moduleLoader, "com.fasterxml.jackson.core.jackson-annotations", true, false);
-        addDependency(moduleSpecification, moduleLoader, "com.fasterxml.jackson.core.jackson-core", true, false);
-        addDependency(moduleSpecification, moduleLoader, "com.fasterxml.jackson.core.jackson-databind", true, false);
-        addDependency(moduleSpecification, moduleLoader, "com.fasterxml.jackson.jakarta.jackson-jakarta-json-provider", true, false);
+        addDependency(moduleSpecification, moduleLoader, "com.fasterxml.jackson.core.jackson-annotations", true, false, false);
+        addDependency(moduleSpecification, moduleLoader, "com.fasterxml.jackson.core.jackson-core", true, false, false);
+        addDependency(moduleSpecification, moduleLoader, "com.fasterxml.jackson.core.jackson-databind", true, false, false);
+        addDependency(moduleSpecification, moduleLoader, "com.fasterxml.jackson.jakarta.jackson-jakarta-json-provider", true, false, false);
 
         // These were perviously exported on the org.jboss.resteasy.resteasy-rxjava2 module.
-        addDependency(moduleSpecification, moduleLoader, "org.reactivestreams", true, false);
-        addDependency(moduleSpecification, moduleLoader, "io.reactivex.rxjava2.rxjava", true, false);
+        addDependency(moduleSpecification, moduleLoader, "org.reactivestreams", true, false, false);
+        addDependency(moduleSpecification, moduleLoader, "io.reactivex.rxjava2.rxjava", true, false, false);
 
         // End add exported modules
 
@@ -135,7 +135,16 @@ public class JaxrsDependencyProcessor implements DeploymentUnitProcessor {
 
     private void addDependency(ModuleSpecification moduleSpecification, ModuleLoader moduleLoader,
                                String moduleIdentifier, boolean optional, boolean deploymentBundlesClientBuilder) {
-        ModuleDependency dependency = ModuleDependency.Builder.of(moduleLoader, moduleIdentifier).setOptional(optional).setImportServices(true).build();
+        addDependency(moduleSpecification, moduleLoader, moduleIdentifier, optional, deploymentBundlesClientBuilder, true);
+    }
+
+    private void addDependency(final ModuleSpecification moduleSpecification, final ModuleLoader moduleLoader,
+                               final String moduleIdentifier, final boolean optional,
+                               final boolean deploymentBundlesClientBuilder, final boolean importServices) {
+        ModuleDependency dependency = ModuleDependency.Builder.of(moduleLoader, moduleIdentifier)
+                .setOptional(optional)
+                .setImportServices(importServices)
+                .build();
         if(deploymentBundlesClientBuilder) {
             dependency.addImportFilter(PathFilters.is(CLIENT_BUILDER), false);
         }
