@@ -836,6 +836,18 @@
 
             <dependency>
                 <groupId>${project.groupId}</groupId>
+                <artifactId>persistencecdiextension</artifactId>
+                <version>${project.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>${project.groupId}</groupId>
                 <artifactId>wildfly-preview-feature-pack-product-conf</artifactId>
                 <version>${ee.maven.version}</version>
             </dependency>
