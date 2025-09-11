@@ -424,6 +424,21 @@
                             <jboss.inst>${basedir}/target/wildfly</jboss.inst>
                             <jboss.install.dir>${basedir}/target/wildfly</jboss.install.dir>
                             <jboss.server.config.file.name>standalone-full.xml</jboss.server.config.file.name>
+                            <!-- EE Dist properties -->
+                            <jboss.ee.dist.product.release.name>${ee.dist.product.release.name}</jboss.ee.dist.product.release.name>
+                            <jboss.ee.dist.product.release.version>${ee.dist.product.release.version}</jboss.ee.dist.product.release.version>
+                            <jboss.ee.dist.product.stability.level>${ee.dist.product.stability.level}</jboss.ee.dist.product.stability.level>
+                            <jboss.ee.dist.product.min.stability.level>${ee.dist.product.min.stability.level}</jboss.ee.dist.product.min.stability.level>
+                            <!-- Full Dist properties -->
+                            <jboss.full.dist.product.release.name>${full.dist.product.release.name}</jboss.full.dist.product.release.name>
+                            <jboss.full.dist.product.release.version>${full.dist.product.release.version}</jboss.full.dist.product.release.version>
+                            <jboss.full.dist.product.stability.level>${full.dist.product.stability.level}</jboss.full.dist.product.stability.level>
+                            <jboss.full.dist.product.min.stability.level>${full.dist.product.min.stability.level}</jboss.full.dist.product.min.stability.level>
+                            <!-- Preview Dist properties -->
+                            <jboss.preview.dist.product.release.name>${preview.dist.product.release.name}</jboss.preview.dist.product.release.name>
+                            <jboss.preview.dist.product.release.version>${preview.dist.product.release.version}</jboss.preview.dist.product.release.version>
+                            <jboss.preview.dist.product.stability.level>${preview.dist.product.stability.level}</jboss.preview.dist.product.stability.level>
+                            <jboss.preview.dist.product.min.stability.level>${preview.dist.product.min.stability.level}</jboss.preview.dist.product.min.stability.level>
                         </systemPropertyVariables>
                     </configuration>
                     <executions>

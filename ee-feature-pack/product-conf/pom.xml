@@ -48,8 +48,8 @@
                                 <manifestEntries>
                                     <JBoss-Product-Release-Name>${ee.dist.product.release.name}</JBoss-Product-Release-Name>
                                     <JBoss-Product-Release-Version>${ee.dist.product.release.version}</JBoss-Product-Release-Version>
-                                    <JBoss-Product-Stability>community</JBoss-Product-Stability>
-                                    <JBoss-Product-Minimum-Stability>experimental</JBoss-Product-Minimum-Stability>
+                                    <JBoss-Product-Stability>${ee.dist.product.stability.level}</JBoss-Product-Stability>
+                                    <JBoss-Product-Minimum-Stability>${ee.dist.product.min.stability.level}</JBoss-Product-Minimum-Stability>
                                 </manifestEntries>
                             </archive>
                         </configuration>
