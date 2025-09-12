@@ -7,6 +7,7 @@ package org.wildfly.test.integration.microprofile.jwt.ejb;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static org.wildfly.test.integration.microprofile.jwt.TokenUtil.createKeySupplier;
 import static org.wildfly.test.integration.microprofile.jwt.TokenUtil.generateJWT;
 
 import java.net.URL;
@@ -27,6 +28,7 @@ import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.wildfly.test.integration.microprofile.jwt.App;
 import org.wildfly.test.integration.microprofile.jwt.BaseJWTCase;
 
 /**
@@ -71,7 +73,8 @@ public class JWTEJBTestCase {
 
     @Test
     public void testAuthorized() throws Exception {
-        String jwtToken = generateJWT(Paths.get(KEY_LOCATION.toURI()).toAbsolutePath().toString(), PRINCIPAL_NAME, DATE, ECHOER_GROUP, SUBSCRIBER_GROUP);
+        String jwtToken = generateJWT(createKeySupplier(Paths.get(KEY_LOCATION.toURI()).toAbsolutePath().toString()),
+                                PRINCIPAL_NAME, DATE, ECHOER_GROUP, SUBSCRIBER_GROUP);
 
         HttpGet httpGet = new HttpGet(deploymentUrl.toString() + ROOT_PATH + SUBSCRIPTION);
         httpGet.addHeader(AUTHORIZATION, BEARER + " " + jwtToken);
