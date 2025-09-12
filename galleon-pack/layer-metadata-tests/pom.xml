@@ -26,6 +26,12 @@
     <description>Tests for the layer metadata rules</description>
     <packaging>jar</packaging>
 
+    <properties>
+        <!-- Don't try to deploy the module -->
+        <maven.deploy.skip>true</maven.deploy.skip>
+        <skipNexusStagingDeployMojo>true</skipNexusStagingDeployMojo>
+    </properties>
+
     <dependencies>
         <dependency>
             <groupId>${full.maven.groupId}</groupId>
@@ -213,16 +219,6 @@
                         <maven.repo.local>${settings.localRepository}</maven.repo.local>
                     </systemPropertyVariables>
                 </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.sonatype.plugins</groupId>
-                <artifactId>nxrm3-maven-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <id>nexus-deploy</id>
-                        <phase>none</phase>
-                    </execution>
-                </executions>
             </plugin>
         </plugins>
         <testResources>
