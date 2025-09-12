@@ -69,10 +69,7 @@ public class JDBCStoreResourceDefinitionRegistrar extends StoreResourceDefinitio
 
                     @Override
                     public JdbcStringBasedStoreConfigurationBuilder get() {
-                        JdbcStringBasedStoreConfigurationBuilder builder = new ConfigurationBuilder().persistence().addStore(JdbcStringBasedStoreConfigurationBuilder.class)
-                                .segmented(true)
-                                .transactional(false)
-                                .dialect(dialect);
+                        JdbcStringBasedStoreConfigurationBuilder builder = new ConfigurationBuilder().persistence().addStore(JdbcStringBasedStoreConfigurationBuilder.class).dialect(dialect);
                         builder.connectionFactory(DataSourceConnectionFactoryConfigurationBuilder.class).setDataSource(dataSource.get());
                         builder.table().read(table.get());
                         ServiceLoader.load(TwoWayKey2StringMapper.class, loader.get()).findFirst().map(TwoWayKey2StringMapper::getClass).ifPresent(builder::key2StringMapper);

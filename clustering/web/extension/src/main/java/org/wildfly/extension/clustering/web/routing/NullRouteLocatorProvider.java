@@ -5,12 +5,12 @@
 
 package org.wildfly.extension.clustering.web.routing;
 
-import org.wildfly.clustering.function.Supplier;
 import org.wildfly.clustering.function.UnaryOperator;
 import org.wildfly.clustering.server.service.BinaryServiceConfiguration;
 import org.wildfly.clustering.web.service.deployment.WebDeploymentConfiguration;
 import org.wildfly.clustering.web.service.deployment.WebDeploymentServiceDescriptor;
 import org.wildfly.clustering.web.service.routing.RouteLocatorProvider;
+import org.wildfly.service.Installer.StartWhen;
 import org.wildfly.subsystem.service.DeploymentServiceInstaller;
 import org.wildfly.subsystem.service.ServiceInstaller;
 
@@ -20,9 +20,9 @@ import org.wildfly.subsystem.service.ServiceInstaller;
 public class NullRouteLocatorProvider implements RouteLocatorProvider {
     @Override
     public DeploymentServiceInstaller getServiceInstaller(BinaryServiceConfiguration configuration, WebDeploymentConfiguration deployment) {
-        Supplier<UnaryOperator<String>> factory = Supplier.<String>of(null).map(UnaryOperator::of);
-        return ServiceInstaller.builder(factory)
+        return ServiceInstaller.builder(UnaryOperator.empty())
                 .provides(WebDeploymentServiceDescriptor.ROUTE_LOCATOR.resolve(deployment.getDeploymentUnit()))
+                .startWhen(StartWhen.REQUIRED)
                 .build();
     }
 }
