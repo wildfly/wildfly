@@ -5,9 +5,10 @@
 
 package org.wildfly.extension.microprofile.openapi;
 
-import org.jboss.as.controller.PersistentResourceXMLDescription;
-import org.jboss.as.controller.PersistentSubsystemSchema;
 import org.jboss.as.controller.SubsystemSchema;
+import org.jboss.as.controller.persistence.xml.ResourceXMLParticleFactory;
+import org.jboss.as.controller.persistence.xml.SubsystemResourceRegistrationXMLElement;
+import org.jboss.as.controller.persistence.xml.SubsystemResourceXMLSchema;
 import org.jboss.as.controller.xml.VersionedNamespace;
 import org.jboss.staxmapper.IntVersion;
 
@@ -15,16 +16,17 @@ import org.jboss.staxmapper.IntVersion;
  * Enumeration of MicroProfile OpenAPI subsystem schema versions.
  * @author Paul Ferraro
  */
-public enum MicroProfileOpenAPISubsystemSchema implements PersistentSubsystemSchema<MicroProfileOpenAPISubsystemSchema> {
+public enum MicroProfileOpenAPISubsystemSchema implements SubsystemResourceXMLSchema<MicroProfileOpenAPISubsystemSchema> {
 
     VERSION_1_0(1, 0), // WildFly 19
     ;
     static final MicroProfileOpenAPISubsystemSchema CURRENT = VERSION_1_0;
 
     private final VersionedNamespace<IntVersion, MicroProfileOpenAPISubsystemSchema> namespace;
+    private final ResourceXMLParticleFactory factory = ResourceXMLParticleFactory.newInstance(this);
 
     MicroProfileOpenAPISubsystemSchema(int major, int minor) {
-        this.namespace = SubsystemSchema.createSubsystemURN(MicroProfileOpenAPISubsystemRegistrar.NAME, new IntVersion(major, minor));
+        this.namespace = SubsystemSchema.createSubsystemURN(MicroProfileOpenAPISubsystemRegistrar.REGISTRATION.getName(), new IntVersion(major, minor));
     }
 
     @Override
@@ -33,7 +35,7 @@ public enum MicroProfileOpenAPISubsystemSchema implements PersistentSubsystemSch
     }
 
     @Override
-    public PersistentResourceXMLDescription getXMLDescription() {
-        return PersistentResourceXMLDescription.factory(this).builder(MicroProfileOpenAPISubsystemRegistrar.PATH).build();
+    public SubsystemResourceRegistrationXMLElement getSubsystemXMLElement() {
+        return this.factory.subsystemElement(MicroProfileOpenAPISubsystemRegistrar.REGISTRATION).build();
     }
 }
