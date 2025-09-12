@@ -15,7 +15,6 @@
     </resources>
 
     <dependencies>
-        <module name="com.google.code.gson" />
         <module name="io.netty.netty-buffer" />
         <module name="io.netty.netty-codec" />
         <module name="io.netty.netty-codec-http" />
