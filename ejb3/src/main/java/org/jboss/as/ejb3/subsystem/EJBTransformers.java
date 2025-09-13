@@ -42,16 +42,18 @@ public class EJBTransformers implements ExtensionTransformerRegistration {
 
         // create the chained builder which incorporates all transformations
         chainedBuilder.buildAndRegister(subsystemRegistration, new ModelVersion[] {
-                VERSION_9_0_0.getVersion() });
+                VERSION_9_0_0.getVersion()
+        });
     }
 
     /*
      * Transformers for changes in model version 10.0.0
      */
     private static void registerTransformers_9_0_0(ResourceTransformationDescriptionBuilder subsystemBuilder) {
-        // Reject ejb3/caches/simple-cache element
+        // Reject ejb3/caches/simple-cache resource
         subsystemBuilder.rejectChildResource(EJB3SubsystemModel.SIMPLE_CACHE_PATH);
-        // Reject ejb3/caches/distributable-cache element
+
+        // Reject ejb3/caches/distributable-cache resource
         subsystemBuilder.rejectChildResource(EJB3SubsystemModel.DISTRIBUTABLE_CACHE_PATH);
 
         subsystemBuilder.addChildResource(EJB3SubsystemModel.TIMER_SERVICE_PATH).getAttributeBuilder()
