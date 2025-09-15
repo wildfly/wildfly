@@ -1195,9 +1195,6 @@ public class PersistenceUnitServiceHandler {
                     if (null == persistenceCdiExtension) {
                         // For WildFly Preview try loading a PersistenceCdiExtensionService (WildFly will not have this service).
                         ServiceLoader<PersistenceCdiExtension> persistenceCdiExtensionService = module.loadService(PersistenceCdiExtension.class);
-                        if (persistenceCdiExtensionService == null) {
-                            return null;
-                        }
                         for (PersistenceCdiExtension service: persistenceCdiExtensionService) {
                             if (persistenceCdiExtension != null) {
                                 // This is an internal error check that shouldn't happen.
