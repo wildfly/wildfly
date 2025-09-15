@@ -836,7 +836,7 @@
 
             <dependency>
                 <groupId>${project.groupId}</groupId>
-                <artifactId>persistencecdiextension</artifactId>
+                <artifactId>persistence-cdi-extension</artifactId>
                 <version>${project.version}</version>
                 <exclusions>
                     <exclusion>
