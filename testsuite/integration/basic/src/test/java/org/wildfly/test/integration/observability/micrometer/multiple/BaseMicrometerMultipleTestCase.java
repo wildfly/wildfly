@@ -4,20 +4,20 @@
  */
 package org.wildfly.test.integration.observability.micrometer.multiple;
 
-import java.net.URI;
-
 import jakarta.ws.rs.client.Client;
 import jakarta.ws.rs.client.ClientBuilder;
 import jakarta.ws.rs.client.WebTarget;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.arquillian.testcontainers.api.TestcontainersRequired;
 import org.jboss.arquillian.testcontainers.api.Testcontainer;
+import org.jboss.arquillian.testcontainers.api.TestcontainersRequired;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.test.shared.observability.containers.OpenTelemetryCollectorContainer;
 import org.jboss.as.test.shared.observability.setuptasks.MicrometerSetupTask;
 import org.junit.Assert;
 import org.junit.runner.RunWith;
+
+import java.net.URI;
 
 @RunWith(Arquillian.class)
 @ServerSetup(MicrometerSetupTask.class)

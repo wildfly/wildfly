@@ -80,11 +80,6 @@
                                     <groupId>io.opentelemetry</groupId>
                                     <artifactId>opentelemetry-context</artifactId>
                                 </dependency>
-                                <!-- include Micrometer API -->
-                                <dependency>
-                                    <groupId>io.micrometer</groupId>
-                                    <artifactId>micrometer-core</artifactId>
-                                </dependency>
                                 <!-- include jakarta specs APIs -->
                                 <dependency>
                                     <groupId>jakarta.annotation</groupId>

@@ -4,12 +4,8 @@
  */
 package org.wildfly.test.integration.observability.micrometer;
 
-import static org.wildfly.test.integration.observability.setuptask.PrometheusSetupTask.PROMETHEUS_CONTEXT;
-import static org.wildfly.test.integration.observability.setuptask.PrometheusSetupTask.PROMETHEUS_REGISTRY_ADDRESS;
-
-import java.io.IOException;
-import java.net.URISyntaxException;
-import java.net.URL;
+import static org.jboss.as.test.shared.observability.setuptasks.PrometheusSetupTask.PROMETHEUS_CONTEXT;
+import static org.jboss.as.test.shared.observability.setuptasks.PrometheusSetupTask.PROMETHEUS_REGISTRY_ADDRESS;
 
 import jakarta.ws.rs.client.Client;
 import jakarta.ws.rs.client.ClientBuilder;
@@ -36,6 +32,7 @@ import org.jboss.as.controller.client.Operation;
 import org.jboss.as.controller.client.helpers.Operations;
 import org.jboss.as.test.shared.CdiUtils;
 import org.jboss.as.test.shared.ServerReload;
+import org.jboss.as.test.shared.observability.setuptasks.PrometheusSetupTask;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -43,9 +40,12 @@ import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.wildfly.test.integration.observability.JaxRsActivator;
-import org.wildfly.test.integration.observability.setuptask.PrometheusSetupTask;
+import org.wildfly.test.integration.observability.micrometer.multiple.JaxRsActivator;
 import org.wildfly.test.stabilitylevel.StabilityServerSetupSnapshotRestoreTasks;
+
+import java.io.IOException;
+import java.net.URISyntaxException;
+import java.net.URL;
 
 @RunWith(Arquillian.class)
 @ServerSetup({StabilityServerSetupSnapshotRestoreTasks.Community.class, PrometheusSetupTask.class})
