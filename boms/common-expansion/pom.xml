@@ -1035,6 +1035,44 @@
             </dependency>
 
             <dependency>
+                <groupId>io.smallrye.stork</groupId>
+                <artifactId>stork-api</artifactId>
+                <version>${version.io.smallrye.smallrye-stork}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+
+            <dependency>
+                <groupId>io.smallrye.stork</groupId>
+                <artifactId>stork-core</artifactId>
+                <version>${version.io.smallrye.smallrye-stork}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>io.smallrye.stork</groupId>
+                <artifactId>stork-service-discovery-static-list</artifactId>
+                <version>${version.io.smallrye.smallrye-stork}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+
+            <dependency>
                 <groupId>io.vertx</groupId>
                 <artifactId>vertx-amqp-client</artifactId>
                 <version>${version.io.vertx.vertx}</version>
