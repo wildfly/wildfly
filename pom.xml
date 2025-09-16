@@ -439,7 +439,7 @@
         <version.org.apache.activemq.artemis>2.42.0</version.org.apache.activemq.artemis>
         <version.org.apache.activemq.artemis.native>2.0.0</version.org.apache.activemq.artemis.native>
         <version.org.apache.avro>1.12.0</version.org.apache.avro>
-        <version.org.apache.cxf>4.0.9</version.org.apache.cxf>
+        <version.org.apache.cxf>4.0.9-jbossorg-1</version.org.apache.cxf>
         <version.org.apache.cxf.xjcplugins>4.1.0</version.org.apache.cxf.xjcplugins>
         <version.org.apache.httpcomponents.httpasyncclient>4.1.5</version.org.apache.httpcomponents.httpasyncclient>
         <version.org.apache.james.apache-mime4j>0.8.12</version.org.apache.james.apache-mime4j>
@@ -516,7 +516,7 @@
         <version.org.jboss.ws.api>3.0.0.Final</version.org.jboss.ws.api>
         <version.org.jboss.ws.common>5.1.0.Final</version.org.jboss.ws.common>
         <version.org.jboss.ws.common.tools>2.1.0.Final</version.org.jboss.ws.common.tools>
-        <version.org.jboss.ws.cxf>7.3.3.Final</version.org.jboss.ws.cxf>
+        <version.org.jboss.ws.cxf>7.3.4.Final</version.org.jboss.ws.cxf>
         <version.org.jboss.ws.jaxws-undertow-httpspi>2.0.0.Final</version.org.jboss.ws.jaxws-undertow-httpspi>
         <version.org.jboss.ws.spi>5.0.0.Final</version.org.jboss.ws.spi>
         <version.org.jboss.xnio.netty.netty-xnio-transport>0.1.10.Final</version.org.jboss.xnio.netty.netty-xnio-transport>
