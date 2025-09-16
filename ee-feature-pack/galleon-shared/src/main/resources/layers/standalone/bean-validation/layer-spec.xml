@@ -6,6 +6,8 @@
 
 <layer-spec xmlns="urn:jboss:galleon:layer-spec:2.0" name="bean-validation">
     <props>
+        <prop name="org.wildfly.category" value="Jakarta EE"/>
+        <prop name="org.wildfly.description" value="Support for Jakarta Bean Validation"/>
         <prop name="org.wildfly.rule.annotations" value="jakarta.validation.*"/>
         <prop name="org.wildfly.rule.class" value="jakarta.validation.*"/>
     </props>

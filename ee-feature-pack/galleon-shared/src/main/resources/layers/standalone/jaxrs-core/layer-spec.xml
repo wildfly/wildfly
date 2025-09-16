@@ -4,7 +4,11 @@
   ~ SPDX-License-Identifier: Apache-2.0
   -->
 
-<layer-spec xmlns="urn:jboss:galleon:layer-spec:1.0" name="jaxrs-core">
+<layer-spec xmlns="urn:jboss:galleon:layer-spec:2.0" name="jaxrs-core">
+    <props>
+        <prop name="org.wildfly.category" value="Jakarta EE"/>
+        <prop name="org.wildfly.description" value="Support for Jakarta RESTful Web Services."/>
+    </props>
     <dependencies>
         <layer name="ee-integration"/>
         <layer name="servlet"/>

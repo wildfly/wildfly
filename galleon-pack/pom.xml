@@ -21,7 +21,7 @@
     </parent>
 
     <artifactId>wildfly-feature-pack-parent</artifactId>
-    <description>Parent for various Galleon feature pack modules</description>
+    <description>WildFly ${project.version} Galleon pack</description>
     <packaging>pom</packaging>
 
     <name>WildFly: Feature Pack Parent</name>

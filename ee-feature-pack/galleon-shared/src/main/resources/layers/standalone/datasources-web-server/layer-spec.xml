@@ -6,6 +6,8 @@
 
 <layer-spec xmlns="urn:jboss:galleon:layer-spec:2.0" name="datasources-web-server">
     <props>
+        <prop name="org.wildfly.category" value="Base WildFly server"/>
+        <prop name="org.wildfly.description" value="A servlet container with support for datasources"/>
         <prop name="org.wildfly.rule.kind" value="base-layer"/>
     </props>
     <dependencies>

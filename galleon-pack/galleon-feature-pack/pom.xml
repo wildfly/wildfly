@@ -33,6 +33,7 @@
         <galleon.shared.resources.directory>${basedir}/../galleon-shared/src/main/resources</galleon.shared.resources.directory>
         <galleon.shared.generated.resources.directory>${basedir}/../galleon-shared/target/index</galleon.shared.generated.resources.directory>
         <galleon.local.resources.directory>${basedir}/../galleon-local/src/main/resources</galleon.local.resources.directory>
+        <copyright>The WildFly authors</copyright>
     </properties>
 
     <build>
@@ -74,6 +75,30 @@
                                  robust exclude artifact metadata content -->
                             <excludes>**/pom.xml,META-INF,META-INF/**</excludes>
                             <outputDirectory>${galleon.unpacked.resources.directory}</outputDirectory>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <!-- WildFly is composed of 2 feature packs so we copy the artifact list from
+                             the ee-galleon-pack (in addition to this artifact list)
+                             to generate all the log and error code when the feature pack doc is created
+                        -->
+                        <id>copy-ee-artifact-list</id>
+                        <phase>process-resources</phase>
+                        <goals>
+                            <goal>copy</goal>
+                        </goals>
+                        <configuration>
+                            <artifactItems>
+                                <artifactItem>
+                                    <groupId>${project.groupId}</groupId>
+                                    <artifactId>wildfly-ee-galleon-pack</artifactId>
+                                    <version>${project.version}</version>
+                                    <classifier>artifact-list</classifier>
+                                    <type>txt</type>
+                                    <overWrite>true</overWrite>
+                                    <outputDirectory>${project.build.directory}/</outputDirectory>
+                                </artifactItem>
+                            </artifactItems>
                         </configuration>
                     </execution>
                 </executions>
@@ -217,6 +242,8 @@
                             <fork-embedded>${galleon.fork.embedded}</fork-embedded>
                             <generate-channel-manifest>true</generate-channel-manifest>
                             <deploy-channel-manifest>false</deploy-channel-manifest>
+                            <generate-complete-model>true</generate-complete-model>
+                            <copyright>${copyright}</copyright>
                         </configuration>
                     </execution>
                 </executions>

@@ -5,6 +5,8 @@
   -->
 <layer-spec xmlns="urn:jboss:galleon:layer-spec:2.0" name="singleton-ha">
     <props>
+        <prop name="org.wildfly.category" value="Clustering"/>
+        <prop name="org.wildfly.description" value="Support for WildFly singleton HA."/>
         <prop name="org.wildfly.rule.profile-ha" value="singleton-local"/>
     </props>
     <dependencies>

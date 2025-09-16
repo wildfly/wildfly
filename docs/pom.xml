@@ -25,10 +25,6 @@
     <name>WildFly: Documentation</name>
 
     <properties>
-        <server.name>wildfly-${project.version}</server.name>
-        <messages.filename>${server.name}.messages</messages.filename>
-        <management-model.filename>${server.name}.dmr</management-model.filename>
-
         <wildfly.github.io.dir>
             ..${file.separator}..${file.separator}wildfly.github.io${file.separator}${product.docs.server.version}
         </wildfly.github.io.dir>
@@ -91,78 +87,28 @@
                 </executions>
             </plugin>
             <plugin>
-                <groupId>org.wildfly.plugins</groupId>
-                <artifactId>wildfly-maven-plugin</artifactId>
-                <version>${version.org.wildfly.plugin}</version>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
                 <executions>
                     <execution>
-                        <id>server-provisioning</id>
+                        <id>unpack-feature-pack-doc</id>
+                        <phase>process-resources</phase>
                         <goals>
-                            <goal>provision</goal>
+                            <goal>unpack</goal>
                         </goals>
-                        <phase>prepare-package</phase>
                         <configuration>
-                            <provisioningDir>${jboss.home}</provisioningDir>
-                            <recordProvisioningState>false</recordProvisioningState>
-                            <channels>
-                                <channel>
-                                    <manifest>
-                                        <groupId>org.wildfly.channels</groupId>
-                                        <artifactId>wildfly</artifactId>
-                                        <version>${full.maven.version}</version>
-                                    </manifest>
-                                </channel>
-                            </channels>
-                            <feature-packs>
-                                <feature-pack>
+                            <artifactItems>
+                                <artifactItem>
                                     <groupId>${project.groupId}</groupId>
                                     <artifactId>wildfly-galleon-pack</artifactId>
                                     <version>${project.version}</version>
-                                    <inherit-configs>false</inherit-configs>
-                                    <excluded-packages>
-                                        <name>docs</name>
-                                        <name>docs.licenses.merge</name>
-                                    </excluded-packages>
-                                    <included-configs>
-                                        <config>
-                                            <model>standalone</model>
-                                            <name>standalone-full-ha.xml</name>
-                                        </config>
-                                    </included-configs>
-                                </feature-pack>
-                            </feature-packs>
+                                    <classifier>doc</classifier>
+                                    <type>zip</type>
+                                    <overWrite>true</overWrite>
+                                    <outputDirectory>${project.build.directory}/generated-docs/feature-pack</outputDirectory>
+                                </artifactItem>
+                            </artifactItems>
                         </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <groupId>org.jboss.wildscribe</groupId>
-                <artifactId>wildscribe-maven-plugin</artifactId>
-                <version>${version.org.jboss.wildscribe}</version>
-                <configuration>
-                    <jboss-home>${jboss.home}</jboss-home>
-                    <display-name>${full.dist.product.release.name}</display-name>
-                    <display-version>${product.docs.server.version}</display-version>
-                    <site-dir>${project.build.directory}/generated-docs/wildscribe</site-dir>
-                    <stability>experimental</stability>
-                    <required-extensions>
-                        <required-extension>org.wildfly.extension.rts</required-extension>
-                        <required-extension>org.jboss.as.xts</required-extension>
-                        <required-extension>org.wildfly.extension.datasources-agroal</required-extension>
-                        <required-extension>org.wildfly.extension.micrometer</required-extension>
-                        <required-extension>org.wildfly.extension.microprofile.fault-tolerance-smallrye</required-extension>
-                        <required-extension>org.wildfly.extension.microprofile.openapi-smallrye</required-extension>
-                        <required-extension>org.wildfly.extension.microprofile.telemetry</required-extension>
-                        <required-extension>org.wildfly.extension.opentelemetry</required-extension>
-                    </required-extensions>
-                </configuration>
-                <executions>
-                    <execution>
-                        <id>generate-site</id>
-                        <goals>
-                            <goal>generate-site</goal>
-                        </goals>
-                        <phase>package</phase>
                     </execution>
                 </executions>
             </plugin>

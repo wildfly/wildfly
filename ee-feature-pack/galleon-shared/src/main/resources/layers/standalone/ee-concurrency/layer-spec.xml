@@ -6,6 +6,8 @@
 
 <layer-spec xmlns="urn:jboss:galleon:layer-spec:2.0" name="ee-concurrency">
     <props>
+        <prop name="org.wildfly.category" value="Jakarta EE"/>
+        <prop name="org.wildfly.description" value="Support for Jakarta EE Concurrency"/>
         <prop name="org.wildfly.rule.class" value="jakarta.enterprise.concurrent"/>
     </props>
     <dependencies>
