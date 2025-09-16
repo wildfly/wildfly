@@ -198,6 +198,7 @@ public abstract class LayersTestBase {
             "org.jboss.narayana.lra.lra-coordinator",
             "org.jboss.narayana.lra.lra-participant",
             "org.eclipse.microprofile.lra.api",
+            "io.smallrye.stork",
             // Extension not included in the default config
             "org.wildfly.extension.microprofile.openapi-smallrye",
             "org.eclipse.microprofile.openapi.api",
