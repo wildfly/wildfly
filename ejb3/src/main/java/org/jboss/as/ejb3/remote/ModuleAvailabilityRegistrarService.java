@@ -13,6 +13,7 @@ import org.jboss.as.server.suspend.SuspendableActivity;
 import org.jboss.as.server.suspend.SuspendableActivityRegistry;
 import org.jboss.ejb.client.EJBModuleIdentifier;
 import org.jboss.logging.Logger;
+import org.jboss.msc.service.ServiceName;
 import org.wildfly.clustering.server.GroupMember;
 import org.wildfly.clustering.server.manager.Service;
 import org.wildfly.clustering.server.provider.ServiceProviderListener;
@@ -43,6 +44,8 @@ import java.util.concurrent.CompletionStage;
  * when the server is suspended, and marked as available when the server is resumed.
  */
 public class ModuleAvailabilityRegistrarService implements ModuleAvailabilityRegistrar, Service {
+
+    public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("as", "ejb3", "remote", "module-availability-registrar-service");
 
     protected static final Logger log = Logger.getLogger(ModuleAvailabilityRegistrarService.class.getSimpleName());
 
