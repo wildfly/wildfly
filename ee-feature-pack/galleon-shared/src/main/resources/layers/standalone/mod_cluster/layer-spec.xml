@@ -5,6 +5,8 @@
   -->
 <layer-spec xmlns="urn:jboss:galleon:layer-spec:2.0" name="mod_cluster">
     <props>
+        <prop name="org.wildfly.category" value="Clustering"/>
+        <prop name="org.wildfly.description" value="Support for mod_cluster subsystem."/>
         <prop name="org.wildfly.rule.add-on" value="clustering,mod_cluster" />
         <prop name="org.wildfly.rule.add-on-depends-on" value="only:undertow" />
         <prop name="org.wildfly.rule.add-on-description" value="Support for mod_cluster integration."/>

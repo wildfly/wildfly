@@ -4,7 +4,12 @@
   ~ SPDX-License-Identifier: Apache-2.0
   -->
 
-<layer-spec xmlns="urn:jboss:galleon:layer-spec:1.0" name="ejb-local-cache">
+<layer-spec xmlns="urn:jboss:galleon:layer-spec:2.0" name="ejb-local-cache">
+    <props>
+        <prop name="org.wildfly.category" value="Jakarta EE"/>
+        <prop name="org.wildfly.description" value="Infinispan-based local cache for stateful session beans."/>
+        <prop name="org.wildfly.note" value="This layer must be explicitly excluded if ejb-dist-cache is in use."/>
+    </props>
     <dependencies>
         <layer name="transactions"/>
     </dependencies>

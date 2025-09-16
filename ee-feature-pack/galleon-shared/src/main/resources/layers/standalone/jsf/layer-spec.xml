@@ -6,6 +6,8 @@
 
 <layer-spec xmlns="urn:jboss:galleon:layer-spec:2.0" name="jsf">
     <props>
+        <prop name="org.wildfly.category" value="Jakarta EE"/>
+        <prop name="org.wildfly.description" value="Support for Jakarta Faces."/>
         <prop name="org.wildfly.rule.xml-path" value="/WEB-INF/web.xml,/web-app/servlet/servlet-class,jakarta.faces.webapp.FacesServlet"/>
         <prop name="org.wildfly.rule.expected-file" value="/WEB-INF/faces-config.xml"/>
         <prop name="org.wildfly.rule.annotations" value="jakarta.faces.annotation"/>

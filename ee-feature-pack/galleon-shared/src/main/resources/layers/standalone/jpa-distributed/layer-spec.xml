@@ -6,6 +6,9 @@
 
 <layer-spec xmlns="urn:jboss:galleon:layer-spec:2.0" name="jpa-distributed">
     <props>
+        <prop name="org.wildfly.category" value="Clustering"/>
+        <prop name="org.wildfly.description" value="Support for JPA with a distributed second level cache."/>
+        <prop name="org.wildfly.note" value="jpa layer must be explicitly excluded if jpa-distributed is in use."/>
         <prop name="org.wildfly.rule.profile-ha" value="jpa"/>
     </props>
     <dependencies>

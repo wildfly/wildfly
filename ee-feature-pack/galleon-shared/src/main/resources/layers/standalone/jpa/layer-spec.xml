@@ -6,6 +6,9 @@
 
 <layer-spec xmlns="urn:jboss:galleon:layer-spec:2.0" name="jpa">
     <props>
+        <prop name="org.wildfly.category" value="Jakarta EE"/>
+        <prop name="org.wildfly.description" value="Support for JPA (using the latest WildFly supported Hibernate release)."/>
+        <prop name="org.wildfly.note" value="This layer must be explicitly excluded if jpa-distributed is in use."/>
         <prop name="org.wildfly.rule.expected-file" value="[/META-INF/persistence.xml,/WEB-INF/classes/META-INF/persistence.xml]"/>
         <prop name="org.wildfly.rule.annotations" value="jakarta.persistence"/>
         <prop name="org.wildfly.rule.class" value="jakarta.persistence,jakarta.persistence.criteria"/>

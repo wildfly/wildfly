@@ -19,7 +19,7 @@ handlers). Each handler declares the log format and output.
 --
 
 [TIP]
-The WildFly Model Reference provides a complete description of the link:./wildscribe/subsystem/logging/index.html[management API for the `logging` subsystem].
+The WildFly Model Reference provides a complete description of the link:feature-pack/doc/reference/subsystem/logging/index.html[/subsystem=logging model reference].
 
 Here is an example of the `logging` subsystem XML configuration:
 

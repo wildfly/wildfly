@@ -6,6 +6,8 @@
 
 <layer-spec xmlns="urn:jboss:galleon:layer-spec:2.0" name="jdr">
     <props>
+        <prop name="org.wildfly.category" value="Monitoring"/>
+        <prop name="org.wildfly.description" value="Support for the JBoss Diagnostic Reporting (JDR) subsystem."/>
         <prop name="org.wildfly.rule.add-on-depends-on" value="all-dependencies"/>
         <prop name="org.wildfly.rule.add-on" value="management,jdr"/>
         <prop name="org.wildfly.rule.add-on-description" value="Support for the JBoss Diagnostic Reporting (JDR)."/>

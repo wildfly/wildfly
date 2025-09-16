@@ -6,6 +6,8 @@
 
 <layer-spec xmlns="urn:jboss:galleon:layer-spec:2.0" name="embedded-activemq">
     <props>
+        <prop name="org.wildfly.category" value="Jakarta Messaging"/>
+        <prop name="org.wildfly.description" value="Support for an embedded Apache Activemq Artemis Jakarta Messaging broker."/>
         <prop name="org.wildfly.rule.add-on-depends-on" value="only:messaging-activemq"/>
         <prop name="org.wildfly.rule.add-on" value="messaging,embedded-activemq"/>
         <prop name="org.wildfly.rule.add-on-cardinality" value="1"/>

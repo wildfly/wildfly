@@ -6,6 +6,9 @@
 
 <layer-spec xmlns="urn:jboss:galleon:layer-spec:2.0" name="web-console">
     <props>
+        <prop name="org.wildfly.category" value="Management"/>
+        <prop name="org.wildfly.description" value="Support for loading the HAL web console from the /console context on the HTTP 
+management interface."/>
         <prop name="org.wildfly.rule.add-on-depends-on" value="all-dependencies"/>
         <prop name="org.wildfly.rule.add-on" value="management,hal-web-console"/>
         <prop name="org.wildfly.rule.add-on-description" value="Management Web console. Make sure to add an initial user."/>
