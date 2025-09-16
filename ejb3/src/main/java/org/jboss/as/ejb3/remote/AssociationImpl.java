@@ -34,7 +34,6 @@ import org.jboss.as.ejb3.component.interceptors.CancellationFlag;
 import org.jboss.as.ejb3.component.session.SessionBeanComponent;
 import org.jboss.as.ejb3.component.stateful.StatefulSessionComponent;
 import org.jboss.as.ejb3.component.stateless.StatelessSessionComponent;
-import org.jboss.as.ejb3.deployment.DeploymentModuleIdentifier;
 import org.jboss.as.ejb3.deployment.DeploymentRepository;
 import org.jboss.as.ejb3.deployment.DeploymentRepositoryListener;
 import org.jboss.as.ejb3.deployment.EjbDeploymentInformation;
@@ -399,9 +398,8 @@ final class AssociationImpl implements Association, AutoCloseable {
 
                 if (!repositoryIsSuspended()) {
                     // only send out the initial list if the deployment repository (i.e. the server + clean transaction state) is not in a suspended state
-                    for (DeploymentModuleIdentifier deploymentModuleIdentifier : repository.getModules().keySet()) {
-                        EJBModuleIdentifier ejbModuleIdentifier = toModuleIdentifier(deploymentModuleIdentifier);
-                        list.add(ejbModuleIdentifier);
+                    for (EJBModuleIdentifier moduleId : repository.getModules().keySet()) {
+                       list.add(moduleId);
                     }
                     EjbLogger.EJB3_INVOCATION_LOGGER.debugf("Sending initial module availability to connecting client: server is not suspended");
                 } else {
@@ -413,28 +411,28 @@ final class AssociationImpl implements Association, AutoCloseable {
             }
 
             @Override
-            public void deploymentAvailable(final DeploymentModuleIdentifier deployment, final ModuleDeployment moduleDeployment) {
+            public void deploymentAvailable(final EJBModuleIdentifier moduleId, final ModuleDeployment moduleDeployment) {
             }
 
             @Override
-            public void deploymentStarted(final DeploymentModuleIdentifier deployment, final ModuleDeployment moduleDeployment) {
+            public void deploymentStarted(final EJBModuleIdentifier moduleId, final ModuleDeployment moduleDeployment) {
                 // only send out moduleAvailability until module has started (WFLY-13009)
-                moduleAvailabilityListener.moduleAvailable(Collections.singletonList(toModuleIdentifier(deployment)));
+                moduleAvailabilityListener.moduleAvailable(Collections.singletonList(moduleId));
             }
 
             @Override
-            public void deploymentRemoved(final DeploymentModuleIdentifier deployment) {
-                moduleAvailabilityListener.moduleUnavailable(Collections.singletonList(toModuleIdentifier(deployment)));
+            public void deploymentRemoved(final EJBModuleIdentifier moduleId) {
+                moduleAvailabilityListener.moduleUnavailable(Collections.singletonList(moduleId));
             }
 
             @Override
-            public void deploymentSuspended(DeploymentModuleIdentifier deployment) {
-                moduleAvailabilityListener.moduleUnavailable(Collections.singletonList(toModuleIdentifier(deployment)));
+            public void deploymentSuspended(EJBModuleIdentifier moduleId) {
+                moduleAvailabilityListener.moduleUnavailable(Collections.singletonList(moduleId));
             }
 
             @Override
-            public void deploymentResumed(DeploymentModuleIdentifier deployment) {
-                moduleAvailabilityListener.moduleAvailable(Collections.singletonList(toModuleIdentifier(deployment)));
+            public void deploymentResumed(EJBModuleIdentifier moduleId) {
+                moduleAvailabilityListener.moduleAvailable(Collections.singletonList(moduleId));
             }
 
             private boolean repositoryIsSuspended() {
@@ -446,17 +444,13 @@ final class AssociationImpl implements Association, AutoCloseable {
         return () -> deploymentRepository.removeListener(listener);
     }
 
-    static EJBModuleIdentifier toModuleIdentifier(final DeploymentModuleIdentifier identifier) {
-        return new EJBModuleIdentifier(identifier.getApplicationName(), identifier.getModuleName(), identifier.getDistinctName());
-    }
-
     private EjbDeploymentInformation findEJB(final String appName, final String moduleName, final String distinctName, final String beanName) {
-        final DeploymentModuleIdentifier ejbModule = new DeploymentModuleIdentifier(appName, moduleName, distinctName);
-        final Map<DeploymentModuleIdentifier, ModuleDeployment> modules = this.deploymentRepository.getStartedModules();
+        final EJBModuleIdentifier moduleId = new EJBModuleIdentifier(appName, moduleName, distinctName);
+        final Map<EJBModuleIdentifier, ModuleDeployment> modules = this.deploymentRepository.getStartedModules();
         if (modules == null || modules.isEmpty()) {
             return null;
         }
-        final ModuleDeployment moduleDeployment = modules.get(ejbModule);
+        final ModuleDeployment moduleDeployment = modules.get(moduleId);
         if (moduleDeployment == null) {
             return null;
         }
