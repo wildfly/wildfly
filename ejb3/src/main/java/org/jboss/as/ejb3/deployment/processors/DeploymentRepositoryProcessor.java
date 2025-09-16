@@ -27,6 +27,7 @@ import org.jboss.as.ejb3.deployment.DeploymentRepositoryService;
 import org.jboss.as.ejb3.deployment.EjbDeploymentInformation;
 import org.jboss.as.ejb3.deployment.ModuleDeployment;
 import org.jboss.as.ejb3.iiop.EjbIIOPService;
+import org.jboss.as.ejb3.remote.ModuleAvailabilityRegistrarService;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
@@ -116,6 +117,8 @@ public class DeploymentRepositoryProcessor implements DeploymentUnitProcessor {
             builder.addDependency(entry.getKey(), Object.class, (InjectedValue<Object>) entry.getValue());
         }
         builder.addDependency(DeploymentRepositoryService.SERVICE_NAME, DeploymentRepository.class, deployment.getDeploymentRepository());
+        // to pull up the ModuleAvailabilityRegistrarService
+        builder.requires(ModuleAvailabilityRegistrarService.SERVICE_NAME);
         builder.install();
 
         final ModuleDeployment.ModuleDeploymentStartService deploymentStart = new ModuleDeployment.ModuleDeploymentStartService(moduleId, countdown);

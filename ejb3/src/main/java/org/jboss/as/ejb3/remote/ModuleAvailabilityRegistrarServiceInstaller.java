@@ -10,7 +10,6 @@ import org.jboss.as.ejb3.deployment.DeploymentRepositoryService;
 import org.jboss.as.server.suspend.SuspendableActivityRegistry;
 import org.jboss.ejb.client.EJBModuleIdentifier;
 import org.jboss.msc.service.ServiceController;
-import org.jboss.msc.service.ServiceName;
 import org.wildfly.clustering.ejb.remote.EjbClientServicesProvider;
 import org.wildfly.clustering.server.GroupMember;
 import org.wildfly.clustering.server.provider.ServiceProviderRegistrar;
@@ -38,10 +37,7 @@ public class ModuleAvailabilityRegistrarServiceInstaller implements ServiceInsta
                 .onStart(ModuleAvailabilityRegistrarService::start)
                 .onStop(ModuleAvailabilityRegistrarService::stop)
                 .requires(List.of(deploymentRepository, serviceProviderRegistrar, activityRegistry))
-                // doesn't need a name but give it one anyway for debugging
-                .provides(ServiceName.parse("org.jboss.as.ejb3.remote.module-availability-registrar-service"))
-                // TODO: this service ideally is ON_DEMAND and made available upn deployment of one or more EJBs
-                .asActive()
+                .provides(ModuleAvailabilityRegistrarService.SERVICE_NAME)
                 .build()
                 .install(target);
     }
