@@ -7,20 +7,22 @@ package org.jboss.as.ejb3.deployment;
 
 import java.util.Map;
 
+import org.jboss.ejb.client.EJBModuleIdentifier;
+
 /**
  * @author Radoslav Husar
  */
 public interface DeploymentRepository {
 
-    void add(DeploymentModuleIdentifier identifier, ModuleDeployment deployment);
+    void add(EJBModuleIdentifier moduleId, ModuleDeployment deployment);
 
-    boolean startDeployment(DeploymentModuleIdentifier identifier);
+    boolean startDeployment(EJBModuleIdentifier moduleId);
 
     void addListener(DeploymentRepositoryListener listener);
 
     void removeListener(DeploymentRepositoryListener listener);
 
-    void remove(DeploymentModuleIdentifier identifier);
+    void remove(EJBModuleIdentifier moduleId);
 
     void suspend();
 
@@ -33,13 +35,13 @@ public interface DeploymentRepository {
      *
      * @return all deployments
      */
-    Map<DeploymentModuleIdentifier, ModuleDeployment> getModules();
+    Map<EJBModuleIdentifier, ModuleDeployment> getModules();
 
     /**
      * Returns all deployments that are in a started state, i.e. all components are ready to receive invocations.
      *
      * @return all started deployments
      */
-    Map<DeploymentModuleIdentifier, ModuleDeployment> getStartedModules();
+    Map<EJBModuleIdentifier, ModuleDeployment> getStartedModules();
 
 }

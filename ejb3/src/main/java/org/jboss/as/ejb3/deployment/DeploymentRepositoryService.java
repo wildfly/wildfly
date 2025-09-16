@@ -14,6 +14,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.jboss.as.ejb3.logging.EjbLogger;
+import org.jboss.ejb.client.EJBModuleIdentifier;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
@@ -33,7 +34,7 @@ public class DeploymentRepositoryService implements DeploymentRepository, Servic
     /**
      * All deployed modules. This is a copy on write map that is updated infrequently and read often.
      */
-    private volatile Map<DeploymentModuleIdentifier, DeploymentHolder> modules;
+    private volatile Map<EJBModuleIdentifier, DeploymentHolder> modules;
 
     private final List<DeploymentRepositoryListener> listeners = new ArrayList<DeploymentRepositoryListener>();
 
@@ -59,21 +60,21 @@ public class DeploymentRepositoryService implements DeploymentRepository, Servic
     }
 
     @Override
-    public void add(DeploymentModuleIdentifier identifier, ModuleDeployment deployment) {
+    public void add(EJBModuleIdentifier moduleId, ModuleDeployment deployment) {
         final List<DeploymentRepositoryListener> listeners;
         final boolean suspended;
         synchronized (this) {
-            final Map<DeploymentModuleIdentifier, DeploymentHolder> modules = new HashMap<DeploymentModuleIdentifier, DeploymentHolder>(this.modules);
-            modules.put(identifier, new DeploymentHolder(deployment));
+            final Map<EJBModuleIdentifier, DeploymentHolder> modules = new HashMap<EJBModuleIdentifier, DeploymentHolder>(this.modules);
+            modules.put(moduleId, new DeploymentHolder(deployment));
             this.modules = Collections.unmodifiableMap(modules);
             listeners = new ArrayList<DeploymentRepositoryListener>(this.listeners);
             suspended = this.suspended;
         }
         for (final DeploymentRepositoryListener listener : listeners) {
             try {
-                listener.deploymentAvailable(identifier, deployment);
+                listener.deploymentAvailable(moduleId, deployment);
                 if (suspended) {
-                    listener.deploymentSuspended(identifier);
+                    listener.deploymentSuspended(moduleId);
                 }
             } catch (Throwable t) {
                 EjbLogger.DEPLOYMENT_LOGGER.deploymentAddListenerException(t);
@@ -82,18 +83,18 @@ public class DeploymentRepositoryService implements DeploymentRepository, Servic
     }
 
     @Override
-    public boolean startDeployment(DeploymentModuleIdentifier identifier) {
+    public boolean startDeployment(EJBModuleIdentifier moduleId) {
         DeploymentHolder deployment;
         final List<DeploymentRepositoryListener> listeners;
         synchronized (this) {
-            deployment = modules.get(identifier);
+            deployment = modules.get(moduleId);
             if (deployment == null) return false;
             deployment.started = true;
             listeners = new ArrayList<DeploymentRepositoryListener>(this.listeners);
         }
         for (final DeploymentRepositoryListener listener : listeners) {
             try {
-                listener.deploymentStarted(identifier, deployment.deployment);
+                listener.deploymentStarted(moduleId, deployment.deployment);
             } catch (Throwable t) {
                 EjbLogger.DEPLOYMENT_LOGGER.deploymentAddListenerException(t);
             }
@@ -115,17 +116,17 @@ public class DeploymentRepositoryService implements DeploymentRepository, Servic
     }
 
     @Override
-    public void remove(DeploymentModuleIdentifier identifier) {
+    public void remove(EJBModuleIdentifier moduleId) {
         final List<DeploymentRepositoryListener> listeners;
         synchronized (this) {
-            final Map<DeploymentModuleIdentifier, DeploymentHolder> modules = new HashMap<DeploymentModuleIdentifier, DeploymentHolder>(this.modules);
-            modules.remove(identifier);
+            final Map<EJBModuleIdentifier, DeploymentHolder> modules = new HashMap<EJBModuleIdentifier, DeploymentHolder>(this.modules);
+            modules.remove(moduleId);
             this.modules = Collections.unmodifiableMap(modules);
             listeners = new ArrayList<DeploymentRepositoryListener>(this.listeners);
         }
         for (final DeploymentRepositoryListener listener : listeners) {
             try {
-                listener.deploymentRemoved(identifier);
+                listener.deploymentRemoved(moduleId);
             } catch (Throwable t) {
                 EjbLogger.DEPLOYMENT_LOGGER.deploymentRemoveListenerException(t);
             }
@@ -140,14 +141,14 @@ public class DeploymentRepositoryService implements DeploymentRepository, Servic
     @Override
     public void suspend() {
         final List<DeploymentRepositoryListener> listeners;
-        final Set<DeploymentModuleIdentifier> moduleIdentifiers;
+        final Set<EJBModuleIdentifier> moduleIdentifiers;
         synchronized (this) {
             moduleIdentifiers = new HashSet<>(this.modules.keySet());
             listeners = new ArrayList<>(this.listeners);
             suspended = true;
         }
         for (final DeploymentRepositoryListener listener : listeners) {
-            for (DeploymentModuleIdentifier moduleIdentifier : moduleIdentifiers)
+            for (EJBModuleIdentifier moduleIdentifier : moduleIdentifiers)
             try {
                 listener.deploymentSuspended(moduleIdentifier);
             } catch (Throwable t) {
@@ -159,14 +160,14 @@ public class DeploymentRepositoryService implements DeploymentRepository, Servic
     @Override
     public void resume() {
         final List<DeploymentRepositoryListener> listeners;
-        final Set<DeploymentModuleIdentifier> moduleIdentifiers;
+        final Set<EJBModuleIdentifier> moduleIdentifiers;
         synchronized (this) {
             moduleIdentifiers = new HashSet<>(this.modules.keySet());
             listeners = new ArrayList<>(this.listeners);
             suspended = false;
         }
         for (final DeploymentRepositoryListener listener : listeners) {
-            for (DeploymentModuleIdentifier moduleIdentifier : moduleIdentifiers)
+            for (EJBModuleIdentifier moduleIdentifier : moduleIdentifiers)
                 try {
                     listener.deploymentResumed(moduleIdentifier);
                 } catch (Throwable t) {
@@ -176,18 +177,18 @@ public class DeploymentRepositoryService implements DeploymentRepository, Servic
     }
 
     @Override
-    public Map<DeploymentModuleIdentifier, ModuleDeployment> getModules() {
-        Map<DeploymentModuleIdentifier, ModuleDeployment> modules = new HashMap<DeploymentModuleIdentifier, ModuleDeployment>();
-        for(Map.Entry<DeploymentModuleIdentifier, DeploymentHolder> entry : this.modules.entrySet()) {
+    public Map<EJBModuleIdentifier, ModuleDeployment> getModules() {
+        Map<EJBModuleIdentifier, ModuleDeployment> modules = new HashMap<EJBModuleIdentifier, ModuleDeployment>();
+        for(Map.Entry<EJBModuleIdentifier, DeploymentHolder> entry : this.modules.entrySet()) {
             modules.put(entry.getKey(), entry.getValue().deployment);
         }
         return modules;
     }
 
     @Override
-    public Map<DeploymentModuleIdentifier, ModuleDeployment> getStartedModules() {
-        Map<DeploymentModuleIdentifier, ModuleDeployment> modules = new HashMap<DeploymentModuleIdentifier, ModuleDeployment>();
-        for(Map.Entry<DeploymentModuleIdentifier, DeploymentHolder> entry : this.modules.entrySet()) {
+    public Map<EJBModuleIdentifier, ModuleDeployment> getStartedModules() {
+        Map<EJBModuleIdentifier, ModuleDeployment> modules = new HashMap<EJBModuleIdentifier, ModuleDeployment>();
+        for(Map.Entry<EJBModuleIdentifier, DeploymentHolder> entry : this.modules.entrySet()) {
             if(entry.getValue().started) {
                 modules.put(entry.getKey(), entry.getValue().deployment);
             }

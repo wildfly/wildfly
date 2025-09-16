@@ -7,7 +7,6 @@ package org.jboss.as.ejb3.iiop;
 
 import org.jboss.as.ejb3.deployment.DeploymentRepository;
 import org.jboss.as.ejb3.logging.EjbLogger;
-import org.jboss.as.ejb3.deployment.DeploymentModuleIdentifier;
 import org.jboss.as.ejb3.deployment.EjbDeploymentInformation;
 import org.jboss.as.ejb3.deployment.ModuleDeployment;
 import org.jboss.ejb.client.AbstractEJBMetaData;
@@ -19,6 +18,7 @@ import org.jboss.ejb.client.EJBHandle;
 import org.jboss.ejb.client.EJBHomeHandle;
 import org.jboss.ejb.client.EJBLocator;
 import org.jboss.ejb.client.EJBMetaDataImpl;
+import org.jboss.ejb.client.EJBModuleIdentifier;
 import org.jboss.ejb.iiop.EJBMetaDataImplIIOP;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
@@ -105,7 +105,7 @@ public class RemoteObjectSubstitutionService implements RemoteObjectSubstitution
     }
 
     private EjbIIOPService serviceForLocator(final EJBLocator<?> locator, DeploymentRepository deploymentRepository) {
-        final ModuleDeployment module = deploymentRepository.getModules().get(new DeploymentModuleIdentifier(locator.getAppName(), locator.getModuleName(), locator.getDistinctName()));
+        final ModuleDeployment module = deploymentRepository.getModules().get(new EJBModuleIdentifier(locator.getAppName(), locator.getModuleName(), locator.getDistinctName()));
         if (module == null) {
             EjbLogger.ROOT_LOGGER.couldNotFindEjbForLocatorIIOP(locator);
             return null;
