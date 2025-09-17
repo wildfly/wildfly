@@ -105,6 +105,10 @@
             <artifactId>artemis-cli</artifactId>
             <exclusions>
                 <exclusion>
+                    <groupId>info.picocli</groupId>
+                    <artifactId>picocli-shell-jline3</artifactId>
+                </exclusion>
+                <exclusion>
                     <groupId>org.apache.qpid</groupId>
                     <artifactId>qpid-jms-client</artifactId>
                 </exclusion>
