@@ -14,6 +14,22 @@ package org.jboss.as.jpa.hibernate.management;
  * @author Scott Marlow
  */
 public class QueryName {
+    public static void main(String[] args ) {
+        String testvalue = "query name select * from mytable where mytable.id <> != ^= = >= , , , , , , ,\"\" {}";
+        for (int loop = 0; loop < 20; loop++) {
+            testvalue = testvalue + testvalue;
+        }
+        System.out.println("Start the test");
+        Long starttime = System.currentTimeMillis();
+        for (int loop = 0; loop < 20; loop++) {
+            System.out.println(" loop " + loop);
+            QueryName queryName = new QueryName(testvalue);
+        }
+        Long endtime = System.currentTimeMillis();
+        System.out.println("took " + (endtime - starttime) + " milliseconds");
+        // new way: took 29650 milliseconds on Java 17/21 with using String#replace instead of current subst()
+        // old way:
+    }
 
     // query name as returned from hibernate Statistics.getQueries()
     private final String hibernateQuery;
@@ -198,6 +214,53 @@ public class QueryName {
             begin = end + to.length();
             end = begin;
         }
+    }
+
+    /**
+     * transform a Hibernate HQL query into something that can be displayed/used for management operations
+     *
+     * @param query
+     * @return
+     */
+    private String displayable2(String query) {
+        if (query == null ||
+                query.length() == 0) {
+            return query;
+        }
+
+        // handle two character transforms first
+        return query.replace(SQL_NE, NOT_EQUAL__).
+                replace(NE_BANG, BANG_NOT_EQUAL__).
+                replace(NE_HAT, HAT_NOT_EQUAL__).
+                replace(LE, LESS_THAN_EQUAL__).
+                replace(GE, GREATER_THAN_EQUAL__).
+                replace(CONCAT, CONCAT__).
+                replace(LT, LESS_THAN__).
+                replace(EQ, EQUAL__).
+                replace(GT, GREATER__).
+                replace(OPEN, LEFT_PAREN__).
+                replace(CLOSE, RIGHT_PAREN__).
+                replace(OPEN_BRACKET, LEFT_BRACKET__).
+                replace(CLOSE_BRACKET, RIGHT_BRACKET__).
+                replace(PLUS, PLUS__).
+                replace(MINUS, MINUS__).
+                replace(STAR, STAR__).
+                replace(DIV, DIVIDE__).
+                replace(MOD, MODULUS__).
+                replace(COLON, COLON__).
+                replace(PARAM, PARAM__).
+                replace(COMMA, COMMA__).
+                replace(SPACE, SPACE__).
+                replace(TAB, TAB__).
+                replace(NEWLINE, NEWLINE__).
+                replace(LINEFEED, LINEFEED__).
+                replace(QUOTE, QUOTE__).
+                replace(DQUOTE, DQUOTE__).
+                replace(TICK, TICK__).
+                replace(OPEN_BRACE, OPEN_BRACE__).
+                replace(CLOSE_BRACE, CLOSE_BRACE__).
+                replace(HAT, HAT__).
+                replace(AMPERSAND, AMPERSAND__);
     }
 
 }
