@@ -21,40 +21,6 @@ public class QueryName {
     // query name transformed for display use (allowed to be ugly but should be unique)
     private final String displayQuery;
 
-    // HQL symbol or operators
-    private static final String SQL_NE = "<>";
-    private static final String NE_BANG = "!=";
-    private static final String NE_HAT = "^=";
-    private static final String LE = "<=";
-    private static final String GE = ">=";
-    private static final String CONCAT = "||";
-    private static final String LT = "<";
-    private static final String EQ = "=";
-    private static final String GT = ">";
-    private static final String OPEN = "(";
-    private static final String CLOSE = ")";
-    private static final String OPEN_BRACKET = "[";
-    private static final String CLOSE_BRACKET = "]";
-    private static final String PLUS = "+";
-    private static final String MINUS = "-";
-    private static final String STAR = "*";
-    private static final String DIV = "/";
-    private static final String MOD = "%";
-    private static final String COLON = ":";
-    private static final String PARAM = "?";
-    private static final String COMMA = ",";
-    private static final String SPACE = " ";
-    private static final String TAB = "\t";
-    private static final String NEWLINE = "\n";
-    private static final String LINEFEED = "\r";
-    private static final String QUOTE = "'";
-    private static final String DQUOTE = "\"";
-    private static final String TICK = "`";
-    private static final String OPEN_BRACE = "{";
-    private static final String CLOSE_BRACE = "}";
-    private static final String HAT = "^";
-    private static final String AMPERSAND = "&";
-
     // textual representation (not to be localized as we don't won't duplication between any of the values)
     private static final String NOT_EQUAL__ = "_not_equal_";
     private static final String BANG_NOT_EQUAL__ = "_bang_not_equal_";
@@ -101,7 +67,6 @@ public class QueryName {
     private QueryName(String query) {
         hibernateQuery = query;
         displayQuery = displayable(query);
-
     }
 
     public String getDisplayName() {
@@ -138,66 +103,146 @@ public class QueryName {
      */
     private String displayable(String query) {
         if (query == null ||
-            query.length() == 0) {
+                query.isEmpty()) {
             return query;
         }
-
-        StringBuilder buff = new StringBuilder(query);
-
-        // handle two character transforms first
-        subst(buff, SQL_NE, NOT_EQUAL__);
-        subst(buff, NE_BANG, BANG_NOT_EQUAL__);
-        subst(buff, NE_HAT, HAT_NOT_EQUAL__);
-        subst(buff, LE, LESS_THAN_EQUAL__);
-        subst(buff, GE, GREATER_THAN_EQUAL__);
-        subst(buff, CONCAT, CONCAT__);
-        subst(buff, LT, LESS_THAN__);
-        subst(buff, EQ, EQUAL__);
-        subst(buff, GT, GREATER__);
-        subst(buff, OPEN, LEFT_PAREN__);
-        subst(buff, CLOSE, RIGHT_PAREN__);
-        subst(buff, OPEN_BRACKET, LEFT_BRACKET__);
-        subst(buff, CLOSE_BRACKET, RIGHT_BRACKET__);
-        subst(buff, PLUS, PLUS__);
-        subst(buff, MINUS, MINUS__);
-        subst(buff, STAR, STAR__);
-        subst(buff, DIV, DIVIDE__);
-        subst(buff, MOD, MODULUS__);
-        subst(buff, COLON, COLON__);
-        subst(buff, PARAM, PARAM__);
-        subst(buff, COMMA, COMMA__);
-        subst(buff, SPACE, SPACE__);
-        subst(buff, TAB, TAB__);
-        subst(buff, NEWLINE, NEWLINE__);
-        subst(buff, LINEFEED, LINEFEED__);
-        subst(buff, QUOTE, QUOTE__);
-        subst(buff, DQUOTE, DQUOTE__);
-        subst(buff, TICK, TICK__);
-        subst(buff, OPEN_BRACE, OPEN_BRACE__);
-        subst(buff, CLOSE_BRACE, CLOSE_BRACE__);
-        subst(buff, HAT, HAT__);
-        subst(buff, AMPERSAND, AMPERSAND__);
-        return buff.toString();
-    }
-
-    /**
-     * Substitute sub-strings inside of a string.
-     *
-     * @param stringBuilder String buffer to use for substitution (buffer is not reset)
-     * @param from String to substitute from
-     * @param to   String to substitute to
-     */
-    private static void subst(final StringBuilder stringBuilder, final String from, final String to) {
-        int begin = 0, end = 0;
-
-        while ((end = stringBuilder.indexOf(from, end)) != -1) {
-            stringBuilder.delete(end, end + from.length());
-            stringBuilder.insert(end, to);
-
-            // update positions
-            begin = end + to.length();
-            end = begin;
+        final int queryLength = query.length();
+        final StringBuilder out = new StringBuilder(queryLength);
+        for (int index = 0; index < queryLength; index++) {
+            final char current = query.charAt(index);
+            final char next = index + 1 < queryLength ? query.charAt(index + 1) : 0;
+            switch (current) {
+                case '<':
+                    if (next == '>') {
+                        index++;
+                        out.append(NOT_EQUAL__);
+                    } else if (next == '=') {
+                        index++;
+                        out.append(LESS_THAN_EQUAL__);
+                    } else {
+                        out.append(LESS_THAN__);
+                    }
+                    break;
+                case '!':
+                    if (next == '=') {
+                        index++;
+                        out.append(BANG_NOT_EQUAL__);
+                    } else {
+                        out.append(current);
+                    }
+                    break;
+                case '^':
+                    if (next == '=') {
+                        index++;
+                        out.append(HAT_NOT_EQUAL__);
+                    } else {
+                        out.append(HAT__);
+                    }
+                    break;
+                case '>':
+                    if (next == '=') {
+                        index++;
+                        out.append(GREATER_THAN_EQUAL__);
+                    } else {
+                        out.append(GREATER__);
+                    }
+                    break;
+                case '|':
+                    if (next == '!') {
+                        index++;
+                        out.append(CONCAT__);
+                    } else {
+                        out.append(current);
+                    }
+                    break;
+                case '=':
+                    out.append(EQUAL__);
+                    break;
+                case '(':
+                    out.append(LEFT_PAREN__);
+                    break;
+                case ')':
+                    out.append(RIGHT_PAREN__);
+                    break;
+                case '[':
+                    out.append(LEFT_BRACKET__);
+                    break;
+                case ']':
+                    out.append(RIGHT_BRACKET__);
+                    break;
+                case '{':
+                    out.append(OPEN_BRACE__);
+                    break;
+                case '}':
+                    out.append(CLOSE_BRACE__);
+                    break;
+                case '+':
+                    out.append(PLUS__);
+                    break;
+                case '-':
+                    out.append(MINUS__);
+                    break;
+                case '*':
+                    out.append(STAR__);
+                    break;
+                case '/':
+                    out.append(DIVIDE__);
+                    break;
+                case '%':
+                    out.append(MODULUS__);
+                    break;
+                case ':':
+                    out.append(COLON__);
+                    break;
+                case '?':
+                    out.append(PARAM__);
+                    break;
+                case ',':
+                    out.append(COMMA__);
+                    break;
+                case ' ':
+                    out.append(SPACE__);
+                    break;
+                case '\t':
+                    out.append(TAB__);
+                    break;
+                case '\n':
+                    out.append(NEWLINE__);
+                    break;
+                case '\r':
+                    out.append(LINEFEED__);
+                    break;
+                case '\'':
+                    out.append(QUOTE__);
+                    break;
+                case '\"':
+                    out.append(DQUOTE__);
+                    break;
+                case '`':
+                    out.append(TICK__);
+                    break;
+                case '&':
+                    out.append(AMPERSAND__);
+                    break;
+                default:
+                    out.append(current);
+                    break;
+            }
         }
+        return out.toString();
     }
 
+    /*
+        public static void main(String[] args) {
+            String testvalue =
+                    "query name select * from mytable where mytable.id <> != ^= = >= , , , , , , ,\"\" {}";
+            for (int loop = 0; loop < 10; loop++) {
+                testvalue = testvalue + testvalue;
+            }
+            System.out.println("input string length= " + testvalue.length());
+            for (int loop = 0; loop < 100; loop++) {
+                QueryName queryName = new QueryName(testvalue);
+            }
+        }
+    */
 }
