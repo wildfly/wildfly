@@ -72,6 +72,7 @@
         <dependency><groupId>io.opentelemetry.instrumentation</groupId><artifactId>opentelemetry-runtime-telemetry-java8</artifactId></dependency>
         <dependency><groupId>io.opentelemetry.proto</groupId><artifactId>opentelemetry-proto</artifactId></dependency>
         <dependency><groupId>io.opentelemetry.semconv</groupId><artifactId>opentelemetry-semconv</artifactId></dependency>
+        <dependency><groupId>io.opentelemetry.semconv</groupId><artifactId>opentelemetry-semconv-incubating</artifactId></dependency>
         <dependency><groupId>io.opentelemetry</groupId><artifactId>opentelemetry-api-incubator</artifactId></dependency>
         <dependency><groupId>io.opentelemetry</groupId><artifactId>opentelemetry-api</artifactId></dependency>
         <dependency><groupId>io.opentelemetry</groupId><artifactId>opentelemetry-context</artifactId></dependency>
