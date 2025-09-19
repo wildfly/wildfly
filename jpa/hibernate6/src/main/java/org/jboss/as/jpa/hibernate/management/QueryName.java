@@ -14,6 +14,15 @@ package org.jboss.as.jpa.hibernate.management;
  * @author Scott Marlow
  */
 public class QueryName {
+    public static void main(String[] args) {
+        String testvalue = "query name select * from mytable where mytable.id <> != ^= = >= , , , , , , ,\"\" {}";
+        for (int loop = 0; loop < 20; loop++) {
+            testvalue = testvalue + testvalue;
+        }
+        for (int loop = 0; loop < 2; loop++) {
+            QueryName queryName = new QueryName(testvalue);
+        }
+    }
 
     // query name as returned from hibernate Statistics.getQueries()
     private final String hibernateQuery;
@@ -142,62 +151,39 @@ public class QueryName {
             return query;
         }
 
-        StringBuilder buff = new StringBuilder(query);
-
         // handle two character transforms first
-        subst(buff, SQL_NE, NOT_EQUAL__);
-        subst(buff, NE_BANG, BANG_NOT_EQUAL__);
-        subst(buff, NE_HAT, HAT_NOT_EQUAL__);
-        subst(buff, LE, LESS_THAN_EQUAL__);
-        subst(buff, GE, GREATER_THAN_EQUAL__);
-        subst(buff, CONCAT, CONCAT__);
-        subst(buff, LT, LESS_THAN__);
-        subst(buff, EQ, EQUAL__);
-        subst(buff, GT, GREATER__);
-        subst(buff, OPEN, LEFT_PAREN__);
-        subst(buff, CLOSE, RIGHT_PAREN__);
-        subst(buff, OPEN_BRACKET, LEFT_BRACKET__);
-        subst(buff, CLOSE_BRACKET, RIGHT_BRACKET__);
-        subst(buff, PLUS, PLUS__);
-        subst(buff, MINUS, MINUS__);
-        subst(buff, STAR, STAR__);
-        subst(buff, DIV, DIVIDE__);
-        subst(buff, MOD, MODULUS__);
-        subst(buff, COLON, COLON__);
-        subst(buff, PARAM, PARAM__);
-        subst(buff, COMMA, COMMA__);
-        subst(buff, SPACE, SPACE__);
-        subst(buff, TAB, TAB__);
-        subst(buff, NEWLINE, NEWLINE__);
-        subst(buff, LINEFEED, LINEFEED__);
-        subst(buff, QUOTE, QUOTE__);
-        subst(buff, DQUOTE, DQUOTE__);
-        subst(buff, TICK, TICK__);
-        subst(buff, OPEN_BRACE, OPEN_BRACE__);
-        subst(buff, CLOSE_BRACE, CLOSE_BRACE__);
-        subst(buff, HAT, HAT__);
-        subst(buff, AMPERSAND, AMPERSAND__);
-        return buff.toString();
-    }
-
-    /**
-     * Substitute sub-strings inside of a string.
-     *
-     * @param stringBuilder String buffer to use for substitution (buffer is not reset)
-     * @param from String to substitute from
-     * @param to   String to substitute to
-     */
-    private static void subst(final StringBuilder stringBuilder, final String from, final String to) {
-        int begin = 0, end = 0;
-
-        while ((end = stringBuilder.indexOf(from, end)) != -1) {
-            stringBuilder.delete(end, end + from.length());
-            stringBuilder.insert(end, to);
-
-            // update positions
-            begin = end + to.length();
-            end = begin;
-        }
+        return query.replace(SQL_NE, NOT_EQUAL__).
+                replace(NE_BANG, BANG_NOT_EQUAL__).
+                replace(NE_HAT, HAT_NOT_EQUAL__).
+                replace(LE, LESS_THAN_EQUAL__).
+                replace(GE, GREATER_THAN_EQUAL__).
+                replace(CONCAT, CONCAT__).
+                replace(LT, LESS_THAN__).
+                replace(EQ, EQUAL__).
+                replace(GT, GREATER__).
+                replace(OPEN, LEFT_PAREN__).
+                replace(CLOSE, RIGHT_PAREN__).
+                replace(OPEN_BRACKET, LEFT_BRACKET__).
+                replace(CLOSE_BRACKET, RIGHT_BRACKET__).
+                replace(PLUS, PLUS__).
+                replace(MINUS, MINUS__).
+                replace(STAR, STAR__).
+                replace(DIV, DIVIDE__).
+                replace(MOD, MODULUS__).
+                replace(COLON, COLON__).
+                replace(PARAM, PARAM__).
+                replace(COMMA, COMMA__).
+                replace(SPACE, SPACE__).
+                replace(TAB, TAB__).
+                replace(NEWLINE, NEWLINE__).
+                replace(LINEFEED, LINEFEED__).
+                replace(QUOTE, QUOTE__).
+                replace(DQUOTE, DQUOTE__).
+                replace(TICK, TICK__).
+                replace(OPEN_BRACE, OPEN_BRACE__).
+                replace(CLOSE_BRACE, CLOSE_BRACE__).
+                replace(HAT, HAT__).
+                replace(AMPERSAND, AMPERSAND__);
     }
 
 }
