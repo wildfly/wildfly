@@ -30,7 +30,7 @@ public class MdbDeliveryGroupResourceDefinition extends SimpleResourceDefinition
     public static final UnaryServiceDescriptor<Void> MDB_DELIVERY_GROUP = UnaryServiceDescriptor.of("org.wildfly.ejb3.mdb-delivery-group", Void.class);
     static final RuntimeCapability<Void> MDB_DELIVERY_GROUP_CAPABILITY = RuntimeCapability.Builder.of(MDB_DELIVERY_GROUP).build();
 
-    public static final SimpleAttributeDefinition ACTIVE = new SimpleAttributeDefinitionBuilder(EJB3SubsystemModel.MDB_DELVIERY_GROUP_ACTIVE, ModelType.BOOLEAN, true)
+    public static final SimpleAttributeDefinition ACTIVE = new SimpleAttributeDefinitionBuilder(EJB3SubsystemModel.MDB_DELIVERY_GROUP_ACTIVE, ModelType.BOOLEAN, true)
             .setAllowExpression(true)
             .setDefaultValue(ModelNode.TRUE)
             .build();
