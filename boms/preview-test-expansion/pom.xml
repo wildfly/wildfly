@@ -26,10 +26,6 @@
 
     <name>WildFly Preview: Dependency Management (Expansion Test Dependencies)</name>
 
-    <properties>
-        <version.org.eclipse.microprofile.telemetry>2.0</version.org.eclipse.microprofile.telemetry>
-    </properties>
-
     <dependencyManagement>
         <dependencies>
             <!-- Import the preview test BOM -->
@@ -50,35 +46,6 @@
                 <version>${ee.maven.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
-            </dependency>
-
-            <!-- Test only dependencies -->
-            <dependency>
-                <groupId>org.eclipse.microprofile.telemetry</groupId>
-                <artifactId>microprofile-telemetry-logs-tck</artifactId>
-                <version>${version.org.eclipse.microprofile.telemetry}</version>
-                <scope>test</scope>
-                <!-- Don't exclude all TCK dependencies, only specific ones that cause problems -->
-            </dependency>
-            <dependency>
-                <groupId>org.eclipse.microprofile.telemetry</groupId>
-                <artifactId>microprofile-telemetry-metrics-tck</artifactId>
-                <version>${version.org.eclipse.microprofile.telemetry}</version>
-                <scope>test</scope>
-                <!-- Don't exclude all TCK dependencies, only specific ones that cause problems -->
-            </dependency>
-            <dependency>
-                <groupId>org.eclipse.microprofile.telemetry</groupId>
-                <artifactId>microprofile-telemetry-tracing-tck</artifactId>
-                <version>${version.org.eclipse.microprofile.telemetry}</version>
-                <scope>test</scope>
-                <!-- Don't exclude all TCK dependencies, only specific ones that cause problems -->
-            </dependency>
-            <dependency>
-                <groupId>io.vertx</groupId>
-                <artifactId>vertx-core</artifactId>
-                <version>${version.io.vertx.vertx}</version>
-                <scope>test</scope>
             </dependency>
         </dependencies>
     </dependencyManagement>
