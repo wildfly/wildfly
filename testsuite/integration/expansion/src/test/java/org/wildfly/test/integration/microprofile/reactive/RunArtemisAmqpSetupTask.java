@@ -20,6 +20,7 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.model.test.ModelTestUtils;
+import org.jboss.as.test.shared.IntermittentFailure;
 import org.jboss.dmr.ModelNode;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.utility.DockerImageName;
@@ -84,7 +85,15 @@ public class RunArtemisAmqpSetupTask implements ServerSetupTask {
 
 
             }
-            container.start();
+
+            try {
+                container.start();
+            } catch (Exception e) {
+                // Either throw AssumptionViolatedException because we are ignoring intermittent failures,
+                // or propagate the exception and fail
+                IntermittentFailure.thisTestIsFailingIntermittently("https://issues.redhat.com/browse/WFLY-20945");
+                throw e;
+            }
 
             // Set the calculated port as a property in the model
             int amqpPort = container.getMappedPort(AMQP_PORT);
