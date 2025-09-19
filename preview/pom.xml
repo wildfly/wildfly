@@ -25,12 +25,6 @@
 
     <name>WildFly Preview: Parent</name>
 
-    <properties>
-        <preview.dist.product.release.name>WildFly Preview</preview.dist.product.release.name>
-        <preview.dist.product.slot>${full.dist.product.slot}</preview.dist.product.slot>
-        <preview.dist.product.release.version>${full.dist.product.release.version}</preview.dist.product.release.version>
-    </properties>
-
     <modules>
         <module>channel</module>
         <module>feature-pack</module>
