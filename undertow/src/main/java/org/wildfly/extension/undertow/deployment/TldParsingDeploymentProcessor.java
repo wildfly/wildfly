@@ -25,6 +25,7 @@ import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.module.ResourceRoot;
+import org.wildfly.common.xml.XMLInputFactoryUtil;
 import org.wildfly.extension.undertow.logging.UndertowLogger;
 import org.jboss.as.web.common.WarMetaData;
 import org.jboss.metadata.parser.jsp.TldMetaDataParser;
@@ -192,7 +193,7 @@ public class TldParsingDeploymentProcessor implements DeploymentUnitProcessor {
         InputStream is = null;
         try {
             is = tld.openStream();
-            final XMLInputFactory inputFactory = XMLInputFactory.newInstance();
+            final XMLInputFactory inputFactory = XMLInputFactoryUtil.create();
             inputFactory.setXMLResolver(NoopXMLResolver.create());
             XMLStreamReader xmlReader = inputFactory.createXMLStreamReader(is);
             return TldMetaDataParser.parse(xmlReader);
