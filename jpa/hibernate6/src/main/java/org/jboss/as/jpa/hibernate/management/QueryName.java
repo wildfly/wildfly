@@ -14,21 +14,14 @@ package org.jboss.as.jpa.hibernate.management;
  * @author Scott Marlow
  */
 public class QueryName {
-    public static void main(String[] args ) {
+    public static void main(String[] args) {
         String testvalue = "query name select * from mytable where mytable.id <> != ^= = >= , , , , , , ,\"\" {}";
         for (int loop = 0; loop < 20; loop++) {
             testvalue = testvalue + testvalue;
         }
-        System.out.println("Start the test");
-        Long starttime = System.currentTimeMillis();
-        for (int loop = 0; loop < 20; loop++) {
-            System.out.println(" loop " + loop);
+        for (int loop = 0; loop < 2; loop++) {
             QueryName queryName = new QueryName(testvalue);
         }
-        Long endtime = System.currentTimeMillis();
-        System.out.println("took " + (endtime - starttime) + " milliseconds");
-        // new way: took 29650 milliseconds on Java 17/21 with using String#replace instead of current subst()
-        // old way:
     }
 
     // query name as returned from hibernate Statistics.getQueries()
@@ -155,76 +148,6 @@ public class QueryName {
     private String displayable(String query) {
         if (query == null ||
             query.length() == 0) {
-            return query;
-        }
-
-        StringBuilder buff = new StringBuilder(query);
-
-        // handle two character transforms first
-        subst(buff, SQL_NE, NOT_EQUAL__);
-        subst(buff, NE_BANG, BANG_NOT_EQUAL__);
-        subst(buff, NE_HAT, HAT_NOT_EQUAL__);
-        subst(buff, LE, LESS_THAN_EQUAL__);
-        subst(buff, GE, GREATER_THAN_EQUAL__);
-        subst(buff, CONCAT, CONCAT__);
-        subst(buff, LT, LESS_THAN__);
-        subst(buff, EQ, EQUAL__);
-        subst(buff, GT, GREATER__);
-        subst(buff, OPEN, LEFT_PAREN__);
-        subst(buff, CLOSE, RIGHT_PAREN__);
-        subst(buff, OPEN_BRACKET, LEFT_BRACKET__);
-        subst(buff, CLOSE_BRACKET, RIGHT_BRACKET__);
-        subst(buff, PLUS, PLUS__);
-        subst(buff, MINUS, MINUS__);
-        subst(buff, STAR, STAR__);
-        subst(buff, DIV, DIVIDE__);
-        subst(buff, MOD, MODULUS__);
-        subst(buff, COLON, COLON__);
-        subst(buff, PARAM, PARAM__);
-        subst(buff, COMMA, COMMA__);
-        subst(buff, SPACE, SPACE__);
-        subst(buff, TAB, TAB__);
-        subst(buff, NEWLINE, NEWLINE__);
-        subst(buff, LINEFEED, LINEFEED__);
-        subst(buff, QUOTE, QUOTE__);
-        subst(buff, DQUOTE, DQUOTE__);
-        subst(buff, TICK, TICK__);
-        subst(buff, OPEN_BRACE, OPEN_BRACE__);
-        subst(buff, CLOSE_BRACE, CLOSE_BRACE__);
-        subst(buff, HAT, HAT__);
-        subst(buff, AMPERSAND, AMPERSAND__);
-        return buff.toString();
-    }
-
-    /**
-     * Substitute sub-strings inside of a string.
-     *
-     * @param stringBuilder String buffer to use for substitution (buffer is not reset)
-     * @param from String to substitute from
-     * @param to   String to substitute to
-     */
-    private static void subst(final StringBuilder stringBuilder, final String from, final String to) {
-        int begin = 0, end = 0;
-
-        while ((end = stringBuilder.indexOf(from, end)) != -1) {
-            stringBuilder.delete(end, end + from.length());
-            stringBuilder.insert(end, to);
-
-            // update positions
-            begin = end + to.length();
-            end = begin;
-        }
-    }
-
-    /**
-     * transform a Hibernate HQL query into something that can be displayed/used for management operations
-     *
-     * @param query
-     * @return
-     */
-    private String displayable2(String query) {
-        if (query == null ||
-                query.length() == 0) {
             return query;
         }
 
