@@ -24,6 +24,6 @@ public class CacheComponentMetricExecutor<C> extends CacheMetricExecutor<C> {
 
     @Override
     public C apply(Cache<?, ?> cache) {
-        return ComponentRegistry.componentOf(cache, this.componentClass);
+        return ComponentRegistry.componentOf(cache.getAdvancedCache(), this.componentClass);
     }
 }
