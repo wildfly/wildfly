@@ -18,6 +18,7 @@ import org.jboss.as.test.clustering.ejb.EJBDirectory;
 import org.jboss.as.test.clustering.ejb.RemoteEJBDirectory;
 import org.jboss.as.test.shared.PermissionUtils;
 import org.jboss.ejb.client.EJBModuleIdentifier;
+import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
@@ -44,6 +45,7 @@ import static org.junit.Assert.assertTrue;
  */
 @RunWith(Arquillian.class)
 public class ModuleAvailabilityRegistrarTestCase extends AbstractClusteringTestCase {
+    private static final Logger LOGGER = Logger.getLogger(ModuleAvailabilityRegistrarTestCase.class);
     private static final String MODULE_NAME = ModuleAvailabilityRegistrarTestCase.class.getSimpleName();
 
     @Deployment(name = DEPLOYMENT_1, managed = false, testable = false)
@@ -91,37 +93,52 @@ public class ModuleAvailabilityRegistrarTestCase extends AbstractClusteringTestC
             Set<String> providers = new HashSet();
 
             // cluster starts with deployments on NODE_1 and NODE_2
+
+            LOGGER.info("Calling getServices()");
             modules = bean.getServices();
+            LOGGER.info("Calling getProviders()");
             providers = bean.getProviders(moduleIdentifier);
             assertEquals(1, modules.size());
             assertTrue(providers.contains(NODE_1));
             assertTrue(providers.contains(NODE_2));
 
+            LOGGER.info("Undeploying node-1");
             undeploy(DEPLOYMENT_1);
 
+            LOGGER.info("Calling getServices()");
             modules = bean.getServices();
+            LOGGER.info("Calling getProviders()");
             providers = bean.getProviders(moduleIdentifier);
             assertEquals(1, modules.size());
             assertTrue(providers.contains(NODE_2));
 
+            LOGGER.info("Deploying node-1");
             deploy(DEPLOYMENT_1);
 
+            LOGGER.info("Calling getServices()");
             modules = bean.getServices();
+            LOGGER.info("Calling getProviders()");
             providers = bean.getProviders(moduleIdentifier);
             assertEquals(1, modules.size());
             assertTrue(providers.contains(NODE_1));
             assertTrue(providers.contains(NODE_2));
 
+            LOGGER.info("Stopping node-2");
             stop(NODE_2);
 
+            LOGGER.info("Calling getServices()");
             modules = bean.getServices();
+            LOGGER.info("Calling getProviders()");
             providers = bean.getProviders(moduleIdentifier);
             assertEquals(1, modules.size());
             assertTrue(providers.contains(NODE_1));
 
+            LOGGER.info("Starting node-2");
             start(NODE_2);
 
+            LOGGER.info("Calling getServices()");
             modules = bean.getServices();
+            LOGGER.info("Calling getProviders()");
             providers = bean.getProviders(moduleIdentifier);
             assertEquals(1, modules.size());
             assertTrue(providers.contains(NODE_1));
