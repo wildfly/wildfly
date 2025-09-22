@@ -54,7 +54,7 @@
         <version.org.elasticsearch.client.rest-client>9.1.3</version.org.elasticsearch.client.rest-client>
         <version.org.bytebuddy>1.17.6</version.org.bytebuddy>
         <version.org.glassfish.expressly>6.0.0</version.org.glassfish.expressly>
-        <version.org.glassfish.jakarta.faces>4.1.3</version.org.glassfish.jakarta.faces>
+        <version.org.glassfish.jakarta.faces>4.0.12</version.org.glassfish.jakarta.faces>
         <version.org.jboss.metadata>17.0.0.Beta1</version.org.jboss.metadata>
         <version.org.jboss.resteasy>7.0.0.Beta1</version.org.jboss.resteasy>
         <version.org.jboss.weld.weld>6.0.3.Final</version.org.jboss.weld.weld>
