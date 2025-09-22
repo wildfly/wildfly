@@ -36,16 +36,24 @@ import org.jboss.msc.service.ServiceTarget;
  */
 public class JaccEjbDeploymentProcessor implements DeploymentUnitProcessor {
 
-    private final String jaccCapabilityName;
+    private static final String ELYTRON_JACC_CAPABILITY = "org.wildfly.security.jacc-policy";
+    public static final String ELYTRON_JAKARTA_AUTHORIZATION = "org.wildfly.security.jakarta-authorization";
 
-    public JaccEjbDeploymentProcessor(final String jaccCapabilityName) {
-        this.jaccCapabilityName = jaccCapabilityName;
+    public JaccEjbDeploymentProcessor() {
     }
 
     @Override
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
         if (deploymentContainsEjbs(deploymentUnit) == false) {
+            return;
+        }
+
+        CapabilityServiceSupport capabilitySupport = deploymentUnit.getAttachment(Attachments.CAPABILITY_SERVICE_SUPPORT);
+
+        boolean usesElytronJaccPolicy = capabilitySupport.hasCapability(ELYTRON_JACC_CAPABILITY);
+        boolean requireJakartaAuthorization = usesElytronJaccPolicy || capabilitySupport.hasCapability(ELYTRON_JAKARTA_AUTHORIZATION);
+        if (requireJakartaAuthorization == false) {
             return;
         }
 
@@ -63,8 +71,9 @@ public class JaccEjbDeploymentProcessor implements DeploymentUnitProcessor {
                 builder.addDependency(parentDU.getServiceName().append(JaccService.SERVICE_NAME), PolicyConfiguration.class,
                         service.getParentPolicyInjector());
             }
-            CapabilityServiceSupport capabilitySupport = deploymentUnit.getAttachment(Attachments.CAPABILITY_SERVICE_SUPPORT);
-            builder.requires(capabilitySupport.getCapabilityServiceName(jaccCapabilityName));
+            if (usesElytronJaccPolicy) {
+                builder.requires(capabilitySupport.getCapabilityServiceName(ELYTRON_JACC_CAPABILITY));
+            }
             builder.setInitialMode(Mode.ACTIVE).install();
         }
     }
@@ -82,8 +91,7 @@ public class JaccEjbDeploymentProcessor implements DeploymentUnitProcessor {
 
     @Override
     public void undeploy(DeploymentUnit deploymentUnit) {
-        AbstractSecurityDeployer<?> deployer = null;
-        deployer = new EjbSecurityDeployer();
+        AbstractSecurityDeployer<?> deployer = new EjbSecurityDeployer();
         deployer.undeploy(deploymentUnit);
 
         // Jakarta Enterprise Beans maybe included directly in war deployment
