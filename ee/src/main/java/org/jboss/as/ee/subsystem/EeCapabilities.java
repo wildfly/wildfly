@@ -24,5 +24,6 @@ public final class EeCapabilities {
             .build();
 
     public static final String ELYTRON_JACC_CAPABILITY = "org.wildfly.security.jacc-policy";
+    public static final String ELYTRON_JAKARTA_AUTHORIZATION = "org.wildfly.security.jakarta-authorization";
 
 }
