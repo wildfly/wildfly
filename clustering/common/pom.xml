@@ -66,6 +66,10 @@
             <artifactId>wildfly-clustering-function</artifactId>
         </dependency>
         <dependency>
+            <groupId>org.wildfly.clustering</groupId>
+            <artifactId>wildfly-clustering-server-spi</artifactId>
+        </dependency>
+        <dependency>
             <groupId>org.wildfly.core</groupId>
             <artifactId>wildfly-subsystem</artifactId>
         </dependency>

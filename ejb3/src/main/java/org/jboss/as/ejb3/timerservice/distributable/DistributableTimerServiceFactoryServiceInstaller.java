@@ -7,6 +7,7 @@ package org.jboss.as.ejb3.timerservice.distributable;
 
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.Executor;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -14,6 +15,7 @@ import java.util.function.Predicate;
 import jakarta.ejb.TimerConfig;
 
 import org.jboss.as.controller.RequirementServiceTarget;
+import org.jboss.as.controller.management.Capabilities;
 import org.jboss.as.ejb3.component.EJBComponent;
 import org.jboss.as.ejb3.timerservice.SuspendableTimerService;
 import org.jboss.as.ejb3.timerservice.spi.ManagedTimerService;
@@ -37,7 +39,6 @@ import org.wildfly.clustering.ejb.timer.TimerRegistry;
 import org.wildfly.clustering.ejb.timer.TimerServiceConfiguration;
 import org.wildfly.clustering.function.Supplier;
 import org.wildfly.clustering.server.util.UUIDFactory;
-import org.wildfly.common.function.Functions;
 import org.wildfly.subsystem.service.ServiceDependency;
 import org.wildfly.subsystem.service.ServiceInstaller;
 
@@ -125,6 +126,7 @@ public class DistributableTimerServiceFactoryServiceInstaller implements Service
 
         ServiceDependency<TimerManagerFactory<UUID>> managerFactory = ServiceDependency.on(timerManagerFactoryName);
         ServiceDependency<SuspendableActivityRegistry> activityRegistry = ServiceDependency.on(SuspendableActivityRegistry.SERVICE_DESCRIPTOR);
+        ServiceDependency<Executor> executor = ServiceDependency.on(Capabilities.MANAGEMENT_EXECUTOR);
 
         ManagedTimerServiceFactory factory = new ManagedTimerServiceFactory() {
             @Override
@@ -203,12 +205,13 @@ public class DistributableTimerServiceFactoryServiceInstaller implements Service
                         return synchronizationFactory;
                     }
                 };
-                return new SuspendableTimerService(new DistributableTimerService<>(serviceConfiguration, manager), activityRegistry.get());
+                return new SuspendableTimerService(new DistributableTimerService<>(serviceConfiguration, manager), activityRegistry.get(), executor.get());
             }
         };
-        return ServiceInstaller.builder(Functions.constantSupplier(factory))
+        return ServiceInstaller.builder(factory)
                 .provides(this.name)
-                .requires(List.of(managerFactory, activityRegistry))
+                .startWhen(StartWhen.REQUIRED)
+                .requires(List.of(managerFactory, activityRegistry, executor))
                 .build()
                 .install(target);
     }
