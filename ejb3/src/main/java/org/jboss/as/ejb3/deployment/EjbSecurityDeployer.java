@@ -31,7 +31,7 @@ public class EjbSecurityDeployer extends AbstractSecurityDeployer<AttachmentList
      * {@inheritDoc}
      */
     @Override
-    protected JaccService<AttachmentList<EjbJaccConfig>> createService(String contextId, AttachmentList<EjbJaccConfig> metaData, Boolean standalone) {
-        return new EjbJaccService(contextId, metaData, standalone);
+    protected JaccService<AttachmentList<EjbJaccConfig>> createService(String contextId, AttachmentList<EjbJaccConfig> metaData, Boolean standalone, ClassLoader deploymentClassLoader) {
+        return new EjbJaccService(contextId, metaData, standalone, deploymentClassLoader);
     }
 }

@@ -5,6 +5,7 @@
 
 package org.wildfly.extension.undertow.security.jacc;
 
+import static org.wildfly.common.Assert.checkNotNullParam;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -37,7 +38,7 @@ import org.jboss.metadata.web.spec.ServletSecurityMetaData;
 import org.jboss.metadata.web.spec.UserDataConstraintMetaData;
 import org.jboss.metadata.web.spec.WebResourceCollectionMetaData;
 import org.jboss.metadata.web.spec.WebResourceCollectionsMetaData;
-
+import org.wildfly.security.jakarta.authz.PolicyRegistration;
 /**
  * A service that creates Jakarta Authorization permissions for a web deployment
  * @author Scott.Stark@jboss.org
@@ -60,8 +61,12 @@ public class WarJACCService extends JaccService<WarMetaData> {
 
     private static final String ANY_AUTHENTICATED_USER_ROLE = "**";
 
-    public WarJACCService(String contextId, WarMetaData metaData, Boolean standalone) {
+    /** The ClassLoader of the deployment.  */
+    private final ClassLoader deploymentClassLoader;
+
+    public WarJACCService(String contextId, WarMetaData metaData, Boolean standalone, final ClassLoader deploymentClassLoader) {
         super(contextId, metaData, standalone);
+        this.deploymentClassLoader = checkNotNullParam("deploymentClassLoader", deploymentClassLoader);
     }
 
     /** {@inheritDoc} */
@@ -390,6 +395,16 @@ public class WarJACCService extends JaccService<WarMetaData> {
             WebRoleRefPermission wrrep = new WebRoleRefPermission("", role);
             pc.addToRole(role, wrrep);
         }
+    }
+
+    @Override
+    public void beginContextPolicy() throws SecurityException {
+        PolicyRegistration.beginContextPolicy(contextId, deploymentClassLoader);
+    }
+
+    @Override
+    public void endContextPolicy() throws SecurityException {
+        PolicyRegistration.endContextPolicy(contextId);
     }
 
     static String getCommaSeparatedString(String[] str) {

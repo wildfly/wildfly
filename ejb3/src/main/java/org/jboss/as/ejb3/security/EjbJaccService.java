@@ -5,6 +5,8 @@
 
 package org.jboss.as.ejb3.security;
 
+import static org.wildfly.common.Assert.checkNotNullParam;
+
 import java.security.Permission;
 import java.util.Map.Entry;
 
@@ -13,6 +15,7 @@ import jakarta.security.jacc.PolicyContextException;
 
 import org.jboss.as.ee.security.JaccService;
 import org.jboss.as.server.deployment.AttachmentList;
+import org.wildfly.security.jakarta.authz.PolicyRegistration;
 
 /**
  * A service that creates JACC permissions for an ejb deployment
@@ -24,8 +27,11 @@ import org.jboss.as.server.deployment.AttachmentList;
  */
 public class EjbJaccService extends JaccService<AttachmentList<EjbJaccConfig>> {
 
-    public EjbJaccService(String contextId, AttachmentList<EjbJaccConfig> metaData, Boolean standalone) {
+    private final ClassLoader deploymentClassLoader;
+
+    public EjbJaccService(String contextId, AttachmentList<EjbJaccConfig> metaData, Boolean standalone, ClassLoader deploymClassLoader) {
         super(contextId, metaData, standalone);
+        this.deploymentClassLoader = checkNotNullParam("deploymentClassLoader", deploymClassLoader);
     }
 
     @Override
@@ -42,4 +48,16 @@ public class EjbJaccService extends JaccService<AttachmentList<EjbJaccConfig>> {
             }
         }
     }
+
+    @Override
+    public void beginContextPolicy() throws SecurityException {
+        PolicyRegistration.beginContextPolicy(contextId, deploymentClassLoader);
+    }
+
+    @Override
+    public void endContextPolicy() throws SecurityException {
+        PolicyRegistration.endContextPolicy(contextId);
+    }
+
+
 }
