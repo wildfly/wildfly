@@ -65,13 +65,22 @@
         <full.dist.product.release.name>WildFly</full.dist.product.release.name>
         <full.dist.product.slot>main</full.dist.product.slot>
         <full.dist.product.release.version>${project.version}</full.dist.product.release.version>
+        <full.dist.product.stability.level>community</full.dist.product.stability.level>
+        <full.dist.product.min.stability.level>experimental</full.dist.product.min.stability.level>
         <full.maven.groupId>${project.groupId}</full.maven.groupId>
         <full.maven.version>${project.version}</full.maven.version>
         <ee.dist.product.release.name>WildFly EE</ee.dist.product.release.name>
         <ee.dist.product.slot>${full.dist.product.slot}</ee.dist.product.slot>
         <ee.dist.product.release.version>${full.dist.product.release.version}</ee.dist.product.release.version>
+        <ee.dist.product.stability.level>community</ee.dist.product.stability.level>
+        <ee.dist.product.min.stability.level>experimental</ee.dist.product.min.stability.level>
         <ee.maven.groupId>${project.groupId}</ee.maven.groupId>
         <ee.maven.version>${project.version}</ee.maven.version>
+        <preview.dist.product.release.name>WildFly Preview</preview.dist.product.release.name>
+        <preview.dist.product.slot>${full.dist.product.slot}</preview.dist.product.slot>
+        <preview.dist.product.release.version>${full.dist.product.release.version}</preview.dist.product.release.version>
+        <preview.dist.product.stability.level>preview</preview.dist.product.stability.level>
+        <preview.dist.product.min.stability.level>experimental</preview.dist.product.min.stability.level>
         <product.docs.server.version>38</product.docs.server.version>
         <!-- The Galleon channel for the minor version with which this branch is associated.  -->
         <galleon.minor.channel>${product.docs.server.version}.0</galleon.minor.channel>
