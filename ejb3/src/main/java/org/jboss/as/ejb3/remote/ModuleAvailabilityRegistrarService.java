@@ -154,7 +154,7 @@ public class ModuleAvailabilityRegistrarService implements ModuleAvailabilityReg
     public Set<GroupMember> getProviders(EJBModuleIdentifier service) {
         log.infof("Calling getProviders(%s)\n", service);
         Set<GroupMember> result = serviceRegistrar.getProviders(service);
-        log.infof("Called getProviders(%s): result = %s\n", result);
+        log.infof("Called getProviders(%s): result = %s\n", service, result);
         return result;
 //        return serviceRegistrar.getProviders(service);
     }
@@ -173,7 +173,7 @@ public class ModuleAvailabilityRegistrarService implements ModuleAvailabilityReg
     }
 
     /**
-     * Remove a listener receiving receive updates on changes in which modules are deployed in a cluster.
+     * Remove a listener receiving updates on changes in which modules are deployed in a cluster.
      *
      * @param listener
      */
@@ -194,6 +194,7 @@ public class ModuleAvailabilityRegistrarService implements ModuleAvailabilityReg
          * When the server is suspended:
          * - unregister all registered service providers
          * - for each service provider unregistered, callback clients will be notified that the module is no longer available
+         * This also includes the case where the server is being suspended as part pf clean shutdown.
          *
          * @param context
          * @return
@@ -202,19 +203,15 @@ public class ModuleAvailabilityRegistrarService implements ModuleAvailabilityReg
         public CompletionStage<Void> prepare(ServerSuspendContext context) {
             log.infof("Preparing for suspend - context: isStarting = %s, isStopping = %s\n", context.isStarting(), context.isStopping());
 
-            if (!context.isStopping()) {
-                log.info("Server not stopping - performing prapare actions");
-
-                // unregister all of the service providers we have registered
-                Iterator<Map.Entry<EJBModuleIdentifier, ServiceProviderRegistration<EJBModuleIdentifier, GroupMember>>> iterator = registrations.entrySet().iterator();
-                while (iterator.hasNext()) {
-                    Map.Entry<EJBModuleIdentifier, ServiceProviderRegistration<EJBModuleIdentifier, GroupMember>> entry = iterator.next();
-                    EJBModuleIdentifier moduleId = entry.getKey();
-                    log.infof("Closing registration for module %s\n", moduleId);
-                    ServiceProviderRegistration<EJBModuleIdentifier, GroupMember> registration = entry.getValue();
-                    registration.close();
-                    iterator.remove();
-                }
+            // unregister all of the service providers we have registered
+            Iterator<Map.Entry<EJBModuleIdentifier, ServiceProviderRegistration<EJBModuleIdentifier, GroupMember>>> iterator = registrations.entrySet().iterator();
+            while (iterator.hasNext()) {
+                Map.Entry<EJBModuleIdentifier, ServiceProviderRegistration<EJBModuleIdentifier, GroupMember>> entry = iterator.next();
+                EJBModuleIdentifier moduleId = entry.getKey();
+                log.infof("Closing registration for module %s\n", moduleId);
+                ServiceProviderRegistration<EJBModuleIdentifier, GroupMember> registration = entry.getValue();
+                registration.close();
+                iterator.remove();
             }
             log.info("Prepared for suspend");
             return SuspendableActivity.COMPLETED;
@@ -230,10 +227,7 @@ public class ModuleAvailabilityRegistrarService implements ModuleAvailabilityReg
         public CompletionStage<Void> suspend(ServerSuspendContext context) {
             log.infof("Suspending - context: isStarting = %s, isStopping = %s\n", context.isStarting(), context.isStopping());
             // available if necessary
-            if (!context.isStopping()) {
-                log.info("Server not stopping - performing suspend actions");
-                // guard against peforming actions in susoend while server stopping
-            }
+
             log.info("Suspended");
             return SuspendableActivity.COMPLETED;
         }
@@ -244,6 +238,7 @@ public class ModuleAvailabilityRegistrarService implements ModuleAvailabilityReg
          * - find out which modules are in the deployment repository
          * - register all deployed modules as service providers
          * - for each service provider registered, callback clients will be notified (automatically) that the module is again available
+         * This does not apply when the server is starting as deployments are not possible until ther server is atarted.
          *
          * @param context the server resume context
          * @return
