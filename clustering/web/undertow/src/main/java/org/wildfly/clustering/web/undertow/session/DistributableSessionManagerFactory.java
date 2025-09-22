@@ -45,7 +45,7 @@ public class DistributableSessionManagerFactory implements io.undertow.servlet.a
     }
 
     @Override
-    public io.undertow.server.session.SessionManager createSessionManager(final Deployment deployment) {
+    public UndertowSessionManager createSessionManager(final Deployment deployment) {
         DeploymentInfo info = deployment.getDeploymentInfo();
         boolean statisticsEnabled = info.getMetricsCollector() != null;
         RecordableInactiveSessionStatistics inactiveSessionStatistics = statisticsEnabled ? new DistributableInactiveSessionStatistics() : null;
@@ -108,7 +108,7 @@ public class DistributableSessionManagerFactory implements io.undertow.servlet.a
             }
         });
         RecordableSessionManagerStatistics statistics = (inactiveSessionStatistics != null) ? new DistributableSessionManagerStatistics(manager.getStatistics(), inactiveSessionStatistics, this.config.getMaxActiveSessions()) : null;
-        io.undertow.server.session.SessionManager result = new DistributableSessionManager(new DistributableSessionManagerConfiguration() {
+        UndertowSessionManager result = new DistributableSessionManager(new DistributableSessionManagerConfiguration() {
             @Override
             public String getDeploymentName() {
                 return info.getDeploymentName();

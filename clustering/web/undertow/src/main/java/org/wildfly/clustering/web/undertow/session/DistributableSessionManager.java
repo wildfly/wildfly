@@ -98,7 +98,7 @@ public class DistributableSessionManager implements UndertowSessionManager {
     }
 
     @Override
-    public synchronized void start() {
+    public void start() {
         long stamp = this.lifecycleStamp.getAndSet(0L);
         if (StampedLock.isWriteLockStamp(stamp)) {
             this.lifecycleLock.unlockWrite(stamp);
@@ -110,7 +110,7 @@ public class DistributableSessionManager implements UndertowSessionManager {
     }
 
     @Override
-    public synchronized void stop() {
+    public void stop() {
         try {
             this.lifecycleStamp.set(this.lifecycleLock.tryWriteLock(60, TimeUnit.SECONDS));
         } catch (InterruptedException e) {
