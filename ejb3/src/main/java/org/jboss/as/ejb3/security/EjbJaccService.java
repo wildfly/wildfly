@@ -7,6 +7,7 @@ package org.jboss.as.ejb3.security;
 
 import static org.wildfly.common.Assert.checkNotNullParam;
 
+import java.security.GeneralSecurityException;
 import java.security.Permission;
 import java.util.Map.Entry;
 
@@ -50,12 +51,12 @@ public class EjbJaccService extends JaccService<AttachmentList<EjbJaccConfig>> {
     }
 
     @Override
-    public void beginContextPolicy() throws SecurityException {
+    public void beginContextPolicy() throws GeneralSecurityException {
         PolicyRegistration.beginContextPolicy(contextId, deploymentClassLoader);
     }
 
     @Override
-    public void endContextPolicy() throws SecurityException {
+    public void endContextPolicy() throws GeneralSecurityException {
         PolicyRegistration.endContextPolicy(contextId);
     }
 

@@ -7,6 +7,7 @@ package org.wildfly.extension.undertow.security.jacc;
 
 import static org.wildfly.common.Assert.checkNotNullParam;
 
+import java.security.GeneralSecurityException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -398,12 +399,12 @@ public class WarJACCService extends JaccService<WarMetaData> {
     }
 
     @Override
-    public void beginContextPolicy() throws SecurityException {
+    public void beginContextPolicy() throws GeneralSecurityException {
         PolicyRegistration.beginContextPolicy(contextId, deploymentClassLoader);
     }
 
     @Override
-    public void endContextPolicy() throws SecurityException {
+    public void endContextPolicy() throws GeneralSecurityException {
         PolicyRegistration.endContextPolicy(contextId);
     }
 

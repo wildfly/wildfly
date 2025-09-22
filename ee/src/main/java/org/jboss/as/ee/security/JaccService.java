@@ -9,6 +9,8 @@ import static org.jboss.as.ee.logging.EeLogger.ROOT_LOGGER;
 import static org.wildfly.common.Assert.checkNotNullParam;
 import static org.wildfly.security.authz.jacc.PolicyUtil.getPolicyUtil;
 
+import java.security.GeneralSecurityException;
+
 import jakarta.security.jacc.PolicyConfiguration;
 import jakarta.security.jacc.PolicyConfigurationFactory;
 import jakarta.security.jacc.PolicyContextException;
@@ -149,11 +151,11 @@ public abstract class JaccService<T> implements Service<PolicyConfiguration> {
     /**
      * Begin any Policy set up for this Context.
      */
-    public void beginContextPolicy() throws SecurityException {};
+    public void beginContextPolicy() throws GeneralSecurityException {};
 
     /**
      * End any Policy set up for this Context.
      */
-    public void endContextPolicy() throws SecurityException {};
+    public void endContextPolicy() throws GeneralSecurityException {};
 
 }
