@@ -125,8 +125,8 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor {
     public static final String OLD_URI_PREFIX = "http://java.sun.com";
     public static final String NEW_URI_PREFIX = "http://xmlns.jcp.org";
 
-    private static final String LEGACY_JACC_CAPABILITY_NAME = "org.wildfly.legacy-security.jacc";
     private static final String ELYTRON_JACC_CAPABILITY_NAME = "org.wildfly.security.jacc-policy";
+    private static final String ELYTRON_JAKARTA_AUTHORIZATION = "org.wildfly.security.jakarta-authorization";
 
     private final String defaultServer;
     private final String defaultHost;
@@ -417,8 +417,10 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor {
         deploymentUnit.addToAttachmentList(Attachments.DEPLOYMENT_COMPLETE_SERVICES, deploymentServiceName);
 
         // adding Jakarta Authorization service
-        final boolean elytronJacc = capabilitySupport.hasCapability(ELYTRON_JACC_CAPABILITY_NAME);
-        if(elytronJacc) {
+        boolean usesElytronJaccPolicy = capabilitySupport.hasCapability(ELYTRON_JACC_CAPABILITY_NAME);
+        boolean requireJakartaAuthorization = usesElytronJaccPolicy || capabilitySupport.hasCapability(ELYTRON_JAKARTA_AUTHORIZATION);
+
+        if(requireJakartaAuthorization) {
             WarJACCDeployer deployer = new WarJACCDeployer();
             JaccService<WarMetaData> jaccService = deployer.deploy(deploymentUnit, jaccContextId);
             if (jaccService != null) {
@@ -428,7 +430,10 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor {
                     // add dependency to parent policy
                     jaccBuilder.addDependency(parentDeploymentUnit.getServiceName().append(JaccService.SERVICE_NAME), PolicyConfiguration.class, jaccService.getParentPolicyInjector());
                 }
-                jaccBuilder.requires(capabilitySupport.getCapabilityServiceName(elytronJacc ? ELYTRON_JACC_CAPABILITY_NAME : LEGACY_JACC_CAPABILITY_NAME));
+
+                if (usesElytronJaccPolicy) {
+                    jaccBuilder.requires(capabilitySupport.getCapabilityServiceName(ELYTRON_JACC_CAPABILITY_NAME));
+                }
                 // add dependency to web deployment service
                 jaccBuilder.requires(deploymentServiceName);
                 jaccBuilder.setInitialMode(Mode.PASSIVE).install();
