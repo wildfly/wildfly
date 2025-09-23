@@ -9,6 +9,7 @@
 
     <resources>
         <artifact name="${io.opentelemetry.semconv:opentelemetry-semconv}"/>
+        <artifact name="${io.opentelemetry.semconv:opentelemetry-semconv-incubating}"/>
     </resources>
 
     <dependencies>

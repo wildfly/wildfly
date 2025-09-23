@@ -13,6 +13,7 @@ import io.smallrye.openapi.api.SmallRyeOpenAPI;
 
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.wildfly.extension.undertow.Host;
+import org.wildfly.service.Installer.StartWhen;
 import org.wildfly.subsystem.service.DeploymentServiceInstaller;
 import org.wildfly.subsystem.service.ServiceDependency;
 import org.wildfly.subsystem.service.ServiceInstaller;
@@ -54,7 +55,7 @@ public class OpenAPIHttpHandlerServiceInstaller implements DeploymentServiceInst
         };
         ServiceInstaller.builder(start, stop)
             .requires(List.of(host, model))
-            .asActive()
+            .startWhen(StartWhen.INSTALLED)
             .build()
             .install(context);
     }
