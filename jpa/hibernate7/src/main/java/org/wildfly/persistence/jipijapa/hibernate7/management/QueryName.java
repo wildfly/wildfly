@@ -274,7 +274,6 @@ public class QueryName {
         for (int loop = 0; loop < 10; loop++) {
             testvalue = testvalue + testvalue;
         }
-        System.out.println("input string length= " + testvalue.length());
         for (int loop = 0; loop < 100; loop++) {
             QueryName queryName = new QueryName(testvalue);
         }
