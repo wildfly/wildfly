@@ -468,7 +468,7 @@
         <version.org.codehaus.woodstox.woodstox-core>7.0.0</version.org.codehaus.woodstox.woodstox-core>
         <version.org.cryptacular>1.2.5</version.org.cryptacular>
         <version.org.eclipse.angus.angus-activation>2.0.3</version.org.eclipse.angus.angus-activation>
-        <version.org.eclipse.angus.angus-mail>2.0.4</version.org.eclipse.angus.angus-mail>
+        <version.org.eclipse.angus.angus-mail>2.0.5</version.org.eclipse.angus.angus-mail>
         <version.org.eclipse.jdt>3.33.0</version.org.eclipse.jdt>
         <version.org.eclipse.microprofile>7.1</version.org.eclipse.microprofile>
         <version.org.eclipse.microprofile.config.api>3.1</version.org.eclipse.microprofile.config.api>
