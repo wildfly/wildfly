@@ -41,8 +41,16 @@ public class OpenTelemetryCollectorContainer extends BaseContainer<OpenTelemetry
     public static final String OTEL_COLLECTOR_CONFIG_YAML = "/etc/otel-collector-config.yaml";
 
     private final JaegerContainer jaegerContainer;
+
+    /**
+     * The default timeout in seconds configurable by -Dtestsuite.integration.container.timeout=... and adjustable by -Dts.timeout.factor=...
+     * Note that this is not a waiting time, but the maximum allowable time while actively polling.
+     * Defaults to 2 minutes.
+     */
     private final Duration DEFAULT_TIMEOUT = Duration.ofSeconds(
-            TimeoutUtil.adjust(Integer.parseInt(System.getProperty("testsuite.integration.container.timeout", "30"))));
+            TimeoutUtil.adjust(
+                    Integer.parseInt(
+                            System.getProperty("testsuite.integration.container.timeout", "120"))));
 
     public OpenTelemetryCollectorContainer() {
         super("OpenTelemetryCollector", IMAGE_NAME, IMAGE_VERSION,
