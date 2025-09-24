@@ -13,6 +13,7 @@ import jakarta.persistence.SharedCacheMode;
 import jakarta.persistence.spi.PersistenceUnitInfo;
 
 import org.hibernate.cfg.AvailableSettings;
+import org.hibernate.cfg.StatisticsSettings;
 import org.jboss.as.jpa.hibernate.management.HibernateManagementAdaptor;
 import org.jboss.as.jpa.hibernate.service.WildFlyCustomJtaPlatform;
 import org.jipijapa.cache.spi.Classification;
@@ -79,6 +80,9 @@ public class HibernatePersistenceProviderAdaptor implements PersistenceProviderA
 
         // Enable JPA Compliance mode
         putPropertyIfAbsent( pu, properties, AvailableSettings.JPA_COMPLIANCE, true);
+
+        // Set max number of queries retained by Hibernate statistics to default to 200
+        putPropertyIfAbsent( pu, properties, StatisticsSettings.QUERY_STATISTICS_MAX_SIZE, 200);
     }
 
     private void failOnIncompatibleSetting(PersistenceUnitMetadata pu, Map properties) {
