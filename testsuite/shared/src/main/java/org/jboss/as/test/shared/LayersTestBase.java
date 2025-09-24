@@ -299,8 +299,6 @@ public abstract class LayersTestBase {
             // Appclient support is not provided by a layer
             "org.jboss.as.appclient",
             "org.jboss.metadata.appclient",
-            // TODO WFLY-16576 -- cruft?
-            "org.bouncycastle",
             // This was brought in as part an RFE, WFLY-10632 & WFLY-10636. While the module is currently marked as private,
             // for now we should keep this module.
             "org.jboss.resteasy.resteasy-rxjava2",
