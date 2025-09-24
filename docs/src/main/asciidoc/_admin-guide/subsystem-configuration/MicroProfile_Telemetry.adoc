@@ -29,7 +29,7 @@ EOF
 
 === Important Note
 
-MicroProfile Telemetry 2.0 now includes support for https://opentelemetry.io/docs/concepts/signals/metrics/[OpenTelemetry Metrics] and https://opentelemetry.io/docs/concepts/signals/logs/[OpenTelemetry Logs]. While detailed information on their usage should be found in the relevant external documentation, systems administrators should make note of the inclusion of metrics. When the MicroProfile Telemetry subsystem starts, certain JVM- and system-related metrics will be registered, and their values will be exported to the configured downstream collector. While this is the desired behavior for the subsystem, it can result in the duplication of metrics if either (or both) WildFly Metrics or Micrometer are also configured.
+MicroProfile Telemetry includes support for https://opentelemetry.io/docs/concepts/signals/metrics/[OpenTelemetry Metrics] and https://opentelemetry.io/docs/concepts/signals/logs/[OpenTelemetry Logs]. While detailed information on their usage should be found in the relevant external documentation, systems administrators should make note of the inclusion of metrics. When the MicroProfile Telemetry subsystem starts, certain JVM- and system-related metrics will be registered, and their values will be exported to the configured downstream collector. While this is the desired behavior for the subsystem, it can result in the duplication of metrics if either (or both) WildFly Metrics or Micrometer are also configured.
 
 To disable the export of metrics via MicroProfile Telemetry, the following should be added to an MicroProfile Config `ConfigSource` available to the application:
 
