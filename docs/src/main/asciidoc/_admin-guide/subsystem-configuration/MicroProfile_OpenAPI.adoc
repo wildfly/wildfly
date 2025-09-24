@@ -1,5 +1,5 @@
 :OpenAPIVersion: 3.1
-:MicroProfileOpenAPIVersion: 4.0
+:MicroProfileOpenAPIVersion: 4.1
 
 [[MicroProfile_OpenAPI_SmallRye]]
 = MicroProfile OpenAPI Subsystem

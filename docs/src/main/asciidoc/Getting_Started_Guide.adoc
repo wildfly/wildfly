@@ -125,11 +125,11 @@ WildFly {wildflyVersion} also provides support for a number of MicroProfile tech
 |MicroProfile Health 4.0 |-- |X
 |MicroProfile JWT Authentication 2.1 |X |X
 |MicroProfile LRA 2.0 |-- |--
-|MicroProfile OpenAPI 4.0 |-- |X
+|MicroProfile OpenAPI 4.1 |-- |X
 |MicroProfile Reactive Messaging 3.0 |-- |--
 |MicroProfile Rest Client 4.0|X |X
 |MicroProfile Streams Operators 3.0 |-- |--
-|MicroProfile Telemetry 2.0|--|X
+|MicroProfile Telemetry 2.1|--|X
 
 |=======================================================================
 
