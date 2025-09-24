@@ -17,6 +17,7 @@ import io.smallrye.reactive.messaging.kafka.companion.KafkaCompanion;
 import org.jboss.arquillian.testcontainers.api.TestcontainersRequired;
 import org.jboss.as.arquillian.api.ServerSetupTask;
 import org.jboss.as.arquillian.container.ManagementClient;
+import org.jboss.as.test.shared.IntermittentFailure;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.utility.MountableFile;
@@ -58,7 +59,14 @@ public class RunKafkaWithSslSetupTask implements ServerSetupTask {
 //            // Set env vars which don't seem to have any effect when only in server.properties
             container.addEnv("KAFKA_CONTROLLER_QUORUM_VOTERS", "1@localhost:29093");
 
-            container.start();
+            try {
+                container.start();
+            } catch (Exception e) {
+                // Either throw AssumptionViolatedException because we are ignoring intermittent failures,
+                // or propagate the exception and fail
+                IntermittentFailure.thisTestIsFailingIntermittently("https://issues.redhat.com/browse/WFLY-20945");
+                throw e;
+            }
 
             companion = new KafkaCompanion("INTERNAL://localhost:19092");
             companion.topics().createAndWait("testing", 1, Duration.of(10, ChronoUnit.SECONDS));
