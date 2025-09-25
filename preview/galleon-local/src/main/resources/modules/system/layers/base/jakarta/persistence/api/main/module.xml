@@ -13,7 +13,7 @@
 
     <dependencies>
         <!-- java.instrument export due to jdeps result -->
-        <module name="java.instrument" export="true"/>
+        <module name="java.instrument"/>
         <module name="java.logging"/>
         <!-- PersistenceUnitInfo needs javax.sql.DataSource -->
         <module name="java.sql" export="true"/>
