@@ -81,6 +81,12 @@
             <artifactId>wildfly-preview-feature-pack-product-conf</artifactId>
         </dependency>
 
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>persistence-cdi-extension</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
     </dependencies>
 
     <build>
