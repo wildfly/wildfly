@@ -639,7 +639,7 @@ public class PersistenceUnitServiceHandler {
                     deploymentUnit.getServiceName(), validatorFactory,
                     deploymentUnit.getAttachment(org.jboss.as.ee.naming.Attachments.JAVA_NAMESPACE_SETUP_ACTION),
                     beanManagerAfterDeploymentValidation,
-                    deploymentUnit.getAttachment(JpaAttachments.TRANSACTION_SYNCHRONIZATION_REGISTRY),
+                    transactionSynchronizationRegistry,
                     ContextTransactionManager.getInstance(),
                     null
                     );
@@ -1188,30 +1188,29 @@ public class PersistenceUnitServiceHandler {
             Optional<WeldCapability> weldCapability = support.getOptionalCapabilityRuntimeAPI(WELD_CAPABILITY_NAME, WeldCapability.class);
 
             if (weldCapability.get().isPartOfWeldDeployment(deploymentUnit)) {
-                synchronized (deploymentUnit) { // protect against multiple subdeployment threads registering the persistenceCdiExtension at same time
-                    final Module module = deploymentUnit.getAttachment(Attachments.MODULE);
+                final Module module = deploymentUnit.getAttachment(Attachments.MODULE);
 
-                    PersistenceCdiExtension persistenceCdiExtension = deploymentUnit.getAttachment(JpaAttachments.AFTER_BEAN_DISCOVERY_ATTACHMENT_KEY);
-                    if (null == persistenceCdiExtension) {
-                        // For WildFly Preview try loading a PersistenceCdiExtensionService (WildFly will not have this service).
-                        ServiceLoader<PersistenceCdiExtension> persistenceCdiExtensionService = module.loadService(PersistenceCdiExtension.class);
-                        for (PersistenceCdiExtension service: persistenceCdiExtensionService) {
-                            if (persistenceCdiExtension != null) {
-                                // This is an internal error check that shouldn't happen.
-                                throw JpaLogger.ROOT_LOGGER.foundMoreThanOneCdiExtensionService(PersistenceCdiExtension.class, module.getClassLoader());
-                            }
-                            persistenceCdiExtension = service;
-                        }
+                PersistenceCdiExtension persistenceCdiExtension = deploymentUnit.getAttachment(JpaAttachments.AFTER_BEAN_DISCOVERY_ATTACHMENT_KEY);
+                if (null == persistenceCdiExtension) {
+                    // For WildFly Preview try loading a PersistenceCdiExtensionService (WildFly will not have this service).
+                    ServiceLoader<PersistenceCdiExtension> persistenceCdiExtensionService = module.loadService(PersistenceCdiExtension.class);
+                    for (PersistenceCdiExtension service: persistenceCdiExtensionService) {
                         if (persistenceCdiExtension != null) {
-                            deploymentUnit.putAttachment(JpaAttachments.AFTER_BEAN_DISCOVERY_ATTACHMENT_KEY, persistenceCdiExtension);
-                            weldCapability.get().registerExtensionInstance(persistenceCdiExtension, deploymentUnit);
+                            // This is an internal error check that shouldn't happen.
+                            throw JpaLogger.ROOT_LOGGER.foundMoreThanOneCdiExtensionService(PersistenceCdiExtension.class, module.getClassLoader());
                         }
+                        persistenceCdiExtension = service;
                     }
-                    if ( persistenceCdiExtension != null) {
-                        result = persistenceCdiExtension.register(pu);
-                        result.setTransactionManager(transactionManager);
-                        result.setTransactionSynchronizationRegistry(transactionSynchronizationRegistry);
+                    if (persistenceCdiExtension != null) {
+                        // putAttachment will return null if the attachment was not set yet, in which case we will also register the CDI extension with Weld
+                        if (null == deploymentUnit.putAttachment(JpaAttachments.AFTER_BEAN_DISCOVERY_ATTACHMENT_KEY, persistenceCdiExtension))
+                            weldCapability.get().registerExtensionInstance(persistenceCdiExtension, deploymentUnit);
                     }
+                }
+                if ( persistenceCdiExtension != null) {
+                    result = persistenceCdiExtension.register(pu);
+                    result.setTransactionManager(transactionManager);
+                    result.setTransactionSynchronizationRegistry(transactionSynchronizationRegistry);
                 }
             }
         }

@@ -14,6 +14,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
+import jakarta.enterprise.context.Dependent;
 import jakarta.enterprise.event.Observes;
 import jakarta.enterprise.inject.spi.AfterBeanDiscovery;
 import jakarta.enterprise.inject.spi.BeanManager;
@@ -73,7 +74,7 @@ import org.jipijapa.plugin.spi.PersistenceUnitMetadata;
  */
 
 public class IntegratePersistenceAfterBeanDiscovery implements PersistenceCdiExtension {
-    private final CopyOnWriteArrayList<IntegrationWithCDIBagImpl> copyOnWriteArrayList = new CopyOnWriteArrayList();
+    private final CopyOnWriteArrayList<IntegrationWithCDIBagImpl> persistenceUnitIntegrationStuff = new CopyOnWriteArrayList<>();
     private volatile boolean afterBeanDiscoveryEventRanAlready = false;
 
     void afterBeanDiscovery(@Observes AfterBeanDiscovery event, BeanManager manager) {
@@ -83,7 +84,7 @@ public class IntegratePersistenceAfterBeanDiscovery implements PersistenceCdiExt
         } catch (RuntimeException e) {
             event.addDefinitionError(e);
         } finally {
-            copyOnWriteArrayList.clear();
+            persistenceUnitIntegrationStuff.clear();
         }
     }
 
@@ -96,18 +97,17 @@ public class IntegratePersistenceAfterBeanDiscovery implements PersistenceCdiExt
         }
         final IntegrationWithCDIBagImpl integrationWithCDIBag = new IntegrationWithCDIBagImpl();
         integrationWithCDIBag.setPersistenceUnitMetadata(persistenceUnitMetadata);
-        copyOnWriteArrayList.add(integrationWithCDIBag);
+        persistenceUnitIntegrationStuff.add(integrationWithCDIBag);
         return integrationWithCDIBag;
     }
 
-    private static final List defaultQualifier = List.of("jakarta.enterprise.inject.Default");
+    private static final List<String> defaultQualifier = List.of("jakarta.enterprise.inject.Default");
     private static final String transactionScoped = "jakarta.transaction.TransactionScoped";
     private static final String applicationScoped = "jakarta.enterprise.context.ApplicationScoped";
-    protected static final String dependentScoped = "jakarta.enterprise.context.Dependent";
 
     public void addBeans(AfterBeanDiscovery afterBeanDiscovery) {
-        boolean onePersistenceUnit = copyOnWriteArrayList.size() == 1;
-        for (IntegrationWithCDIBagImpl integrationWithCDIBag : copyOnWriteArrayList) {
+        boolean onePersistenceUnit = persistenceUnitIntegrationStuff.size() == 1;
+        for (IntegrationWithCDIBagImpl integrationWithCDIBag : persistenceUnitIntegrationStuff) {
             PersistenceUnitMetadata persistenceUnitMetadata = integrationWithCDIBag.getPersistenceUnitMetadata();
 
             // determine the qualifiers to use for creating each bean
@@ -232,18 +232,10 @@ public class IntegratePersistenceAfterBeanDiscovery implements PersistenceCdiExt
             List<String> qualifiers,
             IntegrationWithCDIBag integrationWithCDIBag) {
 
-        String scope = dependentScoped;
-
         BeanConfigurator<CriteriaBuilder> beanConfigurator = afterBeanDiscovery.addBean();
         beanConfigurator.addTransitiveTypeClosure(CriteriaBuilder.class);
 
-        Class<? extends Annotation> scopeAnnotation = null;
-        try {
-            scopeAnnotation = persistenceUnitMetadata.getClassLoader().loadClass(scope).asSubclass(Annotation.class);
-        } catch (ClassNotFoundException e) {
-            throw JpaLogger.ROOT_LOGGER.classNotFound(e, "CriteriaBuilder", persistenceUnitMetadata.getPersistenceUnitName(), persistenceUnitMetadata.getScopedPersistenceUnitName());
-        }
-        beanConfigurator.scope(scopeAnnotation);
+        beanConfigurator.scope(Dependent.class);
 
         for (String qualifier : qualifiers) {
             final Class<? extends Annotation> qualifierType;
@@ -272,19 +264,11 @@ public class IntegratePersistenceAfterBeanDiscovery implements PersistenceCdiExt
             List<String> qualifiers,
             IntegrationWithCDIBag integrationWithCDIBag) {
 
-        String scope = dependentScoped;
-
         BeanConfigurator<PersistenceUnitUtil> beanConfigurator = afterBeanDiscovery.addBean();
         beanConfigurator.addTransitiveTypeClosure(PersistenceUnitUtil.class);
 
 
-        Class<? extends Annotation> scopeAnnotation = null;
-        try {
-            scopeAnnotation = persistenceUnitMetadata.getClassLoader().loadClass(scope).asSubclass(Annotation.class);
-        } catch (ClassNotFoundException e) {
-            throw JpaLogger.ROOT_LOGGER.classNotFound(e, "PersistenceUnitUtil", persistenceUnitMetadata.getPersistenceUnitName(), persistenceUnitMetadata.getScopedPersistenceUnitName());
-        }
-        beanConfigurator.scope(scopeAnnotation);
+        beanConfigurator.scope(Dependent.class);
 
         for (String qualifier : qualifiers) {
             final Class<? extends Annotation> qualifierType;
@@ -311,18 +295,10 @@ public class IntegratePersistenceAfterBeanDiscovery implements PersistenceCdiExt
             List<String> qualifiers,
             IntegrationWithCDIBag integrationWithCDIBag) {
 
-        String scope = dependentScoped;
-
         BeanConfigurator<Cache> beanConfigurator = afterBeanDiscovery.addBean();
         beanConfigurator.addTransitiveTypeClosure(Cache.class);
 
-        Class<? extends Annotation> scopeAnnotation = null;
-        try {
-            scopeAnnotation = persistenceUnitMetadata.getClassLoader().loadClass(scope).asSubclass(Annotation.class);
-        } catch (ClassNotFoundException e) {
-            throw JpaLogger.ROOT_LOGGER.classNotFound(e, "Cache", persistenceUnitMetadata.getPersistenceUnitName(), persistenceUnitMetadata.getScopedPersistenceUnitName());
-        }
-        beanConfigurator.scope(scopeAnnotation);
+        beanConfigurator.scope(Dependent.class);
 
         for (String qualifier : qualifiers) {
             final Class<? extends Annotation> qualifierType;
@@ -350,18 +326,10 @@ public class IntegratePersistenceAfterBeanDiscovery implements PersistenceCdiExt
             List<String> qualifiers,
             IntegrationWithCDIBag integrationWithCDIBag) {
 
-        String scope = dependentScoped;
-
         BeanConfigurator<Metamodel> beanConfigurator = afterBeanDiscovery.addBean();
         beanConfigurator.addTransitiveTypeClosure(Metamodel.class);
 
-        Class<? extends Annotation> scopeAnnotation = null;
-        try {
-            scopeAnnotation = persistenceUnitMetadata.getClassLoader().loadClass(scope).asSubclass(Annotation.class);
-        } catch (ClassNotFoundException e) {
-            throw JpaLogger.ROOT_LOGGER.classNotFound(e, "Metamodel", persistenceUnitMetadata.getPersistenceUnitName(), persistenceUnitMetadata.getScopedPersistenceUnitName());
-        }
-        beanConfigurator.scope(scopeAnnotation);
+        beanConfigurator.scope(Dependent.class);
 
         for (String qualifier : qualifiers) {
             final Class<? extends Annotation> qualifierType;
@@ -386,17 +354,10 @@ public class IntegratePersistenceAfterBeanDiscovery implements PersistenceCdiExt
             PersistenceUnitMetadata persistenceUnitMetadata,
             List<String> qualifiers,
             IntegrationWithCDIBagImpl integrationWithCDIBag) {
-        String scope = dependentScoped;
         BeanConfigurator<SchemaManager> beanConfigurator = afterBeanDiscovery.addBean();
         beanConfigurator.addTransitiveTypeClosure(SchemaManager.class);
 
-        Class<? extends Annotation> scopeAnnotation = null;
-        try {
-            scopeAnnotation = persistenceUnitMetadata.getClassLoader().loadClass(scope).asSubclass(Annotation.class);
-        } catch (ClassNotFoundException e) {
-            throw JpaLogger.ROOT_LOGGER.classNotFound(e, "SchemaManager", persistenceUnitMetadata.getPersistenceUnitName(), persistenceUnitMetadata.getScopedPersistenceUnitName());
-        }
-        beanConfigurator.scope(scopeAnnotation);
+        beanConfigurator.scope(Dependent.class);
 
         for (String qualifier : qualifiers) {
             final Class<? extends Annotation> qualifierType;
