@@ -14,6 +14,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
+import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.context.Dependent;
 import jakarta.enterprise.event.Observes;
 import jakarta.enterprise.inject.spi.AfterBeanDiscovery;
@@ -188,8 +189,6 @@ public class IntegratePersistenceAfterBeanDiscovery implements PersistenceCdiExt
             List<String> qualifiers,
             IntegrationWithCDIBag integrationWithCDIBag) {
 
-        String scope = applicationScoped;
-
         // EntityManagerFactory setup
         BeanConfigurator<EntityManagerFactory> beanConfigurator = afterBeanDiscovery.addBean();
         beanConfigurator.addTransitiveTypeClosure(EntityManagerFactory.class);
@@ -200,13 +199,7 @@ public class IntegratePersistenceAfterBeanDiscovery implements PersistenceCdiExt
         } else {
             JpaLogger.ROOT_LOGGER.willNotNameEntityManagerFactoryBean(persistenceUnitMetadata.getScopedPersistenceUnitName(), persistenceUnitMetadata.getPersistenceUnitName());
         }
-        Class<? extends Annotation> scopeAnnotation = null;
-        try {
-            scopeAnnotation = persistenceUnitMetadata.getClassLoader().loadClass(scope).asSubclass(Annotation.class);
-        } catch (ClassNotFoundException e) {
-            throw JpaLogger.ROOT_LOGGER.classNotFound(e, "EntityManagerFactory", persistenceUnitMetadata.getPersistenceUnitName(), persistenceUnitMetadata.getScopedPersistenceUnitName());
-        }
-        beanConfigurator.scope(scopeAnnotation);
+        beanConfigurator.scope(ApplicationScoped.class);
 
         for (String qualifier : qualifiers) {
             final Class<? extends Annotation> qualifierType;
