@@ -42,6 +42,10 @@
         <hibernate-search-provisioning.phase>none</hibernate-search-provisioning.phase>
         <mvc-provisioning.phase>none</mvc-provisioning.phase>
         <vertx-provisioning.phase>none</vertx-provisioning.phase>
+
+        <!-- TODO WFLY-20965 remove the need for this and rely on wildfly-preview-ee-bom specified by our parent -->
+        <dependency.management.import.artifact>wildfly-preview-expansion-bom</dependency.management.import.artifact>
+
     </properties>
 
     <dependencies>
