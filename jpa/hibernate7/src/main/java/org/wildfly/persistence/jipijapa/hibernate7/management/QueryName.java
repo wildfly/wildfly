@@ -101,7 +101,6 @@ public class QueryName {
     private QueryName(String query) {
         hibernateQuery = query;
         displayQuery = displayable(query);
-
     }
 
     public String getDisplayName() {
@@ -138,66 +137,147 @@ public class QueryName {
      */
     private String displayable(String query) {
         if (query == null ||
-            query.length() == 0) {
+                query.isEmpty()) {
             return query;
         }
-
-        StringBuilder buff = new StringBuilder(query);
-
-        // handle two character transforms first
-        subst(buff, SQL_NE, NOT_EQUAL__);
-        subst(buff, NE_BANG, BANG_NOT_EQUAL__);
-        subst(buff, NE_HAT, HAT_NOT_EQUAL__);
-        subst(buff, LE, LESS_THAN_EQUAL__);
-        subst(buff, GE, GREATER_THAN_EQUAL__);
-        subst(buff, CONCAT, CONCAT__);
-        subst(buff, LT, LESS_THAN__);
-        subst(buff, EQ, EQUAL__);
-        subst(buff, GT, GREATER__);
-        subst(buff, OPEN, LEFT_PAREN__);
-        subst(buff, CLOSE, RIGHT_PAREN__);
-        subst(buff, OPEN_BRACKET, LEFT_BRACKET__);
-        subst(buff, CLOSE_BRACKET, RIGHT_BRACKET__);
-        subst(buff, PLUS, PLUS__);
-        subst(buff, MINUS, MINUS__);
-        subst(buff, STAR, STAR__);
-        subst(buff, DIV, DIVIDE__);
-        subst(buff, MOD, MODULUS__);
-        subst(buff, COLON, COLON__);
-        subst(buff, PARAM, PARAM__);
-        subst(buff, COMMA, COMMA__);
-        subst(buff, SPACE, SPACE__);
-        subst(buff, TAB, TAB__);
-        subst(buff, NEWLINE, NEWLINE__);
-        subst(buff, LINEFEED, LINEFEED__);
-        subst(buff, QUOTE, QUOTE__);
-        subst(buff, DQUOTE, DQUOTE__);
-        subst(buff, TICK, TICK__);
-        subst(buff, OPEN_BRACE, OPEN_BRACE__);
-        subst(buff, CLOSE_BRACE, CLOSE_BRACE__);
-        subst(buff, HAT, HAT__);
-        subst(buff, AMPERSAND, AMPERSAND__);
-        return buff.toString();
+        final int queryLength = query.length();
+        final StringBuilder out = new StringBuilder(queryLength);
+        for (int index = 0; index < queryLength; index++) {
+            final char current = query.charAt(index);
+            final char next = index + 1 < queryLength ? query.charAt(index + 1) : 0;
+            switch (current) {
+                case '<':
+                    if (next == '>') {
+                        index++;
+                        out.append(NOT_EQUAL__);
+                    } else if (next == '=') {
+                        index++;
+                        out.append(LESS_THAN_EQUAL__);
+                    } else {
+                        out.append(LESS_THAN__);
+                    }
+                    break;
+                case '!':
+                    if (next == '=') {
+                        index++;
+                        out.append(BANG_NOT_EQUAL__);
+                    } else {
+                        out.append(current);
+                    }
+                    break;
+                case '^':
+                    if (next == '=') {
+                        index++;
+                        out.append(HAT_NOT_EQUAL__);
+                    } else {
+                        out.append(HAT__);
+                    }
+                    break;
+                case '>':
+                    if (next == '=') {
+                        index++;
+                        out.append(GREATER_THAN_EQUAL__);
+                    } else {
+                        out.append(GREATER__);
+                    }
+                    break;
+                case '|':
+                    if (next == '!') {
+                        index++;
+                        out.append(CONCAT__);
+                    } else {
+                        out.append(current);
+                    }
+                    break;
+                case '=':
+                    out.append(EQUAL__);
+                    break;
+                case '(':
+                    out.append(LEFT_PAREN__);
+                    break;
+                case ')':
+                    out.append(RIGHT_PAREN__);
+                    break;
+                case '[':
+                    out.append(LEFT_BRACKET__);
+                    break;
+                case ']':
+                    out.append(RIGHT_BRACKET__);
+                    break;
+                case '{':
+                    out.append(OPEN_BRACE__);
+                    break;
+                case '}':
+                    out.append(CLOSE_BRACE__);
+                    break;
+                case '+':
+                    out.append(PLUS__);
+                    break;
+                case '-':
+                    out.append(MINUS__);
+                    break;
+                case '*':
+                    out.append(STAR__);
+                    break;
+                case '/':
+                    out.append(DIVIDE__);
+                    break;
+                case '%':
+                    out.append(MODULUS__);
+                    break;
+                case ':':
+                    out.append(COLON__);
+                    break;
+                case '?':
+                    out.append(PARAM__);
+                    break;
+                case ',':
+                    out.append(COMMA__);
+                    break;
+                case ' ':
+                    out.append(SPACE__);
+                    break;
+                case '\t':
+                    out.append(TAB__);
+                    break;
+                case '\n':
+                    out.append(NEWLINE__);
+                    break;
+                case '\r':
+                    out.append(LINEFEED__);
+                    break;
+                case '\'':
+                    out.append(QUOTE__);
+                    break;
+                case '\"':
+                    out.append(DQUOTE__);
+                    break;
+                case '`':
+                    out.append(TICK__);
+                    break;
+                case '&':
+                    out.append(AMPERSAND__);
+                    break;
+                default:
+                    out.append(current);
+                    break;
+            }
+        }
+        return out.toString();
     }
 
-    /**
-     * Substitute sub-strings inside of a string.
-     *
-     * @param stringBuilder String buffer to use for substitution (buffer is not reset)
-     * @param from String to substitute from
-     * @param to   String to substitute to
-     */
-    private static void subst(final StringBuilder stringBuilder, final String from, final String to) {
-        int begin = 0, end = 0;
 
-        while ((end = stringBuilder.indexOf(from, end)) != -1) {
-            stringBuilder.delete(end, end + from.length());
-            stringBuilder.insert(end, to);
-
-            // update positions
-            begin = end + to.length();
-            end = begin;
+/*
+    public static void main(String[] args) {
+        String testvalue =
+                "query name select * from mytable where mytable.id <> != ^= = >= , , , , , , ,\"\" {}";
+        for (int loop = 0; loop < 10; loop++) {
+            testvalue = testvalue + testvalue;
+        }
+        for (int loop = 0; loop < 100; loop++) {
+            QueryName queryName = new QueryName(testvalue);
         }
     }
+*/
 
 }
