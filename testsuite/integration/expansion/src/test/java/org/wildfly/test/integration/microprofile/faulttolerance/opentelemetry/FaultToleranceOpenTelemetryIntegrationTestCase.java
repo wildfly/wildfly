@@ -6,7 +6,6 @@
 package org.wildfly.test.integration.microprofile.faulttolerance.opentelemetry;
 
 import java.net.URL;
-import java.time.Duration;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
@@ -100,7 +99,7 @@ public class FaultToleranceOpenTelemetryIntegrationTestCase {
                     .findFirst();
             Assert.assertTrue(prometheusMetric.isPresent());
             Assert.assertEquals(0, Integer.parseInt(prometheusMetric.get().getValue()), 0);
-        }, Duration.ofSeconds(70)); // n.b. this in ~2% of cases needs slightly more time on our CI given the asynchronicity
+        });
     }
 
 }
