@@ -16,7 +16,9 @@ wildfly:
       directories: 
         - clustering
         - testsuite/integration/clustering
-      notify: [ pferraro ]
+      notify:
+        - pferraro
+        - rhusar
 
     - id: connector
       directories: [ connector ]
