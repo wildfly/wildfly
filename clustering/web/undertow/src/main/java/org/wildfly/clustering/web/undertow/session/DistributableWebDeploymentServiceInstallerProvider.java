@@ -13,6 +13,7 @@ import java.util.Optional;
 import java.util.OptionalInt;
 import java.util.ServiceLoader;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Executor;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
@@ -20,10 +21,13 @@ import java.util.function.UnaryOperator;
 import jakarta.servlet.ServletContext;
 
 import io.undertow.security.api.AuthenticatedSessionManager.AuthenticatedSession;
+import io.undertow.servlet.api.Deployment;
 import io.undertow.servlet.util.SavedRequest;
 
+import org.jboss.as.controller.management.Capabilities;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentUnit;
+import org.jboss.as.server.suspend.SuspendableActivityRegistry;
 import org.jboss.as.web.common.WarMetaData;
 import org.jboss.metadata.web.jboss.JBossWebMetaData;
 import org.jboss.metadata.web.jboss.ReplicationConfig;
@@ -44,6 +48,7 @@ import org.wildfly.clustering.web.undertow.logging.UndertowClusteringLogger;
 import org.wildfly.elytron.web.undertow.server.servlet.ServletSecurityContextImpl.IdentityContainer;
 import org.wildfly.extension.undertow.session.SessionAffinityProvider;
 import org.wildfly.security.cache.CachedIdentity;
+import org.wildfly.service.Installer.StartWhen;
 import org.wildfly.subsystem.service.DeploymentServiceInstaller;
 import org.wildfly.subsystem.service.ServiceDependency;
 import org.wildfly.subsystem.service.ServiceInstaller;
@@ -75,16 +80,23 @@ public class DistributableWebDeploymentServiceInstallerProvider implements WebDe
         Immutability immutability = Immutability.classes(immutableClasses);
         DeploymentServiceInstaller providedInstaller = provider.getSessionManagerFactoryServiceInstaller(new SessionManagerFactoryConfigurationAdapter<>(configuration, provider.getSessionManagementConfiguration(), immutability));
 
-        Function<SessionManagerFactory<ServletContext, Map<String, Object>>, io.undertow.servlet.api.SessionManagerFactory> mapper = new Function<>() {
+        ServiceDependency<SuspendableActivityRegistry> activityRegistry = ServiceDependency.on(SuspendableActivityRegistry.SERVICE_DESCRIPTOR);
+        ServiceDependency<Executor> executor = ServiceDependency.on(Capabilities.MANAGEMENT_EXECUTOR);
+        ServiceDependency<io.undertow.servlet.api.SessionManagerFactory> factory = ServiceDependency.<SessionManagerFactory<ServletContext, Map<String, Object>>>on(WebDeploymentServiceDescriptor.SESSION_MANAGER_FACTORY.resolve(unit)).map(new Function<>() {
             @Override
             public io.undertow.servlet.api.SessionManagerFactory apply(SessionManagerFactory<ServletContext, Map<String, Object>> factory) {
-                return new DistributableSessionManagerFactory(factory, configuration);
+                return new DistributableSessionManagerFactory(factory, configuration) {
+                    @Override
+                    public UndertowSessionManager createSessionManager(Deployment deployment) {
+                        return new SuspendableSessionManager(super.createSessionManager(deployment), activityRegistry.get(), executor.get());
+                    }
+                };
             }
-        };
-        ServiceDependency<SessionManagerFactory<ServletContext, Map<String, Object>>> factory = ServiceDependency.on(WebDeploymentServiceDescriptor.SESSION_MANAGER_FACTORY.resolve(unit));
-        DeploymentServiceInstaller installer = ServiceInstaller.builder(mapper, factory)
+        });
+        DeploymentServiceInstaller installer = ServiceInstaller.builder(factory)
                 .provides(org.wildfly.extension.undertow.deployment.WebDeploymentServiceDescriptor.SESSION_MANAGER_FACTORY.resolve(unit))
-                .requires(factory)
+                .startWhen(StartWhen.REQUIRED)
+                .requires(List.of(activityRegistry, executor))
                 .build();
 
         return DeploymentServiceInstaller.combine(providedInstaller, installer);

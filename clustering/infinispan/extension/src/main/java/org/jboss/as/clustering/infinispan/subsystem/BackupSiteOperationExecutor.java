@@ -44,7 +44,7 @@ public class BackupSiteOperationExecutor implements RuntimeOperationExecutor<Map
             @Override
             public Map.Entry<String, XSiteAdminOperations> apply(Cache<?, ?> cache) {
                 String site = context.getCurrentAddressValue();
-                return new AbstractMap.SimpleImmutableEntry<>(site, ComponentRegistry.componentOf(cache, XSiteAdminOperations.class));
+                return new AbstractMap.SimpleImmutableEntry<>(site, ComponentRegistry.componentOf(cache.getAdvancedCache(), XSiteAdminOperations.class));
             }
         };
         FunctionExecutor<Cache<?, ?>> executor = this.executors.getExecutor(ServiceDependency.on(InfinispanServiceDescriptor.CACHE, containerName, cacheName));

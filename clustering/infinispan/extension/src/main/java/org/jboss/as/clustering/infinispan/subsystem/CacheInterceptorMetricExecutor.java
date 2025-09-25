@@ -32,6 +32,6 @@ public class CacheInterceptorMetricExecutor<I extends AsyncInterceptor> extends 
 
     @Override
     public I apply(Cache<?, ?> cache) {
-        return ComponentRegistry.componentOf(cache, AsyncInterceptorChain.class).findInterceptorExtending(this.interceptorClass);
+        return ComponentRegistry.componentOf(cache.getAdvancedCache(), AsyncInterceptorChain.class).findInterceptorExtending(this.interceptorClass);
     }
 }

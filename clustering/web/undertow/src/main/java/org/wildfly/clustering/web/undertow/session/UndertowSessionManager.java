@@ -6,6 +6,7 @@ package org.wildfly.clustering.web.undertow.session;
 
 import java.util.Map;
 
+import org.wildfly.clustering.server.manager.Service;
 import org.wildfly.clustering.session.SessionManager;
 
 import io.undertow.server.session.SessionListeners;
@@ -14,7 +15,7 @@ import io.undertow.server.session.SessionListeners;
  * Exposes additional session manager aspects to a session.
  * @author Paul Ferraro
  */
-public interface UndertowSessionManager extends io.undertow.server.session.SessionManager {
+public interface UndertowSessionManager extends io.undertow.server.session.SessionManager, Service {
     /**
      * Returns the configured session listeners for this web application
      * @return the session listeners
@@ -26,4 +27,19 @@ public interface UndertowSessionManager extends io.undertow.server.session.Sessi
      * @return a session manager
      */
     SessionManager<Map<String, Object>> getSessionManager();
+
+    @Override
+    default boolean isStarted() {
+        return this.getSessionManager().isStarted();
+    }
+
+    @Override
+    default void start() {
+        this.getSessionManager().start();
+    }
+
+    @Override
+    default void stop() {
+        this.getSessionManager().stop();
+    }
 }

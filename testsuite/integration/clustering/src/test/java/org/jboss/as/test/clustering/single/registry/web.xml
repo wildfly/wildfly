@@ -10,7 +10,7 @@
     <resource-env-ref>
         <resource-env-ref-name>clustering/registry</resource-env-ref-name>
         <resource-env-ref-type>org.wildfly.clustering.registry.RegistryFactory</resource-env-ref-type>
-        <lookup-name>java:jboss/clustering/registry/web/routing</lookup-name>
+        <lookup-name>java:jboss/clustering/registry/web/default</lookup-name>
     </resource-env-ref>
     <resource-env-ref>
         <resource-env-ref-name>clustering/registry-factory</resource-env-ref-name>

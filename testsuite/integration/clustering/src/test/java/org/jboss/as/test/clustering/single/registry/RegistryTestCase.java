@@ -38,7 +38,7 @@ public class RegistryTestCase {
         war.addPackage(RegistryRetrieverBean.class.getPackage());
         war.addPackage(LegacyRegistryRetrieverBean.class.getPackage());
         war.addAsManifestResource(createPermissionsXmlAsset(new PropertyPermission(NODE_NAME_PROPERTY, "read"), new RuntimePermission("getClassLoader")), "permissions.xml");
-        war.setWebXML(org.jboss.as.test.clustering.cluster.registry.RegistryTestCase.class.getPackage(), "web.xml");
+        war.setWebXML(RegistryTestCase.class.getPackage(), "web.xml");
         return war;
     }
 

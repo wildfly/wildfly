@@ -31,7 +31,7 @@ import org.infinispan.notifications.cachemanagerlistener.annotation.CacheStarted
 import org.infinispan.notifications.cachemanagerlistener.annotation.CacheStopped;
 import org.infinispan.notifications.cachemanagerlistener.event.CacheStartedEvent;
 import org.infinispan.notifications.cachemanagerlistener.event.CacheStoppedEvent;
-import org.infinispan.util.concurrent.BlockingManager;
+import org.jboss.as.clustering.infinispan.cache.LazyCache;
 import org.jboss.as.clustering.infinispan.logging.InfinispanLogger;
 import org.jboss.as.clustering.infinispan.manager.DefaultCacheContainer;
 import org.jboss.as.clustering.naming.BinderServiceInstaller;
@@ -75,7 +75,7 @@ public class CacheContainerServiceConfigurator implements ResourceServiceConfigu
         String name = context.getCurrentAddressValue();
         List<String> aliases = CacheContainerResourceDefinitionRegistrar.ALIASES.resolveModelAttribute(context, model).asListOrEmpty().stream().map(ModelNode::asString).toList();
 
-        Object listener = new CacheLifecycleListener(name, this.cacheRegistry, (CacheContainerResource) context.readResource(PathAddress.EMPTY_ADDRESS));
+        Object listener = new CacheLifecycleListener(this.cacheRegistry, (CacheContainerResource) context.readResource(PathAddress.EMPTY_ADDRESS));
 
         ServiceDependency<EmbeddedCacheManager> container = ServiceDependency.on(InfinispanServiceDescriptor.CACHE_CONTAINER_CONFIGURATION, name).map(new Function<>() {
             @Override
@@ -197,35 +197,33 @@ public class CacheContainerServiceConfigurator implements ResourceServiceConfigu
 
     @Listener
     static class CacheLifecycleListener {
-        private final String containerName;
         private final ServiceValueRegistry<Cache<?, ?>> registry;
         private final Registrar<String> registrar;
         private final Map<String, Registration> registrations = new ConcurrentHashMap<>();
 
-        CacheLifecycleListener(String containerName, ServiceValueRegistry<Cache<?, ?>> registry, Registrar<String> registrar) {
-            this.containerName = containerName;
+        CacheLifecycleListener(ServiceValueRegistry<Cache<?, ?>> registry, Registrar<String> registrar) {
             this.registry = registry;
             this.registrar = registrar;
         }
 
         @CacheStarted
         public CompletionStage<Void> cacheStarted(CacheStartedEvent event) {
+            EmbeddedCacheManager container = event.getCacheManager();
+            String containerName = container.getCacheManagerConfiguration().cacheManagerName();
             String cacheName = event.getCacheName();
-            BinaryServiceConfiguration configuration = BinaryServiceConfiguration.of(this.containerName, cacheName);
+            BinaryServiceConfiguration configuration = BinaryServiceConfiguration.of(containerName, cacheName);
             InfinispanLogger.ROOT_LOGGER.started(configuration);
             this.registrations.put(cacheName, this.registrar.register(cacheName));
-            Consumer<Cache<?, ?>> captor = this.registry.add(configuration.getServiceDependency(InfinispanServiceDescriptor.CACHE));
-            EmbeddedCacheManager container = event.getCacheManager();
-            // Use getCacheAsync(), once available
-            BlockingManager blocking = GlobalComponentRegistry.componentOf(container, BlockingManager.class);
-            blocking.asExecutor(event.getCacheName()).execute(() -> captor.accept(container.getCache(cacheName)));
+            this.registry.add(configuration.getServiceDependency(InfinispanServiceDescriptor.CACHE)).accept(new LazyCache<>(container, cacheName));
             return CompletableFuture.completedStage(null);
         }
 
         @CacheStopped
         public CompletionStage<Void> cacheStopped(CacheStoppedEvent event) {
+            EmbeddedCacheManager container = event.getCacheManager();
+            String containerName = container.getCacheManagerConfiguration().cacheManagerName();
             String cacheName = event.getCacheName();
-            BinaryServiceConfiguration configuration = BinaryServiceConfiguration.of(this.containerName, cacheName);
+            BinaryServiceConfiguration configuration = BinaryServiceConfiguration.of(containerName, cacheName);
             this.registry.remove(configuration.getServiceDependency(InfinispanServiceDescriptor.CACHE));
             try (Registration registration = this.registrations.remove(cacheName)) {
                 InfinispanLogger.ROOT_LOGGER.stopped(configuration);

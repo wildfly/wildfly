@@ -4,18 +4,26 @@
  */
 package org.wildfly.clustering.infinispan.service;
 
+import java.util.Collections;
+import java.util.IdentityHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CompletionStage;
 import java.util.function.Supplier;
 
 import org.infinispan.AdvancedCache;
 import org.infinispan.Cache;
 import org.infinispan.cache.impl.AbstractDelegatingAdvancedCache;
+import org.infinispan.configuration.ConfigurationManager;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.factories.ComponentRegistry;
 import org.infinispan.factories.GlobalComponentRegistry;
 import org.infinispan.factories.impl.BasicComponentRegistry;
 import org.infinispan.manager.EmbeddedCacheManager;
+import org.infinispan.metadata.Metadata;
+import org.infinispan.notifications.cachelistener.filter.CacheEventConverter;
+import org.infinispan.notifications.cachelistener.filter.CacheEventFilter;
+import org.infinispan.notifications.cachelistener.filter.EventType;
 import org.infinispan.util.concurrent.BlockingManager;
 import org.jboss.as.controller.ControlledProcessState;
 import org.jboss.as.controller.ProcessStateNotifier;
@@ -54,7 +62,7 @@ public class CacheServiceInstaller implements ServiceInstaller {
         ServiceDependency<ProcessStateNotifier> processStateProvider = ServiceDependency.on(ProcessStateNotifier.SERVICE_DESCRIPTOR);
         ServiceDependency<ServerEnvironment> environment = ServiceDependency.on(ServerEnvironment.SERVICE_DESCRIPTOR);
         String cacheName = this.configuration.getChildName();
-        Supplier<Cache<?, ?>> cache = new Supplier<>() {
+        Supplier<Cache<?, ?>> factory = new Supplier<>() {
             @Override
             public Cache<?, ?> get() {
                 EmbeddedCacheManager manager = container.get();
@@ -64,20 +72,20 @@ public class CacheServiceInstaller implements ServiceInstaller {
                 // For distributed caches use smallest positive non-zero capacity.
                 // TODO Consider handling replicated/invalidation caches via zero capacity, though this will likely require special handling in CacheRegistry
                 org.infinispan.configuration.cache.Configuration suspendedConfiguration = originalConfiguration.clustering().cacheMode().isDistributed() ? new ConfigurationBuilder().read(originalConfiguration).clustering().hash().capacityFactor(Float.MIN_VALUE).build() : originalConfiguration;
-                // If we are starting in suspended mode, switch to suspended configuration
+                // If we are starting in suspended mode, switch to suspended configuration before starting cache
                 if ((suspendedConfiguration != originalConfiguration) && (registry.getState() != ServerSuspendController.State.RUNNING)) {
                     ControlledProcessState.State state = processStateProvider.get().getCurrentState();
-                    // If server is suspended, but will not auto-resume (e.g. server startup), start cache using suspended configuration
+                    // If server is suspended, but will not auto-resume (e.g. server startup), pre-emptively switch to suspended configuration
                     if ((state == ControlledProcessState.State.RUNNING) || ((state == ControlledProcessState.State.STARTING) && environment.get().isStartSuspended())) {
                         LOGGER.debugf("%s cache of %s container will start using a suspended configuration", cacheName, manager.getCacheManagerConfiguration().cacheManagerName());
-                        manager.undefineConfiguration(cacheName);
-                        manager.defineConfiguration(cacheName, suspendedConfiguration);
+                        updateConfiguration(manager, cacheName, suspendedConfiguration);
                     }
                 }
-                return new DefaultCache<>(manager.getCache(cacheName), originalConfiguration, suspendedConfiguration, registry);
+                Cache<?, ?> cache = manager.getCache(cacheName);
+                return (suspendedConfiguration != originalConfiguration) ? new SuspendableCache<>(cache, originalConfiguration, suspendedConfiguration, registry) : cache;
             }
         };
-        return ServiceInstaller.builder(ManagedCache::new, cache).blocking()
+        return ServiceInstaller.builder(ManagedCache::new, factory).blocking()
                 .provides(this.configuration.resolveServiceName(InfinispanServiceDescriptor.CACHE))
                 .requires(List.of(container, cacheConfiguration, activityRegistry, processStateProvider, environment))
                 .onStart(Cache::start)
@@ -86,58 +94,131 @@ public class CacheServiceInstaller implements ServiceInstaller {
                 .install(target);
     }
 
-    private static class DefaultCache<K, V> extends AbstractDelegatingAdvancedCache<K, V> {
+    static void updateConfiguration(Cache<?, ?> cache, org.infinispan.configuration.cache.Configuration configuration) {
+        ComponentRegistry.componentOf(cache, BasicComponentRegistry.class).replaceComponent(Configuration.class.getName(), configuration, false);
+        cache.stop();
+        updateConfiguration(cache.getCacheManager(), cache.getName(), configuration);
+        cache.start();
+    }
+
+    static void updateConfiguration(EmbeddedCacheManager manager, String name, org.infinispan.configuration.cache.Configuration configuration) {
+        ConfigurationManager configManager = GlobalComponentRegistry.componentOf(manager, ConfigurationManager.class);
+        configManager.removeConfiguration(name);
+        configManager.putConfiguration(name, configuration);
+    }
+
+    private static class SuspendableCache<K, V> extends AbstractDelegatingAdvancedCache<K, V> {
+
         private final SuspendableActivityRegistry activityRegistry;
         private final SuspendableActivity activity;
+        private final Map<Object, CacheEventFilter<? super K, ? super V>> listeners;
 
-        DefaultCache(Cache<K, V> cache, org.infinispan.configuration.cache.Configuration resumedConfiguration, org.infinispan.configuration.cache.Configuration suspendedConfiguration, SuspendableActivityRegistry activityRegistry) {
-            this(cache.getAdvancedCache(), activityRegistry, new SuspendableActivity() {
+        SuspendableCache(Cache<K, V> cache, org.infinispan.configuration.cache.Configuration originalConfiguration, org.infinispan.configuration.cache.Configuration suspendedConfiguration, SuspendableActivityRegistry activityRegistry) {
+            this(cache, originalConfiguration, suspendedConfiguration, activityRegistry, Collections.synchronizedMap(new IdentityHashMap<>()));
+        }
+
+        private SuspendableCache(Cache<K, V> cache, org.infinispan.configuration.cache.Configuration originalConfiguration, org.infinispan.configuration.cache.Configuration suspendedConfiguration, SuspendableActivityRegistry activityRegistry, Map<Object, CacheEventFilter<? super K, ? super V>> listeners) {
+            this(cache.getAdvancedCache(), activityRegistry, listeners, new SuspendableActivity() {
                 private final BlockingManager blocking = GlobalComponentRegistry.componentOf(cache.getCacheManager(), BlockingManager.class);
                 @Override
                 public CompletionStage<Void> suspend(ServerSuspendContext context) {
-                    // N.B. Only switch to a suspended configuration if there are other cluster members in the cache topology.
-                    if (context.isStarting() || context.isStopping() || (resumedConfiguration == suspendedConfiguration) || (cache.getCacheConfiguration().clustering().hash().capacityFactor() == suspendedConfiguration.clustering().hash().capacityFactor()) || (cache.getAdvancedCache().getDistributionManager().getCacheTopology().getActualMembers().size() < 2)) {
+                    // N.B. Skip configuration swapping if:
+                    //  * server is stopping
+                    //  * cache already uses a suspended configuration
+                    //  * we are the only cache topology member (and cannot tolerate a cache restart)
+                    if (context.isStopping() || this.inUse(suspendedConfiguration) || (cache.getAdvancedCache().getDistributionManager().getCacheTopology().getActualMembers().size() < 2)) {
                         return SuspendableActivity.COMPLETED;
                     }
                     return this.blocking.runBlocking(new Runnable() {
                         @Override
                         public void run() {
+                            // Remove recorded listeners (to be restored during resume)
+                            synchronized (listeners) {
+                                for (Object listener : listeners.keySet()) {
+                                    cache.removeListener(listener);
+                                }
+                            }
                             LOGGER.debugf("Restarting %s cache of %s container using suspended configuration", cache.getName(), cache.getCacheManager().getCacheManagerConfiguration().cacheManagerName());
-                            ComponentRegistry.componentOf(cache, BasicComponentRegistry.class).replaceComponent(Configuration.class.getName(), suspendedConfiguration, false);
-                            cache.stop();
-                            cache.start();
+                            updateConfiguration(cache, suspendedConfiguration);
                         }
                     }, "suspend");
                 }
 
                 @Override
                 public CompletionStage<Void> resume(ServerResumeContext context) {
-                    if (context.isStarting() || (resumedConfiguration == suspendedConfiguration) || (cache.getCacheConfiguration().clustering().hash().capacityFactor() == resumedConfiguration.clustering().hash().capacityFactor())) {
+                    // N.B. Skip configuration swapping if cache already uses its original configuration
+                    if (this.inUse(originalConfiguration)) {
                         return SuspendableActivity.COMPLETED;
                     }
                     return this.blocking.runBlocking(new Runnable() {
                         @Override
                         public void run() {
                             LOGGER.debugf("Restarting %s cache of %s container using original configuration", cache.getName(), cache.getCacheManager().getCacheManagerConfiguration().cacheManagerName());
-                            ComponentRegistry.componentOf(cache, BasicComponentRegistry.class).replaceComponent(Configuration.class.getName(), resumedConfiguration, false);
-                            cache.stop();
-                            cache.start();
+                            updateConfiguration(cache, originalConfiguration);
+                            // Restore recorded listeners
+                            synchronized (listeners) {
+                                for (Map.Entry<Object, CacheEventFilter<? super K, ? super V>> entry : listeners.entrySet()) {
+                                    cache.addListener(entry.getKey(), entry.getValue(), null);
+                                }
+                            }
                         }
                     }, "resume");
+                }
+
+                boolean inUse(org.infinispan.configuration.cache.Configuration configuration) {
+                    return ComponentRegistry.componentOf(cache, BasicComponentRegistry.class).getComponent(Configuration.class) == configuration;
                 }
             });
         }
 
-        private DefaultCache(AdvancedCache<K, V> cache, SuspendableActivityRegistry activityRegistry, SuspendableActivity activity) {
+        private SuspendableCache(AdvancedCache<K, V> cache, SuspendableActivityRegistry activityRegistry, Map<Object, CacheEventFilter<? super K, ? super V>> listeners, SuspendableActivity activity) {
             super(cache.getAdvancedCache());
             this.activityRegistry = activityRegistry;
+            this.listeners = listeners;
             this.activity = activity;
+        }
+
+        @Override
+        public void addListener(Object listener) {
+            this.addListenerAsync(listener).toCompletableFuture().join();
+        }
+
+        @Override
+        public <C> void addListener(Object listener, CacheEventFilter<? super K, ? super V> filter, CacheEventConverter<? super K, ? super V, C> converter) {
+            this.addListenerAsync(listener, filter, converter).toCompletableFuture().join();
+        }
+
+        @Override
+        public CompletionStage<Void> addListenerAsync(Object listener) {
+            return super.addListenerAsync(listener, new CacheEventFilter<>() {
+                @Override
+                public boolean accept(K key, V oldValue, Metadata oldMetadata, V newValue, Metadata newMetadata, EventType eventType) {
+                    return true;
+                }
+            }, null);
+        }
+
+        @Override
+        public <C> CompletionStage<Void> addListenerAsync(Object listener, CacheEventFilter<? super K, ? super V> filter, CacheEventConverter<? super K, ? super V, C> converter) {
+            // Record listener to be be restored on resume
+            return super.addListenerAsync(listener, filter, converter).thenAccept(ignore -> this.listeners.put(listener, filter));
+        }
+
+        @Override
+        public void removeListener(Object listener) {
+            this.removeListenerAsync(listener).toCompletableFuture().join();
+        }
+
+        @Override
+        public CompletionStage<Void> removeListenerAsync(Object listener) {
+            // Also remove recorded listener
+            return super.removeListenerAsync(listener).thenAccept(ignore -> this.listeners.remove(listener));
         }
 
         @SuppressWarnings({ "unchecked" })
         @Override
         public AdvancedCache rewrap(AdvancedCache delegate) {
-            return new DefaultCache<>(delegate, this.activityRegistry, this.activity);
+            return new SuspendableCache<>(delegate, this.activityRegistry, this.listeners, this.activity);
         }
 
         @Override
