@@ -1590,6 +1590,7 @@
                       <version>${version.org.owasp.dependency-check}</version>
                       <configuration>
                           <nvdApiServerId>nvd</nvdApiServerId>
+                          <ossIndexServerId>oss-index</ossIndexServerId>
                           <suppressionFile>./sca-overrides/owasp-suppressions.xml</suppressionFile>
                       </configuration>
                       <executions>
