@@ -125,8 +125,19 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor {
     public static final String OLD_URI_PREFIX = "http://java.sun.com";
     public static final String NEW_URI_PREFIX = "http://xmlns.jcp.org";
 
-    private static final String LEGACY_JACC_CAPABILITY_NAME = "org.wildfly.legacy-security.jacc";
+    /*
+     * Prior to Jakarta EE 11 the Policy was an instance of java.security.Policy, within the Elytron subsystem
+     * we would make use of an MSC service to handle the global registration. Any deployments that were utilising JACC
+     * would need to depend on the "org.wildfly.security.jacc-policy" capability to ensure registration was complete
+     * before processing the deployment.
+     *
+     * The Elytron subsystem now also supports an immediate registration which is indicated by the
+     * "org.wildfly.security.jakarta-authorization" capability, if this is registered it means Jakarta Authorization
+     * has already been registered.
+     */
+
     private static final String ELYTRON_JACC_CAPABILITY_NAME = "org.wildfly.security.jacc-policy";
+    private static final String ELYTRON_JAKARTA_AUTHORIZATION = "org.wildfly.security.jakarta-authorization";
 
     private final String defaultServer;
     private final String defaultHost;
@@ -194,7 +205,7 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor {
 
         ResourceRoot deploymentResourceRoot = deploymentUnit.getAttachment(Attachments.DEPLOYMENT_ROOT);
         final VirtualFile deploymentRoot = deploymentResourceRoot.getRoot();
-        final Module module = deploymentUnit.getAttachment(Attachments.MODULE);
+    final Module module = deploymentUnit.getAttachment(Attachments.MODULE);
         if (module == null) {
             throw new DeploymentUnitProcessingException(UndertowLogger.ROOT_LOGGER.failedToResolveModule(deploymentUnit));
         }
@@ -417,8 +428,10 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor {
         deploymentUnit.addToAttachmentList(Attachments.DEPLOYMENT_COMPLETE_SERVICES, deploymentServiceName);
 
         // adding Jakarta Authorization service
-        final boolean elytronJacc = capabilitySupport.hasCapability(ELYTRON_JACC_CAPABILITY_NAME);
-        if(elytronJacc) {
+        boolean usesElytronJaccPolicy = capabilitySupport.hasCapability(ELYTRON_JACC_CAPABILITY_NAME);
+        boolean requireJakartaAuthorization = usesElytronJaccPolicy || capabilitySupport.hasCapability(ELYTRON_JAKARTA_AUTHORIZATION);
+
+        if(requireJakartaAuthorization) {
             WarJACCDeployer deployer = new WarJACCDeployer();
             JaccService<WarMetaData> jaccService = deployer.deploy(deploymentUnit, jaccContextId);
             if (jaccService != null) {
@@ -428,7 +441,10 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor {
                     // add dependency to parent policy
                     jaccBuilder.addDependency(parentDeploymentUnit.getServiceName().append(JaccService.SERVICE_NAME), PolicyConfiguration.class, jaccService.getParentPolicyInjector());
                 }
-                jaccBuilder.requires(capabilitySupport.getCapabilityServiceName(elytronJacc ? ELYTRON_JACC_CAPABILITY_NAME : LEGACY_JACC_CAPABILITY_NAME));
+
+                if (usesElytronJaccPolicy) {
+                    jaccBuilder.requires(capabilitySupport.getCapabilityServiceName(ELYTRON_JACC_CAPABILITY_NAME));
+                }
                 // add dependency to web deployment service
                 jaccBuilder.requires(deploymentServiceName);
                 jaccBuilder.setInitialMode(Mode.PASSIVE).install();
