@@ -30,8 +30,6 @@ import org.jboss.msc.service.ServiceTarget;
  */
 public class JaccEarDeploymentProcessor implements DeploymentUnitProcessor {
 
-    private volatile boolean deployed = false;
-
     public JaccEarDeploymentProcessor() {
     }
 
@@ -43,13 +41,13 @@ public class JaccEarDeploymentProcessor implements DeploymentUnitProcessor {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
 
         if (DeploymentTypeMarker.isType(DeploymentType.EAR, deploymentUnit)) {
-                    CapabilityServiceSupport capabilitySupport = deploymentUnit.getAttachment(Attachments.CAPABILITY_SERVICE_SUPPORT);
+            CapabilityServiceSupport capabilitySupport = deploymentUnit.getAttachment(Attachments.CAPABILITY_SERVICE_SUPPORT);
 
+            // See the comment in EeCapabilities for more information regarding this pair of capabilities.
             boolean usesElytronJaccPolicy = capabilitySupport.hasCapability(ELYTRON_JACC_CAPABILITY);
             boolean requireJakartaAuthorization = usesElytronJaccPolicy || capabilitySupport.hasCapability(ELYTRON_JAKARTA_AUTHORIZATION);
 
             if (requireJakartaAuthorization) {
-                deployed = true;
                 AbstractSecurityDeployer<?> deployer = new EarSecurityDeployer();
                 JaccService<?> service = deployer.deploy(deploymentUnit);
                 if (service != null) {
@@ -78,7 +76,7 @@ public class JaccEarDeploymentProcessor implements DeploymentUnitProcessor {
      */
     @Override
     public void undeploy(DeploymentUnit context) {
-        if (deployed && DeploymentTypeMarker.isType(DeploymentType.EAR, context)) {
+        if (DeploymentTypeMarker.isType(DeploymentType.EAR, context)) {
             AbstractSecurityDeployer<?> deployer = new EarSecurityDeployer();
             deployer.undeploy(context);
         }

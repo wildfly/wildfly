@@ -125,6 +125,17 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor {
     public static final String OLD_URI_PREFIX = "http://java.sun.com";
     public static final String NEW_URI_PREFIX = "http://xmlns.jcp.org";
 
+    /*
+     * Prior to Jakarta EE 11 the Policy was an instance of java.security.Policy, within the Elytron subsystem
+     * we would make use of an MSC service to handle the global registration. Any deployments that were utilising JACC
+     * would need to depend on the "org.wildfly.security.jacc-policy" capability to ensure registration was complete
+     * before processing the deployment.
+     *
+     * The Elytron subsystem now also supports an immediate registration which is indicated by the
+     * "org.wildfly.security.jakarta-authorization" capability, if this is registered it means Jakarta Authorization
+     * has already been registered.
+     */
+
     private static final String ELYTRON_JACC_CAPABILITY_NAME = "org.wildfly.security.jacc-policy";
     private static final String ELYTRON_JAKARTA_AUTHORIZATION = "org.wildfly.security.jakarta-authorization";
 
@@ -194,7 +205,7 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor {
 
         ResourceRoot deploymentResourceRoot = deploymentUnit.getAttachment(Attachments.DEPLOYMENT_ROOT);
         final VirtualFile deploymentRoot = deploymentResourceRoot.getRoot();
-        final Module module = deploymentUnit.getAttachment(Attachments.MODULE);
+    final Module module = deploymentUnit.getAttachment(Attachments.MODULE);
         if (module == null) {
             throw new DeploymentUnitProcessingException(UndertowLogger.ROOT_LOGGER.failedToResolveModule(deploymentUnit));
         }
