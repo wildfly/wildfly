@@ -9,6 +9,8 @@ import static org.jboss.as.ee.logging.EeLogger.ROOT_LOGGER;
 import static org.wildfly.common.Assert.checkNotNullParam;
 import static org.wildfly.security.authz.jacc.PolicyUtil.getPolicyUtil;
 
+import java.security.GeneralSecurityException;
+
 import jakarta.security.jacc.PolicyConfiguration;
 import jakarta.security.jacc.PolicyConfigurationFactory;
 import jakarta.security.jacc.PolicyContextException;
@@ -34,7 +36,7 @@ public abstract class JaccService<T> implements Service<PolicyConfiguration> {
 
     public static final ServiceName SERVICE_NAME = ServiceName.of("jacc");
 
-    private final String contextId;
+    protected final String contextId;
 
     private final T metaData;
 
@@ -85,6 +87,7 @@ public abstract class JaccService<T> implements Service<PolicyConfiguration> {
                 // Allow the policy to incorporate the policy configs
                 getPolicyUtil().refresh();
             }
+            beginContextPolicy();
         } catch (Exception e) {
             throw ROOT_LOGGER.unableToStartException("JaccService", e);
         }
@@ -120,6 +123,7 @@ public abstract class JaccService<T> implements Service<PolicyConfiguration> {
                 policyConfiguration = pcf.getPolicyConfiguration(contextId, false);
                 policyConfiguration.delete();
             }
+            endContextPolicy();
         } catch (Exception e) {
             ROOT_LOGGER.errorDeletingJACCPolicy(e);
         }
@@ -143,5 +147,15 @@ public abstract class JaccService<T> implements Service<PolicyConfiguration> {
      * @throws PolicyContextException
      */
     public abstract void createPermissions(T metaData, PolicyConfiguration policyConfiguration) throws PolicyContextException;
+
+    /**
+     * Begin any Policy set up for this Context.
+     */
+    public void beginContextPolicy() throws GeneralSecurityException {};
+
+    /**
+     * End any Policy set up for this Context.
+     */
+    public void endContextPolicy() throws GeneralSecurityException {};
 
 }

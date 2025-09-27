@@ -6,7 +6,9 @@
 package org.jboss.as.ee.security;
 
 import org.jboss.as.server.deployment.AttachmentKey;
+import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentUnit;
+import org.jboss.modules.Module;
 
 /**
  * A helper class for security deployment processors
@@ -32,7 +34,8 @@ public abstract class AbstractSecurityDeployer<T> {
         if (deploymentUnit.getParent() == null) {
             standalone = Boolean.TRUE;
         }
-        return createService(jaccContextId, metaData, standalone);
+        Module module = deploymentUnit.getAttachment(Attachments.MODULE);
+        return createService(jaccContextId, metaData, standalone, module.getClassLoader());
     }
 
     public void undeploy(DeploymentUnit deploymentUnit) {
@@ -46,7 +49,7 @@ public abstract class AbstractSecurityDeployer<T> {
      * @param standalone
      * @return
      */
-    protected abstract JaccService<T> createService(String contextId, T metaData, Boolean standalone);
+    protected abstract JaccService<T> createService(String contextId, T metaData, Boolean standalone, ClassLoader deploymentClassLoader);
 
     /**
      * Return the type of metadata
