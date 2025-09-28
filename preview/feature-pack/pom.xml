@@ -18,7 +18,7 @@
         -->
         <version>39.0.0.Beta1-SNAPSHOT</version>
     </parent>
-    
+
     <artifactId>wildfly-preview-feature-pack</artifactId>
 
     <name>WildFly Preview: Galleon Feature Pack</name>
@@ -291,6 +291,12 @@
         </dependency>
 
         <!-- module and copy artifact dependencies -->
+
+        <dependency>
+            <groupId>org.glassfish.soteria</groupId>
+            <artifactId>soteria</artifactId>
+            <scope>provided</scope>
+        </dependency>
 
         <!-- Deps from the source modules we copy in -->
 

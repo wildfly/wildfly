@@ -2886,17 +2886,6 @@
 
             <dependency>
                 <groupId>org.glassfish.soteria</groupId>
-                <artifactId>jakarta.security.enterprise</artifactId>
-                <version>${version.org.glassfish.soteria}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>org.glassfish.soteria</groupId>
                 <artifactId>soteria.spi.bean.decorator.weld</artifactId>
                 <version>${version.org.glassfish.soteria}</version>
                 <exclusions>
