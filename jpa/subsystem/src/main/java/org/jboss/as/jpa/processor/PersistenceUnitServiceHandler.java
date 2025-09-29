@@ -1205,6 +1205,10 @@ public class PersistenceUnitServiceHandler {
                         // putAttachment will return null if the attachment was not set yet, in which case we will also register the CDI extension with Weld
                         if (null == deploymentUnit.putAttachment(JpaAttachments.AFTER_BEAN_DISCOVERY_ATTACHMENT_KEY, persistenceCdiExtension))
                             weldCapability.get().registerExtensionInstance(persistenceCdiExtension, deploymentUnit);
+                        else {
+                            // ensure that other threads use the service that was loaded in a different thread.
+                            persistenceCdiExtension = deploymentUnit.getAttachment(JpaAttachments.AFTER_BEAN_DISCOVERY_ATTACHMENT_KEY);
+                        }
                     }
                 }
                 if ( persistenceCdiExtension != null) {
