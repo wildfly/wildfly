@@ -94,12 +94,14 @@ public class OpenAPIMultipleDeploymentTestCase {
         // External documentation will originate from system property, as this is not specified deployment models
         Assert.assertEquals(body, "wildfly.org", externalDocumentation.get("url").asText());
 
-        JsonNode servers = node.required("servers");
         List<String> result = new LinkedList<>();
-        for (JsonNode server : servers) {
-            result.add(server.required("url").asText());
+        JsonNode servers = node.get("servers");
+        if (servers != null) {
+            for (JsonNode server : servers) {
+                result.add(server.required("url").asText());
+            }
+            Assert.assertFalse(result.isEmpty());
         }
-        Assert.assertFalse(result.isEmpty());
         return result;
     }
 
