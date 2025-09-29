@@ -235,7 +235,7 @@
       <packageUrl regex="true">^pkg:maven/org\.jboss\.resteasy/resteasy\-tracing\-api@.*$</packageUrl>
       <cve>CVE-2021-20293</cve>
    </suppress>
-   <suppress until="2025-09-20">
+   <suppress until="2026-09-29">
       <notes><![CDATA[
       file name: vertx-kafka-client-4.4.9.jar
 
