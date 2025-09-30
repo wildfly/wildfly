@@ -20,7 +20,7 @@ public class EarSecurityDeployer extends AbstractSecurityDeployer<EarMetaData> {
      * {@inheritDoc}
      */
     @Override
-    protected JaccService<EarMetaData> createService(String contextId, EarMetaData metaData, Boolean standalone) {
+    protected JaccService<EarMetaData> createService(String contextId, EarMetaData metaData, Boolean standalone, ClassLoader deploymentClassLoader) {
         return new EarJaccService(contextId, metaData, standalone);
     }
 
