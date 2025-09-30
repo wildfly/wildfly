@@ -5,6 +5,9 @@
 
 package org.jboss.as.ee.security;
 
+import static org.jboss.as.ee.subsystem.EeCapabilities.ELYTRON_JACC_CAPABILITY;
+import static org.jboss.as.ee.subsystem.EeCapabilities.ELYTRON_JAKARTA_AUTHORIZATION;
+
 import jakarta.security.jacc.PolicyConfiguration;
 
 import org.jboss.as.controller.capability.CapabilityServiceSupport;
@@ -27,10 +30,7 @@ import org.jboss.msc.service.ServiceTarget;
  */
 public class JaccEarDeploymentProcessor implements DeploymentUnitProcessor {
 
-    private final String jaccCapabilityName;
-
-    public JaccEarDeploymentProcessor(final String jaccCapabilityName) {
-        this.jaccCapabilityName = jaccCapabilityName;
+    public JaccEarDeploymentProcessor() {
     }
 
     /**
@@ -39,23 +39,34 @@ public class JaccEarDeploymentProcessor implements DeploymentUnitProcessor {
     @Override
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
-        AbstractSecurityDeployer<?> deployer = null;
+
         if (DeploymentTypeMarker.isType(DeploymentType.EAR, deploymentUnit)) {
-            deployer = new EarSecurityDeployer();
-            JaccService<?> service = deployer.deploy(deploymentUnit);
-            if (service != null) {
-                final ServiceName jaccServiceName = deploymentUnit.getServiceName().append(JaccService.SERVICE_NAME);
-                final ServiceTarget serviceTarget = phaseContext.getServiceTarget();
-                ServiceBuilder<?> builder = serviceTarget.addService(jaccServiceName, service);
-                if (deploymentUnit.getParent() != null) {
-                    // add dependency to parent policy
-                    final DeploymentUnit parentDU = deploymentUnit.getParent();
-                    builder.addDependency(parentDU.getServiceName().append(JaccService.SERVICE_NAME), PolicyConfiguration.class,
-                            service.getParentPolicyInjector());
+            CapabilityServiceSupport capabilitySupport = deploymentUnit.getAttachment(Attachments.CAPABILITY_SERVICE_SUPPORT);
+
+            // See the comment in EeCapabilities for more information regarding this pair of capabilities.
+            boolean usesElytronJaccPolicy = capabilitySupport.hasCapability(ELYTRON_JACC_CAPABILITY);
+            boolean requireJakartaAuthorization = usesElytronJaccPolicy || capabilitySupport.hasCapability(ELYTRON_JAKARTA_AUTHORIZATION);
+
+            if (requireJakartaAuthorization) {
+                AbstractSecurityDeployer<?> deployer = new EarSecurityDeployer();
+                JaccService<?> service = deployer.deploy(deploymentUnit);
+                if (service != null) {
+                    final ServiceName jaccServiceName = deploymentUnit.getServiceName().append(JaccService.SERVICE_NAME);
+                    final ServiceTarget serviceTarget = phaseContext.getServiceTarget();
+                    ServiceBuilder<?> builder = serviceTarget.addService(jaccServiceName, service);
+                    if (deploymentUnit.getParent() != null) {
+                        // add dependency to parent policy
+                        final DeploymentUnit parentDU = deploymentUnit.getParent();
+                        builder.addDependency(parentDU.getServiceName().append(JaccService.SERVICE_NAME), PolicyConfiguration.class,
+                                service.getParentPolicyInjector());
+                    }
+
+                    if (usesElytronJaccPolicy) {
+                        builder.requires(capabilitySupport.getCapabilityServiceName(ELYTRON_JACC_CAPABILITY));
+                    }
+
+                    builder.setInitialMode(Mode.ACTIVE).install();
                 }
-                CapabilityServiceSupport capabilitySupport = deploymentUnit.getAttachment(Attachments.CAPABILITY_SERVICE_SUPPORT);
-                builder.requires(capabilitySupport.getCapabilityServiceName(jaccCapabilityName));
-                builder.setInitialMode(Mode.ACTIVE).install();
             }
         }
     }
@@ -65,9 +76,8 @@ public class JaccEarDeploymentProcessor implements DeploymentUnitProcessor {
      */
     @Override
     public void undeploy(DeploymentUnit context) {
-        AbstractSecurityDeployer<?> deployer = null;
         if (DeploymentTypeMarker.isType(DeploymentType.EAR, context)) {
-            deployer = new EarSecurityDeployer();
+            AbstractSecurityDeployer<?> deployer = new EarSecurityDeployer();
             deployer.undeploy(context);
         }
     }
