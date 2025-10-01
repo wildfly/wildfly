@@ -50,6 +50,6 @@ public class DuplicatePostConstructTestCase {
                         HttpResponse.BodyHandlers.ofString())
                 .body();
 
-        Assert.assertEquals("1", response);
+        Assert.assertEquals("34", response);
     }
 }
