@@ -238,3 +238,57 @@ embedded broker is still supported. We've added to the $WILDFLY_HOME/docs/exampl
 * WildFly Preview includes the `jakarta-data` subsystem in its out-of-the-box `standalone.xml`, `standalone-ha.xml`, `standalone-full.xml`, `standalone-full-ha.xml`, `standalone-microprofile.xml` and `standalone-microprofile-ha.xml` configuration files. It also include the subsystem in the out-of-the-box `domain.xml` configuration file's `default`, `ha`, `full` and `full-ha` profiles. Standard WildFly includes support for the `jakarta-data` subsystem but does not include it in any out-of-the-box-configuration file. link:https://jakarta.ee/specifications/data/[Jakarta Data] is a new Jakarta specification that will be part of Jakarta EE 11.
 * WildFly Preview includes a new xref:Admin_Guide.adoc#Feature_stability_levels[`preview` stability] `org.wildfly.extension.vertx` extension and its `vertx` subsystem, along with a new `vertx` Galleon layer so you can provision it in a slimmed server. This subsystem can be used to configure the Vert.x instance used by our OpenTelemetry integration.
 * The Hibernate ORM integration used by the link:Developer_Guide{outfilesuffix}#JPA_Reference_Guide[JPA subsystem's] Hibernate Search feature supports using outbox polling as a coordination strategy for automatic indexing.
+
+== Jakarta Persistence 3.2+
+
+In https://jakarta.ee/specifications/persistence/3.2/[Jakarta Persistence 3.2] and https://jakarta.ee/specifications/platform/11/[Jakarta EE 11+],
+there is a requirement to produce the following types for CDI injection:
+
+* `CriteriaBuilder`
+* `EntityManager`
+* `EntityManagerFactory`
+* `Metamodel`
+* `PersistenceUnitUtil`
+* `SchemaManager`
+
+As noted in the https://jakarta.ee/specifications/platform/11/jakarta-platform-spec-11.0#a441[specification], the
+`EntityManager` has a default scope of `@TransactionScoped`. The `EntityManagerFactory` has a scope of `@ApplicationScoped`.
+All other types have a scope of `@Dependent`.
+
+In the `persistence.xml`, each persistence unit can define their own scope and own qualifiers. It's important to note
+if you choose to use CDI for your Jakarta Persistence application, you must create CDI qualifiers if you have more than
+one persistence unit defined in your `persistence.xml` file. Without this you will likely see deployment failures due
+to ambiguous beans.
+
+.Example persistence.xml
+[source,xml]
+----
+<?xml version="1.0" encoding="UTF-8"?>
+<persistence xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             xmlns="https://jakarta.ee/xml/ns/persistence"
+             xsi:schemaLocation="https://jakarta.ee/xml/ns/persistence
+        https://jakarta.ee/xml/ns/persistence/persistence_3_2.xsd"
+             version="3.2">
+    <persistence-unit name="auth">
+        <jta-data-source>java:jboss/datasources/AuthDS</jta-data-source>
+        <qualifier>org.wildfly.example.AuthDb</qualifier>
+    </persistence-unit>
+    <persistence-unit name="default">
+        <jta-data-source>java:jboss/datasources/defaultDS</jta-data-source>
+    </persistence-unit>
+</persistence>
+----
+
+At most one persistence unit is allowed to have no qualifier defined in the `persistence.xml`. This will be the default
+scoped `EntityManagerFactory` and `EntityManager`.
+
+NOTE: If you already have CDI producers defined in your application to inject any of these types, they should continue
+to work. However, you may be able to remove these producers and rely on the default behavior.
+
+=== Special Notes
+
+It should be noted that there is some ambiguity in the Jakarta EE 11 specification when defining beans for the
+`EntityManagerFactory`. It's noted that bean name is given by the name of the persistence unit. In most cases this
+should be fine. However, if multiple persistence units with the same name exist in a deployment,
+we've opted to not give the bean a name. This will only affect you if you want to use Jakarta Expression Language to
+get the `EntityManagerFactory` and you've got more than one persistence unit with the same name.
