@@ -32,6 +32,6 @@ public class SimpleServlet extends HttpServlet {
 
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         resp.setContentType("text/plain");
-        resp.getWriter().write(""+m_postCount.get());
+        resp.getWriter().write(""+(m_postCount.get() + m_cInteger));
     }
 }
