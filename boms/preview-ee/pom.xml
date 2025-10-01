@@ -63,7 +63,7 @@
         <version.org.hibernate.models>1.0.1</version.org.hibernate.models>
         <version.org.hibernate.search>8.1.2.Final</version.org.hibernate.search>
         <version.org.hibernate.validator>9.0.1.Final</version.org.hibernate.validator>
-        <version.org.wildfly.security.jakarta.elytron-ee>4.0.0.Beta1</version.org.wildfly.security.jakarta.elytron-ee>
+        <version.org.wildfly.security.jakarta.elytron-ee>4.0.0.Beta3</version.org.wildfly.security.jakarta.elytron-ee>
     </properties>
 
     <dependencyManagement>
