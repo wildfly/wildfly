@@ -14,6 +14,7 @@ import org.wildfly.clustering.server.GroupMember;
 import org.wildfly.clustering.server.provider.ServiceProviderListener;
 import org.wildfly.clustering.server.provider.ServiceProviderRegistrar;
 import org.wildfly.clustering.server.provider.ServiceProviderRegistration;
+import org.wildfly.clustering.server.provider.ServiceProviderRegistrationListener;
 
 import java.util.Set;
 
@@ -46,8 +47,8 @@ public class ModuleAvailabilityRegistrarBean implements ServiceProviderRegistrar
     }
 
     @Override
-    public ServiceProviderRegistration<Object, GroupMember> register(Object service, ServiceProviderListener<GroupMember> listener) {
-        log.infof("Calling register() with identifier %s\n", service);
+    public ServiceProviderRegistration<Object, GroupMember> register(Object service, ServiceProviderRegistrationListener<GroupMember> listener) {
+        // noop
         return registrar.register(service, listener);
     }
 

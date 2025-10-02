@@ -16,13 +16,14 @@ import org.jboss.logging.Logger;
 import org.jboss.msc.service.ServiceName;
 import org.wildfly.clustering.server.GroupMember;
 import org.wildfly.clustering.server.manager.Service;
-import org.wildfly.clustering.server.provider.ServiceProviderListener;
 import org.wildfly.clustering.server.provider.ServiceProviderRegistrar;
 import org.wildfly.clustering.server.provider.ServiceProviderRegistration;
+import org.wildfly.clustering.server.provider.ServiceProviderRegistrationEvent;
+import org.wildfly.clustering.server.provider.ServiceProviderRegistrationListener;
 import org.wildfly.subsystem.service.ServiceDependency;
 
 import java.util.ArrayList;
-import java.util.HashMap;
+
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -30,6 +31,7 @@ import java.util.Map;
 import java.util.Set;
 
 import java.util.concurrent.CompletionStage;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * A service which implements a ModuleAvailabilityRegistrar.
@@ -61,16 +63,16 @@ public class ModuleAvailabilityRegistrarService implements ModuleAvailabilityReg
     private final SuspendableActivity activity;
 
     private final List<ModuleAvailabilityRegistrarListener> moduleAvailabilityListeners = new ArrayList<>();
-    private final Map<EJBModuleIdentifier, ServiceProviderRegistration<EJBModuleIdentifier, GroupMember>> registrations = new HashMap<>();
+    private final Map<EJBModuleIdentifier, ServiceProviderRegistration<EJBModuleIdentifier, GroupMember>> registrations = new ConcurrentHashMap<>();
 
     private boolean started;
 
     /**
      * Create an instance of a ModuleAvailabilityRegistrar which reflects the content of a given DepoymentRepository.
      *
-     * @param deploymentRepository the repository this registrar listens to for module availability information on a given host
-     * @param registrar            the ServiceProviderRegistrar instance used to store module availability information
-     * @param registry             the suspendable activity registry to register our server activity with
+     * @param activityRegistryDependency a dependency reference to the suspendable activity registry to register our server activity with
+     * @param serviceRegistrarDependency a dependency reference to ServiceProviderRegistrar providing module availability information
+     * @param repositoryDependency a dependency reference to the deployment repository
      */
     public ModuleAvailabilityRegistrarService(ServiceDependency<SuspendableActivityRegistry> activityRegistryDependency, ServiceDependency<ServiceProviderRegistrar<EJBModuleIdentifier, GroupMember>> serviceRegistrarDependency, ServiceDependency<DeploymentRepository> repositoryDependency) {
         this.activityRegistryDependency = activityRegistryDependency;
@@ -80,13 +82,12 @@ public class ModuleAvailabilityRegistrarService implements ModuleAvailabilityReg
         this.activity = new ModuleAvailabilityRegistrarSuspendableActivity();
         this.deploymentRepositoryListener = new ModuleAvailabilityRegistrarDeploymentRepositoryListener();
         this.started = false;
-        log.info("ModuleAvailabilityRegistrarService : <init>");
     }
 
-    // service interface
+    // the service interface
+
     @Override
     public boolean isStarted() {
-        // how to check started
         return started;
     }
 
@@ -136,12 +137,10 @@ public class ModuleAvailabilityRegistrarService implements ModuleAvailabilityReg
      */
     @Override
     public Set<EJBModuleIdentifier> getServices() {
-        log.info("Calling getServices()");
         Set<EJBModuleIdentifier> services = new HashSet();
         for (EJBModuleIdentifier service : serviceRegistrar.getServices()) {
             services.add(service);
         }
-        log.infof("Called getServices(): result = %s\n", services);
         return services;
     }
 
@@ -152,11 +151,7 @@ public class ModuleAvailabilityRegistrarService implements ModuleAvailabilityReg
      */
     @Override
     public Set<GroupMember> getProviders(EJBModuleIdentifier service) {
-        log.infof("Calling getProviders(%s)\n", service);
-        Set<GroupMember> result = serviceRegistrar.getProviders(service);
-        log.infof("Called getProviders(%s): result = %s\n", service, result);
-        return result;
-//        return serviceRegistrar.getProviders(service);
+        return serviceRegistrar.getProviders(service);
     }
 
     /**
@@ -196,19 +191,19 @@ public class ModuleAvailabilityRegistrarService implements ModuleAvailabilityReg
          * - for each service provider unregistered, callback clients will be notified that the module is no longer available
          * This also includes the case where the server is being suspended as part pf clean shutdown.
          *
-         * @param context
-         * @return
+         * @param context the server suspend context
+         * @return a completion stage for the ServerSuspendController
          */
         @Override
         public CompletionStage<Void> prepare(ServerSuspendContext context) {
-            log.infof("Preparing for suspend - context: isStarting = %s, isStopping = %s\n", context.isStarting(), context.isStopping());
+            log.infof("Preparing for suspend - context: isStarting = %s, isStopping = %s", context.isStarting(), context.isStopping());
 
             // unregister all of the service providers we have registered
             Iterator<Map.Entry<EJBModuleIdentifier, ServiceProviderRegistration<EJBModuleIdentifier, GroupMember>>> iterator = registrations.entrySet().iterator();
             while (iterator.hasNext()) {
                 Map.Entry<EJBModuleIdentifier, ServiceProviderRegistration<EJBModuleIdentifier, GroupMember>> entry = iterator.next();
                 EJBModuleIdentifier moduleId = entry.getKey();
-                log.infof("Closing registration for module %s\n", moduleId);
+                log.infof("Closing registration for module %s", moduleId);
                 ServiceProviderRegistration<EJBModuleIdentifier, GroupMember> registration = entry.getValue();
                 registration.close();
                 iterator.remove();
@@ -221,11 +216,11 @@ public class ModuleAvailabilityRegistrarService implements ModuleAvailabilityReg
          * Adjust the ServiceProviderRegistry once suspension of the server cas completed.
          *
          * @param context the server suspend context
-         * @return
+         * @return a completion stage for the ServerSuspendController
          */
         @Override
         public CompletionStage<Void> suspend(ServerSuspendContext context) {
-            log.infof("Suspending - context: isStarting = %s, isStopping = %s\n", context.isStarting(), context.isStopping());
+            log.infof("Suspending - context: isStarting = %s, isStopping = %s", context.isStarting(), context.isStopping());
             // available if necessary
 
             log.info("Suspended");
@@ -245,7 +240,7 @@ public class ModuleAvailabilityRegistrarService implements ModuleAvailabilityReg
          */
         @Override
         public CompletionStage<Void> resume(ServerResumeContext context) {
-            log.infof("Resuming - context: isStarting = %s\n", context.isStarting());
+            log.infof("Resuming - context: isStarting = %s", context.isStarting());
 
             if (!context.isStarting()) {
                 log.info("Server not starting - performing resume actions");
@@ -257,13 +252,14 @@ public class ModuleAvailabilityRegistrarService implements ModuleAvailabilityReg
                 for (EJBModuleIdentifier moduleId : deployedModules.keySet()) {
                     // only register modules that do not already have a local registration entry
                     if (registrations.get(moduleId) == null) {
-                        ModuleAvailabilityRegistrarServiceProviderListener serviceProviderListener = new ModuleAvailabilityRegistrarServiceProviderListener(moduleId, moduleAvailabilityListeners);
-                        log.infof("Opening registration for module %s\n" + moduleId);
-                        ServiceProviderRegistration<EJBModuleIdentifier, GroupMember> registration = serviceRegistrar.register(moduleId, serviceProviderListener);
-                        // set the initial value of the providers
-                        serviceProviderListener.setCurrentProviders(registration.getProviders());
-                        // keep track of registrartions
-                        registrations.putIfAbsent(moduleId, registration);
+                        ModuleAvailabilityRegistrarServiceProviderRegistrationListener serviceProviderRegistrationListener = new ModuleAvailabilityRegistrarServiceProviderRegistrationListener(moduleId, moduleAvailabilityListeners);
+                        log.infof("Opening registration for module %s" + moduleId);
+                        ServiceProviderRegistration<EJBModuleIdentifier, GroupMember> registration = serviceRegistrar.register(moduleId, serviceProviderRegistrationListener);
+                        // keep track of registrations
+                        ServiceProviderRegistration<EJBModuleIdentifier, GroupMember> oldRegistration = registrations.putIfAbsent(moduleId, registration);
+                        if (oldRegistration != null) {
+                            log.warnf("resume: Found stale registration for module %s" + moduleId);
+                        }
                     }
                 }
             }
@@ -279,82 +275,67 @@ public class ModuleAvailabilityRegistrarService implements ModuleAvailabilityReg
      * orremoved, we need to keep track of the current providers to determine whether nodes were addede or removed
      * for this module.
      */
-    class ModuleAvailabilityRegistrarServiceProviderListener implements ServiceProviderListener<GroupMember> {
+    class ModuleAvailabilityRegistrarServiceProviderRegistrationListener implements ServiceProviderRegistrationListener<GroupMember> {
 
+        private static final Logger log = Logger.getLogger(ModuleAvailabilityRegistrarServiceProviderRegistrationListener.class.getSimpleName());
         private final EJBModuleIdentifier moduleId;
         private final List<ModuleAvailabilityRegistrarListener> listeners;
-        private Set<GroupMember> providers;
 
-        public ModuleAvailabilityRegistrarServiceProviderListener(EJBModuleIdentifier moduleId, List<ModuleAvailabilityRegistrarListener> listeners) {
+        public ModuleAvailabilityRegistrarServiceProviderRegistrationListener(EJBModuleIdentifier moduleId, List<ModuleAvailabilityRegistrarListener> listeners) {
             this.moduleId = moduleId;
             this.listeners = listeners;
-            this.providers = new HashSet<GroupMember>();
         }
 
         /**
-         * Set the initial value of current providers, immediately after registration
-         *
-         * @param currentProviders
-         */
-        public void setCurrentProviders(Set<GroupMember> currentProviders) {
-            this.providers = currentProviders;
-        }
-
-        /**
-         * Use the information on changes in providers to notifiy listeners that modules have been added or removed.
+         * Use the information on changes in providers to notify listeners that modules have been added or removed.
          * NOTE: called even when the change in providers is locally initiated.
          *
-         * @param providers the new set of group members providing the given service
+         * @param providers a registration event describing members providing the given service
          */
         @Override
-        public void providersChanged(Set<GroupMember> providers) {
-            log.infof("Calling providerChanged() for module %s : providers = %s\n", moduleId, providers);
-            // check if this module has been added or removed
+        public synchronized void providersChanged(ServiceProviderRegistrationEvent<GroupMember> providers) {
+            log.infof("Calling providersChanged() for module %s : previous = %s, current = %s", moduleId, providers.getPreviousProviders(), providers.getCurrentProviders());
 
-            // calculate providers which have not changed
-            Set<GroupMember> intersection = new HashSet<GroupMember>();
-            intersection.addAll(this.providers);
-            intersection.retainAll(providers);
+            Set<GroupMember> added = providers.getNewProviders();
+            Set<GroupMember> removed = providers.getObsoleteProviders();
 
-            // calculate providers which have left
-            Set<GroupMember> removed = new HashSet<GroupMember>();
-            removed.addAll(this.providers);
-            removed.removeAll(intersection);
+            log.infof("Calling providersChanged() for module %s : added = %s, removed = %s", moduleId, added, removed);
 
-            // calculate providers which have appeared
-            Set<GroupMember> added = new HashSet<GroupMember>();
-            added.addAll(providers);
-            added.removeAll(intersection);
+            if (!added.isEmpty()) {
+                // some providers were added - create the map
+                List<GroupMember> list = new ArrayList<GroupMember>(added);
+                Map<EJBModuleIdentifier, List<GroupMember>> map = Map.of(moduleId, list);
 
-            if (! added.isEmpty()) {
-                // some providers were added
+                log.infof("Calling ModuleAvailabilityRegistrarListener:modulesAvailable with map = %s", map);
+
+                // call the listeners
                 for (ModuleAvailabilityRegistrarListener listener : this.listeners) {
-                    List<GroupMember> list = new ArrayList<GroupMember>();
-                    list.addAll(added);
-                    // EJBModuleIdentifier
-                    Map<EJBModuleIdentifier, List<GroupMember>> map = Map.of(moduleId, list);
                     listener.modulesAvailable(map);
                 }
             }
 
-            if (! removed.isEmpty()) {
-                // some providers were removed, advise our listeners
+            if (!removed.isEmpty()) {
+                // some providers were removed - create the map
+                List<GroupMember> list = new ArrayList<GroupMember>(removed);
+                Map<EJBModuleIdentifier, List<GroupMember>> map = Map.of(moduleId, list);
+
+                log.infof("Calling ModuleAvailabilityRegistrarListener:modulesUnavailable with map = %s", map);
+
+                // call the listeners
                 for (ModuleAvailabilityRegistrarListener listener : this.listeners) {
-                    List<GroupMember> list = new ArrayList<GroupMember>();
-                    list.addAll(removed);
-                    Map<EJBModuleIdentifier, List<GroupMember>> map = Map.of(moduleId, list);
                     listener.modulesUnavailable(map);
                 }
             }
         }
     }
 
-
     /*
      * This listener receives events concerning the local deployment repository and adds the information to the
      * shared ServiceProviderRegistry.so that remote nodes can see what is deployed on this node.
      */
     class ModuleAvailabilityRegistrarDeploymentRepositoryListener implements DeploymentRepositoryListener {
+
+        private static final Logger log = Logger.getLogger(ModuleAvailabilityRegistrarDeploymentRepositoryListener.class.getSimpleName());
 
         /**
          * Adjust the contents of the ServiceProviderRegistrar to account for a set of new deployment (possibly
@@ -363,26 +344,26 @@ public class ModuleAvailabilityRegistrarService implements ModuleAvailabilityReg
          * @param repository the deployment repository
          */
         @Override
-        public void listenerAdded (DeploymentRepository repository){
-            log.info("Adding ModuleAvailabilityRegistrarDeploymentModuleListener");
+        public synchronized void listenerAdded (DeploymentRepository repository){
+            log.info("Adding ModuleAvailabilityRegistrarDeploymentRepositoryListener");
 
             // get all deployments in the DeploymentRepository, started or not
             Map<EJBModuleIdentifier, ModuleDeployment> availableModules = repository.getModules();
 
             for (EJBModuleIdentifier moduleId : availableModules.keySet()){
-                log.infof("Adding moduleID %s to ServiceProviderRegistry\n", moduleId);
+                log.infof("Adding moduleID %s to ServiceProviderRegistry", moduleId);
 
                 // initialize the listener for the new service
-                ModuleAvailabilityRegistrarServiceProviderListener serviceProviderListener = new ModuleAvailabilityRegistrarServiceProviderListener(moduleId, moduleAvailabilityListeners);
+                ModuleAvailabilityRegistrarServiceProviderRegistrationListener serviceProviderRegistrationListener = new ModuleAvailabilityRegistrarServiceProviderRegistrationListener(moduleId, moduleAvailabilityListeners);
 
                 // register the new service
-                ServiceProviderRegistration<EJBModuleIdentifier, GroupMember> registration = serviceRegistrar.register(moduleId, serviceProviderListener);
-
-                // set the initial value of the providers
-                serviceProviderListener.setCurrentProviders(registration.getProviders());
+                ServiceProviderRegistration<EJBModuleIdentifier, GroupMember> registration = serviceRegistrar.register(moduleId, serviceProviderRegistrationListener);
 
                 // keep track of registrations
-                registrations.putIfAbsent(moduleId, registration);
+                ServiceProviderRegistration<EJBModuleIdentifier, GroupMember> oldRegistration = registrations.putIfAbsent(moduleId, registration);
+                if (oldRegistration != null) {
+                    log.warnf("listenerAdded: Found stale registration for module %s" + moduleId);
+                }
             }
         }
 
@@ -394,18 +375,15 @@ public class ModuleAvailabilityRegistrarService implements ModuleAvailabilityReg
          * @param moduleDeployment module deployment
          */
         @Override
-        public void deploymentAvailable (EJBModuleIdentifier moduleId, ModuleDeployment moduleDeployment){
+        public synchronized void deploymentAvailable (EJBModuleIdentifier moduleId, ModuleDeployment moduleDeployment){
             // add an entry to the ServiceProviderRegistrar
-            log.infof("Adding moduleID %s to ServiceProviderRegistry\n", moduleId);
+            log.infof("Adding moduleID %s to ServiceProviderRegistry", moduleId);
 
             // initialize the listener for the new service
-            ModuleAvailabilityRegistrarServiceProviderListener serviceProviderListener = new ModuleAvailabilityRegistrarServiceProviderListener(moduleId, moduleAvailabilityListeners);
+            ModuleAvailabilityRegistrarServiceProviderRegistrationListener serviceProviderRegistrationListener = new ModuleAvailabilityRegistrarServiceProviderRegistrationListener(moduleId, moduleAvailabilityListeners);
 
             // register the new service
-            ServiceProviderRegistration<EJBModuleIdentifier, GroupMember> registration = serviceRegistrar.register(moduleId, serviceProviderListener);
-
-            // set the initial value of the providers
-            serviceProviderListener.setCurrentProviders(registration.getProviders());
+            ServiceProviderRegistration<EJBModuleIdentifier, GroupMember> registration = serviceRegistrar.register(moduleId, serviceProviderRegistrationListener);
 
             // keep track of which services are registered
             registrations.putIfAbsent(moduleId, registration);
@@ -418,9 +396,9 @@ public class ModuleAvailabilityRegistrarService implements ModuleAvailabilityReg
          * @param moduleDeployment module deployment
          */
         @Override
-        public void deploymentStarted (EJBModuleIdentifier moduleId, ModuleDeployment moduleDeployment){
+        public synchronized void deploymentStarted (EJBModuleIdentifier moduleId, ModuleDeployment moduleDeployment){
             // TODO: how do we differentiate between deployments whch have not started and those which have started?
-            log.infof("Adding started moduleID %s to ServiceProviderRegistry\n", moduleId);
+            log.infof("Adding started moduleID %s to ServiceProviderRegistry", moduleId);
         }
 
         /**
@@ -429,13 +407,13 @@ public class ModuleAvailabilityRegistrarService implements ModuleAvailabilityReg
          * @param moduleId The deployment
          */
         @Override
-        public void deploymentRemoved (EJBModuleIdentifier moduleId){
-            log.infof("Removing moduleID %s from ServiceProviderRegistry\n", moduleId);
+        public synchronized void deploymentRemoved (EJBModuleIdentifier moduleId){
+            log.infof("Removing moduleID %s from ServiceProviderRegistry", moduleId);
 
             // get hold of the deployment's service registration
             ServiceProviderRegistration<EJBModuleIdentifier, GroupMember> registration = registrations.remove(moduleId);
 
-            // close the registrarion
+            // close the registration
             registration.close();
         }
 
@@ -447,36 +425,6 @@ public class ModuleAvailabilityRegistrarService implements ModuleAvailabilityReg
         @Override
         public void deploymentResumed (EJBModuleIdentifier moduleId){
             // this method will be deprecated
-        }
-    }
-
-    /**
-     * Dump out the contents of the local registrations map (debugging)
-     *
-     * @param a descriptive message of context
-     * @param serviceRegistrar
-     */
-    private void dumpRegistrations(String message, Map<EJBModuleIdentifier, ServiceProviderRegistration<Object, GroupMember>> registrations) {
-
-        log.infof("Dumping registered modules on node %s for: %s\n", System.getProperty("jboss.node.name", "unknown") , message);
-        for (EJBModuleIdentifier moduleId: registrations.keySet()) {
-            log.info("Registered module: " + moduleId);
-        }
-    }
-
-    /**
-     * Dump out the contents of the registrar (debugging)
-     *
-     * @param a descriptive message of context
-     * @param serviceRegistrar
-     */
-    private void dumpServices(String message, ServiceProviderRegistrar<EJBModuleIdentifier, GroupMember> serviceRegistrar) {
-        log.infof("Dumping service registrar contents for : %s\n" + message);
-        for (EJBModuleIdentifier moduleId: serviceRegistrar.getServices()) {
-            log.infof("Registered module: %s\n" + (EJBModuleIdentifier) moduleId);
-            for (GroupMember m: serviceRegistrar.getProviders(moduleId)) {
-                log.infof("Module provider: %s\n" + m);
-            }
         }
     }
 }
