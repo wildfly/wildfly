@@ -89,6 +89,11 @@ public class ResteasyDocumentSecureProcessingFeatureTestCase extends AbstractRes
     @InSequence(2)
     public void checkFalse() throws Exception {
         AssumeTestGroupUtil.assumeSecurityManagerDisabled();
+        // Java 24+ when disabling XMLConstants.FEATURE_SECURE_PROCESSING, it doesn't really make the values for
+        // properties like jdk.xml.entityExpansionLimit unlimited, see https://docs.oracle.com/en/java/javase/25/docs/api/java.xml/module-summary.html#Properties
+        // For now we'll just disable this test for Java 24+. This property/attribute may just need to be disabled.
+        // A review of these properties needs to be done in RESTEasy. Then we need to review the attributes in WildFly.
+        org.jboss.as.test.shared.AssumeTestGroupUtil.assumeJDKVersionBefore(24);
         writeAttribute(ModelNode.FALSE);
         try (Client client = ClientBuilder.newClient()) {
             try (Response response = client.target(uriBuilder()).request().post(Entity.xml(EXPONENTIAL_ENTITY))) {
