@@ -33,7 +33,7 @@ for the JPA interfaces]and https://jcp.org/en/jsr/detail?id=338[JPA 2.2
 specification].
 
 The index of the Hibernate documentation is at
-https://hibernate.org/orm/documentation/6.1/
+https://hibernate.org/orm/documentation/6.6/
 
 [[update-your-persistence.xml-for-hibernate]]
 == Update your Persistence.xml for Hibernate

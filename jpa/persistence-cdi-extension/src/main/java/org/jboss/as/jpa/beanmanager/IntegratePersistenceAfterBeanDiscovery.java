@@ -9,16 +9,26 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.stream.Collectors;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.context.Dependent;
 import jakarta.enterprise.event.Observes;
+import jakarta.enterprise.inject.Any;
+import jakarta.enterprise.inject.Default;
 import jakarta.enterprise.inject.spi.AfterBeanDiscovery;
+import jakarta.enterprise.inject.spi.Bean;
 import jakarta.enterprise.inject.spi.BeanManager;
+import jakarta.enterprise.inject.spi.ProcessProducerField;
+import jakarta.enterprise.inject.spi.ProcessProducerMethod;
 import jakarta.enterprise.inject.spi.configurator.BeanConfigurator;
 import jakarta.persistence.Cache;
 import jakarta.persistence.EntityManager;
@@ -75,8 +85,29 @@ import org.jipijapa.plugin.spi.PersistenceUnitMetadata;
  */
 
 public class IntegratePersistenceAfterBeanDiscovery implements PersistenceCdiExtension {
+    private static final Set<String> DEFAULT_QUALIFIERS = Set.of(Default.class.getName(), Any.class.getName());
     private final CopyOnWriteArrayList<IntegrationWithCDIBagImpl> persistenceUnitIntegrationStuff = new CopyOnWriteArrayList<>();
+    // Captures a map of produces for the known persistence injection types
+    private final Map<Class<?>, Collection<Set<String>>> foundProducers = new HashMap<>();
     private volatile boolean afterBeanDiscoveryEventRanAlready = false;
+
+    /**
+     * Process producer fields for known persistence injection types
+     *
+     * @param producerField the producer field
+     */
+    public void processProducerFields(@Observes final ProcessProducerField<?, ?> producerField) {
+        processBeanProducer(producerField.getBean());
+    }
+
+    /**
+     * Process producer methods for the known persistence injection types
+     *
+     * @param processProducerMethod the producer method
+     */
+    public void processProducerMethods(@Observes final ProcessProducerMethod<?, ?> processProducerMethod) {
+        processBeanProducer(processProducerMethod.getBean());
+    }
 
     void afterBeanDiscovery(@Observes AfterBeanDiscovery event, BeanManager manager) {
         afterBeanDiscoveryEventRanAlready = true;
@@ -133,6 +164,7 @@ public class IntegratePersistenceAfterBeanDiscovery implements PersistenceCdiExt
             schemaManager(afterBeanDiscovery, persistenceUnitMetadata, qualifiers, integrationWithCDIBag);
 
         }
+        foundProducers.clear();
     }
 
     private void entityManager(
@@ -140,6 +172,10 @@ public class IntegratePersistenceAfterBeanDiscovery implements PersistenceCdiExt
             PersistenceUnitMetadata persistenceUnitMetadata,
             List<String> qualifiers,
             IntegrationWithCDIBag integrationWithCDIBag) {
+
+        if (producerExists(EntityManager.class, qualifiers)) {
+            return;
+        }
 
         String scope = persistenceUnitMetadata.getScopeAnnotationName();
         if (scope == null || scope.isEmpty()) {
@@ -189,6 +225,10 @@ public class IntegratePersistenceAfterBeanDiscovery implements PersistenceCdiExt
             List<String> qualifiers,
             IntegrationWithCDIBag integrationWithCDIBag) {
 
+        if (producerExists(EntityManagerFactory.class, qualifiers)) {
+            return;
+        }
+
         // EntityManagerFactory setup
         BeanConfigurator<EntityManagerFactory> beanConfigurator = afterBeanDiscovery.addBean();
         beanConfigurator.addTransitiveTypeClosure(EntityManagerFactory.class);
@@ -225,6 +265,10 @@ public class IntegratePersistenceAfterBeanDiscovery implements PersistenceCdiExt
             List<String> qualifiers,
             IntegrationWithCDIBag integrationWithCDIBag) {
 
+        if (producerExists(CriteriaBuilder.class, qualifiers)) {
+            return;
+        }
+
         BeanConfigurator<CriteriaBuilder> beanConfigurator = afterBeanDiscovery.addBean();
         beanConfigurator.addTransitiveTypeClosure(CriteriaBuilder.class);
 
@@ -257,6 +301,10 @@ public class IntegratePersistenceAfterBeanDiscovery implements PersistenceCdiExt
             List<String> qualifiers,
             IntegrationWithCDIBag integrationWithCDIBag) {
 
+        if (producerExists(PersistenceUnitUtil.class, qualifiers)) {
+            return;
+        }
+
         BeanConfigurator<PersistenceUnitUtil> beanConfigurator = afterBeanDiscovery.addBean();
         beanConfigurator.addTransitiveTypeClosure(PersistenceUnitUtil.class);
 
@@ -287,6 +335,10 @@ public class IntegratePersistenceAfterBeanDiscovery implements PersistenceCdiExt
             PersistenceUnitMetadata persistenceUnitMetadata,
             List<String> qualifiers,
             IntegrationWithCDIBag integrationWithCDIBag) {
+
+        if (producerExists(Cache.class, qualifiers)) {
+            return;
+        }
 
         BeanConfigurator<Cache> beanConfigurator = afterBeanDiscovery.addBean();
         beanConfigurator.addTransitiveTypeClosure(Cache.class);
@@ -319,6 +371,10 @@ public class IntegratePersistenceAfterBeanDiscovery implements PersistenceCdiExt
             List<String> qualifiers,
             IntegrationWithCDIBag integrationWithCDIBag) {
 
+        if (producerExists(Metamodel.class, qualifiers)) {
+            return;
+        }
+
         BeanConfigurator<Metamodel> beanConfigurator = afterBeanDiscovery.addBean();
         beanConfigurator.addTransitiveTypeClosure(Metamodel.class);
 
@@ -347,6 +403,10 @@ public class IntegratePersistenceAfterBeanDiscovery implements PersistenceCdiExt
             PersistenceUnitMetadata persistenceUnitMetadata,
             List<String> qualifiers,
             IntegrationWithCDIBagImpl integrationWithCDIBag) {
+
+        if (producerExists(SchemaManager.class, qualifiers)) {
+            return;
+        }
         BeanConfigurator<SchemaManager> beanConfigurator = afterBeanDiscovery.addBean();
         beanConfigurator.addTransitiveTypeClosure(SchemaManager.class);
 
@@ -369,6 +429,66 @@ public class IntegratePersistenceAfterBeanDiscovery implements PersistenceCdiExt
                     return integrationWithCDIBag.getEntityManagerFactory().getSchemaManager();
                 }
         );
+    }
+
+    /**
+     * Processes a bean looking for known injection types. If found, the type is captured along with the qualifiers.
+     * The captured information is later used to determine if a producer already exists for the type and a producer
+     * will not be created dynamically.
+     *
+     * @param bean the bean to check
+     */
+    private void processBeanProducer(final Bean<?> bean) {
+        // Check for known injection types
+        addProducerType(bean, EntityManager.class);
+        addProducerType(bean, EntityManagerFactory.class);
+        addProducerType(bean, CriteriaBuilder.class);
+        addProducerType(bean, PersistenceUnitUtil.class);
+        addProducerType(bean, Metamodel.class);
+        addProducerType(bean, SchemaManager.class);
+    }
+
+    /**
+     * Adds, if applicable, the type to the map of known injection types with the qualifiers for the bean.
+     *
+     * @param bean the bean being processed
+     * @param type the injection type to look for
+     */
+    private void addProducerType(final Bean<?> bean, final Class<?> type) {
+        if (bean.getTypes().contains(type)) {
+            final var qualifiers = foundProducers.computeIfAbsent(type, ignore -> new ArrayList<>());
+            qualifiers.add(bean
+                    .getQualifiers()
+                    .stream()
+                    .map(a -> a.annotationType().getName())
+                    .collect(Collectors.toSet()));
+        }
+    }
+
+    /**
+     * Checks if a producer for the type already exists. If the producer exists, a producer will not be dynamically
+     * created.
+     *
+     * @param type the type to check if a producer exists
+     * @param qualifiers the qualifiers for the producer
+     *
+     * @return {@code true} if a producer already exists, otherwise {@code false}
+     */
+    private boolean producerExists(final Class<?> type, final Collection<String> qualifiers) {
+        final var allQualifiers = foundProducers.get(type);
+        if (allQualifiers != null) {
+            for (final var q : allQualifiers) {
+                if (qualifiers.isEmpty()) {
+                    if (DEFAULT_QUALIFIERS.containsAll(q)) {
+                        return true;
+                    }
+                }
+                if (q.containsAll(qualifiers)) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     protected record ScopeProxy(Class<? extends Annotation> annotationType) implements InvocationHandler {
