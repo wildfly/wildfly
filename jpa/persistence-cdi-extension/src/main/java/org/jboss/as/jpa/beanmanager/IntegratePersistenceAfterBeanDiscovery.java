@@ -38,7 +38,6 @@ import jakarta.persistence.SchemaManager;
 import jakarta.persistence.SynchronizationType;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.metamodel.Metamodel;
-import org.jboss.as.jpa.config.Configuration;
 import org.jboss.as.jpa.container.TransactionScopedEntityManager;
 import org.jboss.as.jpa.messages.JpaLogger;
 import org.jipijapa.plugin.spi.IntegrationWithCDIBag;
@@ -133,12 +132,10 @@ public class IntegratePersistenceAfterBeanDiscovery implements PersistenceCdiExt
         return integrationWithCDIBag;
     }
 
-    private static final List<String> defaultQualifier = List.of("jakarta.enterprise.inject.Default");
     private static final String transactionScoped = "jakarta.transaction.TransactionScoped";
     private static final String applicationScoped = "jakarta.enterprise.context.ApplicationScoped";
 
     public void addBeans(AfterBeanDiscovery afterBeanDiscovery) {
-        boolean onePersistenceUnit = persistenceUnitIntegrationStuff.size() == 1;
         for (IntegrationWithCDIBagImpl integrationWithCDIBag : persistenceUnitIntegrationStuff) {
             PersistenceUnitMetadata persistenceUnitMetadata = integrationWithCDIBag.getPersistenceUnitMetadata();
 
@@ -146,14 +143,7 @@ public class IntegratePersistenceAfterBeanDiscovery implements PersistenceCdiExt
             List<String> qualifiers = Collections.emptyList();
             if (persistenceUnitMetadata.getQualifierAnnotationNames().size() > 0) {
                 qualifiers = persistenceUnitMetadata.getQualifierAnnotationNames();
-            } else {
-                // mark the only default persistence unit as default.
-                // With multiple persistence units, mark the one with hint "wildfly.jpa.default-unit" set to true.
-                if (onePersistenceUnit || Configuration.isDefaultPersistenceUnit(persistenceUnitMetadata)) {
-                    qualifiers = defaultQualifier;
-                }
             }
-
 
             entityManager(afterBeanDiscovery, persistenceUnitMetadata, qualifiers, integrationWithCDIBag);
             entityManagerFactory(afterBeanDiscovery, persistenceUnitMetadata, qualifiers, integrationWithCDIBag);
