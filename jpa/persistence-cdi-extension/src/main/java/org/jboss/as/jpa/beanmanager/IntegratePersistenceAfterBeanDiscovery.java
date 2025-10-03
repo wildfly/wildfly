@@ -135,7 +135,6 @@ public class IntegratePersistenceAfterBeanDiscovery implements PersistenceCdiExt
 
     private static final List<String> defaultQualifier = List.of("jakarta.enterprise.inject.Default");
     private static final String transactionScoped = "jakarta.transaction.TransactionScoped";
-    private static final String applicationScoped = "jakarta.enterprise.context.ApplicationScoped";
 
     public void addBeans(AfterBeanDiscovery afterBeanDiscovery) {
         boolean onePersistenceUnit = persistenceUnitIntegrationStuff.size() == 1;
