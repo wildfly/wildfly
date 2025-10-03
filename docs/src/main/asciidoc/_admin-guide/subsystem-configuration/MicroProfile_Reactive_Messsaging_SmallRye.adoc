@@ -114,6 +114,9 @@ If we replace the `Emitter` with the `generate()` method from the original metho
 
 User's applications intended to return published values to users via e.g. Jakarta RESTFul Webservices will need to do their own subscriptions and buffering of the data. Care must be taken to not let the cache grow uncontrolled, which could cause OutOfMemoryErrors.
 
+== Packaging
+MicroProfile Reactive Messaging applications are meant to be packaged in Web Archives (i.e. `.war` files). While other deployment types might work, we only test the `.war` case thoroughly. You may package the classes using MicroProfile Reactive Messaging in `.jar` archives, and put those inside the `.war` file's `WEB-INb/lib` folder, as long as you don't change the default classloading behaviour which is to add such `.jar` files to the `.war` classloader.
+
 [[microprofile-reactive-messaging-smallrye-config-connectors]]
 === Connectors
 MicroProfile Reactive Messaging is designed to be flexible enough to integrate with a wide variety of external messaging systems. This functionality is provided via 'connectors'.
