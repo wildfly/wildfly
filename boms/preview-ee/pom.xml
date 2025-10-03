@@ -63,7 +63,7 @@
         <version.org.hibernate.models>1.0.1</version.org.hibernate.models>
         <version.org.hibernate.search>8.1.2.Final</version.org.hibernate.search>
         <version.org.hibernate.validator>9.0.1.Final</version.org.hibernate.validator>
-        <version.org.wildfly.security.jakarta.elytron-ee>4.0.0.Beta1</version.org.wildfly.security.jakarta.elytron-ee>
+        <version.org.wildfly.security.jakarta.elytron-ee>4.0.0.Beta3</version.org.wildfly.security.jakarta.elytron-ee>
     </properties>
 
     <dependencyManagement>
@@ -941,9 +941,22 @@
                 <version>${ee.maven.version}</version>
             </dependency>
 
+            <!-- TODO Before we reach the end we need to ensure every elytron-ee component is listed -->
+            <!-- Otherwise we risk a weird hybrid mix of dependencies.                               -->
             <dependency>
                 <groupId>org.wildfly.security.jakarta</groupId>
                 <artifactId>jakarta-authentication</artifactId>
+                <version>${version.org.wildfly.security.jakarta.elytron-ee}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>org.wildfly.security.jakarta</groupId>
+                <artifactId>jakarta-authorization</artifactId>
                 <version>${version.org.wildfly.security.jakarta.elytron-ee}</version>
                 <exclusions>
                     <exclusion>
