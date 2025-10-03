@@ -8,7 +8,6 @@ package org.jboss.as.test.shared.util;
 import static org.junit.Assume.assumeTrue;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
-import java.util.Set;
 import java.util.function.Supplier;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -318,9 +317,12 @@ public class AssumeTestGroupUtil {
     }
 
     private static boolean anyOf(final String... keys) {
-        final Set<String> names = Set.of(keys);
-        return System.getProperties().stringPropertyNames().stream()
-                .anyMatch(names::contains);
+        for (String key : keys) {
+            if (System.getProperty(key) != null) {
+                return true;
+            }
+        }
+        return false;
     }
 
 }
