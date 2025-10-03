@@ -50,6 +50,9 @@
         <testsuite.default.base.build.artifactId>wildfly-build</testsuite.default.base.build.artifactId>
         <testsuite.default.base.dist.artifactId>wildfly-dist</testsuite.default.base.dist.artifactId>
         <testsuite.default.base.build.version>${full.maven.version}</testsuite.default.base.build.version>
+        <!-- Don't try to deploy the module -->
+        <maven.deploy.skip>true</maven.deploy.skip>
+        <skipNexusStagingDeployMojo>true</skipNexusStagingDeployMojo>
     </properties>
 
     <dependencies>

@@ -34,6 +34,12 @@
     <description>Controls execution of testsuite modules relevant to testing functionality
                  available via the wildfly-ee-galleon-pack feature pack</description>
 
+    <properties>
+        <!-- Don't try to deploy the module -->
+        <maven.deploy.skip>true</maven.deploy.skip>
+        <skipNexusStagingDeployMojo>true</skipNexusStagingDeployMojo>
+    </properties>
+
     <profiles>
 
         <!-- -Dts.smoke -->

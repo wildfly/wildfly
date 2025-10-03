@@ -40,6 +40,12 @@
     <description>Ensures the default server installation used by preview testsuites
         is built</description>
 
+    <properties>
+        <!-- Don't try to deploy the module -->
+        <maven.deploy.skip>true</maven.deploy.skip>
+        <skipNexusStagingDeployMojo>true</skipNexusStagingDeployMojo>
+    </properties>
+
     <dependencies>
         <!-- Sure the test boms are built -->
         <dependency>
