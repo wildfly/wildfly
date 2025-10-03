@@ -72,7 +72,8 @@ public class JdbcDriverRemove extends AbstractRemoveStepHandler {
             context.getFailureDescription().set(ConnectorLogger.ROOT_LOGGER.missingDependencyInModuleDriver(moduleName, e.getMessage()));
             return;
         } catch (ModuleLoadException e) {
-            context.getFailureDescription().set(ConnectorLogger.ROOT_LOGGER.failedToLoadModuleDriver(moduleName));
+            context.getFailureDescription().set(ConnectorLogger.ROOT_LOGGER.failedToLoadModuleDriver(moduleName, e.getLocalizedMessage(),
+                    e.getCause() != null ? e.getCause().getLocalizedMessage() : "-"));
             return;
         }
 
