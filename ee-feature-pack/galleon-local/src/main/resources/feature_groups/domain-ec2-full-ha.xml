@@ -25,7 +25,7 @@
     </feature>
 
     <feature spec="profile">
-        <param name="profile" value="full-ha"/>
+        <param name="__profile" value="full-ha"/>
         <feature-group name="domain-ha-profile">
             <feature spec="subsystem.modcluster">
                 <feature spec="subsystem.modcluster.proxy">
