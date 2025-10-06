@@ -448,20 +448,23 @@ public class RaOperationUtil {
         }
 
         Module module;
+        String moduleId = ModuleIdentifierUtil.canonicalModuleIdentifier(moduleName, slot);
         try {
-            String moduleId = ModuleIdentifierUtil.canonicalModuleIdentifier(moduleName, slot);
             module = Module.getCallerModuleLoader().loadModule(moduleId);
         } catch (ModuleNotFoundException e) {
-            throw new OperationFailedException(ConnectorLogger.ROOT_LOGGER.raModuleNotFound(moduleName, e.getMessage()), e);
+            throw new OperationFailedException(ConnectorLogger.ROOT_LOGGER.raModuleNotFound(moduleId, e.getMessage()), e);
         } catch (ModuleLoadException e) {
-            throw new OperationFailedException(ConnectorLogger.ROOT_LOGGER.failedToLoadModuleRA(moduleName, e.getMessage()), e);
+            throw new OperationFailedException(ConnectorLogger.ROOT_LOGGER.failedToLoadModuleRA(moduleId, e.getMessage()), e);
         }
         URL path = module.getExportedResource("META-INF/ra.xml");
+        if (path == null) {
+            throw new OperationFailedException(ConnectorLogger.ROOT_LOGGER.raXmlNotFound(moduleId));
+        }
         Closeable closable = null;
             try {
                 VirtualFile child;
                 if (path.getPath().contains("!")) {
-                    throw new OperationFailedException(ConnectorLogger.ROOT_LOGGER.compressedRarNotSupportedInModuleRA(moduleName));
+                    throw new OperationFailedException(ConnectorLogger.ROOT_LOGGER.compressedRarNotSupportedInModuleRA(moduleId));
                 } else {
                     child = VFS.getChild(path.getPath().split("META-INF")[0]);
 
@@ -520,7 +523,7 @@ public class RaOperationUtil {
                 }
 
             } catch (Exception e) {
-                throw new OperationFailedException(ConnectorLogger.ROOT_LOGGER.failedToLoadModuleRA(moduleName, e.getMessage()), e);
+                throw new OperationFailedException(ConnectorLogger.ROOT_LOGGER.failedToLoadModuleRA(moduleId, e.getMessage()), e);
             } finally {
                 if (closable != null) {
                     try {
