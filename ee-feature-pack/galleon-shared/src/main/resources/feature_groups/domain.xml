@@ -20,7 +20,7 @@
     </feature>
 
     <feature spec="profile">
-        <param name="profile" value="default"/>
+        <param name="__profile" value="default"/>
         <feature-group name="domain-profile"/>
     </feature>
 
