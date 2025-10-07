@@ -1,6 +1,7 @@
 [[index]]
-= WildFly Documentation
+= WildFly {wildflyVersion} Documentation
 :ext-relative: {outfilesuffix}
+:wildflyVersion: 37
 
 ifdef::env-github[]
 :tip-caption: :bulb:
