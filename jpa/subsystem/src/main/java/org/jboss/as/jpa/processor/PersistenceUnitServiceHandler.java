@@ -16,7 +16,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
-import java.util.ServiceLoader;
 
 import jakarta.persistence.SynchronizationType;
 import jakarta.persistence.ValidationMode;
@@ -1196,25 +1195,18 @@ public class PersistenceUnitServiceHandler {
                     // For an EAR deployment `deploymentUnit` will always be set to the ear.
                     // For a standalone war/jar deployment `deploymentUnit` will always be set to the war/jar deployment.
                     synchronized (deploymentUnit) {
-                        // For WildFly Preview try loading a PersistenceCdiExtensionService (WildFly will not have this service).
-                        ServiceLoader<PersistenceCdiExtension> persistenceCdiExtensionService = module.loadService(PersistenceCdiExtension.class);
-                        for (PersistenceCdiExtension service : persistenceCdiExtensionService) {
-                            if (persistenceCdiExtension != null) {
-                                // This is an internal error check that shouldn't happen.
-                                throw JpaLogger.ROOT_LOGGER.foundMoreThanOneCdiExtensionService(PersistenceCdiExtension.class, module.getClassLoader());
-                            }
-                            persistenceCdiExtension = service;
-                        }
-                        if (persistenceCdiExtension != null) {
-                            // putAttachment will return null if the attachment was not set yet, in which case we will also register the CDI extension with Weld
-                            if (null == deploymentUnit.putAttachment(JpaAttachments.AFTER_BEAN_DISCOVERY_ATTACHMENT_KEY, persistenceCdiExtension))
-                                weldCapability.get().registerExtensionInstance(persistenceCdiExtension, deploymentUnit);
-                        }
-                        // ensure that the other threads use the persistenceCdiExtension that was registered as a CDI extension in a different thread.
                         persistenceCdiExtension = deploymentUnit.getAttachment(JpaAttachments.AFTER_BEAN_DISCOVERY_ATTACHMENT_KEY);
+                        if (null == persistenceCdiExtension) {
+                            persistenceCdiExtension = module.loadService(PersistenceCdiExtension.class).findFirst().orElse(null);
+                            if (persistenceCdiExtension != null) {
+                                deploymentUnit.putAttachment(JpaAttachments.AFTER_BEAN_DISCOVERY_ATTACHMENT_KEY, persistenceCdiExtension);
+                                weldCapability.get().registerExtensionInstance(persistenceCdiExtension, deploymentUnit);
+                            }
+                        }
                     }
                 }
                 if ( persistenceCdiExtension != null) {
+                    // register the persistence unit with the CDI Persistence extension that we registered above
                     result = persistenceCdiExtension.register(pu);
                     result.setTransactionManager(transactionManager);
                     result.setTransactionSynchronizationRegistry(transactionSynchronizationRegistry);

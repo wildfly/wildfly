@@ -770,7 +770,4 @@ public interface JpaLogger extends BasicLogger {
     @LogMessage(level = INFO)
     @Message(id = 79, value = "EntityManagerFactory CDI bean (for %s) will not have persistence unit name.  In order for the EntityManagerFactory CDI bean to be named remove duplicate copies of persistence unit %s.")
     void willNotNameEntityManagerFactoryBean(String scopedPersistenceUnitName, String persistenceUnitName);
-
-    @Message(id = 80, value = "Found more than one %s service for application deployment %s")
-    RuntimeException foundMoreThanOneCdiExtensionService(Class<?> serviceClassName, ClassLoader module);
 }
