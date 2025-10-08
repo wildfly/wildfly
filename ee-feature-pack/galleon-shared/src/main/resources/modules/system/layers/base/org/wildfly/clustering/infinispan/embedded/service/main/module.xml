@@ -24,7 +24,6 @@
         <module name="org.jboss.msc"/>
         <module name="org.wildfly.clustering.service"/>
         <module name="org.wildfly.clustering.server.service"/>
-        <module name="org.wildfly.common"/>
         <module name="org.wildfly.service"/>
         <module name="org.wildfly.subsystem"/>
     </dependencies>

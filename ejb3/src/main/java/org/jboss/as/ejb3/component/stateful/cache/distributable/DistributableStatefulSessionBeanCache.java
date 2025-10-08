@@ -23,6 +23,7 @@ import org.wildfly.clustering.context.Context;
 import org.wildfly.clustering.ejb.bean.Bean;
 import org.wildfly.clustering.ejb.bean.BeanManager;
 import org.wildfly.clustering.function.Consumer;
+import org.wildfly.clustering.server.service.DecoratedService;
 
 /**
  * A distributable stateful session bean cache.
@@ -31,30 +32,21 @@ import org.wildfly.clustering.function.Consumer;
  * @param <K> the bean identifier type
  * @param <V> the bean instance type
  */
-public class DistributableStatefulSessionBeanCache<K, V extends StatefulSessionBeanInstance<K>> implements StatefulSessionBeanCache<K, V> {
+public class DistributableStatefulSessionBeanCache<K, V extends StatefulSessionBeanInstance<K>> extends DecoratedService implements StatefulSessionBeanCache<K, V> {
     private static final Object UNSET = Boolean.TRUE;
 
     private final BeanManager<K, V> manager;
     private final StatefulSessionBeanInstanceFactory<V> factory;
 
     public DistributableStatefulSessionBeanCache(DistributableStatefulSessionBeanCacheConfiguration<K, V> configuration) {
+        super(configuration.getBeanManager());
         this.manager = configuration.getBeanManager();
         this.factory = configuration.getInstanceFactory();
     }
 
     @Override
-    public boolean isStarted() {
-        return this.manager.isStarted();
-    }
-
-    @Override
-    public void start() {
-        this.manager.start();
-    }
-
-    @Override
-    public void stop() {
-        this.manager.stop();
+    public void close() {
+        this.manager.close();
     }
 
     @Override

@@ -8,8 +8,8 @@ package org.wildfly.clustering.web.undertow.session;
 import java.util.Map;
 import java.util.Set;
 
-import org.jboss.as.clustering.service.DecoratedService;
-import org.wildfly.clustering.server.manager.Service;
+import org.wildfly.clustering.server.service.DecoratedService;
+import org.wildfly.clustering.server.service.Service;
 import org.wildfly.clustering.session.SessionManager;
 
 import io.undertow.server.HttpServerExchange;

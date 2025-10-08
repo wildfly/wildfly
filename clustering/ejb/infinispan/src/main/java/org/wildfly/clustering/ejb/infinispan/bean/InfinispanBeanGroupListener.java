@@ -41,7 +41,7 @@ public class InfinispanBeanGroupListener<K, V extends BeanInstance<K>, C> implem
         this.context = context;
         // We only need to listen for activation/passivation events for non-persistent caches
         // pre-passivate/post-activate callbacks for persistent caches are triggered via GroupManager
-        this.executor = !configuration.getCacheProperties().isPersistent() ? configuration.getBlockingManager().asExecutor(this.getClass().getName()) : null;
+        this.executor = !configuration.getCacheProperties().isPersistent() ? configuration.getExecutor() : null;
         this.postActivateListenerRegistration = (this.executor != null) ? new PostActivateBlockingListener<>(configuration.getCache(), this::postActivate).register(BeanGroupKey.class) : null;
         this.prePassivateListenerRegistration = (this.executor != null) ? new PrePassivateBlockingListener<>(configuration.getCache(), this::prePassivate).register(BeanGroupKey.class) : null;
     }

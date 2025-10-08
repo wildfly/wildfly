@@ -78,7 +78,8 @@ public class DistributableSingleSignOnManagerServiceInstallerProvider implements
 
             @Override
             public ByteBufferMarshaller getMarshaller() {
-                return new ProtoStreamByteBufferMarshaller(SerializationContextBuilder.newInstance(new ModuleClassLoaderMarshaller(loader.get())).load(WildFlySecurityManager.getClassLoaderPrivileged(this.getClass())).build());
+                ClassLoader classLoader = WildFlySecurityManager.getClassLoaderPrivileged(this.getClass());
+                return new ProtoStreamByteBufferMarshaller(SerializationContextBuilder.newInstance(new ModuleClassLoaderMarshaller(loader.get())).load(classLoader).build());
             }
 
             @Override

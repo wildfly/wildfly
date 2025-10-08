@@ -26,9 +26,10 @@ import org.jboss.msc.service.ServiceNotFoundException;
 import org.wildfly.clustering.server.Group;
 import org.wildfly.clustering.server.GroupMember;
 import org.wildfly.clustering.server.dispatcher.CommandDispatcher;
-import org.wildfly.clustering.server.manager.Service;
-import org.wildfly.clustering.server.provider.ServiceProviderListener;
+import org.wildfly.clustering.server.service.Service;
 import org.wildfly.clustering.server.provider.ServiceProviderRegistration;
+import org.wildfly.clustering.server.provider.ServiceProviderRegistrationEvent;
+import org.wildfly.clustering.server.provider.ServiceProviderRegistrationListener;
 import org.wildfly.clustering.singleton.SingletonState;
 import org.wildfly.clustering.singleton.election.SingletonElectionListener;
 import org.wildfly.clustering.singleton.election.SingletonElectionPolicy;
@@ -37,7 +38,7 @@ import org.wildfly.security.manager.WildFlySecurityManager;
 /**
  * @author Paul Ferraro
  */
-public abstract class AbstractSingletonContext<C extends SingletonContext, S extends Service> implements SingletonContextRegistration<C>, Supplier<C>, ServiceProviderListener<GroupMember> {
+public abstract class AbstractSingletonContext<C extends SingletonContext, S extends Service> implements SingletonContextRegistration<C>, Supplier<C>, ServiceProviderRegistrationListener<GroupMember> {
 
     private final ServiceName name;
     private final AtomicBoolean primary = new AtomicBoolean(false);
@@ -149,9 +150,9 @@ public abstract class AbstractSingletonContext<C extends SingletonContext, S ext
     }
 
     @Override
-    public synchronized void providersChanged(Set<GroupMember> providers) {
+    public void providersChanged(ServiceProviderRegistrationEvent<GroupMember> event) {
         List<GroupMember> candidates = new ArrayList<>(this.group.getMembership().getMembers());
-        candidates.retainAll(providers);
+        candidates.retainAll(event.getCurrentProviders());
 
         // Only run election on a single node
         if (candidates.isEmpty() || candidates.get(0).equals(this.group.getLocalMember())) {

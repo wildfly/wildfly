@@ -23,6 +23,5 @@
         <module name="org.wildfly.clustering.marshalling.jboss"/>
         <module name="org.wildfly.clustering.marshalling.protostream"/>
         <module name="org.wildfly.clustering.marshalling.spi"/>
-        <module name="org.wildfly.common"/>
     </dependencies>
 </module>

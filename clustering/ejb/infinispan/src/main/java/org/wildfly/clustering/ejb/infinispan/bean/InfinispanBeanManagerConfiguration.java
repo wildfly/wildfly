@@ -18,10 +18,10 @@ import org.wildfly.clustering.server.infinispan.dispatcher.CacheContainerCommand
  * @param <M> the bean metadata value type
  */
 public interface InfinispanBeanManagerConfiguration<K, V extends BeanInstance<K>, M> extends BeanManagerConfiguration<K, V, M, CacheContainerGroupMember>, InfinispanBeanMetaDataFactoryConfiguration {
+    CacheContainerCommandDispatcherFactory getCommandDispatcherFactory();
+
     @Override
     default CacheContainerGroup getGroup() {
         return this.getCommandDispatcherFactory().getGroup();
     }
-
-    CacheContainerCommandDispatcherFactory getCommandDispatcherFactory();
 }

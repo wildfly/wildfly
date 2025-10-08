@@ -179,7 +179,7 @@ public class DistributableWebDeploymentServiceInstallerProvider implements WebDe
         }
 
         @Override
-        public OptionalInt getMaxActiveSessions() {
+        public OptionalInt getMaxSize() {
             return this.maxActiveSessions;
         }
 

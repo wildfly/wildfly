@@ -9,6 +9,8 @@ import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 import jakarta.servlet.ServletContext;
+import jakarta.servlet.http.HttpSession;
+import jakarta.servlet.http.HttpSessionActivationListener;
 
 import org.infinispan.client.hotrod.DataFormat;
 import org.infinispan.client.hotrod.RemoteCache;
@@ -25,6 +27,8 @@ import org.wildfly.clustering.infinispan.client.service.RemoteCacheServiceInstal
 import org.wildfly.clustering.server.service.BinaryServiceConfiguration;
 import org.wildfly.clustering.session.SessionManagerFactory;
 import org.wildfly.clustering.session.infinispan.remote.HotRodSessionManagerFactory;
+import org.wildfly.clustering.session.spec.SessionEventListenerSpecificationProvider;
+import org.wildfly.clustering.session.spec.SessionSpecificationProvider;
 import org.wildfly.clustering.session.spec.servlet.HttpSessionActivationListenerProvider;
 import org.wildfly.clustering.session.spec.servlet.HttpSessionProvider;
 import org.wildfly.clustering.web.service.deployment.WebDeploymentServiceDescriptor;
@@ -101,7 +105,27 @@ public class HotRodSessionManagementProvider extends AbstractSessionManagementPr
         Supplier<SessionManagerFactory<ServletContext, C>> factory = new Supplier<>() {
             @Override
             public SessionManagerFactory<ServletContext, C> get() {
-                return new HotRodSessionManagerFactory<>(configuration, HttpSessionProvider.INSTANCE, HttpSessionActivationListenerProvider.INSTANCE, cacheConfiguration);
+                return new HotRodSessionManagerFactory<>(new HotRodSessionManagerFactory.Configuration<HttpSession, ServletContext, C, HttpSessionActivationListener>() {
+                    @Override
+                    public SessionManagerFactoryConfiguration<C> getSessionManagerFactoryConfiguration() {
+                        return configuration;
+                    }
+
+                    @Override
+                    public SessionSpecificationProvider<HttpSession, ServletContext> getSessionSpecificationProvider() {
+                        return HttpSessionProvider.INSTANCE;
+                    }
+
+                    @Override
+                    public SessionEventListenerSpecificationProvider<HttpSession, HttpSessionActivationListener> getSessionEventListenerSpecificationProvider() {
+                        return HttpSessionActivationListenerProvider.INSTANCE;
+                    }
+
+                    @Override
+                    public RemoteCacheConfiguration getCacheConfiguration() {
+                        return cacheConfiguration;
+                    }
+                });
             }
         };
         DeploymentServiceInstaller installer = ServiceInstaller.builder(factory)

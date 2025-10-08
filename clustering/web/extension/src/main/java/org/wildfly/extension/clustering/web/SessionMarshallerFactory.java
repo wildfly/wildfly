@@ -101,7 +101,7 @@ public enum SessionMarshallerFactory implements Function<DeploymentUnit, ByteBuf
                 }
             }
 
-            return new ProtoStreamByteBufferMarshaller(builder.build(), module.getClassLoader());
+            return new ProtoStreamByteBufferMarshaller(builder.build());
         }
     },
     ;

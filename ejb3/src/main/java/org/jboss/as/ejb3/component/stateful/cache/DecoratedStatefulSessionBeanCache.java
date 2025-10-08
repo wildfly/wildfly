@@ -7,9 +7,9 @@ package org.jboss.as.ejb3.component.stateful.cache;
 
 import java.util.function.Supplier;
 
-import org.jboss.as.clustering.service.DecoratedService;
 import org.jboss.ejb.client.Affinity;
-import org.wildfly.clustering.server.manager.Service;
+import org.wildfly.clustering.server.service.DecoratedService;
+import org.wildfly.clustering.server.service.Service;
 
 /**
  * A stateful session bean cache decorator.
@@ -26,6 +26,11 @@ public class DecoratedStatefulSessionBeanCache<K, V extends StatefulSessionBeanI
     protected DecoratedStatefulSessionBeanCache(StatefulSessionBeanCache<K, V> cache, Service service) {
         super(service);
         this.cache = cache;
+    }
+
+    @Override
+    public void close() {
+        this.cache.close();
     }
 
     @Override

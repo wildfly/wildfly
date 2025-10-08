@@ -57,10 +57,6 @@
             <groupId>org.wildfly.clustering</groupId>
             <artifactId>wildfly-clustering-marshalling-protostream</artifactId>
         </dependency>
-        <dependency>
-            <groupId>org.wildfly.common</groupId>
-            <artifactId>wildfly-common</artifactId>
-        </dependency>
 
         <!-- Internal test dependencies -->
         <dependency>
