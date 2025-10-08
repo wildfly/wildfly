@@ -15,7 +15,7 @@ endif::[]
 The WildFly JPA subsystem implements the Jakarta Persistence 3.1 container-managed
 requirements. Deploys the persistence unit definitions, the persistence
 unit/context annotations and persistence unit/context references in the
-deployment descriptor. JPA Applications use the Hibernate (version 5.3)
+deployment descriptor. JPA Applications use the Hibernate 
 persistence provider, which is included with WildFly. The JPA subsystem
 uses the standard SPI (jakarta.persistence.spi.PersistenceProvider) to
 access the Hibernate persistence provider and some additional extensions
