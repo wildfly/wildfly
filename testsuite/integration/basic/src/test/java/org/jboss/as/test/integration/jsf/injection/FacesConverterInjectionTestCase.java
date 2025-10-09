@@ -110,11 +110,11 @@ public class FacesConverterInjectionTestCase {
 
     @Test
     public void testConverterSuccess() throws Exception {
-        test("http://wildfly.org/index.html", "Valid URL.");
+        test("https://wildfly.org/index.html", "Valid URL.");
     }
 
     @Test
     public void testConverterError() throws Exception {
-        test("http://wildfly.org:wrong/index.html", "Invalid URL:");
+        test("https://wildfly.org:wrong/index.html", "Invalid URL:");
     }
 }

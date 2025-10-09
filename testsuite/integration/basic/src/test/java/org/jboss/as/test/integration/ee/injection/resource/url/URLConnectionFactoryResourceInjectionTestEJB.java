@@ -17,10 +17,10 @@ import java.net.URL;
 @Stateless
 public class URLConnectionFactoryResourceInjectionTestEJB {
 
-    @Resource(name = "overrideLookupURL", lookup = "http://www.wildfly.org")
+    @Resource(name = "overrideLookupURL", lookup = "https://www.wildfly.org")
     private URL url1;
 
-    @Resource(name = "lookupURL", lookup = "http://www.wildfly.org")
+    @Resource(name = "lookupURL", lookup = "https://www.wildfly.org")
     private URL url2;
 
     /**

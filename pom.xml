@@ -47,7 +47,7 @@
             <id>wildfly.org</id>
             <name>WildFly Community</name>
             <organization>wildfly.org</organization>
-            <organizationUrl>http://wildfly.org</organizationUrl>
+            <organizationUrl>https://wildfly.org</organizationUrl>
         </developer>
     </developers>
 

@@ -12,7 +12,7 @@ endif::[]
 [abstract]
 
 The batch subsystem is used to configure an environment for running
-batch applications. http://wildfly.org[WildFly] uses
+batch applications. https://wildfly.org[WildFly] uses
 https://github.com/jberet/jsr352[JBeret] for its Jakarta Batch implementation.
 Specific information about JBeret can be found in the
 http://jberet.gitbooks.io/jberet-user-guide/content/[user guide]. The
@@ -90,7 +90,7 @@ job executions from the backing storage mechanism.
 
 There are no deployment descriptors for configuring a batch environment
 defined by the https://www.jcp.org/en/jsr/detail?id=352[JSR-352
-specification]. In http://wildfly.org[WildFly] you can use a
+specification]. In https://wildfly.org[WildFly] you can use a
 `jboss-all.xml` deployment descriptor to define aspects of the batch
 environment for your deployment.
 
@@ -130,7 +130,7 @@ deployment descriptor.
 [[deployment-resources]]
 == Deployment Resources
 
-Some subsystems in http://wildfly.org[WildFly] register runtime
+Some subsystems in https://wildfly.org[WildFly] register runtime
 resources for deployments. The batch subsystem registers jobs and
 executions. The jobs are registered using the job name, this is _not_
 the job XML name. Executions are registered using the execution id.

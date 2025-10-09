@@ -171,7 +171,7 @@ we'll focus on the common approach of installing the download zip of standard Wi
 
 WildFly {wildflyVersion} distributions can be obtained from:
 
-http://www.wildfly.org/downloads/[wildfly.org/downloads]
+https://www.wildfly.org/downloads/[wildfly.org/downloads]
 
 Standard WildFly {wildflyVersion} provides a single distribution available in zip or tar file
 formats.
