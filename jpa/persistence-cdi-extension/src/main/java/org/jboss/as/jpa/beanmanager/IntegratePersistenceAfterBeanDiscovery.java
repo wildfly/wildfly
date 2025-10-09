@@ -133,7 +133,6 @@ public class IntegratePersistenceAfterBeanDiscovery implements PersistenceCdiExt
     }
 
     private static final String transactionScoped = "jakarta.transaction.TransactionScoped";
-    private static final String applicationScoped = "jakarta.enterprise.context.ApplicationScoped";
 
     public void addBeans(AfterBeanDiscovery afterBeanDiscovery) {
         for (IntegrationWithCDIBagImpl integrationWithCDIBag : persistenceUnitIntegrationStuff) {

@@ -203,9 +203,6 @@ public class PersistenceUnitServiceImpl implements Service<PersistenceUnitServic
                                     if(wrapperBeanManagerLifeCycle != null) {
                                         beanManagerAfterDeploymentValidation.register(persistenceProviderAdaptor, wrapperBeanManagerLifeCycle);
                                     }
-                                    if (proxyBeanManager != null && proxyBeanManager.delegate() != null) {
-                                        createCDIBeansForPersistence(proxyBeanManager.delegate(), entityManagerFactory, pu, classLoader);
-                                    }
                                     context.complete();
                                 } catch (Throwable t) {
                                     context.failed(new StartException(t));
@@ -220,11 +217,6 @@ public class PersistenceUnitServiceImpl implements Service<PersistenceUnitServic
                                 }
                                 return null;
                             }
-
-                            private void createCDIBeansForPersistence(BeanManager beanManager, EntityManagerFactory entityManagerFactory, PersistenceUnitMetadata pu, ClassLoader classLoader) {
-                                // no-op stub
-                            }
-
                         };
                 WildFlySecurityManager.doChecked(privilegedAction, accessControlContext);
 
