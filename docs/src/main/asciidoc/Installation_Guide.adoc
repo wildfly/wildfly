@@ -41,7 +41,7 @@ but if you'd like a technical preview look at what's coming in the future, try o
 [[Zipped_Installation]]
 = Installing WildFly from a zipped distribution
 
-http://www.wildfly.org/downloads[Downloading the WildFly release zip] and unzipping it is the traditional way to install
+https://www.wildfly.org/downloads/[Downloading the WildFly release zip] and unzipping it is the traditional way to install
 a complete WildFly server with support for both standalone and managed domain operating modes. A WildFly distribution
 contains a large number of default configurations allowing you to select the server features and operating modes.
 

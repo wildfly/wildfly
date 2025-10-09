@@ -440,7 +440,7 @@ The final two elements are mutually exclusive and define how the SASL mechanism 
 
 == <net-authenticator />
 
-This element contains no specific configuration, however if present the [org.wildfly.security.auth.util.ElytronAuthenticator|http://wildfly-security.github.io/wildfly-elytron/1.1.x/org/wildfly/security/auth/util/ElytronAuthenticator.html] will be registered with [java.net.Authenticator.setDefault(Authenticator)|https://docs.oracle.com/javase/8/docs/api/java/net/Authenticator.html#setDefault-java.net.Authenticator-] meaning that the WildFly Elytron authentication client configuration can be used for authentication where the JDK APIs are used for HTTP calls which require authentication.
+This element contains no specific configuration, however if present the [org.wildfly.security.auth.util.ElytronAuthenticator|https://wildfly-security.github.io/wildfly-elytron/documentation/api/upstream/org/wildfly/security/auth/util/ElytronAuthenticator.html] will be registered with [java.net.Authenticator.setDefault(Authenticator)|https://docs.oracle.com/javase/8/docs/api/java/net/Authenticator.html#setDefault-java.net.Authenticator-] meaning that the WildFly Elytron authentication client configuration can be used for authentication where the JDK APIs are used for HTTP calls which require authentication.
 
 There are some limitations within this integration as the JDK will cache the authentication JVM wide from the first call so is better used in stand alone processes that don't require different credentials for different calls to the same URI,
 

@@ -76,7 +76,7 @@ move on and you will get the points step by step.
 [[download-wildfly]]
 == Download WildFly
 
-First we should download WildFly from the http://wildfly.org/downloads/[WildFly website].
+First we should download WildFly from the https://wildfly.org/downloads/[WildFly website].
 
 Then I unzipped the package to the primary host and try to make a test run:
 
