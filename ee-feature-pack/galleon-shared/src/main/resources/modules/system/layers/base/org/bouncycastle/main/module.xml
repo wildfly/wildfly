@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+
+<module xmlns="urn:jboss:module:1.9" name="org.bouncycastle">
+
+    <properties>
+        <property name="jboss.api" value="private"/>
+    </properties>
+
+    <dependencies>
+        <module name="org.bouncycastle.bcpkix" export="true" services="export"/>
+        <module name="org.bouncycastle.bcprov" export="true" services="export"/>
+        <module name="org.bouncycastle.bcmail" export="true" services="export"/>
+    </dependencies>
+
+    <provides>
+        <service name="java.security.Provider">
+            <with-class name="org.bouncycastle.jce.provider.BouncyCastleProvider"/>
+            <with-class name="org.bouncycastle.pqc.jcajce.provider.BouncyCastlePQCProvider"/>
+        </service>
+    </provides>
+</module>
