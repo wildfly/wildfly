@@ -5,22 +5,22 @@
 
 package org.jboss.as.naming.deployment;
 
+import javax.naming.NamingException;
+
 import org.jboss.as.naming.ImmediateManagedReference;
 import org.jboss.as.naming.ManagedReference;
 import org.jboss.as.naming.ManagedReferenceFactory;
 import org.jboss.as.naming.NamingContext;
 import org.jboss.as.naming.NamingStore;
 import org.jboss.as.naming.context.external.ExternalContexts;
+import org.jboss.as.naming.logging.NamingLogger;
 import org.jboss.as.server.CurrentServiceContainer;
 import org.jboss.as.server.deployment.DeploymentUnit;
-import org.jboss.as.naming.logging.NamingLogger;
 import org.jboss.msc.inject.InjectionException;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceName;
-
-import javax.naming.NamingException;
 
 /**
  * @author John Bailey
@@ -307,7 +307,7 @@ public class ContextNames {
                                 if(!optional) {
                                     throw NamingLogger.ROOT_LOGGER.resourceLookupForInjectionFailed(getAbsoluteJndiName(), e);
                                 } else {
-                                    NamingLogger.ROOT_LOGGER.tracef(e,"failed to lookup %s", getAbsoluteJndiName());
+                                    NamingLogger.ROOT_LOGGER.infof(e,"failed to lookup %s", getAbsoluteJndiName());
                                 }
                             }
                             return null;
