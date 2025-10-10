@@ -278,6 +278,12 @@
             <scope>compile</scope>
         </dependency>
 
+        <dependency>
+            <groupId>org.wildfly</groupId>
+            <artifactId>wildfly-testsuite-config</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
     </dependencies>
 
     <build>
