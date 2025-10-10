@@ -20,6 +20,7 @@ public class ServiceContributorImpl implements ServiceContributor {
     private static final String CONTROL2LCINTEGRATION = "wildfly.jpa.regionfactory";
     private static final String TRANSACTION_PLATFORM = "hibernate.transaction.jta.platform";
     private static final String EHCACHE = "ehcache";
+    private static final String JCACHE = "jcache";
     private static final String HIBERNATE_REGION_FACTORY_CLASS = "hibernate.cache.region.factory_class";
     private static final String DEFAULT_REGION_FACTORY = "org.infinispan.hibernate.cache.v62.InfinispanRegionFactory";
 
@@ -44,8 +45,8 @@ public class ServiceContributorImpl implements ServiceContributor {
         final Object regionFactory = serviceRegistryBuilder.getSettings().get(HIBERNATE_REGION_FACTORY_CLASS);
         if ((regionFactory instanceof String)) {
             String cacheRegionFactory = (String) regionFactory;
-            if (cacheRegionFactory.contains(EHCACHE)) {
-                JPA_LOGGER.tracef("ServiceContributorImpl#contribute application is using Ehcache via %s=%s",
+            if (cacheRegionFactory.contains(EHCACHE) || cacheRegionFactory.equals(JCACHE)) {
+                JPA_LOGGER.tracef("ServiceContributorImpl#contribute application is using custom cache via %s=%s",
                         HIBERNATE_REGION_FACTORY_CLASS, cacheRegionFactory);
                 return;
             } else if (!DEFAULT_REGION_FACTORY.equals(cacheRegionFactory)) {
