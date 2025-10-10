@@ -7,6 +7,8 @@
 
 <layer-spec xmlns="urn:jboss:galleon:layer-spec:2.0" name="metrics">
     <props>
+        <prop name="org.wildfly.category" value="Monitoring"/>
+        <prop name="org.wildfly.description" value="Support for base server metrics in Prometheus format."/>
         <prop name="org.wildfly.rule.add-on" value="observability,metrics"/>
         <prop name="org.wildfly.rule.add-on-depends-on" value="only:management"/>
         <prop name="org.wildfly.rule.add-on-description" value="Support for base metrics from the WildFly Management Model and JVM MBeans."/>

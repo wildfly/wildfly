@@ -6,6 +6,8 @@
 
 <layer-spec xmlns="urn:jboss:galleon:layer-spec:2.0" name="opentelemetry">
     <props>
+        <prop name="org.wildfly.category" value="Monitoring"/>
+        <prop name="org.wildfly.description" value="Support for OpenTelemetry"/>
         <prop name="org.wildfly.rule.annotations" value="io.opentelemetry.instrumentation.annotations"/>
         <prop name="org.wildfly.rule.class" value="io.opentelemetry.api.*,io.opentelemetry.sdk.*"/>
     </props>

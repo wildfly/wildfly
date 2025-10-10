@@ -6,6 +6,8 @@
 
 <layer-spec xmlns="urn:jboss:galleon:layer-spec:2.0" name="cloud-server">
     <props>
+        <prop name="org.wildfly.category" value="Base WildFly server"/>
+        <prop name="org.wildfly.description" value="An extension of jaxrs-server to address common cloud requirements."/>
         <prop name="org.wildfly.rule.kind" value="base-layer"/>
     </props>
     <dependencies>

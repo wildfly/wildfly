@@ -6,6 +6,8 @@
 
 <layer-spec xmlns="urn:jboss:galleon:layer-spec:2.0" name="undertow-load-balancer">
     <props>
+        <prop name="org.wildfly.category" value="Clustering"/>
+        <prop name="org.wildfly.description" value="Support for Undertow configured as a load balancer."/>
         <prop name="org.wildfly.rule.add-on" value="web,load-balancer"/>
         <prop name="org.wildfly.rule.add-on-depends-on" value="none"/>
         <prop name="org.wildfly.rule.add-on-description" value="Support for Undertow configured as a load balancer."/>

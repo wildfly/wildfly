@@ -6,6 +6,8 @@
 
 <layer-spec xmlns="urn:jboss:galleon:layer-spec:2.0" name="sar">
     <props>
+        <prop name="org.wildfly.category" value="Management"/>
+        <prop name="org.wildfly.description" value="Support for SAR archives to deploy MBeans."/>
         <prop name="org.wildfly.rule.expected-file" value="/META-INF/jboss-service.xml"/>
     </props>
     <dependencies>

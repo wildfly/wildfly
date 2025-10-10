@@ -6,6 +6,8 @@
 
 <layer-spec xmlns="urn:jboss:galleon:layer-spec:2.0" name="web-passivation">
     <props>
+        <prop name="org.wildfly.category" value="Clustering"/>
+        <prop name="org.wildfly.description" value="Support for distributable web applications. Configures a local Infinispan-based container web cache for data session handling suitable to single node environments."/>
         <prop name="org.wildfly.rule.xml-path" value="/WEB-INF/web.xml,/web-app/distributable"/>
     </props>
     <dependencies>

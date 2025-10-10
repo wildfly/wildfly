@@ -6,6 +6,8 @@
 
 <layer-spec xmlns="urn:jboss:galleon:layer-spec:2.0" name="h2-default-datasource">
     <props>
+        <prop name="org.wildfly.category" value="Database"/>
+        <prop name="org.wildfly.description" value="Support for an H2 datasource set as the ee subsystem default datasource."/>
         <prop name="org.wildfly.rule.add-on" value="database,h2-database:default"/>
         <prop name="org.wildfly.rule.add-on-fix-no-default-datasource" value=""/>
         <prop name="org.wildfly.rule.add-on-depends-on" value="only:datasources"/>

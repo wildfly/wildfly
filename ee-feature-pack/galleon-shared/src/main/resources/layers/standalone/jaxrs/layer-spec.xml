@@ -6,6 +6,8 @@
 
 <layer-spec xmlns="urn:jboss:galleon:layer-spec:2.0" name="jaxrs">
     <props>
+        <prop name="org.wildfly.category" value="Jakarta EE"/>
+        <prop name="org.wildfly.description" value="Support for Jakarta RESTful Web Services with optional ee-concurrency and deployment scanner layers."/>
         <prop name="org.wildfly.rule.annotations" value="jakarta.ws.rs,jakarta.ws.rs.core"/>
         <prop name="org.wildfly.rule.class" value="jakarta.ws.rs,jakarta.ws.rs.core"/>
         <prop name="org.wildfly.rule.xml-path" value="/WEB-INF/web.xml,/web-app/servlet/servlet-class,jakarta.ws.rs.core.Application"/>

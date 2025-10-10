@@ -6,6 +6,8 @@
 
 <layer-spec xmlns="urn:jboss:galleon:layer-spec:2.0" name="ee-security">
     <props>
+        <prop name="org.wildfly.category" value="Security"/>
+        <prop name="org.wildfly.description" value="Support for EE Security"/>
         <prop name="org.wildfly.rule.annotations" value="jakarta.security.enterprise.authentication.mechanism.http.*,jakarta.security.enterprise.identitystore"/>
         <prop name="org.wildfly.rule.class" value="jakarta.security.*"/>
     </props>

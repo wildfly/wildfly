@@ -137,4 +137,4 @@ This is all there is to it. If you point your browser to http://localhost:8080/a
 you should be able to see the proxied content.
 
 The full details of all configuration options available can be found in
-the link:wildscribe/subsystem/undertow/index.html[subsystem reference^].
+the link:feature-pack/doc/reference/subsystem/undertow/index.html[/subsystem=undertow model reference].
