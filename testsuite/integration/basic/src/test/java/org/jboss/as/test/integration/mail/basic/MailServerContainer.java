@@ -7,6 +7,7 @@ package org.jboss.as.test.integration.mail.basic;
 
 import java.util.List;
 
+import org.jboss.as.test.config.ContainerConfig;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.utility.DockerImageName;
@@ -17,7 +18,7 @@ public class MailServerContainer extends GenericContainer<MailServerContainer> {
     public MailServerContainer(String confPath) {
         // When updating the image version the startup.sh script forked into this testsuite should
         // be checked in case a sync is needed whilst retaining the lines added for this testsuite.
-        super(DockerImageName.parse("apache/james:demo-3.8.2"));
+        super(DockerImageName.parse(ContainerConfig.MAILSERVER.getImage()));
         this.setExposedPorts(List.of(25, 110));
         this.waitStrategy = Wait.forLogMessage(".*AddUser command executed sucessfully.*", 3);
         // WFLY-20553 Copying files to a directory that is also defined as a volume in the image

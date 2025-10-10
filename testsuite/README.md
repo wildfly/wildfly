@@ -237,4 +237,28 @@ The prototype also contains a profile which shows how the default database for W
 
 will run the tests using MySQL 5.1 instead of the default H2 database.
 
+8.0 Changing the container images used in integration tests
+------------------------
 
+In integrations tests, we use the following images:
+
+* otel/opentelemetry-collector
+* docker.elastic.co/elasticsearch/elasticsearch
+* apache/james
+* apache/kafka-native
+* quay.io/arkmq-org/activemq-artemis-broker
+* quay.io/keycloak/keycloak
+
+It is possible to override the default images and versions by using:
+
+* System properties, e.g. `-Dtestsuite.kafka-native.image=apache/kafka-native:3.9.0`
+* Environment variables, e.g. `AS_TS_KAFKA_NATIVE_IMAGE=apache/kafka-native:3.9.0`
+* Properties file specified via `testsuite.config.properties` system property or `TESTSUITE_CONFIG_PROPERTIES` environment variable, e.g. `-Dtestsuite.config.properties=/path/to/testsuite-config.properties` or `TESTSUITE_CONFIG_PROPERTIES=/path/to/testsuite-config.properties`; the properties file format has to be the same as for System properties e.g.:
+     ```properties
+     testsuite.opentelemetry-collector.image=otel/opentelemetry-collector:0.115.1
+     testsuite.elasticsearch.image=docker.elastic.co/elasticsearch/elasticsearch:8.15.4
+     testsuite.mailserver.image=apache/james:demo-3.8.2
+     testsuite.kafka-native.image=apache/kafka-native:3.8.0
+     testsuite.activemq-artemis-broker.image=quay.io/arkmq-org/activemq-artemis-broker:artemis.2.42.0
+     testsuite.keycloak.image=quay.io/keycloak/keycloak:24.0.2
+     ```

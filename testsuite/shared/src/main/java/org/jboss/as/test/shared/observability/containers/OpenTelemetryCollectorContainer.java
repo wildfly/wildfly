@@ -21,6 +21,7 @@ import java.util.stream.Collectors;
 import jakarta.ws.rs.client.Client;
 import jakarta.ws.rs.client.ClientBuilder;
 import jakarta.ws.rs.client.WebTarget;
+import org.jboss.as.test.config.ContainerConfig;
 import org.jboss.as.test.shared.TimeoutUtil;
 import org.jboss.as.test.shared.observability.signals.PrometheusMetric;
 import org.jboss.as.test.shared.observability.signals.jaeger.JaegerTrace;
@@ -32,8 +33,6 @@ import org.testcontainers.utility.MountableFile;
  * @author Radoslav Husar
  */
 public class OpenTelemetryCollectorContainer extends BaseContainer<OpenTelemetryCollectorContainer> {
-    public static final String IMAGE_NAME = "otel/opentelemetry-collector";
-    public static final String IMAGE_VERSION = "0.138.0";
     public static final int OTLP_GRPC_PORT = 4317;
     public static final int OTLP_HTTP_PORT = 4318;
     public static final int PROMETHEUS_PORT = 1234;
@@ -53,7 +52,7 @@ public class OpenTelemetryCollectorContainer extends BaseContainer<OpenTelemetry
                             System.getProperty("testsuite.integration.container.timeout", "120"))));
 
     public OpenTelemetryCollectorContainer() {
-        super("OpenTelemetryCollector", IMAGE_NAME, IMAGE_VERSION,
+        super("OpenTelemetryCollector", ContainerConfig.OTEL_COLLECTOR.getImageName(), ContainerConfig.OTEL_COLLECTOR.getImageVersion(),
                 List.of(OTLP_GRPC_PORT, OTLP_HTTP_PORT, HEALTH_CHECK_PORT, PROMETHEUS_PORT));
         withCopyToContainer(
                 MountableFile.forClasspathResource(
