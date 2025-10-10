@@ -82,7 +82,7 @@ include::subsystem-configuration/MicroProfile_Reactive_Streams_Operators_SmallRy
 
 include::subsystem-configuration/MicroProfile_Telemetry.adoc[]
 
-include::subsystem-configuration/Observability_Tracing.adoc[]
+include::subsystem-configuration/OpenTelemetry.adoc[]
 
 include::subsystem-configuration/Naming.adoc[]
 
