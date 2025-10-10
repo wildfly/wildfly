@@ -9,6 +9,7 @@ The MicroProfile Telemetry specification describes how OpenTelemetry can be inte
 == Subsystem
 
 The MicroProfile Telemetry integration is provided by the _microprofle-telemetry_ subsystem, and is included in the default configuration.  If not present, the subsystem can be added using the following CLI commands.
+
 [NOTE]
 =====
 The MicroProfile Telemetry subsystem depends on the `opentelemetry` subsystem, so it must be added prior to adding MicroProfile Telemetry.
@@ -79,9 +80,21 @@ The MicroProfile Telemetry subsystem does, however, allow for individual applica
 otel.service.name=My Application
 -----
 
+
+[NOTE]
+====
 Note also that, per spec requirements, MicroProfile Telemetry is *disabled by default* and must be manually enabled on a per-application basis:
 
 [source]
 -----
 otel.sdk.disabled=false
 -----
+====
+
+[NOTE]
+.Multiple Application Support
+====
+While WildFly makes it possible to deploy multiple MicroProfile applications to a single instance of the server, MicroProfile
+Telemetry does come with a caveat. Please see the link:#otel-multiple-apps[note] under OpenTelemetry multiple application support
+for those details.
+====
