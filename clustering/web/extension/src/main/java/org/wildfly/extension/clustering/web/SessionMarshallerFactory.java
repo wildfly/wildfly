@@ -5,11 +5,15 @@
 
 package org.wildfly.extension.clustering.web;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.IdentityHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 import org.infinispan.protostream.FileDescriptorSource;
 import org.jboss.as.ee.component.ComponentConfiguration;
@@ -19,6 +23,8 @@ import org.jboss.as.ee.component.serialization.WriteReplaceInterface;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.modules.Module;
+import org.wildfly.clustering.context.Context;
+import org.wildfly.clustering.context.ThreadContextClassLoaderReference;
 import org.wildfly.clustering.marshalling.ByteBufferMarshaller;
 import org.wildfly.clustering.marshalling.jboss.JBossByteBufferMarshaller;
 import org.wildfly.clustering.marshalling.jboss.MarshallingConfigurationRepository;
@@ -100,8 +106,23 @@ public enum SessionMarshallerFactory implements Function<DeploymentUnit, ByteBuf
                     });
                 }
             }
+            // CDI and JSF expect that the TCCL references the deployment class loader during marshalling
+            Supplier<Context<ClassLoader>> contextProvider = ThreadContextClassLoaderReference.CURRENT.provide(module.getClassLoader());
+            return new ProtoStreamByteBufferMarshaller(builder.build()) {
+                @Override
+                public Object readFrom(InputStream input) throws IOException {
+                    try (Context<ClassLoader> context = contextProvider.get()) {
+                        return super.readFrom(input);
+                    }
+                }
 
-            return new ProtoStreamByteBufferMarshaller(builder.build());
+                @Override
+                public void writeTo(OutputStream output, Object object) throws IOException {
+                    try (Context<ClassLoader> context = contextProvider.get()) {
+                        super.writeTo(output, object);
+                    }
+                }
+            };
         }
     },
     ;
