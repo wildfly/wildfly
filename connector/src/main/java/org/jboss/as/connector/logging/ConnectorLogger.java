@@ -977,4 +977,7 @@ public interface ConnectorLogger extends BasicLogger {
 
     @Message(id = 135, value = "The jdbc driver: %s is not installed")
     OperationFailedException jdbcDriverNotInstalled(String jdbcDriver);
+
+    @Message(id = 136, value = "The %s module does not export a META-INF/ra.xml file.")
+    String raXmlNotFound(String moduleId);
 }
