@@ -1,0 +1,41 @@
+:_newdoc-version: 2.15.0
+:_template-generated: 2023-10-28
+:_mod-docs-content-type: PROCEDURE
+
+[id="importing-the-server-boms-dependency-management-in-maven-project_{context}"]
+= Importing the {ProductShortname} BOMs as dependency management in a Maven project
+
+[role="_abstract"]
+Import the {ProductShortname} EE With Tools Bill of materials (BOM) to control the versions of runtime Maven dependencies. When you specify a BOM in the `<dependencyManagement>` section, you do not need to individually specify the versions of the Maven dependencies defined in the `provided` scope.
+
+.Prerequisites
+
+include::fragments/frag_prereq-initialize-maven-project.adoc[]
+
+.Procedure
+
+. Add a property for the BOM version in the properties section of the `pom.xml` configuration file.
++
+[source,xml,options="nowrap",subs=attributes+]
+----
+<properties>
+    ...
+    <version.bom.ee>${version.server}</version.bom.ee>
+</properties>
+----
++
+The value defined in the property `<version.server>` is used as the value for BOM version.
+
+. Import the {ProductShortname} BOMs dependency management.
++
+[source,xml,options="nowrap",subs=attributes+]
+----
+include::sources/dependency-management-pom.xml[]
+----
+<1> GroupID of the {ProductShortname}-provided BOM.
+<2> ArtifactID of the {ProductShortname}-provided BOM that provides supported {ProductShortname} {JEE} APIs plus additional {ProductShortname} API JARs and client BOMs, and development tools such as Arquillian.
+
+[role="_additional-resources"]
+.Next steps
+
+* xref:adding-plugin-management-in-a-maven-project_creating-a-maven-project-for-a-hello-world-application[Adding plug-in management in a Maven project]

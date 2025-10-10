@@ -1,0 +1,43 @@
+:_newdoc-version: 2.15.0
+:_template-generated: 2023-10-27
+
+ifdef::context[:parent-context-of-creating-a-maven-project-for-a-hello-world-application: {context}]
+
+:_mod-docs-content-type: ASSEMBLY
+
+ifndef::context[]
+[id="creating-a-maven-project-for-a-hello-world-application"]
+endif::[]
+ifdef::context[]
+[id="creating-a-maven-project-for-a-hello-world-application_{context}"]
+endif::[]
+= Creating a Maven project for a Hello World application
+
+:context: creating-a-maven-project-for-a-hello-world-application
+
+[role="_abstract"]
+A Maven project contains a `pom.xml` configuration file and has the directory structure required for creating an application. You can configure the `pom.xml` configuration file to add dependencies for your application.
+
+To create a Maven project for a Hello World application, follow these procedures:
+
+* xref:creating-a-maven-project-with-the-webapp-maven-archetype_creating-a-maven-project-for-a-hello-world-application[Creating a Maven project with `maven-archetype-webapp`]
+* xref:defining-properties-in-a-maven-project_creating-a-maven-project-for-a-hello-world-application[Defining properties in a Maven project]
+* xref:defining-the-repositories-in-a-maven-project_creating-a-maven-project-for-a-hello-world-application[Defining the repositories in a Maven project]
+* xref:importing-the-server-boms-dependency-management-in-maven-project_creating-a-maven-project-for-a-hello-world-application[Importing the {ProductShortname} BOMs as dependency management in a Maven project]
+* xref:adding-plugin-management-in-a-maven-project_creating-a-maven-project-for-a-hello-world-application[Adding plug-in management in a Maven project]
+* xref:verifying-a-maven-project_creating-a-maven-project-for-a-hello-world-application[Verifying a maven project]
+
+include::{pathToModules}/proc_creating-a-maven-project-with-the-webapp-maven-archetype.adoc[leveloffset=+1]
+
+include::{pathToModules}/proc_defining-properties-in-a-maven-project.adoc[leveloffset=+1]
+
+include::{pathToModules}/proc_defining-the-repositories-in-a-maven-project.adoc[leveloffset=+1]
+
+include::{pathToModules}/proc_importing-the-server-boms-dependency-management-in-maven-project.adoc[leveloffset=+1]
+
+include::{pathToModules}/proc_adding-plugin-management-in-a-maven-project.adoc[leveloffset=+1]
+
+include::{pathToModules}/proc_verifying-a-maven-project.adoc[leveloffset=+1]
+
+ifdef::parent-context-of-creating-a-maven-project-for-a-hello-world-application[:context: {parent-context-of-creating-a-maven-project-for-a-hello-world-application}]
+ifndef::parent-context-of-creating-a-maven-project-for-a-hello-world-application[:!context:]

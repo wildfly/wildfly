@@ -1,0 +1,19 @@
+<project>
+    ...
+    <build>
+        <pluginManagement>
+            <plugins>
+                <plugin>                                  <!--1-->
+                    <groupId>org.wildfly.plugins</groupId>
+                    <artifactId>wildfly-maven-plugin</artifactId>
+                    <version>${version.plugin.wildfly}</version>
+                </plugin>
+                <plugin>                                  <!--2-->
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-war-plugin</artifactId>
+                    <version>${version.plugin.war}</version>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+    </build>
+</project>
