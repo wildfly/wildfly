@@ -166,4 +166,7 @@ public interface JGroupsLogger extends BasicLogger {
     @LogMessage(level = INFO)
     @Message(id = 35, value = "Disconnected '%s' channel. '%s' left cluster '%s'")
     void disconnected(String channelName, String nodeName, String clusterName);
+
+    @Message(id = 36, value = "Unable to load module %s for protocol %s")
+    OperationFailedException unableToLoadProtocolModule(String moduleName, String protocolName);
 }

@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -41,6 +42,7 @@ import org.jboss.as.controller.registry.PlaceholderResource;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 import org.jboss.modules.Module;
+import org.jboss.modules.ModuleClassLoader;
 import org.jboss.modules.ModuleLoadException;
 import org.jgroups.Global;
 import org.jgroups.JChannel;
@@ -97,7 +99,7 @@ public abstract class AbstractChannelResourceDefinitionRegistrar<C extends Chann
                 @Override
                 public void accept(ForkChannelFactoryConfiguration configuration) {
                     ProtocolStack stack = configuration.getChannel().getProtocolStack();
-                    FORK fork = (FORK) stack.findProtocol(FORK.class);
+                    FORK fork = stack.findProtocol(FORK.class);
                     fork.remove(name);
                 }
             };
@@ -393,14 +395,38 @@ public abstract class AbstractChannelResourceDefinitionRegistrar<C extends Chann
 
     static Class<? extends Protocol> findProtocolClass(OperationContext context, String protocolName, ModelNode protocolModel) throws OperationFailedException {
         String moduleName = ProtocolChildResourceDefinitionRegistrar.MODULE.resolveModelAttribute(context, protocolModel).asString();
-        String className = protocolName;
-        if (moduleName.equals(ProtocolChildResourceDefinitionRegistrar.MODULE.getDefaultValue().asString()) && !protocolName.startsWith(Global.PREFIX)) {
-            className = Global.PREFIX + protocolName;
-        }
+        boolean isDefaultModule = moduleName.equals(ProtocolChildResourceDefinitionRegistrar.MODULE.getDefaultValue().asString());
+
+        ModuleClassLoader classLoader;
         try {
-            return Module.getContextModuleLoader().loadModule(moduleName).getClassLoader().loadClass(className).asSubclass(Protocol.class);
-        } catch (ClassNotFoundException | ModuleLoadException e) {
-            throw JGroupsLogger.ROOT_LOGGER.unableToLoadProtocolClass(className);
+            classLoader = Module.getContextModuleLoader().loadModule(moduleName).getClassLoader();
+        } catch (ModuleLoadException e) {
+            throw JGroupsLogger.ROOT_LOGGER.unableToLoadProtocolModule(moduleName, protocolName);
         }
+
+        List<String> candidateClassNames = new ArrayList<>(2);
+        if (protocolName.startsWith(Global.PREFIX)) {
+            // Protocol name is already a jgroups protocol class name
+            candidateClassNames.add(protocolName);
+        } else {
+            // If using non-default module, try loading protocol name as class name first
+            if (!isDefaultModule) {
+                candidateClassNames.add(protocolName);
+            }
+            // Compose class name using standard prefix
+            // e.g. "raft.RAFT" akin to standalone jgroups classloading
+            candidateClassNames.add(Global.PREFIX + protocolName);
+        }
+
+        Iterator<String> classNames = candidateClassNames.iterator();
+        while (classNames.hasNext()) {
+            try {
+                return classLoader.loadClass(classNames.next()).asSubclass(Protocol.class);
+            } catch (ClassNotFoundException e) {
+                // Retry with next
+            }
+        }
+        throw JGroupsLogger.ROOT_LOGGER.unableToLoadProtocolClass(protocolName);
     }
+
 }
