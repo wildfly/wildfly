@@ -1,4 +1,4 @@
-[[Observability_Tracing]]
+[[OpenTelemetry]]
 = OpenTelemetry Subsystem
 
 ifdef::env-github[]
@@ -13,16 +13,16 @@ endif::[]
 == Extension
 
 This extension is not included in any of the standalone configurations included in the WildFly distribution.
-To enable, the administrator must run the following CLI commands:
+To enable it, the administrator must run the following CLI commands:
 
 [source,options=nowrap]
------
+----
 [standalone@localhost:9990 /]  /extension=org.wildfly.extension.opentelemetry:add()
 [standalone@localhost:9990 /]  /subsystem=opentelemetry:add()
------
+----
 
 [IMPORTANT]
-The OpenTelemetry subsystem provides support for all three "pillars" of observability: traces, metrics, and logging. It is important for administrators to note that WildFly also supports two other metrics-reporting subsystems, `metrics` and `micrometer`. While these subsystems may all be run concurrently, it is not advisable, as this will likely have an impact on server performance due to the duplicated metrics collection.
+The OpenTelemetry subsystem provides support for all three "pillars" of observability: tracing, metrics, and logging. It is important for administrators to note that WildFly also supports two other metrics-reporting subsystems, `metrics` and `micrometer`. While these subsystems may all be run concurrently, it is not advisable, as this will likely have an impact on server performance due to the duplicated metrics collection.
 
 To disable WildFly Metrics, then, issue these commands:
 
@@ -84,7 +84,7 @@ The span process is configured via the `span-processor` element, which supports 
 * `batch-delay`: The amount of time, in milliseconds, to wait before traces are published (default: 5000)
 * `max-queue-size`: The maximum size of the queue before traces are dropped (default: 2048)
 * `max-export-batch-size`: The maximum number of traces that are published in each batch, which must be smaller or equal to `max-queue-size (default: 512)
-* `export-timeout`: The maximum amount of time in milliseconds to allow for an export to complete before being cancelled (default: 30000)
+* `export-timeout`: The maximum amount of time in milliseconds to allow for an export to complete before being canceled (default: 30000)
 
 === Sampler
 
@@ -94,7 +94,7 @@ The sampler is configured via the `sampler` element:
 ** `on`: Always on (all traces are recorded)
 ** `off`: Always off (no traces are recorded)
 ** `ratio`: Return a ratio of the traces (e.g., 1 trace in 10000).
-* `ratio`: The value used to configure the `ratio` sampler, which must be within [0.0, 1.0].For example, if 1 trace in 10,000 is to be exported, this value would be `0.0001`.
+* `ratio`: The value used to configure the `ratio` sampler, which must be within [0.0, 1.0]. For example, if 1 trace in 10,000 is to be exported, this value would be `0.0001`.
 
 === Example Configuration
 
@@ -121,15 +121,15 @@ default values, so what you see in the configuration file may look different):
 
 == Application Usage
 
-All incoming REST requests are automatically traced, so no work needs be done in user applications.If a REST request is received and the OpenTelemetry context propagation header (`traceparent`) is present, the request will traced as part of the remote trace context automatically.
+All incoming REST requests are automatically traced, so no work needs be done in user applications. If a REST request is received and the OpenTelemetry context propagation header (`traceparent`) is present, the request will be traced as part of the remote trace context automatically.
 
-Likewise, all Jakarta REST Client calls will have the trace context added to outgoing request headers so that requests to external applications can be traced correctly (assuming the remote system properly handles OpenTelemetry trace context propagation).If the REST Client call is made to another application on the local WildFly server, or a remote server of the same version or later, the trace context will propagate automatically as described above.
+Likewise, all Jakarta REST Client calls will have the trace context added to outgoing request headers so that requests to external applications can be traced correctly (assuming the remote system properly handles OpenTelemetry trace context propagation). If the REST Client call is made to another application on the local WildFly server, or a remote server of the same version or later, the trace context will propagate automatically as described above.
 
-While automatic tracing may be sufficient in many cases, it will often be desirable to have traces occur throughout the user application.To support that, WildFly makes available the `io.opentelemetry.api.OpenTelemetry` and
-`io.opentelemetry.api.trace.Tracer` instances, via CDI injection.A user application, then is able to create arbitrary spans as part of the server-managed trace:
+While automatic tracing may be sufficient in many cases, it will often be desirable to have traces occur throughout the user application. To support that, WildFly makes available the `io.opentelemetry.api.OpenTelemetry` and
+`io.opentelemetry.api.trace.Tracer` instances, via CDI injection. A user application, then is able to create arbitrary spans as part of the server-managed trace:
 
 [source,java,options="nowrap"]
------
+----
 @Path("/myEndpoint")
 public class MyEndpoint {
     @Inject
@@ -147,8 +147,17 @@ public class MyEndpoint {
         span.end();
 
         return Response.ok().build();
+    }
 }
------
+----
+
+[[otel-multiple-apps]]
+=== Multiple Application Support
+Generally speaking, applications deployed to an application server like WildFly run in isolation. While that remains
+true when using the OpenTelemetry subsystem, there is an important caveat. The configuration for OpenTelemetry is
+server-wide, so each application will share that configuration. This means that observability signals from all
+applications deployed to a given server will be aggregated and published together. If this aggregation of signals poses
+concerns for your environment, consider deploying sensitive applications to isolated environments.
 
 == Component Reference
 

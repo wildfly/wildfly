@@ -41,10 +41,10 @@ Note that this an alternative to the existing WildFly Metrics extension. While t
 Additionally, WildFly support for OpenTelemetry and MicroProfile Telemetry now includes support for metrics as well. Running these in conjunction with Micrometer poses the same performance concerns mentioned above, so administrators/developers are advised to choose one subsystem and remove the other. If, however, Micrometer metrics and OpenTelemetry tracing/logging are both desired, OpenTelemetry/MicroProfile Telemetry metrics can be disabled via a system property:
 
 [source,options="nowrap"]
------
+----
 [standalone@localhost:9990 /] /system-property=otel.metrics.exporter:add(value=none)
 [standalone@localhost:9990 /] reload
------
+----
 
 or via `otel.metrics.exporter=none` in a MicroProfile Config `ConfigSource`.
 
@@ -116,12 +116,12 @@ NOTE: Prometheus has its own https://prometheus.io/docs/practices/naming/[metric
 The https://github.com/wildfly/quickstart/tree/main/helloworld[helloworld quickstart] demonstrates the use of CDI and Servlet in WildFly. A corresponding metric will be exposed for it with the name and tags (formatted for readability):
 
 [source]
------
+----
 undertow_request_count_total{
     deployment="helloworld.war",
     servlet="org.jboss.as.quickstarts.helloworld.HelloWorldServlet",
     subdeployment="helloworld.war"} 4.0
------
+----
 
 [NOTE]
 Some subsystems (such as `undertow` or `messaging-activemq`) do not enable their statistics by default as they have an impact on performance and memory usage. These subsystems provide a `statistics-enabled` attribute that must be set to `true` to enable them. For convenience, WildFly standalone configuration provides expressions to enable the statistics by setting a System property `-Dwildfly.statistics-enabled=true` to enable statistics on the subsystems provided by the configuration.
@@ -131,7 +131,7 @@ Some subsystems (such as `undertow` or `messaging-activemq`) do not enable their
 Unlike the previous metrics systems, this new extension exposes an API (that of https://micrometer.io[Micrometer]) to applications in order to allow developers to record and export metrics out of the box. To do so, application developers will need to inject a `MeterRegistry` instance:
 
 [source,java]
------
+----
 package com.redhat.wildfly.micrometerdemo;
 
 import jakarta.enterprise.context.RequestScoped;
@@ -152,16 +152,16 @@ public class Endpoint {
         return "Counter is " + registry.counter("dummy").count();
     }
 }
------
+----
 
 This provides the application with a `MeterRegistry` instance that will have any recorded metrics exported with the system metrics WildFly already exposes. There is no need for an application to include the Micrometer dependencies in the application archive, as they are provided by the server out-of-the-box:
 
 [source,xml]
------
+----
 <dependency>
     <groupId>io.micrometer</groupId>
     <artifactId>micrometer-core</artifactId>
     <version>${version.micrometer}</version>
     <scope>provided</scope>
 </dependency>
------
+----
