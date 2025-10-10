@@ -38,7 +38,7 @@ Note that this an alternative to the existing WildFly Metrics extension. While t
 [standalone@localhost:9990 /] reload
 ----
 
-Additionally, WildFly support for OpenTelemetry and MicroProfile Telemetry now includes support for metrics as well. Running these in conjunction with Micrometer poses the same performance concerns mentioned above, so administrators/developers are advised to choose one subsystem and remove the other. If, however, Micrometer metrics and OpenTelemetry tracing/logging are both desired, OpenTelemetry/MicroProfile Telemetry metrics can be disabled via a system property:
+Additionally, WildFly support for OpenTelemetry and MicroProfile Telemetry now includes support for metrics as well. Running these in conjunction with Micrometer poses the same performance concerns mentioned above, so administrators/developers are advised to choose one subsystem and remove the others. If, however, Micrometer metrics and OpenTelemetry tracing/logging are both desired, OpenTelemetry/MicroProfile Telemetry metrics can be disabled via a system property:
 
 [source,options="nowrap"]
 -----
@@ -74,7 +74,8 @@ To install the Prometheus registry, execute this command:
 [standalone@localhost:9990 /] /subsystem=micrometer/registry=prometheus:add(context="/metrics")
 ----
 
-This will create a context on the management interface from which metrics can be scraped. For example, the above configuration would result in a URL that looks like `http://localhost:9090/metrics`. If you have not disabled the WildFly Metrics subsystem, you will not be able to use `/metrics` as your context, as that is already configured. To disable the WildFly Metrics Subsystem, see the `remove` commands above.
+This will create a context on the management interface from which metrics can be scraped. For example, the above configuration would result in a URL that looks like `http://localhost:9090/metrics`. If you have not disabled the WildFly Metrics subsystem, you will not be able to use `/metrics` as your context, as that is already configured. To disable the WildFly Metrics Subsystem, see the `remove` commands above. Alternatively, you can specify a different context, e.g., `/prometheus`, though
+the performance concerns above are still valid.
 
 == Management Model
 
@@ -128,11 +129,11 @@ Some subsystems (such as `undertow` or `messaging-activemq`) do not enable their
 
 == Use in Applications
 
-Unlike the previous metrics systems, this new extension exposes an API (that of https://micrometer.io[Micrometer]) to applications in order to allow developers to record and export metrics out of the box. To do so, application developers will need to inject a `MeterRegistry` instance:
+Unlike the previous metrics systems, this new extension exposes an API (see https://micrometer.io[Micrometer]) to applications in order to allow developers to record and export metrics out of the box. To do so, application developers will need to inject a `MeterRegistry` instance:
 
 [source,java]
 -----
-package com.redhat.wildfly.micrometerdemo;
+package org.wildfly.micrometerdemo;
 
 import jakarta.enterprise.context.RequestScoped;
 import jakarta.inject.Inject;
@@ -165,3 +166,9 @@ This provides the application with a `MeterRegistry` instance that will have any
     <scope>provided</scope>
 </dependency>
 -----
+
+[NOTE]
+.Multiple Application Support
+====
+Generally speaking, applications deployed to an application server like WildFly run in isolation. While that remains true when using the Micrometer subsystem, there is an important caveat. WildFly creates a single instance of each configured `MetricRegistry` for the entire system, so there will be single point from which metrics are pushed or pulled. This means that metrics from all applications deployed to a given server will be aggregated and published together. If this mingling of metrics poses concerns for your environment, consider deploying sensitive applications to isolated environments.
+====

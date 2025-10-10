@@ -1,4 +1,4 @@
-[[Observability_Tracing]]
+[[OpenTelemetry]]
 = OpenTelemetry Subsystem
 
 ifdef::env-github[]
@@ -129,7 +129,7 @@ While automatic tracing may be sufficient in many cases, it will often be desira
 `io.opentelemetry.api.trace.Tracer` instances, via CDI injection.A user application, then is able to create arbitrary spans as part of the server-managed trace:
 
 [source,java,options="nowrap"]
------
+----
 @Path("/myEndpoint")
 public class MyEndpoint {
     @Inject
@@ -148,7 +148,14 @@ public class MyEndpoint {
 
         return Response.ok().build();
 }
------
+----
+
+[[otel-multiple-apps]]
+[NOTE]
+.Multiple Application Support
+====
+Generally speaking, applications deployed to an application server like WildFly run in isolation. While that remains true when using the OpenTelemetry subsystem, there is an important caveat. The configuration for OpenTelemetry is server-wide, so each application will share that configuration. This means that observability signals from all applications deployed to a given server will be aggregated and published together. If this mingling of signals poses concerns for your environment, consider deploying sensitive applications to isolated environments.
+====
 
 == Component Reference
 
