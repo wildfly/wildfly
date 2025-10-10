@@ -24,6 +24,12 @@
 
     <name>WildFly: Web Services Tests Integration Subsystem</name>
 
+    <properties>
+        <!-- Don't try to deploy the module -->
+        <maven.deploy.skip>true</maven.deploy.skip>
+        <skipNexusStagingDeployMojo>true</skipNexusStagingDeployMojo>
+    </properties>
+
     <dependencies>
         <dependency> <!-- Required by activemq... -->
             <groupId>jakarta.json</groupId>
