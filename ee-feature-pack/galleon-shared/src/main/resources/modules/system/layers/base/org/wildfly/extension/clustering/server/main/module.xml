@@ -30,6 +30,7 @@
         <module name="org.jgroups"/>
         <module name="org.wildfly.clustering.cache.infinispan.embedded"/>
         <module name="org.wildfly.clustering.context"/>
+        <module name="org.wildfly.clustering.function"/>
         <module name="org.wildfly.clustering.infinispan.embedded.service"/>
         <module name="org.wildfly.clustering.jgroups.spi"/>
         <module name="org.wildfly.clustering.marshalling.jboss"/>
@@ -41,7 +42,6 @@
         <module name="org.wildfly.clustering.server.local"/>
         <module name="org.wildfly.clustering.server.service"/>
         <module name="org.wildfly.clustering.server.spi"/>
-        <module name="org.wildfly.common"/>
         <module name="org.wildfly.security.elytron-private"/>
         <module name="org.wildfly.service"/>
         <module name="org.wildfly.subsystem"/>

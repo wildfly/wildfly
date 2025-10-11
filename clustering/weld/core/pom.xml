@@ -85,10 +85,6 @@
             <artifactId>wildfly-clustering-marshalling-protostream</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.wildfly.common</groupId>
-            <artifactId>wildfly-common</artifactId>
-        </dependency>
-        <dependency>
             <groupId>org.wildfly.core</groupId>
             <artifactId>wildfly-server</artifactId>
         </dependency>

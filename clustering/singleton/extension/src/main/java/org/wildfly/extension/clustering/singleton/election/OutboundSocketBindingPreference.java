@@ -36,7 +36,7 @@ public class OutboundSocketBindingPreference implements Predicate<GroupMember> {
     public boolean test(GroupMember member) {
         if (member instanceof CacheContainerGroupMember) {
             CacheContainerGroupMember infinispanMember = (CacheContainerGroupMember) member;
-            Address infinispanAddress = infinispanMember.getAddress();
+            Address infinispanAddress = infinispanMember.getId();
             if (infinispanAddress instanceof JGroupsAddress) {
                 org.jgroups.Address address = ((JGroupsAddress) infinispanAddress).getJGroupsAddress();
                 IpAddress physicalAddress = (IpAddress) this.channel.down(new Event(Event.GET_PHYSICAL_ADDRESS, address));

@@ -25,7 +25,6 @@
         <module name="org.jboss.weld.core"/>
         <module name="org.jboss.weld.spi"/>
         <module name="org.wildfly.clustering.marshalling.protostream"/>
-        <module name="org.wildfly.common"/>
         <module name="org.wildfly.security.elytron-private"/>
     </dependencies>
 </module>

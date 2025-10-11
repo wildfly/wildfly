@@ -55,7 +55,7 @@ public class SessionManagerFactoryConfigurationAdapter<C extends DistributableSe
     }
 
     @Override
-    public OptionalInt getMaxActiveSessions() {
+    public OptionalInt getMaxSize() {
         return this.maxActiveSessions;
     }
 

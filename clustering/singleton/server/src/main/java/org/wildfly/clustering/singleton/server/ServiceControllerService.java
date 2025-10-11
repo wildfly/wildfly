@@ -14,7 +14,7 @@ import java.util.concurrent.CountDownLatch;
 import org.jboss.msc.service.LifecycleEvent;
 import org.jboss.msc.service.LifecycleListener;
 import org.jboss.msc.service.ServiceController;
-import org.wildfly.clustering.server.manager.Service;
+import org.wildfly.clustering.server.service.Service;
 import org.wildfly.clustering.service.CountDownLifecycleListener;
 import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.msc.service.ServiceController.State;

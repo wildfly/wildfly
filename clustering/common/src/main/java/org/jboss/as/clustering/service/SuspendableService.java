@@ -14,34 +14,22 @@ import org.jboss.as.server.suspend.ServerSuspendContext;
 import org.jboss.as.server.suspend.ServerSuspendController;
 import org.jboss.as.server.suspend.SuspendableActivity;
 import org.jboss.as.server.suspend.SuspendableActivityRegistry;
-import org.wildfly.clustering.server.manager.Service;
+import org.wildfly.clustering.server.service.Service;
 
 /**
  * A {@link Service} decorator that auto-stops on server suspend and auto-starts on server resume.
  * @author Paul Ferraro
  */
-public class SuspendableService implements Service {
+public class SuspendableService implements Service, SuspendableActivity {
 
     private final Service service;
     private final SuspendableActivityRegistry registry;
-    private final SuspendableActivity activity;
+    private final Executor executor;
 
     public SuspendableService(Service service, SuspendableActivityRegistry registry, Executor executor) {
         this.service = service;
         this.registry = registry;
-        this.activity = new SuspendableActivity() {
-            @Override
-            public CompletionStage<Void> suspend(ServerSuspendContext context) {
-                // Avoid spurious stop on startup during activity registration
-                if (context.isStarting()) return SuspendableActivity.COMPLETED;
-                return CompletableFuture.runAsync(service::stop, executor);
-            }
-
-            @Override
-            public CompletionStage<Void> resume(ServerResumeContext context) {
-                return CompletableFuture.runAsync(service::start, executor);
-            }
-        };
+        this.executor = executor;
     }
 
     @Override
@@ -51,8 +39,8 @@ public class SuspendableService implements Service {
 
     @Override
     public void start() {
-        this.registry.registerActivity(this.activity);
-        // Only start now if we are not suspended
+        this.registry.registerActivity(this);
+        // If we are suspended, defer start until SuspendableActivity.resume(...)
         if (this.registry.getState() == ServerSuspendController.State.RUNNING) {
             this.service.start();
         }
@@ -60,10 +48,20 @@ public class SuspendableService implements Service {
 
     @Override
     public void stop() {
-        // Only stop if we are not already suspended
+        // If we are suspended, SuspendableActivity.suspend(...) will have already stopped the service
         if (this.registry.getState() == ServerSuspendController.State.RUNNING) {
             this.service.stop();
         }
-        this.registry.unregisterActivity(this.activity);
+        this.registry.unregisterActivity(this);
+    }
+
+    @Override
+    public CompletionStage<Void> suspend(ServerSuspendContext context) {
+        return this.service.isStarted() ? CompletableFuture.runAsync(this.service::stop, this.executor) : SuspendableActivity.COMPLETED;
+    }
+
+    @Override
+    public CompletionStage<Void> resume(ServerResumeContext context) {
+        return !this.service.isStarted() ? CompletableFuture.runAsync(this.service::start, this.executor) : SuspendableActivity.COMPLETED;
     }
 }

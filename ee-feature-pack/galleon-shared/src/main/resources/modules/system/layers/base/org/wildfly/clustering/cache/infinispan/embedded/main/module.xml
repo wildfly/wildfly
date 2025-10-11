@@ -20,10 +20,13 @@
 
         <module name="io.github.resilience4j.core"/>
         <module name="io.github.resilience4j.retry"/>
+        <module name="io.reactivex.rxjava3.rxjava"/>
         <module name="org.infinispan.commons"/>
         <module name="org.infinispan.core"/>
         <module name="org.jgroups" optional="true"/>
+        <module name="org.reactivestreams"/>
         <module name="org.wildfly.clustering.context"/>
+        <module name="org.wildfly.clustering.cache.caffeine"/>
         <module name="org.wildfly.clustering.cache.infinispan.common"/>
         <module name="org.wildfly.clustering.cache.spi"/>
         <module name="org.wildfly.clustering.function"/>

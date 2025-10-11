@@ -10,11 +10,11 @@ import java.util.Map;
 import java.util.function.Supplier;
 
 import org.kohsuke.MetaInfServices;
+import org.wildfly.clustering.function.Consumer;
 import org.wildfly.clustering.server.GroupMember;
 import org.wildfly.clustering.server.registry.Registry;
 import org.wildfly.clustering.server.registry.RegistryFactory;
 import org.wildfly.clustering.server.service.ClusteringServiceDescriptor;
-import org.wildfly.common.function.Functions;
 import org.wildfly.clustering.server.service.BinaryServiceConfiguration;
 import org.wildfly.clustering.server.service.BinaryServiceInstallerFactory;
 import org.wildfly.service.descriptor.BinaryServiceDescriptor;
@@ -38,7 +38,7 @@ public class RegistryServiceInstallerFactory implements BinaryServiceInstallerFa
             }
         };
         return ServiceInstaller.builder(factory).blocking()
-                .onStop(Functions.closingConsumer())
+                .onStop(Consumer.close())
                 .provides(configuration.resolveServiceName(this.getServiceDescriptor()))
                 .requires(List.of(registryFactory, registryEntry))
                 .build();

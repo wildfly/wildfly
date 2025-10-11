@@ -6,7 +6,7 @@
 package org.wildfly.clustering.singleton.server;
 
 import org.wildfly.clustering.server.dispatcher.Command;
-import org.wildfly.clustering.server.manager.Service;
+import org.wildfly.clustering.server.service.Service;
 
 /**
  * Command to stop a singleton service.

@@ -123,10 +123,11 @@ public class CacheServiceInstaller implements ServiceInstaller {
                 @Override
                 public CompletionStage<Void> suspend(ServerSuspendContext context) {
                     // N.B. Skip configuration swapping if:
+                    //  * server is starting, and suspend method was auto-triggered by activity registration
                     //  * server is stopping
                     //  * cache already uses a suspended configuration
                     //  * we are the only cache topology member (and cannot tolerate a cache restart)
-                    if (context.isStopping() || this.inUse(suspendedConfiguration) || (cache.getAdvancedCache().getDistributionManager().getCacheTopology().getActualMembers().size() < 2)) {
+                    if (context.isStarting() || context.isStopping() || this.inUse(suspendedConfiguration) || (cache.getAdvancedCache().getDistributionManager().getCacheTopology().getActualMembers().size() < 2)) {
                         return SuspendableActivity.COMPLETED;
                     }
                     return this.blocking.runBlocking(new Runnable() {
@@ -146,8 +147,10 @@ public class CacheServiceInstaller implements ServiceInstaller {
 
                 @Override
                 public CompletionStage<Void> resume(ServerResumeContext context) {
-                    // N.B. Skip configuration swapping if cache already uses its original configuration
-                    if (this.inUse(originalConfiguration)) {
+                    // N.B. Skip configuration swapping if:
+                    //  * server is starting, and thus we were never suspended
+                    //  * cache already uses its original configuration
+                    if (context.isStarting() || this.inUse(originalConfiguration)) {
                         return SuspendableActivity.COMPLETED;
                     }
                     return this.blocking.runBlocking(new Runnable() {
@@ -166,7 +169,7 @@ public class CacheServiceInstaller implements ServiceInstaller {
                 }
 
                 boolean inUse(org.infinispan.configuration.cache.Configuration configuration) {
-                    return ComponentRegistry.componentOf(cache, BasicComponentRegistry.class).getComponent(Configuration.class) == configuration;
+                    return GlobalComponentRegistry.componentOf(cache.getCacheManager(), ConfigurationManager.class).getConfiguration(cache.getName()) == configuration;
                 }
             });
         }
