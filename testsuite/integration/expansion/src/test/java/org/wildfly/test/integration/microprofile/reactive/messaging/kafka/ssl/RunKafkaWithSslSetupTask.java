@@ -23,6 +23,7 @@ import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.utility.MountableFile;
 import org.wildfly.security.manager.WildFlySecurityManager;
 import org.wildfly.test.integration.microprofile.reactive.KeystoreUtil;
+import org.jboss.as.test.config.ContainerConfig;
 
 /**
  * @author <a href="mailto:kabir.khan@jboss.com">Kabir Khan</a>
@@ -36,13 +37,13 @@ public class RunKafkaWithSslSetupTask implements ServerSetupTask {
     public void setup(ManagementClient managementClient, String s) throws Exception {
         try {
             KeystoreUtil.createKeystores();
-            String kafkaVersion = WildFlySecurityManager.getPropertyPrivileged("wildfly.test.kafka.version", null);
+            String kafkaVersion = ContainerConfig.getKafkaImageVersion() != null ? ContainerConfig.getKafkaImageVersion() : WildFlySecurityManager.getPropertyPrivileged("wildfly.test.kafka.version", null);
             if (kafkaVersion == null) {
                 throw new IllegalArgumentException("Specify Kafka version with -Dwildfly.test.kafka.version");
             }
 
             // The KafkaContainer class doesn't play nicely when trying to make it use SSL
-            container = new GenericContainer("apache/kafka-native:" + kafkaVersion);
+            container = new GenericContainer(ContainerConfig.getKafkaImageName() + ":" + kafkaVersion);
             container.setPortBindings(Arrays.asList("9092:9092", "19092:19092"));
             container.withCopyFileToContainer(
                     MountableFile.forHostPath(Path.of("src/test/resources/org/wildfly/test/integration/microprofile/reactive/messaging/kafka/ssl/server.properties")),

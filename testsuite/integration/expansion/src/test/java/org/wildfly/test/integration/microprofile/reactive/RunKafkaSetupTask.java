@@ -17,6 +17,7 @@ import org.jboss.as.arquillian.api.ServerSetupTask;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.testcontainers.kafka.KafkaContainer;
 import org.wildfly.security.manager.WildFlySecurityManager;
+import org.jboss.as.test.config.ContainerConfig;
 
 @TestcontainersRequired
 public class RunKafkaSetupTask implements ServerSetupTask {
@@ -25,11 +26,11 @@ public class RunKafkaSetupTask implements ServerSetupTask {
 
     @Override
     public void setup(ManagementClient managementClient, String s) throws Exception {
-        String kafkaVersion = WildFlySecurityManager.getPropertyPrivileged("wildfly.test.kafka.version", null);
+        String kafkaVersion = ContainerConfig.getKafkaImageVersion() != null ? ContainerConfig.getKafkaImageVersion() : WildFlySecurityManager.getPropertyPrivileged("wildfly.test.kafka.version", null);
         if (kafkaVersion == null) {
             throw new IllegalArgumentException("Specify Kafka version with -Dwildfly.test.kafka.version");
         }
-        container = new KafkaContainer("apache/kafka-native:" + kafkaVersion);
+        container = new KafkaContainer(ContainerConfig.getKafkaImageName() + ":" + kafkaVersion);
         container.setPortBindings(Arrays.asList("9092:9092", "9093:9093"));
 
         for (Map.Entry<String, String> entry : extraBrokerProperties().entrySet()) {
