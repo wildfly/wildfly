@@ -5,7 +5,7 @@
 
 package org.wildfly.clustering.singleton.server;
 
-import org.wildfly.clustering.server.manager.Service;
+import org.wildfly.clustering.server.service.Service;
 
 /**
  * @author Paul Ferraro

@@ -42,6 +42,7 @@ import org.wildfly.clustering.ejb.timer.IntervalTimerConfiguration;
 import org.wildfly.clustering.ejb.timer.ScheduleTimerConfiguration;
 import org.wildfly.clustering.ejb.timer.Timer;
 import org.wildfly.clustering.ejb.timer.TimerManager;
+import org.wildfly.clustering.server.service.DecoratedService;
 
 import jakarta.ejb.EJBException;
 import jakarta.ejb.ScheduleExpression;
@@ -56,7 +57,7 @@ import jakarta.transaction.TransactionSynchronizationRegistry;
  * @author Paul Ferraro
  * @param <I> the timer identifier type
  */
-public class DistributableTimerService<I> implements ManagedTimerService {
+public class DistributableTimerService<I> extends DecoratedService implements ManagedTimerService {
 
     private final TimerServiceRegistry registry;
     private final TimedObjectInvoker invoker;
@@ -66,6 +67,7 @@ public class DistributableTimerService<I> implements ManagedTimerService {
     private final Predicate<TimerConfig> filter;
 
     public DistributableTimerService(DistributableTimerServiceConfiguration<I> configuration, TimerManager<I> manager) {
+        super(manager);
         this.invoker = configuration.getInvoker();
         this.identifierParser = configuration.getIdentifierParser();
         this.filter = configuration.getTimerFilter();
@@ -96,21 +98,6 @@ public class DistributableTimerService<I> implements ManagedTimerService {
     @Override
     public TimedObjectInvoker getInvoker() {
         return this.invoker;
-    }
-
-    @Override
-    public boolean isStarted() {
-        return this.manager.isStarted();
-    }
-
-    @Override
-    public void start() {
-        this.manager.start();
-    }
-
-    @Override
-    public void stop() {
-        this.manager.stop();
     }
 
     @Override

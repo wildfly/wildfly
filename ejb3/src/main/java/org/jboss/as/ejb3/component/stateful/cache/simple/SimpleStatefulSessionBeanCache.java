@@ -10,7 +10,6 @@ import java.time.Instant;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
@@ -23,10 +22,9 @@ import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.ejb.client.Affinity;
 import org.jboss.ejb.client.NodeAffinity;
 import org.wildfly.clustering.context.DefaultThreadFactory;
-import org.wildfly.clustering.server.local.scheduler.LocalScheduler;
-import org.wildfly.clustering.server.local.scheduler.LocalSchedulerConfiguration;
+import org.wildfly.clustering.server.local.scheduler.LocalSchedulerService;
 import org.wildfly.clustering.server.local.scheduler.ScheduledEntries;
-import org.wildfly.clustering.server.scheduler.Scheduler;
+import org.wildfly.clustering.server.scheduler.SchedulerService;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
@@ -39,74 +37,69 @@ import org.wildfly.security.manager.WildFlySecurityManager;
 public class SimpleStatefulSessionBeanCache<K, V extends StatefulSessionBeanInstance<K>> implements StatefulSessionBeanCache<K, V>, Predicate<K>, Consumer<StatefulSessionBean<K, V>> {
     private static final ThreadFactory THREAD_FACTORY = new DefaultThreadFactory(SimpleStatefulSessionBeanCache.class, WildFlySecurityManager.getClassLoaderPrivileged(SimpleStatefulSessionBeanCache.class));
 
-    private final String componentName;
     private final Map<K, V> instances = new ConcurrentHashMap<>();
     private final Consumer<K> remover = this.instances::remove;
     private final StatefulSessionBeanInstanceFactory<V> factory;
     private final Supplier<K> identifierFactory;
     private final Duration timeout;
     private final Affinity strongAffinity;
-    private final AtomicBoolean started = new AtomicBoolean();
-
-    private volatile Scheduler<K, Instant> scheduler;
+    private final SchedulerService<K, Instant> scheduler;
 
     public SimpleStatefulSessionBeanCache(SimpleStatefulSessionBeanCacheConfiguration<K, V> configuration) {
-        this.componentName = configuration.getComponentName();
         this.factory = configuration.getInstanceFactory();
         this.identifierFactory = configuration.getIdentifierFactory();
         this.timeout = configuration.getTimeout();
         this.strongAffinity = new NodeAffinity(configuration.getEnvironment().getNodeName());
+        this.scheduler = (this.timeout != null) && !this.timeout.isZero() && !this.timeout.isNegative() ? new LocalSchedulerService<>(new LocalSchedulerService.Configuration<>() {
+            @Override
+            public String getName() {
+                return configuration.getComponentName();
+            }
+
+            @Override
+            public ScheduledEntries<K, Instant> getScheduledEntries() {
+                return ScheduledEntries.queued();
+            }
+
+            @Override
+            public Predicate<K> getTask() {
+                return SimpleStatefulSessionBeanCache.this;
+            }
+
+            @Override
+            public ThreadFactory getThreadFactory() {
+                return THREAD_FACTORY;
+            }
+        }) : null;
     }
 
     @Override
     public boolean isStarted() {
-        return this.started.get();
+        return (this.scheduler != null) ? this.scheduler.isStarted() : true;
     }
 
     @Override
     public void start() {
-        if (this.started.compareAndSet(false, true)) {
-            Predicate<K> task = this;
-            String componentName = this.componentName;
-            this.scheduler = (this.timeout != null) && !this.timeout.isZero() ? new LocalScheduler<>(new LocalSchedulerConfiguration<>() {
-                @Override
-                public String getName() {
-                    return componentName;
-                }
-
-                @Override
-                public ScheduledEntries<K, Instant> getScheduledEntries() {
-                    return ScheduledEntries.linked();
-                }
-
-                @Override
-                public Predicate<K> getTask() {
-                    return task;
-                }
-
-                @Override
-                public ThreadFactory getThreadFactory() {
-                    return THREAD_FACTORY;
-                }
-
-                @Override
-                public Duration getCloseTimeout() {
-                    return Duration.ZERO;
-                }
-            }) : null;
+        if (this.scheduler != null) {
+            this.scheduler.start();
         }
     }
 
     @Override
     public void stop() {
-        if (this.started.compareAndSet(true, false)) {
-            if (this.scheduler != null) {
-                this.scheduler.close();
-            }
-            for (V instance : this.instances.values()) {
-                instance.removed();
-            }
-            this.instances.clear();
+        if (this.scheduler != null) {
+            this.scheduler.stop();
+        }
+        for (V instance : this.instances.values()) {
+            instance.removed();
+        }
+        this.instances.clear();
+    }
+
+    @Override
+    public void close() {
+        if (this.scheduler != null) {
+            this.scheduler.close();
         }
     }
 

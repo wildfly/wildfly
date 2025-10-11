@@ -6,7 +6,7 @@ package org.wildfly.clustering.web.undertow.session;
 
 import java.util.Map;
 
-import org.wildfly.clustering.server.manager.Service;
+import org.wildfly.clustering.server.service.Service;
 import org.wildfly.clustering.session.SessionManager;
 
 import io.undertow.server.session.SessionListeners;

@@ -8,12 +8,13 @@ import java.io.IOException;
 import java.net.Inet4Address;
 import java.net.InetAddress;
 
+import io.smallrye.common.net.Inet;
+
 import org.infinispan.protostream.descriptors.WireType;
 import org.jboss.as.network.ClientMapping;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamMarshaller;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamReader;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamWriter;
-import org.wildfly.common.net.Inet;
 
 /**
  * ProtoStream marshaller for a {@link ClientMapping}.

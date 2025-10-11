@@ -12,6 +12,7 @@ import java.util.function.UnaryOperator;
 
 import org.infinispan.Cache;
 import org.infinispan.configuration.cache.Configuration;
+import org.infinispan.configuration.cache.Configurations;
 import org.jboss.as.controller.RequirementServiceTarget;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -51,7 +52,7 @@ public class InfinispanRouteLocatorProvider extends LocalRouteLocatorProvider {
             @Override
             public ServiceController<?> install(RequirementServiceTarget target) {
                 // Fallback to local routing if cache is local
-                if (!cacheConfiguration.get().clustering().cacheMode().isClustered()) {
+                if (!Configurations.needSegments(cacheConfiguration.get())) {
                     return localInstaller.install(target);
                 }
 

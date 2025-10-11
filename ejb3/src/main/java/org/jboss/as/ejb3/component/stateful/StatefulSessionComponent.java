@@ -360,7 +360,9 @@ public class StatefulSessionComponent extends SessionBeanComponent implements St
 
     @Override
     public void done() {
-        this.cache.stop();
+        try (StatefulSessionBeanCache<SessionID, StatefulSessionComponentInstance> cache = this.cache) {
+            cache.stop();
+        }
 
         cache = null;
         afterBeginInterceptor = null;

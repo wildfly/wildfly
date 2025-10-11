@@ -43,6 +43,7 @@
         <module name="org.wildfly.clustering.cache.infinispan.embedded"/>
         <module name="org.wildfly.clustering.cache.infinispan.remote"/>
         <module name="org.wildfly.clustering.cache.spi"/>
+        <module name="org.wildfly.clustering.context"/>
         <module name="org.wildfly.clustering.el.expressly"/>
         <module name="org.wildfly.clustering.faces.mojarra"/>
         <module name="org.wildfly.clustering.function"/>

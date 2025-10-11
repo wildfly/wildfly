@@ -8,11 +8,11 @@ package org.jboss.as.ejb3.timerservice;
 import java.util.Collection;
 import java.util.Date;
 
-import org.jboss.as.clustering.service.DecoratedService;
 import org.jboss.as.ejb3.timerservice.spi.ManagedTimer;
 import org.jboss.as.ejb3.timerservice.spi.ManagedTimerService;
 import org.jboss.as.ejb3.timerservice.spi.TimedObjectInvoker;
-import org.wildfly.clustering.server.manager.Service;
+import org.wildfly.clustering.server.service.DecoratedService;
+import org.wildfly.clustering.server.service.Service;
 
 import jakarta.ejb.ScheduleExpression;
 import jakarta.ejb.Timer;

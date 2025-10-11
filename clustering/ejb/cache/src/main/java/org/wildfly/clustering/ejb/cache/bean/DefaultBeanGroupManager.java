@@ -9,7 +9,6 @@ import java.io.IOException;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.BiFunction;
-import java.util.function.Consumer;
 
 import org.jboss.logging.Logger;
 import org.wildfly.clustering.cache.CacheEntryCreator;
@@ -17,12 +16,12 @@ import org.wildfly.clustering.cache.CacheEntryMutator;
 import org.wildfly.clustering.cache.CacheEntryMutatorFactory;
 import org.wildfly.clustering.cache.CacheEntryRemover;
 import org.wildfly.clustering.ejb.bean.BeanInstance;
+import org.wildfly.clustering.function.Consumer;
 import org.wildfly.clustering.marshalling.MarshalledValue;
 import org.wildfly.clustering.marshalling.MarshalledValueFactory;
 import org.wildfly.clustering.server.cache.Cache;
 import org.wildfly.clustering.server.cache.CacheStrategy;
 import org.wildfly.clustering.server.manager.Manager;
-import org.wildfly.common.function.Functions;
 
 /**
  * A manager for bean groups that leverages a {@link Manager} to handle bean group lifecycle.
@@ -47,9 +46,9 @@ public class DefaultBeanGroupManager<K, V extends BeanInstance<K>, C> implements
         this.mutatorFactory = configuration.getMutatorFactory();
         this.factory = configuration.getMarshalledValueFactory();
         boolean persistent = configuration.getCacheProperties().isPersistent();
-        this.postActivateTask = persistent ? new MapValuesTask<>(BeanInstance::postActivate) : Functions.discardingConsumer();
-        this.prePassivateTask = persistent ? new MapValuesTask<>(BeanInstance::prePassivate) : Functions.discardingConsumer();
-        this.cache = CacheStrategy.CONCURRENT.createCache(Functions.discardingConsumer(), new NewBeanGroupCloseTask<>(configuration.getRemover()));
+        this.postActivateTask = persistent ? new MapValuesTask<>(BeanInstance::postActivate) : Consumer.empty();
+        this.prePassivateTask = persistent ? new MapValuesTask<>(BeanInstance::prePassivate) : Consumer.empty();
+        this.cache = CacheStrategy.CONCURRENT.createCache(Consumer.empty(), new NewBeanGroupCloseTask<>(configuration.getRemover()));
         this.beanGroupFactory = (id, closeTask) -> {
             Map<K, V> instances = new ConcurrentHashMap<>();
             MarshalledValue<Map<K, V>, C> newValue = this.factory.createMarshalledValue(instances);

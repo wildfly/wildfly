@@ -37,7 +37,7 @@ import org.wildfly.clustering.server.offset.OffsetValue;
 public class InfinispanTimerMetaDataFactory<I, C> implements TimerMetaDataFactory<I, RemappableTimerMetaDataEntry<C>> {
 
     private final Cache<TimerIndexKey, I> indexCache;
-    private final Cache<TimerMetaDataKey<I>, RemappableTimerMetaDataEntry<C>> tryReadForUpdateCache;
+    private final Cache<TimerMetaDataKey<I>, RemappableTimerMetaDataEntry<C>> readCache;
     private final Cache<TimerMetaDataKey<I>, RemappableTimerMetaDataEntry<C>> readForUpdateCache;
     private final Cache<TimerMetaDataKey<I>, RemappableTimerMetaDataEntry<C>> writeCache;
     private final Cache<TimerMetaDataKey<I>, RemappableTimerMetaDataEntry<C>> removeCache;
@@ -48,7 +48,7 @@ public class InfinispanTimerMetaDataFactory<I, C> implements TimerMetaDataFactor
     public InfinispanTimerMetaDataFactory(InfinispanTimerMetaDataConfiguration<C> config) {
         this.config = config;
         this.indexCache = config.getReadForUpdateCache();
-        this.tryReadForUpdateCache = config.getTryReadForUpdateCache();
+        this.readCache = config.getCache();
         this.readForUpdateCache = config.getReadForUpdateCache();
         this.writeCache = config.getSilentWriteCache();
         this.removeCache = config.getWriteCache();
@@ -73,7 +73,7 @@ public class InfinispanTimerMetaDataFactory<I, C> implements TimerMetaDataFactor
 
     @Override
     public CompletionStage<RemappableTimerMetaDataEntry<C>> tryValueAsync(I id) {
-        return this.tryReadForUpdateCache.getAsync(new InfinispanTimerMetaDataKey<>(id));
+        return this.readCache.getAsync(new InfinispanTimerMetaDataKey<>(id));
     }
 
     @Override

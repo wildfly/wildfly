@@ -18,6 +18,7 @@ import org.infinispan.configuration.cache.StorageType;
 import org.infinispan.configuration.cache.StoreConfiguration;
 import org.infinispan.eviction.EvictionStrategy;
 import org.jboss.as.server.deployment.DeploymentUnit;
+import org.wildfly.clustering.cache.infinispan.embedded.EmbeddedCacheConfiguration;
 import org.wildfly.clustering.cache.infinispan.embedded.container.DataContainerConfigurationBuilder;
 import org.wildfly.clustering.infinispan.service.CacheConfigurationServiceInstaller;
 import org.wildfly.clustering.infinispan.service.CacheServiceInstaller;
@@ -27,8 +28,9 @@ import org.wildfly.clustering.server.service.BinaryServiceConfiguration;
 import org.wildfly.clustering.server.service.ClusteringServiceDescriptor;
 import org.wildfly.clustering.session.SessionManagerFactory;
 import org.wildfly.clustering.session.infinispan.embedded.InfinispanSessionManagerFactory;
-import org.wildfly.clustering.session.infinispan.embedded.InfinispanSessionManagerFactoryConfiguration;
 import org.wildfly.clustering.session.infinispan.embedded.metadata.SessionMetaDataKey;
+import org.wildfly.clustering.session.spec.SessionEventListenerSpecificationProvider;
+import org.wildfly.clustering.session.spec.SessionSpecificationProvider;
 import org.wildfly.clustering.session.spec.servlet.HttpSessionActivationListenerProvider;
 import org.wildfly.clustering.session.spec.servlet.HttpSessionProvider;
 import org.wildfly.clustering.web.service.deployment.WebDeploymentServiceDescriptor;
@@ -43,6 +45,8 @@ import org.wildfly.subsystem.service.ServiceDependency;
 import org.wildfly.subsystem.service.ServiceInstaller;
 
 import jakarta.servlet.ServletContext;
+import jakarta.servlet.http.HttpSession;
+import jakarta.servlet.http.HttpSessionActivationListener;
 
 /**
  * An Infinispan cache-based {@link DistributableSessionManagementProvider}.
@@ -68,7 +72,7 @@ public class InfinispanSessionManagementProvider extends AbstractSessionManageme
                     builder.expiration().lifespan(-1).maxIdle(-1);
                 }
 
-                OptionalInt size = configuration.getMaxActiveSessions();
+                OptionalInt size = configuration.getMaxSize();
                 EvictionStrategy strategy = size.isPresent() ? EvictionStrategy.REMOVE : EvictionStrategy.NONE;
                 builder.memory().storage(StorageType.HEAP)
                         .whenFull(strategy)
@@ -92,7 +96,7 @@ public class InfinispanSessionManagementProvider extends AbstractSessionManageme
 
         ServiceDependency<CacheContainerCommandDispatcherFactory> commandDispatcherFactory = deploymentCacheConfiguration.getServiceDependency(ClusteringServiceDescriptor.COMMAND_DISPATCHER_FACTORY).map(CacheContainerCommandDispatcherFactory.class::cast);
         ServiceDependency<Cache<?, ?>> cache = deploymentCacheConfiguration.getServiceDependency(InfinispanServiceDescriptor.CACHE);
-        InfinispanSessionManagerFactoryConfiguration factoryConfiguration = new InfinispanSessionManagerFactoryConfiguration() {
+        EmbeddedCacheConfiguration cacheConfiguration = new EmbeddedCacheConfiguration() {
             @SuppressWarnings("unchecked")
             @Override
             public <K, V> Cache<K, V> getCache() {
@@ -100,14 +104,39 @@ public class InfinispanSessionManagementProvider extends AbstractSessionManageme
             }
 
             @Override
-            public CacheContainerCommandDispatcherFactory getCommandDispatcherFactory() {
-                return commandDispatcherFactory.get();
+            public boolean isFaultTolerant() {
+                return true;
             }
         };
         Supplier<SessionManagerFactory<ServletContext, C>> factory = new Supplier<>() {
             @Override
             public SessionManagerFactory<ServletContext, C> get() {
-                return new InfinispanSessionManagerFactory<>(configuration, HttpSessionProvider.INSTANCE, HttpSessionActivationListenerProvider.INSTANCE, factoryConfiguration);
+                return new InfinispanSessionManagerFactory<>(new InfinispanSessionManagerFactory.Configuration<HttpSession, ServletContext, C, HttpSessionActivationListener>() {
+                    @Override
+                    public EmbeddedCacheConfiguration getCacheConfiguration() {
+                        return cacheConfiguration;
+                    }
+
+                    @Override
+                    public CacheContainerCommandDispatcherFactory getCommandDispatcherFactory() {
+                        return commandDispatcherFactory.get();
+                    }
+
+                    @Override
+                    public org.wildfly.clustering.session.SessionManagerFactoryConfiguration<C> getSessionManagerFactoryConfiguration() {
+                        return configuration;
+                    }
+
+                    @Override
+                    public SessionSpecificationProvider<HttpSession, ServletContext> getSessionSpecificationProvider() {
+                        return HttpSessionProvider.INSTANCE;
+                    }
+
+                    @Override
+                    public SessionEventListenerSpecificationProvider<HttpSession, HttpSessionActivationListener> getSessionEventListenerSpecificationProvider() {
+                        return HttpSessionActivationListenerProvider.INSTANCE;
+                    }
+                });
             }
         };
         DeploymentServiceInstaller installer = ServiceInstaller.builder(factory)
