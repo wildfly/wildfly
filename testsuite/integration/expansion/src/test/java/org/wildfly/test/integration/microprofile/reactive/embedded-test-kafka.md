@@ -69,7 +69,7 @@ services:
 Then run `docker-compose up` to start Kafka.
 
 ### logging-properties
-In addition to the `org.jboss.logmanager:log4j-jboss-logmanager` dependency we meed to add a
+In addition to the `org.jboss.logmanager:log4j-jboss-logmanager` dependency we need to add a
 `src/test/resources/logging.properties` file in order to grab the logs from the embedded broker.
 The contents should be:
 

@@ -99,14 +99,14 @@ public abstract class AbstractSaslTestBase {
                 Assert.assertEquals(MESSAGE, text);
             }
         } catch (NamingException e) {
-            LOGGER.error("Naming problem occured.", e);
+            LOGGER.error("Naming problem occurred.", e);
             throw new RuntimeException(e);
         } finally {
             if (namingContext != null) {
                 try {
                     namingContext.close();
                 } catch (NamingException e) {
-                    LOGGER.error("Naming problem occured during closing context.", e);
+                    LOGGER.error("Naming problem occurred during closing context.", e);
                 }
             }
         }

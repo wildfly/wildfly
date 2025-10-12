@@ -133,11 +133,11 @@ There are a number of other profiles that can be activated to control how tests 
 3.5 Profiles for specific testsuite modules
 ---------------------
 
-For the `domain` and `integration` modules, there is a profile is named `X.module.profile` that can be is enabled by `-DX.module`
+For the `domain` and `integration` modules, there is a profile named `X.module.profile` that can be enabled by `-DX.module`
 
 For example, `integration.module.profile`, enabled by `-Dintegration.module`, enables the integration module.
 
-The integration module includes a number of child modules. For many of these, there is a profile is named `X.integration.tests.profile` which is enabled by `-DX.integration.tests`
+The integration module includes a number of child modules. For many of these, there is a profile named `X.integration.tests.profile` which is enabled by `-DX.integration.tests`
 - e.g.,  the clustering tests are defined in profile `clustering.integration.tests.profile`, enabled by `-Dclustering.integration.tests`
 
 Many individual modules can also be run by executing a profile by passing a property in the form `-Dts.X` where X is the name of the lowest level maven module that contains the tests. For example, `-Dts.domain` runs the tests in `testsuite/domain` while `-Dts.clustering` runs the tests in `testsuite/integration/clustering`.

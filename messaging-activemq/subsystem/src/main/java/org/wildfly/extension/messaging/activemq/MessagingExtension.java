@@ -398,8 +398,8 @@ public class MessagingExtension implements Extension {
 
     @Override
     public void initializeParsers(ExtensionParsingContext context) {
-        // use method references for legacay versions that may never be instantiated
-        // and use an instance for the current version that will be use if the extension is loaded.
+        // use method references for legacy versions that may never be instantiated
+        // and use an instance for the current version that will be used if the extension is loaded.
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, MessagingSubsystemParser_1_0.NAMESPACE, MessagingSubsystemParser_1_0::new);
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, MessagingSubsystemParser_2_0.NAMESPACE, MessagingSubsystemParser_2_0::new);
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, MessagingSubsystemParser_3_0.NAMESPACE, MessagingSubsystemParser_3_0::new);

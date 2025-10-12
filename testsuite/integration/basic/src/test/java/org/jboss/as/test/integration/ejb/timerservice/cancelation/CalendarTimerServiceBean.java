@@ -23,7 +23,7 @@ import jakarta.ejb.TimerService;
 @ConcurrencyManagement(ConcurrencyManagementType.BEAN)
 public class CalendarTimerServiceBean {
 
-    // should to be greater then one second (1000ms)
+    // should be greater than one second (1000ms)
     private static final int TIMER_CALL_QUICK_WAITING_MS = 1200;
 
     private static final CountDownLatch latch = new CountDownLatch(1);

@@ -432,7 +432,7 @@ public class TransportConfigOperationHandlers {
      *
      * @param context the operation context
      * @param config the transport configuration
-     * @param mapping Mapping betwen WildFly parameters (keys) and Artemis
+     * @param mapping Mapping between WildFly parameters (keys) and Artemis
      * constants (values)
      * @return the extracted parameters
      * @throws OperationFailedException if an expression can not be resolved
