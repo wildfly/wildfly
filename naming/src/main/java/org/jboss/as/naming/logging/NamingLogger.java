@@ -326,7 +326,7 @@ public interface NamingLogger extends BasicLogger {
     IllegalArgumentException invalidJndiName(String jndiName);
 
     /**
-     * Creates an exception indicating the load factor must be greater than 0 and less then or equal 1.
+     * Creates an exception indicating the load factor must be greater than 0 and less than or equal to 1.
      *
      * @return an {@link IllegalArgumentException} for the error.
      */

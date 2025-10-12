@@ -292,7 +292,7 @@ public interface WSLogger extends BasicLogger {
     void failedAuthentication(final String username);
 
     @LogMessage(level = DEBUG)
-    @Message(id = 72, value = "Error occured when authenticate username %s. Exception message: %s")
+    @Message(id = 72, value = "Error occurred when authenticate username %s. Exception message: %s")
     void failedAuthenticationWithException(@Cause final Throwable cause, final String username, final String message);
 
     @Message(id = 73, value = "The target endpoint %s is undeploying or stopped" )

@@ -1,6 +1,6 @@
 # Contributing guide
 
-**First off all, thank you for taking the time to contribute into WildFly!** The below contents will help you through the steps for getting started with WildFly. Please make sure to read the relevant section before making your contribution. It will make it a lot easier for us maintainers and smooth out the experience for all involved. The community looks forward to your contributions.
+**First of all, thank you for taking the time to contribute to WildFly!** The below contents will help you through the steps for getting started with WildFly. Please make sure to read the relevant section before making your contribution. It will make it a lot easier for us maintainers and smooth out the experience for all involved. The community looks forward to your contributions.
 
 * Git Setup: https://github.com/wildfly/wildfly/blob/main/docs/src/main/asciidoc/_hacking/github_setup.adoc
 * Contributing: https://github.com/wildfly/wildfly/blob/main/docs/src/main/asciidoc/_hacking/contributing.adoc

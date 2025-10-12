@@ -27,7 +27,7 @@ import static org.junit.Assert.assertEquals;
  * Test for JBEAP-4862
  *
  * - uses the {@link TransactionTimeoutSetupStep} to set up small transaction timeout.
- * - the batch job is slow and takes more then the timeout failing the analyzer
+ * - the batch job is slow and takes more than the timeout failing the analyzer
  * - using jberet.analyzer.txDisabled makes the test pass
  */
 @RunWith(Arquillian.class)

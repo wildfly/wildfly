@@ -62,7 +62,7 @@ class ConnectorService implements Service {
         } else if (socketBindingSupplier != null) {
             SocketBinding binding = socketBindingSupplier.get();
             if (binding.getClientMappings() != null && !binding.getClientMappings().isEmpty()) {
-                // At the moment ActiveMQ doesn't allow to select mapping based on client's network.
+                // At the moment ActiveMQ doesn't allow selecting mapping based on client's network.
                 // Instead the first client-mapping element will always be used - see WFLY-8432
                 ClientMapping clientMapping = binding.getClientMappings().get(0);
                 parameters.put(HOST, NetworkUtils.canonize(clientMapping.getDestinationAddress()));
