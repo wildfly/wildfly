@@ -34,7 +34,7 @@ import org.wildfly.test.integration.elytron.oidc.client.subsystem.SimpleServletW
 import io.restassured.RestAssured;
 
 /**
- * Base OIDC Deployment Test used for commmon test code.
+ * Base OIDC Deployment Test used for common test code.
  * @author <a href="mailto:pesilva@redhat.com">Pedro Hos</a>
  */
 public abstract class OidcDeploymentConfigBaseTest extends OidcBaseTest {
@@ -77,7 +77,7 @@ public abstract class OidcDeploymentConfigBaseTest extends OidcBaseTest {
         APP_NAMES.put(WRONG_PROVIDER_URL_APP, KeycloakConfiguration.ClientAppType.OIDC_CLIENT);
         APP_NAMES.put(WRONG_SECRET_APP, KeycloakConfiguration.ClientAppType.OIDC_CLIENT);
         APP_NAMES.put(MISSING_EXPRESSION_APP, KeycloakConfiguration.ClientAppType.OIDC_CLIENT);
-        APP_NAMES.put(DIRECT_ACCCESS_GRANT_ENABLED_CLIENT, KeycloakConfiguration.ClientAppType.DIRECT_ACCESS_GRANT_OIDC_CLIENT);
+        APP_NAMES.put(DIRECT_ACCESS_GRANT_ENABLED_CLIENT, KeycloakConfiguration.ClientAppType.DIRECT_ACCESS_GRANT_OIDC_CLIENT);
         APP_NAMES.put(BEARER_ONLY_AUTH_SERVER_URL_APP, KeycloakConfiguration.ClientAppType.BEARER_ONLY_CLIENT);
         APP_NAMES.put(BEARER_ONLY_PROVIDER_URL_APP, KeycloakConfiguration.ClientAppType.BEARER_ONLY_CLIENT);
         APP_NAMES.put(BASIC_AUTH_PROVIDER_URL_APP, KeycloakConfiguration.ClientAppType.BEARER_ONLY_CLIENT);
@@ -393,7 +393,7 @@ public abstract class OidcDeploymentConfigBaseTest extends OidcBaseTest {
         public void tearDown(ManagementClient managementClient, String containerId) throws Exception {
             RestAssured
                     .given()
-                    .auth().oauth2(org.wildfly.test.integration.elytron.oidc.client.KeycloakConfiguration.getAdminAccessToken(KEYCLOAK_CONTAINER.getAuthServerUrl()))
+                    .auth().oauth2(KeycloakConfiguration.getAdminAccessToken(KEYCLOAK_CONTAINER.getAuthServerUrl()))
                     .when()
                     .delete(KEYCLOAK_CONTAINER.getAuthServerUrl() + "/admin/realms/" + TEST_REALM).then().statusCode(204);
 

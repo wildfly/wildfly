@@ -7,6 +7,7 @@ package org.wildfly.test.integration.elytron.oidc.client;
 
 import static org.wildfly.test.integration.elytron.oidc.client.OidcBaseTest.MULTIPLE_SCOPE_APP;
 import static org.wildfly.test.integration.elytron.oidc.client.OidcBaseTest.SINGLE_SCOPE_APP;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -79,9 +80,9 @@ public class KeycloakConfiguration {
     public static final String TENANT2_USER = "tenant2_user";
     public static final String TENANT2_PASSWORD = "tenant2_password";
     public static final String CHARLOTTE = "charlotte";
-    public static final String CHARLOTTE_PASSWORD =" charlotte123+";
+    public static final String CHARLOTTE_PASSWORD = " charlotte123+";
     public static final String DAN = "dan";
-    public static final String DAN_PASSWORD =" dan123+";
+    public static final String DAN_PASSWORD = " dan123+";
     public static final String TENANT1_REALM = "tenant1";
     public static final String TENANT2_REALM = "tenant2";
     public static final String TENANT1_ENDPOINT = "/tenant1";
@@ -186,9 +187,9 @@ public class KeycloakConfiguration {
             String multiTenancyRedirectUri = null;
             if (multiTenancyApp) {
                 if (name.equals(TENANT1_REALM)) {
-                    multiTenancyRedirectUri = "http://" + clientHostName + ":" + clientPort + "/" + clientApp  + TENANT1_ENDPOINT;
+                    multiTenancyRedirectUri = "http://" + clientHostName + ":" + clientPort + "/" + clientApp + TENANT1_ENDPOINT;
                 } else if (name.equals(TENANT2_REALM)) {
-                    multiTenancyRedirectUri = "http://" + clientHostName + ":" + clientPort + "/" + clientApp  + TENANT2_ENDPOINT;
+                    multiTenancyRedirectUri = "http://" + clientHostName + ":" + clientPort + "/" + clientApp + TENANT2_ENDPOINT;
                 }
             }
 
@@ -300,7 +301,7 @@ public class KeycloakConfiguration {
         return createUser(username, password, realmRoles, username, username, false);
     }
 
-        private static UserRepresentation createUser(String username, String password, List<String> realmRoles, String firstName, String lastName, boolean emailVerified) {
+    private static UserRepresentation createUser(String username, String password, List<String> realmRoles, String firstName, String lastName, boolean emailVerified) {
         UserRepresentation user = new UserRepresentation();
         user.setUsername(username);
         user.setFirstName(firstName);
