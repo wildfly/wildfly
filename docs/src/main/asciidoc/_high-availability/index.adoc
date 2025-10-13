@@ -22,8 +22,6 @@ endif::[]
 
 ifndef::ebook-format[:leveloffset: 1]
 
-(C) The WildFly Authors.
-
 ifdef::basebackend-html[toc::[]]
 :numbered:
 

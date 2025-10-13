@@ -1,6 +1,6 @@
 [[Installation_Guide]]
 = Installation Guide
-WildFly team;
+WildFly authors;
 :revnumber: {version}
 :revdate: {localdate}
 :toc: macro
@@ -22,8 +22,6 @@ endif::[]
 :leveloffset: +1
 
 ifndef::ebook-format[:leveloffset: 1]
-
-(C) The WildFly Authors.
 
 ifdef::basebackend-html[toc::[]]
 :numbered:

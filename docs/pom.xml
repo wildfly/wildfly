@@ -57,12 +57,14 @@
                         <revdate>${maven.build.timestamp}</revdate>
                         <organization>${project.organization.name}</organization>
                         <!-- end TODO -->
+                        <nofooter>true</nofooter>
+                        <docinfo>shared</docinfo>
                         <!-- Attributes to use in the asciidoc source files. Please leave in alphabetical order -->
                         <appservername>${full.dist.product.release.name}</appservername>
                         <oracle-javadoc>https://docs.oracle.com/en/java/javase/17/docs/api</oracle-javadoc>
                         <resteasyversion>${version.org.jboss.resteasy}</resteasyversion>
                         <wildflyversion>${product.docs.server.version}</wildflyversion>
-
+                        <copyright-blurb>${wildfly.copyright}</copyright-blurb>
                         <!-- Default asciidoc setting attributes -->
                         <linkcss>false</linkcss>
                         <sectanchors/>

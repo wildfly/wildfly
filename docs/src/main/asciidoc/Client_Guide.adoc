@@ -1,5 +1,6 @@
 [[Client_Guide]]
 = WildFly Client Configuration
+WildFly authors;
 :revnumber: {version}
 :revdate: {localdate}
 :toc: macro
