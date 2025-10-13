@@ -519,7 +519,7 @@ We define the module in `module.xml`:
 </module>
 ----
 
-[[configuration]]
+[[messaging.configuration]]
 === Configuration
 
 A Jakarta Messaging bridge is defined inside a `jms-bridge` section of the

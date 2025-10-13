@@ -179,7 +179,7 @@ the Naming subsystem configuration.
 == Retrieving entries from JNDI
 
 [[resource-injection]]
-==== Resource Injection
+=== Resource Injection
 
 For Jakarta EE applications the recommended way to lookup a JNDI entry is
 to use `@Resource` injection:
@@ -227,7 +227,7 @@ the default instance of a managed executor service, the value in
 Concurrency Utilities 1.0 Specification (JSR 236).
 
 [[standard-java-se-jndi-api]]
-==== Standard Java SE JNDI API
+=== Standard Java SE JNDI API
 
 Jakarta EE applications may use, without any additional configuration
 needed, the standard JNDI API to lookup an entry from JNDI:
