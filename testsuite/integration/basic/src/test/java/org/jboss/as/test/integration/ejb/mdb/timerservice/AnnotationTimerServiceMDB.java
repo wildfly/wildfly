@@ -36,9 +36,9 @@ public class AnnotationTimerServiceMDB implements MessageListener {
         latch.countDown();
     }
 
-    public static boolean awaitTimerCall() {
+    public static boolean awaitTimerCall(int timeout) {
         try {
-            latch.await(2, TimeUnit.SECONDS);
+            latch.await(timeout, TimeUnit.MILLISECONDS);
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
