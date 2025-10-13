@@ -157,51 +157,6 @@
                             <goal>execute-commands</goal>
                         </goals>
                     </execution>
-                    <execution>
-                        <id>channel-provisioning-comparison</id>
-                        <goals>
-                            <goal>provision</goal>
-                        </goals>
-                        <phase>${channel.provisioning.phase}</phase>
-                        <configuration>
-                            <provisioning-dir>${project.build.directory}/wildfly-from-channel</provisioning-dir>
-                            <record-provisioning-state>true</record-provisioning-state>
-                            <log-provisioning-time>${galleon.log.time}</log-provisioning-time>
-                            <offline-provisioning>true</offline-provisioning>
-                            <overwrite-provisioned-server>true</overwrite-provisioned-server>
-                            <galleon-options>
-                                <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
-                            </galleon-options>
-                            <channels>
-                                <channel>
-                                    <manifest>
-                                        <groupId>${channels.maven.groupId}</groupId>
-                                        <artifactId>wildfly</artifactId>
-                                        <version>${full.maven.version}</version>
-                                    </manifest>
-                                </channel>
-                            </channels>
-                            <feature-packs>
-                                <feature-pack>
-                                    <transitive>true</transitive>
-                                    <groupId>${ee.maven.groupId}</groupId>
-                                    <artifactId>wildfly-ee-galleon-pack</artifactId>
-                                    <version>${ee.maven.version}</version>
-                                    <included-packages>
-                                        <name>docs.examples.configs</name>
-                                    </included-packages>
-                                </feature-pack>
-                                <feature-pack>
-                                    <groupId>${full.maven.groupId}</groupId>
-                                    <artifactId>wildfly-galleon-pack</artifactId>
-                                    <version>${full.maven.version}</version>
-                                    <included-packages>
-                                        <name>docs.examples.configs</name>
-                                    </included-packages>
-                                </feature-pack>
-                            </feature-packs>
-                        </configuration>
-                    </execution>
                 </executions>
             </plugin>
             <plugin>
