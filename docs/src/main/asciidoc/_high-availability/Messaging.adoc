@@ -1,4 +1,6 @@
+[[Messaging]]
 = Messaging
+:experimental:
 
 ifdef::env-github[]
 :tip-caption: :bulb:
@@ -8,4 +10,462 @@ ifdef::env-github[]
 :warning-caption: :warning:
 endif::[]
 
-This section is under development intending to describe high availability features and configuration pertaining to Jakarta Messaging (JMS).
+== Client Connection to HA Pair
+
+Clients connecting to an Apache ActiveMQ Artemis high-availability pair must be configured to recognize both the primary and secondary brokers to enable automatic failover. In WildFly, this is accomplished by configuring a connection factory within the `messaging-activemq` subsystem that includes connectors for both brokers. The connection factory configuration should define remote connectors for both the primary and secondary brokers, allowing the client to automatically detect and connect to the active broker. For example, in the `standalone.xml` configuration file:
+
+[,xml]
+----
+<subsystem xmlns="urn:jboss:domain:messaging-activemq:10.0">
+    <server name="default">
+        <!-- Define connectors for both primary and secondary brokers -->
+        <remote-connector name="primary-connector" socket-binding="primary-broker"/>
+        <remote-connector name="secondary-connector" socket-binding="secondary-broker"/>
+
+        <!-- Define the connection factory with both connectors -->
+        <connection-factory name="HAConnectionFactory"
+                            entries="java:/jms/HAConnectionFactory"
+                            connectors="primary-connector secondary-connector"
+                            ha="true"
+                            reconnect-attempts="-1"/>
+    </server>
+</subsystem>
+----
+
+In this configuration, the `connectors` attribute lists both `primary-connector` and `secondary-connector`, enabling the client to connect to either broker. The `ha="true"` attribute enables high availability mode, allowing the client to automatically fail over to the secondary broker when the primary becomes unavailable. The `reconnect-attempts="-1"` parameter ensures the client will attempt to reconnect indefinitely, providing maximum resilience. Clients can also implement connection failure listeners (such as `ExceptionListener` in JMS) to handle connection failures and receive notifications during failover events. The client will automatically discover which broker is currently active through the cluster topology information and establish connections accordingly, ensuring seamless operation during both normal operation and failover scenarios.
+
+== Terminology
+
+In order to discuss both configuration and runtime behavior consistently, we need to define a couple of nouns and adjectives.
+These terms will be used throughout the documentation, configuration, source code, and runtime logs.
+
+=== Configuration
+
+These nouns identify how the broker is _configured_. The configuration allows brokers to be paired together as _primary/secondary_ (i.e. an _HA pair_ of brokers).
+
+primary::
+This identifies the main broker in the high availability configuration.
+Oftentimes the hardware on this broker will be higher performance than the hardware on the secondary broker.
+Typically, this broker is started before the secondary and is active most of the time.
++
+Each primary server can be paired with one secondary server.
+Other backups can be configured, but the primary will only pair with one.
+When the primary fails the secondary will take over.
+At this point if there are other backups configured then the secondary that took over will pair with one of those.
+
+secondary (backup)::
+This identifies the broker that should take over when the primary broker fails in a high availability configuration.
+Oftentimes the hardware on this broker will be lower performance than the hardware on the primary broker.
+Typically, this broker is started after the primary and is passive most of the time.
+
+=== Runtime
+
+These adjectives describe the _behavior_ of the broker at runtime. For example, you could have a _passive_ primary or an _active_ secondary.
+
+active::
+This identifies a broker in a high-availability configuration which is accepting remote connections.
+For example, consider the scenario where the primary broker has failed and its secondary has taken over.
+The secondary would be described as _active_ at that point since it is accepting remote connections.
+
+passive::
+This identifies a broker in a high-availability configuration which is **not** accepting remote connections.
+For example, consider the scenario where the primary broker was started and then the secondary broker was started.
+The secondary broker would be _passive_ since it is not accepting remote connections.
+It is waiting for the primary to fail before it activates and begins accepting remote connections.
+
+== HA Policies
+
+Apache ActiveMQ Artemis supports two main policies for backing up a server:
+
+* *shared store*
+* *replication*
+
+These are configured via the `ha-policy` configuration element.
+
+[NOTE]
+.What is Backed Up?
+====
+Only message data *written to storage* will survive failover.
+Any message data not written to storage will not be available after failover.
+====
+
+[NOTE]
+.Clustering is Required
+====
+A proper xref:Admin_Guide.html#Messaging_Discovery_Configuration[cluster] configuration is required as a prerequisite for an HA configuration.
+The cluster configuration allows the server to announce its presence to its primary/secondary (or any other nodes in the cluster).
+====
+
+There is technically a third policy called `primary-only` which omits the secondary entirely.
+This is used to configure xref:#scaling-down[`scale-down`].
+This is the default policy if none is provided.
+
+=== Shared Store
+
+When using a shared store both primary and secondary servers share the _same_ entire data directory using a shared file system.
+This includes the paging directory, journal directory, large messages, and bindings journal.
+
+When the primary server fails it will release its lock on the shared journal and allow the secondary server to activate.
+The secondary will then load the data from the shared file system and accept remote connections from clients.
+
+Typically, this will be some kind of high performance Storage Area Network (SAN).
+Network Attached Storage (NAS), like an <<NFS Mount Recommendations,NFS mount>>, is viable but won't provide optimal performance.
+
+One main advantage of a shared store configuration is that no replication occurs between the primary and secondary nodes which means it does not suffer any performance penalties due to the overhead of replication during normal operation.
+
+One potentially significant disadvantage of shared store versus replication is that it requires a shared file system, and when the secondary server activates it needs to load the journal from the shared store which can take some time depending on the amount of data in the store and the speed of the store.
+
+If you require the highest performance during normal operation then acquire access to a fast SAN and deal with a slightly slower failover (depending on amount of data).
+
+[TIP]
+.What About Split Brain?
+====
+Shared store configurations are naturally immune to xref:Admin_Guide.html#network-isolation-split-brain[split-brain].
+====
+
+==== Shared Store Configuration
+
+Both primary & secondary servers must configure the location of journal directories to the _same shared location_ (as explained in https://activemq.apache.org/components/artemis/documentation/latest/persistence.html#persistence[persistence documentation]).
+
+===== Primary
+
+The primary broker needs this basic configuration in `standalone.xml`:
+
+[,xml]
+----
+<shared-store-primary/>
+----
+
+====== Additional parameters
+
+failover-on-shutdown::
+The xref:wildscribe/subsystem/messaging-activemq/server/ha-policy/shared-store-primary/index.html[failover-on-shutdown] attribute describes whether the _graceful_ shutdown of this broker will cause the backup to activate.
+If `false` then the backup server will remain passive if this broker is shutdown gracefully (e.g. using kbd:[Ctrl+C]).
++
+If `true` then when this server is stopped the backup will activate.
+
+
+===== Secondary
+
+The secondary needs this basic configuration in `standalone.xml`:
+
+[,xml]
+----
+<shared-store-secondary/>
+----
+
+====== Additional parameters
+
+allow-failback::
+Whether this secondary will automatically stop when its primary is restarted and requests to take over its place.
+The use case is when a primary server stops and its secondary takes over its duties, later the primary server restarts and requests the now-active secondary to stop so the primary can take over again.
++
+Default is `true`.
+
+failover-on-shutdown:: 
+Whether the server must failover when it is normally shutdown.
++
+NOTE: This only applies when this secondary has activated due to its primary failing.
+
+scale-down::
+If provided then this secondary will scale down rather than becoming active after fail over.
+This really only applies to colocated configurations where the secondary will scale-down its messages to the primary broker in the same JVM.
+
+restart-backup::
+Will this secondary restart after being stopped due to failback or scaling down.
+Default is `false`.
+
+===== NFS Mount Recommendations
+
+If you choose to implement your shared store configuration with NFS here are some recommended configuration options.
+These settings are designed for reliability and to help the broker detect problems with NFS quickly and shut itself down so that clients can failover to a working broker.
+
+sync::
+Specifies that all changes are immediately flushed to disk.
+intr::
+Allows NFS requests to be interrupted if the server is shut down or cannot be reached.
+noac::
+Disables attribute caching. This behavior is needed to achieve attribute cache coherence among multiple clients.
+soft::
+Specifies that if the NFS server is unavailable the error should be reported rather than waiting for the server to come back online.
+lookupcache=none::
+Disables lookup caching.
+timeo=n::
+The time, in deciseconds (i.e. tenths of a second), that the NFS client (i.e. the broker) waits for a response from the NFS server before it retries a request. For NFS over TCP the default `timeo` value is `600` (60 seconds). For NFS over UDP the client uses an adaptive algorithm to estimate an appropriate timeout value for frequently used request types, such as read and write requests.
+retrans=n::
+The number of times that the NFS client retries a request before it attempts further recovery action.
+
+[TIP]
+====
+Use reasonable values when you configure `timeo` and `retrans`. A default `timeo` wait time of 600 deciseconds (60 seconds) combined with a `retrans` value of 5 retries can result in a five-minute wait for the broker to detect an NFS disconnection. You likely don't want all store-related operations on the broker to be blocked for that long while clients wait for responses. Tune these values to balance latency and reliability in your environment.
+====
+
+=== Replication
+
+When using replication, the primary and the secondary servers do not share the same data directories.
+All data synchronization is done over the network.
+Therefore, all (durable) data received by the primary server will be duplicated to the secondary.
+
+Note that upon startup the secondary server will first need to synchronize all existing data from the primary server before becoming capable of replacing the primary server should it fail.
+Therefore, unlike when using shared storage, a secondary will not be _fully operational_ until after it finishes synchronizing the data with its primary server.
+The time it takes for this to happen depends on the amount of data to be synchronized and the connection speed.
+
+[NOTE]
+====
+In general, synchronization occurs in parallel with current network traffic so this won't cause any blocking for current clients.
+However, there is a critical moment at the end of this process where the replicating server must complete the synchronization and ensure the secondary acknowledges this completion.
+This exchange between the replicating server and secondary will block any journal related operations.
+The maximum length of time that this exchange will block is controlled by the `initial-replication-sync-timeout` configuration element.
+====
+
+Since replication will create a copy of the data at the secondary then in case of a successful fail-over, the secondary's data will be newer than the primary's data.
+If you configure your secondary to allow failback to the primary then when the primary is restarted it will be passive and the active secondary will synchronize its data with the passive primary before stopping to allow the passive primary to become active again.
+If both servers are shut down then the administrator will have to determine which one has the latest data.
+
+[NOTE]
+.An Important Difference From Shared Store
+====
+If a shared-store secondary *does not* find a primary then it will just activate and service client requests like it is a primary.
+
+However, in the replication case, the secondary just keeps waiting for a primary to pair with because the secondary does not know whether its data is up-to-date.
+It cannot unilaterally decide to activate.
+To activate a replicating secondary using its current data the administrator must change its configuration to make it a primary server by changing `secondary` to `primary`.
+====
+
+==== Split Brain
+
+"Split Brain" is a potential issue that is important to understand.
+xref:Admin_Guide.html#network-isolation-split-brain[A whole chapter] has been devoted to explaining what it is and how it can be mitigated at a high level.
+
+==== Replication Configuration
+
+In a shared-store configuration brokers pair with each other based on their shared storage device.
+However, since replication configurations have no such shared storage device, they must find each other another way.
+Servers can be grouped together explicitly using the same `group-name` in both the `primary` or the `secondary` elements.
+A secondary will only connect to a primary that shares the same node group name.
+
+[NOTE]
+.A `group-name` Example
+====
+Suppose you have 5 primary servers and 6 secondary servers:
+
+* `primary1`, `primary2`, `primary3`: with `group-name=fish`
+* `primary4`, `primary5`: with `group-name=bird`
+* `backup1`, `backup2`, `backup3`, `backup4`: with `group-name=fish`
+* `backup5`, `backup6`: with `group-name=bird`
+
+After joining the cluster the backups with `group-name=fish` will search for primary servers with `group-name=fish` to pair with.
+Since there is one secondary too many, the `fish` will remain with one spare secondary.
+
+The 2 backups with `group-name=bird` (`backup5` and `backup6`) will pair with primary servers `primary4` and `primary5`.
+====
+
+If `group-name` is not configured then the secondary will search for any primary that it can find in the cluster.
+It tries to replicate with each primary until it finds a primary that has no current secondary configured.
+If no primary server is available it will wait until the cluster topology changes and repeat the process.
+
+===== Primary
+
+The primary broker needs this basic configuration in `standalone.xml`:
+
+[,xml]
+----
+<replication-primary/>
+----
+
+====== Additional parameters
+
+group-name::
+If set, secondary servers will only pair with primary servers with matching group-name.
+See <<replication-configuration,above>> for more details.
+
+cluster-name::
+Name of the `cluster-connection` to use for replication.
+This setting is only necessary if you configure multiple cluster connections.
+If configured then the connector configuration of the cluster configuration with this name will be used when connecting to the cluster to discover if an active server is already running, see `check-for-active-server`.
+If unset then the default cluster connections configuration is used (i.e. the first one configured).
+
+check-for-live-server::
+Whether to check the cluster for an active server using our own server ID when starting up.
+The server ID (also known as nodeID) is a unique identifier that distinguishes each broker instance in the cluster and is used to prevent multiple brokers from claiming the same identity during failover scenarios.
+This is an important option to avoid split-brain when failover happens and the primary is restarted.
+Default is `false`.
+
+initial-replication-sync-timeout::
+The amount of time the replicating server will wait at the completion of the initial replication process for the secondary to acknowledge it has received all the necessary data.
+The default is `30000`; measured in milliseconds.
++
+NOTE: During this interval any journal related operations will be blocked.
+
+===== Secondary
+
+The secondary needs this basic configuration in `standalone.xml`:
+
+[,xml]
+----
+<replication-secondary/>
+----
+
+====== Additional parameters
+
+group-name::
+If set, secondary servers will only pair with primary servers with matching group-name.
+See <<replication-configuration,above>> for more details.
+
+cluster-name::
+Name of the `cluster-connection` to use for replication.
+This setting is only necessary if you configure multiple cluster connections.
+If configured then the connector configuration of the cluster configuration with this name will be used when connecting to the cluster to discover if an active server is already running, see `check-for-active-server`.
+If unset then the default cluster connections configuration is used (i.e. the first one configured).
+
+max-saved-replicated-journal-size::
+This option specifies how many replication secondary directories will be kept when server starts as a passive secondary.
+Every time when server starts as such all former data moves to `oldreplica.\{id}` directory, where `{id}` is a growing secondary index.
+This parameter sets the maximum number of such directories kept on disk.
+
+scale-down::
+If provided then this secondary will scale down rather than becoming active after fail over.
+This really only applies to colocated configurations where the secondary will scale-down its messages to the primary broker in the same JVM.
+
+restart-backup::
+Will this server, if a secondary, restart once it has been stopped because of failback or scaling down.
+Default is `false`.
+
+allow-failback::
+Whether this secondary will automatically stop when its primary is restarted and requests to take over its place.
+The use case is when a primary server stops and its secondary takes over its duties, later the primary server restarts and requests the now-active secondary to stop so the primary can take over again.
+Default is `true`.
+
+initial-replication-sync-timeout::
+After failover when the secondary has activated this is enforced when the primary is restarted and connects as a secondary (e.g. for failback).
+The amount of time the replicating server will wait at the completion of the initial replication process for the secondary to acknowledge it has received all the necessary data.
+The default is `30000`; measured in milliseconds.
++
+NOTE: during this interval any journal related operations will be blocked.
+
+== Failing Back to Primary Server
+
+After a primary server has failed and a secondary taken has taken over its duties, you may want to restart the primary server and have clients fail back.
+
+=== Failback with Shared Store
+
+In case of shared storage you have a couple of options:
+
+. Simply restart the primary and kill the secondary.
+You can do this by killing the process itself.
+. Alternatively you can set `allow-failback` to `true` on the secondary which will force the secondary that has become active to automatically stop.
+This configuration would look like:
++
+[,xml]
+----
+<shared-store-secondary allow-failback="true"/>
+----
+
+It is also possible, in the case of shared store, to cause failover to occur on normal server shutdown, to enable this set the following property to true in the `ha-policy` configuration on either the `primary` or `secondary` like so:
+
+[,xml]
+----
+<shared-store-primary failover-on-shutdown="true"/>
+----
+
+By default this is set to false.
+
+You can also force the active secondary to shutdown when the primary comes back up allowing the primary to take over automatically by setting the following property in the `standalone.xml` configuration file as follows:
+
+[,xml]
+----
+<shared-store-secondary allow-failback="true"/>
+----
+
+=== Failback with Replication
+
+As with shared storage the `allow-failback` option can be set in replication configurations.
+
+[,xml]
+----
+<replication-secondary allow-failback="true"/>
+----
+
+If the attribute `check-for-active-server` is set to `true` in the `primary` configuration, then during startup the primary server will first search the cluster for another active server using its ID.
+If it finds one it will contact this server and try to "failback".
+Since this is a remote replication scenario, the primary will have to synchronize its data with the secondary server running with its ID. Once they are in sync, it will request the other server (which it assumes is a secondary that has assumed its duties) to shut down in order for it to take over.
+This is necessary because otherwise the primary server has no means to know whether there was a failover or not, and if there was, if the server that took its duties is still running or not.
+To configure this option in your `standalone.xml` configuration file as follows:
+
+[,xml]
+----
+<replication-primary check-for-active-server="true"/>
+----
+
+[WARNING]
+====
+Be aware that if you restart a primary server after failover has occurred then `check-for-active-server` *must* be `true`.
+If not then the primary server will restart and serve the same messages that the secondary has already handled causing duplicates.
+====
+
+=== All Shared Store Configuration
+
+==== Primary
+
+The following lists all the `ha-policy` configuration elements for HA strategy shared store for `primary`:
+
+failover-on-shutdown::
+The xref:wildscribe/subsystem/messaging-activemq/server/ha-policy/shared-store-primary/index.html[failover-on-shutdown] attribute describes whether the _graceful_ shutdown of this broker will cause the backup to activate.
+If `false` then the backup server will remain passive if this broker is shutdown gracefully (e.g. using kbd:[Ctrl+C]) or using the shutdown command with the `jboss-cli`.
++
+If `true` then when this server is stopped the backup will activate.
+
+==== Secondary
+
+The following lists all the `ha-policy` configuration elements for HA strategy Shared Store for `secondary`:
+
+failover-on-shutdown::
+The xref:wildscribe/subsystem/messaging-activemq/server/ha-policy/shared-store-primary/index.html[failover-on-shutdown] attribute describes whether the _graceful_ shutdown of this broker will cause the backup to activate.
+If `false` then the backup server will remain passive if this broker is shutdown gracefully (e.g. using kbd:[Ctrl+C]).
++
+If `true` then when this server is stopped the backup will activate.
+
+allow-failback::
+Whether a server will automatically stop when another places a request to take over its place.
+The use case is when the secondary has failed over.
+
+== Scaling Down
+
+An alternative to using primary/secondary groups is to configure _scaledown_.
+When configured for scale down a server can copy all its messages and transaction state to another active server.
+The advantage of this is that you don't need full backups to provide some form of HA; however, there are disadvantages with this approach, the first being that it only deals with a server being stopped and not a server crash.
+Another disadvantage is that it is possible to lose message ordering.
+This happens in the following scenario: say you have 2 active servers and messages are distributed evenly between the servers from a single producer. If one of the servers scales down, then the messages sent back to the other server will be in the queue after the ones already there. So server 1 could have messages 1,3,5,7,9 and server 2 would have 2,4,6,8,10. If server 2 scales down, the order in server 1 would be 1,3,5,7,9,2,4,6,8,10.
+
+The configuration for an active server to scale down would be something like:
+
+[,xml]
+----
+<live-only>
+   <scale-down enabled="true"/>
+</live-only>
+----
+
+In this instance, the server is configured to use a specific connector to scale down. If a connector is not specified, then the first INVM connector is chosen. This is to make scale down from a secondary server easy to configure.
+It is also possible to use discovery to scale down. This would look like:
+
+[,xml]
+----
+<live-only>
+   <scale-down enabled="true" discovery-group="dg-group1"/>
+</live-only>
+----
+
+[NOTE]
+====
+Moving messages from one broker to another during scale-down involves an internal transaction.
+By default this transaction is only committed once per queue.
+However, as the number of messages in the queue grows so does the memory requirements for the transaction.
+At some point the memory requirements for the transaction will exceed the limits of the available heap.
+
+In order to deal with this you can configure the `commit-interval` in the `scale-down` element.
+This will allow the transaction to be committed every so often which will free the memory from the transaction.
+It must be greater than `0` or `-1`.
+It is `-1` by default (i.e., don't commit until all the messages in the queue are scaled-down).
+====
+
