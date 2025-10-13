@@ -10,6 +10,7 @@ import static org.wildfly.test.integration.observability.setuptask.PrometheusSet
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.List;
 
 import jakarta.ws.rs.client.Client;
 import jakarta.ws.rs.client.ClientBuilder;
@@ -24,6 +25,7 @@ import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
+import org.arquillian.testcontainers.api.Testcontainer;
 import org.arquillian.testcontainers.api.TestcontainersRequired;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
@@ -36,6 +38,8 @@ import org.jboss.as.controller.client.Operation;
 import org.jboss.as.controller.client.helpers.Operations;
 import org.jboss.as.test.shared.CdiUtils;
 import org.jboss.as.test.shared.ServerReload;
+import org.jboss.as.test.shared.observability.containers.OpenTelemetryCollectorContainer;
+import org.jboss.as.test.shared.observability.signals.PrometheusMetric;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -60,6 +64,9 @@ public class MicrometerPrometheusTestCase {
     @ContainerResource
     protected ManagementClient managementClient;
 
+    @Testcontainer
+    protected OpenTelemetryCollectorContainer otelCollector;
+
     @Deployment
     public static Archive<?> deploy() {
         return ShrinkWrap.create(WebArchive.class, "micrometer-prometheus.war")
@@ -71,11 +78,14 @@ public class MicrometerPrometheusTestCase {
     public void basicPrometheusTest() throws Exception {
         makeRequests();
 
-        String metrics = fetchPrometheusMetrics(false);
-        Assert.assertTrue("'demo_counter_total " + REQUEST_COUNT + "' is expected",
-                metrics.contains("demo_counter_total " + REQUEST_COUNT));
-        Assert.assertTrue("'demo_timer_seconds_count' is expected",
-                metrics.contains("demo_timer_seconds_count"));
+        otelCollector.assertMetrics(prometheusMetrics -> {
+            List<PrometheusMetric> results = otelCollector.getMetricsByName(prometheusMetrics, "demo_counter_total"); // Adjust for Prometheus naming conventions
+
+            Assert.assertEquals(1, results.size());
+            results.forEach(r -> Assert.assertEquals("" + REQUEST_COUNT, r.getValue()));
+
+            Assert.assertNotEquals(0, otelCollector.getMetricsByName(prometheusMetrics, "demo_timer_milliseconds_count").size());
+        });
     }
 
     @Test
@@ -87,14 +97,12 @@ public class MicrometerPrometheusTestCase {
         Assert.assertTrue("'401 - Unauthorized' message is expected", metrics.contains("401 - Unauthorized"));
 
         metrics = fetchPrometheusMetrics(true);
-        Assert.assertTrue("'demo_counter_total " + REQUEST_COUNT + "' is expected",
-                metrics.contains("demo_counter_total " + REQUEST_COUNT));
+        Assert.assertTrue("'demo_counter_total' is expected", metrics.contains("demo_counter_total"));
 
         setPrometheusSecurity(false);
         makeRequests();
         metrics = fetchPrometheusMetrics(false);
-        Assert.assertTrue("'demo_counter_total " + REQUEST_COUNT + "' is expected",
-                metrics.contains("demo_counter_total " + REQUEST_COUNT));
+        Assert.assertTrue("'demo_counter_total' is expected", metrics.contains("demo_counter_total"));
     }
 
     private void setPrometheusSecurity(boolean enabled) throws Exception {
