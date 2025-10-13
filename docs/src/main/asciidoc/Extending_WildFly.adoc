@@ -1,6 +1,6 @@
 [[Extending_WildFly]]
 = Extending WildFly
-WildFly code development team;
+WildFly authors;
 :revnumber: {version}
 :revdate: {localdate}
 :toc: macro

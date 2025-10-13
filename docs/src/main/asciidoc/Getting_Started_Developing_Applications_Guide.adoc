@@ -1,6 +1,6 @@
 [[Getting_Started_Developing_Applications_Guide]]
 = Getting Started Developing Applications Guide
-WildFly team;
+WildFly authors;
 :revnumber: {version}
 :revdate: {localdate}
 :toc: macro
@@ -20,8 +20,6 @@ ifdef::env-github[]
 endif::[]
 
 ifndef::ebook-format[:leveloffset: 1]
-
-(C) The WildFly Authors.
 
 ifdef::basebackend-html[toc::[]]
 :numbered:

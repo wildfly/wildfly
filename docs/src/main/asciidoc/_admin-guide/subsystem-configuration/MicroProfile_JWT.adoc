@@ -127,8 +127,5 @@ As the deployment is configured entirely within the MicroProfile Config properti
 [NOTE]
 ====
 To propagate an identity from a virtual security domain, additional configuration might be required
-depending on your use case. See <<identity_propagation, Identity Propagation>> for more details.
+depending on your use case. See <<Identity_Propagation, Identity Propagation>> for more details.
 ====
-
-include::Identity_Propagation.adoc[]
-

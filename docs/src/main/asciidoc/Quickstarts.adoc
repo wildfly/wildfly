@@ -1,6 +1,6 @@
 [[Quickstarts]]
 = Quickstarts
-WildFly team;
+WildFly authors;
 :revnumber: {version}
 :revdate: {localdate}
 :toc: macro
@@ -17,8 +17,6 @@ ifdef::env-github[]
 :caution-caption: :fire:
 :warning-caption: :warning:
 endif::[]
-
-(C) The WildFly Authors.
 
 ifdef::basebackend-html[toc::[]]
 :numbered:

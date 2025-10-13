@@ -313,7 +313,7 @@ across the deployment. No further managed configuration is required.
 [NOTE]
 ====
 To propagate an identity from a virtual security domain, additional configuration might be required
-depending on your use case. See <<identity_propagation, Identity Propagation>> for more details.
+depending on your use case. See <<Identity_Propagation, Identity Propagation>> for more details.
 ====
 
 == OpenID Providers

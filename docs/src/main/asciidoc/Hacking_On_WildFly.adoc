@@ -1,6 +1,6 @@
 [[Hacking_On_WildFly]]
 = Hacking on WildFly
-WildFly developer team;
+WildFly authors;
 :revnumber: {version}
 :revdate: {localdate}
 :toc: macro
@@ -24,8 +24,6 @@ ifdef::env-github[]
 endif::[]
 
 ifndef::ebook-format[:leveloffset: 1]
-
-(C) The WildFly Authors.
 
 ifdef::basebackend-html[toc::[]]
 

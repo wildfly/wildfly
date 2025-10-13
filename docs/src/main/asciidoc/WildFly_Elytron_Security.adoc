@@ -1,5 +1,6 @@
 [[WildFly_Elytron_Security]]
 = WildFly Elytron Security
+WildFly authors;
 :revnumber: {version}
 :revdate: {localdate}
 :toc: macro

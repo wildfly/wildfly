@@ -181,7 +181,7 @@ selected but the Keycloak feature pack requires the complete `groupId`, `artifac
 specified.
 ====
 
-[[identity-propagation]]
+[[saml-identity-propagation]]
 == Propagating the Security Context to EJBs
 
 The sample configuration in the above sections has referenced the `keycloak-client-saml` layer.
