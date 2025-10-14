@@ -122,7 +122,6 @@ import org.jboss.as.ejb3.remote.AssociationService;
 import org.jboss.as.ejb3.remote.EJBClientContextService;
 import org.jboss.as.ejb3.remote.LocalTransportProvider;
 import org.jboss.as.ejb3.remote.ModuleAvailabilityRegistrar;
-import org.jboss.as.ejb3.remote.ModuleAvailabilityRegistrarService;
 import org.jboss.as.ejb3.remote.http.EJB3RemoteHTTPService;
 import org.jboss.as.ejb3.security.ApplicationSecurityDomainConfig;
 import org.jboss.as.ejb3.suspend.EJBSuspendHandlerService;
@@ -272,7 +271,7 @@ class EJB3SubsystemAdd extends AbstractBoottimeAddStepHandler {
         associationServiceBuilder.addDependency(DeploymentRepositoryService.SERVICE_NAME, DeploymentRepository.class, associationService.getDeploymentRepositoryInjector())
                 .addDependency(suspendControllerServiceName, SuspendController.class, associationService.getSuspendControllerInjector())
                 .addDependency(ServerEnvironmentService.SERVICE_NAME, ServerEnvironment.class, associationService.getServerEnvironmentServiceInjector())
-                .addDependency(ModuleAvailabilityRegistrarService.SERVICE_NAME, ModuleAvailabilityRegistrar.class, associationService.getModuleAvailabilityRegistrarInjector())
+                .addDependency(DeploymentRepositoryService.SERVICE_NAME, ModuleAvailabilityRegistrar.class, associationService.getModuleAvailabilityRegistrarInjector())
                 .setInitialMode(ServiceController.Mode.LAZY);
 
         if (resource.hasChild(EJB3SubsystemModel.REMOTE_SERVICE_PATH)) {
@@ -477,7 +476,41 @@ class EJB3SubsystemAdd extends AbstractBoottimeAddStepHandler {
 
         final ServiceTarget serviceTarget = context.getServiceTarget();
 
-        context.getServiceTarget().addService(DeploymentRepositoryService.SERVICE_NAME, new DeploymentRepositoryService()).install();
+        // add in the new DeploymentRepositorySerice
+        //context.getServiceTarget().addService(DeploymentRepositoryService.SERVICE_NAME, new DeploymentRepositoryService()).install();
+
+        /*
+        // for now, assume this is available
+        ServiceDependency<EjbClientServicesProvider> ejbClientServicesProvider = ServiceDependency.on(EjbClientServicesProvider.SERVICE_DESCRIPTOR);
+
+        ServiceInstaller installer = new ServiceInstaller() {
+            @Override
+            public ServiceController<?> install(RequirementServiceTarget target) {
+                // install the abstractions
+                for (ServiceInstaller installer : ejbClientServicesProvider.get().getModuleAvailabilityRegistrarServiceInstallers()) {
+                    ServiceController<?> controller = installer.install(target);
+                }
+
+                // install the DeploymentRepositoryService
+                ServiceDependency<ServiceProviderRegistrar<EJBModuleIdentifier, GroupMember>> serviceProviderRegistrar =
+                        ServiceDependency.on(EjbClientServicesProvider.MODULE_AVAILABILITY_REGISTRAR_SERVICE_PROVIDER_REGISTRAR).map(ServiceProviderRegistrar.class::cast);
+                ServiceDependency<SuspendableActivityRegistry> activityRegistry = ServiceDependency.on(SuspendableActivityRegistry.SERVICE_DESCRIPTOR);
+
+                // NOTE: choose the correct builder to avoid service installation issues (need a supplier builder here)
+                return ServiceInstaller.builder(() -> new DeploymentRepositoryService(activityRegistry, serviceProviderRegistrar))
+                        // this service performs blocking operations
+                        .blocking()
+                        .onStart(DeploymentRepositoryService::start)
+                        .onStop(DeploymentRepositoryService::stop)
+                        .requires(List.of(serviceProviderRegistrar, activityRegistry))
+                        .provides(DeploymentRepositoryService.SERVICE_NAME)
+                        .asActive()
+                        .build()
+                        .install(target);
+            }
+        };
+        ServiceInstaller.builder(installer, context.getCapabilityServiceSupport()).requires(ejbClientServicesProvider).build().install(context);
+         */
 
         addRemoteInvocationServices(context, model, appclient);
         // add clustering service

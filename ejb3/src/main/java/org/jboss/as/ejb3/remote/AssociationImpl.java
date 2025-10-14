@@ -402,9 +402,10 @@ final class AssociationImpl implements Association, AutoCloseable {
             @Override
             public void listenerAdded(final ModuleAvailabilityRegistrar registrar) {
                 List<EJBModuleIdentifier> list = new ArrayList<>();
-                EjbLogger.EJB3_INVOCATION_LOGGER.infof(" listenerAdded(%s) (repository suspended = %s, modules %s)", currentNode, deploymentRepository.isSuspended(), registrar.getServices());
+                EjbLogger.EJB3_INVOCATION_LOGGER.infof(" listenerAdded(%s) (repository suspended = %s, modules = %s)", currentNode, deploymentRepository.isSuspended(), registrar.getServices());
 
                 if (!deploymentRepository.isSuspended()) {
+                    System.out.println("Contacting registrar for services");
                     // only send out the initial list if the deployment repository (i.e. the server + clean transaction state) is not in a suspended state
                     for (EJBModuleIdentifier moduleId : moduleAvailabilityRegistrar.getServices()) {
                         // for each service, add to the list of we are in the providers set
@@ -418,7 +419,7 @@ final class AssociationImpl implements Association, AutoCloseable {
                     // send out empty list if the deploymentRepository is suspended
                     EjbLogger.EJB3_INVOCATION_LOGGER.debugf("Sending empty initial module availability to connecting client: server is suspended");
                 }
-                if (!list.isEmpty()) {
+                if (true) {
                     EjbLogger.EJB3_INVOCATION_LOGGER.infof("listenerAdded (%s): sending modules %s to client", currentNode, list);
                     moduleAvailabilityListener.moduleAvailable(list);
                 }

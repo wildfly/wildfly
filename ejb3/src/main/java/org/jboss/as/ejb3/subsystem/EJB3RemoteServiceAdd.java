@@ -14,14 +14,16 @@ import org.jboss.as.controller.RequirementServiceTarget;
 import org.jboss.as.controller.ServiceNameFactory;
 import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.ejb3.deployment.DeploymentRepositoryService;
 import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.remote.AssociationService;
 import org.jboss.as.ejb3.remote.EJBRemoteConnectorService;
-import org.jboss.as.ejb3.remote.ModuleAvailabilityRegistrarServiceInstaller;
 import org.jboss.as.network.ClientMapping;
 import org.jboss.as.network.ProtocolSocketBinding;
+import org.jboss.as.server.suspend.SuspendableActivityRegistry;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
+import org.jboss.ejb.client.EJBModuleIdentifier;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.remoting3.Endpoint;
@@ -29,6 +31,8 @@ import org.jboss.remoting3.RemotingOptions;
 import org.wildfly.clustering.ejb.remote.EjbClientServicesProvider;
 import org.wildfly.clustering.ejb.remote.LegacyEjbClientServicesProviderFactory;
 import org.wildfly.clustering.infinispan.service.InfinispanServiceDescriptor;
+import org.wildfly.clustering.server.GroupMember;
+import org.wildfly.clustering.server.provider.ServiceProviderRegistrar;
 import org.wildfly.clustering.server.service.ClusteringServiceDescriptor;
 import org.wildfly.common.function.Functions;
 import org.wildfly.common.net.Inet;
@@ -143,10 +147,22 @@ public class EJB3RemoteServiceAdd extends AbstractBoottimeAddStepHandler {
                     ServiceController<?> controller = installer.install(target);
                 }
 
-                // install ModuleAvailoabilityRegistrar service
-                ModuleAvailabilityRegistrarServiceInstaller serviceInstaller = new ModuleAvailabilityRegistrarServiceInstaller();
-                ServiceController<?> controller = serviceInstaller.install(target);
-                return controller;
+                // install the DeploymentRepositoryService
+                ServiceDependency<ServiceProviderRegistrar<EJBModuleIdentifier, GroupMember>> serviceProviderRegistrar =
+                        ServiceDependency.on(EjbClientServicesProvider.MODULE_AVAILABILITY_REGISTRAR_SERVICE_PROVIDER_REGISTRAR).map(ServiceProviderRegistrar.class::cast);
+                ServiceDependency<SuspendableActivityRegistry> activityRegistry = ServiceDependency.on(SuspendableActivityRegistry.SERVICE_DESCRIPTOR);
+
+                // NOTE: choose the correct builder to avoid service installation issues (need a supplier builder here)
+                return ServiceInstaller.builder(() -> new DeploymentRepositoryService(activityRegistry, serviceProviderRegistrar))
+                        // this service performs blocking operations
+                        .blocking()
+                        .onStart(DeploymentRepositoryService::start)
+                        .onStop(DeploymentRepositoryService::stop)
+                        .requires(List.of(serviceProviderRegistrar, activityRegistry))
+                        .provides(DeploymentRepositoryService.SERVICE_NAME)
+                        .asActive()
+                        .build()
+                        .install(target);
             }
         };
         ServiceInstaller.builder(installer, context.getCapabilityServiceSupport()).requires(ejbClientServicesProvider).build().install(context);

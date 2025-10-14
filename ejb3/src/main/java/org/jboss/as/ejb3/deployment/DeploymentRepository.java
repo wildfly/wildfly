@@ -18,15 +18,7 @@ public interface DeploymentRepository {
 
     boolean startDeployment(EJBModuleIdentifier moduleId);
 
-    void addListener(DeploymentRepositoryListener listener);
-
-    void removeListener(DeploymentRepositoryListener listener);
-
     void remove(EJBModuleIdentifier moduleId);
-
-    void suspend();
-
-    void resume();
 
     boolean isSuspended();
 
