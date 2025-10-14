@@ -8,6 +8,8 @@
     <!-- Aggregates the functionality roughly associated with the EJB Lite concept.
          Note that the timer-service feature provides persistent timers which goes beyond EJB Lite requirements. -->
     <props>
+        <prop name="org.wildfly.category" value="Jakarta EE"/>
+        <prop name="org.wildfly.description" value="Support for Jakarta Enterprise Beans Lite"/>
         <prop name="org.wildfly.rule.annotations" value="jakarta.ejb"/>
         <prop name="org.wildfly.rule.class" value="jakarta.ejb"/>
     </props>

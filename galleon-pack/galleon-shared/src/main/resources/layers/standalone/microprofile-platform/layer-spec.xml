@@ -3,7 +3,11 @@
   ~ Copyright The WildFly Authors
   ~ SPDX-License-Identifier: Apache-2.0
   -->
-<layer-spec xmlns="urn:jboss:galleon:layer-spec:1.0" name="microprofile-platform">
+<layer-spec xmlns="urn:jboss:galleon:layer-spec:2.0" name="microprofile-platform">
+    <props>
+        <prop name="org.wildfly.category" value="Microprofile"/>
+        <prop name="org.wildfly.description" value="Support for available MicroProfile platform specifications."/>
+    </props>
     <dependencies>
         <layer name="microprofile-config" optional="true"/>
         <layer name="microprofile-fault-tolerance" optional="true"/>

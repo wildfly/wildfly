@@ -6,6 +6,9 @@
 
 <layer-spec xmlns="urn:jboss:galleon:layer-spec:2.0" name="hibernate-search">
     <props>
+        <prop name="org.wildfly.category" value="Database"/>
+        <prop name="org.wildfly.description" value="Support for Hibernate Search."/>
+        <prop name="org.wildfly.note" value="The jpa dependency can be excluded and jpa-distributed used instead."/>
         <prop name="org.wildfly.rule.annotations" value="org.hibernate.search.mapper.pojo.mapping.definition.annotation.Indexed"/>
     </props>
     <dependencies>

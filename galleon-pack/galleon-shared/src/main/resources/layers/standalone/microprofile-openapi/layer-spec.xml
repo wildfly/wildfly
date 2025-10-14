@@ -6,6 +6,8 @@
 
 <layer-spec xmlns="urn:jboss:galleon:layer-spec:2.0" name="microprofile-openapi">
     <props>
+        <prop name="org.wildfly.category" value="Microprofile"/>
+        <prop name="org.wildfly.description" value="Support for MicroProfile OpenAPI."/>
         <prop name="org.wildfly.rule.add-on-depends-on" value="only:jaxrs"/>
         <prop name="org.wildfly.rule.add-on" value="jaxrs,openapi"/>
         <prop name="org.wildfly.rule.annotations" value="org.eclipse.microprofile.openapi.*"/>

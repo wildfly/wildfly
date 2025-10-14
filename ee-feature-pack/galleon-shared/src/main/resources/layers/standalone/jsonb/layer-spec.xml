@@ -6,6 +6,8 @@
 
 <layer-spec xmlns="urn:jboss:galleon:layer-spec:2.0" name="jsonb">
     <props>
+        <prop name="org.wildfly.category" value="Jakarta EE"/>
+        <prop name="org.wildfly.description" value="Support for JSON Binding (Jakarta JSON Binding) provisioning the Jakarta JSON Binding API and Implementation modules."/>
         <prop name="org.wildfly.rule.annotations" value="jakarta.json.bind.annotation" />
         <prop name="org.wildfly.rule.class" value="jakarta.json.bind.*"/>
     </props>
