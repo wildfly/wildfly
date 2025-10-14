@@ -6,6 +6,8 @@
 
 <layer-spec xmlns="urn:jboss:galleon:layer-spec:2.0" name="microprofile-lra-participant">
     <props>
+        <prop name="org.wildfly.category" value="MicroProfile"/>
+        <prop name="org.wildfly.description" value="Support for acting as a participant in MicroProfile LRA long-running actions."/>
         <prop name="org.wildfly.rule.annotations" value="org.eclipse.microprofile.lra.annotation,org.eclipse.microprofile.lra.annotation.ws.rs"/>
         <prop name="org.wildfly.rule.class" value="org.eclipse.microprofile.lra.*"/>
     </props>

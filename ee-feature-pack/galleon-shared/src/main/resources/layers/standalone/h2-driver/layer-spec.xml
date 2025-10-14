@@ -6,6 +6,8 @@
 
 <layer-spec xmlns="urn:jboss:galleon:layer-spec:2.0" name="h2-driver">
     <props>
+        <prop name="org.wildfly.category" value="Database"/>
+        <prop name="org.wildfly.description" value="Support for the H2 JDBC driver."/>
         <prop name="org.wildfly.rule.xml-path" value="[/WEB-INF/*.xml,/META-INF/*.xml],/datasources/datasource/driver,h2"/>
         <prop name="org.wildfly.rule.xml-path-xa" value="[/WEB-INF/*.xml,/META-INF/*.xml],/datasources/xa-datasource/driver,h2"/>
         <prop name="org.wildfly.rule.annotation.field.value-url" value="jakarta.annotation.sql.DataSourceDefinition,url=jdbc:h2:*"/>

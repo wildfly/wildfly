@@ -6,6 +6,8 @@
 
 <layer-spec xmlns="urn:jboss:galleon:layer-spec:2.0" name="ejb-http-invoker">
     <props>
+        <prop name="org.wildfly.category" value="Jakarta EE"/>
+        <prop name="org.wildfly.description" value="Support for invoking Jakarta Enterprise Beans over HTTP."/>
         <prop name="org.wildfly.rule.add-on" value="ejb,http-invoker"/>
         <prop name="org.wildfly.rule.add-on-depends-on" value="all-dependencies"/>
         <prop name="org.wildfly.rule.add-on-description" value="Support for invoking Jakarta Enterprise Beans over HTTP."/>

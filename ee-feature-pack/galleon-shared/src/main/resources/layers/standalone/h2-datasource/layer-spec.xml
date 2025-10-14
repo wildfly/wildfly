@@ -6,6 +6,8 @@
 
 <layer-spec xmlns="urn:jboss:galleon:layer-spec:2.0" name="h2-datasource">
     <props>
+        <prop name="org.wildfly.category" value="Database"/>
+        <prop name="org.wildfly.description" value="Support for an H2 datasource."/>
         <prop name="org.wildfly.rule.add-on" value="database,h2-database"/>
         <prop name="org.wildfly.rule.add-on-depends-on" value="only:datasources"/>
         <prop name="org.wildfly.rule.bring-datasource" value="java:jboss/datasources/ExampleDS"/>

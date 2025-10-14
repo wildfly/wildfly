@@ -495,7 +495,7 @@ Configuration related to the behaviour of the Narayana transaction manager
 is covered under `transactions` subsystem. For the details refer to
 link:Admin_Guide{outfilesuffix}#Transactions_Subsystem[Admin Guide Transactions subsystem].
 
-To check the subsystem model you can use the link:wildscribe[WildFly model reference^]
+To check the subsystem model you can use the link:feature-pack/doc/reference/subsystem/transactions/index.html[/subsystem=transactions model reference]
 or list all the configuration options of the subsystem in `jboss-cli`
 
 [source,bash]

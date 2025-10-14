@@ -5,6 +5,8 @@
   -->
 <layer-spec xmlns="urn:jboss:galleon:layer-spec:2.0" name="singleton-local">
     <props>
+        <prop name="org.wildfly.category" value="Clustering"/>
+        <prop name="org.wildfly.description" value="Support for WildFly singleton."/>
         <prop name="org.wildfly.rule.expected-file" value="[/META-INF/singleton-deployment.xml,/WEB-INF/classes/META-INF/singleton-deployment.xml]"/>
         <prop name="org.wildfly.rule.class" value="org.wildfly.clustering.singleton.*"/>
     </props>

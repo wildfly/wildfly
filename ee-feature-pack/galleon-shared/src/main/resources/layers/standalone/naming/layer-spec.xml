@@ -6,6 +6,8 @@
 
 <layer-spec xmlns="urn:jboss:galleon:layer-spec:2.0" name="naming">
     <props>
+        <prop name="org.wildfly.category" value="Jakarta EE"/>
+        <prop name="org.wildfly.description" value="Support for JNDI."/>
         <prop name="org.wildfly.rule.class" value="javax.naming"/>
     </props>
     <dependencies>

@@ -139,7 +139,7 @@ The primary broker needs this basic configuration in `standalone.xml`:
 ====== Additional parameters
 
 failover-on-shutdown::
-The xref:wildscribe/subsystem/messaging-activemq/server/ha-policy/shared-store-primary/index.html[failover-on-shutdown] attribute describes whether the _graceful_ shutdown of this broker will cause the backup to activate.
+The xref:feature-pack/doc/reference/subsystem/messaging-activemq/server/ha-policy/shared-store-primary/index.html[failover-on-shutdown] attribute describes whether the _graceful_ shutdown of this broker will cause the backup to activate.
 If `false` then the backup server will remain passive if this broker is shutdown gracefully (e.g. using kbd:[Ctrl+C]).
 +
 If `true` then when this server is stopped the backup will activate.
@@ -410,7 +410,7 @@ If not then the primary server will restart and serve the same messages that the
 The following lists all the `ha-policy` configuration elements for HA strategy shared store for `primary`:
 
 failover-on-shutdown::
-The xref:wildscribe/subsystem/messaging-activemq/server/ha-policy/shared-store-primary/index.html[failover-on-shutdown] attribute describes whether the _graceful_ shutdown of this broker will cause the backup to activate.
+The xref:feature-pack/doc/reference/subsystem/messaging-activemq/server/ha-policy/shared-store-primary/index.html[failover-on-shutdown] attribute describes whether the _graceful_ shutdown of this broker will cause the backup to activate.
 If `false` then the backup server will remain passive if this broker is shutdown gracefully (e.g. using kbd:[Ctrl+C]) or using the shutdown command with the `jboss-cli`.
 +
 If `true` then when this server is stopped the backup will activate.
@@ -420,7 +420,7 @@ If `true` then when this server is stopped the backup will activate.
 The following lists all the `ha-policy` configuration elements for HA strategy Shared Store for `secondary`:
 
 failover-on-shutdown::
-The xref:wildscribe/subsystem/messaging-activemq/server/ha-policy/shared-store-primary/index.html[failover-on-shutdown] attribute describes whether the _graceful_ shutdown of this broker will cause the backup to activate.
+The xref:feature-pack/doc/reference/subsystem/messaging-activemq/server/ha-policy/shared-store-primary/index.html[failover-on-shutdown] attribute describes whether the _graceful_ shutdown of this broker will cause the backup to activate.
 If `false` then the backup server will remain passive if this broker is shutdown gracefully (e.g. using kbd:[Ctrl+C]).
 +
 If `true` then when this server is stopped the backup will activate.

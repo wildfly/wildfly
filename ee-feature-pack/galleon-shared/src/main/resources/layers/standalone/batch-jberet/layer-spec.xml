@@ -6,6 +6,8 @@
 
 <layer-spec xmlns="urn:jboss:galleon:layer-spec:2.0" name="batch-jberet">
     <props>
+        <prop name="org.wildfly.category" value="Jakarta EE"/>
+        <prop name="org.wildfly.description" value="Support for Jakarta Batch."/>
         <prop name="org.wildfly.rule.expected-file" value="/WEB-INF/classes/META-INF/batch-jobs"/>
         <prop name="org.wildfly.rule.class" value="jakarta.batch.api.*"/>
     </props>

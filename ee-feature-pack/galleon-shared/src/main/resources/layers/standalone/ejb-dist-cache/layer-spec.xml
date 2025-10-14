@@ -8,6 +8,9 @@
 
     <!-- Infinispan cache configuration used for distributed SFSB caching -->
     <props>
+        <prop name="org.wildfly.category" value="Clustering"/>
+        <prop name="org.wildfly.description" value="Infinispan-based distributed cache for stateful session beans."/>
+        <prop name="org.wildfly.note" value="ejb-local-cache layer must be explicitly excluded if ejb-dist-cache is in use."/>
         <prop name="org.wildfly.rule.profile-ha" value="ejb-local-cache"/>
     </props>
     <dependencies>

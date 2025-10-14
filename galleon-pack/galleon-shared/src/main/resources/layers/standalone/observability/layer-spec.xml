@@ -4,7 +4,11 @@
   ~ SPDX-License-Identifier: Apache-2.0
   -->
 
-<layer-spec xmlns="urn:jboss:galleon:layer-spec:1.0" name="observability">
+<layer-spec xmlns="urn:jboss:galleon:layer-spec:2.0" name="observability">
+    <props>
+        <prop name="org.wildfly.category" value="Monitoring"/>
+        <prop name="org.wildfly.description" value="Aggregation of multiple monitoring functionalities."/>
+    </props>
     <dependencies>
         <layer name="microprofile-config" optional="true"/>
         <layer name="microprofile-telemetry" optional="true"/>
