@@ -7,7 +7,7 @@
 
 <layer-spec xmlns="urn:jboss:galleon:layer-spec:2.0" name="microprofile-config">
     <props>
-        <prop name="org.wildfly.category" value="Microprofile"/>
+        <prop name="org.wildfly.category" value="MicroProfile"/>
         <prop name="org.wildfly.description" value="Support for MicroProfile Config"/>
         <prop name="org.wildfly.rule.annotations" value="org.eclipse.microprofile.config.inject"/>
         <prop name="org.wildfly.rule.class" value="org.eclipse.microprofile.config.*"/>

@@ -6,7 +6,7 @@
 
 <layer-spec xmlns="urn:jboss:galleon:layer-spec:2.0" name="microprofile-lra-coordinator">
     <props>
-        <prop name="org.wildfly.category" value="Microprofile"/>
+        <prop name="org.wildfly.category" value="MicroProfile"/>
         <prop name="org.wildfly.description" value="Support for acting as coordinator of MicroProfile LRA long-running actions."/>
         <prop name="org.wildfly.rule.add-on-depends-on" value="none"/>
         <prop name="org.wildfly.rule.add-on" value="lra,lra-coordinator"/>

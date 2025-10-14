@@ -5,7 +5,7 @@
   -->
 <layer-spec xmlns="urn:jboss:galleon:layer-spec:2.0" name="microprofile-platform">
     <props>
-        <prop name="org.wildfly.category" value="Microprofile"/>
+        <prop name="org.wildfly.category" value="MicroProfile"/>
         <prop name="org.wildfly.description" value="Support for available MicroProfile platform specifications."/>
     </props>
     <dependencies>

@@ -5,7 +5,7 @@
   -->
 <layer-spec xmlns="urn:jboss:galleon:layer-spec:2.0" name="microprofile-rest-client">
     <props>
-        <prop name="org.wildfly.category" value="Microprofile"/>
+        <prop name="org.wildfly.category" value="MicroProfile"/>
         <prop name="org.wildfly.description" value="Support for MicroProfile REST client."/>
         <prop name="org.wildfly.rule.annotations" value="org.eclipse.microprofile.rest.client.annotation,org.eclipse.microprofile.rest.client.inject"/>
         <prop name="org.wildfly.rule.class" value="org.eclipse.microprofile.rest.client.*"/>
