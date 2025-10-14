@@ -69,10 +69,6 @@
 
     <name>WildFly Test Suite: Aggregator</name>
 
-    <modules>
-        <module>config</module>
-    </modules>
-
     <!-- Global testsuite system properties defaults. -->
 
     <properties>

@@ -284,10 +284,12 @@
             <scope>compile</scope>
         </dependency>
 
+        <!-- test -->
         <dependency>
-            <groupId>org.wildfly</groupId>
-            <artifactId>wildfly-testsuite-config</artifactId>
-            <version>${project.version}</version>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <version>${version.org.junit}</version>
+            <scope>test</scope>
         </dependency>
 
     </dependencies>
