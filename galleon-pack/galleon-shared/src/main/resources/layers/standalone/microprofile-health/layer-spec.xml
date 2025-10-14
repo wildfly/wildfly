@@ -8,7 +8,7 @@
 <layer-spec xmlns="urn:jboss:galleon:layer-spec:2.0" name="microprofile-health">
     <props>
         <prop name="org.wildfly.category" value="Monitoring"/>
-        <prop name="org.wildfly.description" value="Support for MicroProfile Health"/>
+        <prop name="org.wildfly.description" value="Support for MicroProfile Health."/>
         <prop name="org.wildfly.rule.annotations" value="org.eclipse.microprofile.health"/>
         <prop name="org.wildfly.rule.class" value="org.eclipse.microprofile.health.*"/> 
     </props>

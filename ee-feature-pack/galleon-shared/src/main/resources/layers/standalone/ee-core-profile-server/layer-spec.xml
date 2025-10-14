@@ -7,7 +7,7 @@
 <layer-spec xmlns="urn:jboss:galleon:layer-spec:2.0" name="ee-core-profile-server">
     <props>
         <prop name="org.wildfly.category" value="Base WildFly server"/>
-        <prop name="org.wildfly.description" value="A Jakarta EE Core Profile server"/>
+        <prop name="org.wildfly.description" value="A Jakarta EE Core Profile server."/>
         <prop name="org.wildfly.rule.kind" value="default-base-layer"/>
     </props>
     <dependencies>

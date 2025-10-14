@@ -8,7 +8,7 @@
     <!-- Aggregates EJB functionality, excluding ejb-iiop. -->
     <props>
         <prop name="org.wildfly.category" value="Jakarta EE"/>
-        <prop name="org.wildfly.description" value="Support for Jakarta Enterprise Beans, excluding the IIOP protocol"/>
+        <prop name="org.wildfly.description" value="Support for Jakarta Enterprise Beans, excluding the IIOP protocol."/>
         <prop name="org.wildfly.rule.annotations" value="jakarta.ejb.MessageDriven,jakarta.ejb.Remote"/>
         <prop name="org.wildfly.rule.class" value="jakarta.ejb.MessageDrivenContext"/>
     </props>

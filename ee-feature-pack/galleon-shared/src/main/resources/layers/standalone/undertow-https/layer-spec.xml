@@ -7,7 +7,7 @@
 <layer-spec xmlns="urn:jboss:galleon:layer-spec:2.0" name="undertow-https">
     <props>
         <prop name="org.wildfly.category" value="Security"/>
-        <prop name="org.wildfly.description" value="Support for securing web access with HTTPS"/>
+        <prop name="org.wildfly.description" value="Support for securing web access with HTTPS."/>
         <prop name="org.wildfly.rule.add-on-depends-on" value="all-dependencies"/>
         <prop name="org.wildfly.rule.add-on" value="security,ssl"/>
         <prop name="org.wildfly.rule.add-on-description" value="Support for the Undertow HTTPS listener."/>

@@ -7,7 +7,7 @@
 <layer-spec xmlns="urn:jboss:galleon:layer-spec:2.0" name="iiop-openjdk">
     <props>
         <prop name="org.wildfly.category" value="RPC (Remote Procedure Call)"/>
-        <prop name="org.wildfly.description" value="Support for IIOP"/>
+        <prop name="org.wildfly.description" value="Support for IIOP."/>
         <prop name="org.wildfly.rule.add-on" value="rpc,iiop" />
         <prop name="org.wildfly.rule.add-on-depends-on" value="none" />
         <prop name="org.wildfly.rule.add-on-description" value="Support for IIOP."/>

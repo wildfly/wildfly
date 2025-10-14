@@ -6,7 +6,7 @@
 <layer-spec xmlns="urn:jboss:galleon:layer-spec:2.0" name="micrometer">
     <props>
         <prop name="org.wildfly.category" value="Monitoring"/>
-        <prop name="org.wildfly.description" value="Support for Micrometer"/>
+        <prop name="org.wildfly.description" value="Support for Micrometer."/>
         <prop name="org.wildfly.rule.add-on-depends-on" value="only:cdi"/>
         <prop name="org.wildfly.rule.add-on" value="observability,micrometer"/>
         <prop name="org.wildfly.rule.add-on-description" value="Support for Micrometer."/>

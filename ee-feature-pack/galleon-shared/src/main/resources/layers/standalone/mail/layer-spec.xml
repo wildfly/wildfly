@@ -7,7 +7,7 @@
 <layer-spec xmlns="urn:jboss:galleon:layer-spec:2.0" name="mail">
     <props>
         <prop name="org.wildfly.category" value="Jakarta EE"/>
-        <prop name="org.wildfly.description" value="Support for Jakarta Mail"/>
+        <prop name="org.wildfly.description" value="Support for Jakarta Mail."/>
         <prop name="org.wildfly.rule.annotations" value="jakarta.mail" />
         <prop name="org.wildfly.rule.class" value="jakarta.mail.*"/>
     </props>

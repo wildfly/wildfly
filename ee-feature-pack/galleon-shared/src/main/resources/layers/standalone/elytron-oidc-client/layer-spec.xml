@@ -7,7 +7,7 @@
 <layer-spec xmlns="urn:jboss:galleon:layer-spec:2.0" name="elytron-oidc-client">
     <props>
         <prop name="org.wildfly.category" value="Security"/>
-        <prop name="org.wildfly.description" value="Support for securing deployment with OIDC"/>
+        <prop name="org.wildfly.description" value="Support for securing deployments with OIDC."/>
         <prop name="org.wildfly.rule.xml-path" value="/WEB-INF/web.xml,/web-app/login-config/auth-method,OIDC"/>
     </props>
     <dependencies>

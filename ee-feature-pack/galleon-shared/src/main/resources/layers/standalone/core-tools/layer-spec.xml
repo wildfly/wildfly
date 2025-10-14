@@ -7,7 +7,7 @@
 <layer-spec xmlns="urn:jboss:galleon:layer-spec:2.0" name="core-tools">
     <props>
         <prop name="org.wildfly.category" value="Management"/>
-        <prop name="org.wildfly.description" value="Support for 'jboss-cli', 'add-user' and 'elytron-tool' launch scripts and configuration files"/>
+        <prop name="org.wildfly.description" value="Support for 'jboss-cli', 'add-user' and 'elytron-tool' launch scripts and configuration files."/>
         <prop name="org.wildfly.rule.add-on-depends-on" value="all-dependencies"/>
         <prop name="org.wildfly.rule.add-on" value="management,wildfly-cli"/>
         <prop name="org.wildfly.rule.add-on-description" value="Server command line tools: jboss-cli, add-user, elytron-tool."/>

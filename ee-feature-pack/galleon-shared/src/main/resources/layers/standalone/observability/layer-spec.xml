@@ -7,7 +7,7 @@
 <layer-spec xmlns="urn:jboss:galleon:layer-spec:2.0" name="observability">
     <props>
       <prop name="org.wildfly.category" value="Monitoring"/>
-      <prop name="org.wildfly.description" value="Aggregation of multiple monitoring functionalities"/>
+      <prop name="org.wildfly.description" value="Aggregation of multiple monitoring functionalities."/>
     </props>
     <dependencies>
         <layer name="metrics" optional="true"/>

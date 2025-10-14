@@ -7,7 +7,7 @@
 <layer-spec xmlns="urn:jboss:galleon:layer-spec:2.0" name="webservices">
     <props>
         <prop name="org.wildfly.category" value="Jakarta EE"/>
-        <prop name="org.wildfly.description" value="Support for Jakarta XML Web Services"/>
+        <prop name="org.wildfly.description" value="Support for Jakarta XML Web Services."/>
         <prop name="org.wildfly.rule.annotations" value="jakarta.jws,jakarta.jws.soap,jakarta.xml.ws.*"/>
         <prop name="org.wildfly.rule.class" value="jakarta.xml.ws.*"/>
     </props>
