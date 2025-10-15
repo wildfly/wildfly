@@ -255,10 +255,10 @@ It is possible to override the default images and versions by using:
 * Environment variables, e.g. `AS_TS_KAFKA_NATIVE_IMAGE=apache/kafka-native:3.9.0`
 * Properties file specified via `testsuite.config.properties` system property or `TESTSUITE_CONFIG_PROPERTIES` environment variable, e.g. `-Dtestsuite.config.properties=/path/to/testsuite-config.properties` or `TESTSUITE_CONFIG_PROPERTIES=/path/to/testsuite-config.properties`; the properties file format has to be the same as for System properties e.g.:
      ```properties
-      as-ts.opentelemetry-collector.image=otel/opentelemetry-collector:0.115.1
-      as-ts.elasticsearch.image=docker.elastic.co/elasticsearch/elasticsearch:8.15.4
-      as-ts.mailserver.image=apache/james:demo-3.8.2
-      as-ts.kafka-native.image=apache/kafka-native:3.8.0
-      as-ts.activemq-artemis-broker.image=quay.io/arkmq-org/activemq-artemis-broker:artemis.2.42.0
-      as-ts.keycloak.image=quay.io/keycloak/keycloak:24.0.2
+     as-ts.opentelemetry-collector.image=otel/opentelemetry-collector:0.115.1
+     as-ts.elasticsearch.image=docker.elastic.co/elasticsearch/elasticsearch:8.15.4
+     as-ts.mailserver.image=apache/james:demo-3.8.2
+     as-ts.kafka-native.image=apache/kafka-native:3.8.0
+     as-ts.activemq-artemis-broker.image=quay.io/arkmq-org/activemq-artemis-broker:artemis.2.42.0
+     as-ts.keycloak.image=quay.io/keycloak/keycloak:24.0.2
      ```

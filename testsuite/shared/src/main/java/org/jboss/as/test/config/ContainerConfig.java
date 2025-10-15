@@ -1,6 +1,9 @@
-package org.jboss.as.test.config;
+/*
+ * Copyright The WildFly Authors
+ * SPDX-License-Identifier: Apache-2.0
+ */
 
-import org.testcontainers.shaded.com.google.common.base.Strings;
+package org.jboss.as.test.config;
 
 import java.io.File;
 import java.io.FileReader;
@@ -8,6 +11,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.file.Paths;
+import java.util.Locale;
 import java.util.Properties;
 import java.util.logging.Logger;
 
@@ -41,7 +45,7 @@ public class ContainerConfig {
     protected static final String OPENTELEMETRY_COLLECTOR_IMAGE_CONFIG_KEY = "as-ts.opentelemetry-collector.image";
 
     /** Default OpenTelemetry Collector container image. */
-    protected static final String OPENTELEMETRY_COLLECTOR_DEFAULT_IMAGE = "otel/opentelemetry-collector:0.115.1";
+    protected static final String OPENTELEMETRY_COLLECTOR_DEFAULT_IMAGE = "otel/opentelemetry-collector:0.138.0";
 
     /** Configuration key for Elasticsearch container image. */
     protected static final String ELASTICSEARCH_IMAGE_CONFIG_KEY = "as-ts.elasticsearch.image";
@@ -80,6 +84,15 @@ public class ContainerConfig {
     }
 
     /**
+     * Tells if the input {@link CharSequence} is null or empty
+     * @param cs {@link CharSequence} to check
+     * @return true if the input {@link CharSequence} is null or empty
+     */
+    private static boolean isNullOrEmpty(final CharSequence cs) {
+        return cs == null || cs.isEmpty();
+    }
+
+    /**
      * Loads and caches properties from the configuration file.
      * <p>
      * The properties file location can be specified via:
@@ -98,8 +111,8 @@ public class ContainerConfig {
             // Properties file location can be passed as e.g. -Dtestsuite.config.properties=/some-path/testsuite-config.properties
             String configFileLocation = System.getProperty(PROPERTIES_FILE_PROPERTY_NAME) != null ?
                     System.getProperty(PROPERTIES_FILE_PROPERTY_NAME) :
-                    System.getenv(PROPERTIES_FILE_PROPERTY_NAME.replace(".", "_").toUpperCase());
-            if (!Strings.isNullOrEmpty(configFileLocation)) {
+                    System.getenv(PROPERTIES_FILE_PROPERTY_NAME.replace(".", "_").toUpperCase(Locale.ROOT));
+            if (!isNullOrEmpty(configFileLocation)) {
                 logger.fine(String.format("Loading config properties from file: %s", configFileLocation));
                 try (FileReader reader = new FileReader(convertToFile(configFileLocation))) {
                     properties.load(reader);
@@ -143,12 +156,12 @@ public class ContainerConfig {
      * @return the property value, or the default value if not found
      */
     private static String getProperty(String key, String defaultValue) {
-        String value = Strings.isNullOrEmpty(System.getProperty(key)) ?
-                System.getenv(key.replace(".", "_").toUpperCase())
+        String value = isNullOrEmpty(System.getProperty(key)) ?
+                System.getenv(key.replace(".", "_").toUpperCase(Locale.ROOT))
                 :
                 System.getProperty(key);
         logger.fine(String.format("Loading config properties from system property: %s = %s", key, value));
-        return Strings.isNullOrEmpty(value) ? getPropertiesFromFile().getProperty(key, defaultValue) : value;
+        return isNullOrEmpty(value) ? getPropertiesFromFile().getProperty(key, defaultValue) : value;
     }
 
     /*

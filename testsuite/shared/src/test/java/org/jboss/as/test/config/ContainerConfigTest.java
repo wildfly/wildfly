@@ -1,3 +1,8 @@
+/*
+ * Copyright The WildFly Authors
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 package org.jboss.as.test.config;
 
 import org.junit.jupiter.api.Test;
@@ -25,7 +30,7 @@ public class ContainerConfigTest {
     @Test
     public void testContainerConfig() {
         System.setProperty(ContainerConfig.PROPERTIES_FILE_PROPERTY_NAME,
-                Thread.currentThread().getContextClassLoader().getResource("testsuite-config.properties").getFile());
+                Thread.currentThread().getContextClassLoader().getResource("testsuite-config.properties").getPath());
         String artemisImage = ContainerConfig.getArtemisImage();
         assertNotNull(artemisImage, "Artemis image not found in configuration!");
         assertEquals("quay.io/arkmq-org/activemq-artemis-broker:artemis.9999999", artemisImage);
