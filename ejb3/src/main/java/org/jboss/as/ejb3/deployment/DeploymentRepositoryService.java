@@ -25,7 +25,7 @@ import org.jboss.ejb.client.EJBModuleIdentifier;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.ServiceName;
 import org.wildfly.clustering.server.GroupMember;
-import org.wildfly.clustering.server.manager.Service;
+import org.wildfly.clustering.server.service.Service;
 import org.wildfly.clustering.server.provider.ServiceProviderRegistration;
 import org.wildfly.clustering.server.provider.ServiceProviderRegistrationEvent;
 import org.wildfly.clustering.server.provider.ServiceProviderRegistrationListener;
