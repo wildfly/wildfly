@@ -11,7 +11,6 @@ import jakarta.transaction.RollbackException;
 import jakarta.transaction.Synchronization;
 import jakarta.transaction.SystemException;
 
-import org.jboss.as.ejb3.deployment.DeploymentRepository;
 import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.server.suspend.ServerActivity;
 import org.jboss.as.server.suspend.ServerActivityCallback;
@@ -77,11 +76,6 @@ public class EJBSuspendHandlerService implements Service<EJBSuspendHandlerServic
     private final InjectedValue<LocalTransactionContext> localTransactionContextInjectedValue = new InjectedValue<>();
 
     /**
-     * Injection of DeploymentRepository, for suspending and resuming deployments
-     */
-    private final InjectedValue<DeploymentRepository> deploymentRepositoryInjectedValue = new InjectedValue<>();
-
-    /**
      * The number of active requests that are using this entry point
      */
     @SuppressWarnings("unused") private volatile int activeInvocationCount = 0;
@@ -135,15 +129,6 @@ public class EJBSuspendHandlerService implements Service<EJBSuspendHandlerServic
      */
     public InjectedValue<LocalTransactionContext> getLocalTransactionContextInjectedValue() {
         return localTransactionContextInjectedValue;
-    }
-
-    /**
-     * Returns deployment repository injected value.
-     *
-     * @return local transaction context injected value
-     */
-    public InjectedValue<DeploymentRepository> getDeploymentRepositoryInjectedValue() {
-        return deploymentRepositoryInjectedValue;
     }
 
     /**
