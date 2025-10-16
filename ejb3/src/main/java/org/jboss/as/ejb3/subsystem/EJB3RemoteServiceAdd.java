@@ -160,7 +160,6 @@ public class EJB3RemoteServiceAdd extends AbstractBoottimeAddStepHandler {
                         .onStop(DeploymentRepositoryService::stop)
                         .requires(List.of(serviceProviderRegistrar, activityRegistry))
                         .provides(DeploymentRepositoryService.SERVICE_NAME)
-                        .asActive()
                         .build()
                         .install(target);
             }
