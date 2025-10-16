@@ -474,45 +474,9 @@ class EJB3SubsystemAdd extends AbstractBoottimeAddStepHandler {
 
         ExceptionLoggingWriteHandler.INSTANCE.updateOrCreateDefaultExceptionLoggingEnabledService(context, model);
 
-        final ServiceTarget serviceTarget = context.getServiceTarget();
-
-        // add in the new DeploymentRepositorySerice
-        //context.getServiceTarget().addService(DeploymentRepositoryService.SERVICE_NAME, new DeploymentRepositoryService()).install();
-
-        /*
-        // for now, assume this is available
-        ServiceDependency<EjbClientServicesProvider> ejbClientServicesProvider = ServiceDependency.on(EjbClientServicesProvider.SERVICE_DESCRIPTOR);
-
-        ServiceInstaller installer = new ServiceInstaller() {
-            @Override
-            public ServiceController<?> install(RequirementServiceTarget target) {
-                // install the abstractions
-                for (ServiceInstaller installer : ejbClientServicesProvider.get().getModuleAvailabilityRegistrarServiceInstallers()) {
-                    ServiceController<?> controller = installer.install(target);
-                }
-
-                // install the DeploymentRepositoryService
-                ServiceDependency<ServiceProviderRegistrar<EJBModuleIdentifier, GroupMember>> serviceProviderRegistrar =
-                        ServiceDependency.on(EjbClientServicesProvider.MODULE_AVAILABILITY_REGISTRAR_SERVICE_PROVIDER_REGISTRAR).map(ServiceProviderRegistrar.class::cast);
-                ServiceDependency<SuspendableActivityRegistry> activityRegistry = ServiceDependency.on(SuspendableActivityRegistry.SERVICE_DESCRIPTOR);
-
-                // NOTE: choose the correct builder to avoid service installation issues (need a supplier builder here)
-                return ServiceInstaller.builder(() -> new DeploymentRepositoryService(activityRegistry, serviceProviderRegistrar))
-                        // this service performs blocking operations
-                        .blocking()
-                        .onStart(DeploymentRepositoryService::start)
-                        .onStop(DeploymentRepositoryService::stop)
-                        .requires(List.of(serviceProviderRegistrar, activityRegistry))
-                        .provides(DeploymentRepositoryService.SERVICE_NAME)
-                        .asActive()
-                        .build()
-                        .install(target);
-            }
-        };
-        ServiceInstaller.builder(installer, context.getCapabilityServiceSupport()).requires(ejbClientServicesProvider).build().install(context);
-         */
-
+        // add remote incocation services
         addRemoteInvocationServices(context, model, appclient);
+
         // add clustering service
         addClusteringServices(context, appclient);
 
@@ -528,7 +492,6 @@ class EJB3SubsystemAdd extends AbstractBoottimeAddStepHandler {
         context.getServiceTarget().addService(EJBSuspendHandlerService.SERVICE_NAME, ejbSuspendHandlerService)
                 .addDependency(suspendControllerServiceName, SuspendController.class, ejbSuspendHandlerService.getSuspendControllerInjectedValue())
                 .addDependency(TxnServices.JBOSS_TXN_LOCAL_TRANSACTION_CONTEXT, LocalTransactionContext.class, ejbSuspendHandlerService.getLocalTransactionContextInjectedValue())
-                .addDependency(DeploymentRepositoryService.SERVICE_NAME, DeploymentRepository.class, ejbSuspendHandlerService.getDeploymentRepositoryInjectedValue())
                 .install();
 
         if (!appclient) {
