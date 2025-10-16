@@ -12,7 +12,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.jboss.as.ejb3.remote.ModuleAvailabilityRegistrar;
@@ -25,18 +27,18 @@ import org.jboss.ejb.client.EJBModuleIdentifier;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.ServiceName;
 import org.wildfly.clustering.server.GroupMember;
-import org.wildfly.clustering.server.service.Service;
+import org.wildfly.clustering.server.provider.ServiceProviderRegistrar;
 import org.wildfly.clustering.server.provider.ServiceProviderRegistration;
 import org.wildfly.clustering.server.provider.ServiceProviderRegistrationEvent;
 import org.wildfly.clustering.server.provider.ServiceProviderRegistrationListener;
-import org.wildfly.clustering.server.provider.ServiceProviderRegistrar;
+import org.wildfly.clustering.server.service.Service;
 import org.wildfly.subsystem.service.ServiceDependency;
-
 
 /**
  * Repository for information about deployed modules. This includes information on all the deployed Jakarta Enterprise Beans's in the module
  *
  * @author Stuart Douglas
+ * @author Richard Achmatowicz
  */
 public class DeploymentRepositoryService implements DeploymentRepository, ModuleAvailabilityRegistrar, Service {
     public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("ee", "deploymentRepository");
@@ -55,7 +57,7 @@ public class DeploymentRepositoryService implements DeploymentRepository, Module
     /**
      * All deployed modules. This is a copy on write map that is updated infrequently and read often.
      */
-    private volatile Map<EJBModuleIdentifier, DeploymentHolder> modules;
+    protected volatile Map<EJBModuleIdentifier, DeploymentHolder> modules;
     private boolean started;
     // servers start out suspended
     private boolean suspended = true;
@@ -142,6 +144,7 @@ public class DeploymentRepositoryService implements DeploymentRepository, Module
 
     @Override
     public boolean startDeployment(EJBModuleIdentifier moduleId) {
+        log.infof("Starting moduleId %s in DeploymentRepository", moduleId);
         DeploymentHolder deployment;
         synchronized (this) {
             deployment = modules.get(moduleId);
@@ -158,10 +161,10 @@ public class DeploymentRepositoryService implements DeploymentRepository, Module
      * - a cluster-wide service provider registry holds information on which modules are deployed on which servers in the cluster
      *
      * @param moduleId the moduleId of the newly deployed module
-     * @param deployment the matadata for the newly deployed module
      */
     @Override
     public void remove(EJBModuleIdentifier moduleId) {
+        log.infof("Removing moduleId %s from DeploymentRepository", moduleId);
         synchronized (this) {
             final Map<EJBModuleIdentifier, DeploymentHolder> modules = new HashMap<EJBModuleIdentifier, DeploymentHolder>(this.modules);
 
@@ -171,7 +174,11 @@ public class DeploymentRepositoryService implements DeploymentRepository, Module
 
             // close the registration of the undeployed module in the service provider registry
             ServiceProviderRegistration<EJBModuleIdentifier, GroupMember> registration = deploymentHolder.registrationReference.get();
-            registration.close();
+            if (registration != null) {
+                registration.close();
+            } else {
+                log.warnf("Removing moduleId %s from DeploymentRepository: module registration not present!", moduleId);
+            }
             deploymentHolder = null;
         }
     }
@@ -301,7 +308,7 @@ public class DeploymentRepositoryService implements DeploymentRepository, Module
     }
 
     /*
-     * A SuspendableActivity that controls what happens when the server is suspended and resumed.
+     * A SuspendableActivity that controls what happens to deployment registrations when the server is suspended and resumed.
      */
     class ModuleAvailabilityRegistrarSuspendableActivity implements SuspendableActivity {
 
@@ -310,14 +317,19 @@ public class DeploymentRepositoryService implements DeploymentRepository, Module
          * When the server is suspended:
          * - unregister all registered service providers
          * - for each service provider unregistered, callback clients will be notified that the module is no longer available
-         * This also includes the case where the server is being suspended as part pf clean shutdown.
+         * This also includes the case where the server is being suspended as part of clean shutdown.
+         *
+         * IMPORTANT NOTE: This activity must happen in the prepare phase, so that moduleunavailability updates are sent to
+         * connected EJB clients before the suspend phase, when the EjbSuspendHandlerService will block the completion of suspend
+         * to allow active transactions to complete. This prevents the creation of new transactions on a server which is in
+         * the process of shutting down and allows the EjbSuspendHandlerService to permit clean transaction shutdown.
          *
          * @param context the server suspend context
          * @return a completion stage for the ServerSuspendController
          */
         @Override
         public CompletionStage<Void> prepare(ServerSuspendContext context) {
-            log.infof("Preparing for suspend - context: isStarting = %s, isStopping = %s", context.isStarting(), context.isStopping());
+            log.infof("Preparing for suspend: server suspend context: isStarting = %s, isStopping = %s", context.isStarting(), context.isStopping());
 
             // unregister the service providers we have registered
             Map<EJBModuleIdentifier, DeploymentHolder> deployedModules = modules;
@@ -325,8 +337,12 @@ public class DeploymentRepositoryService implements DeploymentRepository, Module
                 DeploymentHolder holder = deployedModules.get(moduleId);
                 ServiceProviderRegistration<EJBModuleIdentifier, GroupMember> registration = holder.registrationReference.get();
                 log.infof("Closing registration for module %s", moduleId);
-                registration.close();
-                holder.registrationReference.set(null);
+                if (registration != null) {
+                    registration.close();
+                    holder.registrationReference.set(null);
+                } else {
+                    log.warnf("Closing registration for module %s: registration is null", moduleId);
+                }
             }
             log.info("Prepared for suspend");
             return SuspendableActivity.COMPLETED;
@@ -340,7 +356,7 @@ public class DeploymentRepositoryService implements DeploymentRepository, Module
          */
         @Override
         public CompletionStage<Void> suspend(ServerSuspendContext context) {
-            log.infof("Suspending - context: isStarting = %s, isStopping = %s", context.isStarting(), context.isStopping());
+            log.infof("Suspending: server suspend context: isStarting = %s, isStopping = %s", context.isStarting(), context.isStopping());
             // available if necessary
             log.info("Suspended");
             suspended = true;
@@ -360,26 +376,35 @@ public class DeploymentRepositoryService implements DeploymentRepository, Module
          */
         @Override
         public CompletionStage<Void> resume(ServerResumeContext context) {
-            log.infof("Resuming - context: isStarting = %s", context.isStarting());
+            log.infof("Resuming: server resume context: isStarting = %s", context.isStarting());
 
+            // we don't need to register deployments if the server is starting
             if (!context.isStarting()) {
-                log.info("Server not starting - performing resume actions");
+                CompletableFuture<Void> result = new CompletableFuture<>();
+                // it is safe to assume no concurrent modifications while server is resuming
+                AtomicInteger count = new AtomicInteger(modules.size());
 
-                // interrogate the deployment repository and register the current deployments
-                Map<EJBModuleIdentifier, DeploymentHolder> deployedModules = modules;
-                // create one service entry for each module
-                for (EJBModuleIdentifier moduleId : deployedModules.keySet()) {
-                    DeploymentHolder holder = deployedModules.get(moduleId);
-                    // only register modules that do not already have a local registration entry
-                    if (holder.registrationReference == null) {
-                        ModuleAvailabilityRegistrarServiceProviderRegistrationListener serviceProviderRegistrationListener = new ModuleAvailabilityRegistrarServiceProviderRegistrationListener(moduleId, listeners);
-                        log.infof("Opening registration for module %s" + moduleId);
-                        ServiceProviderRegistration<EJBModuleIdentifier, GroupMember> registration = serviceRegistrar.register(moduleId, serviceProviderRegistrationListener);
-                        // keep track of registrations
-                        holder.registrationReference.set(registration);
-                    }
+                // iterate through the locally deployed modules and add registrations to the module availability registrar
+                for (EJBModuleIdentifier moduleId : modules.keySet()) {
+                    DeploymentHolder holder = modules.get(moduleId);
+                    ModuleAvailabilityRegistrarServiceProviderRegistrationListener registrationListener = new ModuleAvailabilityRegistrarServiceProviderRegistrationListener(moduleId, listeners);
+                    CompletableFuture.supplyAsync(() -> serviceRegistrar.register(moduleId, registrationListener))
+                            .whenComplete((registration, e) -> {
+                                if (e != null) {
+                                    result.completeExceptionally(e);
+                                } else {
+                                    holder.registrationReference.set(registration);
+                                    if (count.decrementAndGet() == 0) {
+                                        result.complete(null);
+                                    }
+                                }
+                            });
                 }
+                log.info("Resumed");
+                suspended = false;
+                return result;
             }
+
             log.info("Resumed");
             suspended = false;
             return SuspendableActivity.COMPLETED;
