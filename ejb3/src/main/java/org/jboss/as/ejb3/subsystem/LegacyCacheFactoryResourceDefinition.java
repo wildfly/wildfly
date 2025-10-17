@@ -48,6 +48,7 @@ public class LegacyCacheFactoryResourceDefinition extends SimpleResourceDefiniti
 
     LegacyCacheFactoryResourceDefinition() {
         super(new SimpleResourceDefinition.Parameters(PathElement.pathElement(EJB3SubsystemModel.CACHE), EJB3Extension.getResourceDescriptionResolver(EJB3SubsystemModel.CACHE))
+                .setCapabilities(StatefulSessionBeanCacheProviderResourceDefinition.CAPABILITY)
                 .setAddHandler(ADD_HANDLER)
                 .setRemoveHandler(REMOVE_HANDLER)
                 .setRemoveRestartLevel(OperationEntry.Flag.RESTART_RESOURCE_SERVICES));

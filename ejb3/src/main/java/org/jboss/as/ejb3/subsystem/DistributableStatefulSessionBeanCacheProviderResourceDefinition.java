@@ -43,7 +43,7 @@ import org.wildfly.subsystem.service.ServiceInstaller;
  * @author Paul Ferraro
  * @author Richard Achmatowicz
  */
-public class DistributableStatefulSessionBeanCacheProviderResourceDefinition extends StatefulSessionBeanCacheProviderResourceDefinition {
+public class DistributableStatefulSessionBeanCacheProviderResourceDefinition extends StatefulSessionBeanCacheProviderResourceDefinition implements Function<String, ServiceDependency<StatefulSessionBeanCacheProvider>> {
 
     public enum Attribute implements org.jboss.as.clustering.controller.Attribute {
         BEAN_MANAGEMENT(EJB3SubsystemModel.BEAN_MANAGEMENT, ModelType.STRING, CapabilityReferenceRecorder.builder(CAPABILITY, BeanManagementProvider.SERVICE_DESCRIPTOR).build())
@@ -71,8 +71,12 @@ public class DistributableStatefulSessionBeanCacheProviderResourceDefinition ext
 
     @Override
     public ServiceDependency<StatefulSessionBeanCacheProvider> resolve(OperationContext context, ModelNode model) throws OperationFailedException {
-        String provider = Attribute.BEAN_MANAGEMENT.resolveModelAttribute(context, model).asStringOrNull();
-        return ServiceDependency.on(BeanManagementProvider.SERVICE_DESCRIPTOR, provider).map(new Function<>() {
+        return this.apply(Attribute.BEAN_MANAGEMENT.resolveModelAttribute(context, model).asStringOrNull());
+    }
+
+    @Override
+    public ServiceDependency<StatefulSessionBeanCacheProvider> apply(String name) {
+        return ServiceDependency.on(BeanManagementProvider.SERVICE_DESCRIPTOR, name).map(new Function<>() {
             @Override
             public StatefulSessionBeanCacheProvider apply(BeanManagementProvider provider) {
                 return new StatefulSessionBeanCacheProvider() {

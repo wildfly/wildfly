@@ -30,8 +30,7 @@ public class PassivationStoreAdd extends AbstractAddStepHandler {
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
         int initialMaxSize = PassivationStoreResourceDefinition.MAX_SIZE.resolveModelAttribute(context, model).asInt();
         String containerName = PassivationStoreResourceDefinition.CACHE_CONTAINER.resolveModelAttribute(context, model).asString();
-        ModelNode beanCacheNode = PassivationStoreResourceDefinition.BEAN_CACHE.resolveModelAttribute(context, model);
-        String cacheName = beanCacheNode.isDefined() ? beanCacheNode.asString() : null;
+        String cacheName = PassivationStoreResourceDefinition.BEAN_CACHE.resolveModelAttribute(context, model).asStringOrNull();
         this.install(context, operation, initialMaxSize, containerName, cacheName);
     }
 
@@ -54,6 +53,6 @@ public class PassivationStoreAdd extends AbstractAddStepHandler {
         };
         ServiceInstaller.builder(LEGACY_PROVIDER_FACTORY.createBeanManagementProvider(context.getCurrentAddressValue(), config))
                 .provides(ServiceNameFactory.resolveServiceName(BeanManagementProvider.SERVICE_DESCRIPTOR, context.getCurrentAddressValue()))
-                .build();
+                .build().install(context);
     }
 }
