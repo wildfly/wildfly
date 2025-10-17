@@ -15,9 +15,9 @@ import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.test.clustering.ejb.RemoteEJBDirectory;
 import org.jboss.as.test.clustering.single.ejb.bean.Incrementor;
-import org.jboss.as.test.clustering.single.ejb.bean.IncrementorBean;
 import org.jboss.as.test.clustering.single.ejb.bean.Result;
 import org.jboss.as.test.clustering.single.ejb.bean.StatefulIncrementorBean;
+import org.jboss.as.test.clustering.single.ejb.bean.TransientStatefulIncrementorBean;
 import org.jboss.as.test.clustering.ejb.EJBDirectory;
 import org.jboss.as.test.shared.ManagementServerSetupTask;
 import org.jboss.dmr.ModelNode;
@@ -43,7 +43,7 @@ public class DistributableEjbSubsystemLegacyOperationTestCase {
     @Deployment(testable = false)
     public static Archive<?> deployment() {
         JavaArchive jar = ShrinkWrap.create(JavaArchive.class, APPLICATION_NAME);
-        jar.addClasses(Result.class, Incrementor.class, IncrementorBean.class, StatefulIncrementorBean.class);
+        jar.addPackage(Incrementor.class.getPackage());
         return jar;
     }
 
@@ -58,14 +58,19 @@ public class DistributableEjbSubsystemLegacyOperationTestCase {
 
         // lookup the deployed stateful session bean
         try (EJBDirectory directory = new RemoteEJBDirectory(MODULE_NAME)) {
-            Incrementor bean = directory.lookupStateful(StatefulIncrementorBean.class, Incrementor.class);
+            validate(directory, StatefulIncrementorBean.class);
+            validate(directory, TransientStatefulIncrementorBean.class);
+        }
+    }
 
-            // invoke on the bean to check that state is maintained using legacy cache support
-            for (int i = 1; i <= 5; i++) {
-                Result<Integer> invResult = bean.increment();
+    private static void validate(EJBDirectory directory, Class<? extends Incrementor> beanClass) throws Exception {
+        Incrementor bean = directory.lookupStateful(beanClass, Incrementor.class);
 
-                Assert.assertEquals(i, invResult.getValue().intValue());
-            }
+        // invoke on the bean to check that state is maintained using legacy cache support
+        for (int i = 1; i <= 5; i++) {
+            Result<Integer> invResult = bean.increment();
+
+            Assert.assertEquals(i, invResult.getValue().intValue());
         }
     }
 
@@ -92,7 +97,7 @@ public class DistributableEjbSubsystemLegacyOperationTestCase {
                             .add("/subsystem=ejb3/passivation-store=infinispan:add(cache-container=ejb, max-size=10000")
                             .add("/subsystem=ejb3/cache=legacy-distributable:add(passivation-store=infinispan,aliases=[passivating,clustered])")
                             // update cache defaults, now to legacy caches
-                            .add("/subsystem=ejb3:write-attribute(name=default-sfsb-cache, value=legacy-simple")
+                            .add("/subsystem=ejb3:write-attribute(name=default-sfsb-cache, value=legacy-distributable")
                             .add("/subsystem=ejb3:write-attribute(name=default-sfsb-passivation-disabled-cache, value=legacy-simple")
                             // remove non-legacy caches
                             .add("/subsystem=ejb3/simple-cache=simple:remove(){allow-resource-service-restart=true}")
