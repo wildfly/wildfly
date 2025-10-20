@@ -107,16 +107,16 @@ jobs:
         with:
           name: ${{ inputs.maven-repo-name }}
           path: .
-      - name: Extract Maven Repo
-        shell: bash
-        run: |
-         tar -xzf ${{ inputs.maven-repo-path }} -C ~
       - name: Set up JDK ${{ matrix.java }}
         uses: actions/setup-java@v5
         with:
           java-version: ${{ matrix.java }}
           distribution: 'temurin'
           cache: 'maven'
+      - name: Extract Maven Repo
+        shell: bash
+        run: |
+         tar -xzf ${{ inputs.maven-repo-path }} -C ~
       - name: Build and Test WildFly SNAPSHOT ${{ inputs.build-arguments }}  ${{ inputs.test-arguments }}
         run: JAVA_HOME=$JAVA_HOME_${{ matrix.java }}_${{ runner.arch }} mvn -U -B -ntp clean install ${{ inputs.build-arguments }} ${{ inputs.test-arguments }}
         shell: bash
