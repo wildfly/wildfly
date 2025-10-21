@@ -44,9 +44,10 @@ public class JaxrsExtension extends SubsystemExtension<JaxrsSubsystemSchema> {
     enum JaxrsSubsystemModel implements SubsystemModel {
         VERSION_4_0_0(ModelVersion.create(4, 0, 0)),
         VERSION_5_0_0(ModelVersion.create(5, 0, 0)),
+        VERSION_6_0_0(ModelVersion.create(6, 0, 0)),
         ;
 
-        static final JaxrsSubsystemModel CURRENT = VERSION_5_0_0;
+        static final JaxrsSubsystemModel CURRENT = VERSION_6_0_0;
         private final ModelVersion version;
 
         JaxrsSubsystemModel(final ModelVersion version) {
