@@ -3,7 +3,7 @@
   ~ SPDX-License-Identifier: Apache-2.0
   -->
 
-<subsystem xmlns="urn:jboss:domain:jaxrs:5.0">
+<subsystem xmlns="urn:jboss:domain:jaxrs:4.0">
     <jaxrs-2-0-request-matching>true</jaxrs-2-0-request-matching>
     <resteasy-add-charset>false</resteasy-add-charset>
     <resteasy-buffer-exception-entity>false</resteasy-buffer-exception-entity>

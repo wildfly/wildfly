@@ -24,30 +24,30 @@ import org.junit.Test;
 /**
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
-public class JaxrsSubsystem40TestCase extends AbstractSubsystemBaseTest {
+public class JaxrsSubsystem50TestCase extends AbstractSubsystemBaseTest {
 
-    public JaxrsSubsystem40TestCase() {
+    public JaxrsSubsystem50TestCase() {
         super(JaxrsExtension.SUBSYSTEM_NAME, new JaxrsExtension());
     }
 
     @Override
     protected String getSubsystemXml() throws IOException {
-        return readResource("jaxrs-4.0.xml");
+        return readResource("jaxrs.xml");
     }
 
     @Override
     protected String getSubsystemXsdPath() {
-        return "schema/jboss-as-jaxrs_4_0.xsd";
+        return "schema/jboss-as-jaxrs_5_0.xsd";
     }
 
     @Override
     public void testSubsystem() throws Exception {
-        standardSubsystemTest(null, false);
+        standardSubsystemTest(null);
     }
 
     @Test
     public void testExpressions() throws Exception {
-        standardSubsystemTest("jaxrs-expressions-4.0.xml", false);
+        standardSubsystemTest("jaxrs-expressions.xml");
     }
 
     @Test
@@ -82,7 +82,7 @@ public class JaxrsSubsystem40TestCase extends AbstractSubsystemBaseTest {
         assertTrue(kernelServices.isSuccessfulBoot());
         assertTrue(kernelServices.getLegacyServices(subsystemModelVersion).isSuccessfulBoot());
 
-        List<ModelNode> operations = builder.parseXmlResource("jaxrs-4.0.xml");
+        List<ModelNode> operations = builder.parseXmlResource("jaxrs.xml");
         ModelTestUtils.checkFailedTransformedBootOperations(kernelServices, subsystemModelVersion, operations, transformationConfig);
     }
 
@@ -98,7 +98,7 @@ public class JaxrsSubsystem40TestCase extends AbstractSubsystemBaseTest {
         assertTrue(kernelServices.isSuccessfulBoot());
         assertTrue(kernelServices.getLegacyServices(subsystemModelVersion).isSuccessfulBoot());
 
-        List<ModelNode> operations = builder.parseXmlResource("jaxrs-4.0.xml");
+        List<ModelNode> operations = builder.parseXmlResource("jaxrs.xml");
         ModelTestUtils.checkFailedTransformedBootOperations(kernelServices, subsystemModelVersion, operations, transformationConfig);
     }
 }
