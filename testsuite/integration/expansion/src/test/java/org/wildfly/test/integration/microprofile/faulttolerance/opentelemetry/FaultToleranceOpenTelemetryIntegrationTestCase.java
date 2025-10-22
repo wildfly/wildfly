@@ -49,8 +49,8 @@ public class FaultToleranceOpenTelemetryIntegrationTestCase {
     protected OpenTelemetryCollectorContainer otelCollector;
 
     private static final String MP_CONFIG = "otel.sdk.disabled=false\n" +
-            // Lower the interval from 60 seconds to 100 millis
-            "otel.metric.export.interval=100";
+            // Lower the interval from 60 seconds to 2 seconds
+            "otel.metric.export.interval=2000";
 
     @Deployment(testable = false)
     public static Archive<?> deploy() {
