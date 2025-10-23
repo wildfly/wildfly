@@ -33,10 +33,11 @@ public class ResteasyExtensionTransformerRegistration implements ExtensionTransf
     public void registerTransformers(final SubsystemTransformerRegistration subsystemRegistration) {
         ChainedTransformationDescriptionBuilder builder = TransformationDescriptionBuilder.Factory.createChainedSubystemInstance(subsystemRegistration.getCurrentSubsystemVersion());
 
-        registerV4Transformers(builder.createBuilder(JaxrsSubsystemModel.CURRENT.getVersion(), JaxrsSubsystemModel.VERSION_4_0_0.getVersion()));
+        registerV5Transformers(builder.createBuilder(JaxrsSubsystemModel.CURRENT.getVersion(), JaxrsSubsystemModel.VERSION_5_0_0.getVersion()));
+        registerV4Transformers(builder.createBuilder(JaxrsSubsystemModel.VERSION_5_0_0.getVersion(), JaxrsSubsystemModel.VERSION_4_0_0.getVersion()));
         registerV3Transformers(builder.createBuilder(JaxrsSubsystemModel.VERSION_4_0_0.getVersion(), VERSION_3_0_0));
 
-        builder.buildAndRegister(subsystemRegistration, new ModelVersion[] {VERSION_3_0_0, JaxrsSubsystemModel.VERSION_4_0_0.getVersion(), JaxrsSubsystemModel.CURRENT.getVersion()});
+        builder.buildAndRegister(subsystemRegistration, new ModelVersion[] {VERSION_3_0_0, JaxrsSubsystemModel.VERSION_4_0_0.getVersion(),  JaxrsSubsystemModel.VERSION_5_0_0.getVersion(), JaxrsSubsystemModel.CURRENT.getVersion()});
     }
 
     private static void registerV3Transformers(ResourceTransformationDescriptionBuilder subsystem) {
@@ -49,5 +50,15 @@ public class ResteasyExtensionTransformerRegistration implements ExtensionTransf
         subsystem.getAttributeBuilder()
                 .setDiscard(DiscardAttributeChecker.DEFAULT_VALUE, JaxrsAttribute.RESTEASY_PATCHFILTER_DISABLED)
                 .addRejectCheck(RejectAttributeChecker.DEFINED, JaxrsAttribute.RESTEASY_PATCHFILTER_DISABLED);
+    }
+
+    private static void registerV5Transformers(ResourceTransformationDescriptionBuilder subsystem) {
+        subsystem.getAttributeBuilder()
+                .setDiscard(DiscardAttributeChecker.DEFAULT_VALUE,
+                        JaxrsAttribute.RESTEASY_ORIGINAL_WEBAPPLICATIONEXCEPTION_BEHAVIOR
+                )
+                .addRejectCheck(RejectAttributeChecker.DEFINED,
+                        JaxrsAttribute.RESTEASY_ORIGINAL_WEBAPPLICATIONEXCEPTION_BEHAVIOR
+                );
     }
 }
