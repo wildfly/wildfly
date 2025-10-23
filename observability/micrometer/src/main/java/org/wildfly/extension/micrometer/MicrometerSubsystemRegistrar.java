@@ -71,7 +71,7 @@ import org.wildfly.subsystem.service.ServiceInstaller;
 public class MicrometerSubsystemRegistrar implements SubsystemResourceDefinitionRegistrar, ResourceServiceConfigurator {
     private static final String MICROMETER_MODULE = "org.wildfly.extension.micrometer";
     private static final String MICROMETER_API_MODULE = "org.wildfly.micrometer.deployment";
-    private static final String CAPABILITY_NAME_METRICS = "org.wildfly.extension.metrics.scan";
+    private static final String CAPABILITY_NAME_METRICS = "org.wildfly.extension.metrics.registry";
     private static final String CAPABILITY_NAME_OPENTELEMETRY = "org.wildfly.extension.opentelemetry";
 
     public static final PathElement SUBSYSTEM_PATH = SubsystemResourceDefinitionRegistrar.pathElement(MicrometerConfigurationConstants.NAME);
