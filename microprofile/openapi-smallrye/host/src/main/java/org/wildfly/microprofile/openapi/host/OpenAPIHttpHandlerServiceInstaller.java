@@ -14,7 +14,7 @@ import io.undertow.server.HttpHandler;
 
 import org.jboss.as.controller.RequirementServiceTarget;
 import org.jboss.msc.service.ServiceController;
-import org.wildfly.microprofile.openapi.OpenAPIProvider;
+import org.wildfly.microprofile.openapi.OpenAPIModelProvider;
 import org.wildfly.extension.undertow.Host;
 import org.wildfly.microprofile.openapi.OpenAPIModelConfiguration;
 import org.wildfly.subsystem.service.ServiceDependency;
@@ -40,12 +40,12 @@ public class OpenAPIHttpHandlerServiceInstaller implements ServiceInstaller {
         String path = this.configuration.getPath();
         OpenApiConfig configuration = this.configuration.getOpenApiConfig();
         ServiceDependency<Host> host = ServiceDependency.on(Host.SERVICE_DESCRIPTOR, serverName, hostName);
-        ServiceDependency<OpenAPIProvider> provider = ServiceDependency.on(OpenAPIProvider.SERVICE_DESCRIPTOR, serverName, hostName, modelName);
+        ServiceDependency<OpenAPIModelProvider> provider = ServiceDependency.on(OpenAPIModelProvider.SERVICE_DESCRIPTOR, serverName, hostName, modelName);
 
         Supplier<HttpHandler> factory = new Supplier<>() {
             @Override
             public HttpHandler get() {
-                return new OpenAPIHttpHandler(provider.get(), configuration);
+                return new OpenAPIHttpHandler(() -> provider.get().getModel(), configuration);
             }
         };
         Consumer<HttpHandler> start = new Consumer<>() {

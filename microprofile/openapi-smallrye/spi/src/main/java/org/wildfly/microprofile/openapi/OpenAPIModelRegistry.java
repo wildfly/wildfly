@@ -14,8 +14,8 @@ import org.wildfly.service.descriptor.BinaryServiceDescriptor;
  * A registry of OpenAPI models.
  * @author Paul Ferraro
  */
-public interface OpenAPIRegistry {
-    BinaryServiceDescriptor<OpenAPIRegistry> SERVICE_DESCRIPTOR = BinaryServiceDescriptor.of("org.wildfly.open-api.model-registry", OpenAPIRegistry.class);
+public interface OpenAPIModelRegistry {
+    BinaryServiceDescriptor<OpenAPIModelRegistry> SERVICE_DESCRIPTOR = BinaryServiceDescriptor.of("org.wildfly.open-api.model-registry", OpenAPIModelRegistry.class);
 
     interface Registration extends AutoCloseable {
         @Override

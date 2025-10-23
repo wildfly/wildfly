@@ -5,7 +5,11 @@
 
 package org.wildfly.test.integration.microprofile.openapi;
 
+import static org.hamcrest.MatcherAssert.*;
+import static org.hamcrest.Matchers.*;
+
 import java.io.IOException;
+import java.io.StringWriter;
 import java.net.HttpURLConnection;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -14,9 +18,11 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.net.http.HttpResponse.BodyHandlers;
 import java.nio.charset.StandardCharsets;
-import java.util.LinkedList;
 import java.util.List;
+import java.util.Properties;
 
+import org.eclipse.microprofile.openapi.OASConfig;
+import org.jboss.arquillian.container.test.api.Deployer;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
@@ -26,12 +32,11 @@ import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.test.shared.ManagementServerSetupTask;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.asset.EmptyAsset;
+import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.wildfly.test.integration.microprofile.openapi.service.TestApplication;
+import org.wildfly.test.integration.microprofile.openapi.filter.TestModelReader;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -53,56 +58,153 @@ public class OpenAPIMultipleDeploymentTestCase {
         return deployment(DEPLOYMENT1_NAME);
     }
 
-    @Deployment(name = DEPLOYMENT2_NAME, testable = false)
+    @Deployment(name = DEPLOYMENT2_NAME, testable = false, managed = false)
     public static Archive<?> deployment2() {
         return deployment(DEPLOYMENT2_NAME);
     }
 
     private static Archive<?> deployment(String deploymentName) {
-        return ShrinkWrap.create(WebArchive.class, deploymentName + ".war")
-                .add(EmptyAsset.INSTANCE, "WEB-INF/beans.xml")
-                .addPackage(TestApplication.class.getPackage())
-                .setWebXML(TestApplication.class.getPackage(), "web.xml")
-                ;
+        Properties properties = new Properties();
+        properties.setProperty(OASConfig.MODEL_READER, TestModelReader.class.getName());
+        properties.setProperty(TestModelReader.CALLBACK_PATH_DESCRIPTION, "Callback description for " + deploymentName);
+        properties.setProperty(TestModelReader.EXAMPLE_SUMMARY, "Example summary for " + deploymentName);
+        properties.setProperty(TestModelReader.HEADER_DESCRIPTION, "Header description for " + deploymentName);
+        properties.setProperty(TestModelReader.LINK_DESCRIPTION, "Link description: " + deploymentName);
+        properties.setProperty(TestModelReader.PARAMETER_DESCRIPTION, "Parameter description for " + deploymentName);
+        properties.setProperty(TestModelReader.PATH_ITEM_DESCRIPTION, "Path item description for " + deploymentName);
+        properties.setProperty(TestModelReader.REQUEST_BODY_DESCRIPTION, "Request body description for " + deploymentName);
+        properties.setProperty(TestModelReader.RESPONSE_DESCRIPTION, "Response description for " + deploymentName);
+        properties.setProperty(TestModelReader.SCHEMA_DESCRIPTION, "Schema description for " + deploymentName);
+        properties.setProperty(TestModelReader.SECURITY_SCHEME_DESCRIPTION, "Security scheme description for " + deploymentName);
+        properties.setProperty(TestModelReader.EXTERNAL_DOCUMENTATION_DESCRIPTION, "External documentation description for " + deploymentName);
+        properties.setProperty(TestModelReader.EXTERNAL_DOCUMENTATION_URL, "External documentation description for " + deploymentName);
+        properties.setProperty(TestModelReader.INFO_CONTACT_EMAIL, "Contact email for " + deploymentName);
+        properties.setProperty(TestModelReader.INFO_CONTACT_NAME, "Contact name for " + deploymentName);
+        properties.setProperty(TestModelReader.INFO_CONTACT_URL, "Contact url for " + deploymentName);
+        properties.setProperty(TestModelReader.INFO_DESCRIPTION, "Description for " + deploymentName);
+        properties.setProperty(TestModelReader.INFO_LICENSE_IDENTIFIER, "License identifier for " + deploymentName);
+        properties.setProperty(TestModelReader.INFO_LICENSE_NAME, "License name for " + deploymentName);
+        properties.setProperty(TestModelReader.INFO_LICENSE_URL, "License url for " + deploymentName);
+        properties.setProperty(TestModelReader.INFO_SUMMARY, "Summary for " + deploymentName);
+        properties.setProperty(TestModelReader.INFO_TERMS_OF_SERVICE, "Terms of service for " + deploymentName);
+        properties.setProperty(TestModelReader.INFO_TITLE, "Title for " + deploymentName);
+        properties.setProperty(TestModelReader.INFO_VERSION, "Version for " + deploymentName);
+        try (StringWriter writer = new StringWriter()) {
+            properties.store(writer, null);
+            return ShrinkWrap.create(WebArchive.class, deploymentName + ".war")
+                    .addPackage(TestModelReader.class.getPackage())
+                    .addAsManifestResource(new StringAsset(writer.toString()), "microprofile-config.properties")
+                    ;
+        } catch (IOException e) {
+            throw new IllegalStateException(e);
+        }
     }
+
+    @OperateOnDeployment(DEPLOYMENT1_NAME)
+    @ArquillianResource
+    private URL baseURL;
+
+    @ArquillianResource
+    private Deployer deployer;
 
     @Test
-    public void test(@ArquillianResource @OperateOnDeployment(DEPLOYMENT1_NAME) URL baseURL) throws IOException, URISyntaxException, InterruptedException {
+    public void test() throws IOException, URISyntaxException, InterruptedException {
         HttpClient client = HttpClient.newHttpClient();
-        HttpResponse<String> response = client.send(HttpRequest.newBuilder(baseURL.toURI().resolve("/openapi")).GET().build(), BodyHandlers.ofString(StandardCharsets.UTF_8));
-        Assert.assertEquals(HttpURLConnection.HTTP_OK, response.statusCode());
-        Assert.assertEquals("application/yaml", response.headers().firstValue("Content-Type").orElse(null));
-        List<String> urls = validateContent(response.body());
-        // Ensure relative urls are valid
-        for (String url : urls) {
-            response = client.send(HttpRequest.newBuilder(baseURL.toURI().resolve(url + "/test/echo/foo")).GET().build(), BodyHandlers.ofString(StandardCharsets.UTF_8));
-            Assert.assertEquals(HttpURLConnection.HTTP_OK, response.statusCode());
-            Assert.assertEquals("foo", response.body());
+        JsonNode model = this.read(client);
+        // OpenAPI model should look normal
+        verifySingletonProperties(model, DEPLOYMENT1_NAME);
+        verifyDeploymentProperties(model, DEPLOYMENT1_NAME, "");
+        this.deployer.deploy(DEPLOYMENT2_NAME);
+        try {
+            model = this.read(client);
+            // Verify use of host-specific properties
+            verifySingletonProperties(model, "host");
+            for (String deploymentName : List.of(DEPLOYMENT1_NAME, DEPLOYMENT2_NAME)) {
+                // Verify deployment-specific components and references
+                verifyDeploymentProperties(model, deploymentName, deploymentName + "-");
+            }
+        } finally {
+            this.deployer.undeploy(DEPLOYMENT2_NAME);
         }
+        model = this.read(client);
+        // Verify model is back to normal
+        verifySingletonProperties(model, DEPLOYMENT1_NAME);
+        verifyDeploymentProperties(model, DEPLOYMENT1_NAME, "");
     }
 
-    private static List<String> validateContent(String body) throws IOException {
-        JsonNode node = new ObjectMapper(new YAMLFactory()).reader().readTree(body);
-        JsonNode info = node.get("info");
-        Assert.assertNotNull(body, info);
-        // Info will originate from deployment model, as this is the same per deployment
-        Assert.assertEquals(body, "Test application", info.get("title").asText());
-        Assert.assertEquals(body, "This is my test application description", info.get("description").asText());
+    private JsonNode read(HttpClient client) throws IOException, InterruptedException, URISyntaxException {
+        HttpResponse<String> response = client.send(HttpRequest.newBuilder(this.baseURL.toURI().resolve("/openapi")).GET().build(), BodyHandlers.ofString(StandardCharsets.UTF_8));
+        assertThat(response.statusCode(), equalTo(HttpURLConnection.HTTP_OK));
+        assertThat(response.headers().firstValue("Content-Type").orElse(null), equalTo("application/yaml"));
+        return new ObjectMapper(new YAMLFactory()).reader().readTree(response.body());
+    }
 
-        JsonNode externalDocumentation = node.get("externalDocs");
-        Assert.assertNotNull(body, externalDocumentation);
-        // External documentation will originate from system property, as this is not specified deployment models
-        Assert.assertEquals(body, "wildfly.org", externalDocumentation.get("url").asText());
+    private static void verifySingletonProperties(JsonNode model, String suffix) {
+        assertThat(model.required("externalDocs").required("description").asText(), endsWith(suffix));
+        assertThat(model.required("externalDocs").required("url").asText(), endsWith(suffix));
+        assertThat(model.required("info").required("contact").required("email").asText(), endsWith(suffix));
+        assertThat(model.required("info").required("contact").required("name").asText(), endsWith(suffix));
+        assertThat(model.required("info").required("contact").required("url").asText(), endsWith(suffix));
+        assertThat(model.required("info").required("description").asText(), endsWith(suffix));
+        assertThat(model.required("info").required("license").required("identifier").asText(), endsWith(suffix));
+        assertThat(model.required("info").required("license").required("name").asText(), endsWith(suffix));
+        assertThat(model.required("info").required("license").required("url").asText(), endsWith(suffix));
+        assertThat(model.required("info").required("summary").asText(), endsWith(suffix));
+        assertThat(model.required("info").required("termsOfService").asText(), endsWith(suffix));
+        assertThat(model.required("info").required("title").asText(), endsWith(suffix));
+        assertThat(model.required("info").required("version").asText(), endsWith(suffix));
+    }
 
-        List<String> result = new LinkedList<>();
-        JsonNode servers = node.get("servers");
-        if (servers != null) {
-            for (JsonNode server : servers) {
-                result.add(server.required("url").asText());
-            }
-            Assert.assertFalse(result.isEmpty());
-        }
-        return result;
+    private static void verifyDeploymentProperties(JsonNode model, String deploymentName, String deploymentPrefix) {
+        String callback = deploymentPrefix + "callback";
+        String callbackRef = deploymentPrefix + "callbackRef";
+        String example = deploymentPrefix + "example";
+        String exampleRef = deploymentPrefix + "exampleRef";
+        String header = deploymentPrefix + "header";
+        String headerRef = deploymentPrefix + "headerRef";
+        String link = deploymentPrefix + "link";
+        String linkRef = deploymentPrefix + "linkRef";
+        String parameter = deploymentPrefix + "parameter";
+        String parameterRef = deploymentPrefix + "parameterRef";
+        String pathItem = deploymentPrefix + "path";
+        String pathItemRef = deploymentPrefix + "pathRef";
+        String requestBody = deploymentPrefix + "requestBody";
+        String requestBodyRef = deploymentPrefix + "requestBodyRef";
+        String response = deploymentPrefix + "response";
+        String responseRef = deploymentPrefix + "responseRef";
+        String schema = deploymentPrefix + "schema";
+        String schemaRef = deploymentPrefix + "schemaRef";
+        String securityScheme = deploymentPrefix + "securityScheme";
+        String securitySchemeRef = deploymentPrefix + "securitySchemeRef";
+        assertThat(model.required("components").required("callbacks").required(callback).required("callback-path").required("description").asText(), endsWith(deploymentName));
+        assertThat(model.required("components").required("callbacks").required(callbackRef).required("$ref").asText(), equalTo("#/components/callbacks/" + callback));
+        assertThat(model.required("components").required("examples").required(example).required("summary").asText(), endsWith(deploymentName));
+        assertThat(model.required("components").required("examples").required(exampleRef).required("$ref").asText(), equalTo("#/components/examples/" + example));
+        assertThat(model.required("components").required("headers").required(header).required("description").asText(), endsWith(deploymentName));
+        assertThat(model.required("components").required("headers").required(headerRef).required("$ref").asText(), equalTo("#/components/headers/" + header));
+        assertThat(model.required("components").required("links").required(link).required("description").asText(), endsWith(deploymentName));
+        assertThat(model.required("components").required("links").required(linkRef).required("$ref").asText(), equalTo("#/components/links/" + link));
+        assertThat(model.required("components").required("parameters").required(parameter).required("description").asText(), endsWith(deploymentName));
+        assertThat(model.required("components").required("parameters").required(parameterRef).required("$ref").asText(), equalTo("#/components/parameters/" + parameter));
+        assertThat(model.required("components").required("pathItems").required(pathItem).required("description").asText(), endsWith(deploymentName));
+        assertThat(model.required("components").required("pathItems").required(pathItemRef).required("$ref").asText(), equalTo("#/components/pathItems/" + pathItem));
+        assertThat(model.required("components").required("requestBodies").required(requestBody).required("description").asText(), endsWith(deploymentName));
+        assertThat(model.required("components").required("requestBodies").required(requestBodyRef).required("$ref").asText(), equalTo("#/components/requestBodies/" + requestBody));
+        assertThat(model.required("components").required("responses").required(response).required("description").asText(), endsWith(deploymentName));
+        assertThat(model.required("components").required("responses").required(responseRef).required("$ref").asText(), equalTo("#/components/responses/" + response));
+        assertThat(model.required("components").required("schemas").required(schema).required("description").asText(), endsWith(deploymentName));
+        assertThat(model.required("components").required("schemas").required(schemaRef).required("$ref").asText(), equalTo("#/components/schemas/" + schema));
+        assertThat(model.required("components").required("securitySchemes").required(securityScheme).required("description").asText(), endsWith(deploymentName));
+        assertThat(model.required("components").required("securitySchemes").required(securitySchemeRef).required("$ref").asText(), equalTo("#/components/securitySchemes/" + securityScheme));
+        assertThat(model.required("paths").required(String.format("/%s/path", deploymentName)).required("get").required("callbacks").required("operation-callback").required("$ref").asText(), equalTo("#/components/callbacks/" + callback));
+        assertThat(model.required("paths").required(String.format("/%s/path", deploymentName)).required("get").required("parameters").required(0).required("$ref").asText(), equalTo("#/components/parameters/" + parameter));
+        assertThat(model.required("paths").required(String.format("/%s/path", deploymentName)).required("get").required("requestBody").required("$ref").asText(), equalTo("#/components/requestBodies/" + requestBody));
+        assertThat(model.required("paths").required(String.format("/%s/path", deploymentName)).required("get").required("responses").required("operation-response-ref").required("$ref").asText(), equalTo("#/components/responses/" + response));
+        assertThat(model.required("paths").required(String.format("/%s/path", deploymentName)).required("get").required("responses").required("operation-response").required("content").required("media-type").required("examples").required("media-type-example").required("$ref").asText(), equalTo("#/components/examples/" + example));
+        assertThat(model.required("paths").required(String.format("/%s/path", deploymentName)).required("get").required("responses").required("operation-response").required("content").required("media-type").required("schema").required("$ref").asText(), equalTo("#/components/schemas/" + schema));
+        assertThat(model.required("paths").required(String.format("/%s/path", deploymentName)).required("get").required("responses").required("operation-response").required("headers").required("response-header").required("$ref").asText(), equalTo("#/components/headers/" + header));
+        assertThat(model.required("paths").required(String.format("/%s/path", deploymentName)).required("get").required("responses").required("operation-response").required("links").required("response-link").required("$ref").asText(), equalTo("#/components/links/" + link));
+        assertThat(model.required("paths").required(String.format("/%s/path-ref", deploymentName)).required("$ref").asText(), equalTo("#/components/pathItems/" + pathItem));
     }
 
     public static class ConfigServerSetupTask extends ManagementServerSetupTask {
@@ -110,10 +212,36 @@ public class OpenAPIMultipleDeploymentTestCase {
         public ConfigServerSetupTask() {
             super(createContainerConfigurationBuilder()
                     .setupScript(createScriptBuilder()
-                            .add("/system-property=mp.openapi.extensions.server.default-server.host.default-host.externalDocs.url:add(value=wildfly.org)")
+                            .add("/system-property=mp.openapi.extensions.server.default-server.host.default-host.externalDocs.description:add(value=External documentation description for host)")
+                            .add("/system-property=mp.openapi.extensions.server.default-server.host.default-host.externalDocs.url:add(value=External documentation url for host)")
+                            .add("/system-property=mp.openapi.extensions.server.default-server.host.default-host.info.contact.email:add(value=Contact email for host)")
+                            .add("/system-property=mp.openapi.extensions.server.default-server.host.default-host.info.contact.name:add(value=Contact name for host)")
+                            .add("/system-property=mp.openapi.extensions.server.default-server.host.default-host.info.contact.url:add(value=Contact url for host)")
+                            .add("/system-property=mp.openapi.extensions.server.default-server.host.default-host.info.description:add(value=Description for host)")
+                            .add("/system-property=mp.openapi.extensions.server.default-server.host.default-host.info.license.identifier:add(value=License identifier for host)")
+                            .add("/system-property=mp.openapi.extensions.server.default-server.host.default-host.info.license.name:add(value=License name for host)")
+                            .add("/system-property=mp.openapi.extensions.server.default-server.host.default-host.info.license.url:add(value=License url for host)")
+                            .add("/system-property=mp.openapi.extensions.server.default-server.host.default-host.info.summary:add(value=Summary for host)")
+                            .add("/system-property=mp.openapi.extensions.server.default-server.host.default-host.info.termsOfService:add(value=Terms of service for host)")
+                            .add("/system-property=mp.openapi.extensions.server.default-server.host.default-host.info.title:add(value=Title for host)")
+                            .add("/system-property=mp.openapi.extensions.server.default-server.host.default-host.info.version:add(value=Version for host)")
+                            .add("/system-property=mp.openapi.extensions.server.default-server.host.default-host.component-key-format:add(value=%1\\$s-%2\\$s)")
                             .build())
                     .tearDownScript(createScriptBuilder()
+                            .add("/system-property=mp.openapi.extensions.server.default-server.host.default-host.externalDocs.description:remove")
                             .add("/system-property=mp.openapi.extensions.server.default-server.host.default-host.externalDocs.url:remove")
+                            .add("/system-property=mp.openapi.extensions.server.default-server.host.default-host.info.contact.email:remove")
+                            .add("/system-property=mp.openapi.extensions.server.default-server.host.default-host.info.contact.name:remove")
+                            .add("/system-property=mp.openapi.extensions.server.default-server.host.default-host.info.contact.url:remove")
+                            .add("/system-property=mp.openapi.extensions.server.default-server.host.default-host.info.description:remove")
+                            .add("/system-property=mp.openapi.extensions.server.default-server.host.default-host.info.license.identifier:remove")
+                            .add("/system-property=mp.openapi.extensions.server.default-server.host.default-host.info.license.name:remove")
+                            .add("/system-property=mp.openapi.extensions.server.default-server.host.default-host.info.license.url:remove")
+                            .add("/system-property=mp.openapi.extensions.server.default-server.host.default-host.info.summary:remove")
+                            .add("/system-property=mp.openapi.extensions.server.default-server.host.default-host.info.termsOfService:remove")
+                            .add("/system-property=mp.openapi.extensions.server.default-server.host.default-host.info.title:remove")
+                            .add("/system-property=mp.openapi.extensions.server.default-server.host.default-host.info.version:remove")
+                            .add("/system-property=mp.openapi.extensions.server.default-server.host.default-host.component-key-format:remove")
                             .build())
                     .build());
         }

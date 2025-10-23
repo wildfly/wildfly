@@ -9,6 +9,7 @@ import static org.wildfly.extension.microprofile.openapi.logging.MicroProfileOpe
 
 import java.net.InetAddress;
 import java.net.MalformedURLException;
+import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -18,6 +19,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -31,10 +33,23 @@ import io.undertow.servlet.api.DeploymentInfo;
 import org.eclipse.microprofile.config.Config;
 import org.eclipse.microprofile.openapi.OASFactory;
 import org.eclipse.microprofile.openapi.OASFilter;
+import org.eclipse.microprofile.openapi.models.Components;
 import org.eclipse.microprofile.openapi.models.OpenAPI;
 import org.eclipse.microprofile.openapi.models.PathItem;
 import org.eclipse.microprofile.openapi.models.Paths;
+import org.eclipse.microprofile.openapi.models.Reference;
+import org.eclipse.microprofile.openapi.models.callbacks.Callback;
+import org.eclipse.microprofile.openapi.models.examples.Example;
+import org.eclipse.microprofile.openapi.models.headers.Header;
 import org.eclipse.microprofile.openapi.models.info.Info;
+import org.eclipse.microprofile.openapi.models.links.Link;
+import org.eclipse.microprofile.openapi.models.media.Content;
+import org.eclipse.microprofile.openapi.models.media.MediaType;
+import org.eclipse.microprofile.openapi.models.media.Schema;
+import org.eclipse.microprofile.openapi.models.parameters.Parameter;
+import org.eclipse.microprofile.openapi.models.parameters.RequestBody;
+import org.eclipse.microprofile.openapi.models.responses.APIResponse;
+import org.eclipse.microprofile.openapi.models.security.SecurityScheme;
 import org.eclipse.microprofile.openapi.models.servers.Server;
 import org.jboss.as.network.ClientMapping;
 import org.jboss.as.network.SocketBinding;
@@ -52,7 +67,7 @@ import org.wildfly.extension.undertow.Host;
 import org.wildfly.extension.undertow.UndertowListener;
 import org.wildfly.extension.undertow.UndertowService;
 import org.wildfly.extension.undertow.deployment.UndertowDeploymentInfoService;
-import org.wildfly.microprofile.openapi.OpenAPIProvider;
+import org.wildfly.microprofile.openapi.OpenAPIModelProvider;
 import org.wildfly.security.manager.WildFlySecurityManager;
 import org.wildfly.service.Installer.StartWhen;
 import org.wildfly.subsystem.service.DeploymentServiceInstaller;
@@ -98,11 +113,11 @@ public class DeploymentOpenAPIProviderServiceInstaller implements DeploymentServ
         OpenApiConfig openAPIConfig = this.configuration.getOpenApiConfig();
 
         ServiceDependency<Host> host = ServiceDependency.on(Host.SERVICE_DESCRIPTOR, serverName, hostName);
-        ServiceDependency<DeploymentInfo> deploymentInfo = ServiceDependency.on(UndertowService.deploymentServiceName(unit.getServiceName()).append(UndertowDeploymentInfoService.SERVICE_NAME));
+        ServiceDependency<DeploymentInfo> deployment = ServiceDependency.on(UndertowService.deploymentServiceName(unit.getServiceName()).append(UndertowDeploymentInfoService.SERVICE_NAME));
 
-        Supplier<OpenAPI> factory = new Supplier<>() {
+        Supplier<OpenAPIModelProvider> factory = new Supplier<>() {
             @Override
-            public OpenAPI get() {
+            public OpenAPIModelProvider get() {
                 SmallRyeOpenAPI.Builder builder = SmallRyeOpenAPI.builder()
                         // Disable "standard filter" logic so that our filter can run last
                         .enableStandardFilter(false)
@@ -112,13 +127,73 @@ public class DeploymentOpenAPIProviderServiceInstaller implements DeploymentServ
                         .withResourceLocator(resourceResolver)
                         .withScannerClassLoader(WildFlySecurityManager.getClassLoaderPrivileged(AnnotationScanner.class))
                         ;
-                // SmallRyeOpenAPI.Builder.build() woud otherwise apply the standard filter last
+                // SmallRyeOpenAPI.Builder.build() would otherwise apply the standard filter last
                 @SuppressWarnings("deprecation")
                 OASFilter filter = OpenApiProcessor.getFilter(openAPIConfig, module.getClassLoader(), index);
                 if (filter != null) {
                     builder.addFilter(filter);
                 }
+                String undertowContextPath = deployment.get().getContextPath();
+                // Normalise context path, which should never end in "/"
+                String contextPath = undertowContextPath.endsWith("/") ? undertowContextPath.substring(0, undertowContextPath.length() - 1) : undertowContextPath;
+
                 builder.addFilter(new OASFilter() {
+                    @Override
+                    public APIResponse filterAPIResponse(APIResponse response) {
+                        response.setContent(this.filterContent(response.getContent()));
+                        return this.filterReference(response);
+                    }
+
+                    @Override
+                    public Callback filterCallback(Callback callback) {
+                        return this.filterReference(callback);
+                    }
+
+                    @Override
+                    public Header filterHeader(Header header) {
+                        for (Map.Entry<String, Example> entry : Optional.ofNullable(header.getExamples()).orElse(Map.of()).entrySet()) {
+                            header.addExample(entry.getKey(), this.filterExample(entry.getValue()));
+                        }
+                        header.setContent(this.filterContent(header.getContent()));
+                        return this.filterReference(header);
+                    }
+
+                    @Override
+                    public Link filterLink(Link link) {
+                        this.resolveURI(link::getOperationRef, link::setOperationRef);
+                        return this.filterReference(link);
+                    }
+
+                    @Override
+                    public Parameter filterParameter(Parameter parameter) {
+                        for (Map.Entry<String, Example> entry : Optional.ofNullable(parameter.getExamples()).orElse(Map.of()).entrySet()) {
+                            parameter.addExample(entry.getKey(), this.filterExample(entry.getValue()));
+                        }
+                        parameter.setContent(this.filterContent(parameter.getContent()));
+                        return this.filterReference(parameter);
+                    }
+
+                    @Override
+                    public PathItem filterPathItem(PathItem pathItem) {
+                        return this.filterReference(pathItem);
+                    }
+
+                    @Override
+                    public RequestBody filterRequestBody(RequestBody requestBody) {
+                        requestBody.setContent(this.filterContent(requestBody.getContent()));
+                        return this.filterReference(requestBody);
+                    }
+
+                    @Override
+                    public Schema filterSchema(Schema schema) {
+                        return this.filterReference(schema);
+                    }
+
+                    @Override
+                    public SecurityScheme filterSecurityScheme(SecurityScheme securityScheme) {
+                        return this.filterReference(securityScheme);
+                    }
+
                     @Override
                     public void filterOpenAPI(OpenAPI model) {
                         // Generate default title and description based on web metadata
@@ -139,13 +214,20 @@ public class DeploymentOpenAPIProviderServiceInstaller implements DeploymentServ
                             info.setDescription(description);
                         }
 
+                        Components components = model.getComponents();
+                        if (components != null) {
+                            for (Map.Entry<String, Example> entry : Optional.of(components).map(Components::getExamples).orElse(Map.of()).entrySet()) {
+                                components.addExample(entry.getKey(), this.filterExample(entry.getValue()));
+                            }
+                        }
+
                         Collection<UndertowListener> listeners = host.get().getServer().getListeners();
 
                         if (listeners.stream().map(UndertowListener::getProtocol).noneMatch(REQUISITE_LISTENERS::contains)) {
                             LOGGER.requiredListenersNotFound(host.get().getServer().getName(), REQUISITE_LISTENERS);
                         }
 
-                        // Generate Server entries if none exist
+                        // N.B. Deprecate this mechanism in favour of host-specific auto-generate-servers property
                         if ((model.getServers() == null) && !useRelativeServerURLs) {
                             int aliases = host.get().getAllAliases().size();
                             int size = 0;
@@ -181,10 +263,52 @@ public class DeploymentOpenAPIProviderServiceInstaller implements DeploymentServ
                             model.setServers(servers);
                         }
                     }
+
+                    private Content filterContent(Content content) {
+                        for (Map.Entry<String, MediaType> entry : Optional.ofNullable(content).map(Content::getMediaTypes).orElse(Map.of()).entrySet()) {
+                            content.addMediaType(entry.getKey(), this.filterMediaType(entry.getValue()));
+                        }
+                        return content;
+                    }
+
+                    private MediaType filterMediaType(MediaType type) {
+                        for (Map.Entry<String, Example> entry : Optional.of(type).map(MediaType::getExamples).orElse(Map.of()).entrySet()) {
+                            type.addExample(entry.getKey(), this.filterExample(entry.getValue()));
+                        }
+                        return type;
+                    }
+
+                    private Example filterExample(Example example) {
+                        this.resolveURI(example::getExternalValue, example::setExternalValue);
+                        return this.filterReference(example);
+                    }
+
+                    private <T extends Reference<T>> T filterReference(T reference) {
+                        String ref = reference.getRef();
+                        if (ref != null) {
+                            URI uri = URI.create(ref);
+                            // Ignore if ref is a URL
+                            if ((uri.getHost() == null) && !uri.getPath().isEmpty()) {
+                                this.resolveURI(reference::getRef, reference::setRef);
+                            }
+                        }
+                        return reference;
+                    }
+
+                    private void resolveURI(Supplier<String> accessor, Consumer<String> mutator) {
+                        // If this application is not deployed to the root context, we need to prepend the context path to any absolute path references.
+                        // N.B. Undertow uses "/" for the root context, rather than the more intuitive value of "".
+                        if (contextPath.length() > 1) {
+                            String ref = accessor.get();
+                            if ((ref != null) && ref.startsWith("/")) {
+                                mutator.accept(contextPath + ref);
+                            }
+                        }
+                    }
                 });
-                String contextPath = deploymentInfo.get().getContextPath();
                 // If this application is not deployed to the root context, we need to append the context path to all service paths.
                 // This ensures that multiple applications sharing the same virtual host can document services with the same path without colliding.
+                // N.B. Undertow uses "/" for the root context, rather than the more intuitive value of "".
                 if (contextPath.length() > 1) {
                     // N.B. The MicroProfile OpenAPI specification API inexplicably lacks a common path API.
                     builder.addFilter(new OASFilter() {
@@ -204,12 +328,12 @@ public class DeploymentOpenAPIProviderServiceInstaller implements DeploymentServ
                         }
                     });
                 }
-                return builder.build().model();
+                return OpenAPIModelProvider.of(builder.build().model());
             }
         };
-        ServiceInstaller.builder(OpenAPIProvider::of, factory)
-                .provides(OpenAPIProvider.SERVICE_DESCRIPTOR, serverName, hostName, modelName)
-                .requires(List.of(host, deploymentInfo))
+        ServiceInstaller.builder(factory)
+                .provides(OpenAPIModelProvider.SERVICE_DESCRIPTOR, serverName, hostName, modelName)
+                .requires(List.of(host, deployment))
                 .startWhen(StartWhen.INSTALLED)
                 .build()
                 .install(context);

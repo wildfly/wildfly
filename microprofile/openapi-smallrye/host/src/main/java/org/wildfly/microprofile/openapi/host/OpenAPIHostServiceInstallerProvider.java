@@ -19,7 +19,7 @@ import org.kohsuke.MetaInfServices;
 import org.wildfly.extension.undertow.Host;
 import org.wildfly.extension.undertow.HostServiceInstallerProvider;
 import org.wildfly.microprofile.openapi.OpenAPIModelConfiguration;
-import org.wildfly.microprofile.openapi.OpenAPIProvider;
+import org.wildfly.microprofile.openapi.OpenAPIModelProvider;
 import org.wildfly.subsystem.service.ResourceServiceInstaller;
 
 /**
@@ -44,7 +44,7 @@ public class OpenAPIHostServiceInstallerProvider implements HostServiceInstaller
             public Consumer<OperationContext> install(OperationContext context) {
                 List<ResourceServiceInstaller> installers = new ArrayList<>(2);
                 RuntimeCapability<?> hostCapability = context.getResourceRegistration().getCapabilities().stream().filter(HOST_FILTER).findFirst().orElse(null);
-                if ((hostCapability != null) && context.hasOptionalCapability(OpenAPIProvider.SUBSYSTEM_SERVICE_DESCRIPTOR, hostCapability, null)) {
+                if ((hostCapability != null) && context.hasOptionalCapability(OpenAPIModelProvider.SUBSYSTEM_SERVICE_DESCRIPTOR, hostCapability, null)) {
                     OpenAPIModelConfiguration configuration = new HostOpenAPIModelConfiguration(serverName, hostName);
                     if (configuration.isEnabled()) {
                         installers.add(new HostOpenAPIProviderServiceInstaller(configuration));

@@ -47,9 +47,13 @@ In addition to the https://download.eclipse.org/microprofile/microprofile-open-a
 |/openapi
 |Used to customize the path of the OpenAPI endpoint.
 
-|mp.openapi.extensions.servers.relative
-|true
-|Indicates whether auto-generated Server records are absolute or relative to the location of the OpenAPI endpoint.  If absolute, WildFly will generate Server records including the protocols, hosts, and ports at which the given deployment is accessible.
+|mp.openapi.extensions.server._server-name_.host._host-name_.auto-generate-servers
+|false
+|Indicates whether to auto-generate Server URLs for this host if undefined by any application.
+
+|mp.openapi.extensions.server._server-name_.host._host-name_.component-key-format
+|%1$s%2$s
+|Specifies the identifier format (using java.util.Formatter syntax) used generate distinct OpenAPI component keys for multiple applications.  Format accepts 2 parameters: context path, component name.
 
 |mp.openapi.extensions.server._server-name_.host._host-name_.externalDocs.url
 |_None_
