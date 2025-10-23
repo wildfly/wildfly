@@ -26,9 +26,11 @@ public class OpenTelemetryWithCollectorSetupTask extends OpenTelemetrySetupTask 
 
     @Override
     public void tearDown(final ManagementClient managementClient, final String containerId) throws Exception {
-        otelCollectorContainer.stop();
         super.tearDown(managementClient, containerId);
 
         ServerReload.executeReloadAndWaitForCompletion(managementClient);
+
+        // Stop the container last to avoid spurious connection errors from the GrpcExporter
+        otelCollectorContainer.stop();
     }
 }

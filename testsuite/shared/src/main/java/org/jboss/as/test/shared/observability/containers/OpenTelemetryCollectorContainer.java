@@ -33,7 +33,7 @@ import org.testcontainers.utility.MountableFile;
  */
 public class OpenTelemetryCollectorContainer extends BaseContainer<OpenTelemetryCollectorContainer> {
     public static final String IMAGE_NAME = "otel/opentelemetry-collector";
-    public static final String IMAGE_VERSION = "0.115.1";
+    public static final String IMAGE_VERSION = "0.138.0";
     public static final int OTLP_GRPC_PORT = 4317;
     public static final int OTLP_HTTP_PORT = 4318;
     public static final int PROMETHEUS_PORT = 1234;
