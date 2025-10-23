@@ -43,4 +43,5 @@
     <tracing-type>ALL</tracing-type>
     <tracing-threshold>VERBOSE</tracing-threshold>
     <resteasy-patchfilter-disabled>true</resteasy-patchfilter-disabled>
+    <resteasy-original-webapplicationexception-behavior>true</resteasy-original-webapplicationexception-behavior>
 </subsystem>
