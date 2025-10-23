@@ -36,6 +36,8 @@
             <xs:element name="resteasy-language-mappings" type="mapType" minOccurs="0" maxOccurs="1"/>
             <xs:element name="resteasy-media-type-mappings" type="mapType" minOccurs="0" maxOccurs="1"/>
             <xs:element name="resteasy-media-type-param-mapping" type="xs:string" minOccurs="0" maxOccurs="1"/>
+            <xs:element name="resteasy-original-webapplicationexception-behavior" type="xs:boolean" minOccurs="0"
+                        default="false"/>
             <xs:element name="resteasy-patchfilter-disabled" type="xs:boolean" minOccurs="0" maxOccurs="1"
                         default="false"/>
             <xs:element name="resteasy-prefer-jackson-over-jsonb" type="xs:boolean" minOccurs="0" maxOccurs="1"
