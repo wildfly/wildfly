@@ -49,7 +49,7 @@ enum JaxrsSubsystemSchema implements PersistentSubsystemSchema<JaxrsSubsystemSch
             JaxrsAttribute.TRACING_TYPE,
             JaxrsAttribute.TRACING_THRESHOLD),
     VERSION_4_0_0(4, 0, Stability.DEFAULT, VERSION_3_0_0, JaxrsAttribute.RESTEASY_PATCHFILTER_DISABLED),
-    VERSION_5_0_0(5, 0, Stability.DEFAULT, VERSION_4_0_0),
+    VERSION_5_0_0(5, 0, Stability.DEFAULT, VERSION_4_0_0, JaxrsAttribute.RESTEASY_ORIGINAL_WEBAPPLICATIONEXCEPTION_BEHAVIOR),
     ;
 
     static final JaxrsSubsystemSchema CURRENT = VERSION_5_0_0;

@@ -55,9 +55,20 @@ public class JaxrsSubsystem50TestCase extends AbstractSubsystemBaseTest {
         FailedOperationTransformationConfig transformationConfig = new FailedOperationTransformationConfig();
 
         transformationConfig.addFailedAttribute(PathAddress.pathAddress(JaxrsExtension.SUBSYSTEM_PATH),
-                new FailedOperationTransformationConfig.NewAttributesConfig(JaxrsAttribute.RESTEASY_PATCHFILTER_DISABLED));
+                new FailedOperationTransformationConfig.NewAttributesConfig(JaxrsAttribute.RESTEASY_PATCHFILTER_DISABLED,
+                        JaxrsAttribute.RESTEASY_ORIGINAL_WEBAPPLICATIONEXCEPTION_BEHAVIOR));
 
-        testRejectingTransformersEAP80(transformationConfig, ModelTestControllerVersion.EAP_8_0_0);
+        testRejectingTransformersEAP80_81(transformationConfig, ModelTestControllerVersion.EAP_8_0_0);
+    }
+
+    @Test
+    public void testRejectingTransformersEAP81() throws Exception {
+        FailedOperationTransformationConfig transformationConfig = new FailedOperationTransformationConfig();
+
+        transformationConfig.addFailedAttribute(PathAddress.pathAddress(JaxrsExtension.SUBSYSTEM_PATH),
+                new FailedOperationTransformationConfig.NewAttributesConfig(JaxrsAttribute.RESTEASY_ORIGINAL_WEBAPPLICATIONEXCEPTION_BEHAVIOR));
+
+        testRejectingTransformersEAP80_81(transformationConfig, ModelTestControllerVersion.EAP_8_1_0);
     }
 
     @Test
@@ -65,7 +76,8 @@ public class JaxrsSubsystem50TestCase extends AbstractSubsystemBaseTest {
         FailedOperationTransformationConfig transformationConfig = new FailedOperationTransformationConfig();
 
         transformationConfig.addFailedAttribute(PathAddress.pathAddress(JaxrsExtension.SUBSYSTEM_PATH),
-                new FailedOperationTransformationConfig.NewAttributesConfig(JaxrsAttribute.TRACING_TYPE, JaxrsAttribute.TRACING_THRESHOLD, JaxrsAttribute.RESTEASY_PATCHFILTER_DISABLED));
+                new FailedOperationTransformationConfig.NewAttributesConfig(JaxrsAttribute.TRACING_TYPE, JaxrsAttribute.TRACING_THRESHOLD, JaxrsAttribute.RESTEASY_PATCHFILTER_DISABLED,
+                        JaxrsAttribute.RESTEASY_ORIGINAL_WEBAPPLICATIONEXCEPTION_BEHAVIOR));
 
         testRejectingTransformers(transformationConfig, ModelTestControllerVersion.EAP_7_4_0);
     }
@@ -86,14 +98,16 @@ public class JaxrsSubsystem50TestCase extends AbstractSubsystemBaseTest {
         ModelTestUtils.checkFailedTransformedBootOperations(kernelServices, subsystemModelVersion, operations, transformationConfig);
     }
 
-    private void testRejectingTransformersEAP80(FailedOperationTransformationConfig transformationConfig, ModelTestControllerVersion controllerVersion) throws Exception {
+    private void testRejectingTransformersEAP80_81(FailedOperationTransformationConfig transformationConfig, ModelTestControllerVersion controllerVersion) throws Exception {
         ModelVersion subsystemModelVersion = controllerVersion.getSubsystemModelVersion(JaxrsExtension.SUBSYSTEM_NAME);
 
         KernelServicesBuilder builder = createKernelServicesBuilder(createAdditionalInitialization());
-        builder.createLegacyKernelServicesBuilder(createAdditionalInitialization(), controllerVersion, subsystemModelVersion)
-                .addMavenResourceURL(controllerVersion.createCoreGAV("wildfly-threads"))
-                .addMavenResourceURL(controllerVersion.createGAV("wildfly-jaxrs"))
+        final LegacyKernelServicesInitializer initializer = builder.createLegacyKernelServicesBuilder(createAdditionalInitialization(), controllerVersion, subsystemModelVersion)
+                .addMavenResourceURL(controllerVersion.createCoreGAV("wildfly-threads"), controllerVersion.createGAV("wildfly-jaxrs"))
                 .dontPersistXml();
+        if (controllerVersion != ModelTestControllerVersion.EAP_8_0_0) {
+                initializer.addMavenResourceURL(controllerVersion.createCoreGAV("wildfly-subsystem"));
+        }
         KernelServices kernelServices = builder.build();
         assertTrue(kernelServices.isSuccessfulBoot());
         assertTrue(kernelServices.getLegacyServices(subsystemModelVersion).isSuccessfulBoot());
