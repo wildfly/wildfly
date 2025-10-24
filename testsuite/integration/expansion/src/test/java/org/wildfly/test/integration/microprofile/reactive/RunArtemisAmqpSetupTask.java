@@ -26,6 +26,7 @@ import org.junit.AssumptionViolatedException;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.MountableFile;
+import org.jboss.as.test.config.ContainerConfig;
 
 /**
  * Setup task to start an embedded version of Artemis for AMQP support.
@@ -56,7 +57,7 @@ public class RunArtemisAmqpSetupTask implements ServerSetupTask {
     @Override
     public void setup(ManagementClient managementClient, String containerId) throws Exception {
         try {
-            DockerImageName imageName = DockerImageName.parse("quay.io/arkmq-org/activemq-artemis-broker:artemis.2.42.0");
+            DockerImageName imageName = DockerImageName.parse(ContainerConfig.getArtemisImage());
             container = new GenericContainer<>(imageName);
             container.addExposedPort(AMQP_PORT);
             container.withEnv(Map.of(

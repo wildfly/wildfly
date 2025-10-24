@@ -284,6 +284,14 @@
             <scope>compile</scope>
         </dependency>
 
+        <!-- test -->
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <version>${version.org.junit}</version>
+            <scope>test</scope>
+        </dependency>
+
     </dependencies>
 
     <build>
