@@ -44,6 +44,7 @@ import io.undertow.servlet.api.ThreadSetupHandler;
 import io.undertow.servlet.api.WebResourceCollection;
 import io.undertow.servlet.handlers.DefaultServlet;
 import io.undertow.servlet.handlers.ServletPathMatches;
+import io.undertow.servlet.spec.AsyncContextImpl;
 import io.undertow.servlet.util.ImmediateInstanceFactory;
 import io.undertow.websockets.extensions.PerMessageDeflateHandshake;
 import io.undertow.websockets.jsr.ServerWebSocketContainer;
@@ -997,6 +998,7 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
 
             d.setPreservePathOnForward(servletContainer.isPreservePathOnForward());
 
+            System.setProperty(AsyncContextImpl.ASYNC_CONTEXT_TIMEOUT,""+ servletContainer.getDefaultAsyncContextTimeout());
             return d;
         } catch (ClassNotFoundException e) {
             throw new StartException(e);
