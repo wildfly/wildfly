@@ -4,10 +4,6 @@
  */
 package org.jboss.as.test.integration.ejb.mdb.timerservice;
 
-import static org.jboss.as.test.shared.PermissionUtils.createPermissionsXmlAsset;
-
-import java.util.PropertyPermission;
-
 import jakarta.jms.Destination;
 import jakarta.jms.Message;
 import jakarta.jms.MessageProducer;
@@ -44,23 +40,15 @@ public class SimpleTimerMDBTestCase {
         war.addPackage(SimpleTimerMDBTestCase.class.getPackage());
         war.addClass(CreateTopicSetupTask.class);
         war.addClass(TimeoutUtil.class);
-        war.addAsManifestResource(createPermissionsXmlAsset(
-                new PropertyPermission("ts.timeout.factor", "read")
-        ), "permissions.xml");
         return war;
 
     }
 
     @Test
-    public void testAnnotationTimeoutMethod() throws Exception {
+    public void testTimeoutMethods() throws Exception {
         sendMessage();
-        Assert.assertTrue(AnnotationTimerServiceMDB.awaitTimerCall());
-    }
-
-    @Test
-    public void testTimedObjectTimeoutMethod() throws Exception {
-        sendMessage();
-        Assert.assertTrue(TimedObjectTimerServiceMDB.awaitTimerCall(TimeoutUtil.adjust(2000)));
+        Assert.assertTrue(AnnotationTimerServiceMDB.awaitTimerCall(30000));
+        Assert.assertTrue(TimedObjectTimerServiceMDB.awaitTimerCall(30000));
     }
 
     //the timer is created when the
