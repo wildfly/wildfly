@@ -91,7 +91,7 @@ class HostDefinition extends SimpleResourceDefinition {
         registration.registerSubModel(new LocationDefinition());
         registration.registerSubModel(new AccessLogDefinition());
         registration.registerSubModel(new ConsoleAccessLogDefinition());
-        registration.registerSubModel(new FilterRefDefinition());
+        registration.registerSubModel(new FilterRefDefinition(true));
         registration.registerSubModel(new HttpInvokerDefinition());
         new HostSingleSignOnDefinition().register(registration, null);
     }
