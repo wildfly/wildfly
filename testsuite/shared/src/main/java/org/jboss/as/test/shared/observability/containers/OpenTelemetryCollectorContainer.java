@@ -137,10 +137,10 @@ public class OpenTelemetryCollectorContainer extends BaseContainer<OpenTelemetry
         debugLog("assertTraces(...) validation starting.");
         Instant endTime = Instant.now().plus(timeout);
         AssertionError lastAssertionError = null;
+        List<JaegerTrace> traces = jaegerContainer.getTraces(serviceName);
 
         while (Instant.now().isBefore(endTime)) {
             try {
-                List<JaegerTrace> traces = jaegerContainer.getTraces(serviceName);
                 assertionConsumer.accept(traces);
                 debugLog("assertTraces(...) validation passed.");
                 return traces;
@@ -149,8 +149,10 @@ public class OpenTelemetryCollectorContainer extends BaseContainer<OpenTelemetry
                 lastAssertionError = assertionError;
                 Thread.sleep(1000);
             }
+            traces = jaegerContainer.getTraces(serviceName);
         }
 
+        debugLog("assertTraces(...) validation failed. State at final check:\n" + traces);
         throw Objects.requireNonNullElseGet(lastAssertionError, AssertionError::new);
     }
 
@@ -181,11 +183,10 @@ public class OpenTelemetryCollectorContainer extends BaseContainer<OpenTelemetry
         Instant endTime = Instant.now().plus(timeout);
 
         AssertionError lastAssertionError = null;
+        List<PrometheusMetric> prometheusMetrics = fetchMetrics();
 
         while (Instant.now().isBefore(endTime)) {
             try {
-                List<PrometheusMetric> prometheusMetrics = fetchMetrics();
-
                 assertionConsumer.accept(prometheusMetrics);
 
                 debugLog("assertMetrics(..) validation passed.");
@@ -196,8 +197,11 @@ public class OpenTelemetryCollectorContainer extends BaseContainer<OpenTelemetry
                 lastAssertionError = assertionError;
                 Thread.sleep(1000);
             }
+            prometheusMetrics = fetchMetrics();
+
         }
 
+        debugLog("assertMetrics(...) validation. State at final check: \n" + prometheusMetrics);
         throw Objects.requireNonNullElseGet(lastAssertionError, AssertionError::new);
     }
 
