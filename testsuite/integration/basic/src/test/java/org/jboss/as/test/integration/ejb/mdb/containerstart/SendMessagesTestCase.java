@@ -12,6 +12,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 
+import java.io.IOException;
 import java.util.PropertyPermission;
 import java.util.Set;
 import java.util.TreeSet;
@@ -45,9 +46,11 @@ import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.client.OperationBuilder;
 import org.jboss.as.controller.client.helpers.ClientConstants;
+import org.jboss.as.controller.client.helpers.Operations;
 import org.jboss.as.controller.client.helpers.standalone.DeploymentPlan;
 import org.jboss.as.controller.client.helpers.standalone.ServerDeploymentManager;
 import org.jboss.as.test.integration.common.jms.JMSOperations;
+import org.jboss.as.test.shared.ServerReload;
 import org.jboss.as.test.shared.TimeoutUtil;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
@@ -111,12 +114,43 @@ public class SendMessagesTestCase {
         public void setup(final ManagementClient managementClient, final String containerId) throws Exception {
             final JMSOperations operations = getInstance(managementClient);
             operations.createJmsQueue(QUEUE_SEND, "java:jboss/exported/" + QUEUE_SEND);
+
+            addSystemProperty(managementClient, "com.arjuna.ats.arjuna.common.RecoveryEnvironmentBean.periodicRecoveryPeriod", "5");
+            addSystemProperty(managementClient, "com.arjuna.ats.arjuna.common.RecoveryEnvironmentBean.recoveryBackoffPeriod", "1");
+
+            ServerReload.executeReloadAndWaitForCompletion(managementClient);
         }
 
         @Override
         public void tearDown(final ManagementClient managementClient, final String containerId) throws Exception {
             final JMSOperations operations = getInstance(managementClient);
             operations.removeJmsQueue(QUEUE_SEND);
+
+            removeSystemProperty(managementClient, "com.arjuna.ats.arjuna.common.RecoveryEnvironmentBean.periodicRecoveryPeriod");
+            removeSystemProperty(managementClient, "com.arjuna.ats.arjuna.common.RecoveryEnvironmentBean.recoveryBackoffPeriod");
+        }
+
+        private static void addSystemProperty(ManagementClient client, String systemProperty, String value) throws IOException {
+            ModelNode op = new ModelNode();
+            op.get("address").add("system-property", systemProperty);
+            op.get("operation").set("add");
+            op.get("value").set(value);
+
+            ModelNode result = client.getControllerClient().execute(op);
+            if (!Operations.isSuccessfulOutcome(result)) {
+                throw new IOException("Failed to add system property: " + systemProperty);
+            }
+        }
+
+        private void removeSystemProperty(ManagementClient client, String systemProperty) throws IOException {
+            ModelNode op = new ModelNode();
+            op.get("address").add("system-property", systemProperty);
+            op.get("operation").set("remove");
+
+            ModelNode result = client.getControllerClient().execute(op);
+            if (!Operations.isSuccessfulOutcome(result)) {
+                throw new IOException("Failed to remove system property: " + systemProperty);
+            }
         }
     }
 
