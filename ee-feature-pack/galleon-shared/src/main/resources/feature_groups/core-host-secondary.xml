@@ -6,7 +6,7 @@
 
 <feature-group-spec name="core-host-secondary" xmlns="urn:jboss:galleon:feature-group:1.0">
     <feature spec="host">
-        <param name="host" value="secondary"/>
+        <param name="__host" value="secondary"/>
         <param name="persist-name" value="false"/>
 
         <feature spec="core-service.management"/>
@@ -33,8 +33,7 @@
             <feature spec="host.core-service.discovery-options.static-discovery">
                 <param name="static-discovery" value="primary"/>
                 <param name="protocol" value="${jboss.domain.primary.protocol:remote+http}"/>
-                <param name="host-feature" value="${jboss.domain.primary.address}"/>
-                <param name="host" value="secondary"/>
+                <param name="host" value="${jboss.domain.primary.address}"/>
                 <param name="port" value="${jboss.domain.primary.port:9990}"/>
             </feature>
         </feature>

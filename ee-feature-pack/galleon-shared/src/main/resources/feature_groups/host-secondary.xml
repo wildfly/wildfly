@@ -10,7 +10,7 @@
         <exclude feature-id="host.interface:host=secondary,interface=private"/>
     </feature-group>
     <feature spec="host">
-        <param name="host" value="secondary"/>
+        <param name="__host" value="secondary"/>
         <feature spec="host.jvm">
             <param name="jvm" value="default"/>
             <param name="jvm-options" value="[&quot;-server&quot;]"/>

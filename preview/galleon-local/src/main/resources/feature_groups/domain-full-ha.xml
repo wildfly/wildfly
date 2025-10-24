@@ -26,7 +26,7 @@
     </feature>
 
     <feature spec="profile">
-        <param name="profile" value="full-ha"/>
+        <param name="__profile" value="full-ha"/>
         <feature-group name="domain-ha-profile"/>
         <feature-group name="ejb3-mdb"/>
         <feature-group name="iiop-openjdk"/>
