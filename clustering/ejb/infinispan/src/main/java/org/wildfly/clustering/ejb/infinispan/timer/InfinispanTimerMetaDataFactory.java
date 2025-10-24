@@ -63,7 +63,7 @@ public class InfinispanTimerMetaDataFactory<I, C> implements TimerMetaDataFactor
         CompletionStage<I> existingIndex = (index != null) ? this.indexCache.putIfAbsentAsync(new InfinispanTimerIndexKey(index), id) : CompletableFuture.completedStage(null);
         Supplier<CompletionStage<RemappableTimerMetaDataEntry<C>>> createTimerMetaData = () -> this.writeCache.putAsync(new InfinispanTimerMetaDataKey<>(id), metaData).thenApply(Function.of(metaData));
         // If a timer with the same index already exists, return null;
-        return existingIndex.thenCompose(Function.get(createTimerMetaData).orDefault(Objects::isNull, this.completed));
+        return existingIndex.thenCompose(Function.of(Consumer.empty(), createTimerMetaData).orDefault(Objects::isNull, this.completed));
     }
 
     @Override
