@@ -66,10 +66,11 @@ public enum UndertowSubsystemSchema implements PersistentSubsystemSchema<Underto
     VERSION_13_0(13),   // WildFly 27       N.B. There were no schema changes between 12.0 and 13.0!
     VERSION_14_0(14),   // WildFly 28-32
     VERSION_14_0_PREVIEW(14, 0, Stability.PREVIEW),   // WildFly 33-35
-    VERSION_14_0_COMMUNITY(14, 0, Stability.COMMUNITY)   // WildFly 36 - present
+    VERSION_14_0_COMMUNITY(14, 0, Stability.COMMUNITY),   // WildFly 36 - present
+    VERSION_15_0_COMMUNITY(15, 0, Stability.PREVIEW)   // WildFly 39 - present
     ;
 
-    static final Map<Stability, UndertowSubsystemSchema> CURRENT = Feature.map(EnumSet.of(VERSION_14_0, VERSION_14_0_PREVIEW, VERSION_14_0_COMMUNITY));
+    static final Map<Stability, UndertowSubsystemSchema> CURRENT = Feature.map(EnumSet.of(VERSION_14_0, VERSION_15_0_COMMUNITY, VERSION_14_0_COMMUNITY));
     private final VersionedNamespace<IntVersion, UndertowSubsystemSchema> namespace;
     private final PersistentResourceXMLDescription.Factory factory = PersistentResourceXMLDescription.factory(this);
 
