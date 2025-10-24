@@ -91,8 +91,8 @@ public interface IIOPLogger extends BasicLogger {
     @Message(id = 12, value = "Could not deactivate anonymous IR object")
     void warnCouldNotDeactivateAnonIRObject(@Cause Throwable cause);
 
-    @Message(id = 13, value = "SSL support has been enabled but no security domain or client/server SSL contexts have been specified")
-    OperationFailedException noSecurityDomainOrSSLContextsSpecified();
+    @Message(id = 13, value = "SSL support has been enabled but neither client nor server SSL contexts have been specified")
+    OperationFailedException noSSLContextsSpecified();
 
     @Message(id = 14, value = "Unexpected exception")
     RuntimeException unexpectedException(@Cause Throwable cause);
@@ -384,8 +384,8 @@ public interface IIOPLogger extends BasicLogger {
     @Message(id = 110, value = "Client requires SSL but server does not support it")
     IllegalStateException serverDoesNotSupportSsl();
 
-    @Message(id = 111, value = "SSL has not been configured but ssl-port property has been specified - the connection will use clear-text protocol")
-    String sslPortWithoutSslConfiguration();
+//    @Message(id = 111, value = "SSL has not been configured but ssl-port property has been specified - the connection will use clear-text protocol")
+//    String sslPortWithoutSslConfiguration();
 
 //    @Message(id = 112, value = "Security initializer was set to 'elytron' but no authentication-context has been specified")
 //    OperationFailedException elytronInitializerMissingAuthContext();
@@ -411,5 +411,23 @@ public interface IIOPLogger extends BasicLogger {
 
     @Message(id = 120, value = "The use of security domains at runtime is unsupported.")
     OperationFailedException runtimeSecurityDomainUnsupported();
+
+    @Message(id = 121, value ="Can't create server SSL socket: authentication context not configured.")
+    IOException serverSSLNotConfiguredRuntime();
+
+    @Message(id = 122, value ="Can't create client SSL socket: authentication context not configured.")
+    IOException clientSSLNotConfiguredRuntime();
+
+    @Message(id = 123, value ="Server requires SSL but server authentication context is not defined")
+    OperationFailedException serverSSLNotConfigured();
+
+    @Message(id = 124, value ="Client requires SSL but client authentication context is not defined")
+    OperationFailedException clientSSLNotConfigured();
+
+    @Message(id = 125, value = "Server SSL has not been configured but ssl-port property has been specified - inbound connections will use only clear-text protocol")
+    String serverSSLPortWithoutSslConfiguration();
+
+    @Message(id = 126, value = "Client SSL has not been configured but ssl-port property has been specified - outbound connections will use only clear-text protocol")
+    String clientSSLPortWithoutSslConfiguration();
 
 }
