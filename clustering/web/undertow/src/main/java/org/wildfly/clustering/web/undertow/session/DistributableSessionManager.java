@@ -47,11 +47,18 @@ public class DistributableSessionManager implements UndertowSessionManager {
     // If requested session id contains invalid characters, then session cannot exist
     private static final Predicate<String> VALID_IDENTIFIER = REQUESTED_IDENTIFIER.and(IDENTIFIER_MARSHALLER::validate);
     private static final Predicate<Session<Map<String, Object>>> EXISTING_SESSION = Objects::nonNull;
-    private static final Predicate<Session<Map<String, Object>>> VALID_SESSION = Session::isValid;
-    private static final Function<Session<Map<String, Object>>, SessionMetaData> SESSION_META_DATA = Session::getMetaData;
-    private static final Predicate<Session<Map<String, Object>>> ACTIVE_SESSION = Predicate.not(SessionMetaData::isExpired).compose(SESSION_META_DATA);
-    // If session exists, ensure it is valid and not expired
-    private static final UnaryOperator<Session<Map<String, Object>>> VALIDATE_SESSION = UnaryOperator.<Session<Map<String, Object>>>identity().orDefault(EXISTING_SESSION.and(VALID_SESSION.and(ACTIVE_SESSION)), Supplier.of(null));
+    private static final Predicate<Session<Map<String, Object>>> VALID_SESSION = EXISTING_SESSION.and(Session::isValid);
+    // If session exists, verify that it was not invalidated by a concurrent thread
+    private static final UnaryOperator<Session<Map<String, Object>>> VALIDATE_SESSION = new UnaryOperator<>() {
+        @Override
+        public Session<Map<String, Object>> apply(Session<Map<String, Object>> session) {
+            if (!VALID_SESSION.test(session)) {
+                Consumer.close().accept(session);
+                return null;
+            }
+            return session;
+        }
+    };
     private static final UnaryOperator<Session<Map<String, Object>>> REQUIRE_SESSION = UnaryOperator.<Session<Map<String, Object>>>identity().orDefault(EXISTING_SESSION, () -> {
         throw new IllegalStateException();
     });
