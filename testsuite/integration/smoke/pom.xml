@@ -147,6 +147,12 @@
         </dependency>
 
         <dependency>
+            <groupId>jakarta.data</groupId>
+            <artifactId>jakarta.data-api</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
             <groupId>jakarta.ejb</groupId>
             <artifactId>jakarta.ejb-api</artifactId>
             <scope>test</scope>
@@ -167,6 +173,18 @@
         <dependency>
             <groupId>jakarta.jms</groupId>
             <artifactId>jakarta.jms-api</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>jakarta.json</groupId>
+            <artifactId>jakarta.json-api</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>jakarta.json.bind</groupId>
+            <artifactId>jakarta.json.bind-api</artifactId>
             <scope>test</scope>
         </dependency>
 
@@ -321,6 +339,12 @@
         </dependency>
 
         <dependency>
+            <groupId>org.hibernate.orm</groupId>
+            <artifactId>hibernate-core</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
             <groupId>org.jboss.arquillian.junit5</groupId>
             <artifactId>arquillian-junit5-container</artifactId>
             <scope>test</scope>
@@ -353,6 +377,12 @@
         <dependency>
             <groupId>org.jboss.ironjacamar</groupId>
             <artifactId>ironjacamar-deployers-common</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jboss.resteasy</groupId>
+            <artifactId>resteasy-client</artifactId>
             <scope>test</scope>
         </dependency>
 
@@ -394,6 +424,12 @@
 
         <dependency>
             <groupId>org.wildfly.core</groupId>
+            <artifactId>wildfly-cli</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.wildfly.core</groupId>
             <artifactId>wildfly-core-testsuite-shared</artifactId>
             <scope>test</scope>
         </dependency>
@@ -415,6 +451,25 @@
 
         <pluginManagement>
             <plugins>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-compiler-plugin</artifactId>
+                    <configuration>
+                        <annotationProcessorPaths>
+                            <path>
+                                <groupId>org.hibernate.orm</groupId>
+                                <artifactId>hibernate-jpamodelgen</artifactId>
+                                <!-- We declare the version here instead of relying
+                                     on dependencyManagement. The testsuite uses the server
+                                     build boms for dependency management, not the user boms
+                                     like org.wildfly.bom:wildfly-ee that includes this artifact.
+                                     Perhaps it should switch; if it does this version config
+                                     could be removed. -->
+                                <version>${version.org.hibernate}</version>
+                            </path>
+                        </annotationProcessorPaths>
+                    </configuration>
+                </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-surefire-plugin</artifactId>
@@ -458,6 +513,8 @@
                                     <!-- Requires EJB -->
                                     <exclude>org/jboss/as/test/smoke/ejb3/**/*TestCase.java</exclude>
                                     <exclude>org/jboss/as/test/smoke/property/EjbDDWithPropertyTestCase.java</exclude>
+                                    <!-- Requires Jakarta Data -->
+                                    <exclude>org/jboss/as/test/smoke/jakarta/data/**/*TestCase.java</exclude>
                                     <!-- Requires iiop -->
                                     <exclude>org/jboss/as/test/smoke/socketbindings/SocketBindingBoundPortsTestCase.java</exclude>
                                     <!-- Requires messaging -->
@@ -539,6 +596,17 @@
                         <configuration>
                             <expected-discovery>[sar]==>ee-core-profile-server,sar</expected-discovery>
                             <surefire-execution-for-included-classes>legacy-sar-layers.surefire</surefire-execution-for-included-classes>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>scan-jakarta-data-layers</id>
+                        <goals>
+                            <goal>scan</goal>
+                        </goals>
+                        <phase>${glow.phase.sar}</phase>
+                        <configuration>
+                            <expected-discovery>[cdi, ee-integration, h2-datasource, jakarta-data, jaxrs, jpa, jsonb, jsonp]==>ee-core-profile-server,h2-datasource,jakarta-data,jaxrs</expected-discovery>
+                            <surefire-execution-for-included-classes>jakarta-data-layers.surefire</surefire-execution-for-included-classes>
                         </configuration>
                     </execution>
                 </executions>
@@ -656,6 +724,11 @@
                                                     <name>standalone-microprofile.xml</name>
                                                 </config>
                                             </included-configs>
+                                            <included-packages>
+                                                <!-- Tests will add the jakarta data extension, so provision its packages too -->
+                                                <name>org.wildfly.extension.jakarta.data</name>
+                                                <name>jakarta.data.api</name>
+                                            </included-packages>
                                         </feature-pack>
                                     </feature-packs>
                                 </configuration>
@@ -772,6 +845,35 @@
                                     <provisioning-file>target/glow-scan/legacy-sar-layers.surefire/provisioning.xml</provisioning-file>
                                 </configuration>
                             </execution>
+
+                            <!-- Provision a server with jakarta data support -->
+                            <execution>
+                                <id>jakarta-data-provisioning</id>
+                                <goals>
+                                    <goal>provision</goal>
+                                </goals>
+                                <!--<phase>process-test-classes</phase>-->
+                                <!--
+                                Glow Arquillian plugin generates a provisioning.xml that doesn't
+                                provision preview stability artifacts, so this doesn't work.
+                                See https://github.com/wildfly/wildfly-glow/issues/134
+                                Leave all the config here to ease promotion to community stability.
+                                -->
+                                <phase>none</phase>
+                                <configuration>
+                                    <provisioning-dir>${project.build.directory}/wildfly-jakarta-data</provisioning-dir>
+                                    <record-provisioning-state>false</record-provisioning-state>
+                                    <log-provisioning-time>${galleon.log.time}</log-provisioning-time>
+                                    <offline-provisioning>${galleon.offline}</offline-provisioning>
+                                    <galleon-options>
+                                        <jboss-maven-dist/>
+                                        <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
+                                        <optional-packages>passive+</optional-packages>
+                                        <stability-level>preview</stability-level>
+                                    </galleon-options>
+                                    <provisioning-file>target/glow-scan/jakarta-data-layers.surefire/provisioning.xml</provisioning-file>
+                                </configuration>
+                            </execution>
                         </executions>
                     </plugin>
 
@@ -824,6 +926,40 @@
                                     </environmentVariables>
                                     <includes>
                                         <include>org/jboss/as/test/smoke/sar/**/*TestCase.java</include>
+                                    </includes>
+                                </configuration>
+                            </execution>
+
+                            <!-- Tests against the install with jakarta data support -->
+                            <execution>
+                                <id>jakarta-data-layers.surefire</id>
+                                <!--<phase>test</phase>-->
+                                <!--
+                                Glow Arquillian plugin generates a provisioning.xml that doesn't
+                                provision preview stability artifacts, so this doesn't work.
+                                See https://github.com/wildfly/wildfly-glow/issues/134
+                                Leave all the config here to ease promotion to community stability.
+                                -->
+                                <phase>none</phase>
+                                <goals>
+                                    <goal>test</goal>
+                                </goals>
+                                <configuration>
+                                    <systemPropertyVariables>
+                                        <jboss.home>${project.build.directory}/wildfly-jakarta-data</jboss.home>
+                                        <jboss.home.dir>${project.build.directory}/wildfly-jakarta-data</jboss.home.dir>
+                                        <jbossas.dist>${project.build.directory}/wildfly-jakarta-data</jbossas.dist>
+                                        <jboss.dist>${project.build.directory}/wildfly-jakarta-data</jboss.dist>
+                                        <jboss.install.dir>${basedir}/target/wildfly-jakarta-data</jboss.install.dir>
+                                        <!-- Override the standard module path that points at the shared module set from dist -->
+                                        <module.path>${project.build.directory}/wildfly-jakarta-data/modules${path.separator}${basedir}/target/modules</module.path>
+                                        <jboss.server.config.file.name>standalone.xml</jboss.server.config.file.name>
+                                    </systemPropertyVariables>
+                                    <environmentVariables>
+                                        <JBOSS_HOME>${project.build.directory}/wildfly-jakarta-data</JBOSS_HOME>
+                                    </environmentVariables>
+                                    <includes>
+                                        <include>org/jboss/as/test/smoke/jakarta/data/**/*TestCase.java</include>
                                     </includes>
                                 </configuration>
                             </execution>
@@ -941,6 +1077,22 @@
             </properties>
             <build>
                 <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-compiler-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>default-testCompile</id>
+                                <configuration>
+                                    <testExcludes>
+                                        <!-- The classes generated with the standard WF hibernate-jpamodelgen
+                                             won't run with WFP's ORM version -->
+                                        <exclude>org/jboss/as/test/smoke/jakarta/data/**</exclude>
+                                    </testExcludes>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
                     <!-- Disable the standard copy-based provisioning -->
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
@@ -1018,6 +1170,22 @@
             </activation>
             <build>
                 <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-compiler-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>default-testCompile</id>
+                                <configuration>
+                                    <testExcludes>
+                                        <!-- The classes generated with the standard WF hibernate-jpamodelgen
+                                             won't run with WFP's ORM version -->
+                                        <exclude>org/jboss/as/test/smoke/jakarta/data/**</exclude>
+                                    </testExcludes>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-surefire-plugin</artifactId>
