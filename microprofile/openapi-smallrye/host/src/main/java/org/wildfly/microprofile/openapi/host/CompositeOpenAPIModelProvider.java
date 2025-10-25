@@ -13,7 +13,8 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.TreeMap;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.concurrent.locks.StampedLock;
 import java.util.function.BiConsumer;
 import java.util.function.BinaryOperator;
 import java.util.function.Consumer;
@@ -167,7 +168,10 @@ public class CompositeOpenAPIModelProvider implements OpenAPIModelProvider, Open
 
     private final Optional<OpenAPI> defaultModel;
     private final BinaryOperator<String> resolver;
-    private final Map<String, Optional<OpenAPI>> models = new ConcurrentHashMap<>();
+    private final StampedLock lock = new StampedLock();
+    private final Map<String, Optional<OpenAPI>> models = new TreeMap<>();
+    // We will read/write cached model using plain references guarded by lock
+    private final AtomicReference<OpenAPI> provider = new AtomicReference<>();
 
     CompositeOpenAPIModelProvider(OpenAPI defaultModel, BinaryOperator<String> resolver) {
         this.defaultModel = Optional.of(defaultModel);
@@ -176,8 +180,29 @@ public class CompositeOpenAPIModelProvider implements OpenAPIModelProvider, Open
 
     @Override
     public Registration register(String key, OpenAPI model) {
-        this.models.put(key, Optional.of(model));
-        return () -> this.models.remove(key);
+        Optional<OpenAPI> optionalModel = Optional.of(model);
+        long stamp = this.lock.writeLock();
+        try {
+            if (this.models.put(key, optionalModel) != optionalModel) {
+                // Invalidate cached model
+                this.provider.setPlain(null);
+            }
+            return () -> this.remove(key);
+        } finally {
+            this.lock.unlock(stamp);
+        }
+    }
+
+    void remove(String key) {
+        long stamp = this.lock.writeLock();
+        try {
+            if (this.models.remove(key) != null) {
+                // Invalidate cached model
+                this.provider.setPlain(null);
+            }
+        } finally {
+            this.lock.unlock(stamp);
+        }
     }
 
     @Override
@@ -187,18 +212,68 @@ public class CompositeOpenAPIModelProvider implements OpenAPIModelProvider, Open
 
     @Override
     public Map<String, Optional<OpenAPI>> getModels() {
-        return this.models;
+        long stamp = this.lock.readLock();
+        try {
+            return Map.copyOf(this.models);
+        } finally {
+            this.lock.unlock(stamp);
+        }
     }
 
     @Override
     public OpenAPI getModel() {
-        return new Factory(List.copyOf(this.models.entrySet())).getModel();
+        // Logic copied from org.wildfly.clustering.server.util.BlockingReference.ConditionalReferenceWriter
+        OpenAPI model = null;
+        boolean update = false;
+        // Try optimistic read first
+        long stamp = this.lock.tryOptimisticRead();
+        try {
+            if (StampedLock.isOptimisticReadStamp(stamp)) {
+                // Read optimistically, and validate later
+                model = this.provider.getPlain();
+                update = (model == null);
+            }
+            if (!this.lock.validate(stamp)) {
+                // Optimistic read unsuccessful or invalid
+                // Acquire pessimistic read lock
+                stamp = this.lock.readLock();
+                // Re-read with read lock
+                model = this.provider.getPlain();
+                update = (model == null);
+            }
+            if (update) {
+                long conversionStamp = this.lock.tryConvertToWriteLock(stamp);
+                if (StampedLock.isWriteLockStamp(conversionStamp)) {
+                    // Read -> write lock upgrade successful
+                    stamp = conversionStamp;
+                } else {
+                    // Lock upgrade unsuccessful, release any pessimistic read lock and acquire write lock
+                    if (StampedLock.isReadLockStamp(stamp)) {
+                        this.lock.unlockRead(stamp);
+                    }
+                    stamp = this.lock.writeLock();
+                    // Re-read with write lock
+                    model = this.provider.getPlain();
+                    update = (model == null);
+                }
+                if (update) {
+                    // Generate model with write lock
+                    model = new OpenAPIModelFactory(this.models).getModel();
+                    this.provider.setPlain(model);
+                }
+            }
+            return model;
+        } finally {
+            if (StampedLock.isLockStamp(stamp)) {
+                this.lock.unlock(stamp);
+            }
+        }
     }
 
-    private class Factory implements OpenAPIModelProvider {
-        private final List<Map.Entry<String, Optional<OpenAPI>>> models;
+    private class OpenAPIModelFactory implements OpenAPIModelProvider {
+        private final Map<String, Optional<OpenAPI>> models;
 
-        Factory(List<Map.Entry<String, Optional<OpenAPI>>> models) {
+        OpenAPIModelFactory(Map<String, Optional<OpenAPI>> models) {
             this.models = models;
         }
 
@@ -235,7 +310,7 @@ public class CompositeOpenAPIModelProvider implements OpenAPIModelProvider, Open
                     ;
 
             // For named components, resolve distinct names if necessary to avoid collisions
-            for (Map.Entry<String, Optional<OpenAPI>> entry : this.models) {
+            for (Map.Entry<String, Optional<OpenAPI>> entry : this.models.entrySet()) {
                 String key = entry.getKey();
                 if (entry.getValue().isPresent()) {
                     OpenAPI model = entry.getValue().get();
@@ -272,12 +347,12 @@ public class CompositeOpenAPIModelProvider implements OpenAPIModelProvider, Open
 
         private String singleton(Function<Optional<OpenAPI>, Optional<String>> function) {
             // For singleton properties, use value from host model if present, otherwise use concordant value from deployment models
-            return function.apply(CompositeOpenAPIModelProvider.this.defaultModel).orElseGet(() -> this.models.stream().map(Map.Entry::getValue).map(function).filter(Optional::isPresent).map(Optional::get).distinct().collect(new SingletonCollector<>()).orElse(null));
+            return function.apply(CompositeOpenAPIModelProvider.this.defaultModel).orElseGet(() -> this.models.values().stream().map(function).filter(Optional::isPresent).map(Optional::get).distinct().collect(new SingletonCollector<>()).orElse(null));
         }
 
         private <T extends Extensible<T>> Map<String, Object> extensions(Function<Optional<OpenAPI>, Optional<T>> component) {
             Stream<T> defaultComponents = component.apply(CompositeOpenAPIModelProvider.this.defaultModel).map(Stream::of).orElse(Stream.empty());
-            Stream<T> deploymentComponents = this.models.stream().map(Map.Entry::getValue).map(component).filter(Optional::isPresent).map(Optional::get);
+            Stream<T> deploymentComponents = this.models.values().stream().map(component).filter(Optional::isPresent).map(Optional::get);
             return Stream.concat(defaultComponents, deploymentComponents).map(Extensible::getExtensions).filter(Objects::nonNull).map(Map::entrySet).flatMap(Set::stream)
                     // Drop conflicts
                     .distinct().collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (value1, value2) -> null, TreeMap::new));
@@ -285,7 +360,7 @@ public class CompositeOpenAPIModelProvider implements OpenAPIModelProvider, Open
 
         private <T> List<T> list(Function<Optional<OpenAPI>, Optional<List<T>>> components) {
             Stream<T> defaultComponents = components.apply(CompositeOpenAPIModelProvider.this.defaultModel).orElse(List.of()).stream();
-            Stream<T> deploymentComponents = this.models.stream().map(Map.Entry::getValue).map(components).filter(Optional::isPresent).map(Optional::get).flatMap(List::stream);
+            Stream<T> deploymentComponents = this.models.values().stream().map(components).filter(Optional::isPresent).map(Optional::get).flatMap(List::stream);
             return Stream.concat(defaultComponents, deploymentComponents).distinct().toList();
         }
     }
