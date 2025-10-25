@@ -5,13 +5,15 @@
 
 package org.wildfly.microprofile.openapi.host;
 
-import java.util.Collections;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.TreeMap;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.concurrent.locks.StampedLock;
 import java.util.function.BiConsumer;
 import java.util.function.BinaryOperator;
 import java.util.function.Consumer;
@@ -57,7 +59,9 @@ public class CompositeOpenAPIProvider implements OpenAPIModelProvider, OpenAPIMo
 
     private final OpenAPI defaultModel;
     private final BinaryOperator<String> resolver;
-    private final Map<String, OpenAPI> models = new ConcurrentHashMap<>();
+    private final StampedLock lock = new StampedLock();
+    private final Map<String, OpenAPI> models = new TreeMap<>();
+    private final AtomicReference<OpenAPI> provider = new AtomicReference<>();
 
     CompositeOpenAPIProvider(OpenAPI defaultModel, BinaryOperator<String> resolver) {
         this.defaultModel = defaultModel;
@@ -66,32 +70,104 @@ public class CompositeOpenAPIProvider implements OpenAPIModelProvider, OpenAPIMo
 
     @Override
     public Registration register(String key, OpenAPI model) {
-        this.models.put(key, model);
-        return () -> this.models.remove(key);
+        long stamp = this.lock.writeLock();
+        try {
+            if (this.models.put(key, model) != model) {
+                this.provider.setPlain(null);
+            }
+            return new Registration() {
+                @Override
+                public void close() {
+                    long stamp = CompositeOpenAPIProvider.this.lock.writeLock();
+                    try {
+                        if (CompositeOpenAPIProvider.this.models.remove(key) != null) {
+                            CompositeOpenAPIProvider.this.provider.setPlain(null);
+                        }
+                    } finally {
+                        CompositeOpenAPIProvider.this.lock.unlock(stamp);
+                    }
+                }
+            };
+        } finally {
+            this.lock.unlock(stamp);
+        }
     }
 
     @Override
     public Map<String, OpenAPI> getModels() {
-        return Collections.unmodifiableMap(this.models);
+        long stamp = this.lock.readLock();
+        try {
+            return Map.copyOf(this.models);
+        } finally {
+            this.lock.unlock(stamp);
+        }
     }
 
     @Override
     public OpenAPI getModel() {
-        List<Map.Entry<String, OpenAPI>> models = List.copyOf(this.models.entrySet());
+        // Logic copied from org.wildfly.clustering.server.util.BlockingReference.ConditionalReferenceWriter
+        OpenAPI model = null;
+        boolean update = false;
+        // Try optimistic read first
+        long stamp = this.lock.tryOptimisticRead();
+        try {
+            if (StampedLock.isOptimisticReadStamp(stamp)) {
+                // Read optimistically, and validate later
+                model = this.provider.getPlain();
+                update = (model == null);
+            }
+            if (!this.lock.validate(stamp)) {
+                // Optimistic read unsuccessful or invalid
+                // Acquire pessimistic read lock
+                stamp = this.lock.readLock();
+                // Re-read with read lock
+                model = this.provider.getPlain();
+                update = (model == null);
+            }
+            if (update) {
+                long conversionStamp = this.lock.tryConvertToWriteLock(stamp);
+                if (StampedLock.isWriteLockStamp(conversionStamp)) {
+                    // Read -> write lock upgrade successful
+                    stamp = conversionStamp;
+                } else {
+                    // Lock upgrade unsuccessful, release any pessimistic read lock and acquire write lock
+                    if (StampedLock.isReadLockStamp(stamp)) {
+                        this.lock.unlockRead(stamp);
+                    }
+                    stamp = this.lock.writeLock();
+                    // Re-read with write lock
+                    model = this.provider.getPlain();
+                    update = (model == null);
+                }
+                if (update) {
+                    model = this.createModel();
+                    this.provider.setPlain(model);
+                }
+            }
+            return model;
+        } finally {
+            if (StampedLock.isLockStamp(stamp)) {
+                this.lock.unlock(stamp);
+            }
+        }
+    }
+
+    // Invoked with write lock
+    private OpenAPI createModel() {
         // Single deployment use case
-        if (models.size() == 1) return models.get(0).getValue();
+        if (this.models.size() == 1) return this.models.values().iterator().next();
 
         // If there are OpenAPI models for multiple deployments, merge into single model
         OpenAPI result = OASFactory.createOpenAPI()
-                .externalDocs(this.distinct(models, OpenAPI::getExternalDocs))
-                .info(this.distinct(models, OpenAPI::getInfo))
-                .jsonSchemaDialect(this.distinct(models, OpenAPI::getJsonSchemaDialect))
-                .openapi(this.distinct(models, OpenAPI::getOpenapi))
+                .externalDocs(this.distinct(this.models.values(), OpenAPI::getExternalDocs))
+                .info(this.distinct(this.models.values(), OpenAPI::getInfo))
+                .jsonSchemaDialect(this.distinct(this.models.values(), OpenAPI::getJsonSchemaDialect))
+                .openapi(this.distinct(this.models.values(), OpenAPI::getOpenapi))
                 ;
 
         Components resultComponents = OASFactory.createComponents();
         Paths resultPaths = OASFactory.createPaths();
-        for (Map.Entry<String, OpenAPI> entry : models) {
+        for (Map.Entry<String, OpenAPI> entry : this.models.entrySet()) {
             String key = entry.getKey();
             OpenAPI model = entry.getValue();
             // Resolve distinct component names using deployment name
@@ -128,8 +204,8 @@ public class CompositeOpenAPIProvider implements OpenAPIModelProvider, OpenAPIMo
         result.setComponents(resultComponents);
         result.setPaths(resultPaths);
 
-        addDistinct(models, OpenAPI::getServers, result::addServer);
-        addDistinct(models, OpenAPI::getTags, result::addTag);
+        addDistinct(this.models.values(), OpenAPI::getServers, result::addServer);
+        addDistinct(this.models.values(), OpenAPI::getTags, result::addTag);
 
         return result;
     }
@@ -143,13 +219,13 @@ public class CompositeOpenAPIProvider implements OpenAPIModelProvider, OpenAPIMo
         };
     }
 
-    private <T> T distinct(List<Map.Entry<String, OpenAPI>> models, Function<OpenAPI, T> function) {
+    private <T> T distinct(Collection<OpenAPI> models, Function<OpenAPI, T> function) {
         // If registered models contain conflicting values use value from default model
-        return models.stream().map(Map.Entry::getValue).map(function).filter(Objects::nonNull).distinct().collect(new SingletonCollector<>()).orElse(function.apply(this.defaultModel));
+        return models.stream().map(function).filter(Objects::nonNull).distinct().collect(new SingletonCollector<>()).orElse(function.apply(this.defaultModel));
     }
 
-    private <T> void addDistinct(List<Map.Entry<String, OpenAPI>> models, Function<OpenAPI, List<T>> function, Consumer<T> accumulator) {
-        List<T> values = models.stream().map(Map.Entry::getValue).map(function).filter(Objects::nonNull).flatMap(List::stream).distinct().toList();
+    private <T> void addDistinct(Collection<OpenAPI> models, Function<OpenAPI, List<T>> function, Consumer<T> accumulator) {
+        List<T> values = models.stream().map(function).filter(Objects::nonNull).flatMap(List::stream).distinct().toList();
         (values.isEmpty() ? Optional.ofNullable(function.apply(this.defaultModel)).orElse(List.of()) : values).forEach(accumulator);
     }
 
