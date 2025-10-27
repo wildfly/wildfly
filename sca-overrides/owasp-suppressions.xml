@@ -273,4 +273,13 @@
       <packageUrl regex="true">^pkg:maven/org\.eclipse\.jgit/org\.eclipse\.jgit.*@6\.10\.1.*$</packageUrl>
       <cve>CVE-2025-4949</cve>
    </suppress>
+   <suppress>
+     <notes><![CDATA[
+     file name: elasticsearch-rest-client-8.15.4.jar
+
+     [WFLY-21079] This CVE is about the server side of the connection, not the client library we depend on.
+     ]]></notes>
+     <packageUrl regex="true">^pkg:maven/org\.elasticsearch\.client/elasticsearch-rest-client.*@.*$</packageUrl>
+     <cve>CVE-2024-52979</cve>
+  </suppress>
 </suppressions>
