@@ -100,4 +100,11 @@ public class OrphanSession implements Session {
         // Thus session fixation is a non-issue
         return this.id;
     }
+
+    /*
+     * New method in io.undertow.server.session.Session that can add the @Override annotation when Undertow is upgraded
+     */
+    public boolean isInvalid() {
+        return true;
+    }
 }

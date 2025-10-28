@@ -224,6 +224,13 @@ public class DistributableSession extends AbstractSession {
         return id;
     }
 
+    /*
+     * New method in io.undertow.server.session.Session that can add the @Override annotation when Undertow is upgraded
+     */
+    public boolean isInvalid() {
+        return !this.reference.get().getKey().isValid();
+    }
+
     private void closeIfInvalid(HttpServerExchange exchange) {
         // If session was invalidated by a concurrent request, Undertow will not trigger Session.requestDone(...), so we need to close the session here
         Session<Map<String, Object>> session = this.get();
