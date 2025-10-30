@@ -88,6 +88,11 @@ on:
         required: false
         default: ""
         type: string
+      id:
+        description: "An id to identify the uploaded artifacts"
+        required: false
+        default: "default"
+        type: string
 
 jobs:
   wildfly-build-and-test:
@@ -143,24 +148,24 @@ jobs:
         uses: actions/upload-artifact@v4
         if: ${{ failure() && contains(matrix.os, 'windows') }}
         with:
-          name: surefire-reports-${{ matrix.os }}-${{ matrix.java }}
+          name: surefire-reports-${{ matrix.os }}-${{ matrix.java }}-${{ inputs.id }}
           path: ${{ env.SUREFIRE_REPORTS }}
       - name: Upload Server Logs on Failure on Windows
         uses: actions/upload-artifact@v4
         if: ${{ failure() && contains(matrix.os, 'windows') }}
         with:
-          name: server-logs-${{ matrix.os }}-${{ matrix.java }}
+          name: server-logs-${{ matrix.os }}-${{ matrix.java }}-${{ inputs.id }}
           path: ${{ env.SERVER_LOGS }}
       - name: Upload Test Reports on Failure
         uses: actions/upload-artifact@v4
         if: ${{ failure() && ! contains(matrix.os, 'windows') }}
         with:
-          name: surefire-reports-${{ matrix.os }}-${{ matrix.java }}
+          name: surefire-reports-${{ matrix.os }}-${{ matrix.java }}-${{ inputs.id }}
           path: '**/surefire-reports/*.txt'
       - name: Upload Server Logs on Failure
         uses: actions/upload-artifact@v4
         if: ${{ failure() && ! contains(matrix.os, 'windows') }}
         with:
-          name: server-logs-${{ matrix.os }}-${{ matrix.java }}
+          name: server-logs-${{ matrix.os }}-${{ matrix.java }}-${{ inputs.id }}
           path: '**/server.log'
 
