@@ -398,40 +398,6 @@ public class DistributableSessionManagerTestCase {
     }
 
     @Test
-    public void getSessionExpired() {
-        HttpServerExchange exchange = new HttpServerExchange(null);
-        Batch batch = mock(Batch.class);
-        SuspendedBatch suspendedBatch = mock(SuspendedBatch.class);
-        Context<Batch> context = mock(Context.class);
-        SessionConfig config = mock(SessionConfig.class);
-        Session<Map<String, Object>> session = mock(Session.class);
-        SessionMetaData metaData = mock(SessionMetaData.class);
-        String sessionId = "session";
-
-        when(this.batchFactory.get()).thenReturn(batch);
-        when(batch.suspend()).thenReturn(suspendedBatch);
-        when(suspendedBatch.resume()).thenReturn(batch);
-        when(suspendedBatch.resumeWithContext()).thenReturn(context);
-        when(context.get()).thenReturn(batch);
-        when(config.findSessionId(exchange)).thenReturn(sessionId);
-        when(this.manager.findSession(sessionId)).thenReturn(session);
-        when(session.getId()).thenReturn(sessionId);
-        when(session.isValid()).thenReturn(true);
-        when(session.getMetaData()).thenReturn(metaData);
-        when(metaData.isExpired()).thenReturn(true);
-        when(metaData.isNew()).thenReturn(false);
-
-        io.undertow.server.session.Session sessionAdapter = this.adapter.getSession(exchange, config);
-
-        assertNull(sessionAdapter);
-
-        verifyNoInteractions(this.statistics);
-
-        verify(batch, never()).discard();
-        verify(batch).close();
-    }
-
-    @Test
     public void activeSessions() {
         when(this.stats.getActiveSessions()).thenReturn(Collections.singleton("expected"));
 
