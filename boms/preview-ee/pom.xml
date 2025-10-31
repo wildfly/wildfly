@@ -32,6 +32,8 @@
 
     <properties>
         <version.com.fasterxml.classmate>1.7.0</version.com.fasterxml.classmate>
+        <version.io.undertow>2.4.0.Alpha1</version.io.undertow>
+        <version.io.undertow.ee>2.0.0.Alpha1</version.io.undertow.ee>
         <version.jakarta.annotation.jakarta-annotation-api>3.0.0</version.jakarta.annotation.jakarta-annotation-api>
         <version.jakarta.authentication.jakarta-authentication-api>3.1.0</version.jakarta.authentication.jakarta-authentication-api>
         <version.jakarta.authorization.jakarta-authorization-api>3.0.0</version.jakarta.authorization.jakarta-authorization-api>
@@ -85,6 +87,41 @@
                 <groupId>${ee.maven.groupId}</groupId>
                 <artifactId>jipijapa-hibernate7</artifactId>
                 <version>${ee.maven.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <!-- Bom-specific dependencies. Keep sorted -->
+            <dependency>
+                <groupId>io.undertow</groupId>
+                <artifactId>undertow-core</artifactId>
+                <version>${version.io.undertow}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>io.undertow.ee</groupId>
+                <artifactId>undertow-servlet</artifactId>
+                <version>${version.io.undertow.ee}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>io.undertow.ee</groupId>
+                <artifactId>undertow-websockets</artifactId>
+                <version>${version.io.undertow.ee}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>
