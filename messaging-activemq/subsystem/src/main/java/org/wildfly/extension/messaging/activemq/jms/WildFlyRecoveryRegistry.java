@@ -31,9 +31,6 @@ public class WildFlyRecoveryRegistry extends WildFlyActiveMQRegistry {
     }
 
     private static XAResourceRecoveryRegistry getXAResourceRecoveryRegistry() {
-        // This parsing isn't 100% ideal as it's somewhat 'internal' knowledge of the relationship between
-        // capability names and service names. But at this point that relationship really needs to become
-        // a contract anyway
         return supplier == null ? null : supplier.get();
     }
 }
