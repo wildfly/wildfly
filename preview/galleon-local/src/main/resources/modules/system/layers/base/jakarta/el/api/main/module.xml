@@ -8,7 +8,7 @@
 <module xmlns="urn:jboss:module:1.9" name="jakarta.el.api">
 
     <resources>
-        <artifact name="${jakarta.el:jakarta.el-api}"/>
+        <artifact name="${org.jboss.spec.jakarta.el:jakarta.el-api}"/>
     </resources>
 
     <dependencies>

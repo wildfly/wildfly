@@ -46,10 +46,6 @@
             <artifactId>jipijapa-hibernate7</artifactId>
         </dependency>
         <dependency>
-            <groupId>jakarta.el</groupId>
-            <artifactId>jakarta.el-api</artifactId>
-        </dependency>
-        <dependency>
             <groupId>jakarta.enterprise</groupId>
             <artifactId>jakarta.enterprise.cdi-el-api</artifactId>
         </dependency>
@@ -76,6 +72,11 @@
         <dependency>
             <groupId>org.hibernate.search</groupId>
             <artifactId>hibernate-search-mapper-orm-outbox-polling</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jboss.spec.jakarta.el</groupId>
+            <artifactId>jakarta.el-api</artifactId>
         </dependency>
 
         <dependency>
