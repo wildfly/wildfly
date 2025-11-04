@@ -31,6 +31,7 @@ import javax.naming.spi.ResolveResult;
 import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.as.naming.logging.NamingLogger;
 import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceController.State;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceRegistry;
 import org.wildfly.security.manager.WildFlySecurityManager;
@@ -63,12 +64,12 @@ public class ServiceBasedNamingStore implements NamingStore {
             return new NamingContext(EMPTY_NAME, this, null);
         }
         final ServiceName lookupName = buildServiceName(name);
-        Object obj = lookup(name.toString(), lookupName, dereference);
+        Object obj = lookup(name, lookupName, dereference);
         if (obj == null) {
             final ServiceName lower = boundServices.lower(lookupName);
             if (lower != null && lower.isParentOf(lookupName)) {
                 // Parent might be a reference or a link
-                obj = lookup(name.toString(), lower, dereference);
+                obj = lookup(name, lower, dereference);
                 //if the lower is a context that has been explicitly bound then
                 //we do not return a resolve result, as this will result in an
                 //infinite loop
@@ -106,10 +107,17 @@ public class ServiceBasedNamingStore implements NamingStore {
         return cpe;
     }
 
-    private Object lookup(final String name, final ServiceName lookupName, boolean dereference) throws NamingException {
+    private Object lookup(final Name name, final ServiceName lookupName, boolean dereference) throws NamingException {
         try {
             final ServiceController<?> controller = serviceRegistry.getService(lookupName);
             if (controller != null) {
+                if (!State.UP.equals(controller.getState())) {
+                    // the controller is registered but there is not outcome yet. 
+                    // If we try to get value at this point it will fail so it is not resolvable
+                    // due to a race condition.
+                    return new ResolveResult(null, name);
+                }
+
                 final Object object = controller.getValue();
                 if (dereference && object instanceof ManagedReferenceFactory) {
                     if(WildFlySecurityManager.isChecking()) {
@@ -132,13 +140,13 @@ public class ServiceBasedNamingStore implements NamingStore {
                 return null;
             }
         } catch (IllegalStateException e) {
-            NameNotFoundException n = new NameNotFoundException(name);
+            NameNotFoundException n = new NameNotFoundException(name.toString());
             n.initCause(e);
             throw n;
         } catch (SecurityException ex) {
             throw ex;
         } catch (Throwable t) {
-            throw NamingLogger.ROOT_LOGGER.lookupError(t, name);
+            throw NamingLogger.ROOT_LOGGER.lookupError(t, name.toString());
         }
     }
 
@@ -148,7 +156,7 @@ public class ServiceBasedNamingStore implements NamingStore {
         boolean isContextBinding = false;
         if (floor != null && floor.isParentOf(lookupName)) {
             // Parent might be a reference or a link
-            Object obj = lookup(name.toString(), floor, true);
+            Object obj = lookup(name, floor, true);
             if (obj instanceof NamingContext) {
                 isContextBinding = true;
             } else if (obj != null) {
@@ -165,7 +173,7 @@ public class ServiceBasedNamingStore implements NamingStore {
             if (childParts.length > lookupParts.length + 1) {
                 childContexts.add(childParts[lookupParts.length]);
             } else {
-                final Object binding = lookup(name.toString(), child, false);
+                final Object binding = lookup(name, child, false);
                 if (binding != null) {
                     final String bindingType;
                     if (binding instanceof ContextListManagedReferenceFactory) {
@@ -193,7 +201,7 @@ public class ServiceBasedNamingStore implements NamingStore {
         boolean isContextBinding = false;
         if (floor != null && floor.isParentOf(lookupName)) {
             // Parent might be a reference or a link
-            Object obj = lookup(name.toString(), floor, true);
+            Object obj = lookup(name, floor, true);
             if (obj instanceof NamingContext) {
                 isContextBinding = true;
             } else if (obj != null) {
@@ -209,7 +217,7 @@ public class ServiceBasedNamingStore implements NamingStore {
             if (childParts.length > lookupParts.length + 1) {
                 childContexts.add(childParts[lookupParts.length]);
             } else {
-                final Object binding = lookup(name.toString(), child, true);
+                final Object binding = lookup(name, child, true);
                 results.add(new Binding(childParts[childParts.length - 1], binding));
             }
         }

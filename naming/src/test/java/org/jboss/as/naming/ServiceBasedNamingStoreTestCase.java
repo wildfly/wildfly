@@ -9,6 +9,7 @@ import java.util.Hashtable;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+
 import javax.naming.Binding;
 import javax.naming.CompositeName;
 import javax.naming.Context;
@@ -17,21 +18,27 @@ import javax.naming.NameClassPair;
 import javax.naming.NameParser;
 import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
+import javax.naming.spi.ResolveResult;
 
+import org.hamcrest.CoreMatchers;
+import org.hamcrest.MatcherAssert;
+import org.hamcrest.core.IsInstanceOf;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 /**
  * @author John Bailey
@@ -368,6 +375,16 @@ public class ServiceBasedNamingStoreTestCase {
         }
     }
 
+    @Test
+    public void testNotAvailableBinding() throws Exception {
+        CountDownLatch latch = bindObjectNoWait(ServiceName.JBOSS.append("TestBean"), new Object());
+        Object value = store.lookup(new CompositeName("TestBean"));
+        latch.countDown();
+        assertNotNull(value);
+        MatcherAssert.assertThat(value, IsInstanceOf.instanceOf(ResolveResult.class));
+        assertNull(((ResolveResult) value).getResolvedObj());
+    }
+
     private void assertContains(final List<? extends NameClassPair> list, String name, Class<?> type) {
         for (NameClassPair value : list) {
             if (value instanceof Binding) {
@@ -396,5 +413,28 @@ public class ServiceBasedNamingStoreTestCase {
             }
         }).install();
         latch.await();
+    }
+
+    private CountDownLatch bindObjectNoWait(final ServiceName serviceName, final Object value) throws Exception {
+        CountDownLatch latch = new CountDownLatch(1);
+        container.addService(serviceName, new Service<Object>() {
+            public void start(StartContext context) throws StartException {
+                try {
+                    store.add(serviceName);
+                    latch.await();
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    throw new StartException(e);
+                }
+            }
+
+            public void stop(StopContext context) {
+            }
+
+            public Object getValue() throws IllegalStateException, IllegalArgumentException {
+                return value;
+            }
+        }).install();
+        return latch;
     }
 }
