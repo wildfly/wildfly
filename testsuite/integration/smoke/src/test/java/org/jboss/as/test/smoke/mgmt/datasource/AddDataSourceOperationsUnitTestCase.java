@@ -17,6 +17,7 @@ import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.as.connector.subsystems.datasources.DataSourcesExtension;
 import org.jboss.as.connector.subsystems.datasources.Namespace;
 import org.jboss.as.test.integration.management.jca.DsMgmtTestBase;
+import org.jboss.as.test.integration.management.util.ServerReload;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -37,7 +38,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 
 public class AddDataSourceOperationsUnitTestCase extends DsMgmtTestBase{
 
-    private static final String JDBC_DRIVER_NAME = "test-jdbc-" + System.currentTimeMillis() + ".jar";
+    private static final String JDBC_DRIVER_NAME = "test-jdbc.jar";
 
     @Deployment(testable = false)
     public static Archive<?> getDeployment() {
@@ -77,6 +78,8 @@ public class AddDataSourceOperationsUnitTestCase extends DsMgmtTestBase{
         List<ModelNode> newList = marshalAndReparseDsResources("data-source");
 
         remove(address);
+
+        ServerReload.executeReloadAndWaitForCompletion(getModelControllerClient());
 
         Assertions.assertNotNull(newList,"Reparsing failed:");
 
