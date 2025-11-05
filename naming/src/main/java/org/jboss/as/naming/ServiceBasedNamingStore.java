@@ -112,7 +112,7 @@ public class ServiceBasedNamingStore implements NamingStore {
             final ServiceController<?> controller = serviceRegistry.getService(lookupName);
             if (controller != null) {
                 if (!State.UP.equals(controller.getState())) {
-                    // the controller is registered but there is not outcome yet. 
+                    // the controller is registered but there is not outcome yet.
                     // If we try to get value at this point it will fail so it is not resolvable
                     // due to a race condition.
                     return new ResolveResult(null, name);
