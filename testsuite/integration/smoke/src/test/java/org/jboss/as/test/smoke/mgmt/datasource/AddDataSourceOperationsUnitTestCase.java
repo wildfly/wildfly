@@ -37,7 +37,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 
 public class AddDataSourceOperationsUnitTestCase extends DsMgmtTestBase{
 
-    private static final String JDBC_DRIVER_NAME = "test-jdbc.jar";
+    private static final String JDBC_DRIVER_NAME = "test-jdbc-" + System.currentTimeMillis() + ".jar";
 
     @Deployment(testable = false)
     public static Archive<?> getDeployment() {
