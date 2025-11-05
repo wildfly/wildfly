@@ -34,6 +34,7 @@
         <!-- properties to enable plugins shared by various bootable jar executions -->
         <glow.phase.observability>none</glow.phase.observability>
         <glow.phase.sar>none</glow.phase.sar>
+        <glow.phase.jakarta.data>none</glow.phase.jakarta.data>
     </properties>
 
     <dependencies>
@@ -603,7 +604,14 @@
                         <goals>
                             <goal>scan</goal>
                         </goals>
-                        <phase>${glow.phase.sar}</phase>
+                        <!--<phase>${glow.phase.jakarta.data}</phase>-->
+                        <!--
+                        Glow Arquillian plugin generates a provisioning.xml that doesn't
+                        provision preview stability artifacts, so this doesn't work.
+                        See https://github.com/wildfly/wildfly-glow/issues/134
+                        Leave all the config here to ease promotion to community stability.
+                        -->
+                        <phase>none</phase>
                         <configuration>
                             <expected-discovery>[cdi, ee-integration, h2-datasource, jakarta-data, jaxrs, jpa, jsonb, jsonp]==>ee-core-profile-server,h2-datasource,jakarta-data,jaxrs</expected-discovery>
                             <surefire-execution-for-included-classes>jakarta-data-layers.surefire</surefire-execution-for-included-classes>
@@ -779,6 +787,7 @@
                 <jboss.dist>${project.build.directory}/wildfly</jboss.dist>
                 <glow.phase.observability>test-compile</glow.phase.observability>
                 <glow.phase.sar>test-compile</glow.phase.sar>
+                <glow.phase.jakarta.data>test-compile</glow.phase.jakarta.data>
             </properties>
             <build>
                 <plugins>
