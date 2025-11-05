@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+
+<module xmlns="urn:jboss:module:1.9" name="org.wildfly.clustering.session.container.servlet">
+
+    <properties>
+        <property name="jboss.api" value="private"/>
+    </properties>
+
+    <resources>
+        <artifact name="${org.wildfly.clustering:wildfly-clustering-session-container-servlet-6.0}"/>
+    </resources>
+
+    <dependencies>
+        <module name="jakarta.servlet.api"/>
+
+        <module name="org.wildfly.clustering.function"/>
+        <module name="org.wildfly.clustering.session.container.spi"/>
+        <module name="org.wildfly.clustering.session.spi"/>
+    </dependencies>
+</module>

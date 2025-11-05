@@ -85,6 +85,17 @@
         </dependency>
 
         <dependency>
+            <groupId>org.wildfly.clustering</groupId>
+            <artifactId>wildfly-clustering-session-container-servlet-6.1</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <dependency>
             <groupId>org.wildfly.deployment</groupId>
             <artifactId>wildfly-ee-9-deployment-transformer</artifactId>
         </dependency>

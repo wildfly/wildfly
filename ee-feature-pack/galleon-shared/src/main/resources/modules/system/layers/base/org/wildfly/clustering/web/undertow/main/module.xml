@@ -38,8 +38,7 @@
         <module name="org.wildfly.clustering.marshalling.protostream"/>
         <module name="org.wildfly.clustering.marshalling.spi"/>
         <module name="org.wildfly.clustering.server.spi"/>
-        <module name="org.wildfly.clustering.session.spec.servlet"/>
-        <module name="org.wildfly.clustering.session.spec.spi"/>
+        <module name="org.wildfly.clustering.session.container.spi"/>
         <module name="org.wildfly.clustering.session.spi"/>
         <module name="org.wildfly.clustering.web.container"/>
         <module name="org.wildfly.clustering.web.service"/>

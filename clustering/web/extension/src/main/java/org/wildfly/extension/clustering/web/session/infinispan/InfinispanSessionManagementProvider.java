@@ -29,10 +29,6 @@ import org.wildfly.clustering.server.service.ClusteringServiceDescriptor;
 import org.wildfly.clustering.session.SessionManagerFactory;
 import org.wildfly.clustering.session.infinispan.embedded.InfinispanSessionManagerFactory;
 import org.wildfly.clustering.session.infinispan.embedded.metadata.SessionMetaDataKey;
-import org.wildfly.clustering.session.spec.SessionEventListenerSpecificationProvider;
-import org.wildfly.clustering.session.spec.SessionSpecificationProvider;
-import org.wildfly.clustering.session.spec.servlet.HttpSessionActivationListenerProvider;
-import org.wildfly.clustering.session.spec.servlet.HttpSessionProvider;
 import org.wildfly.clustering.web.service.deployment.WebDeploymentServiceDescriptor;
 import org.wildfly.clustering.web.service.routing.RouteLocatorProvider;
 import org.wildfly.clustering.web.service.session.DistributableSessionManagementConfiguration;
@@ -45,8 +41,6 @@ import org.wildfly.subsystem.service.ServiceDependency;
 import org.wildfly.subsystem.service.ServiceInstaller;
 
 import jakarta.servlet.ServletContext;
-import jakarta.servlet.http.HttpSession;
-import jakarta.servlet.http.HttpSessionActivationListener;
 
 /**
  * An Infinispan cache-based {@link DistributableSessionManagementProvider}.
@@ -111,7 +105,7 @@ public class InfinispanSessionManagementProvider extends AbstractSessionManageme
         Supplier<SessionManagerFactory<ServletContext, C>> factory = new Supplier<>() {
             @Override
             public SessionManagerFactory<ServletContext, C> get() {
-                return new InfinispanSessionManagerFactory<>(new InfinispanSessionManagerFactory.Configuration<HttpSession, ServletContext, C, HttpSessionActivationListener>() {
+                return new InfinispanSessionManagerFactory<>(new InfinispanSessionManagerFactory.Configuration<C>() {
                     @Override
                     public EmbeddedCacheConfiguration getCacheConfiguration() {
                         return cacheConfiguration;
@@ -125,16 +119,6 @@ public class InfinispanSessionManagementProvider extends AbstractSessionManageme
                     @Override
                     public org.wildfly.clustering.session.SessionManagerFactoryConfiguration<C> getSessionManagerFactoryConfiguration() {
                         return configuration;
-                    }
-
-                    @Override
-                    public SessionSpecificationProvider<HttpSession, ServletContext> getSessionSpecificationProvider() {
-                        return HttpSessionProvider.INSTANCE;
-                    }
-
-                    @Override
-                    public SessionEventListenerSpecificationProvider<HttpSession, HttpSessionActivationListener> getSessionEventListenerSpecificationProvider() {
-                        return HttpSessionActivationListenerProvider.INSTANCE;
                     }
                 });
             }

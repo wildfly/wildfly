@@ -3012,6 +3012,14 @@
         </dependency>
         <dependency>
             <groupId>org.wildfly.clustering</groupId>
+            <artifactId>wildfly-clustering-session-container-servlet-6.0</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.wildfly.clustering</groupId>
+            <artifactId>wildfly-clustering-session-container-spi</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.wildfly.clustering</groupId>
             <artifactId>wildfly-clustering-session-infinispan-embedded</artifactId>
             <exclusions>
                 <exclusion>
@@ -3033,14 +3041,6 @@
         <dependency>
             <groupId>org.wildfly.clustering</groupId>
             <artifactId>wildfly-clustering-session-spi</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.wildfly.clustering</groupId>
-            <artifactId>wildfly-clustering-session-spec-servlet-6.0</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.wildfly.clustering</groupId>
-            <artifactId>wildfly-clustering-session-spec-spi</artifactId>
         </dependency>
 
         <dependency>
