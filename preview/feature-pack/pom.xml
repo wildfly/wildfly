@@ -252,6 +252,8 @@
                             <fork-embedded>${galleon.fork.embedded}</fork-embedded>
                             <generate-channel-manifest>true</generate-channel-manifest>
                             <deploy-channel-manifest>false</deploy-channel-manifest>
+                            <generate-complete-model>true</generate-complete-model>
+                            <copyright>The WildFly authors</copyright>
                         </configuration>
                     </execution>
                 </executions>
