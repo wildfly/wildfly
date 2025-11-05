@@ -20,7 +20,6 @@ import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.network.SocketBinding;
 import org.jboss.dmr.ModelNode;
 import org.jboss.modules.Module;
-import org.jgroups.Global;
 import org.jgroups.stack.Protocol;
 import org.jgroups.util.StackType;
 import org.jgroups.util.Util;
@@ -76,10 +75,7 @@ public abstract class ProtocolConfigurationResourceDefinitionRegistrar<P extends
                         @Override
                         public P createProtocol(ChannelFactoryConfiguration configuration) {
                             try {
-                                // A "native" protocol is one that is not specified as a class name
-                                boolean nativeProtocol = module.get().getName().equals(MODULE.getDefaultValue().asString()) && !name.startsWith(Global.PREFIX);
-                                String className = nativeProtocol ? (Global.PREFIX + name) : name;
-                                Class<? extends Protocol> protocolClass = module.get().getClassLoader().loadClass(className).asSubclass(Protocol.class);
+                                Class<? extends Protocol> protocolClass = findProtocolClass(context, name, model);
                                 Map<String, String> protocolProperties = new HashMap<>(repository.get().getProperties(protocolClass));
                                 protocolProperties.putAll(properties);
                                 PrivilegedExceptionAction<Protocol> action = new PrivilegedExceptionAction<>() {
