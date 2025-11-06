@@ -36,6 +36,11 @@ public class TestConcurrencyImplementation implements ConcurrencyImplementation 
     }
 
     @Override
+    public String getJBossModuleName() {
+        return "";
+    }
+
+    @Override
     public void installSubsystemServices(OperationContext context) {
 
     }

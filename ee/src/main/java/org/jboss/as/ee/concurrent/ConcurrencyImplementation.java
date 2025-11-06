@@ -47,6 +47,12 @@ public interface ConcurrencyImplementation {
     void addDeploymentProcessors(DeploymentProcessorTarget processorTarget);
 
     /**
+     *
+     * @return the name of the JBoss Module for the Concurrency Implementation
+     */
+    String getJBossModuleName();
+
+    /**
      * Installs boot-time concurrency related subsystem services
      * @param context the boot-time subsystem add operation context
      */

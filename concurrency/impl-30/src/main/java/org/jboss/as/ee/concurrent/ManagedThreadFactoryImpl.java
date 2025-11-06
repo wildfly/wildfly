@@ -94,7 +94,9 @@ public class ManagedThreadFactoryImpl extends org.glassfish.enterprise.concurren
 
         @Override
         public AbstractManagedThread run() {
-            return new ManagedThread(r, contextHandleForSetup);
+            final ManagedThread t = new ManagedThread(r, contextHandleForSetup);
+            t.setPriority(priority);
+            return t;
         }
     }
 

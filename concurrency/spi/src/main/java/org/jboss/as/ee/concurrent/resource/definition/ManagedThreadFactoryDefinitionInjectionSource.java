@@ -6,6 +6,8 @@ package org.jboss.as.ee.concurrent.resource.definition;
 
 import java.util.function.Consumer;
 
+import org.jboss.as.ee.component.Attachments;
+import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ee.concurrent.WildFlyManagedThreadFactory;
 import org.jboss.as.ee.concurrent.WildFlyContextService;
 import org.jboss.as.ee.concurrent.deployers.EEConcurrentDefaultBindingProcessor;
@@ -16,6 +18,7 @@ import org.jboss.as.naming.ManagedReference;
 import org.jboss.as.naming.ManagedReferenceFactory;
 import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
+import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.msc.inject.InjectionException;
 import org.jboss.msc.inject.Injector;
@@ -41,7 +44,7 @@ public class ManagedThreadFactoryDefinitionInjectionSource extends ResourceDefin
 
     public void getResourceValue(final ResolutionContext context, final ServiceBuilder<?> serviceBuilder, final DeploymentPhaseContext phaseContext, final Injector<ManagedReferenceFactory> injector) throws DeploymentUnitProcessingException {
         final String resourceName = uniqueName(context);
-        final String resourceJndiName = "java:jboss/ee/concurrency/definition/managedScheduledExecutor/"+resourceName;
+        final String resourceJndiName = "java:jboss/ee/concurrency/definition/managedThreadFactory/"+resourceName;
         try {
             // install the resource service
             final ServiceName resourceServiceName = ManagedThreadFactoryResourceDefinition.CAPABILITY.getCapabilityServiceName(resourceName);
@@ -58,7 +61,15 @@ public class ManagedThreadFactoryDefinitionInjectionSource extends ResourceDefin
                     resourceService.getContextServiceSupplier().set(() -> null);
                 }
             };
-            final String contextServiceRef = this.contextServiceRef == null || this.contextServiceRef.isEmpty() ? EEConcurrentDefaultBindingProcessor.COMP_DEFAULT_CONTEXT_SERVICE_JNDI_NAME : this.contextServiceRef;
+            final String contextServiceRef;
+            if (this.contextServiceRef == null || this.contextServiceRef.isEmpty() || this.contextServiceRef.equals(EEConcurrentDefaultBindingProcessor.COMP_DEFAULT_CONTEXT_SERVICE_JNDI_NAME)) {
+                // default context service, use the real name of the resource since java:comp may not exist (e.g. ear)
+                final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
+                final EEModuleDescription moduleDescription = deploymentUnit.getAttachment(Attachments.EE_MODULE_DESCRIPTION);
+                contextServiceRef = moduleDescription.getDefaultResourceJndiNames().getContextService();
+            } else {
+                contextServiceRef = this.contextServiceRef;
+            }
             final ContextNames.BindInfo contextServiceBindInfo = ContextNames.bindInfoForEnvEntry(context.getApplicationName(), context.getModuleName(), context.getComponentName(), !context.isCompUsesModule(), contextServiceRef);
             contextServiceBindInfo.setupLookupInjection(resourceServiceBuilder, contextServiceLookupInjector, phaseContext.getDeploymentUnit(), false);
             resourceServiceBuilder.setInstance(resourceService);
