@@ -13,7 +13,7 @@ endif::[]
 == Naming Client
 
 This migration example assumes a client application performs a remote
-JNDI lookup using an ﻿﻿ `InitialContext` backed by the
+JNDI lookup using an  `InitialContext` backed by the
 `org.wildfly.naming.client.WildFlyInitialContextFactory` class.
 
 [[original-configuration-app-client]]

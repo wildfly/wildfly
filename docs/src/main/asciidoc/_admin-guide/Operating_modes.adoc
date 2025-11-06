@@ -140,7 +140,7 @@ they should have the same deployment content deployed.
 The domain can have multiple server groups. The above diagram shows two
 server groups, "ServerGroupA" and "ServerGroupB". Different server
 groups can be configured with different profiles and deployments; for
-example in a domain with different tiers of servers ﻿providing different
+example in a domain with different tiers of servers providing different
 services. Different server groups can also run the same profile and have
 the same deployments; for example to support rolling application upgrade
 scenarios where a complete service outage is avoided by first upgrading

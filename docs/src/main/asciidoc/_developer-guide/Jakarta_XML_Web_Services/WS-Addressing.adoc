@@ -37,7 +37,7 @@ The supported addressing policy elements are:
 
 Alternatively, Apache CXF proprietary ways are also available:
 
-* specifying the ﻿ _[http://cxf.apache.org/ws/addressing]addressing_
+* specifying the  _[http://cxf.apache.org/ws/addressing]addressing_
 feature for a given client/endpoint
 * using the `org.apache.cxf.ws.addressing.WSAddressingFeature` feature
 through the API

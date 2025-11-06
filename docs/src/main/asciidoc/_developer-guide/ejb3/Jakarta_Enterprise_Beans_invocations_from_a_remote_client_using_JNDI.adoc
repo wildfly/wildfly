@@ -592,7 +592,7 @@ remote.connection.default.password=apppassword
 ....
 
 The given user/password must be set by using the command bin/add-user.sh
-﻿(or.bat). +
+(or.bat). +
 The user and password must be set because the security-realm is enabled
 for the subsystem remoting (see standalone*.xml or domain.xml) by
 default. +
