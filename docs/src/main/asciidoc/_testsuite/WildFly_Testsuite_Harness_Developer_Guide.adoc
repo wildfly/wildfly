@@ -38,7 +38,7 @@ for testsuite modules.>>
 [[properties-and-their-propagation]]
 == Properties and their propagation
 
-﻿Propagated to tests through arquillian.xml: +
+Propagated to tests through arquillian.xml: +
 `<property name="javaVmArguments">${server.jvm.args}</property>` +
 TBD: https://issues.redhat.com/browse/ARQ-647
 

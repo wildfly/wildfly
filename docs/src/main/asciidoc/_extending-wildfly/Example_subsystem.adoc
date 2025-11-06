@@ -92,7 +92,7 @@ will generate the project for you.
 |=======================================================================
 
 We now have a skeleton project that you can use to
-implement a subsystem. Import the ﻿ `acme-subsystem` project into your
+implement a subsystem. Import the  `acme-subsystem` project into your
 favourite IDE. A nice side-effect of running this in the IDE is that you
 can see the javadoc of WildFly classes and interfaces imported by the
 skeleton code. If you do a `mvn install` in the project it will work if
@@ -167,13 +167,13 @@ to the following
 </xs:schema>
 ----
 
-Note that we modified the `xmlns` and `targetNamespace` values to ﻿
+Note that we modified the `xmlns` and `targetNamespace` values to
 `urn.com.acme.corp.tracker:1.0`. Our new `subsystem` element has a child
 called `deployment-types`, which in turn can have zero or more children
 called `deployment-type`. Each `deployment-type` has a required `suffix`
 attribute, and a `tick` attribute which defaults to `true.`
 
-Now modify the ﻿ `com.acme.corp.tracker.extension.SubsystemExtension`
+Now modify the  `com.acme.corp.tracker.extension.SubsystemExtension`
 class to contain the new namespace.
 
 [source,java,options="nowrap"]

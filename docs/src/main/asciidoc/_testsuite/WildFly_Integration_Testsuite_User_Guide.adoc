@@ -42,7 +42,7 @@ can use:
 === Supported Maven phases
 
 Testsuite actions are bounds to various Maven phases up to `verify`.
-Running the build with earlier ﻿phases may fail in the submodules due to
+Running the build with earlier phases may fail in the submodules due to
 missed configuration steps. Therefore, the only Maven phases you may
 safely run, are:
 
