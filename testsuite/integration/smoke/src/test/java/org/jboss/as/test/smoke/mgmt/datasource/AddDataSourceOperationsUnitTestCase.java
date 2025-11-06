@@ -17,6 +17,7 @@ import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.as.connector.subsystems.datasources.DataSourcesExtension;
 import org.jboss.as.connector.subsystems.datasources.Namespace;
 import org.jboss.as.test.integration.management.jca.DsMgmtTestBase;
+import org.jboss.as.test.integration.management.util.ServerReload;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -77,6 +78,8 @@ public class AddDataSourceOperationsUnitTestCase extends DsMgmtTestBase{
         List<ModelNode> newList = marshalAndReparseDsResources("data-source");
 
         remove(address);
+
+        ServerReload.executeReloadAndWaitForCompletion(getModelControllerClient());
 
         Assertions.assertNotNull(newList,"Reparsing failed:");
 
