@@ -529,7 +529,7 @@
         <version.org.jboss.spec.jakarta.xml.soap.saaj-api_3.0_spec>1.0.0.Final</version.org.jboss.spec.jakarta.xml.soap.saaj-api_3.0_spec>
         <version.org.jboss.spec.jakarta.xml.ws.api_4.0_spec>1.0.0.Final</version.org.jboss.spec.jakarta.xml.ws.api_4.0_spec>
         <version.org.jboss.universe.community>1.2.0.Final</version.org.jboss.universe.community>
-        <version.org.jboss.universe.producer.wildfly>1.3.14.Final</version.org.jboss.universe.producer.wildfly>
+        <version.org.jboss.universe.producer.wildfly>1.3.16.Final</version.org.jboss.universe.producer.wildfly>
         <version.org.jboss.weld.weld>5.1.6.Final</version.org.jboss.weld.weld>
         <version.org.jboss.weld.weld-api>5.0.SP3</version.org.jboss.weld.weld-api>
         <version.org.jboss.ws.api>3.0.0.Final</version.org.jboss.ws.api>
