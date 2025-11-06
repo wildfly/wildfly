@@ -93,7 +93,7 @@
                                     <artifactId>jakarta.data-api</artifactId>
                                 </dependency>
                                 <dependency>
-                                    <groupId>jakarta.el</groupId>
+                                    <groupId>org.jboss.spec.jakarta.el</groupId>
                                     <artifactId>jakarta.el-api</artifactId>
                                 </dependency>
                                 <dependency>
