@@ -631,6 +631,37 @@
                     </execution>
                 </executions>
             </plugin>
+            <!-- Extend general surefire configuration defined in pom.xml of the integration module -->
+            <!-- This configuration is then inherited in all executions in this module providing the default, per node: -->
+            <!-- distribution directory, address, JPDA arguments and shared Infinispan server configuration -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <systemPropertyVariables combine.children="append">
+                        <wildfly1>wildfly-1</wildfly1>
+                        <wildfly2>wildfly-2</wildfly2>
+                        <wildfly3>wildfly-3</wildfly3>
+                        <wildfly4>wildfly-4</wildfly4>
+                        <wildfly-load-balancer1>wildfly-load-balancer-1</wildfly-load-balancer1>
+                        <node0>${node0}</node0>
+                        <node1>${node1}</node1>
+                        <node2>${node2}</node2>
+                        <node3>${node3}</node3>
+                        <mcast>${mcast}</mcast>
+                        <mcast1>${mcast1}</mcast1>
+                        <mcast2>${mcast2}</mcast2>
+                        <mcast3>${mcast3}</mcast3>
+                        <server.jvm.args>${server.jvm.args}</server.jvm.args>
+                        <surefire.jpda.args.node1>${surefire.jpda.args.node1}</surefire.jpda.args.node1>
+                        <surefire.jpda.args.node2>${surefire.jpda.args.node2}</surefire.jpda.args.node2>
+                        <surefire.jpda.args.node3>${surefire.jpda.args.node3}</surefire.jpda.args.node3>
+                        <surefire.jpda.args.node4>${surefire.jpda.args.node4}</surefire.jpda.args.node4>
+                        <infinispan.server.home>${infinispan.server.home.template}</infinispan.server.home>
+                        <infinispan.server.profile>${infinispan.server.profile.override}</infinispan.server.profile>
+                    </systemPropertyVariables>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
     <profiles>
@@ -952,33 +983,10 @@
                                         <exclude>${test-group}/**/byteman/*TestCase.java</exclude>
                                         <exclude>%regex[${test-group}/(${ts.surefire.clustering.ha.additionalExcludes})/.*TestCase.class]</exclude>
                                     </excludes>
-                                    <!-- Parameters to test cases. -->
                                     <systemPropertyVariables>
-                                        <!-- required by arquillian.xml -->
-                                        <wildfly1>wildfly-1</wildfly1>
-                                        <wildfly2>wildfly-2</wildfly2>
-                                        <wildfly3>wildfly-3</wildfly3>
-                                        <wildfly4>wildfly-4</wildfly4>
-                                        <wildfly-load-balancer1>wildfly-load-balancer-1</wildfly-load-balancer1>
-                                        <!-- end required by arquillian.xml -->
-                                        <node0>${node0}</node0>
-                                        <node1>${node1}</node1>
-                                        <node2>${node2}</node2>
-                                        <node3>${node3}</node3>
-                                        <mcast>${mcast}</mcast>
-                                        <mcast1>${mcast1}</mcast1>
-                                        <mcast2>${mcast2}</mcast2>
-                                        <mcast3>${mcast3}</mcast3>
                                         <arquillian.xml>arquillian.xml</arquillian.xml>
                                         <arquillian.launch>clustering-all</arquillian.launch>
                                         <jboss.server.config.file.name>standalone-ha.xml</jboss.server.config.file.name>
-                                        <server.jvm.args>${server.jvm.args}</server.jvm.args>
-                                        <surefire.jpda.args.node1>${surefire.jpda.args.node1}</surefire.jpda.args.node1>
-                                        <surefire.jpda.args.node2>${surefire.jpda.args.node2}</surefire.jpda.args.node2>
-                                        <surefire.jpda.args.node3>${surefire.jpda.args.node3}</surefire.jpda.args.node3>
-                                        <surefire.jpda.args.node4>${surefire.jpda.args.node4}</surefire.jpda.args.node4>
-                                        <infinispan.server.home>${infinispan.server.home.template}</infinispan.server.home>
-                                        <infinispan.server.profile>${infinispan.server.profile.override}</infinispan.server.profile>
                                     </systemPropertyVariables>
                                 </configuration>
                             </execution>
@@ -1022,31 +1030,9 @@
                                     </includes>
                                     <!-- Parameters to test cases. -->
                                     <systemPropertyVariables>
-                                        <!-- required by arquillian.xml -->
-                                        <wildfly1>wildfly-1</wildfly1>
-                                        <wildfly2>wildfly-2</wildfly2>
-                                        <wildfly3>wildfly-3</wildfly3>
-                                        <wildfly4>wildfly-4</wildfly4>
-                                        <wildfly-load-balancer1>wildfly-load-balancer-1</wildfly-load-balancer1>
-                                        <!-- end required by arquillian.xml -->
-                                        <node0>${node0}</node0>
-                                        <node1>${node1}</node1>
-                                        <node2>${node2}</node2>
-                                        <node3>${node3}</node3>
-                                        <mcast>${mcast}</mcast>
-                                        <mcast1>${mcast1}</mcast1>
-                                        <mcast2>${mcast2}</mcast2>
-                                        <mcast3>${mcast3}</mcast3>
                                         <arquillian.xml>arquillian.xml</arquillian.xml>
                                         <arquillian.launch>clustering-all</arquillian.launch>
                                         <jboss.server.config.file.name>standalone-ha.xml</jboss.server.config.file.name>
-                                        <server.jvm.args>${server.jvm.args}</server.jvm.args>
-                                        <surefire.jpda.args.node1>${surefire.jpda.args.node1}</surefire.jpda.args.node1>
-                                        <surefire.jpda.args.node2>${surefire.jpda.args.node2}</surefire.jpda.args.node2>
-                                        <surefire.jpda.args.node3>${surefire.jpda.args.node3}</surefire.jpda.args.node3>
-                                        <surefire.jpda.args.node4>${surefire.jpda.args.node4}</surefire.jpda.args.node4>
-                                        <infinispan.server.home>${infinispan.server.home.template}</infinispan.server.home>
-                                        <infinispan.server.profile>${infinispan.server.profile.override}</infinispan.server.profile>
                                     </systemPropertyVariables>
                                 </configuration>
                             </execution>
@@ -1089,31 +1075,10 @@
                                     </includes>
                                     <!-- Parameters to test cases. -->
                                     <systemPropertyVariables>
-                                        <!-- required by arquillian.xml -->
-                                        <wildfly1>wildfly-1</wildfly1>
-                                        <wildfly2>wildfly-2</wildfly2>
-                                        <wildfly3>wildfly-3</wildfly3>
-                                        <wildfly4>wildfly-4</wildfly4>
-                                        <wildfly-load-balancer1>wildfly-load-balancer-1</wildfly-load-balancer1>
-                                        <!-- end required by arquillian.xml -->
-                                        <node0>${node0}</node0>
-                                        <node1>${node1}</node1>
-                                        <node2>${node2}</node2>
-                                        <node3>${node3}</node3>
-                                        <mcast>${mcast}</mcast>
-                                        <mcast1>${mcast1}</mcast1>
-                                        <mcast2>${mcast2}</mcast2>
-                                        <mcast3>${mcast3}</mcast3>
+                                        <server.jvm.args>${server.jvm.args} -Djboss.messaging.cluster.password=testsuite-messaging-password</server.jvm.args>
                                         <arquillian.xml>arquillian.xml</arquillian.xml>
                                         <arquillian.launch>clustering-all</arquillian.launch>
                                         <jboss.server.config.file.name>standalone-full-ha.xml</jboss.server.config.file.name>
-                                        <server.jvm.args>${server.jvm.args} -Djboss.messaging.cluster.password=testsuite-messaging-password</server.jvm.args>
-                                        <surefire.jpda.args.node1>${surefire.jpda.args.node1}</surefire.jpda.args.node1>
-                                        <surefire.jpda.args.node2>${surefire.jpda.args.node2}</surefire.jpda.args.node2>
-                                        <surefire.jpda.args.node3>${surefire.jpda.args.node3}</surefire.jpda.args.node3>
-                                        <surefire.jpda.args.node4>${surefire.jpda.args.node4}</surefire.jpda.args.node4>
-                                        <infinispan.server.home>${infinispan.server.home.template}</infinispan.server.home>
-                                        <infinispan.server.profile>${infinispan.server.profile.override}</infinispan.server.profile>
                                     </systemPropertyVariables>
                                 </configuration>
                             </execution>
@@ -1155,7 +1120,6 @@
                                         <exclude>org/jboss/as/test/clustering/single/web/NonHaWebSessionPersistenceTestCase.java</exclude>
                                     </excludes>
                                     <systemPropertyVariables combine.children="append">
-                                        <wildfly1>wildfly-1</wildfly1>
                                         <arquillian.launch>single</arquillian.launch>
                                         <jboss.server.config.file.name>standalone.xml</jboss.server.config.file.name>
                                     </systemPropertyVariables>
@@ -1174,7 +1138,6 @@
                                         <include>org/jboss/as/test/clustering/single/web/NonHaWebSessionPersistenceTestCase.java</include>
                                     </includes>
                                     <systemPropertyVariables combine.children="append">
-                                        <wildfly1>wildfly-1</wildfly1>
                                         <arquillian.launch>node-non-ha</arquillian.launch>
                                         <jboss.server.config.file.name>standalone.xml</jboss.server.config.file.name>
                                     </systemPropertyVariables>
@@ -1215,14 +1178,8 @@
                                         <classpathDependencyExclude>org.jboss.arquillian.extension:arquillian-extension-byteman</classpathDependencyExclude>
                                     </classpathDependencyExcludes>
                                     <systemPropertyVariables>
-                                        <node0>${node0}</node0>
-                                        <mcast>${mcast}</mcast>
                                         <arquillian.xml>arquillian-testable.xml</arquillian.xml>
                                         <jboss.server.config.file.name>standalone-ha.xml</jboss.server.config.file.name>
-                                        <server.jvm.args>${server.jvm.args}</server.jvm.args>
-                                        <surefire.jpda.args.node1>${surefire.jpda.args.node1}</surefire.jpda.args.node1>
-                                        <infinispan.server.home>${infinispan.server.home.template}</infinispan.server.home>
-                                        <infinispan.server.profile>${infinispan.server.profile.override}</infinispan.server.profile>
                                     </systemPropertyVariables>
                                 </configuration>
                             </execution>
@@ -1266,25 +1223,11 @@
                                         <include>${test-group}/**/byteman/*TestCase.java</include>
                                     </includes>
                                     <systemPropertyVariables combine.children="append">
-                                        <node0>${node0}</node0>
-                                        <node1>${node1}</node1>
-                                        <node2>${node2}</node2>
-                                        <node3>${node3}</node3>
-                                        <mcast>${mcast}</mcast>
-                                        <mcast1>${mcast1}</mcast1>
-                                        <mcast2>${mcast2}</mcast2>
-                                        <mcast3>${mcast3}</mcast3>
+                                        <!-- Append required byteman args (-Djboss.modules.system.pkgs, -Xbootclasspath) to standard ${server.jvm.args} -->
+                                        <server.jvm.args>${server.jvm.args} ${surefire.byteman.args}</server.jvm.args>
                                         <arquillian.xml>arquillian-byteman.xml</arquillian.xml>
                                         <arquillian.launch>clustering-all</arquillian.launch>
                                         <jboss.server.config.file.name>standalone-full-ha.xml</jboss.server.config.file.name>
-                                        <!-- Append required byteman args (-Djboss.modules.system.pkgs, -Xbootclasspath) to standard ${server.jvm.args} -->
-                                        <server.jvm.args>${server.jvm.args} ${surefire.byteman.args}</server.jvm.args>
-                                        <surefire.jpda.args.node1>${surefire.jpda.args.node1}</surefire.jpda.args.node1>
-                                        <surefire.jpda.args.node2>${surefire.jpda.args.node2}</surefire.jpda.args.node2>
-                                        <surefire.jpda.args.node3>${surefire.jpda.args.node3}</surefire.jpda.args.node3>
-                                        <surefire.jpda.args.node4>${surefire.jpda.args.node4}</surefire.jpda.args.node4>
-                                        <infinispan.server.home>${infinispan.server.home.template}</infinispan.server.home>
-                                        <infinispan.server.profile>${infinispan.server.profile.override}</infinispan.server.profile>
                                     </systemPropertyVariables>
                                 </configuration>
                             </execution>
@@ -1346,24 +1289,9 @@
                                     <runOrder>alphabetical</runOrder>
                                     <!-- Parameters to test cases. -->
                                     <systemPropertyVariables>
-                                        <node0>${node0}</node0>
-                                        <node1>${node1}</node1>
-                                        <node2>${node2}</node2>
-                                        <node3>${node3}</node3>
-                                        <mcast>${mcast}</mcast>
-                                        <mcast1>${mcast1}</mcast1>
-                                        <mcast2>${mcast2}</mcast2>
-                                        <mcast3>${mcast3}</mcast3>
                                         <arquillian.xml>arquillian.xml</arquillian.xml>
                                         <arquillian.launch>clustering-all</arquillian.launch>
                                         <jboss.server.config.file.name>standalone-full-ha.xml</jboss.server.config.file.name>
-                                        <server.jvm.args>${server.jvm.args}</server.jvm.args>
-                                        <surefire.jpda.args.node1>${surefire.jpda.args.node1}</surefire.jpda.args.node1>
-                                        <surefire.jpda.args.node2>${surefire.jpda.args.node2}</surefire.jpda.args.node2>
-                                        <surefire.jpda.args.node3>${surefire.jpda.args.node3}</surefire.jpda.args.node3>
-                                        <surefire.jpda.args.node4>${surefire.jpda.args.node4}</surefire.jpda.args.node4>
-                                        <infinispan.server.home>${infinispan.server.home.template}</infinispan.server.home>
-                                        <infinispan.server.profile>${infinispan.server.profile.override}</infinispan.server.profile>
                                     </systemPropertyVariables>
                                     <!-- Tests to execute. -->
                                     <includes>
@@ -1438,24 +1366,9 @@
                                     </includes>
                                     <!-- Parameters to test cases. -->
                                     <systemPropertyVariables>
-                                        <node0>${node0}</node0>
-                                        <node1>${node1}</node1>
-                                        <node2>${node2}</node2>
-                                        <node3>${node3}</node3>
-                                        <mcast>${mcast}</mcast>
-                                        <mcast1>${mcast1}</mcast1>
-                                        <mcast2>${mcast2}</mcast2>
-                                        <mcast3>${mcast3}</mcast3>
                                         <arquillian.xml>arquillian.xml</arquillian.xml>
                                         <arquillian.launch>clustering-all</arquillian.launch>
                                         <jboss.server.config.file.name>standalone-full-ha.xml</jboss.server.config.file.name>
-                                        <server.jvm.args>${server.jvm.args}</server.jvm.args>
-                                        <surefire.jpda.args.node1>${surefire.jpda.args.node1}</surefire.jpda.args.node1>
-                                        <surefire.jpda.args.node2>${surefire.jpda.args.node2}</surefire.jpda.args.node2>
-                                        <surefire.jpda.args.node3>${surefire.jpda.args.node3}</surefire.jpda.args.node3>
-                                        <surefire.jpda.args.node4>${surefire.jpda.args.node4}</surefire.jpda.args.node4>
-                                        <infinispan.server.home>${infinispan.server.home.template}</infinispan.server.home>
-                                        <infinispan.server.profile>${infinispan.server.profile.override}</infinispan.server.profile>
                                     </systemPropertyVariables>
                                 </configuration>
                             </execution>
@@ -1473,24 +1386,9 @@
                                     </includes>
                                     <!-- Parameters to test cases. -->
                                     <systemPropertyVariables>
-                                        <node0>${node0}</node0>
-                                        <node1>${node1}</node1>
-                                        <node2>${node2}</node2>
-                                        <node3>${node3}</node3>
-                                        <mcast>${mcast}</mcast>
-                                        <mcast1>${mcast1}</mcast1>
-                                        <mcast2>${mcast2}</mcast2>
-                                        <mcast3>${mcast3}</mcast3>
                                         <arquillian.xml>arquillian.xml</arquillian.xml>
                                         <arquillian.launch>clustering-all</arquillian.launch>
                                         <jboss.server.config.file.name>standalone-full-ha.xml</jboss.server.config.file.name>
-                                        <server.jvm.args>${server.jvm.args}</server.jvm.args>
-                                        <surefire.jpda.args.node1>${surefire.jpda.args.node1}</surefire.jpda.args.node1>
-                                        <surefire.jpda.args.node2>${surefire.jpda.args.node2}</surefire.jpda.args.node2>
-                                        <surefire.jpda.args.node3>${surefire.jpda.args.node3}</surefire.jpda.args.node3>
-                                        <surefire.jpda.args.node4>${surefire.jpda.args.node4}</surefire.jpda.args.node4>
-                                        <infinispan.server.home>${infinispan.server.home.template}</infinispan.server.home>
-                                        <infinispan.server.profile>${infinispan.server.profile.override}</infinispan.server.profile>
                                     </systemPropertyVariables>
                                 </configuration>
                             </execution>
@@ -1512,24 +1410,9 @@
                                     </excludes>
                                     <!-- Parameters to test cases. -->
                                     <systemPropertyVariables>
-                                        <node0>${node0}</node0>
-                                        <node1>${node1}</node1>
-                                        <node2>${node2}</node2>
-                                        <node3>${node3}</node3>
-                                        <mcast>${mcast}</mcast>
-                                        <mcast1>${mcast1}</mcast1>
-                                        <mcast2>${mcast2}</mcast2>
-                                        <mcast3>${mcast3}</mcast3>
                                         <arquillian.xml>arquillian.xml</arquillian.xml>
                                         <arquillian.launch>clustering-all</arquillian.launch>
                                         <jboss.server.config.file.name>standalone-full-ha.xml</jboss.server.config.file.name>
-                                        <server.jvm.args>${server.jvm.args}</server.jvm.args>
-                                        <surefire.jpda.args.node1>${surefire.jpda.args.node1}</surefire.jpda.args.node1>
-                                        <surefire.jpda.args.node2>${surefire.jpda.args.node2}</surefire.jpda.args.node2>
-                                        <surefire.jpda.args.node3>${surefire.jpda.args.node3}</surefire.jpda.args.node3>
-                                        <surefire.jpda.args.node4>${surefire.jpda.args.node4}</surefire.jpda.args.node4>
-                                        <infinispan.server.home>${infinispan.server.home.template}</infinispan.server.home>
-                                        <infinispan.server.profile>${infinispan.server.profile.override}</infinispan.server.profile>
                                     </systemPropertyVariables>
                                 </configuration>
                             </execution>
@@ -2377,13 +2260,6 @@
                                         <!-- Override the standard module path that points at the shared module set from dist.
                                         Have all the servers use wildfly-1 for the modules -->
                                         <module.path>${project.build.directory}/wildfly-1/modules${path.separator}${basedir}/target/modules</module.path>
-                                        <!-- required by arquillian.xml -->
-                                        <wildfly1>wildfly-1</wildfly1>
-                                        <wildfly2>wildfly-2</wildfly2>
-                                        <wildfly3>wildfly-3</wildfly3>
-                                        <wildfly4>wildfly-4</wildfly4>
-                                        <wildfly-load-balancer1>wildfly-load-balancer-1</wildfly-load-balancer1>
-                                        <!-- end required by arquillian.xml -->
                                     </systemPropertyVariables>
                                 </configuration>
                             </execution>
@@ -2399,13 +2275,11 @@
                                         <!-- Override the standard module path that points at the shared module set from dist.
                                         Have all the servers use wildfly-jpa-dist-1 for the modules -->
                                         <module.path>${project.build.directory}/wildfly-jpa-dist-1/modules${path.separator}${basedir}/target/modules</module.path>
-                                        <!-- required by arquillian.xml -->
                                         <wildfly1>wildfly-jpa-dist-1</wildfly1>
                                         <wildfly2>wildfly-jpa-dist-2</wildfly2>
                                         <wildfly3>wildfly-jpa-dist-3</wildfly3>
                                         <wildfly4>wildfly-jpa-dist-4</wildfly4>
                                         <wildfly-load-balancer1>wildfly-jpa-dist-load-balancer-1</wildfly-load-balancer1>
-                                        <!-- end required by arquillian.xml -->
                                     </systemPropertyVariables>
                                 </configuration>
                             </execution>
@@ -2422,28 +2296,12 @@
                                         <include>${test-group}/**/modcluster/*TestCase.java</include>
                                     </includes>
                                     <systemPropertyVariables>
-                                        <node0>${node0}</node0>
-                                        <node1>${node1}</node1>
-                                        <node2>${node2}</node2>
-                                        <node3>${node3}</node3>
-                                        <mcast>${mcast}</mcast>
-                                        <mcast1>${mcast1}</mcast1>
-                                        <mcast2>${mcast2}</mcast2>
-                                        <mcast3>${mcast3}</mcast3>
                                         <arquillian.xml>arquillian.xml</arquillian.xml>
                                         <arquillian.launch>clustering-all</arquillian.launch>
                                         <jboss.server.config.file.name>standalone-ha.xml</jboss.server.config.file.name>
-                                        <server.jvm.args>${server.jvm.args}</server.jvm.args>
-                                        <surefire.jpda.args.node1>${surefire.jpda.args.node1}</surefire.jpda.args.node1>
-                                        <surefire.jpda.args.node2>${surefire.jpda.args.node2}</surefire.jpda.args.node2>
-                                        <surefire.jpda.args.node3>${surefire.jpda.args.node3}</surefire.jpda.args.node3>
-                                        <surefire.jpda.args.node4>${surefire.jpda.args.node4}</surefire.jpda.args.node4>
-                                        <infinispan.server.home>${infinispan.server.home.template}</infinispan.server.home>
-                                        <infinispan.server.profile>${infinispan.server.profile.override}</infinispan.server.profile>
                                         <!-- Override the standard module path that points at the shared module set from dist.
                                         Have all the servers use wildfly-clustering-mod_cluster-1 for the modules -->
                                         <module.path>${project.build.directory}/wildfly-clustering-mod_cluster-1/modules${path.separator}${basedir}/target/modules</module.path>
-                                        <!-- arquillian.xml -->
                                         <wildfly1>wildfly-clustering-mod_cluster-1</wildfly1>
                                         <wildfly2>wildfly-clustering-mod_cluster-2</wildfly2>
                                         <wildfly3>wildfly-clustering-mod_cluster-3</wildfly3>
@@ -2476,34 +2334,17 @@
                                     </excludes>
                                     <!-- Parameters to test cases. -->
                                     <systemPropertyVariables>
-                                        <node0>${node0}</node0>
-                                        <node1>${node1}</node1>
-                                        <node2>${node2}</node2>
-                                        <node3>${node3}</node3>
-                                        <mcast>${mcast}</mcast>
-                                        <mcast1>${mcast1}</mcast1>
-                                        <mcast2>${mcast2}</mcast2>
-                                        <mcast3>${mcast3}</mcast3>
                                         <arquillian.xml>arquillian.xml</arquillian.xml>
                                         <arquillian.launch>clustering-all</arquillian.launch>
                                         <jboss.server.config.file.name>standalone-full-ha.xml</jboss.server.config.file.name>
-                                        <server.jvm.args>${server.jvm.args}</server.jvm.args>
-                                        <surefire.jpda.args.node1>${surefire.jpda.args.node1}</surefire.jpda.args.node1>
-                                        <surefire.jpda.args.node2>${surefire.jpda.args.node2}</surefire.jpda.args.node2>
-                                        <surefire.jpda.args.node3>${surefire.jpda.args.node3}</surefire.jpda.args.node3>
-                                        <surefire.jpda.args.node4>${surefire.jpda.args.node4}</surefire.jpda.args.node4>
-                                        <infinispan.server.home>${infinispan.server.home.template}</infinispan.server.home>
-                                        <infinispan.server.profile>${infinispan.server.profile.override}</infinispan.server.profile>
                                         <!-- Override the standard module path that points at the shared module set from dist.
                                         Have all the servers use wildfly-clustering-ejb-1 for the modules -->
                                         <module.path>${project.build.directory}/wildfly-clustering-ejb-1/modules${path.separator}${basedir}/target/modules</module.path>
-                                        <!-- required by arquillian.xml -->
                                         <wildfly1>wildfly-clustering-ejb-1</wildfly1>
                                         <wildfly2>wildfly-clustering-ejb-2</wildfly2>
                                         <wildfly3>wildfly-clustering-ejb-3</wildfly3>
                                         <wildfly4>wildfly-clustering-ejb-4</wildfly4>
                                         <wildfly-load-balancer1>wildfly-clustering-ejb-load-balancer-1</wildfly-load-balancer1>
-                                        <!-- end required by arquillian.xml -->
                                     </systemPropertyVariables>
                                 </configuration>
                             </execution>
@@ -2519,13 +2360,11 @@
                                         <!-- Override the standard module path that points at the shared module set from dist.
                                         Have all the servers use wildfly-clustering-jsf-1 for the modules -->
                                         <module.path>${project.build.directory}/wildfly-clustering-jsf-1/modules${path.separator}${basedir}/target/modules</module.path>
-                                        <!-- required by arquillian.xml -->
                                         <wildfly1>wildfly-clustering-jsf-1</wildfly1>
                                         <wildfly2>wildfly-clustering-jsf-2</wildfly2>
                                         <wildfly3>wildfly-clustering-jsf-3</wildfly3>
                                         <wildfly4>wildfly-clustering-jsf-4</wildfly4>
                                         <wildfly-load-balancer1>wildfly-clustering-jsf-load-balancer-1</wildfly-load-balancer1>
-                                        <!-- end required by arquillian.xml -->
                                     </systemPropertyVariables>
                                 </configuration>
                             </execution>
@@ -2716,14 +2555,12 @@
                                 </goals>
                                 <configuration>
                                     <systemPropertyVariables>
-                                        <!-- required by arquillian.xml -->
                                         <wildfly1>wildfly-mp-dist-1</wildfly1>
                                         <wildfly2>wildfly-mp-dist-2</wildfly2>
                                         <wildfly3>wildfly-mp-dist-3</wildfly3>
                                         <wildfly4>wildfly-mp-dist-4</wildfly4>
                                         <wildfly-load-balancer1>wildfly-mp-dist-load-balancer-1</wildfly-load-balancer1>
                                         <jboss.server.config.file.name>standalone-microprofile-ha.xml</jboss.server.config.file.name>
-                                        <!-- end required by arquillian.xml -->
                                     </systemPropertyVariables>
                                 </configuration>
                             </execution>
@@ -2734,16 +2571,13 @@
                                     <goal>test</goal>
                                 </goals>
                                 <configuration>
-                                    <!-- Parameters to test cases. -->
                                     <systemPropertyVariables>
-                                        <!-- required by arquillian.xml -->
                                         <wildfly1>wildfly-mp-dist-1</wildfly1>
                                         <wildfly2>wildfly-mp-dist-2</wildfly2>
                                         <wildfly3>wildfly-mp-dist-3</wildfly3>
                                         <wildfly4>wildfly-mp-dist-4</wildfly4>
                                         <wildfly-load-balancer1>wildfly-mp-dist-load-balancer-1</wildfly-load-balancer1>
                                         <jboss.server.config.file.name>standalone-microprofile-ha.xml</jboss.server.config.file.name>
-                                        <!-- end required by arquillian.xml -->
                                     </systemPropertyVariables>
                                 </configuration>
                             </execution>
