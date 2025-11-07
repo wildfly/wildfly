@@ -14,12 +14,12 @@
 
     <container qualifier="default" default="true">
         <configuration>
-            <property name="javaVmArguments">${server.jvm.args} -Djboss.inst=${basedir}/target/wildfly-1 -Djboss.bind.address=${node0} -Djboss.bind.address.management=${node0} -Djboss.bind.address.private=${node0} -Djboss.default.multicast.address=${mcast} -Djboss.node.name=node-1</property>
+            <property name="javaVmArguments">${server.jvm.args} ${surefire.jpda.args.node1} -Djboss.inst=${basedir}/target/wildfly-1 -Djboss.bind.address=${node0} -Djboss.bind.address.management=${node0} -Djboss.bind.address.private=${node0} -Djboss.default.multicast.address=${mcast} -Djboss.node.name=node-1</property>
             <property name="jbossHome">${basedir}/target/wildfly-1</property>
             <property name="managementAddress">${node0}</property>
             <property name="managementPort">${as.managementPort:9990}</property>
             <property name="serverConfig">${jboss.server.config.file.name}</property>
-            <property name="waitForPorts">${as.debug.port:8787} ${as.managementPort:9990}</property>
+            <property name="waitForPorts">8787 ${as.managementPort:9990}</property>
             <property name="waitForPortsTimeoutInSeconds">8</property>
         </configuration>
     </container>

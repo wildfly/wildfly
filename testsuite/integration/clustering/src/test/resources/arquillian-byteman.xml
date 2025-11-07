@@ -15,12 +15,12 @@
     <container qualifier="single">
         <configuration>
             <property name="jbossHome">${basedir}/target/wildfly-1</property>
-            <property name="javaVmArguments">${server.jvm.args} -Djboss.inst=${basedir}/target/wildfly-1 -Djboss.bind.address=${node0} -Djboss.bind.address.management=${node0} -Djboss.bind.address.private=${node0} -Djboss.default.multicast.address=${mcast} -Djboss.node.name=node-1</property>
+            <property name="javaVmArguments">${server.jvm.args} ${surefire.jpda.args.node1} -Djboss.inst=${basedir}/target/wildfly-1 -Djboss.bind.address=${node0} -Djboss.bind.address.management=${node0} -Djboss.bind.address.private=${node0} -Djboss.default.multicast.address=${mcast} -Djboss.node.name=node-1</property>
             <property name="serverConfig">${jboss.server.config.file.name}</property>
             <property name="jbossArguments">${jboss.args}</property>
             <property name="managementAddress">${node0}</property>
             <property name="managementPort">${as.managementPort:9990}</property>
-            <property name="waitForPorts">${as.debug.port:8787} ${as.managementPort:9990}</property>
+            <property name="waitForPorts">8787 ${as.managementPort:9990}</property>
             <property name="waitForPortsTimeoutInSeconds">8</property>
         </configuration>
     </container>
@@ -30,49 +30,49 @@
             <configuration>
                 <property name="jbossHome">${basedir}/target/wildfly-1</property>
                 <!-- AS7-2493 different jboss.node.name must be specified -->
-                <property name="javaVmArguments">${server.jvm.args} -Djboss.inst=${basedir}/target/wildfly-1 -Djboss.bind.address=${node0} -Djboss.bind.address.management=${node0} -Djboss.bind.address.private=${node0} -Djboss.default.multicast.address=${mcast} -Djboss.node.name=node-1</property>
+                <property name="javaVmArguments">${server.jvm.args} ${surefire.jpda.args.node1} -Djboss.inst=${basedir}/target/wildfly-1 -Djboss.bind.address=${node0} -Djboss.bind.address.management=${node0} -Djboss.bind.address.private=${node0} -Djboss.default.multicast.address=${mcast} -Djboss.node.name=node-1</property>
                 <property name="serverConfig">${jboss.server.config.file.name}</property>
                 <property name="jbossArguments">${jboss.args}</property>
                 <property name="managementAddress">${node0}</property>
                 <property name="managementPort">${as.managementPort:9990}</property>
                 <!-- AS7-4070 Arquillian should wait until a port is free after AS JVM process ends to prevent "port in use" -->
-                <property name="waitForPorts">${as.debug.port:8787} ${as.managementPort:9990}</property>
+                <property name="waitForPorts">8787 ${as.managementPort:9990}</property>
                 <property name="waitForPortsTimeoutInSeconds">8</property>
             </configuration>
         </container>
         <container qualifier="node-2" mode="custom">
             <configuration>
                 <property name="jbossHome">${basedir}/target/wildfly-2</property>
-                <property name="javaVmArguments">${server.jvm.args} -Djboss.inst=${basedir}/target/wildfly-2 -Djboss.bind.address=${node1} -Djboss.bind.address.management=${node1} -Djboss.bind.address.private=${node1} -Djboss.default.multicast.address=${mcast} -Djboss.node.name=node-2 -Djboss.socket.binding.port-offset=100</property>
+                <property name="javaVmArguments">${server.jvm.args} ${surefire.jpda.args.node2} -Djboss.inst=${basedir}/target/wildfly-2 -Djboss.bind.address=${node1} -Djboss.bind.address.management=${node1} -Djboss.bind.address.private=${node1} -Djboss.default.multicast.address=${mcast} -Djboss.node.name=node-2 -Djboss.socket.binding.port-offset=100</property>
                 <property name="serverConfig">${jboss.server.config.file.name}</property>
                 <property name="jbossArguments">${jboss.args}</property>
                 <property name="managementAddress">${node1}</property>
                 <property name="managementPort">10090</property>
-                <property name="waitForPorts">${as.debug.port.node1} 10090</property>
+                <property name="waitForPorts">8788 10090</property>
                 <property name="waitForPortsTimeoutInSeconds">8</property>
             </configuration>
         </container>
         <container qualifier="node-3" mode="custom">
             <configuration>
                 <property name="jbossHome">${basedir}/target/wildfly-3</property>
-                <property name="javaVmArguments">${server.jvm.args} -Djboss.inst=${basedir}/target/wildfly-3 -Djboss.bind.address=${node2} -Djboss.bind.address.management=${node2} -Djboss.bind.address.private=${node2} -Djboss.default.multicast.address=${mcast} -Djboss.node.name=node-3 -Djboss.socket.binding.port-offset=200</property>
+                <property name="javaVmArguments">${server.jvm.args} ${surefire.jpda.args.node3} -Djboss.inst=${basedir}/target/wildfly-3 -Djboss.bind.address=${node2} -Djboss.bind.address.management=${node2} -Djboss.bind.address.private=${node2} -Djboss.default.multicast.address=${mcast} -Djboss.node.name=node-3 -Djboss.socket.binding.port-offset=200</property>
                 <property name="serverConfig">${jboss.server.config.file.name}</property>
                 <property name="jbossArguments">${jboss.args}</property>
                 <property name="managementAddress">${node2}</property>
                 <property name="managementPort">10190</property>
-                <property name="waitForPorts">${as.debug.port.node2} 10190</property>
+                <property name="waitForPorts">8789 10190</property>
                 <property name="waitForPortsTimeoutInSeconds">8</property>
             </configuration>
         </container>
         <container qualifier="node-4" mode="custom">
             <configuration>
                 <property name="jbossHome">${basedir}/target/wildfly-4</property>
-                <property name="javaVmArguments">${server.jvm.args} -Djboss.inst=${basedir}/target/wildfly-4 -Djboss.bind.address=${node3} -Djboss.bind.address.management=${node3} -Djboss.bind.address.private=${node3} -Djboss.default.multicast.address=${mcast} -Djboss.node.name=node-4 -Djboss.socket.binding.port-offset=300</property>
+                <property name="javaVmArguments">${server.jvm.args} ${surefire.jpda.args.node4} -Djboss.inst=${basedir}/target/wildfly-4 -Djboss.bind.address=${node3} -Djboss.bind.address.management=${node3} -Djboss.bind.address.private=${node3} -Djboss.default.multicast.address=${mcast} -Djboss.node.name=node-4 -Djboss.socket.binding.port-offset=300</property>
                 <property name="serverConfig">${jboss.server.config.file.name}</property>
                 <property name="jbossArguments">${jboss.args}</property>
                 <property name="managementAddress">${node3}</property>
                 <property name="managementPort">10290</property>
-                <property name="waitForPorts">${as.debug.port.node3} 10290</property>
+                <property name="waitForPorts">8790 10290</property>
                 <property name="waitForPortsTimeoutInSeconds">8</property>
             </configuration>
         </container>
@@ -80,12 +80,12 @@
         <container qualifier="node-non-ha" mode="custom">
             <configuration>
                 <property name="jbossHome">${basedir}/target/wildfly-1</property>
-                <property name="javaVmArguments">${server.jvm.args} -Djboss.inst=${basedir}/target/wildfly-1 -Djboss.bind.address=${node0} -Djboss.bind.address.management=${node0} -Djboss.bind.address.private=${node0} -Djboss.default.multicast.address=${mcast} -Djboss.node.name=node-1</property>
+                <property name="javaVmArguments">${server.jvm.args} ${surefire.jpda.args.node1} -Djboss.inst=${basedir}/target/wildfly-1 -Djboss.bind.address=${node0} -Djboss.bind.address.management=${node0} -Djboss.bind.address.private=${node0} -Djboss.default.multicast.address=${mcast} -Djboss.node.name=node-1</property>
                 <property name="serverConfig">standalone.xml</property>
                 <property name="jbossArguments">${jboss.args}</property>
                 <property name="managementAddress">${node0}</property>
                 <property name="managementPort">${as.managementPort:9990}</property>
-                <property name="waitForPorts">${as.debug.port:8787} ${as.managementPort:9990}</property>
+                <property name="waitForPorts">8787 ${as.managementPort:9990}</property>
                 <property name="waitForPortsTimeoutInSeconds">8</property>
             </configuration>
         </container>

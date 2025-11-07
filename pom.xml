@@ -1624,10 +1624,6 @@
             </build>
         </profile>
 
-        <!--
-          Name: jpda
-          Descr: Enable JPDA remote debuging
-        -->
         <profile>
             <id>jpda</id>
             <activation>

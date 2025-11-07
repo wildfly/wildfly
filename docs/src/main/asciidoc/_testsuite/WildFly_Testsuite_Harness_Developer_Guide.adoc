@@ -13,11 +13,13 @@ endif::[]
 
 *JIRA*: https://issues.redhat.com/browse/WFLY-576[WFLY-576]
 
-[[testsuite-requirements]]
-== Testsuite requirements
+// TODO - the following link is no longer available. If someone can get the content, and it is still relevant, replace this section with it.
 
-http://community.jboss.org/wiki/ASTestsuiteRequirements will probably be
-merged here later.
+// [[testsuite-requirements]]
+// == Testsuite requirements
+//
+// http://community.jboss.org/wiki/ASTestsuiteRequirements will probably be
+// merged here later.
 
 [[adding-a-new-maven-plugin]]
 == Adding a new maven plugin
@@ -64,16 +66,14 @@ TBD: https://issues.redhat.com/browse/ARQ-647
 [source,xml,options="nowrap"]
 ----
 <surefire.memory.args>-Xmx512m -XX:MaxPermSize=256m</surefire.memory.args>
-    <surefire.jpda.args></surefire.jpda.args>
-    <surefire.system.args>${surefire.memory.args} ${surefire.jpda.args}</surefire.system.args>
+<surefire.jpda.args></surefire.jpda.args>
+<surefire.system.args>${surefire.memory.args} ${surefire.jpda.args}</surefire.system.args>
 ----
 
 [[ip-settings]]
 === IP settings
 
-* `${ip.server.stack` *}* - used in
-`<systemPropertyVariables> / <server.jvm.args>` which is used in
-`*-arquillian.xml`.
+* `${ip.server.stack}` used in `<systemPropertyVariables>/<server.jvm.args>` which is used in `*-arquillian.xml`.
 
 [[testsuite-directories]]
 === Testsuite directories
