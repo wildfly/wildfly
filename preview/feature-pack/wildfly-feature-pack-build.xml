@@ -3,8 +3,14 @@
   ~ SPDX-License-Identifier: Apache-2.0
   -->
 
-<build xmlns="urn:wildfly:feature-pack-build:3.4" producer="wildfly-preview@maven(org.jboss.universe:community-universe):current">
-
+<build xmlns="urn:wildfly:feature-pack-build:3.5" producer="wildfly-preview@maven(org.jboss.universe:community-universe):current">
+    <family name="wildfly">
+      <criteria name="jakarta-ee-10+"/>
+      <criteria name="jakarta-ee-11"/>
+      <criteria name="jakarta-ee-deployment"/>
+      <criteria name="microprofile-7.1+"/>
+      <criteria name="microprofile-7.1"/>
+    </family>
     <default-packages>
         <package name="modules.all"/>
         <package name="docs"/>
