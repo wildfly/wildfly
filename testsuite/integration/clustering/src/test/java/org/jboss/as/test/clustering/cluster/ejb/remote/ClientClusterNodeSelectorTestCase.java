@@ -74,7 +74,7 @@ public class ClientClusterNodeSelectorTestCase extends AbstractClusteringTestCas
     }
 
     public ClientClusterNodeSelectorTestCase() {
-        super(FOUR_NODES);
+        super(NODE_1_2_3_4);
     }
 
     @Deployment(name = DEPLOYMENT_1, managed = false, testable = false)

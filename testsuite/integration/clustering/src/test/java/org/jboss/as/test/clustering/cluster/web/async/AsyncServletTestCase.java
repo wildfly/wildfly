@@ -102,7 +102,7 @@ public class AsyncServletTestCase extends AbstractClusteringTestCase {
 
     public static class ServerSetupTask extends CLIServerSetupTask {
         public ServerSetupTask() {
-            this.builder.node(AbstractClusteringTestCase.THREE_NODES)
+            this.builder.node(NODE_1_2_3.toArray(new String[0]))
                     .setup("/subsystem=distributable-web/infinispan-session-management=attribute:add(cache-container=web, granularity=ATTRIBUTE)")
                     .teardown("/subsystem=distributable-web/infinispan-session-management=attribute:remove()")
             ;

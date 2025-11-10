@@ -14,7 +14,7 @@ import org.jboss.as.test.shared.CLIServerSetupTask;
 public class ElytronSSOServerSetupTask extends CLIServerSetupTask {
     public ElytronSSOServerSetupTask() {
 
-        NodeBuilder nb = this.builder.node(AbstractClusteringTestCase.TWO_NODES)
+        NodeBuilder nb = this.builder.node(AbstractClusteringTestCase.NODE_1_2.toArray(new String[0]))
                 .setup("/subsystem=elytron/filesystem-realm=sso:add(path=sso-realm, relative-to=jboss.server.data.dir)")
                 .setup("/subsystem=elytron/security-domain=sso:add(default-realm=sso, permission-mapper=default-permission-mapper,realms=[{realm=sso, role-decoder=groups-to-roles}])");
 

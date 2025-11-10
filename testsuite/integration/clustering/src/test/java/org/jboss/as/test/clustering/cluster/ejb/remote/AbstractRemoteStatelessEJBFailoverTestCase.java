@@ -77,9 +77,9 @@ public abstract class AbstractRemoteStatelessEJBFailoverTestCase extends Abstrac
                     Thread.sleep(INVOCATION_WAIT);
                 }
 
-                for (String node : TWO_NODES) {
+                for (String node : NODE_1_2) {
                     int frequency = Collections.frequency(results, node);
-                    assertTrue(String.valueOf(frequency) + " invocations were routed to " + node, frequency > 0);
+                    assertTrue(frequency + " invocations were routed to " + node, frequency > 0);
                 }
 
                 undeploy(DEPLOYMENT_1);
@@ -104,9 +104,9 @@ public abstract class AbstractRemoteStatelessEJBFailoverTestCase extends Abstrac
                     Thread.sleep(INVOCATION_WAIT);
                 }
 
-                for (String node : TWO_NODES) {
+                for (String node : NODE_1_2) {
                     int frequency = Collections.frequency(results, node);
-                    assertTrue(String.valueOf(frequency) + " invocations were routed to " + node, frequency > 0);
+                    assertTrue(frequency + " invocations were routed to " + node, frequency > 0);
                 }
 
                 stop(NODE_2);
@@ -131,9 +131,9 @@ public abstract class AbstractRemoteStatelessEJBFailoverTestCase extends Abstrac
                     Thread.sleep(INVOCATION_WAIT);
                 }
 
-                for (String node : TWO_NODES) {
+                for (String node : NODE_1_2) {
                     int frequency = Collections.frequency(results, node);
-                    assertTrue(String.valueOf(frequency) + " invocations were routed to " + node, frequency > 0);
+                    assertTrue(frequency + " invocations were routed to " + node, frequency > 0);
                 }
             }
             return null;

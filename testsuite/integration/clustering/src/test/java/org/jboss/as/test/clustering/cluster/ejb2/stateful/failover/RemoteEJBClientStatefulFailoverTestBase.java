@@ -120,14 +120,14 @@ public abstract class RemoteEJBClientStatefulFailoverTestBase extends AbstractCl
                 deployer.undeploy(DEPLOYMENT_1);
                 deployer.undeploy(DEPLOYMENT_HELPER_1);
             } else {
-                stop(GRACEFUL_SHUTDOWN_TIMEOUT, NODE_1);
+                stop(NODE_1);
             }
         } else {
             if (undeployOnly) {
                 deployer.undeploy(DEPLOYMENT_2);
                 deployer.undeploy(DEPLOYMENT_HELPER_2);
             } else {
-                stop(GRACEFUL_SHUTDOWN_TIMEOUT, NODE_2);
+                stop(NODE_2);
             }
         }
         // invoke again

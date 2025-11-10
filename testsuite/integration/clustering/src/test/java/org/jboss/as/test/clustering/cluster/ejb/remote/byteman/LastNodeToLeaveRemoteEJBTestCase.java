@@ -70,8 +70,8 @@ import static org.junit.Assert.assertNull;
 @RunWith(Arquillian.class)
 public class LastNodeToLeaveRemoteEJBTestCase extends AbstractClusteringTestCase {
 
-    public LastNodeToLeaveRemoteEJBTestCase() throws Exception {
-        super(THREE_NODES);
+    public LastNodeToLeaveRemoteEJBTestCase() {
+        super(NODE_1_2_3);
     }
 
     static final Logger LOGGER = Logger.getLogger(LastNodeToLeaveRemoteEJBTestCase.class);
@@ -278,7 +278,7 @@ public class LastNodeToLeaveRemoteEJBTestCase extends AbstractClusteringTestCase
      * can keep track of them.
      */
     private Set<String> getStartedNodes() {
-        List<String> nodes = Arrays.asList(THREE_NODES);
+        List<String> nodes = NODE_1_2_3.stream().toList();
         Set<String> startedNodes = new HashSet<>();
         for (String node : nodes) {
             if (isStarted(node)) {
