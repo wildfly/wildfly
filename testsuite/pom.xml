@@ -167,6 +167,7 @@
              a location as is practical; no more coarse-grained than the global config of
              the pom for the maven module that includes the test. -->
         <modular.jdk.testsuite.args>${modular.jdk.args}</modular.jdk.testsuite.args>
+        <!-- n.b. any updates to line below need to be mirrored in testsuite/integration/clustering/pom.xml with omitted ${surefire.jpda.args} which must be unique per node! -->
         <surefire.system.args>${modular.jdk.testsuite.args} -Dorg.jboss.ejb.client.wildfly-testsuite-hack=true ${surefire.memory.args} ${surefire.jpda.args} -Djboss.dist=${jboss.dist} ${surefire.jacoco.args} -Dmaven.repo.local=${settings.localRepository}</surefire.system.args>
         <extra.server.jvm.args />
         <!-- needed for arquillian-byteman-extension -->
@@ -552,14 +553,22 @@
         -->
         <profile>
             <id>jpda.profile</id>
-            <activation><property><name>jpda</name></property></activation>
+            <activation>
+                <property>
+                    <name>jpda</name>
+                </property>
+            </activation>
             <properties>
                 <surefire.jpda.args>-agentlib:jdwp=transport=dt_socket,address=*:${as.debug.port},server=y,suspend=y</surefire.jpda.args>
             </properties>
         </profile>
         <profile>
             <id>debug.profile</id>
-            <activation><property><name>debug</name></property></activation>
+            <activation>
+                <property>
+                    <name>debug</name>
+                </property>
+            </activation>
             <properties>
                 <surefire.jpda.args>-agentlib:jdwp=transport=dt_socket,address=*:${as.debug.port},server=y,suspend=y</surefire.jpda.args>
             </properties>
