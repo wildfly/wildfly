@@ -16,7 +16,7 @@
         <configuration>
             <property name="installDir">${install.dir.1}</property>
             <property name="jarFile">${bootable.jar}</property>
-            <property name="javaVmArguments">${server.jvm.args} ${surefire.jpda.args.node1} -Djboss.bind.address=${node0} -Djboss.bind.address.management=${node0} -Djboss.bind.address.private=${node0} -Djboss.default.multicast.address=${mcast} -Djboss.node.name=node-1</property>
+            <property name="javaVmArguments">${server.jvm.args} ${surefire.jpda.args.node1} -Djboss.bind.address=${node0} -Djboss.bind.address.management=${node0} -Djboss.bind.address.private=${node0} -Djboss.node.name=node-1</property>
             <property name="jbossArguments">${jboss.args}</property>
             <property name="allowConnectingToRunningServer">true</property>
             <property name="managementAddress">${node0:127.0.0.1}</property>
@@ -30,7 +30,7 @@
         <configuration>
             <property name="installDir">${install.dir.1}</property>
             <property name="jarFile">${bootable.jar}</property>
-            <property name="javaVmArguments">${server.jvm.args} ${surefire.jpda.args.node1} -Djboss.bind.address=${node0} -Djboss.bind.address.management=${node0} -Djboss.bind.address.private=${node0} -Djboss.default.multicast.address=${mcast} -Djboss.node.name=node-1</property>
+            <property name="javaVmArguments">${server.jvm.args} ${surefire.jpda.args.node1} -Djboss.bind.address=${node0} -Djboss.bind.address.management=${node0} -Djboss.bind.address.private=${node0} -Djboss.node.name=node-1</property>
             <property name="jbossArguments">${jboss.args}</property>
             <property name="allowConnectingToRunningServer">true</property>
             <property name="managementAddress">${node0:127.0.0.1}</property>
@@ -46,7 +46,7 @@
                 <property name="installDir">${install.dir.1}</property>
                 <property name="jarFile">${bootable.jar}</property>
                 <!-- AS7-2493 different jboss.node.name must be specified -->
-                <property name="javaVmArguments">${server.jvm.args} ${surefire.jpda.args.node1} -Djboss.bind.address=${node0} -Djboss.bind.address.management=${node0} -Djboss.bind.address.private=${node0} -Djboss.default.multicast.address=${mcast} -Djboss.node.name=node-1</property>
+                <property name="javaVmArguments">${server.jvm.args} ${surefire.jpda.args.node1} -Djboss.bind.address=${node0} -Djboss.bind.address.management=${node0} -Djboss.bind.address.private=${node0} -Djboss.node.name=node-1</property>
                 <property name="jbossArguments">${jboss.args}</property>
                 <property name="allowConnectingToRunningServer">true</property>
                 <property name="managementAddress">${node0:127.0.0.1}</property>
@@ -60,7 +60,7 @@
             <configuration>
                 <property name="installDir">${install.dir.2}</property>
                 <property name="jarFile">${bootable.jar}</property>
-                <property name="javaVmArguments">${server.jvm.args} ${surefire.jpda.args.node2} -Djboss.bind.address=${node1} -Djboss.bind.address.management=${node1} -Djboss.bind.address.private=${node1} -Djboss.default.multicast.address=${mcast} -Djboss.node.name=node-2 -Djboss.socket.binding.port-offset=100</property>
+                <property name="javaVmArguments">${server.jvm.args} ${surefire.jpda.args.node2} -Djboss.bind.address=${node1} -Djboss.bind.address.management=${node1} -Djboss.bind.address.private=${node1} -Djboss.node.name=node-2 -Djboss.socket.binding.port-offset=100</property>
                 <property name="jbossArguments">${jboss.args}</property>
                 <property name="allowConnectingToRunningServer">true</property>
                 <property name="managementAddress">${node1}</property>
@@ -73,7 +73,7 @@
             <configuration>
                 <property name="installDir">${install.dir.3}</property>
                 <property name="jarFile">${bootable.jar}</property>
-                <property name="javaVmArguments">${server.jvm.args} ${surefire.jpda.args.node3} -Djboss.bind.address=${node2} -Djboss.bind.address.management=${node2} -Djboss.bind.address.private=${node2} -Djboss.default.multicast.address=${mcast} -Djboss.node.name=node-3 -Djboss.socket.binding.port-offset=200</property>
+                <property name="javaVmArguments">${server.jvm.args} ${surefire.jpda.args.node3} -Djboss.bind.address=${node2} -Djboss.bind.address.management=${node2} -Djboss.bind.address.private=${node2} -Djboss.node.name=node-3 -Djboss.socket.binding.port-offset=200</property>
                 <property name="jbossArguments">${jboss.args}</property>
                 <property name="allowConnectingToRunningServer">true</property>
                 <property name="managementAddress">${node2}</property>
@@ -86,7 +86,7 @@
             <configuration>
                 <property name="installDir">${install.dir.4}</property>
                 <property name="jarFile">${bootable.jar}</property>
-                <property name="javaVmArguments">${server.jvm.args} ${surefire.jpda.args.node4} -Djboss.bind.address=${node3} -Djboss.bind.address.management=${node3} -Djboss.bind.address.private=${node3} -Djboss.default.multicast.address=${mcast} -Djboss.node.name=node-4 -Djboss.socket.binding.port-offset=300</property>
+                <property name="javaVmArguments">${server.jvm.args} ${surefire.jpda.args.node4} -Djboss.bind.address=${node3} -Djboss.bind.address.management=${node3} -Djboss.bind.address.private=${node3} -Djboss.node.name=node-4 -Djboss.socket.binding.port-offset=300</property>
                 <property name="serverConfig">${jboss.server.config.file.name}</property>
                 <property name="jbossArguments">${jboss.args}</property>
                 <property name="allowConnectingToRunningServer">true</property>
