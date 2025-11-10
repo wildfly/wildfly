@@ -25,7 +25,7 @@
         <module name="org.wildfly.clustering.marshalling.spi"/>
         <module name="org.wildfly.clustering.server.api"/>
         <module name="org.wildfly.clustering.server.spi"/>
-        <module name="org.wildfly.clustering.session.spec.spi"/>
+        <module name="org.wildfly.clustering.session.container.spi"/>
         <module name="org.wildfly.clustering.session.spi"/>
     </dependencies>
 </module>

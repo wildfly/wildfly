@@ -28,7 +28,7 @@ public class DistributableImmutableSession implements Session {
     private final long creationTime;
     private final long lastAccessedTime;
     private final int maxInactiveInterval;
-    private final boolean isInvalid;
+    private final boolean invalid;
 
     public DistributableImmutableSession(SessionManager manager, ImmutableSession session) {
         this.manager = manager;
@@ -38,7 +38,7 @@ public class DistributableImmutableSession implements Session {
         this.creationTime = metaData.getCreationTime().toEpochMilli();
         this.lastAccessedTime = metaData.getLastAccessStartTime().toEpochMilli();
         this.maxInactiveInterval = (int) metaData.getTimeout().getSeconds();
-        this.isInvalid = !session.isValid();
+        this.invalid = !session.isValid();
     }
 
     @Override
@@ -110,6 +110,6 @@ public class DistributableImmutableSession implements Session {
      * New method in io.undertow.server.session.Session that can add the @Override annotation when Undertow is upgraded
      */
     public boolean isInvalid() {
-        return isInvalid;
+        return this.invalid;
     }
 }

@@ -58,10 +58,9 @@
         <module name="org.wildfly.clustering.server.service"/>
         <module name="org.wildfly.clustering.server.spi"/>
         <module name="org.wildfly.clustering.session.cache"/>
+        <module name="org.wildfly.clustering.session.container.spi"/>
         <module name="org.wildfly.clustering.session.infinispan.embedded"/>
         <module name="org.wildfly.clustering.session.infinispan.remote"/>
-        <module name="org.wildfly.clustering.session.spec.servlet"/>
-        <module name="org.wildfly.clustering.session.spec.spi"/>
         <module name="org.wildfly.clustering.session.spi"/>
         <module name="org.wildfly.clustering.web.api"/>
         <module name="org.wildfly.clustering.web.service"/>

@@ -34,7 +34,7 @@
         <module name="org.wildfly.clustering.server.local"/>
         <module name="org.wildfly.clustering.server.spi" services="import"/>
         <module name="org.wildfly.clustering.session.cache" services="import"/>
-        <module name="org.wildfly.clustering.session.spec.spi"/>
+        <module name="org.wildfly.clustering.session.container.spi"/>
         <module name="org.wildfly.clustering.session.spi"/>
     </dependencies>
 </module>
