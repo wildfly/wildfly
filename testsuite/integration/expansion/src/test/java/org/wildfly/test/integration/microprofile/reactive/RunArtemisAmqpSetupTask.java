@@ -20,6 +20,7 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.model.test.ModelTestUtils;
+import org.jboss.as.test.config.ContainerConfig;
 import org.jboss.as.test.shared.IntermittentFailure;
 import org.jboss.dmr.ModelNode;
 import org.junit.AssumptionViolatedException;
@@ -56,7 +57,7 @@ public class RunArtemisAmqpSetupTask implements ServerSetupTask {
     @Override
     public void setup(ManagementClient managementClient, String containerId) throws Exception {
         try {
-            DockerImageName imageName = DockerImageName.parse("quay.io/arkmq-org/activemq-artemis-broker:artemis.2.42.0");
+            DockerImageName imageName = DockerImageName.parse(ContainerConfig.ARTEMIS_BROKER.getImage());
             container = new GenericContainer<>(imageName);
             container.addExposedPort(AMQP_PORT);
             container.withEnv(Map.of(

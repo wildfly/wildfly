@@ -8,13 +8,13 @@ package org.jboss.as.test.integration.hibernate.search.backend.elasticsearch.uti
 import org.jboss.arquillian.container.spi.event.StartClassContainers;
 import org.jboss.arquillian.container.spi.event.StopClassContainers;
 import org.jboss.arquillian.core.api.annotation.Observes;
+import org.jboss.as.test.config.ContainerConfig;
 import org.jboss.as.test.shared.util.AssumeTestGroupUtil;
 import org.testcontainers.elasticsearch.ElasticsearchContainer;
 
 import java.util.concurrent.atomic.AtomicReference;
 
 public class ElasticsearchServerSetupObserver {
-    private static final String ELASTICSEARCH_IMAGE = "docker.elastic.co/elasticsearch/elasticsearch:8.15.4";
 
     private static final AtomicReference<String> httpHostAddress = new AtomicReference<>();
 
@@ -49,7 +49,7 @@ public class ElasticsearchServerSetupObserver {
             this.elasticsearchContainer = null;
             return;
         }
-        this.elasticsearchContainer = new ElasticsearchContainer(ELASTICSEARCH_IMAGE)
+        this.elasticsearchContainer = new ElasticsearchContainer(ContainerConfig.ELASTICSEARCH.getImage())
                 // Limit the RAM usage.
                 // Recent versions of ES limit themselves to 50% of the total available RAM,
                 // but on CI this can be too much, as we also have the Maven JVM
