@@ -94,6 +94,8 @@ public class PhaseOnePersistenceUnitServiceImpl implements Service<PhaseOnePersi
                             // run as security privileged action
                             @Override
                             public Void run() {
+                                ClassLoader oldTCCL = Thread.currentThread().getContextClassLoader();
+                                Thread.currentThread().setContextClassLoader(classLoader);
                                 try {
                                     ROOT_LOGGER.startingPersistenceUnitService(1, pu.getScopedPersistenceUnitName());
                                     pu.setTempClassLoaderFactory(new TempClassLoaderFactoryImpl(classLoader));
@@ -116,6 +118,7 @@ public class PhaseOnePersistenceUnitServiceImpl implements Service<PhaseOnePersi
                                 } catch (Throwable t) {
                                     context.failed(new StartException(t));
                                 } finally {
+                                    Thread.currentThread().setContextClassLoader(oldTCCL);
                                     pu.setTempClassLoaderFactory(null);    // release the temp classloader factory (only needed when creating the EMF)
                                     WritableServiceBasedNamingStore.popOwner();
                                 }
