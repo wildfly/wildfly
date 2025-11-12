@@ -158,7 +158,7 @@ public abstract class AbstractRemoteEJBForwardingTestCase extends AbstractCluste
             client.assertNoExceptions("at the beginning of the test");
 
             logger.debugf("------ Shutdown clusterA-node0 -----");
-            stop(NODE_1, GRACEFUL_SHUTDOWN_TIMEOUT);
+            stop(NODE_1);
             Thread.sleep(SERVER_DOWN_TIME);
             client.assertNoExceptions("after clusterA-node0 was shut down");
 
@@ -168,7 +168,7 @@ public abstract class AbstractRemoteEJBForwardingTestCase extends AbstractCluste
             client.assertNoExceptions("after clusterA-node0 was brought up");
 
             logger.debug("----- Shutdown clusterA-node1 -----");
-            stop(NODE_2, GRACEFUL_SHUTDOWN_TIMEOUT);
+            stop(NODE_2);
             Thread.sleep(SERVER_DOWN_TIME);
 
             logger.debug("------ Startup clusterA-node1 -----");
@@ -177,7 +177,7 @@ public abstract class AbstractRemoteEJBForwardingTestCase extends AbstractCluste
             client.assertNoExceptions("after clusterA-node1 was brought back up");
 
             logger.debug("----- Shutdown clusterB-node0 -----");
-            stop(NODE_3, GRACEFUL_SHUTDOWN_TIMEOUT);
+            stop(NODE_3);
             Thread.sleep(SERVER_DOWN_TIME);
             client.assertNoExceptions("after clusterB-node0 was shut down");
 
@@ -187,7 +187,7 @@ public abstract class AbstractRemoteEJBForwardingTestCase extends AbstractCluste
             client.assertNoExceptions("after clusterB-node0 was brought back up");
 
             logger.debug("----- Shutdown clusterB-node1 -----");
-            stop(NODE_4, GRACEFUL_SHUTDOWN_TIMEOUT);
+            stop(NODE_4);
             Thread.sleep(SERVER_DOWN_TIME);
 
             logger.debug("------ Startup clusterB-node1 -----");

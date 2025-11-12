@@ -176,7 +176,7 @@ public class RemoteStatelessFailoverTestCase {
             StatelessRemoteHome home = directory.lookupHome(StatelessBean.class, StatelessRemoteHome.class);
             StatelessRemote bean = home.create();
 
-            assertEquals("The only " + TWO_NODES[0] + " is active. Bean had to be invoked on it but it wasn't.", TWO_NODES[0], bean.getNodeName());
+            assertEquals("The only " + NODE_1 + " is active. Bean had to be invoked on it but it wasn't.", NODE_1, bean.getNodeName());
 
             this.start(NODE_2);
             this.deploy(NODE_2, deployment2);
@@ -187,9 +187,9 @@ public class RemoteStatelessFailoverTestCase {
                 this.undeploy(NODE_1, deployment1);
             }
 
-            assertEquals("Only " + TWO_NODES[1] + " is active. The bean had to be invoked on it but it wasn't.", TWO_NODES[1], bean.getNodeName());
+            assertEquals("Only " + NODE_2 + " is active. The bean had to be invoked on it but it wasn't.", NODE_2, bean.getNodeName());
         } finally {
-            // need to have the container started to undeploy deployment afterwards
+            // need to have the container started to undeploy deployment afterward
             this.start(NODE_1);
             // shutdown the containers
             undeployAll();

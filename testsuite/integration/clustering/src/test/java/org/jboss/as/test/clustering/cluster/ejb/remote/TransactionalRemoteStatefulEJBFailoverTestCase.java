@@ -111,7 +111,7 @@ public class TransactionalRemoteStatefulEJBFailoverTestCase extends AbstractClus
                 tx.rollback();
 
                 // TODO remove workaround for WFLY-12128
-                undeploy(TWO_DEPLOYMENTS);
+                undeploy(DEPLOYMENT_1_2);
                 ServerReload.executeReloadAndWaitForCompletion(client1);
                 ServerReload.executeReloadAndWaitForCompletion(client2);
                 // Workaround the above yielding "DeploymentException: Cannot deploy StatefulFailoverTestCase.war: WFLYCTL0379: System boot is in process; execution of remote management operations is not currently available"

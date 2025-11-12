@@ -26,6 +26,7 @@ import org.jboss.as.arquillian.api.WildFlyContainerController;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.test.clustering.ClusterTestUtil;
 import org.jboss.as.test.clustering.NodeUtil;
+import org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase;
 import org.jboss.as.test.http.util.TestHttpClientUtils;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -88,11 +89,11 @@ public class NonHaWebSessionPersistenceTestCase {
             try (CloseableHttpResponse response = client.execute(new HttpGet(url))) {
                 Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
                 Assert.assertEquals(2, Integer.parseInt(response.getFirstHeader("value").getValue()));
-                Assert.assertFalse(Boolean.valueOf(response.getFirstHeader("serialized").getValue()));
+                Assert.assertFalse(Boolean.parseBoolean(response.getFirstHeader("serialized").getValue()));
                 Assert.assertEquals(sessionId, response.getFirstHeader(SimpleServlet.SESSION_ID_HEADER).getValue());
             }
 
-            NodeUtil.stop(this.controller, CONTAINER_SINGLE);
+            NodeUtil.stop(this.controller, CONTAINER_SINGLE, AbstractClusteringTestCase.SUSPEND_TIMEOUT_S);
             NodeUtil.start(this.controller, CONTAINER_SINGLE);
             if (isBootableJar()) {
                 NodeUtil.deploy(this.deployer, DEPLOYMENT_1);
@@ -102,7 +103,7 @@ public class NonHaWebSessionPersistenceTestCase {
                 Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
                 Assert.assertEquals("Session passivation was configured but session was lost after restart.",
                         3, Integer.parseInt(response.getFirstHeader("value").getValue()));
-                Assert.assertTrue(Boolean.valueOf(response.getFirstHeader("serialized").getValue()));
+                Assert.assertTrue(Boolean.parseBoolean(response.getFirstHeader("serialized").getValue()));
                 Assert.assertEquals(sessionId, response.getFirstHeader(SimpleServlet.SESSION_ID_HEADER).getValue());
             }
 

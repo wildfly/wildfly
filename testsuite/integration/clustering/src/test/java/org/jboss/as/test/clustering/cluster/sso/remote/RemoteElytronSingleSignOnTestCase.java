@@ -48,7 +48,7 @@ public class RemoteElytronSingleSignOnTestCase extends AbstractSingleSignOnTestC
 
     public static class ServerSetupTask extends CLIServerSetupTask {
         public ServerSetupTask() {
-            this.builder.node(TWO_NODES)
+            this.builder.node(NODE_1_2.toArray(new String[0]))
                     .setup("/subsystem=distributable-web/hotrod-single-sign-on-management=other:add(remote-cache-container=sso, cache-configuration=default)")
                     .teardown("/subsystem=distributable-web/hotrod-single-sign-on-management=other:remove")
             ;

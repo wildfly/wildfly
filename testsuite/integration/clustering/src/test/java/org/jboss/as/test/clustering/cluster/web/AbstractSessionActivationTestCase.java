@@ -38,7 +38,7 @@ public abstract class AbstractSessionActivationTestCase extends AbstractClusteri
     private final boolean transactional;
 
     protected AbstractSessionActivationTestCase(boolean transactional) {
-        super(THREE_NODES);
+        super(NODE_1_2_3);
         this.transactional = transactional;
     }
 

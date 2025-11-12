@@ -120,21 +120,21 @@ public abstract class RemoteEJBClientStatefulFailoverTestBase extends AbstractCl
                 deployer.undeploy(DEPLOYMENT_1);
                 deployer.undeploy(DEPLOYMENT_HELPER_1);
             } else {
-                stop(GRACEFUL_SHUTDOWN_TIMEOUT, NODE_1);
+                stop(NODE_1);
             }
         } else {
             if (undeployOnly) {
                 deployer.undeploy(DEPLOYMENT_2);
                 deployer.undeploy(DEPLOYMENT_HELPER_2);
             } else {
-                stop(GRACEFUL_SHUTDOWN_TIMEOUT, NODE_2);
+                stop(NODE_2);
             }
         }
         // invoke again
         CounterResult resultAfterShuttingDownANode = remoteCounter.increment();
         Assert.assertNotNull("Result from remote stateful counter, after shutting down a node was null", resultAfterShuttingDownANode);
         Assert.assertEquals("Unexpected count from remote counter, after shutting down a node", totalCountBeforeShuttingDownANode + 1, resultAfterShuttingDownANode.getCount());
-        Assert.assertFalse("Result was received from an unexpected node, after shutting down a node", previousInvocationNodeName.equals(resultAfterShuttingDownANode.getNodeName()));
+        Assert.assertNotEquals("Result was received from an unexpected node, after shutting down a node", previousInvocationNodeName, resultAfterShuttingDownANode.getNodeName());
 
         // repeat invocations
         final int countBeforeDecrementing = resultAfterShuttingDownANode.getCount();

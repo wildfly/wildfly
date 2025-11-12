@@ -117,7 +117,7 @@ public class SingletonPartitionTestCase extends AbstractClusteringTestCase {
         checkSingletonNode(baseURL2, SingletonServiceActivator.SERVICE_B_NAME, SingletonServiceActivator.SERVICE_B_PREFERRED_NODE);
 
 
-        // 2. Simulate network partition; each having it's own provider
+        // 2. Simulate network partition; each having its own provider
 
         partition(true, baseURL1, baseURL2);
         waitForView(baseURL1, Set.of(NODE_1));

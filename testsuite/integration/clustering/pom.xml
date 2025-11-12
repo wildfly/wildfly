@@ -648,10 +648,6 @@
                         <node1>${node1}</node1>
                         <node2>${node2}</node2>
                         <node3>${node3}</node3>
-                        <mcast>${mcast}</mcast>
-                        <mcast1>${mcast1}</mcast1>
-                        <mcast2>${mcast2}</mcast2>
-                        <mcast3>${mcast3}</mcast3>
                         <server.jvm.args>${server.jvm.args}</server.jvm.args>
                         <surefire.jpda.args.node1>${surefire.jpda.args.node1}</surefire.jpda.args.node1>
                         <surefire.jpda.args.node2>${surefire.jpda.args.node2}</surefire.jpda.args.node2>

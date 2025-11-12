@@ -51,7 +51,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAM
  * Test for WFLY-13871.
  * <p>
  * This test will set up an EJB client interacting with a cluster of two nodes and verify that when
- * one of the nodes is suspended, invovations no longer are sent to the suspended node; and that when the node is resumed,
+ * one of the nodes is suspended, invocations no longer are sent to the suspended node; and that when the node is resumed,
  * invocations return to the resumed node.
  *
  * @author Richard Achmatowicz
@@ -98,7 +98,7 @@ public class SuspendResumeRemoteEJBTestCase extends AbstractClusteringTestCase {
     // time between invocations
     static final long INV_WAIT_DURATION_MSECS = 10;
     // time that the server remains suspended (or resumed) during continuous invocations
-    static final long SUSPEND_RESUME_DURATION_MSECS = 1 * 1000;
+    static final long SUSPEND_RESUME_DURATION_MSECS = 1000;
 
     // the set of nodes available, according to suspend/resume
     private final Set<String> nodesAvailable = new TreeSet<>(NODE_1_2);
@@ -127,12 +127,10 @@ public class SuspendResumeRemoteEJBTestCase extends AbstractClusteringTestCase {
      * in the case that the proxy is created before the server is suspended.
      * <p>
      * The test assertion is checked after each invocation result, and verifies that no invocation is sent to a suspended node.
-     *
-     * @throws Exception
      */
     @Test
     @InSequence(1)
-    public void testSuspendResumeAfterProxyInit() throws Exception {
+    public void testSuspendResumeAfterProxyInit() {
         LOGGER.info("testSuspendResumeAfterProxyInit() - start");
         try (EJBDirectory directory = new RemoteEJBDirectory(MODULE_NAME)) {
             Heartbeat bean = directory.lookupStateless(HeartbeatBean.class, Heartbeat.class);
@@ -165,12 +163,10 @@ public class SuspendResumeRemoteEJBTestCase extends AbstractClusteringTestCase {
      * in the case that the proxy is created after the server is suspended.
      * <p>
      * The test assertion is checked after each invocation result, and verifies that no invocation is sent to a suspended node.
-     *
-     * @throws Exception
      */
     @Test
     @InSequence(2)
-    public void testSuspendResumeBeforeProxyInit() throws Exception {
+    public void testSuspendResumeBeforeProxyInit() {
         LOGGER.info("testSuspendResumeBeforeProxyInit() - start");
         try (EJBDirectory directory = new RemoteEJBDirectory(MODULE_NAME)) {
 
@@ -200,12 +196,10 @@ public class SuspendResumeRemoteEJBTestCase extends AbstractClusteringTestCase {
      * in the case that the proxy is created after the server is suspended.
      * <p>
      * The test assertion is checked after each invocation result, and verifies that no invocation is sent to a suspended node.
-     *
-     * @throws Exception
      */
     @Test
     @InSequence(3)
-    public void testSuspendResumeContinuous() throws Exception {
+    public void testSuspendResumeContinuous() {
         LOGGER.info("testSuspendResumeContinuous() - start");
         try (EJBDirectory directory = new RemoteEJBDirectory(MODULE_NAME)) {
 
@@ -268,7 +262,7 @@ public class SuspendResumeRemoteEJBTestCase extends AbstractClusteringTestCase {
                     performInvocation(this.bean);
                 }
             } catch (Throwable e) {
-                LOGGER.info("ContinousInvoker: caught exception while performing invocation: e = " + e.getMessage());
+                LOGGER.info("ContinuousInvoker: caught exception while performing invocation: e = " + e.getMessage());
             }
         }
     }
@@ -355,7 +349,7 @@ public class SuspendResumeRemoteEJBTestCase extends AbstractClusteringTestCase {
      * Check if a server is suspended by reading the server attribute "suspend-state"
      *
      * @param node the node to be checked
-     * @return true if the server is suspended
+     * @return server suspend state
      */
     private String getSuspendState(String node) throws IOException {
         ModelNode op = Util.createOperation("read-attribute", PathAddress.EMPTY_ADDRESS);

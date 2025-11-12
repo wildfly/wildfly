@@ -285,7 +285,7 @@ public class ClusteredJPA2LCCustomRegionTestCase extends AbstractClusteringTestC
 
     public static class ServerSetupTask extends CLIServerSetupTask {
         public ServerSetupTask() {
-            this.builder.node(TWO_NODES)
+            this.builder.node(NODE_1_2.toArray(new String[0]))
                     .setup("/subsystem=infinispan/cache-container=hibernate/replicated-cache=entity-replicated-template:add()")
                     .teardown("/subsystem=infinispan/cache-container=hibernate/replicated-cache=entity-replicated-template:remove()")
                     ;

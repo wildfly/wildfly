@@ -81,16 +81,16 @@ public final class NodeUtil {
         return controller.isStarted(container);
     }
 
-    public static void stop(WildFlyContainerController controller, Set<String> containers, int timeout) {
+    public static void stop(WildFlyContainerController controller, Set<String> containers, int suspendTimeout) {
         for (String container : containers) {
-            stop(controller, container, timeout);
+            stop(controller, container, suspendTimeout);
         }
     }
 
-    public static void stop(WildFlyContainerController controller, String container, int timeout) {
+    public static void stop(WildFlyContainerController controller, String container, int suspendTimeout) {
         if (controller.isStarted(container)) {
             log.tracef("Stopping container %s", container);
-            controller.stop(container, timeout);
+            controller.stop(container, suspendTimeout);
             log.tracef("Stopped container %s", container);
         } else {
             log.tracef("Container %s was already stopped", container);

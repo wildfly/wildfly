@@ -12,6 +12,7 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.Arrays;
 import java.util.Properties;
+import java.util.Set;
 import java.util.UUID;
 import jakarta.jms.ConnectionFactory;
 import jakarta.jms.Destination;
@@ -52,7 +53,7 @@ public class ClusteredMessagingTestCase extends AbstractClusteringTestCase {
     private static final String jmsTopicLookup = "jms/" + jmsTopicName;
 
     public ClusteredMessagingTestCase() {
-        super(TWO_NODES, new String[] {});
+        super(NODE_1_2, Set.of());
     }
 
     protected static ModelControllerClient createClient1() {
