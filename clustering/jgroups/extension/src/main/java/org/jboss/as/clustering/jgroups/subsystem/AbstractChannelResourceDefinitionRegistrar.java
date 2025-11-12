@@ -4,12 +4,13 @@
  */
 package org.jboss.as.clustering.jgroups.subsystem;
 
+import static org.jboss.as.clustering.jgroups.subsystem.ProtocolChildResourceDefinitionRegistrar.findProtocolClass;
+
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -41,10 +42,6 @@ import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.PlaceholderResource;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
-import org.jboss.modules.Module;
-import org.jboss.modules.ModuleClassLoader;
-import org.jboss.modules.ModuleLoadException;
-import org.jgroups.Global;
 import org.jgroups.JChannel;
 import org.jgroups.jmx.JmxConfigurator;
 import org.jgroups.protocols.FORK;
@@ -230,7 +227,7 @@ public abstract class AbstractChannelResourceDefinitionRegistrar<C extends Chann
                 ChannelConfiguration configuration = channelConfiguration.get();
                 try {
                     JChannel channel = configuration.getChannelFactory().createChannel(name);
-                    if (JGroupsLogger.ROOT_LOGGER.isTraceEnabled())  {
+                    if (JGroupsLogger.ROOT_LOGGER.isTraceEnabled()) {
                         JGroupsLogger.ROOT_LOGGER.tracef("JGroups channel %s created with configuration:%n %s", name, channel.getProtocolStack().printProtocolSpec(true));
                     }
                     return channel.stats(configuration.isStatisticsEnabled());
@@ -321,7 +318,7 @@ public abstract class AbstractChannelResourceDefinitionRegistrar<C extends Chann
         }
     }
 
-    /*
+    /**
      * Unregisters override channel model
      */
     @Override
@@ -391,42 +388,6 @@ public abstract class AbstractChannelResourceDefinitionRegistrar<C extends Chann
         }
 
         return registration;
-    }
-
-    static Class<? extends Protocol> findProtocolClass(OperationContext context, String protocolName, ModelNode protocolModel) throws OperationFailedException {
-        String moduleName = ProtocolChildResourceDefinitionRegistrar.MODULE.resolveModelAttribute(context, protocolModel).asString();
-        boolean isDefaultModule = moduleName.equals(ProtocolChildResourceDefinitionRegistrar.MODULE.getDefaultValue().asString());
-
-        ModuleClassLoader classLoader;
-        try {
-            classLoader = Module.getContextModuleLoader().loadModule(moduleName).getClassLoader();
-        } catch (ModuleLoadException e) {
-            throw JGroupsLogger.ROOT_LOGGER.unableToLoadProtocolModule(moduleName, protocolName);
-        }
-
-        List<String> candidateClassNames = new ArrayList<>(2);
-        if (protocolName.startsWith(Global.PREFIX)) {
-            // Protocol name is already a jgroups protocol class name
-            candidateClassNames.add(protocolName);
-        } else {
-            // If using non-default module, try loading protocol name as class name first
-            if (!isDefaultModule) {
-                candidateClassNames.add(protocolName);
-            }
-            // Compose class name using standard prefix
-            // e.g. "raft.RAFT" akin to standalone jgroups classloading
-            candidateClassNames.add(Global.PREFIX + protocolName);
-        }
-
-        Iterator<String> classNames = candidateClassNames.iterator();
-        while (classNames.hasNext()) {
-            try {
-                return classLoader.loadClass(classNames.next()).asSubclass(Protocol.class);
-            } catch (ClassNotFoundException e) {
-                // Retry with next
-            }
-        }
-        throw JGroupsLogger.ROOT_LOGGER.unableToLoadProtocolClass(protocolName);
     }
 
 }

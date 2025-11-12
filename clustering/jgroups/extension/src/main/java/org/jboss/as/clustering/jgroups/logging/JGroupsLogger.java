@@ -85,8 +85,8 @@ public interface JGroupsLogger extends BasicLogger {
 //    @Message(id = 9, value = "A node named %s already exists in this cluster. Perhaps there is already a server running on this host? If so, restart this server with a unique node name, via -Djboss.node.name=<node-name>")
 //    IllegalStateException duplicateNodeName(String name);
 
-    @Message(id = 10, value = "Transport for stack %s is not defined. Please specify both a transport and protocol list, either as optional parameters to add() or via batching.")
-    OperationFailedException transportNotDefined(String stackName);
+//    @Message(id = 10, value = "Transport for stack %s is not defined. Please specify both a transport and protocol list, either as optional parameters to add() or via batching.")
+//    OperationFailedException transportNotDefined(String stackName);
 
 //    @Message(id = 11, value = "Protocol list for stack %s is not defined. Please specify both a transport and protocol list, either as optional parameters to add() or via batching.")
 //    OperationFailedException protocolListNotDefined(String stackName);
