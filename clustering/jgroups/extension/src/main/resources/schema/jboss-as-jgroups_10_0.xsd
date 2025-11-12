@@ -348,6 +348,11 @@
                             <xs:documentation>Defines the thread pool used for default messages received by this transport.</xs:documentation>
                         </xs:annotation>
                     </xs:element>
+                    <xs:element name="ssl" type="tns:ssl" minOccurs="0">
+                        <xs:annotation>
+                            <xs:documentation>References to the managed client and server SSLContexts to be used for communication with other cluster members.</xs:documentation>
+                        </xs:annotation>
+                    </xs:element>
                 </xs:sequence>
                 <xs:attribute name="socket-binding" type="xs:string">
                     <xs:annotation>
@@ -381,6 +386,19 @@
                 </xs:attribute>
             </xs:extension>
         </xs:complexContent>
+    </xs:complexType>
+
+    <xs:complexType name="ssl">
+        <xs:attribute name="client-context" type="xs:string" use="required">
+            <xs:annotation>
+                <xs:documentation>Reference to the managed client SSLContext to be used for communication with other cluster members.</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="server-context" type="xs:string" use="required">
+            <xs:annotation>
+                <xs:documentation>Reference to the managed server SSLContext to be used for communication with other cluster members.</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
     </xs:complexType>
 
     <xs:complexType name="thread-pool">

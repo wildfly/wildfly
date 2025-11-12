@@ -82,7 +82,6 @@ public class ManagementServerSetupTask implements ServerSetupTask {
 
         /**
          * Adds a container configuration.
-         * @param container a container identifier
          * @param configuration a container configuration
          * @return a reference to this builder
          */
@@ -115,11 +114,11 @@ public class ManagementServerSetupTask implements ServerSetupTask {
 
         /**
          * Adds the specified parameterized command to the associated set.
-         * @param command a CLI command
+         * @param commandPattern a CLI command
          * @return a reference to this builder
          */
-        default B add(String pattern, Object... params) {
-            return this.add(String.format(Locale.ROOT, pattern, params));
+        default B add(String commandPattern, Object... params) {
+            return this.add(String.format(Locale.ROOT, commandPattern, params));
         }
     }
 
@@ -222,7 +221,7 @@ public class ManagementServerSetupTask implements ServerSetupTask {
      */
     public static ScriptBuilder createScriptBuilder() {
         return new ScriptBuilder() {
-            private List<List<String>> batches = new LinkedList<>();
+            private final List<List<String>> batches = new LinkedList<>();
 
             @Override
             public List<List<String>> build() {

@@ -10,6 +10,8 @@ endif::[]
 
 include::jgroups/JGroups_Subsystem.adoc[leveloffset=+1]
 
+include::jgroups/SSL-TLS-Secured-Transport.adoc[leveloffset=+1]
+
 == Member Discovery
 
 include::jgroups/Kubernetes.adoc[]
