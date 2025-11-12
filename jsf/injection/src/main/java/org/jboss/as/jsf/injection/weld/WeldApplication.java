@@ -14,6 +14,9 @@ import javax.naming.NamingException;
 
 import org.jboss.weld.module.web.el.WeldELContextListener;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+
 /**
  * @author pmuir
  */
@@ -53,7 +56,18 @@ public class WeldApplication extends ApplicationWrapper {
             synchronized (this) {
                 if(!initialized) {
                     if(beanManager() != null) {
-                        elResolver.setDelegate(beanManager().getELResolver());
+                        // Test for CDI 4.1+, if present use the new ElAwareBeanManager
+                        // This block can be replaced by non-reflective variant soon as WFLY runs CDI 4.1+
+                        try {
+                            Class<?> elAwareBmClass = Class.forName("jakarta.enterprise.inject.spi.el.ELAwareBeanManager");
+                            Method getELResolver = elAwareBmClass.getMethod("getELResolver");
+                            elResolver.setDelegate((ELResolver) getELResolver.invoke(elAwareBmClass.cast(beanManager())));
+                        } catch (ClassNotFoundException e) {
+                            // this is CDI 4.0, use the standard BM
+                            elResolver.setDelegate(beanManager().getELResolver());
+                        } catch (NoSuchMethodException | InvocationTargetException | IllegalAccessException e) {
+                            throw new RuntimeException(e);
+                        }
                     }
                     initialized = true;
                 }
@@ -77,7 +91,19 @@ public class WeldApplication extends ApplicationWrapper {
                     if (bm == null) {
                         expressionFactory = application.getExpressionFactory();
                     } else {
-                        expressionFactory = bm.wrapExpressionFactory(application.getExpressionFactory());
+                        // Test for CDI 4.1+, if present use the new ElAwareBeanManager
+                        // This block can be replaced by non-reflective variant soon as WFLY runs CDI 4.1+
+                        try {
+                            Class<?> elAwareBmClass = Class.forName("jakarta.enterprise.inject.spi.el.ELAwareBeanManager");
+                            Method wrapExpressionFactory = elAwareBmClass.getMethod("wrapExpressionFactory", ExpressionFactory.class);
+                            expressionFactory = (ExpressionFactory) wrapExpressionFactory.invoke(elAwareBmClass.cast(bm), application.getExpressionFactory());
+
+                        } catch (ClassNotFoundException e) {
+                            // this is CDI 4.0, use the standard BM
+                            expressionFactory = bm.wrapExpressionFactory(application.getExpressionFactory());
+                        } catch (NoSuchMethodException | InvocationTargetException | IllegalAccessException e) {
+                            throw new RuntimeException(e);
+                        }
                     }
                 }
             }
