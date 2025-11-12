@@ -99,7 +99,7 @@ public class JGroupsSubsystemTestCase extends AbstractSubsystemSchemaTest<JGroup
 
         Assert.assertTrue(originalForkModel.isDefined());
         originalForkModel.protect();
-        Assert.assertTrue(0 < originalForkModel.get(StackResourceDefinitionRegistrar.Component.PROTOCOL.getPathElement().getKey()).keys().size());
+        Assert.assertFalse(originalForkModel.get(StackResourceDefinitionRegistrar.Component.PROTOCOL.getPathElement().getKey()).keys().isEmpty());
 
         ModelNode originalStackModel = originalSubsystemModel.get(JGroupsResourceRegistration.STACK.pathElement("maximal").getKeyValuePair());
         Assert.assertTrue(originalStackModel.isDefined());

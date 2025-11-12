@@ -31,6 +31,7 @@ import org.jboss.as.controller.persistence.xml.SubsystemResourceRegistrationXMLE
 import org.jboss.as.controller.persistence.xml.SubsystemResourceXMLSchema;
 import org.jboss.as.controller.xml.VersionedNamespace;
 import org.jboss.as.controller.xml.XMLCardinality;
+import org.jboss.as.controller.xml.XMLContent;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.staxmapper.IntVersion;
@@ -235,12 +236,21 @@ public enum JGroupsSubsystemSchema implements SubsystemResourceXMLSchema<JGroups
                 }
             });
         }
-        return builder.withContent(contentBuilder.build());
+
+        if (this.since(JGroupsSubsystemSchema.VERSION_10_0)) {
+            ResourceXMLElement ssl = this.factory.element(this.factory.resolve("ssl"))
+                    .withCardinality(XMLCardinality.Single.OPTIONAL)
+                    .addAttributes(List.of(SocketTransportResourceDefinitionRegistrar.CLIENT_SSL_CONTEXT, SocketTransportResourceDefinitionRegistrar.SERVER_SSL_CONTEXT))
+                    .build();
+            contentBuilder.addElement(ssl);
+        }
+
+        return builder.withContent(XMLContent.of(contentBuilder.build()));
     }
 
     private ResourceXMLChoice protocolChoice() {
         NamedResourceRegistrationXMLElement protocolElement = this.protocolElementBuilder(StackResourceDefinitionRegistrar.Component.PROTOCOL)
-                .withContent(this.protocolContentBuilder().build())
+                .withContent(XMLContent.of(this.protocolContentBuilder().build()))
                 .build();
         NamedResourceRegistrationXMLChoice.Builder builder = this.factory.namedElementChoice(protocolElement).withCardinality(XMLCardinality.Unbounded.OPTIONAL);
 
