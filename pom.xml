@@ -485,7 +485,7 @@
         <version.org.eclipse.microprofile.health.api>4.0.1</version.org.eclipse.microprofile.health.api>
         <version.org.eclipse.microprofile.jwt.api>2.1</version.org.eclipse.microprofile.jwt.api>
         <version.org.eclipse.microprofile.lra.api>2.0.1</version.org.eclipse.microprofile.lra.api>
-        <version.org.eclipse.microprofile.openapi>4.1</version.org.eclipse.microprofile.openapi>
+        <version.org.eclipse.microprofile.openapi>4.1.1</version.org.eclipse.microprofile.openapi>
         <version.org.eclipse.microprofile.reactive-messaging.api>3.0.1</version.org.eclipse.microprofile.reactive-messaging.api>
         <version.org.eclipse.microprofile.reactive-streams-operators.api>3.0.1</version.org.eclipse.microprofile.reactive-streams-operators.api>
         <version.org.eclipse.microprofile.rest.client.api>4.0</version.org.eclipse.microprofile.rest.client.api>
