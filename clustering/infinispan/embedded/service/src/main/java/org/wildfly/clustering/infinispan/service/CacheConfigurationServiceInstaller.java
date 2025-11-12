@@ -10,9 +10,7 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 import org.infinispan.commons.dataconversion.MediaType;
-import org.infinispan.configuration.cache.CacheMode;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
-import org.infinispan.configuration.cache.StorageType;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.jboss.as.controller.RequirementServiceTarget;
 import org.jboss.msc.service.ServiceController;
@@ -64,10 +62,10 @@ public class CacheConfigurationServiceInstaller implements ServiceInstaller {
             @Override
             public org.infinispan.configuration.cache.Configuration apply(ConfigurationBuilder builder) {
                 // Auto-enable simple cache optimization if cache is local, on-heap, non-transactional, and non-persistent, and statistics are disabled
-                builder.simpleCache((builder.clustering().cacheMode() == CacheMode.LOCAL) && (builder.memory().storage() == StorageType.HEAP) && !builder.transaction().transactionMode().isTransactional() && builder.persistence().stores().isEmpty() && !builder.statistics().create().enabled());
+                builder.simpleCache(!builder.clustering().cacheMode().isClustered() && builder.memory().storage().canStoreReferences() && !builder.transaction().transactionMode().isTransactional() && builder.persistence().stores().isEmpty() && !builder.statistics().create().enabled());
 
                 // Set media-type appropriate for the configured memory store
-                builder.encoding().mediaType(builder.memory().storage().canStoreReferences() ? MediaType.APPLICATION_OBJECT : manager.get().getCacheManagerConfiguration().serialization().marshaller().mediaType());
+                builder.encoding().mediaType(builder.memory().storage().canStoreReferences() ? MediaType.APPLICATION_OBJECT : MediaType.APPLICATION_OCTET_STREAM);
 
                 return builder.build();
             }
