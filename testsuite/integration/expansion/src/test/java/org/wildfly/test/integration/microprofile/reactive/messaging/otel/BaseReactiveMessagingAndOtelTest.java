@@ -432,6 +432,11 @@ public abstract class BaseReactiveMessagingAndOtelTest {
         long end = System.currentTimeMillis() + timeout;
         String errMessage = null;
         List<JaegerTrace> currentDebug = new ArrayList<>();
+
+        int lastSeenTraceCount = 0;
+        int stallCount = 0;
+        final int MAX_STALL_ITERATIONS = TimeoutUtil.adjust(5); // 5 seconds of no progress
+
         while (System.currentTimeMillis() < end) {
             List<JaegerTrace> current = new ArrayList<>();
             List<JaegerTrace> traces = getCollector().getTraces(deploymentName);
@@ -442,6 +447,15 @@ public abstract class BaseReactiveMessagingAndOtelTest {
                 currentTraceIds.add(trace.getTraceID());
                 current.add(trace);
             }
+
+            // Track progress - are we seeing new traces?
+            if (current.size() > lastSeenTraceCount) {
+                lastSeenTraceCount = current.size();
+                stallCount = 0; // Reset stall counter when we see progress
+            } else if (current.size() > 0) {
+                stallCount++; // We have traces but count isn't increasing
+            }
+
             boolean allGood = true;
             for (ReactiveMessagingOtelAssertUtils.TraceChecker traceChecker : traceCheckers) {
                 if (!traceChecker.areValidTraces(current)) {
@@ -453,6 +467,13 @@ public abstract class BaseReactiveMessagingAndOtelTest {
             if (allGood) {
                 return;
             }
+
+            // Early exit if we've stalled - don't wait full timeout
+            if (stallCount >= MAX_STALL_ITERATIONS && current.size() > 0) {
+                System.out.println("Traces have stalled at count=" + current.size() + " for " + stallCount + " iterations");
+                break; // Exit early and fail with diagnostic info
+            }
+
             Thread.sleep(1000);
             currentDebug = new ArrayList<>(current);
         }
@@ -464,10 +485,10 @@ public abstract class BaseReactiveMessagingAndOtelTest {
         });
         if (errMessage != null) {
             // some checker produced false and err message
-            Assert.fail(errMessage);
+            Assert.fail(errMessage + " (final count: " + currentDebug.size() + ", stalled after seeing " + lastSeenTraceCount + " traces)");
         } else {
             // should not really happen, just to be sure. If everything is good, method returns without getting here
-            Assert.fail();
+            Assert.fail("Trace validation failed (final count: " + currentDebug.size() + ")");
         }
     }
 }
