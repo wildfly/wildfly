@@ -31,5 +31,7 @@ public class StackResourceTransformer implements Consumer<ModelVersion> {
         for (EncryptProtocolResourceDefinitionRegistrar.Protocol protocol : EnumSet.allOf(EncryptProtocolResourceDefinitionRegistrar.Protocol.class)) {
             new EncryptProtocolResourceTransformer(this.builder, protocol.getPathElement()).accept(version);
         }
+
+        new SocketTransportResourceTransformer(this.builder).accept(version);
     }
 }

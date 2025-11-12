@@ -1,0 +1,46 @@
+= SSL/TLS support to JGroups TCP-based transports
+
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
+
+Since WildFly 39, the TCP-based JGroups transports can be SSL/TLS-secured.
+This mechanism effectively replaces native JGroups functionality which would combine `ASYM_ENCRYPT` with `AUTH` protocols.
+
+Cluster communication via TLS promotes:
+
+* Confidentiality: prevents eavesdropping on data exchanged between nodes.
+Payloads remains unreadable if intercepted.
+* Integrity: protects against tampering or injection by ensuring messages can’t be modified in transit.
+* Authentication: verifies that communication happens only between trusted cluster members,
+ensures both client and server identity.
+* Compliance: meets data protection requirements in regulated environments where encryption is mandatory, even for internal systems.
+
+The Elytron subsystem provides capabilities to configure and provision client and server `SSLContext`.
+Refer to link:WildFly_Elytron_Security{outfilesuffix}[Elytron subsystem documentation] for configuration.
+
+[source]
+----
+/subsystem=elytron/client-ssl-context=jgroupsCSC:add(...)
+/subsystem=elytron/server-ssl-context=jgroupsSSC:add(...)
+----
+
+Once the `client-ssl-context` and `server-ssl-context` are configured in Elytron subsystem,
+the TCP stacks in JGroups can be configured to secure the transport.
+
+See the following CLI script snippet for securing the transport:
+
+[source]
+----
+batch
+/subsystem=jgroups/stack=tcp/transport=TCP:write-attribute(name=client-context, value=jgroupsCSC)
+/subsystem=jgroups/stack=tcp/transport=TCP:write-attribute(name=server-context, value=jgroupsSSC)
+run-batch
+----
+
+NOTE: While the runtime overhead of encrypting entire cluster communication on modern hardware will be moderate,
+it will incur a performance penalty.

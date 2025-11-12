@@ -53,7 +53,7 @@ public enum JGroupsSubsystemSchema implements SubsystemResourceXMLSchema<JGroups
     VERSION_9_0(9, 0), // WildFly 27-38, EAP 8.0-8.1
     VERSION_10_0(10, 0), // WildFly 39-present
     ;
-    static final JGroupsSubsystemSchema CURRENT = VERSION_10_0;
+    static final Set<JGroupsSubsystemSchema> CURRENT = Set.of(VERSION_10_0);
 
     private final ResourceXMLParticleFactory factory = ResourceXMLParticleFactory.newInstance(this);
     private final VersionedNamespace<IntVersion, JGroupsSubsystemSchema> namespace;
@@ -235,6 +235,15 @@ public enum JGroupsSubsystemSchema implements SubsystemResourceXMLSchema<JGroups
                 }
             });
         }
+
+        if (this.since(JGroupsSubsystemSchema.VERSION_10_0)) {
+            ResourceXMLElement ssl = this.factory.element(this.factory.resolve("ssl"))
+                    .withCardinality(XMLCardinality.Single.OPTIONAL)
+                    .addAttributes(List.of(SocketTransportResourceDefinitionRegistrar.CLIENT_SSL_CONTEXT, SocketTransportResourceDefinitionRegistrar.SERVER_SSL_CONTEXT))
+                    .build();
+            contentBuilder.addElement(ssl);
+        }
+
         return builder.withContent(contentBuilder.build());
     }
 
