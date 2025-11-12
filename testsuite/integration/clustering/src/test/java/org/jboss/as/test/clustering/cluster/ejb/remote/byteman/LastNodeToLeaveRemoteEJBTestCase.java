@@ -47,13 +47,12 @@ import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
-import java.util.stream.Collectors;
 
 import static org.junit.Assert.assertNull;
 
 /**
  *
- * Tests the ability of the the RemoteEJBDiscoveryProvider to detect the condition when a last node left in a cluster has crashed
+ * Tests the ability of the RemoteEJBDiscoveryProvider to detect the condition when a last node left in a cluster has crashed
  * and to remove that cluster from the discovered node registry (DNR).
  * The condition is as follows: if we get a ConnectException when trying to connect to a node X in cluster Y, and the DNR shows
  * X as being the only member of Y, then remove cluster Y from the DNR.
@@ -106,11 +105,11 @@ public class LastNodeToLeaveRemoteEJBTestCase extends AbstractClusteringTestCase
                 ;
     }
 
-    public class CustomClusterNodeSelector implements ClusterNodeSelector {
+    public static class CustomClusterNodeSelector implements ClusterNodeSelector {
         @Override
         public String selectNode(String clusterName, String[] connectedNodes, String[] totalAvailableNodes) {
-            Set<String> connectedNodesSet = Arrays.asList(connectedNodes).stream().collect(Collectors.toSet());
-            Set<String> totalNodesSet = Arrays.asList(totalAvailableNodes).stream().collect(Collectors.toSet());
+            Set<String> connectedNodesSet = new HashSet<>(Arrays.asList(connectedNodes));
+            Set<String> totalNodesSet = new HashSet<>(Arrays.asList(totalAvailableNodes));
             LOGGER.debugf("Calling ClusterNodeSelector.selectNode(%s,%s,%s)", clusterName, connectedNodesSet, totalNodesSet);
             return ClusterNodeSelector.DEFAULT.selectNode(clusterName, connectedNodes, totalAvailableNodes);
         }
@@ -278,9 +277,8 @@ public class LastNodeToLeaveRemoteEJBTestCase extends AbstractClusteringTestCase
      * can keep track of them.
      */
     private Set<String> getStartedNodes() {
-        List<String> nodes = NODE_1_2_3.stream().toList();
         Set<String> startedNodes = new HashSet<>();
-        for (String node : nodes) {
+        for (String node : this.getContainers()) {
             if (isStarted(node)) {
                 startedNodes.add(node);
             }

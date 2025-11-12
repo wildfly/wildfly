@@ -131,8 +131,26 @@ public abstract class AbstractClusteringTestCase {
     }
 
     public AbstractClusteringTestCase(Set<String> containers, Set<String> deployments) {
-        this.containers = containers;
-        this.deployments = deployments;
+        this.containers = Set.copyOf(containers);
+        this.deployments = Set.copyOf(deployments);
+    }
+
+    /**
+     * Returns an unmodifiable set of container names available for this clustering test.
+     *
+     * @return an unmodifiable set of container names available for this clustering test.
+     */
+    public Set<String> getContainers() {
+        return this.containers;
+    }
+
+    /**
+     * Returns an unmodifiable set of deployment names available for this clustering test.
+     *
+     * @return an unmodifiable set of deployment names available for this clustering test.
+     */
+    public Set<String> getDeployments() {
+        return this.deployments;
     }
 
     /**
