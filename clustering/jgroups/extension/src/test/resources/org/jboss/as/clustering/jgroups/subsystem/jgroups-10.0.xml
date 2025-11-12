@@ -31,6 +31,8 @@
                 <default-thread-pool min-threads="${jgroups.maximal.min-threads:11}"
                                      max-threads="${jgroups.maximal.max-threads:12}"
                                      keepalive-time="${jgroups.maximal.keepalive-time:13}"/>
+                <ssl client-context="my-client-context"
+                     server-context="my-server-context"/>
             </transport>
             <socket-protocol type="MPING" module="${jgroups.maximal.mping.module:org.jgroups}" socket-binding="jgroups-mping">
                 <property name="name">${jgroups.maximal.property:value}</property>
