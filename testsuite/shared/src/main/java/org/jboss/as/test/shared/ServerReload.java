@@ -168,10 +168,6 @@ public class ServerReload {
                 serverPort != -1 ? serverPort : TestSuiteEnvironment.getServerPort());
     }
 
-    private static void executeReload(ModelControllerClient client, boolean adminOnly, String serverConfig) {
-        executeReload(client, adminOnly, false, serverConfig);
-    }
-
     private static void executeReload(ModelControllerClient client, boolean adminOnly, boolean startSuspended, String serverConfig) {
         ModelNode operation = new ModelNode();
         operation.get(OP_ADDR).setEmptyList();
@@ -199,40 +195,55 @@ public class ServerReload {
     }
 
     private static void waitForLiveServerToReload(int timeout, String serverAddress, int serverPort) {
-        int adjustedTimeout = TimeoutUtil.adjust(timeout);
-        long start = System.currentTimeMillis();
-        ModelNode operation = new ModelNode();
-        operation.get(OP_ADDR).setEmptyList();
-        operation.get(OP).set(READ_ATTRIBUTE_OPERATION);
-        operation.get(NAME).set("server-state");
-        while (System.currentTimeMillis() - start < adjustedTimeout) {
-            //do the sleep before we check, as the attribute state may not change instantly
-            //also reload generally takes longer than 100ms anyway
-            try {
-                Thread.sleep(100);
-            } catch (InterruptedException e) {
-            }
-            try {
-                ModelControllerClient liveClient = ModelControllerClient.Factory.create(
-                        serverAddress, serverPort);
-                try {
-                    ModelNode result = liveClient.execute(operation);
-                    if ("running" .equals(result.get(RESULT).asString())) {
-                        log.debugf("Server %s:%d was reloaded in %d milliseconds",
-                                serverAddress, serverPort, System.currentTimeMillis() - start);
-                        return;
-                    }
-                } catch (IOException e) {
-                    // ignore
-                } finally {
-                    IoUtils.safeClose(liveClient);
-                }
-            } catch (UnknownHostException e) {
-                throw new RuntimeException(e);
-            }
+        try {
+            ModelControllerClient liveClient = ModelControllerClient.Factory.create(serverAddress, serverPort);
+            waitForLiveServerToRun(liveClient, TimeoutUtil.adjust(timeout));
+            IoUtils.safeClose(liveClient);
+        } catch (UnknownHostException e) {
+            throw new RuntimeException(e);
         }
-        fail("Live Server did not reload in the imparted time of " +
-                adjustedTimeout + "(" + timeout + ") milliseconds");
+    }
+
+    public static void waitForLiveServerToRun(ModelControllerClient liveClient, long timeoutInMillis) {
+        try {
+            long start = System.currentTimeMillis();
+            while (System.currentTimeMillis() - start < timeoutInMillis) {
+                //do the sleep before we check, as the attribute state may not change instantly
+                //also reload generally takes longer than 100ms anyway
+                Thread.sleep(100);
+                if (isRunning(liveClient)) {
+                    log.debugf("Server was reloaded in %d milliseconds", System.currentTimeMillis() - start);
+                    return;
+                }
+            }
+            fail("Live Server did not reload in the imparted time of " + timeoutInMillis + " (" + timeoutInMillis + ") milliseconds");
+        } catch (InterruptedException e) {
+            log.warnf("Waiting server to be in running state has been interrupted");
+        }
+    }
+
+    public static boolean isRunning(ModelControllerClient liveClient) {
+        try {
+            ModelNode operation = new ModelNode();
+            operation.get(OP_ADDR).setEmptyList();
+            operation.get(OP).set(READ_ATTRIBUTE_OPERATION);
+            operation.get(NAME).set("server-state");
+
+            ModelNode outcome = liveClient.execute(operation);
+            log.debugf("isRunning\n%s", outcome);
+            return isSuccefulExecution(outcome) && "running".equals(outcome.get(RESULT).asString());
+        } catch (IOException e) {
+            log.debugf("Error while trying to check if the server is running %s", e.getMessage());
+            return false;
+        }
+    }
+
+    private static boolean isSuccefulExecution(ModelNode outcome) {
+        if (!outcome.hasDefined(OUTCOME)) {
+            return false;
+        }
+
+        return SUCCESS.equals(outcome.get(OUTCOME).asString());
     }
 
     /**
