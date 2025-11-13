@@ -20,6 +20,7 @@ import org.jboss.as.network.SocketBinding;
 import org.jboss.as.subsystem.test.AbstractSubsystemSchemaTest;
 import org.jboss.as.subsystem.test.KernelServices;
 import org.jboss.as.subsystem.test.KernelServicesBuilder;
+import org.jboss.as.version.Stability;
 import org.jboss.dmr.ModelNode;
 import org.junit.Assert;
 import org.junit.Test;
@@ -34,6 +35,7 @@ import org.junit.runners.Parameterized.Parameters;
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  * @author Richard Achmatowicz (c) 2013 Red Hat Inc.
+ * @author Radoslav Husar
  */
 @RunWith(value = Parameterized.class)
 public class JGroupsSubsystemTestCase extends AbstractSubsystemSchemaTest<JGroupsSubsystemSchema> {
@@ -52,7 +54,7 @@ public class JGroupsSubsystemTestCase extends AbstractSubsystemSchemaTest<JGroup
 
     @Override
     protected String getSubsystemXsdPathPattern() {
-        return "schema/jboss-as-%s_%d_%d.xsd";
+        return (this.schema.getStability() == Stability.DEFAULT) ? "schema/jboss-as-%1$s_%2$d_%3$d.xsd" : "schema/jboss-as-%1$s_%4$s_%2$d_%3$d.xsd";
     }
 
     private KernelServices buildKernelServices() throws Exception {
