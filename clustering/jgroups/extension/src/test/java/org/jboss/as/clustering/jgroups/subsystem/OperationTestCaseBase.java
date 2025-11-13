@@ -107,7 +107,7 @@ public class OperationTestCaseBase extends AbstractSubsystemTest {
     }
 
     /**
-     * Creates operations such as /subsystem=jgroups/stack=tcp/transport=TCP/:write-attribute(name=properties,value={a=b,c=d})".
+     * Creates operations such as /subsystem=jgroups/stack=tcp/transport=TCP/:write-attribute(name=properties,value={a=b,c=d}).
      *
      * @return resulting :write-attribute operation
      */
@@ -153,7 +153,7 @@ public class OperationTestCaseBase extends AbstractSubsystemTest {
     }
 
     /**
-     * Creates operations such as /subsystem=jgroups/stack=tcp/protocol=MPING/:write-attribute(name=properties,value={a=b,c=d})".
+     * Creates operations such as /subsystem=jgroups/stack=tcp/protocol=MPING/:write-attribute(name=properties,value={a=b,c=d}).
      */
     protected static ModelNode getProtocolSetPropertiesOperation(String stackName, String protocolName, ModelNode values) {
         return Util.getWriteAttributeOperation(getProtocolAddress(stackName, protocolName), ProtocolChildResourceDefinitionRegistrar.PROPERTIES.getName(), values);

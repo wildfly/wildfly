@@ -3,7 +3,7 @@
   ~ SPDX-License-Identifier: Apache-2.0
   -->
 
-<subsystem xmlns="urn:jboss:domain:jgroups:10.0">
+<subsystem xmlns="urn:jboss:domain:jgroups:community:9.0">
     <channels default="default">
         <channel name="default" stack="minimal"/>
         <channel name="bridge" stack="default"/>
