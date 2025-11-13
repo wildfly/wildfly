@@ -13,7 +13,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>38.0.1.Final</version>
+        <version>38.0.2.Final-SNAPSHOT</version>
     </parent>
 
     <artifactId>wildfly-metrics</artifactId>
