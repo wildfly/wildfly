@@ -32,6 +32,7 @@ import org.jboss.as.controller.persistence.xml.SubsystemResourceXMLSchema;
 import org.jboss.as.controller.xml.VersionedNamespace;
 import org.jboss.as.controller.xml.XMLCardinality;
 import org.jboss.as.controller.xml.XMLContent;
+import org.jboss.as.version.Stability;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.staxmapper.IntVersion;
@@ -52,15 +53,19 @@ public enum JGroupsSubsystemSchema implements SubsystemResourceXMLSchema<JGroups
     VERSION_7_0(7, 0), // WildFly 17-19, EAP 7.3
     VERSION_8_0(8, 0), // WildFly 20-26, EAP 7.4
     VERSION_9_0(9, 0), // WildFly 27-38, EAP 8.0-8.1
-    VERSION_10_0(10, 0), // WildFly 39-present
+    VERSION_9_0_COMMUNITY(9, 0, Stability.COMMUNITY), // WildFly 39-present
     ;
-    static final JGroupsSubsystemSchema CURRENT = VERSION_10_0;
+    static final Set<JGroupsSubsystemSchema> CURRENT = Set.of(VERSION_9_0_COMMUNITY, VERSION_9_0);
 
     private final ResourceXMLParticleFactory factory = ResourceXMLParticleFactory.newInstance(this);
     private final VersionedNamespace<IntVersion, JGroupsSubsystemSchema> namespace;
 
     JGroupsSubsystemSchema(int major, int minor) {
-        this.namespace = SubsystemSchema.createLegacySubsystemURN(JGroupsSubsystemResourceDefinitionRegistrar.REGISTRATION.getName(), new IntVersion(major, minor));
+        this(major, minor, Stability.DEFAULT);
+    }
+
+    JGroupsSubsystemSchema(int major, int minor, Stability stability) {
+        this.namespace = SubsystemSchema.createLegacySubsystemURN(JGroupsSubsystemResourceDefinitionRegistrar.REGISTRATION.getName(), stability, new IntVersion(major, minor));
     }
 
     @Override
@@ -237,7 +242,7 @@ public enum JGroupsSubsystemSchema implements SubsystemResourceXMLSchema<JGroups
             });
         }
 
-        if (this.since(JGroupsSubsystemSchema.VERSION_10_0)) {
+        if (this.since(JGroupsSubsystemSchema.VERSION_9_0_COMMUNITY)) {
             ResourceXMLElement ssl = this.factory.element(this.factory.resolve("ssl"))
                     .withCardinality(XMLCardinality.Single.OPTIONAL)
                     .addAttributes(List.of(SocketTransportResourceDefinitionRegistrar.CLIENT_SSL_CONTEXT, SocketTransportResourceDefinitionRegistrar.SERVER_SSL_CONTEXT))

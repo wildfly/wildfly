@@ -16,6 +16,7 @@ import org.jboss.as.network.SocketBinding;
 import org.jboss.as.subsystem.test.AbstractSubsystemTest;
 import org.jboss.as.subsystem.test.AdditionalInitialization;
 import org.jboss.as.subsystem.test.KernelServices;
+import org.jboss.as.version.Stability;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -25,7 +26,7 @@ import org.jboss.dmr.ModelNode;
 */
 public class OperationTestCaseBase extends AbstractSubsystemTest {
 
-    static final String SUBSYSTEM_XML_FILE = String.format("jgroups-%d.%d.xml", JGroupsSubsystemSchema.CURRENT.getVersion().major(), JGroupsSubsystemSchema.CURRENT.getVersion().minor());
+    static final String SUBSYSTEM_XML_FILE = String.format("jgroups-%d.%d.xml", JGroupsSubsystemSchema.CURRENT.stream().filter(s -> s.getStability().equals(Stability.DEFAULT)).findFirst().get().getVersion().major(), JGroupsSubsystemSchema.CURRENT.stream().filter(s -> s.getStability().equals(Stability.DEFAULT)).findFirst().get().getVersion().minor());
 
     public OperationTestCaseBase() {
         super(JGroupsSubsystemResourceDefinitionRegistrar.REGISTRATION.getName(), new JGroupsExtension());
@@ -104,7 +105,7 @@ public class OperationTestCaseBase extends AbstractSubsystemTest {
     }
 
     /**
-     * Creates operations such as /subsystem=jgroups/stack=tcp/transport=TCP/:write-attribute(name=properties,value={a=b,c=d})".
+     * Creates operations such as /subsystem=jgroups/stack=tcp/transport=TCP/:write-attribute(name=properties,value={a=b,c=d}).
      *
      * @return resulting :write-attribute operation
      */
@@ -150,7 +151,7 @@ public class OperationTestCaseBase extends AbstractSubsystemTest {
     }
 
     /**
-     * Creates operations such as /subsystem=jgroups/stack=tcp/protocol=MPING/:write-attribute(name=properties,value={a=b,c=d})".
+     * Creates operations such as /subsystem=jgroups/stack=tcp/protocol=MPING/:write-attribute(name=properties,value={a=b,c=d}).
      */
     protected static ModelNode getProtocolSetPropertiesOperation(String stackName, String protocolName, ModelNode values) {
         return Util.getWriteAttributeOperation(getProtocolAddress(stackName, protocolName), ProtocolChildResourceDefinitionRegistrar.PROPERTIES.getName(), values);
@@ -181,7 +182,7 @@ public class OperationTestCaseBase extends AbstractSubsystemTest {
     }
 
     protected KernelServices buildKernelServices() throws Exception {
-        return this.createKernelServicesBuilder(AdditionalInitialization.withCapabilities(JGroupsSubsystemSchema.CURRENT,
+        return this.createKernelServicesBuilder(AdditionalInitialization.withCapabilities(JGroupsSubsystemSchema.CURRENT.stream().filter(s -> s.getStability().equals(Stability.DEFAULT)).findFirst().get(),
                 RuntimeCapability.resolveCapabilityName(SocketBinding.SERVICE_DESCRIPTOR, "some-binding"),
                 RuntimeCapability.resolveCapabilityName(SocketBinding.SERVICE_DESCRIPTOR, "jgroups-diagnostics"),
                 RuntimeCapability.resolveCapabilityName(SocketBinding.SERVICE_DESCRIPTOR, "jgroups-mping"),
