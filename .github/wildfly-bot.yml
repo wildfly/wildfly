@@ -6,7 +6,7 @@ wildfly:
 
     - id: batch-jberet
       directories: [ batch-jberet ]
-      notify: [ liweinan ]
+      notify: [ jamezp ]
 
     - id: bean-validation
       directories: [ bean-validation ]
