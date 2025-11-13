@@ -203,4 +203,13 @@ public interface BatchLogger extends BasicLogger {
 
     @Message(id = 21, value = "Duplicate virtual file %s.")
     IllegalStateException duplicateVirtualFile(VirtualFile file);
+
+    /**
+     * Creates an exception indicating the {@link org.wildfly.extension.batch.jberet.job.repository.JobRepositoryService
+     * JobRepositoryService} has stopped.
+     *
+     * @return an {@link java.lang.IllegalStateException} for the error
+     */
+    @Message(id = 22, value = "The service JobRepositoryService has been stopped and cannot execute operations.")
+    IllegalStateException jobRepositoryServiceStopped();
 }

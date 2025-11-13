@@ -488,6 +488,8 @@ public class JobOperatorService extends AbstractJobOperator implements WildFlyJo
                             }
                         }
                     }
+                } catch (IllegalStateException e) {
+                    BatchLogger.LOGGER.error(e);
                 } finally {
                     WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(current);
                     // Reset the stopped state
