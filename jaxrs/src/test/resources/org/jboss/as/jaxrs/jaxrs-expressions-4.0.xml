@@ -3,7 +3,7 @@
   ~ SPDX-License-Identifier: Apache-2.0
   -->
 
-<subsystem xmlns="urn:jboss:domain:jaxrs:5.0">
+<subsystem xmlns="urn:jboss:domain:jaxrs:4.0">
     <jaxrs-2-0-request-matching>${test.request.matching:true}</jaxrs-2-0-request-matching>
     <resteasy-add-charset>${test.add.charset:false}</resteasy-add-charset>
     <resteasy-buffer-exception-entity>${test.buffer:false}</resteasy-buffer-exception-entity>
@@ -43,5 +43,4 @@
     <tracing-type>${test.tracing.type:ON_DEMAND}</tracing-type>
     <tracing-threshold>${test.tracing.threshold:TRACE}</tracing-threshold>
     <resteasy-patchfilter-disabled>${test.patchfilter.disable:true}</resteasy-patchfilter-disabled>
-    <resteasy-original-webapplicationexception-behavior>${test.original.wae.behavior:true}</resteasy-original-webapplicationexception-behavior>
 </subsystem>
