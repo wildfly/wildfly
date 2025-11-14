@@ -392,7 +392,7 @@
         <version.com.squareup.protoparser>4.0.3</version.com.squareup.protoparser>
         <version.com.sun.istack>4.1.2</version.com.sun.istack>
         <version.com.sun.xml.fastinfoset>2.1.1</version.com.sun.xml.fastinfoset>
-        <version.com.sun.xml.messaging.saaj>3.0.0</version.com.sun.xml.messaging.saaj>
+        <version.com.sun.xml.messaging.saaj>3.0.4</version.com.sun.xml.messaging.saaj>
         <version.commons-beanutils>1.11.0</version.commons-beanutils>
         <version.commons-codec>1.17.2</version.commons-codec>
         <version.commons-collections>3.2.2</version.commons-collections>
