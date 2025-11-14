@@ -553,7 +553,7 @@
         <version.org.ow2.asm>9.7.1</version.org.ow2.asm>
         <version.org.reactivestreams>1.0.4</version.org.reactivestreams>
         <version.org.wildfly.clustering>9.0.0.Beta2</version.org.wildfly.clustering>
-        <version.org.wildfly.core>31.0.0.Beta1</version.org.wildfly.core>
+        <version.org.wildfly.core>31.0.0.Beta2</version.org.wildfly.core>
         <version.org.wildfly.http-client>2.1.3.Final</version.org.wildfly.http-client>
         <version.org.wildfly.launcher>1.0.2.Final</version.org.wildfly.launcher>
         <version.org.wildfly.mvc.krazo>2.0.1.Final</version.org.wildfly.mvc.krazo>
