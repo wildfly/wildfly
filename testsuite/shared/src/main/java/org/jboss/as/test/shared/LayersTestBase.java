@@ -201,9 +201,6 @@ public abstract class LayersTestBase {
             "io.smallrye.stork",
             // Extension not included in the default config
             "org.wildfly.extension.microprofile.openapi-smallrye",
-            "org.eclipse.microprofile.openapi.api",
-            "io.smallrye.openapi",
-            "com.fasterxml.jackson.dataformat.jackson-dataformat-yaml",
             // Extension not included in the default config
             "org.wildfly.extension.microprofile.reactive-messaging-smallrye",
             // Extension not included in the default config
