@@ -41,19 +41,23 @@ import org.junit.Test;
  */
 public abstract class AbstractJSFFailoverTestCase extends AbstractClusteringTestCase {
 
+    static Pattern smallestPattern = Pattern.compile("<span id=\"numberGuess:smallest\">([^<]+)</span>");
+    static Pattern biggestPattern = Pattern.compile("<span id=\"numberGuess:biggest\">([^<]+)</span>");
+    static Pattern remainingPattern = Pattern.compile("You have (\\d+) guesses remaining.");
+    static Pattern viewStatePattern = Pattern.compile("name=\"jakarta\\.faces\\.ViewState\"[^>]*value=\"([^\"]*)\"|value=\"([^\"]*)\"[^>]*name=\"jakarta\\.faces\\.ViewState\"");
+
     /**
      * Parses the response page and headers for a cookie, Jakarta Server Faces view state and the numberguess game status.
      */
     private static NumberGuessState parseState(HttpResponse response, String sessionId) throws IllegalStateException, IOException {
-        Pattern smallestPattern = Pattern.compile("<span id=\"numberGuess:smallest\">([^<]+)</span>");
-        Pattern biggestPattern = Pattern.compile("<span id=\"numberGuess:biggest\">([^<]+)</span>");
-        Pattern remainingPattern = Pattern.compile("You have (\\d+) guesses remaining.");
-        Pattern viewStatePattern = Pattern.compile("id=\".*jakarta.faces.ViewState.*\" value=\"([^\"]*)\"");
-
         Matcher matcher;
 
         NumberGuessState state = new NumberGuessState();
         String responseString = EntityUtils.toString(response.getEntity(), StandardCharsets.UTF_8);
+
+        // FIXME Move these eventually to org.jboss.logging.Logger.Level.DEBUG once the intermittent
+        // failures in [ProtoStream]JSFFailoverTestCase are fully resolved
+        log.infof("Parsing response string for JSF state: %s", responseString);
 
         Map.Entry<String, String> sessionRouteEntry = parseSessionRoute(response);
         state.sessionId = (sessionRouteEntry != null) ? sessionRouteEntry.getKey() : sessionId;
@@ -75,8 +79,12 @@ public abstract class AbstractJSFFailoverTestCase extends AbstractClusteringTest
 
         matcher = viewStatePattern.matcher(responseString);
         if (matcher.find()) {
-            state.jsfViewState = matcher.group(1);
+            // N.B. The pattern matches both possible attribute orders (name/value or value/name),
+            // so we check group(1) first (name comes before value), then fall back to group(2) (value comes before name)
+            state.jsfViewState = matcher.group(1) != null ? matcher.group(1) : matcher.group(2);
         }
+
+        log.infof("Parsed JSF state: %s", state);
 
         return state;
     }
@@ -99,6 +107,8 @@ public abstract class AbstractJSFFailoverTestCase extends AbstractClusteringTest
             post.setHeader("Cookie", "JSESSIONID=" + sessionId);
         }
 
+        log.infof("Built HTTP POST request: %s", post);
+
         return post;
     }
 
@@ -110,6 +120,8 @@ public abstract class AbstractJSFFailoverTestCase extends AbstractClusteringTest
         if (sessionId != null) {
             request.addHeader("Cookie", "JSESSIONID=" + sessionId);
         }
+
+        log.infof("Built HTTP GET request: %s", request);
 
         return request;
     }
@@ -232,8 +244,6 @@ public abstract class AbstractJSFFailoverTestCase extends AbstractClusteringTest
             Assert.assertEquals("3", state.smallest);
             Assert.assertEquals("49", state.biggest);
         }
-
-        // Assert.fail("Show me the logs please!");
     }
 
     /**
@@ -364,5 +374,16 @@ public abstract class AbstractJSFFailoverTestCase extends AbstractClusteringTest
         String sessionId;
         String remainingGuesses;
         String jsfViewState;
+
+        @Override
+        public String toString() {
+            return "NumberGuessState{" +
+                    "smallest='" + smallest + '\'' +
+                    ", biggest='" + biggest + '\'' +
+                    ", sessionId='" + sessionId + '\'' +
+                    ", remainingGuesses='" + remainingGuesses + '\'' +
+                    ", jsfViewState='" + jsfViewState + '\'' +
+                    '}';
+        }
     }
 }
