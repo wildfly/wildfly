@@ -19,7 +19,7 @@
     </feature>
 
     <feature spec="profile">
-        <param name="profile" value="ha"/>
+        <param name="__profile" value="ha"/>
         <feature-group name="domain-ha-profile">
             <feature spec="subsystem.modcluster">
                 <feature spec="subsystem.modcluster.proxy">
