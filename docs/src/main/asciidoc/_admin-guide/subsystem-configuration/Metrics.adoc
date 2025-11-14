@@ -17,7 +17,7 @@ https://microprofile.io/project/eclipse/microprofile-metrics[MicroProfile Metric
 a more robust alternative, see any of the following:
 
 * https://micrometer.io[Micrometer] and the xref:Micrometer.adoc[_micrometer_ subsystem]
-* https://opentelemetry.io[OpenTelemetry] and the xref:Observability_Tracing.adoc[_opentelemetry_ subsystem]
+* https://opentelemetry.io[OpenTelemetry] and the xref:OpenTelemetry.adoc[_opentelemetry_ subsystem]
 * https://microprofile.io/specifications/telemetry/[MicroProfile Telemetry] and the xref:MicroProfile_Telemetry.adoc[_microprofile-telemetry_ subsystem]
 
 Note that these new subsystems also offer metrics support, so their use in conjunction with this subsystem may carry some performance concerns. Please read the sections of the Admin Guide for each of these subsystems before enabling them.
