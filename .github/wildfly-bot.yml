@@ -201,7 +201,7 @@ wildfly:
     - id: testsuite-ws
       directories:
         - testsuite/integration/ws
-      notify: [ jimma ]
+      notify: [ ropalka ]
       
     - id: testsuite-mixed-domain
       directories:
@@ -217,15 +217,15 @@ wildfly:
 
     - id: undertow
       directories: [ undertow ]
-      notify: [ fl4via ]
+      notify: [ fl4via, ropalka ]
 
     - id: web-common
       directories: [ web-common ]
-      notify: [ pferraro, fl4via ]
+      notify: [ pferraro, fl4via, ropalka ]
 
     - id: webservices
       directories: [ webservices ]
-      notify: [ jimma ]
+      notify: [ ropalka ]
 
     - id: weld
       directories: [ weld ]
