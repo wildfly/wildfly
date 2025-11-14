@@ -41,6 +41,9 @@ public class BeanDefiningAnnotationProcessor implements DeploymentUnitProcessor 
     private static final DotName FLOW_SCOPED_NAME = DotName.createSimple("jakarta.faces.flow.FlowScoped");
     private static final DotName CLIENT_WINDOW_SCOPED = DotName.createSimple("jakarta.faces.lifecycle.ClientWindowScoped");
 
+    private static final DotName WS_ENDPOINT = DotName.createSimple("jakarta.websocket.Endpoint");
+    private static final DotName WS_ENDPOINT_CLIENT = DotName.createSimple("jakarta.websocket.ClientEndpoint");
+    private static final DotName WS_ENDPOINT_SERVER = DotName.createSimple("jakarta.websocket.server.ServerEndpoint");
     @Override
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
@@ -59,6 +62,10 @@ public class BeanDefiningAnnotationProcessor implements DeploymentUnitProcessor 
         addAnnotation(deploymentUnit, new AnnotationType(VIEW_SCOPED_NAME, true));
         addAnnotation(deploymentUnit, new AnnotationType(FLOW_SCOPED_NAME, true));
         addAnnotation(deploymentUnit, new AnnotationType(CLIENT_WINDOW_SCOPED, true));
+        // WS endpoint
+        addAnnotation(deploymentUnit, new AnnotationType(WS_ENDPOINT, true));
+        addAnnotation(deploymentUnit, new AnnotationType(WS_ENDPOINT_CLIENT, true));
+        addAnnotation(deploymentUnit, new AnnotationType(WS_ENDPOINT_SERVER, true));
 
         for (AnnotationType annotationType : CdiAnnotations.BEAN_DEFINING_META_ANNOTATIONS) {
             addAnnotations(deploymentUnit, getAnnotationsAnnotatedWith(index, annotationType.getName()));
