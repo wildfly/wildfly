@@ -12,83 +12,76 @@ endif::[]
 [[jgroups-purpose]]
 == Purpose
 
-The JGroups subsystem provides group communication support for HA
-services in the form of JGroups channels.
+The JGroups subsystem provides group communication support for HA services in the form of JGroups channels.
 
-Named channel instances permit application peers in a cluster to
-communicate as a group and in such a way that the communication
-satisfies defined properties (e.g. reliable, ordered,
-failure-sensitive). Communication properties are configurable for each
-channel and are defined by the protocol stack used to create the
-channel. Protocol stacks consist of a base transport layer (used to
-transport messages around the cluster) together with a user-defined,
-ordered stack of protocol layers, where each protocol layer supports a
-given communication property.
+Named channel instances permit application peers in a cluster to communicate as a group and in such a way that the communication satisfies defined properties (e.g. reliable, ordered,failure-sensitive).
+Communication properties are configurable for each channel and are defined by the protocol stack used to create the channel.
+Protocol stacks consist of a base transport layer (used to transport messages around the cluster) together with a user-defined,
+ordered stack of protocol layers,
+where each protocol layer supports a given communication property.
 
 The JGroups subsystem provides the following features:
 
-* allows definition of named protocol stacks
-* view run-time metrics associated with channels
-* specify a default stack for general use
+* allows definition of named protocol stacks and channels
+* specify a stack for each channel and a default channel
+* view runtime metrics associated with channels
 
 In the following sections, we describe the JGroups subsystem.
 
 [IMPORTANT]
 
-JGroups channels are created transparently as part of the clustering
-functionality (e.g. on clustered application deployment, channels will
-be created behind the scenes to support clustered features such as
-session replication or transmission of SSO contexts around the cluster).
+JGroups channels are created transparently as part of the clustering functionality
+(e.g. on clustered application deployment, channels will be created behind the scenes to support clustered features such as session replication or transmission of SSO contexts around the cluster).
 
 [[jgroups-configuration-example]]
 == Configuration example
 
-What follows is a sample JGroups subsystem configuration showing all of
-the possible elements and attributes which may be configured. We shall
-use this example to explain the meaning of the various elements and
-attributes.
+Following is the default JGroups subsystem configuration.
+We shall use this example to explain the meaning of the various elements and attributes.
 
 [IMPORTANT]
 
-The schema for the subsystem, describing all valid elements and
-attributes, can be found in the WildFly distribution, in the `docs/schema`
-directory.
+The XML schema for the subsystem, describing all valid elements and attributes,
+can be found in the WildFly distribution,
+in the `docs/schema` directory.
 
 [source,xml,options="nowrap"]
 ----
-<subsystem xmlns="urn:jboss:domain:jgroups:6.0">
+<subsystem xmlns="urn:jboss:domain:jgroups:9.0">
     <channels default="ee">
         <channel name="ee" stack="udp" cluster="ejb"/>
     </channels>
     <stacks>
         <stack name="udp">
             <transport type="UDP" socket-binding="jgroups-udp"/>
+            <protocol type="RED"/>
             <protocol type="PING"/>
             <protocol type="MERGE3"/>
-            <protocol type="FD_SOCK"/>
-            <protocol type="FD_ALL"/>
-            <protocol type="VERIFY_SUSPECT"/>
+            <socket-protocol type="FD_SOCK2" socket-binding="jgroups-udp-fd"/>
+            <protocol type="FD_ALL3"/>
+            <protocol type="VERIFY_SUSPECT2"/>
             <protocol type="pbcast.NAKACK2"/>
             <protocol type="UNICAST3"/>
             <protocol type="pbcast.STABLE"/>
             <protocol type="pbcast.GMS"/>
             <protocol type="UFC"/>
             <protocol type="MFC"/>
-            <protocol type="FRAG3"/>
+            <protocol type="FRAG4"/>
         </stack>
         <stack name="tcp">
             <transport type="TCP" socket-binding="jgroups-tcp"/>
+            <protocol type="RED"/>
             <socket-protocol type="MPING" socket-binding="jgroups-mping"/>
             <protocol type="MERGE3"/>
-            <protocol type="FD_SOCK"/>
-            <protocol type="FD_ALL"/>
-            <protocol type="VERIFY_SUSPECT"/>
+            <protocol type="FD_ALL3"/>
+            <protocol type="VERIFY_SUSPECT2"/>
             <protocol type="pbcast.NAKACK2"/>
             <protocol type="UNICAST3"/>
             <protocol type="pbcast.STABLE"/>
             <protocol type="pbcast.GMS"/>
+            <protocol type="UFC"/>
             <protocol type="MFC"/>
-            <protocol type="FRAG3"/>
+            <protocol type="FRAG4"/>
         </stack>
     </stacks>
 </subsystem>
@@ -97,72 +90,63 @@ directory.
 [[subsystem]]
 === <subsystem>
 
-This element is used to configure the subsystem within a WildFly system
-profile.
+This element is used to configure the subsystem within a WildFly configuration profile.
 
-* `xmlns` This attribute specifies the XML namespace of the JGroups
-subsystem and, in particular, its version.
+* `xmlns` specifies the XML namespace of the JGroups subsystem and, in particular, its version.
 
-* `default-stack` This attribute is used to specify a default stack for
-the JGroups subsystem. This default stack will be used whenever a stack
-is required but no stack is specified.
+[[jgroups-subsystem-channels]]
+=== <channels>
+
+This element is used to configure JGroups channels and the default channel to use.
+
+* `default` is used to specify a default channel for the JGroups subsystem.
+This default channel will be used whenever a stack is required but no stack is specified.
+
+[[jgroups-subsystem-channel]]
+==== <channel>
+
+This element configures individual JGroups channels with attributes:
+
+* `name` defines the name of this channel that can be referenced or looked up.
+* `stack` defines the stack configuration to use for this channel.
+* `cluster` defines the logical cluster name shared across the cluster members.
 
 [[stack]]
 === <stack>
 
-This element is used to configure a JGroups protocol stack.
+This element containing sequence of protocols is used to configure a JGroups protocol stack.
 
 * `name` This attribute is used to specify the name of the stack.
 
 [[jgroups-transport]]
 === <transport>
 
-This element is used to configure the transport layer (required) of the
-protocol stack.
+This element is used to configure the transport layer (required) of the protocol stack with attributes:
 
-* `type` This attribute specifies the transport type (e.g. UDP, TCP,
-TCPGOSSIP)
-* `socket-binding` This attribute references a defined socket binding in
-the server profile. It is used when JGroups needs to create general
-sockets internally.
-* `diagnostics-socket-binding` This attribute references a defined
-socket binding in the server profile. It is used when JGroups needs to
-create sockets for use with the diagnostics program. For more about the
-use of diagnostics, see the JGroups documentation for probe.sh.
-* `default-executor` This attribute references a defined thread pool
-executor in the threads subsystem. It governs the allocation and
-execution of runnable tasks to handle incoming JGroups messages.
-* `oob-executor` This attribute references a defined thread pool
-executor in the threads subsystem. It governs the allocation and
-execution of runnable tasks to handle incoming JGroups OOB
-(out-of-bound) messages.
-* `timer-executor` This attribute references a defined thread pool
-executor in the threads subsystem. It governs the allocation and
-execution of runnable timer-related tasks.
-* `shared` This attribute indicates whether or not this transport is
-shared amongst several JGroups stacks or not.
-* `thread-factory` This attribute references a defined thread factory in
-the threads subsystem. It governs the allocation of threads for running
-tasks which are not handled by the executors above.
-* `site` This attribute defines a site (data centre) id for this node.
-* `rack` This attribute defines a rack (server rack) id for this node.
-* `machine` This attribute defines a machine (host) is for this node.
+* `type` specifies the transport type (e.g. `UDP`, `TCP`, `TCP_NIO2`)
+* `module` defines a JBoss Modules module to load the protocol class from (defaults to `org.jgroups`)
+* `socket-binding` references a defined socket binding in the server profile.
+It is used when JGroups needs to create general sockets internally.
+* `diagnostics-socket-binding` references a defined socket binding in the server profile.
+It is used when JGroups needs to create sockets for use with the diagnostics program.
+For more about the use of diagnostics,
+see the JGroups documentation for `probe.sh` tool.
+* `thread-pool` configures the thread pool options, such as keepalive-time, min-threads and max-threads.
+* `site` defines a site (data centre) ID for this node.
+* `rack` defines a rack (server rack) ID for this node.
+* `machine` defines a machine (host) is for this node.
 
 [IMPORTANT]
-
-site, rack and machine ids are used by the Infinispan topology-aware
-consistent hash function, which when using dist mode, prevents dist mode
-replicas from being stored on the same host, rack or site
-
-.
+Attributes site, rack and machine IDs are used by the Infinispan topology-aware consistent hash function,
+which when using dist mode, prevents dist mode replicas from being stored on the same host, rack or site.
 
 [[property]]
 ==== <property>
 
-This element is used to configure a transport property.
+This element is used to configure a transport or protocol property.
 
-* `name` This attribute specifies the name of the protocol property. The
-value is provided as text for the property element.
+* `name` This attribute specifies the name of the protocol property.
+The value is provided as text for the property element.
 
 [[protocol]]
 === <protocol>
@@ -170,88 +154,112 @@ value is provided as text for the property element.
 This element is used to configure a (non-transport) protocol layer in
 the JGroups stack. Protocol layers are ordered within the stack.
 
-* `type` This attribute specifies the name of the JGroups protocol
-implementation (e.g. MPING, pbcast.GMS), with the package prefix
-org.jgroups.protocols removed.
-* `socket-binding` This attribute references a defined socket binding in
-the server profile. It is used when JGroups needs to create general
-sockets internally for this protocol instance.
+* `type` specifies the name of the JGroups protocol implementation (e.g. `MPING`, `pbcast.GMS`),
+with the package prefix `org.jgroups.protocols` removed.
+* `socket-binding` references a defined socket binding in the server profile.
+It is used when JGroups needs to create general sockets internally for this protocol instance.
 
 [[relay]]
 === <relay>
 
-This element is used to configure the RELAY protocol for a JGroups
-stack. RELAY is a protocol which provides cross-site replication between
-defined sites (data centres). In the RELAY protocol, defined sites
-specify the names of remote sites (backup sites) to which their data
-should be backed up. Channels are defined between sites to permit the
-RELAY protocol to transport the data from the current site to a backup
-site.
+This element is used to configure the RELAY protocol for a JGroups stack.
+RELAY is a protocol which provides cross-site replication between defined sites (data centres).
+In the RELAY protocol, defined sites specify the names of remote sites (backup sites) to which their data should be backed up.
+Channels are defined between sites to permit the RELAY protocol to transport the data from the current site to a backup site.
 
-* `site` This attribute specifies the name of the current site. Site
-names can be referenced elsewhere (e.g. in the JGroups remote-site
-configuration elements, as well as backup configuration elements in the
-Infinispan subsystem)
+* `site` specifies the name of the current site.
+Site names can be referenced elsewhere
+(e.g. in the JGroups remote-site configuration elements, as well as backup configuration elements in the Infinispan subsystem)
 
 [[remote-site]]
 ==== <remote-site>
 
-This element is used to configure a remote site for the RELAY protocol.
+This element is used to configure a remote site for the RELAY protocol with attributes:
 
-* `name` This attribute specifies the name of the remote site to which
-this configuration applies.
-* `stack` This attribute specifies a JGroups protocol stack to use for
-communication between this site and the remote site.
-* `cluster` This attribute specifies the name of the JGroups channel to
-use for communication between this site and the remote site.
+* `name` specifies the name of the remote site to which this configuration applies.
+* `stack` specifies a JGroups protocol stack to use for communication between this site and the remote site.
+* `cluster` specifies the name of the JGroups channel to use for communication between this site and the remote site.
 
 [[jgroups-use-cases]]
 == Use Cases
 
-In many cases, channels will be configured via XML as in the example
-above, so that the channels will be available upon server startup.
-However, channels may also be added, removed or have their
-configurations changed in a running server by making use of the WildFly
-management API command-line interface (CLI). In this section, we present
-some key use cases for the JGroups management API.
+In many cases, channels will be configured via XML as in the example above, so that the channels will be available upon server startup.
+However, channels may also be added, removed or have their configurations modified.
+The recommended way is by making use of the WildFly management API command-line interface (CLI).
+In this section, we present some key use cases for the managing the JGroups subsystem.
 
 The key use cases covered are:
 
 * adding a stack
 * adding a protocol to an existing stack
-* adding a property to a protocol
+* configuring a property of a protocol
 
 [IMPORTANT]
-
 The WildFly management API command-line interface (CLI) itself can be
 used to provide extensive information on the attributes and commands
 available in the JGroups subsystem interface used in these examples.
 
 [[add-a-stack]]
-=== Add a stack
+=== Creating a new stack
+
+To create a new stack it must be created using a `batch` to satisfy capability references checks.
 
 [source,options="nowrap"]
 ----
-/subsystem=jgroups/stack=mystack:add(transport={}, protocols={})
+batch
+/subsystem=jgroups/stack=mystack:add
+/subsystem=jgroups/stack=mystack/transport=TCP:add(socket-binding=jgroups-tcp)
+/subsystem=jgroups/stack=mystack/protocol=RED:add
+/subsystem=jgroups/stack=mystack/protocol=MPING:add(socket-binding=jgroups-mping)
+/subsystem=jgroups/stack=mystack/protocol=MERGE3:add
+/subsystem=jgroups/stack=mystack/protocol=FD_ALL3:add
+/subsystem=jgroups/stack=mystack/protocol=VERIFY_SUSPECT2:add
+/subsystem=jgroups/stack=mystack/protocol=pbcast.NAKACK2:add
+/subsystem=jgroups/stack=mystack/protocol=UNICAST3:add
+/subsystem=jgroups/stack=mystack/protocol=pbcast.STABLE:add
+/subsystem=jgroups/stack=mystack/protocol=pbcast.GMS:add
+/subsystem=jgroups/stack=mystack/protocol=UFC:add
+/subsystem=jgroups/stack=mystack/protocol=MFC:add
+/subsystem=jgroups/stack=mystack/protocol=FRAG4:add
+run-batch
+----
+
+The default `ee` channel can be then reconfigured to use this stack with the following operation:
+
+[source,options="nowrap"]
+----
+/subsystem=jgroups/channel=ee:write-attribute(name=stack, value=mystack)
 ----
 
 [[add-a-protocol-to-a-stack]]
-=== Add a protocol to a stack
+=== Adding a protocol to a stack
+
+While the order of management resources in WildFly is typically not a concern,
+ordering is essential when configuring JGroups protocols.
+Protocols can be inserted into existing stacks at any point using `add-index` attribute of the `add` protocol.
+Following is an example of adding the `RED` protocol which always operates at the top of the stack,
+hence it is added at index of zero.
 
 [source,options="nowrap"]
 ----
-/subsystem=jgroups/stack=mystack/transport=TRANSPORT:add(type=<type>, socket-binding=<socketbinding>)
+/subsystem=jgroups/stack=udp/protocol=RED:add(add-index=0)
 ----
+
+Analogously, a protocol can be removed from the protocol referencing its name:
 
 [source,options="nowrap"]
 ----
-/subsystem=jgroups/stack=mystack:add-protocol(type=<type>, socket-binding=<socketbinding>)
+/subsystem=jgroups/stack=udp/protocol=RED:remove
 ----
 
 [[add-a-property-to-a-protocol]]
-=== Add a property to a protocol
+=== Configuring a property of protocol
+
+Most JGroups protocols support configuration options that are not exposed as management attributed within the WildFly subsystem.
+These can be configured using properties.
+Following is an example of fine-tuning the `RED` protocol's `min_treshold` to increase from default to `0.6`.
 
 [source,options="nowrap"]
 ----
-/subsystem=jgroups/stack=mystack/transport=TRANSPORT/property=<property>:add(value=<value>)
+/subsystem=jgroups/stack=udp/protocol=RED:map-put(name=properties, key=min_threshold, value=0.6)
 ----

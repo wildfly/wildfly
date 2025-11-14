@@ -157,11 +157,11 @@ public class Endpoint {
 This provides the application with a `MeterRegistry` instance that will have any recorded metrics exported with the system metrics WildFly already exposes. There is no need for an application to include the Micrometer dependencies in the application archive, as they are provided by the server out-of-the-box:
 
 [source,xml]
------
+----
 <dependency>
     <groupId>io.micrometer</groupId>
     <artifactId>micrometer-core</artifactId>
     <version>${version.micrometer}</version>
     <scope>provided</scope>
 </dependency>
------
+----
