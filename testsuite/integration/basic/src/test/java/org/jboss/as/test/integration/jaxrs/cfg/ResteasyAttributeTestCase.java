@@ -21,13 +21,13 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.container.ManagementClient;
-import org.jboss.as.arquillian.setup.SnapshotServerSetupTask;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.client.helpers.Operations;
 import org.jboss.as.controller.client.helpers.Operations.CompositeOperationBuilder;
 import org.jboss.as.jaxrs.JaxrsAttribute;
 import org.jboss.as.jaxrs.JaxrsConstants;
 import org.jboss.as.test.integration.jaxrs.packaging.war.WebXml;
+import org.jboss.as.test.shared.ExtendedSnapshotServerSetupTask;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.dmr.Property;
@@ -85,7 +85,7 @@ public class ResteasyAttributeTestCase {
     private static final ModelNode VALUE_EXPRESSION_RESOURCE = new ModelNode(new ValueExpression("${rest.test.dummy:java:global/jaxrsnoap/" + EJB_Resource1.class.getSimpleName() + "}"));
     private static final ModelNode VALUE_EXPRESSION_PROVIDER = new ModelNode(new ValueExpression("${rest.test.dummy:" + StringTextStar.class.getName() + "}"));
 
-    static class AttributeTestCaseDeploymentSetup extends SnapshotServerSetupTask {
+    static class AttributeTestCaseDeploymentSetup extends ExtendedSnapshotServerSetupTask {
         @SuppressWarnings("deprecation")
         @Override
         protected void doSetup(final ManagementClient client, final String containerId) throws Exception {
@@ -183,6 +183,11 @@ public class ResteasyAttributeTestCase {
                 sb.append(key).append(':').append(value.asString());
             }
             return new ModelNode(sb.toString());
+        }
+
+        @Override
+        protected long timeout() {
+            return 20L;
         }
     }
     /**
