@@ -3,11 +3,11 @@
   ~ SPDX-License-Identifier: Apache-2.0
   -->
 
-<subsystem xmlns="urn:jboss:domain:resource-adapters:7.1">
+<subsystem xmlns="urn:jboss:domain:resource-adapters:7.2">
     <resource-adapters>
         <resource-adapter id="double">
-            <config-property name="name">overRA</config-property>
             <module slot="main" id="org.jboss.ironjacamar.ra16out"/>
+            <config-property name="name">overRA</config-property>
             <connection-definitions>
                 <connection-definition
                         class-name="org.jboss.as.test.integration.jca.rar.MultipleManagedConnectionFactory1"
