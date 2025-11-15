@@ -3,7 +3,7 @@
   ~ SPDX-License-Identifier: Apache-2.0
   -->
 
-<subsystem xmlns="urn:jboss:domain:jgroups:9.0">
+<subsystem xmlns="urn:jboss:domain:jgroups:community:9.0">
     <channels default="default">
         <channel name="default" stack="minimal"/>
         <channel name="bridge" stack="default"/>
@@ -21,6 +21,8 @@
                 <default-thread-pool min-threads="11"
                              max-threads="13"
                              keepalive-time="14"/>
+                <ssl client-context="my-client-ssl-context"
+                     server-context="my-server-ssl-context"/>
             </transport>
             <socket-protocol type="MPING" module="org.jgroups" socket-binding="jgroups-mping"/>
             <protocol type="MERGE3"/>
