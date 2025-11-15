@@ -11,14 +11,13 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAM
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_HEADERS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PLAIN_TEXT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PORT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROTOCOL;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REALM;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOTE_DESTINATION_OUTBOUND_SOCKET_BINDING;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SASL_AUTHENTICATION_FACTORY;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SECURITY_REALM;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER;
@@ -26,8 +25,11 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOC
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_GROUP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SSL_CONTEXT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
+
+import jakarta.ejb.NoSuchEJBException;
 
 import java.io.File;
 import java.io.IOException;
@@ -36,8 +38,8 @@ import java.net.URI;
 import java.net.UnknownHostException;
 import java.security.Provider;
 import java.util.Properties;
+import java.util.concurrent.TimeUnit;
 
-import jakarta.ejb.NoSuchEJBException;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
@@ -82,6 +84,7 @@ import org.wildfly.security.auth.client.AuthenticationContext;
 import org.wildfly.security.auth.client.MatchRule;
 import org.wildfly.security.sasl.SaslMechanismSelector;
 import org.wildfly.test.api.Authentication;
+import org.xnio.IoUtils;
 
 /**
  * Test case pertaining to remote outbound connection authentication between two server instances using remote-outbound-connection
@@ -94,6 +97,8 @@ import org.wildfly.test.api.Authentication;
 public class ElytronRemoteOutboundConnectionTestCase {
 
     private static final Logger log = Logger.getLogger(ElytronRemoteOutboundConnectionTestCase.class);
+
+    private static final String SNAPSHOT_NAME = "ElytronRemoteOutboundConnectionTestCase";
 
     private static final String INBOUND_CONNECTION_MODULE_NAME = "inbound-module";
     private static final String OUTBOUND_CONNECTION_MODULE_NAME = "outbound-module";
@@ -224,109 +229,35 @@ public class ElytronRemoteOutboundConnectionTestCase {
             containerController.start(OUTBOUND_CONNECTION_SERVER);
         }
 
-        serverSideMCC = getInboundConnectionServerMCC();
         clientSideMCC = getOutboundConnectionServerMCC();
+        saveServerConfiguration(clientSideMCC);
+
+        serverSideMCC = getInboundConnectionServerMCC();
+        saveServerConfiguration(serverSideMCC);
+
+    }
+
+    private void saveServerConfiguration(ModelControllerClient client) {
+        ServerReload.waitForLiveServerToRun(client, TimeUnit.SECONDS.toMillis(5));
+        takeSnapshot(client, SNAPSHOT_NAME);
     }
 
     @After
     public void cleanResources()throws Exception {
+
         deployer.undeploy(EJB_CLIENT_DEPLOYMENT);
         deployer.undeploy(EJB_SERVER_DEPLOYMENT);
 
-        //==================================
-        // Client-side server tear down
-        //==================================
-        boolean clientReloadRequired = false;
-        ModelNode result;
-        try {
-            result = clientSideMCC.execute(Util.getReadAttributeOperation(PathAddress.pathAddress(SUBSYSTEM, "elytron"),
-                    "default-authentication-context"));
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-        if (result != null && result.hasDefined(RESULT)) {
-            applyUpdate(clientSideMCC, Util.getUndefineAttributeOperation(PathAddress.pathAddress(SUBSYSTEM, "elytron"),
-                    "default-authentication-context"));
-            clientReloadRequired = true;
-        }
+        restoreServerConfiguration(clientSideMCC);
+        restoreServerConfiguration(serverSideMCC);
 
-        applyUpdate(clientSideMCC, getEjbConnectorOp("list-remove", CONNECTOR));
-        executeBlockingReloadClientServer(clientSideMCC);
+    }
 
-        removeIfExists(clientSideMCC, getAuthenticationContextAddress(DEFAULT_AUTH_CONTEXT), !clientReloadRequired);
-        removeIfExists(clientSideMCC, addDynamicClientSSLContext(DYNAMIC_CLIENT_SSL_CONTEXT), !clientReloadRequired);
-        removeIfExists(clientSideMCC, getServerAuthenticationContext(DYNAMIC_CLIENT_AUTH_CONTEXT), !clientReloadRequired);
-        removeIfExists(clientSideMCC, getConnectionAddress(REMOTE_OUTBOUND_CONNECTION), !clientReloadRequired);
-        removeIfExists(clientSideMCC, getServerSSLContextAddress(DEFAULT_SERVER_SSL_CONTEXT), !clientReloadRequired);
-        removeIfExists(clientSideMCC, getTrustManagerAddress(DEFAULT_TRUST_MANAGER), !clientReloadRequired);
-        removeIfExists(clientSideMCC, getKeyStoreAddress(DEFAULT_TRUST_STORE), !clientReloadRequired);
-        removeIfExists(clientSideMCC, getKeyManagerAddress(DEFAULT_KEY_MANAGER), !clientReloadRequired);
-        removeIfExists(clientSideMCC, getKeyStoreAddress(DEFAULT_KEY_STORE), !clientReloadRequired);
-        removeIfExists(clientSideMCC, getAuthenticationConfigurationAddress(DEFAULT_AUTH_CONFIG), !clientReloadRequired);
-        removeIfExists(clientSideMCC, getAuthenticationContextAddress(OVERRIDING_AUTH_CONTEXT), !clientReloadRequired);
-        removeIfExists(clientSideMCC, getServerSSLContextAddress(OVERRIDING_SERVER_SSL_CONTEXT), !clientReloadRequired);
-        removeIfExists(clientSideMCC, getTrustManagerAddress(OVERRIDING_TRUST_MANAGER), !clientReloadRequired);
-        removeIfExists(clientSideMCC, getKeyStoreAddress(OVERRIDING_TRUST_STORE), !clientReloadRequired);
-        removeIfExists(clientSideMCC, getKeyManagerAddress(OVERRIDING_KEY_MANAGER), !clientReloadRequired);
-        removeIfExists(clientSideMCC, getKeyStoreAddress(OVERRIDING_KEY_STORE), !clientReloadRequired);
-        removeIfExists(clientSideMCC, getAuthenticationConfigurationAddress(OVERRIDING_AUTH_CONFIG), !clientReloadRequired);
-        removeIfExists(clientSideMCC, getOutboundSocketBindingAddress(OUTBOUND_SOCKET_BINDING), !clientReloadRequired);
-        if (clientReloadRequired) {
-            executeBlockingReloadClientServer(clientSideMCC);
-        }
-
-        //==================================
-        // Server-side server tear down
-        //==================================
-        if (!executeReadAttributeOpReturnResult(serverSideMCC, getHttpConnectorAddress("http-remoting-connector"), SASL_AUTHENTICATION_FACTORY)
-                .equals("application-sasl-authentication")) {
-            applyUpdate(serverSideMCC, Util.getWriteAttributeOperation(getHttpConnectorAddress("http-remoting-connector"),
-                    SASL_AUTHENTICATION_FACTORY, "application-sasl-authentication"));
-        }
-        Operations.CompositeOperationBuilder compositeBuilder = Operations.CompositeOperationBuilder.create();
-
-        String defaultHttpsListenerSSLContext = executeReadAttributeOpReturnResult(serverSideMCC, getDefaultHttpsListenerAddress(), SSL_CONTEXT);
-        if (!(defaultHttpsListenerSSLContext == null) && !defaultHttpsListenerSSLContext.isEmpty()) {
-            ModelNode update = Util.getUndefineAttributeOperation(getDefaultHttpsListenerAddress(), SSL_CONTEXT);
-            update.get(OPERATION_HEADERS, ALLOW_RESOURCE_SERVICE_RESTART).set(true);
-            compositeBuilder.addStep(update);
-        }
-
-        ModelNode update = Util.getWriteAttributeOperation(getDefaultHttpsListenerAddress(), "ssl-context", "applicationSSC");
-        update.get(OPERATION_HEADERS, ALLOW_RESOURCE_SERVICE_RESTART).set(true);
-        compositeBuilder.addStep(update);
-
-        applyUpdate(serverSideMCC, compositeBuilder.build().getOperation());
-
-        applyUpdate(serverSideMCC, getEjbConnectorOp("list-remove", CONNECTOR));
-        ServerReload.reloadIfRequired(serverSideMCC); // this use is ok; the server is on the standard address/port
-
-        removeIfExists(serverSideMCC, getConnectorAddress(CONNECTOR));
-        removeIfExists(serverSideMCC, getHttpConnectorAddress(CONNECTOR));
-        removeIfExists(serverSideMCC, getServerSSLContextAddress(SERVER_SSL_CONTEXT), false);
-        removeIfExists(serverSideMCC, getTrustManagerAddress(SERVER_TRUST_MANAGER));
-        removeIfExists(serverSideMCC, getKeyStoreAddress(SERVER_TRUST_STORE));
-        removeIfExists(serverSideMCC, getKeyManagerAddress(SERVER_KEY_MANAGER));
-        removeIfExists(serverSideMCC, getKeyStoreAddress(SERVER_KEY_STORE));
-        removeIfExists(serverSideMCC, getSocketBindingAddress(INBOUND_SOCKET_BINDING));
-        removeIfExists(serverSideMCC, getEjbApplicationSecurityDomainAddress(APPLICATION_SECURITY_DOMAIN));
-        removeIfExists(serverSideMCC, getSaslAuthenticationFactoryAddress(AUTHENTICATION_FACTORY));
-        removeIfExists(serverSideMCC, getElytronSecurityDomainAddress(SECURITY_DOMAIN));
-        removeIfExists(serverSideMCC, getPropertiesRealmAddress(PROPERTIES_REALM));
-        removeIfExists(serverSideMCC, getElytronAggregateRoleDecoderAddress(AGGREGATE_ROLE_DECODER));
-        removeIfExists(serverSideMCC, getElytronSourceAddressRoleDecoderAddress(DECODER_1));
-        removeIfExists(serverSideMCC, getElytronSourceAddressRoleDecoderAddress(DECODER_2));
-        removeIfExists(serverSideMCC, getElytronPermissionMapperAddress(IP_PERMISSION_MAPPER));
-
-        //noinspection deprecation
-        ServerReload.reloadIfRequired(serverSideMCC); // this use is ok; the server is on the standard address/port
-
-        try {
-            clientSideMCC.close();
-            serverSideMCC.close();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+    private void restoreServerConfiguration(ModelControllerClient client) {
+        reloadSnapshot(client, SNAPSHOT_NAME);
+        ServerReload.waitForLiveServerToRun(client, TimeUnit.SECONDS.toMillis(5));
+        deleteSnapshot(client, SNAPSHOT_NAME);
+        IoUtils.safeClose(client);
     }
 
     @AfterClass
@@ -1580,27 +1511,9 @@ public class ElytronRemoteOutboundConnectionTestCase {
         } catch (IOException ex) {
             throw new RuntimeException(ex);
         }
-        if (result.hasDefined("outcome") && "success".equals(result.get("outcome").asString())) {
-            log.trace("Operation result:\n" + result.toString());
-        } else if (result.hasDefined("failure-description")) {
-            throw new RuntimeException(result.toString());
-        } else {
-            throw new RuntimeException("Operation not successful, outcome:\n" + result.get("outcome"));
-        }
-    }
 
-    private static String executeReadAttributeOpReturnResult(final ModelControllerClient client, PathAddress address,
-                                                           String attributeName) {
-        ModelNode op = Util.getReadAttributeOperation(address, attributeName);
-        ModelNode result;
-        try {
-            result = client.execute(new OperationBuilder(op).build());
-        } catch (IOException ex) {
-            throw new RuntimeException(ex);
-        }
         if (result.hasDefined("outcome") && "success".equals(result.get("outcome").asString())) {
             log.trace("Operation result:\n" + result.toString());
-            return result.get("result").asString();
         } else if (result.hasDefined("failure-description")) {
             throw new RuntimeException(result.toString());
         } else {
@@ -1648,6 +1561,53 @@ public class ElytronRemoteOutboundConnectionTestCase {
         log.trace("Container state after reload on client side server: [ " + state + " ]");
     }
 
+    public void takeSnapshot(final ModelControllerClient client, final String snapshot) {
+        ModelNode operation = new ModelNode();
+        operation.get(OP_ADDR).setEmptyList();
+        operation.get(OP).set("take-snapshot");
+        operation.get(NAME).set(snapshot);
+        executeWithThrow(client, operation);
+    }
+
+    public void deleteSnapshot(final ModelControllerClient client, final String snapshot) {
+        ModelNode operation = new ModelNode();
+        operation.get(OP_ADDR).setEmptyList();
+        operation.get(OP).set("delete-snapshot");
+        operation.get(NAME).set(snapshot);
+        executeWithThrow(client, operation);
+    }
+
+    public void reloadSnapshot(final ModelControllerClient client, final String snapshot) {
+        ModelNode operation = new ModelNode();
+        operation.get(OP_ADDR).setEmptyList();
+        operation.get(OP).set("reload");
+        operation.get("server-config").set(snapshot);
+        executeWithThrow(client, operation);
+    }
+
+    private void executeWithThrow(final ModelControllerClient client, ModelNode operation) {
+        try {
+            ModelNode outcome = client.execute(new OperationBuilder(operation).build());
+            if (isSuccefulExecution(outcome)) {
+                log.debugf("Operation reloadSnapshot  result:\n" + outcome.toString());
+            } else if (outcome.hasDefined("failure-description")) {
+                throw new RuntimeException(outcome.toString());
+            } else {
+                throw new RuntimeException("Operation not successful, outcome:\n" + outcome.get(OUTCOME));
+            }
+        } catch (IOException e) {
+            throw new RuntimeException("not possible to connect with client", e);
+        }
+    }
+
+    private static boolean isSuccefulExecution(ModelNode outcome) {
+        if (!outcome.hasDefined(OUTCOME)) {
+            return false;
+        }
+
+        return SUCCESS.equals(outcome.get(OUTCOME).asString());
+    }
+
     private String callIntermediateWhoAmI() {
         return callIntermediateWhoAmI(false);
     }
@@ -1689,22 +1649,6 @@ public class ElytronRemoteOutboundConnectionTestCase {
         }
 
         return result;
-    }
-
-    public void removeIfExists(ModelControllerClient client, PathAddress address, boolean allowResourceReload) {
-        ModelNode rrResult;
-        try {
-            rrResult = client.execute(Util.createOperation(READ_RESOURCE_OPERATION, address));
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-        if (rrResult != null && Operations.isSuccessfulOutcome(rrResult)) {
-            applyUpdate(client, Util.createRemoveOperation(address), allowResourceReload);
-        }
-    }
-
-    public void removeIfExists(ModelControllerClient client, PathAddress address) {
-        removeIfExists(client, address, false);
     }
 
     public static void cleanFile(File toClean) {
