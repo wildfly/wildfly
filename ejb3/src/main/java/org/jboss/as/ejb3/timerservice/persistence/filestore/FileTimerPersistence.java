@@ -47,6 +47,7 @@ import org.jboss.marshalling.MarshallerFactory;
 import org.jboss.marshalling.MarshallingConfiguration;
 import org.jboss.marshalling.ModularClassResolver;
 import org.jboss.marshalling.river.RiverMarshallerFactory;
+import org.jboss.metadata.parser.util.NoopXMLResolver;
 import org.jboss.modules.ModuleLoader;
 import org.jboss.msc.Service;
 import org.jboss.msc.service.StartContext;
@@ -66,7 +67,10 @@ import org.wildfly.transaction.client.ContextTransactionManager;
 public class FileTimerPersistence implements TimerPersistence, Service {
 
     private static final FilePermission FILE_PERMISSION = new FilePermission("<<ALL FILES>>", "read,write,delete");
-    private static final XMLInputFactory INPUT_FACTORY = XMLInputFactory.newInstance();
+    private static final XMLInputFactory INPUT_FACTORY = XMLInputFactory.newInstance(); //XmlInputFactoryUtil will cause failure
+    static {
+        INPUT_FACTORY.setXMLResolver(new NoopXMLResolver());
+    }
 
     private final boolean createIfNotExists;
     private MarshallerFactory factory;
@@ -355,6 +359,7 @@ public class FileTimerPersistence implements TimerPersistence, Service {
                 final XMLInputFactory inputFactory = INPUT_FACTORY;
                 setIfSupported(inputFactory, XMLInputFactory.IS_VALIDATING, Boolean.FALSE);
                 setIfSupported(inputFactory, XMLInputFactory.SUPPORT_DTD, Boolean.FALSE);
+                setIfSupported(inputFactory, XMLInputFactory.IS_SUPPORTING_EXTERNAL_ENTITIES, false);
                 final XMLStreamReader streamReader = inputFactory.createXMLStreamReader(in);
                 try {
                     List<TimerImpl> timerList = new ArrayList<>();

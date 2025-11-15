@@ -31,6 +31,7 @@ import org.jboss.metadata.web.spec.TldMetaData;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleLoadException;
 import org.jboss.modules.Resource;
+import org.wildfly.common.xml.XMLInputFactoryUtil;
 import org.wildfly.extension.undertow.logging.UndertowLogger;
 
 /**
@@ -119,7 +120,7 @@ public class ExternalTldParsingDeploymentProcessor implements DeploymentUnitProc
         InputStream is = null;
         try {
             is = tld.openStream();
-            final XMLInputFactory inputFactory = XMLInputFactory.newInstance();
+            final XMLInputFactory inputFactory = XMLInputFactoryUtil.create();
             inputFactory.setXMLResolver(NoopXMLResolver.create());
             XMLStreamReader xmlReader = inputFactory.createXMLStreamReader(is);
             return TldMetaDataParser.parse(xmlReader);
