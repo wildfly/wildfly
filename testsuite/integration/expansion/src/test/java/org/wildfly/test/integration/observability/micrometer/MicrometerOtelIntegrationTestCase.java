@@ -25,12 +25,10 @@ import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.test.shared.observability.containers.OpenTelemetryCollectorContainer;
 import org.jboss.as.test.shared.observability.setuptasks.MicrometerSetupTask;
 import org.jboss.as.test.shared.observability.signals.PrometheusMetric;
-import org.jboss.as.test.shared.util.AssumeTestGroupUtil;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.wildfly.test.integration.observability.JaxRsActivator;
@@ -53,14 +51,6 @@ public class MicrometerOtelIntegrationTestCase {
     public static Archive<?> deploy() {
         return ShrinkWrap.create(WebArchive.class, "micrometer-test.war")
                 .addClasses(JaxRsActivator.class, MicrometerResource.class);
-    }
-
-    // The @ServerSetup(MicrometerSetupTask.class) requires Docker to be available.
-    // Otherwise the org.wildfly.extension.micrometer.registry.NoOpRegistry is installed which will result in 0 counters,
-    // and cause the test fail seemingly intermittently on machines with broken Docker setup.
-    @BeforeClass
-    public static void checkForDocker() {
-        AssumeTestGroupUtil.assumeDockerAvailable();
     }
 
     @Test
