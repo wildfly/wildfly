@@ -97,6 +97,10 @@ public class OpenTelemetryCollectorContainer extends BaseContainer<OpenTelemetry
         return jaegerContainer.getTraces(serviceName);
     }
 
+    public List<JaegerTrace> getTraces(String serviceName, Map<String, String> tags) throws InterruptedException {
+        return jaegerContainer.getTraces(serviceName, tags);
+    }
+
     /**
      * Given a list of <code>PrometheusMetric</code> instances, return a sublist whose key matches <code>key</code>. Note
      * that the key name must match the Prometheus conventions (see <a href="https://prometheus.io/docs/practices/naming/">

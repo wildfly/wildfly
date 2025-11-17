@@ -14,10 +14,8 @@ import java.io.InputStreamReader;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.apache.http.NameValuePair;
@@ -40,7 +38,6 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Before;
@@ -75,10 +72,6 @@ public abstract class BaseReactiveMessagingAndOtelTest {
 
     private static String deploymentName;
 
-    // these must be static and final so that they are same objects for test instances / thread
-    private static final Set<String> previousTestsTraceIds = new HashSet<>();
-    private static final Set<String> currentTraceIds = new HashSet<>();
-
     private int ITERATIONS = Integer.valueOf(WildFlySecurityManager.getPropertyPrivileged("wildfly.mp.rm.otel.iterations", "2"));
 
     public BaseReactiveMessagingAndOtelTest(String connectorSuffix) {
@@ -107,11 +100,6 @@ public abstract class BaseReactiveMessagingAndOtelTest {
         System.out.println("=============================");
     }
 
-    @After
-    public void after() throws Exception {
-        previousTestsTraceIds.addAll(currentTraceIds);
-        currentTraceIds.clear();
-    }
 
     protected static WebArchive createDeployment(String deploymentName, String mpCfgPropertiesFileName) {
         BaseReactiveMessagingAndOtelTest.deploymentName = deploymentName;
@@ -130,14 +118,17 @@ public abstract class BaseReactiveMessagingAndOtelTest {
         ReactiveMessagingOtelUtils.setTracingConfigSystemProperty(managementClient.getControllerClient(), connectorTracingPropertyName, null);
         ReactiveMessagingOtelUtils.reload(managementClient.getControllerClient());
 
+        // Capture timestamp before sending data for time-based filtering
+        long testStartTimeMicros = System.currentTimeMillis() * 1000;
+
         try (CloseableHttpClient client = HttpClientBuilder.create().build()){
-            postData(client,"no-trace");
+            postData(client,"no-trace", "testNoOpenTelemetryTracing", 0);
             waitForData(client, "no-trace");
 
             // We should not get any traces for reactive messaging. Since traces are not synchronous,
             // sleep a little bit so that rogue ones can have time to come through.
             List<JaegerTrace> traces = getCollector().getTraces(deploymentName);
-            checkJaegerTraces(JAEGER_TIMEOUT,
+            checkJaegerTraces("testNoOpenTelemetryTracing", testStartTimeMicros, JAEGER_TIMEOUT,
                     ReactiveMessagingOtelAssertUtils.createChecker(1, ReactiveMessagingOtelAssertUtils.spanSet(connectorSuffix)
                                     .zeroDisabledReceiveAndPublish()
                                     .singlePost()
@@ -146,7 +137,7 @@ public abstract class BaseReactiveMessagingAndOtelTest {
         }
     }
 
-    private void testOpenTelemetryTraces(Map<String, TracingType> tracingAttributes, Map<String, Boolean> tracingConfigSystemProperties, int iterations, ReactiveMessagingOtelAssertUtils.TraceChecker... traceCheckers) throws Exception {
+    private void testOpenTelemetryTraces(String testName, Map<String, TracingType> tracingAttributes, Map<String, Boolean> tracingConfigSystemProperties, int iterations, ReactiveMessagingOtelAssertUtils.TraceChecker... traceCheckers) throws Exception {
         String[] values = new String[iterations];
         for (int i = 0; i < iterations; i++) {
             values[i] = "trace-" + i;
@@ -162,14 +153,18 @@ public abstract class BaseReactiveMessagingAndOtelTest {
             }
             ReactiveMessagingOtelUtils.reload(managementClient.getControllerClient());
 
+            // Capture timestamp before sending data for time-based filtering
+            // Jaeger uses microseconds since epoch
+            long testStartTimeMicros = System.currentTimeMillis() * 1000;
+
             // send data
             try (CloseableHttpClient client = HttpClientBuilder.create().build()) {
-                for (String value : values) {
-                    postData(client, value);
+                for (int i = 0; i < values.length; i++) {
+                    postData(client, values[i], testName, i);
                 }
                 waitForData(client, values);
             }
-            checkJaegerTraces(JAEGER_TIMEOUT, traceCheckers);
+            checkJaegerTraces(testName, testStartTimeMicros, JAEGER_TIMEOUT, traceCheckers);
         } finally {
             ReactiveMessagingOtelUtils.enableConnectorOpenTelemetryResource(managementClient.getControllerClient(), false);
             for (String tracingConfigSystemProperty : tracingConfigSystemProperties.keySet()) {
@@ -182,6 +177,7 @@ public abstract class BaseReactiveMessagingAndOtelTest {
     @Test
     public void testOpenTelemetryTracingOffEnabledAtConnectorLevel() throws Exception {
         testOpenTelemetryTraces(
+                "testOpenTelemetryTracingOffEnabledAtConnectorLevel",
                 Map.of(tracingAttributeName, TracingType.OFF),
                 Map.of(connectorTracingPropertyName, true),
                 ITERATIONS,
@@ -196,6 +192,7 @@ public abstract class BaseReactiveMessagingAndOtelTest {
     @Test
     public void testOpenTelemetryTracingOffEnabledAtConnectorLevelDisabledAtIncomingChannel() throws Exception {
         testOpenTelemetryTraces(
+                "testOpenTelemetryTracingOffEnabledAtConnectorLevelDisabledAtIncomingChannel",
                 Map.of(tracingAttributeName, TracingType.OFF),
                 Map.of(connectorTracingPropertyName, true, incomingChannelProperty, false),
                 ITERATIONS,
@@ -209,6 +206,7 @@ public abstract class BaseReactiveMessagingAndOtelTest {
     @Test
     public void testOpenTelemetryTracingOffEnabledAtConnectorLevelDisabledAtOutgoingChannel() throws Exception {
         testOpenTelemetryTraces(
+                "testOpenTelemetryTracingOffEnabledAtConnectorLevelDisabledAtOutgoingChannel",
                 Map.of(tracingAttributeName, TracingType.OFF),
                 Map.of(connectorTracingPropertyName, true, outgoingChannelProperty, false),
                 ITERATIONS,
@@ -228,6 +226,7 @@ public abstract class BaseReactiveMessagingAndOtelTest {
     @Test
     public void testOpenTelemetryTracingOffEnabledAtIncomingChannel() throws Exception {
         testOpenTelemetryTraces(
+                "testOpenTelemetryTracingOffEnabledAtIncomingChannel",
                 Map.of(tracingAttributeName, TracingType.OFF),
                 Map.of(incomingChannelProperty, true),
                 ITERATIONS,
@@ -246,6 +245,7 @@ public abstract class BaseReactiveMessagingAndOtelTest {
     @Test
     public void testOpenTelemetryTracingOffEnabledAtOutgoingChannel() throws Exception {
         testOpenTelemetryTraces(
+                "testOpenTelemetryTracingOffEnabledAtOutgoingChannel",
                 Map.of(tracingAttributeName, TracingType.OFF),
                 Map.of(outgoingChannelProperty, true),
                 ITERATIONS,
@@ -259,6 +259,7 @@ public abstract class BaseReactiveMessagingAndOtelTest {
     @Test
     public void testOpenTelemetryTracingOnDisabledAtConnectorLevel() throws Exception {
         testOpenTelemetryTraces(
+                "testOpenTelemetryTracingOnDisabledAtConnectorLevel",
                 Map.of(tracingAttributeName, TracingType.ON),
                 Map.of(connectorTracingPropertyName, false),
                 ITERATIONS,
@@ -271,6 +272,7 @@ public abstract class BaseReactiveMessagingAndOtelTest {
     @Test
     public void testOpenTelemetryTracingOnDisabledAtConnectorLevelEnabledAtIncomingChannel() throws Exception {
         testOpenTelemetryTraces(
+                "testOpenTelemetryTracingOnDisabledAtConnectorLevelEnabledAtIncomingChannel",
                 Map.of(tracingAttributeName, TracingType.ON),
                 Map.of(connectorTracingPropertyName, false, incomingChannelProperty, true),
                 ITERATIONS,
@@ -289,6 +291,7 @@ public abstract class BaseReactiveMessagingAndOtelTest {
     @Test
     public void testOpenTelemetryTracingOnDisabledAtConnectorLevelEnabledAtOutgoingChannel() throws Exception {
         testOpenTelemetryTraces(
+                "testOpenTelemetryTracingOnDisabledAtConnectorLevelEnabledAtOutgoingChannel",
                 Map.of(tracingAttributeName, TracingType.ON),
                 Map.of(connectorTracingPropertyName, false, outgoingChannelProperty, true),
                 ITERATIONS,
@@ -302,6 +305,7 @@ public abstract class BaseReactiveMessagingAndOtelTest {
     @Test
     public void testOpenTelemetryTracingOnDisabledAtIncomingChannel() throws Exception {
         testOpenTelemetryTraces(
+                "testOpenTelemetryTracingOnDisabledAtIncomingChannel",
                 Map.of(tracingAttributeName, TracingType.ON),
                 Map.of(incomingChannelProperty, false),
                 ITERATIONS,
@@ -315,6 +319,7 @@ public abstract class BaseReactiveMessagingAndOtelTest {
     @Test
     public void testOpenTelemetryTracingOnDisabledAtOutgoingChannel() throws Exception {
         testOpenTelemetryTraces(
+                "testOpenTelemetryTracingOnDisabledAtOutgoingChannel",
                 Map.of(tracingAttributeName, TracingType.ON),
                 Map.of(outgoingChannelProperty, false),
                 ITERATIONS,
@@ -334,6 +339,7 @@ public abstract class BaseReactiveMessagingAndOtelTest {
     @Test
     public void testOpenTelemetryTracingAlwaysDisabledAtConnectorLevel() throws Exception {
         testOpenTelemetryTraces(
+                "testOpenTelemetryTracingAlwaysDisabledAtConnectorLevel",
                 Map.of(tracingAttributeName, TracingType.ALWAYS),
                 Map.of(connectorTracingPropertyName, false),
                 ITERATIONS,
@@ -348,6 +354,7 @@ public abstract class BaseReactiveMessagingAndOtelTest {
     @Test
     public void testOpenTelemetryTracingAlwaysDisabledAtChannel() throws Exception {
         testOpenTelemetryTraces(
+                "testOpenTelemetryTracingAlwaysDisabledAtChannel",
                 Map.of(tracingAttributeName, TracingType.ALWAYS),
                 Map.of(outgoingChannelProperty, false, incomingChannelProperty, false),
                 ITERATIONS,
@@ -362,6 +369,7 @@ public abstract class BaseReactiveMessagingAndOtelTest {
     @Test
     public void testOpenTelemetryTracingNeverEnabledAtConnectorLevel() throws Exception {
         testOpenTelemetryTraces(
+                "testOpenTelemetryTracingNeverEnabledAtConnectorLevel",
                 Map.of(tracingAttributeName, TracingType.NEVER),
                 Map.of(connectorTracingPropertyName, true),
                 ITERATIONS,
@@ -375,6 +383,7 @@ public abstract class BaseReactiveMessagingAndOtelTest {
     @Test
     public void testOpenTelemetryTracingNeverEnabledAtChannel() throws Exception {
         testOpenTelemetryTraces(
+                "testOpenTelemetryTracingNeverEnabledAtChannel",
                 Map.of(tracingAttributeName, TracingType.NEVER),
                 Map.of(outgoingChannelProperty, true, incomingChannelProperty, true),
                 ITERATIONS,
@@ -385,10 +394,12 @@ public abstract class BaseReactiveMessagingAndOtelTest {
                         .zeroTracedReceive()));
     }
 
-    private void postData(CloseableHttpClient client, String value) throws Exception {
+    private void postData(CloseableHttpClient client, String value, String testName, int iteration) throws Exception {
         HttpPost post = new HttpPost(url.toString());
         List<NameValuePair> nvps = new ArrayList<>();
         nvps.add(new BasicNameValuePair("value", value));
+        nvps.add(new BasicNameValuePair("testName", testName));
+        nvps.add(new BasicNameValuePair("iteration", String.valueOf(iteration)));
         post.setEntity(new UrlEncodedFormEntity(nvps));
 
         try (CloseableHttpResponse response = client.execute(post)){
@@ -428,32 +439,33 @@ public abstract class BaseReactiveMessagingAndOtelTest {
         return Collections.emptyList();
     }
 
-    private void checkJaegerTraces(int timeout, ReactiveMessagingOtelAssertUtils.TraceChecker... traceCheckers) throws InterruptedException {
+    private List<JaegerTrace> filterTracesByTime(List<JaegerTrace> traces, long testStartTimeMicros) {
+        // Filter traces to only include those with spans that started at or after testStartTimeMicros
+        return traces.stream()
+                .filter(trace -> trace.getSpans().stream()
+                        .anyMatch(span -> span.getStartTime() >= testStartTimeMicros))
+                .collect(Collectors.toList());
+    }
+
+    private void checkJaegerTraces(String testName, long testStartTimeMicros, int timeout, ReactiveMessagingOtelAssertUtils.TraceChecker... traceCheckers) throws InterruptedException {
         long end = System.currentTimeMillis() + timeout;
         String errMessage = null;
         List<JaegerTrace> currentDebug = new ArrayList<>();
 
-        int lastSeenTraceCount = 0;
-        int stallCount = 0;
-        final int MAX_STALL_ITERATIONS = TimeoutUtil.adjust(5); // 5 seconds of no progress
+        // Hybrid approach: tag-based filtering for single-checker tests, time-based for multi-checker tests
+        // Multi-checker tests have broken trace context propagation (e.g., disabled channels)
+        // where Kafka receive spans don't have test.name attribute
+        boolean useTagFiltering = (traceCheckers.length == 1);
 
         while (System.currentTimeMillis() < end) {
-            List<JaegerTrace> current = new ArrayList<>();
-            List<JaegerTrace> traces = getCollector().getTraces(deploymentName);
-            for (JaegerTrace trace : traces) {
-                if (previousTestsTraceIds.contains(trace.getTraceID())) {
-                    continue;
-                }
-                currentTraceIds.add(trace.getTraceID());
-                current.add(trace);
-            }
-
-            // Track progress - are we seeing new traces?
-            if (current.size() > lastSeenTraceCount) {
-                lastSeenTraceCount = current.size();
-                stallCount = 0; // Reset stall counter when we see progress
-            } else if (current.size() > 0) {
-                stallCount++; // We have traces but count isn't increasing
+            // Query Jaeger - use tag filter for single-checker tests, time-based for multi-checker tests
+            List<JaegerTrace> current;
+            if (useTagFiltering) {
+                current = getCollector().getTraces(deploymentName, Map.of("test.name", testName));
+            } else {
+                // Time-based filtering: get all traces and filter by timestamp
+                List<JaegerTrace> allTraces = getCollector().getTraces(deploymentName);
+                current = filterTracesByTime(allTraces, testStartTimeMicros);
             }
 
             boolean allGood = true;
@@ -468,26 +480,36 @@ public abstract class BaseReactiveMessagingAndOtelTest {
                 return;
             }
 
-            // Early exit if we've stalled - don't wait full timeout
-            if (stallCount >= MAX_STALL_ITERATIONS && current.size() > 0) {
-                System.out.println("Traces have stalled at count=" + current.size() + " for " + stallCount + " iterations");
-                break; // Exit early and fail with diagnostic info
-            }
-
             Thread.sleep(1000);
             currentDebug = new ArrayList<>(current);
         }
-        System.out.println("Current traces:");
+
+        // Debug output on failure
+        System.out.println("Test: " + testName + " - Traces found: " + currentDebug.size());
         currentDebug.forEach(trace -> {
                 System.out.println("TraceID: " + trace.getTraceID());
-                trace.getSpans().forEach(s -> System.out.println(s.getOperationName()));
+                trace.getSpans().forEach(span -> {
+                    System.out.println("  Span: " + span.getOperationName());
+                    System.out.println("    StartTime: " + span.getStartTime());
+                    System.out.println("    Duration: " + span.getDuration());
+                    if (span.getTags() != null && !span.getTags().isEmpty()) {
+                        System.out.println("    Tags:");
+                        span.getTags().forEach(tag ->
+                            System.out.println("      " + tag.getKey() + " = " + tag.getValue() + " (type: " + tag.getType() + ")")
+                        );
+                    } else {
+                        System.out.println("    Tags: (none)");
+                    }
+                    if (span.getLogs() != null && !span.getLogs().isEmpty()) {
+                        System.out.println("    Logs: " + span.getLogs().size() + " entries");
+                    }
+                });
                 System.out.println("-------------------------");
         });
+
         if (errMessage != null) {
-            // some checker produced false and err message
-            Assert.fail(errMessage + " (final count: " + currentDebug.size() + ", stalled after seeing " + lastSeenTraceCount + " traces)");
+            Assert.fail(errMessage + " (final count: " + currentDebug.size() + ")");
         } else {
-            // should not really happen, just to be sure. If everything is good, method returns without getting here
             Assert.fail("Trace validation failed (final count: " + currentDebug.size() + ")");
         }
     }
