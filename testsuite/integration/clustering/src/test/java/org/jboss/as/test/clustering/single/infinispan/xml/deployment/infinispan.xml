@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+
+<infinispan xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+            xsi:schemaLocation="urn:infinispan:config:15.2 https://infinispan.org/schemas/infinispan-config-15.2.xsd"
+            xmlns="urn:infinispan:config:15.2">
+    <cache-container name="test" default-cache="test">
+        <local-cache name="test">
+            <persistence>
+                <file-store path="target/infinispan-xml-test-case"/>
+            </persistence>
+        </local-cache>
+    </cache-container>
+</infinispan>
+
