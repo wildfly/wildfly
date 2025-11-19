@@ -15,7 +15,7 @@
     </feature>
 
     <feature spec="profile">
-        <param name="profile" value="load-balancer"/>
+        <param name="__profile" value="load-balancer"/>
             <feature-group name="logging">
                 <include feature-id="subsystem.logging.root-logger.ROOT:subsystem=logging,root-logger=ROOT">
                     <param name="handlers" value="[FILE]"/>
@@ -23,7 +23,7 @@
                 <exclude spec="subsystem.logging.console-handler"/>
             </feature-group>
             <feature-group name="io"/>
-            <feature-group name="undertow-load-balancer"/>        
+            <feature-group name="undertow-load-balancer"/>
         <feature-group name="domain-server-groups"/>
     </feature>
 

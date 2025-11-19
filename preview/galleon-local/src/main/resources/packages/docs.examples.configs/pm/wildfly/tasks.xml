@@ -74,7 +74,7 @@
             <feature-group name="adjust-standalone-full-config"/>
 
             <feature spec="subsystem.rts">
-                <param name="host-feature" value="default-host"/>
+                <param name="host" value="default-host"/>
                 <param name="socket-binding" value="http"/>
                 <param name="server" value="default-server"/>
             </feature>
@@ -89,7 +89,7 @@
             <feature-group name="adjust-standalone-full-config"/>
 
             <feature spec="subsystem.xts">
-                <param name="host-feature" value="default-host"/>
+                <param name="host" value="default-host"/>
                 <param name="url" value="http://${jboss.bind.address:127.0.0.1}:8080/ws-c11/ActivationService"/>
                 <param name="default-context-propagation" value="true"/>
             </feature>
