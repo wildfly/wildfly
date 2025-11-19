@@ -374,6 +374,10 @@ purge::
     Indicates whether the cache store should be purged on cache start.
     Purge should never be enabled on a shared store.
     Default is true.
+segmented::
+    Indicates whether or not the cache store is segmented.
+    The number of segments is defined by the segments attribute of the associated cache resource.
+    Default is true.
 shared::
     Indicates that the same cache store endpoint (e.g. database, data grid, etc.) is used by all members of the cluster.
     When using a shared cache store, cache entries are only persisted by the primary owner of a given cache entry.
