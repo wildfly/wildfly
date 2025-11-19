@@ -20,13 +20,13 @@ import java.util.concurrent.TimeUnit;
 import jakarta.inject.Inject;
 
 import io.smallrye.reactive.messaging.kafka.api.IncomingKafkaRecordMetadata;
+import org.arquillian.testcontainers.api.TestcontainersRequired;
 import org.apache.kafka.common.header.Header;
 import org.apache.kafka.common.header.Headers;
 import org.apache.kafka.common.record.TimestampType;
 import org.eclipse.microprofile.reactive.messaging.Message;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.arquillian.testcontainers.api.TestcontainersRequired;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.test.shared.CLIServerSetupTask;
 import org.jboss.as.test.shared.TimeoutUtil;

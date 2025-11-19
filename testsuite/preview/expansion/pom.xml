@@ -81,7 +81,7 @@
         </dependency>
 
         <dependency>
-            <groupId>org.jboss.arquillian</groupId>
+            <groupId>org.arquillian.testcontainers</groupId>
             <artifactId>arquillian-testcontainers</artifactId>
             <scope>test</scope>
         </dependency>

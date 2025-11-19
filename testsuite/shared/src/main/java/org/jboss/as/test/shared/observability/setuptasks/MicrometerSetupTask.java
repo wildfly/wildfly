@@ -7,8 +7,8 @@ package org.jboss.as.test.shared.observability.setuptasks;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STATISTICS_ENABLED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 
-import org.jboss.arquillian.testcontainers.api.TestcontainersRequired;
-import org.jboss.arquillian.testcontainers.api.Testcontainer;
+import org.arquillian.testcontainers.api.Testcontainer;
+import org.arquillian.testcontainers.api.TestcontainersRequired;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.client.helpers.Operations;
 import org.jboss.as.test.shared.ServerReload;

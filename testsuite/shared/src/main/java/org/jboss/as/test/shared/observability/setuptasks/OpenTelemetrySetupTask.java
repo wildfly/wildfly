@@ -4,7 +4,7 @@
  */
 package org.jboss.as.test.shared.observability.setuptasks;
 
-import org.jboss.arquillian.testcontainers.api.TestcontainersRequired;
+import org.arquillian.testcontainers.api.TestcontainersRequired;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.client.helpers.Operations;
 import org.jboss.as.test.shared.ServerReload;

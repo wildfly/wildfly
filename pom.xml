@@ -334,7 +334,7 @@
         <version.org.javassist>3.29.2-GA</version.org.javassist>
         <version.org.jboss.arquillian.core>1.10.0.Final</version.org.jboss.arquillian.core>
         <version.org.jboss.arquillian.jakarta>10.0.0.Final</version.org.jboss.arquillian.jakarta>
-        <version.org.jboss.arquillian.testcontainers>1.0.0.Alpha4</version.org.jboss.arquillian.testcontainers>
+        <version.org.arquillian.testcontainers>1.0.0.Beta1</version.org.arquillian.testcontainers>
         <version.org.jboss.byteman>4.0.26</version.org.jboss.byteman>
         <version.org.jboss.logmanager.commons-logging-jboss-logmanager>1.0.3.Final</version.org.jboss.logmanager.commons-logging-jboss-logmanager>
         <!-- only needed here until wildfly-arquillian has this version properly synced with arquillian itself  -->

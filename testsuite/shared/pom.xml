@@ -272,9 +272,9 @@
         </dependency>
 
         <dependency>
-            <groupId>org.jboss.arquillian</groupId>
+            <groupId>org.arquillian.testcontainers</groupId>
             <artifactId>arquillian-testcontainers</artifactId>
-            <version>${version.org.jboss.arquillian.testcontainers}</version>
+            <version>${version.org.arquillian.testcontainers}</version>
             <scope>compile</scope>
         </dependency>
 

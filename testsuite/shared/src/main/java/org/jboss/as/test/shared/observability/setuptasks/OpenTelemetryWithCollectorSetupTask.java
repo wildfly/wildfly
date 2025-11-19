@@ -4,8 +4,8 @@
  */
 package org.jboss.as.test.shared.observability.setuptasks;
 
-import org.jboss.arquillian.testcontainers.api.TestcontainersRequired;
-import org.jboss.arquillian.testcontainers.api.Testcontainer;
+import org.arquillian.testcontainers.api.Testcontainer;
+import org.arquillian.testcontainers.api.TestcontainersRequired;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.test.shared.ServerReload;
 import org.jboss.as.test.shared.observability.containers.OpenTelemetryCollectorContainer;
