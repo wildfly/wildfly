@@ -30,6 +30,8 @@ class HttpListenerAdd extends ListenerAdd<HttpListenerService> {
         OptionMap.Builder listenerBuilder = OptionMap.builder().addAll(listenerOptions);
         AbstractHttpListenerResourceDefinition.ENABLE_HTTP2.resolveOption(context, model,listenerBuilder);
 
+        logRequireHostHttp1Ineffective(context, model);
+
         handleHttp2Options(context, model, listenerBuilder);
 
         return new HttpListenerService(serviceConsumer, context.getCurrentAddress(), serverName, listenerBuilder.getMap(), socketOptions, certificateForwarding, proxyAddressForwarding, proxyProtocol);

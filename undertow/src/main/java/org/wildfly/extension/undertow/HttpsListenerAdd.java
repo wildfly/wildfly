@@ -43,6 +43,7 @@ class HttpsListenerAdd extends ListenerAdd<HttpsListenerService> {
         AbstractHttpListenerResourceDefinition.ENABLE_HTTP2.resolveOption(context, model, listenerBuilder);
         HttpListenerAdd.handleHttp2Options(context, model, listenerBuilder);
 
+        logRequireHostHttp1Ineffective(context, model);
 
         final boolean certificateForwarding = AbstractHttpListenerResourceDefinition.CERTIFICATE_FORWARDING.resolveModelAttribute(context, model).asBoolean();
         final boolean proxyAddressForwarding = AbstractHttpListenerResourceDefinition.PROXY_ADDRESS_FORWARDING.resolveModelAttribute(context, model).asBoolean();
