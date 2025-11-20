@@ -5,10 +5,6 @@
 
 package org.jboss.as.txn.logging;
 
-import static org.jboss.logging.Logger.Level.DEBUG;
-import static org.jboss.logging.Logger.Level.ERROR;
-import static org.jboss.logging.Logger.Level.WARN;
-
 import java.lang.invoke.MethodHandles;
 
 import jakarta.resource.spi.work.Work;
@@ -29,6 +25,8 @@ import org.jboss.logging.annotations.Message;
 import org.jboss.logging.annotations.MessageLogger;
 import org.jboss.logging.annotations.Param;
 import org.jboss.msc.service.StartException;
+
+import static org.jboss.logging.Logger.Level.*;
 
 /**
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
@@ -254,4 +252,12 @@ public interface TransactionLogger extends BasicLogger {
 
     @Message(id = 45, value = "Could not register initial reference for InboundTransactionCurrent implementation")
     RuntimeException cannotRegister(@Cause Exception e);
+
+    @LogMessage(level = INFO)
+    @Message(id = 46, value = "Transactions subsystem: starting transactions recovery suspension")
+    void scan_suspension_initiated();
+
+    @LogMessage(level = INFO)
+    @Message(id = 47, value = "Transactions subsystem: transactions recovery suspension completed")
+    void scan_suspension_completed();
 }

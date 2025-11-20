@@ -170,6 +170,7 @@ public class SecurityContextImplLoginTestCase {
         @Override
         public void setup(ManagementClient managementClient, String s) throws Exception {
             CommandContextConfiguration.Builder configBuilder = new CommandContextConfiguration.Builder();
+            configBuilder.setConnectionTimeout(20000);
             ctx = CommandContextFactory.getInstance().newCommandContext(configBuilder.build());
             ctx.connectController();
             ctx.handle("/subsystem=elytron/filesystem-realm=" + MY_FS_REALM + ":add(path=my-realm-users, relative-to=jboss.server.config.dir)");

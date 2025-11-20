@@ -19,10 +19,10 @@ import org.jboss.arquillian.junit.InSequence;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.setup.ConfigureLoggingSetupTask;
-import org.jboss.as.arquillian.setup.SnapshotServerSetupTask;
 import org.jboss.as.test.integration.jaxrs.cfg.resources.TestApplication;
 import org.jboss.as.test.integration.jaxrs.cfg.resources.User;
 import org.jboss.as.test.integration.jaxrs.cfg.resources.UserResource;
+import org.jboss.as.test.shared.ExtendedSnapshotServerSetupTask;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
@@ -40,7 +40,7 @@ import org.junit.Test;
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
 @RunAsClient
-@ServerSetup({ConfigureLoggingSetupTask.class, SnapshotServerSetupTask.class})
+@ServerSetup({ConfigureLoggingSetupTask.class, ExtendedSnapshotServerSetupTask.class})
 public class ResteasyPatchFilterDisabledTestCase extends AbstractResteasyAttributeTest {
 
     @ArquillianResource
