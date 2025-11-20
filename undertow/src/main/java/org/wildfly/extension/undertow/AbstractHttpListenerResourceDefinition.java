@@ -14,6 +14,7 @@ import io.undertow.protocols.http2.Http2Channel;
 
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
@@ -98,6 +99,7 @@ abstract class AbstractHttpListenerResourceDefinition extends ListenerResourceDe
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .setAllowExpression(true)
             .setDefaultValue(ModelNode.FALSE)
+            .setDeprecated(ModelVersion.create(14, 0, 0))
             .build();
 
     static final SimpleAttributeDefinition PROXY_PROTOCOL = new SimpleAttributeDefinitionBuilder(Constants.PROXY_PROTOCOL, ModelType.BOOLEAN)
