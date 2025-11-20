@@ -6,9 +6,9 @@ package org.wildfly.test.integration.observability.micrometer;
 
 import io.micrometer.core.instrument.MeterRegistry;
 import jakarta.inject.Inject;
+import org.arquillian.testcontainers.api.TestcontainersRequired;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.arquillian.testcontainers.api.TestcontainersRequired;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.test.shared.CdiUtils;
 import org.jboss.as.test.shared.observability.setuptasks.MicrometerSetupTask;

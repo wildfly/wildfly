@@ -5,9 +5,11 @@
 
 package org.wildfly.test.integration.observability.opentelemetry;
 
+import java.net.MalformedURLException;
+
+import org.arquillian.testcontainers.api.Testcontainer;
+import org.arquillian.testcontainers.api.TestcontainersRequired;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.arquillian.testcontainers.api.TestcontainersRequired;
-import org.jboss.arquillian.testcontainers.api.Testcontainer;
 import org.jboss.as.test.shared.CdiUtils;
 import org.jboss.as.test.shared.TestSuiteEnvironment;
 import org.jboss.as.test.shared.observability.containers.OpenTelemetryCollectorContainer;
@@ -18,8 +20,6 @@ import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.runner.RunWith;
 import org.wildfly.test.integration.observability.JaxRsActivator;
 import org.wildfly.test.integration.observability.opentelemetry.application.OtelService1;
-
-import java.net.MalformedURLException;
 
 // This is copied from testsuite/integration/microprofile/src/test/java/org/wildfly/test/integration/observability/opentelemetry/BaseOpenTelemetryTest.java
 // this will be removed once promoted to ts/integ/mp

@@ -13,8 +13,8 @@ import java.time.Duration;
 import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
 
+import org.arquillian.testcontainers.api.TestcontainersRequired;
 import io.smallrye.reactive.messaging.kafka.companion.KafkaCompanion;
-import org.jboss.arquillian.testcontainers.api.TestcontainersRequired;
 import org.jboss.as.arquillian.api.ServerSetupTask;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.test.config.ContainerConfig;
