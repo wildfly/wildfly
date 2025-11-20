@@ -78,7 +78,7 @@ public class SubsystemTransformersTestCase extends AbstractSubsystemTest {
         Assert.assertTrue(mainServices.isSuccessfulBoot());
         Assert.assertTrue(mainServices.getLegacyServices(modelVersion).isSuccessfulBoot());
 
-        List<ModelNode> ops = builder.parseXmlResource("micrometer-community-2.0.xml");
+        List<ModelNode> ops = builder.parseXmlResource("micrometer-2.0.xml");
 
         PathAddress address = PathAddress.pathAddress(SUBSYSTEM_PATH);
 

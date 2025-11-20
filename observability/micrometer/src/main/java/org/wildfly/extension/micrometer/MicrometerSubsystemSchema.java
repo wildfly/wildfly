@@ -24,10 +24,10 @@ import org.wildfly.extension.micrometer.prometheus.PrometheusRegistryDefinitionR
 public enum MicrometerSubsystemSchema implements PersistentSubsystemSchema<MicrometerSubsystemSchema> {
     VERSION_1_0(1, 0, Stability.DEFAULT), // WildFly 28
     VERSION_1_1(1, 1, Stability.DEFAULT), // WildFly 29.0.0.Alpha1
-    VERSION_2_0_COMMUNITY(2, 0, Stability.COMMUNITY) // WildFly 36
+    VERSION_2_0(2, 0, Stability.DEFAULT) // WildFly 36
     ;
 
-    public static final Set<MicrometerSubsystemSchema> CURRENT = EnumSet.of(VERSION_1_1, VERSION_2_0_COMMUNITY);
+    public static final Set<MicrometerSubsystemSchema> CURRENT = EnumSet.of(VERSION_1_1, VERSION_2_0);
 
     private final VersionedNamespace<IntVersion, MicrometerSubsystemSchema> namespace;
 
