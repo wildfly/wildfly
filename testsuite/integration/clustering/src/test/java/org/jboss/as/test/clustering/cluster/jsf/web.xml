@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+<web-app xmlns="https://jakarta.ee/xml/ns/jakartaee"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/web-app_6_0.xsd"
+         version="6.0">
+
+    <distributable/>
+
+    <!-- Make JSF parameters explicit and optimized for clustering -->
+
+    <!-- Reference: https://github.com/eclipse-ee4j/mojarra/blob/4.0/impl/src/main/java/jakarta/faces/application/StateManager.java -->
+    <context-param>
+        <param-name>jakarta.faces.STATE_SAVING_METHOD</param-name>
+        <param-value>server</param-value>
+    </context-param>
+    <!-- Reference: https://github.com/eclipse-ee4j/mojarra/blob/4.0/impl/src/main/java/com/sun/faces/config/WebConfiguration.java#L752-L786 -->
+    <context-param>
+        <param-name>com.sun.faces.serializeServerState</param-name>
+        <!-- n.b. always use 'false' to let the session manager control when session attributes are serialized and to not force JDK serialization of JSF state -->
+        <param-value>false</param-value>
+    </context-param>
+    <context-param>
+        <param-name>com.sun.faces.compressViewState</param-name>
+        <!-- n.b. defaults to 'true' in mojarra 4.0 -->
+        <param-value>false</param-value>
+    </context-param>
+    <!-- Temporarily bump the view limits high enough to definitely not hit any of the LRU size limits -->
+    <context-param>
+        <param-name>com.sun.faces.numberOfViewsInSession</param-name>
+        <param-value>100</param-value>
+    </context-param>
+    <context-param>
+        <param-name>com.sun.faces.numberOfLogicalViews</param-name>
+        <param-value>100</param-value>
+    </context-param>
+
+</web-app>
