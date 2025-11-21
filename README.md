@@ -1,11 +1,10 @@
 <p align="center">
   <a href="https://wildfly.org">
-      <img src="logo/wildfly_logo.svg" alt="wildfly logo" title="wildlfy" width="600"/>
+      <img src="logo/wildfly_logo.svg" alt="wildfly logo" title="WildFly" width="600"/>
   </a>
 </p>
 
-WildFly Application Server
-========================
+# WildFly Application Server
 https://wildfly.org
 
 * Fast Startup
@@ -15,8 +14,11 @@ https://wildfly.org
 
 And of course Jakarta EE and MicroProfile!
 
-Building
--------------------
+# Documentation
+
+* https://docs.wildfly.org/
+
+# Building
 
 Prerequisites:
 
@@ -38,12 +40,11 @@ On Windows
 
     mvnw install
 
+# Starting and Stopping WildFly
 
-Starting and Stopping WildFly
-------------------------------------------
 Change to the bin directory after a successful build
 
-$ cd build/target/wildfly-\[version\]/bin
+    $ cd build/target/wildfly-\[version\]/bin
 
 Start the server in domain mode
 
@@ -59,17 +60,7 @@ To stop the server, press Ctrl + C, or use the admin console
 
 Check 'Getting Started Guide' in the WildFly documentation for more information about how to start and stop WildFly.
 
-Documentation
-------------------------------------------
-
-* https://docs.wildfly.org/
-
-Contributing
-------------------
-Please see the instructions available in the [contribution guide](CONTRIBUTING.md).
-
-Build vs. Dist directories
---------------------------
+# `build` vs. `dist` directories
 
 After running `mvn install`, WildFly will be available in two distinct directories, `build` and `dist`.
 
@@ -80,16 +71,7 @@ Using the `build` directory makes iterating with subsystem or module development
 
 The `dist` directory is better suited when a full build of WildFly is needed for development or test purposes.
 
-Running the Testsuite
---------------------
-The testsuite module contains several submodules including the following:
-
-* "smoke" -- core tests that should be run as part of every build of the AS. Failures here will fail the build.
-* "api" -- tests of features that involve end user use of the public JBoss AS 8 API. Should be run with no failures before any major commits.
-* "cluster" -- tests of the WildFly HA clustering features. Should be run with no failures before any major commits.
-* "domain" -- tests of the domain management features. Should be run with no failures before any major commits.
-* "integration" -- tests of a WildFly standalone server's internals. Should be run with no failures before any major commits.
-* "spec" -- tests of features that only involve end user use of the Jakarta EE spec APIs. Should be run with no failures before any major commits.
+# Running the Testsuite
 
 For basic smoke tests, simply: `mvn test`
 
@@ -97,23 +79,17 @@ To run all the tests
 
     mvn install -DallTests
 
-Using Eclipse
--------------
-1. Install the latest version of eclipse
-2. Make sure Xmx in eclipse.ini is at least 1280M, and it's using JDK 17
-3. Launch eclipse and install the m2e plugin, make sure it uses your repo configs
-   (get it from: http://www.eclipse.org/m2e/
-   or install "Maven Integration for Eclipse" from the Eclipse Marketplace)
-4. In eclipse preferences Java->Compiler->Errors/Warnings->Deprecated and restricted
-   set forbidden reference to WARNING
-5. In eclipse preferences Java->Code Style, import the cleanup, templates, and
-   formatter configs in [ide-configs/eclipse](https://github.com/wildfly/wildfly-core/tree/main/ide-configs) in the wildfly-core repository.
-6. In eclipse preferences Java->Editor->Save Actions enable "Additional Actions",
-   and deselect all actions except for "Remove trailing whitespace"
-7. Use import on the root pom, which will pull in all modules
-8. Wait (m2e takes a while on initial import)
+The testsuite module contains several submodules which can be run individually as needed to speed up development.
+Refer to our documentation section that describes the testsuite in details.
 
-License
--------
+https://github.com/wildfly/wildfly/blob/main/docs/src/main/asciidoc/_testsuite/WildFly_Integration_Testsuite_User_Guide.adoc
+
+[//]: # ( TODO Replace this link with published version of the document section once we do publish it with a permalink)
+
+# Contributing
+
+Please see the instructions available in the [contributing guide](CONTRIBUTING.md).
+
+# License
+
 * [Apache License 2.0](http://www.apache.org/licenses/LICENSE-2.0)
-
