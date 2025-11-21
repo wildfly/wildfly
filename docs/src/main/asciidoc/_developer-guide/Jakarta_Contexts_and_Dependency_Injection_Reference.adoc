@@ -20,7 +20,7 @@ see the below links:
 http://docs.jboss.org/cdi/spec/1.2/cdi-spec.html[CDI Specification] +
 http://docs.jboss.org/weld/reference/latest/en-US/html/[Weld Reference
 Guide] +
-https://github.com/wildfly/quickstart/[The WildFly Quickstarts]
+https://docs.wildfly.org/quickstart[The WildFly Quickstarts]
 
 [[using-cdi-beans-from-outside-the-deployment]]
 == Using CDI Beans from outside the deployment
