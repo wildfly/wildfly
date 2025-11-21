@@ -137,10 +137,37 @@ public class OpenTelemetryCollectorContainer extends BaseContainer<OpenTelemetry
      * timeout duration.
      */
     public List<JaegerTrace> assertTraces(String serviceName, Consumer<List<JaegerTrace>> assertionConsumer, Duration timeout) throws InterruptedException {
+        return assertTraces(serviceName, null, assertionConsumer, timeout);
+    }
+
+    /**
+     * Continually evaluates assertions provided in a consumer until the state obtained from the Jaeger endpoint
+     * matches the expected state or until a timeout elapses. By default, polls the collector every second for 30 seconds.
+     * Supports filtering by tags for improved test isolation.
+     *
+     * @param tags              optional map of tag key-value pairs to filter traces (e.g., {"test.name": "testMethodName"})
+     * @param assertionConsumer consumer implementation that contains {@link Assert}ions throwing
+     *                          {@link AssertionError#AssertionError()}s if the state obtained from the Jaeger endpoint
+     *                          does not match the expected state
+     * @return list of Jaeger traces; typically ignored.
+     * @throws AssertionError       last {@link AssertionError} thrown by the provided {@code assertionConsumer} before timeout elapsed
+     * @throws InterruptedException if interrupted
+     */
+    public List<JaegerTrace> assertTraces(String serviceName, Map<String, String> tags, Consumer<List<JaegerTrace>> assertionConsumer) throws InterruptedException {
+        return assertTraces(serviceName, tags, assertionConsumer, DEFAULT_TIMEOUT);
+    }
+
+    /**
+     * Variant of {@link OpenTelemetryCollectorContainer#assertTraces(String, Map, Consumer)} that can be configured with a
+     * timeout duration.
+     */
+    public List<JaegerTrace> assertTraces(String serviceName, Map<String, String> tags, Consumer<List<JaegerTrace>> assertionConsumer, Duration timeout) throws InterruptedException {
         debugLog("assertTraces(...) validation starting.");
         Instant endTime = Instant.now().plus(timeout);
         AssertionError lastAssertionError = null;
-        List<JaegerTrace> traces = jaegerContainer.getTraces(serviceName);
+        List<JaegerTrace> traces = (tags != null && !tags.isEmpty())
+                ? jaegerContainer.getTraces(serviceName, tags)
+                : jaegerContainer.getTraces(serviceName);
 
         while (Instant.now().isBefore(endTime)) {
             try {
@@ -152,7 +179,9 @@ public class OpenTelemetryCollectorContainer extends BaseContainer<OpenTelemetry
                 lastAssertionError = assertionError;
                 Thread.sleep(1000);
             }
-            traces = jaegerContainer.getTraces(serviceName);
+            traces = (tags != null && !tags.isEmpty())
+                    ? jaegerContainer.getTraces(serviceName, tags)
+                    : jaegerContainer.getTraces(serviceName);
         }
 
         debugLog("assertTraces(...) validation failed. State at final check:\n" + traces);

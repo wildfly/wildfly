@@ -12,6 +12,7 @@ import static org.wildfly.extension.microprofile.reactive.messaging.MicroProfile
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.URL;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -448,69 +449,71 @@ public abstract class BaseReactiveMessagingAndOtelTest {
     }
 
     private void checkJaegerTraces(String testName, long testStartTimeMicros, int timeout, ReactiveMessagingOtelAssertUtils.TraceChecker... traceCheckers) throws InterruptedException {
-        long end = System.currentTimeMillis() + timeout;
-        String errMessage = null;
-        List<JaegerTrace> currentDebug = new ArrayList<>();
-
         // Hybrid approach: tag-based filtering for single-checker tests, time-based for multi-checker tests
         // Multi-checker tests have broken trace context propagation (e.g., disabled channels)
         // where Kafka receive spans don't have test.name attribute
         boolean useTagFiltering = (traceCheckers.length == 1);
 
-        while (System.currentTimeMillis() < end) {
-            // Query Jaeger - use tag filter for single-checker tests, time-based for multi-checker tests
-            List<JaegerTrace> current;
+        try {
             if (useTagFiltering) {
-                current = getCollector().getTraces(deploymentName, Map.of("test.name", testName));
+                // Tag-based filtering: use assertTraces with tags parameter
+                getCollector().assertTraces(
+                    deploymentName,
+                    Map.of("test.name", testName),
+                    traces -> {
+                        for (ReactiveMessagingOtelAssertUtils.TraceChecker traceChecker : traceCheckers) {
+                            Assert.assertTrue(traceChecker.errorMessaage(), traceChecker.areValidTraces(traces));
+                        }
+                    },
+                    Duration.ofMillis(timeout)
+                );
             } else {
-                // Time-based filtering: get all traces and filter by timestamp
+                // Time-based filtering: get all traces and filter by timestamp in the consumer
+                getCollector().assertTraces(
+                    deploymentName,
+                    traces -> {
+                        List<JaegerTrace> filteredTraces = filterTracesByTime(traces, testStartTimeMicros);
+                        for (ReactiveMessagingOtelAssertUtils.TraceChecker traceChecker : traceCheckers) {
+                            Assert.assertTrue(traceChecker.errorMessaage(), traceChecker.areValidTraces(filteredTraces));
+                        }
+                    },
+                    Duration.ofMillis(timeout)
+                );
+            }
+        } catch (AssertionError e) {
+            // Debug output on failure - fetch traces one more time for detailed logging
+            List<JaegerTrace> debugTraces;
+            if (useTagFiltering) {
+                debugTraces = getCollector().getTraces(deploymentName, Map.of("test.name", testName));
+            } else {
                 List<JaegerTrace> allTraces = getCollector().getTraces(deploymentName);
-                current = filterTracesByTime(allTraces, testStartTimeMicros);
+                debugTraces = filterTracesByTime(allTraces, testStartTimeMicros);
             }
 
-            boolean allGood = true;
-            for (ReactiveMessagingOtelAssertUtils.TraceChecker traceChecker : traceCheckers) {
-                if (!traceChecker.areValidTraces(current)) {
-                    allGood = false;
-                    errMessage = traceChecker.errorMessaage();
-                    break;
-                }
-            }
-            if (allGood) {
-                return;
-            }
+            System.out.println("Test: " + testName + " - Traces found: " + debugTraces.size());
+            debugTraces.forEach(trace -> {
+                    System.out.println("TraceID: " + trace.getTraceID());
+                    trace.getSpans().forEach(span -> {
+                        System.out.println("  Span: " + span.getOperationName());
+                        System.out.println("    StartTime: " + span.getStartTime());
+                        System.out.println("    Duration: " + span.getDuration());
+                        if (span.getTags() != null && !span.getTags().isEmpty()) {
+                            System.out.println("    Tags:");
+                            span.getTags().forEach(tag ->
+                                System.out.println("      " + tag.getKey() + " = " + tag.getValue() + " (type: " + tag.getType() + ")")
+                            );
+                        } else {
+                            System.out.println("    Tags: (none)");
+                        }
+                        if (span.getLogs() != null && !span.getLogs().isEmpty()) {
+                            System.out.println("    Logs: " + span.getLogs().size() + " entries");
+                        }
+                    });
+                    System.out.println("-------------------------");
+            });
 
-            Thread.sleep(1000);
-            currentDebug = new ArrayList<>(current);
-        }
-
-        // Debug output on failure
-        System.out.println("Test: " + testName + " - Traces found: " + currentDebug.size());
-        currentDebug.forEach(trace -> {
-                System.out.println("TraceID: " + trace.getTraceID());
-                trace.getSpans().forEach(span -> {
-                    System.out.println("  Span: " + span.getOperationName());
-                    System.out.println("    StartTime: " + span.getStartTime());
-                    System.out.println("    Duration: " + span.getDuration());
-                    if (span.getTags() != null && !span.getTags().isEmpty()) {
-                        System.out.println("    Tags:");
-                        span.getTags().forEach(tag ->
-                            System.out.println("      " + tag.getKey() + " = " + tag.getValue() + " (type: " + tag.getType() + ")")
-                        );
-                    } else {
-                        System.out.println("    Tags: (none)");
-                    }
-                    if (span.getLogs() != null && !span.getLogs().isEmpty()) {
-                        System.out.println("    Logs: " + span.getLogs().size() + " entries");
-                    }
-                });
-                System.out.println("-------------------------");
-        });
-
-        if (errMessage != null) {
-            Assert.fail(errMessage + " (final count: " + currentDebug.size() + ")");
-        } else {
-            Assert.fail("Trace validation failed (final count: " + currentDebug.size() + ")");
+            // Re-throw the original assertion error
+            throw e;
         }
     }
 }
