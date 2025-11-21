@@ -1,7 +1,7 @@
 # Contributing guide
 
 **First of all, thank you for taking the time to contribute to WildFly!**
-The below contents will help you through the steps for getting started with WildFly.
+The contents below will help you through the steps for getting started with WildFly.
 Please make sure to read the relevant section before making your contribution.
 It will make it a lot easier for us maintainers and smooth out the experience for all involved.
 The community looks forward to your contributions.
