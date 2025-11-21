@@ -78,4 +78,8 @@ public interface MicrometerExtensionLogger extends BasicLogger {
 
     @Message(id = 14, value = "Prometheus is not supported on domain mode servers")
     OperationFailedException prometheusNotSupportedOnHostControllers();
+
+    @LogMessage(level = WARN)
+    @Message(id = 15, value = "MeterRegistry.Config is not supported in a WildFly-managed MeterRegistry.")
+    void configNotSupported();
 }
