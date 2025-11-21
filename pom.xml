@@ -89,6 +89,7 @@
         <nexus.repository.staging>wildfly-staging</nexus.repository.staging>
         <nexus.staging.tag>wildfly-${project.version}</nexus.staging.tag>
         <!-- Nexus staging repository URL used to retrieve test component releases -->
+        <nexus.repository.url>https://repository.jboss.org/nexus/</nexus.repository.url> <!-- duplicated from jboss-parent, but Maven 4 wants to know it before accessing jboss-parent -->
         <nexus.repository.staging.url>${nexus.repository.url}repository/${nexus.repository.staging}</nexus.repository.staging.url>
 
         <!-- Galleon -->
