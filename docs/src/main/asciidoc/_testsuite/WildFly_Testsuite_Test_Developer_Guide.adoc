@@ -9,21 +9,12 @@ ifdef::env-github[]
 :warning-caption: :warning:
 endif::[]
 
-*See also:* <<WildFly_Integration_Testsuite_User_Guide,WildFly
-Integration Testsuite User Guide>>
+*See also:* <<WildFly_Integration_Testsuite_User_Guide,WildFly Integration Testsuite User Guide>>
 
 [[pre-requisites]]
 == Pre-requisites
 
-Please be sure to read <<Pre-requisites_-_test_quality_standards,Pre-requisites - test quality
-standards>> and follow those guidelines.
-
-[[arquillian-container-configuration]]
-== Arquillian container configuration
-
-See
-https://docs.jboss.org/author/display/ARQ/JBoss+AS+7.1%2C+JBoss+EAP+6.0+-+Managed[AS
-7.1 managed container adapter refrence].
+Please be sure to read <<Pre-requisites_-_test_quality_standards,Pre-requisites - test quality standards>> and follow those guidelines.
 
 [[managementclient-and-modelnode-usage-example]]
 == ManagementClient and ModelNode usage example
@@ -155,9 +146,7 @@ timeouts by setting value >= 100:
 100 = leave as is, +
 150 = 50 % longer, etc.
 
-* timeout.ratio.gen - General ratio - can be used to adjust all
-timeouts.When this and specific are defined, both apply.
-
+* timeout.ratio.gen - General ratio - can be used to adjust all timeouts. When this and specific are defined, both apply.
 * timeout.ratio.fs- Filesystem IO
 * timeout.ratio.net - Network IO
 * timeout.ratio.mem - Memory IO
@@ -172,31 +161,28 @@ Time ratios will soon be provided by
 
 To test invalid deployment handling: @ShouldThrowException
 
-Currently doesn't work due to
-https://issues.redhat.com/browse/WFLY-673[WFLY-673].
-
-optionally you might be able to catch it using the manual deployer
+Currently, doesn't work due to https://issues.redhat.com/browse/WFLY-673[WFLY-673].
+Optionally you might be able to catch it using the manual deployer
 
 [source,java,options="nowrap"]
 ----
-@Deployment(name = "X", managed = false) ...
+@Deployment(name = "X", managed = false)
+// ...
 
 @Test
 public void shouldFail(@ArquillianResource Deployer deployer) throws Exception {
-  try {
-    deployer.deploy("X")
-  }
-  catch(Exception e) {
-   // do something
-  }
+    try {
+        deployer.deploy("X");
+    } catch(Exception e) {
+        // do something
+    }
 }
 ----
 
 [[clustering-tests-wfly-616]]
 == Clustering tests (WFLY-616)
 
-You need to deploy the same thing twice, so two deployment methods that
-just return the same thing. +
+You need to deploy the same thing twice, so two deployment methods that just return the same thing.
 And then you have tests that run against each.
 
 [source,java,options="nowrap"]

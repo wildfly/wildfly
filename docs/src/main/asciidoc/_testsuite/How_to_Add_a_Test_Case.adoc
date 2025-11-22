@@ -9,44 +9,25 @@ ifdef::env-github[]
 :warning-caption: :warning:
 endif::[]
 
-_(Please don't (re)move - this is a landing page from a Jira link.)_
-
-*Thank you for finding time to contribute to WildFly {wildflyVersion} quality.* +
-Covering corner cases found by community users with tests is very
-important to increase stability. +
-If you're providing a test case to support your bug report, it's very
-likely that your bug will be fixed much sooner.
+Thank you for finding time to contribute to WildFly quality.
+Covering corner cases found by community users with tests is very important to increase stability.
+If you're providing a test case to support your bug report,
+it's very likely that your bug will be fixed much sooner.
 
 [[create-a-test-case.]]
-== 1) Create a test case.
+== Create a test case
 
-It's quite easy - a simple use case may even consist of one short .java
-file.
+Don't be discouraged, it's quite easy - a simple use case may even consist of a single short `.java` file.
 
-Check WildFly {wildflyVersion}
-https://github.com/wildfly/wildfly/tree/main/testsuite/integration/basic/src/test/java/org/jboss/as/test/integration[test
-suite test cases] for examples.
+Check WildFly https://github.com/wildfly/wildfly/tree/main/testsuite/integration/basic/src/test/java/org/jboss/as/test/integration[test suite test cases] for examples.
 
-For more information, see <<WildFly_Testsuite_Test_Developer_Guide,WildFly Testsuite Test
-Developer Guide>>. Check the requirements for a test to be included in
-the testsuite.
+For more information, see <<WildFly_Testsuite_Test_Developer_Guide,WildFly Testsuite Test Developer Guide>>.
+Check the requirements for a test to be included in the testsuite.
 
-Ask for help at WildFly {wildflyVersion} forum or at IRC - #wildfly @ FreeNode.
+Ask for help at WildFly Google user group or Zulip chat.
 
 [[push-your-test-case-to-github-and-create-a-pull-request.]]
-== 2) Push your test case to GitHub and create a pull request.
+== Push your test case to GitHub and create a pull request.
 
-For information on how to create a GitHub account and push your code
-therein, see https://community.jboss.org/wiki/HackingOnWildFly[Hacking
-on WildFly].
-
-If you're not into Git, send a diff file to JBoss forums, someone might
-pick it up.
-
-[[wait-for-the-outcome.]]
-== 3) Wait for the outcome.
-
-Your test case will be reviewed and eventually added. It may take few
-days.
-
-When something happens, you'll receive a notification e-mail.
+For information on how to create a GitHub account and push your code therein,
+see link:Hacking_On_WildFly{outfilesuffix}[Hacking on WildFly].
