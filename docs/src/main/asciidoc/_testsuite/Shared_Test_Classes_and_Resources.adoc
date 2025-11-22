@@ -14,22 +14,19 @@ endif::[]
 
 Use the testsuite/shared module.
 
-Classes and resources in this module are available in all testsuite
-modules - i.e. in testsuite/* .
-
+Classes and resources in this module are available in all testsuite modules - i.e. in testsuite/*
 Only use it if necessary - don't put things "for future use" in there.
+Don't split packages across modules.
+Make sure the java package is unique in the WildFly project.
 
-*Don't split packages across modules.* *Make sure the java package is
-unique in the WildFly project.*
-
-*Document your util classes* (javadoc) so they can be easily found and
-reused! A generated list will be put here.
+Document your util classes* (javadoc) so they can be easily found and reused!
+A generated list will be put here.
 
 [[between-components-and-testsuite-modules]]
 == Between Components and Testsuite Modules
 
-To share component's test classes with some module in testsuite, you
-don't need to split to submodules. 
+To share component's test classes with some module in testsuite,
+you don't need to split to submodules.
 You can create a jar with classifier using this:
 
 [source,xml,options="nowrap"]
@@ -47,8 +44,7 @@ You can create a jar with classifier using this:
 </plugin>
 ----
 
-This creates a jar with classifier "tests", so you can add it as
-dependency to a testsuite module:
+This creates a jar with classifier "tests", so you can add it as dependency to a testsuite module:
 
 [source,xml,options="nowrap"]
 ----

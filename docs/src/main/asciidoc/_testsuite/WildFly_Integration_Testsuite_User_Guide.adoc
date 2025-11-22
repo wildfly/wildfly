@@ -9,8 +9,7 @@ ifdef::env-github[]
 :warning-caption: :warning:
 endif::[]
 
-*See also:* <<WildFly_Testsuite_Test_Developer_Guide,WildFly
-Testsuite Test Developer Guide>>
+*See also:* <<WildFly_Testsuite_Test_Developer_Guide,WildFly Testsuite Test Developer Guide>>
 
 *Target Audience:* Those interested in running the testsuite or a subset
 thereof, with various configuration options.
