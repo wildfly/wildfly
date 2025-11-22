@@ -133,13 +133,6 @@
             </dependency>
 
             <dependency>
-                <groupId>org.apache.openjpa</groupId>
-                <artifactId>openjpa-all</artifactId>
-                <version>${version.org.apache.openjpa}</version>
-                <scope>test</scope>
-            </dependency>
-
-            <dependency>
                 <groupId>org.assertj</groupId>
                 <artifactId>assertj-bom</artifactId>
                 <version>${version.org.assertj}</version>
