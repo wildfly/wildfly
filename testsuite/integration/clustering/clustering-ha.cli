@@ -49,6 +49,9 @@ run-batch
 /subsystem=logging/pattern-formatter=TESTSUITE-PATTERN:add(pattern="${jboss.node.name} %d{yyyy-MM-dd HH:mm:ss,SSS} %-5p [%c] (%t) %s%e%n")
 /subsystem=logging/console-handler=CONSOLE:write-attribute(name=named-formatter, value=TESTSUITE-PATTERN)
 
+# TODO https://issues.redhat.com/browse/WFLY-21236 - temporary TRACE logging to investigate inconsistent topology
+/subsystem=logging/logger=org.jgroups:add(level=TRACE)
+
 stop-embedded-server
 
 
@@ -97,5 +100,8 @@ run-batch
 # Prepend node name to console log messages and disable color output
 /subsystem=logging/pattern-formatter=TESTSUITE-PATTERN:add(pattern="${jboss.node.name} %d{yyyy-MM-dd HH:mm:ss,SSS} %-5p [%c] (%t) %s%e%n")
 /subsystem=logging/console-handler=CONSOLE:write-attribute(name=named-formatter, value=TESTSUITE-PATTERN)
+
+# TODO https://issues.redhat.com/browse/WFLY-21236 - temporary TRACE logging to investigate inconsistent topology
+/subsystem=logging/logger=org.jgroups:add(level=TRACE)
 
 stop-embedded-server
