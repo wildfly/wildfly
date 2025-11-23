@@ -415,7 +415,7 @@
         <version.io.smallrye.open-api>4.1.1</version.io.smallrye.open-api>
         <version.io.smallrye.reactive-utils>2.6.0</version.io.smallrye.reactive-utils>
         <version.io.smallrye.smallrye-config>3.13.4</version.io.smallrye.smallrye-config>
-        <version.io.smallrye.smallrye-fault-tolerance>6.9.3</version.io.smallrye.smallrye-fault-tolerance>
+        <version.io.smallrye.smallrye-fault-tolerance>6.10.0</version.io.smallrye.smallrye-fault-tolerance>
         <version.io.smallrye.smallrye-health>4.3.0</version.io.smallrye.smallrye-health>
         <version.io.smallrye.smallrye-jwt>4.3.1</version.io.smallrye.smallrye-jwt>
         <version.io.smallrye.smallrye-mutiny>2.8.0</version.io.smallrye.smallrye-mutiny>
