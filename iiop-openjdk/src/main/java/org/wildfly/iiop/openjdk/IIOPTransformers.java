@@ -6,19 +6,20 @@ package org.wildfly.iiop.openjdk;
 
 import static org.wildfly.iiop.openjdk.IIOPExtension.VERSION_3_0;
 
+import java.util.Map;
+
 import org.jboss.as.controller.ModelVersion;
-import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.transform.ExtensionTransformerRegistration;
-import org.jboss.as.controller.transform.ResourceTransformationContext;
-import org.jboss.as.controller.transform.ResourceTransformer;
 import org.jboss.as.controller.transform.SubsystemTransformerRegistration;
+import org.jboss.as.controller.transform.TransformationContext;
 import org.jboss.as.controller.transform.description.ChainedTransformationDescriptionBuilder;
 import org.jboss.as.controller.transform.description.RejectAttributeChecker;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.as.controller.transform.description.TransformationDescriptionBuilder;
+import org.jboss.dmr.ModelNode;
 import org.kohsuke.MetaInfServices;
+import org.wildfly.iiop.openjdk.logging.IIOPLogger;
 
 /**
  * IIOP Transformers used to transform current model version to legacy model versions for domain mode.
@@ -49,14 +50,28 @@ public class IIOPTransformers implements ExtensionTransformerRegistration {
      * Transformers for changes in model version 4.0.0
      */
     private static void registerTransformers_3_0_0(ResourceTransformationDescriptionBuilder subsystemBuilder) {
-        //rejection is attempted - seems the configuration is fine...
-        subsystemBuilder.getAttributeBuilder().addRejectCheck(RejectAttributeChecker.DEFINED, "registration-check").end().
-                setCustomResourceTransformer(new ResourceTransformer() {
-            @Override
-            public void transformResource(ResourceTransformationContext resourceTransformationContext, PathAddress pathAddress, Resource resource) throws OperationFailedException {
-                //... but this code is not executed
-            }
-        });
+        subsystemBuilder.getAttributeBuilder()
+                // require that both xxx-ssl-context attributes are defined or both are undefined
+                .addRejectCheck(new RejectAttributeChecker.DefaultRejectAttributeChecker() {
+                    @Override
+                    public String getRejectionLogMessage(Map<String, ModelNode> attributes) {
+                        return IIOPLogger.ROOT_LOGGER.inconsistentSSLContextDefinition();
+                    }
+
+                    @Override
+                    protected boolean rejectAttribute(PathAddress address, String attributeName, ModelNode attributeValue,
+                                                      TransformationContext context) {
+                        // Note: we don't limit checking the other attribute to the case where attributeValue
+                        // is undefined. That would be sufficient for an add op transformation or a resource
+                        // transformation, where this method would be called for both attributes. But we want
+                        // to catch cases where both *were* undefined but an operation is defining just one.
+                        ModelNode model = context.readResource(PathAddress.EMPTY_ADDRESS).getModel();
+                        String otherAttribute = attributeName.equals(IIOPRootDefinition.CLIENT_SSL_CONTEXT.getName())
+                                ? IIOPRootDefinition.SERVER_SSL_CONTEXT.getName()
+                                : IIOPRootDefinition.CLIENT_SSL_CONTEXT.getName();
+                        return model.hasDefined(attributeName) != model.hasDefined(otherAttribute);
+                    }
+                }, IIOPRootDefinition.CLIENT_SSL_CONTEXT, IIOPRootDefinition.SERVER_SSL_CONTEXT);
     }
 }
 

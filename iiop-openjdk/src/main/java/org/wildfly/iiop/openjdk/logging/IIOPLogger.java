@@ -412,10 +412,10 @@ public interface IIOPLogger extends BasicLogger {
     @Message(id = 120, value = "The use of security domains at runtime is unsupported.")
     OperationFailedException runtimeSecurityDomainUnsupported();
 
-    @Message(id = 121, value ="Can't create server SSL socket: authentication context not configured.")
+    @Message(id = 121, value ="Cannot create server SSL socket: authentication context not configured.")
     IOException serverSSLNotConfiguredRuntime();
 
-    @Message(id = 122, value ="Can't create client SSL socket: authentication context not configured.")
+    @Message(id = 122, value ="Cannot create client SSL socket: authentication context not configured.")
     IOException clientSSLNotConfiguredRuntime();
 
     @Message(id = 123, value ="Server requires SSL but server authentication context is not defined")
@@ -429,5 +429,9 @@ public interface IIOPLogger extends BasicLogger {
 
     @Message(id = 126, value = "Client SSL has not been configured but ssl-port property has been specified - outbound connections will use only clear-text protocol")
     String clientSSLPortWithoutSslConfiguration();
+
+    @Message(id = 127, value = "Either the 'client-ssl-context' attribute is undefined and 'server-ssl-context' is not, or vice versa; " +
+            "on servers running previous versions either both must be defined or both must be undefined.")
+    String inconsistentSSLContextDefinition();
 
 }
