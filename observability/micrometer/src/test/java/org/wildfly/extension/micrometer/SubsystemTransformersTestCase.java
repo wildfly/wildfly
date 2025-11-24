@@ -55,11 +55,20 @@ public class SubsystemTransformersTestCase extends AbstractSubsystemTest {
 
         checkSubsystemModelTransformation(mainServices, modelVersion);
         ModelNode transformed = mainServices.readTransformedModel(modelVersion);
-        Assert.assertTrue(transformed.isDefined());
+        Assert.assertTrue(transformed.toString(), transformed.hasDefined("subsystem", "micrometer"));
+        Assert.assertEquals(transformed.toString(), 20L, transformed.get("subsystem", "micrometer","step").asLong());
+        Assert.assertEquals(transformed.toString(), "http://localhost:4318/v1/metrics",
+                transformed.get("subsystem", "micrometer", "endpoint").asString());
+        ModelNode main = mainServices.readWholeModel().get("subsystem", "micrometer");
+        Assert.assertEquals(main.toString(), 20L, main.get("registry", "otlp", "step").asLong());
+        Assert.assertEquals(main.toString(), "http://localhost:4318/v1/metrics",
+                main.get("registry", "otlp", "endpoint").asString());
+        Assert.assertFalse(main.toString(), main.hasDefined("endpoint"));
+        Assert.assertFalse(main.toString(), main.hasDefined("step"));
     }
 
     @Test
-    public void testRejectingTransformers_1_0_0() throws Exception {
+    public void testRejectingTransformers_1_1_0() throws Exception {
         ModelVersion modelVersion = MicrometerSubsystemModel.VERSION_1_1_0.getVersion();
 
         var capabilityNames = new String[]{WELD_CAPABILITY_NAME, MICROMETER_OTLP_CONFIG_RUNTIME_CAPABILITY.getName()};
