@@ -25,6 +25,8 @@ import org.jboss.as.test.config.ContainerConfig;
 import org.jboss.as.test.shared.TimeoutUtil;
 import org.jboss.as.test.shared.observability.signals.PrometheusMetric;
 import org.jboss.as.test.shared.observability.signals.jaeger.JaegerTrace;
+import org.jboss.as.test.shared.observability.signals.logs.CollectorLogRecordParser;
+import org.jboss.as.test.shared.observability.signals.logs.OpenTelemetryLogRecord;
 import org.junit.Assert;
 import org.testcontainers.utility.MountableFile;
 
@@ -101,16 +103,20 @@ public class OpenTelemetryCollectorContainer extends BaseContainer<OpenTelemetry
      * Given a list of <code>PrometheusMetric</code> instances, return a sublist whose key matches <code>key</code>. Note
      * that the key name must match the Prometheus conventions (see <a href="https://prometheus.io/docs/practices/naming/">
      * here</a> for details.
+     *
      * @param metrics List of PrometheusMetrics to filter.
      * @param key The name of the metric to find
      * @return a sublist of <code>metrics</code> that matches <code>key</code>
      */
     public List<PrometheusMetric> getMetricsByName(List<PrometheusMetric> metrics, String key) {
         return metrics.stream()
-            .filter(m -> Objects.equals(m.getKey(), key))
-            .toList();
+                .filter(m -> Objects.equals(m.getKey(), key))
+                .toList();
     }
 
+    public List<OpenTelemetryLogRecord> getOpenTelemetryLogs() {
+        return new CollectorLogRecordParser().retrieveLogRecords(this.getLogs().split("\n"));
+    }
 
     /**
      * Continually evaluates assertions provided in a consumer until the state obtained from the Jaeger endpoint
@@ -152,6 +158,33 @@ public class OpenTelemetryCollectorContainer extends BaseContainer<OpenTelemetry
         }
 
         debugLog("assertTraces(...) validation failed. State at final check:\n" + traces);
+        throw Objects.requireNonNullElseGet(lastAssertionError, AssertionError::new);
+    }
+
+    public List<OpenTelemetryLogRecord> assertOpenTelemetryLogs(Consumer<List<OpenTelemetryLogRecord>> assertionConsumer) throws InterruptedException {
+        return assertOpenTelemetryLogs(assertionConsumer, DEFAULT_TIMEOUT);
+    }
+
+    public List<OpenTelemetryLogRecord> assertOpenTelemetryLogs(Consumer<List<OpenTelemetryLogRecord>> assertionConsumer, Duration timeout) throws InterruptedException {
+        debugLog("assertOpenTelemetryLogs(...) validation starting.");
+        Instant endTime = Instant.now().plus(timeout);
+        AssertionError lastAssertionError = null;
+        List<OpenTelemetryLogRecord> logEntries = getOpenTelemetryLogs();
+
+        while (Instant.now().isBefore(endTime)) {
+            try {
+                assertionConsumer.accept(logEntries);
+                debugLog("assertOpenTelemetryLogs(...) validation passed.");
+                return logEntries;
+            } catch (AssertionError assertionError) {
+                debugLog("assertOpenTelemetryLogs(...) validation failed - retrying.");
+                lastAssertionError = assertionError;
+                Thread.sleep(1000);
+            }
+            logEntries = getOpenTelemetryLogs();
+        }
+
+        debugLog("assertOpenTelemetryLogs(...) validation failed. State at final check:\n" + logEntries);
         throw Objects.requireNonNullElseGet(lastAssertionError, AssertionError::new);
     }
 
