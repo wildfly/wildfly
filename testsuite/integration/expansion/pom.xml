@@ -220,7 +220,7 @@
             <scope>test</scope>
         </dependency>
         <!--
-            smallrye-reactive-messaging-kafka-test-companion doesn't pull in the kafka server dependencies
+            smallrye-reactive-messaging-kafka-test-companion doesn't pull in the kafka server dependencies,
             so we need to add them here
         -->
         <dependency>
