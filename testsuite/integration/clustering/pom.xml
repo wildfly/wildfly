@@ -1108,7 +1108,9 @@
                                         <include>org/jboss/as/test/clustering/single/**/*TestCase.java</include>
                                     </includes>
                                     <excludes>
-                                        <exclude>org/jboss/as/test/clustering/single/infinispan/**/*TestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/clustering/single/infinispan/InfinispanModulesTestSuite.java</exclude>
+                                        <exclude>org/jboss/as/test/clustering/single/infinispan/cdi/**/*TestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/clustering/single/infinispan/query/**/*TestCase.java</exclude>
                                         <exclude>org/jboss/as/test/clustering/single/web/NonHaWebSessionPersistenceTestCase.java</exclude>
                                     </excludes>
                                     <systemPropertyVariables combine.children="append">
