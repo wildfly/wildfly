@@ -1579,22 +1579,14 @@ public class ElytronRemoteOutboundConnectionTestCase {
     }
 
     private static ModelNode executeWithThrow(final ModelControllerClient client, ModelNode operation) {
-        long start = System.currentTimeMillis();
-        while (System.currentTimeMillis() - start < 15000) {
-            try {
-                try {
-                    ModelNode outcome = client.execute(operation);
-                    if (isSuccefulExecution(outcome)) {
-                        log.debugf("executeWithThrow outcome:\n%s" + outcome.toString());
-                        return outcome;
-                    }
-                } catch (Exception e) {
-                    // do nothing
-                }
-                Thread.sleep(100);
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
+        try {
+            ModelNode outcome = client.execute(operation);
+            if (isSuccefulExecution(outcome)) {
+                log.debugf("executeWithThrow outcome:\n%s" + outcome.toString());
+                return outcome;
             }
+        } catch (Exception e) {
+            throw new RuntimeException("error during execute with throw", e);
         }
         throw new RuntimeException ("Failed to executed operation\n" + operation.toString());
     }
