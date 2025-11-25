@@ -22,28 +22,27 @@ where each protocol layer supports a given communication property.
 
 The JGroups subsystem provides the following features:
 
-* allows definition of named protocol stacks and channels
-* specify a stack for each channel and a default channel
-* view runtime metrics associated with channels
+* definition of named protocol stacks and channels
+* specification of a stack for each channel and a default channel
+* viewing of runtime metrics associated with channels
 
 In the following sections, we describe the JGroups subsystem.
 
 [IMPORTANT]
 
-JGroups channels are created transparently as part of the clustering functionality
-(e.g. on clustered application deployment, channels will be created behind the scenes to support clustered features such as session replication or transmission of SSO contexts around the cluster).
+JGroups channels are created transparently as part of the clustering functionality.
+For example, on clustered application deployment, channels will be created behind the scenes to support clustered features such as session replication or transmission of SSO contexts around the cluster.
 
 [[jgroups-configuration-example]]
 == Configuration example
 
-Following is the default JGroups subsystem configuration.
-We shall use this example to explain the meaning of the various elements and attributes.
-
 [IMPORTANT]
 
-The XML schema for the subsystem, describing all valid elements and attributes,
-can be found in the WildFly distribution,
-in the `docs/schema` directory.
+For up-to-date information about subsystem configuration options see the
+link:feature-pack/doc/reference/subsystem/jgroups/index.html[/subsystem=jgroups model reference].
+
+Following is the default JGroups subsystem configuration.
+We shall use this example to explain the meaning of the various elements and attributes.
 
 [source,xml,options="nowrap"]
 ----
@@ -87,6 +86,12 @@ in the `docs/schema` directory.
 </subsystem>
 ----
 
+[IMPORTANT]
+
+The XML schema for the subsystem, describing all valid elements and attributes,
+can be found in the WildFly distribution,
+in the `docs/schema` directory.
+
 [[subsystem]]
 === <subsystem>
 
@@ -100,7 +105,7 @@ This element is used to configure the subsystem within a WildFly configuration p
 This element is used to configure JGroups channels and the default channel to use.
 
 * `default` is used to specify a default channel for the JGroups subsystem.
-This default channel will be used whenever a stack is required but no stack is specified.
+This default channel will be used whenever a channel is required but no channel is specified.
 
 [[jgroups-subsystem-channel]]
 ==== <channel>
@@ -114,7 +119,7 @@ This element configures individual JGroups channels with attributes:
 [[stack]]
 === <stack>
 
-This element containing sequence of protocols is used to configure a JGroups protocol stack.
+This element containing a sequence of protocols is used to configure a JGroups protocol stack.
 
 * `name` This attribute is used to specify the name of the stack.
 
@@ -138,7 +143,7 @@ see the JGroups documentation for `probe.sh` tool.
 
 [IMPORTANT]
 Attributes site, rack and machine IDs are used by the Infinispan topology-aware consistent hash function,
-which when using dist mode, prevents dist mode replicas from being stored on the same host, rack or site.
+which, when using dist mode, prevents dist mode replicas from being stored on the same host, rack or site.
 
 [[property]]
 ==== <property>
@@ -151,13 +156,34 @@ The value is provided as text for the property element.
 [[protocol]]
 === <protocol>
 
-This element is used to configure a (non-transport) protocol layer in
-the JGroups stack. Protocol layers are ordered within the stack.
+This element is used to configure a (non-transport) protocol layer in the JGroups stack.
+Protocol layers are ordered within the stack.
 
 * `type` specifies the name of the JGroups protocol implementation (e.g. `MPING`, `pbcast.GMS`),
-with the package prefix `org.jgroups.protocols` removed.
+with the default package prefix `org.jgroups.protocols` removed.
+
+[[socket-protocol]]
+=== <socket-protocol>
+
+Extension of the generic protocol with addition of:
+
 * `socket-binding` references a defined socket binding in the server profile.
 It is used when JGroups needs to create general sockets internally for this protocol instance.
+Used by `MPING`, `FD_SOCK`, etc.
+
+[[socket-discovery-protocol]]
+=== <socket-discovery-protocol>
+
+Extension of the generic protocol with addition of:
+
+* `socket-binding` references a list of socket bindings for a protocol used for initial discovery.
+Used by `TCPPING`.
+
+[[jdbc-protocol]]
+=== <jdbc-protocol>
+
+* `data-source` reference for JDBC protocols to be used instead of connection and JNDI lookup properties.
+Used by `JDBC_PING`.
 
 [[relay]]
 === <relay>
@@ -185,7 +211,7 @@ This element is used to configure a remote site for the RELAY protocol with attr
 
 In many cases, channels will be configured via XML as in the example above, so that the channels will be available upon server startup.
 However, channels may also be added, removed or have their configurations modified.
-The recommended way is by making use of the WildFly management API command-line interface (CLI).
+The recommended way to do this is by making use of the WildFly management API command-line interface (CLI).
 In this section, we present some key use cases for the managing the JGroups subsystem.
 
 The key use cases covered are:
