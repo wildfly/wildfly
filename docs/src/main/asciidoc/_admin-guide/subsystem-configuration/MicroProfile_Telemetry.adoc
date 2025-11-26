@@ -1,21 +1,25 @@
 [[MicroProfile_Telemetry]]
 = MicroProfile Telemetry Subsystem
 
-Support for https://microprofile.io/project/eclipse/microprofile-telemetry[MicroProfile Telemetry] is provided by the _microprofile-telemetry_ subsystem.
+Support for https://microprofile.io/project/eclipse/microprofile-telemetry[MicroProfile Telemetry] is provided by the 
+_microprofile-telemetry_ subsystem.
 
 The MicroProfile Telemetry specification describes how OpenTelemetry can be integrated into a MicroProfile application.
 
 [[subsystem-configuration-microprofile-telemetry]]
 == Subsystem
 
-The MicroProfile Telemetry integration is provided by the _microprofle-telemetry_ subsystem, and is included in the default configuration.  If not present, the subsystem can be added using the following CLI commands.
+The MicroProfile Telemetry integration is provided by the _microprofle-telemetry_ subsystem, and is included in the default 
+configuration.  If not present, the subsystem can be added using the following CLI commands.
+
 [NOTE]
-=====
-The MicroProfile Telemetry subsystem depends on the `opentelemetry` subsystem, so it must be added prior to adding MicroProfile Telemetry.
-=====
+====
+The MicroProfile Telemetry subsystem depends on the `opentelemetry` subsystem, so it must be added prior to adding MicroProfile 
+Telemetry.
+====
 
 [source,options="nowrap"]
------
+----
 $ jboss-cli.sh -c <<EOF
     if (outcome != success) of /subsystem=opentelemetry:read-resource
         /extension=org.wildfly.extension.opentelemetry:add()
@@ -25,13 +29,19 @@ $ jboss-cli.sh -c <<EOF
     /subsystem=microprofile-telemetry:add
     reload
 EOF
------
+----
 
 === Important Note
 
-MicroProfile Telemetry includes support for https://opentelemetry.io/docs/concepts/signals/metrics/[OpenTelemetry Metrics] and https://opentelemetry.io/docs/concepts/signals/logs/[OpenTelemetry Logs]. While detailed information on their usage should be found in the relevant external documentation, systems administrators should make note of the inclusion of metrics. When the MicroProfile Telemetry subsystem starts, certain JVM- and system-related metrics will be registered, and their values will be exported to the configured downstream collector. While this is the desired behavior for the subsystem, it can result in the duplication of metrics if either (or both) WildFly Metrics or Micrometer are also configured.
+MicroProfile Telemetry includes support for https://opentelemetry.io/docs/concepts/signals/metrics/[OpenTelemetry Metrics] and 
+https://opentelemetry.io/docs/concepts/signals/logs/[OpenTelemetry Logs]. While detailed information on their usage should be found 
+in the relevant external documentation, systems administrators should note the inclusion of metrics. When the MicroProfile Telemetry 
+subsystem starts, certain JVM- and system-related metrics will be registered, and their values will be exported to the configured 
+collector. While this is the desired behavior for the subsystem, it can result in the duplication of metrics if either (or both) 
+WildFly Metrics or Micrometer are also configured.
 
-To disable the export of metrics via MicroProfile Telemetry, the following should be added to an MicroProfile Config `ConfigSource` available to the application:
+To disable the export of metrics via MicroProfile Telemetry, the following should be added to an MicroProfile Config `ConfigSource` 
+available to the application:
 
 [source]
 ----
@@ -41,10 +51,10 @@ otel.metrics.exporter=none
 or by setting a system property:
 
 [source,options="nowrap"]
------
+----
 [standalone@localhost:9990 /] /system-property=otel.metrics.exporter:add(value=none)
 [standalone@localhost:9990 /] reload
------
+----
 
 Duplication can also be avoided by disabling either of the other subsystems:
 
@@ -70,18 +80,33 @@ Migration from Micrometer to MicroProfile Telemetry Metrics is outside the scope
 
 == Configuration
 
-The MicroProfile Telemetry subsystem contains no configurable attributes or resources. Any server configuration related to OpenTelemetry should be made to the _opentelemetry_ subsystem, the documentation for which can be found in the relevant section of the Administration Guide.
+The MicroProfile Telemetry subsystem contains no configurable attributes or resources. Any server configuration related to 
+OpenTelemetry should be made to the _opentelemetry_ subsystem, the documentation for which can be found in the relevant section of 
+the Administration Guide.
 
-The MicroProfile Telemetry subsystem does, however, allow for individual applications to override any server configuration via MicroProfile Config. For example, the default service name used in exported traces is derived from the deployment name, so if the deployment archive is `my-application-1.0.war`, the service name will be `my-application-1.0.war`. This can be overridden using the standard OpenTelemetry configuration properties (documented https://github.com/open-telemetry/opentelemetry-java/blob/main/sdk-extensions/autoconfigure/README.md[here]):
+The MicroProfile Telemetry subsystem does, however, allow for individual applications to override any server configuration via 
+MicroProfile Config. For example, the default service name used in exported traces is derived from the deployment name, so if the 
+deployment archive is `my-application-1.0.war`, the service name will be `my-application-1.0.war`. This can be overridden using the 
+standard OpenTelemetry configuration properties (documented 
+https://github.com/open-telemetry/opentelemetry-java/blob/main/sdk-extensions/autoconfigure/README.md[here]):
 
 [source]
------
+----
 otel.service.name=My Application
------
+----
 
-Note also that, per spec requirements, MicroProfile Telemetry is *disabled by default* and must be manually enabled on a per-application basis:
+
+[NOTE]
+====
+Per spec requirements, MicroProfile Telemetry is *disabled by default* and must be manually enabled on a per-application basis: +
 
 [source]
 -----
 otel.sdk.disabled=false
 -----
+====
+
+=== Multiple Application Support
+While WildFly makes it possible to deploy multiple MicroProfile applications to a single instance of the server, MicroProfile
+Telemetry does come with a caveat. Please see the link:#otel-multiple-apps[note] under OpenTelemetry multiple application support
+for those details.
