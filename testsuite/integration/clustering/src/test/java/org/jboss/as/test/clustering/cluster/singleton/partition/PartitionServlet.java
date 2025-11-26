@@ -6,6 +6,7 @@
 package org.jboss.as.test.clustering.cluster.singleton.partition;
 
 import java.io.IOException;
+import java.io.Serial;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -36,7 +37,7 @@ import org.jgroups.stack.ProtocolStack;
  * {@link DISCARD} protocol and passing MERGE event up the stack.
  * <p>
  * Note that while it would be desirable for the tests to leave splitting and merging to the servers themselves, this is not practical in a
- * test suite. While FD/VERIFY_SUSPECT/GMS can be be configured to detect partitions quickly the MERGE3 handles merges within randomized
+ * test suite. While FD/VERIFY_SUSPECT/GMS can be configured to detect partitions quickly the MERGE3 handles merges within randomized
  * intervals and uses unreliable channel which can easily take several minutes for merge to actually happen. Also, speeds up the test
  * significantly.
  *
@@ -44,6 +45,7 @@ import org.jgroups.stack.ProtocolStack;
  */
 @WebServlet(urlPatterns = {PartitionServlet.PARTITION})
 public class PartitionServlet extends HttpServlet {
+    @Serial
     private static final long serialVersionUID = 3034138469210308974L;
 
     private static final long VIEWS_TIMEOUT = 3_000;
@@ -73,7 +75,7 @@ public class PartitionServlet extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        boolean partition = Boolean.valueOf(request.getParameter(PARTITION));
+        boolean partition = Boolean.parseBoolean(request.getParameter(PARTITION));
 
         this.log("Simulating network partitions? " + partition);
 

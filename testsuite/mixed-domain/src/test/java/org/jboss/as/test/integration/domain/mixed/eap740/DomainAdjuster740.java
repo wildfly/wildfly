@@ -56,13 +56,12 @@ public class DomainAdjuster740 extends DomainAdjuster {
     }
 
     private static void adjustJGroups(List<ModelNode> operations, PathAddress subsystemAddress) {
-        // Remove protocols that do not exist in EAP 7.4, but don't bother replacing
-        operations.add(Util.createRemoveOperation(subsystemAddress.append("stack", "udp").append("protocol", "FD_SOCK2")));
         for (String stack : Arrays.asList("tcp", "udp")) {
-            for (String protocol : Arrays.asList("RED", "FD_ALL3", "FRAG4", "VERIFY_SUSPECT2", "NAKACK4", "UNICAST4")) {
+            // Remove protocols that do not exist in EAP 7.4, but don't bother replacing
+            for (String protocol : Arrays.asList("RED", "FD_SOCK2", "FD_ALL3", "FRAG4", "VERIFY_SUSPECT2", "NAKACK4", "UNICAST4")) {
                 operations.add(Util.createRemoveOperation(subsystemAddress.append("stack", stack).append("protocol", protocol)));
             }
-            // Remote GMS too - this requires reliable unicast/multicast
+            // Remove GMS too - this requires reliable unicast/multicast
             operations.add(Util.createRemoveOperation(subsystemAddress.append("stack", stack).append("protocol", "pbcast.GMS")));
         }
     }
