@@ -54,7 +54,7 @@ public class TestServlet extends HttpServlet {
                     // and then we'll store it in the test for further entity manipulations.
                     //
                     // While previous versions of ORM may have allowed users to set the value of a generated id, now the rules are stricter.
-                    // Pasting from https://docs.jboss.org/hibernate/orm/6.6/migration-guide/migration-guide.html:
+                    // Pasting from https://docs.hibernate.org/orm/6.6/migration-guide/:
                     // "
                     // Merge versioned entity when row is deleted
                     //

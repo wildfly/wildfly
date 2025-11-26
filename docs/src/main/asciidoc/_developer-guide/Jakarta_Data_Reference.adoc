@@ -9,7 +9,7 @@ ifdef::env-github[]
 :warning-caption: :warning:
 endif::[]
 
-link:https://jakarta.ee/specifications/data[Jakarta Data] brings the repository pattern to the Jakarta ecosystem. {appservername} provides Jakarta Data support via its `jakarta-data` subsystem, which integrates https://docs.jboss.org/hibernate/orm/6.6/repositories/html_single/Hibernate_Data_Repositories.html[Hibernate Data Repositories, window=_blank], a part of Hibernate ORM.
+link:https://jakarta.ee/specifications/data[Jakarta Data] brings the repository pattern to the Jakarta ecosystem. {appservername} provides Jakarta Data support via its `jakarta-data` subsystem, which integrates https://docs.hibernate.org/orm/6.6/repositories/html_single/[Hibernate Data Repositories, window=_blank], a part of Hibernate ORM.
 
 == Jakarta Data Overview
 
@@ -53,13 +53,13 @@ The repository interface methods are annotated with various Jakarta Data annotat
 There's much more to the Jakarta Data programming model than this; for all the details see:
 
 * The link:https://jakarta.ee/specifications/data/1.0/jakarta-data-1.0[Jakarta Data 1.0 specification, window=_blank]
-* The link:https://docs.jboss.org/hibernate/orm/6.6/repositories/html_single/Hibernate_Data_Repositories.html[Hibernate Data Repositories documentation, window=_blank]
+* The link:https://docs.hibernate.org/orm/6.6/repositories/html_single/[Hibernate Data Repositories documentation, window=_blank]
 * Gavin King's excellent link:https://in.relation.to/2024/04/01/jakarta-data-1/[blog posts, window=_blank] on Jakarta Data
 
 
 A Jakarta Data implementation like WildFly can support one or more Jakarta Data link:https://jakarta.ee/specifications/data/1.0/jakarta-data-1.0#_jakarta_data_providers[providers, window=_blank]. A provider understands one or more Java annotation types that are used to define entities, and it understands how to interact with a particular type of back end datastore.
 
-WildFly's Jakarta Data implementation supports the link:https://docs.jboss.org/hibernate/orm/6.6/repositories/html_single/Hibernate_Data_Repositories.html[Hibernate Data Repositories, window=_blank] provider, which uses Hibernate ORM to interact with a variety of different relational databases. Hibernate Data Repositories supports the `jakarta.persistence.Entity` annotation as the mechanism for application authors to define entities.
+WildFly's Jakarta Data implementation supports the link:https://docs.hibernate.org/orm/6.6/repositories/html_single/[Hibernate Data Repositories, window=_blank] provider, which uses Hibernate ORM to interact with a variety of different relational databases. Hibernate Data Repositories supports the `jakarta.persistence.Entity` annotation as the mechanism for application authors to define entities.
 
 == Using Hibernate Data Repositories in Your Application
 
@@ -115,7 +115,7 @@ Note that there is no version element in the `org.hibernate.orm:hibernate-jpamod
     </dependencyManagement>
 ----
 
-WARNING: Some users may have learned to configure Hibernate annotation processing by declaring `org.hibernate.orm:hibernate-jpamodelgen` as a `provided` dependency in their pom. With the Hibernate version used with WildFly, link:https://docs.jboss.org/hibernate/orm/6.3/migration-guide/migration-guide.html#metamodel-generation[this will likely fail, window=_blank]. Use the `maven-compiler-plugin` configuration approach described above.
+WARNING: Some users may have learned to configure Hibernate annotation processing by declaring `org.hibernate.orm:hibernate-jpamodelgen` as a `provided` dependency in their pom. With the Hibernate version used with WildFly, link:https://docs.hibernate.org/orm/6.3/migration-guide/#metamodel-generation[this will likely fail, window=_blank]. Use the `maven-compiler-plugin` configuration approach described above.
 
 If you're using Gradle, you'll need to use `annotationProcessor`:
 
