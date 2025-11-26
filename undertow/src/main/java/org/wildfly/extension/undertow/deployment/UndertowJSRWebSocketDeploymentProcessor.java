@@ -99,6 +99,16 @@ public class UndertowJSRWebSocketDeploymentProcessor implements DeploymentUnitPr
                 for (AnnotationInstance endpoint : clientEndpoints) {
                     if (endpoint.target() instanceof ClassInfo) {
                         ClassInfo clazz = (ClassInfo) endpoint.target();
+                        // Check for a default no-arg constructor as per the Jakarta WebSocket 2.2 specification
+                        // section 6.2. It only mentions scanning for classes with @ServerEndpoint and not classes
+                        // with @ClientEndpoint. However, we've been adding deployed client endpoints since this
+                        // specification was implemented in WildFly. If there is not a no-arg constructor, we'll
+                        // log a warning and not process the type.
+                        if (!clazz.hasNoArgsConstructor()) {
+                            UndertowLogger.ROOT_LOGGER.debugf("The client endpoint '%s' annotated with @ClientEndpoint does not have a no-arg constructor. " +
+                                    "The endpoint will not be available for use without manual instantiation.", clazz.name());
+                            continue;
+                        }
                         try {
                             Class<?> moduleClass = ClassLoadingUtils.loadClass(clazz.name().toString(), module);
                             if (!Modifier.isAbstract(moduleClass.getModifiers())) {
