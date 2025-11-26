@@ -18,8 +18,12 @@ import org.jboss.as.test.smoke.jakarta.data.lib.Recruiter;
 @ApplicationScoped
 public class InitialRecruiter {
 
+    private final Recruiter recruiter;
+
     @Inject
-    private Recruiter recruiter;
+    public InitialRecruiter(Recruiter recruiter) {
+        this.recruiter = recruiter;
+    }
 
     public void init(@Observes @Initialized(ApplicationScoped.class) Object init) {
         recruiter.recruit(CHANTAL, CHANTAL_BDAY);

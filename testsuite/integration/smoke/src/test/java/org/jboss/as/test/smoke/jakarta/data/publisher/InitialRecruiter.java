@@ -9,19 +9,21 @@ import static org.jboss.as.test.smoke.jakarta.data.lib.Constants.BARRY;
 import static org.jboss.as.test.smoke.jakarta.data.lib.Constants.BARRY_BDAY;
 
 import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.enterprise.context.Initialized;
 import jakarta.enterprise.event.Observes;
+import jakarta.enterprise.event.Startup;
 import jakarta.inject.Inject;
+import jakarta.transaction.Transactional;
 import org.jboss.as.test.smoke.jakarta.data.lib.Recruiter;
 
 /** Used to validate use of a Repository during initialization of an ApplicationScoped bean packaged in a war. */
 @ApplicationScoped
+@Transactional
 public class InitialRecruiter {
 
     @Inject
     private Recruiter recruiter;
 
-    public void init(@Observes @Initialized(ApplicationScoped.class) Object init) {
+    public void init(@Observes Startup event) {
         recruiter.recruit(BARRY, BARRY_BDAY);
     }
 }
