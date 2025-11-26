@@ -21,6 +21,7 @@ import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.jandex.AnnotationTarget;
 import org.jboss.jandex.ClassInfo;
+import org.jboss.jandex.DotName;
 import org.jboss.logging.BasicLogger;
 import org.jboss.logging.Logger;
 import org.jboss.logging.annotations.Cause;
@@ -428,5 +429,9 @@ public interface UndertowLogger extends BasicLogger {
     @LogMessage(level = WARN)
     @Message(id = 111, value = "The annotation: '%s' will have no effect on Servlet: '%s'")
     void badAnnotationOnServlet(String annotation, String servlet);
+
+    @LogMessage(level = WARN)
+    @Message(id = 112, value = "The client endpoint '%s' annotated with @ClientEndpoint does not have a no-arg constructor. This endpoint will be ignored.")
+    void invalidClientEndpoint(DotName type);
 
 }
