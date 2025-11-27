@@ -6,6 +6,7 @@
 package org.jboss.as.naming.subsystem;
 
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.ModuleIdentifierUtil;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
@@ -66,6 +67,7 @@ public class NamingBindingResourceDefinition extends SimpleResourceDefinition {
     static final SimpleAttributeDefinition MODULE = new SimpleAttributeDefinitionBuilder(NamingSubsystemModel.MODULE, ModelType.STRING, true)
             .setAllowExpression(true)
             .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
+            .setCorrector(ModuleIdentifierUtil.MODULE_NAME_CORRECTOR)
             .build();
 
     static final SimpleAttributeDefinition LOOKUP = new SimpleAttributeDefinitionBuilder(NamingSubsystemModel.LOOKUP, ModelType.STRING, true)

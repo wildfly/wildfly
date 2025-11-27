@@ -5,6 +5,7 @@
 
 package org.wildfly.extension.picketlink.idm.model;
 
+import org.jboss.as.controller.ModuleIdentifierUtil;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.SimpleAttributeDefinition;
@@ -34,6 +35,7 @@ public class CredentialHandlerResourceDefinition extends AbstractIDMResourceDefi
     public static final SimpleAttributeDefinition MODULE = new SimpleAttributeDefinitionBuilder(ModelElement.COMMON_MODULE.getName(), ModelType.STRING, true)
         .setAllowExpression(true)
         .setRequires(ModelElement.COMMON_CLASS_NAME.getName())
+        .setCorrector(ModuleIdentifierUtil.MODULE_NAME_CORRECTOR)
         .build();
     public static final CredentialHandlerResourceDefinition INSTANCE = new CredentialHandlerResourceDefinition(CLASS_NAME, CODE, MODULE);
 
