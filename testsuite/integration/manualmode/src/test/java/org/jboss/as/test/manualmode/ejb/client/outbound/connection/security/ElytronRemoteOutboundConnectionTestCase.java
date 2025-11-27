@@ -18,7 +18,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PRO
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REALM;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOTE_DESTINATION_OUTBOUND_SOCKET_BINDING;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SASL_AUTHENTICATION_FACTORY;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SECURITY_REALM;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER;
@@ -49,6 +48,7 @@ import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.container.test.api.TargetsContainer;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
+import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.client.ModelControllerClient;
@@ -59,6 +59,7 @@ import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.test.integration.security.common.SecurityTestConstants;
 import org.jboss.as.test.integration.security.common.Utils;
 import org.jboss.as.test.shared.ServerReload;
+import org.jboss.as.test.shared.ServerSnapshot;
 import org.jboss.as.test.shared.TestSuiteEnvironment;
 import org.jboss.dmr.ModelNode;
 import org.jboss.ejb.client.EJBClientConnection;
@@ -180,11 +181,19 @@ public class ElytronRemoteOutboundConnectionTestCase {
     @ArquillianResource
     private static ContainerController containerController;
 
-    private static ModelControllerClient serverSideMCC;
-    private static ModelControllerClient clientSideMCC;
-
     @ArquillianResource
     private Deployer deployer;
+
+    @ArquillianResource
+    @TargetsContainer(INBOUND_CONNECTION_SERVER)
+    private ManagementClient node1;
+
+    @ArquillianResource
+    @TargetsContainer(OUTBOUND_CONNECTION_SERVER)
+    private ManagementClient node2;
+
+    private AutoCloseable restoreNode1Task;
+    private AutoCloseable restoreNode2Task;
 
     @Deployment(name = EJB_SERVER_DEPLOYMENT, managed = false, testable = false)
     @TargetsContainer(INBOUND_CONNECTION_SERVER)
@@ -224,8 +233,8 @@ public class ElytronRemoteOutboundConnectionTestCase {
             containerController.start(OUTBOUND_CONNECTION_SERVER);
         }
 
-        serverSideMCC = getInboundConnectionServerMCC();
-        clientSideMCC = getOutboundConnectionServerMCC();
+        restoreNode1Task = ServerSnapshot.takeSnapshot(node1);
+        restoreNode2Task = ServerSnapshot.takeSnapshot(node2);
     }
 
     @After
@@ -233,100 +242,8 @@ public class ElytronRemoteOutboundConnectionTestCase {
         deployer.undeploy(EJB_CLIENT_DEPLOYMENT);
         deployer.undeploy(EJB_SERVER_DEPLOYMENT);
 
-        //==================================
-        // Client-side server tear down
-        //==================================
-        boolean clientReloadRequired = false;
-        ModelNode result;
-        try {
-            result = clientSideMCC.execute(Util.getReadAttributeOperation(PathAddress.pathAddress(SUBSYSTEM, "elytron"),
-                    "default-authentication-context"));
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-        if (result != null && result.hasDefined(RESULT)) {
-            applyUpdate(clientSideMCC, Util.getUndefineAttributeOperation(PathAddress.pathAddress(SUBSYSTEM, "elytron"),
-                    "default-authentication-context"));
-            clientReloadRequired = true;
-        }
-
-        applyUpdate(clientSideMCC, getEjbConnectorOp("list-remove", CONNECTOR));
-        executeBlockingReloadClientServer(clientSideMCC);
-
-        removeIfExists(clientSideMCC, getAuthenticationContextAddress(DEFAULT_AUTH_CONTEXT), !clientReloadRequired);
-        removeIfExists(clientSideMCC, addDynamicClientSSLContext(DYNAMIC_CLIENT_SSL_CONTEXT), !clientReloadRequired);
-        removeIfExists(clientSideMCC, getServerAuthenticationContext(DYNAMIC_CLIENT_AUTH_CONTEXT), !clientReloadRequired);
-        removeIfExists(clientSideMCC, getConnectionAddress(REMOTE_OUTBOUND_CONNECTION), !clientReloadRequired);
-        removeIfExists(clientSideMCC, getServerSSLContextAddress(DEFAULT_SERVER_SSL_CONTEXT), !clientReloadRequired);
-        removeIfExists(clientSideMCC, getTrustManagerAddress(DEFAULT_TRUST_MANAGER), !clientReloadRequired);
-        removeIfExists(clientSideMCC, getKeyStoreAddress(DEFAULT_TRUST_STORE), !clientReloadRequired);
-        removeIfExists(clientSideMCC, getKeyManagerAddress(DEFAULT_KEY_MANAGER), !clientReloadRequired);
-        removeIfExists(clientSideMCC, getKeyStoreAddress(DEFAULT_KEY_STORE), !clientReloadRequired);
-        removeIfExists(clientSideMCC, getAuthenticationConfigurationAddress(DEFAULT_AUTH_CONFIG), !clientReloadRequired);
-        removeIfExists(clientSideMCC, getAuthenticationContextAddress(OVERRIDING_AUTH_CONTEXT), !clientReloadRequired);
-        removeIfExists(clientSideMCC, getServerSSLContextAddress(OVERRIDING_SERVER_SSL_CONTEXT), !clientReloadRequired);
-        removeIfExists(clientSideMCC, getTrustManagerAddress(OVERRIDING_TRUST_MANAGER), !clientReloadRequired);
-        removeIfExists(clientSideMCC, getKeyStoreAddress(OVERRIDING_TRUST_STORE), !clientReloadRequired);
-        removeIfExists(clientSideMCC, getKeyManagerAddress(OVERRIDING_KEY_MANAGER), !clientReloadRequired);
-        removeIfExists(clientSideMCC, getKeyStoreAddress(OVERRIDING_KEY_STORE), !clientReloadRequired);
-        removeIfExists(clientSideMCC, getAuthenticationConfigurationAddress(OVERRIDING_AUTH_CONFIG), !clientReloadRequired);
-        removeIfExists(clientSideMCC, getOutboundSocketBindingAddress(OUTBOUND_SOCKET_BINDING), !clientReloadRequired);
-        if (clientReloadRequired) {
-            executeBlockingReloadClientServer(clientSideMCC);
-        }
-
-        //==================================
-        // Server-side server tear down
-        //==================================
-        if (!executeReadAttributeOpReturnResult(serverSideMCC, getHttpConnectorAddress("http-remoting-connector"), SASL_AUTHENTICATION_FACTORY)
-                .equals("application-sasl-authentication")) {
-            applyUpdate(serverSideMCC, Util.getWriteAttributeOperation(getHttpConnectorAddress("http-remoting-connector"),
-                    SASL_AUTHENTICATION_FACTORY, "application-sasl-authentication"));
-        }
-        Operations.CompositeOperationBuilder compositeBuilder = Operations.CompositeOperationBuilder.create();
-
-        String defaultHttpsListenerSSLContext = executeReadAttributeOpReturnResult(serverSideMCC, getDefaultHttpsListenerAddress(), SSL_CONTEXT);
-        if (!(defaultHttpsListenerSSLContext == null) && !defaultHttpsListenerSSLContext.isEmpty()) {
-            ModelNode update = Util.getUndefineAttributeOperation(getDefaultHttpsListenerAddress(), SSL_CONTEXT);
-            update.get(OPERATION_HEADERS, ALLOW_RESOURCE_SERVICE_RESTART).set(true);
-            compositeBuilder.addStep(update);
-        }
-
-        ModelNode update = Util.getWriteAttributeOperation(getDefaultHttpsListenerAddress(), "ssl-context", "applicationSSC");
-        update.get(OPERATION_HEADERS, ALLOW_RESOURCE_SERVICE_RESTART).set(true);
-        compositeBuilder.addStep(update);
-
-        applyUpdate(serverSideMCC, compositeBuilder.build().getOperation());
-
-        applyUpdate(serverSideMCC, getEjbConnectorOp("list-remove", CONNECTOR));
-        ServerReload.reloadIfRequired(serverSideMCC); // this use is ok; the server is on the standard address/port
-
-        removeIfExists(serverSideMCC, getConnectorAddress(CONNECTOR));
-        removeIfExists(serverSideMCC, getHttpConnectorAddress(CONNECTOR));
-        removeIfExists(serverSideMCC, getServerSSLContextAddress(SERVER_SSL_CONTEXT), false);
-        removeIfExists(serverSideMCC, getTrustManagerAddress(SERVER_TRUST_MANAGER));
-        removeIfExists(serverSideMCC, getKeyStoreAddress(SERVER_TRUST_STORE));
-        removeIfExists(serverSideMCC, getKeyManagerAddress(SERVER_KEY_MANAGER));
-        removeIfExists(serverSideMCC, getKeyStoreAddress(SERVER_KEY_STORE));
-        removeIfExists(serverSideMCC, getSocketBindingAddress(INBOUND_SOCKET_BINDING));
-        removeIfExists(serverSideMCC, getEjbApplicationSecurityDomainAddress(APPLICATION_SECURITY_DOMAIN));
-        removeIfExists(serverSideMCC, getSaslAuthenticationFactoryAddress(AUTHENTICATION_FACTORY));
-        removeIfExists(serverSideMCC, getElytronSecurityDomainAddress(SECURITY_DOMAIN));
-        removeIfExists(serverSideMCC, getPropertiesRealmAddress(PROPERTIES_REALM));
-        removeIfExists(serverSideMCC, getElytronAggregateRoleDecoderAddress(AGGREGATE_ROLE_DECODER));
-        removeIfExists(serverSideMCC, getElytronSourceAddressRoleDecoderAddress(DECODER_1));
-        removeIfExists(serverSideMCC, getElytronSourceAddressRoleDecoderAddress(DECODER_2));
-        removeIfExists(serverSideMCC, getElytronPermissionMapperAddress(IP_PERMISSION_MAPPER));
-
-        //noinspection deprecation
-        ServerReload.reloadIfRequired(serverSideMCC); // this use is ok; the server is on the standard address/port
-
-        try {
-            clientSideMCC.close();
-            serverSideMCC.close();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+        restoreNode1Task.close();
+        restoreNode2Task.close();
     }
 
     @AfterClass
@@ -358,6 +275,8 @@ public class ElytronRemoteOutboundConnectionTestCase {
      */
     @Test
     public void testAuthenticationHostConfigWithBareRemoting() {
+        ModelControllerClient serverSideMCC = getInboundConnectionServerMCC();
+        ModelControllerClient clientSideMCC = getOutboundConnectionServerMCC();
         //==================================
         // Server-side server setup
         //==================================
@@ -387,6 +306,8 @@ public class ElytronRemoteOutboundConnectionTestCase {
      */
     @Test
     public void testElytronDefaultContextWithBareRemoting() {
+        ModelControllerClient serverSideMCC = getInboundConnectionServerMCC();
+        ModelControllerClient clientSideMCC = getOutboundConnectionServerMCC();
         //==================================
         // Server-side server setup
         //==================================
@@ -416,6 +337,8 @@ public class ElytronRemoteOutboundConnectionTestCase {
      */
     @Test
     public void testOverridingElytronDefaultContextWithBareRemoting() {
+        ModelControllerClient serverSideMCC = getInboundConnectionServerMCC();
+        ModelControllerClient clientSideMCC = getOutboundConnectionServerMCC();
         //==================================
         // Server-side server setup
         //==================================
@@ -448,6 +371,8 @@ public class ElytronRemoteOutboundConnectionTestCase {
      */
     @Test
     public void testConnectionContextWithBareRemoting() {
+        ModelControllerClient serverSideMCC = getInboundConnectionServerMCC();
+        ModelControllerClient clientSideMCC = getOutboundConnectionServerMCC();
         //==================================
         // Server-side server setup
         //==================================
@@ -476,6 +401,8 @@ public class ElytronRemoteOutboundConnectionTestCase {
      */
     @Test
     public void testAuthenticationHostConfigWithSSLRemoting() {
+        ModelControllerClient serverSideMCC = getInboundConnectionServerMCC();
+        ModelControllerClient clientSideMCC = getOutboundConnectionServerMCC();
         //==================================
         // Server-side server setup
         //==================================
@@ -510,6 +437,8 @@ public class ElytronRemoteOutboundConnectionTestCase {
      */
     @Test
     public void testElytronDefaultContextWithSSLRemoting() {
+        ModelControllerClient serverSideMCC = getInboundConnectionServerMCC();
+        ModelControllerClient clientSideMCC = getOutboundConnectionServerMCC();
         //==================================
         // Server-side server setup
         //==================================
@@ -544,6 +473,8 @@ public class ElytronRemoteOutboundConnectionTestCase {
      */
     @Test
     public void testOverridingElytronDefaultContextWithSSLRemoting() {
+        ModelControllerClient serverSideMCC = getInboundConnectionServerMCC();
+        ModelControllerClient clientSideMCC = getOutboundConnectionServerMCC();
         //==================================
         // Server-side server setup
         //==================================
@@ -586,6 +517,8 @@ public class ElytronRemoteOutboundConnectionTestCase {
      */
     @Test
     public void testConnectionContextWithSSLRemoting() {
+        ModelControllerClient serverSideMCC = getInboundConnectionServerMCC();
+        ModelControllerClient clientSideMCC = getOutboundConnectionServerMCC();
         //==================================
         // Server-side server setup
         //==================================
@@ -616,6 +549,8 @@ public class ElytronRemoteOutboundConnectionTestCase {
      */
     @Test
     public void testConnectionContextWithSSLRemoteTls() {
+        ModelControllerClient serverSideMCC = getInboundConnectionServerMCC();
+        ModelControllerClient clientSideMCC = getOutboundConnectionServerMCC();
         //==================================
         // Server-side server setup
         //==================================
@@ -649,6 +584,8 @@ public class ElytronRemoteOutboundConnectionTestCase {
      */
     @Test
     public void testAuthenticationHostConfigWithHttpRemoting() {
+        ModelControllerClient serverSideMCC = getInboundConnectionServerMCC();
+        ModelControllerClient clientSideMCC = getOutboundConnectionServerMCC();
         //==================================
         // Server-side server setup
         //==================================
@@ -678,6 +615,8 @@ public class ElytronRemoteOutboundConnectionTestCase {
      */
     @Test
     public void testElytronDefaultContextWithHttpRemoting() {
+        ModelControllerClient serverSideMCC = getInboundConnectionServerMCC();
+        ModelControllerClient clientSideMCC = getOutboundConnectionServerMCC();
         //==================================
         // Server-side server setup
         //==================================
@@ -707,6 +646,8 @@ public class ElytronRemoteOutboundConnectionTestCase {
      */
     @Test
     public void testOverridingElytronDefaultContextWithHttpRemoting() {
+        ModelControllerClient serverSideMCC = getInboundConnectionServerMCC();
+        ModelControllerClient clientSideMCC = getOutboundConnectionServerMCC();
         //==================================
         // Server-side server setup
         //==================================
@@ -739,6 +680,8 @@ public class ElytronRemoteOutboundConnectionTestCase {
      */
     @Test
     public void testConnectionContextWithHttpRemoting() {
+        ModelControllerClient serverSideMCC = getInboundConnectionServerMCC();
+        ModelControllerClient clientSideMCC = getOutboundConnectionServerMCC();
         //==================================
         // Server-side server setup
         //==================================
@@ -767,6 +710,8 @@ public class ElytronRemoteOutboundConnectionTestCase {
      */
     @Test
     public void testAuthenticationHostConfigWithHttpsRemoting() {
+        ModelControllerClient serverSideMCC = getInboundConnectionServerMCC();
+        ModelControllerClient clientSideMCC = getOutboundConnectionServerMCC();
         //==================================
         // Server-side server setup
         //==================================
@@ -795,6 +740,8 @@ public class ElytronRemoteOutboundConnectionTestCase {
 
     @Test
     public void testAuthenticationHostConfigUsingDynamicClientSSLContextWithHttpsRemoting() {
+        ModelControllerClient serverSideMCC = getInboundConnectionServerMCC();
+        ModelControllerClient clientSideMCC = getOutboundConnectionServerMCC();
         //==================================
         // Server-side server setup
         //==================================
@@ -831,6 +778,8 @@ public class ElytronRemoteOutboundConnectionTestCase {
      */
     @Test
     public void testElytronDefaultContextWithHttpsRemoting() {
+        ModelControllerClient serverSideMCC = getInboundConnectionServerMCC();
+        ModelControllerClient clientSideMCC = getOutboundConnectionServerMCC();
         //==================================
         // Server-side server setup
         //==================================
@@ -865,6 +814,8 @@ public class ElytronRemoteOutboundConnectionTestCase {
      */
     @Test
     public void testOverridingElytronDefaultContextWithHttpsRemoting() {
+        ModelControllerClient serverSideMCC = getInboundConnectionServerMCC();
+        ModelControllerClient clientSideMCC = getOutboundConnectionServerMCC();
         //==================================
         // Server-side server setup
         //==================================
@@ -907,6 +858,8 @@ public class ElytronRemoteOutboundConnectionTestCase {
      */
     @Test
     public void testConnectionContextWithHttpsRemoting() {
+        ModelControllerClient serverSideMCC = getInboundConnectionServerMCC();
+        ModelControllerClient clientSideMCC = getOutboundConnectionServerMCC();
         //==================================
         // Server-side server setup
         //==================================
@@ -939,6 +892,8 @@ public class ElytronRemoteOutboundConnectionTestCase {
      */
     @Test
     public void testElytronWithBareRemotingWithSourceAddressRoleDecoderMatch() {
+        ModelControllerClient serverSideMCC = getInboundConnectionServerMCC();
+        ModelControllerClient clientSideMCC = getOutboundConnectionServerMCC();
         //==================================
         // Server-side server setup
         //==================================
@@ -967,6 +922,8 @@ public class ElytronRemoteOutboundConnectionTestCase {
      */
     @Test
     public void testElytronWithBareRemotingWithSourceAddressRoleDecoderMatchAndPermissionMapperMismatch() {
+        ModelControllerClient serverSideMCC = getInboundConnectionServerMCC();
+        ModelControllerClient clientSideMCC = getOutboundConnectionServerMCC();
         //==================================
         // Server-side server setup
         //==================================
@@ -999,6 +956,8 @@ public class ElytronRemoteOutboundConnectionTestCase {
      */
     @Test
     public void testElytronWithBareRemotingWithSourceAddressRoleDecoderMismatch() {
+        ModelControllerClient serverSideMCC = getInboundConnectionServerMCC();
+        ModelControllerClient clientSideMCC = getOutboundConnectionServerMCC();
         //==================================
         // Server-side server setup
         //==================================
@@ -1032,6 +991,8 @@ public class ElytronRemoteOutboundConnectionTestCase {
      */
     @Test
     public void testElytronWithBareRemotingWithSecurityRealmRole() {
+        ModelControllerClient serverSideMCC = getInboundConnectionServerMCC();
+        ModelControllerClient clientSideMCC = getOutboundConnectionServerMCC();
         //==================================
         // Server-side server setup
         //==================================
@@ -1063,6 +1024,8 @@ public class ElytronRemoteOutboundConnectionTestCase {
      */
     @Test
     public void testElytronWithBareRemotingWithSourceAddressRoleDecoderInvalidCredentials() {
+        ModelControllerClient serverSideMCC = getInboundConnectionServerMCC();
+        ModelControllerClient clientSideMCC = getOutboundConnectionServerMCC();
         //==================================
         // Server-side server setup
         //==================================
