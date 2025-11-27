@@ -43,6 +43,7 @@ public class ExpressionFilterDefinition extends SimpleFilterDefinition {
             .setRequired(false)
             .setAllowExpression(true)
             .setRestartAllServices()
+            .setCorrector(ModuleIdentifierUtil.MODULE_NAME_CORRECTOR)
             .build();
 
     public static final Collection<AttributeDefinition> ATTRIBUTES = List.of(EXPRESSION, MODULE);
