@@ -23,7 +23,7 @@ import jakarta.ws.rs.core.MediaType;
 public class PersonResource {
 
     @Inject
-    private Recruiter recruiter;
+    private RecruiterService recruiter;
 
     @Path("{name}")
     @GET
