@@ -6,7 +6,7 @@
 <subsystem xmlns="urn:jboss:domain:datasources:7.2">
     <datasources>
         <drivers>
-            <driver name="name" module="com.h2database.h2" major-version="2" minor-version="2">
+            <driver name="name" module="com.h2database.h2" major-version="2" minor-version="4">
                 <driver-class>org.h2.Driver</driver-class>
                 <xa-datasource-class>org.h2.jdbcx.JdbcDataSource</xa-datasource-class>
             </driver>

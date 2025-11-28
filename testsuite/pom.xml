@@ -862,7 +862,7 @@
                 <ds.db>h2</ds.db>
                 <ds.jdbc.driver>org.h2.Driver</ds.jdbc.driver>
                 <ds.jdbc.driver-xa>org.h2.jdbcx.JdbcDataSource</ds.jdbc.driver-xa>
-                <ds.jdbc.url>jdbc:h2:mem:test;DB_CLOSE_DELAY=-1;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE</ds.jdbc.url>
+                <ds.jdbc.url>jdbc:h2:mem:test;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE</ds.jdbc.url>
                 <ds.jdbc.driver.version>${version.com.h2database}</ds.jdbc.driver.version>
             </properties>
         </profile>
@@ -873,7 +873,7 @@
                 <ds.db>h2</ds.db>
                 <ds.jdbc.driver>org.h2.Driver</ds.jdbc.driver>
                 <ds.jdbc.driver-xa>org.h2.jdbcx.JdbcDataSource</ds.jdbc.driver-xa>
-                <ds.jdbc.url>jdbc:h2:mem:test;DB_CLOSE_DELAY=-1;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE</ds.jdbc.url>
+                <ds.jdbc.url>jdbc:h2:mem:test;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE</ds.jdbc.url>
                 <ds.jdbc.driver.version>${version.com.h2database}</ds.jdbc.driver.version>
             </properties>
         </profile>
