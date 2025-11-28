@@ -25,6 +25,7 @@ import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.AttributeMarshaller;
 import org.jboss.as.controller.AttributeMarshallers;
 import org.jboss.as.controller.AttributeParsers;
+import org.jboss.as.controller.ModuleIdentifierUtil;
 import org.jboss.as.controller.ObjectTypeAttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -65,6 +66,7 @@ class ConfigSourceDefinition extends PersistentResourceDefinition {
                     .build(),
             create(MODULE, ModelType.STRING, false)
                     .setAllowExpression(false)
+                    .setCorrector(ModuleIdentifierUtil.MODULE_NAME_CORRECTOR)
                     .build())
             .setAlternatives("properties", "dir")
             .setRequired(false)

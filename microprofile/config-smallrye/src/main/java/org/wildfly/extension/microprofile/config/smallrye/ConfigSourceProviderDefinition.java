@@ -19,6 +19,7 @@ import org.eclipse.microprofile.config.spi.ConfigSourceProvider;
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.AttributeMarshaller;
+import org.jboss.as.controller.ModuleIdentifierUtil;
 import org.jboss.as.controller.ObjectTypeAttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -40,6 +41,7 @@ class ConfigSourceProviderDefinition extends PersistentResourceDefinition {
                     .build(),
             create(MODULE, ModelType.STRING, false)
                     .setAllowExpression(false)
+                    .setCorrector(ModuleIdentifierUtil.MODULE_NAME_CORRECTOR)
                     .build())
             .setRequired(false)
             .setAttributeMarshaller(AttributeMarshaller.ATTRIBUTE_OBJECT)
