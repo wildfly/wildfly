@@ -6,7 +6,13 @@
 package org.wildfly.test.integration.observability.opentelemetry;
 
 import java.net.MalformedURLException;
+import java.net.URISyntaxException;
+import java.net.URL;
 
+import jakarta.ws.rs.client.Client;
+import jakarta.ws.rs.client.ClientBuilder;
+import jakarta.ws.rs.client.WebTarget;
+import jakarta.ws.rs.core.Response;
 import org.arquillian.testcontainers.api.Testcontainer;
 import org.arquillian.testcontainers.api.TestcontainersRequired;
 import org.jboss.arquillian.junit.Arquillian;
@@ -17,6 +23,7 @@ import org.jboss.as.test.shared.observability.signals.jaeger.JaegerResponse;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.junit.Assert;
 import org.junit.runner.RunWith;
 import org.wildfly.test.integration.observability.JaxRsActivator;
 import org.wildfly.test.integration.observability.opentelemetry.application.OtelMetricResource;
@@ -49,5 +56,15 @@ public abstract class BaseOpenTelemetryTest {
 
     protected String getDeploymentUrl(String deploymentName) throws MalformedURLException {
         return TestSuiteEnvironment.getHttpUrl() + "/" + deploymentName + "/";
+    }
+
+    protected void makeRequests(URL url, int count, int expectedStatus) throws URISyntaxException {
+        try (Client client = ClientBuilder.newClient()) {
+            WebTarget target = client.target(url.toURI());
+            for (int i = 0; i < count; i++) {
+                Response response = target.request().get();
+                Assert.assertEquals(expectedStatus, response.getStatus());
+            }
+        }
     }
 }
