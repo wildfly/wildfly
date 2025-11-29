@@ -32,6 +32,9 @@
 
     <properties>
         <version.com.fasterxml.classmate>1.7.0</version.com.fasterxml.classmate>
+        <!-- n.b. H2 version here is driven by what Hibernate ORM version tests with as the H2 dialect! -->
+        <!-- Thus, in preview, ORM 7.1 uses 2.4 so keep this at current 2.4.x until standard moves to EE 11 -->
+        <version.com.h2database>2.4.240</version.com.h2database>
         <version.io.undertow>2.4.0.Alpha1</version.io.undertow>
         <version.io.undertow.ee>2.0.0.Alpha1</version.io.undertow.ee>
         <version.jakarta.annotation.jakarta-annotation-api>3.0.0</version.jakarta.annotation.jakarta-annotation-api>
@@ -97,6 +100,12 @@
             </dependency>
 
             <!-- Bom-specific dependencies. Keep sorted -->
+            <dependency>
+                <groupId>com.h2database</groupId>
+                <artifactId>h2</artifactId>
+                <version>${version.com.h2database}</version>
+            </dependency>
+
             <dependency>
                 <groupId>io.undertow</groupId>
                 <artifactId>undertow-core</artifactId>
