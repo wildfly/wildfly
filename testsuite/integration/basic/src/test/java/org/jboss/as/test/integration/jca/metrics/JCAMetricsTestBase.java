@@ -21,22 +21,19 @@ import org.junit.Assert;
 /**
  * @author Stuart Douglas
  */
-public abstract class JCAMetrictsTestBase extends DsMgmtTestBase {
+public abstract class JCAMetricsTestBase extends DsMgmtTestBase {
 
-
-    //@Before - called from each test
-    /*
+    /**
      * Load data source model, stored in specified file to the configuration
      */
     protected void setModel(String filename) throws Exception {
-        String xml = FileUtils.readFile(JCAMetrictsTestBase.class, "data-sources/" + filename);
+        String xml = FileUtils.readFile(JCAMetricsTestBase.class, "data-sources/" + filename);
         List<ModelNode> operations = xmlToModelOperations(xml, Namespace.CURRENT.getUriString(), new DataSourcesExtension.DataSourceSubsystemParser());
         executeOperation(operationListToCompositeOperation(operations));
     }
 
-    /*
-
-     * Bad model must throw an Exception during setModel methos call. To work around wrong test case
+    /**
+     * Bad model must throw an Exception during setModel methods call. To work around wrong test case
      * removeDs() method is added.
      */
     protected void setBadModel(String filename) throws Exception {

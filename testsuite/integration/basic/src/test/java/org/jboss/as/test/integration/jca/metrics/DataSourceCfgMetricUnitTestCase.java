@@ -22,7 +22,7 @@ import org.junit.runner.RunWith;
  */
 @RunWith(Arquillian.class)
 @RunAsClient
-public class DataSourceCfgMetricUnitTestCase extends JCAMetrictsTestBase {
+public class DataSourceCfgMetricUnitTestCase extends JCAMetricsTestBase {
 
     @BeforeClass
     public static void before() {

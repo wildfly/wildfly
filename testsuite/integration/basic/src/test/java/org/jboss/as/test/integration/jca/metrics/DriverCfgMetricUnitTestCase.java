@@ -21,7 +21,7 @@ import org.junit.runner.RunWith;
  */
 @RunWith(Arquillian.class)
 @RunAsClient
-public class DriverCfgMetricUnitTestCase extends JCAMetrictsTestBase {
+public class DriverCfgMetricUnitTestCase extends JCAMetricsTestBase {
 
     @BeforeClass
     public static void before() {
