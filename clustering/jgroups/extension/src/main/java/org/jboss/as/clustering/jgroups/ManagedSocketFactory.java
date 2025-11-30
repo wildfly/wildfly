@@ -33,11 +33,11 @@ import org.wildfly.common.function.ExceptionFunction;
 public class ManagedSocketFactory implements SocketFactory {
 
     private final SelectorProvider provider;
-    private final SocketBindingManager manager;
+    protected final SocketBindingManager manager;
     // Maps a JGroups service name its associated SocketBinding
-    private final Map<String, SocketBinding> bindings;
+    protected final Map<String, SocketBinding> bindings;
     // Store references to managed socket-binding registrations
-    private final Map<NetworkChannel, Closeable> channels = Collections.synchronizedMap(new IdentityHashMap<>());
+    protected final Map<Object, Closeable> closeables = Collections.synchronizedMap(new IdentityHashMap<>());
 
     public ManagedSocketFactory(SelectorProvider provider, SocketBindingManager manager, Map<String, SocketBinding> socketBindings) {
         this.provider = provider;
@@ -102,16 +102,16 @@ public class ManagedSocketFactory implements SocketFactory {
     private <C extends NetworkChannel> C createNetworkChannel(String name, ExceptionFunction<SelectorProvider, C, IOException> factory, TriFunction<SocketBindingManager.NamedManagedBindingRegistry, String, C, Closeable> namedRegistration, BiFunction<SocketBindingManager.UnnamedBindingRegistry, C, Closeable> unnamedRegistration) throws IOException {
         SocketBinding binding = this.bindings.get(name);
         C channel = factory.apply(this.provider);
-        this.channels.put(channel, (binding != null) ? namedRegistration.apply(this.manager.getNamedRegistry(), binding.getName(), channel) : unnamedRegistration.apply(this.manager.getUnnamedRegistry(), channel));
+        this.closeables.put(channel, (binding != null) ? namedRegistration.apply(this.manager.getNamedRegistry(), binding.getName(), channel) : unnamedRegistration.apply(this.manager.getUnnamedRegistry(), channel));
         return channel;
     }
 
     private void closeNetworkChannel(NetworkChannel channel) {
-        Util.close(this.channels.remove(channel));
+        Util.close(this.closeables.remove(channel));
         Util.close(channel);
     }
 
-    private static interface TriFunction<T, U, V, R> {
+    private interface TriFunction<T, U, V, R> {
         R apply(T t, U u, V v);
     }
 }
