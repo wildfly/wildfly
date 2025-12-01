@@ -146,7 +146,7 @@ public abstract class OidcBaseTest {
         BASIC
     }
 
-    public static void sendRealmCreationRequest(RealmRepresentation realm) {
+    public static void sendRealmCreationRequest(RealmRepresentation realm) throws Exception {
         long timeout = System.currentTimeMillis() + REALM_CREATION_TIMEOUT;
         while (true) {
             try {
