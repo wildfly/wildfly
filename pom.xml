@@ -349,7 +349,7 @@
         <version.org.jboss.spec.javax.servlet.jboss-servlet-api_4.0_spec>2.0.0.Final</version.org.jboss.spec.javax.servlet.jboss-servlet-api_4.0_spec>
         <version.org.junit>5.14.1</version.org.junit>
         <version.org.keycloak>25.0.6</version.org.keycloak>
-        <version.org.mockito>5.14.2</version.org.mockito>
+        <version.org.mockito>5.20.0</version.org.mockito>
         <version.org.syslog4j>0.9.30</version.org.syslog4j>
         <version.org.testcontainers>2.0.2</version.org.testcontainers>
         <version.org.testng>7.8.0</version.org.testng>
