@@ -8,6 +8,7 @@ package org.wildfly.extension.clustering.web;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ResourceRegistration;
@@ -23,6 +24,7 @@ import org.jboss.as.controller.persistence.xml.SubsystemResourceRegistrationXMLE
 import org.jboss.as.controller.persistence.xml.SubsystemResourceXMLSchema;
 import org.jboss.as.controller.xml.VersionedNamespace;
 import org.jboss.as.controller.xml.XMLCardinality;
+import org.jboss.as.version.Stability;
 import org.jboss.staxmapper.IntVersion;
 import org.wildfly.clustering.server.service.CacheConfigurationAttributeGroup;
 import org.wildfly.subsystem.resource.ResourceDescriptor;
@@ -38,14 +40,19 @@ public enum DistributableWebSubsystemSchema implements SubsystemResourceXMLSchem
     VERSION_3_0(3, 0), // WildFly 27-29
     VERSION_4_0(4, 0), // WildFly 30-35, EAP 8.0-8.1
     VERSION_5_0(5, 0), // WildFly 36-present
+    VERSION_5_0_COMMUNITY(5, 0, Stability.COMMUNITY), // WildFly 39-present
     ;
-    static final DistributableWebSubsystemSchema CURRENT = VERSION_5_0;
+    static final Set<DistributableWebSubsystemSchema> CURRENT = Set.of(VERSION_5_0, VERSION_5_0_COMMUNITY);
 
     private final ResourceXMLParticleFactory factory = ResourceXMLParticleFactory.newInstance(this);
     private final VersionedNamespace<IntVersion, DistributableWebSubsystemSchema> namespace;
 
     DistributableWebSubsystemSchema(int major, int minor) {
         this.namespace = SubsystemSchema.createLegacySubsystemURN(DistributableWebSubsystemResourceDefinitionRegistrar.REGISTRATION.getName(), new IntVersion(major, minor));
+    }
+
+    DistributableWebSubsystemSchema(int major, int minor, Stability stability) {
+        this.namespace = SubsystemSchema.createLegacySubsystemURN(DistributableWebSubsystemResourceDefinitionRegistrar.REGISTRATION.getName(), stability, new IntVersion(major, minor));
     }
 
     @Override
@@ -124,6 +131,9 @@ public enum DistributableWebSubsystemSchema implements SubsystemResourceXMLSchem
         if (this.since(VERSION_3_0)) {
             builder.addAttribute(SessionManagementResourceDefinitionRegistrar.MARSHALLER);
         }
+//        if (this.since(VERSION_5_0_COMMUNITY)) {
+//            builder.addAttribute(SessionManagementResourceDefinitionRegistrar.MAX_IDLE);
+//        }
         return builder;
     }
 
