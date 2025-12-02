@@ -14,6 +14,7 @@ import jakarta.enterprise.context.RequestScoped;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.Path;
+import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.WebApplicationException;
 import jakarta.ws.rs.client.Client;
@@ -21,10 +22,13 @@ import jakarta.ws.rs.client.ClientBuilder;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.UriInfo;
+import org.jboss.logging.Logger;
 
 @RequestScoped
 @Path("/")
 public class OtelService1 {
+    private final Logger logger = Logger.getLogger(OtelService1.class.getName());
+
     @Context
     private UriInfo uriInfo;
 
@@ -41,6 +45,14 @@ public class OtelService1 {
         }
 
         return "Hello, " + name;
+    }
+
+    @GET
+    @Path("logging/{message}")
+    public Response log(@PathParam("message") String message) {
+        logger.infof("This is a test message: %s", message);
+
+        return Response.noContent().build();
     }
 
     @GET
