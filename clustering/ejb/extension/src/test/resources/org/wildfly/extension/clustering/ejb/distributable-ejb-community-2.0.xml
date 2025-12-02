@@ -1,0 +1,13 @@
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+
+<subsystem xmlns="urn:jboss:domain:distributable-ejb:community:2.0">
+    <bean-management default="default">
+        <infinispan-bean-management name="default" cache-container="foo" cache="bar" max-active-beans="${exp.max-active-beans:10000}"/>
+    </bean-management>
+    <local-client-mappings-registry/>
+    <infinispan-timer-management name="distributed" cache-container="foo" cache="bar" max-active-timers="${exp.max-active-distributed-timers:100}"/>
+    <infinispan-timer-management name="transient" cache-container="foo" cache="bar" max-active-timers="${exp.max-active-transient-timers:1000}"/>
+</subsystem>
