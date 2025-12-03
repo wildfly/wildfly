@@ -20,6 +20,7 @@ import org.jboss.ejb.client.EJBLocator;
 import org.jboss.ejb.client.EJBMetaDataImpl;
 import org.jboss.ejb.client.EJBModuleIdentifier;
 import org.jboss.ejb.iiop.EJBMetaDataImplIIOP;
+import org.jboss.logging.Logger;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
@@ -33,6 +34,8 @@ import jakarta.ejb.HomeHandle;
  * @author Stuart Douglas
  */
 public class RemoteObjectSubstitutionService implements RemoteObjectSubstitution, Service<RemoteObjectSubstitution> {
+
+    protected Logger log = Logger.getLogger(RemoteObjectSubstitutionService.class.getSimpleName());
 
     private final InjectedValue<DeploymentRepository> deploymentRepositoryInjectedValue = new InjectedValue<DeploymentRepository>();
 
@@ -125,12 +128,14 @@ public class RemoteObjectSubstitutionService implements RemoteObjectSubstitution
 
     @Override
     public void start(final StartContext context) throws StartException {
-
+        log.info("Starting");
+        log.info("Started");
     }
 
     @Override
     public void stop(final StopContext context) {
-
+        log.info("Stopping");
+        log.info("Stopped");
     }
 
     @Override

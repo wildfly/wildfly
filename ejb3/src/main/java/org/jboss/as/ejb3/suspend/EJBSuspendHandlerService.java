@@ -145,11 +145,12 @@ public class EJBSuspendHandlerService implements Service<EJBSuspendHandlerServic
      * @param context start context
      */
     public void start(StartContext context) {
-        log.info("Started");
+        log.info("Starting");
         final SuspendController suspendController = suspendControllerInjectedValue.getValue();
         suspendController.registerActivity(this);
         final LocalTransactionContext localTransactionContext = localTransactionContextInjectedValue.getValue();
         localTransactionContext.registerCreationListener(this);
+        log.info("Started");
     }
 
     /**
@@ -157,6 +158,7 @@ public class EJBSuspendHandlerService implements Service<EJBSuspendHandlerServic
      * @param context stop context
      */
     public void stop(StopContext context) {
+        log.info("Stopping");
         final SuspendController suspendController = suspendControllerInjectedValue.getValue();
         suspendController.unRegisterActivity(this);
         final LocalTransactionContext localTransactionContext = localTransactionContextInjectedValue.getValue();
