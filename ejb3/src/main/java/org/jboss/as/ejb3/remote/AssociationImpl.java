@@ -61,6 +61,7 @@ import org.jboss.ejb.server.ModuleAvailabilityListener;
 import org.jboss.ejb.server.Request;
 import org.jboss.ejb.server.SessionOpenRequest;
 import org.jboss.invocation.InterceptorContext;
+import org.jboss.logging.Logger;
 import org.wildfly.clustering.server.Group;
 import org.wildfly.clustering.server.GroupMember;
 import org.wildfly.clustering.server.Registration;
@@ -75,6 +76,8 @@ import org.wildfly.security.manager.WildFlySecurityManager;
  * @author <a href="mailto:jbaesner@redhat.com">Joerg Baesner</a>
  */
 final class AssociationImpl implements Association, AutoCloseable {
+
+    protected static final Logger log = Logger.getLogger(AssociationImpl.class.getSimpleName());
 
     private static final String RETURNED_CONTEXT_DATA_KEY = "jboss.returned.keys";
     private static final ListenerHandle NOOP_LISTENER_HANDLE = new ListenerHandle() {
@@ -97,6 +100,7 @@ final class AssociationImpl implements Association, AutoCloseable {
         for (Map.Entry<ProtocolSocketBinding, Registry<GroupMember, String, List<ClientMapping>>> entry : clientMappingRegistries) {
             this.clusterTopologyRegistrars.put(entry.getKey().getSocketBinding().getSocketAddress().getPort(), new ClusterTopologyRegistrar(entry.getValue()));
         }
+        log.info("<init>");
     }
 
     @Override
@@ -108,6 +112,7 @@ final class AssociationImpl implements Association, AutoCloseable {
 
     @Override
     public CancelHandle receiveInvocationRequest(@NotNull final InvocationRequest invocationRequest) {
+        log.info("Calling receiveInvocationRequest()");
 
         final EJBIdentifier ejbIdentifier = invocationRequest.getEJBIdentifier();
 
@@ -260,6 +265,9 @@ final class AssociationImpl implements Association, AutoCloseable {
         };
         // invoke the method and write out the response, possibly on a separate thread
         execute(invocationRequest, runnable, isAsync, false);
+
+        log.info("Called receiveInvocationRequest()");
+
         return cancellationFlag::cancel;
     }
 
@@ -314,6 +322,7 @@ final class AssociationImpl implements Association, AutoCloseable {
     @Override
     @NotNull
     public CancelHandle receiveSessionOpenRequest(@NotNull final SessionOpenRequest sessionOpenRequest) {
+        log.info("Calling receiveSessionOpenRequest()");
 
         final EJBIdentifier ejbIdentifier = sessionOpenRequest.getEJBIdentifier();
         final String appName = ejbIdentifier.getAppName();
@@ -377,11 +386,15 @@ final class AssociationImpl implements Association, AutoCloseable {
             sessionOpenRequest.convertToStateful(sessionID);
         };
         execute(sessionOpenRequest, runnable, false, true);
+
+        log.info("Called receiveSessionOpenRequest()");
         return ignored -> cancelled.set(true);
     }
 
     @Override
     public ListenerHandle registerClusterTopologyListener(@NotNull final ClusterTopologyListener listener) {
+        log.info("Calling registerClusterTopologyListener()");
+
         SocketAddress localAddress = listener.getConnection().getLocalAddress();
         ClusterTopologyRegistrar registrar = this.findClusterTopologyRegistrar(localAddress);
         // if the registrar is null, this means that the connector has not been registered on the <remote connectors=/> attribute
@@ -396,6 +409,8 @@ final class AssociationImpl implements Association, AutoCloseable {
 
     @Override
     public ListenerHandle registerModuleAvailabilityListener(@NotNull final ModuleAvailabilityListener moduleAvailabilityListener) {
+        log.info("Calling registerModuleAvauilabilityListener()");
+
         final ModuleAvailabilityRegistrarListener listener = new ModuleAvailabilityRegistrarListener() {
             String currentNode = AssociationImpl.this.serverEnvironment.getNodeName();
 
@@ -405,7 +420,7 @@ final class AssociationImpl implements Association, AutoCloseable {
                 EjbLogger.EJB3_INVOCATION_LOGGER.infof(" listenerAdded(%s) (repository suspended = %s, modules = %s)", currentNode, deploymentRepository.isSuspended(), registrar.getServices());
 
                 if (!deploymentRepository.isSuspended()) {
-                    System.out.println("Contacting registrar for services");
+                    log.info("Contacting registrar for services");
                     // only send out the initial list if the deployment repository (i.e. the server + clean transaction state) is not in a suspended state
                     for (EJBModuleIdentifier moduleId : moduleAvailabilityRegistrar.getServices()) {
                         // for each service, add to the list of we are in the providers set
@@ -573,6 +588,8 @@ final class AssociationImpl implements Association, AutoCloseable {
     }
 
     static Object invokeMethod(final ComponentView componentView, final Method method, final InvocationRequest incomingInvocation, final InvocationRequest.Resolved content, final CancellationFlag cancellationFlag, final EJBLocator<?> ejbLocator, Map<String, Object> contextDataHolder) throws Exception {
+        log.info("Calling invokeMethod()");
+
         final InterceptorContext interceptorContext = new InterceptorContext();
         interceptorContext.setParameters(content.getParameters());
         interceptorContext.setMethod(method);
@@ -624,10 +641,12 @@ final class AssociationImpl implements Association, AutoCloseable {
             }
             final Object result = invokeWithIdentity(componentView, interceptorContext, securityIdentity);
             handleReturningContextData(contextDataHolder, interceptorContext, content);
+            log.info("Called invokeMethod()");
             return result == null ? null : ((Future<?>) result).get();
         } else {
             Object result = invokeWithIdentity(componentView, interceptorContext, securityIdentity);
             handleReturningContextData(contextDataHolder, interceptorContext, content);
+            log.info("Called invokeMethod()");
             return result;
         }
     }

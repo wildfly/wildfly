@@ -70,7 +70,7 @@ public class DeploymentRepositoryService implements DeploymentRepository, Module
 
     @Override
     public void start()  {
-        log.info("Starting DeploymentRepositoryService");
+        log.info("Starting");
 
         // inject the dependencies
         this.activityRegistry = this.activityRegistryDependency.get();
@@ -84,11 +84,12 @@ public class DeploymentRepositoryService implements DeploymentRepository, Module
 
         // mark this service as started
         started = true;
+        log.info("Started");
     }
 
     @Override
     public void stop() {
-        log.info("Stopping DeploymentRepositoryService");
+        log.info("Stopping");
 
         // unregister as a server activity
         activityRegistry.unregisterActivity(this.activity);
@@ -100,6 +101,7 @@ public class DeploymentRepositoryService implements DeploymentRepository, Module
 
         // mark this service as stopped
         started = false;
+        log.info("Stopped");
     }
 
     // check started status

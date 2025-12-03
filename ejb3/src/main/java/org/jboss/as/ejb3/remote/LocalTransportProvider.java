@@ -11,6 +11,7 @@ import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.ejb.client.EJBReceiver;
 import org.jboss.ejb.client.EJBReceiverContext;
 import org.jboss.ejb.client.EJBTransportProvider;
+import org.jboss.logging.Logger;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
@@ -23,6 +24,8 @@ import org.jboss.msc.value.InjectedValue;
  *  @author <a href=mailto:tadamski@redhat.com>Tomasz Adamski</a>
  */
 public class LocalTransportProvider implements EJBTransportProvider, Service<LocalTransportProvider> {
+
+    protected static final Logger log = Logger.getLogger(LocalTransportProvider.class.getSimpleName());
 
     public static final ServiceName DEFAULT_LOCAL_TRANSPORT_PROVIDER_SERVICE_NAME = ServiceName.JBOSS.append("ejb").append("default-local-transport-provider");
 
@@ -41,11 +44,15 @@ public class LocalTransportProvider implements EJBTransportProvider, Service<Loc
 
     @Override
     public void start(StartContext startContext) throws StartException {
+        log.info("Starting");
         receiver = new LocalEjbReceiver(allowPassByReference, deploymentRepository.getValue());
+        log.info("Started");
     }
 
     @Override
     public void stop(StopContext stopContext) {
+        log.info("Stopping");
+        log.info("Stopped");
     }
 
     @Override

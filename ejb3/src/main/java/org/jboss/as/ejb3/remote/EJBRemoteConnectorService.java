@@ -10,6 +10,7 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 import org.jboss.ejb.protocol.remote.RemoteEJBService;
+import org.jboss.logging.Logger;
 import org.jboss.msc.Service;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
@@ -26,6 +27,8 @@ import org.xnio.OptionMap;
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */
 public class EJBRemoteConnectorService implements Service {
+
+    protected static final Logger log = Logger.getLogger(EJBRemoteConnectorService.class.getSimpleName());
 
     // TODO: Should this be exposed via the management APIs?
     private static final String EJB_CHANNEL_NAME = "jboss.ejb";
@@ -56,6 +59,7 @@ public class EJBRemoteConnectorService implements Service {
 
     @Override
     public void start(StartContext context) throws StartException {
+        log.info("Starting");
         final AssociationService associationService = associationServiceSupplier.get();
         final Endpoint endpoint = endpointSupplier.get();
         Executor executor = executorSupplier.get();
@@ -77,15 +81,18 @@ public class EJBRemoteConnectorService implements Service {
             throw new StartException(e);
         }
         serviceConsumer.accept(this);
+        log.info("Started");
     }
 
     @Override
     public void stop(StopContext context) {
+        log.info("Stopping");
         serviceConsumer.accept(null);
         final AssociationService associationService = associationServiceSupplier.get();
         associationService.sendTopologyUpdateIfLastNodeToLeave();
         associationService.setExecutor(null);
         registration.close();
+        log.info("Stopped");
     }
 
 }

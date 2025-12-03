@@ -8,6 +8,7 @@ package org.jboss.as.txn.service;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
+import org.jboss.logging.Logger;
 import org.jboss.msc.Service;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
@@ -25,6 +26,9 @@ import org.wildfly.transaction.client.provider.remoting.RemotingTransactionServi
  * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
 public final class RemotingTransactionServiceService implements Service {
+
+    protected static final Logger log = Logger.getLogger(RemotingTransactionServiceService.class.getSimpleName());
+
     private final Consumer<RemotingTransactionService> remotingTxnServiceConsumer;
     private final Supplier<LocalTransactionContext> localTransactionContextSupplier;
     private final Supplier<Endpoint> endpointSupplier;
@@ -39,6 +43,7 @@ public final class RemotingTransactionServiceService implements Service {
     }
 
     public void start(final StartContext context) throws StartException {
+        log.info("Starting");
         final RemotingTransactionService remotingTransactionService = RemotingTransactionService.builder().setEndpoint(endpointSupplier.get()).setTransactionContext(localTransactionContextSupplier.get()).build();
         try {
             registration = remotingTransactionService.register();
@@ -46,10 +51,13 @@ public final class RemotingTransactionServiceService implements Service {
             throw new StartException(e);
         }
         remotingTxnServiceConsumer.accept(remotingTransactionService);
+        log.info("Started");
     }
 
     public void stop(final StopContext context) {
+        log.info("Stopping");
         remotingTxnServiceConsumer.accept(null);
         registration.close();
+        log.info("Stopped");
     }
 }
