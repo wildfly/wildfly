@@ -93,7 +93,7 @@ public abstract class OidcBaseTest {
     public static final String WRONG_SECRET_APP = "WrongSecretOidcApp";
     public static final String FORM_WITH_OIDC_EAR_APP = "FormWithOidcApp";
     public static final String FORM_WITH_OIDC_OIDC_APP = "oidc";
-    public static final String DIRECT_ACCCESS_GRANT_ENABLED_CLIENT = "DirectAccessGrantEnabledClient";
+    public static final String DIRECT_ACCESS_GRANT_ENABLED_CLIENT = "DirectAccessGrantEnabledClient";
     public static final String BEARER_ONLY_AUTH_SERVER_URL_APP = "AuthServerUrlBearerOnlyApp";
     public static final String BEARER_ONLY_PROVIDER_URL_APP = "ProviderUrlBearerOnlyApp";
     public static final String BASIC_AUTH_PROVIDER_URL_APP = "BasicAuthProviderUrlApp";
@@ -146,7 +146,7 @@ public abstract class OidcBaseTest {
         BASIC
     }
 
-    public static void sendRealmCreationRequest(RealmRepresentation realm) {
+    public static void sendRealmCreationRequest(RealmRepresentation realm) throws Exception {
         long timeout = System.currentTimeMillis() + REALM_CREATION_TIMEOUT;
         while (true) {
             try {
@@ -186,49 +186,49 @@ public abstract class OidcBaseTest {
     }
 
     public void testWrongPasswordWithProviderUrl() throws Exception {
-        loginToApp(PROVIDER_URL_APP, org.wildfly.test.integration.elytron.oidc.client.KeycloakConfiguration.ALICE, "WRONG_PASSWORD", HttpURLConnection.HTTP_OK, "Invalid username or password");
+        loginToApp(PROVIDER_URL_APP, KeycloakConfiguration.ALICE, "WRONG_PASSWORD", HttpURLConnection.HTTP_OK, "Invalid username or password");
     }
 
-    public void testSucessfulAuthenticationWithProviderUrl() throws Exception {
-        loginToApp(PROVIDER_URL_APP, org.wildfly.test.integration.elytron.oidc.client.KeycloakConfiguration.ALICE, org.wildfly.test.integration.elytron.oidc.client.KeycloakConfiguration.ALICE_PASSWORD, HttpURLConnection.HTTP_OK, SimpleServlet.RESPONSE_BODY);
+    public void testSuccessfulAuthenticationWithProviderUrl() throws Exception {
+        loginToApp(PROVIDER_URL_APP, KeycloakConfiguration.ALICE, KeycloakConfiguration.ALICE_PASSWORD, HttpURLConnection.HTTP_OK, SimpleServlet.RESPONSE_BODY);
     }
 
     public void testWrongRoleWithProviderUrl() throws Exception {
-        loginToApp(PROVIDER_URL_APP, org.wildfly.test.integration.elytron.oidc.client.KeycloakConfiguration.BOB, org.wildfly.test.integration.elytron.oidc.client.KeycloakConfiguration.BOB_PASSWORD, HttpURLConnection.HTTP_FORBIDDEN, null);
+        loginToApp(PROVIDER_URL_APP, KeycloakConfiguration.BOB, KeycloakConfiguration.BOB_PASSWORD, HttpURLConnection.HTTP_FORBIDDEN, null);
     }
 
     public void testWrongPasswordWithAuthServerUrl() throws Exception {
-        loginToApp(AUTH_SERVER_URL_APP, org.wildfly.test.integration.elytron.oidc.client.KeycloakConfiguration.ALICE, "WRONG_PASSWORD", HttpURLConnection.HTTP_OK, "Invalid username or password");
+        loginToApp(AUTH_SERVER_URL_APP, KeycloakConfiguration.ALICE, "WRONG_PASSWORD", HttpURLConnection.HTTP_OK, "Invalid username or password");
     }
 
-    public void testSucessfulAuthenticationWithAuthServerUrl() throws Exception {
-        loginToApp(AUTH_SERVER_URL_APP, org.wildfly.test.integration.elytron.oidc.client.KeycloakConfiguration.ALICE, org.wildfly.test.integration.elytron.oidc.client.KeycloakConfiguration.ALICE_PASSWORD, HttpURLConnection.HTTP_OK, SimpleServlet.RESPONSE_BODY);
+    public void testSuccessfulAuthenticationWithAuthServerUrl() throws Exception {
+        loginToApp(AUTH_SERVER_URL_APP, KeycloakConfiguration.ALICE, KeycloakConfiguration.ALICE_PASSWORD, HttpURLConnection.HTTP_OK, SimpleServlet.RESPONSE_BODY);
     }
 
     public void testWrongRoleWithAuthServerUrl() throws Exception {
-        loginToApp(AUTH_SERVER_URL_APP, org.wildfly.test.integration.elytron.oidc.client.KeycloakConfiguration.BOB, org.wildfly.test.integration.elytron.oidc.client.KeycloakConfiguration.BOB_PASSWORD, HttpURLConnection.HTTP_FORBIDDEN, null);
+        loginToApp(AUTH_SERVER_URL_APP, KeycloakConfiguration.BOB, KeycloakConfiguration.BOB_PASSWORD, HttpURLConnection.HTTP_FORBIDDEN, null);
     }
 
     public void testWrongProviderUrl() throws Exception {
-        loginToApp(WRONG_PROVIDER_URL_APP, org.wildfly.test.integration.elytron.oidc.client.KeycloakConfiguration.ALICE, org.wildfly.test.integration.elytron.oidc.client.KeycloakConfiguration.ALICE_PASSWORD, -1, null, false);
+        loginToApp(WRONG_PROVIDER_URL_APP, KeycloakConfiguration.ALICE, KeycloakConfiguration.ALICE_PASSWORD, -1, null, false);
     }
 
     public void testWrongClientSecret() throws Exception {
-        loginToApp(WRONG_SECRET_APP, org.wildfly.test.integration.elytron.oidc.client.KeycloakConfiguration.ALICE, org.wildfly.test.integration.elytron.oidc.client.KeycloakConfiguration.ALICE_PASSWORD, HttpURLConnection.HTTP_FORBIDDEN, null);
+        loginToApp(WRONG_SECRET_APP, KeycloakConfiguration.ALICE, KeycloakConfiguration.ALICE_PASSWORD, HttpURLConnection.HTTP_FORBIDDEN, null);
     }
 
     /**
      * Tests that use a bearer token.
      */
 
-    public void testSucessfulBearerOnlyAuthenticationWithAuthServerUrl() throws Exception {
+    public void testSuccessfulBearerOnlyAuthenticationWithAuthServerUrl() throws Exception {
         performBearerAuthentication(BEARER_ONLY_AUTH_SERVER_URL_APP, KeycloakConfiguration.ALICE, KeycloakConfiguration.ALICE_PASSWORD,
-                SimpleServlet.RESPONSE_BODY, null, BearerAuthType.BEARER, DIRECT_ACCCESS_GRANT_ENABLED_CLIENT, CLIENT_SECRET);
+                SimpleServlet.RESPONSE_BODY, null, BearerAuthType.BEARER, DIRECT_ACCESS_GRANT_ENABLED_CLIENT, CLIENT_SECRET);
     }
 
-    public void testSucessfulBearerOnlyAuthenticationWithProviderUrl() throws Exception {
+    public void testSuccessfulBearerOnlyAuthenticationWithProviderUrl() throws Exception {
         performBearerAuthentication(BEARER_ONLY_PROVIDER_URL_APP, KeycloakConfiguration.ALICE, KeycloakConfiguration.ALICE_PASSWORD,
-                SimpleServlet.RESPONSE_BODY, null, BearerAuthType.BEARER, DIRECT_ACCCESS_GRANT_ENABLED_CLIENT, CLIENT_SECRET);
+                SimpleServlet.RESPONSE_BODY, null, BearerAuthType.BEARER, DIRECT_ACCESS_GRANT_ENABLED_CLIENT, CLIENT_SECRET);
     }
 
     public void testWrongToken() throws Exception {
@@ -252,7 +252,7 @@ public abstract class OidcBaseTest {
 
     public void testTokenProvidedBearerOnlyNotSet() throws Exception {
         performBearerAuthentication(PROVIDER_URL_APP, KeycloakConfiguration.ALICE, KeycloakConfiguration.ALICE_PASSWORD,
-                SimpleServlet.RESPONSE_BODY, null, BearerAuthType.BEARER, DIRECT_ACCCESS_GRANT_ENABLED_CLIENT, CLIENT_SECRET);
+                SimpleServlet.RESPONSE_BODY, null, BearerAuthType.BEARER, DIRECT_ACCESS_GRANT_ENABLED_CLIENT, CLIENT_SECRET);
     }
 
     public void testTokenNotProvidedBearerOnlyNotSet() throws Exception {
@@ -266,7 +266,7 @@ public abstract class OidcBaseTest {
 
     public void testValidTokenViaQueryParameter() throws Exception {
         performBearerAuthentication(BEARER_ONLY_PROVIDER_URL_APP, KeycloakConfiguration.ALICE, KeycloakConfiguration.ALICE_PASSWORD,
-                SimpleServlet.RESPONSE_BODY, null, BearerAuthType.QUERY_PARAM, DIRECT_ACCCESS_GRANT_ENABLED_CLIENT, CLIENT_SECRET);
+                SimpleServlet.RESPONSE_BODY, null, BearerAuthType.QUERY_PARAM, DIRECT_ACCESS_GRANT_ENABLED_CLIENT, CLIENT_SECRET);
     }
 
     public void testWrongTokenViaQueryParameter() throws Exception {
@@ -370,61 +370,61 @@ public abstract class OidcBaseTest {
     **/
 
     public void testOpenIDWithOauth2Request() throws Exception {
-        loginToApp(org.wildfly.test.integration.elytron.oidc.client.KeycloakConfiguration.ALICE, org.wildfly.test.integration.elytron.oidc.client.KeycloakConfiguration.ALICE_PASSWORD, HttpURLConnection.HTTP_OK, SimpleServlet.RESPONSE_BODY, true,
+        loginToApp(KeycloakConfiguration.ALICE, KeycloakConfiguration.ALICE_PASSWORD, HttpURLConnection.HTTP_OK, SimpleServlet.RESPONSE_BODY, true,
                 new URL("http", TestSuiteEnvironment.getHttpAddress(), TestSuiteEnvironment.getHttpPort(),
                         "/" + OAUTH2_REQUEST_METHOD_APP + SimpleSecuredServlet.SERVLET_PATH).toURI(), null, false, OAUTH2.getValue());
     }
 
     public void testOpenIDWithPlainTextRequest() throws Exception {
-        loginToApp(org.wildfly.test.integration.elytron.oidc.client.KeycloakConfiguration.ALICE, org.wildfly.test.integration.elytron.oidc.client.KeycloakConfiguration.ALICE_PASSWORD, HttpURLConnection.HTTP_OK, SimpleServlet.RESPONSE_BODY, true,
+        loginToApp(KeycloakConfiguration.ALICE, KeycloakConfiguration.ALICE_PASSWORD, HttpURLConnection.HTTP_OK, SimpleServlet.RESPONSE_BODY, true,
                 new URL("http", TestSuiteEnvironment.getHttpAddress(), TestSuiteEnvironment.getHttpPort(),
                         "/" + PLAINTEXT_REQUEST_APP + SimpleSecuredServlet.SERVLET_PATH).toURI(), null, false, REQUEST.getValue());
     }
 
     public void testOpenIDWithPlainTextRequestUri() throws Exception {
-        loginToApp(org.wildfly.test.integration.elytron.oidc.client.KeycloakConfiguration.ALICE, org.wildfly.test.integration.elytron.oidc.client.KeycloakConfiguration.ALICE_PASSWORD, HttpURLConnection.HTTP_OK, SimpleServlet.RESPONSE_BODY, true,
+        loginToApp(KeycloakConfiguration.ALICE, KeycloakConfiguration.ALICE_PASSWORD, HttpURLConnection.HTTP_OK, SimpleServlet.RESPONSE_BODY, true,
                 new URL("http", TestSuiteEnvironment.getHttpAddress(), TestSuiteEnvironment.getHttpPort(),
                         "/" + PLAINTEXT_REQUEST_URI_APP + SimpleSecuredServlet.SERVLET_PATH).toURI(), null, false, REQUEST_URI.getValue());
     }
 
     public void testOpenIDWithPlainTextEncryptedRequest() throws Exception {
-        loginToApp(org.wildfly.test.integration.elytron.oidc.client.KeycloakConfiguration.ALICE, org.wildfly.test.integration.elytron.oidc.client.KeycloakConfiguration.ALICE_PASSWORD, HttpURLConnection.HTTP_OK, SimpleServlet.RESPONSE_BODY, true,
+        loginToApp(KeycloakConfiguration.ALICE, KeycloakConfiguration.ALICE_PASSWORD, HttpURLConnection.HTTP_OK, SimpleServlet.RESPONSE_BODY, true,
                 new URL("http", TestSuiteEnvironment.getHttpAddress(), TestSuiteEnvironment.getHttpPort(),
                         "/" + PLAINTEXT_ENCRYPTED_REQUEST_APP + SimpleSecuredServlet.SERVLET_PATH).toURI(), null, false, REQUEST.getValue());
     }
 
     public void testOpenIDWithPlainTextEncryptedRequestUri() throws Exception {
-        loginToApp(org.wildfly.test.integration.elytron.oidc.client.KeycloakConfiguration.ALICE, org.wildfly.test.integration.elytron.oidc.client.KeycloakConfiguration.ALICE_PASSWORD, HttpURLConnection.HTTP_OK, SimpleServlet.RESPONSE_BODY, true,
+        loginToApp(KeycloakConfiguration.ALICE, KeycloakConfiguration.ALICE_PASSWORD, HttpURLConnection.HTTP_OK, SimpleServlet.RESPONSE_BODY, true,
                 new URL("http", TestSuiteEnvironment.getHttpAddress(), TestSuiteEnvironment.getHttpPort(),
                         "/" + PLAINTEXT_ENCRYPTED_REQUEST_URI_APP + SimpleSecuredServlet.SERVLET_PATH).toURI(), null, false, REQUEST_URI.getValue());
     }
 
     public void testOpenIDWithRsaSignedRequest() throws Exception {
-        loginToApp(org.wildfly.test.integration.elytron.oidc.client.KeycloakConfiguration.ALICE, org.wildfly.test.integration.elytron.oidc.client.KeycloakConfiguration.ALICE_PASSWORD, HttpURLConnection.HTTP_OK, SimpleServlet.RESPONSE_BODY, true,
+        loginToApp(KeycloakConfiguration.ALICE, KeycloakConfiguration.ALICE_PASSWORD, HttpURLConnection.HTTP_OK, SimpleServlet.RESPONSE_BODY, true,
                 new URL("http", TestSuiteEnvironment.getHttpAddress(), TestSuiteEnvironment.getHttpPort(),
                         "/" + RSA_SIGNED_REQUEST_APP + SimpleSecuredServlet.SERVLET_PATH).toURI(), null, false, REQUEST.getValue());
     }
 
     public void testOpenIDWithRsaSignedAndEncryptedRequest() throws Exception {
-        loginToApp(org.wildfly.test.integration.elytron.oidc.client.KeycloakConfiguration.ALICE, org.wildfly.test.integration.elytron.oidc.client.KeycloakConfiguration.ALICE_PASSWORD, HttpURLConnection.HTTP_OK, SimpleServlet.RESPONSE_BODY, true,
+        loginToApp(KeycloakConfiguration.ALICE, KeycloakConfiguration.ALICE_PASSWORD, HttpURLConnection.HTTP_OK, SimpleServlet.RESPONSE_BODY, true,
                 new URL("http", TestSuiteEnvironment.getHttpAddress(), TestSuiteEnvironment.getHttpPort(),
                         "/" + RSA_SIGNED_AND_ENCRYPTED_REQUEST_APP + SimpleSecuredServlet.SERVLET_PATH).toURI(), null, false, REQUEST.getValue());
     }
 
     public void testOpenIDWithSignedAndEncryptedRequestUri() throws Exception {
-        loginToApp(org.wildfly.test.integration.elytron.oidc.client.KeycloakConfiguration.ALICE, org.wildfly.test.integration.elytron.oidc.client.KeycloakConfiguration.ALICE_PASSWORD, HttpURLConnection.HTTP_OK, SimpleServlet.RESPONSE_BODY, true,
+        loginToApp(KeycloakConfiguration.ALICE, KeycloakConfiguration.ALICE_PASSWORD, HttpURLConnection.HTTP_OK, SimpleServlet.RESPONSE_BODY, true,
                 new URL("http", TestSuiteEnvironment.getHttpAddress(), TestSuiteEnvironment.getHttpPort(),
                         "/" + SIGNED_AND_ENCRYPTED_REQUEST_URI_APP + SimpleSecuredServlet.SERVLET_PATH).toURI(), null, false, REQUEST_URI.getValue());
     }
 
     public void testOpenIDWithPsSignedRequestUri() throws Exception {
-        loginToApp(org.wildfly.test.integration.elytron.oidc.client.KeycloakConfiguration.ALICE, org.wildfly.test.integration.elytron.oidc.client.KeycloakConfiguration.ALICE_PASSWORD, HttpURLConnection.HTTP_OK, SimpleServlet.RESPONSE_BODY, true,
+        loginToApp(KeycloakConfiguration.ALICE, KeycloakConfiguration.ALICE_PASSWORD, HttpURLConnection.HTTP_OK, SimpleServlet.RESPONSE_BODY, true,
                 new URL("http", TestSuiteEnvironment.getHttpAddress(), TestSuiteEnvironment.getHttpPort(),
                         "/" + PS_SIGNED_REQUEST_URI_APP + SimpleSecuredServlet.SERVLET_PATH).toURI(), null, false, REQUEST_URI.getValue());
     }
 
     public void testOpenIDWithPsSignedAndRsaEncryptedRequest() throws Exception {
-        loginToApp(org.wildfly.test.integration.elytron.oidc.client.KeycloakConfiguration.ALICE, org.wildfly.test.integration.elytron.oidc.client.KeycloakConfiguration.ALICE_PASSWORD, HttpURLConnection.HTTP_OK, SimpleServlet.RESPONSE_BODY, true,
+        loginToApp(KeycloakConfiguration.ALICE, KeycloakConfiguration.ALICE_PASSWORD, HttpURLConnection.HTTP_OK, SimpleServlet.RESPONSE_BODY, true,
                 new URL("http", TestSuiteEnvironment.getHttpAddress(), TestSuiteEnvironment.getHttpPort(),
                         "/" + PS_SIGNED_RSA_ENCRYPTED_REQUEST_APP + SimpleSecuredServlet.SERVLET_PATH).toURI(), null, false, REQUEST.getValue());
     }
@@ -444,8 +444,8 @@ public abstract class OidcBaseTest {
         // oidc login
         // EAR declares context-root to be oidc
         loginToApp(FORM_WITH_OIDC_OIDC_APP,
-                org.wildfly.test.integration.elytron.oidc.client.KeycloakConfiguration.ALICE,
-                org.wildfly.test.integration.elytron.oidc.client.KeycloakConfiguration.ALICE_PASSWORD,
+                KeycloakConfiguration.ALICE,
+                KeycloakConfiguration.ALICE_PASSWORD,
                 HttpURLConnection.HTTP_OK, SimpleServlet.RESPONSE_BODY);
 
         // login with Form wfly user acct
@@ -466,8 +466,8 @@ public abstract class OidcBaseTest {
 
         HttpResponse response = httpClient.execute(getMethod);
         int statusCode = response.getStatusLine().getStatusCode();
-        assertTrue("Expected code == OK but got " + statusCode +
-                " for request=" + requestUri, statusCode == HttpURLConnection.HTTP_MOVED_TEMP);
+        assertEquals("Expected code == OK but got " + statusCode +
+                " for request=" + requestUri, HttpURLConnection.HTTP_MOVED_TEMP, statusCode);
     }
 
     public void testInvalidFormWithOidcCredentials() throws Exception {
@@ -476,7 +476,7 @@ public abstract class OidcBaseTest {
         // oidc login
         // EAR declares context-root to be oidc
         loginToApp(FORM_WITH_OIDC_OIDC_APP,
-                org.wildfly.test.integration.elytron.oidc.client.KeycloakConfiguration.ALICE,
+                KeycloakConfiguration.ALICE,
                 "WRONG_PASSWORD", HttpURLConnection.HTTP_OK, "Invalid username or password");
     }
     public void testInvalidFormCredentials() throws Exception {
@@ -536,7 +536,7 @@ public abstract class OidcBaseTest {
         try {
             int statusCode = response.getStatusLine().getStatusCode();
             if (loginToKeycloak) {
-                assertTrue("Expected code == OK but got " + statusCode + " for request=" + requestUri, statusCode == HttpURLConnection.HTTP_OK);
+                assertEquals("Expected code == OK but got " + statusCode + " for request=" + requestUri, HttpURLConnection.HTTP_OK, statusCode);
                 Form keycloakLoginForm = new Form(response);
                 HttpResponse afterLoginClickResponse = simulateClickingOnButton(httpClient, keycloakLoginForm, username, password, "Sign In");
                 afterLoginClickResponse.getEntity().getContent();
@@ -569,9 +569,9 @@ public abstract class OidcBaseTest {
                 }
             } else if (checkInvalidScope) {
                 assertTrue(context.toString().contains("error_description=Invalid+scopes"));
-                assertTrue("Expected code == BAD REQUEST but got " + statusCode + " for request=" + requestUri, statusCode == HttpURLConnection.HTTP_BAD_REQUEST);
+                assertEquals("Expected code == BAD REQUEST but got " + statusCode + " for request=" + requestUri, HttpURLConnection.HTTP_BAD_REQUEST, statusCode);
             } else {
-                assertTrue("Expected code == FORBIDDEN but got " + statusCode + " for request=" + requestUri, statusCode == HttpURLConnection.HTTP_FORBIDDEN);
+                assertEquals("Expected code == FORBIDDEN but got " + statusCode + " for request=" + requestUri, HttpURLConnection.HTTP_FORBIDDEN, statusCode);
             }
         } finally {
             HttpClientUtils.closeQuietly(response);
@@ -590,9 +590,9 @@ public abstract class OidcBaseTest {
         try {
             int statusCode = response.getStatusLine().getStatusCode();
             if (expectFailure) {
-                assertTrue("Expected code == HTTP_INTERNAL_ERROR but got " + statusCode + " for request=" + requestUri, statusCode == HttpURLConnection.HTTP_INTERNAL_ERROR);
+                assertEquals("Expected code == HTTP_INTERNAL_ERROR but got " + statusCode + " for request=" + requestUri, HttpURLConnection.HTTP_INTERNAL_ERROR, statusCode);
             } else {
-                assertTrue("Expected code == OK but got " + statusCode + " for request=" + requestUri, statusCode == HttpURLConnection.HTTP_OK);
+                assertEquals("Expected code == OK but got " + statusCode + " for request=" + requestUri, HttpURLConnection.HTTP_OK, statusCode);
             }
         } finally {
             HttpClientUtils.closeQuietly(response);
@@ -656,7 +656,7 @@ public abstract class OidcBaseTest {
                 String responseString = new BasicResponseHandler().handleResponse(response);
                 assertTrue(responseString.contains(clientPageText));
             } else {
-                assertTrue("Expected code == UNAUTHORIZED but got " + statusCode + " for request=" + requestUri, statusCode == HttpURLConnection.HTTP_UNAUTHORIZED);
+                assertEquals("Expected code == UNAUTHORIZED but got " + statusCode + " for request=" + requestUri, HttpURLConnection.HTTP_UNAUTHORIZED, statusCode);
             }
         } finally {
             HttpClientUtils.closeQuietly(response);
@@ -711,7 +711,7 @@ public abstract class OidcBaseTest {
                         assertEquals(HttpURLConnection.HTTP_FORBIDDEN, statusCode);
                     }
                 } else {
-                    assertTrue("Expected code == UNAUTHORIZED but got " + statusCode + " for request=" + requestUri, statusCode == HttpURLConnection.HTTP_UNAUTHORIZED);
+                    assertEquals("Expected code == UNAUTHORIZED but got " + statusCode + " for request=" + requestUri, HttpURLConnection.HTTP_UNAUTHORIZED, statusCode);
                 }
             } else {
                 assertEquals(HttpURLConnection.HTTP_UNAUTHORIZED, statusCode);
@@ -758,7 +758,7 @@ public abstract class OidcBaseTest {
         try {
             int statusCode = response.getStatusLine().getStatusCode();
             if (bearerOnlyOrEnableBasicConfigured) {
-                assertTrue("Expected code == UNAUTHORIZED but got " + statusCode + " for request=" + requestUri, statusCode == HttpURLConnection.HTTP_UNAUTHORIZED);
+                assertEquals("Expected code == UNAUTHORIZED but got " + statusCode + " for request=" + requestUri, HttpURLConnection.HTTP_UNAUTHORIZED, statusCode);
                 Header authenticateHeader = response.getFirstHeader("WWW-Authenticate");
                 String authenticateValue = authenticateHeader.getValue();
                 if (password != null && password.equals(WRONG_PASSWORD)) {
@@ -772,7 +772,7 @@ public abstract class OidcBaseTest {
                 }
             } else {
                 // no token provided and bearer-only is not configured, should end up in the OIDC flow
-                assertTrue("Expected code == OK but got " + statusCode + " for request=" + requestUri, statusCode == HttpURLConnection.HTTP_OK);
+                assertEquals("Expected code == OK but got " + statusCode + " for request=" + requestUri, HttpURLConnection.HTTP_OK, statusCode);
                 Form keycloakLoginForm = new Form(response);
                 HttpResponse afterLoginClickResponse = simulateClickingOnButton(httpClient, keycloakLoginForm,
                         KeycloakConfiguration.ALICE, KeycloakConfiguration.ALICE_PASSWORD, "Sign In");
@@ -900,26 +900,26 @@ public abstract class OidcBaseTest {
             super(createContainerConfigurationBuilder()
                     .setupScript(createScriptBuilder()
                             .startBatch()
-                            .add(String.format("/subsystem=elytron/properties-realm=ApplicationRealm:write-attribute(name=users-properties.path,value=\"%s\")",
-                                    USERS_PATH))
-                            .add("/subsystem=elytron/properties-realm=ApplicationRealm:write-attribute(name=users-properties.plain-text,value=true)")
+                            .add("/subsystem=elytron/properties-realm=ApplicationRealm:write-attribute(name=users-properties.path, value=\"%s\")",
+                                    USERS_PATH)
+                            .add("/subsystem=elytron/properties-realm=ApplicationRealm:write-attribute(name=users-properties.plain-text, value=true)")
                             .add("/subsystem=elytron/properties-realm=ApplicationRealm:undefine-attribute(name=users-properties.relative-to)")
-                            .add(String.format("/subsystem=elytron/properties-realm=ApplicationRealm:write-attribute(name=groups-properties.path,value=\"%s\")",
-                                    ROLES_PATH))
+                            .add("/subsystem=elytron/properties-realm=ApplicationRealm:write-attribute(name=groups-properties.path, value=\"%s\")",
+                                    ROLES_PATH)
                             .add("/subsystem=elytron/properties-realm=ApplicationRealm:undefine-attribute(name=groups-properties.relative-to)")
                             .endBatch()
                             .build())
                     .tearDownScript(createScriptBuilder()
                             .startBatch()
-                            .add(String.format("/subsystem=elytron/properties-realm=ApplicationRealm:write-attribute(name=users-properties.path,value=\"%s\")",
-                                    ORIGINAL_USERS_PATH))
-                            .add(String.format("/subsystem=elytron/properties-realm=ApplicationRealm:write-attribute(name=users-properties.relative-to,value=\"%s\")",
-                                    RELATIVE_TO))
+                            .add("/subsystem=elytron/properties-realm=ApplicationRealm:write-attribute(name=users-properties.path, value=\"%s\")",
+                                    ORIGINAL_USERS_PATH)
+                            .add("/subsystem=elytron/properties-realm=ApplicationRealm:write-attribute(name=users-properties.relative-to, value=\"%s\")",
+                                    RELATIVE_TO)
                             .add("/subsystem=elytron/properties-realm=ApplicationRealm:undefine-attribute(name=users-properties.plain-text)")
-                            .add(String.format("/subsystem=elytron/properties-realm=ApplicationRealm:write-attribute(name=groups-properties.path,value=\"%s\")",
-                                    ORIGINAL_ROLES_PATH))
-                            .add(String.format("/subsystem=elytron/properties-realm=ApplicationRealm:write-attribute(name=groups-properties.relative-to,value=\"%s\")",
-                                    RELATIVE_TO))
+                            .add("/subsystem=elytron/properties-realm=ApplicationRealm:write-attribute(name=groups-properties.path, value=\"%s\")",
+                                    ORIGINAL_ROLES_PATH)
+                            .add("/subsystem=elytron/properties-realm=ApplicationRealm:write-attribute(name=groups-properties.relative-to, value=\"%s\")",
+                                    RELATIVE_TO)
                             .endBatch()
                             .build())
                     .build());

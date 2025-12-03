@@ -41,8 +41,8 @@ public class OidcWithDeploymentConfigTest extends OidcDeploymentConfigBaseTest {
     @Test
     @InSequence(2)
     @OperateOnDeployment(PROVIDER_URL_APP)
-    public void testSucessfulAuthenticationWithProviderUrl() throws Exception {
-        super.testSucessfulAuthenticationWithProviderUrl();
+    public void testSuccessfulAuthenticationWithProviderUrl() throws Exception {
+        super.testSuccessfulAuthenticationWithProviderUrl();
     }
 
     @Test
@@ -88,8 +88,8 @@ public class OidcWithDeploymentConfigTest extends OidcDeploymentConfigBaseTest {
     @Test
     @InSequence(8)
     @OperateOnDeployment(AUTH_SERVER_URL_APP)
-    public void testSucessfulAuthenticationWithAuthServerUrl() throws Exception {
-        super.testSucessfulAuthenticationWithAuthServerUrl();
+    public void testSuccessfulAuthenticationWithAuthServerUrl() throws Exception {
+        super.testSuccessfulAuthenticationWithAuthServerUrl();
     }
 
     @Test
@@ -138,9 +138,9 @@ public class OidcWithDeploymentConfigTest extends OidcDeploymentConfigBaseTest {
     @Test
     @InSequence(10)
     @OperateOnDeployment(BEARER_ONLY_AUTH_SERVER_URL_APP)
-    public void testSucessfulBearerOnlyAuthenticationWithAuthServerUrl() throws Exception {
+    public void testSuccessfulBearerOnlyAuthenticationWithAuthServerUrl() throws Exception {
         deployer.deploy(BEARER_ONLY_AUTH_SERVER_URL_APP);
-        super.testSucessfulBearerOnlyAuthenticationWithAuthServerUrl();
+        super.testSuccessfulBearerOnlyAuthenticationWithAuthServerUrl();
 
     }
 
@@ -158,9 +158,9 @@ public class OidcWithDeploymentConfigTest extends OidcDeploymentConfigBaseTest {
     @Test
     @InSequence(12)
     @OperateOnDeployment(BEARER_ONLY_PROVIDER_URL_APP)
-    public void testSucessfulBearerOnlyAuthenticationWithProviderUrl() throws Exception {
+    public void testSuccessfulBearerOnlyAuthenticationWithProviderUrl() throws Exception {
         deployer.deploy(BEARER_ONLY_PROVIDER_URL_APP);
-        super.testSucessfulBearerOnlyAuthenticationWithProviderUrl();
+        super.testSuccessfulBearerOnlyAuthenticationWithProviderUrl();
     }
 
     @Test

@@ -7,6 +7,7 @@ package org.wildfly.test.integration.elytron.oidc.client;
 
 import static org.wildfly.test.integration.elytron.oidc.client.OidcBaseTest.MULTIPLE_SCOPE_APP;
 import static org.wildfly.test.integration.elytron.oidc.client.OidcBaseTest.SINGLE_SCOPE_APP;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -21,6 +22,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
+import io.restassured.config.HttpClientConfig;
+import org.apache.http.params.CoreConnectionPNames;
 import org.keycloak.protocol.oidc.OIDCAdvancedConfigWrapper;
 import org.keycloak.representations.AccessTokenResponse;
 import org.keycloak.representations.idm.ClientRepresentation;
@@ -79,9 +82,9 @@ public class KeycloakConfiguration {
     public static final String TENANT2_USER = "tenant2_user";
     public static final String TENANT2_PASSWORD = "tenant2_password";
     public static final String CHARLOTTE = "charlotte";
-    public static final String CHARLOTTE_PASSWORD =" charlotte123+";
+    public static final String CHARLOTTE_PASSWORD = " charlotte123+";
     public static final String DAN = "dan";
-    public static final String DAN_PASSWORD =" dan123+";
+    public static final String DAN_PASSWORD = " dan123+";
     public static final String TENANT1_REALM = "tenant1";
     public static final String TENANT2_REALM = "tenant2";
     public static final String TENANT1_ENDPOINT = "/tenant1";
@@ -119,27 +122,47 @@ public class KeycloakConfiguration {
         return createRealm(realmName, clientSecret, clientHostName, clientPort, clientApps, accessTokenLifespan, ssoSessionMaxLifespan, multiTenancyApp);
     }
 
-    public static String getAdminAccessToken(String authServerUrl) {
+    /**
+     * Returns the admin access token from the Keycloak container. Throws an exception if token could not be obtained
+     * within the configured timeout of three minutes.
+     *
+     * @throws Exception exception
+     */
+    public static String getAdminAccessToken(String authServerUrl) throws Exception {
         RequestSpecification requestSpecification = RestAssured
                 .given()
                 .param("grant_type", "password")
                 .param("username", KeycloakContainer.ADMIN_USER)
                 .param("password", KeycloakContainer.ADMIN_PASSWORD)
-                .param("client_id", "admin-cli");
+                .param("client_id", "admin-cli")
+                .config(RestAssured.config()
+                        .httpClient(HttpClientConfig.httpClientConfig()
+                                .setParam(CoreConnectionPNames.CONNECTION_TIMEOUT, 5_000)
+                                .setParam(CoreConnectionPNames.SO_TIMEOUT, 5_000)));
 
-        Response response = requestSpecification.when().post(authServerUrl + "/realms/master/protocol/openid-connect/token");
 
-        final long deadline = System.currentTimeMillis() + 180000;
-        while (response.getStatusCode() != 200) {
-            // the Keycloak admin user isn't available yet, keep trying until it is to ensure we can obtain the token
-            // needed to set up the realms for the test
-            response = requestSpecification.when().post(authServerUrl + "/realms/master/protocol/openid-connect/token");
-            if (System.currentTimeMillis() > deadline) {
-                return null;
+        final long deadline = System.currentTimeMillis() + 180_000L;
+        Response response = null;
+
+        while (System.currentTimeMillis() <= deadline) {
+            try {
+                response = requestSpecification.when().post(authServerUrl + "/realms/master/protocol/openid-connect/token");
+            } catch (RuntimeException e) {
+                // network/connect error — retry with backoff
+                Thread.sleep(1_000);
+                continue;
             }
+
+            int status = response.getStatusCode();
+            if (status == 200) {
+                return response.as(AccessTokenResponse.class).getToken();
+            }
+
+            // retry with a backoff interval as not to overload the booting keycloak container with requests
+            Thread.sleep(1_000);
         }
 
-        return response.as(AccessTokenResponse.class).getToken();
+        throw new IllegalStateException("Timed out waiting for Keycloak to return an admin token. Last response was: " + (response != null ? response.asPrettyString() : "network/connect error"));
     }
 
     public static String getAccessToken(String authServerUrl, String realmName, String username, String password, String clientId, String clientSecret) {
@@ -186,9 +209,9 @@ public class KeycloakConfiguration {
             String multiTenancyRedirectUri = null;
             if (multiTenancyApp) {
                 if (name.equals(TENANT1_REALM)) {
-                    multiTenancyRedirectUri = "http://" + clientHostName + ":" + clientPort + "/" + clientApp  + TENANT1_ENDPOINT;
+                    multiTenancyRedirectUri = "http://" + clientHostName + ":" + clientPort + "/" + clientApp + TENANT1_ENDPOINT;
                 } else if (name.equals(TENANT2_REALM)) {
-                    multiTenancyRedirectUri = "http://" + clientHostName + ":" + clientPort + "/" + clientApp  + TENANT2_ENDPOINT;
+                    multiTenancyRedirectUri = "http://" + clientHostName + ":" + clientPort + "/" + clientApp + TENANT2_ENDPOINT;
                 }
             }
 
@@ -300,7 +323,7 @@ public class KeycloakConfiguration {
         return createUser(username, password, realmRoles, username, username, false);
     }
 
-        private static UserRepresentation createUser(String username, String password, List<String> realmRoles, String firstName, String lastName, boolean emailVerified) {
+    private static UserRepresentation createUser(String username, String password, List<String> realmRoles, String firstName, String lastName, boolean emailVerified) {
         UserRepresentation user = new UserRepresentation();
         user.setUsername(username);
         user.setFirstName(firstName);
