@@ -404,8 +404,8 @@ final class AssociationImpl implements Association, AutoCloseable {
                 List<EJBModuleIdentifier> list = new ArrayList<>();
                 EjbLogger.EJB3_INVOCATION_LOGGER.infof(" listenerAdded(%s) (repository suspended = %s, modules = %s)", currentNode, deploymentRepository.isSuspended(), registrar.getServices());
 
+                // why? this is preventing the initial update from going out
                 if (!deploymentRepository.isSuspended()) {
-                    System.out.println("Contacting registrar for services");
                     // only send out the initial list if the deployment repository (i.e. the server + clean transaction state) is not in a suspended state
                     for (EJBModuleIdentifier moduleId : moduleAvailabilityRegistrar.getServices()) {
                         // for each service, add to the list of we are in the providers set
@@ -439,6 +439,8 @@ final class AssociationImpl implements Association, AutoCloseable {
                 if (!list.isEmpty()) {
                     EjbLogger.EJB3_INVOCATION_LOGGER.infof("modulesAvailable(%s): sending modules %s to client", currentNode, list);
                     moduleAvailabilityListener.moduleAvailable(list);
+                } else {
+                    EjbLogger.EJB3_INVOCATION_LOGGER.infof("modulesAvailable(%s): no modules to send", currentNode);
                 }
             }
 
@@ -456,6 +458,8 @@ final class AssociationImpl implements Association, AutoCloseable {
                 if (!list.isEmpty()) {
                     EjbLogger.EJB3_INVOCATION_LOGGER.infof(" modulesUnavailable(%s): sending modules %s to client", currentNode, list);
                     moduleAvailabilityListener.moduleUnavailable(list);
+                } else {
+                    EjbLogger.EJB3_INVOCATION_LOGGER.infof("modulesAvailable(%s): no modules to send", currentNode);
                 }
             }
         };

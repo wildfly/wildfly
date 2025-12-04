@@ -272,7 +272,7 @@ class EJB3SubsystemAdd extends AbstractBoottimeAddStepHandler {
                 .addDependency(suspendControllerServiceName, SuspendController.class, associationService.getSuspendControllerInjector())
                 .addDependency(ServerEnvironmentService.SERVICE_NAME, ServerEnvironment.class, associationService.getServerEnvironmentServiceInjector())
                 .addDependency(DeploymentRepositoryService.SERVICE_NAME, ModuleAvailabilityRegistrar.class, associationService.getModuleAvailabilityRegistrarInjector())
-                .setInitialMode(ServiceController.Mode.LAZY);
+                .setInitialMode(ServiceController.Mode.ON_DEMAND);
 
         if (resource.hasChild(EJB3SubsystemModel.REMOTE_SERVICE_PATH)) {
             ModelNode remoteModel = resource.getChild(EJB3SubsystemModel.REMOTE_SERVICE_PATH).getModel();
@@ -297,6 +297,7 @@ class EJB3SubsystemAdd extends AbstractBoottimeAddStepHandler {
         final RemoteObjectSubstitutionService substitutionService = new RemoteObjectSubstitutionService();
         context.getServiceTarget().addService(RemoteObjectSubstitutionService.SERVICE_NAME, substitutionService)
                 .addDependency(DeploymentRepositoryService.SERVICE_NAME, DeploymentRepository.class, substitutionService.getDeploymentRepositoryInjectedValue())
+                .setInitialMode(ServiceController.Mode.ON_DEMAND)
                 .install();
 
         // register EJB context selector
@@ -512,7 +513,7 @@ class EJB3SubsystemAdd extends AbstractBoottimeAddStepHandler {
                         .addDependency(context.getCapabilityServiceName(UNDERTOW_HTTP_INVOKER_CAPABILITY_NAME, PathHandler.class), PathHandler.class, service.getPathHandlerInjectedValue())
                         .addDependency(TxnServices.JBOSS_TXN_LOCAL_TRANSACTION_CONTEXT, LocalTransactionContext.class, service.getLocalTransactionContextInjectedValue())
                         .addDependency(AssociationService.SERVICE_NAME, AssociationService.class, service.getAssociationServiceInjectedValue())
-                        .setInitialMode(ServiceController.Mode.PASSIVE)
+                        .setInitialMode(ServiceController.Mode.ON_DEMAND)
                         .install();
             }
         }
@@ -541,7 +542,7 @@ class EJB3SubsystemAdd extends AbstractBoottimeAddStepHandler {
             ServiceName serviceName = context.getCapabilityServiceName(REMOTING_ENDPOINT_CAPABILITY, Endpoint.class);
             configuratorBuilder.addDependency(serviceName, Endpoint.class, clientConfiguratorService.getEndpointInjector());
         }
-        configuratorBuilder.setInitialMode(ServiceController.Mode.ACTIVE).install();
+        configuratorBuilder.setInitialMode(ServiceController.Mode.ON_DEMAND).install();
 
 
         //TODO: This should be managed
@@ -576,7 +577,7 @@ class EJB3SubsystemAdd extends AbstractBoottimeAddStepHandler {
         }
 
         // install the default EJB client context service
-        clientContextServiceBuilder.install();
+        clientContextServiceBuilder.setInitialMode(ServiceController.Mode.ON_DEMAND).install();
     }
 
     private static void addClusteringServices(final OperationContext context, final boolean appclient) {

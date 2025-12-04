@@ -181,11 +181,12 @@ public class EJB3RemoteServiceAdd extends AbstractBoottimeAddStepHandler {
         final Supplier<AssociationService> associationServiceSupplier = builder.requires(AssociationService.SERVICE_NAME);
         final Supplier<RemotingTransactionService> remotingTransactionServiceSupplier = builder.requiresCapability(
                 EJB3RemoteResourceDefinition.REMOTE_TRANSACTION_SERVICE_CAPABILITY_NAME, RemotingTransactionService.class);
-        builder.addAliases(EJBRemoteConnectorService.SERVICE_NAME).setInitialMode(ServiceController.Mode.LAZY);
+        builder.addAliases(EJBRemoteConnectorService.SERVICE_NAME);
         final EJBRemoteConnectorService ejbRemoteConnectorService = new EJBRemoteConnectorService(serviceConsumer,
                 endpointSupplier, executorSupplier, associationServiceSupplier, remotingTransactionServiceSupplier,
                 channelCreationOptions, FilterSpecClassResolverFilter.getFilterForOperationContext(context));
         builder.setInstance(ejbRemoteConnectorService);
+        builder.setInitialMode(ServiceController.Mode.ON_DEMAND);
         builder.install();
     }
 

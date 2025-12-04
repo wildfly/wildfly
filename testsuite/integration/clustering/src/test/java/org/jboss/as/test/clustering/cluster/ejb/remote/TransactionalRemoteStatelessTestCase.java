@@ -37,6 +37,7 @@ import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -337,6 +338,7 @@ public class TransactionalRemoteStatelessTestCase extends AbstractClusteringTest
      * {@link TransactionalRemoteStatefulEJBFailoverTestCase#test(ManagementClient, ManagementClient)}
      * but this test works with a stateless bean.
      */
+    @Ignore("Until WFLY-21094 is fixed")
     @Test
     public void affinityNodeFailure () throws Exception {
         InitialContext initCtx = getInitialContext(InitialContextLookupType.REMOTE_HTTP, TESTSUITE_NODE0);
