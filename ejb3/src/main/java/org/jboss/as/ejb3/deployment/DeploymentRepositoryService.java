@@ -59,8 +59,8 @@ public class DeploymentRepositoryService implements DeploymentRepository, Module
      */
     protected volatile Map<EJBModuleIdentifier, DeploymentHolder> modules;
     private boolean started;
-    // servers start out suspended
-    private boolean suspended = true;
+    // servers start out suspended and auto-resume, but not on demand services like this one
+    private boolean suspended = false;
 
     public DeploymentRepositoryService(ServiceDependency<SuspendableActivityRegistry> activityRegistryDependency, ServiceDependency<ServiceProviderRegistrar<EJBModuleIdentifier, GroupMember>> serviceRegistrarDependency) {
         this.activityRegistryDependency = activityRegistryDependency;
