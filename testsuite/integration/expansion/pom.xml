@@ -284,7 +284,7 @@
         </dependency>
         <dependency>
             <!-- Needed if people use compression.type=lz4 in their Kafka config -->
-            <groupId>org.lz4</groupId>
+            <groupId>at.yawk.lz4</groupId>
             <artifactId>lz4-java</artifactId>
             <scope>test</scope>
         </dependency>
