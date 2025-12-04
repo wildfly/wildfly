@@ -1408,9 +1408,9 @@
             </dependency>
 
             <dependency>
-                <groupId>org.lz4</groupId>
+                <groupId>at.yawk.lz4</groupId>
                 <artifactId>lz4-java</artifactId>
-                <version>${version.org.lz4.lz4-java}</version>
+                <version>${version.at.yawk.lz4.lz4-java}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>
