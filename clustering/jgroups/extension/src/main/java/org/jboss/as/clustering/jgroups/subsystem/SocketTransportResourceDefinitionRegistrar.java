@@ -8,20 +8,25 @@ import java.net.InetSocketAddress;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.TreeMap;
-import java.util.function.BiFunction;
+import javax.net.ssl.SSLContext;
 
+import org.jboss.as.clustering.controller.CommonServiceDescriptor;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.RequirementServiceBuilder;
 import org.jboss.as.controller.ResourceRegistration;
 import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraintDefinition;
 import org.jboss.as.network.SocketBinding;
+import org.jboss.as.version.Stability;
 import org.jboss.dmr.ModelNode;
 import org.jgroups.protocols.BasicTCP;
 import org.wildfly.clustering.jgroups.spi.ChannelFactoryConfiguration;
 import org.wildfly.clustering.jgroups.spi.ProtocolConfiguration;
+import org.wildfly.clustering.jgroups.spi.TLSConfiguration;
 import org.wildfly.clustering.jgroups.spi.TransportConfiguration;
 import org.wildfly.subsystem.resource.ResourceDescriptor;
 import org.wildfly.subsystem.resource.capability.CapabilityReference;
@@ -31,6 +36,7 @@ import org.wildfly.subsystem.service.ServiceDependency;
 
 /**
  * @author Paul Ferraro
+ * @author Radoslav Husar
  */
 public class SocketTransportResourceDefinitionRegistrar<T extends BasicTCP> extends AbstractTransportResourceDefinitionRegistrar<T> {
     enum Transport implements ResourceRegistration {
@@ -50,6 +56,23 @@ public class SocketTransportResourceDefinitionRegistrar<T extends BasicTCP> exte
             .setAccessConstraints(SensitiveTargetAccessConstraintDefinition.SOCKET_BINDING_REF)
             .build();
 
+    private static final String CLIENT_CONTEXT_NAME = "client-context";
+    private static final String SERVER_CONTEXT_NAME = "server-context";
+
+    static final CapabilityReferenceAttributeDefinition<SSLContext> CLIENT_SSL_CONTEXT = new CapabilityReferenceAttributeDefinition.Builder<>(CLIENT_CONTEXT_NAME, CapabilityReference.builder(CAPABILITY, CommonServiceDescriptor.SSL_CONTEXT).build())
+            .setRequired(false)
+            .setStability(Stability.COMMUNITY)
+            .setAccessConstraints(SensitiveTargetAccessConstraintDefinition.SSL_REF)
+            .setRequires(SERVER_CONTEXT_NAME)
+            .build();
+
+    static final CapabilityReferenceAttributeDefinition<SSLContext> SERVER_SSL_CONTEXT = new CapabilityReferenceAttributeDefinition.Builder<>(SERVER_CONTEXT_NAME, CapabilityReference.builder(CAPABILITY, CommonServiceDescriptor.SSL_CONTEXT).build())
+            .setRequired(false)
+            .setStability(Stability.COMMUNITY)
+            .setAccessConstraints(SensitiveTargetAccessConstraintDefinition.SSL_REF)
+            .setRequires(CLIENT_CONTEXT_NAME)
+            .build();
+
     SocketTransportResourceDefinitionRegistrar(Transport registration, ResourceOperationRuntimeHandler parentRuntimeHandler) {
         super(new Configurator() {
             @Override
@@ -66,23 +89,36 @@ public class SocketTransportResourceDefinitionRegistrar<T extends BasicTCP> exte
 
     @Override
     public ResourceDescriptor.Builder apply(ResourceDescriptor.Builder builder) {
-        return super.apply(builder).addAttributes(List.of(CLIENT_SOCKET_BINDING));
+        return super.apply(builder).addAttributes(List.of(CLIENT_SOCKET_BINDING, CLIENT_SSL_CONTEXT, SERVER_SSL_CONTEXT));
     }
 
     @Override
     public ServiceDependency<TransportConfiguration<T>> resolve(OperationContext context, ModelNode model) throws OperationFailedException {
         String stackName = context.getCurrentAddress().getParent().getLastElement().getValue();
         boolean hasSocketBasedFailureDetectionProtocol = EnumSet.allOf(SocketProtocolResourceRegistration.class).stream().map(Enum::name).anyMatch(fd -> context.hasOptionalCapability(ProtocolConfiguration.SERVICE_DESCRIPTOR, stackName, fd, CAPABILITY, null));
+        ServiceDependency<TransportConfiguration<T>> configuration = super.resolve(context, model);
         ServiceDependency<SocketBinding> clientSocketBinding = CLIENT_SOCKET_BINDING.resolve(context, model);
-        return super.resolve(context, model).combine(clientSocketBinding, new BiFunction<>() {
+        ServiceDependency<SSLContext> clientSSLContext = CLIENT_SSL_CONTEXT.resolve(context, model);
+        ServiceDependency<SSLContext> serverSSLContext = SERVER_SSL_CONTEXT.resolve(context, model);
+
+        return new ServiceDependency<>() {
             @Override
-            public TransportConfiguration<T> apply(TransportConfiguration<T> configuration, SocketBinding clientSocketBinding) {
-                return new TransportConfigurationDecorator<>(configuration) {
+            public void accept(RequirementServiceBuilder<?> builder) {
+                configuration.accept(builder);
+
+                clientSocketBinding.accept(builder);
+                clientSSLContext.accept(builder);
+                serverSSLContext.accept(builder);
+            }
+
+            @Override
+            public TransportConfiguration<T> get() {
+                return new TransportConfigurationDecorator<>(configuration.get()) {
                     @Override
                     public T createProtocol(ChannelFactoryConfiguration stackConfiguration) {
                         T transport = super.createProtocol(stackConfiguration);
-                        if (clientSocketBinding != null) {
-                            InetSocketAddress clientSocketAddress = clientSocketBinding.getSocketAddress();
+                        if (clientSocketBinding.isPresent()) {
+                            InetSocketAddress clientSocketAddress = clientSocketBinding.get().getSocketAddress();
                             this.setValue(transport, "client_bind_addr", clientSocketAddress.getAddress());
                             this.setValue(transport, "client_bind_port", clientSocketAddress.getPort());
                         }
@@ -98,16 +134,35 @@ public class SocketTransportResourceDefinitionRegistrar<T extends BasicTCP> exte
                     @Override
                     public Map<String, SocketBinding> getSocketBindings() {
                         Map<String, SocketBinding> bindings = super.getSocketBindings();
-                        if (clientSocketBinding != null) {
+                        if (clientSocketBinding.isPresent()) {
                             bindings = new TreeMap<>(bindings);
                             for (String serviceName : Set.of("jgroups.tcp.sock", "jgroups.nio.client")) {
-                                bindings.put(serviceName, clientSocketBinding);
+                                bindings.put(serviceName, clientSocketBinding.get());
                             }
                         }
                         return bindings;
                     }
+
+                    @Override
+                    public Optional<TLSConfiguration> getSSLConfiguration() {
+                        if (serverSSLContext.isPresent() && clientSSLContext.isPresent()) {
+                            return Optional.of(new TLSConfiguration() {
+                                @Override
+                                public SSLContext getClientSSLContext() {
+                                    return clientSSLContext.get();
+                                }
+
+                                @Override
+                                public SSLContext getServerSSLContext() {
+                                    return serverSSLContext.get();
+                                }
+                            });
+                        } else {
+                            return Optional.empty();
+                        }
+                    }
                 };
             }
-        });
+        };
     }
 }
