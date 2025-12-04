@@ -134,7 +134,7 @@ public abstract class AbstractEntityManager implements EntityManager {
         } finally {
             if (isTraceEnabled) {
                 long elapsed = System.currentTimeMillis() - start;
-                ROOT_LOGGER.tracef("detach entityClass '%s' took %dms", entity.getClass().getName(), elapsed);
+                ROOT_LOGGER.tracef("detach entityClass '%s' took %dms", getClassName(entity), elapsed);
             }
         }
     }
@@ -246,7 +246,7 @@ public abstract class AbstractEntityManager implements EntityManager {
         } finally {
             if (isTraceEnabled) {
                 long elapsed = System.currentTimeMillis() - start;
-                ROOT_LOGGER.tracef("getLockMode entityClass '%s', lockMode '%s'  took %dms", entity.getClass().getName(), getLockModeAsString(result), elapsed);
+                ROOT_LOGGER.tracef("getLockMode entityClass '%s', lockMode '%s' took %dms", getClassName(entity), getLockModeAsString(result), elapsed);
             }
         }
         return result;
@@ -289,9 +289,13 @@ public abstract class AbstractEntityManager implements EntityManager {
         } finally {
             if (isTraceEnabled) {
                 long elapsed = System.currentTimeMillis() - start;
-                ROOT_LOGGER.tracef("lock entityClass '%s', lockMode '%s'  took %dms", entity.getClass().getName(), getLockModeAsString(lockMode), elapsed);
+                ROOT_LOGGER.tracef("lock entityClass '%s', lockMode '%s' took %dms", getClassName(entity), getLockModeAsString(lockMode), elapsed);
             }
         }
+    }
+
+    private static String getClassName(Object entity) {
+        return entity != null ? entity.getClass().getName() : "null";
     }
 
 
@@ -346,7 +350,7 @@ public abstract class AbstractEntityManager implements EntityManager {
         } finally {
             if (isTraceEnabled) {
                 long elapsed = System.currentTimeMillis() - start;
-                ROOT_LOGGER.tracef("contains '%s' took %dms", entity.getClass().getName(), elapsed);
+                ROOT_LOGGER.tracef("contains '%s' took %dms", getClassName(entity), elapsed);
             }
         }
     }
@@ -537,7 +541,7 @@ public abstract class AbstractEntityManager implements EntityManager {
         } finally {
             if (isTraceEnabled) {
                 long elapsed = System.currentTimeMillis() - start;
-                ROOT_LOGGER.tracef("lock entityClass '%s', lockMode '%s' took %dms", entity.getClass().getName(), getLockModeAsString(lockMode), elapsed);
+                ROOT_LOGGER.tracef("lock entityClass '%s', lockMode '%s' took %dms", getClassName(entity), getLockModeAsString(lockMode), elapsed);
             }
         }
     }
@@ -552,7 +556,7 @@ public abstract class AbstractEntityManager implements EntityManager {
         } finally {
             if (isTraceEnabled) {
                 long elapsed = System.currentTimeMillis() - start;
-                ROOT_LOGGER.tracef("merge entityClass '%s' took %dms", entity.getClass().getName(), elapsed);
+                ROOT_LOGGER.tracef("merge entityClass '%s' took %dms", getClassName(entity), elapsed);
             }
         }
     }
@@ -567,7 +571,7 @@ public abstract class AbstractEntityManager implements EntityManager {
         } finally {
             if (isTraceEnabled) {
                 long elapsed = System.currentTimeMillis() - start;
-                ROOT_LOGGER.tracef("persist entityClass '%s' took %dms", entity.getClass().getName(), elapsed);
+                ROOT_LOGGER.tracef("persist entityClass '%s' took %dms", getClassName(entity), elapsed);
             }
         }
     }
@@ -582,7 +586,7 @@ public abstract class AbstractEntityManager implements EntityManager {
         } finally {
             if (isTraceEnabled) {
                 long elapsed = System.currentTimeMillis() - start;
-                ROOT_LOGGER.tracef("refresh entityClass '%s' took %dms", entity.getClass().getName(), elapsed);
+                ROOT_LOGGER.tracef("refresh entityClass '%s' took %dms", getClassName(entity), elapsed);
             }
         }
     }
@@ -597,7 +601,7 @@ public abstract class AbstractEntityManager implements EntityManager {
         } finally {
             if (isTraceEnabled) {
                 long elapsed = System.currentTimeMillis() - start;
-                ROOT_LOGGER.tracef("refresh entityClass '%s' took %dms", entity.getClass().getName(), elapsed);
+                ROOT_LOGGER.tracef("refresh entityClass '%s' took %dms", getClassName(entity), elapsed);
             }
         }
     }
@@ -612,7 +616,7 @@ public abstract class AbstractEntityManager implements EntityManager {
         } finally {
             if (isTraceEnabled) {
                 long elapsed = System.currentTimeMillis() - start;
-                ROOT_LOGGER.tracef("refresh entityClass '%s', lockMode '%s' took %dms", entity.getClass().getName(), getLockModeAsString(lockMode), elapsed);
+                ROOT_LOGGER.tracef("refresh entityClass '%s', lockMode '%s' took %dms", getClassName(entity), getLockModeAsString(lockMode), elapsed);
             }
         }
     }
@@ -627,7 +631,7 @@ public abstract class AbstractEntityManager implements EntityManager {
         } finally {
             if (isTraceEnabled) {
                 long elapsed = System.currentTimeMillis() - start;
-                ROOT_LOGGER.tracef("refresh entityClass '%s', lockMode '%s' took %dms", entity.getClass().getName(), getLockModeAsString(lockMode), elapsed);
+                ROOT_LOGGER.tracef("refresh entityClass '%s', lockMode '%s' took %dms", getClassName(entity), getLockModeAsString(lockMode), elapsed);
             }
         }
     }
@@ -642,7 +646,7 @@ public abstract class AbstractEntityManager implements EntityManager {
         } finally {
             if (isTraceEnabled) {
                 long elapsed = System.currentTimeMillis() - start;
-                ROOT_LOGGER.tracef("remove entityClass '%s' took %dms", entity.getClass().getName(), elapsed);
+                ROOT_LOGGER.tracef("remove entityClass '%s' took %dms", getClassName(entity), elapsed);
             }
         }
     }
