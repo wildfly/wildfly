@@ -166,7 +166,6 @@ public class ElytronRemoteOutboundConnectionTestCase {
 
     private static final int BARE_REMOTING_PORT = 54447;
     private static final String BARE_REMOTING_PROTOCOL = "remote";
-    private static final int SSL_REMOTING_PORT = 54448;
     private static final String SSL_REMOTING_PROTOCOL = "remote";
 
     private static final int SSL_REMOTING_TLS_PORT = 54449;
@@ -182,6 +181,8 @@ public class ElytronRemoteOutboundConnectionTestCase {
 
     private static ModelControllerClient serverSideMCC;
     private static ModelControllerClient clientSideMCC;
+
+    private static int sslRemotingPort = 54448;
 
     @ArquillianResource
     private Deployer deployer;
@@ -479,6 +480,7 @@ public class ElytronRemoteOutboundConnectionTestCase {
         //==================================
         // Server-side server setup
         //==================================
+        sslRemotingPort++;
         configureServerSideForInboundSSLRemoting(serverSideMCC);
         //==================================
         // Client-side server setup
@@ -486,7 +488,7 @@ public class ElytronRemoteOutboundConnectionTestCase {
         applyUpdate(clientSideMCC, getAddOutboundSocketBindingOp(OUTBOUND_SOCKET_BINDING, TestSuiteEnvironment.getServerAddressNode1(),
                 54321));
         applyUpdate(clientSideMCC, getAddAuthenticationConfigurationOp(DEFAULT_AUTH_CONFIG, SSL_REMOTING_PROTOCOL, PROPERTIES_REALM,
-                DEFAULT_USERNAME, DEFAULT_PASSWORD, TestSuiteEnvironment.getServerAddress(), SSL_REMOTING_PORT));
+                DEFAULT_USERNAME, DEFAULT_PASSWORD, TestSuiteEnvironment.getServerAddress(), sslRemotingPort));
         applyUpdate(clientSideMCC, getAddKeyStoreOp(DEFAULT_KEY_STORE, CLIENT_KEY_STORE_PATH, KEY_STORE_KEYPASS));
         applyUpdate(clientSideMCC, getAddKeyManagerOp(DEFAULT_KEY_MANAGER, DEFAULT_KEY_STORE, KEY_STORE_KEYPASS));
         applyUpdate(clientSideMCC, getAddKeyStoreOp(DEFAULT_TRUST_STORE, CLIENT_TRUST_STORE_PATH, KEY_STORE_KEYPASS));
@@ -513,14 +515,15 @@ public class ElytronRemoteOutboundConnectionTestCase {
         //==================================
         // Server-side server setup
         //==================================
+        sslRemotingPort++;
         configureServerSideForInboundSSLRemoting(serverSideMCC);
         //==================================
         // Client-side server setup
         //==================================
         applyUpdate(clientSideMCC, getAddOutboundSocketBindingOp(OUTBOUND_SOCKET_BINDING, TestSuiteEnvironment.getServerAddress(),
-                SSL_REMOTING_PORT));
+                sslRemotingPort));
         applyUpdate(clientSideMCC, getAddAuthenticationConfigurationOp(DEFAULT_AUTH_CONFIG, SSL_REMOTING_PROTOCOL, PROPERTIES_REALM,
-                DEFAULT_USERNAME, DEFAULT_PASSWORD, TestSuiteEnvironment.getServerAddress(), SSL_REMOTING_PORT));
+                DEFAULT_USERNAME, DEFAULT_PASSWORD, TestSuiteEnvironment.getServerAddress(), sslRemotingPort));
         applyUpdate(clientSideMCC, getAddKeyStoreOp(DEFAULT_KEY_STORE, CLIENT_KEY_STORE_PATH, KEY_STORE_KEYPASS));
         applyUpdate(clientSideMCC, getAddKeyManagerOp(DEFAULT_KEY_MANAGER, DEFAULT_KEY_STORE, KEY_STORE_KEYPASS));
         applyUpdate(clientSideMCC, getAddKeyStoreOp(DEFAULT_TRUST_STORE, CLIENT_TRUST_STORE_PATH, KEY_STORE_KEYPASS));
@@ -547,14 +550,15 @@ public class ElytronRemoteOutboundConnectionTestCase {
         //==================================
         // Server-side server setup
         //==================================
+        sslRemotingPort++;
         configureServerSideForInboundSSLRemoting(serverSideMCC);
         //==================================
         // Client-side server setup
         //==================================
         applyUpdate(clientSideMCC, getAddOutboundSocketBindingOp(OUTBOUND_SOCKET_BINDING, TestSuiteEnvironment.getServerAddress(),
-                SSL_REMOTING_PORT));
+                sslRemotingPort));
         applyUpdate(clientSideMCC, getAddAuthenticationConfigurationOp(DEFAULT_AUTH_CONFIG, SSL_REMOTING_PROTOCOL, PROPERTIES_REALM,
-                DEFAULT_USERNAME, DEFAULT_PASSWORD, TestSuiteEnvironment.getServerAddress(), SSL_REMOTING_PORT));
+                DEFAULT_USERNAME, DEFAULT_PASSWORD, TestSuiteEnvironment.getServerAddress(), sslRemotingPort));
         applyUpdate(clientSideMCC, getAddKeyStoreOp(DEFAULT_KEY_STORE, UNTRUSTED_KEY_STORE_PATH, KEY_STORE_KEYPASS));
         applyUpdate(clientSideMCC, getAddKeyManagerOp(DEFAULT_KEY_MANAGER, DEFAULT_KEY_STORE, KEY_STORE_KEYPASS));
         applyUpdate(clientSideMCC, getAddKeyStoreOp(DEFAULT_TRUST_STORE, UNTRUSTED_KEY_STORE_PATH, KEY_STORE_KEYPASS));
@@ -562,7 +566,7 @@ public class ElytronRemoteOutboundConnectionTestCase {
         applyUpdate(clientSideMCC, getAddServerSSLContextOp(DEFAULT_SERVER_SSL_CONTEXT, DEFAULT_KEY_MANAGER, DEFAULT_TRUST_MANAGER));
         applyUpdate(clientSideMCC, getAddAuthenticationContextOp(DEFAULT_AUTH_CONTEXT, DEFAULT_AUTH_CONFIG, DEFAULT_SERVER_SSL_CONTEXT));
         applyUpdate(clientSideMCC, getAddAuthenticationConfigurationOp(OVERRIDING_AUTH_CONFIG, SSL_REMOTING_PROTOCOL, PROPERTIES_REALM,
-                OVERRIDING_USERNAME, OVERRIDING_PASSWORD, TestSuiteEnvironment.getServerAddress(), SSL_REMOTING_PORT));
+                OVERRIDING_USERNAME, OVERRIDING_PASSWORD, TestSuiteEnvironment.getServerAddress(), sslRemotingPort));
         applyUpdate(clientSideMCC, getAddKeyStoreOp(OVERRIDING_KEY_STORE, CLIENT_KEY_STORE_PATH, KEY_STORE_KEYPASS));
         applyUpdate(clientSideMCC, getAddKeyManagerOp(OVERRIDING_KEY_MANAGER, OVERRIDING_KEY_STORE, KEY_STORE_KEYPASS));
         applyUpdate(clientSideMCC, getAddKeyStoreOp(OVERRIDING_TRUST_STORE, CLIENT_TRUST_STORE_PATH, KEY_STORE_KEYPASS));
@@ -589,14 +593,15 @@ public class ElytronRemoteOutboundConnectionTestCase {
         //==================================
         // Server-side server setup
         //==================================
+        sslRemotingPort++;
         configureServerSideForInboundSSLRemoting(serverSideMCC);
         //==================================
         // Client-side server setup
         //==================================
         applyUpdate(clientSideMCC, getAddOutboundSocketBindingOp(OUTBOUND_SOCKET_BINDING, TestSuiteEnvironment.getServerAddress(),
-                SSL_REMOTING_PORT));
+                sslRemotingPort));
         applyUpdate(clientSideMCC, getAddAuthenticationConfigurationOp(OVERRIDING_AUTH_CONFIG, SSL_REMOTING_PROTOCOL, PROPERTIES_REALM,
-                OVERRIDING_USERNAME, OVERRIDING_PASSWORD, TestSuiteEnvironment.getServerAddress(), SSL_REMOTING_PORT));
+                OVERRIDING_USERNAME, OVERRIDING_PASSWORD, TestSuiteEnvironment.getServerAddress(), sslRemotingPort));
         applyUpdate(clientSideMCC, getAddKeyStoreOp(OVERRIDING_KEY_STORE, CLIENT_KEY_STORE_PATH, KEY_STORE_KEYPASS));
         applyUpdate(clientSideMCC, getAddKeyManagerOp(OVERRIDING_KEY_MANAGER, OVERRIDING_KEY_STORE, KEY_STORE_KEYPASS));
         applyUpdate(clientSideMCC, getAddKeyStoreOp(OVERRIDING_TRUST_STORE, CLIENT_TRUST_STORE_PATH, KEY_STORE_KEYPASS));
@@ -839,7 +844,7 @@ public class ElytronRemoteOutboundConnectionTestCase {
         // Client-side server setup
         //==================================
         applyUpdate(clientSideMCC, getAddOutboundSocketBindingOp(OUTBOUND_SOCKET_BINDING, TestSuiteEnvironment.getServerAddress(),
-                SSL_REMOTING_PORT));
+                sslRemotingPort));
         applyUpdate(clientSideMCC, getAddAuthenticationConfigurationOp(DEFAULT_AUTH_CONFIG, HTTPS_REMOTING_PROTOCOL, PROPERTIES_REALM,
                 DEFAULT_USERNAME, DEFAULT_PASSWORD, TestSuiteEnvironment.getServerAddress(), HTTPS_REMOTING_PORT));
         applyUpdate(clientSideMCC, getAddKeyStoreOp(DEFAULT_KEY_STORE, CLIENT_KEY_STORE_PATH, KEY_STORE_KEYPASS));
@@ -1481,7 +1486,7 @@ public class ElytronRemoteOutboundConnectionTestCase {
         applyUpdate(serverSideMCC, getAddElytronSecurityDomainOp(SECURITY_DOMAIN, PROPERTIES_REALM));
         applyUpdate(serverSideMCC, getAddSaslAuthenticationFactoryOp(AUTHENTICATION_FACTORY, SECURITY_DOMAIN, PROPERTIES_REALM));
         applyUpdate(serverSideMCC, getAddEjbApplicationSecurityDomainOp(APPLICATION_SECURITY_DOMAIN, SECURITY_DOMAIN));
-        applyUpdate(serverSideMCC, getAddSocketBindingOp(INBOUND_SOCKET_BINDING, SSL_REMOTING_PORT));
+        applyUpdate(serverSideMCC, getAddSocketBindingOp(INBOUND_SOCKET_BINDING, sslRemotingPort));
         applyUpdate(serverSideMCC, getAddKeyStoreOp(SERVER_KEY_STORE, SERVER_KEY_STORE_PATH, KEY_STORE_KEYPASS));
         applyUpdate(serverSideMCC, getAddKeyManagerOp(SERVER_KEY_MANAGER, SERVER_KEY_STORE, KEY_STORE_KEYPASS));
         applyUpdate(serverSideMCC, getAddKeyStoreOp(SERVER_TRUST_STORE, SERVER_TRUST_STORE_PATH, KEY_STORE_KEYPASS));
