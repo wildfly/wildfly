@@ -8,6 +8,7 @@ package org.wildfly.test.integration.microprofile.openapi;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -40,7 +41,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 
 /**
- * Validates usage of "mp.openapi.extensions.servers.relative" configuration property.
+ * Validates usage of legacy "mp.openapi.extensions.servers.relative" configuration property.
  * @author Paul Ferraro
  */
 @RunWith(Arquillian.class)
@@ -65,7 +66,7 @@ public class OpenAPIAbsoluteServersTestCase {
                 List<String> urls = validateContent(response);
                 // Ensure absolute urls are valid
                 for (String url : urls) {
-                    try (CloseableHttpResponse r = client.execute(new HttpGet(url + "/test/echo/foo"))) {
+                    try (CloseableHttpResponse r = client.execute(new HttpGet(url))) {
                         Assert.assertEquals(HttpServletResponse.SC_OK, r.getStatusLine().getStatusCode());
                         Assert.assertEquals("foo", EntityUtils.toString(r.getEntity()));
                     } catch (SSLHandshakeException ignored) {
@@ -81,15 +82,20 @@ public class OpenAPIAbsoluteServersTestCase {
         Assert.assertEquals("application/yaml", response.getEntity().getContentType().getValue());
 
         JsonNode node = new ObjectMapper(new YAMLFactory()).reader().readTree(response.getEntity().getContent());
+        System.out.println(node.toPrettyString());
         JsonNode info = node.required("info");
         Assert.assertNotNull(info);
         Assert.assertEquals(DEPLOYMENT_NAME, info.required("title").asText());
         Assert.assertNull(info.get("description"));
 
         JsonNode servers = node.required("servers");
+        JsonNode paths = node.required("paths");
         List<String> result = new LinkedList<>();
         for (JsonNode server : servers) {
-            result.add(server.required("url").asText());
+            Iterator<String> pathNames = paths.fieldNames();
+            while (pathNames.hasNext()) {
+                result.add(server.required("url").asText() + pathNames.next().replace("{value}", "foo"));
+            }
         }
         Assert.assertFalse(result.isEmpty());
         return result;

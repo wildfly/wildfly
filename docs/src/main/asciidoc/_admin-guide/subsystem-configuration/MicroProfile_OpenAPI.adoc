@@ -35,21 +35,121 @@ The microprofile-openapi-smallrye subsystem obtains all of its configuration via
 
 In addition to the https://download.eclipse.org/microprofile/microprofile-open-api-{MicroProfileOpenAPIVersion}/microprofile-openapi-spec-{MicroProfileOpenAPIVersion}.html#_core_configurations[standard Open API configuration] properties, WildFly supports the following additional MicroProfile Config properties:
 
-[cols="2,1,5"]
+[cols="2,1,1,5"]
 |===
-|Property |Default |Description
+|Property |Scope |Default |Description
 
 |mp.openapi.extensions.enabled
+|Deployment
 |true
 |Enables/disables registration of an OpenAPI endpoint.  Many users will want to parameterize this to selectively enable/disable OpenAPI in different environments.
 
 |mp.openapi.extensions.path
+|Deployment
 |/openapi
 |Used to customize the path of the OpenAPI endpoint.
 
-|mp.openapi.extensions.servers.relative
-|true
-|Indicates whether auto-generated Server records are absolute or relative to the location of the OpenAPI endpoint.  If absolute, WildFly will generate Server records including the protocols, hosts, and ports at which the given deployment is accessible.
+|mp.openapi.extensions.server._server-name_.host._host-name_.auto-generate-servers +
+mp.openapi.extensions.auto-generate-servers
+|Global
+|false
+|Indicates whether to auto-generate Server URLs for this host if undefined by any application.
+
+|mp.openapi.extensions.server._server-name_.host._host-name_.component-key-format +
+mp.openapi.extensions.component-key-format
+|Global
+|%1$s%2$s
+|Specifies the identifier format (using java.util.Formatter syntax) used generate distinct OpenAPI component keys for multiple applications.  Format accepts 2 parameters: context path, component name.
+
+|mp.openapi.extensions.server._server-name_.host._host-name_.externalDocs.description +
+mp.openapi.extensions.externalDocs.description
+|Global
+|_None_
+|Defines the external documentation description of the OpenAPI document provided by this host.
+
+|mp.openapi.extensions.server._server-name_.host._host-name_.externalDocs.url +
+mp.openapi.extensions.externalDocs.url
+|Global
+|_None_
+|Defines the external documentation URL of the OpenAPI document provided by this host.
+
+|mp.openapi.extensions.server._server-name_.host._host-name_.info.contact.email +
+mp.openapi.extensions.info.contact.email
+|Global
+|_None_
+|Defines the contact email of the OpenAPI document provided by this host.
+
+|mp.openapi.extensions.server._server-name_.host._host-name_.info.contact.name +
+mp.openapi.extensions.info.contact.name
+|Global
+|_None_
+|Defines the contact name of the OpenAPI document provided by this host.
+
+|mp.openapi.extensions.server._server-name_.host._host-name_.info.contact.url +
+mp.openapi.extensions.info.contact.url
+|Global
+|_None_
+|Defines the contact url of the OpenAPI document provided by this host.
+
+|mp.openapi.extensions.server._server-name_.host._host-name_.info.description +
+mp.openapi.extensions.info.description
+|Global
+|_None_
+|Defines the description of the OpenAPI document provided by this host.
+
+|mp.openapi.extensions.server._server-name_.host._host-name_.info.license.name +
+mp.openapi.extensions.info.license.name
+|Global
+|_None_
+|Defines the license name of the OpenAPI document provided by this host.
+
+|mp.openapi.extensions.server._server-name_.host._host-name_.info.license.identifier +
+mp.openapi.extensions.info.license.identifier
+|Global
+|_None_
+|Defines the license identifier of the OpenAPI document provided by this host.
+
+|mp.openapi.extensions.server._server-name_.host._host-name_.info.license.url +
+mp.openapi.extensions.info.license.url
+|Global
+|_None_
+|Defines the license URL of the OpenAPI document provided by this host.
+
+|mp.openapi.extensions.server._server-name_.host._host-name_.info.summary +
+mp.openapi.extensions.info.summary
+|Global
+|_None_
+|Defines the summary of the OpenAPI document provided by this host.
+
+|mp.openapi.extensions.server._server-name_.host._host-name_.info.termsOfService +
+mp.openapi.extensions.info.termsOfService
+|Global
+|_None_
+|Defines the terms of service of the OpenAPI document provided by this host.
+
+|mp.openapi.extensions.server._server-name_.host._host-name_.info.title +
+mp.openapi.extensions.info.title
+|Global
+|_None_
+|Defines the title of the OpenAPI document provided by this host.
+
+|mp.openapi.extensions.server._server-name_.host._host-name_.info.version +
+mp.openapi.extensions.info.version
+|Global
+|_None_
+|Defines the application API version provided by this host.
+
+|mp.openapi.extensions.server._server-name_.host._host-name_.jsonSchemaDialect +
+mp.openapi.extensions.jsonSchemaDialect
+|Global
+|_None_
+|Defines the JSON schema dialect used by this host.
+
+|mp.openapi.extensions.server._server-name_.host._host-name_.version +
+mp.openapi.extensions.version
+|Global
+|_None_
+|Defines the OpenAPI specification version used by this host.
 
 |===
 
@@ -58,7 +158,6 @@ e.g. `/META-INF/microprofile-config.properties`:
 ---- 
 mp.openapi.extensions.enabled=${microprofile.openapi.enabled}
 mp.openapi.extensions.path=/swagger
-mp.openapi.extensions.servers.relative=false
 ----
 
 == HTTP/S Endpoint
@@ -67,8 +166,9 @@ The MicroProfile OpenAPI specification defines an HTTP endpoint that serves an O
 The OpenAPI endpoint is registered using the configured path (e.g. http://localhost:8080/openapi) local to the root of the host associated with a given deployment.
 
 [NOTE]
-Currently, the OpenAPI endpoint for a given virtual host can only document a single JAX-RS deployment.
-To use OpenAPI with multiple JAX-RS deployments registered with different context paths on the same virtual host, each deployment should use a distinct endpoint path.
+When the OpenAPI endpoint for a given host documents _a single_ JAX-RS deployment, the title and description of the OpenAPI document are obtained from the <display-name/> and <description/> elements, respectively, from the web application deployment descriptor (e.g. web.xml), if otherwise unspecified.
+When the OpenAPI endpoint for a given host documents _multiple_ JAX-RS deployments, any discordant 'info' or 'externalDocs' OpenAPI document properties will be sourced from the MicroProfile config properties prefixed by 'mp.openapi.extensions.server._server-name_.host._host-name_', where 'server-name' and 'host-name' identify the virtual host as defined within the Undertow subsystem.
+To avoid the possibility of conflicting values, these are best defined globally, rather than per application, e.g. '-Dmp.openapi.extensions.server.default-server.host.default-host.info.version=1.0'.
 
 By default, the OpenAPI endpoint returns a YAML document.
 Alternatively, a JSON document can be requested via an `Accept` HTTP header, or a `format` query parameter.
