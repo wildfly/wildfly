@@ -24,30 +24,30 @@ import org.junit.Test;
 /**
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
-public class JaxrsSubsystem40TestCase extends AbstractSubsystemBaseTest {
+public class JaxrsSubsystem50TestCase extends AbstractSubsystemBaseTest {
 
-    public JaxrsSubsystem40TestCase() {
+    public JaxrsSubsystem50TestCase() {
         super(JaxrsExtension.SUBSYSTEM_NAME, new JaxrsExtension());
     }
 
     @Override
     protected String getSubsystemXml() throws IOException {
-        return readResource("jaxrs-4.0.xml");
+        return readResource("jaxrs.xml");
     }
 
     @Override
     protected String getSubsystemXsdPath() {
-        return "schema/jboss-as-jaxrs_4_0.xsd";
+        return "schema/jboss-as-jaxrs_5_0.xsd";
     }
 
     @Override
     public void testSubsystem() throws Exception {
-        standardSubsystemTest(null, false);
+        standardSubsystemTest(null);
     }
 
     @Test
     public void testExpressions() throws Exception {
-        standardSubsystemTest("jaxrs-expressions-4.0.xml", false);
+        standardSubsystemTest("jaxrs-expressions.xml");
     }
 
     @Test
@@ -55,9 +55,20 @@ public class JaxrsSubsystem40TestCase extends AbstractSubsystemBaseTest {
         FailedOperationTransformationConfig transformationConfig = new FailedOperationTransformationConfig();
 
         transformationConfig.addFailedAttribute(PathAddress.pathAddress(JaxrsExtension.SUBSYSTEM_PATH),
-                new FailedOperationTransformationConfig.NewAttributesConfig(JaxrsAttribute.RESTEASY_PATCHFILTER_DISABLED));
+                new FailedOperationTransformationConfig.NewAttributesConfig(JaxrsAttribute.RESTEASY_PATCHFILTER_DISABLED,
+                        JaxrsAttribute.RESTEASY_ORIGINAL_WEBAPPLICATIONEXCEPTION_BEHAVIOR));
 
-        testRejectingTransformersEAP80(transformationConfig, ModelTestControllerVersion.EAP_8_0_0);
+        testRejectingTransformersEAP80_81(transformationConfig, ModelTestControllerVersion.EAP_8_0_0);
+    }
+
+    @Test
+    public void testRejectingTransformersEAP81() throws Exception {
+        FailedOperationTransformationConfig transformationConfig = new FailedOperationTransformationConfig();
+
+        transformationConfig.addFailedAttribute(PathAddress.pathAddress(JaxrsExtension.SUBSYSTEM_PATH),
+                new FailedOperationTransformationConfig.NewAttributesConfig(JaxrsAttribute.RESTEASY_ORIGINAL_WEBAPPLICATIONEXCEPTION_BEHAVIOR));
+
+        testRejectingTransformersEAP80_81(transformationConfig, ModelTestControllerVersion.EAP_8_1_0);
     }
 
     @Test
@@ -65,7 +76,8 @@ public class JaxrsSubsystem40TestCase extends AbstractSubsystemBaseTest {
         FailedOperationTransformationConfig transformationConfig = new FailedOperationTransformationConfig();
 
         transformationConfig.addFailedAttribute(PathAddress.pathAddress(JaxrsExtension.SUBSYSTEM_PATH),
-                new FailedOperationTransformationConfig.NewAttributesConfig(JaxrsAttribute.TRACING_TYPE, JaxrsAttribute.TRACING_THRESHOLD, JaxrsAttribute.RESTEASY_PATCHFILTER_DISABLED));
+                new FailedOperationTransformationConfig.NewAttributesConfig(JaxrsAttribute.TRACING_TYPE, JaxrsAttribute.TRACING_THRESHOLD, JaxrsAttribute.RESTEASY_PATCHFILTER_DISABLED,
+                        JaxrsAttribute.RESTEASY_ORIGINAL_WEBAPPLICATIONEXCEPTION_BEHAVIOR));
 
         testRejectingTransformers(transformationConfig, ModelTestControllerVersion.EAP_7_4_0);
     }
@@ -82,23 +94,25 @@ public class JaxrsSubsystem40TestCase extends AbstractSubsystemBaseTest {
         assertTrue(kernelServices.isSuccessfulBoot());
         assertTrue(kernelServices.getLegacyServices(subsystemModelVersion).isSuccessfulBoot());
 
-        List<ModelNode> operations = builder.parseXmlResource("jaxrs-4.0.xml");
+        List<ModelNode> operations = builder.parseXmlResource("jaxrs.xml");
         ModelTestUtils.checkFailedTransformedBootOperations(kernelServices, subsystemModelVersion, operations, transformationConfig);
     }
 
-    private void testRejectingTransformersEAP80(FailedOperationTransformationConfig transformationConfig, ModelTestControllerVersion controllerVersion) throws Exception {
+    private void testRejectingTransformersEAP80_81(FailedOperationTransformationConfig transformationConfig, ModelTestControllerVersion controllerVersion) throws Exception {
         ModelVersion subsystemModelVersion = controllerVersion.getSubsystemModelVersion(JaxrsExtension.SUBSYSTEM_NAME);
 
         KernelServicesBuilder builder = createKernelServicesBuilder(createAdditionalInitialization());
-        builder.createLegacyKernelServicesBuilder(createAdditionalInitialization(), controllerVersion, subsystemModelVersion)
-                .addMavenResourceURL(controllerVersion.createCoreGAV("wildfly-threads"))
-                .addMavenResourceURL(controllerVersion.createGAV("wildfly-jaxrs"))
+        final LegacyKernelServicesInitializer initializer = builder.createLegacyKernelServicesBuilder(createAdditionalInitialization(), controllerVersion, subsystemModelVersion)
+                .addMavenResourceURL(controllerVersion.createCoreGAV("wildfly-threads"), controllerVersion.createGAV("wildfly-jaxrs"))
                 .dontPersistXml();
+        if (controllerVersion != ModelTestControllerVersion.EAP_8_0_0) {
+                initializer.addMavenResourceURL(controllerVersion.createCoreGAV("wildfly-subsystem"));
+        }
         KernelServices kernelServices = builder.build();
         assertTrue(kernelServices.isSuccessfulBoot());
         assertTrue(kernelServices.getLegacyServices(subsystemModelVersion).isSuccessfulBoot());
 
-        List<ModelNode> operations = builder.parseXmlResource("jaxrs-4.0.xml");
+        List<ModelNode> operations = builder.parseXmlResource("jaxrs.xml");
         ModelTestUtils.checkFailedTransformedBootOperations(kernelServices, subsystemModelVersion, operations, transformationConfig);
     }
 }

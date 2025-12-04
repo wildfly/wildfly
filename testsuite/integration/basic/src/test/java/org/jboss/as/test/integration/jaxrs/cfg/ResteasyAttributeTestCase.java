@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import jakarta.ws.rs.client.Client;
@@ -64,6 +65,8 @@ public class ResteasyAttributeTestCase {
             Map.entry(ModelType.LIST, String.class),
             Map.entry(ModelType.OBJECT, String.class)
     );
+
+    private static final Set<String> IGNORED_ATTRIBUTES = Set.of("tracing-type", "tracing-threshold", "resteasy-patchfilter-disabled", "resteasy-original-webapplicationexception-behavior");
     private static Client jaxrsClient;
 
     @ArquillianResource
@@ -230,7 +233,7 @@ public class ResteasyAttributeTestCase {
         for (AttributeDefinition attribute : JaxrsAttribute.ATTRIBUTES) {
             // Ignore these attributes as they are not set in the context as the attributes are not public. These are
             // also tested elsewhere
-            if ("tracing-type".equals(attribute.getName()) || "tracing-threshold".equals(attribute.getName()) || "resteasy-patchfilter-disabled".equals(attribute.getName())) {
+            if (IGNORED_ATTRIBUTES.contains(attribute.getName())) {
                 continue;
             }
             testAttribute(target, attribute);
