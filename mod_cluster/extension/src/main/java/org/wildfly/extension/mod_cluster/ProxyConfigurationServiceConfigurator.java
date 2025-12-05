@@ -49,7 +49,7 @@ import java.util.function.Supplier;
 import javax.net.ssl.SSLContext;
 
 import org.jboss.as.clustering.controller.CapabilityServiceNameProvider;
-import org.jboss.as.clustering.controller.CommonUnaryRequirement;
+import org.jboss.as.clustering.controller.CommonServiceDescriptor;
 import org.jboss.as.clustering.controller.ResourceServiceConfigurator;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -99,7 +99,7 @@ public class ProxyConfigurationServiceConfigurator extends CapabilityServiceName
 
         // Advertise
         String advertiseSocket = ADVERTISE_SOCKET.resolveModelAttribute(context, model).asStringOrNull();
-        this.advertiseSocketDependency = (advertiseSocket != null) ? new ServiceSupplierDependency<>(CommonUnaryRequirement.SOCKET_BINDING.getServiceName(context, advertiseSocket)) : null;
+        this.advertiseSocketDependency = (advertiseSocket != null) ? new ServiceSupplierDependency<>(context.getCapabilityServiceName(SocketBinding.SERVICE_DESCRIPTOR, advertiseSocket)) : null;
         this.builder.advertise().setAdvertiseSecurityKey(ADVERTISE_SECURITY_KEY.resolveModelAttribute(context, model).asStringOrNull());
 
         // MCMP
@@ -213,8 +213,7 @@ public class ProxyConfigurationServiceConfigurator extends CapabilityServiceName
         node = PROXIES.resolveModelAttribute(context, model);
         if (node.isDefined()) {
             for (ModelNode ref : node.asList()) {
-                String asString = ref.asString();
-                this.outboundSocketBindings.add(new ServiceSupplierDependency<>(CommonUnaryRequirement.OUTBOUND_SOCKET_BINDING.getServiceName(context, asString)));
+                this.outboundSocketBindings.add(new ServiceSupplierDependency<>(context.getCapabilityServiceName(OutboundSocketBinding.SERVICE_DESCRIPTOR, ref.asString())));
             }
         }
 
@@ -222,7 +221,7 @@ public class ProxyConfigurationServiceConfigurator extends CapabilityServiceName
 
         node = SSL_CONTEXT.resolveModelAttribute(context, model);
         if (node.isDefined()) {
-            this.sslContextDependency = new ServiceSupplierDependency<>(CommonUnaryRequirement.SSL_CONTEXT.getServiceName(context, node.asString()));
+            this.sslContextDependency = new ServiceSupplierDependency<>(context.getCapabilityServiceName(CommonServiceDescriptor.SSL_CONTEXT, node.asString()));
         }
 
         return this;

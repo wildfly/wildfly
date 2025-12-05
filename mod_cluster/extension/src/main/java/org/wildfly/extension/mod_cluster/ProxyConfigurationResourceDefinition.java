@@ -8,14 +8,13 @@ package org.wildfly.extension.mod_cluster;
 import java.util.function.UnaryOperator;
 
 import org.jboss.as.clustering.controller.ChildResourceDefinition;
-import org.jboss.as.clustering.controller.CommonUnaryRequirement;
+import org.jboss.as.clustering.controller.CommonServiceDescriptor;
 import org.jboss.as.clustering.controller.ManagementResourceRegistration;
 import org.jboss.as.clustering.controller.OperationHandler;
 import org.jboss.as.clustering.controller.ReloadRequiredResourceRegistrar;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.AttributeMarshaller;
-import org.jboss.as.controller.ParameterCorrector;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.StringListAttributeDefinition;
@@ -26,6 +25,8 @@ import org.jboss.as.controller.client.helpers.MeasurementUnit;
 import org.jboss.as.controller.operations.validation.EnumValidator;
 import org.jboss.as.controller.operations.validation.IntRangeValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
+import org.jboss.as.network.OutboundSocketBinding;
+import org.jboss.as.network.SocketBinding;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.modcluster.ModClusterServiceMBean;
@@ -33,7 +34,7 @@ import org.jboss.modcluster.config.impl.SessionDrainingStrategyEnum;
 import org.wildfly.subsystem.service.capture.FunctionExecutorRegistry;
 
 /**
- * {@link org.jboss.as.controller.ResourceDefinition} implementation for the core mod_cluster configuration resource.
+ * {@link org.jboss.as.controller.ResourceDefinition} implementation for a mod_cluster proxy configuration resource.
  *
  * @author Radoslav Husar
  */
@@ -79,7 +80,7 @@ public class ProxyConfigurationResourceDefinition extends ChildResourceDefinitio
             public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
                 return builder
                         .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.SOCKET_BINDING_REF)
-                        .setCapabilityReference(CommonUnaryRequirement.SOCKET_BINDING.getName())
+                        .setCapabilityReference(SocketBinding.SERVICE_DESCRIPTOR.getName())
                         ;
             }
         },
@@ -111,12 +112,7 @@ public class ProxyConfigurationResourceDefinition extends ChildResourceDefinitio
             public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
                 return builder
                         .setValidator(new IntRangeValidator(0, true, true))
-                        .setCorrector(new ParameterCorrector() {
-                            @Override
-                            public ModelNode correct(ModelNode newValue, ModelNode currentValue) {
-                                return (newValue.getType().equals(ModelType.INT) && newValue.asInt() == -1) ? new ModelNode(1) : newValue;
-                            }
-                        })
+                        .setCorrector((newValue, currentValue) -> (newValue.getType().equals(ModelType.INT) && newValue.asInt() == -1) ? new ModelNode(1) : newValue)
                         ;
             }
         },
@@ -169,7 +165,7 @@ public class ProxyConfigurationResourceDefinition extends ChildResourceDefinitio
             @Override
             public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
                 return builder
-                        .setCapabilityReference(CommonUnaryRequirement.SSL_CONTEXT.getName())
+                        .setCapabilityReference(CommonServiceDescriptor.SSL_CONTEXT.getName())
                         .setValidator(new StringLengthValidator(1))
                         .setAccessConstraints(SensitiveTargetAccessConstraintDefinition.SSL_REF)
                         ;
@@ -230,7 +226,7 @@ public class ProxyConfigurationResourceDefinition extends ChildResourceDefinitio
                     .setRequired(false)
                     .setAllowExpression(false) // expressions are not allowed for model references
                     .setRestartAllServices()
-                    .setCapabilityReference(CommonUnaryRequirement.OUTBOUND_SOCKET_BINDING.getName())
+                    .setCapabilityReference(OutboundSocketBinding.SERVICE_DESCRIPTOR.getName())
                     .setAttributeMarshaller(AttributeMarshaller.STRING_LIST)
                     .addAccessConstraint(ModClusterExtension.MOD_CLUSTER_PROXIES_DEF)
                     .build();
