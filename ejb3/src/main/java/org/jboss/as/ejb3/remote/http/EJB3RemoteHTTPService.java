@@ -9,6 +9,7 @@ import java.util.function.Function;
 
 import io.undertow.server.handlers.PathHandler;
 import org.jboss.as.ejb3.remote.AssociationService;
+import org.jboss.logging.Logger;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
@@ -23,6 +24,8 @@ import org.wildfly.transaction.client.LocalTransactionContext;
  */
 public class EJB3RemoteHTTPService implements Service<EJB3RemoteHTTPService> {
 
+    protected static final Logger log = Logger.getLogger(EJB3RemoteHTTPService.class.getSimpleName());
+
     public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("ejb", "remote", "http-invoker");
     private final InjectedValue<PathHandler> pathHandlerInjectedValue = new InjectedValue<>();
     private final InjectedValue<AssociationService> associationServiceInjectedValue = new InjectedValue<>();
@@ -35,14 +38,18 @@ public class EJB3RemoteHTTPService implements Service<EJB3RemoteHTTPService> {
 
     @Override
     public void start(StartContext context) throws StartException {
+        log.info("Starting");
         HttpRemoteEjbService service = new HttpRemoteEjbService(associationServiceInjectedValue.getValue().getAssociation(),
                 null, localTransactionContextInjectedValue.getValue(), classResolverFilter);
         pathHandlerInjectedValue.getValue().addPrefixPath("/ejb", service.createHttpHandler());
+        log.info("Started");
     }
 
     @Override
     public void stop(StopContext context) {
+        log.info("Stopping");
         pathHandlerInjectedValue.getValue().removePrefixPath("/ejb");
+        log.info("Stopped");
     }
 
     @Override

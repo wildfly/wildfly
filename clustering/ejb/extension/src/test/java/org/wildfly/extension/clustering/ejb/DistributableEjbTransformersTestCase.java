@@ -10,6 +10,8 @@ import java.util.List;
 
 import org.jboss.as.clustering.subsystem.AdditionalInitialization;
 import org.jboss.as.controller.ModelVersion;
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.PathElement;
 import org.jboss.as.model.test.FailedOperationTransformationConfig;
 import org.jboss.as.model.test.ModelTestControllerVersion;
 import org.jboss.as.model.test.ModelTestUtils;
@@ -52,7 +54,8 @@ public class DistributableEjbTransformersTestCase extends AbstractSubsystemTest 
 
     private DistributableEjbSubsystemModel getModelVersion() {
         return switch (this.controllerVersion) {
-            case EAP_8_0_0, EAP_8_1_0 -> DistributableEjbSubsystemModel.VERSION_1_0_0;
+            case EAP_8_0_0 -> DistributableEjbSubsystemModel.VERSION_1_0_0;
+            case EAP_8_1_0 -> DistributableEjbSubsystemModel.VERSION_1_0_0;
             default -> throw new IllegalArgumentException();
         };
     }
@@ -121,7 +124,21 @@ public class DistributableEjbTransformersTestCase extends AbstractSubsystemTest 
     }
 
     private static FailedOperationTransformationConfig createFailedOperationConfig(ModelVersion version) {
-        return new FailedOperationTransformationConfig();
+        //
+        PathAddress subsystemAddress = PathAddress.pathAddress(DistributableEjbSubsystemResourceDefinitionRegistrar.REGISTRATION.getPathElement());
+        PathAddress ejbClientServicesAddress = subsystemAddress.append(PathElement.pathElement("ejb-client-services", "local"));
+
+        FailedOperationTransformationConfig config = new FailedOperationTransformationConfig();
+        if (DistributableEjbSubsystemModel.VERSION_1_0_0.requiresTransformation(version)) {
+            // reject the use of ejb-client-services child resource as it does not exist in 1_0_0
+            config.addFailedAttribute(ejbClientServicesAddress, FailedOperationTransformationConfig.REJECTED_RESOURCE);
+            return config;
+        }
+        if (DistributableEjbSubsystemModel.VERSION_2_0_0.requiresTransformation(version)) {
+            // no transformation required
+            return config;
+        }
+        return config;
     }
 
     private KernelServicesBuilder createKernelServicesBuilder() {

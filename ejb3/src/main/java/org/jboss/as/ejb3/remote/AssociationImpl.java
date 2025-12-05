@@ -17,6 +17,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ConcurrentHashMap;
@@ -34,14 +35,13 @@ import org.jboss.as.ejb3.component.interceptors.CancellationFlag;
 import org.jboss.as.ejb3.component.session.SessionBeanComponent;
 import org.jboss.as.ejb3.component.stateful.StatefulSessionComponent;
 import org.jboss.as.ejb3.component.stateless.StatelessSessionComponent;
-import org.jboss.as.ejb3.deployment.DeploymentModuleIdentifier;
 import org.jboss.as.ejb3.deployment.DeploymentRepository;
-import org.jboss.as.ejb3.deployment.DeploymentRepositoryListener;
 import org.jboss.as.ejb3.deployment.EjbDeploymentInformation;
 import org.jboss.as.ejb3.deployment.ModuleDeployment;
 import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.network.ClientMapping;
 import org.jboss.as.network.ProtocolSocketBinding;
+import org.jboss.as.server.ServerEnvironment;
 import org.jboss.ejb.client.Affinity;
 import org.jboss.ejb.client.ClusterAffinity;
 import org.jboss.ejb.client.EJBClientInvocationContext;
@@ -61,6 +61,7 @@ import org.jboss.ejb.server.ModuleAvailabilityListener;
 import org.jboss.ejb.server.Request;
 import org.jboss.ejb.server.SessionOpenRequest;
 import org.jboss.invocation.InterceptorContext;
+import org.jboss.logging.Logger;
 import org.wildfly.clustering.server.Group;
 import org.wildfly.clustering.server.GroupMember;
 import org.wildfly.clustering.server.Registration;
@@ -76,6 +77,8 @@ import org.wildfly.security.manager.WildFlySecurityManager;
  */
 final class AssociationImpl implements Association, AutoCloseable {
 
+    protected static final Logger log = Logger.getLogger(AssociationImpl.class.getSimpleName());
+
     private static final String RETURNED_CONTEXT_DATA_KEY = "jboss.returned.keys";
     private static final ListenerHandle NOOP_LISTENER_HANDLE = new ListenerHandle() {
         @Override
@@ -84,15 +87,20 @@ final class AssociationImpl implements Association, AutoCloseable {
         }
     };
     private final DeploymentRepository deploymentRepository;
+    protected final ServerEnvironment serverEnvironment;
+    private final ModuleAvailabilityRegistrar moduleAvailabilityRegistrar;
     private final Map<Integer, ClusterTopologyRegistrar> clusterTopologyRegistrars;
     private volatile Executor executor;
 
-    AssociationImpl(final DeploymentRepository deploymentRepository, final List<Map.Entry<ProtocolSocketBinding, Registry<GroupMember, String, List<ClientMapping>>>> clientMappingRegistries) {
+    AssociationImpl(final DeploymentRepository deploymentRepository, final ServerEnvironment serverEnvironment, final ModuleAvailabilityRegistrar moduleAvailabilityRegistrar, final List<Map.Entry<ProtocolSocketBinding, Registry<GroupMember, String, List<ClientMapping>>>> clientMappingRegistries) {
         this.deploymentRepository = deploymentRepository;
+        this.serverEnvironment = serverEnvironment;
+        this.moduleAvailabilityRegistrar = moduleAvailabilityRegistrar;
         this.clusterTopologyRegistrars = clientMappingRegistries.isEmpty() ? Collections.emptyMap() : new HashMap<>(clientMappingRegistries.size());
         for (Map.Entry<ProtocolSocketBinding, Registry<GroupMember, String, List<ClientMapping>>> entry : clientMappingRegistries) {
             this.clusterTopologyRegistrars.put(entry.getKey().getSocketBinding().getSocketAddress().getPort(), new ClusterTopologyRegistrar(entry.getValue()));
         }
+        log.info("<init>");
     }
 
     @Override
@@ -104,6 +112,7 @@ final class AssociationImpl implements Association, AutoCloseable {
 
     @Override
     public CancelHandle receiveInvocationRequest(@NotNull final InvocationRequest invocationRequest) {
+        log.info("Calling receiveInvocationRequest()");
 
         final EJBIdentifier ejbIdentifier = invocationRequest.getEJBIdentifier();
 
@@ -256,6 +265,9 @@ final class AssociationImpl implements Association, AutoCloseable {
         };
         // invoke the method and write out the response, possibly on a separate thread
         execute(invocationRequest, runnable, isAsync, false);
+
+        log.info("Called receiveInvocationRequest()");
+
         return cancellationFlag::cancel;
     }
 
@@ -310,6 +322,7 @@ final class AssociationImpl implements Association, AutoCloseable {
     @Override
     @NotNull
     public CancelHandle receiveSessionOpenRequest(@NotNull final SessionOpenRequest sessionOpenRequest) {
+        log.info("Calling receiveSessionOpenRequest()");
 
         final EJBIdentifier ejbIdentifier = sessionOpenRequest.getEJBIdentifier();
         final String appName = ejbIdentifier.getAppName();
@@ -373,11 +386,15 @@ final class AssociationImpl implements Association, AutoCloseable {
             sessionOpenRequest.convertToStateful(sessionID);
         };
         execute(sessionOpenRequest, runnable, false, true);
+
+        log.info("Called receiveSessionOpenRequest()");
         return ignored -> cancelled.set(true);
     }
 
     @Override
     public ListenerHandle registerClusterTopologyListener(@NotNull final ClusterTopologyListener listener) {
+        log.info("Calling registerClusterTopologyListener()");
+
         SocketAddress localAddress = listener.getConnection().getLocalAddress();
         ClusterTopologyRegistrar registrar = this.findClusterTopologyRegistrar(localAddress);
         // if the registrar is null, this means that the connector has not been registered on the <remote connectors=/> attribute
@@ -392,71 +409,87 @@ final class AssociationImpl implements Association, AutoCloseable {
 
     @Override
     public ListenerHandle registerModuleAvailabilityListener(@NotNull final ModuleAvailabilityListener moduleAvailabilityListener) {
-        final DeploymentRepositoryListener listener = new DeploymentRepositoryListener() {
-            @Override
-            public void listenerAdded(final DeploymentRepository repository) {
-                List<EJBModuleIdentifier> list = new ArrayList<>();
+        log.info("Calling registerModuleAvailabilityListener()");
 
-                if (!repositoryIsSuspended()) {
+        final ModuleAvailabilityRegistrarListener listener = new ModuleAvailabilityRegistrarListener() {
+            String currentNode = AssociationImpl.this.serverEnvironment.getNodeName();
+
+            @Override
+            public void listenerAdded(final ModuleAvailabilityRegistrar registrar) {
+                List<EJBModuleIdentifier> list = new ArrayList<>();
+                EjbLogger.EJB3_INVOCATION_LOGGER.infof(" listenerAdded(%s) (repository suspended = %s, modules = %s)", currentNode, deploymentRepository.isSuspended(), registrar.getServices());
+
+                // why? this is preventing the initial update from going out
+                if (!deploymentRepository.isSuspended()) {
+                    log.info("Contacting registrar for services");
                     // only send out the initial list if the deployment repository (i.e. the server + clean transaction state) is not in a suspended state
-                    for (DeploymentModuleIdentifier deploymentModuleIdentifier : repository.getModules().keySet()) {
-                        EJBModuleIdentifier ejbModuleIdentifier = toModuleIdentifier(deploymentModuleIdentifier);
-                        list.add(ejbModuleIdentifier);
+                    for (EJBModuleIdentifier moduleId : moduleAvailabilityRegistrar.getServices()) {
+                        // for each service, add to the list of we are in the providers set
+                        Optional<GroupMember> localProvider = moduleAvailabilityRegistrar.getProviders(moduleId).stream().filter(provider -> (provider.getName().equals(currentNode))).findAny();
+                        if (!localProvider.isEmpty()) {
+                            list.add(moduleId);
+                        }
                     }
                     EjbLogger.EJB3_INVOCATION_LOGGER.debugf("Sending initial module availability to connecting client: server is not suspended");
                 } else {
                     // send out empty list if the deploymentRepository is suspended
                     EjbLogger.EJB3_INVOCATION_LOGGER.debugf("Sending empty initial module availability to connecting client: server is suspended");
                 }
-
-                moduleAvailabilityListener.moduleAvailable(list);
+                if (true) {
+                    EjbLogger.EJB3_INVOCATION_LOGGER.infof("listenerAdded (%s): sending modules %s to client", currentNode, list);
+                    moduleAvailabilityListener.moduleAvailable(list);
+                }
             }
 
             @Override
-            public void deploymentAvailable(final DeploymentModuleIdentifier deployment, final ModuleDeployment moduleDeployment) {
+            public void modulesAvailable(Map<EJBModuleIdentifier, List<GroupMember>> modules) {
+                EjbLogger.EJB3_INVOCATION_LOGGER.infof("modulesAvailable(%s): called, modules %s", currentNode, modules.keySet());
+                List<EJBModuleIdentifier> list = new ArrayList<>();
+                for (Map.Entry<EJBModuleIdentifier, List<GroupMember>> entry : modules.entrySet()) {
+                    EJBModuleIdentifier moduleId = entry.getKey();
+                    Optional<GroupMember> localProvider = entry.getValue().stream().filter(provider -> (provider.getName().equals(currentNode))).findAny();
+                    if (!localProvider.isEmpty()) {
+                        list.add(moduleId);
+                    }
+                }
+                if (!list.isEmpty()) {
+                    EjbLogger.EJB3_INVOCATION_LOGGER.infof("modulesAvailable(%s): sending modules %s to client", currentNode, list);
+                    moduleAvailabilityListener.moduleAvailable(list);
+                } else {
+                    EjbLogger.EJB3_INVOCATION_LOGGER.infof("modulesAvailable(%s): no modules to send", currentNode);
+                }
             }
 
             @Override
-            public void deploymentStarted(final DeploymentModuleIdentifier deployment, final ModuleDeployment moduleDeployment) {
-                // only send out moduleAvailability until module has started (WFLY-13009)
-                moduleAvailabilityListener.moduleAvailable(Collections.singletonList(toModuleIdentifier(deployment)));
+            public void modulesUnavailable(Map<EJBModuleIdentifier, List<GroupMember>> modules) {
+                EjbLogger.EJB3_INVOCATION_LOGGER.infof("modulesUnavailable(%s): calling with modules %s\n", currentNode, modules.keySet());
+                List<EJBModuleIdentifier> list = new ArrayList<>();
+                for (Map.Entry<EJBModuleIdentifier, List<GroupMember>> entry : modules.entrySet()) {
+                    EJBModuleIdentifier moduleId = entry.getKey();
+                    Optional<GroupMember> localProvider = entry.getValue().stream().filter(provider -> (provider.getName().equals(currentNode))).findAny();
+                    if (!localProvider.isEmpty()) {
+                        list.add(moduleId);
+                    }
+                }
+                if (!list.isEmpty()) {
+                    EjbLogger.EJB3_INVOCATION_LOGGER.infof(" modulesUnavailable(%s): sending modules %s to client", currentNode, list);
+                    moduleAvailabilityListener.moduleUnavailable(list);
+                } else {
+                    EjbLogger.EJB3_INVOCATION_LOGGER.infof("modulesAvailable(%s): no modules to send", currentNode);
+                }
             }
-
-            @Override
-            public void deploymentRemoved(final DeploymentModuleIdentifier deployment) {
-                moduleAvailabilityListener.moduleUnavailable(Collections.singletonList(toModuleIdentifier(deployment)));
-            }
-
-            @Override
-            public void deploymentSuspended(DeploymentModuleIdentifier deployment) {
-                moduleAvailabilityListener.moduleUnavailable(Collections.singletonList(toModuleIdentifier(deployment)));
-            }
-
-            @Override
-            public void deploymentResumed(DeploymentModuleIdentifier deployment) {
-                moduleAvailabilityListener.moduleAvailable(Collections.singletonList(toModuleIdentifier(deployment)));
-            }
-
-            private boolean repositoryIsSuspended() {
-                return deploymentRepository.isSuspended();
-            }
-
         };
-        deploymentRepository.addListener(listener);
-        return () -> deploymentRepository.removeListener(listener);
-    }
-
-    static EJBModuleIdentifier toModuleIdentifier(final DeploymentModuleIdentifier identifier) {
-        return new EJBModuleIdentifier(identifier.getApplicationName(), identifier.getModuleName(), identifier.getDistinctName());
+        moduleAvailabilityRegistrar.addListener(listener);
+        return () -> moduleAvailabilityRegistrar.removeListener(listener);
     }
 
     private EjbDeploymentInformation findEJB(final String appName, final String moduleName, final String distinctName, final String beanName) {
-        final DeploymentModuleIdentifier ejbModule = new DeploymentModuleIdentifier(appName, moduleName, distinctName);
-        final Map<DeploymentModuleIdentifier, ModuleDeployment> modules = this.deploymentRepository.getStartedModules();
+        final EJBModuleIdentifier moduleId = new EJBModuleIdentifier(appName, moduleName, distinctName);
+        final Map<EJBModuleIdentifier, ModuleDeployment> modules = this.deploymentRepository.getStartedModules();
         if (modules == null || modules.isEmpty()) {
             return null;
         }
-        final ModuleDeployment moduleDeployment = modules.get(ejbModule);
+        final ModuleDeployment moduleDeployment = modules.get(moduleId);
         if (moduleDeployment == null) {
             return null;
         }
@@ -560,6 +593,8 @@ final class AssociationImpl implements Association, AutoCloseable {
     }
 
     static Object invokeMethod(final ComponentView componentView, final Method method, final InvocationRequest incomingInvocation, final InvocationRequest.Resolved content, final CancellationFlag cancellationFlag, final EJBLocator<?> ejbLocator, Map<String, Object> contextDataHolder) throws Exception {
+        log.info("Calling invokeMethod()");
+
         final InterceptorContext interceptorContext = new InterceptorContext();
         interceptorContext.setParameters(content.getParameters());
         interceptorContext.setMethod(method);
@@ -611,10 +646,12 @@ final class AssociationImpl implements Association, AutoCloseable {
             }
             final Object result = invokeWithIdentity(componentView, interceptorContext, securityIdentity);
             handleReturningContextData(contextDataHolder, interceptorContext, content);
+            log.info("Called invokeMethod()");
             return result == null ? null : ((Future<?>) result).get();
         } else {
             Object result = invokeWithIdentity(componentView, interceptorContext, securityIdentity);
             handleReturningContextData(contextDataHolder, interceptorContext, content);
+            log.info("Called invokeMethod()");
             return result;
         }
     }
