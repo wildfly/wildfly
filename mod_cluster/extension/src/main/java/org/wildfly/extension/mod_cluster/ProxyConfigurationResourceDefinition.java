@@ -79,8 +79,10 @@ public class ProxyConfigurationResourceDefinition extends ChildResourceDefinitio
             @Override
             public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
                 return builder
-                        .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.SOCKET_BINDING_REF)
                         .setCapabilityReference(SocketBinding.SERVICE_DESCRIPTOR.getName())
+                        .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.SOCKET_BINDING_REF)
+                        .setValidator(new StringLengthValidator(1))
+                        .setAllowExpression(false)
                         ;
             }
         },
@@ -166,8 +168,9 @@ public class ProxyConfigurationResourceDefinition extends ChildResourceDefinitio
             public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
                 return builder
                         .setCapabilityReference(CommonServiceDescriptor.SSL_CONTEXT.getName())
-                        .setValidator(new StringLengthValidator(1))
                         .setAccessConstraints(SensitiveTargetAccessConstraintDefinition.SSL_REF)
+                        .setValidator(new StringLengthValidator(1))
+                        .setAllowExpression(false)
                         ;
             }
         },
