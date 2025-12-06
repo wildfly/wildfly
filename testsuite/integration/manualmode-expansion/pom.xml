@@ -35,7 +35,7 @@
         <byteman.port>17091</byteman.port>
         <!-- JVM args -->
         <microprofile.server.jvm.args>${server.jvm.args} -Djboss.node.name=microprofile</microprofile.server.jvm.args>
-        <!-- This module tests expanded funtionality, so use a bom that includes expansion dependencies -->
+        <!-- This module tests expanded functionality, so use a bom that includes expansion dependencies -->
         <dependency.management.import.artifact>wildfly-standard-expansion-bom</dependency.management.import.artifact>
         <dependency.management.import.test.artifact>wildfly-standard-test-expansion-bom</dependency.management.import.test.artifact>
         <channel.provisioning.phase>process-test-resources</channel.provisioning.phase>
