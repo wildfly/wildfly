@@ -35,8 +35,8 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 /**
- * <p>Test that starts a long running batchlet and performs a suspend/resume.
- * The batch should be restarted after the resume.</p>
+ * Test that starts a long-running Batchlet and performs a suspend/resume.
+ * The batch should be restarted after the resume.
  *
  * @author rmartinc
  */
@@ -81,6 +81,30 @@ public class SuspendBatchletTestCase extends AbstractBatchTestCase {
         Assert.assertEquals("The batchlet did not return the expected exit status", expectedExitStatus, steps.get(0).getExitStatus());
     }
 
+    // Reimplementation of the following if we ever decide to simplify our testing using Awaitility:
+    // Awaitility.await("batchlet to start executing").atMost(TimeoutUtil.adjust(10), TimeUnit.SECONDS).pollInterval(100, TimeUnit.MILLISECONDS).until(LongRunningBatchlet::isStarted);
+    // Alternatively also be generalized with SuspendBatchletTestCase#waitForJobRestarted
+    private static void waitForBatchletToStart(final int timeoutInSeconds) {
+        long timeoutMillis = TimeoutUtil.adjust(timeoutInSeconds * 1000); // Convert seconds to milliseconds
+        long deadline = System.currentTimeMillis() + timeoutMillis;
+        long pollIntervalMillis = 100L; // Use a fixed interval for simplicity
+
+        while (System.currentTimeMillis() < deadline) {
+            if (LongRunningBatchlet.isStarted()) {
+                return;
+            }
+
+            try {
+                TimeUnit.MILLISECONDS.sleep(pollIntervalMillis);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                throw new RuntimeException("Wait for batchlet start interrupted", e);
+            }
+        }
+
+        throw new IllegalStateException("Batchlet did not start executing within the allotted time of " + timeoutInSeconds + " seconds.");
+    }
+
     private static JobExecution waitForJobRestarted(final JobOperator jobOperator, final JobInstance jobInstance, final int timeout) {
         long waitTimeout = TimeoutUtil.adjust(timeout * 1000);
         long sleep = 100L;
@@ -119,6 +143,11 @@ public class SuspendBatchletTestCase extends AbstractBatchTestCase {
 
         long executionId = jobOperator.start("suspend-batchlet", jobProperties);
         JobExecution jobExecution = jobOperator.getJobExecution(executionId);
+
+        // Wait for the batchlet to actually start executing before suspending (WFLY-16653)
+        // JobOperator.start() is asynchronous, so we need to wait for the batchlet's
+        // process() method to be called before suspending the server
+        waitForBatchletToStart(10);
 
         suspendServer();
 
