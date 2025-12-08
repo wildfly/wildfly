@@ -9,7 +9,7 @@
     <feature-group name="core-host"/>
 
     <feature spec="host">
-        <param name="__host" value="primary"/>
+        <param name="host" value="primary"/>
         <feature spec="host.interface">
             <param name="interface" value="private"/>
             <param name="inet-address" value="${jboss.bind.address.private:127.0.0.1}"/>
