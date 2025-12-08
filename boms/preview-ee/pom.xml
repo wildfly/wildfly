@@ -76,11 +76,11 @@
         <dependencies>
 
             <!--
-                Re-expose the standard-ee deps.
+                Re-expose the common-ee deps.
              -->
             <dependency>
                 <groupId>${ee.maven.groupId}</groupId>
-                <artifactId>wildfly-standard-ee-bom</artifactId>
+                <artifactId>wildfly-common-ee-dependency-management</artifactId>
                 <version>${ee.maven.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
