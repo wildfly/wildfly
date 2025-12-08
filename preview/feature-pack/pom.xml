@@ -292,12 +292,6 @@
 
         <!-- module and copy artifact dependencies -->
 
-        <dependency>
-            <groupId>org.glassfish.soteria</groupId>
-            <artifactId>soteria</artifactId>
-            <scope>provided</scope>
-        </dependency>
-
         <!-- Deps from the source modules we copy in -->
 
         <dependency>
