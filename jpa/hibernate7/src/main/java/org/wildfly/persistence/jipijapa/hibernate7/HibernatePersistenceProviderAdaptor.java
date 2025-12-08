@@ -12,6 +12,7 @@ import jakarta.enterprise.inject.spi.BeanManager;
 import jakarta.persistence.SharedCacheMode;
 import jakarta.persistence.spi.PersistenceUnitInfo;
 import org.hibernate.cfg.AvailableSettings;
+import org.hibernate.cfg.MappingSettings;
 import org.jipijapa.cache.spi.Classification;
 import org.jipijapa.event.impl.internal.Notification;
 import org.jipijapa.plugin.spi.EntityManagerFactoryBuilder;
@@ -80,6 +81,9 @@ public class HibernatePersistenceProviderAdaptor implements PersistenceProviderA
 
         // Enable JPA Compliance mode
         putPropertyIfAbsent(pu, properties, AvailableSettings.JPA_COMPLIANCE, true);
+        // Default to CHAR type for UUID column mapping.
+        // Applications can override by setting "hibernate.type.preferred_uuid_jdbc_type" to "uuid"
+        putPropertyIfAbsent(pu, properties, MappingSettings.PREFERRED_UUID_JDBC_TYPE, "CHAR");
     }
 
     private void failOnIncompatibleSetting(PersistenceUnitMetadata pu, Map properties) {
