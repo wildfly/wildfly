@@ -5,7 +5,7 @@
 
 <subsystem xmlns="urn:jboss:domain:distributable-web:community:5.0">
     <session-management default="session">
-        <infinispan-session-management name="session" cache-container="foo" granularity="SESSION" marshaller="PROTOSTREAM">
+        <infinispan-session-management name="session" cache-container="foo" granularity="SESSION" marshaller="PROTOSTREAM" idle-threshold="PT10M">
             <ranked-affinity delimiter=":" max-routes="4"/>
         </infinispan-session-management>
         <infinispan-session-management name="attribute" cache-container="foo" cache="bar" granularity="ATTRIBUTE">
