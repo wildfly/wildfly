@@ -26,8 +26,12 @@ public abstract class JCAMetricsTestBase extends DsMgmtTestBase {
     /**
      * Load data source model, stored in specified file to the configuration
      */
+
     protected void setModel(String filename) throws Exception {
-        String xml = FileUtils.readFile(JCAMetricsTestBase.class, "data-sources/" + filename);
+        setModelXml(FileUtils.readFile(JCAMetricsTestBase.class, "data-sources/" + filename));
+    }
+
+    protected void setModelXml(String xml) throws Exception {
         List<ModelNode> operations = xmlToModelOperations(xml, Namespace.CURRENT.getUriString(), new DataSourcesExtension.DataSourceSubsystemParser());
         executeOperation(operationListToCompositeOperation(operations));
     }
