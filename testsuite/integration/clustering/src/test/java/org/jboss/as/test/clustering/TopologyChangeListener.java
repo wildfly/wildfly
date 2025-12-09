@@ -22,7 +22,6 @@ public interface TopologyChangeListener {
      * @param topology the desired topology
      * @param timeout a timeout for which to wait for the desired topology
      * @throws TimeoutException if the topology could not be established within the desired timeout
-     * @throws InterruptedException if the waiting process was interrupted.
      */
     void establishTopology(String containerName, String cacheName, Set<String> topology, Duration timeout) throws TimeoutException;
 }
