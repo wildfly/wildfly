@@ -86,9 +86,13 @@ public enum DistributableEjbSubsystemSchema implements SubsystemResourceXMLSchem
     }
 
     NamedResourceRegistrationXMLElement.Builder beanManagementElementBuilder(ResourceRegistration registration) {
-        return this.factory.namedElement(registration)
+        NamedResourceRegistrationXMLElement.Builder builder = this.factory.namedElement(registration)
                 .addAttribute(BeanManagementResourceDefinitionRegistrar.MAX_ACTIVE_BEANS)
                 ;
+        if (this.since(VERSION_2_0_COMMUNITY)) {
+            builder.addAttribute(BeanManagementResourceDefinitionRegistrar.IDLE_THRESHOLD);
+        }
+        return builder;
     }
 
     SingletonResourceRegistrationXMLChoice clientMappingsRegistryChoice() {
@@ -118,9 +122,12 @@ public enum DistributableEjbSubsystemSchema implements SubsystemResourceXMLSchem
                 .build();
     }
     NamedResourceRegistrationXMLElement infinispanTimerManagementElement() {
-        return this.factory.namedElement(InfinispanTimerManagementResourceDefinitionRegistrar.REGISTRATION)
+        NamedResourceRegistrationXMLElement.Builder builder = this.factory.namedElement(InfinispanTimerManagementResourceDefinitionRegistrar.REGISTRATION)
                 .addAttributes(InfinispanTimerManagementResourceDefinitionRegistrar.CACHE_ATTRIBUTE_GROUP.getAttributes())
-                .addAttributes(List.of(InfinispanTimerManagementResourceDefinitionRegistrar.MARSHALLER, InfinispanTimerManagementResourceDefinitionRegistrar.MAX_ACTIVE_TIMERS))
-                .build();
+                .addAttributes(List.of(InfinispanTimerManagementResourceDefinitionRegistrar.MARSHALLER, InfinispanTimerManagementResourceDefinitionRegistrar.MAX_ACTIVE_TIMERS));
+        if (this.since(VERSION_2_0_COMMUNITY)) {
+            builder.addAttribute(InfinispanTimerManagementResourceDefinitionRegistrar.IDLE_THRESHOLD);
+        }
+        return builder.build();
     }
 }
