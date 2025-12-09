@@ -77,6 +77,11 @@ cache::
 Specifies the session state cache and its configured properties
 max-active-beans::
 Specifies the maximum number of non-passivated session state entries allowed in the cache
+idle-threshold::
+Specifies the duration in ISO 8601 format after which a bean should be considered idle and eligible for passivation.
+If unspecified, beans will not be passivated based on idle time.
+This attribute uses ISO 8601 duration format (e.g., `PT10M` for 10 minutes, `PT1H` for 1 hour).
+Idle-based passivation can help optimize memory usage by passivating beans that haven't been accessed recently, even if the `max-active-beans` limit hasn't been reached.
 
 
 [[client-mappings-registries]]
@@ -125,6 +130,11 @@ cache::
 Specifies the a cache configuration within the specified cache-container
 max-active-timers::
 Specifies the maximum number active timers to retain in memory at a time, after which the least recently used will passivate
+idle-threshold::
+Specifies the duration after which a timer should be considered idle and eligible for passivation.
+If unspecified, timers will not be passivated based on idle time.
+This attribute uses ISO 8601 duration format (e.g., `PT10M` for 10 minutes, `PT1H` for 1 hour).
+This can help reduce memory consumption for applications with many scheduled timers that fire infrequently.
 marshaller::
 Specifies the marshalling implementation used to serialize the timeout context of a timer.
 JBOSS:::
