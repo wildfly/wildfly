@@ -10,6 +10,8 @@ import java.util.List;
 
 import org.jboss.as.clustering.subsystem.AdditionalInitialization;
 import org.jboss.as.controller.ModelVersion;
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.PathElement;
 import org.jboss.as.model.test.FailedOperationTransformationConfig;
 import org.jboss.as.model.test.ModelTestControllerVersion;
 import org.jboss.as.model.test.ModelTestUtils;
@@ -121,7 +123,15 @@ public class DistributableEjbTransformersTestCase extends AbstractSubsystemTest 
     }
 
     private static FailedOperationTransformationConfig createFailedOperationConfig(ModelVersion version) {
-        return new FailedOperationTransformationConfig();
+        FailedOperationTransformationConfig config = new FailedOperationTransformationConfig();
+        PathAddress subsystemAddress = PathAddress.pathAddress(DistributableEjbSubsystemResourceDefinitionRegistrar.REGISTRATION.getPathElement());
+
+        if (DistributableEjbSubsystemModel.VERSION_2_0_0.requiresTransformation(version)) {
+            config.addFailedAttribute(subsystemAddress.append(PathElement.pathElement(BeanManagementResourceRegistration.INFINISPAN.getPathElement().getKey(), "default")), new FailedOperationTransformationConfig.NewAttributesConfig(BeanManagementResourceDefinitionRegistrar.IDLE_THRESHOLD));
+            config.addFailedAttribute(subsystemAddress.append(PathElement.pathElement(InfinispanTimerManagementResourceDefinitionRegistrar.REGISTRATION.getPathElement().getKey(), "distributed")), new FailedOperationTransformationConfig.NewAttributesConfig(InfinispanTimerManagementResourceDefinitionRegistrar.IDLE_THRESHOLD));
+        }
+
+        return config;
     }
 
     private KernelServicesBuilder createKernelServicesBuilder() {

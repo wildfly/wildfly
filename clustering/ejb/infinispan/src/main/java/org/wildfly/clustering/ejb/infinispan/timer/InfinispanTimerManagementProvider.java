@@ -5,7 +5,9 @@
 
 package org.wildfly.clustering.ejb.infinispan.timer;
 
+import java.time.Duration;
 import java.util.List;
+import java.util.Optional;
 import java.util.OptionalInt;
 import java.util.function.UnaryOperator;
 
@@ -113,13 +115,19 @@ public class InfinispanTimerManagementProvider implements TimerManagementProvide
             builder.expiration().lifespan(-1).maxIdle(-1);
         }
 
-        OptionalInt size = this.configuration.getMaxActiveTimers();
-        EvictionStrategy strategy = size.isPresent() ? EvictionStrategy.REMOVE : EvictionStrategy.NONE;
-        builder.memory().storage(StorageType.HEAP).whenFull(strategy).maxCount(size.orElse(0));
+        OptionalInt size = this.configuration.getMaxSize();
+        Optional<Duration> idleThreshold = this.configuration.getIdleTimeout();
+
+        EvictionStrategy strategy = (size.isPresent() || idleThreshold.isPresent()) ? EvictionStrategy.REMOVE : EvictionStrategy.NONE;
+        builder.memory().storage(StorageType.HEAP).whenFull(strategy);
         if (strategy.isEnabled()) {
+            int maxCount = size.orElse(Integer.MAX_VALUE);
+            builder.memory().maxCount(maxCount);
             // Only evict creation meta-data entries
             // We will cascade eviction to the remaining entries for a given session
-            builder.addModule(DataContainerConfigurationBuilder.class).evictable(TimerMetaDataKey.class::isInstance);
+            DataContainerConfigurationBuilder container = builder.addModule(DataContainerConfigurationBuilder.class);
+            container.evictable(TimerMetaDataKey.class::isInstance);
+            idleThreshold.ifPresent(container::idleTimeout);
         }
 
         builder.transaction().transactionMode(TransactionMode.TRANSACTIONAL).transactionManagerLookup(EmbeddedTransactionManager::getInstance).lockingMode(LockingMode.PESSIMISTIC).locking().isolationLevel(IsolationLevel.REPEATABLE_READ);

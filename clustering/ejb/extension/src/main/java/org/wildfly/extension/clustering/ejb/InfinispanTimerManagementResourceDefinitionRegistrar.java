@@ -5,12 +5,14 @@
 
 package org.wildfly.extension.clustering.ejb;
 
+import java.time.Duration;
 import java.util.List;
 import java.util.Optional;
 import java.util.OptionalInt;
 import java.util.function.Function;
 
 import org.jboss.as.clustering.controller.EnumAttributeDefinition;
+import org.jboss.as.clustering.controller.ISOStandardDurationAttributeDefinition;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -23,6 +25,7 @@ import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.operations.validation.IntRangeValidator;
 import org.jboss.as.controller.registry.AttributeAccess.Flag;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.version.Stability;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.modules.Module;
@@ -44,6 +47,7 @@ import org.wildfly.subsystem.service.capability.CapabilityServiceInstaller;
 /**
  * Registers a resource definition for an embedded Infinispan timer management provider.
  * @author Paul Ferraro
+ * @author Radoslav Husar
  */
 public class InfinispanTimerManagementResourceDefinitionRegistrar implements ChildResourceDefinitionRegistrar, ResourceServiceConfigurator {
 
@@ -60,12 +64,17 @@ public class InfinispanTimerManagementResourceDefinitionRegistrar implements Chi
             .setValidator(new IntRangeValidator(1))
             .build();
 
+    static final ISOStandardDurationAttributeDefinition IDLE_THRESHOLD = new ISOStandardDurationAttributeDefinition.Builder("idle-threshold")
+            .setRequired(false)
+            .setStability(Stability.COMMUNITY)
+            .build();
+
     @Override
     public ManagementResourceRegistration register(ManagementResourceRegistration parent, ManagementResourceRegistrationContext context) {
         ResourceDescriptionResolver resolver = DistributableEjbSubsystemResourceDefinitionRegistrar.RESOLVER.createChildResolver(REGISTRATION.getPathElement());
         ResourceDescriptor descriptor = ResourceDescriptor.builder(resolver)
                 .addAttributes(CACHE_ATTRIBUTE_GROUP.getAttributes())
-                .addAttributes(List.of(MARSHALLER, MAX_ACTIVE_TIMERS))
+                .addAttributes(List.of(MARSHALLER, MAX_ACTIVE_TIMERS, IDLE_THRESHOLD))
                 .addCapability(CAPABILITY)
                 .withRuntimeHandler(ResourceOperationRuntimeHandler.configureService(this))
                 .build();
@@ -77,6 +86,7 @@ public class InfinispanTimerManagementResourceDefinitionRegistrar implements Chi
     @Override
     public ResourceServiceInstaller configure(OperationContext context, ModelNode model) throws OperationFailedException {
         OptionalInt maxActiveTimers = Optional.ofNullable(MAX_ACTIVE_TIMERS.resolveModelAttribute(context, model).asIntOrNull()).map(OptionalInt::of).orElse(OptionalInt.empty());
+        Optional<Duration> idleThreshold = Optional.ofNullable(IDLE_THRESHOLD.resolve(context, model));
         Function<Module, ByteBufferMarshaller> marshallerFactory = MARSHALLER.resolve(context, model);
         TimerManagementConfiguration config = new TimerManagementConfiguration() {
             @Override
@@ -85,8 +95,13 @@ public class InfinispanTimerManagementResourceDefinitionRegistrar implements Chi
             }
 
             @Override
-            public OptionalInt getMaxActiveTimers() {
+            public OptionalInt getMaxSize() {
                 return maxActiveTimers;
+            }
+
+            @Override
+            public Optional<Duration> getIdleTimeout() {
+                return idleThreshold;
             }
         };
         return CapabilityServiceInstaller.builder(CAPABILITY, new InfinispanTimerManagementProvider(config, CACHE_ATTRIBUTE_GROUP.resolve(context, model))).build();

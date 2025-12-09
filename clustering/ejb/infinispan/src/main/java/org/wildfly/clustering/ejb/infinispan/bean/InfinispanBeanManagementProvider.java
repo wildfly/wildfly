@@ -4,8 +4,10 @@
  */
 package org.wildfly.clustering.ejb.infinispan.bean;
 
+import java.time.Duration;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.OptionalInt;
 
 import org.infinispan.Cache;
@@ -27,7 +29,6 @@ import org.wildfly.clustering.ejb.bean.BeanInstance;
 import org.wildfly.clustering.ejb.bean.BeanManagementConfiguration;
 import org.wildfly.clustering.ejb.bean.BeanManagementProvider;
 import org.wildfly.clustering.ejb.bean.BeanManagerFactory;
-import org.wildfly.clustering.ejb.bean.BeanPassivationConfiguration;
 import org.wildfly.clustering.ejb.cache.bean.BeanGroupManager;
 import org.wildfly.clustering.ejb.cache.bean.DefaultBeanGroupManager;
 import org.wildfly.clustering.ejb.cache.bean.DefaultBeanGroupManagerConfiguration;
@@ -43,6 +44,7 @@ import org.wildfly.clustering.marshalling.ByteBufferMarshaller;
 import org.wildfly.clustering.marshalling.MarshalledValue;
 import org.wildfly.clustering.marshalling.MarshalledValueFactory;
 import org.wildfly.clustering.server.Registration;
+import org.wildfly.clustering.server.eviction.EvictionConfiguration;
 import org.wildfly.clustering.server.infinispan.dispatcher.CacheContainerCommandDispatcherFactory;
 import org.wildfly.clustering.server.service.BinaryServiceConfiguration;
 import org.wildfly.clustering.server.service.ClusteringServiceDescriptor;
@@ -162,7 +164,7 @@ public class InfinispanBeanManagementProvider<K, V extends BeanInstance<K>> impl
             }
 
             @Override
-            public BeanPassivationConfiguration getPassivationConfiguration() {
+            public EvictionConfiguration getPassivationConfiguration() {
                 return InfinispanBeanManagementProvider.this.configuration;
             }
 
@@ -195,13 +197,19 @@ public class InfinispanBeanManagementProvider<K, V extends BeanInstance<K>> impl
             InfinispanEjbLogger.ROOT_LOGGER.expirationDisabled(InfinispanBeanManagementProvider.this.cacheConfiguration.getChildName());
         }
 
-        OptionalInt size = InfinispanBeanManagementProvider.this.configuration.getMaxActiveBeans();
-        EvictionStrategy strategy = size.isPresent() ? EvictionStrategy.REMOVE : EvictionStrategy.MANUAL;
-        builder.memory().storage(StorageType.HEAP).whenFull(strategy).maxCount(size.orElse(0));
+        OptionalInt size = InfinispanBeanManagementProvider.this.configuration.getMaxSize();
+        Optional<Duration> idleThreshold = InfinispanBeanManagementProvider.this.configuration.getIdleTimeout();
+
+        EvictionStrategy strategy = (size.isPresent() || idleThreshold.isPresent()) ? EvictionStrategy.REMOVE : EvictionStrategy.MANUAL;
+        builder.memory().storage(StorageType.HEAP).whenFull(strategy);
         if (strategy.isEnabled()) {
+            int maxCount = size.orElse(Integer.MAX_VALUE);
+            builder.memory().maxCount(maxCount);
             // Only evict bean group entries
             // We will cascade eviction to the associated beans
-            builder.addModule(DataContainerConfigurationBuilder.class).evictable(InfinispanBeanGroupKey.class::isInstance);
+            DataContainerConfigurationBuilder container = builder.addModule(DataContainerConfigurationBuilder.class);
+            container.evictable(InfinispanBeanGroupKey.class::isInstance);
+            idleThreshold.ifPresent(container::idleTimeout);
         }
         return builder;
     }

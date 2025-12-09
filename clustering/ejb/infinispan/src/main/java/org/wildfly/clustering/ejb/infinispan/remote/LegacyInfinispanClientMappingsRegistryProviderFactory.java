@@ -39,7 +39,7 @@ public class LegacyInfinispanClientMappingsRegistryProviderFactory implements Le
         clustering.cacheMode(mode.needsStateTransfer() ? CacheMode.REPL_SYNC : CacheMode.LOCAL);
         clustering.l1().disable();
         // Ensure we use the default data container
-        builder.addModule(DataContainerConfigurationBuilder.class).evictable(null);
+        builder.addModule(DataContainerConfigurationBuilder.class);
         // Disable expiration
         builder.expiration().lifespan(-1).maxIdle(-1);
         // Disable eviction
