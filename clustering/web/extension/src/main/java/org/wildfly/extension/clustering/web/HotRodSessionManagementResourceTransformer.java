@@ -30,7 +30,7 @@ public class HotRodSessionManagementResourceTransformer extends SessionManagemen
         this.accept(version, builder);
 
         builder.getAttributeBuilder()
-                .setDiscard(DiscardAttributeChecker.ALWAYS, HotRodSessionManagementResourceDefinitionRegistrar.EXPIRATION_THREAD_POOL_SIZE.getName())
+                .setDiscard(DiscardAttributeChecker.ALWAYS, HotRodSessionManagementResourceDefinitionRegistrar.EXPIRATION_THREAD_POOL_SIZE)
                 .end();
     }
 }

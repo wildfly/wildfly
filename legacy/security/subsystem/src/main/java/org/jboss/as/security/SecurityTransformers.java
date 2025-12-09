@@ -5,8 +5,8 @@
 
 package org.jboss.as.security;
 
-import static org.jboss.as.security.Constants.MODULE;
 import static org.jboss.as.security.Constants.ORG_PICKETBOX;
+import static org.jboss.as.security.MappingProviderModuleDefinition.MODULE;
 import static org.jboss.as.security.MappingProviderModuleDefinition.PATH_PROVIDER_MODULE;
 import static org.jboss.as.security.SecuritySubsystemRootResourceDefinition.INITIALIZE_JACC;
 

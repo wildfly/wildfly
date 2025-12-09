@@ -16,7 +16,7 @@ import org.jboss.as.controller.transform.description.ResourceTransformationDescr
 import org.jboss.as.controller.transform.description.TransformationDescriptionBuilder;
 import org.kohsuke.MetaInfServices;
 
-import static org.jboss.as.connector.subsystems.resourceadapters.Constants.REPORT_DIRECTORY_NAME;
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.REPORT_DIRECTORY;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.RESOURCEADAPTER_NAME;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.WM_SECURITY;
 import static org.jboss.as.connector.subsystems.resourceadapters.ResourceAdaptersExtension.VERSION_6_0_0;
@@ -59,6 +59,6 @@ public class ResourceAdaptersTransformers implements ExtensionTransformerRegistr
 
     private static void register610Transformers(ResourceTransformationDescriptionBuilder parentBuilder) {
         // 6.0.0 doesn't contain the report-directory attribute introduced in 6.1.0
-        parentBuilder.getAttributeBuilder().setDiscard(DiscardAttributeChecker.ALWAYS, REPORT_DIRECTORY_NAME);
+        parentBuilder.getAttributeBuilder().setDiscard(DiscardAttributeChecker.ALWAYS, REPORT_DIRECTORY);
     }
 }
