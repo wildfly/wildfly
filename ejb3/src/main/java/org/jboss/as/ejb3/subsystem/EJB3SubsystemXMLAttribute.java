@@ -45,7 +45,7 @@ public enum EJB3SubsystemXMLAttribute {
 
     @Deprecated GROUPS_PATH("groups-path"),
 
-    @Deprecated IDLE_TIMEOUT("idle-timeout"),
+    IDLE_TIMEOUT("idle-timeout"),
     @Deprecated IDLE_TIMEOUT_UNIT("idle-timeout-unit"),
     INSTANCE_ACQUISITION_TIMEOUT("instance-acquisition-timeout"),
     INSTANCE_ACQUISITION_TIMEOUT_UNIT("instance-acquisition-timeout-unit"),
