@@ -242,7 +242,7 @@ public enum JGroupsSubsystemSchema implements SubsystemResourceXMLSchema<JGroups
         }
 
         if (this.since(JGroupsSubsystemSchema.VERSION_9_0_COMMUNITY)) {
-            ResourceXMLElement ssl = this.factory.element(this.factory.resolve("ssl"))
+            ResourceXMLElement ssl = this.factory.element(this.factory.resolve("ssl-context"))
                     .withCardinality(XMLCardinality.Single.OPTIONAL)
                     .addAttributes(List.of(SocketTransportResourceDefinitionRegistrar.CLIENT_SSL_CONTEXT, SocketTransportResourceDefinitionRegistrar.SERVER_SSL_CONTEXT))
                     .build();

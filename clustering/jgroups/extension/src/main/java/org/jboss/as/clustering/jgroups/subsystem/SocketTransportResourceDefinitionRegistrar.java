@@ -56,21 +56,23 @@ public class SocketTransportResourceDefinitionRegistrar<T extends BasicTCP> exte
             .setAccessConstraints(SensitiveTargetAccessConstraintDefinition.SOCKET_BINDING_REF)
             .build();
 
-    private static final String CLIENT_CONTEXT_NAME = "client-context";
-    private static final String SERVER_CONTEXT_NAME = "server-context";
+    private static final String CLIENT_SSL_CONTEXT_NAME = "client-ssl-context";
+    private static final String SERVER_SSL_CONTEXT_NAME = "server-ssl-context";
 
-    static final CapabilityReferenceAttributeDefinition<SSLContext> CLIENT_SSL_CONTEXT = new CapabilityReferenceAttributeDefinition.Builder<>(CLIENT_CONTEXT_NAME, CapabilityReference.builder(CAPABILITY, CommonServiceDescriptor.SSL_CONTEXT).build())
+    static final CapabilityReferenceAttributeDefinition<SSLContext> CLIENT_SSL_CONTEXT = new CapabilityReferenceAttributeDefinition.Builder<>(CLIENT_SSL_CONTEXT_NAME, CapabilityReference.builder(CAPABILITY, CommonServiceDescriptor.SSL_CONTEXT).build())
             .setRequired(false)
             .setStability(Stability.COMMUNITY)
             .setAccessConstraints(SensitiveTargetAccessConstraintDefinition.SSL_REF)
-            .setRequires(SERVER_CONTEXT_NAME)
+            .setRequires(SERVER_SSL_CONTEXT_NAME)
+            .setXmlName("client")
             .build();
 
-    static final CapabilityReferenceAttributeDefinition<SSLContext> SERVER_SSL_CONTEXT = new CapabilityReferenceAttributeDefinition.Builder<>(SERVER_CONTEXT_NAME, CapabilityReference.builder(CAPABILITY, CommonServiceDescriptor.SSL_CONTEXT).build())
+    static final CapabilityReferenceAttributeDefinition<SSLContext> SERVER_SSL_CONTEXT = new CapabilityReferenceAttributeDefinition.Builder<>(SERVER_SSL_CONTEXT_NAME, CapabilityReference.builder(CAPABILITY, CommonServiceDescriptor.SSL_CONTEXT).build())
             .setRequired(false)
             .setStability(Stability.COMMUNITY)
             .setAccessConstraints(SensitiveTargetAccessConstraintDefinition.SSL_REF)
-            .setRequires(CLIENT_CONTEXT_NAME)
+            .setRequires(CLIENT_SSL_CONTEXT_NAME)
+            .setXmlName("server")
             .build();
 
     SocketTransportResourceDefinitionRegistrar(Transport registration, ResourceOperationRuntimeHandler parentRuntimeHandler) {

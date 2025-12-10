@@ -21,8 +21,8 @@
                 <default-thread-pool min-threads="11"
                              max-threads="13"
                              keepalive-time="14"/>
-                <ssl client-context="my-client-ssl-context"
-                     server-context="my-server-ssl-context"/>
+                <ssl-context client="my-client-ssl-context"
+                             server="my-server-ssl-context"/>
             </transport>
             <socket-protocol type="MPING" module="org.jgroups" socket-binding="jgroups-mping"/>
             <protocol type="MERGE3"/>

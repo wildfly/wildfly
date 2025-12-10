@@ -37,8 +37,8 @@ See the following CLI script snippet for securing the transport:
 [source]
 ----
 batch
-/subsystem=jgroups/stack=tcp/transport=TCP:write-attribute(name=client-context, value=jgroupsCSC)
-/subsystem=jgroups/stack=tcp/transport=TCP:write-attribute(name=server-context, value=jgroupsSSC)
+/subsystem=jgroups/stack=tcp/transport=TCP:write-attribute(name=client-ssl-context, value=jgroupsCSC)
+/subsystem=jgroups/stack=tcp/transport=TCP:write-attribute(name=server-ssl-context, value=jgroupsSSC)
 run-batch
 ----
 
