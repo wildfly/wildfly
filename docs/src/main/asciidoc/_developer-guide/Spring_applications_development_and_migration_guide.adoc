@@ -20,8 +20,7 @@ WildFly {wildflyVersion} has a modular class loading strategy, different from pr
 versions of JBoss AS, which enforces a better class loading isolation
 between deployments and the application server itself. A detailed
 description can be found in the documentation dedicated to
-https://docs.jboss.org/author/display/AS7/Class+Loading+in+AS7[class
-loading in WildFly {wildflyVersion}].
+<<Class_Loading_in_WildFly, class loading in WildFly {wildflyVersion}>>.
 
 This reduces significantly the risk of running into a class loading
 conflict and allows applications to package their own dependencies if
@@ -32,7 +31,7 @@ persistence providers to run on WildFly {wildflyVersion}.
 At the same time, this does not mean that duplications and conflicts
 cannot exist on the classpath. Some module dependencies are implicit,
 depending on the type of deployment as shown
-https://docs.jboss.org/author/display/AS7/Implicit+module+dependencies+for+deployments[here].
+<<Implicit_module_dependencies_for_deployments, here>>
 
 [[persistence-usage-guide]]
 == Persistence usage guide
