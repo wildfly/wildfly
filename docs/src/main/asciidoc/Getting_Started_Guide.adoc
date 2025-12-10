@@ -727,7 +727,7 @@ the project documentation.
 * IronJacamar homepage: http://www.jboss.org/ironjacamar
 * Project Documentation: http://www.jboss.org/ironjacamar/docs
 * Schema description:
-http://docs.jboss.org/ironjacamar/userguide/1.0/en-US/html/deployment.html#deployingds_descriptor
+https://www.ironjacamar.org/doc/userguide/1.2/en-US/html/ch05.html#deployingds_descriptor
 
 [[configure-logging-in-wildfly]]
 === Configure Logging in WildFly
