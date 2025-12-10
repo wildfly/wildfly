@@ -56,9 +56,7 @@ public class IdleThresholdTimerPassivationTestCase {
                             .add("/subsystem=ejb3/service=timer-service:write-attribute(name=default-transient-timer-management, value=transient)")
                             .add("/subsystem=ejb3/service=timer-service:write-attribute(name=default-persistent-timer-management, value=persistent)")
                             .add("/subsystem=distributable-ejb/infinispan-timer-management=transient:write-attribute(name=idle-threshold, value=PT1S)")
-                            .add("/subsystem=distributable-ejb/infinispan-timer-management=transient:undefine-attribute(name=max-active-timers)")
                             .add("/subsystem=distributable-ejb/infinispan-timer-management=persistent:write-attribute(name=idle-threshold, value=PT1S)")
-                            .add("/subsystem=distributable-ejb/infinispan-timer-management=persistent:undefine-attribute(name=max-active-timers)")
                             .endBatch()
                             .build())
                     .build());

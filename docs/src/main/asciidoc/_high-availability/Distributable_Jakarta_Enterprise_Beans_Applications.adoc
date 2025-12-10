@@ -127,7 +127,7 @@ This provider stores timer metadata within an embedded Infinispan cache, and uti
 cache-container::
 Specifies a cache container defined in the Infinispan subsystem
 cache::
-Specifies the a cache configuration within the specified cache-container
+Specifies a cache configuration within the specified cache-container
 max-active-timers::
 Specifies the maximum number active timers to retain in memory at a time, after which the least recently used will passivate
 idle-threshold::
