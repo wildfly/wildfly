@@ -32,7 +32,7 @@ public class JaxrsSubsystem40TestCase extends AbstractSubsystemBaseTest {
 
     @Override
     protected String getSubsystemXml() throws IOException {
-        return readResource("jaxrs.xml");
+        return readResource("jaxrs-4.0.xml");
     }
 
     @Override
@@ -42,12 +42,12 @@ public class JaxrsSubsystem40TestCase extends AbstractSubsystemBaseTest {
 
     @Override
     public void testSubsystem() throws Exception {
-        standardSubsystemTest(null);
+        standardSubsystemTest(null, false);
     }
 
     @Test
     public void testExpressions() throws Exception {
-        standardSubsystemTest("jaxrs-expressions.xml");
+        standardSubsystemTest("jaxrs-expressions-4.0.xml", false);
     }
 
     @Test
@@ -82,7 +82,7 @@ public class JaxrsSubsystem40TestCase extends AbstractSubsystemBaseTest {
         assertTrue(kernelServices.isSuccessfulBoot());
         assertTrue(kernelServices.getLegacyServices(subsystemModelVersion).isSuccessfulBoot());
 
-        List<ModelNode> operations = builder.parseXmlResource("jaxrs.xml");
+        List<ModelNode> operations = builder.parseXmlResource("jaxrs-4.0.xml");
         ModelTestUtils.checkFailedTransformedBootOperations(kernelServices, subsystemModelVersion, operations, transformationConfig);
     }
 
@@ -98,7 +98,7 @@ public class JaxrsSubsystem40TestCase extends AbstractSubsystemBaseTest {
         assertTrue(kernelServices.isSuccessfulBoot());
         assertTrue(kernelServices.getLegacyServices(subsystemModelVersion).isSuccessfulBoot());
 
-        List<ModelNode> operations = builder.parseXmlResource("jaxrs.xml");
+        List<ModelNode> operations = builder.parseXmlResource("jaxrs-4.0.xml");
         ModelTestUtils.checkFailedTransformedBootOperations(kernelServices, subsystemModelVersion, operations, transformationConfig);
     }
 }
