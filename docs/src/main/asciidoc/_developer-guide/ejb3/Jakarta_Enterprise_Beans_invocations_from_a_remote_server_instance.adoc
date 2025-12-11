@@ -12,8 +12,7 @@ endif::[]
 The purpose of this chapter is to demonstrate how to lookup and invoke
 on EJBs deployed on an WildFly server instance *from another* WildFly
 server instance. This is different from invoking the EJBs
-https://docs.jboss.org/author/display/AS71/EJB+invocations+from+a+remote+client+using+JNDI[from
-a remote standalone client]
+<<EJB_invocations_from_a_remote_client_using_JNDI, from a remote standalone client>>
 
 Let's call the server, from which the invocation happens to the EJB, as
 "Client Server" and the server on which the bean is deployed as the
@@ -417,7 +416,9 @@ application is deployed successfully.
 
 We mentioned that we'll be using a servlet to invoke on the bean, but
 the code to invoke the bean isn't servlet specific and can be used in
-other components (like EJB) too. So let's see how it looks like:
+other components (like EJB) too. Syntax used in Greeter bean lookup is
+explained <<EJB_invocations_from_a_remote_client_using_JNDI, here>>.
+So let's see how it looks like:
 
 [source,java,options="nowrap"]
 ----
@@ -434,7 +435,7 @@ public void invokeOnBean() {
             // create the InitialContext
             final Context context = new javax.naming.InitialContext(props);
 
-            // Lookup the Greeter bean using the ejb: namespace syntax which is explained here https://docs.jboss.org/author/display/AS71/EJB+invocations+from+a+remote+client+using+JNDI
+            // Lookup the Greeter bean using the ejb: namespace syntax which is explained in the link above
             final Greeter bean = (Greeter) context.lookup("ejb:" + "myapp" + "/" + "myejb" + "/" + "" + "/" + "GreeterBean" + "!" + org.myapp.ejb.Greeter.class.getName());
 
    // invoke on the bean

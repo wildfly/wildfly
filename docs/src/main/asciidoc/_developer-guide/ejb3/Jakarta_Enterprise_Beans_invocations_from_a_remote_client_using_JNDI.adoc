@@ -16,18 +16,10 @@ proxy.
 [IMPORTANT]
 
 After you have read this article, do remember to take a look at
-https://docs.jboss.org/author/display/WFLY8/Remote+EJB+invocations+via+JNDI+-+EJB+client+API+or+remote-naming+project[Remote
-EJB invocations via JNDI - EJB client API or remote-naming project]
+<<Remote_Jakarta_Enterprise_Beans_invocations_via_JNDI_-_Jakarta_Enterprise_Beans_client_API_or_wildfly-naming-client_project,
+Remote Jakarta Enterprise Beans invocations via JNDI - Jakarta Enterprise Beans client API or wildfly-naming-client project>>
 
-Before getting into the details, we would like the users to know that we
-have introduced a new EJB client API, which is a WildFly-specific API
-and allows invocation on remote EJBs. This client API isn't based on
-JNDI. So remote clients need not rely on JNDI API to invoke on EJBs. A
-separate document covering the EJB remote client API will be made
-available. For now, you can refer to the javadocs of the EJB client
-project at http://docs.jboss.org/ejbclient/. In this document, we'll
-just concentrate on the traditional JNDI based invocation on EJBs. So
-let's get started:
+In this document, we'll concentrate on the traditional JNDI based invocation on EJBs. So let's get started:
 
 [[deploying-your-ejbs-on-the-server-side]]
 == Deploying your EJBs on the server side:

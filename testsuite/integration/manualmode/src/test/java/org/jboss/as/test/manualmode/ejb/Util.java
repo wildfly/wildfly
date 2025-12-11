@@ -17,7 +17,7 @@ public class Util {
 
     /**
      * Creates JNDI context string based on given parameters.
-     * See details at https://docs.jboss.org/author/display/AS71/EJB+invocations+from+a+remote+client+using+JNDI
+     * See details at <i>EJB invocations from a remote client using JNDI</i> section of WildFly developer documentation.
      *
      * @param appName       - typically the ear name without the .ear
      *                      - could be empty string when deploying just jar with EJBs

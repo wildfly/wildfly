@@ -61,8 +61,7 @@ public class MyApplication {
 }
 ----
 
-Now, we have seen in this other chapter
-https://docs.jboss.org/author/display/WFLY8/EJB+invocations+from+a+remote+client+using+JNDI[EJB
+Now, we have seen in this <<EJB_invocations_from_a_remote_client_using_JNDI, other chapter>>
 invocations from a remote client using JNDI] that the JNDI lookups are
 (typically) backed by jboss-ejb-client.properties file which is used to
 setup the EJB client context and the EJB receivers. Let's assume we have
