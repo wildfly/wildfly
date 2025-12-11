@@ -38,7 +38,7 @@ public class OrderedChildResourcesTestCase extends BuildConfigurationTestBase {
     private static final String SECONDARY_ADDRESS = System.getProperty("jboss.test.host.secondary.address", "127.0.0.1");
     private static final String SECONDARY_HOST_NAME = "secondary";
     private static final int ADJUSTED_SECOND = TimeoutUtil.adjust(1000);
-    private static final String TARGET_PROTOCOL = "pbcast.STABLE";
+    private static final String TARGET_PROTOCOL = "pbcast.GMS";
 
     @Test
     public void testOrderedChildResources() throws Exception {
@@ -70,7 +70,7 @@ public class OrderedChildResourcesTestCase extends BuildConfigurationTestBase {
 
             //Make sure that we found the protocol and that it is not at the end
             Assert.assertTrue(0 <= index);
-            Assert.assertTrue(index < originalPrimaryStack.get(PROTOCOL).keys().size() - 2);
+            Assert.assertTrue(index < originalPrimaryStack.get(PROTOCOL).keys().size() - 1);
 
             PathAddress targetProtocolAddress = stackAddress.append(PROTOCOL, TARGET_PROTOCOL);
             //Remove the protocol

@@ -3,9 +3,8 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package org.jboss.as.test.integration.domain.mixed.eap800;
+package org.jboss.as.test.integration.domain.mixed.wfly31;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXTENSION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 
 import java.util.Arrays;
@@ -19,11 +18,9 @@ import org.jboss.as.test.integration.domain.mixed.DomainAdjuster;
 import org.jboss.dmr.ModelNode;
 
 /**
- * Does adjustments to the domain model for 8.0.0 legacy secondary hosts.
- *
- * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
+ * Does adjustments to the domain model for WF31 legacy secondary hosts.
  */
-public class DomainAdjuster800 extends DomainAdjuster {
+public class DomainAdjusterWFLY31 extends DomainAdjuster {
 
     @Override
     protected List<ModelNode> adjustForVersion(final DomainClient client, PathAddress profileAddress, boolean withPrimaryServers) {
@@ -36,14 +33,8 @@ public class DomainAdjuster800 extends DomainAdjuster {
         return operations;
     }
 
-    @Override
-    protected void adjustExpansionExtensions(DomainClient client, PathAddress profileAddress) throws Exception {
-        removeSubsystemExtensionIfExist(client, profileAddress.append(SUBSYSTEM, "microprofile-jwt-smallrye"), PathAddress.pathAddress(EXTENSION, "org.wildfly.extension.microprofile.jwt-smallrye"));
-        removeSubsystemExtensionIfExist(client, profileAddress.append(SUBSYSTEM, "microprofile-config-smallrye"), PathAddress.pathAddress(EXTENSION, "org.wildfly.extension.microprofile.config-smallrye"));
-    }
-
     private static void adjustJGroups(List<ModelNode> operations, PathAddress subsystemAddress) {
-        // Remove protocols that do not exist in EAP 8.0, but don't bother replacing
+        // Remove protocols that do not exist in WFLY31, but don't bother replacing
         for (String stack : Arrays.asList("tcp", "udp")) {
             for (String protocol : Arrays.asList("NAKACK4", "UNICAST4")) {
                 operations.add(Util.createRemoveOperation(subsystemAddress.append("stack", stack).append("protocol", protocol)));
