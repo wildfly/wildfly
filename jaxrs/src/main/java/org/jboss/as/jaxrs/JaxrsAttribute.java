@@ -241,6 +241,17 @@ public abstract class JaxrsAttribute {
             .setRestartAllServices()
             .build();
 
+    static final SimpleAttributeDefinition RESTEASY_ORIGINAL_WEBAPPLICATIONEXCEPTION_BEHAVIOR =
+            new SimpleAttributeDefinitionBuilder("resteasy-original-webapplicationexception-behavior", ModelType.BOOLEAN)
+            .setRequired(false)
+            .setAllowExpression(true)
+            .setValidator(new ModelTypeValidator(ModelType.BOOLEAN, false))
+            .setDefaultValue(ModelNode.FALSE)
+            .setAttributeMarshaller(AttributeMarshallers.SIMPLE_ELEMENT)
+            .setAttributeParser(AttributeParsers.SIMPLE_ELEMENT)
+            .setRestartAllServices()
+            .build();
+
     public static final SimpleAttributeDefinition RESTEASY_PREFER_JACKSON_OVER_JSONB = new SimpleAttributeDefinitionBuilder(JaxrsConstants.RESTEASY_PREFER_JACKSON_OVER_JSONB, ModelType.BOOLEAN)
             .setRequired(false)
             .setAllowExpression(true)
@@ -376,6 +387,7 @@ public abstract class JaxrsAttribute {
             RESTEASY_LANGUAGE_MAPPINGS,
             RESTEASY_MEDIA_TYPE_MAPPINGS,
             RESTEASY_MEDIA_TYPE_PARAM_MAPPING,
+            RESTEASY_ORIGINAL_WEBAPPLICATIONEXCEPTION_BEHAVIOR,
             RESTEASY_PATCHFILTER_DISABLED,
             RESTEASY_PREFER_JACKSON_OVER_JSONB,
             RESTEASY_PROVIDERS,
