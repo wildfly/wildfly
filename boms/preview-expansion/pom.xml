@@ -44,11 +44,11 @@
             </dependency>
 
             <!--
-                Re-expose the standard-expansion deps.
+                Re-expose the common-expansion deps.
              -->
             <dependency>
                 <groupId>${full.maven.groupId}</groupId>
-                <artifactId>wildfly-standard-expansion-bom</artifactId>
+                <artifactId>wildfly-common-expansion-dependency-management</artifactId>
                 <version>${full.maven.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
