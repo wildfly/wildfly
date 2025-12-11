@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+
+<module xmlns="urn:jboss:module:1.9" name="org.wildfly.microprofile.openapi-smallrye.host">
+
+    <properties>
+        <property name="jboss.api" value="private"/>
+    </properties>
+
+    <resources>
+        <artifact name="${org.wildfly:wildfly-microprofile-openapi-smallrye-host}"/>
+    </resources>
+
+    <dependencies>
+        <module name="jakarta.ws.rs.api"/>
+
+        <module name="io.smallrye.openapi"/>
+
+        <module name="io.undertow.core"/>
+        <module name="io.undertow.servlet"/>
+
+        <module name="org.eclipse.microprofile.config.api"/>
+        <module name="org.eclipse.microprofile.openapi.api"/>
+
+        <module name="org.jboss.as.controller"/>
+        <module name="org.jboss.as.network"/>
+        <module name="org.jboss.msc"/>
+        <module name="org.jboss.resteasy.resteasy-client"/>
+        <module name="org.jboss.resteasy.resteasy-core"/>
+
+        <module name="org.wildfly.common"/>
+        <module name="org.wildfly.extension.undertow"/>
+        <module name="org.wildfly.microprofile.openapi-smallrye.spi"/>
+        <module name="org.wildfly.service"/>
+        <module name="org.wildfly.subsystem"/>
+    </dependencies>
+</module>
