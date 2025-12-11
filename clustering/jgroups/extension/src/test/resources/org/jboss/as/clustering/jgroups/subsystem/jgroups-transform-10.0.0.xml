@@ -3,7 +3,7 @@
   ~ SPDX-License-Identifier: Apache-2.0
   -->
 
-<subsystem xmlns="urn:jboss:domain:jgroups:9.0">
+<subsystem xmlns="urn:jboss:domain:jgroups:community:9.0">
     <channels default="ee">
         <channel name="ee" stack="maximal" cluster="${jgroups.ee.cluster:mycluster}" module="${jgroups.ee.module:org.wildfly.clustering.server}" statistics-enabled="${jgroups.ee.statistics-enabled:true}">
             <fork name="web">

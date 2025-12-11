@@ -4,6 +4,8 @@
  */
 package org.wildfly.clustering.jgroups.spi;
 
+import java.util.Optional;
+
 import org.jboss.as.network.SocketBinding;
 import org.jgroups.protocols.TP;
 import org.wildfly.service.descriptor.UnaryServiceDescriptor;
@@ -25,4 +27,9 @@ public interface TransportConfiguration<T extends TP> extends ProtocolConfigurat
         String getRack();
         String getSite();
     }
+
+    default Optional<TLSConfiguration> getSSLConfiguration() {
+        return Optional.empty();
+    }
+
 }

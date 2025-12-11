@@ -28,6 +28,7 @@ import org.jboss.as.controller.xml.XMLElementSchema;
 import org.jboss.as.controller.xml.XMLSequence;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.jbossallxml.JBossAllSchema;
+import org.jboss.as.version.Stability;
 import org.jboss.staxmapper.IntVersion;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.wildfly.clustering.web.service.routing.RouteLocatorProvider;
@@ -40,7 +41,7 @@ import org.wildfly.extension.clustering.web.session.hotrod.HotRodSessionManageme
 import org.wildfly.extension.clustering.web.session.infinispan.InfinispanSessionManagementProvider;
 
 /**
- * Enumerate the schema versions of the distibutable-web deployment descriptor.
+ * Enumerate the schema versions of the distributable-web deployment descriptor.
  * @author Paul Ferraro
  */
 public enum DistributableWebDeploymentSchema implements XMLElementSchema<DistributableWebDeploymentSchema, MutableDistributableWebDeploymentConfiguration>, JBossAllSchema<DistributableWebDeploymentSchema, DistributableWebDeploymentConfiguration> {
@@ -50,12 +51,17 @@ public enum DistributableWebDeploymentSchema implements XMLElementSchema<Distrib
     VERSION_3_0(3, 0),
     VERSION_4_0(4, 0),
     VERSION_5_0(5, 0),
+    VERSION_5_0_COMMUNITY(5, 0, Stability.COMMUNITY),
     ;
     private final VersionedNamespace<IntVersion, DistributableWebDeploymentSchema> namespace;
     private final XMLComponentFactory<MutableDistributableWebDeploymentConfiguration, Void> factory = XMLComponentFactory.newInstance(this);
 
     DistributableWebDeploymentSchema(int major, int minor) {
-        this.namespace = IntVersionSchema.createURN(List.of(IntVersionSchema.JBOSS_IDENTIFIER, this.getLocalName()), new IntVersion(major, minor));
+        this(major, minor, Stability.DEFAULT);
+    }
+
+    DistributableWebDeploymentSchema(int major, int minor, Stability stability) {
+        this.namespace = IntVersionSchema.createURN(List.of(IntVersionSchema.JBOSS_IDENTIFIER, this.getLocalName()), stability, new IntVersion(major, minor));
     }
 
     @Override
@@ -132,6 +138,9 @@ public enum DistributableWebDeploymentSchema implements XMLElementSchema<Distrib
                 ;
         if (this.since(VERSION_3_0)) {
             builder.addAttribute(factory.attribute(this.resolve("marshaller")).withConsumer(MutableSessionManagementConfiguration::setMarshallerFactory).build());
+        }
+        if (this == VERSION_5_0_COMMUNITY) {
+            builder.addAttribute(factory.attribute(this.resolve("idle-threshold")).withConsumer(MutableSessionManagementConfiguration::setIdleThreshold).build());
         }
         XMLSequence<C, Void> sequence = factory.sequence()
                 .addChoice(affinityChoice)

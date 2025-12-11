@@ -25,10 +25,10 @@
         <module name="org.infinispan.core"/>
         <module name="org.jgroups" optional="true"/>
         <module name="org.reactivestreams"/>
-        <module name="org.wildfly.clustering.context"/>
         <module name="org.wildfly.clustering.cache.caffeine"/>
         <module name="org.wildfly.clustering.cache.infinispan.common"/>
         <module name="org.wildfly.clustering.cache.spi"/>
+        <module name="org.wildfly.clustering.context"/>
         <module name="org.wildfly.clustering.function"/>
         <module name="org.wildfly.clustering.marshalling.spi"/>
     </dependencies>

@@ -7,9 +7,9 @@ package org.wildfly.clustering.ejb.cache.bean;
 
 import org.wildfly.clustering.ejb.bean.BeanConfiguration;
 import org.wildfly.clustering.ejb.bean.BeanInstance;
-import org.wildfly.clustering.ejb.bean.BeanPassivationConfiguration;
 import org.wildfly.clustering.server.Group;
 import org.wildfly.clustering.server.GroupMember;
+import org.wildfly.clustering.server.eviction.EvictionConfiguration;
 
 /**
  * Encapsulates the configuration of a {@link org.wildfly.clustering.ejb.bean.BeanManagerFactory} implementation.
@@ -20,6 +20,6 @@ import org.wildfly.clustering.server.GroupMember;
 public interface BeanManagerFactoryConfiguration<K, V extends BeanInstance<K>, M extends GroupMember> {
     BeanGroupManager<K, V> getBeanGroupManager();
     BeanConfiguration getBeanConfiguration();
-    BeanPassivationConfiguration getPassivationConfiguration();
+    EvictionConfiguration getPassivationConfiguration();
     Group<M> getGroup();
 }
