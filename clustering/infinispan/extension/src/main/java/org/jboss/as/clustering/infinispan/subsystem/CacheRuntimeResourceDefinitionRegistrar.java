@@ -6,7 +6,6 @@
 package org.jboss.as.clustering.infinispan.subsystem;
 
 import org.infinispan.Cache;
-import org.infinispan.eviction.impl.ActivationManager;
 import org.infinispan.eviction.impl.PassivationManager;
 import org.infinispan.interceptors.impl.CacheLoaderInterceptor;
 import org.infinispan.interceptors.impl.CacheMgmtInterceptor;
@@ -46,7 +45,7 @@ public class CacheRuntimeResourceDefinitionRegistrar implements ChildResourceDef
 
         new MetricOperationStepHandler<>(new CacheInterceptorMetricExecutor<>(this.executors, CacheMgmtInterceptor.class), CacheMetric.class).register(registration);
         new MetricOperationStepHandler<>(new CacheInterceptorMetricExecutor<>(this.executors, InvalidationInterceptor.class), CacheInvalidationInterceptorMetric.class).register(registration);
-        new MetricOperationStepHandler<>(new CacheComponentMetricExecutor<>(this.executors, ActivationManager.class), CacheActivationMetric.class).register(registration);
+        new MetricOperationStepHandler<>(new CacheComponentMetricExecutor<>(this.executors, PassivationManager.class), CacheActivationMetric.class).register(registration);
         new MetricOperationStepHandler<>(new CacheComponentMetricExecutor<>(this.executors, PassivationManager.class), CachePassivationMetric.class).register(registration);
         new MetricOperationStepHandler<>(new ClusteredCacheMetricExecutor(this.executors), ClusteredCacheMetric.class).register(registration);
         new RuntimeOperationStepHandler<>(new CacheInterceptorOperationExecutor<>(this.executors, CacheMgmtInterceptor.class), CacheOperation.class).register(registration);

@@ -66,7 +66,7 @@ public class InfinispanSessionManagementProvider extends AbstractSessionManageme
                     builder.expiration().lifespan(-1).maxIdle(-1);
                 }
 
-                OptionalInt size = configuration.getMaxSize();
+                OptionalInt size = configuration.getSizeThreshold();
                 EvictionStrategy strategy = size.isPresent() ? EvictionStrategy.REMOVE : EvictionStrategy.NONE;
                 builder.memory().storage(StorageType.HEAP)
                         .whenFull(strategy)

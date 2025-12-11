@@ -32,11 +32,11 @@ public abstract class AbstractBeanMetaDataEntryTestCase implements Consumer<Rema
         // Verify defaults
         Assert.assertEquals(this.name, entry.getName());
         Assert.assertEquals(this.groupId, entry.getGroupId());
-        Assert.assertEquals(this.created, entry.getLastAccess().getBasis());
-        Assert.assertEquals(this.created, entry.getLastAccess().get());
+        Assert.assertEquals(this.created, entry.getLastAccessTime().getBasis());
+        Assert.assertEquals(this.created, entry.getLastAccessTime().get());
 
         // Apply original state
-        entry.getLastAccess().set(this.originalLastAccessed);
+        entry.getLastAccessTime().set(this.originalLastAccessed);
 
         this.verifyOriginalState(entry);
 
@@ -44,18 +44,18 @@ public abstract class AbstractBeanMetaDataEntryTestCase implements Consumer<Rema
     }
 
     void updateState(BeanMetaDataEntry<UUID> entry) {
-        entry.getLastAccess().set(this.updatedLastAccessed);
+        entry.getLastAccessTime().set(this.updatedLastAccessed);
     }
 
     void verifyOriginalState(BeanMetaDataEntry<UUID> entry) {
         Assert.assertEquals(this.name, entry.getName());
         Assert.assertEquals(this.groupId, entry.getGroupId());
-        Assert.assertEquals(this.originalLastAccessed, entry.getLastAccess().get());
+        Assert.assertEquals(this.originalLastAccessed, entry.getLastAccessTime().get());
     }
 
     void verifyUpdatedState(BeanMetaDataEntry<UUID> entry) {
         Assert.assertEquals(this.name, entry.getName());
         Assert.assertEquals(this.groupId, entry.getGroupId());
-        Assert.assertEquals(this.updatedLastAccessed, entry.getLastAccess().get());
+        Assert.assertEquals(this.updatedLastAccessed, entry.getLastAccessTime().get());
     }
 }

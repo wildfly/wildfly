@@ -5,15 +5,14 @@
 
 package org.wildfly.clustering.ejb.infinispan.bean;
 
-import java.util.function.Consumer;
-import java.util.function.Predicate;
-import java.util.function.Supplier;
-
 import org.wildfly.clustering.cache.batch.Batch;
 import org.wildfly.clustering.ejb.bean.Bean;
 import org.wildfly.clustering.ejb.bean.BeanInstance;
 import org.wildfly.clustering.ejb.cache.bean.BeanFactory;
 import org.wildfly.clustering.ejb.infinispan.logging.InfinispanEjbLogger;
+import org.wildfly.clustering.function.Consumer;
+import org.wildfly.clustering.function.Predicate;
+import org.wildfly.clustering.function.Supplier;
 
 /**
  * The bean expiration task triggered by the expiration scheduler.
@@ -22,12 +21,12 @@ import org.wildfly.clustering.ejb.infinispan.logging.InfinispanEjbLogger;
 public class BeanExpirationTask<K, V extends BeanInstance<K>, M> implements Predicate<K> {
     private final BeanFactory<K, V, M> beanFactory;
     private final Supplier<Batch> batchFactory;
-    private final Consumer<V> expirationListener;
+    private final Consumer<Bean<K, V>> remover;
 
-    BeanExpirationTask(BeanFactory<K, V, M> beanFactory, Supplier<Batch> batchFactory, Consumer<V> expirationListener) {
+    BeanExpirationTask(BeanFactory<K, V, M> beanFactory, Supplier<Batch> batchFactory, Consumer<Bean<K, V>> remover) {
         this.beanFactory = beanFactory;
         this.batchFactory = batchFactory;
-        this.expirationListener = expirationListener;
+        this.remover = remover;
     }
 
     @Override
@@ -40,7 +39,9 @@ public class BeanExpirationTask<K, V extends BeanInstance<K>, M> implements Pred
                     try (Bean<K, V> bean = this.beanFactory.createBean(id, value)) {
                         // Ensure bean is actually expired
                         if (bean.getMetaData().isExpired()) {
-                            bean.remove(this.expirationListener);
+                            this.remover.accept(bean);
+                        } else {
+                            InfinispanEjbLogger.ROOT_LOGGER.debugf("Stateful session bean %s is not yet expired", id);
                         }
                     }
                 }

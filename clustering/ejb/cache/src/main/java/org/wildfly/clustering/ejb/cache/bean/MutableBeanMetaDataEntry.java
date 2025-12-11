@@ -34,7 +34,7 @@ public class MutableBeanMetaDataEntry<K> implements BeanMetaDataEntry<K> {
     }
 
     @Override
-    public Value<Instant> getLastAccess() {
+    public Value<Instant> getLastAccessTime() {
         return this.lastAccess;
     }
 }

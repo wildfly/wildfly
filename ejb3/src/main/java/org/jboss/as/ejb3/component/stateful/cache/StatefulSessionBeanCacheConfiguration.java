@@ -5,8 +5,7 @@
 
 package org.jboss.as.ejb3.component.stateful.cache;
 
-import java.time.Duration;
-
+import org.wildfly.clustering.server.expiration.Expiration;
 import org.wildfly.clustering.server.manager.ManagerConfiguration;
 
 /**
@@ -15,9 +14,8 @@ import org.wildfly.clustering.server.manager.ManagerConfiguration;
  * @param <K> the bean identifier type
  * @param <V> the bean instance type
  */
-public interface StatefulSessionBeanCacheConfiguration<K, V extends StatefulSessionBeanInstance<K>> extends ManagerConfiguration<K> {
+public interface StatefulSessionBeanCacheConfiguration<K, V extends StatefulSessionBeanInstance<K>> extends ManagerConfiguration<K>, Expiration {
 
     String getComponentName();
     StatefulSessionBeanInstanceFactory<V> getInstanceFactory();
-    Duration getTimeout();
 }

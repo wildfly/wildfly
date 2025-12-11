@@ -14,8 +14,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.ThreadFactory;
-import java.util.function.Predicate;
-import java.util.function.Supplier;
 
 import org.wildfly.clustering.cache.batch.Batch;
 import org.wildfly.clustering.cache.infinispan.embedded.distribution.Locality;
@@ -29,6 +27,8 @@ import org.wildfly.clustering.ejb.timer.Timer;
 import org.wildfly.clustering.ejb.timer.TimerManager;
 import org.wildfly.clustering.ejb.timer.TimerMetaData;
 import org.wildfly.clustering.ejb.timer.TimerRegistry;
+import org.wildfly.clustering.function.Predicate;
+import org.wildfly.clustering.function.Supplier;
 import org.wildfly.clustering.server.local.scheduler.ScheduledEntries;
 import org.wildfly.clustering.server.scheduler.Scheduler;
 import org.wildfly.security.manager.WildFlySecurityManager;

@@ -16,5 +16,5 @@ import org.wildfly.clustering.server.offset.Value;
  */
 public interface BeanMetaDataEntry<K> extends ImmutableBeanMetaDataEntry<K> {
     @Override
-    Value<Instant> getLastAccess();
+    Value<Instant> getLastAccessTime();
 }

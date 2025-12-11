@@ -26,6 +26,7 @@ import java.time.Instant;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Consumer;
 
@@ -85,9 +86,11 @@ public class DistributableSessionTestCase {
         String id = "id";
 
         doReturn(this.metaData).when(this.session).getMetaData();
-        doReturn(false).when(this.metaData).isNew();
+        doReturn(Optional.empty()).when(this.metaData).getLastAccessTime();
 
         io.undertow.server.session.Session session = new DistributableSession(this.manager, this.session, this.config, this.suspendedBatch, this.closeTask, this.statistics);
+
+        verify(this.metaData).getLastAccessTime();
 
         doReturn(id).when(this.session).getId();
 
@@ -102,10 +105,12 @@ public class DistributableSessionTestCase {
     public void newSessionRequestDone() {
         Instant creationTime = Instant.now();
         doReturn(this.metaData).when(this.session).getMetaData();
-        doReturn(true).when(this.metaData).isNew();
+        doReturn(Optional.empty()).when(this.metaData).getLastAccessTime();
         doReturn(creationTime).when(this.metaData).getCreationTime();
 
         io.undertow.server.session.Session session = new DistributableSession(this.manager, this.session, this.config, this.suspendedBatch, this.closeTask, this.statistics);
+
+        verify(this.metaData).getLastAccessTime();
 
         HttpServerExchange exchange = new HttpServerExchange(null);
         Context<Batch> context = mock(Context.class);
@@ -135,9 +140,11 @@ public class DistributableSessionTestCase {
     @Test
     public void existingSessionRequestDone() {
         doReturn(this.metaData).when(this.session).getMetaData();
-        doReturn(false).when(this.metaData).isNew();
+        doReturn(Optional.of(Instant.now())).when(this.metaData).getLastAccessTime();
 
         io.undertow.server.session.Session session = new DistributableSession(this.manager, this.session, this.config, this.suspendedBatch, this.closeTask, this.statistics);
+
+        verify(this.metaData).getLastAccessTime();
 
         HttpServerExchange exchange = new HttpServerExchange(null);
         Context<Batch> context = mock(Context.class);
@@ -167,11 +174,11 @@ public class DistributableSessionTestCase {
     @Test
     public void invalidSessionRequestDone() {
         doReturn(this.metaData).when(this.session).getMetaData();
-        doReturn(false).when(this.metaData).isNew();
+        doReturn(Optional.of(Instant.now())).when(this.metaData).getLastAccessTime();
 
         io.undertow.server.session.Session session = new DistributableSession(this.manager, this.session, this.config, this.suspendedBatch, this.closeTask, this.statistics);
 
-        verify(this.metaData).isNew();
+        verify(this.metaData).getLastAccessTime();
 
         HttpServerExchange exchange = new HttpServerExchange(null);
         Context<Batch> context = mock(Context.class);
@@ -192,7 +199,7 @@ public class DistributableSessionTestCase {
     @Test
     public void getCreationTime() {
         doReturn(this.metaData).when(this.session).getMetaData();
-        doReturn(false).when(this.metaData).isNew();
+        doReturn(Optional.of(Instant.now())).when(this.metaData).getLastAccessTime();
 
         io.undertow.server.session.Session session = new DistributableSession(this.manager, this.session, this.config, this.suspendedBatch, this.closeTask, this.statistics);
 
@@ -217,7 +224,7 @@ public class DistributableSessionTestCase {
     @Test
     public void getLastAccessedTime() {
         doReturn(this.metaData).when(this.session).getMetaData();
-        doReturn(false).when(this.metaData).isNew();
+        doReturn(Optional.of(Instant.now())).when(this.metaData).getLastAccessTime();
 
         io.undertow.server.session.Session session = new DistributableSession(this.manager, this.session, this.config, this.suspendedBatch, this.closeTask, this.statistics);
 
@@ -225,7 +232,7 @@ public class DistributableSessionTestCase {
 
         Instant now = Instant.now();
 
-        doReturn(now).when(this.metaData).getLastAccessStartTime();
+        doReturn(Optional.of(now)).when(this.metaData).getLastAccessStartTime();
 
         long result = session.getLastAccessedTime();
 
@@ -242,7 +249,7 @@ public class DistributableSessionTestCase {
     @Test
     public void getMaxInactiveInterval() {
         doReturn(this.metaData).when(this.session).getMetaData();
-        doReturn(false).when(this.metaData).isNew();
+        doReturn(Optional.of(Instant.now())).when(this.metaData).getLastAccessTime();
 
         io.undertow.server.session.Session session = new DistributableSession(this.manager, this.session, this.config, this.suspendedBatch, this.closeTask, this.statistics);
 
@@ -250,7 +257,7 @@ public class DistributableSessionTestCase {
 
         long expected = 3600L;
 
-        doReturn(Duration.ofSeconds(expected)).when(this.metaData).getTimeout();
+        doReturn(Optional.of(Duration.ofSeconds(expected))).when(this.metaData).getMaxIdle();
 
         long result = session.getMaxInactiveInterval();
 
@@ -267,7 +274,7 @@ public class DistributableSessionTestCase {
     @Test
     public void setMaxInactiveInterval() {
         doReturn(this.metaData).when(this.session).getMetaData();
-        doReturn(false).when(this.metaData).isNew();
+        doReturn(Optional.of(Instant.now())).when(this.metaData).getLastAccessTime();
 
         io.undertow.server.session.Session session = new DistributableSession(this.manager, this.session, this.config, this.suspendedBatch, this.closeTask, this.statistics);
 
@@ -277,7 +284,7 @@ public class DistributableSessionTestCase {
 
         session.setMaxInactiveInterval(interval);
 
-        verify(this.metaData).setTimeout(Duration.ofSeconds(interval));
+        verify(this.metaData).setMaxIdle(Duration.ofSeconds(interval));
 
         verifyNoInteractions(this.suspendedBatch);
         verify(this.session, never()).close();
@@ -289,7 +296,7 @@ public class DistributableSessionTestCase {
     @Test
     public void getAttributeNames() {
         doReturn(this.metaData).when(this.session).getMetaData();
-        doReturn(false).when(this.metaData).isNew();
+        doReturn(Optional.of(Instant.now())).when(this.metaData).getLastAccessTime();
 
         io.undertow.server.session.Session session = new DistributableSession(this.manager, this.session, this.config, this.suspendedBatch, this.closeTask, this.statistics);
 
@@ -315,7 +322,7 @@ public class DistributableSessionTestCase {
     @Test
     public void getAttribute() {
         doReturn(this.metaData).when(this.session).getMetaData();
-        doReturn(false).when(this.metaData).isNew();
+        doReturn(Optional.of(Instant.now())).when(this.metaData).getLastAccessTime();
 
         io.undertow.server.session.Session session = new DistributableSession(this.manager, this.session, this.config, this.suspendedBatch, this.closeTask, this.statistics);
 
@@ -343,7 +350,7 @@ public class DistributableSessionTestCase {
     @Test
     public void getAuthenticatedSessionAttribute() {
         doReturn(this.metaData).when(this.session).getMetaData();
-        doReturn(false).when(this.metaData).isNew();
+        doReturn(Optional.of(Instant.now())).when(this.metaData).getLastAccessTime();
 
         io.undertow.server.session.Session session = new DistributableSession(this.manager, this.session, this.config, this.suspendedBatch, this.closeTask, this.statistics);
 
@@ -391,7 +398,7 @@ public class DistributableSessionTestCase {
 
     private void getLocalContextSessionAttribute(String name) {
         doReturn(this.metaData).when(this.session).getMetaData();
-        doReturn(false).when(this.metaData).isNew();
+        doReturn(Optional.of(Instant.now())).when(this.metaData).getLastAccessTime();
 
         io.undertow.server.session.Session session = new DistributableSession(this.manager, this.session, this.config, this.suspendedBatch, this.closeTask, this.statistics);
 
@@ -412,7 +419,7 @@ public class DistributableSessionTestCase {
     @Test
     public void setAttribute() {
         doReturn(this.metaData).when(this.session).getMetaData();
-        doReturn(false).when(this.metaData).isNew();
+        doReturn(Optional.of(Instant.now())).when(this.metaData).getLastAccessTime();
 
         io.undertow.server.session.Session session = new DistributableSession(this.manager, this.session, this.config, this.suspendedBatch, this.closeTask, this.statistics);
 
@@ -449,9 +456,11 @@ public class DistributableSessionTestCase {
     @Test
     public void setNewAttribute() {
         doReturn(this.metaData).when(this.session).getMetaData();
-        doReturn(false).when(this.metaData).isNew();
+        doReturn(Optional.of(Instant.now())).when(this.metaData).getLastAccessTime();
 
         io.undertow.server.session.Session session = new DistributableSession(this.manager, this.session, this.config, this.suspendedBatch, this.closeTask, this.statistics);
+
+        verify(this.metaData).getLastAccessTime();
 
         String name = "name";
         Integer value = 1;
@@ -479,7 +488,7 @@ public class DistributableSessionTestCase {
     @Test
     public void setNullAttribute() {
         doReturn(this.metaData).when(this.session).getMetaData();
-        doReturn(false).when(this.metaData).isNew();
+        doReturn(Optional.of(Instant.now())).when(this.metaData).getLastAccessTime();
 
         io.undertow.server.session.Session session = new DistributableSession(this.manager, this.session, this.config, this.suspendedBatch, this.closeTask, this.statistics);
 
@@ -509,9 +518,11 @@ public class DistributableSessionTestCase {
     @Test
     public void setSameAttribute() {
         doReturn(this.metaData).when(this.session).getMetaData();
-        doReturn(false).when(this.metaData).isNew();
+        doReturn(Optional.of(Instant.now())).when(this.metaData).getLastAccessTime();
 
         io.undertow.server.session.Session session = new DistributableSession(this.manager, this.session, this.config, this.suspendedBatch, this.closeTask, this.statistics);
+
+        verify(this.metaData).getLastAccessTime();
 
         String name = "name";
         Integer value = 1;
@@ -539,9 +550,11 @@ public class DistributableSessionTestCase {
     @Test
     public void setAuthenticatedSessionAttribute() {
         doReturn(this.metaData).when(this.session).getMetaData();
-        doReturn(false).when(this.metaData).isNew();
+        doReturn(Optional.of(Instant.now())).when(this.metaData).getLastAccessTime();
 
         io.undertow.server.session.Session session = new DistributableSession(this.manager, this.session, this.config, this.suspendedBatch, this.closeTask, this.statistics);
+
+        verify(this.metaData).getLastAccessTime();
 
         String name = CachedAuthenticatedSessionHandler.class.getName() + ".AuthenticatedSession";
         Account account = mock(Account.class);
@@ -612,7 +625,7 @@ public class DistributableSessionTestCase {
 
     private void setLocalContextSessionAttribute(String name) {
         doReturn(this.metaData).when(this.session).getMetaData();
-        doReturn(false).when(this.metaData).isNew();
+        doReturn(Optional.of(Instant.now())).when(this.metaData).getLastAccessTime();
 
         io.undertow.server.session.Session session = new DistributableSession(this.manager, this.session, this.config, this.suspendedBatch, this.closeTask, this.statistics);
 
@@ -637,9 +650,11 @@ public class DistributableSessionTestCase {
     @Test
     public void removeAttribute() {
         doReturn(this.metaData).when(this.session).getMetaData();
-        doReturn(false).when(this.metaData).isNew();
+        doReturn(Optional.of(Instant.now())).when(this.metaData).getLastAccessTime();
 
         io.undertow.server.session.Session session = new DistributableSession(this.manager, this.session, this.config, this.suspendedBatch, this.closeTask, this.statistics);
+
+        verify(this.metaData).getLastAccessTime();
 
         String name = "name";
 
@@ -668,9 +683,11 @@ public class DistributableSessionTestCase {
     @Test
     public void removeNonExistingAttribute() {
         doReturn(this.metaData).when(this.session).getMetaData();
-        doReturn(false).when(this.metaData).isNew();
+        doReturn(Optional.of(Instant.now())).when(this.metaData).getLastAccessTime();
 
         io.undertow.server.session.Session session = new DistributableSession(this.manager, this.session, this.config, this.suspendedBatch, this.closeTask, this.statistics);
+
+        verify(this.metaData).getLastAccessTime();
 
         String name = "name";
 
@@ -694,9 +711,11 @@ public class DistributableSessionTestCase {
     @Test
     public void removeAuthenticatedSessionAttribute() {
         doReturn(this.metaData).when(this.session).getMetaData();
-        doReturn(false).when(this.metaData).isNew();
+        doReturn(Optional.of(Instant.now())).when(this.metaData).getLastAccessTime();
 
         io.undertow.server.session.Session session = new DistributableSession(this.manager, this.session, this.config, this.suspendedBatch, this.closeTask, this.statistics);
+
+        verify(this.metaData).getLastAccessTime();
 
         String name = CachedAuthenticatedSessionHandler.class.getName() + ".AuthenticatedSession";
 
@@ -748,9 +767,11 @@ public class DistributableSessionTestCase {
 
     private void removeLocalContextSessionAttribute(String name) {
         doReturn(this.metaData).when(this.session).getMetaData();
-        doReturn(false).when(this.metaData).isNew();
+        doReturn(Optional.of(Instant.now())).when(this.metaData).getLastAccessTime();
 
         io.undertow.server.session.Session session = new DistributableSession(this.manager, this.session, this.config, this.suspendedBatch, this.closeTask, this.statistics);
+
+        verify(this.metaData).getLastAccessTime();
 
         Object oldValue = new Object();
 
@@ -772,9 +793,11 @@ public class DistributableSessionTestCase {
     @Test
     public void invalidate() {
         doReturn(this.metaData).when(this.session).getMetaData();
-        doReturn(false).when(this.metaData).isNew();
+        doReturn(Optional.of(Instant.now())).when(this.metaData).getLastAccessTime();
 
         io.undertow.server.session.Session session = new DistributableSession(this.manager, this.session, this.config, this.suspendedBatch, this.closeTask, this.statistics);
+
+        verify(this.metaData).getLastAccessTime();
 
         HttpServerExchange exchange = new HttpServerExchange(null);
 
@@ -817,10 +840,12 @@ public class DistributableSessionTestCase {
         Batch batch = mock(Batch.class);
 
         doReturn(this.metaData).when(this.session).getMetaData();
-        doReturn(false).when(this.metaData).isNew();
+        doReturn(Optional.of(Instant.now())).when(this.metaData).getLastAccessTime();
         doReturn(sessionId).when(this.session).getId();
 
         io.undertow.server.session.Session session = new DistributableSession(this.manager, this.session, this.config, this.suspendedBatch, this.closeTask, this.statistics);
+
+        verify(this.metaData).getLastAccessTime();
 
         doReturn(context).when(this.suspendedBatch).resumeWithContext();
         doReturn(batch).when(context).get();
@@ -837,9 +862,11 @@ public class DistributableSessionTestCase {
     @Test
     public void getSessionManager() {
         doReturn(this.metaData).when(this.session).getMetaData();
-        doReturn(false).when(this.metaData).isNew();
+        doReturn(Optional.of(Instant.now())).when(this.metaData).getLastAccessTime();
 
         io.undertow.server.session.Session session = new DistributableSession(this.manager, this.session, this.config, this.suspendedBatch, this.closeTask, this.statistics);
+
+        verify(this.metaData).getLastAccessTime();
 
         assertSame(this.manager, session.getSessionManager());
     }
@@ -847,9 +874,11 @@ public class DistributableSessionTestCase {
     @Test
     public void changeSessionId() {
         doReturn(this.metaData).when(this.session).getMetaData();
-        doReturn(false).when(this.metaData).isNew();
+        doReturn(Optional.of(Instant.now())).when(this.metaData).getLastAccessTime();
 
         io.undertow.server.session.Session session = new DistributableSession(this.manager, this.session, this.config, this.suspendedBatch, this.closeTask, this.statistics);
+
+        verify(this.metaData).getLastAccessTime();
 
         HttpServerExchange exchange = new HttpServerExchange(null);
         SessionConfig config = mock(SessionConfig.class);
@@ -881,9 +910,9 @@ public class DistributableSessionTestCase {
         doReturn(oldMetaData).when(this.session).getMetaData();
         doReturn(newAttributes).when(newSession).getAttributes();
         doReturn(newMetaData).when(newSession).getMetaData();
-        doReturn(now).when(oldMetaData).getLastAccessStartTime();
-        doReturn(now).when(oldMetaData).getLastAccessEndTime();
-        doReturn(interval).when(oldMetaData).getTimeout();
+        doReturn(Optional.of(now)).when(oldMetaData).getLastAccessStartTime();
+        doReturn(Optional.of(now)).when(oldMetaData).getLastAccessEndTime();
+        doReturn(Optional.of(interval)).when(oldMetaData).getMaxIdle();
         doReturn(oldSessionId).when(this.session).getId();
         doReturn(newSessionId).when(newSession).getId();
         doReturn(oldContext).when(this.session).getContext();
@@ -895,7 +924,7 @@ public class DistributableSessionTestCase {
         assertSame(newSessionId, result);
 
         verify(newMetaData).setLastAccess(now, now);
-        verify(newMetaData).setTimeout(interval);
+        verify(newMetaData).setMaxIdle(interval);
         verify(newAttributes).putAll(oldAttributes);
         verify(config).setSessionId(exchange, newSessionId);
         assertEquals(oldContext, newContext);
@@ -909,10 +938,12 @@ public class DistributableSessionTestCase {
 
     public void changeSessionIdResponseCommitted() {
         doReturn(this.metaData).when(this.session).getMetaData();
-        doReturn(false).when(this.metaData).isNew();
+        doReturn(Optional.of(Instant.now())).when(this.metaData).getLastAccessTime();
         doReturn(true).when(this.session).isValid();
 
         io.undertow.server.session.Session session = new DistributableSession(this.manager, this.session, this.config, this.suspendedBatch, this.closeTask, this.statistics);
+
+        verify(this.metaData).getLastAccessTime();
 
         // Ugh - all this, just to get HttpServerExchange.isResponseStarted() to return true
         Configurable configurable = mock(Configurable.class);
@@ -940,9 +971,11 @@ public class DistributableSessionTestCase {
     @Test
     public void changeSessionIdConcurrentInvalidate() {
         doReturn(this.metaData).when(this.session).getMetaData();
-        doReturn(false).when(this.metaData).isNew();
+        doReturn(Optional.of(Instant.now())).when(this.metaData).getLastAccessTime();
 
         io.undertow.server.session.Session session = new DistributableSession(this.manager, this.session, this.config, this.suspendedBatch, this.closeTask, this.statistics);
+
+        verify(this.metaData).getLastAccessTime();
 
         HttpServerExchange exchange = new HttpServerExchange(null);
         SessionConfig config = mock(SessionConfig.class);
@@ -974,9 +1007,9 @@ public class DistributableSessionTestCase {
         doReturn(oldMetaData).when(this.session).getMetaData();
         doReturn(newAttributes).when(newSession).getAttributes();
         doReturn(newMetaData).when(newSession).getMetaData();
-        doReturn(now).when(oldMetaData).getLastAccessStartTime();
-        doReturn(now).when(oldMetaData).getLastAccessEndTime();
-        doReturn(interval).when(oldMetaData).getTimeout();
+        doReturn(Optional.of(now)).when(oldMetaData).getLastAccessStartTime();
+        doReturn(Optional.of(now)).when(oldMetaData).getLastAccessEndTime();
+        doReturn(Optional.of(interval)).when(oldMetaData).getMaxIdle();
         doReturn(oldSessionId).when(this.session).getId();
         doReturn(newSessionId).when(newSession).getId();
         doReturn(oldContext).when(this.session).getContext();

@@ -52,7 +52,7 @@ public class FineTransactionalHotRodWebFailoverTestCase extends AbstractHotRodWe
         WebArchive war = ShrinkWrap.create(WebArchive.class, DEPLOYMENT_NAME);
         war.addClasses(SimpleServlet.class, Mutable.class);
         war.setWebXML(AbstractWebFailoverTestCase.class.getPackage(), "web.xml");
-        war.addAsWebInfResource(FineTransactionalHotRodWebFailoverTestCase.class.getPackage(), "jboss-all_fine_transactional.xml", "jboss-all.xml");
+        war.addAsWebInfResource(FineTransactionalHotRodWebFailoverTestCase.class.getPackage(), "jboss-all_fine.xml", "jboss-all.xml");
         war.addAsWebInfResource(FineTransactionalHotRodWebFailoverTestCase.class.getPackage(), "jboss-web.xml", "jboss-web.xml");
         return war;
     }

@@ -5,17 +5,11 @@
 
 package org.jboss.as.clustering.infinispan.marshalling;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.UncheckedIOException;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.function.Supplier;
 
 import org.infinispan.commons.dataconversion.MediaType;
-import org.infinispan.commons.io.ByteBuffer;
-import org.infinispan.commons.io.ByteBufferImpl;
-import org.infinispan.commons.marshall.BufferSizePredictor;
 import org.infinispan.commons.marshall.Marshaller;
 import org.infinispan.commons.marshall.ProtoStreamMarshaller;
 import org.infinispan.commons.util.AggregatedClassLoader;
@@ -41,26 +35,7 @@ import org.wildfly.clustering.marshalling.protostream.modules.ModuleClassLoaderM
 public enum UserMarshallerFactory implements MarshallerFactory {
 
     DEFAULT(MediaTypes.INFINISPAN_PROTOSTREAM) {
-        private final Supplier<SerializationContextBuilder<org.infinispan.protostream.SerializationContextInitializer>> builderFactory = () -> SerializationContextBuilder.newInstance().register(new org.infinispan.protostream.SerializationContextInitializer() {
-            @Override
-            public String getProtoFileName() {
-                return null;
-            }
-
-            @Override
-            public String getProtoFile() throws UncheckedIOException {
-                return null;
-            }
-
-            @Override
-            public void registerSchema(SerializationContext context) {
-                org.infinispan.query.remote.client.impl.MarshallerRegistration.init(context);
-            }
-
-            @Override
-            public void registerMarshallers(SerializationContext context) {
-            }
-        });
+        private final Supplier<SerializationContextBuilder<org.infinispan.protostream.SerializationContextInitializer>> builderFactory = () -> SerializationContextBuilder.newInstance().register(org.infinispan.query.remote.client.impl.GlobalContextInitializer.INSTANCE);
 
         @Override
         public ByteBufferMarshaller createByteBufferMarshaller(ModuleLoader moduleLoader, List<ClassLoader> loaders) {
@@ -71,55 +46,8 @@ public enum UserMarshallerFactory implements MarshallerFactory {
         @Override
         public Marshaller createUserMarshaller(ModuleLoader moduleLoader, List<ClassLoader> loaders) {
             ImmutableSerializationContext context = this.build(this.builderFactory, loaders);
-            ByteBufferMarshaller marshaller = new WrappedMessageByteBufferMarshaller(context);
-            // N.B. RemoteQueryFactory is hard-wired to use ProtoStreamMarshaller
-            BufferSizePredictor predictor = new BufferSizePredictor() {
-                @Override
-                public int nextSize(Object object) {
-                    return marshaller.size(object).orElse(1);
-                }
-
-                @Override
-                public void recordSize(int previousSize) {
-                    // Do nothing
-                }
-            };
-            return new ProtoStreamMarshaller((SerializationContext) context) {
-                @Override
-                public Object objectFromByteBuffer(byte[] buffer, int offset, int length) throws IOException, ClassNotFoundException {
-                    return marshaller.read(java.nio.ByteBuffer.wrap(buffer, offset, length));
-                }
-
-                @Override
-                public ByteBuffer objectToBuffer(Object object) throws IOException {
-                    return ByteBufferImpl.create(marshaller.write(object));
-                }
-
-                @Override
-                protected ByteBuffer objectToBuffer(Object object, int estimatedSize) throws IOException {
-                    return this.objectToBuffer(object);
-                }
-
-                @Override
-                public byte[] objectToByteBuffer(Object object) throws IOException {
-                    return this.objectToBuffer(object).trim();
-                }
-
-                @Override
-                public byte[] objectToByteBuffer(Object object, int estimatedSize) throws IOException {
-                    return this.objectToByteBuffer(object);
-                }
-
-                @Override
-                public Object objectFromInputStream(InputStream input) throws IOException {
-                    return marshaller.readFrom(input);
-                }
-
-                @Override
-                public BufferSizePredictor getBufferSizePredictor(Object object) {
-                    return predictor;
-                }
-            };
+            // N.B. RemoteQueryFactory requires a ProtoStreamMarshaller instance via casting
+            return new ProtoStreamMarshaller((SerializationContext) context);
         }
     },
     JBOSS(MediaTypes.JBOSS_MARSHALLING) {
