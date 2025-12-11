@@ -213,6 +213,8 @@ public interface Constants {
     String CRAWLER_SESSION_MANAGEMENT = "crawler-session-management";
     String MAX_AJP_PACKET_SIZE = "max-ajp-packet-size";
     String STATISTICS_ENABLED = "statistics-enabled";
+    String ACTIVE_REQUEST_TRACKING = "active-request-tracking";
+    String LIST_ACTIVE_REQUESTS = "list-active-requests";
     String DEFAULT_SECURITY_DOMAIN = "default-security-domain";
     String DISABLE_FILE_WATCH_SERVICE = "disable-file-watch-service";
     String DISABLE_SESSION_ID_REUSE = "disable-session-id-reuse";
