@@ -9,7 +9,7 @@
     <feature-group name="core-host-primary"/>
 
     <feature spec="host">
-        <param name="__host" value="primary"/>
+        <param name="host" value="primary"/>
 
         <!-- TODO Track back and check why this override is needed. --> 
         <feature spec="host.core-service.management.management-interface.http-interface">

@@ -11,7 +11,7 @@
     </origin>
 
     <feature spec="profile">
-        <param name="__profile" value="default"/>
+        <param name="profile" value="default"/>
         <feature spec="subsystem.microprofile-config-smallrye"/>
         <feature spec="subsystem.microprofile-jwt-smallrye"/>
     </feature>

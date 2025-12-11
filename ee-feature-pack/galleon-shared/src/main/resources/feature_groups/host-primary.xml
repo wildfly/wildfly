@@ -7,7 +7,7 @@
 <feature-group-spec name="host-primary" xmlns="urn:jboss:galleon:feature-group:1.0">
     <feature-group name="servlet-host-primary"/>
     <feature spec="host">
-        <param name="__host" value="primary"/>
+        <param name="host" value="primary"/>
         <feature spec="host.jvm">
             <param name="jvm" value="default"/>
             <param name="jvm-options" value="[&quot;-server&quot;]"/>
