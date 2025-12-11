@@ -45,6 +45,8 @@ public final class SSOTestBase {
 
     public static final String USERNAME = "user1";
     public static final String PASSWORD = "password1";
+    public static final String USERNAME_2 = "user2";
+    public static final String PASSWORD_2 = "password2";
     public static final String ROLE = "Users";
 
     /*
