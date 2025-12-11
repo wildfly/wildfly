@@ -47,7 +47,7 @@ public class PassivationStoreAdd extends AbstractAddStepHandler {
             }
 
             @Override
-            public OptionalInt getMaxSize() {
+            public OptionalInt getSizeThreshold() {
                 return OptionalInt.of(maxSize);
             }
         };

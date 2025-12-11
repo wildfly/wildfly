@@ -14,6 +14,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.ServiceLoader;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
@@ -42,12 +43,16 @@ import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.PlaceholderResource;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
+import org.jgroups.Address;
 import org.jgroups.JChannel;
+import org.jgroups.fork.ForkChannel;
 import org.jgroups.jmx.JmxConfigurator;
 import org.jgroups.protocols.FORK;
 import org.jgroups.protocols.TP;
+import org.jgroups.stack.AddressGenerator;
 import org.jgroups.stack.Protocol;
 import org.jgroups.stack.ProtocolStack;
+import org.wildfly.clustering.jgroups.spi.AddressFactory;
 import org.wildfly.clustering.jgroups.spi.ChannelConfiguration;
 import org.wildfly.clustering.jgroups.spi.ForkChannelFactory;
 import org.wildfly.clustering.jgroups.spi.ForkChannelFactoryConfiguration;
@@ -229,6 +234,19 @@ public abstract class AbstractChannelResourceDefinitionRegistrar<C extends Chann
                     JChannel channel = configuration.getChannelFactory().createChannel(name);
                     if (JGroupsLogger.ROOT_LOGGER.isTraceEnabled()) {
                         JGroupsLogger.ROOT_LOGGER.tracef("JGroups channel %s created with configuration:%n %s", name, channel.getProtocolStack().printProtocolSpec(true));
+                    }
+                    if (!(channel instanceof ForkChannel)) {
+                        ServiceLoader.load(AddressFactory.class, AddressFactory.class.getClassLoader()).findFirst().ifPresent(factory -> channel.addAddressGenerator(new AddressGenerator() {
+                            @Override
+                            public Address generateAddress(String name) {
+                                return factory.createAddress(name, configuration.getChannelFactory().getConfiguration().getTransport().getTopology());
+                            }
+
+                            @Override
+                            public Address generateAddress() {
+                                return this.generateAddress(null);
+                            }
+                        }));
                     }
                     return channel.stats(configuration.isStatisticsEnabled());
                 } catch (Exception e) {

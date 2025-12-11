@@ -7,8 +7,7 @@ package org.wildfly.clustering.singleton.server;
 
 import java.util.List;
 
-import org.infinispan.remoting.transport.jgroups.JGroupsAddress;
-import org.jgroups.util.UUID;
+import org.infinispan.remoting.transport.Address;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.wildfly.clustering.marshalling.MarshallingTesterFactory;
@@ -34,7 +33,7 @@ public class CommandMarshallerTestCase {
     }
 
     private static CacheContainerGroupMember createMember() {
-        return new EmbeddedCacheManagerGroupMember(new JGroupsAddress(UUID.randomUUID()));
+        return new EmbeddedCacheManagerGroupMember(Address.random());
     }
 
     private static void assertEquals(SingletonElectionCommand command1, SingletonElectionCommand command2) {

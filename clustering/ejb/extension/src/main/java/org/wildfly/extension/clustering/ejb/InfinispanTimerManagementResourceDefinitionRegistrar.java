@@ -95,12 +95,12 @@ public class InfinispanTimerManagementResourceDefinitionRegistrar implements Chi
             }
 
             @Override
-            public OptionalInt getMaxSize() {
+            public OptionalInt getSizeThreshold() {
                 return maxActiveTimers;
             }
 
             @Override
-            public Optional<Duration> getIdleTimeout() {
+            public Optional<Duration> getIdleThreshold() {
                 return idleThreshold;
             }
         };

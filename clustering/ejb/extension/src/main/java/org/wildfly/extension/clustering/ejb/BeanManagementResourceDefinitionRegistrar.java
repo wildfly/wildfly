@@ -95,12 +95,12 @@ public abstract class BeanManagementResourceDefinitionRegistrar implements Child
         Optional<Duration> idleThreshold = Optional.ofNullable(IDLE_THRESHOLD.resolve(context, model));
         return new BeanManagementConfiguration() {
             @Override
-            public OptionalInt getMaxSize() {
+            public OptionalInt getSizeThreshold() {
                 return maxActiveBeans;
             }
 
             @Override
-            public Optional<Duration> getIdleTimeout() {
+            public Optional<Duration> getIdleThreshold() {
                 return idleThreshold;
             }
 

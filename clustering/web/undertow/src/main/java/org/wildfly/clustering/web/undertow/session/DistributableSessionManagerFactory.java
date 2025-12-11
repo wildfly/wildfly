@@ -6,16 +6,18 @@ package org.wildfly.clustering.web.undertow.session;
 
 import java.time.Duration;
 import java.util.Map;
+import java.util.Optional;
 import java.util.ServiceLoader;
 import java.util.concurrent.CompletionException;
 import java.util.function.BiFunction;
-import java.util.function.Consumer;
+import java.util.function.Predicate;
 
 import jakarta.servlet.ServletContext;
 
 import org.wildfly.clustering.cache.batch.BatchContextualizerFactory;
 import org.wildfly.clustering.context.Contextualizer;
 import org.wildfly.clustering.context.ContextualizerFactory;
+import org.wildfly.clustering.function.Consumer;
 import org.wildfly.clustering.function.Supplier;
 import org.wildfly.clustering.session.ImmutableSession;
 import org.wildfly.clustering.session.SessionManager;
@@ -34,6 +36,7 @@ import io.undertow.servlet.api.ThreadSetupHandler;
  * @author Paul Ferraro
  */
 public class DistributableSessionManagerFactory implements io.undertow.servlet.api.SessionManagerFactory {
+    private static final Predicate<Duration> MORTAL = Predicate.not(Duration::isNegative).and(Predicate.not(Duration::isZero));
     private static final ContextualizerFactory BATCH_CONTEXTUALIZER_FACTORY = ServiceLoader.load(BatchContextualizerFactory.class, BatchContextualizerFactory.class.getClassLoader()).findFirst().orElseThrow();
 
     private final SessionManagerFactory<ServletContext, Map<String, Object>> factory;
@@ -70,8 +73,8 @@ public class DistributableSessionManagerFactory implements io.undertow.servlet.a
             }
 
             @Override
-            public Duration getTimeout() {
-                return Duration.ofMinutes(this.getContext().getSessionTimeout());
+            public Optional<Duration> getMaxIdle() {
+                return Optional.of(Duration.ofMinutes(this.getContext().getSessionTimeout())).filter(MORTAL);
             }
         };
         SessionManager<Map<String, Object>> manager = this.factory.createSessionManager(configuration);

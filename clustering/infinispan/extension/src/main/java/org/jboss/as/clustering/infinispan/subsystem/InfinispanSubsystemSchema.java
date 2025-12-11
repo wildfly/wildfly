@@ -681,6 +681,7 @@ public enum InfinispanSubsystemSchema implements SubsystemResourceXMLSchema<Infi
         return builder.withContent(contentBuilder.build()).build();
     }
 
+    @SuppressWarnings("deprecation")
     private ResourceRegistrationXMLElement connectionPoolElement() {
         return this.factory.singletonElement(RemoteComponentResourceRegistration.CONNECTION_POOL)
                 .implyIfAbsent()

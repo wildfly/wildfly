@@ -31,6 +31,7 @@ import org.wildfly.subsystem.resource.ResourceDescriptor;
  * Registers a resource definition for the connection pool component of a remote cache container.
  * @author Paul Ferraro
  */
+@Deprecated
 public class ConnectionPoolResourceDefinitionRegistrar implements ChildResourceDefinitionRegistrar {
 
     public enum Attribute implements AttributeDefinitionProvider, UnaryOperator<SimpleAttributeDefinitionBuilder> {

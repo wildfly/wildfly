@@ -23,9 +23,26 @@ public interface TransportConfiguration<T extends TP> extends ProtocolConfigurat
     SocketBinding getSocketBinding();
 
     interface Topology {
-        String getMachine();
-        String getRack();
-        String getSite();
+        Topology UNSPECIFIED = new Topology() {
+            @Override
+            public Optional<String> getMachine() {
+                return Optional.empty();
+            }
+
+            @Override
+            public Optional<String> getRack() {
+                return Optional.empty();
+            }
+
+            @Override
+            public Optional<String> getSite() {
+                return Optional.empty();
+            }
+        };
+
+        Optional<String> getMachine();
+        Optional<String> getRack();
+        Optional<String> getSite();
     }
 
     default Optional<TLSConfiguration> getSSLConfiguration() {

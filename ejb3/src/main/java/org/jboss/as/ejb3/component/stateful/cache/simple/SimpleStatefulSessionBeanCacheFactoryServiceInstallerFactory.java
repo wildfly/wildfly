@@ -6,6 +6,7 @@
 package org.jboss.as.ejb3.component.stateful.cache.simple;
 
 import java.time.Duration;
+import java.util.Optional;
 import java.util.function.Function;
 
 import org.jboss.as.ejb3.component.stateful.StatefulComponentDescription;
@@ -46,8 +47,8 @@ public class SimpleStatefulSessionBeanCacheFactoryServiceInstallerFactory<K, V e
                     }
 
                     @Override
-                    public Duration getTimeout() {
-                        return configuration.getTimeout();
+                    public Optional<Duration> getMaxIdle() {
+                        return configuration.getMaxIdle();
                     }
 
                     @Override

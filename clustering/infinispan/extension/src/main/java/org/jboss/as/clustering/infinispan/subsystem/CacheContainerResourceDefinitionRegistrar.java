@@ -11,7 +11,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.ServiceLoader;
 import java.util.function.BiPredicate;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -19,7 +18,6 @@ import java.util.stream.Collectors;
 import javax.management.MBeanServer;
 
 import org.infinispan.Cache;
-import org.infinispan.commands.module.ModuleCommandExtensions;
 import org.infinispan.commons.jmx.MBeanServerLookup;
 import org.infinispan.commons.marshall.Marshaller;
 import org.infinispan.commons.util.AggregatedClassLoader;
@@ -30,7 +28,6 @@ import org.infinispan.configuration.global.ShutdownHookBehavior;
 import org.infinispan.configuration.global.ThreadPoolConfiguration;
 import org.infinispan.configuration.global.TransportConfiguration;
 import org.infinispan.configuration.global.UncleanShutdownAction;
-import org.infinispan.configuration.internal.PrivateGlobalConfigurationBuilder;
 import org.infinispan.globalstate.ConfigurationStorage;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.infinispan.protostream.SerializationContext;
@@ -225,18 +222,6 @@ public class CacheContainerResourceDefinitionRegistrar implements ChildResourceD
                 // Register dummy serialization context initializer, to bypass service loading in org.infinispan.marshall.protostream.impl.SerializationContextRegistryImpl
                 // Otherwise marshaller auto-detection will not work
                 builder.serialization().marshaller(marshaller).addContextInitializer(new SerializationContextInitializer() {
-                    @Deprecated
-                    @Override
-                    public String getProtoFile() {
-                        return null;
-                    }
-
-                    @Deprecated
-                    @Override
-                    public String getProtoFileName() {
-                        return null;
-                    }
-
                     @Override
                     public void registerMarshallers(SerializationContext context) {
                     }
@@ -269,7 +254,7 @@ public class CacheContainerResourceDefinitionRegistrar implements ChildResourceD
                 // * The 2LC stack already overrides the interceptor for distribution caches
                 // * This renders Infinispan default 2LC configuration unusable as it results in a default media type of application/unknown for keys and values
                 // See ISPN-12252 for details
-                builder.addModule(PrivateGlobalConfigurationBuilder.class).serverMode(!ServiceLoader.load(ModuleCommandExtensions.class, loader).iterator().hasNext());
+//                builder.addModule(PrivateGlobalConfigurationBuilder.class).serverMode(!ServiceLoader.load(ModuleCommandExtensions.class, loader).iterator().hasNext());
 
                 String path = InfinispanSubsystemResourceDefinitionRegistrar.REGISTRATION.getName() + File.separatorChar + name;
                 builder.globalState().enable()

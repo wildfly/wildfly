@@ -9,8 +9,6 @@ import static org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase.IN
 import static org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase.INFINISPAN_APPLICATION_USER;
 import static org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase.INFINISPAN_SERVER_ADDRESS;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
 
 import java.util.List;
 import java.util.ServiceLoader;
@@ -22,14 +20,14 @@ import org.infinispan.client.hotrod.RemoteSchemasAdmin;
 import org.infinispan.client.hotrod.RemoteSchemasAdmin.SchemaOpResult;
 import org.infinispan.client.hotrod.configuration.ConfigurationBuilder;
 import org.infinispan.commons.api.query.Query;
+import org.infinispan.commons.configuration.StringConfiguration;
 import org.infinispan.commons.marshall.ProtoStreamMarshaller;
 import org.infinispan.protostream.GeneratedSchema;
 import org.infinispan.protostream.SerializationContextInitializer;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.test.clustering.single.infinispan.query.data.Book;
-import org.jboss.as.test.clustering.single.infinispan.query.data.Person;
-import org.jboss.as.test.clustering.single.infinispan.query.data.PersonSchema;
+import org.jboss.as.test.clustering.single.infinispan.query.data.BookSchema;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
@@ -49,51 +47,55 @@ import org.junit.runner.RunWith;
  * @since 27
  */
 @RunWith(Arquillian.class)
-public class RemoteQueryTestCase {
+public class IndexedRemoteQueryTestCase {
 
     @Deployment
     public static Archive<?> deployment() {
         return ShrinkWrap
-                .create(WebArchive.class, RemoteQueryTestCase.class.getSimpleName() + ".war")
-                .addClasses(RemoteQueryTestCase.class)
+                .create(WebArchive.class, IndexedRemoteQueryTestCase.class.getSimpleName() + ".war")
+                .addClasses(IndexedRemoteQueryTestCase.class)
                 .addPackage(Book.class.getPackage())
-                .addAsServiceProvider(SerializationContextInitializer.class.getName(), PersonSchema.class.getName() + "Impl")
+                .addAsServiceProvider(SerializationContextInitializer.class.getName(), BookSchema.class.getName() + "Impl")
                 .setManifest(new StringAsset(Descriptors.create(ManifestDescriptor.class).attribute("Dependencies", "org.infinispan.commons, org.infinispan.client.hotrod, org.infinispan.protostream").exportAsString()));
     }
 
     @Test
-    public void testRemoteQuery() throws Exception {
+    public void test() {
         try (RemoteCacheManager container = this.createRemoteCacheManager()) {
-            RemoteCache<String, Person> cache = container.getCache("query");
-            try {
-                cache.put("Adrian", new Person("Adrian"));
-
-                assertTrue(cache.containsKey("Adrian"));
-
-                Query<Person> query = cache.query("FROM Person WHERE name='Adrian'");
-                List<Person> list = query.execute().list();
-                assertNotNull(list);
-                assertEquals(1, list.size());
-                assertEquals(Person.class, list.get(0).getClass());
-                assertEquals("Adrian", list.get(0).name);
-            } finally {
-                cache.clear();
+            String config = """
+{
+    "local-cache" : {
+        "encoding" : {
+            "key" : {
+                "media-type" : "application/x-protostream"
+            },
+            "value" : {
+                "media-type" : "application/x-protostream"
             }
+        },
+        "indexing" : {
+            "storage" : "local-heap",
+            "indexed-entities" : [ "Book" ]
         }
     }
-
-    /**
-     * Sorting on a field that does not contain DocValues so Hibernate Search is forced to uninvert it - ISPN-5729
-     */
-    @Test
-    public void testUninverting() throws Exception {
-        try (RemoteCacheManager container = this.createRemoteCacheManager()) {
-            RemoteCache<String, Person> cache = container.getCache("query");
+}""";
+            String cacheName = IndexedRemoteQueryTestCase.class.getSimpleName();
+            RemoteCache<Integer, Book> cache = container.administration().createCache(cacheName, new StringConfiguration(config));
             try {
-                Query<Person> query = cache.query("FROM Person WHERE name='John' ORDER BY id");
-                Assert.assertEquals(0, query.execute().list().size());
+                // Add some Books
+                Book book1 = new Book("Infinispan in Action", "Learn Infinispan by using it", 2015);
+                Book book2 = new Book("Cloud-Native Applications with Java and Quarkus", "Build robust and reliable cloud applications", 2019);
+
+                cache.put(1, book1);
+                cache.put(2, book2);
+
+                Query<Book> query = cache.query("FROM Book WHERE title:'java'");
+                List<Book> list = query.execute().list();
+                assertEquals(1, list.size());
             } finally {
                 cache.clear();
+                container.administration().reindexCache(cacheName);
+                container.administration().removeCache(cacheName);
             }
         }
     }
@@ -112,8 +114,11 @@ public class RemoteQueryTestCase {
             public void close() {
                 RemoteSchemasAdmin admin = this.administration().schemas();
                 for (GeneratedSchema schema : schemas) {
-                    SchemaOpResult result = admin.remove(schema.getName());
-                    Assert.assertFalse(result.getError(), result.hasError());
+                    // Index may still reference the book schema
+                    if (!(schema instanceof BookSchema)) {
+                        SchemaOpResult result = admin.remove(schema.getName());
+                        Assert.assertFalse(result.getError(), result.hasError());
+                    }
                 }
                 super.close();
             }

@@ -15,7 +15,7 @@ import org.infinispan.manager.EmbeddedCacheManager;
 import org.infinispan.manager.EmbeddedCacheManagerAdmin;
 
 /**
- * Custom {@link EmbeddedCacheManagerAdmin} that does not use on a GlobalConfigurationManager.
+ * Custom {@link EmbeddedCacheManagerAdmin} that does not use a GlobalConfigurationManager.
  * @author Paul Ferraro
  */
 public class DefaultCacheContainerAdmin implements EmbeddedCacheManagerAdmin {

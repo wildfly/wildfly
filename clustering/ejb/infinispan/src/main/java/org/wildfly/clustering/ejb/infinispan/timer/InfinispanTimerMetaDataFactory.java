@@ -51,7 +51,7 @@ public class InfinispanTimerMetaDataFactory<I, C> implements TimerMetaDataFactor
         this.readCache = config.getCache();
         this.readForUpdateCache = config.getReadForUpdateCache();
         this.writeCache = config.getSilentWriteCache();
-        this.removeCache = config.getWriteCache();
+        this.removeCache = config.getReadWriteCache();
         this.mutatorFactory = config.getCacheEntryMutatorFactory(TimerMetaDataEntryFunction::new);
     }
 

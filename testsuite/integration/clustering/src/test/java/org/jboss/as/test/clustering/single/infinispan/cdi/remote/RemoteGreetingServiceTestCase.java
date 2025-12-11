@@ -9,7 +9,9 @@ import static org.junit.Assert.assertEquals;
 
 import jakarta.inject.Inject;
 
+import org.infinispan.client.hotrod.DataFormat;
 import org.infinispan.client.hotrod.RemoteCache;
+import org.infinispan.commons.dataconversion.MediaType;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.test.clustering.single.infinispan.cdi.remote.deployment.RemoteGreetingCache;
@@ -38,11 +40,13 @@ public class RemoteGreetingServiceTestCase {
                 .addClass(RemoteGreetingServiceTestCase.class)
                 .addPackage(RemoteGreetingCache.class.getPackage())
                 .add(new StringAsset(Descriptors.create(ManifestDescriptor.class).attribute(
-                        "Dependencies", "org.infinispan.commons, org.infinispan.client.hotrod, org.infinispan.cdi.common meta-inf, org.infinispan.cdi.remote meta-inf"
+                        "Dependencies", "org.infinispan.commons, org.infinispan.client.hotrod, org.infinispan.cdi.common meta-inf, org.infinispan.cdi.remote meta-inf, org.infinispan.protostream"
                 ).exportAsString()), "META-INF/MANIFEST.MF")
                 .addAsWebInfResource(new StringAsset("<beans bean-discovery-mode=\"all\"></beans>"), "beans.xml")
                 ;
     }
+
+    private static final DataFormat DATA_FORMAT = DataFormat.builder().keyType(MediaType.TEXT_PLAIN).valueType(MediaType.TEXT_PLAIN).build();
 
     @Inject
     @RemoteGreetingCache
@@ -57,10 +61,14 @@ public class RemoteGreetingServiceTestCase {
         assertEquals(0, greetingCacheWithQualifier.size());
 
         // The name set with @Remote annotation on @RemoteGreetingCache
-        assertEquals("transactional", greetingCacheWithQualifier.getName());
+        assertEquals("default", greetingCacheWithQualifier.getName());
 
-        greetingCacheWithQualifier.put("Hello", this.getClass().getName());
+        try {
+            greetingCacheWithQualifier.withDataFormat(DATA_FORMAT).put("Hello", this.getClass().getName());
 
-        assertEquals(1, greetingCacheWithQualifier.size());
+            assertEquals(1, greetingCacheWithQualifier.size());
+        } finally {
+            greetingCacheWithQualifier.clear();
+        }
     }
 }
