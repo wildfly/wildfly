@@ -30,6 +30,7 @@ import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -61,6 +62,7 @@ public class TransactionalRemoteStatefulEJBFailoverTestCase extends AbstractClus
                 ;
     }
 
+    @Ignore("Until WFLY-21094 is fixed")
     @Test
     public void test(
             @ArquillianResource @OperateOnDeployment(DEPLOYMENT_1) ManagementClient client1,

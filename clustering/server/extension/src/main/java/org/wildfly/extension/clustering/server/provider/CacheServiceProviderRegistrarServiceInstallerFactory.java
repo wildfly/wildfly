@@ -19,10 +19,10 @@ import org.wildfly.subsystem.service.ServiceDependency;
 import org.wildfly.subsystem.service.ServiceInstaller;
 
 /**
- * Builds a cache-based {@link ServiceProviderRegistrationFactory} service.
+ * Used to create a configured ServiceInstaller for the distrbuted variant of the ServiceProviderRegistrar clustering abstraction.
  * @author Paul Ferraro
  */
-public class CacheServiceProviderRegistrarServiceInstallerFactory<T> extends ServiceProviderRegistrarServiceInstallerFactory<T> {
+public class CacheServiceProviderRegistrarServiceInstallerFactory<T> extends AbstractServiceProviderRegistrarServiceInstallerFactory<T> {
 
     @Override
     public ServiceInstaller apply(BinaryServiceConfiguration configuration) {

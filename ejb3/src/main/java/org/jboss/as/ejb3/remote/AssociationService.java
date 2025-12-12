@@ -27,6 +27,7 @@ import org.jboss.ejb.client.EJBModuleIdentifier;
 import org.jboss.ejb.server.Association;
 import org.jboss.ejb.server.ListenerHandle;
 import org.jboss.ejb.server.ModuleAvailabilityListener;
+import org.jboss.logging.Logger;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
@@ -51,6 +52,7 @@ import org.wildfly.discovery.spi.DiscoveryRequest;
  */
 public final class AssociationService implements Service<AssociationService> {
 
+    protected static final Logger log = Logger.getLogger(AssociationService.class.getSimpleName());
     public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("ejb", "association");
 
     private final InjectedValue<DeploymentRepository> deploymentRepositoryInjector = new InjectedValue<>();
@@ -58,6 +60,7 @@ public final class AssociationService implements Service<AssociationService> {
     private final List<Map.Entry<Value<ProtocolSocketBinding>, Value<Registry>>> clientMappingsRegistries = new LinkedList<>();
     private final InjectedValue<SuspendController> suspendControllerInjector = new InjectedValue<>();
     private final InjectedValue<ServerEnvironment> serverEnvironmentServiceInjector = new InjectedValue<>();
+    private final InjectedValue<ModuleAvailabilityRegistrar> moduleAvailabilityRegistrarInjector = new InjectedValue<>();
 
     private final Object serviceLock = new Object();
     private final Set<EJBModuleIdentifier> ourModules = new HashSet<>();
@@ -70,13 +73,14 @@ public final class AssociationService implements Service<AssociationService> {
 
     @Override
     public void start(final StartContext context) throws StartException {
+        log.info("Starting");
         // todo suspendController
         //noinspection unchecked
         List<Map.Entry<ProtocolSocketBinding, Registry<GroupMember, String, List<ClientMapping>>>> clientMappingsRegistries = this.clientMappingsRegistries.isEmpty() ? Collections.emptyList() : new ArrayList<>(this.clientMappingsRegistries.size());
         for (Map.Entry<Value<ProtocolSocketBinding>, Value<Registry>> entry : this.clientMappingsRegistries) {
             clientMappingsRegistries.add(new SimpleImmutableEntry<>(entry.getKey().getValue(), entry.getValue().getValue()));
         }
-        value = new AssociationImpl(deploymentRepositoryInjector.getValue(), clientMappingsRegistries);
+        value = new AssociationImpl(deploymentRepositoryInjector.getValue(), serverEnvironmentServiceInjector.getValue(), moduleAvailabilityRegistrarInjector.getValue(), clientMappingsRegistries);
 
         String ourNodeName = serverEnvironmentServiceInjector.getValue().getNodeName();
 
@@ -141,10 +145,12 @@ public final class AssociationService implements Service<AssociationService> {
             result.complete();
             return DiscoveryRequest.NULL;
         });
+        log.info("Started");
     }
 
     @Override
     public void stop(final StopContext context) {
+        log.info("Stopping");
         value.close();
         value = null;
         moduleAvailabilityListener.close();
@@ -154,6 +160,7 @@ public final class AssociationService implements Service<AssociationService> {
             cachedServiceURL = null;
             ourModules.clear();
         }
+        log.info("Stopped");
     }
 
     @Override
@@ -167,6 +174,10 @@ public final class AssociationService implements Service<AssociationService> {
 
     public InjectedValue<DeploymentRepository> getDeploymentRepositoryInjector() {
         return deploymentRepositoryInjector;
+    }
+
+    public InjectedValue<ModuleAvailabilityRegistrar> getModuleAvailabilityRegistrarInjector() {
+        return moduleAvailabilityRegistrarInjector;
     }
 
     public Map.Entry<Injector<ProtocolSocketBinding>, Injector<Registry>> addConnectorInjectors(String connectorName) {
