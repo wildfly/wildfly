@@ -368,7 +368,7 @@
             Properties for dependencies that solely relate to tests go in the test code section above.
          -->
         <version.antlr>4.13.0</version.antlr>
-        <version.at.yawk.lz4.lz4-java>1.8.1</version.at.yawk.lz4.lz4-java>
+        <version.at.yawk.lz4.lz4-java>1.10.1</version.at.yawk.lz4.lz4-java>
         <version.com.carrotsearch.hppc>0.10.0</version.com.carrotsearch.hppc>
         <version.com.fasterxml.classmate>1.5.1</version.com.fasterxml.classmate>
         <version.com.fasterxml.jackson>2.20.1</version.com.fasterxml.jackson>
