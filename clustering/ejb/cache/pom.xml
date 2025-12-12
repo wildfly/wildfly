@@ -100,12 +100,5 @@
             <scope>test</scope>
             <classifier>tests</classifier>
         </dependency>
-
-        <!-- External test dependencies -->
-        <dependency>
-            <groupId>com.squareup</groupId>
-            <artifactId>protoparser</artifactId>
-            <scope>test</scope>
-        </dependency>
     </dependencies>
 </project>

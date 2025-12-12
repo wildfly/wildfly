@@ -56,11 +56,6 @@
 
         <!-- External test dependencies -->
         <dependency>
-            <groupId>com.squareup</groupId>
-            <artifactId>protoparser</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
             <groupId>org.wildfly.clustering</groupId>
             <artifactId>wildfly-clustering-marshalling-jboss</artifactId>
             <scope>test</scope>
