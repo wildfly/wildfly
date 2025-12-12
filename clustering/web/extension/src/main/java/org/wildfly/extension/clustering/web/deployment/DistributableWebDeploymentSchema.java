@@ -139,7 +139,7 @@ public enum DistributableWebDeploymentSchema implements XMLElementSchema<Distrib
         if (this.since(VERSION_3_0)) {
             builder.addAttribute(factory.attribute(this.resolve("marshaller")).withConsumer(MutableSessionManagementConfiguration::setMarshallerFactory).build());
         }
-        if (this == VERSION_5_0_COMMUNITY) {
+        if (this.since(VERSION_5_0_COMMUNITY)) {
             builder.addAttribute(factory.attribute(this.resolve("idle-threshold")).withConsumer(MutableSessionManagementConfiguration::setIdleThreshold).build());
         }
         XMLSequence<C, Void> sequence = factory.sequence()

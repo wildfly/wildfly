@@ -17,16 +17,18 @@ import org.jboss.as.controller.transform.description.ResourceTransformationDescr
  */
 public class TimerManagementResourceTransformer implements Consumer<ModelVersion> {
 
-    private final ResourceTransformationDescriptionBuilder builder;
+    private final ResourceTransformationDescriptionBuilder parent;
 
-    TimerManagementResourceTransformer(ResourceTransformationDescriptionBuilder builder) {
-        this.builder = builder;
+    TimerManagementResourceTransformer(ResourceTransformationDescriptionBuilder parent) {
+        this.parent = parent;
     }
 
     @Override
     public void accept(ModelVersion version) {
+        ResourceTransformationDescriptionBuilder builder = this.parent.addChildResource(InfinispanTimerManagementResourceDefinitionRegistrar.REGISTRATION.getPathElement());
+
         if (DistributableEjbSubsystemModel.VERSION_2_0_0.requiresTransformation(version)) {
-            this.builder.getAttributeBuilder()
+            builder.getAttributeBuilder()
                     .setDiscard(DiscardAttributeChecker.UNDEFINED, InfinispanTimerManagementResourceDefinitionRegistrar.IDLE_THRESHOLD)
                     .addRejectCheck(RejectAttributeChecker.DEFINED, InfinispanTimerManagementResourceDefinitionRegistrar.IDLE_THRESHOLD)
                     .end();

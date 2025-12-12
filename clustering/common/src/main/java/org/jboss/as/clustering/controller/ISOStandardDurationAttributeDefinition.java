@@ -20,6 +20,8 @@ import org.wildfly.subsystem.resource.ResourceModelResolver;
  * This directly maps to the XSD type {@code xs:duration}.
  * Values are validated by calling {@link Duration#parse(CharSequence)}.
  *
+ * FIXME This is intended to be replaced with variant from WildFly Core.
+ *
  * @author Radoslav Husar
  */
 public class ISOStandardDurationAttributeDefinition extends SimpleAttributeDefinition implements ResourceModelResolver<Duration> {
@@ -41,7 +43,7 @@ public class ISOStandardDurationAttributeDefinition extends SimpleAttributeDefin
             this.setAllowExpression(true);
             this.setFlags(Flag.RESTART_RESOURCE_SERVICES);
             this.setValidator((parameterName, value) -> {
-                if (value.isDefined()) {
+                if (value.isDefined() && value.getType() != ModelType.EXPRESSION) {
                     String stringValue = value.asString();
                     try {
                         Duration.parse(stringValue);

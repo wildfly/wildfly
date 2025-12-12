@@ -17,16 +17,18 @@ import org.jboss.as.controller.transform.description.ResourceTransformationDescr
  */
 public class BeanManagementResourceTransformer implements Consumer<ModelVersion> {
 
-    private final ResourceTransformationDescriptionBuilder builder;
+    private final ResourceTransformationDescriptionBuilder parent;
 
-    BeanManagementResourceTransformer(ResourceTransformationDescriptionBuilder builder) {
-        this.builder = builder;
+    BeanManagementResourceTransformer(ResourceTransformationDescriptionBuilder parent) {
+        this.parent = parent;
     }
 
     @Override
     public void accept(ModelVersion version) {
+        ResourceTransformationDescriptionBuilder builder = this.parent.addChildResource(BeanManagementResourceRegistration.INFINISPAN.getPathElement());
+
         if (DistributableEjbSubsystemModel.VERSION_2_0_0.requiresTransformation(version)) {
-            this.builder.getAttributeBuilder()
+            builder.getAttributeBuilder()
                     .setDiscard(DiscardAttributeChecker.UNDEFINED, BeanManagementResourceDefinitionRegistrar.IDLE_THRESHOLD)
                     .addRejectCheck(RejectAttributeChecker.DEFINED, BeanManagementResourceDefinitionRegistrar.IDLE_THRESHOLD)
                     .end();

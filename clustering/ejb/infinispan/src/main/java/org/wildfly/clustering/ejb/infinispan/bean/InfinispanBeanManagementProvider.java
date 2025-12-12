@@ -203,6 +203,9 @@ public class InfinispanBeanManagementProvider<K, V extends BeanInstance<K>> impl
         EvictionStrategy strategy = (size.isPresent() || idleThreshold.isPresent()) ? EvictionStrategy.REMOVE : EvictionStrategy.MANUAL;
         builder.memory().storage(StorageType.HEAP).whenFull(strategy);
         if (strategy.isEnabled()) {
+            // When an idle-timeout is configured without a size threshold, the cache's size limit must still be configured due to Infinispan's requirements.
+            // As a workaround we explicitly set maxCount(..) to Integer.MAX_VALUE.
+            // This in effect ensures that eviction is governed solely by idleness rather than hitting of the size constraint.
             int maxCount = size.orElse(Integer.MAX_VALUE);
             builder.memory().maxCount(maxCount);
             // Only evict bean group entries

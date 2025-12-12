@@ -8,6 +8,7 @@ package org.wildfly.extension.clustering.web.deployment;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.time.Duration;
 import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.Locale;
@@ -19,7 +20,9 @@ import javax.xml.stream.XMLStreamReader;
 
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.version.Stability;
+import org.jboss.metadata.property.PropertyReplacer;
 import org.jboss.metadata.property.PropertyReplacers;
+import org.jboss.metadata.property.SystemPropertyResolver;
 import org.jboss.staxmapper.XMLMapper;
 import org.junit.Assert;
 import org.junit.Test;
@@ -46,6 +49,8 @@ public class DistributableWebDeploymentSchemaTestCase {
         return EnumSet.allOf(DistributableWebDeploymentSchema.class);
     }
 
+    private static final PropertyReplacer PROPERTY_REPLACER = PropertyReplacers.resolvingExpressionReplacer(SystemPropertyResolver.INSTANCE);
+
     private final DistributableWebDeploymentSchema schema;
 
     public DistributableWebDeploymentSchemaTestCase(DistributableWebDeploymentSchema schema) {
@@ -69,7 +74,7 @@ public class DistributableWebDeploymentSchemaTestCase {
         mapper.registerRootElement(this.schema.getQualifiedName(), this.schema);
         try (InputStream input = url.openStream()) {
             XMLStreamReader reader = XMLInputFactory.newInstance().createXMLStreamReader(input);
-            MutableDistributableWebDeploymentConfiguration config = new MutableDistributableWebDeploymentConfiguration(PropertyReplacers.noop());
+            MutableDistributableWebDeploymentConfiguration config = new MutableDistributableWebDeploymentConfiguration(PROPERTY_REPLACER);
             mapper.parseDocument(config, reader);
 
             Assert.assertNull(config.getSessionManagementProvider());
@@ -89,7 +94,7 @@ public class DistributableWebDeploymentSchemaTestCase {
         mapper.registerRootElement(this.schema.getQualifiedName(), this.schema);
         try (InputStream input = url.openStream()) {
             XMLStreamReader reader = XMLInputFactory.newInstance().createXMLStreamReader(input);
-            MutableDistributableWebDeploymentConfiguration config = new MutableDistributableWebDeploymentConfiguration(PropertyReplacers.noop());
+            MutableDistributableWebDeploymentConfiguration config = new MutableDistributableWebDeploymentConfiguration(PROPERTY_REPLACER);
             mapper.parseDocument(config, reader);
 
             Assert.assertNull(config.getSessionManagementName());
@@ -113,6 +118,11 @@ public class DistributableWebDeploymentSchemaTestCase {
                 Assert.assertTrue(provider.getRouteLocatorProvider() instanceof NullRouteLocatorProvider);
             }
 
+            if (this.schema.since(DistributableWebDeploymentSchema.VERSION_5_0_COMMUNITY)) {
+                Assert.assertTrue(configuration.getIdleThreshold().isPresent());
+                Assert.assertEquals(Duration.ofMinutes(10), configuration.getIdleThreshold().get());
+            }
+
             Assert.assertNotNull(config.getImmutableClasses());
             Assert.assertEquals(Arrays.asList(Locale.class.getName(), UUID.class.getName()), config.getImmutableClasses());
         } finally {
@@ -127,7 +137,7 @@ public class DistributableWebDeploymentSchemaTestCase {
         mapper.registerRootElement(this.schema.getQualifiedName(), this.schema);
         try (InputStream input = url.openStream()) {
             XMLStreamReader reader = XMLInputFactory.newInstance().createXMLStreamReader(input);
-            MutableDistributableWebDeploymentConfiguration config = new MutableDistributableWebDeploymentConfiguration(PropertyReplacers.noop());
+            MutableDistributableWebDeploymentConfiguration config = new MutableDistributableWebDeploymentConfiguration(PROPERTY_REPLACER);
             mapper.parseDocument(config, reader);
 
             Assert.assertNull(config.getSessionManagementName());
