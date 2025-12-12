@@ -5,14 +5,12 @@
 
 package org.jboss.as.test.integration.jpa.earbytecodeenhancement;
 
-import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
-import javax.naming.InitialContext;
+import jakarta.inject.Inject;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
@@ -47,12 +45,10 @@ public class EJBJarPackagingTestCase {
         return ear;
     }
 
-    @ArquillianResource
-    private static InitialContext iniCtx;
+    private @Inject EmployeeBean bean;
 
     @Test
     public void testEntityByteCodeIsEnhanced() throws Exception {
-            EmployeeBean bean = (EmployeeBean) iniCtx.lookup("java:app/ejbjar/EmployeeBean");
             assertTrue("Employee entity class needs to be bytecode enhanced",
                     bean.isEmployeeClassByteCodeEnhanced());
             assertTrue("Organisation entity class (that resides in ear/lib/lib.jar) needs to be bytecode enhanced",
