@@ -17,6 +17,8 @@ import org.hibernate.Filter;
 import org.hibernate.HibernateException;
 import org.hibernate.LockMode;
 import org.hibernate.SessionFactory;
+import org.hibernate.SharedSessionBuilder;
+import org.hibernate.SharedStatelessSessionBuilder;
 import org.hibernate.StatelessSession;
 import org.hibernate.Transaction;
 import org.hibernate.graph.GraphSemantic;
@@ -65,6 +67,16 @@ public final class TransactionScopedStatelessSession implements StatelessSession
         // Transaction scoped session manager will be closed when the (owning) component invocation completes
         // For call stacks that wrap calls with NoTxEmCloser.pushCall/popCall, the popCall will close the session
         // TODO https://issues.redhat.com/browse/WFLY-21272 what about call stacks not using NoTxSSCloser.pushCall/popCall???
+    }
+
+    @Override
+    public SharedStatelessSessionBuilder statelessWithOptions() {
+        return getDelegate().statelessWithOptions();
+    }
+
+    @Override
+    public SharedSessionBuilder sessionWithOptions() {
+        return getDelegate().sessionWithOptions();
     }
 
     @Override
