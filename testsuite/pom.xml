@@ -503,46 +503,17 @@
             Plugin execution configuration profiles. DO NOT ACTIVATE MODULES VIA THESE PROFILES
         -->
 
+        <!-- Settings applicable to all execution modes for testing WFP (ts.preview, -Dts.bootable.preview, -Dts.layers, -Dts.galleon) -->
         <profile>
-            <id>preview.profile</id>
-            <activation><property><name>ts.preview</name></property></activation>
+            <id>preview-server-tests-config</id>
+            <activation><property><name>preview-server-tests</name></property></activation>
             <properties>
+                <!-- Use the WFP dependencies -->
                 <dependency.management.import.artifact>wildfly-preview-expansion-bom</dependency.management.import.artifact>
                 <dependency.management.import.test.artifact>wildfly-preview-test-expansion-bom</dependency.management.import.test.artifact>
-                <!-- For WFP, if there are EE-version-specific test sources, uses the ee11 ones -->
-                <additional.ee.test.source>ee11</additional.ee.test.source>
-            </properties>
-        </profile>
-
-        <profile>
-            <id>bootablejar.preview.profile</id>
-            <activation>
-                <property>
-                    <name>ts.bootable.preview</name>
-                </property>
-            </activation>
-            <properties>
-                <!-- For WFP, if there are EE-version-specific test sources, uses the ee11 ones -->
-                <additional.ee.test.source>ee11</additional.ee.test.source>
-            </properties>
-        </profile>
-        <!-- Profile that can be activated in combination with -Dts.layers and -Dts.galleon
-             to execute the tests activated by those profiles, but using the wildfly-preview feature pack
-             based variant of wildfly-test-galleon-pack.
-        -->
-        <profile>
-            <id>test.feature.pack.preview.profile</id>
-            <activation>
-                <property>
-                    <name>testsuite.ee.galleon.pack.artifactId</name>
-                    <value>wildfly-preview-feature-pack</value>
-                </property>
-            </activation>
-            <properties>
-                <dependency.management.import.artifact>wildfly-preview-expansion-bom</dependency.management.import.artifact>
-                <dependency.management.import.test.artifact>wildfly-preview-test-expansion-bom</dependency.management.import.test.artifact>
+                <!-- Use the WFP test-feature-pack -->
                 <testsuite.test.feature.pack.artifactId>wildfly-test-feature-pack-preview</testsuite.test.feature.pack.artifactId>
-                <!-- For WFP, if there are EE-version-specific test sources, uses the ee11 ones -->
+                <!-- If there are EE-version-specific test sources, uses the ee11 ones -->
                 <additional.ee.test.source>ee11</additional.ee.test.source>
             </properties>
         </profile>

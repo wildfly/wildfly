@@ -19,9 +19,11 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CopyOnWriteArraySet;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -40,10 +42,12 @@ import io.undertow.servlet.api.DeploymentInfo;
 import io.undertow.util.CopyOnWriteMap;
 import io.undertow.util.Methods;
 import org.jboss.as.controller.ControlledProcessState;
-import org.jboss.as.controller.ControlledProcessStateService;
-import org.jboss.as.server.suspend.ServerActivity;
-import org.jboss.as.server.suspend.ServerActivityCallback;
-import org.jboss.as.server.suspend.SuspendController;
+import org.jboss.as.controller.ProcessStateNotifier;
+import org.jboss.as.server.suspend.ServerResumeContext;
+import org.jboss.as.server.suspend.ServerSuspendContext;
+import org.jboss.as.server.suspend.SuspendableActivity;
+import org.jboss.as.server.suspend.SuspendableActivityRegistry;
+import org.jboss.as.server.suspend.SuspensionStateProvider;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
@@ -58,16 +62,15 @@ import org.wildfly.service.descriptor.BinaryServiceDescriptor;
  * @author Radoslav Husar
  * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
-public class Host implements Service<Host>, FilterLocation {
+public class Host implements Service<Host>, FilterLocation, SuspendableActivity {
     // TODO Extract proper interface from this service implementation
     // TODO Relocate ServiceDescriptor and interface to a separate SPI module.
     public static final BinaryServiceDescriptor<Host> SERVICE_DESCRIPTOR = BinaryServiceDescriptor.of("org.wildfly.undertow.host", Host.class);
 
     private final Consumer<Host> serviceConsumer;
     private final Supplier<Server> server;
-    private final Supplier<UndertowService> undertowService;
-    private final Supplier<ControlledProcessStateService> controlledProcessStateService;
-    private final Supplier<SuspendController> suspendController;
+    private final Supplier<ProcessStateNotifier> processStateNotifier;
+    private final Supplier<SuspendableActivityRegistry> activityRegistry;
     private final PathHandler pathHandler = new PathHandler();
     private final Set<String> allAliases;
     private final String name;
@@ -77,40 +80,22 @@ public class Host implements Service<Host>, FilterLocation {
     private final Map<String, LocationService> locations = new CopyOnWriteMap<>();
     private final Map<String, AuthenticationMechanism> additionalAuthenticationMechanisms = new ConcurrentHashMap<>();
     private final HostRootHandler hostRootHandler = new HostRootHandler();
-    private final DefaultResponseCodeHandler defaultHandler;
+    private final HttpHandler defaultHandler;
     private final Boolean queueRequestsOnStart;
     private final int defaultResponseCode;
     private volatile HttpHandler rootHandler = null;
     private volatile AccessLogService  accessLogService;
     private volatile GateHandlerWrapper gateHandlerWrapper;
     private volatile Function<HttpHandler, HttpHandler> accessLogHttpHandler;
+    private final AtomicBoolean suspended = new AtomicBoolean(false);
 
-    ServerActivity suspendListener = new ServerActivity() {
-        @Override
-        public void preSuspend(ServerActivityCallback listener) {
-            defaultHandler.setSuspended(true);
-            listener.done();
-        }
-
-        @Override
-        public void suspended(ServerActivityCallback listener) {
-            listener.done();
-        }
-
-        @Override
-        public void resume() {
-            defaultHandler.setSuspended(false);
-        }
-    };
-
-    public Host(final Consumer<Host> serviceConsumer, final Supplier<Server> server, final Supplier<UndertowService> undertowService,
-            final Supplier<ControlledProcessStateService> controlledProcessStateService, final Supplier<SuspendController> suspendController,
+    public Host(final Consumer<Host> serviceConsumer, final Supplier<Server> server,
+            final Supplier<ProcessStateNotifier> processStateNotifier, final Supplier<SuspendableActivityRegistry> activityRegistry,
             final String name, final List<String> aliases, final String defaultWebModule, final int defaultResponseCode, final Boolean queueRequestsOnStart ) {
         this.serviceConsumer = serviceConsumer;
         this.server = server;
-        this.undertowService = undertowService;
-        this.controlledProcessStateService = controlledProcessStateService;
-        this.suspendController = suspendController;
+        this.processStateNotifier = processStateNotifier;
+        this.activityRegistry = activityRegistry;
         this.name = name;
         this.defaultWebModule = defaultWebModule;
         Set<String> hosts = new HashSet<>(aliases.size() + 1);
@@ -118,9 +103,27 @@ public class Host implements Service<Host>, FilterLocation {
         hosts.addAll(aliases);
         allAliases = Collections.unmodifiableSet(hosts);
         this.queueRequestsOnStart = queueRequestsOnStart;
-        this.defaultHandler = new DefaultResponseCodeHandler(defaultResponseCode);
+        this.defaultHandler = new DefaultResponseCodeHandler(defaultResponseCode, this.suspended::get);
         this.defaultResponseCode = defaultResponseCode;
         this.setupDefaultResponseCodeHandler();
+    }
+
+    @Override
+    public CompletionStage<Void> prepare(ServerSuspendContext context) {
+        this.suspended.set(true);
+        return COMPLETED;
+    }
+
+    @Override
+    public CompletionStage<Void> suspend(ServerSuspendContext context) {
+        this.suspended.set(true);
+        return COMPLETED;
+    }
+
+    @Override
+    public CompletionStage<Void> resume(ServerResumeContext context) {
+        this.suspended.set(false);
+        return COMPLETED;
     }
 
     private String getDeployedContextPath(DeploymentInfo deploymentInfo) {
@@ -129,35 +132,27 @@ public class Host implements Service<Host>, FilterLocation {
 
     @Override
     public void start(StartContext context) throws StartException {
-        suspendController.get().registerActivity(suspendListener);
-        SuspendController.State state = suspendController.get().getState();
-        if(state == SuspendController.State.RUNNING) {
-            defaultHandler.setSuspended(false);
-        } else {
-            defaultHandler.setSuspended(true);
-        }
-        ControlledProcessStateService controlledProcessStateService = this.controlledProcessStateService.get();
-        //may be null for tests
-        if(controlledProcessStateService != null && controlledProcessStateService.getCurrentState() == ControlledProcessState.State.STARTING) {
-            // Non-graceful is ControlledProcessState.State.STARTING && SuspendController.State.RUNNING. We know from above
-            // that we are STARTING, so we just need to check that state of the SuspendController
-            boolean nonGraceful = state == SuspendController.State.RUNNING;
-
-            int statusCode = defaultResponseCode;
-            if (nonGraceful && queueRequestsOnStart == null) {
+        SuspendableActivityRegistry activityRegistry = this.activityRegistry.get();
+        this.suspended.set(activityRegistry.getState() != SuspensionStateProvider.State.RUNNING);
+        activityRegistry.registerActivity(this);
+        ProcessStateNotifier processStateNotifier = this.processStateNotifier.get();
+        if (processStateNotifier.getCurrentState() == ControlledProcessState.State.STARTING) {
+            // Non-graceful startup = ControlledProcessState.State.STARTING && SuspensionStateProvider.State.RUNNING.
+            if (!this.suspended.get() && queueRequestsOnStart == null) {
                 UndertowLogger.ROOT_LOGGER.debug("Running in non-graceful mode and " + QUEUE_REQUESTS_ON_START.getName() +
                         " not explicitly set. Requests will not be queued.");
             } else {
+                int statusCode = defaultResponseCode;
                 if (queueRequestsOnStart == null || Boolean.TRUE.equals(queueRequestsOnStart)) {
                     UndertowLogger.ROOT_LOGGER.info("Queuing requests.");
                     statusCode = -1;
                 }
 
                 gateHandlerWrapper = new GateHandlerWrapper(statusCode);
-                controlledProcessStateService.addPropertyChangeListener(new PropertyChangeListener() {
+                processStateNotifier.addPropertyChangeListener(new PropertyChangeListener() {
                     @Override
                     public void propertyChange(PropertyChangeEvent evt) {
-                        controlledProcessStateService.removePropertyChangeListener(this);
+                        processStateNotifier.removePropertyChangeListener(this);
                         if (gateHandlerWrapper != null) {
                             gateHandlerWrapper.open();
                             gateHandlerWrapper = null;
@@ -223,7 +218,7 @@ public class Host implements Service<Host>, FilterLocation {
             gateHandlerWrapper = null;
         }
         UndertowLogger.ROOT_LOGGER.hostStopping(name);
-        suspendController.get().unRegisterActivity(suspendListener);
+        activityRegistry.get().unregisterActivity(this);
     }
 
     @Override
@@ -284,13 +279,13 @@ public class Host implements Service<Host>, FilterLocation {
         registerHandler(path, handler);
         deployments.add(deployment);
         UndertowLogger.ROOT_LOGGER.registerWebapp(path, getServer().getName());
-        undertowService.get().fireEvent(listener -> listener.onDeploymentStart(deployment, Host.this));
+        server.get().getUndertowService().fireEvent(listener -> listener.onDeploymentStart(deployment, Host.this));
     }
 
     public void unregisterDeployment(final Deployment deployment) {
         DeploymentInfo deploymentInfo = deployment.getDeploymentInfo();
         String path = getDeployedContextPath(deploymentInfo);
-        undertowService.get().fireEvent(listener -> listener.onDeploymentStop(deployment, Host.this));
+        server.get().getUndertowService().fireEvent(listener -> listener.onDeploymentStop(deployment, Host.this));
         unregisterHandler(path);
         deployments.remove(deployment);
         UndertowLogger.ROOT_LOGGER.unregisterWebapp(path, getServer().getName());
@@ -299,13 +294,13 @@ public class Host implements Service<Host>, FilterLocation {
     void registerLocation(String path) {
         String realPath = path.startsWith("/") ? path : "/" + path;
         locations.put(realPath, null);
-        undertowService.get().fireEvent(listener -> listener.onDeploymentStart(realPath, Host.this));
+        server.get().getUndertowService().fireEvent(listener -> listener.onDeploymentStart(realPath, Host.this));
     }
 
     void unregisterLocation(String path) {
         String realPath = path.startsWith("/") ? path : "/" + path;
         locations.remove(realPath);
-        undertowService.get().fireEvent(listener -> listener.onDeploymentStop(realPath, Host.this));
+        server.get().getUndertowService().fireEvent(listener -> listener.onDeploymentStop(realPath, Host.this));
     }
 
     public void registerHandler(String path, HttpHandler handler) {
@@ -328,13 +323,13 @@ public class Host implements Service<Host>, FilterLocation {
     void registerLocation(LocationService location) {
         locations.put(location.getLocationPath(), location);
         registerHandler(location.getLocationPath(), location.getLocationHandler());
-        undertowService.get().fireEvent(listener -> listener.onDeploymentStart(location.getLocationPath(), Host.this));
+        server.get().getUndertowService().fireEvent(listener -> listener.onDeploymentStart(location.getLocationPath(), Host.this));
     }
 
     void unregisterLocation(LocationService location) {
         locations.remove(location.getLocationPath());
         unregisterHandler(location.getLocationPath());
-        undertowService.get().fireEvent(listener -> listener.onDeploymentStop(location.getLocationPath(), Host.this));
+        server.get().getUndertowService().fireEvent(listener -> listener.onDeploymentStop(location.getLocationPath(), Host.this));
     }
 
     public Set<String> getLocations() {
@@ -372,8 +367,8 @@ public class Host implements Service<Host>, FilterLocation {
         rootHandler = null;
     }
 
-    public SuspendController.State getSuspendState() {
-        return this.suspendController.get().getState();
+    public SuspensionStateProvider.State getSuspendState() {
+        return this.activityRegistry.get().getState();
     }
 
     protected void setupDefaultResponseCodeHandler(){

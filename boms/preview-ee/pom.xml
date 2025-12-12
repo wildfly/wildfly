@@ -61,7 +61,8 @@
         <version.org.glassfish.expressly>6.0.0</version.org.glassfish.expressly>
         <version.org.glassfish.jakarta.faces>4.1.5</version.org.glassfish.jakarta.faces>
         <version.org.glassfish.soteria>4.0.2</version.org.glassfish.soteria>
-        <version.org.jboss.resteasy>7.0.0.Final</version.org.jboss.resteasy>
+        <version.org.jboss.metadata>17.0.0.Beta1</version.org.jboss.metadata>
+        <version.org.jboss.resteasy>7.0.1.Final</version.org.jboss.resteasy>
         <version.org.jboss.spec.jakarta.el.jakarta.el-api>6.0.2.Final</version.org.jboss.spec.jakarta.el.jakarta.el-api>
         <version.org.jboss.weld.weld>6.0.3.Final</version.org.jboss.weld.weld>
         <version.org.jboss.weld.weld-api>6.0.Final</version.org.jboss.weld.weld-api>
@@ -76,11 +77,11 @@
         <dependencies>
 
             <!--
-                Re-expose the standard-ee deps.
+                Re-expose the common-ee deps.
              -->
             <dependency>
                 <groupId>${ee.maven.groupId}</groupId>
-                <artifactId>wildfly-standard-ee-bom</artifactId>
+                <artifactId>wildfly-common-ee-dependency-management</artifactId>
                 <version>${ee.maven.version}</version>
                 <type>pom</type>
                 <scope>import</scope>

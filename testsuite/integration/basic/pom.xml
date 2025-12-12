@@ -836,11 +836,6 @@
             <artifactId>wsdl4j</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.jboss.spec.jakarta.el</groupId>
-            <artifactId>jboss-el-api_5.0_spec</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
             <groupId>jakarta.servlet.jsp</groupId>
             <artifactId>jakarta.servlet.jsp-api</artifactId>
             <scope>test</scope>
@@ -3755,22 +3750,40 @@
                 </plugins>
             </build>
         </profile>
-        <!-- Profile that can be activated in combination with -Dts.layers and -Dts.galleon
-             to execute the tests activated by those profiles, but using the wildfly-preview feature pack
-             based variant of wildfly-test-galleon-pack.
-        -->
+        <!-- Dependencies only to be used when testing WildFly Preview -->
         <profile>
-            <id>test.feature.pack.preview.profile</id>
+            <id>preview-server-tests-deps</id>
             <activation>
                 <property>
-                    <name>testsuite.ee.galleon.pack.artifactId</name>
-                    <value>wildfly-preview-feature-pack</value>
+                    <name>preview-server-tests</name>
                 </property>
             </activation>
             <dependencies>
                 <dependency>
                     <groupId>jakarta.enterprise</groupId>
                     <artifactId>jakarta.enterprise.cdi-el-api</artifactId>
+                    <scope>test</scope>
+                </dependency>
+                <dependency>
+                    <groupId>org.jboss.spec.jakarta.el</groupId>
+                    <artifactId>jakarta.el-api</artifactId>
+                    <scope>test</scope>
+                </dependency>
+            </dependencies>
+        </profile>
+        <!-- Dependencies only to be used when NOT testing WildFly Preview -->
+        <profile>
+            <id>standard-server-tests-deps</id>
+            <activation>
+                <property>
+                    <name>!preview-server-tests</name>
+                </property>
+            </activation>
+            <dependencies>
+                <dependency>
+                    <groupId>org.jboss.spec.jakarta.el</groupId>
+                    <artifactId>jboss-el-api_5.0_spec</artifactId>
+                    <scope>test</scope>
                 </dependency>
             </dependencies>
         </profile>

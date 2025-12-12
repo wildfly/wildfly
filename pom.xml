@@ -349,7 +349,7 @@
         <version.org.jboss.spec.javax.servlet.jboss-servlet-api_4.0_spec>2.0.0.Final</version.org.jboss.spec.javax.servlet.jboss-servlet-api_4.0_spec>
         <version.org.junit>5.14.1</version.org.junit>
         <version.org.keycloak>25.0.6</version.org.keycloak>
-        <version.org.mockito>5.20.0</version.org.mockito>
+        <version.org.mockito>5.21.0</version.org.mockito>
         <version.org.syslog4j>0.9.30</version.org.syslog4j>
         <version.org.testcontainers>2.0.2</version.org.testcontainers>
         <version.org.testng>7.8.0</version.org.testng>
@@ -368,7 +368,7 @@
             Properties for dependencies that solely relate to tests go in the test code section above.
          -->
         <version.antlr>4.13.0</version.antlr>
-        <version.at.yawk.lz4.lz4-java>1.8.1</version.at.yawk.lz4.lz4-java>
+        <version.at.yawk.lz4.lz4-java>1.10.1</version.at.yawk.lz4.lz4-java>
         <version.com.carrotsearch.hppc>0.10.0</version.com.carrotsearch.hppc>
         <version.com.fasterxml.classmate>1.5.1</version.com.fasterxml.classmate>
         <version.com.fasterxml.jackson>2.20.1</version.com.fasterxml.jackson>
@@ -522,7 +522,7 @@
         <version.org.jboss.narayana>7.3.3.Final</version.org.jboss.narayana>
         <version.org.jboss.narayana.lra>1.0.3.Final</version.org.jboss.narayana.lra>
         <version.org.jboss.openjdk-orb>10.1.3.Final</version.org.jboss.openjdk-orb>
-        <version.org.jboss.resteasy>6.2.14.Final</version.org.jboss.resteasy>
+        <version.org.jboss.resteasy>6.2.15.Final</version.org.jboss.resteasy>
         <version.org.jboss.resteasy.extensions>2.0.1.Final</version.org.jboss.resteasy.extensions>
         <version.org.jboss.resteasy.microprofile>3.0.1.Final</version.org.jboss.resteasy.microprofile>
         <version.org.jboss.resteasy.spring>3.2.0.Final</version.org.jboss.resteasy.spring>

@@ -4,10 +4,6 @@
  */
 package org.jboss.as.test.integration.web.sso;
 
-import static org.jboss.as.test.integration.web.sso.SSOTestBase.PASSWORD;
-import static org.jboss.as.test.integration.web.sso.SSOTestBase.ROLE;
-import static org.jboss.as.test.integration.web.sso.SSOTestBase.USERNAME;
-
 import java.util.Collections;
 import java.util.List;
 
@@ -19,6 +15,12 @@ import org.wildfly.test.security.common.elytron.PropertyFileBasedDomain.Builder;
 import org.wildfly.test.security.common.elytron.SimpleKeyStore;
 import org.wildfly.test.undertow.common.SingleSignOnSetting;
 import org.wildfly.test.undertow.common.UndertowApplicationSecurityDomain;
+
+import static org.jboss.as.test.integration.web.sso.SSOTestBase.PASSWORD;
+import static org.jboss.as.test.integration.web.sso.SSOTestBase.PASSWORD_2;
+import static org.jboss.as.test.integration.web.sso.SSOTestBase.ROLE;
+import static org.jboss.as.test.integration.web.sso.SSOTestBase.USERNAME;
+import static org.jboss.as.test.integration.web.sso.SSOTestBase.USERNAME_2;
 
 public class SingleSignOnSetup extends WebTestsSecurityDomainSetup {
 
@@ -35,7 +37,8 @@ public class SingleSignOnSetup extends WebTestsSecurityDomainSetup {
 
     @Override
     protected Builder withUsers(Builder builder) {
-        return builder.withUser(USERNAME, PASSWORD, ROLE);
+        return builder.withUser(USERNAME, PASSWORD, ROLE)
+                .withUser(USERNAME_2, PASSWORD_2, ROLE);
     }
 
     @Override
