@@ -28,6 +28,7 @@ import org.infinispan.configuration.global.ShutdownHookBehavior;
 import org.infinispan.configuration.global.ThreadPoolConfiguration;
 import org.infinispan.configuration.global.TransportConfiguration;
 import org.infinispan.configuration.global.UncleanShutdownAction;
+import org.infinispan.configuration.internal.PrivateGlobalConfigurationBuilder;
 import org.infinispan.globalstate.ConfigurationStorage;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.infinispan.protostream.SerializationContext;
@@ -240,7 +241,7 @@ public class CacheContainerResourceDefinitionRegistrar implements ChildResourceD
                 builder.expirationThreadPool().read(scheduledPools.get(ScheduledThreadPool.EXPIRATION).get());
 
                 builder.shutdown().hookBehavior(ShutdownHookBehavior.DONT_REGISTER);
-                // Disable registration of MicroProfile Metrics
+                // Disable native Micrometer registration - we register metrics via management model
                 builder.metrics().gauges(false).histograms(false).accurateSize(true);
 
                 MBeanServerLookup mbeanServerProvider = Optional.ofNullable(mbeanServer.get()).map(MBeanServerProvider::new).orElse(null);
@@ -249,12 +250,10 @@ public class CacheContainerResourceDefinitionRegistrar implements ChildResourceD
                         .enabled(mbeanServerProvider != null)
                         ;
 
-                // Disable triangle algorithm - we optimize for originator as primary owner
-                // Do not enable server-mode for the Hibernate 2LC use case:
-                // * The 2LC stack already overrides the interceptor for distribution caches
-                // * This renders Infinispan default 2LC configuration unusable as it results in a default media type of application/unknown for keys and values
+                // Disable triangle algorithm for transactional distributed caches - we optimize for originator as primary owner
+                // Now that managed cache configurations always define a cache encoding, this should no longer be problematic for Hibernate 2LC interceptors
                 // See ISPN-12252 for details
-//                builder.addModule(PrivateGlobalConfigurationBuilder.class).serverMode(!ServiceLoader.load(ModuleCommandExtensions.class, loader).iterator().hasNext());
+                builder.addModule(PrivateGlobalConfigurationBuilder.class).serverMode(true);
 
                 String path = InfinispanSubsystemResourceDefinitionRegistrar.REGISTRATION.getName() + File.separatorChar + name;
                 builder.globalState().enable()
