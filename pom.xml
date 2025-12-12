@@ -390,7 +390,6 @@
         <version.com.nimbus.jose-jwt>10.3.1</version.com.nimbus.jose-jwt>
         <legacy.version.com.squareup.okhttp>3.14.9</legacy.version.com.squareup.okhttp>
         <legacy.version.com.squareup.okio>1.17.6</legacy.version.com.squareup.okio>
-        <version.com.squareup.protoparser>4.0.3</version.com.squareup.protoparser>
         <version.com.sun.istack>4.1.2</version.com.sun.istack>
         <version.com.sun.xml.fastinfoset>2.1.1</version.com.sun.xml.fastinfoset>
         <version.com.sun.xml.messaging.saaj>3.0.4</version.com.sun.xml.messaging.saaj>

@@ -253,17 +253,6 @@
         </dependency>
 
         <dependency>
-            <groupId>com.squareup</groupId>
-            <artifactId>protoparser</artifactId>
-            <exclusions>
-                <exclusion>
-                    <groupId>*</groupId>
-                    <artifactId>*</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-
-        <dependency>
             <groupId>com.sun.istack</groupId>
             <artifactId>istack-commons-runtime</artifactId>
             <exclusions>
