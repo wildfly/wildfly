@@ -20,6 +20,8 @@ import org.jboss.as.controller.transform.description.ResourceTransformationDescr
 import org.jboss.as.controller.transform.description.TransformationDescription;
 import org.jboss.as.controller.transform.description.TransformationDescriptionBuilder;
 import org.kohsuke.MetaInfServices;
+import org.wildfly.extension.undertow.filters.FilterDefinitions;
+import org.wildfly.extension.undertow.filters.ModClusterDefinition;
 import org.wildfly.extension.undertow.handlers.HandlerDefinitions;
 import org.wildfly.extension.undertow.handlers.ReverseProxyHandlerDefinition;
 
@@ -39,15 +41,24 @@ public class UndertowExtensionTransformerRegistration implements ExtensionTransf
     public void registerTransformers(SubsystemTransformerRegistration registration) {
         for (UndertowSubsystemModel model : EnumSet.complementOf(EnumSet.of(UndertowSubsystemModel.CURRENT))) {
             ModelVersion version = model.getVersion();
-            ResourceTransformationDescriptionBuilder subsystem = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
+            final ResourceTransformationDescriptionBuilder subsystem = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
 
-            ResourceTransformationDescriptionBuilder server = subsystem.addChildResource(ServerDefinition.PATH_ELEMENT);
+            final ResourceTransformationDescriptionBuilder server = subsystem.addChildResource(ServerDefinition.PATH_ELEMENT);
             for (PathElement listenerPath : Set.of(HttpListenerResourceDefinition.PATH_ELEMENT, HttpsListenerResourceDefinition.PATH_ELEMENT)) {
                 if (UndertowSubsystemModel.VERSION_13_0_0.requiresTransformation(version)) {
                     server.addChildResource(listenerPath).getAttributeBuilder()
                         .setValueConverter(AttributeConverter.DEFAULT_VALUE, ListenerResourceDefinition.WRITE_TIMEOUT, ListenerResourceDefinition.READ_TIMEOUT)
                         .end();
                 }
+            }
+
+            if (UndertowSubsystemModel.VERSION_15_0_0.requiresTransformation(version)) {
+                final ResourceTransformationDescriptionBuilder modClusterFilter = server.addChildResource(FilterDefinitions.PATH_ELEMENT).addChildResource(ModClusterDefinition.PATH_ELEMENT);
+                final AttributeTransformationDescriptionBuilder modClusterAttributeTransformer = modClusterFilter.getAttributeBuilder();
+                modClusterAttributeTransformer.setDiscard(DiscardAttributeChecker.UNDEFINED, ModClusterDefinition.REUSE_X_FORWARDED_HEADER);
+                modClusterAttributeTransformer.addRejectCheck(RejectAttributeChecker.DEFINED, ModClusterDefinition.REUSE_X_FORWARDED_HEADER);
+                modClusterAttributeTransformer.setDiscard(DiscardAttributeChecker.UNDEFINED, ModClusterDefinition.REWRITE_HOST_HEADER);
+                modClusterAttributeTransformer.addRejectCheck(RejectAttributeChecker.DEFINED, ModClusterDefinition.REWRITE_HOST_HEADER);
             }
 
             if (UndertowSubsystemModel.VERSION_14_0_0.requiresTransformation(version)) {
