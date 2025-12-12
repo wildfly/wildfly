@@ -3,7 +3,7 @@
   ~ SPDX-License-Identifier: Apache-2.0
   -->
 
-<subsystem xmlns="urn:jboss:domain:undertow:preview:14.0" default-server="some-server" default-servlet-container="myContainer" default-virtual-host="default-virtual-host" instance-id="some-id" statistics-enabled="true">
+<subsystem xmlns="urn:jboss:domain:undertow:preview:15.0" default-server="some-server" default-servlet-container="myContainer" default-virtual-host="default-virtual-host" instance-id="some-id" statistics-enabled="true">
    <byte-buffer-pool name="default" thread-local-cache-size="45" buffer-size="1000" direct="false" leak-detection-percent="50" max-pool-size="1000"/>
    <buffer-cache buffer-size="1025" buffers-per-region="1054" max-regions="15" name="default"/>
    <buffer-cache buffer-size="1025" buffers-per-region="1054" max-regions="15" name="extra"/>
@@ -23,7 +23,7 @@
             <filter-ref name="404-handler"/>
             <filter-ref name="static-gzip" predicate="path-suffix('.js')"/>
          </location>
-         <access-log directory="${jboss.server.server.dir}" pattern="REQ %{i,test-header}" predicate="not path-suffix(*.css)" prefix="access" rotate="false"/>
+         <access-log directory="${jboss.server.server.dir}" pattern="REQ %{i,test-header}" predicate="not path-suffix(*.css)" prefix="access" rotate="false" close-retry-count="30" close-retry-delay="30"/>
          <console-access-log predicate="not path-suffix(*.css)" worker="default">
             <attributes>
                <authentication-type/>
