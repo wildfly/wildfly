@@ -50,6 +50,17 @@
              -->
 
             <dependency>
+                <groupId>org.glassfish.soteria</groupId>
+                <artifactId>jakarta.security.enterprise</artifactId>
+                <version>${version.org.glassfish.soteria}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
                 <groupId>org.jboss.spec.jakarta.el</groupId>
                 <artifactId>jboss-el-api_5.0_spec</artifactId>
                 <version>${version.org.jboss.spec.jakarta.el.jboss-el-api_5.0_spec}</version>

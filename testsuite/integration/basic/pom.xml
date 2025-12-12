@@ -907,6 +907,15 @@
                             </artifactItems>
                         </configuration>
                     </execution>
+                    <execution>
+                        <goals>
+                            <goal>build-classpath</goal>
+                        </goals>
+                        <configuration>
+                            <includeArtifactIds>h2</includeArtifactIds>
+                            <outputFile>${project.build.directory}/h2.version</outputFile>
+                        </configuration>
+                    </execution>
                 </executions>
             </plugin>
             <plugin>

@@ -6,8 +6,8 @@
 <subsystem xmlns="urn:jboss:domain:datasources:7.2">
     <datasources>
         <drivers>
-            <!-- TODO this test driver configuration used to also specify minor-version="2" which would however fail against preview which uses 2.4 already -->
-            <driver name="name" module="com.h2database.h2" major-version="2">
+            <!-- we need to obtain information about driver version from maven -->
+            <driver name="name" module="com.h2database.h2" major-version="%s" minor-version="%s">
                 <driver-class>org.h2.Driver</driver-class>
                 <xa-datasource-class>org.h2.jdbcx.JdbcDataSource</xa-datasource-class>
             </driver>

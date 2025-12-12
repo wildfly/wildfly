@@ -60,8 +60,9 @@
         <version.org.glassfish.concurro>3.1.0</version.org.glassfish.concurro>
         <version.org.glassfish.expressly>6.0.0</version.org.glassfish.expressly>
         <version.org.glassfish.jakarta.faces>4.1.5</version.org.glassfish.jakarta.faces>
+        <version.org.glassfish.soteria>4.0.2</version.org.glassfish.soteria>
         <version.org.jboss.metadata>17.0.0.Beta1</version.org.jboss.metadata>
-        <version.org.jboss.resteasy>7.0.0.Final</version.org.jboss.resteasy>
+        <version.org.jboss.resteasy>7.0.1.Final</version.org.jboss.resteasy>
         <version.org.jboss.spec.jakarta.el.jakarta.el-api>6.0.2.Final</version.org.jboss.spec.jakarta.el.jakarta.el-api>
         <version.org.jboss.weld.weld>6.0.3.Final</version.org.jboss.weld.weld>
         <version.org.jboss.weld.weld-api>6.0.Final</version.org.jboss.weld.weld-api>
@@ -69,7 +70,7 @@
         <version.org.hibernate.models>1.0.1</version.org.hibernate.models>
         <version.org.hibernate.search>8.1.2.Final</version.org.hibernate.search>
         <version.org.hibernate.validator>9.1.0.Final</version.org.hibernate.validator>
-        <version.org.wildfly.security.jakarta.elytron-ee>4.0.0.Beta3</version.org.wildfly.security.jakarta.elytron-ee>
+        <version.org.wildfly.security.jakarta.elytron-ee>4.0.0.Beta4</version.org.wildfly.security.jakarta.elytron-ee>
     </properties>
 
     <dependencyManagement>
@@ -476,6 +477,29 @@
                 <groupId>org.glassfish.expressly</groupId>
                 <artifactId>expressly</artifactId>
                 <version>${version.org.glassfish.expressly}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.glassfish.soteria</groupId>
+                <artifactId>soteria</artifactId>
+                <version>${version.org.glassfish.soteria}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>org.glassfish.soteria</groupId>
+                <artifactId>soteria.spi.bean.decorator.weld</artifactId>
+                <version>${version.org.glassfish.soteria}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>
@@ -1029,6 +1053,17 @@
             <dependency>
                 <groupId>org.wildfly.security.jakarta</groupId>
                 <artifactId>jakarta-authorization</artifactId>
+                <version>${version.org.wildfly.security.jakarta.elytron-ee}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>org.wildfly.security.jakarta</groupId>
+                <artifactId>jakarta-security</artifactId>
                 <version>${version.org.wildfly.security.jakarta.elytron-ee}</version>
                 <exclusions>
                     <exclusion>

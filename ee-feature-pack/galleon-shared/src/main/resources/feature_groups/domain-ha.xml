@@ -19,7 +19,7 @@
     </feature>
 
     <feature spec="profile">
-        <param name="__profile" value="ha"/>
+        <param name="profile" value="ha"/>
         <feature-group name="domain-ha-profile"/>
     </feature>
 
