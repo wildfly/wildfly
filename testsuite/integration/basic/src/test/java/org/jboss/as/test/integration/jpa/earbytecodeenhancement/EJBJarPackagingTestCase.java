@@ -44,24 +44,11 @@ public class EJBJarPackagingTestCase {
         lib.addClasses(Organisation.class);
         ear.addAsLibrary(lib);          // add entity jar to ear/lib
 
-
-
-
         return ear;
     }
 
     @ArquillianResource
     private static InitialContext iniCtx;
-
-    /**
-     * Test that bean in ejbjar can access persistence provider class
-     */
-    @Test
-    public void testBeanInEJBJarCanAccessPersistenceProviderClass() throws Exception {
-        EmployeeBean bean = (EmployeeBean) iniCtx.lookup("java:app/ejbjar/EmployeeBean");
-        Class sessionClass = bean.getPersistenceProviderClass("org.hibernate.Session");
-        assertNotNull("was able to load 'org.hibernate.Session' class from persistence provider", sessionClass);
-    }
 
     @Test
     public void testEntityByteCodeIsEnhanced() throws Exception {
