@@ -13,6 +13,7 @@ import org.infinispan.cdi.embedded.ConfigureCache;
 import org.infinispan.configuration.cache.Configuration;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.configuration.cache.StorageType;
+import org.infinispan.configuration.global.GlobalConfigurationBuilder;
 import org.infinispan.manager.DefaultCacheManager;
 import org.infinispan.manager.EmbeddedCacheManager;
 
@@ -62,7 +63,8 @@ public class CdiConfig {
     @Produces
     @ApplicationScoped
     public EmbeddedCacheManager defaultEmbeddedCacheManager() {
-        return new DefaultCacheManager();
+        // Disable metrics - otherwise, we would need to ensure Micrometer available is available to deployment.
+        return new DefaultCacheManager(new GlobalConfigurationBuilder().metrics().gauges(false).histograms(false).build());
     }
 
     public void stopEmbeddedCacheManager(@Disposes EmbeddedCacheManager embeddedCacheManager) {
