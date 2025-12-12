@@ -25,7 +25,7 @@ public class NonTxEmCloser {
      * Each thread will have its own list of SB invocations in progress.
      * Key = scoped persistence unit name
      */
-    public static final ThreadLocalStack<Map<String, EntityManager>> nonTxStack = new ThreadLocalStack<Map<String, EntityManager>>();
+    public static final ThreadLocalStack<Map<String, ScopedObjects>> nonTxStack = new ThreadLocalStack<>();
 
     /**
      * entered new session bean invocation, start new collection for tracking transactional entity managers created
@@ -41,10 +41,11 @@ public class NonTxEmCloser {
      * transaction.
      */
     public static void popCall() {
-        Map<String, EntityManager> emStack = nonTxStack.pop();
+        Map<String, ScopedObjects> emStack = nonTxStack.pop();
         if (emStack != null) {
-            for (EntityManager entityManager : emStack.values()) {
+            for (ScopedObjects scopedObjects : emStack.values()) {
                 try {
+                    EntityManager entityManager = scopedObjects.getEntityManager();
                     if (entityManager.isOpen()) {
                         entityManager.close();
                     }
@@ -53,6 +54,16 @@ public class NonTxEmCloser {
                         ROOT_LOGGER.trace("Could not close (non-transactional) container managed entity manager." +
                             "  This shouldn't impact application functionality (only read " +
                             "operations occur in non-transactional mode)", safeToIgnore);
+                    }
+                }
+                try {
+                    AutoCloseable statelessSession = scopedObjects.getStatelessSession();
+                    statelessSession.close();
+                } catch (Exception safeToIgnore) {
+                    if (ROOT_LOGGER.isTraceEnabled()) {
+                        ROOT_LOGGER.trace("Could not close (non-transactional) container managed stateless session." +
+                                "  This shouldn't impact application functionality (only read " +
+                                "operations occur in non-transactional mode)", safeToIgnore);
                     }
                 }
             }
@@ -65,24 +76,28 @@ public class NonTxEmCloser {
      * @param puScopedName
      * @return
      */
-    public static EntityManager get(String puScopedName) {
-        Map<String, EntityManager> map = nonTxStack.peek();
+    public static <T extends AutoCloseable> T get(Class<T> type, String puScopedName) {
+        Map<String, ScopedObjects> map = nonTxStack.peek();
         if (map != null) {
-            return map.get(puScopedName);
+            ScopedObjects objects = map.get(puScopedName);
+            if (objects != null) {
+                return objects.get(type);
+            }
         }
         return null;
     }
 
-    public static void add(String puScopedName, EntityManager entityManager) {
-        Map<String, EntityManager> map = nonTxStack.peek();
+    public static <T extends AutoCloseable> void add(String puScopedName, T scopedObject) {
+        Map<String, ScopedObjects> map = nonTxStack.peek();
         if (map == null && !nonTxStack.isEmpty()) {
             // replace null with a collection to hold the entity managers.
-            map = new HashMap<String, EntityManager>();
+            map = new HashMap<>();
             nonTxStack.pop();
             nonTxStack.push(map);    // replace top of stack (currently null) with new collection
         }
         if (map != null) {
-            map.put(puScopedName, entityManager);
+            ScopedObjects objects = map.computeIfAbsent(puScopedName, k -> new ScopedObjects());
+            objects.set(scopedObject);
         }
     }
 }
