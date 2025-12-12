@@ -351,8 +351,6 @@ e.g. To configure expiration of entries older than 1 day, or that have not been 
 /subsystem=infinispan/cache-container=foo/local-cache=bar/component=expiration(lifespan=86400000, max-idle=3600000)
 ----
 
-CAUTION: max-idle based expiration is not generally safe for use with clustered caches, as the meta data of a cache entry is not replicated by cache read operations
-
 For a complete list of expiration attributes, refer to the link:feature-pack/doc/reference/index.html[WildFly management model documentation^]
 
 ==== Persistence
