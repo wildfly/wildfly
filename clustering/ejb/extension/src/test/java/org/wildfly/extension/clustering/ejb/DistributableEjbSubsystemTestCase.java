@@ -6,6 +6,7 @@
 package org.wildfly.extension.clustering.ejb;
 
 import org.jboss.as.clustering.subsystem.AdditionalInitialization;
+import org.jboss.as.controller.Feature;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.common.Util;
@@ -21,6 +22,7 @@ import org.wildfly.clustering.infinispan.service.InfinispanServiceDescriptor;
 import java.util.EnumSet;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 /**
@@ -31,21 +33,26 @@ import static org.junit.Assert.assertTrue;
 @RunWith(value = Parameterized.class)
 public class DistributableEjbSubsystemTestCase extends AbstractSubsystemSchemaTest<DistributableEjbSubsystemSchema> {
 
+    private final DistributableEjbSubsystemSchema schema;
+
     @Parameters
     public static Iterable<DistributableEjbSubsystemSchema> parameters() {
         return EnumSet.allOf(DistributableEjbSubsystemSchema.class);
     }
 
     public DistributableEjbSubsystemTestCase(DistributableEjbSubsystemSchema schema) {
-        super(DistributableEjbSubsystemResourceDefinitionRegistrar.REGISTRATION.getName(), new DistributableEjbExtension(), schema, DistributableEjbSubsystemSchema.CURRENT);
+        // TODO WFCORE-7416 Eventually simplify by using this constructor AbstractSubsystemSchemaTest(String, Extension, S, Set<S>)
+        super(DistributableEjbSubsystemResourceDefinitionRegistrar.REGISTRATION.getName(), new DistributableEjbExtension(), schema, Feature.map(DistributableEjbSubsystemSchema.CURRENT).get(schema.getStability()));
+
+        this.schema = schema;
     }
 
     /**
      * The distributable-ejb subsystem depends on an infinispan cache-container and cache.
      */
     @Override
-    protected org.jboss.as.subsystem.test.AdditionalInitialization createAdditionalInitialization() {
-        return new AdditionalInitialization()
+    protected AdditionalInitialization createAdditionalInitialization() {
+        return new AdditionalInitialization(this.schema)
                 .require(InfinispanServiceDescriptor.DEFAULT_CACHE_CONFIGURATION, "foo")
                 .require(InfinispanServiceDescriptor.CACHE_CONFIGURATION, "foo", "bar")
                 ;
@@ -109,8 +116,8 @@ public class DistributableEjbSubsystemTestCase extends AbstractSubsystemSchemaTe
         final ModelNode localClientMappingsRegistryProvider = distributableEjbSubsystem.get(ClientMappingsRegistryProviderResourceRegistration.LOCAL.getPathElement().getKeyValuePair());
         final ModelNode infinispanClientMappingsRegistryProvider = distributableEjbSubsystem.get(ClientMappingsRegistryProviderResourceRegistration.INFINISPAN.getPathElement().getKeyValuePair());
 
-        assertEquals(localClientMappingsRegistryProvider.toString(), false, localClientMappingsRegistryProvider.isDefined());
-        assertEquals(infinispanClientMappingsRegistryProvider.toString(), true, infinispanClientMappingsRegistryProvider.isDefined());
+        assertFalse(localClientMappingsRegistryProvider.toString(), localClientMappingsRegistryProvider.isDefined());
+        assertTrue(infinispanClientMappingsRegistryProvider.toString(), infinispanClientMappingsRegistryProvider.isDefined());
     }
 
     /**

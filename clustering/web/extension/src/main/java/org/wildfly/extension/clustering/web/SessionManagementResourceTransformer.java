@@ -26,5 +26,12 @@ public class SessionManagementResourceTransformer implements BiConsumer<ModelVer
                     .addRejectCheck(RejectAttributeChecker.DEFINED, SessionManagementResourceDefinitionRegistrar.MARSHALLER)
                     .end();
         }
+
+        if (DistributableWebSubsystemModel.VERSION_5_0_0.requiresTransformation(version)) {
+            builder.getAttributeBuilder()
+                    .setDiscard(DiscardAttributeChecker.UNDEFINED, InfinispanSessionManagementResourceDefinitionRegistrar.IDLE_THRESHOLD)
+                    .addRejectCheck(RejectAttributeChecker.DEFINED, InfinispanSessionManagementResourceDefinitionRegistrar.IDLE_THRESHOLD)
+                    .end();
+        }
     }
 }

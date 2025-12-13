@@ -29,7 +29,7 @@ import org.junit.runner.RunWith;
 
 @RunWith(Arquillian.class)
 public class CommandDispatcherTestCase extends AbstractClusteringTestCase {
-    private static final String MODULE_NAME = CommandDispatcherTestCase.class.getSimpleName();
+    protected static final String MODULE_NAME = CommandDispatcherTestCase.class.getSimpleName();
     private static final long VIEW_CHANGE_WAIT = TimeoutUtil.adjust(2000);
 
     @Deployment(name = DEPLOYMENT_1, managed = false, testable = false)

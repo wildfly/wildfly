@@ -5,6 +5,8 @@
 
 package org.wildfly.clustering.web.service.session;
 
+import java.time.Duration;
+import java.util.Optional;
 import java.util.function.Function;
 
 import org.wildfly.clustering.marshalling.ByteBufferMarshaller;
@@ -28,4 +30,12 @@ public interface DistributableSessionManagementConfiguration<M> {
      * @return a function that creates a marshaller for a given context.
      */
     Function<M, ByteBufferMarshaller> getMarshallerFactory();
+
+    /**
+     * Returns the maximum duration for session to retain in memory at a time, after which it will be passivated.
+     * @return the maximum duration for session to retain in memory at a time, after which it will be passivated.
+     */
+    default Optional<Duration> getIdleThreshold() {
+        return Optional.empty();
+    }
 }

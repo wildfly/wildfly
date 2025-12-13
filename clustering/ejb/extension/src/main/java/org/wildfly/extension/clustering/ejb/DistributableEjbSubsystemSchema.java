@@ -6,6 +6,7 @@ package org.wildfly.extension.clustering.ejb;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.jboss.as.controller.ResourceRegistration;
 import org.jboss.as.controller.SubsystemSchema;
@@ -19,6 +20,7 @@ import org.jboss.as.controller.persistence.xml.SubsystemResourceRegistrationXMLE
 import org.jboss.as.controller.persistence.xml.SubsystemResourceXMLSchema;
 import org.jboss.as.controller.xml.VersionedNamespace;
 import org.jboss.as.controller.xml.XMLCardinality;
+import org.jboss.as.version.Stability;
 import org.jboss.staxmapper.IntVersion;
 
 /**
@@ -29,15 +31,20 @@ import org.jboss.staxmapper.IntVersion;
 public enum DistributableEjbSubsystemSchema implements SubsystemResourceXMLSchema<DistributableEjbSubsystemSchema> {
 
     VERSION_1_0(1, 0), // WildFly 27-35
-    VERSION_2_0(2, 0), // WildFly 36
+    VERSION_2_0(2, 0), // WildFly 36-present
+    VERSION_2_0_COMMUNITY(2, 0, Stability.COMMUNITY), // WildFly 39-present
     ;
-    static final DistributableEjbSubsystemSchema CURRENT = VERSION_2_0;
+    static final Set<DistributableEjbSubsystemSchema> CURRENT = Set.of(VERSION_2_0, VERSION_2_0_COMMUNITY);
 
     private final VersionedNamespace<IntVersion, DistributableEjbSubsystemSchema> namespace;
     private final ResourceXMLParticleFactory factory = ResourceXMLParticleFactory.newInstance(this);
 
     DistributableEjbSubsystemSchema(int major, int minor) {
-        this.namespace = SubsystemSchema.createLegacySubsystemURN(DistributableEjbSubsystemResourceDefinitionRegistrar.REGISTRATION.getName(), new IntVersion(major, minor));
+        this(major, minor, Stability.DEFAULT);
+    }
+
+    DistributableEjbSubsystemSchema(int major, int minor, Stability stability) {
+        this.namespace = SubsystemSchema.createLegacySubsystemURN(DistributableEjbSubsystemResourceDefinitionRegistrar.REGISTRATION.getName(), stability, new IntVersion(major, minor));
     }
 
     @Override
@@ -79,9 +86,13 @@ public enum DistributableEjbSubsystemSchema implements SubsystemResourceXMLSchem
     }
 
     NamedResourceRegistrationXMLElement.Builder beanManagementElementBuilder(ResourceRegistration registration) {
-        return this.factory.namedElement(registration)
+        NamedResourceRegistrationXMLElement.Builder builder = this.factory.namedElement(registration)
                 .addAttribute(BeanManagementResourceDefinitionRegistrar.MAX_ACTIVE_BEANS)
                 ;
+        if (this.since(VERSION_2_0_COMMUNITY)) {
+            builder.addAttribute(BeanManagementResourceDefinitionRegistrar.IDLE_THRESHOLD);
+        }
+        return builder;
     }
 
     SingletonResourceRegistrationXMLChoice clientMappingsRegistryChoice() {
@@ -111,9 +122,12 @@ public enum DistributableEjbSubsystemSchema implements SubsystemResourceXMLSchem
                 .build();
     }
     NamedResourceRegistrationXMLElement infinispanTimerManagementElement() {
-        return this.factory.namedElement(InfinispanTimerManagementResourceDefinitionRegistrar.REGISTRATION)
+        NamedResourceRegistrationXMLElement.Builder builder = this.factory.namedElement(InfinispanTimerManagementResourceDefinitionRegistrar.REGISTRATION)
                 .addAttributes(InfinispanTimerManagementResourceDefinitionRegistrar.CACHE_ATTRIBUTE_GROUP.getAttributes())
-                .addAttributes(List.of(InfinispanTimerManagementResourceDefinitionRegistrar.MARSHALLER, InfinispanTimerManagementResourceDefinitionRegistrar.MAX_ACTIVE_TIMERS))
-                .build();
+                .addAttributes(List.of(InfinispanTimerManagementResourceDefinitionRegistrar.MARSHALLER, InfinispanTimerManagementResourceDefinitionRegistrar.MAX_ACTIVE_TIMERS));
+        if (this.since(VERSION_2_0_COMMUNITY)) {
+            builder.addAttribute(InfinispanTimerManagementResourceDefinitionRegistrar.IDLE_THRESHOLD);
+        }
+        return builder.build();
     }
 }

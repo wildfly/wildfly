@@ -5,6 +5,8 @@
 
 package org.wildfly.extension.clustering.web.deployment;
 
+import java.time.Duration;
+import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.UnaryOperator;
@@ -30,6 +32,7 @@ public abstract class MutableSessionManagementConfiguration implements Distribut
     private Function<DeploymentUnit, ByteBufferMarshaller> marshallerFactory = SessionMarshallerFactory.JBOSS;
     private RouteLocatorProvider routeLocatorProvider;
     private final Consumer<String> accumulator;
+    private Duration idleThreshold;
 
     MutableSessionManagementConfiguration(UnaryOperator<String> replacer, Consumer<String> accumulator, RouteLocatorProvider defaultRouteLocatorProvider) {
         this.replacer = replacer;
@@ -61,6 +64,15 @@ public abstract class MutableSessionManagementConfiguration implements Distribut
 
     public void setRouteLocatorProvider(RouteLocatorProvider provider) {
         this.routeLocatorProvider = provider;
+    }
+
+    public void setIdleThreshold(String value) {
+        this.idleThreshold = Duration.parse(this.replacer.apply(value));
+    }
+
+    @Override
+    public Optional<Duration> getIdleThreshold() {
+        return Optional.ofNullable(this.idleThreshold);
     }
 
     @Override
