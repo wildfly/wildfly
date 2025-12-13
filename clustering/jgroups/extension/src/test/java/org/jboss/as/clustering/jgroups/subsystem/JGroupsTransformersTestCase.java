@@ -93,6 +93,7 @@ public class JGroupsTransformersTestCase extends AbstractSubsystemTest {
                 .require(SocketBinding.SERVICE_DESCRIPTOR, List.of("jgroups-tcp", "jgroups-udp", "jgroups-udp-fd", "some-binding", "client-binding", "jgroups-diagnostics", "jgroups-mping", "jgroups-tcp-fd", "jgroups-client-fd", "jgroups-state-xfr"))
                 .require(CommonServiceDescriptor.KEY_STORE, "my-key-store")
                 .require(CommonServiceDescriptor.CREDENTIAL_STORE, "my-credential-store")
+                .require(CommonServiceDescriptor.SSL_CONTEXT, List.of("my-client-ssl-context", "my-server-ssl-context"))
                 ;
     }
 
@@ -141,6 +142,13 @@ public class JGroupsTransformersTestCase extends AbstractSubsystemTest {
 
         if (JGroupsSubsystemModel.VERSION_8_0_0.requiresTransformation(this.subsystemVersion)) {
             config.addFailedAttribute(subsystemAddress.append(JGroupsResourceRegistration.STACK.pathElement("credentialReference1")).append(StackResourceDefinitionRegistrar.Component.PROTOCOL.pathElement("SYM_ENCRYPT")), FailedOperationTransformationConfig.REJECTED_RESOURCE);
+        }
+
+        if (JGroupsSubsystemModel.VERSION_11_0_0.requiresTransformation(this.subsystemVersion)) {
+            PathAddress addr = subsystemAddress.append(JGroupsResourceRegistration.STACK.pathElement("maximal")).append(SocketTransportResourceDefinitionRegistrar.Transport.TCP.getPathElement());
+            config.addFailedAttribute(addr,
+                    new FailedOperationTransformationConfig.NewAttributesConfig(SocketTransportResourceDefinitionRegistrar.CLIENT_SSL_CONTEXT, SocketTransportResourceDefinitionRegistrar.SERVER_SSL_CONTEXT)
+            );
         }
 
         List<ModelNode> operations = builder.parseXmlResource("jgroups-reject.xml");

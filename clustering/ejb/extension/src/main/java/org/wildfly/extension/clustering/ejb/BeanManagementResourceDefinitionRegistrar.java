@@ -5,12 +5,14 @@
 
 package org.wildfly.extension.clustering.ejb;
 
+import java.time.Duration;
 import java.util.List;
 import java.util.Optional;
 import java.util.OptionalInt;
 import java.util.function.Function;
 import java.util.function.UnaryOperator;
 
+import org.jboss.as.clustering.controller.ISOStandardDurationAttributeDefinition;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -23,6 +25,7 @@ import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.operations.validation.IntRangeValidator;
 import org.jboss.as.controller.registry.AttributeAccess.Flag;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.version.Stability;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.wildfly.clustering.ejb.bean.BeanDeploymentMarshallingContext;
@@ -42,6 +45,7 @@ import org.wildfly.subsystem.service.ResourceServiceConfigurator;
 /**
  * Registers a resource definition for a bean management provider.
  * @author Paul Ferraro
+ * @author Radoslav Husar
  */
 public abstract class BeanManagementResourceDefinitionRegistrar implements ChildResourceDefinitionRegistrar, ResourceServiceConfigurator, ResourceModelResolver<BeanManagementConfiguration>, UnaryOperator<ResourceDescriptor.Builder> {
 
@@ -57,6 +61,11 @@ public abstract class BeanManagementResourceDefinitionRegistrar implements Child
             .setValidator(new IntRangeValidator(1))
             .build();
 
+    static final ISOStandardDurationAttributeDefinition IDLE_THRESHOLD = new ISOStandardDurationAttributeDefinition.Builder("idle-threshold")
+            .setRequired(false)
+            .setStability(Stability.COMMUNITY)
+            .build();
+
     private final ResourceRegistration registration;
 
     BeanManagementResourceDefinitionRegistrar(ResourceRegistration registration) {
@@ -66,7 +75,7 @@ public abstract class BeanManagementResourceDefinitionRegistrar implements Child
     @Override
     public ResourceDescriptor.Builder apply(ResourceDescriptor.Builder builder) {
         return builder.addCapability(CAPABILITY)
-                .addAttributes(List.of(MAX_ACTIVE_BEANS))
+                .addAttributes(List.of(MAX_ACTIVE_BEANS, IDLE_THRESHOLD))
                 .withRuntimeHandler(ResourceOperationRuntimeHandler.configureService(this))
                 ;
     }
@@ -83,10 +92,16 @@ public abstract class BeanManagementResourceDefinitionRegistrar implements Child
     @Override
     public BeanManagementConfiguration resolve(OperationContext context, ModelNode model) throws OperationFailedException {
         OptionalInt maxActiveBeans = Optional.ofNullable(MAX_ACTIVE_BEANS.resolveModelAttribute(context, model).asIntOrNull()).map(OptionalInt::of).orElse(OptionalInt.empty());
+        Optional<Duration> idleThreshold = Optional.ofNullable(IDLE_THRESHOLD.resolve(context, model));
         return new BeanManagementConfiguration() {
             @Override
-            public OptionalInt getMaxActiveBeans() {
+            public OptionalInt getMaxSize() {
                 return maxActiveBeans;
+            }
+
+            @Override
+            public Optional<Duration> getIdleTimeout() {
+                return idleThreshold;
             }
 
             @Override

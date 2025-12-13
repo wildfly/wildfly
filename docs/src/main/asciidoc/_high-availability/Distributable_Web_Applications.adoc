@@ -18,10 +18,10 @@ e.g.
 ./WEB-INF/web.xml:
 [source,xml]
 ----
-<web-app xmlns="http://xmlns.jcp.org/xml/ns/javaee"
+<web-app xmlns="https://jakarta.ee/xml/ns/jakartaee"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee http://xmlns.jcp.org/xml/ns/javaee/web-app_4_0.xsd"
-         version="4.0">
+         xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/web-app_6_0.xsd"
+         version="6.0">
     <distributable/>
 </web-app>
 ----
@@ -53,6 +53,8 @@ We can introspect its configuration:
         "cache" => undefined,
         "cache-container" => "web",
         "granularity" => "SESSION",
+        "idle-threshold" => undefined,
+        "marshaller" => "JBOSS",
         "affinity" => {"primary-owner" => undefined}
     }
 }
@@ -76,6 +78,9 @@ This is generally more expensive than ATTRIBUTE granularity, but preserves any c
 ATTRIBUTE:::
 Stores each session attribute within a separate cache entry.
 This is generally more efficient than SESSION granularity, but does not preserve any cross-attribute object references.
+idle-threshold::
+Specifies the duration after which a session should be considered idle and eligible for passivation/eviction.
+If unspecified, sessions will not be passivated based on idle time.
 affinity::
 This resource defines the affinity that a web request should have for a given server.
 The affinity of the associated web session determines the algorithm for generating the route to be appended onto the session ID (within the JSESSIONID cookie, or when encoding URLs).
@@ -182,7 +187,7 @@ e.g.
 [source,xml]
 ----
 <?xml version="1.0" encoding="UTF-8"?>
-<distributable-web xmlns="urn:jboss:distributable-web:2.0">
+<distributable-web xmlns="urn:jboss:distributable-web:community:5.0">
     <session-management name="foo"/>
 </distributable-web>
 ----
@@ -196,7 +201,7 @@ e.g.
 ----
 <?xml version="1.0" encoding="UTF-8"?>
 <jboss xmlns="urn:jboss:1.0">
-    <distributable-web xmlns="urn:jboss:distributable-web:2.0">
+    <distributable-web xmlns="urn:jboss:distributable-web:community:5.0">
         <session-management name="foo"/>
     </distributable-web>
 </jboss>
@@ -213,7 +218,7 @@ e.g.
 [source,xml]
 ----
 <?xml version="1.0" encoding="UTF-8"?>
-<distributable-web xmlns="urn:jboss:distributable-web:2.0">
+<distributable-web xmlns="urn:jboss:distributable-web:community:5.0">
     <infinispan-session-management cache-container="foo" cache="bar" granularity="SESSION">
         <primary-owner-affinity/>
     </infinispan-session-management>
@@ -229,7 +234,7 @@ e.g.
 ----
 <?xml version="1.0" encoding="UTF-8"?>
 <jboss xmlns="urn:jboss:1.0">
-    <distributable-web xmlns="urn:jboss:distributable-web:2.0">
+    <distributable-web xmlns="urn:jboss:distributable-web:community:5.0">
         <infinispan-session-management cache-container="foo" cache="bar" granularity="ATTRIBUTE">
             <local-affinity/>
         </infinispan-session-management>
@@ -259,7 +264,7 @@ e.g.
             </cookie-config>
         </session-config>
     </shared-session-config>
-    <distributable-web xmlns="urn:jboss:distributable-web:2.0">
+    <distributable-web xmlns="urn:jboss:distributable-web:community:5.0">
         <session-management name="foo"/>
     </distributable-web>
 </jboss>
@@ -353,12 +358,31 @@ Alternatively, immutable classes can be enumerated via the distributable-web dep
 e.g.
 [source,xml]
 ----
-<distributable-web xmlns="urn:jboss:distributable-web:2.0">
+<distributable-web xmlns="urn:jboss:distributable-web:community:5.0">
     <session-management>
         <immutable-class>foo.bar.ImmutableClass</immutable-class>
         <immutable-class>...</immutable-class>
     </session-management>
 </distributable-web>
+----
+
+[[session_idle_eviction]]
+=== Idle time-based session eviction
+
+For applications with many sessions where not all sessions are actively used,
+configuring `idle-threshold` can help optimize memory usage by passivating sessions that haven't been accessed recently.
+
+The `idle-threshold` attribute allows you to specify how long a session can remain idle before becoming eligible for passivation.
+This works alongside the existing `max-active-sessions` limit but provides time-based eviction rather than purely count-based eviction.
+
+When a session exceeds the idle threshold, it will be passivated to the underlying cache store,
+freeing up memory while preserving the session state.
+When the session is accessed again, it will be activated.
+
+[source]
+----
+# Sets idle threshold to 15 minutes
+/subsystem=distributable-web/infinispan-session-management=default:write-attribute(name=idle-threshold, value=PT15M)
 ----
 
 [[session_attribute_marshalling]]

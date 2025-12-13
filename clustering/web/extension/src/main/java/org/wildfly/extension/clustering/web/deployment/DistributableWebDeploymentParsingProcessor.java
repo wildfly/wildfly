@@ -6,7 +6,6 @@
 package org.wildfly.extension.clustering.web.deployment;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.EnumSet;
@@ -68,8 +67,6 @@ public class DistributableWebDeploymentParsingProcessor implements DeploymentUni
             }
         } catch (XMLStreamException e) {
             throw ServerLogger.ROOT_LOGGER.errorLoadingDeploymentStructureFile(file.getPath(), e);
-        } catch (FileNotFoundException e) {
-            throw ServerLogger.ROOT_LOGGER.deploymentStructureFileNotFound(file);
         } catch (IOException e) {
             throw ServerLogger.ROOT_LOGGER.deploymentStructureFileNotFound(file);
         }
