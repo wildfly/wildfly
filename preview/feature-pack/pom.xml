@@ -18,7 +18,7 @@
         -->
         <version>39.0.0.Beta1-SNAPSHOT</version>
     </parent>
-    
+
     <artifactId>wildfly-preview-feature-pack</artifactId>
 
     <name>WildFly Preview: Galleon Feature Pack</name>

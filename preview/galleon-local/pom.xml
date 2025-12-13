@@ -61,6 +61,15 @@
         </dependency>
 
         <dependency>
+            <groupId>org.glassfish.soteria</groupId>
+            <artifactId>soteria</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.soteria</groupId>
+            <artifactId>soteria.spi.bean.decorator.weld</artifactId>
+        </dependency>
+
+        <dependency>
             <groupId>org.hibernate.models</groupId>
             <artifactId>hibernate-models</artifactId>
         </dependency>
