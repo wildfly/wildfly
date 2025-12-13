@@ -1,5 +1,5 @@
 [[Pre-requisites_-_test_quality_standards]]
-= Before you add a test
+= Test Quality Standards
 
 ifdef::env-github[]
 :tip-caption: :bulb:
@@ -9,149 +9,115 @@ ifdef::env-github[]
 :warning-caption: :warning:
 endif::[]
 
-Every added test, whether ported or new should follow the same
-guidelines:
+All tests must follow these quality standards.
 
-== Verify the test belongs in WildFly
-AS6 has a lot of tests for things that are discontinued. For example
-the +
-legacy JBoss Transaction Manager which was replaced by Arjuna. Also we +
-had tests for SPIs that no longer exist. None of these things should
-be +
-migrated.
+== Verify the Test Belongs in WildFly
 
-== Only add CORRECT and UNDERSTANDABLE tests
-If you don't understand what a test is doing (perhaps too complex), or +
-it's going about things in a strange way that might not be correct,
-THEN +
-DO NOT PORT IT. Instead we should have a simpler, understandable, and +
-correct test. Write a new one, ping the author, or skip it altogether.
+Ensure the test validates current WildFly functionality.
+Do not test the internal functionality of included libraries,
+as those should be tested in the library's upstream test suite.
+However, do test the integration of those libraries with WildFly.
 
-== Do not add duplicate tests
-Always check that the test you are adding doesn't have coverage +
-elsewhere (try using "git grep"). As mentioned above we have some +
-overlap between 6 and 7. The 7 test version will likely be better.
+== Add Only Correct and Understandable Tests
 
-== Don't name tests after JIRAs
-A JIRA number is useless without an internet connection, and they are +
-hard to read. If I get a test failure thats XDGR-843534578 I have to
-dig +
-to figure out the context. It's perfectly fine though to link to a
-JIRA +
-number in the comments of the test. Also the commit log is always
-available.
+Tests must be clear and verifiably correct.
+If a test is overly complex or uses questionable logic,
+refactor it to use clear logic or consult with the original author to clarify intent.
 
-== Tests should contain javadoc that explains what is being tested
-This is especially critical if the test is non-trivial
+== Avoid Duplicate Tests
 
-== Prefer expanding an EXISTING test over a new test class
-If you are looking at migrating or creating a test with similar +
-functionality to an exiting test, it is better to +
-expand upon the existing one by adding more test methods, rather than +
-creating a whole new test. In general each +
-new test class adds at least 300ms to execution time, so as long as it +
-makes sense it is better to add it to an +
-existing test case.
+Before adding a test, verify that the functionality is not already covered elsewhere.
+Use tools like `git grep` to search for existing test coverage.
 
-== Organize tests by subsystem
-Integration tests should be packaged in subpackages under the relevant +
-subsystem (e.g org.jboss.as.test.integration.ejb.async). When a test +
-impacts multiple subsystems this is a bit of a judgement call, but in +
-general the tests should go into the package of +
-the spec that defines the functionality (e.g. Jakarta Contexts and Dependency Injection based constructor +
-injection into a Jakarta Enterprise Beans bean, even though this involves Jakarta Contexts and Dependency Injection and Jakarta Enterprise Beans, +
-the Jakarta Contexts and Dependency Injection spec defines this behaviour)
+== Use Descriptive Test Names
 
-== Explain non-obvious spec behavior in comments
-The EE spec is full of odd requirements. If the test is covering +
-behavior that is not obvious then please add something like "Verifies
-EE +
-X.T.Z - The widget can't have a foobar if it is declared like blah"
+Test class and method names should clearly describe what is being tested.
+Jira IDs alone are not descriptive and require external lookup to understand the test purpose.
+Jira references may be included in test comments or commit messages, e.g. in Javadoc `@see`.
 
-== Put integration test resources in the source directory of the test
-At the moment there is not real organization of these files. It makes +
-sense for most apps to have this separation, however the testsuite is +
-different. e.g. most apps will have a single deployment descriptor of
-a +
-given type, for the testsuite will have hundreds, and maintaining
-mirroring +
-package structures is error prone. +
-This also makes the tests easier to understand, as all the artifacts
-in +
-the deployment are in one place, and that place tends to be small
-(only +
-a handful of files).
+== Document Tests with Javadoc
 
-== Do not hard-code values likely to need configuration (URLs, ports, ...)
-URLs hardcoded to certain address (localhost) or port (like the default
-8080 for web) prevent running the test against different address or with
-IPv6 adress. +
-Always use the configurable values provided by Arquillian or as a system
-property. +
-If you come across a value which is not configurable but you think it
-should be, file an WildFly {wildflyVersion} jira issue with component "Test suite". +
-See
-https://github.com/arquillian/arquillian/blob/master/examples/junit/src/test/java/com/acme/web/LocalRunServletTestCase.java[@ArquillianResourrce
-usage example].
+All test classes and non-trivial test methods must include Javadoc explaining what functionality is being tested and why.
 
-== Follow best committing practices
-* Only do changes related to the topic of the jira/pull request.
-* Do not clutter your pull request with e.g. reformatting, fixing typos
-spotted along the way - do another pull request for such.
-* Prefer smaller changes in more pull request over one big pull request
-which are difficult to merge.
-* Keep the code consistent across commits - e.g. when renaming
-something, be sure to update all references to it.
-* Describe your commits properly as they will appear in main's linear
-history.
-* If you're working on a jira issue, include it's ID in the commit
-message(s).
+== Expand Existing Tests When Appropriate
 
-== Do not use blind timeouts
-Do not use Thread.sleep() without checking for the actual condition you
-need to be fulfilled. +
-You may use active waiting with a timeout, but prefer using timeouts of
-the API/SPI you test where available.
+When adding test coverage for functionality similar to an existing test, consider adding test methods to the existing test class rather than creating a new class.
+Each new test class adds overhead to execution time.
+Only create a new class when the functionality is sufficiently different to warrant separation.
 
-Make the timeouts configurable: For a group of similar test, use a
-configurable timeout value with a default if not set.
+== Organize Tests by Subsystem
 
-== Provide messages in assert*() and fail() calls
-Definitely, it's better to see "File x/y/z.xml not found" instead of:
+Place integration tests in subpackages under the relevant subsystem (e.g., `org.jboss.as.test.integration.ejb.async`).
+When a test involves multiple subsystems, place it under the package for the specification that defines the primary behavior being tested.
+
+== Document Non-Obvious Specification Requirements
+
+When testing behavior mandated by specifications but not immediately obvious, include comments explaining the requirement (e.g., "Verifies Jakarta EE X.Y.Z - Description of requirement").
+
+== Collocate Test Resources with Test Code
+
+Place integration test resources (deployment descriptors, configuration files, etc.) in the same source directory as the test class.
+This keeps all test artifacts together and makes tests easier to understand.
+
+== Use Configurable Values for URLs and Ports
+
+Do not hard-code URLs, hostnames, ports, or IP addresses.
+Use configurable values provided by Arquillian or system properties to ensure tests work with different configurations and IPv6 addresses.
+
+If a necessary configuration property is missing, file a Jira issue with component "Testsuite".
+
+== Follow Best Practices for Commits
+
+* Keep changes focused on the specific issue or feature being addressed.
+* Do not include unrelated changes such as reformatting or typo fixes in feature commits.
+Submit these separately.
+* Prefer smaller, focused pull requests over large, difficult-to-review changes.
+* Maintain consistency across commits (e.g., when renaming, update all references).
+* Write clear commit messages that will be meaningful in the project history.
+* Include the Jira ID in commit messages when working on a tracked issue.
+
+== Avoid Blind Timeouts
+
+Do not use `Thread.sleep()` without checking for the actual condition being awaited.
+Use active waiting with timeouts or timeout mechanisms provided by the API being tested.
+
+Make timeouts configurable with reasonable defaults.
+For groups of similar tests, use a shared configurable timeout value.
+
+== Provide Descriptive Assertion Messages
+
+Always include descriptive messages in `assert*()` and `fail()` calls.
+Clear messages make test failures easier to diagnose.
 
 [source,java,options="nowrap"]
 ----
-junit.framework.AssertionFailedError
-     at junit.framework.Assert.fail(Assert.java:48) [arquillian-service:]
-     at junit.framework.Assert.assertTrue(Assert.java:20) [arquillian-service:]
-     at junit.framework.Assert.assertTrue(Assert.java:27) [arquillian-service:]
-     at org.jboss.as.test.smoke.embedded.parse.ParseAndMarshalModelsTestCase.getOriginalStandaloneXml(ParseAndMarshalModelsTestCase.java:554) [bogus.jar:]
+// Good
+assertTrue("File config.xml should exist", configFile.exists());
+
+// Bad - provides no context on failure
+assertTrue(configFile.exists());
 ----
 
-== Provide configuration properties hints in exceptions
-If your test uses some configuration property and it fails possibly due
-to misconfiguration, note the property and it's value in the exception:
+== Include Configuration Context in Exceptions
+
+When tests fail due to possible misconfiguration, include the relevant configuration property names and values in exception messages.
 
 [source,java,options="nowrap"]
 ----
-File jdbcJar = new File( System.getProperty("jbossas.ts.dir", "."),
-       "integration/src/test/resources/mysql-connector-java-5.1.15.jar");
-    if( !jdbcJar.exists() )
-        throw new IllegalStateException("Can't find " + jdbcJar + " using $\{jbossas.ts.dir} == " + System.getProperty("jbossas.ts.dir") );
+File jdbcJar = new File(System.getProperty("jbossas.ts.dir", "."), "integration/src/test/resources/mysql-connector-java-5.1.15.jar");
+if (!jdbcJar.exists()) {
+    throw new IllegalStateException("Cannot find " + jdbcJar + " using ${jbossas.ts.dir} == " + System.getProperty("jbossas.ts.dir"));
+}
 ----
 
-== Clean up
-* Close sockets, connections, file descriptors;
-* Don't put much data to static fields, or clean them in a finally {...} block.
-* Don't alter AS config (unless you are absolutely sure that it will
-reload in a final \{...} block or an @After* method)
+== Clean Up Resources
 
-== Keep the tests configurable
-Keep these things in properties, set them at the beginning of the test:
-* Timeouts
-* Paths
-* URLs
-* Numbers (of whatever)
+* Close all sockets, connections, streams, and file descriptors in `finally` blocks or use try-with-resources.
+* Avoid storing large objects in static fields.
+If necessary, clear them in `finally` blocks.
+* Do not modify server configuration unless you restore it in a `finally` block or `@After*` method.
 
-They either will be or already are provided in form of system
-properties, or a simple testsuite until API (soon to come).
+== Keep Tests Configurable
+
+Extract configuration values such as timeouts, paths, URLs, and counts into configurable properties defined at the beginning of the test class.
+This improves test maintainability and flexibility.

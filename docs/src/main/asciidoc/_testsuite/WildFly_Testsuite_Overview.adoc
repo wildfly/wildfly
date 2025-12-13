@@ -9,13 +9,9 @@ ifdef::env-github[]
 :warning-caption: :warning:
 endif::[]
 
-WARNING: This section has not been updated for a long time and some sections are out of date. Contributions are welcome.
+This document will detail the implementation of the testsuite integration submodule as it guides you on adding your own test cases.
 
-This document will detail the implementation of the testsuite
-integration submodule as it guides you on adding your own test cases.
-
-The WildFly integration test suite has been designed with the following
-goals:
+The WildFly integration test suite has been designed with the following goals:
 
 * support execution of all identified test case use cases
 * employ a design/organization which is scalable and maintainable
