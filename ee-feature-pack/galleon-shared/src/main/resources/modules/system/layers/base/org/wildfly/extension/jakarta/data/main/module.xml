@@ -17,9 +17,17 @@
     </resources>
 
     <dependencies>
+        <module name="jakarta.data.api"/>
+        <module name="jakarta.enterprise.api"/>
+        <module name="jakarta.persistence.api"/>
+        <module name="org.hibernate"/>
+        <module name="org.hibernate.jipijapa-hibernate" services="import"/>
         <module name="org.jboss.as.controller"/>
+        <module name="org.jboss.as.jpa"/>
+        <module name="org.jboss.as.jpa.spi"/>
         <module name="org.jboss.as.server"/>
         <module name="org.jboss.as.version"/>
+        <module name="org.jboss.as.weld.common"/>
         <module name="org.jboss.logging"/>
         <module name="org.jboss.modules"/>
         <module name="org.jboss.staxmapper"/>

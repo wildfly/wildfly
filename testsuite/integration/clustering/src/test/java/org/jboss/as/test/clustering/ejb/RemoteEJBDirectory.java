@@ -16,7 +16,7 @@ import javax.naming.NamingException;
  * NOTE:
  * if you hold a static reference to this class, it causes any JNDI lookups across different tests to use the same discovered node registry (DNR).
  * This can cause server starts and stops in one test to contaminate other tests and produce incorrect results.
- * It is adviseable to use one instance per test by defining a @Before and @After method to create and dispose of the instance on a per test basis.
+ * It is advisable to use one instance per test by defining a @Before and @After method to create and dispose of the instance on a per test basis.
  *
  * @author Paul Ferraro
  */

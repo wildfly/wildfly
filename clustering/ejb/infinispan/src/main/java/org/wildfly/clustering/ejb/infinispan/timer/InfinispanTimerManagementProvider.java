@@ -5,7 +5,9 @@
 
 package org.wildfly.clustering.ejb.infinispan.timer;
 
+import java.time.Duration;
 import java.util.List;
+import java.util.Optional;
 import java.util.OptionalInt;
 import java.util.function.UnaryOperator;
 
@@ -13,7 +15,9 @@ import org.infinispan.Cache;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.configuration.cache.ExpirationConfiguration;
 import org.infinispan.configuration.cache.IsolationLevel;
+import org.infinispan.configuration.cache.PersistenceConfiguration;
 import org.infinispan.configuration.cache.StorageType;
+import org.infinispan.configuration.cache.StoreConfiguration;
 import org.infinispan.eviction.EvictionStrategy;
 import org.infinispan.transaction.LockingMode;
 import org.infinispan.transaction.TransactionMode;
@@ -113,13 +117,28 @@ public class InfinispanTimerManagementProvider implements TimerManagementProvide
             builder.expiration().lifespan(-1).maxIdle(-1);
         }
 
-        OptionalInt size = this.configuration.getMaxActiveTimers();
-        EvictionStrategy strategy = size.isPresent() ? EvictionStrategy.REMOVE : EvictionStrategy.NONE;
-        builder.memory().storage(StorageType.HEAP).whenFull(strategy).maxCount(size.orElse(0));
+        OptionalInt size = this.configuration.getMaxSize();
+        Optional<Duration> idleThreshold = this.configuration.getIdleTimeout();
+
+        EvictionStrategy strategy = (size.isPresent() || idleThreshold.isPresent()) ? EvictionStrategy.REMOVE : EvictionStrategy.NONE;
+        builder.memory().storage(StorageType.HEAP).whenFull(strategy);
         if (strategy.isEnabled()) {
+            // When an idle-timeout is configured without a size threshold, the cache's size limit must still be configured due to Infinispan's requirements.
+            // As a workaround we explicitly set maxCount(..) to Integer.MAX_VALUE.
+            // This in effect ensures that eviction is governed solely by idleness rather than hitting of the size constraint.
+            int maxCount = size.orElse(Integer.MAX_VALUE);
+            builder.memory().maxCount(maxCount);
             // Only evict creation meta-data entries
             // We will cascade eviction to the remaining entries for a given session
-            builder.addModule(DataContainerConfigurationBuilder.class).evictable(TimerMetaDataKey.class::isInstance);
+            DataContainerConfigurationBuilder container = builder.addModule(DataContainerConfigurationBuilder.class);
+            container.evictable(TimerMetaDataKey.class::isInstance);
+            idleThreshold.ifPresent(container::idleTimeout);
+        }
+
+        PersistenceConfiguration persistence = builder.persistence().create();
+        // If cache is configured to passivate and purge on startup, but application does not define passivation thresholds, then remove useless stores
+        if (!strategy.isEnabled() && persistence.passivation() && persistence.stores().stream().allMatch(StoreConfiguration::purgeOnStartup)) {
+            builder.persistence().passivation(false).clearStores();
         }
 
         builder.transaction().transactionMode(TransactionMode.TRANSACTIONAL).transactionManagerLookup(EmbeddedTransactionManager::getInstance).lockingMode(LockingMode.PESSIMISTIC).locking().isolationLevel(IsolationLevel.REPEATABLE_READ);

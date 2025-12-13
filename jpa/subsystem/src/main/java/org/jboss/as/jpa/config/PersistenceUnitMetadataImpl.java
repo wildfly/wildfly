@@ -13,7 +13,6 @@ import java.util.List;
 import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import jakarta.persistence.SharedCacheMode;
 import jakarta.persistence.ValidationMode;
@@ -97,7 +96,6 @@ public class PersistenceUnitMetadataImpl implements PersistenceUnitMetadata {
 
     private volatile ClassLoader cachedTempClassLoader;
 
-    private final AtomicBoolean onlyCheckIfClassFileTransformerIsNeededOnce = new AtomicBoolean(false);
     private volatile String scopeAnnotationName="";
     private volatile List<String> qualifierAnnotationNames = List.of();
     private volatile boolean isDuplicate;
@@ -373,11 +371,7 @@ public class PersistenceUnitMetadataImpl implements PersistenceUnitMetadata {
 
     @Override
     public boolean needsJPADelegatingClassFileTransformer() {
-        // WFLY-20393 Ensure that only one internal JPADelegatingClassFileTransformer bytecode transformer is configured for each Persistence Unit
-        if (onlyCheckIfClassFileTransformerIsNeededOnce.compareAndSet(false, true)) {
-            return Configuration.needClassFileTransformer(this);
-        }
-        return false;
+        return Configuration.needClassFileTransformer(this);
     }
 
     @Override

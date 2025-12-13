@@ -153,7 +153,7 @@ public class JakartaDataExtension extends SubsystemExtension<JakartaDataExtensio
         private static void registerDeploymentUnitProcessors(DeploymentProcessorTarget processorTarget) {
             processorTarget.addDeploymentProcessor(JakartaDataExtension.SUBSYSTEM_NAME,
                     Phase.DEPENDENCIES,
-                    Phase.DEPENDENCIES_JPA + 1,
+                    Phase.DEPENDENCIES_JPA + 1, // TODO https://issues.redhat.com/browse/WFLY-21271
                     new DeploymentUnitProcessor() {
                         @Override
                         public void deploy(DeploymentPhaseContext phaseContext) {
@@ -166,6 +166,10 @@ public class JakartaDataExtension extends SubsystemExtension<JakartaDataExtensio
                             addDependencies(moduleSpecification, moduleLoader, deploymentUnit, JAKARTA_DATA_API);
                         }
                     });
+            processorTarget.addDeploymentProcessor(JakartaDataExtension.SUBSYSTEM_NAME,
+                    Phase.POST_MODULE,
+                    Phase.POST_MODULE_JMS_CDI_EXTENSIONS + 1, // TODO https://issues.redhat.com/browse/WFLY-21271
+                    new JakartaDataDeploymentProcessor());
         }
     }
 

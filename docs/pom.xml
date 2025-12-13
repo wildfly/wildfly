@@ -86,8 +86,24 @@
                             <goal>process-asciidoc</goal>
                         </goals>
                     </execution>
+                    <execution>
+                        <id>output-html-external</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>process-asciidoc</goal>
+                        </goals>
+                        <configuration>
+                            <sourceDirectory>${project.build.directory}/external-sources</sourceDirectory>
+                            <attributes>
+                                <!-- app dev guide needed attrs -->
+                                <server-version>${project.version}</server-version>
+                                <plugin-version>${version.org.wildfly.plugin}</plugin-version>
+                            </attributes>
+                        </configuration>
+                    </execution>
                 </executions>
             </plugin>
+
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-dependency-plugin</artifactId>
@@ -108,6 +124,24 @@
                                     <type>zip</type>
                                     <overWrite>true</overWrite>
                                     <outputDirectory>${project.build.directory}/generated-docs/feature-pack</outputDirectory>
+                                </artifactItem>
+                            </artifactItems>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>unpack-wildfly-application-development-guide</id>
+                        <phase>process-resources</phase>
+                        <goals>
+                            <goal>unpack</goal>
+                        </goals>
+                        <configuration>
+                            <artifactItems>
+                                <artifactItem>
+                                    <groupId>org.wildfly</groupId>
+                                    <artifactId>wildfly-application-development-guide</artifactId>
+                                    <classifier>sources</classifier>
+                                    <type>zip</type>
+                                    <outputDirectory>${project.build.directory}/external-sources</outputDirectory>
                                 </artifactItem>
                             </artifactItems>
                         </configuration>

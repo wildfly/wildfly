@@ -52,7 +52,21 @@
         <ts.config-as.clustering.phase>test-compile</ts.config-as.clustering.phase>
         <!-- Disable the default surefire test execution. All profiles use custom executions. -->
         <surefire.default-test.phase>none</surefire.default-test.phase>
+        <!-- Use expansion bom since it managed Awaitility -->
+        <dependency.management.import.test.artifact>wildfly-standard-test-expansion-bom</dependency.management.import.test.artifact>
     </properties>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>${full.maven.groupId}</groupId>
+                <artifactId>${dependency.management.import.test.artifact}</artifactId>
+                <version>${full.maven.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
 
     <dependencies>
         <!-- Jakarta specification dependencies -->
@@ -167,6 +181,11 @@
         </dependency>
 
         <!-- Test dependencies -->
+        <dependency>
+            <groupId>org.awaitility</groupId>
+            <artifactId>awaitility</artifactId>
+            <scope>test</scope>
+        </dependency>
         <dependency>
             <groupId>com.h2database</groupId>
             <artifactId>h2</artifactId>
@@ -1301,12 +1320,13 @@
                                         <exclude>org/jboss/as/test/clustering/cluster/cdi/**</exclude>
                                         <exclude>org/jboss/as/test/clustering/cluster/infinispan/embedded/*TestCase.java</exclude>
                                         <exclude>org/jboss/as/test/clustering/cluster/infinispan/remote/*TestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/clustering/cluster/jgroups/tls/**</exclude>
                                         <exclude>org/jboss/as/test/clustering/cluster/singleton/SingletonPartitionTestCase.java</exclude>
                                         <exclude>org/jboss/as/test/clustering/cluster/web/CoarseImmutableWebFailoverTestCase.java</exclude>
-                                        <exclude>org/jboss/as/test/clustering/cluster/web/CoarseWebFailoverTestCase.java</exclude>
                                         <exclude>org/jboss/as/test/clustering/cluster/web/CoarseNonTransactionalWebFailoverTestCase.java</exclude>
-                                        <exclude>org/jboss/as/test/clustering/cluster/web/FineNonTransactionalWebFailoverTestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/clustering/cluster/web/CoarseWebFailoverTestCase.java</exclude>
                                         <exclude>org/jboss/as/test/clustering/cluster/web/FineImmutableWebFailoverTestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/clustering/cluster/web/FineNonTransactionalWebFailoverTestCase.java</exclude>
                                         <exclude>org/jboss/as/test/clustering/cluster/web/FineWebFailoverTestCase.java</exclude>
                                         <exclude>org/jboss/as/test/clustering/cluster/web/ReplicationForNegotiationAuthenticatorTestCase.java</exclude>
                                         <exclude>org/jboss/as/test/clustering/cluster/web/context/InvalidateConversationTestCase.java</exclude>
