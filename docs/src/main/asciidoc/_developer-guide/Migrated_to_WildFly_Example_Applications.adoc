@@ -62,7 +62,6 @@ use the features and functions of EE6.
 * Quickstarts: A number of quickstart applications were written to
 demonstrate Jakarta EE and a few additional technologies. They provide
 small, specific, working examples that can be used as a reference for
-your own project. For more information about the quickstarts, see
-http://www.jboss.org/jdf/quickstarts/jboss-as-quickstart/guide/Introduction/[Get Started Developing Applications]
+your own project. For more information about the quickstarts, see https://docs.wildfly.org/quickstart[The WildFly Quickstarts]
 
 include::Migrate_Order_Application_from_EAP5.adoc[]

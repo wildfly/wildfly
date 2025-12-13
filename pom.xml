@@ -562,6 +562,7 @@
         <version.org.wildfly.security.elytron-tests-common>2.4.2.Final</version.org.wildfly.security.elytron-tests-common>
         <version.org.wildfly.security.elytron-mp>2.0.0.Final</version.org.wildfly.security.elytron-mp>
         <version.org.wildfly.transaction.client>3.0.5.Final</version.org.wildfly.transaction.client>
+        <version.org.wildfly.wildfly-application-development-guide>1.0.0.Final</version.org.wildfly.wildfly-application-development-guide>
         <preview.version.org.wildfly.wildfly-ee-9-deployment-transformer>2.0.0.Final</preview.version.org.wildfly.wildfly-ee-9-deployment-transformer>
         <version.software.amazon.awssdk>2.36.3</version.software.amazon.awssdk>
         <version.software.amazon.eventstream>1.0.1</version.software.amazon.eventstream>
@@ -839,6 +840,14 @@
                 <artifactId>wildfly-standard-test-expansion-bom</artifactId>
                 <version>${full.maven.version}</version>
                 <type>pom</type>
+            </dependency>
+
+            <dependency>
+                <groupId>org.wildfly</groupId>
+                <artifactId>wildfly-application-development-guide</artifactId>
+                <version>${version.org.wildfly.wildfly-application-development-guide}</version>
+                <classifier>sources</classifier>
+                <type>zip</type>
             </dependency>
 
             <dependency>

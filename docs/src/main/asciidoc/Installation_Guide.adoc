@@ -55,8 +55,7 @@ If that is the kind of installation you are aiming at, the guides that you shoul
 
 * The link:Getting_Started_Guide{outfilesuffix}[Getting Started Guide] shows you
 how to install, start and configure the server.
-* The link:Getting_Started_Developing_Applications_Guide{outfilesuffix}[Getting
-Started Developing Applications Guide] shows you how to build Jakarta EE
+* The link:Application_Development_Guide{outfilesuffix}[Application Development Guide] shows you how to build
 applications and deploy them to WildFly.
 
 [[Galleon_Provisioning]]
@@ -80,8 +79,7 @@ If that is the kind of installation you are aiming at, the guides that you shoul
 
 * The link:Galleon_Guide{outfilesuffix}[Galleon Provisioning Guide] shows you how to
 provision customized WildFly server using Galleon.
-* The link:Getting_Started_Developing_Applications_Guide{outfilesuffix}[Getting
-Started Developing Applications Guide] shows you how to build Jakarta EE
+* The link:Application_Development_Guide{outfilesuffix}[Application Development Guide] shows you how to build
 applications and deploy them to WildFly.
 
 [[WildFly_Maven_Plugin_Provisioning]]
