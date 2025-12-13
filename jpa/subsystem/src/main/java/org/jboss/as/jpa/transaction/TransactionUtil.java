@@ -19,7 +19,7 @@ import jakarta.transaction.TransactionManager;
 import jakarta.transaction.TransactionSynchronizationRegistry;
 
 import org.jboss.as.jpa.container.ExtendedEntityManager;
-import org.jboss.as.jpa.messages.JpaLogger;
+import org.jboss.as.jpa.container.ScopedObjects;
 import org.wildfly.transaction.client.AbstractTransaction;
 import org.wildfly.transaction.client.AssociationListener;
 import org.wildfly.transaction.client.ContextTransactionManager;
@@ -49,11 +49,17 @@ public class TransactionUtil {
      * @return
      */
     public static EntityManager getTransactionScopedEntityManager(String puScopedName, TransactionSynchronizationRegistry tsr) {
-        return getEntityManagerInTransactionRegistry(puScopedName, tsr);
+        return getScopedObjectInTransactionRegistry(EntityManager.class, puScopedName, tsr);
     }
 
-    public static void registerSynchronization(EntityManager entityManager, String puScopedName, TransactionSynchronizationRegistry tsr, TransactionManager transactionManager) {
-        SessionSynchronization sessionSynchronization = new SessionSynchronization(entityManager, puScopedName);
+    public static <T extends AutoCloseable> T getScopedObjectInTransactionRegistry(Class<T> type, String scopedPuName, TransactionSynchronizationRegistry tsr) {
+        @SuppressWarnings("unchecked")
+        ScopedObjects objs = (ScopedObjects) tsr.getResource(scopedPuName);
+        return objs == null ? null : objs.get(type);
+    }
+
+    public static void registerSynchronization(AutoCloseable transactionScoped, String puScopedName, TransactionSynchronizationRegistry tsr, TransactionManager transactionManager) {
+        SessionSynchronization sessionSynchronization = new SessionSynchronization(transactionScoped, puScopedName);
         tsr.registerInterposedSynchronization(sessionSynchronization);
         final AbstractTransaction transaction = ((ContextTransactionManager) transactionManager).getTransaction();
         doPrivileged((PrivilegedAction<Void>) () -> {
@@ -66,7 +72,7 @@ public class TransactionUtil {
         try {
             return transactionManager.getTransaction();
         } catch (SystemException e) {
-            throw JpaLogger.ROOT_LOGGER.errorGettingTransaction(e);
+            throw ROOT_LOGGER.errorGettingTransaction(e);
         }
     }
 
@@ -74,20 +80,16 @@ public class TransactionUtil {
         return Thread.currentThread().getName();
     }
 
-    public static String getEntityManagerDetails(EntityManager manager, String scopedPuName) {
+    public static String getTransactionScopedObjectDetails(AutoCloseable closeable, String scopedPuName) {
         String result = currentThread() + ":";  // show the thread for correlation with other modules
-        if (manager instanceof ExtendedEntityManager) {
-            result += manager.toString();
-        }
-        else {
+        if (closeable instanceof ExtendedEntityManager) { // hack to avoid dep on ExtendedEntityManager
+            result += closeable.toString();
+        } else if (closeable instanceof EntityManager) {
             result += "transaction scoped EntityManager [" + scopedPuName + "]";
+        } else {
+            result += "transaction scoped StatelessSession [" + scopedPuName + "]";
         }
         return result;
-    }
-
-
-    private static EntityManager getEntityManagerInTransactionRegistry(String scopedPuName, TransactionSynchronizationRegistry tsr) {
-        return (EntityManager)tsr.getResource(scopedPuName);
     }
 
     /**
@@ -98,7 +100,24 @@ public class TransactionUtil {
      * @param entityManager
      */
     public static void putEntityManagerInTransactionRegistry(String scopedPuName, EntityManager entityManager, TransactionSynchronizationRegistry tsr) {
-        tsr.putResource(scopedPuName, entityManager);
+        putScopedObjectInTransactionRegistry(scopedPuName, entityManager, tsr);
+    }
+
+    /**
+     * Save the specified EntityManager or StatelessSession in the local thread's active transaction.
+     * The TransactionSynchronizationRegistry will clear the reference to the object when the transaction completes.
+     *
+     * @param scopedPuName
+     * @param scopedObject
+     */
+    public static <T extends AutoCloseable> void putScopedObjectInTransactionRegistry(String scopedPuName, T scopedObject, TransactionSynchronizationRegistry tsr) {
+        @SuppressWarnings("unchecked")
+        ScopedObjects objects = (ScopedObjects) tsr.getResource(scopedPuName);
+        if (objects == null) {
+            objects = new ScopedObjects();
+            tsr.putResource(scopedPuName, objects);
+        }
+        objects.set(scopedObject);
     }
 
     /**
@@ -119,7 +138,7 @@ public class TransactionUtil {
      *     https://developer.jboss.org/thread/252572
      */
     private static class SessionSynchronization implements Synchronization, AssociationListener {
-        private EntityManager manager;  // the underlying entity manager
+        private AutoCloseable scopedObject;  // the underlying entity manager or stateless session
         private String scopedPuName;
         private boolean afterCompletionCalled = false;
         private int associationCounter = 1; // set to one since transaction is associated with current thread already.
@@ -127,8 +146,8 @@ public class TransactionUtil {
                                             // decremented when a thread is disassociated from transaction.
                                             // synchronization on this object protects associationCounter.
 
-        public SessionSynchronization(EntityManager session, String scopedPuName) {
-            this.manager = session;
+        public SessionSynchronization(AutoCloseable session, String scopedPuName) {
+            this.scopedObject = session;
             this.scopedPuName = scopedPuName;
         }
 
@@ -143,7 +162,7 @@ public class TransactionUtil {
              */
             synchronized (this) {
                 afterCompletionCalled = true;
-                safeCloseEntityManager();
+                safeCloseScopedObject();
             }
         }
 
@@ -155,20 +174,20 @@ public class TransactionUtil {
          * NOTE: caller must call with synchronized(this), where this == instance of SessionSynchronization associated with
          * the Jakarta Transactions transaction.
          */
-        private void safeCloseEntityManager() {
+        private void safeCloseScopedObject() {
             if (afterCompletionCalled
                     && associationCounter == 0
-                    && manager != null) {
+                    && scopedObject != null) {
                 try {
                     if (ROOT_LOGGER.isDebugEnabled())
-                        ROOT_LOGGER.debugf("%s: closing entity managersession", getEntityManagerDetails(manager, scopedPuName));
-                    manager.close();
+                        ROOT_LOGGER.debugf("%s: closing entity manager/session", getTransactionScopedObjectDetails(scopedObject, scopedPuName));
+                    scopedObject.close();
                 } catch (Exception ignored) {
                     if (ROOT_LOGGER.isDebugEnabled())
                         ROOT_LOGGER.debugf(ignored, "ignoring error that occurred while closing EntityManager for %s (",
                                 scopedPuName);
                 }
-                manager = null;
+                scopedObject = null;
             }
         }
 
@@ -193,9 +212,9 @@ public class TransactionUtil {
                 // application thread (whichever thread reaches associationCounter == 0).
                 associationCounter += associated ? 1 : -1;
                 if (ROOT_LOGGER.isTraceEnabled()) {
-                    ROOT_LOGGER.tracef("transaction association counter = %d for %s: ", associationCounter, getEntityManagerDetails(manager, scopedPuName));
+                    ROOT_LOGGER.tracef("transaction association counter = %d for %s: ", associationCounter, getTransactionScopedObjectDetails(scopedObject, scopedPuName));
                 }
-                safeCloseEntityManager();
+                safeCloseScopedObject();
             }
         }
     }
