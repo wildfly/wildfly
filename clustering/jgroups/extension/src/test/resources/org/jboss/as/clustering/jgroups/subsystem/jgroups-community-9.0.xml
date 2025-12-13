@@ -31,6 +31,8 @@
                 <default-thread-pool min-threads="${jgroups.maximal.min-threads:11}"
                                      max-threads="${jgroups.maximal.max-threads:12}"
                                      keepalive-time="${jgroups.maximal.keepalive-time:13}"/>
+                <ssl-context client="my-client-context"
+                             server="my-server-context"/>
             </transport>
             <socket-protocol type="MPING" module="${jgroups.maximal.mping.module:org.jgroups}" socket-binding="jgroups-mping">
                 <property name="name">${jgroups.maximal.property:value}</property>
@@ -39,7 +41,7 @@
             <socket-discovery-protocol type="TCPPING" socket-bindings="node1 node2"/>
             <protocol type="MERGE3"/>
             <socket-protocol type="FD_SOCK" socket-binding="jgroups-tcp-fd" client-socket-binding="jgroups-client-fd"/>
-            <protocol type="FD"/>
+            <protocol type="FD_ALL2"/>
             <protocol type="VERIFY_SUSPECT"/>
             <encrypt-protocol type="SYM_ENCRYPT" key-store="my-key-store" key-alias="${jgroups.maximal.key-alias:alias}">
                 <key-credential-reference store="my-credential-store" alias="credential-alias" type="PASSWORD"/>

@@ -11,6 +11,7 @@ import javax.xml.stream.XMLStreamException;
 
 import org.jboss.as.clustering.controller.CommonServiceDescriptor;
 import org.jboss.as.clustering.subsystem.AdditionalInitialization;
+import org.jboss.as.controller.Feature;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.model.test.ModelTestUtils;
@@ -19,6 +20,7 @@ import org.jboss.as.network.SocketBinding;
 import org.jboss.as.subsystem.test.AbstractSubsystemSchemaTest;
 import org.jboss.as.subsystem.test.KernelServices;
 import org.jboss.as.subsystem.test.KernelServicesBuilder;
+import org.jboss.as.version.Stability;
 import org.jboss.dmr.ModelNode;
 import org.junit.Assert;
 import org.junit.Test;
@@ -33,6 +35,7 @@ import org.junit.runners.Parameterized.Parameters;
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  * @author Richard Achmatowicz (c) 2013 Red Hat Inc.
+ * @author Radoslav Husar
  */
 @RunWith(value = Parameterized.class)
 public class JGroupsSubsystemTestCase extends AbstractSubsystemSchemaTest<JGroupsSubsystemSchema> {
@@ -45,13 +48,13 @@ public class JGroupsSubsystemTestCase extends AbstractSubsystemSchemaTest<JGroup
     private final JGroupsSubsystemSchema schema;
 
     public JGroupsSubsystemTestCase(JGroupsSubsystemSchema schema) {
-        super(JGroupsSubsystemResourceDefinitionRegistrar.REGISTRATION.getName(), new JGroupsExtension(), schema, JGroupsSubsystemSchema.CURRENT);
+        super(JGroupsSubsystemResourceDefinitionRegistrar.REGISTRATION.getName(), new JGroupsExtension(), schema, Feature.map(JGroupsSubsystemSchema.CURRENT).get(schema.getStability()));
         this.schema = schema;
     }
 
     @Override
     protected String getSubsystemXsdPathPattern() {
-        return "schema/jboss-as-%s_%d_%d.xsd";
+        return (this.schema.getStability() == Stability.DEFAULT) ? "schema/jboss-as-%1$s_%2$d_%3$d.xsd" : "schema/jboss-as-%1$s_%4$s_%2$d_%3$d.xsd";
     }
 
     private KernelServices buildKernelServices() throws Exception {
@@ -99,7 +102,7 @@ public class JGroupsSubsystemTestCase extends AbstractSubsystemSchemaTest<JGroup
 
         Assert.assertTrue(originalForkModel.isDefined());
         originalForkModel.protect();
-        Assert.assertTrue(0 < originalForkModel.get(StackResourceDefinitionRegistrar.Component.PROTOCOL.getPathElement().getKey()).keys().size());
+        Assert.assertFalse(originalForkModel.get(StackResourceDefinitionRegistrar.Component.PROTOCOL.getPathElement().getKey()).keys().isEmpty());
 
         ModelNode originalStackModel = originalSubsystemModel.get(JGroupsResourceRegistration.STACK.pathElement("maximal").getKeyValuePair());
         Assert.assertTrue(originalStackModel.isDefined());
