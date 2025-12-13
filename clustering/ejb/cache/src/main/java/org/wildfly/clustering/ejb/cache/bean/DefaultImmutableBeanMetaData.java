@@ -7,8 +7,8 @@ package org.wildfly.clustering.ejb.cache.bean;
 
 import java.time.Duration;
 import java.time.Instant;
+import java.util.Optional;
 
-import org.wildfly.clustering.ejb.bean.BeanExpiration;
 import org.wildfly.clustering.ejb.bean.ImmutableBeanMetaData;
 
 /**
@@ -17,21 +17,21 @@ import org.wildfly.clustering.ejb.bean.ImmutableBeanMetaData;
 public class DefaultImmutableBeanMetaData<K> implements ImmutableBeanMetaData<K> {
 
     private final ImmutableBeanMetaDataEntry<K> entry;
-    private final BeanExpiration expiration;
+    private final Optional<Duration> maxIdle;
 
-    public DefaultImmutableBeanMetaData(ImmutableBeanMetaDataEntry<K> entry, BeanExpiration expiration) {
+    public DefaultImmutableBeanMetaData(ImmutableBeanMetaDataEntry<K> entry, Optional<Duration> maxIdle) {
         this.entry = entry;
-        this.expiration = expiration;
+        this.maxIdle = maxIdle;
     }
 
     @Override
-    public Duration getTimeout() {
-        return (this.expiration != null) ? this.expiration.getTimeout() : null;
+    public Optional<Duration> getMaxIdle() {
+        return this.maxIdle;
     }
 
     @Override
-    public Instant getLastAccessTime() {
-        return this.entry.getLastAccess().get();
+    public Optional<Instant> getLastAccessTime() {
+        return Optional.of(this.entry.getLastAccessTime().get());
     }
 
     @Override

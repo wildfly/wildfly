@@ -19,8 +19,8 @@
             <property name="hibernate.generate_statistics" value="true"/>
             <property name="hibernate.cache.infinispan.entity.cfg" value="entity-replicated-template"/>
             <property name="hibernate.cache.infinispan.entity.memory.size" value="99991"/>
-            <property name="hibernate.cache.infinispan.entity.expiration.lifespan" value="99992"/>
-            <property name="hibernate.cache.infinispan.entity.expiration.max_idle" value="99993"/>
+            <property name="hibernate.cache.infinispan.entity.expiration.lifespan" value="99993"/>
+            <property name="hibernate.cache.infinispan.entity.expiration.max_idle" value="99992"/>
             <property name="hibernate.cache.infinispan.entity.expiration.wake_up_interval" value="9994"/>
         </properties>
     </persistence-unit>

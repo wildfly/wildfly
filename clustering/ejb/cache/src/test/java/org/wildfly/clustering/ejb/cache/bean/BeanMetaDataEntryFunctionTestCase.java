@@ -19,7 +19,7 @@ public class BeanMetaDataEntryFunctionTestCase extends AbstractBeanMetaDataEntry
 
     @Override
     public void accept(RemappableBeanMetaDataEntry<UUID> entry) {
-        OffsetValue<Instant> operand = entry.getLastAccess().rebase();
+        OffsetValue<Instant> operand = entry.getLastAccessTime().rebase();
 
         BeanMetaDataEntry<UUID> mutableEntry = new MutableBeanMetaDataEntry<>(entry, operand);
 

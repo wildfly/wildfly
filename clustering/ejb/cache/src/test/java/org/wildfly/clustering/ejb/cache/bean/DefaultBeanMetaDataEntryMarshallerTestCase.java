@@ -31,14 +31,14 @@ public class DefaultBeanMetaDataEntryMarshallerTestCase {
         RemappableBeanMetaDataEntry<SessionID> metaData = new DefaultBeanMetaDataEntry<>("foo", id);
         Tester<RemappableBeanMetaDataEntry<SessionID>> tester = factory.createTester(DefaultBeanMetaDataEntryMarshallerTestCase::assertEquals);
         tester.accept(metaData);
-        metaData.getLastAccess().setOffset(Offset.forInstant(Duration.ofSeconds(1)));
+        metaData.getLastAccessTime().setOffset(Offset.forInstant(Duration.ofSeconds(1)));
         tester.accept(metaData);
     }
 
     static void assertEquals(RemappableBeanMetaDataEntry<SessionID> entry1, RemappableBeanMetaDataEntry<SessionID> entry2) {
         Assertions.assertEquals(entry1.getName(), entry2.getName());
         Assertions.assertEquals(entry1.getGroupId(), entry2.getGroupId());
-        Assertions.assertEquals(entry1.getLastAccess().getBasis(), entry2.getLastAccess().getBasis());
-        Assertions.assertEquals(entry1.getLastAccess().get(), entry2.getLastAccess().get());
+        Assertions.assertEquals(entry1.getLastAccessTime().getBasis(), entry2.getLastAccessTime().getBasis());
+        Assertions.assertEquals(entry1.getLastAccessTime().get(), entry2.getLastAccessTime().get());
     }
 }

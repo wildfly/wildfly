@@ -158,6 +158,7 @@ public class RemoteCacheContainerResourceDefinitionRegistrar extends Configurati
                 ;
     }
 
+    @SuppressWarnings("deprecation")
     @Override
     public ManagementResourceRegistration register(ManagementResourceRegistration parent, ManagementResourceRegistrationContext context) {
         ManagementResourceRegistration registration = super.register(parent, context);

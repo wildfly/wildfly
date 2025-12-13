@@ -11,9 +11,9 @@ import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
-import java.time.Duration;
 import java.time.Instant;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Consumer;
 
@@ -58,8 +58,8 @@ public class UndertowSessionExpirationListenerTestCase {
         doReturn(Set.of()).when(attributes).entrySet();
         doReturn(metaData).when(session).getMetaData();
         doReturn(Instant.now()).when(metaData).getCreationTime();
-        doReturn(Instant.now()).when(metaData).getLastAccessStartTime();
-        doReturn(Duration.ZERO).when(metaData).getTimeout();
+        doReturn(Optional.of(Instant.now())).when(metaData).getLastAccessStartTime();
+        doReturn(Optional.empty()).when(metaData).getMaxIdle();
 
         expirationListener.accept(session);
 

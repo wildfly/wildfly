@@ -34,6 +34,7 @@ import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.test.integration.domain.management.util.DomainTestUtils;
 import org.jboss.as.test.integration.domain.mixed.eap740.DomainAdjuster740;
 import org.jboss.as.test.integration.domain.mixed.eap800.DomainAdjuster800;
+import org.jboss.as.test.integration.domain.mixed.wfly31.DomainAdjusterWFLY31;
 import org.jboss.as.test.integration.management.util.MgmtOperationException;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
@@ -68,6 +69,9 @@ public class DomainAdjuster {
                 break;
             case EAP_8_0_0:
                 adjuster = new DomainAdjuster800();
+                break;
+            case WFLY_31_0_0:
+                adjuster = new DomainAdjusterWFLY31();
                 break;
             default:
                 adjuster = new DomainAdjuster();

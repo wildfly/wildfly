@@ -18,11 +18,11 @@ import java.util.stream.Collectors;
 
 import org.infinispan.client.hotrod.RemoteCache;
 import org.infinispan.client.hotrod.RemoteCacheManager;
+import org.infinispan.client.hotrod.RemoteSchemasAdmin;
+import org.infinispan.client.hotrod.RemoteSchemasAdmin.SchemaOpResult;
 import org.infinispan.client.hotrod.configuration.ConfigurationBuilder;
-import org.infinispan.commons.marshall.ProtoStreamMarshaller;
 import org.infinispan.protostream.GeneratedSchema;
 import org.infinispan.protostream.SerializationContextInitializer;
-import org.infinispan.query.remote.client.ProtobufMetadataManagerConstants;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.test.clustering.single.infinispan.query.data.Person;
@@ -33,6 +33,7 @@ import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.jboss.shrinkwrap.descriptor.api.Descriptors;
 import org.jboss.shrinkwrap.descriptor.api.spec.se.manifest.ManifestDescriptor;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -47,8 +48,7 @@ import org.junit.runner.RunWith;
  */
 @RunWith(Arquillian.class)
 public class HotRodClientTestCase {
-
-    private RemoteCache<String, Person> remoteCache;
+    private RemoteCacheManager remoteCacheManager;
 
     @Deployment
     public static Archive<?> deployment() {
@@ -56,30 +56,38 @@ public class HotRodClientTestCase {
                 .addClass(HotRodClientTestCase.class)
                 .addPackage(Person.class.getPackage())
                 .addAsServiceProvider(SerializationContextInitializer.class.getName(), PersonSchema.class.getName() + "Impl")
-                .setManifest(new StringAsset(Descriptors.create(ManifestDescriptor.class).attribute("Dependencies", "org.infinispan, org.infinispan.commons, org.infinispan.client.hotrod, org.infinispan.query, org.infinispan.protostream").exportAsString()))
-                ;
+                .setManifest(new StringAsset(Descriptors.create(ManifestDescriptor.class).attribute("Dependencies", "org.infinispan.commons, org.infinispan.client.hotrod, org.infinispan.protostream").exportAsString()));
     }
+
+    private final List<GeneratedSchema> schemas = ServiceLoader.load(SerializationContextInitializer.class, this.getClass().getClassLoader()).stream().map(ServiceLoader.Provider::get).filter(GeneratedSchema.class::isInstance).map(GeneratedSchema.class::cast).collect(Collectors.toList());
 
     @Before
     public void initialize() {
-        List<GeneratedSchema> schemas = ServiceLoader.load(SerializationContextInitializer.class, this.getClass().getClassLoader()).stream().map(ServiceLoader.Provider::get).filter(GeneratedSchema.class::isInstance).map(GeneratedSchema.class::cast).collect(Collectors.toList());
 
         ConfigurationBuilder config = new ConfigurationBuilder();
         config.addServer().host(INFINISPAN_SERVER_ADDRESS);
-        config.marshaller(new ProtoStreamMarshaller());
-        for (GeneratedSchema schema : schemas) {
+        for (GeneratedSchema schema : this.schemas) {
             config.addContextInitializer(schema);
         }
         config.security().authentication().username(INFINISPAN_APPLICATION_USER).password(INFINISPAN_APPLICATION_PASSWORD);
 
-        RemoteCacheManager remoteCacheManager = new RemoteCacheManager(config.build(), true);
-        this.remoteCache = remoteCacheManager.getCache();
-        this.remoteCache.clear();
+        this.remoteCacheManager = new RemoteCacheManager(config.build(), true);
 
-        RemoteCache<String, String> schemaCache = this.remoteCache.getRemoteCacheContainer().getCache(ProtobufMetadataManagerConstants.PROTOBUF_METADATA_CACHE_NAME);
-        for (GeneratedSchema schema : schemas) {
-            schemaCache.put(schema.getProtoFileName(), schema.getProtoFile());
-            assertFalse(schemaCache.containsKey(ProtobufMetadataManagerConstants.ERRORS_KEY_SUFFIX));
+        RemoteSchemasAdmin admin = this.remoteCacheManager.administration().schemas();
+        for (GeneratedSchema schema : this.schemas) {
+            SchemaOpResult result = admin.create(schema);
+            assertFalse(result.getError(), result.hasError());
+        }
+    }
+
+    @After
+    public void destroy() {
+        try (RemoteCacheManager manager = this.remoteCacheManager) {
+            RemoteSchemasAdmin admin = manager.administration().schemas();
+            for (GeneratedSchema schema : this.schemas) {
+                SchemaOpResult result = admin.remove(schema.getName());
+                assertFalse(result.getError(), result.hasError());
+            }
         }
     }
 
@@ -87,9 +95,14 @@ public class HotRodClientTestCase {
     public void testPutGetCustomObject() {
         String key = "k1";
         Person expected = new Person("Martin");
-        this.remoteCache.put(key, expected);
-        Person result = this.remoteCache.get(key);
-        assertNotNull(result);
-        assertEquals(expected.getName(), result.getName());
+        RemoteCache<String, Person> cache = this.remoteCacheManager.getCache("query");
+        try {
+            cache.put(key, expected);
+            Person result = cache.get(key);
+            assertNotNull(result);
+            assertEquals(expected.getName(), result.getName());
+        } finally {
+            cache.clear();
+        }
     }
 }

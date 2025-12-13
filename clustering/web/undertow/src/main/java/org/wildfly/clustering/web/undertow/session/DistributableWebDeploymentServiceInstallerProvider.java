@@ -14,9 +14,6 @@ import java.util.OptionalInt;
 import java.util.ServiceLoader;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executor;
-import java.util.function.Function;
-import java.util.function.Supplier;
-import java.util.function.UnaryOperator;
 
 import jakarta.servlet.ServletContext;
 
@@ -33,6 +30,9 @@ import org.jboss.metadata.web.jboss.JBossWebMetaData;
 import org.jboss.metadata.web.jboss.ReplicationConfig;
 import org.jboss.modules.Module;
 import org.kohsuke.MetaInfServices;
+import org.wildfly.clustering.function.Function;
+import org.wildfly.clustering.function.Supplier;
+import org.wildfly.clustering.function.UnaryOperator;
 import org.wildfly.clustering.marshalling.ByteBufferMarshaller;
 import org.wildfly.clustering.server.immutable.Immutability;
 import org.wildfly.clustering.session.SessionAttributePersistenceStrategy;
@@ -109,10 +109,9 @@ public class DistributableWebDeploymentServiceInstallerProvider implements WebDe
 
         DeploymentServiceInstaller locatorInstaller = provider.getRouteLocatorServiceInstaller(new WebDeploymentConfigurationAdapter(configuration));
         ServiceDependency<UnaryOperator<String>> locator = ServiceDependency.on(WebDeploymentServiceDescriptor.ROUTE_LOCATOR.resolve(configuration.getDeploymentUnit()));
-        Supplier<SessionAffinityProvider> factory = locator.map(SessionAffinityProviderAdapter::new);
-        DeploymentServiceInstaller affinityInstaller = ServiceInstaller.builder(factory)
+        DeploymentServiceInstaller affinityInstaller = ServiceInstaller.builder(locator.map(SessionAffinityProviderAdapter::new))
                 .provides(org.wildfly.extension.undertow.deployment.WebDeploymentServiceDescriptor.SESSION_AFFINITY_PROVIDER.resolve(unit))
-                .requires(locator)
+                .startWhen(StartWhen.REQUIRED)
                 .build();
         return DeploymentServiceInstaller.combine(locatorInstaller, affinityInstaller);
     }
@@ -179,7 +178,7 @@ public class DistributableWebDeploymentServiceInstallerProvider implements WebDe
         }
 
         @Override
-        public OptionalInt getMaxSize() {
+        public OptionalInt getSizeThreshold() {
             return this.maxActiveSessions;
         }
 

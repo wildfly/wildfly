@@ -14,7 +14,6 @@
         <package name="org.infinispan.counter"/>
         <package name="org.infinispan.lock"/>
         <package name="org.infinispan.query"/>
-        <package name="org.infinispan.query.core"/>
     </packages>
 
 </feature-group-spec>

@@ -120,7 +120,7 @@ public class DummyEntityCustomRegionRESTResource {
     @Path("/eviction-max-entries/{cache-name}")
     @Produces("text/plain")
     public Response getEvictionMaxEntries(@PathParam(value = "cache-name") String cacheName) {
-        Object res = container.getCache(cacheName).getCacheConfiguration().memory().size();
+        Object res = container.getCache(cacheName).getCacheConfiguration().memory().maxCount();
         return Response.ok().entity(res).build();
     }
 

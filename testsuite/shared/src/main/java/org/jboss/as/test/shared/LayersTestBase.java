@@ -151,7 +151,6 @@ public abstract class LayersTestBase {
             "org.infinispan.cdi.embedded",
             "org.infinispan.cdi.remote",
             "org.infinispan.query",
-            "org.infinispan.query.core",
             // WFLY-8770 jgroups-aws layer modules needed to configure the aws.S3_PING protocol are not referenced
             "org.jgroups.aws",
             "software.amazon.awssdk.s3",

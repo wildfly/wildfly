@@ -6,11 +6,11 @@
 package org.wildfly.extension.clustering.web.routing.infinispan;
 
 import java.util.function.BiFunction;
-import java.util.function.Function;
-import java.util.function.UnaryOperator;
 
 import org.infinispan.Cache;
 import org.wildfly.clustering.cache.Key;
+import org.wildfly.clustering.function.Function;
+import org.wildfly.clustering.function.UnaryOperator;
 import org.wildfly.clustering.server.infinispan.CacheContainerGroupMember;
 import org.wildfly.clustering.server.infinispan.affinity.UnaryGroupMemberAffinity;
 import org.wildfly.clustering.server.infinispan.registry.CacheContainerRegistry;

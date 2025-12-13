@@ -10,6 +10,7 @@ import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
 import java.util.EnumSet;
 import java.util.List;
+import java.util.Optional;
 
 import org.jboss.as.clustering.jgroups.ClassLoaderThreadFactory;
 import org.jboss.as.clustering.jgroups.JChannelFactory;
@@ -136,25 +137,25 @@ public class AbstractTransportResourceDefinitionRegistrar<T extends TP> extends 
         ServiceDependency<SocketBinding> serverSocketBinding = SocketBindingAttribute.SERVER.resolve(context, model);
         ServiceDependency<SocketBinding> diagnosticsSocketBinding = SocketBindingAttribute.DIAGNOSTICS.resolve(context, model);
 
-        String machine = TopologyAttribute.MACHINE.resolveModelAttribute(context, model).asStringOrNull();
-        String rack = TopologyAttribute.RACK.resolveModelAttribute(context, model).asStringOrNull();
-        String site = TopologyAttribute.SITE.resolveModelAttribute(context, model).asStringOrNull();
-        TransportConfiguration.Topology topology = (site != null || rack != null || machine != null) ? new TransportConfiguration.Topology() {
+        Optional<String> machine = Optional.ofNullable(TopologyAttribute.MACHINE.resolveModelAttribute(context, model).asStringOrNull());
+        Optional<String> rack = Optional.ofNullable(TopologyAttribute.RACK.resolveModelAttribute(context, model).asStringOrNull());
+        Optional<String> site = Optional.ofNullable(TopologyAttribute.SITE.resolveModelAttribute(context, model).asStringOrNull());
+        TransportConfiguration.Topology topology = site.isPresent() || rack.isPresent() || machine.isPresent() ? new TransportConfiguration.Topology() {
             @Override
-            public String getMachine() {
+            public Optional<String> getMachine() {
                 return machine;
             }
 
             @Override
-            public String getRack() {
+            public Optional<String> getRack() {
                 return rack;
             }
 
             @Override
-            public String getSite() {
+            public Optional<String> getSite() {
                 return site;
             }
-        } : null;
+        } : TransportConfiguration.Topology.UNSPECIFIED;
         return new ServiceDependency<>() {
             @Override
             public void accept(RequirementServiceBuilder<?> builder) {

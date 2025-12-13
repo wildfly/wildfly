@@ -8,8 +8,8 @@ package org.wildfly.clustering.ejb.cache.bean;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.util.Optional;
 
-import org.wildfly.clustering.ejb.bean.BeanExpiration;
 import org.wildfly.clustering.ejb.bean.BeanMetaData;
 
 /**
@@ -20,20 +20,15 @@ public class DefaultBeanMetaData<K> extends DefaultImmutableBeanMetaData<K> impl
     private final BeanMetaDataEntry<K> entry;
     private final Runnable mutator;
 
-    public DefaultBeanMetaData(BeanMetaDataEntry<K> entry, BeanExpiration expiration, Runnable mutator) {
-        super(entry, expiration);
+    public DefaultBeanMetaData(BeanMetaDataEntry<K> entry, Optional<Duration> maxIdle, Runnable mutator) {
+        super(entry, maxIdle);
         this.entry = entry;
         this.mutator = mutator;
     }
 
     @Override
-    public Instant getLastAccessTime() {
-        return this.entry.getLastAccess().get();
-    }
-
-    @Override
     public void setLastAccessTime(Instant lastAccessTime) {
-        Instant previousAccessTime = this.entry.getLastAccess().get();
+        Instant previousAccessTime = this.entry.getLastAccessTime().get();
         if (previousAccessTime.isBefore(lastAccessTime)) {
             // Retain second precision
             Duration duration = Duration.between(previousAccessTime, lastAccessTime);
@@ -42,7 +37,7 @@ public class DefaultBeanMetaData<K> extends DefaultImmutableBeanMetaData<K> impl
                 seconds += 1;
             }
             Duration normalizedDuration = (seconds > 1) ? Duration.ofSeconds(seconds) : ChronoUnit.SECONDS.getDuration();
-            this.entry.getLastAccess().set(previousAccessTime.plus(normalizedDuration));
+            this.entry.getLastAccessTime().set(previousAccessTime.plus(normalizedDuration));
         }
     }
 

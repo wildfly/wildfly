@@ -8,11 +8,10 @@ package org.jboss.as.ejb3.component.stateful.cache.simple;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ThreadFactory;
 import java.util.function.Consumer;
-import java.util.function.Predicate;
-import java.util.function.Supplier;
 
 import org.jboss.as.ejb3.component.stateful.cache.StatefulSessionBean;
 import org.jboss.as.ejb3.component.stateful.cache.StatefulSessionBeanCache;
@@ -22,6 +21,8 @@ import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.ejb.client.Affinity;
 import org.jboss.ejb.client.NodeAffinity;
 import org.wildfly.clustering.context.DefaultThreadFactory;
+import org.wildfly.clustering.function.Predicate;
+import org.wildfly.clustering.function.Supplier;
 import org.wildfly.clustering.server.local.scheduler.LocalSchedulerService;
 import org.wildfly.clustering.server.local.scheduler.ScheduledEntries;
 import org.wildfly.clustering.server.scheduler.SchedulerService;
@@ -41,16 +42,16 @@ public class SimpleStatefulSessionBeanCache<K, V extends StatefulSessionBeanInst
     private final Consumer<K> remover = this.instances::remove;
     private final StatefulSessionBeanInstanceFactory<V> factory;
     private final Supplier<K> identifierFactory;
-    private final Duration timeout;
+    private final Optional<Duration> maxIdle;
     private final Affinity strongAffinity;
     private final SchedulerService<K, Instant> scheduler;
 
     public SimpleStatefulSessionBeanCache(SimpleStatefulSessionBeanCacheConfiguration<K, V> configuration) {
         this.factory = configuration.getInstanceFactory();
         this.identifierFactory = configuration.getIdentifierFactory();
-        this.timeout = configuration.getTimeout();
+        this.maxIdle = configuration.getMaxIdle();
         this.strongAffinity = new NodeAffinity(configuration.getEnvironment().getNodeName());
-        this.scheduler = (this.timeout != null) && !this.timeout.isZero() && !this.timeout.isNegative() ? new LocalSchedulerService<>(new LocalSchedulerService.Configuration<>() {
+        this.scheduler = !this.maxIdle.orElse(Duration.ZERO).isZero() ? new LocalSchedulerService<>(new LocalSchedulerService.Configuration<>() {
             @Override
             public String getName() {
                 return configuration.getComponentName();
@@ -115,11 +116,11 @@ public class SimpleStatefulSessionBeanCache<K, V extends StatefulSessionBeanInst
 
     @Override
     public void accept(StatefulSessionBean<K, V> bean) {
-        if (this.timeout != null) {
+        if (this.maxIdle.isPresent()) {
             K id = bean.getId();
             if (this.scheduler != null) {
                 // Timeout > 0, schedule bean to expire
-                this.scheduler.schedule(id, Instant.now().plus(this.timeout));
+                this.scheduler.schedule(id, Instant.now().plus(this.maxIdle.get()));
             } else {
                 // Timeout = 0, remove bean immediately
                 this.test(id);

@@ -30,7 +30,7 @@ public class SegmentedCacheResourceDefinitionRegistrar extends SharedStateCacheR
     static final AttributeDefinition SEGMENTS = new SimpleAttributeDefinitionBuilder("segments", ModelType.INT)
             .setAllowExpression(true)
             .setRequired(false)
-            .setDefaultValue(new ModelNode(256))
+            .setDefaultValue(new ModelNode(128))
             .setValidator(IntRangeValidator.POSITIVE)
             .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
             .build();

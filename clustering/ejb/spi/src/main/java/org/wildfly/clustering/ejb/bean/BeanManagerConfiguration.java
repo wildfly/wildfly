@@ -5,6 +5,7 @@
 
 package org.wildfly.clustering.ejb.bean;
 
+import org.wildfly.clustering.server.expiration.ExpirationConfiguration;
 import org.wildfly.clustering.server.manager.ManagerConfiguration;
 
 /**
@@ -14,7 +15,6 @@ import org.wildfly.clustering.server.manager.ManagerConfiguration;
  * @param <K> the bean identifier type
  * @param <V> the bean instance type
  */
-public interface BeanManagerConfiguration<K, V extends BeanInstance<K>> extends ManagerConfiguration<K> {
+public interface BeanManagerConfiguration<K, V extends BeanInstance<K>> extends ManagerConfiguration<K>, ExpirationConfiguration<V> {
     String getBeanName();
-    BeanExpirationConfiguration<K, V> getExpiration();
 }

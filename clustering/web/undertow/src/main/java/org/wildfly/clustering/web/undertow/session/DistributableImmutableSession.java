@@ -4,6 +4,7 @@
  */
 package org.wildfly.clustering.web.undertow.session;
 
+import java.time.Duration;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
@@ -36,8 +37,8 @@ public class DistributableImmutableSession implements Session {
         this.attributes = Map.copyOf(session.getAttributes());
         ImmutableSessionMetaData metaData = session.getMetaData();
         this.creationTime = metaData.getCreationTime().toEpochMilli();
-        this.lastAccessedTime = metaData.getLastAccessStartTime().toEpochMilli();
-        this.maxInactiveInterval = (int) metaData.getTimeout().getSeconds();
+        this.lastAccessedTime = metaData.getLastAccessStartTime().orElse(metaData.getCreationTime()).toEpochMilli();
+        this.maxInactiveInterval = metaData.getMaxIdle().map(Duration::getSeconds).orElse(-1L).intValue();
         this.invalid = !session.isValid();
     }
 

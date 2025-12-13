@@ -7,7 +7,6 @@ package org.wildfly.clustering.web.undertow.session;
 
 import java.time.Duration;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 import java.util.function.Supplier;
 
@@ -61,17 +60,17 @@ public abstract class AbstractSession implements io.undertow.server.session.Sess
     @Override
     public long getLastAccessedTime() {
         SessionMetaData metaData = this.reference.get().getMetaData();
-        return Optional.ofNullable(metaData.getLastAccessStartTime()).orElseGet(metaData::getCreationTime).toEpochMilli();
+        return metaData.getLastAccessStartTime().orElseGet(metaData::getCreationTime).toEpochMilli();
     }
 
     @Override
     public int getMaxInactiveInterval() {
-        return (int) this.reference.get().getMetaData().getTimeout().getSeconds();
+        return this.reference.get().getMetaData().getMaxIdle().map(Duration::getSeconds).orElse(0L).intValue();
     }
 
     @Override
     public void setMaxInactiveInterval(int interval) {
-        this.reference.get().getMetaData().setTimeout(Duration.ofSeconds(interval));
+        this.reference.get().getMetaData().setMaxIdle((interval > 0) ? Duration.ofSeconds(interval) : null);
     }
 
     @Override

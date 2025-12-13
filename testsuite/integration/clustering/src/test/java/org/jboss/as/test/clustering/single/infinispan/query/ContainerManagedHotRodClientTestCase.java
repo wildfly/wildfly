@@ -43,7 +43,7 @@ public class ContainerManagedHotRodClientTestCase {
                 .addClass(ContainerManagedHotRodClientTestCase.class)
                 .addPackage(PersonSchema.class.getPackage())
                 .addAsServiceProvider(SerializationContextInitializer.class.getName(), PersonSchema.class.getName() + "Impl")
-                .setManifest(new StringAsset(Descriptors.create(ManifestDescriptor.class).attribute("Dependencies", "org.infinispan, org.infinispan.commons, org.infinispan.client.hotrod, org.infinispan.query, org.infinispan.protostream").exportAsString()))
+                .setManifest(new StringAsset(Descriptors.create(ManifestDescriptor.class).attribute("Dependencies", "org.infinispan.commons, org.infinispan.client.hotrod, org.infinispan.protostream").exportAsString()))
                 ;
     }
 
@@ -52,11 +52,15 @@ public class ContainerManagedHotRodClientTestCase {
 
     @Test
     public void testPutGetCustomObject() {
-        RemoteCache<String, Person> cache = this.remoteCacheContainer.getCache();
-        cache.clear();
-
-        Person p = new Person("Martin");
-        cache.put("k1", p);
-        assertEquals(p.getName(), cache.get("k1").getName());
+        RemoteCache<String, Person> cache = this.remoteCacheContainer.getCache("query");
+        cache.start();
+        try {
+            Person p = new Person("Martin");
+            cache.put("k1", p);
+            assertEquals(p.getName(), cache.get("k1").getName());
+        } finally {
+            cache.clear();
+            cache.stop();
+        }
     }
 }

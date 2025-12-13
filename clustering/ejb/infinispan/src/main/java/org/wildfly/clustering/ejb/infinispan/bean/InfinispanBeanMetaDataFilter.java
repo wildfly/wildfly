@@ -7,18 +7,16 @@ package org.wildfly.clustering.ejb.infinispan.bean;
 
 import java.util.Map;
 
-import org.infinispan.util.function.SerializablePredicate;
 import org.wildfly.clustering.ejb.cache.bean.BeanMetaDataEntry;
 import org.wildfly.clustering.ejb.cache.bean.BeanMetaDataKey;
+import org.wildfly.clustering.function.Predicate;
 
 /**
  * Filters a cache for entries specific to a particular bean.
  * @author Paul Ferraro
  * @param <K> the bean identifier type
  */
-public class InfinispanBeanMetaDataFilter<K, V> implements SerializablePredicate<Map.Entry<? super K, ? super V>> {
-    private static final long serialVersionUID = -1079989480899595045L;
-
+public class InfinispanBeanMetaDataFilter<K, V> implements Predicate<Map.Entry<? super K, ? super V>> {
     private final String beanName;
 
     public InfinispanBeanMetaDataFilter(String beanName) {

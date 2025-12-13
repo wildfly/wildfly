@@ -6,22 +6,16 @@
 package org.jboss.as.test.clustering.single.infinispan.query;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import java.util.List;
-import java.util.ServiceLoader;
 
 import jakarta.annotation.Resource;
 
 import org.infinispan.client.hotrod.RemoteCache;
 import org.infinispan.client.hotrod.RemoteCacheContainer;
-import org.infinispan.client.hotrod.Search;
-import org.infinispan.protostream.GeneratedSchema;
+import org.infinispan.commons.api.query.Query;
 import org.infinispan.protostream.SerializationContextInitializer;
-import org.infinispan.query.dsl.Query;
-import org.infinispan.query.dsl.QueryFactory;
-import org.infinispan.query.remote.client.ProtobufMetadataManagerConstants;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.arquillian.api.ServerSetup;
@@ -53,7 +47,7 @@ public class ContainerRemoteQueryTestCase {
                 .addClasses(ContainerRemoteQueryTestCase.class)
                 .addPackage(Book.class.getPackage())
                 .addAsServiceProvider(SerializationContextInitializer.class.getName(), BookSchema.class.getName() + "Impl")
-                .setManifest(new StringAsset(Descriptors.create(ManifestDescriptor.class).attribute("Dependencies", "org.infinispan, org.infinispan.commons, org.infinispan.client.hotrod, org.infinispan.protostream, org.infinispan.query, org.infinispan.query.dsl, org.infinispan.query.client").exportAsString()))
+                .setManifest(new StringAsset(Descriptors.create(ManifestDescriptor.class).attribute("Dependencies", "org.infinispan.commons, org.infinispan.client.hotrod, org.infinispan.protostream").exportAsString()))
                 ;
     }
 
@@ -62,30 +56,23 @@ public class ContainerRemoteQueryTestCase {
 
     @Test
     public void testRemoteBookQuery() {
-        RemoteCache<String, Book> cache = this.container.getCache();
-        cache.clear();
+        RemoteCache<String, Book> cache = this.container.getCache("query");
+        cache.start();
+        try {
+            cache.put("A", new Book("A1", "A2", 2021));
+            cache.put("B", new Book("B1", "B2", 2022));
 
-        RemoteCache<String, String> schemaCache = this.container.getCache(ProtobufMetadataManagerConstants.PROTOBUF_METADATA_CACHE_NAME);
-        for (SerializationContextInitializer initializer : ServiceLoader.load(SerializationContextInitializer.class, this.getClass().getClassLoader())) {
-            if (initializer instanceof GeneratedSchema) {
-                GeneratedSchema schema = (GeneratedSchema) initializer;
-                schemaCache.put(schema.getProtoFileName(), schema.getProtoFile());
-                assertFalse(schemaCache.containsKey(ProtobufMetadataManagerConstants.ERRORS_KEY_SUFFIX));
-            }
+            assertTrue(cache.containsKey("A"));
+
+            Query<Book> query = cache.query("FROM Book WHERE author='A2'");
+
+            List<Book> list = query.execute().list();
+            assertEquals(1, list.size());
+            assertEquals(Book.class, list.get(0).getClass());
+            assertEquals("A2", list.get(0).author);
+        } finally {
+            cache.clear();
+            cache.stop();
         }
-
-        QueryFactory queryFactory = Search.getQueryFactory(cache);
-
-        cache.put("A", new Book("A1", "A2", 2021));
-        cache.put("B", new Book("B1", "B2", 2022));
-
-        assertTrue(cache.containsKey("A"));
-
-        Query<Book> query = queryFactory.create("FROM Book WHERE author='A2'");
-
-        List<Book> list = query.execute().list();
-        assertEquals(1, list.size());
-        assertEquals(Book.class, list.get(0).getClass());
-        assertEquals("A2", list.get(0).author);
     }
 }

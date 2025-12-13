@@ -40,7 +40,6 @@ public class RemoteCdiConfig {
     }
 
     static void stopRemoteCacheManager(@Disposes @Any RemoteCacheManager remoteCacheManager) {
-        remoteCacheManager.stop();
+        remoteCacheManager.close();
     }
-
 }

@@ -6,12 +6,12 @@
 package org.jboss.as.test.clustering.cluster.cdi.webapp;
 
 import org.infinispan.protostream.SerializationContextInitializer;
-import org.infinispan.protostream.annotations.AutoProtoSchemaBuilder;
+import org.infinispan.protostream.annotations.ProtoSchema;
 
 /**
  * @author Paul Ferraro
  */
-@AutoProtoSchemaBuilder(includeClasses = { IncrementorBean.class }, service = false)
+@ProtoSchema(includeClasses = { IncrementorBean.class }, service = false)
 public interface CDISerializationContextInitializer extends SerializationContextInitializer {
 
 }

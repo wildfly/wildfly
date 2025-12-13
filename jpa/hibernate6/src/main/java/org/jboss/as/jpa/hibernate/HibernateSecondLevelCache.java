@@ -22,7 +22,7 @@ import java.util.HashSet;
 import java.util.Properties;
 import java.util.Set;
 
-import org.hibernate.cfg.AvailableSettings;
+import org.hibernate.cfg.CacheSettings;
 import org.jipijapa.cache.spi.Classification;
 import org.jipijapa.event.impl.internal.Notification;
 
@@ -33,7 +33,7 @@ import org.jipijapa.event.impl.internal.Notification;
  */
 public class HibernateSecondLevelCache {
 
-    private static final String DEFAULT_REGION_FACTORY = "org.infinispan.hibernate.cache.v62.InfinispanRegionFactory";
+    public static final String DEFAULT_REGION_FACTORY = "org.infinispan.hibernate.cache.v6.InfinispanRegionFactory";
 
     public static final String CACHE_TYPE = "cachetype";    // shared (Jakarta Persistence) or private (for native applications)
     public static final String CACHE_PRIVATE = "private";
@@ -43,15 +43,15 @@ public class HibernateSecondLevelCache {
 
     public static void addSecondLevelCacheDependencies(Properties mutableProperties, String scopedPersistenceUnitName) {
 
-        if (mutableProperties.getProperty(AvailableSettings.CACHE_REGION_PREFIX) == null
+        if (mutableProperties.getProperty(CacheSettings.CACHE_REGION_PREFIX) == null
                 && scopedPersistenceUnitName != null) {
             // cache entries for this PU will be identified by scoped pu name + Entity class name
-            mutableProperties.setProperty(AvailableSettings.CACHE_REGION_PREFIX, scopedPersistenceUnitName);
+            mutableProperties.setProperty(CacheSettings.CACHE_REGION_PREFIX, scopedPersistenceUnitName);
         }
-        String regionFactory = mutableProperties.getProperty(AvailableSettings.CACHE_REGION_FACTORY);
+        String regionFactory = mutableProperties.getProperty(CacheSettings.CACHE_REGION_FACTORY);
         if (regionFactory == null) {
             regionFactory = DEFAULT_REGION_FACTORY;
-            mutableProperties.setProperty(AvailableSettings.CACHE_REGION_FACTORY, regionFactory);
+            mutableProperties.setProperty(CacheSettings.CACHE_REGION_FACTORY, regionFactory);
         }
         if (Boolean.parseBoolean(mutableProperties.getProperty(ManagedEmbeddedCacheManagerProvider.SHARED, ManagedEmbeddedCacheManagerProvider.DEFAULT_SHARED))) {
             // Set infinispan defaults
@@ -81,13 +81,13 @@ public class HibernateSecondLevelCache {
         caches.add(properties.getProperty(NATURAL_ID_CACHE_RESOURCE_PROP, DEF_ENTITY_RESOURCE));
         caches.add(properties.getProperty(PENDING_PUTS_CACHE_RESOURCE_PROP, DEF_PENDING_PUTS_RESOURCE));
 
-        if (Boolean.parseBoolean(properties.getProperty(AvailableSettings.USE_QUERY_CACHE))) {
+        if (Boolean.parseBoolean(properties.getProperty(CacheSettings.USE_QUERY_CACHE))) {
             caches.add(properties.getProperty(QUERY_CACHE_RESOURCE_PROP, DEF_QUERY_RESOURCE));
             caches.add(properties.getProperty(TIMESTAMPS_CACHE_RESOURCE_PROP, DEF_TIMESTAMPS_RESOURCE));
         }
 
         int length = INFINISPAN_CONFIG_RESOURCE_PROP.length();
-        String customRegionPrefix = INFINISPAN_CONFIG_RESOURCE_PROP.substring(0, length - 3) + properties.getProperty(AvailableSettings.CACHE_REGION_PREFIX, "");
+        String customRegionPrefix = INFINISPAN_CONFIG_RESOURCE_PROP.substring(0, length - 3) + properties.getProperty(CacheSettings.CACHE_REGION_PREFIX, "");
         String customRegionSuffix = INFINISPAN_CONFIG_RESOURCE_PROP.substring(length - 4, length);
 
         for (String propertyName : properties.stringPropertyNames()) {

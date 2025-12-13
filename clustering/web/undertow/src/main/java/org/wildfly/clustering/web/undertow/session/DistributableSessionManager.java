@@ -198,7 +198,7 @@ public class DistributableSessionManager implements UndertowSessionManager {
             config.setSessionId(exchange, session.getId());
             if (this.statistics != null) {
                 SessionMetaData metaData = session.getMetaData();
-                if (metaData.isNew()) {
+                if (metaData.getLastAccessTime().isEmpty()) {
                     this.statistics.record(metaData);
                 }
             }

@@ -93,9 +93,9 @@ public class JGroupsTransportResourceDefinitionRegistrar extends TransportResour
                         .transport(new JGroupsTransport())
                         .withProperties(properties)
                         ;
-                if (topology != null) {
-                    builder.siteId(topology.getSite()).rackId(topology.getRack()).machineId(topology.getMachine());
-                }
+                topology.getSite().ifPresent(builder::siteId);
+                topology.getRack().ifPresent(builder::rackId);
+                topology.getSite().ifPresent(builder::siteId);
                 return builder;
             }
         });

@@ -19,5 +19,5 @@ import org.wildfly.clustering.server.offset.OffsetValue;
  */
 public interface RemappableBeanMetaDataEntry<K> extends BeanMetaDataEntry<K>, Remappable<RemappableBeanMetaDataEntry<K>, Supplier<Offset<Instant>>> {
     @Override
-    OffsetValue<Instant> getLastAccess();
+    OffsetValue<Instant> getLastAccessTime();
 }

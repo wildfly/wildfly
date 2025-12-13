@@ -19,7 +19,7 @@ public class DefaultBeanMetaDataEntry<K> implements RemappableBeanMetaDataEntry<
 
     private final String name;
     private final K groupId;
-    private final OffsetValue<Instant> lastAccess;
+    private final OffsetValue<Instant> lastAccessTime;
 
     public DefaultBeanMetaDataEntry(String name, K groupId) {
         this(name, groupId, Instant.now().truncatedTo(ChronoUnit.MILLIS));
@@ -28,7 +28,7 @@ public class DefaultBeanMetaDataEntry<K> implements RemappableBeanMetaDataEntry<
     DefaultBeanMetaDataEntry(String name, K groupId, Instant creationTime) {
         this.name = name;
         this.groupId = groupId;
-        this.lastAccess = OffsetValue.from(creationTime);
+        this.lastAccessTime = OffsetValue.from(creationTime);
     }
 
     @Override
@@ -42,14 +42,14 @@ public class DefaultBeanMetaDataEntry<K> implements RemappableBeanMetaDataEntry<
     }
 
     @Override
-    public OffsetValue<Instant> getLastAccess() {
-        return this.lastAccess;
+    public OffsetValue<Instant> getLastAccessTime() {
+        return this.lastAccessTime;
     }
 
     @Override
     public RemappableBeanMetaDataEntry<K> remap(Supplier<Offset<Instant>> lastAccessOffset) {
-        RemappableBeanMetaDataEntry<K> result = new DefaultBeanMetaDataEntry<>(this.name, this.groupId, this.lastAccess.getBasis());
-        result.getLastAccess().set(lastAccessOffset.get().apply(this.lastAccess.get()));
+        RemappableBeanMetaDataEntry<K> result = new DefaultBeanMetaDataEntry<>(this.name, this.groupId, this.lastAccessTime.getBasis());
+        result.getLastAccessTime().set(lastAccessOffset.get().apply(this.lastAccessTime.get()));
         return result;
     }
 
@@ -58,8 +58,8 @@ public class DefaultBeanMetaDataEntry<K> implements RemappableBeanMetaDataEntry<
         StringBuilder builder = new StringBuilder(this.getClass().getSimpleName()).append(" { ");
         builder.append("name = ").append(this.name);
         builder.append(", group = ").append(this.groupId);
-        builder.append(", created = ").append(this.lastAccess.getBasis());
-        builder.append(", last-access = ").append(this.lastAccess.get());
+        builder.append(", created = ").append(this.lastAccessTime.getBasis());
+        builder.append(", last-access = ").append(this.lastAccessTime.get());
         return builder.append(" }").toString();
     }
 }

@@ -13,7 +13,6 @@ import java.util.function.Supplier;
 
 import org.infinispan.AdvancedCache;
 import org.infinispan.Cache;
-import org.infinispan.cache.impl.AbstractDelegatingAdvancedCache;
 import org.infinispan.configuration.ConfigurationManager;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.factories.ComponentRegistry;
@@ -36,6 +35,7 @@ import org.jboss.as.server.suspend.SuspendableActivityRegistry;
 import org.jboss.logging.Logger;
 import org.jboss.as.controller.RequirementServiceTarget;
 import org.jboss.msc.service.ServiceController;
+import org.wildfly.clustering.cache.infinispan.embedded.AdvancedCacheDecorator;
 import org.wildfly.clustering.server.service.BinaryServiceConfiguration;
 import org.wildfly.subsystem.service.ServiceDependency;
 import org.wildfly.subsystem.service.ServiceInstaller;
@@ -107,7 +107,7 @@ public class CacheServiceInstaller implements ServiceInstaller {
         configManager.putConfiguration(name, configuration);
     }
 
-    private static class SuspendableCache<K, V> extends AbstractDelegatingAdvancedCache<K, V> {
+    private static class SuspendableCache<K, V> extends AdvancedCacheDecorator<K, V> {
 
         private final SuspendableActivityRegistry activityRegistry;
         private final SuspendableActivity activity;
@@ -175,7 +175,7 @@ public class CacheServiceInstaller implements ServiceInstaller {
         }
 
         private SuspendableCache(AdvancedCache<K, V> cache, SuspendableActivityRegistry activityRegistry, Map<Object, CacheEventFilter<? super K, ? super V>> listeners, SuspendableActivity activity) {
-            super(cache.getAdvancedCache());
+            super(cache.getAdvancedCache(), decorated -> new SuspendableCache<>(decorated, activityRegistry, listeners, activity));
             this.activityRegistry = activityRegistry;
             this.listeners = listeners;
             this.activity = activity;
@@ -218,12 +218,6 @@ public class CacheServiceInstaller implements ServiceInstaller {
             return super.removeListenerAsync(listener).thenAccept(ignore -> this.listeners.remove(listener));
         }
 
-        @SuppressWarnings({ "unchecked" })
-        @Override
-        public AdvancedCache rewrap(AdvancedCache delegate) {
-            return new SuspendableCache<>(delegate, this.activityRegistry, this.listeners, this.activity);
-        }
-
         @Override
         public void start() {
             this.activityRegistry.registerActivity(this.activity, SuspendableActivityRegistry.SuspendPriority.LAST);
@@ -237,20 +231,14 @@ public class CacheServiceInstaller implements ServiceInstaller {
         }
     }
 
-    private static class ManagedCache<K, V> extends AbstractDelegatingAdvancedCache<K, V> {
+    private static class ManagedCache<K, V> extends AdvancedCacheDecorator<K, V> {
 
         ManagedCache(Cache<K, V> cache) {
             this(cache.getAdvancedCache());
         }
 
         private ManagedCache(AdvancedCache<K, V> cache) {
-            super(cache);
-        }
-
-        @SuppressWarnings({ "unchecked" })
-        @Override
-        public AdvancedCache rewrap(AdvancedCache delegate) {
-            return new ManagedCache<>(delegate);
+            super(cache, ManagedCache::new);
         }
 
         @Override

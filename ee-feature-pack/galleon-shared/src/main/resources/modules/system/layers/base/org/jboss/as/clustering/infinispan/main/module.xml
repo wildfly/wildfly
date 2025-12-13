@@ -37,7 +37,6 @@
         <module name="org.infinispan.persistence.jdbc"/>
         <module name="org.infinispan.persistence.remote"/>
         <module name="org.infinispan.protostream"/>
-        <module name="org.infinispan.query.client"/>
         <module name="org.jboss.as.clustering.common"/>
         <module name="org.jboss.as.controller"/>
         <module name="org.jboss.as.naming"/>
@@ -56,6 +55,7 @@
         <module name="org.wildfly.clustering.cache.infinispan.embedded"/>
         <module name="org.wildfly.clustering.cache.infinispan.persistence.jdbc"/>
         <module name="org.wildfly.clustering.cache.infinispan.persistence.remote"/>
+        <module name="org.wildfly.clustering.cache.infinispan.remote"/>
         <module name="org.wildfly.clustering.cache.spi"/>
         <module name="org.wildfly.clustering.context"/>
         <module name="org.wildfly.clustering.function"/>

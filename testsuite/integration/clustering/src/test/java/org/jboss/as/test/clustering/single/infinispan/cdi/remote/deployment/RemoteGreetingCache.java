@@ -18,7 +18,7 @@ import org.infinispan.cdi.remote.Remote;
  * @author Radoslav Husar
  * @since 27
  */
-@Remote("transactional")
+@Remote("default")
 @Qualifier
 @Target({ ElementType.FIELD, ElementType.PARAMETER, ElementType.METHOD })
 @Retention(RetentionPolicy.RUNTIME)

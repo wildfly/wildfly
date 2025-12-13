@@ -14,7 +14,7 @@ public class MutableBeanMetaDataEntryTestCase extends AbstractBeanMetaDataEntryT
 
     @Override
     public void accept(RemappableBeanMetaDataEntry<UUID> entry) {
-        BeanMetaDataEntry<UUID> mutableEntry = new MutableBeanMetaDataEntry<>(entry, entry.getLastAccess().rebase());
+        BeanMetaDataEntry<UUID> mutableEntry = new MutableBeanMetaDataEntry<>(entry, entry.getLastAccessTime().rebase());
 
         // Verify decorator reflects current values
         this.verifyOriginalState(mutableEntry);
