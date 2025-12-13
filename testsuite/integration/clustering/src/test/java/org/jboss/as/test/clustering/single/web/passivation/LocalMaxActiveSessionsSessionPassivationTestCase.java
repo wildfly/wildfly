@@ -29,8 +29,9 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPut;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
-import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.test.api.ArquillianResource;
+import org.jboss.as.test.clustering.PassivationEventTrackerUtil;
+import org.jboss.as.test.clustering.PassivationEventTrackerUtil.EventType;
 import org.jboss.as.test.clustering.single.web.SimpleServlet;
 import org.jboss.as.test.shared.TimeoutUtil;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -41,7 +42,7 @@ import org.junit.Test;
  * Validates the correctness of session activation/passivation events for a distributed session manager using a local, passivating cache.
  * @author Paul Ferraro
  */
-public abstract class LocalSessionPassivationTestCase {
+public abstract class LocalMaxActiveSessionsSessionPassivationTestCase {
 
     private static final Duration MAX_PASSIVATION_DURATION = Duration.ofSeconds(TimeoutUtil.adjust(10));
     private static final Duration PASSIVATION_WAIT_DURATION = MAX_PASSIVATION_DURATION.dividedBy(100);
@@ -49,19 +50,19 @@ public abstract class LocalSessionPassivationTestCase {
 
     static WebArchive getBaseDeployment(String moduleName) {
         WebArchive war = ShrinkWrap.create(WebArchive.class, moduleName + ".war");
-        war.addClasses(SessionOperationServlet.class);
-        war.addAsWebInfResource(LocalSessionPassivationTestCase.class.getPackage(), "jboss-web.xml", "jboss-web.xml");
+        war.addClasses(SessionOperationServlet.class, PassivationEventTrackerUtil.class);
+        war.addAsWebInfResource(LocalMaxActiveSessionsSessionPassivationTestCase.class.getPackage(), "jboss-web.xml", "jboss-web.xml");
         war.setWebXML(SimpleServlet.class.getPackage(), "web.xml");
         return war;
     }
 
     @Test
-    public void test(@ArquillianResource(SessionOperationServlet.class) @OperateOnDeployment(DEPLOYMENT_1) URL baseURL) throws IOException, URISyntaxException {
+    public void test(@ArquillianResource(SessionOperationServlet.class) URL baseURL) throws IOException, URISyntaxException {
 
         try (CloseableHttpClient client1 = HttpClients.createDefault()) {
             try (CloseableHttpClient client2 = HttpClients.createDefault()) {
                 try {
-                    String session1 = null;
+                    String session1;
 
                     // This should not trigger any passivation/activation events
                     try (CloseableHttpResponse response = client1.execute(new HttpPut(SessionOperationServlet.createURI(baseURL, "a", "1")))) {
@@ -70,16 +71,16 @@ public abstract class LocalSessionPassivationTestCase {
                         session1 = response.getFirstHeader(SessionOperationServlet.SESSION_ID).getValue();
                     }
 
-                    Map<String, Queue<SessionOperationServlet.EventType>> events = new HashMap<>();
-                    Map<String, SessionOperationServlet.EventType> expectedEvents = new HashMap<>();
+                    Map<String, Queue<EventType>> events = new HashMap<>();
+                    Map<String, EventType> expectedEvents = new HashMap<>();
                     events.put(session1, new LinkedList<>());
-                    expectedEvents.put(session1, SessionOperationServlet.EventType.PASSIVATION);
+                    expectedEvents.put(session1, EventType.PASSIVATION);
 
                     // Avoid passivating cache entries before they are committed
                     Thread.sleep(COMMIT_DURATION.toMillis());
 
                     Instant start = Instant.now();
-                    String session2 = null;
+                    String session2;
 
                     // This will trigger passivation of session1
                     try (CloseableHttpResponse response = client2.execute(new HttpPut(SessionOperationServlet.createURI(baseURL, "a", "2")))) {
@@ -87,7 +88,7 @@ public abstract class LocalSessionPassivationTestCase {
                         assertTrue(response.containsHeader(SessionOperationServlet.SESSION_ID));
                         session2 = response.getFirstHeader(SessionOperationServlet.SESSION_ID).getValue();
                         events.put(session2, new LinkedList<>());
-                        expectedEvents.put(session2, SessionOperationServlet.EventType.PASSIVATION);
+                        expectedEvents.put(session2, EventType.PASSIVATION);
                         collectEvents(response, events);
                     }
 
@@ -121,7 +122,7 @@ public abstract class LocalSessionPassivationTestCase {
                         assertEquals("1", response.getFirstHeader(SessionOperationServlet.RESULT).getValue());
                         collectEvents(response, events);
                         assertFalse(events.get(session1).isEmpty());
-                        assertTrue(events.get(session1).contains(SessionOperationServlet.EventType.ACTIVATION));
+                        assertTrue(events.get(session1).contains(EventType.ACTIVATION));
                     }
 
                     // Verify session2 was passivated
@@ -154,7 +155,7 @@ public abstract class LocalSessionPassivationTestCase {
                         assertEquals("2", response.getFirstHeader(SessionOperationServlet.RESULT).getValue());
                         collectEvents(response, events);
                         assertFalse(events.get(session2).isEmpty());
-                        assertTrue(events.get(session2).contains(SessionOperationServlet.EventType.ACTIVATION));
+                        assertTrue(events.get(session2).contains(EventType.ACTIVATION));
                     }
 
                     // Verify session1 was passivated
@@ -188,26 +189,26 @@ public abstract class LocalSessionPassivationTestCase {
         }
     }
 
-    private static void collectEvents(HttpResponse response, Map<String, Queue<SessionOperationServlet.EventType>> events) {
-        events.entrySet().forEach((Map.Entry<String, Queue<SessionOperationServlet.EventType>> entry) -> {
+    private static void collectEvents(HttpResponse response, Map<String, Queue<EventType>> events) {
+        events.entrySet().forEach((Map.Entry<String, Queue<EventType>> entry) -> {
             String sessionId = entry.getKey();
             if (response.containsHeader(sessionId)) {
                 Stream.of(response.getHeaders(sessionId)).forEach((Header header) -> {
-                    entry.getValue().add(SessionOperationServlet.EventType.valueOf(header.getValue()));
+                    entry.getValue().add(EventType.valueOf(header.getValue()));
                 });
             }
         });
     }
 
-    private static void validateEvents(String sessionId, Map<String, Queue<SessionOperationServlet.EventType>> events, Map<String, SessionOperationServlet.EventType> expectedEvents) {
-        Queue<SessionOperationServlet.EventType> types = events.get(sessionId);
-        SessionOperationServlet.EventType type = types.poll();
-        SessionOperationServlet.EventType expected = expectedEvents.get(sessionId);
+    private static void validateEvents(String sessionId, Map<String, Queue<EventType>> events, Map<String, EventType> expectedEvents) {
+        Queue<EventType> types = events.get(sessionId);
+        EventType type = types.poll();
+        EventType expected = expectedEvents.get(sessionId);
         while (type != null) {
             assertSame(expected, type);
             type = types.poll();
             // ACTIVATE event must follow PASSIVATE event and vice versa
-            expected = SessionOperationServlet.EventType.values()[(expected.ordinal() + 1) % 2];
+            expected = EventType.values()[(expected.ordinal() + 1) % 2];
         }
         expectedEvents.put(sessionId, expected);
     }

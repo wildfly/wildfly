@@ -37,10 +37,6 @@ public class PassivationStoreResourceDefinition extends SimpleResourceDefinition
 
     public static final String PASSIVATION_STORE_CAPABILITY_NAME = "org.wildfly.ejb.passivation-store";
 
-    // use these to avoid pulling in ISPN SPI module
-    protected static final String INFINISPAN_DEFAULT_CACHE_CONFIGURATION_CAPABILITY_NAME = "org.wildfly.clustering.infinispan.default-cache-configuration";
-    protected static final String INFINISPAN_CACHE_CONFIGURATION_CAPABILITY_NAME = "org.wildfly.clustering.infinispan.cache-configuration";
-
     static final RuntimeCapability<Void> PASSIVATION_STORE_CAPABILITY = RuntimeCapability.Builder.of(PASSIVATION_STORE_CAPABILITY_NAME, true)
             .setServiceType(Void.class)
             .build();

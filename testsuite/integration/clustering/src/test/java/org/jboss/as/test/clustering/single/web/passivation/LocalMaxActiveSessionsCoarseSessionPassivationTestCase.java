@@ -17,12 +17,14 @@ import org.junit.runner.RunWith;
  * @author Paul Ferraro
  */
 @RunWith(Arquillian.class)
-public class LocalCoarseSessionPassivationTestCase extends LocalSessionPassivationTestCase {
+public class LocalMaxActiveSessionsCoarseSessionPassivationTestCase extends LocalMaxActiveSessionsSessionPassivationTestCase {
 
-    private static final String MODULE_NAME = LocalCoarseSessionPassivationTestCase.class.getSimpleName();
+    private static final String MODULE_NAME = LocalMaxActiveSessionsCoarseSessionPassivationTestCase.class.getSimpleName();
 
     @Deployment(name = DEPLOYMENT_1, testable = false)
     public static Archive<?> deployment() {
-        return getBaseDeployment(MODULE_NAME).addAsWebInfResource(LocalSessionPassivationTestCase.class.getPackage(), "distributable-web-coarse.xml", "distributable-web.xml");
+        return getBaseDeployment(MODULE_NAME)
+                .addAsWebInfResource(LocalMaxActiveSessionsSessionPassivationTestCase.class.getPackage(), "distributable-web-coarse.xml", "distributable-web.xml")
+                ;
     }
 }

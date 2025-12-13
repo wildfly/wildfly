@@ -2,7 +2,7 @@
  * Copyright The WildFly Authors
  * SPDX-License-Identifier: Apache-2.0
  */
-package org.jboss.as.test.clustering.single.ejb;
+package org.jboss.as.test.clustering.single.ejb.stateful;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
@@ -14,12 +14,13 @@ import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.test.clustering.ejb.RemoteEJBDirectory;
-import org.jboss.as.test.clustering.single.ejb.bean.Incrementor;
-import org.jboss.as.test.clustering.single.ejb.bean.Result;
-import org.jboss.as.test.clustering.single.ejb.bean.StatefulIncrementorBean;
-import org.jboss.as.test.clustering.single.ejb.bean.TransientStatefulIncrementorBean;
+import org.jboss.as.test.clustering.single.ejb.stateful.bean.Incrementor;
+import org.jboss.as.test.clustering.single.ejb.stateful.bean.Result;
+import org.jboss.as.test.clustering.single.ejb.stateful.bean.StatefulIncrementorBean;
+import org.jboss.as.test.clustering.single.ejb.stateful.bean.TransientStatefulIncrementorBean;
 import org.jboss.as.test.clustering.ejb.EJBDirectory;
 import org.jboss.as.test.shared.ManagementServerSetupTask;
+import org.jboss.as.test.shared.SnapshotRestoreSetupTask;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -29,12 +30,15 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 /**
- * Validates legacy operation of EJB deployments when <distributable-ejb/> subsystem is removed.
+ * Validates legacy operation of EJB deployments when the distributable-ejb subsystem is removed.
  *
  * @author Richard Achmatowicz
  */
 @RunWith(Arquillian.class)
-@ServerSetup(DistributableEjbSubsystemLegacyOperationTestCase.ServerSetupTask.class)
+@ServerSetup({
+        SnapshotRestoreSetupTask.class,
+        DistributableEjbSubsystemLegacyOperationTestCase.ServerSetupTask.class
+})
 public class DistributableEjbSubsystemLegacyOperationTestCase {
 
     private static final String MODULE_NAME = DistributableEjbSubsystemLegacyOperationTestCase.class.getSimpleName();
@@ -49,7 +53,6 @@ public class DistributableEjbSubsystemLegacyOperationTestCase {
 
     @Test
     public void test(@ArquillianResource ManagementClient managementClient) throws Exception {
-
         // Confirm absence of distributable-ejb subsystem
         PathAddress address = PathAddress.pathAddress(PathElement.pathElement("subsystem", "distributable-ejb"));
         ModelNode operation = Util.createOperation(ModelDescriptionConstants.READ_RESOURCE_OPERATION, address);
@@ -74,18 +77,12 @@ public class DistributableEjbSubsystemLegacyOperationTestCase {
         }
     }
 
-    /*
-     * A server setup task that does the following:
-     * setup:
+    /**
+     * A server setup task that does the following setup:
      * - add legacy cache support to ejb3 subsystem
      * - update the cache defaults to point to the legacy caches
      * - remove non-legacy caches from the ejb3 subsystem
      * - remove the distributable-ejb subsystem
-     * teardown:
-     * - restore distributable-ejb subsystem
-     * - restore non-legacy cache support
-     * - update the cache defaults to point again to the non-legacy caches
-     * - remove legacy cache support from ejb3 subsystem
      */
     public static class ServerSetupTask extends ManagementServerSetupTask {
         public ServerSetupTask() {
@@ -94,34 +91,16 @@ public class DistributableEjbSubsystemLegacyOperationTestCase {
                         .startBatch()
                             // add legacy cache support
                             .add("/subsystem=ejb3/cache=legacy-simple:add()")
-                            .add("/subsystem=ejb3/passivation-store=infinispan:add(cache-container=ejb, max-size=10000")
-                            .add("/subsystem=ejb3/cache=legacy-distributable:add(passivation-store=infinispan,aliases=[passivating,clustered])")
+                            .add("/subsystem=ejb3/passivation-store=infinispan:add(cache-container=ejb, max-size=10000)")
+                            .add("/subsystem=ejb3/cache=legacy-distributable:add(passivation-store=infinispan, aliases=[passivating, clustered])")
                             // update cache defaults, now to legacy caches
-                            .add("/subsystem=ejb3:write-attribute(name=default-sfsb-cache, value=legacy-distributable")
-                            .add("/subsystem=ejb3:write-attribute(name=default-sfsb-passivation-disabled-cache, value=legacy-simple")
+                            .add("/subsystem=ejb3:write-attribute(name=default-sfsb-cache, value=legacy-distributable)")
+                            .add("/subsystem=ejb3:write-attribute(name=default-sfsb-passivation-disabled-cache, value=legacy-simple)")
                             // remove non-legacy caches
                             .add("/subsystem=ejb3/simple-cache=simple:remove(){allow-resource-service-restart=true}")
                             .add("/subsystem=ejb3/distributable-cache=distributable:remove(){allow-resource-service-restart=true}")
                             // remove distributable-ejb subsystem
                             .add("/subsystem=distributable-ejb:remove()")
-                        .endBatch()
-                        .build())
-                    .tearDownScript(createScriptBuilder()
-                        .startBatch()
-                            // add back distributable-ejb subsystem
-                            .add("/subsystem=distributable-ejb:add(default-bean-management=default)")
-                            .add("/subsystem=distributable-ejb/infinispan-bean-management=default:add(cache-container=ejb,cache=passivation,max-active-beans=10000)")
-                            .add("/subsystem=distributable-ejb/client-mappings-registry=local:add()")
-                            // add back non-legacy caches
-                            .add("/subsystem=ejb3/simple-cache=simple:add()")
-                            .add("/subsystem=ejb3/distributable-cache=distributable:add(bean-management=default)")
-                            // reinstate cache defaults to non-legacy caches
-                            .add("/subsystem=ejb3:write-attribute(name=default-sfsb-cache, value=simple")
-                            .add("/subsystem=ejb3:write-attribute(name=default-sfsb-passivation-disabled-cache, value=simple")
-                            // remove legacy cache support
-                            .add("/subsystem=ejb3/cache=legacy-simple:remove(){allow-resource-service-restart=true}")
-                            .add("/subsystem=ejb3/cache=legacy-distributable:remove(){allow-resource-service-restart=true}")
-                            .add("/subsystem=ejb3/passivation-store=infinispan:remove(){allow-resource-service-restart=true}")
                         .endBatch()
                         .build())
                     .build());

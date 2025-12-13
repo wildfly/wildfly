@@ -20,6 +20,7 @@
         <module name="org.jboss.as.clustering.common"/>
         <module name="org.jboss.as.controller"/>
         <module name="org.jboss.as.server"/>
+        <module name="org.jboss.as.version"/>
         <module name="org.jboss.dmr"/>
         <module name="org.jboss.marshalling"/>
         <module name="org.jboss.modules"/>
