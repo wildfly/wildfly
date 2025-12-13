@@ -24,7 +24,7 @@
     </feature>
 
     <feature spec="profile">
-        <param name="__profile" value="full"/>
+        <param name="profile" value="full"/>
         <feature-group name="domain-profile"/>
         <feature-group name="iiop-openjdk"/>
         <feature-group name="messaging-activemq"/>

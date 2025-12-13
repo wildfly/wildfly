@@ -9,7 +9,7 @@
 
     <feature-group name="core-host-secondary">
         <exclude spec="host.core-service.management.management-interface.http-interface"/>
-        <include feature-id="host:__host=secondary">
+        <include feature-id="host:host=secondary">
             <feature spec="host.jvm">
                 <param name="jvm" value="default"/>
                 <param name="heap-size" value="64m"/>
@@ -21,7 +21,7 @@
     </feature-group>
 
     <feature spec="host">
-        <param name="__host" value="secondary"/>
+        <param name="host" value="secondary"/>
         
         <!-- TODO Add an authentication client example.
 
@@ -52,7 +52,6 @@
             <feature spec="host.core-service.discovery-options.static-discovery">
                 <param name="static-discovery" value="primary"/>
                 <param name="protocol" value="${jboss.domain.primary.protocol:remote+http}"/>
-                <param name="host" value="${jboss.domain.primary.address}"/>
                 <param name="port" value="${jboss.domain.primary.port:9990}"/>
             </feature>
         </feature>
