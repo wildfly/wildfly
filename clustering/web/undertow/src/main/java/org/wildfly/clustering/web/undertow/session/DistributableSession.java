@@ -10,6 +10,7 @@ import io.undertow.server.session.SessionListener.SessionDestroyedReason;
 
 import java.time.Instant;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
@@ -46,7 +47,7 @@ public class DistributableSession extends AbstractSession {
         this.suspendedBatch = suspendedBatch;
         this.closeTask = new AtomicReference<>(closeTask);
         Session<Map<String, Object>> session = reference.get().getKey();
-        this.startTime = session.getMetaData().isNew() ? session.getMetaData().getCreationTime() : Instant.now();
+        this.startTime = session.getMetaData().getLastAccessTime().isEmpty() ? session.getMetaData().getCreationTime() : Instant.now();
         this.statistics = statistics;
     }
 
@@ -201,11 +202,11 @@ public class DistributableSession extends AbstractSession {
                 newSession.getAttributes().putAll(currentSession.getAttributes());
                 SessionMetaData oldMetaData = currentSession.getMetaData();
                 SessionMetaData newMetaData = newSession.getMetaData();
-                newMetaData.setTimeout(oldMetaData.getTimeout());
-                Instant lastAccessStartTime = oldMetaData.getLastAccessStartTime();
-                Instant lastAccessEndTime = oldMetaData.getLastAccessEndTime();
-                if ((lastAccessStartTime != null) && (lastAccessEndTime != null)) {
-                    newMetaData.setLastAccess(currentSession.getMetaData().getLastAccessStartTime(), currentSession.getMetaData().getLastAccessEndTime());
+                oldMetaData.getMaxIdle().ifPresent(newMetaData::setMaxIdle);
+                Optional<Instant> lastAccessStartTime = oldMetaData.getLastAccessStartTime();
+                Optional<Instant> lastAccessEndTime = oldMetaData.getLastAccessEndTime();
+                if (lastAccessStartTime.isPresent() && lastAccessEndTime.isPresent()) {
+                    newMetaData.setLastAccess(lastAccessStartTime.get(), lastAccessEndTime.get());
                 }
                 newSession.getContext().putAll(currentSession.getContext());
                 currentSession.invalidate();

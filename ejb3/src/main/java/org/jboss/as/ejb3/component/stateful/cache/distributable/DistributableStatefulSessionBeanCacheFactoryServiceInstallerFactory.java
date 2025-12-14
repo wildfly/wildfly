@@ -7,9 +7,9 @@ package org.jboss.as.ejb3.component.stateful.cache.distributable;
 
 import java.time.Duration;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.Executor;
 import java.util.function.BiFunction;
-import java.util.function.Consumer;
 
 import org.jboss.as.controller.management.Capabilities;
 import org.jboss.as.ejb3.component.stateful.StatefulComponentDescription;
@@ -20,10 +20,10 @@ import org.jboss.as.ejb3.component.stateful.cache.StatefulSessionBeanInstance;
 import org.jboss.as.ejb3.component.stateful.cache.StatefulSessionBeanInstanceFactory;
 import org.jboss.as.ejb3.component.stateful.cache.SuspendableStatefulSessionBeanCache;
 import org.jboss.as.server.suspend.SuspendableActivityRegistry;
-import org.wildfly.clustering.ejb.bean.BeanExpirationConfiguration;
 import org.wildfly.clustering.ejb.bean.BeanManager;
 import org.wildfly.clustering.ejb.bean.BeanManagerConfiguration;
 import org.wildfly.clustering.ejb.bean.BeanManagerFactory;
+import org.wildfly.clustering.function.Consumer;
 import org.wildfly.clustering.function.Supplier;
 import org.wildfly.service.Installer.StartWhen;
 import org.wildfly.subsystem.service.ServiceDependency;
@@ -44,19 +44,7 @@ public class DistributableStatefulSessionBeanCacheFactoryServiceInstallerFactory
         StatefulSessionBeanCacheFactory<K, V> factory = new StatefulSessionBeanCacheFactory<>() {
             @Override
             public StatefulSessionBeanCache<K, V> createStatefulBeanCache(StatefulSessionBeanCacheConfiguration<K, V> configuration) {
-                Duration timeout = configuration.getTimeout();
                 Consumer<V> timeoutListener = StatefulSessionBeanInstance::removed;
-                BeanExpirationConfiguration<K, V> expiration = (timeout != null) ? new BeanExpirationConfiguration<>() {
-                    @Override
-                    public Duration getTimeout() {
-                        return timeout;
-                    }
-
-                    @Override
-                    public Consumer<V> getExpirationListener() {
-                        return timeoutListener;
-                    }
-                } : null;
                 BeanManager<K, V> manager = managerFactory.get().createBeanManager(new BeanManagerConfiguration<>() {
                     @Override
                     public Supplier<K> getIdentifierFactory() {
@@ -69,8 +57,13 @@ public class DistributableStatefulSessionBeanCacheFactoryServiceInstallerFactory
                     }
 
                     @Override
-                    public BeanExpirationConfiguration<K, V> getExpiration() {
-                        return expiration;
+                    public Optional<Duration> getMaxIdle() {
+                        return configuration.getMaxIdle();
+                    }
+
+                    @Override
+                    public Consumer<V> getExpirationListener() {
+                        return timeoutListener;
                     }
                 });
                 return new SuspendableStatefulSessionBeanCache<>(new DistributableStatefulSessionBeanCache<>(new DistributableStatefulSessionBeanCacheConfiguration<>() {
@@ -90,8 +83,8 @@ public class DistributableStatefulSessionBeanCacheFactoryServiceInstallerFactory
                     }
 
                     @Override
-                    public Duration getTimeout() {
-                        return timeout;
+                    public Optional<Duration> getMaxIdle() {
+                        return configuration.getMaxIdle();
                     }
 
                     @Override

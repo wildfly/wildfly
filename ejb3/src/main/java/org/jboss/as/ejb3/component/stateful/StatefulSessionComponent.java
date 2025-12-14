@@ -11,6 +11,7 @@ import java.security.PrivilegedAction;
 import java.time.Duration;
 import java.util.Collections;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 import jakarta.ejb.ConcurrentAccessException;
@@ -309,6 +310,8 @@ public class StatefulSessionComponent extends SessionBeanComponent implements St
     public synchronized void init() {
         super.init();
 
+        StatefulComponentDescription description = (StatefulComponentDescription) this.getComponentDescription();
+        Optional<Duration> maxIdle = Optional.ofNullable(description.getStatefulTimeout()).map(StatefulTimeoutInfo::get);
         this.cache = this.cacheFactory.get().createStatefulBeanCache(new StatefulSessionBeanCacheConfiguration<>() {
             @Override
             public StatefulSessionBeanInstanceFactory<StatefulSessionComponentInstance> getInstanceFactory() {
@@ -321,10 +324,8 @@ public class StatefulSessionComponent extends SessionBeanComponent implements St
             }
 
             @Override
-            public Duration getTimeout() {
-                StatefulComponentDescription description = (StatefulComponentDescription) StatefulSessionComponent.this.getComponentDescription();
-                StatefulTimeoutInfo info = description.getStatefulTimeout();
-                return (info != null && info.getValue() >= 0) ? Duration.of(info.getValue(), info.getTimeUnit().toChronoUnit()) : null;
+            public Optional<Duration> getMaxIdle() {
+                return maxIdle;
             }
 
             @Override

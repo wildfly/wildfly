@@ -11,7 +11,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.ServiceLoader;
 import java.util.function.BiPredicate;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -19,7 +18,6 @@ import java.util.stream.Collectors;
 import javax.management.MBeanServer;
 
 import org.infinispan.Cache;
-import org.infinispan.commands.module.ModuleCommandExtensions;
 import org.infinispan.commons.jmx.MBeanServerLookup;
 import org.infinispan.commons.marshall.Marshaller;
 import org.infinispan.commons.util.AggregatedClassLoader;
@@ -225,18 +223,6 @@ public class CacheContainerResourceDefinitionRegistrar implements ChildResourceD
                 // Register dummy serialization context initializer, to bypass service loading in org.infinispan.marshall.protostream.impl.SerializationContextRegistryImpl
                 // Otherwise marshaller auto-detection will not work
                 builder.serialization().marshaller(marshaller).addContextInitializer(new SerializationContextInitializer() {
-                    @Deprecated
-                    @Override
-                    public String getProtoFile() {
-                        return null;
-                    }
-
-                    @Deprecated
-                    @Override
-                    public String getProtoFileName() {
-                        return null;
-                    }
-
                     @Override
                     public void registerMarshallers(SerializationContext context) {
                     }
@@ -255,7 +241,7 @@ public class CacheContainerResourceDefinitionRegistrar implements ChildResourceD
                 builder.expirationThreadPool().read(scheduledPools.get(ScheduledThreadPool.EXPIRATION).get());
 
                 builder.shutdown().hookBehavior(ShutdownHookBehavior.DONT_REGISTER);
-                // Disable registration of MicroProfile Metrics
+                // Disable native Micrometer registration - we register metrics via management model
                 builder.metrics().gauges(false).histograms(false).accurateSize(true);
 
                 MBeanServerLookup mbeanServerProvider = Optional.ofNullable(mbeanServer.get()).map(MBeanServerProvider::new).orElse(null);
@@ -264,12 +250,10 @@ public class CacheContainerResourceDefinitionRegistrar implements ChildResourceD
                         .enabled(mbeanServerProvider != null)
                         ;
 
-                // Disable triangle algorithm - we optimize for originator as primary owner
-                // Do not enable server-mode for the Hibernate 2LC use case:
-                // * The 2LC stack already overrides the interceptor for distribution caches
-                // * This renders Infinispan default 2LC configuration unusable as it results in a default media type of application/unknown for keys and values
+                // Disable triangle algorithm for transactional distributed caches - we optimize for originator as primary owner
+                // Now that managed cache configurations always define a cache encoding, this should no longer be problematic for Hibernate 2LC interceptors
                 // See ISPN-12252 for details
-                builder.addModule(PrivateGlobalConfigurationBuilder.class).serverMode(!ServiceLoader.load(ModuleCommandExtensions.class, loader).iterator().hasNext());
+                builder.addModule(PrivateGlobalConfigurationBuilder.class).serverMode(true);
 
                 String path = InfinispanSubsystemResourceDefinitionRegistrar.REGISTRATION.getName() + File.separatorChar + name;
                 builder.globalState().enable()

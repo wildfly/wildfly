@@ -13,20 +13,18 @@
         ucast_recv_buf_size="20m"
         ucast_send_buf_size="1m"
         port_range="0"
-        bundler_type="transfer-queue"
         use_virtual_threads="false"
     />
     <TCP
         send_buf_size="640k"
-        sock_conn_timeout="300"
+        sock_conn_timeout="300ms"
         port_range="0"
-        bundler_type="transfer-queue"
         use_virtual_threads="false"
     />
     <TCP_NIO2
         send_buf_size="640k"
-        sock_conn_timeout="300"
-        bundler_type="transfer-queue"
+        sock_conn_timeout="300ms"
+        port_range="0"
         use_virtual_threads="false"
     />
     <TCPPING
@@ -36,34 +34,38 @@
     <MPING ip_ttl="2"/>
     <kubernetes.KUBE_PING port_range="0"/>
     <MERGE3
-        min_interval="10000"
-        max_interval="30000"
+        min_interval="10s"
+        max_interval="30s"
     />
     <FD_ALL
-        interval="15000"
-        timeout="60000"
-        timeout_check_interval="5000"
+        interval="15s"
+        timeout="60s"
+        timeout_check_interval="5s"
     />
     <FD_SOCK port_range="0"/>
     <FD_SOCK2 offset="1"/>
-    <VERIFY_SUSPECT timeout="1000"/>
-    <VERIFY_SUSPECT2 timeout="1000"/>
+    <VERIFY_SUSPECT timeout="1s"/>
+    <VERIFY_SUSPECT2 timeout="1s"/>
     <pbcast.NAKACK2
-        xmit_interval="100"
+        xmit_interval="100ms"
         xmit_table_num_rows="50"
+    />
+    <NAKACK4
+        xmit_interval="100ms"
     />
     <UNICAST3
-        xmit_interval="100"
+        xmit_interval="100ms"
         xmit_table_num_rows="50"
     />
+    <UNICAST4
+        xmit_interval="100ms"
+    />
     <pbcast.STABLE
-        desired_avg_gossip="5000"
+        desired_avg_gossip="5s"
         max_bytes="1m"
     />
     <pbcast.GMS print_local_addr="false"/>
     <UFC max_credits="4m"/>
-    <UFC_NB max_credits="3m"/>
     <MFC max_credits="4m"/>
-    <MFC_NB max_credits="3m"/>
     <FRAG4 frag_size="60k"/>
 </config>

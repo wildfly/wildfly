@@ -13,9 +13,6 @@ import java.util.AbstractMap;
 import java.util.Map;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.Consumer;
-import java.util.function.Function;
-import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 import org.infinispan.Cache;
@@ -41,7 +38,11 @@ import org.wildfly.clustering.ejb.timer.Timer;
 import org.wildfly.clustering.ejb.timer.TimerManager;
 import org.wildfly.clustering.ejb.timer.TimerRegistry;
 import org.wildfly.clustering.function.BiFunction;
+import org.wildfly.clustering.function.Consumer;
+import org.wildfly.clustering.function.Function;
+import org.wildfly.clustering.function.Predicate;
 import org.wildfly.clustering.function.Supplier;
+import org.wildfly.clustering.function.UnaryOperator;
 import org.wildfly.clustering.marshalling.Marshaller;
 import org.wildfly.clustering.server.infinispan.CacheContainerGroup;
 import org.wildfly.clustering.server.infinispan.dispatcher.CacheContainerCommandDispatcherFactory;
@@ -162,7 +163,7 @@ public class InfinispanTimerManager<I, C> implements TimerManager<I> {
             }
         };
         TimerMetaDataFactory<I, RemappableTimerMetaDataEntry<C>> metaDataFactory = config.getTimerFactory().getMetaDataFactory();
-        CacheEntrySchedulerService<I, TimerMetaDataKey<I>, RemappableTimerMetaDataEntry<C>, TimeoutMetaData> cacheEntryScheduler = new CacheEntrySchedulerService<>(localScheduler.compose(Function.<I>identity(), TimeoutMetaData::getNextTimeout), BiFunction.applyLatter(metaDataFactory::createImmutableTimerMetaData)) {
+        CacheEntrySchedulerService<I, TimerMetaDataKey<I>, RemappableTimerMetaDataEntry<C>, TimeoutMetaData> cacheEntryScheduler = new CacheEntrySchedulerService<>(localScheduler.compose(UnaryOperator.identity(), TimeoutMetaData::getNextTimeout), BiFunction.applyLatter(metaDataFactory::createImmutableTimerMetaData)) {
             @Override
             public void start() {
                 super.start();

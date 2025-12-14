@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+<infinispan xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:schemaLocation="urn:infinispan:config:16.0 https://infinispan.org/schemas/infinispan-config-16.0.xsd
+                            urn:infinispan:server:16.0 https://infinispan.org/schemas/infinispan-server-16.0.xsd"
+      xmlns="urn:infinispan:config:16.0" xmlns:server="urn:infinispan:server:16.0">
+
+    <cache-container name="default" default-cache="default" statistics="true">
+        <security>
+            <authorization>
+                <!-- Declare a role mapper that associates a security principal to each role. -->
+                <cluster-role-mapper/>
+                <!-- Specify user roles and corresponding permissions. -->
+                <roles>
+                    <role name="testsuite-application-group" permissions="ALL"/>
+                </roles>
+            </authorization>
+        </security>
+        <local-cache name="query">
+            <encoding>
+                <key media-type="application/x-protostream"/>
+                <value media-type="application/x-protostream"/>
+            </encoding>
+        </local-cache>
+        <local-cache name="default">
+            <encoding>
+                <key media-type="application/octet-stream"/>
+                <value media-type="application/octet-stream"/>
+            </encoding>
+            <transaction mode="NON_XA" locking="PESSIMISTIC"/>
+            <expiration interval="1000"/>
+        </local-cache>
+   </cache-container>
+
+   <server xmlns="urn:infinispan:server:16.0">
+        <interfaces>
+            <interface name="public">
+                <inet-address value="${infinispan.bind.address:127.0.0.1}"/>
+            </interface>
+        </interfaces>
+
+        <socket-bindings default-interface="public" port-offset="${infinispan.socket.binding.port-offset:0}">
+            <socket-binding name="default" port="${infinispan.bind.port:11222}"/>
+        </socket-bindings>
+
+        <security>
+            <security-realms>
+                <security-realm name="default">
+                    <properties-realm groups-attribute="Roles">
+                        <user-properties path="users.properties"/>
+                        <group-properties path="groups.properties"/>
+                    </properties-realm>
+                </security-realm>
+            </security-realms>
+        </security>
+
+        <endpoints socket-binding="default" security-realm="default"/>
+    </server>
+</infinispan>

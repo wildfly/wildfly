@@ -117,8 +117,8 @@ public class InfinispanTimerManagementProvider implements TimerManagementProvide
             builder.expiration().lifespan(-1).maxIdle(-1);
         }
 
-        OptionalInt size = this.configuration.getMaxSize();
-        Optional<Duration> idleThreshold = this.configuration.getIdleTimeout();
+        OptionalInt size = this.configuration.getSizeThreshold();
+        Optional<Duration> idleThreshold = this.configuration.getIdleThreshold();
 
         EvictionStrategy strategy = (size.isPresent() || idleThreshold.isPresent()) ? EvictionStrategy.REMOVE : EvictionStrategy.NONE;
         builder.memory().storage(StorageType.HEAP).whenFull(strategy);

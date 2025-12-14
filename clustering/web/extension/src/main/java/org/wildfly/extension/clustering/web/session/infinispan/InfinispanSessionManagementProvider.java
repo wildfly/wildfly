@@ -68,11 +68,12 @@ public class InfinispanSessionManagementProvider extends AbstractSessionManageme
                     builder.expiration().lifespan(-1).maxIdle(-1);
                 }
 
-                OptionalInt size = configuration.getMaxSize();
+                OptionalInt size = configuration.getSizeThreshold();
                 Optional<Duration> idleThreshold = getSessionManagementConfiguration().getIdleThreshold();
 
                 EvictionStrategy strategy = (size.isPresent() || idleThreshold.isPresent()) ? EvictionStrategy.REMOVE : EvictionStrategy.NONE;
                 builder.memory().storage(StorageType.HEAP).whenFull(strategy);
+
                 if (strategy.isEnabled()) {
                     // When an idle-timeout is configured without a size threshold, the cache's size limit must still be configured due to Infinispan's requirements.
                     // As a workaround we explicitly set maxCount(..) to Integer.MAX_VALUE.

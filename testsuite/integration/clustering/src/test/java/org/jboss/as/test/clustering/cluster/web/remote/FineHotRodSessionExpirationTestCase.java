@@ -33,7 +33,7 @@ public class FineHotRodSessionExpirationTestCase extends AbstractHotRodSessionEx
 
     static WebArchive getDeployment() {
         return getBaseDeployment(MODULE_NAME)
-                .addAsWebInfResource(FineHotRodSessionExpirationTestCase.class.getPackage(), "jboss-all_fine_transactional.xml", "jboss-all.xml")
+                .addAsWebInfResource(FineHotRodSessionExpirationTestCase.class.getPackage(), "jboss-all_fine.xml", "jboss-all.xml")
                 .addAsWebInfResource(FineHotRodSessionExpirationTestCase.class.getPackage(), "jboss-web.xml", "jboss-web.xml")
                 ;
     }
