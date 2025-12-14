@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.util.List;
 
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.Feature;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.operations.common.Util;
@@ -16,6 +17,7 @@ import org.jboss.as.network.SocketBinding;
 import org.jboss.as.subsystem.test.AbstractSubsystemTest;
 import org.jboss.as.subsystem.test.AdditionalInitialization;
 import org.jboss.as.subsystem.test.KernelServices;
+import org.jboss.as.version.Stability;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -25,7 +27,8 @@ import org.jboss.dmr.ModelNode;
 */
 public class OperationTestCaseBase extends AbstractSubsystemTest {
 
-    static final String SUBSYSTEM_XML_FILE = String.format("jgroups-%d.%d.xml", JGroupsSubsystemSchema.CURRENT.getVersion().major(), JGroupsSubsystemSchema.CURRENT.getVersion().minor());
+    private static final JGroupsSubsystemSchema CURRENT = Feature.map(JGroupsSubsystemSchema.CURRENT).get(Stability.DEFAULT);
+    private static final String SUBSYSTEM_XML_FILE = String.format("jgroups-%d.%d.xml", CURRENT.getVersion().major(), CURRENT.getVersion().minor());
 
     public OperationTestCaseBase() {
         super(JGroupsSubsystemResourceDefinitionRegistrar.REGISTRATION.getName(), new JGroupsExtension());
@@ -104,7 +107,7 @@ public class OperationTestCaseBase extends AbstractSubsystemTest {
     }
 
     /**
-     * Creates operations such as /subsystem=jgroups/stack=tcp/transport=TCP/:write-attribute(name=properties,value={a=b,c=d})".
+     * Creates operations such as /subsystem=jgroups/stack=tcp/transport=TCP/:write-attribute(name=properties,value={a=b,c=d}).
      *
      * @return resulting :write-attribute operation
      */
@@ -150,7 +153,7 @@ public class OperationTestCaseBase extends AbstractSubsystemTest {
     }
 
     /**
-     * Creates operations such as /subsystem=jgroups/stack=tcp/protocol=MPING/:write-attribute(name=properties,value={a=b,c=d})".
+     * Creates operations such as /subsystem=jgroups/stack=tcp/protocol=MPING/:write-attribute(name=properties,value={a=b,c=d}).
      */
     protected static ModelNode getProtocolSetPropertiesOperation(String stackName, String protocolName, ModelNode values) {
         return Util.getWriteAttributeOperation(getProtocolAddress(stackName, protocolName), ProtocolChildResourceDefinitionRegistrar.PROPERTIES.getName(), values);
@@ -181,7 +184,7 @@ public class OperationTestCaseBase extends AbstractSubsystemTest {
     }
 
     protected KernelServices buildKernelServices() throws Exception {
-        return this.createKernelServicesBuilder(AdditionalInitialization.withCapabilities(JGroupsSubsystemSchema.CURRENT,
+        return this.createKernelServicesBuilder(AdditionalInitialization.withCapabilities(CURRENT,
                 RuntimeCapability.resolveCapabilityName(SocketBinding.SERVICE_DESCRIPTOR, "some-binding"),
                 RuntimeCapability.resolveCapabilityName(SocketBinding.SERVICE_DESCRIPTOR, "jgroups-diagnostics"),
                 RuntimeCapability.resolveCapabilityName(SocketBinding.SERVICE_DESCRIPTOR, "jgroups-mping"),

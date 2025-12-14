@@ -21,7 +21,8 @@ public final class NodeUtil {
     private static final Logger log = Logger.getLogger(NodeUtil.class);
 
     public static void deploy(Deployer deployer, Set<String> deployments) {
-        for (String deployment : deployments) {
+        // n.b. fix the deployment order
+        for (String deployment : deployments.stream().sorted().toList()) {
             deploy(deployer, deployment);
         }
     }
