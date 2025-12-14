@@ -10,13 +10,13 @@ import org.jboss.as.threads.ThreadsServices;
 import org.jboss.msc.service.ServiceName;
 
 /**
- * User: jpai
+ * @author jpai
  * @author <a href="mailto:tadamski@redhat.com">Tomasz Adamski</a>
  */
 public interface EJB3SubsystemModel {
-    String LITE = "lite";
-    String ABSTACT_TYPE = "abstract-type";
-    String ABSTACT_TYPE_AUTHORITY = "abstract-type-authority";
+    @Deprecated String LITE = "lite";
+    @Deprecated String ABSTACT_TYPE = "abstract-type";
+    @Deprecated String ABSTACT_TYPE_AUTHORITY = "abstract-type-authority";
     String ALIASES = "aliases";
     String ATTRIBUTES = "attributes";
 
@@ -45,7 +45,7 @@ public interface EJB3SubsystemModel {
     String DEFAULT_ENTITY_BEAN_OPTIMISTIC_LOCKING = "default-entity-bean-optimistic-locking";
     String DISABLE_DEFAULT_EJB_PERMISSIONS = "disable-default-ejb-permissions";
     String ENABLE_GRACEFUL_TXN_SHUTDOWN = "enable-graceful-txn-shutdown";
-    String DISCOVERY = "discovery";
+    @Deprecated String DISCOVERY = "discovery";
     String STATIC = "static";
     String LOG_SYSTEM_EXCEPTIONS = "log-system-exceptions";
 
@@ -60,8 +60,8 @@ public interface EJB3SubsystemModel {
 
     String STRICT_MAX_BEAN_INSTANCE_POOL = "strict-max-bean-instance-pool";
 
-    String MAX_THREADS = "max-threads";
-    String KEEPALIVE_TIME = "keepalive-time";
+    @Deprecated String MAX_THREADS = "max-threads";
+    @Deprecated String KEEPALIVE_TIME = "keepalive-time";
 
     String RELATIVE_TO = "relative-to";
     String PATH = "path";
@@ -89,7 +89,7 @@ public interface EJB3SubsystemModel {
     String TIMER_SERVICE = "timer-service";
     String THREAD_POOL = "thread-pool";
     String THREAD_POOL_NAME = "thread-pool-name";
-    String DEFAULT = "default";
+    @Deprecated String DEFAULT = "default";
 
     String USE_QUALIFIED_NAME = "use-qualified-name";
     String ENABLE_BY_DEFAULT = "enable-by-default";
@@ -127,13 +127,13 @@ public interface EJB3SubsystemModel {
     String REFRESH_INTERVAL = "refresh-interval";
     String ALLOW_EXECUTION = "allow-execution";
 
-    String STATIC_URLS = "static-urls";
+    @Deprecated String STATIC_URLS = "static-urls";
 
     PathElement REMOTE_SERVICE_PATH = PathElement.pathElement(SERVICE, REMOTE);
     PathElement ASYNC_SERVICE_PATH = PathElement.pathElement(SERVICE, ASYNC);
     PathElement TIMER_PATH = PathElement.pathElement(TIMER);
     PathElement TIMER_SERVICE_PATH = PathElement.pathElement(SERVICE, TIMER_SERVICE);
-    PathElement THREAD_POOL_PATH = PathElement.pathElement(THREAD_POOL);
+    @Deprecated PathElement THREAD_POOL_PATH = PathElement.pathElement(THREAD_POOL);
     PathElement IIOP_PATH = PathElement.pathElement(SERVICE, IIOP);
     PathElement FILE_DATA_STORE_PATH = PathElement.pathElement(FILE_DATA_STORE);
     PathElement DATABASE_DATA_STORE_PATH = PathElement.pathElement(DATABASE_DATA_STORE);
@@ -166,7 +166,7 @@ public interface EJB3SubsystemModel {
     String CLIENT_INTERCEPTORS = "client-interceptors";
     String MODULE = "module";
     String CLASS = "class";
-    String BINDING = "binding";
+    @Deprecated String BINDING = "binding";
 
     String URI = "uri";
 
