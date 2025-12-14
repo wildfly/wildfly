@@ -69,7 +69,7 @@ public class TransactionScopedEntityManager extends AbstractEntityManager implem
         if (isInTx) {
             entityManager = getOrCreateTransactionScopedEntityManager(emf, puScopedName, properties, synchronizationType);
         } else {
-            entityManager = NonTxEmCloser.get(puScopedName);
+            entityManager = NonTxEmCloser.get(EntityManager.class, puScopedName);
             if (entityManager == null) {
                 entityManager = createEntityManager(emf, properties, synchronizationType);
                 NonTxEmCloser.add(puScopedName, entityManager);
@@ -139,7 +139,7 @@ public class TransactionScopedEntityManager extends AbstractEntityManager implem
         if (entityManager == null) {
             entityManager = createEntityManager(emf, properties, synchronizationType);
             if (ROOT_LOGGER.isDebugEnabled()) {
-                ROOT_LOGGER.debugf("%s: created entity manager session %s", TransactionUtil.getEntityManagerDetails(entityManager, scopedPuName),
+                ROOT_LOGGER.debugf("%s: created entity manager session %s", TransactionUtil.getTransactionScopedObjectDetails(entityManager, scopedPuName),
                         TransactionUtil.getTransaction(transactionManager).toString());
             }
             TransactionUtil.registerSynchronization(entityManager, scopedPuName, transactionSynchronizationRegistry, transactionManager);
@@ -148,7 +148,7 @@ public class TransactionScopedEntityManager extends AbstractEntityManager implem
         else {
             testForMixedSynchronizationTypes(emf, entityManager, puScopedName, synchronizationType, properties);
             if (ROOT_LOGGER.isDebugEnabled()) {
-                ROOT_LOGGER.debugf("%s: reuse entity manager session already in tx %s", TransactionUtil.getEntityManagerDetails(entityManager, scopedPuName),
+                ROOT_LOGGER.debugf("%s: reuse entity manager session already in tx %s", TransactionUtil.getTransactionScopedObjectDetails(entityManager, scopedPuName),
                         TransactionUtil.getTransaction(transactionManager).toString());
             }
         }
