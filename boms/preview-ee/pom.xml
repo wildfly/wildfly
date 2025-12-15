@@ -55,7 +55,7 @@
         <version.jakarta.ws.rs.jakarta-ws-rs-api>4.0.0</version.jakarta.ws.rs.jakarta-ws-rs-api>
         <!-- Required for Hibernate Search -->
         <version.org.apache.lucene>9.12.3</version.org.apache.lucene>
-        <version.org.elasticsearch.client.rest-client>9.2.1</version.org.elasticsearch.client.rest-client>
+        <version.org.elasticsearch.client.rest-client>9.2.2</version.org.elasticsearch.client.rest-client>
         <version.org.bytebuddy>1.17.8</version.org.bytebuddy>
         <version.org.glassfish.concurro>3.1.0</version.org.glassfish.concurro>
         <version.org.glassfish.expressly>6.0.0</version.org.glassfish.expressly>
@@ -66,9 +66,9 @@
         <version.org.jboss.spec.jakarta.el.jakarta.el-api>6.0.2.Final</version.org.jboss.spec.jakarta.el.jakarta.el-api>
         <version.org.jboss.weld.weld>6.0.3.Final</version.org.jboss.weld.weld>
         <version.org.jboss.weld.weld-api>6.0.Final</version.org.jboss.weld.weld-api>
-        <version.org.hibernate>7.2.0.CR4</version.org.hibernate>
+        <version.org.hibernate>7.2.0.Final</version.org.hibernate>
         <version.org.hibernate.models>1.0.1</version.org.hibernate.models>
-        <version.org.hibernate.search>8.2.0.CR1</version.org.hibernate.search>
+        <version.org.hibernate.search>8.2.0.Final</version.org.hibernate.search>
         <version.org.hibernate.validator>9.1.0.Final</version.org.hibernate.validator>
         <version.org.wildfly.security.jakarta.elytron-ee>4.0.0.Beta4</version.org.wildfly.security.jakarta.elytron-ee>
     </properties>
