@@ -10,11 +10,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.OptionalInt;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.Supplier;
 
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.modules.Module;
+import org.wildfly.clustering.function.Supplier;
 import org.wildfly.clustering.marshalling.ByteBufferMarshaller;
 import org.wildfly.clustering.server.immutable.Immutability;
 import org.wildfly.clustering.session.SessionAttributePersistenceStrategy;
@@ -55,7 +55,7 @@ public class SessionManagerFactoryConfigurationAdapter<C extends DistributableSe
     }
 
     @Override
-    public OptionalInt getMaxSize() {
+    public OptionalInt getSizeThreshold() {
         return this.maxActiveSessions;
     }
 

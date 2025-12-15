@@ -68,7 +68,7 @@ public class InfinispanCounterTestCase extends AbstractClusteringTestCase {
     private static Archive<?> createDeployment() {
         return ShrinkWrap.create(WebArchive.class, MODULE_NAME + ".war")
                 .addPackage(InfinispanCounterServlet.class.getPackage())
-                .setManifest(new StringAsset("Manifest-Version: 1.0\nDependencies: org.infinispan, org.infinispan.commons, org.infinispan.counter\n"))
+                .setManifest(new StringAsset("Manifest-Version: 1.0\nDependencies: org.infinispan, org.infinispan.counter\n"))
                 .addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml")
                 .addAsManifestResource(createPermissionsXmlAsset(
                         // WFLY-17968

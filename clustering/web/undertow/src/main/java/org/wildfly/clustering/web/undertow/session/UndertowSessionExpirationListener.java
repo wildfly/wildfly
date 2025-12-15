@@ -7,11 +7,11 @@ package org.wildfly.clustering.web.undertow.session;
 
 import java.util.Map;
 import java.util.ServiceLoader;
-import java.util.function.Consumer;
 
 import org.wildfly.clustering.cache.batch.BatchContextualizerFactory;
 import org.wildfly.clustering.context.Contextualizer;
 import org.wildfly.clustering.context.ContextualizerFactory;
+import org.wildfly.clustering.function.Consumer;
 import org.wildfly.clustering.session.ImmutableSession;
 import org.wildfly.clustering.session.ImmutableSessionMetaData;
 

@@ -15,7 +15,7 @@
     <resources>
         <artifact name="${org.infinispan:infinispan-hibernate-cache-spi}"/>
         <artifact name="${org.infinispan:infinispan-hibernate-cache-commons}"/>
-        <artifact name="${org.infinispan:infinispan-hibernate-cache-v62}"/>
+        <artifact name="${org.infinispan:infinispan-hibernate-cache-v66}"/>
     </resources>
 
     <dependencies>
@@ -27,6 +27,8 @@
         <module name="org.hibernate.jipijapa-hibernate" services="import"/>
         <module name="org.infinispan.commons"/>
         <module name="org.infinispan.core" services="import"/>
+        <module name="org.infinispan.protostream"/>
+        <module name="org.infinispan.protostream.types"/>
         <module name="org.jboss.as.jpa.spi"/>
         <module name="org.jboss.logging"/>
         <module name="org.wildfly.clustering.cache.infinispan.embedded" services="import"/>

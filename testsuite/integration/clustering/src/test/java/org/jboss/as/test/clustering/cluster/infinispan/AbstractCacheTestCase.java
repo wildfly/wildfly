@@ -28,7 +28,6 @@ import org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase;
 import org.jboss.as.test.clustering.cluster.infinispan.bean.Cache;
 import org.jboss.as.test.clustering.cluster.infinispan.bean.InfinispanCacheSerializationContextInitializer;
 import org.jboss.as.test.clustering.cluster.infinispan.servlet.InfinispanCacheServlet;
-import org.jboss.as.test.clustering.single.web.SimpleWebTestCase;
 import org.jboss.as.test.http.util.TestHttpClientUtils;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -50,7 +49,6 @@ public abstract class AbstractCacheTestCase extends AbstractClusteringTestCase {
         war.addPackage(InfinispanCacheServlet.class.getPackage());
         war.addPackage(Cache.class.getPackage());
         war.addClass(beanClass);
-        war.setWebXML(SimpleWebTestCase.class.getPackage(), "web.xml");
         war.addAsResource(new StringAsset(String.format("Manifest-Version: 1.0\nDependencies: %s, org.infinispan.commons, org.infinispan.protostream\n", module)), "META-INF/MANIFEST.MF");
         war.addAsServiceProvider(SerializationContextInitializer.class.getName(), InfinispanCacheSerializationContextInitializer.class.getName() + "Impl");
         war.addAsManifestResource(createPermissionsXmlAsset(

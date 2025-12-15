@@ -12,7 +12,6 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import org.infinispan.commons.marshall.Marshaller;
-import org.infinispan.query.remote.client.impl.MarshallerRegistration;
 import org.jboss.as.clustering.infinispan.marshalling.UserMarshallerFactory;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleLoader;
@@ -42,7 +41,7 @@ public enum HotRodMarshallerFactory implements BiFunction<ModuleLoader, List<Mod
     PROTOSTREAM() {
         @Override
         public Marshaller apply(ModuleLoader moduleLoader, List<Module> modules) {
-            return (modules.contains(Module.forClass(MarshallerRegistration.class)) ? UserMarshallerFactory.DEFAULT : UserMarshallerFactory.PROTOSTREAM).createUserMarshaller(moduleLoader, modules.stream().map(Module::getClassLoader).collect(Collectors.toList()));
+            return UserMarshallerFactory.DEFAULT.createUserMarshaller(moduleLoader, modules.stream().map(Module::getClassLoader).collect(Collectors.toList()));
         }
     },
     ;

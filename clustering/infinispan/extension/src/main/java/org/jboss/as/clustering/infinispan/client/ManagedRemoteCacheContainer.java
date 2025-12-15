@@ -5,25 +5,28 @@
 
 package org.jboss.as.clustering.infinispan.client;
 
-import java.security.PrivilegedAction;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.ServiceLoader;
-import java.util.Set;
 
-import org.infinispan.client.hotrod.DataFormat;
 import org.infinispan.client.hotrod.RemoteCache;
 import org.infinispan.client.hotrod.RemoteCacheManager;
-import org.infinispan.client.hotrod.RemoteCacheManagerAdmin;
+import org.infinispan.client.hotrod.RemoteSchemasAdmin;
+import org.infinispan.client.hotrod.RemoteSchemasAdmin.SchemaOpResult;
 import org.infinispan.client.hotrod.configuration.Configuration;
+import org.infinispan.client.hotrod.configuration.RemoteCacheConfiguration;
 import org.infinispan.commons.dataconversion.MediaType;
 import org.infinispan.commons.marshall.Marshaller;
-import org.infinispan.commons.marshall.ProtoStreamMarshaller;
-import org.infinispan.protostream.SerializationContext;
-import org.infinispan.query.remote.client.ProtobufMetadataManagerConstants;
-import org.jboss.as.clustering.infinispan.dataconversion.MediaTypeFactory;
+import org.infinispan.protostream.GeneratedSchema;
+import org.infinispan.protostream.SerializationContextInitializer;
+import org.jboss.as.clustering.infinispan.logging.InfinispanLogger;
 import org.jboss.as.clustering.infinispan.marshalling.UserMarshallerFactory;
+import org.jboss.as.server.moduleservice.ServiceModuleLoader;
+import org.jboss.modules.Module;
 import org.jboss.modules.ModuleLoader;
+import org.wildfly.clustering.cache.infinispan.remote.RemoteCacheContainerDecorator;
+import org.wildfly.clustering.function.Runner;
 import org.wildfly.clustering.infinispan.client.RemoteCacheContainer;
 import org.wildfly.clustering.server.Registrar;
 import org.wildfly.security.manager.WildFlySecurityManager;
@@ -34,7 +37,7 @@ import org.wildfly.security.manager.WildFlySecurityManager;
  * @author Radoslav Husar
  * @author Paul Ferraro
  */
-public class ManagedRemoteCacheContainer implements RemoteCacheContainer {
+public class ManagedRemoteCacheContainer extends RemoteCacheContainerDecorator implements RemoteCacheContainer {
 
     private final RemoteCacheManager container;
     private final String name;
@@ -42,6 +45,7 @@ public class ManagedRemoteCacheContainer implements RemoteCacheContainer {
     private final Registrar<String> registrar;
 
     public ManagedRemoteCacheContainer(RemoteCacheManager container, String name, ModuleLoader loader, Registrar<String> registrar) {
+        super(container);
         this.container = container;
         this.name = name;
         this.loader = loader;
@@ -54,100 +58,48 @@ public class ManagedRemoteCacheContainer implements RemoteCacheContainer {
     }
 
     @Override
-    public RemoteCacheManagerAdmin administration() {
-        return this.container.administration();
-    }
-
-    @Override
-    public <K, V> RemoteCache<K, V> getCache() {
-        return this.getCache("");
-    }
-
-    @Override
     public <K, V> RemoteCache<K, V> getCache(String cacheName) {
-        org.infinispan.client.hotrod.RemoteCache<K, V> cache = this.container.getCache(cacheName);
-        if (cache == null) return null;
-        Marshaller defaultMarshaller = this.container.getMarshaller();
-        DataFormat.Builder builder = DataFormat.builder().from(cache.getDataFormat())
-                .keyType(defaultMarshaller.mediaType())
-                .keyMarshaller(defaultMarshaller)
-                .valueType(defaultMarshaller.mediaType())
-                .valueMarshaller(defaultMarshaller)
-                ;
-        if (ProtobufMetadataManagerConstants.PROTOBUF_METADATA_CACHE_NAME.equals(cacheName)) {
-            builder.keyType(MediaType.TEXT_PLAIN);
-            builder.valueType(MediaType.TEXT_PLAIN);
-        } else if (defaultMarshaller.mediaType().equals(MediaType.APPLICATION_PROTOSTREAM)) {
-            // RemoteQueryFactory is hard-wired to use marshaller of container instead of DataFormat
-            SerializationContext context = ((ProtoStreamMarshaller) defaultMarshaller).getSerializationContext();
-            WildFlySecurityManager.doUnchecked(new PrivilegedAction<>() {
-                @Override
-                public Void run() {
-                    for (org.infinispan.protostream.SerializationContextInitializer initializer : ServiceLoader.load(org.infinispan.protostream.SerializationContextInitializer.class, Thread.currentThread().getContextClassLoader())) {
-                        initializer.registerSchema(context);
-                        initializer.registerMarshallers(context);
+        List<Runnable> stopTasks = new LinkedList<>();
+        ClassLoader loader = WildFlySecurityManager.getCurrentContextClassLoaderPrivileged();
+        Module module = Module.forClassLoader(loader, false);
+        // If thread context is that of a deployment ...
+        if ((module != null) && module.getName().startsWith(ServiceModuleLoader.MODULE_PREFIX)) {
+            Configuration configuration = this.container.getConfiguration();
+            Map<String, RemoteCacheConfiguration> configurations = configuration.remoteCaches();
+            synchronized (configurations) {
+                // If remote cache configuration is undefined, auto-create
+                if (!configurations.containsKey(cacheName)) {
+                    Marshaller marshaller = UserMarshallerFactory.forMediaType(this.container.getMarshaller().mediaType()).createUserMarshaller(this.loader, List.of(loader));
+                    // If this is a protostream marshaller, additionally auto-register deployment-specific schemas with server
+                    if (marshaller.mediaType().equals(MediaType.APPLICATION_PROTOSTREAM)) {
+                        RemoteSchemasAdmin admin = this.container.administration().schemas();
+                        for (SerializationContextInitializer initializer : ServiceLoader.load(SerializationContextInitializer.class, loader)) {
+                            if (initializer instanceof GeneratedSchema schema) {
+                                if (WildFlySecurityManager.getClassLoaderPrivileged(schema.getClass()) == loader) {
+                                    SchemaOpResult result = admin.create(schema);
+                                    if (result.hasError()) {
+                                        InfinispanLogger.ROOT_LOGGER.warn(result.getError());
+                                    } else {
+                                        stopTasks.add(() -> admin.remove(schema.getName()));
+                                    }
+                                }
+                            }
+                        }
                     }
-                    return null;
-                }
-            });
-        } else {
-            ClassLoader loader = WildFlySecurityManager.getCurrentContextClassLoaderPrivileged();
-            Map.Entry<MediaType, MediaType> types = MediaTypeFactory.INSTANCE.apply(loader);
-            boolean overrideKeyMarshaller = !types.getKey().equals(MediaType.APPLICATION_OBJECT);
-            boolean overrideValueMarshaller = !types.getValue().equals(MediaType.APPLICATION_OBJECT);
-            if (overrideKeyMarshaller || overrideValueMarshaller) {
-                Marshaller marshaller = UserMarshallerFactory.forMediaType(defaultMarshaller.mediaType()).createUserMarshaller(this.loader, List.of(loader));
-                if (overrideKeyMarshaller) {
-                    builder.keyType(marshaller.mediaType());
-                    builder.keyMarshaller(marshaller);
-                }
-                if (overrideValueMarshaller) {
-                    builder.valueType(marshaller.mediaType());
-                    builder.valueMarshaller(marshaller);
+                    configuration.addRemoteCache(cacheName, builder -> builder.marshaller(marshaller));
+                    stopTasks.add(() -> configuration.removeRemoteCache(cacheName));
                 }
             }
         }
-        return new ManagedRemoteCache<>(this, this.container, cache.withDataFormat(builder.build()), this.registrar);
-    }
 
-    @Override
-    public Configuration getConfiguration() {
-        return this.container.getConfiguration();
-    }
-
-    @Override
-    public boolean isStarted() {
-        return this.container.isStarted();
-    }
-
-    @Override
-    public String getCurrentClusterName() {
-        return this.container.getCurrentClusterName();
-    }
-
-    @Override
-    public boolean switchToCluster(String clusterName) {
-        return this.container.switchToCluster(clusterName);
-    }
-
-    @Override
-    public boolean switchToDefaultCluster() {
-        return this.container.switchToDefaultCluster();
-    }
-
-    @Override
-    public Marshaller getMarshaller() {
-        return this.container.getMarshaller();
-    }
-
-    @Override
-    public boolean isTransactional(String cacheName) {
-        return this.container.isTransactional(cacheName);
-    }
-
-    @Override
-    public Set<String> getCacheNames() {
-        return this.container.getCacheNames();
+        RemoteCache<K, V> cache = this.container.getCache(cacheName);
+        return (cache != null) ? new ManagedRemoteCache<>(this, this.container, cache, this.registrar) {
+            @Override
+            public void stop() {
+                super.stop();
+                Runner.runAll(stopTasks);
+            }
+        }: null;
     }
 
     @Override
@@ -183,18 +135,6 @@ public class ManagedRemoteCacheContainer implements RemoteCacheContainer {
     @Override
     public long getRetries() {
         return this.container.getRetries();
-    }
-
-    @Override
-    public int hashCode() {
-        return this.name.hashCode();
-    }
-
-    @Override
-    public boolean equals(Object object) {
-        if (!(object instanceof RemoteCacheContainer)) return false;
-        RemoteCacheContainer container = (RemoteCacheContainer) object;
-        return this.name.equals(container.getName());
     }
 
     @Override

@@ -23,7 +23,6 @@ import org.jboss.weld.annotated.slim.SlimAnnotatedType;
 import org.jboss.weld.annotated.slim.backed.BackedAnnotatedCallable;
 import org.jboss.weld.annotated.slim.backed.BackedAnnotatedParameter;
 import org.jboss.weld.injection.InjectionPointFactory;
-import org.jboss.weld.injection.ParameterInjectionPoint;
 import org.jboss.weld.injection.ParameterInjectionPointImpl;
 import org.jboss.weld.manager.BeanManagerImpl;
 import org.jboss.weld.resources.ClassTransformer;
@@ -44,7 +43,7 @@ public class ParameterInjectionPointMarshaller<T, X> implements ProtoStreamMarsh
     @SuppressWarnings("unchecked")
     @Override
     public Class<? extends ParameterInjectionPointImpl<T, X>> getJavaClass() {
-        return (Class<ParameterInjectionPointImpl<T, X>>) (Class<?>) ParameterInjectionPoint.class;
+        return (Class<ParameterInjectionPointImpl<T, X>>) (Class<?>) ParameterInjectionPointImpl.class;
     }
 
     @SuppressWarnings("unchecked")

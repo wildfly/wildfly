@@ -8,7 +8,7 @@ package org.wildfly.persistence.jipijapa.hibernate7;
 import java.util.Properties;
 
 import org.hibernate.cache.CacheException;
-import org.hibernate.cfg.AvailableSettings;
+import org.hibernate.cfg.PersistenceSettings;
 import org.infinispan.hibernate.cache.spi.EmbeddedCacheManagerProvider;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.infinispan.manager.impl.AbstractDelegatingEmbeddedCacheManager;
@@ -42,7 +42,7 @@ public class ManagedEmbeddedCacheManagerProvider implements EmbeddedCacheManager
             settings.setProperty(HibernateSecondLevelCache.CACHE_TYPE, HibernateSecondLevelCache.CACHE_PRIVATE);
 
             // Find a suitable service name to represent this session factory instance
-            String name = properties.getProperty(AvailableSettings.SESSION_FACTORY_NAME);
+            String name = properties.getProperty(PersistenceSettings.SESSION_FACTORY_NAME);
             if (name != null) {
                 settings.setProperty(HibernateSecondLevelCache.NAME, name);
             }

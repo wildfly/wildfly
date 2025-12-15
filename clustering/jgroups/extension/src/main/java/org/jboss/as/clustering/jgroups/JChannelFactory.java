@@ -27,7 +27,6 @@ import org.wildfly.clustering.jgroups.spi.ChannelFactory;
 import org.wildfly.clustering.jgroups.spi.ProtocolConfiguration;
 import org.wildfly.clustering.jgroups.spi.ChannelFactoryConfiguration;
 import org.wildfly.clustering.jgroups.spi.TLSConfiguration;
-import org.wildfly.clustering.jgroups.spi.TransportConfiguration;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
@@ -109,11 +108,6 @@ public class JChannelFactory implements ChannelFactory {
         JChannel channel = createChannel(protocols);
 
         channel.setName(this.configuration.getMemberName());
-
-        TransportConfiguration.Topology topology = this.configuration.getTransport().getTopology();
-        if (topology != null) {
-            channel.addAddressGenerator(new TopologyAddressGenerator(topology));
-        }
 
         return channel;
     }

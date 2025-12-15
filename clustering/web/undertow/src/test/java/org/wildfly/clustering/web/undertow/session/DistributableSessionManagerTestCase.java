@@ -17,8 +17,10 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
+import java.time.Instant;
 import java.util.Collections;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 import io.undertow.UndertowOptions;
@@ -155,7 +157,6 @@ public class DistributableSessionManagerTestCase {
         when(this.manager.createSession(sessionId)).thenReturn(session);
         when(session.getId()).thenReturn(sessionId);
         when(session.getMetaData()).thenReturn(metaData);
-        when(metaData.isNew()).thenReturn(true);
 
         io.undertow.server.session.Session sessionAdapter = this.adapter.createSession(exchange, config);
 
@@ -193,7 +194,6 @@ public class DistributableSessionManagerTestCase {
         when(this.manager.createSession(sessionId)).thenReturn(session);
         when(session.getId()).thenReturn(sessionId);
         when(session.getMetaData()).thenReturn(metaData);
-        when(metaData.isNew()).thenReturn(true);
 
         io.undertow.server.session.Session sessionAdapter = this.adapter.createSession(exchange, config);
 
@@ -264,7 +264,7 @@ public class DistributableSessionManagerTestCase {
         when(session.isValid()).thenReturn(true);
         when(session.getMetaData()).thenReturn(metaData);
         when(metaData.isExpired()).thenReturn(false);
-        when(metaData.isNew()).thenReturn(false);
+        when(metaData.getLastAccessTime()).thenReturn(Optional.of(Instant.now()));
 
         io.undertow.server.session.Session sessionAdapter = this.adapter.getSession(exchange, config);
 
@@ -385,7 +385,6 @@ public class DistributableSessionManagerTestCase {
         when(session.isValid()).thenReturn(false);
         when(session.getMetaData()).thenReturn(metaData);
         when(metaData.isExpired()).thenReturn(false);
-        when(metaData.isNew()).thenReturn(false);
 
         io.undertow.server.session.Session sessionAdapter = this.adapter.getSession(exchange, config);
 

@@ -5,7 +5,7 @@
 
 package org.jboss.as.clustering.infinispan.subsystem;
 
-import org.infinispan.eviction.impl.ActivationManager;
+import org.infinispan.eviction.impl.PassivationManager;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.registry.AttributeAccess;
@@ -17,12 +17,12 @@ import org.wildfly.subsystem.resource.executor.Metric;
  * Cache activation metrics.
  * @author Paul Ferraro
  */
-public enum CacheActivationMetric implements Metric<ActivationManager> {
+public enum CacheActivationMetric implements Metric<PassivationManager> {
 
     ACTIVATIONS("activations", ModelType.LONG, AttributeAccess.Flag.COUNTER_METRIC) {
         @Override
-        public ModelNode execute(ActivationManager manager) {
-            return new ModelNode(manager.getActivationCount());
+        public ModelNode execute(PassivationManager manager) {
+            return new ModelNode(manager.getPassivations());
         }
     },
     ;

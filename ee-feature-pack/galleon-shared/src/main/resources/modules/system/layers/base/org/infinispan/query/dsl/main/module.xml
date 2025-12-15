@@ -3,16 +3,5 @@
   ~ Copyright The WildFly Authors
   ~ SPDX-License-Identifier: Apache-2.0
   -->
-<module xmlns="urn:jboss:module:1.9" name="org.infinispan.query.dsl">
-
-    <resources>
-        <artifact name="${org.infinispan:infinispan-query-dsl}"/>
-    </resources>
-
-    <dependencies>
-        <module name="org.infinispan.commons"/>
-        <module name="org.infinispan.objectfilter"/>
-        <module name="org.jboss.logging"/>
-    </dependencies>
-
-</module>
+<!-- This module no longer exists as of Infinispan 16.0 -->
+<module-alias xmlns="urn:jboss:module:1.9" name="org.infinispan.query.dsl" target-name="org.infinispan.commons"/>

@@ -36,7 +36,7 @@ public class InfinispanBeanGroupManager<K, V extends BeanInstance<K>, C> impleme
     private final CacheEntryMutatorFactory<BeanGroupKey<K>, MarshalledValue<Map<K, V>, C>> mutatorFactory;
 
     public InfinispanBeanGroupManager(EmbeddedCacheConfiguration configuration) {
-        this.cache = configuration.getWriteCache();
+        this.cache = configuration.getReadWriteCache();
         this.removeCache = configuration.getWriteOnlyCache();
         this.mutatorFactory = configuration.getCacheEntryMutatorFactory();
     }
