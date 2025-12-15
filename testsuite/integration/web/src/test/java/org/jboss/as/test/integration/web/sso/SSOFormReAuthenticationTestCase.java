@@ -4,6 +4,12 @@
  */
 package org.jboss.as.test.integration.web.sso;
 
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.List;
+
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.CookieStore;
@@ -15,17 +21,16 @@ import org.apache.http.client.utils.HttpClientUtils;
 import org.apache.http.impl.client.BasicCookieStore;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.util.EntityUtils;
-import org.jboss.arquillian.container.test.api.OperateOnDeployment;
-import org.jboss.as.test.http.util.TestHttpClientUtils;
-
 import org.jboss.arquillian.container.test.api.Deployment;
+import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
+import org.jboss.as.test.http.util.TestHttpClientUtils;
+import org.jboss.as.test.integration.web.formauth.FormAuthUnitTestCase;
 import org.jboss.as.test.integration.web.formauth.LogoutServlet;
 import org.jboss.as.test.integration.web.formauth.SecureServlet;
-import org.jboss.as.test.integration.web.formauth.FormAuthUnitTestCase;
 import org.jboss.as.test.integration.web.formauth.SecuredPostServlet;
 import org.jboss.as.test.integration.web.sharedsession.SharedSessionTestCase;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -36,12 +41,6 @@ import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Tests a full SSO re-authentication flow. This test verifies:
