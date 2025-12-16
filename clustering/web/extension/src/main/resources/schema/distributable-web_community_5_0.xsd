@@ -5,10 +5,10 @@
   -->
 
 <xs:schema targetNamespace="urn:jboss:distributable-web:community:5.0"
-            xmlns:xs="http://www.w3.org/2001/XMLSchema"
-            xmlns:tns="urn:jboss:distributable-web:community:5.0"
-            elementFormDefault="qualified"
-            version="5.0">
+           xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           xmlns:tns="urn:jboss:distributable-web:community:5.0"
+           elementFormDefault="qualified"
+           version="5.0">
 
     <xs:element name="distributable-web" type="tns:distributable-web"/>
 
@@ -33,6 +33,9 @@
     </xs:complexType>
 
     <xs:complexType name="session-management">
+        <xs:sequence>
+            <xs:group ref="tns:immutability"/>
+        </xs:sequence>
         <xs:attribute name="name" type="xs:string">
             <xs:annotation>
                 <xs:documentation>References the name of an existing session management provider</xs:documentation>
