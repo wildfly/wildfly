@@ -6,8 +6,6 @@ package org.jboss.as.test.clustering.single.ejb.timer.passivation.bean;
 
 import java.time.Duration;
 
-import jakarta.ejb.Remove;
-
 import org.jboss.as.test.clustering.PassivationEventTracker;
 
 /**
@@ -27,23 +25,4 @@ public interface TimerTracker extends PassivationEventTracker {
      * @param duration the duration in milliseconds before the timer expires
      */
     void createTimer(String name, boolean persistent, Duration duration);
-
-    /**
-     * Gets the number of active timers.
-     * Call with caution as this might deserialize the timer.
-     */
-    int getTimerCount();
-
-    /**
-     * Cancels all timers.
-     * Used for test cleanup.
-     */
-    void cancelAllTimers();
-
-    /**
-     * Removes the bean.
-     * Used for test cleanup.
-     */
-    @Remove
-    void remove();
 }
