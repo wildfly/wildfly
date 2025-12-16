@@ -5,7 +5,6 @@
 
 package org.jboss.as.test.clustering.single.web.passivation;
 
-import static org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase.*;
 import static org.junit.Assert.*;
 
 import java.io.IOException;

@@ -84,6 +84,7 @@ public abstract class LocalIdleThresholdSessionPassivationTestCase {
             Awaitility.await("session to passivate")
                     .atMost(PASSIVATION_POLLING_DURATION)
                     .pollInterval(POLL_INTERVAL)
+                    .pollInSameThread()
                     .until(() -> {
                         try (CloseableHttpClient pollingClient = HttpClients.createDefault();
                              CloseableHttpResponse response = pollingClient.execute(new HttpHead(SessionOperationServlet.createURI(baseURL)))) {
@@ -119,6 +120,7 @@ public abstract class LocalIdleThresholdSessionPassivationTestCase {
             Awaitility.await("session to passivate again")
                     .atMost(PASSIVATION_POLLING_DURATION)
                     .pollInterval(POLL_INTERVAL)
+                    .pollInSameThread()
                     .until(() -> {
                         try (CloseableHttpClient pollingClient = HttpClients.createDefault();
                              CloseableHttpResponse response = pollingClient.execute(new HttpHead(SessionOperationServlet.createURI(baseURL)))) {
