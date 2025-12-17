@@ -26,8 +26,8 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StopContext;
 import org.wildfly.extension.requestcontroller.ControlPoint;
 import org.wildfly.extension.requestcontroller.RequestController;
-import org.wildfly.extension.undertow.deployment.SuspendedServerRequestListener;
-import org.wildfly.extension.undertow.deployment.SuspendedServerHandlerWrapper;
+import org.wildfly.extension.undertow.deployment.ServletRequestCompletionListener;
+import org.wildfly.extension.undertow.deployment.ControlPointHandlerWrapper;
 
 /**
  * Implementation of WebHost from common web, service starts with few more dependencies than default Host
@@ -55,7 +55,7 @@ final class WebHostService implements Service<WebHost>, WebHost {
         DeploymentInfo d = new DeploymentInfo();
 
         if (this.controlPoint != null) {
-            new SuspendedServerRequestListener(this.controlPoint).apply(d);
+            new ServletRequestCompletionListener(this.controlPoint).apply(d);
         }
 
         d.setDeploymentName(webDeploymentBuilder.getContextRoot());
@@ -81,7 +81,7 @@ final class WebHostService implements Service<WebHost>, WebHost {
         }
 
         if (this.controlPoint != null) {
-            new SuspendedServerHandlerWrapper(this.controlPoint, webDeploymentBuilder.getAllowRequestPredicates()).apply(d);
+            new ControlPointHandlerWrapper(this.controlPoint, webDeploymentBuilder.getAllowRequestPredicates()).apply(d);
         }
 
         return new WebDeploymentControllerImpl(d);

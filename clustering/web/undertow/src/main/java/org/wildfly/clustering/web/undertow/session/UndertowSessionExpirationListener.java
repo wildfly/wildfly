@@ -41,15 +41,14 @@ public class UndertowSessionExpirationListener implements Consumer<ImmutableSess
         if (this.recorder != null) {
             this.recorder.record(session.getMetaData());
         }
-        UndertowSessionManager manager = (UndertowSessionManager) this.deployment.getSessionManager();
-        Session undertowSession = new DistributableImmutableSession(manager, session);
+        Session undertowSession = new DistributableImmutableSession(this.deployment.getSessionManager(), session);
         Contextualizer contextualizer = BATCH_CONTEXTUALIZER_FACTORY.createContextualizer(this.deployment.getServletContext().getClassLoader());
         Consumer<Session> notifier = this::notify;
         // Perform listener invocation in isolated batch context
         contextualizer.contextualize(notifier).accept(undertowSession);
         // Trigger attribute listeners
         for (Map.Entry<String, Object> entry : session.getAttributes().entrySet()) {
-            manager.getSessionListeners().attributeRemoved(undertowSession, entry.getKey(), entry.getValue());
+            this.listeners.attributeRemoved(undertowSession, entry.getKey(), entry.getValue());
         }
     }
 
