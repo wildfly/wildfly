@@ -15,6 +15,9 @@ import io.undertow.predicate.PredicateParser;
 
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.CapabilityReferenceRecorder;
+import org.jboss.as.controller.CapabilityServiceBuilder;
+import org.jboss.as.controller.CapabilityServiceTarget;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
@@ -24,11 +27,11 @@ import org.jboss.as.controller.ServiceRemoveStepHandler;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.operations.validation.IntRangeValidator;
+import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
-import org.jboss.msc.service.ServiceBuilder;
+import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.msc.service.ServiceName;
-import org.jboss.msc.service.ServiceTarget;
 import org.wildfly.extension.undertow.Capabilities;
 import org.wildfly.extension.undertow.Constants;
 import org.wildfly.extension.undertow.FilterLocation;
@@ -50,6 +53,7 @@ public class FilterRefDefinition extends PersistentResourceDefinition {
             .setRestartAllServices()
             .setValidator(PredicateValidator.INSTANCE)
             .build();
+
     public static final AttributeDefinition PRIORITY = new SimpleAttributeDefinitionBuilder("priority", ModelType.INT)
             .setRequired(false)
             .setAllowExpression(true)
@@ -60,16 +64,33 @@ public class FilterRefDefinition extends PersistentResourceDefinition {
 
     public static final Collection<AttributeDefinition> ATTRIBUTES = List.of(PREDICATE, PRIORITY);
 
-    public FilterRefDefinition() {
-        super(new SimpleResourceDefinition.Parameters(PATH_ELEMENT, UndertowExtension.getResolver(PATH_ELEMENT.getKey()))
-                .setAddHandler(new FilterRefAdd())
-                .setRemoveHandler(new ServiceRemoveStepHandler(new FilterRefAdd()) {
+    /**
+     * Creates a new FilterRefDefinition
+     * @param forHost {@code true} if the definition is for a filter-ref that is a direct child of a host resource;
+     *                {@code false} if it is a child of the location child resource
+     */
+    public FilterRefDefinition(boolean forHost) {
+        super(filterRefParameters(forHost));
+    }
+
+    private static SimpleResourceDefinition.Parameters filterRefParameters(boolean forHost) {
+
+        FilterCapabilities capability = forHost
+                ? FilterCapabilities.FILTER_HOST_REF_CAPABILITY
+                : FilterCapabilities.FILTER_LOCATION_REF_CAPABILITY;
+        return new SimpleResourceDefinition.Parameters(PATH_ELEMENT, UndertowExtension.getResolver(PATH_ELEMENT.getKey()))
+                .setAddHandler(new FilterRefAdd(forHost))
+                .setRemoveHandler(new ServiceRemoveStepHandler(new FilterRefAdd(forHost)) {
                     @Override
                     protected ServiceName serviceName(String name, PathAddress address) {
                         return UndertowService.getFilterRefServiceName(address, name);
                     }
                 })
-        );
+                .addCapabilities(capability.getDefinition())
+                // TODO resolve problem generating a feature spec when this is used
+                //.addRequirement(capability.getName(), capability.getDynamicNameMapper(),
+                //        FilterCapabilities.FILTER_CAPABILITY.getName(), FilterCapabilities.FILTER_CAPABILITY.getDynamicNameMapper())
+                ;
     }
 
     @Override
@@ -79,19 +100,43 @@ public class FilterRefDefinition extends PersistentResourceDefinition {
 
     static class FilterRefAdd extends AbstractAddStepHandler {
 
+        private final boolean forHost;
+
+        private FilterRefAdd(boolean forHost) {
+            this.forHost = forHost;
+        }
+
+        // TODO remove this when registering via SimpleResourceDefinition.Parameters.addRequirement works
+        @Override
+        protected void recordCapabilitiesAndRequirements(OperationContext context, ModelNode operation, Resource resource) throws OperationFailedException {
+            super.recordCapabilitiesAndRequirements(context, operation, resource);
+
+            FilterCapabilities capability = forHost
+                    ? FilterCapabilities.FILTER_HOST_REF_CAPABILITY
+                    : FilterCapabilities.FILTER_LOCATION_REF_CAPABILITY;
+            CapabilityReferenceRecorder filterRefRecorder =
+                    new CapabilityReferenceRecorder.ResourceCapabilityReferenceRecorder(
+                            capability.getDynamicNameMapper(),
+                            capability.getName(),
+                            FilterCapabilities.FILTER_CAPABILITY.getDynamicNameMapper(),
+                            FilterCapabilities.FILTER_CAPABILITY.getName());
+            filterRefRecorder.addCapabilityRequirements(context, resource, null);
+        }
+
         @Override
         protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
             final PathAddress address = context.getCurrentAddress();
             final String name = context.getCurrentAddressValue();
-            final String locationType = address.getElement(address.size() - 2).getKey();
             final ServiceName locationSN;
+            final FilterCapabilities capabilityType;
 
-            if (locationType.equals(Constants.HOST)) {
+            if (forHost) {
                 final PathAddress hostAddress = address.getParent();
                 final PathAddress serverAddress = hostAddress.getParent();
                 final String serverName = serverAddress.getLastElement().getValue();
                 final String hostName = hostAddress.getLastElement().getValue();
                 locationSN = context.getCapabilityServiceName(Host.SERVICE_DESCRIPTOR, serverName, hostName);
+                capabilityType = FilterCapabilities.FILTER_HOST_REF_CAPABILITY;
             } else {
                 final PathAddress locationAddress = address.getParent();
                 final PathAddress hostAddress = locationAddress.getParent();
@@ -100,6 +145,7 @@ public class FilterRefDefinition extends PersistentResourceDefinition {
                 final String serverName = serverAddress.getLastElement().getValue();
                 final String hostName = hostAddress.getLastElement().getValue();
                 locationSN = context.getCapabilityServiceName(Capabilities.CAPABILITY_LOCATION, FilterLocation.class, serverName, hostName, locationName);
+                capabilityType = FilterCapabilities.FILTER_LOCATION_REF_CAPABILITY;
             }
 
             Predicate predicate = null;
@@ -108,15 +154,16 @@ public class FilterRefDefinition extends PersistentResourceDefinition {
                 predicate = PredicateParser.parse(predicateString, getClass().getClassLoader());
             }
 
-            int priority = PRIORITY.resolveModelAttribute(context, operation).asInt();
-            final ServiceTarget target = context.getServiceTarget();
+            final int priority = PRIORITY.resolveModelAttribute(context, operation).asInt();
+            final CapabilityServiceTarget target = context.getCapabilityServiceTarget();
             final ServiceName sn = UndertowService.getFilterRefServiceName(address, name);
-            final ServiceBuilder<?> sb = target.addService(sn);
-            final Consumer<UndertowFilter> frConsumer = sb.provides(sn);
-            final Supplier<PredicateHandlerWrapper> fSupplier = sb.requires(UndertowService.FILTER.append(name));
-            final Supplier<FilterLocation> lSupplier = sb.requires(locationSN);
-            sb.setInstance(new FilterService(frConsumer, fSupplier, lSupplier, predicate, priority));
-            sb.install();
+            final CapabilityServiceBuilder<?> csb = target.addCapability(capabilityType.getDefinition());
+            final Consumer<UndertowFilter> frConsumer = csb.provides(capabilityType.getDefinition() , sn);
+            final Supplier<PredicateHandlerWrapper> fSupplier = csb.requiresCapability(Capabilities.CAPABILITY_FILTER, PredicateHandlerWrapper.class, name);
+            final Supplier<FilterLocation> lSupplier = csb.requires(locationSN);
+            csb.setInitialMode(Mode.ACTIVE);
+            csb.setInstance(new FilterService(frConsumer, fSupplier, lSupplier, predicate, priority));
+            csb.install();
         }
     }
 }
