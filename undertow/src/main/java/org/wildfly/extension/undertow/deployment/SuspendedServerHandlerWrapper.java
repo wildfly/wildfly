@@ -16,6 +16,7 @@ import io.undertow.servlet.api.DeploymentInfo;
 import io.undertow.servlet.handlers.ServletRequestContext;
 import io.undertow.util.AttachmentKey;
 
+import org.jboss.logging.Logger;
 import org.wildfly.extension.requestcontroller.ControlPoint;
 import org.wildfly.extension.requestcontroller.RunResult;
 
@@ -24,6 +25,7 @@ import org.wildfly.extension.requestcontroller.RunResult;
  * @author Paul Ferraro
  */
 public class SuspendedServerHandlerWrapper implements HandlerWrapper, UnaryOperator<DeploymentInfo> {
+    static final Logger LOGGER = Logger.getLogger(SuspendedServerHandlerWrapper.class);
     static final AttachmentKey<RunResult> RUN_RESULT_KEY = AttachmentKey.create(RunResult.class);
 
     private final ControlPoint entryPoint;
@@ -66,6 +68,7 @@ public class SuspendedServerHandlerWrapper implements HandlerWrapper, UnaryOpera
                     entryPoint.requestComplete();
                 }
                 if ((exchange.getAttachment(RUN_RESULT_KEY) == RunResult.RUN) || SuspendedServerHandlerWrapper.this.allowSuspendedRequest(exchange)) {
+                    LOGGER.tracef("BEGIN request: %s", exchange.getRequestURI());
                     handler.handleRequest(exchange);
                 } else {
                     SuspendedServerHandler.DEFAULT.handleRequest(exchange);

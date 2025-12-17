@@ -275,7 +275,6 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
 
             deploymentInfo.setConfidentialPortManager(getConfidentialPortManager());
 
-            handleDistributable(deploymentInfo);
             if (!isElytronActive()) {
                 if (securityDomain != null || mergedMetaData.isUseJBossAuthorization()) {
                     throw UndertowLogger.ROOT_LOGGER.legacySecurityUnsupported();
@@ -458,22 +457,21 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
         };
     }
 
-    private void handleDistributable(final DeploymentInfo deploymentInfo) {
+    private DeploymentInfo createDeploymentInfo() {
+        DeploymentInfo deployment = new DeploymentInfo();
+
         SessionManagerFactory managerFactory = this.sessionManagerFactory != null ? this.sessionManagerFactory.get() : null;
         if (managerFactory != null) {
-            deploymentInfo.setSessionManagerFactory(managerFactory);
+            deployment.setSessionManagerFactory(managerFactory);
         }
 
         SessionAffinityProvider sessionAffinityProvider = this.sessionAffinityProvider != null ? this.sessionAffinityProvider.get() : null;
         if (sessionAffinityProvider != null) {
             CookieConfig config = this.container.get().getAffinityCookieConfig();
             SessionConfigWrapper wrapper = (config != null) ? new AffinitySessionConfigWrapper(config, sessionAffinityProvider) : new CodecSessionConfigWrapper(new AffinitySessionIdentifierCodec(sessionAffinityProvider));
-            deploymentInfo.setSessionConfigWrapper(wrapper);
+            deployment.setSessionConfigWrapper(wrapper);
         }
-    }
 
-    private DeploymentInfo createDeploymentInfo() {
-        DeploymentInfo deployment = new DeploymentInfo();
         ControlPoint controlPoint = this.controlPoint != null ? this.controlPoint.get() : null;
         // GlobalRequestControllerListener must be registered before any application listeners
         return (controlPoint != null) ? new SuspendedServerRequestListener(controlPoint).apply(deployment) : deployment;
