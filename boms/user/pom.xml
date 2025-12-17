@@ -159,6 +159,41 @@
                 </plugins>
             </build>
         </profile>
+
+        <!--
+            Disable the parent pom's use of maven-gpg-plugin for these modules
+            as it can't handle the fact we produce artifacts under multiple
+            grouopIds; we need to use wildfly-maven-gpg-plugin to deal with signing.
+        -->
+        <profile>
+            <id>maven-central-release</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-gpg-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>gpg-sign</id>
+                                <phase>none</phase>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.wildfly</groupId>
+                        <artifactId>wildfly-maven-gpg-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>gpg-sign</id>
+                                <goals>
+                                    <goal>sign</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
     </profiles>
 
 </project>

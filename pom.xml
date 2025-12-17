@@ -92,6 +92,13 @@
         <nexus.repository.url>https://repository.jboss.org/nexus/</nexus.repository.url> <!-- duplicated from jboss-parent, but Maven 4 wants to know it before accessing jboss-parent -->
         <nexus.repository.staging.url>${nexus.repository.url}repository/${nexus.repository.staging}</nexus.repository.staging.url>
 
+        <!-- Maven Central release properties -->
+        <repo.sonatype.url>https://central.sonatype.com</repo.sonatype.url>
+        <sonatype.server.id>central</sonatype.server.id>
+        <autoPublish>false</autoPublish>
+        <waitUntil>validated</waitUntil>
+        <skipPublishing>false</skipPublishing>
+
         <!-- Galleon -->
         <galleon.fork.embedded>true</galleon.fork.embedded>
         <galleon.log.time>true</galleon.log.time>
@@ -288,6 +295,7 @@
          -->
         <version.ant.junit>1.10.15</version.ant.junit>
         <version.asciidoctor.plugin>2.2.6</version.asciidoctor.plugin>
+        <version.central.publishing.maven.plugin>0.9.0</version.central.publishing.maven.plugin>
         <version.org.jacoco>0.8.12</version.org.jacoco>
         <version.org.jboss.galleon>7.0.0.Beta3</version.org.jboss.galleon>
         <version.org.owasp.dependency-check>12.1.6</version.org.owasp.dependency-check>
@@ -2029,6 +2037,105 @@
                         <configuration>
                             <skipMain>true</skipMain>
                             <skip>true</skip>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
+        <profile>
+            <id>maven-central-release</id>
+
+            <distributionManagement>
+                <snapshotRepository>
+                    <id>${sonatype.server.id}</id>
+                    <url>${repo.sonatype.url}</url>
+                </snapshotRepository>
+                <repository>
+                    <id>${sonatype.server.id}</id>
+                    <url>${repo.sonatype.url}</url>
+                </repository>
+            </distributionManagement>
+
+            <build>
+                <plugins>
+                    <!-- Create a source-release artifact that contains the fully buildable
+                         project directory source structure.  This should be released to
+                         the Maven repository for each JBoss project release. -->
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-assembly-plugin</artifactId>
+                        <version>${version.assembly.plugin}</version>
+                        <dependencies>
+                            <dependency>
+                                <groupId>org.apache.apache.resources</groupId>
+                                <artifactId>apache-source-release-assembly-descriptor</artifactId>
+                                <version>1.7</version>
+                            </dependency>
+                        </dependencies>
+                        <executions>
+                            <execution>
+                                <id>source-release-assembly</id>
+                                <phase>package</phase>
+                                <goals>
+                                    <goal>single</goal>
+                                </goals>
+                                <configuration>
+                                    <skipAssembly>${skipReleaseAssembly}</skipAssembly>
+                                    <runOnlyAtExecutionRoot>true</runOnlyAtExecutionRoot>
+                                    <descriptorRefs>
+                                        <descriptorRef>${sourceReleaseAssemblyDescriptor}</descriptorRef>
+                                    </descriptorRefs>
+                                    <tarLongFileMode>gnu</tarLongFileMode>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-deploy-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>default-deploy</id>
+                                <phase>none</phase>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-javadoc-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>attach-javadocs</id>
+                                <goals>
+                                    <goal>jar</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-gpg-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>gpg-sign</id>
+                                <goals>
+                                    <goal>sign</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.sonatype.central</groupId>
+                        <artifactId>central-publishing-maven-plugin</artifactId>
+                        <version>${version.central.publishing.maven.plugin}</version>
+                        <extensions>true</extensions>
+                        <configuration>
+                            <publishingServerId>${sonatype.server.id}</publishingServerId>
+                            <autoPublish>${autoPublish}</autoPublish>
+                            <waitUntil>${waitUntil}</waitUntil>
+                            <deploymentName>wildfly-${project.version}</deploymentName>
+                            <skipPublishing>${skipPublishing}</skipPublishing>
                         </configuration>
                     </plugin>
                 </plugins>

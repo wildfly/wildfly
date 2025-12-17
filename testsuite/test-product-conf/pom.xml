@@ -30,6 +30,11 @@
          chosen to avoid interfering with the release artifact with the same GA.-->
     <version>100000.0.1.TEST-SNAPSHOT</version>
 
+    <properties>
+        <maven.deploy.skip>true</maven.deploy.skip>
+        <skipPublishing>${maven.deploy.skip}</skipPublishing>
+    </properties>
+
     <build>
         <plugins>
             <plugin>
@@ -69,6 +74,16 @@
                          DO NOT DEPLOY IT! -->
                     <skipNexusStagingDeployMojo>true</skipNexusStagingDeployMojo>
                 </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.sonatype.central</groupId>
+                <artifactId>central-publishing-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>injected-central-publishing</id>
+                        <phase>none</phase>
+                    </execution>
+                </executions>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
