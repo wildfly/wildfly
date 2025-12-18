@@ -121,3 +121,29 @@ If necessary, clear them in `finally` blocks.
 
 Extract configuration values such as timeouts, paths, URLs, and counts into configurable properties defined at the beginning of the test class.
 This improves test maintainability and flexibility.
+
+== Follow Coding Standards
+
+Coding standards for production code also apply to test code.
+Please refer to link:Hacking_On_WildFly{outfilesuffix}[Hacking on WildFly] for the coding standards.
+Just to mention the most frequent violations, always include the copyright header:
+
+[code]
+----
+/*
+ * Copyright The WildFly Authors
+ * SPDX-License-Identifier: Apache-2.0
+ */
+----
+
+and follow our import order for the project:
+
+[code]
+----
+import static *
+
+import java.*
+import javax.*
+
+import others.*
+----

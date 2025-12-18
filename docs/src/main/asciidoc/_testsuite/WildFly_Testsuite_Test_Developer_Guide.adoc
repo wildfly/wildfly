@@ -159,10 +159,9 @@ Time ratios will soon be provided by
 [[negative-tests]]
 == Negative tests
 
-To test invalid deployment handling: @ShouldThrowException
-
-Currently, doesn't work due to https://issues.redhat.com/browse/WFLY-673[WFLY-673].
-Optionally you might be able to catch it using the manual deployer
+WARNING: Testing of invalid deployments is supposed to be leveraging the `@ShouldThrowException` annotation.
+Unfortunately, this feature cannot be used at the moment due to outstanding issue, see https://issues.redhat.com/browse/WFLY-673[WFLY-673].
+However, the exception might be obtained using the manual deployer:
 
 [source,java,options="nowrap"]
 ----
@@ -173,7 +172,7 @@ Optionally you might be able to catch it using the manual deployer
 public void shouldFail(@ArquillianResource Deployer deployer) throws Exception {
     try {
         deployer.deploy("X");
-    } catch(Exception e) {
+    } catch (Exception e) {
         // do something
     }
 }
@@ -189,15 +188,15 @@ And then you have tests that run against each.
 ----
 @Deployment(name = "deplA", testable = false)
     @TargetsContainer("serverB")
-    public static Archive<?> deployment()
+    public static Archive<?> deployment() { ... }
 
     @Deployment(name = "deplB", testable = false)
     @TargetsContainer("serverA")
-    public static Archive<?> deployment(){ ... }
+    public static Archive<?> deployment() { ... }
 
     @Test
     @OperateOnDeployment("deplA")
-    public void testA(){ ... }
+    public void testA() { ... }
 
     @Test
     @OperateOnDeployment("deplA")
