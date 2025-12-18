@@ -191,6 +191,39 @@
                             </execution>
                         </executions>
                     </plugin>
+                    <!--
+                        The central-publishing-maven-plugin can't deal with this project's generated artifacts
+                        because it writes maven-metadata-central-staging.xml files for those components that
+                        Maven Central rejects.
+                        So we hack this by redeclaring the central-publishing-maven-plugin
+                        and then *after it* add a 'deploy' phase maven-clean-plugin execution to remove those files.-->
+                    <plugin>
+                        <groupId>org.sonatype.central</groupId>
+                        <artifactId>central-publishing-maven-plugin</artifactId>
+                    </plugin>
+                    <plugin>
+                        <artifactId>maven-clean-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>post-stage-clean</id>
+                                <phase>deploy</phase>
+                                <goals>
+                                    <goal>clean</goal>
+                                </goals>
+                                <configuration>
+                                    <excludeDefaultDirectories>true</excludeDefaultDirectories>
+                                    <filesets>
+                                        <fileset>
+                                            <directory>${maven.multiModuleProjectDirectory}/target/central-staging</directory>
+                                            <includes>
+                                                <include>**/maven-metadata-*.xml</include>
+                                            </includes>
+                                        </fileset>
+                                    </filesets>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
                 </plugins>
             </build>
         </profile>
