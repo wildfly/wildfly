@@ -4,8 +4,8 @@
   ~ SPDX-License-Identifier: Apache-2.0
   -->
 
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xmlns="http://maven.apache.org/POM/4.0.0"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
@@ -306,6 +306,41 @@
                                 <goals>
                                     <goal>jar-no-fork</goal>
                                 </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <profile>
+            <id>maven-central-release</id>
+            <build>
+                <plugins>
+                    <!--
+                     The wildfly-bom-builder-maven-plugin generates POM files for the BOM's. These files are added to
+                     the project via the plugin. However, with the central-publishing-maven-plugin these are not
+                     discovered and therefore do not get the checksum files required. To handle this, scan the staging
+                     directory and add checksum's for any POM files that are missing them.
+
+                     This is executed here as it's the last sub-project/module to be built for releasing.
+                     -->
+                    <plugin>
+                        <groupId>dev.jbang</groupId>
+                        <artifactId>jbang-maven-plugin</artifactId>
+                        <version>0.0.8</version>
+                        <executions>
+                            <execution>
+                                <id>add-missing-checksums</id>
+                                <phase>install</phase>
+                                <goals>
+                                    <goal>run</goal>
+                                </goals>
+                                <configuration>
+                                    <script>${maven.multiModuleProjectDirectory}/ChecksumUpdater.java</script>
+                                    <args>
+                                        <arg>${maven.multiModuleProjectDirectory}/target/central-staging/</arg>
+                                    </args>
+                                </configuration>
                             </execution>
                         </executions>
                     </plugin>

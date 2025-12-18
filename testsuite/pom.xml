@@ -180,6 +180,7 @@
         
         <!-- Don't try to deploy the testsuite modules because they don't build jars -->
         <maven.deploy.skip>true</maven.deploy.skip>
+        <skipPublishing>${maven.deploy.skip}</skipPublishing>
 
         <!-- used to enable trace logging for test suite runs -->
         <trace>none</trace>
@@ -412,6 +413,16 @@
                     <configuration>
                         <skipNexusStagingDeployMojo>true</skipNexusStagingDeployMojo>
                     </configuration>
+                </plugin>
+                <plugin>
+                    <groupId>org.sonatype.central</groupId>
+                    <artifactId>central-publishing-maven-plugin</artifactId>
+                    <executions>
+                        <execution>
+                            <id>injected-central-publishing</id>
+                            <phase>none</phase>
+                        </execution>
+                    </executions>
                 </plugin>
             </plugins>
         </pluginManagement>
