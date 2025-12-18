@@ -34,7 +34,7 @@ public class UndertowServiceTestCase extends AbstractUndertowSubsystemTestCase {
 
     @Parameters
     public static Iterable<UndertowSubsystemSchema> parameters() {
-        return UndertowSubsystemSchema.CURRENT.values();
+        return UndertowSubsystemSchema.CURRENT;
     }
 
     public UndertowServiceTestCase(UndertowSubsystemSchema schema) {

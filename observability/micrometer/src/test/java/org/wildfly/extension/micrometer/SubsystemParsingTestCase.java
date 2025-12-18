@@ -7,7 +7,6 @@ package org.wildfly.extension.micrometer;
 
 import java.util.EnumSet;
 
-import org.jboss.as.controller.Feature;
 import org.jboss.as.subsystem.test.AbstractSubsystemSchemaTest;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -24,7 +23,6 @@ public class SubsystemParsingTestCase extends AbstractSubsystemSchemaTest<Microm
     }
 
     public SubsystemParsingTestCase(MicrometerSubsystemSchema schema) {
-        // TODO WFCORE-7416 Eventually simplify by using this constructor AbstractSubsystemSchemaTest(String, Extension, S, Set<S>)
-        super(MicrometerConfigurationConstants.NAME, new MicrometerExtension(), schema, Feature.map(MicrometerSubsystemSchema.CURRENT).get(schema.getStability()));
+        super(MicrometerConfigurationConstants.NAME, new MicrometerExtension(), schema, MicrometerSubsystemSchema.CURRENT);
     }
 }
