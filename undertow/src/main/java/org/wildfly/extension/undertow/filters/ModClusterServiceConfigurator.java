@@ -25,7 +25,7 @@ import io.undertow.server.handlers.proxy.RouteParsingStrategy;
 import io.undertow.server.handlers.proxy.mod_cluster.MCMPConfig;
 import io.undertow.server.handlers.proxy.mod_cluster.ModCluster;
 
-import org.jboss.as.clustering.controller.CommonUnaryRequirement;
+import org.jboss.as.clustering.controller.CommonServiceDescriptor;
 import org.jboss.as.clustering.controller.ResourceServiceConfigurator;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -102,7 +102,7 @@ public class ModClusterServiceConfigurator extends ModClusterServiceNameProvider
         this.captor = (ModClusterResource) context.readResource(PathAddress.EMPTY_ADDRESS);
 
         String sslContext = ModClusterDefinition.SSL_CONTEXT.resolveModelAttribute(context, model).asStringOrNull();
-        this.sslContext = (sslContext != null) ? new ServiceSupplierDependency<>(CommonUnaryRequirement.SSL_CONTEXT.getServiceName(context, sslContext)) : null;
+        this.sslContext = (sslContext != null) ? new ServiceSupplierDependency<>(context.getCapabilityServiceName(CommonServiceDescriptor.SSL_CONTEXT, sslContext)) : null;
 
         OptionMap.Builder builder = OptionMap.builder();
         Integer packetSize = ModClusterDefinition.MAX_AJP_PACKET_SIZE.resolveModelAttribute(context, model).asIntOrNull();
@@ -128,10 +128,10 @@ public class ModClusterServiceConfigurator extends ModClusterServiceNameProvider
         this.routeDelimiter = (this.routeParsingStrategy == RouteParsingStrategy.RANKED) ? RankedAffinityResourceDefinition.Attribute.DELIMITER.resolveModelAttribute(context, entry.getModel()).asString() : null;
 
         String managementBinding = ModClusterDefinition.MANAGEMENT_SOCKET_BINDING.resolveModelAttribute(context, model).asString();
-        this.managementBinding = new ServiceSupplierDependency<>(CommonUnaryRequirement.SOCKET_BINDING.getServiceName(context, managementBinding));
+        this.managementBinding = new ServiceSupplierDependency<>(context.getCapabilityServiceName(SocketBinding.SERVICE_DESCRIPTOR, managementBinding));
 
         String advertiseBinding = ModClusterDefinition.ADVERTISE_SOCKET_BINDING.resolveModelAttribute(context, model).asStringOrNull();
-        this.advertiseBinding = (advertiseBinding != null) ? new ServiceSupplierDependency<>(CommonUnaryRequirement.SOCKET_BINDING.getServiceName(context, advertiseBinding)) : null;
+        this.advertiseBinding = (advertiseBinding != null) ? new ServiceSupplierDependency<>(context.getCapabilityServiceName(SocketBinding.SERVICE_DESCRIPTOR, advertiseBinding)) : null;
 
         String worker = ModClusterDefinition.WORKER.resolveModelAttribute(context, model).asString();
         this.worker = new ServiceSupplierDependency<>(context.getCapabilityServiceName(IOServices.IO_WORKER_CAPABILITY_NAME, XnioWorker.class, worker));
