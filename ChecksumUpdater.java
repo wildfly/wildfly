@@ -62,8 +62,8 @@ public class ChecksumUpdater implements Callable<Integer> {
     public Integer call() throws Exception {
         for (Path dir : dirs) {
             if (!Files.isDirectory(dir)) {
-                spec.commandLine().getErr().printf("%s must be a directory%n", dir);
-                return -1;
+                spec.commandLine().getErr().printf("%s must be a directory. Skipping processing.%n", dir);
+                continue;
             }
             // Walk the ZIP tree looking for missing checksum files and add them
             Files.walkFileTree(dir, new SimpleFileVisitor<>() {
