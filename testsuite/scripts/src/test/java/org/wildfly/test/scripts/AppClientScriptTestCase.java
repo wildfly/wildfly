@@ -7,6 +7,7 @@ package org.wildfly.test.scripts;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.TimeoutException;
 
 import org.jboss.as.test.shared.AssumeTestGroupUtil;
@@ -25,37 +26,32 @@ public class AppClientScriptTestCase extends ScriptTestCase {
     void testScript(final ScriptProcess script) throws InterruptedException, TimeoutException, IOException {
         // First check the standard script
         script.start(MAVEN_JAVA_OPTS, "-v");
-        testScript(script, 0);
+        this.test(script);
 
         if (AssumeTestGroupUtil.isJDKVersionBefore(24)) {
             // Test with the security manager enabled
             script.start(MAVEN_JAVA_OPTS, "-v", "-secmgr");
-            testScript(script, jvmVersion() >= 17 ? 4 : 0);
+            this.test(script);
         }
     }
 
-    private void testScript(final ScriptProcess script, final int additionalLines) throws InterruptedException, IOException {
+    private void test(final ScriptProcess script) throws InterruptedException, IOException {
         try (script) {
             validateProcess(script);
 
-            final List<String> lines = script.getStdout();
-            // WFLY-20271 workaround
-            int deprecationWarningsCount = 0;
-            if (Runtime.version().feature() >= 24) {
-                // Ignore JDK warnings about sun.misc.Unsafe deprecated method usages on JDK24+
-                for (String line : lines) {
-                    if (line.contains("WARNING: ")) deprecationWarningsCount++;
-                }
-            }
-            int count = 2 + additionalLines;
-            for (String stdout : lines) {
-                if (stdout.startsWith("Picked up")) {
-                    count += 1;
-                }
-            }
-            final int expectedLines = (script.getShell() == Shell.BATCH ? 3 + additionalLines : count);
-            Assert.assertEquals(script.getErrorMessage(String.format("Expected %d lines.", expectedLines)), expectedLines,
-                    lines.size() - deprecationWarningsCount);
+            List<String> output = script.getStdout();
+            // Prune JDK NOTEs, e.g. about JDK environment variable usage
+            // Prune JDK WARNINGs, e.g. about deprecated method usage
+            Set<String> jdkTokens = Set.of("NOTE: ", "WARNING: ");
+            List<String> filteredOutput = output.stream()
+                    // Remove ANSI colour escape sequences
+                    .map(line -> line.replaceAll("\\e\\[\\d+(?:;\\d+)*m", ""))
+                    // Filter out lines starting with JDK message tokens
+                    .filter(line -> jdkTokens.stream().noneMatch(line::startsWith))
+                    .toList();
+
+            int expectedSize = ((script.getShell() == Shell.BATCH) ? 3 : 2);
+            Assert.assertEquals(script.getErrorMessage(String.format("Expected %d lines", expectedSize)), expectedSize, filteredOutput.size());
         }
     }
 }
