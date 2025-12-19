@@ -35,7 +35,7 @@
 #        run:  |
 #          cd ~
 #          find ./.m2/repository -type d -name "*SNAPSHOT" -print0 | xargs -0 tar -czf ~/my-dependency-maven-repository.tar.gz  
-#      - uses: actions/upload-artifact@v5
+#      - uses: actions/upload-artifact@v6
 #        with:
 #          name: my-dependency-maven-repository
 #          path: ~/my-dependency-maven-repository.tar.gz
@@ -145,25 +145,25 @@ jobs:
           } >> "$GITHUB_ENV"
         shell: bash
       - name: Upload Test Reports on Failure on Windows
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         if: ${{ failure() && contains(matrix.os, 'windows') }}
         with:
           name: surefire-reports-${{ matrix.os }}-${{ matrix.java }}-${{ inputs.id }}
           path: ${{ env.SUREFIRE_REPORTS }}
       - name: Upload Server Logs on Failure on Windows
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         if: ${{ failure() && contains(matrix.os, 'windows') }}
         with:
           name: server-logs-${{ matrix.os }}-${{ matrix.java }}-${{ inputs.id }}
           path: ${{ env.SERVER_LOGS }}
       - name: Upload Test Reports on Failure
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         if: ${{ failure() && ! contains(matrix.os, 'windows') }}
         with:
           name: surefire-reports-${{ matrix.os }}-${{ matrix.java }}-${{ inputs.id }}
           path: '**/surefire-reports/*.txt'
       - name: Upload Server Logs on Failure
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         if: ${{ failure() && ! contains(matrix.os, 'windows') }}
         with:
           name: server-logs-${{ matrix.os }}-${{ matrix.java }}-${{ inputs.id }}

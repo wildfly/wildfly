@@ -42,7 +42,7 @@ jobs:
         echo "GITHUB_SHA_FOR_PR=${{ github.sha }}" >> .job-env
         echo "GITHUB_EVENT_PULL_REQUEST_HEAD_SHA=${{ github.event.pull_request.head.sha }}" >> .job-env
         cat .job-env
-    - uses: actions/upload-artifact@v5
+    - uses: actions/upload-artifact@v6
       with:
         name: .job-env
         path: .job-env
