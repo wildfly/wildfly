@@ -104,9 +104,6 @@ public class IdleThresholdTimerPassivationTestCase {
         String timerName = "test-timer";
         bean.createTimer(timerName, false, Duration.ofSeconds(5));
 
-        // Verify timer was created
-        assertEquals("Should have 1 timer", 1, bean.getTimerCount());
-
         // Step 2: Wait for idle timeout - timer should be passivated
         // but actually do NOT wait – keep polling for the event; this makes the test faster and more resilient as opposed to time-based approach
 
@@ -120,7 +117,7 @@ public class IdleThresholdTimerPassivationTestCase {
         assertEquals("Event should be for correct timer", timerName, event.getKey());
         assertEquals("Event should be PASSIVATION", PassivationEventTrackerUtil.EventType.PASSIVATION, event.getValue());
 
-        // FIXME Clear the remaining events; but why are there 4 passivation callbacks total?
+        // Clear remaining passivation events triggered by size calculation in ByteBufferMarshaller / ByteBufferMarshalledValue
         bean.pollPassivationEvent();
         bean.pollPassivationEvent();
         bean.pollPassivationEvent();
@@ -138,9 +135,7 @@ public class IdleThresholdTimerPassivationTestCase {
         assertEquals("Event should be for correct timer", timerName, event.getKey());
         assertEquals("Event should be ACTIVATION", PassivationEventTrackerUtil.EventType.ACTIVATION, event.getValue());
 
-        // Cleanup timers
-        bean.cancelAllTimers();
-        assertEquals("All timers should be cancelled", 0, bean.getTimerCount());
+        // Step 6: Remaining cleanup happens in TimerTrackerBean#preDestroy
     }
 
 

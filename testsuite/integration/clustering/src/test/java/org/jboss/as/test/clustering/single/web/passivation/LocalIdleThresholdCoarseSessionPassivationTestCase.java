@@ -5,8 +5,6 @@
 
 package org.jboss.as.test.clustering.single.web.passivation;
 
-import static org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase.*;
-
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.shrinkwrap.api.Archive;
