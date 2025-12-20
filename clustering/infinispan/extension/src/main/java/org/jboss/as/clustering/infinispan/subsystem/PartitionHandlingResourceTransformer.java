@@ -45,7 +45,7 @@ public class PartitionHandlingResourceTransformer implements Consumer<ModelVersi
                             }
                         }
                     }), PartitionHandlingResourceDefinitionRegistrar.WHEN_SPLIT)
-                    .addRename(PartitionHandlingResourceDefinitionRegistrar.WHEN_SPLIT, PartitionHandlingResourceDefinitionRegistrar.ENABLED.getName())
+                    .addRename(PartitionHandlingResourceDefinitionRegistrar.WHEN_SPLIT, PartitionHandlingResourceDefinitionRegistrar.ENABLED)
                     .end();
         }
     }

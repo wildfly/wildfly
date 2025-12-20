@@ -16,6 +16,7 @@
     </resources>
 
     <dependencies>
+        <module name="org.wildfly.clustering.function"/>
         <module name="org.wildfly.clustering.session.container.servlet" services="import"/>
         <module name="org.wildfly.clustering.session.spi"/>
     </dependencies>

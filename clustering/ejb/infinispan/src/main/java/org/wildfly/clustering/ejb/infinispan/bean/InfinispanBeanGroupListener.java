@@ -9,19 +9,16 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.concurrent.Executor;
 
 import org.infinispan.Cache;
 import org.wildfly.clustering.cache.Key;
 import org.wildfly.clustering.cache.infinispan.embedded.EmbeddedCacheConfiguration;
 import org.wildfly.clustering.cache.infinispan.embedded.listener.ListenerRegistration;
-import org.wildfly.clustering.cache.infinispan.embedded.listener.PostActivateBlockingListener;
-import org.wildfly.clustering.cache.infinispan.embedded.listener.PrePassivateBlockingListener;
+import org.wildfly.clustering.cache.infinispan.embedded.listener.PassivationCacheEventListenerRegistrar;
 import org.wildfly.clustering.ejb.bean.BeanInstance;
 import org.wildfly.clustering.ejb.cache.bean.BeanGroupKey;
 import org.wildfly.clustering.ejb.infinispan.logging.InfinispanEjbLogger;
-import org.wildfly.clustering.function.Consumer;
 import org.wildfly.clustering.marshalling.MarshalledValue;
 import org.wildfly.clustering.server.Registration;
 
@@ -33,8 +30,7 @@ public class InfinispanBeanGroupListener<K, V extends BeanInstance<K>, C> implem
     private final Cache<Key<K>, ?> cache;
     private final C context;
     private final Executor executor;
-    private final ListenerRegistration postActivateListenerRegistration;
-    private final ListenerRegistration prePassivateListenerRegistration;
+    private final ListenerRegistration passivationListenerRegistration;
 
     public InfinispanBeanGroupListener(EmbeddedCacheConfiguration configuration, C context) {
         this.cache = configuration.getCache();
@@ -42,14 +38,13 @@ public class InfinispanBeanGroupListener<K, V extends BeanInstance<K>, C> implem
         // We only need to listen for activation/passivation events for non-persistent caches
         // pre-passivate/post-activate callbacks for persistent caches are triggered via GroupManager
         this.executor = !configuration.getCacheProperties().isPersistent() ? configuration.getExecutor() : null;
-        this.postActivateListenerRegistration = (this.executor != null) ? new PostActivateBlockingListener<>(configuration.getCache(), this::postActivate).register(BeanGroupKey.class) : null;
-        this.prePassivateListenerRegistration = (this.executor != null) ? new PrePassivateBlockingListener<>(configuration.getCache(), this::prePassivate).register(BeanGroupKey.class) : null;
+        Cache<BeanGroupKey<K>, MarshalledValue<Map<K, V>, C>> beanGroupCache = configuration.getCache();
+        this.passivationListenerRegistration = (this.executor != null) ? new PassivationCacheEventListenerRegistrar<>(beanGroupCache, this::prePassivate, this::postActivate).register(BeanGroupKey.class) : ListenerRegistration.EMPTY;
     }
 
     @Override
     public void close() {
-        Optional.ofNullable(this.postActivateListenerRegistration).ifPresent(Consumer.close());
-        Optional.ofNullable(this.prePassivateListenerRegistration).ifPresent(Consumer.close());
+        this.passivationListenerRegistration.close();
     }
 
     void postActivate(BeanGroupKey<K> key, MarshalledValue<Map<K, V>, C> value) {

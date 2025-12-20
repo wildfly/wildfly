@@ -39,7 +39,6 @@
             <artifactId>jakarta.transaction-api</artifactId>
             <scope>provided</scope>
         </dependency>
-<dependency><groupId>org.infinispan.protostream</groupId><artifactId>protostream-types</artifactId></dependency>
 
         <!-- Build-only dependencies -->
         <dependency>
