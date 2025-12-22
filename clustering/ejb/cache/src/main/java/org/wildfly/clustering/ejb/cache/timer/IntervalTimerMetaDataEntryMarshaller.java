@@ -14,7 +14,6 @@ import org.wildfly.clustering.marshalling.protostream.ProtoStreamMarshaller;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamReader;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamWriter;
 import org.wildfly.clustering.marshalling.ByteBufferMarshalledValue;
-import org.wildfly.clustering.marshalling.MarshalledValue;
 
 /**
  * @author Paul Ferraro
@@ -36,7 +35,7 @@ public class IntervalTimerMetaDataEntryMarshaller implements ProtoStreamMarshall
 
     @Override
     public IntervalTimerMetaDataEntry<Object> readFrom(ProtoStreamReader reader) throws IOException {
-        MarshalledValue<Object, Object> context = null;
+        ByteBufferMarshalledValue<Object> context = null;
         Instant start = DEFAULT_START;
         Duration lastTimeout = null;
         Duration interval = null;

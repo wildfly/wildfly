@@ -63,26 +63,16 @@ public enum CacheMetric implements Metric<CacheMgmtInterceptor>, UnaryOperator<S
             return new ModelNode(interceptor.getMisses());
         }
     },
-    @Deprecated NUMBER_OF_ENTRIES("number-of-entries", ModelType.INT, AttributeAccess.Flag.GAUGE_METRIC) {
+    NUMBER_OF_ENTRIES("number-of-entries", ModelType.LONG, AttributeAccess.Flag.GAUGE_METRIC) {
         @Override
         public ModelNode execute(CacheMgmtInterceptor interceptor) {
-            return new ModelNode(interceptor.getNumberOfEntries());
-        }
-
-        @Override
-        public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
-            return builder.setDeprecated(InfinispanSubsystemModel.VERSION_16_0_0.getVersion());
+            return new ModelNode(interceptor.getApproximateEntries());
         }
     },
-    @Deprecated NUMBER_OF_ENTRIES_IN_MEMORY("number-of-entries-in-memory", ModelType.INT, AttributeAccess.Flag.GAUGE_METRIC) {
+    NUMBER_OF_ENTRIES_IN_MEMORY("number-of-entries-in-memory", ModelType.LONG, AttributeAccess.Flag.GAUGE_METRIC) {
         @Override
         public ModelNode execute(CacheMgmtInterceptor interceptor) {
-            return new ModelNode(interceptor.getNumberOfEntriesInMemory());
-        }
-
-        @Override
-        public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
-            return builder.setDeprecated(InfinispanSubsystemModel.VERSION_16_0_0.getVersion());
+            return new ModelNode(interceptor.getApproximateEntriesInMemory());
         }
     },
     READ_WRITE_RATIO("read-write-ratio", ModelType.DOUBLE, AttributeAccess.Flag.GAUGE_METRIC) {
