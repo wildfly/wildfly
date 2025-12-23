@@ -27,7 +27,7 @@ public class Util {
 
     /**
      * Creates JNDI context string based on given parameters.
-     * See details at https://docs.jboss.org/author/display/AS71/EJB+invocations+from+a+remote+client+using+JNDI
+     * See details at https://docs.jboss.org/author/display/AS71/EJB%20invocations%20from%20a%20remote%20client%20using%20JNDI.html
      *
      * @param appName - typically the ear name without the .ear
      *                - could be empty string when deploying just jar with EJBs
