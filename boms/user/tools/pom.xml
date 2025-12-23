@@ -153,9 +153,6 @@
                                     <version>org.jboss.arquillian.container:arquillian-container-test-spi:jar</version>
                                 </dependency>
                             </versionRefDependencies>
-                            <includePlugins>
-                                <includePlugin>org.wildfly.plugins:wildfly-maven-plugin</includePlugin>
-                            </includePlugins>
                         </configuration>
                     </execution>
                 </executions>
