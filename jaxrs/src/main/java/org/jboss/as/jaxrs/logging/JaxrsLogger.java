@@ -133,7 +133,8 @@ public interface JaxrsLogger extends BasicLogger {
      * @param ejbName The ejb
      * @return  the exception
      */
-    @Message(id = 10, value = "Jakarta RESTful Web Services resource %s does not correspond to a view on the Jakarta Enterprise Beans %s. @Path annotations can only be placed on classes or interfaces that represent a local, remote or no-interface view of a Jakarta Enterprise Beans bean.")
+    @Message(id = 10, value = "Jakarta RESTful Web Services resource %s does not correspond to a view on the Jakarta Enterprise Beans %s. @Path annotations can only be placed on classes or interfaces that represent a local, " +
+            "remote or no-interface view of a Jakarta Enterprise Beans bean. For a component with multiple views, you likely need a no-interface view registered.")
     DeploymentUnitProcessingException typeNameNotAnEjbView(List<Class<?>> type, String ejbName);
 
     @Message(id = 11, value = "Invalid value for parameter %s: %s")
