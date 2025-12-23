@@ -87,13 +87,12 @@ import org.jboss.staxmapper.XMLExtendedStreamReader;
  * Enumerated the schema versions for the elytron-oidc-client subsystem.
  * @author Prarthona Paul
  */
-
 public enum ElytronOidcSubsystemSchema implements PersistentSubsystemSchema<ElytronOidcSubsystemSchema> {
 
     VERSION_1_0(1, Stability.DEFAULT),
     VERSION_2_0(2, Stability.DEFAULT),
-    VERSION_2_0_PREVIEW(2, 0, Stability.PREVIEW), // WildFly 32.0-present
-    VERSION_3_0_PREVIEW(3, 0, Stability.PREVIEW), // WildFly 33.0-present
+    VERSION_2_0_PREVIEW(2, 0, Stability.PREVIEW), // WildFly 32
+    VERSION_3_0_PREVIEW(3, 0, Stability.PREVIEW), // WildFly 33-present
     ;
 
     static final Map<Stability, ElytronOidcSubsystemSchema> CURRENT = Feature.map(EnumSet.of(VERSION_3_0_PREVIEW, VERSION_2_0));

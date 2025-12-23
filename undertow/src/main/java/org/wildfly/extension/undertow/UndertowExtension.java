@@ -9,6 +9,7 @@ import java.util.EnumSet;
 
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
+import org.jboss.as.controller.Feature;
 import org.jboss.as.controller.PersistentResourceXMLDescriptionWriter;
 import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
@@ -48,6 +49,6 @@ public class UndertowExtension implements Extension {
         deployments.registerSubModel(new DeploymentServletDefinition());
         deployments.registerSubModel(new DeploymentWebSocketDefinition());
 
-        subsystem.registerXMLElementWriter(new PersistentResourceXMLDescriptionWriter(UndertowSubsystemSchema.CURRENT.get(context.getStability())));
+        subsystem.registerXMLElementWriter(new PersistentResourceXMLDescriptionWriter(Feature.map(UndertowSubsystemSchema.CURRENT).get(context.getStability())));
     }
 }

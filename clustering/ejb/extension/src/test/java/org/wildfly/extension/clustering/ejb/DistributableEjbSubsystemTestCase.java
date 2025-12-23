@@ -6,7 +6,6 @@
 package org.wildfly.extension.clustering.ejb;
 
 import org.jboss.as.clustering.subsystem.AdditionalInitialization;
-import org.jboss.as.controller.Feature;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.common.Util;
@@ -41,8 +40,7 @@ public class DistributableEjbSubsystemTestCase extends AbstractSubsystemSchemaTe
     }
 
     public DistributableEjbSubsystemTestCase(DistributableEjbSubsystemSchema schema) {
-        // TODO WFCORE-7416 Eventually simplify by using this constructor AbstractSubsystemSchemaTest(String, Extension, S, Set<S>)
-        super(DistributableEjbSubsystemResourceDefinitionRegistrar.REGISTRATION.getName(), new DistributableEjbExtension(), schema, Feature.map(DistributableEjbSubsystemSchema.CURRENT).get(schema.getStability()));
+        super(DistributableEjbSubsystemResourceDefinitionRegistrar.REGISTRATION.getName(), new DistributableEjbExtension(), schema, DistributableEjbSubsystemSchema.CURRENT);
 
         this.schema = schema;
     }
