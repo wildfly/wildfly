@@ -78,6 +78,8 @@ final class ServletContainerAdd extends AbstractBoottimeAddStepHandler {
 
         final int sessionTimeout = ServletContainerDefinition.DEFAULT_SESSION_TIMEOUT.resolveModelAttribute(resolver, model).asInt();
 
+        final long defaultAsyncContextTimeout = ServletContainerDefinition.DEFAULT_ASYNC_CONTEXT_TIMEOUT.resolveModelAttribute(resolver, model).asLong();
+
         WebsocketsDefinition.WebSocketInfo webSocketInfo = WebsocketsDefinition.getConfig(resolver, model.get(WebsocketsDefinition.PATH_ELEMENT.getKeyValuePair()));
 
         Map<String, String> mimeMappings = resolveMimeMappings(resolver, model);
@@ -266,6 +268,11 @@ final class ServletContainerAdd extends AbstractBoottimeAddStepHandler {
             @Override
             public boolean isOrphanSessionAllowed() {
                 return orphanSessionAllowed;
+            }
+
+            @Override
+            public long getDefaultAsyncContextTimeout() {
+               return defaultAsyncContextTimeout;
             }
         };
         builder.setInstance(Service.newInstance(builder.provides(ServletContainerDefinition.SERVLET_CONTAINER_CAPABILITY), service));
