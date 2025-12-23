@@ -27,4 +27,4 @@ Refer to https://docs.aws.amazon.com/sdk-for-java/[AWS SDK documentation] how to
 For instance, credentials can be provided by Java system properties (`aws.accessKeyId` and `aws.secretAccessKey`),
 environmental properties (`AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY`), etc.
 
-For advanced configuration options, please visit https://github.com/jgroups-extras/jgroups-aws/tree/3.1.0.Final#readme[protocol's documentation on GitHub].
+For advanced configuration options, please visit https://github.com/jgroups-extras/jgroups-aws/tree/4.0.0.Final#readme[protocol's documentation on GitHub].
