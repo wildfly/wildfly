@@ -13,21 +13,21 @@ import org.jboss.dmr.ModelNode;
 @TestcontainersRequired
 public class OpenTelemetrySetupTask extends AbstractSetupTask {
     protected static final String SUBSYSTEM_NAME = "opentelemetry";
-    protected static final ModelNode extensionAddress = Operations.createAddress("extension", "org.wildfly.extension.opentelemetry");
-    protected static final ModelNode subsystemAddress = Operations.createAddress("subsystem", SUBSYSTEM_NAME);
+    public static final ModelNode OPENTELEMETRY_EXTENSION = Operations.createAddress("extension", "org.wildfly.extension.opentelemetry");
+    public static final ModelNode OPENTELEMETRY_ADDRESS = Operations.createAddress("subsystem", SUBSYSTEM_NAME);
 
     private volatile boolean addedExtension;
     private volatile boolean addedSubsystem;
 
     @Override
     public void setup(final ManagementClient managementClient, final String containerId) throws Exception {
-        if (!Operations.isSuccessfulOutcome(executeRead(managementClient, extensionAddress))) {
-            executeOp(managementClient, Operations.createAddOperation(extensionAddress));
+        if (!Operations.isSuccessfulOutcome(executeRead(managementClient, OPENTELEMETRY_EXTENSION))) {
+            executeOp(managementClient, Operations.createAddOperation(OPENTELEMETRY_EXTENSION));
             addedExtension = true;
         }
 
-        if (!Operations.isSuccessfulOutcome(executeRead(managementClient, subsystemAddress))) {
-            executeOp(managementClient, Operations.createAddOperation(subsystemAddress));
+        if (!Operations.isSuccessfulOutcome(executeRead(managementClient, OPENTELEMETRY_ADDRESS))) {
+            executeOp(managementClient, Operations.createAddOperation(OPENTELEMETRY_ADDRESS));
             addedSubsystem = true;
         }
 
@@ -40,10 +40,10 @@ public class OpenTelemetrySetupTask extends AbstractSetupTask {
     @Override
     public void tearDown(final ManagementClient managementClient, final String containerId) throws Exception {
         if (addedSubsystem) {
-            executeOp(managementClient, Operations.createRemoveOperation(subsystemAddress));
+            executeOp(managementClient, Operations.createRemoveOperation(OPENTELEMETRY_ADDRESS));
         }
         if (addedExtension) {
-            executeOp(managementClient, Operations.createRemoveOperation(extensionAddress));
+            executeOp(managementClient, Operations.createRemoveOperation(OPENTELEMETRY_EXTENSION));
         }
 
         ServerReload.executeReloadAndWaitForCompletion(managementClient);
