@@ -92,12 +92,25 @@ public class DistributableEjbTransformersTestCase extends AbstractSubsystemTest 
                 ;
     }
 
+    /**
+     * Tests transformation of a subsystem XML file between a current server with current model version and
+     * a legacy server with a specified controller version and model version.
+     *
+     * The subsystem XML file used to initialise the current server needs to be backward-compatible: it should not
+     * trigger rejections when being transformed to the legacy server.
+     *
+     * The test requires one XML file "distributable-ejb-transform-<version>.xml per legacy ModelVersion tested.
+     *
+     * @throws Exception
+     */
     @Test
     public void testTransformation() throws Exception {
         String subsystemXmlResource = String.format("distributable-ejb-transform-%s.xml", this.version);
 
+        // create KernelServices instances for both current and the legacy version
         KernelServices services = this.buildKernelServices(subsystemXmlResource, this.controllerVersion, this.version, this.getDependencies());
 
+        // validate that the transformations between current model and legacy model are (1) consistent and (2) valid
         checkSubsystemModelTransformation(services, this.version, null, false);
     }
 
@@ -118,8 +131,8 @@ public class DistributableEjbTransformersTestCase extends AbstractSubsystemTest 
         Assert.assertTrue(services.isSuccessfulBoot());
         Assert.assertTrue(legacyServices.isSuccessfulBoot());
 
-        // test failed operations involving backups
-        String rejectionsXmlResource = String.format("distributable-ejb-reject-%s.xml", this.version);
+        // test that rejections which are expected during transformation do occur
+        String rejectionsXmlResource = String.format("distributable-ejb-reject.xml");
         List<ModelNode> xmlOps = builder.parseXmlResource(rejectionsXmlResource);
         ModelTestUtils.checkFailedTransformedBootOperations(services, version, xmlOps, createFailedOperationConfig(version));
     }
@@ -146,6 +159,17 @@ public class DistributableEjbTransformersTestCase extends AbstractSubsystemTest 
         return this.createKernelServicesBuilder(this.createAdditionalInitialization());
     }
 
+    /**
+     * Builds an instance of KernelServices representing current as well as an instance of legacy KernelServices
+     * representing a specific server version and model version.
+     *
+     * @param subsystemXml  the XML used to initialise the subsystem
+     * @param controllerVersion the server version used to initialise the legacy KernelServices
+     * @param version the model version used to initialise the legacy services
+     * @param mavenResourceURLs additional server modules required to initialize the legacy KernelServices
+     * @return a configured KernelServices instance
+     * @throws Exception
+     */
     private KernelServices buildKernelServices(String subsystemXml, ModelTestControllerVersion controllerVersion, ModelVersion version, String... mavenResourceURLs) throws Exception {
         KernelServicesBuilder builder = this.createKernelServicesBuilder().setSubsystemXmlResource(subsystemXml);
 

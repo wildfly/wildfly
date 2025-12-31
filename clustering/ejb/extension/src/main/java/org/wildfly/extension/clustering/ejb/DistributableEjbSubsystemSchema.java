@@ -35,7 +35,7 @@ public enum DistributableEjbSubsystemSchema implements SubsystemResourceXMLSchem
     VERSION_2_0_COMMUNITY(2, 0, Stability.COMMUNITY), // WildFly 39-present
     VERSION_3_0(3, 0), // WildFly 39-present
     ;
-    static final DistributableEjbSubsystemSchema CURRENT = VERSION_3_0;
+    static final Set<DistributableEjbSubsystemSchema> CURRENT = Set.of(VERSION_3_0, VERSION_2_0_COMMUNITY);
 
     private final VersionedNamespace<IntVersion, DistributableEjbSubsystemSchema> namespace;
     private final ResourceXMLParticleFactory factory = ResourceXMLParticleFactory.newInstance(this);
