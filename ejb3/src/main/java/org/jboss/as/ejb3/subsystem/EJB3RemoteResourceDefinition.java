@@ -23,6 +23,8 @@ import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
+import org.jboss.as.ejb3.remote.EJBRemoteConnectorService;
+import org.jboss.as.ejb3.remote.http.EJBRemoteHTTPService;
 import org.jboss.as.network.ClientMapping;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -47,14 +49,19 @@ public class EJB3RemoteResourceDefinition extends SimpleResourceDefinition {
     protected static final String REMOTE_TRANSACTION_SERVICE_CAPABILITY_NAME = "org.wildfly.transactions.remote-transaction-service";
     protected static final String REMOTING_ENDPOINT_CAPABILITY_NAME = "org.wildfly.remoting.endpoint";
 
-    public static final String EJB_REMOTE_CAPABILITY_NAME = "org.wildfly.ejb.remote";
+    public static final String EJB_REMOTE_CONNECTOR_CAPABILITY_NAME = "org.wildfly.ejb.remote.connector";
+    public static final String EJB_HTTP_CONNECTOR_CAPABILITY_NAME = "org.wildfly.ejb.remote.http.connector";
 
     @SuppressWarnings("unchecked")
     static final UnaryServiceDescriptor<Registry<GroupMember, String, List<ClientMapping>>> CLIENT_MAPPINGS_REGISTRY = UnaryServiceDescriptor.of("org.wildfly.ejb.remote.client-mappings-registry", (Class<Registry<GroupMember, String, List<ClientMapping>>>) (Class<?>) Registry.class);
 
-    static final RuntimeCapability<Void> EJB_REMOTE_CAPABILITY = RuntimeCapability.Builder.of(EJB_REMOTE_CAPABILITY_NAME)
-            .setServiceType(Void.class)
+    static final RuntimeCapability<Void> EJB_REMOTE_CONNECTOR_CAPABILITY = RuntimeCapability.Builder.of(EJB_REMOTE_CONNECTOR_CAPABILITY_NAME)
+            .setServiceType(EJBRemoteConnectorService.class)
             .addRequirements(REMOTING_ENDPOINT_CAPABILITY_NAME)
+            .build();
+
+    static final RuntimeCapability<Void> EJB_HTTP_CONNECTOR_CAPABILITY = RuntimeCapability.Builder.of(EJB_HTTP_CONNECTOR_CAPABILITY_NAME)
+            .setServiceType(EJBRemoteHTTPService.class)
             .build();
 
     @Deprecated
@@ -82,14 +89,14 @@ public class EJB3RemoteResourceDefinition extends SimpleResourceDefinition {
                     .setRequired(true)
                     .setMinSize(1)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-                    .setCapabilityReference(CONNECTOR_CAPABILITY_NAME, EJB_REMOTE_CAPABILITY)
+                    .setCapabilityReference(CONNECTOR_CAPABILITY_NAME, EJB_REMOTE_CONNECTOR_CAPABILITY)
                     .build();
 
     static final SimpleAttributeDefinition THREAD_POOL_NAME =
             new SimpleAttributeDefinitionBuilder(EJB3SubsystemModel.THREAD_POOL_NAME, ModelType.STRING, true)
                     .setAllowExpression(true)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-                    .setCapabilityReference(CapabilityReference.builder(EJB_REMOTE_CAPABILITY, EJB3SubsystemRootResourceDefinition.EXECUTOR_SERVICE_DESCRIPTOR).build())
+                    .setCapabilityReference(CapabilityReference.builder(EJB_REMOTE_CONNECTOR_CAPABILITY, EJB3SubsystemRootResourceDefinition.EXECUTOR_SERVICE_DESCRIPTOR).build())
                     .build();
 
     static final SimpleAttributeDefinition EXECUTE_IN_WORKER =
@@ -109,7 +116,7 @@ public class EJB3RemoteResourceDefinition extends SimpleResourceDefinition {
                 .setAddRestartLevel(OperationEntry.Flag.RESTART_ALL_SERVICES)
                 .setRemoveHandler(ReloadRequiredRemoveStepHandler.INSTANCE)
                 .setRemoveRestartLevel(OperationEntry.Flag.RESTART_ALL_SERVICES)
-                .addCapabilities(EJB_REMOTE_CAPABILITY));
+                .addCapabilities(EJB_REMOTE_CONNECTOR_CAPABILITY, EJB_HTTP_CONNECTOR_CAPABILITY));
     }
 
     @Override
