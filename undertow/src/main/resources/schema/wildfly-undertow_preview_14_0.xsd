@@ -95,6 +95,7 @@
                 <xs:attribute name="secure" type="xs:boolean" default="false"/>
                 <xs:attribute name="rfc6265-cookie-validation" type="xs:boolean" default="false"/>
                 <xs:attribute name="allow-unescaped-characters-in-url" type="xs:boolean" default="false"/>
+                <xs:attribute name="memory-storage-threshold" type="xs:long" default="16384"/>
             </xs:extension>
         </xs:complexContent>
     </xs:complexType>
