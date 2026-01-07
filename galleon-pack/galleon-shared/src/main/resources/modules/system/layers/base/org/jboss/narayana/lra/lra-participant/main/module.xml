@@ -25,6 +25,9 @@
 
     <!-- lra-client -->
     <module name="jakarta.enterprise.api"/>
+    <!-- Setting the cuncurrent.api optional prevents it being provisioned in a slimmed server whose provisioning config doesn't include the actual Jakarta Concurrency integration -->
+    <module name="jakarta.enterprise.concurrent.api" optional="true"/>
+
     <!-- lra-proxy-api -->
     <module name="io.smallrye.jandex"/>
     <!-- narayana-lra -->
