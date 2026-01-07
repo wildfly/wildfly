@@ -20,7 +20,7 @@
         <module name="java.management"/>
         <module name="java.security.jgss"/>
         <module name="java.security.sasl"/>
-        <module name="org.lz4.lz4-java"/>
+        <module name="at.yawk.lz4.lz4-java"/>
         <module name="org.slf4j"/>
         <module name="org.xerial.snappy.snappy-java"/>
     </dependencies>
