@@ -21,9 +21,9 @@ import org.jboss.dmr.ModelNode;
  */
 @TestcontainersRequired
 public class MicrometerSetupTask extends AbstractSetupTask {
-    private static final ModelNode micrometerExtension = Operations.createAddress("extension", "org.wildfly.extension.micrometer");
-    private static final ModelNode micrometerSubsystem = Operations.createAddress("subsystem", "micrometer");
-    private static final ModelNode otlpRegistry = Operations.createAddress(SUBSYSTEM, "micrometer", "registry", "otlp");
+    public static final ModelNode MICROMETER_EXTENSION = Operations.createAddress("extension", "org.wildfly.extension.micrometer");
+    public static final ModelNode MICROMETER_SUBSYSTEM = Operations.createAddress("subsystem", "micrometer");
+    private static final ModelNode OTLP_REGISTRY = Operations.createAddress(SUBSYSTEM, "micrometer", "registry", "otlp");
 
     @Testcontainer
     private OpenTelemetryCollectorContainer otelCollector;
@@ -32,21 +32,21 @@ public class MicrometerSetupTask extends AbstractSetupTask {
     public void setup(final ManagementClient managementClient, String containerId) throws Exception {
         executeOp(managementClient, writeAttribute("undertow", STATISTICS_ENABLED, "true"));
 
-        if (!Operations.isSuccessfulOutcome(executeRead(managementClient, micrometerExtension))) {
-            executeOp(managementClient, Operations.createAddOperation(micrometerExtension));
+        if (!Operations.isSuccessfulOutcome(executeRead(managementClient, MICROMETER_EXTENSION))) {
+            executeOp(managementClient, Operations.createAddOperation(MICROMETER_EXTENSION));
         }
 
-        if (!Operations.isSuccessfulOutcome(executeRead(managementClient, micrometerSubsystem))) {
-            executeOp(managementClient, Operations.createAddOperation(micrometerSubsystem));
+        if (!Operations.isSuccessfulOutcome(executeRead(managementClient, MICROMETER_SUBSYSTEM))) {
+            executeOp(managementClient, Operations.createAddOperation(MICROMETER_SUBSYSTEM));
         }
 
-        if (!Operations.isSuccessfulOutcome(executeRead(managementClient, otlpRegistry))) {
-            ModelNode addOtlpOp = Operations.createAddOperation(otlpRegistry);
+        if (!Operations.isSuccessfulOutcome(executeRead(managementClient, OTLP_REGISTRY))) {
+            ModelNode addOtlpOp = Operations.createAddOperation(OTLP_REGISTRY);
             addOtlpOp.get("endpoint").set(otelCollector.getOtlpHttpEndpoint() + "/v1/metrics");
             addOtlpOp.get("step").set("1");
             executeOp(managementClient, addOtlpOp);
         } else {
-            executeOp(managementClient, writeAttribute(otlpRegistry, "endpoint",
+            executeOp(managementClient, writeAttribute(OTLP_REGISTRY, "endpoint",
                 otelCollector.getOtlpHttpEndpoint() + "/v1/metrics"));
         }
 
@@ -58,8 +58,8 @@ public class MicrometerSetupTask extends AbstractSetupTask {
         otelCollector.stop();
 
         executeOp(managementClient, clearAttribute("undertow", STATISTICS_ENABLED));
-        executeOp(managementClient, Operations.createRemoveOperation(micrometerSubsystem));
-        executeOp(managementClient, Operations.createRemoveOperation(micrometerExtension));
+        executeOp(managementClient, Operations.createRemoveOperation(MICROMETER_SUBSYSTEM));
+        executeOp(managementClient, Operations.createRemoveOperation(MICROMETER_EXTENSION));
 
         ServerReload.executeReloadAndWaitForCompletion(managementClient);
     }
