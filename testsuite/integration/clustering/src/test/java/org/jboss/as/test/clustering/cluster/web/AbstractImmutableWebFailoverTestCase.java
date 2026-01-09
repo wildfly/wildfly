@@ -10,12 +10,13 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicReference;
 
 import jakarta.servlet.http.HttpServletResponse;
 
-import org.apache.http.HttpResponse;
+import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.utils.HttpClientUtils;
+import org.apache.http.client.methods.HttpHead;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.junit.Arquillian;
@@ -68,76 +69,82 @@ public abstract class AbstractImmutableWebFailoverTestCase extends AbstractClust
 
         this.establishTopology(baseURL1, NODE_1_2_3);
 
+        AtomicReference<String> sessionId = new AtomicReference<>();
+
         try (CloseableHttpClient client = TestHttpClientUtils.promiscuousCookieHttpClient()) {
-            HttpResponse response = client.execute(new HttpGet(uri1));
-            try {
+            try (CloseableHttpResponse response = client.execute(new HttpGet(uri1))) {
                 Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
+                sessionId.setPlain(response.getFirstHeader(SimpleServlet.SESSION_ID_HEADER).getValue());
                 Assert.assertEquals(1, Integer.parseInt(response.getFirstHeader(SimpleServlet.VALUE_HEADER).getValue()));
                 Map.Entry<String, String> entry = parseSessionRoute(response);
                 Assert.assertNotNull(entry);
+                Assert.assertEquals(sessionId.getPlain(), entry.getKey());
                 Assert.assertEquals(NODE_1, entry.getValue());
-                Assert.assertEquals(entry.getKey(), response.getFirstHeader(SimpleServlet.SESSION_ID_HEADER).getValue());
-            } finally {
-                HttpClientUtils.closeQuietly(response);
             }
 
-            response = client.execute(new HttpGet(uri1));
-            try {
+            // Were we to request the same session on the same server, there is a chance that the transaction for the next request will coalesce with the previous one.
+            // To ensure the initial transaction completes, request the same session on another server.
+            try (CloseableHttpResponse response = client.execute(new HttpHead(uri3))) {
                 Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
-                Assert.assertEquals(2, Integer.parseInt(response.getFirstHeader(SimpleServlet.VALUE_HEADER).getValue()));
-                Map.Entry<String, String> entry = parseSessionRoute(response);
-                // Ensure routing is not changed on 2nd query
-                Assert.assertNull(entry);
-            } finally {
-                HttpClientUtils.closeQuietly(response);
-            }
-
-            response = client.execute(new HttpGet(uri2));
-            try {
-                Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
-                // Because session attribute is defined to be immutable, the previous updates should be lost
-                Assert.assertEquals(2, Integer.parseInt(response.getFirstHeader(SimpleServlet.VALUE_HEADER).getValue()));
+                Assert.assertEquals(sessionId.getPlain(), response.getFirstHeader(SimpleServlet.SESSION_ID_HEADER).getValue());
                 Map.Entry<String, String> entry = parseSessionRoute(response);
                 Assert.assertNotNull(entry);
-                Assert.assertEquals(NODE_2, entry.getValue());
-                Assert.assertEquals(entry.getKey(), response.getFirstHeader(SimpleServlet.SESSION_ID_HEADER).getValue());
-            } finally {
-                HttpClientUtils.closeQuietly(response);
-            }
-
-            response = client.execute(new HttpGet(uri2));
-            try {
-                Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
-                Assert.assertEquals(3, Integer.parseInt(response.getFirstHeader(SimpleServlet.VALUE_HEADER).getValue()));
-                Map.Entry<String, String> entry = parseSessionRoute(response);
-                // Ensure routing is not changed on 2nd query
-                Assert.assertNull(entry);
-            } finally {
-                HttpClientUtils.closeQuietly(response);
-            }
-
-            response = client.execute(new HttpGet(uri3));
-            try {
-                Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
-                // Because session attribute is defined to be immutable, the previous updates should be lost
-                Assert.assertEquals(2, Integer.parseInt(response.getFirstHeader(SimpleServlet.VALUE_HEADER).getValue()));
-                Map.Entry<String, String> entry = parseSessionRoute(response);
-                Assert.assertNotNull(entry);
+                Assert.assertEquals(sessionId.getPlain(), entry.getKey());
                 Assert.assertEquals(NODE_3, entry.getValue());
-                Assert.assertEquals(entry.getKey(), response.getFirstHeader(SimpleServlet.SESSION_ID_HEADER).getValue());
-            } finally {
-                HttpClientUtils.closeQuietly(response);
             }
 
-            response = client.execute(new HttpGet(uri3));
-            try {
+            // The following requests will read and mutate a session attribute
+            // Since the attribute was configured to be immutable, no operation on the session attributes cache entry will be triggered.
+            // We can verify this by checking that such updates are not visible between servers
+
+            try (CloseableHttpResponse response = client.execute(new HttpGet(uri1))) {
                 Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
+                Assert.assertEquals(sessionId.getPlain(), response.getFirstHeader(SimpleServlet.SESSION_ID_HEADER).getValue());
+                Assert.assertEquals(2, Integer.parseInt(response.getFirstHeader(SimpleServlet.VALUE_HEADER).getValue()));
+                Map.Entry<String, String> entry = parseSessionRoute(response);
+                Assert.assertNotNull(entry);
+                Assert.assertEquals(sessionId.getPlain(), entry.getKey());
+                Assert.assertEquals(NODE_1, entry.getValue());
+            }
+
+            try (CloseableHttpResponse response = client.execute(new HttpGet(uri2))) {
+                Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
+                // Because session attribute is defined to be immutable, the previous updates should be lost
+                Assert.assertEquals(sessionId.getPlain(), response.getFirstHeader(SimpleServlet.SESSION_ID_HEADER).getValue());
+                Assert.assertEquals(2, Integer.parseInt(response.getFirstHeader(SimpleServlet.VALUE_HEADER).getValue()));
+                Map.Entry<String, String> entry = parseSessionRoute(response);
+                Assert.assertNotNull(entry);
+                Assert.assertEquals(sessionId.getPlain(), entry.getKey());
+                Assert.assertEquals(NODE_2, entry.getValue());
+            }
+
+            try (CloseableHttpResponse response = client.execute(new HttpGet(uri2))) {
+                Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
+                Assert.assertEquals(sessionId.getPlain(), response.getFirstHeader(SimpleServlet.SESSION_ID_HEADER).getValue());
                 Assert.assertEquals(3, Integer.parseInt(response.getFirstHeader(SimpleServlet.VALUE_HEADER).getValue()));
                 Map.Entry<String, String> entry = parseSessionRoute(response);
                 // Ensure routing is not changed on 2nd query
                 Assert.assertNull(entry);
-            } finally {
-                HttpClientUtils.closeQuietly(response);
+            }
+
+            try (CloseableHttpResponse response = client.execute(new HttpGet(uri3))) {
+                Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
+                // Because session attribute is defined to be immutable, the previous updates should be lost
+                Assert.assertEquals(sessionId.getPlain(), response.getFirstHeader(SimpleServlet.SESSION_ID_HEADER).getValue());
+                Assert.assertEquals(2, Integer.parseInt(response.getFirstHeader(SimpleServlet.VALUE_HEADER).getValue()));
+                Map.Entry<String, String> entry = parseSessionRoute(response);
+                Assert.assertNotNull(entry);
+                Assert.assertEquals(sessionId.getPlain(), entry.getKey());
+                Assert.assertEquals(NODE_3, entry.getValue());
+            }
+
+            try (CloseableHttpResponse response = client.execute(new HttpGet(uri3))) {
+                Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
+                Assert.assertEquals(sessionId.getPlain(), response.getFirstHeader(SimpleServlet.SESSION_ID_HEADER).getValue());
+                Assert.assertEquals(3, Integer.parseInt(response.getFirstHeader(SimpleServlet.VALUE_HEADER).getValue()));
+                Map.Entry<String, String> entry = parseSessionRoute(response);
+                // Ensure routing is not changed on 2nd query
+                Assert.assertNull(entry);
             }
         }
     }
