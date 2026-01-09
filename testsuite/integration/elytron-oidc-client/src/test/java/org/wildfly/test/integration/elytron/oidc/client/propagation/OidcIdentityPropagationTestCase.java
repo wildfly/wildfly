@@ -33,13 +33,13 @@ import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.container.ManagementClient;
-import org.jboss.as.arquillian.setup.SnapshotServerSetupTask;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.client.helpers.Operations.CompositeOperationBuilder;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.test.integration.management.base.AbstractMgmtTestBase;
 import org.jboss.as.test.integration.security.common.Utils;
+import org.jboss.as.test.shared.ExtendedSnapshotServerSetupTask;
 import org.jboss.as.test.shared.ServerReload;
 import org.jboss.as.test.shared.TestSuiteEnvironment;
 import org.jboss.as.test.shared.TimeoutUtil;
@@ -708,7 +708,7 @@ public class OidcIdentityPropagationTestCase {
         }
     }
 
-    static class PropagationSetup extends SnapshotServerSetupTask {
+    static class PropagationSetup extends ExtendedSnapshotServerSetupTask {
 
         @Override
         public void doSetup(ManagementClient managementClient, String containerId) throws Exception {
