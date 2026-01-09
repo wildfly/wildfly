@@ -11,7 +11,6 @@ import javax.xml.stream.XMLStreamException;
 
 import org.jboss.as.clustering.controller.CommonServiceDescriptor;
 import org.jboss.as.clustering.subsystem.AdditionalInitialization;
-import org.jboss.as.controller.Feature;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.model.test.ModelTestUtils;
@@ -48,7 +47,7 @@ public class JGroupsSubsystemTestCase extends AbstractSubsystemSchemaTest<JGroup
     private final JGroupsSubsystemSchema schema;
 
     public JGroupsSubsystemTestCase(JGroupsSubsystemSchema schema) {
-        super(JGroupsSubsystemResourceDefinitionRegistrar.REGISTRATION.getName(), new JGroupsExtension(), schema, Feature.map(JGroupsSubsystemSchema.CURRENT).get(schema.getStability()));
+        super(JGroupsSubsystemResourceDefinitionRegistrar.REGISTRATION.getName(), new JGroupsExtension(), schema, JGroupsSubsystemSchema.CURRENT);
         this.schema = schema;
     }
 

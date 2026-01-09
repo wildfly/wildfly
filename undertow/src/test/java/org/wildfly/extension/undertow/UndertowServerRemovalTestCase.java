@@ -39,7 +39,7 @@ public class UndertowServerRemovalTestCase extends AbstractUndertowSubsystemTest
 
     @Parameters
     public static Iterable<UndertowSubsystemSchema> parameters() {
-        return UndertowSubsystemSchema.CURRENT.values();
+        return UndertowSubsystemSchema.CURRENT;
     }
 
     public UndertowServerRemovalTestCase(UndertowSubsystemSchema schema) {

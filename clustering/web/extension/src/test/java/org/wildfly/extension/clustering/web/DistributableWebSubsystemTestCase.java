@@ -8,7 +8,6 @@ package org.wildfly.extension.clustering.web;
 import java.util.EnumSet;
 
 import org.jboss.as.clustering.subsystem.AdditionalInitialization;
-import org.jboss.as.controller.Feature;
 import org.jboss.as.subsystem.test.AbstractSubsystemSchemaTest;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -31,8 +30,7 @@ public class DistributableWebSubsystemTestCase extends AbstractSubsystemSchemaTe
     }
 
     public DistributableWebSubsystemTestCase(DistributableWebSubsystemSchema schema) {
-        // TODO WFCORE-7416 Eventually simplify by using this constructor AbstractSubsystemSchemaTest(String, Extension, S, Set<S>)
-        super(DistributableWebSubsystemResourceDefinitionRegistrar.REGISTRATION.getName(), new DistributableWebExtension(), schema, Feature.map(DistributableWebSubsystemSchema.CURRENT).get(schema.getStability()));
+        super(DistributableWebSubsystemResourceDefinitionRegistrar.REGISTRATION.getName(), new DistributableWebExtension(), schema, DistributableWebSubsystemSchema.CURRENT);
 
         this.schema = schema;
     }

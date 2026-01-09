@@ -12,6 +12,7 @@
            elementFormDefault="qualified"
            attributeFormDefault="unqualified"
            version="1.0">
+
     <xs:import namespace="urn:wildfly:credential-reference:1.1" schemaLocation="wildfly-credential-reference_1_1.xsd"/>
     <!-- The undertow subsystem root element -->
     <xs:element name="subsystem" type="undertow-subsystemType"/>
@@ -40,9 +41,9 @@
         <xs:attribute name="obfuscate-session-route" type="xs:boolean" use="optional"/>
         <xs:attribute name="default-security-domain" type="xs:string" use="optional" default="other"/>
         <xs:attribute name="statistics-enabled" type="xs:boolean" default="false">
-          <xs:annotation>
-            <xs:documentation>Whether statistics are to be gathered for undertow subsystem.</xs:documentation>
-          </xs:annotation>
+            <xs:annotation>
+                <xs:documentation>Whether statistics are to be gathered for undertow subsystem.</xs:documentation>
+            </xs:annotation>
         </xs:attribute>
     </xs:complexType>
     <xs:complexType name="serverType">
@@ -102,7 +103,7 @@
     <xs:complexType name="http-listener-type">
         <xs:complexContent>
             <xs:extension base="listener-type">
-               <xs:attribute name="certificate-forwarding" use="optional" type="xs:string" default="false">
+                <xs:attribute name="certificate-forwarding" use="optional" type="xs:string" default="false">
                     <xs:annotation>
                         <xs:documentation>
                             <![CDATA[
