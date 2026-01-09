@@ -13,7 +13,7 @@ import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.test.shared.TestLogHandlerSetupTask;
 import org.jboss.as.test.shared.TestSuiteEnvironment;
-import org.jboss.as.test.shared.util.LoggingUtil;
+import org.jboss.as.test.shared.logging.LoggingUtil;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Assert;
@@ -79,7 +79,7 @@ public class JNDIBindingsNoAppNameTestCase {
         Context ctx = getInitialContext(HOST, PORT);
         Hello ejb = (Hello) ctx.lookup("ejb:/ejb-jndi/Hello!org.jboss.as.test.integration.ejb.jndi.logging.Hello");
         Assert.assertNotNull("Null object returned for local business interface lookup in the ejb namespace", ejb);
-        Assert.assertTrue("Expected JNDI binding message not found", LoggingUtil.hasLogMessage(managementClient, TEST_HANDLER_NAME,
+        Assert.assertTrue("Expected JNDI binding message not found", LoggingUtil.hasLogMessage(managementClient.getControllerClient(), TEST_HANDLER_NAME,
                 "ejb:/ejb-jndi/Hello!org.jboss.as.test.integration.ejb.jndi.logging.Hello"));
     }
 
