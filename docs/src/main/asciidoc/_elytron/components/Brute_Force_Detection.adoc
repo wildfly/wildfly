@@ -9,7 +9,7 @@ ifdef::env-github[]
 :warning-caption: :warning:
 endif::[]
 
-Starting from WildFly 38 all security realms used for username / password
+Starting from WildFly 39.0.1 all security realms used for username / password
 authentication are wrapped by default by a utility realm to add protection
 towards brute force authentication type attacks. This has been added as a
 mitigation regarding http://cve.org/CVERecord?id=CVE-2025-23368[CVE-2025-23368].
@@ -24,7 +24,7 @@ following parameters can be adjusted to tune the operation of the utility.
 * enabled - Should the protection be enabled for the realm. [Default: true]
 * max-failed-attempts - The maximum number of failed authentication attempts
 before an identity should be temporarily unavailable. [Default: 25]
-* lockout-interval - The time in minutes the identity should be unavailble for
+* lockout-interval - The time in minutes the identity should be unavailable for
 once the maximum number of attempts is exceeded. [Default: 15]
 * session-timeout - After the most recent failed authentication, how long in
 minutes to keep the session tracking the identity alive. [Default: 60]
@@ -75,8 +75,9 @@ track failed authentications and if that session does not exist it will be creat
 Within this session the counter tracking the number of failed authentications will
 be incremented.
 
-Once created a session will remain in the cache for the duration of the `session-timeout` except where a successful authentication event is received for the
-identity, in that case the session will be discarded.
+Once created a session will remain in the cache for the duration of the `session-timeout`
+except where a successful authentication event is received for the identity, in that
+case the session will be discarded.
 
 After it has been identified that the number of failed authentications for an
 identity has exceeded the configured `max-failed-attempts` the session will track
