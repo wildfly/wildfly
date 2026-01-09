@@ -597,6 +597,7 @@
                         <oidc.jboss.home>${oidc.jboss.home}</oidc.jboss.home>
                         <ee.dist.output.dir>ee-dist/target/${server.output.dir.prefix}-${server.output.dir.version}</ee.dist.output.dir>
                         <build.output.dir>${wildfly.build.output.dir}</build.output.dir>
+                        <jdk.tls.SunX509KeyManager.certChecking>false</jdk.tls.SunX509KeyManager.certChecking>
                     </systemPropertyVariables>
                 </configuration>
             </plugin>
