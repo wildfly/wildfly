@@ -19,7 +19,7 @@ import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.client.Operation;
 import org.jboss.as.controller.client.helpers.Operations;
-import org.jboss.as.test.shared.util.LoggingUtil;
+import org.jboss.as.test.shared.logging.LoggingUtil;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
 
@@ -76,7 +76,7 @@ public abstract class TestLogHandlerSetupTask implements ServerSetupTask {
 
     @Override
     public void tearDown(ManagementClient managementClient, String containerId) throws Exception {
-        Path logPath = LoggingUtil.getLogPath(managementClient, "file-handler", getHandlerName());
+        Path logPath = LoggingUtil.getLogPath(managementClient.getControllerClient(), "file-handler", getHandlerName());
 
         // Remove the loggers and handler
         final Operations.CompositeOperationBuilder builder = Operations.CompositeOperationBuilder.create();

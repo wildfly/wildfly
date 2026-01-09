@@ -19,7 +19,7 @@ import org.jboss.as.controller.client.helpers.Operations;
 import org.jboss.as.test.shared.ServerReload;
 import org.jboss.as.test.shared.observability.setuptasks.MicrometerSetupTask;
 import org.jboss.as.test.shared.observability.setuptasks.OpenTelemetrySetupTask;
-import org.jboss.as.test.shared.util.LoggingUtil;
+import org.jboss.as.test.shared.logging.LoggingUtil;
 import org.jboss.dmr.ModelNode;
 import org.junit.Assert;
 import org.junit.Test;
@@ -132,7 +132,7 @@ public class MultipleMetricsTestCase {
     }
 
     private void assertExpectedCount(String loggerName, int expected) throws Exception {
-        try (var lines = Files.lines(LoggingUtil.getLogPath(managementClient,
+        try (var lines = Files.lines(LoggingUtil.getLogPath(managementClient.getControllerClient(),
                 "file-handler", loggerName))) {
 
             Assert.assertEquals("The list was expected not to be empty", expected,

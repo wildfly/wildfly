@@ -28,7 +28,7 @@ import org.jboss.as.test.integration.management.util.MgmtOperationException;
 import org.jboss.as.test.shared.TestLogHandlerSetupTask;
 import org.jboss.as.test.shared.TestSuiteEnvironment;
 import org.jboss.as.test.shared.TimeoutUtil;
-import org.jboss.as.test.shared.util.LoggingUtil;
+import org.jboss.as.test.shared.logging.LoggingUtil;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
 import org.junit.After;
@@ -106,7 +106,7 @@ public class NetworkHealthTestCase {
         executeOperationForSuccess(managementClient, op);
         op = Operations.createWriteAttributeOperation(jmsOperations.getServerAddress(), "network-check-timeout", 200);
         executeOperationForSuccess(managementClient, op);
-        Path logFile = LoggingUtil.getLogPath(managementClient, "file-handler", "artemis-log");
+        Path logFile = LoggingUtil.getLogPath(managementClient.getControllerClient(), "file-handler", "artemis-log");
         managementClient.close();
         container.stop(DEFAULT_FULL_JBOSSAS);
         container.start(DEFAULT_FULL_JBOSSAS);
@@ -116,9 +116,9 @@ public class NetworkHealthTestCase {
         if(TestSuiteEnvironment.isWindows()) {
             // Until Artemis is upgraded to 2.22.0 which contains the fix.
             // @see ARTEMIS-3803 / ARTEMIS-3799
-            Assert.assertTrue("Log should contains ActiveMQ ping error log message: [AMQ201001]", LoggingUtil.hasLogMessage(managementClient, "artemis-log", "AMQ201001", (line) -> line.contains("name=default")));
+            Assert.assertTrue("Log should contains ActiveMQ ping error log message: [AMQ201001]", LoggingUtil.hasLogMessage(managementClient.getControllerClient(), "artemis-log", "AMQ201001", (line) -> line.contains("name=default")));
         } else {
-            Assert.assertTrue("Log should contains ActiveMQ ping error log message: [AMQ202002]", LoggingUtil.hasLogMessage(managementClient, "artemis-log", "AMQ202002", (line) -> line.contains(IP_ADDRESS)));
+            Assert.assertTrue("Log should contains ActiveMQ ping error log message: [AMQ202002]", LoggingUtil.hasLogMessage(managementClient.getControllerClient(), "artemis-log", "AMQ202002", (line) -> line.contains(IP_ADDRESS)));
         }
         Assert.assertFalse("Broker should be stopped", isBrokerActive(jmsOperations, managementClient));
 
@@ -137,9 +137,9 @@ public class NetworkHealthTestCase {
         managementClient = createManagementClient();
         Thread.sleep(TimeoutUtil.adjust(2000));
 
-        LoggingUtil.dumpTestLog(managementClient, "artemis-log");
+        LoggingUtil.dumpTestLog(managementClient.getControllerClient(), "artemis-log");
         Assert.assertFalse("Log contains ActiveMQ ping error log message: [AMQ202002]",
-                LoggingUtil.hasLogMessage(managementClient, "artemis-log", "AMQ202002", restartLine, (line) -> line.contains(IP_ADDRESS)));
+                LoggingUtil.hasLogMessage(managementClient.getControllerClient(), "artemis-log", "AMQ202002", restartLine, (line) -> line.contains(IP_ADDRESS)));
         Assert.assertTrue("Broker should be running", isBrokerActive(jmsOperations, managementClient));
     }
 
@@ -166,7 +166,7 @@ public class NetworkHealthTestCase {
         managementClient = createManagementClient();
         Thread.sleep(TimeoutUtil.adjust(2000));
         Assert.assertTrue("Log should contains ActiveMQ ping error log message: [AMQ202007]",
-                LoggingUtil.hasLogMessage(managementClient, "artemis-log", "",
+                LoggingUtil.hasLogMessage(managementClient.getControllerClient(), "artemis-log", "",
                         (line) -> (line.contains(" AMQ202007") && line.contains(IP_ADDRESS) && line.contains("java.io.IOException")) || line.contains("AMQ201001")));
 
         Assert.assertFalse("Broker should be stopped", isBrokerActive(jmsOperations, managementClient));
