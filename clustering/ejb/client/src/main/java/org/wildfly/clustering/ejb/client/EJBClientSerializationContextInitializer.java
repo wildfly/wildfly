@@ -26,5 +26,6 @@ public class EJBClientSerializationContextInitializer extends AbstractSerializat
     @Override
     public void registerMarshallers(SerializationContext context) {
         context.registerMarshaller(Scalar.BYTE_ARRAY.cast(byte[].class).toMarshaller(SessionID.class, SessionID::getEncodedForm, SessionID::createSessionID));
+        context.registerMarshaller(new EJBModuleIdentifierMarshaller());
     }
 }
