@@ -4,7 +4,9 @@
   ~ SPDX-License-Identifier: Apache-2.0
   -->
 
-<ironjacamar>
+<ironjacamar xmlns="http://www.ironjacamar.org/doc/schema"
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             xsi:schemaLocation="http://www.ironjacamar.org/doc/schema https://www.ironjacamar.org/doc/schema/ironjacamar_1_3.xsd">
     <bootstrap-context>customContext</bootstrap-context>
     <connection-definitions>
         <connection-definition
