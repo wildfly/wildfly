@@ -61,11 +61,6 @@ public class DecoratedSessionManager extends DecoratedService implements Underto
     }
 
     @Override
-    public Set<String> getTransientSessions() {
-        return this.manager.getTransientSessions();
-    }
-
-    @Override
     public Set<String> getActiveSessions() {
         return this.manager.getActiveSessions();
     }
