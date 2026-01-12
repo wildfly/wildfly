@@ -4,7 +4,6 @@
  */
 package org.wildfly.clustering.web.undertow.session;
 
-import java.util.Collections;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -257,12 +256,6 @@ public class DistributableSessionManager implements UndertowSessionManager {
     @Override
     public void setDefaultSessionTimeout(int timeout) {
         this.defaultSessionTimeout = timeout;
-    }
-
-    @Override
-    public Set<String> getTransientSessions() {
-        // We are a distributed session manager, so none of our sessions are transient
-        return Collections.emptySet();
     }
 
     @Override
