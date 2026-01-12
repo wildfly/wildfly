@@ -35,6 +35,7 @@ import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.test.shared.TimeoutUtil;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
+import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
 import org.junit.Test;
@@ -50,6 +51,16 @@ import org.wildfly.test.integration.microprofile.reactive.RunKafkaSetupTask;
 @ServerSetup({RunKafkaSetupTask.class, EnableReactiveExtensionsSetupTask.class})
 @TestcontainersRequired
 public class ReactiveMessagingChannelsTestCase {
+    private static final StringAsset DEPLOYMENT_STRUCTURE_XML = new StringAsset("""
+            <jboss-deployment-structure>
+              <deployment>
+                 <exclude-subsystems>
+                    <subsystem name="mvc-krazo" />
+                </exclude-subsystems>
+              </deployment>
+            </jboss-deployment-structure>
+            """);
+
     @ArquillianResource
     URL url;
 
@@ -64,6 +75,7 @@ public class ReactiveMessagingChannelsTestCase {
                         EmitterToSubscriberEndpoint.class,
                         EmitterToSubscribedChannelPublisherBuilderEndpoint.class,
                         EmitterToChannelPublisherViaKafkaEndpoint.class)
+                .addAsWebInfResource(DEPLOYMENT_STRUCTURE_XML, "jboss-deployment-structure.xml")
                 .addAsManifestResource(createPermissionsXmlAsset(
                         new SocketPermission("*", "connect, resolve")
                 ), "permissions.xml");
