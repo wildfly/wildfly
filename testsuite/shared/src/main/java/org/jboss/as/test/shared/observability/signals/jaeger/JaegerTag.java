@@ -4,6 +4,7 @@
  */
 package org.jboss.as.test.shared.observability.signals.jaeger;
 
+@Deprecated
 public class JaegerTag {
     private String key;
     private String type;

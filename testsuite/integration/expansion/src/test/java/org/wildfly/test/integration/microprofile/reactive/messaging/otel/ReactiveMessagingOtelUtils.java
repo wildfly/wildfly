@@ -57,7 +57,11 @@ public class ReactiveMessagingOtelUtils {
 
         if (op != null) {
             ModelNode result = client.execute(op);
-            Assert.assertTrue(Operations.isSuccessfulOutcome(result));
+            boolean outcome = Operations.isSuccessfulOutcome(result);
+            if (!outcome) {
+                System.err.println(result);
+            }
+            Assert.assertTrue(outcome);
         }
     }
 

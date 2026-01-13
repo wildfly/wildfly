@@ -4,14 +4,13 @@
  */
 package org.wildfly.test.integration.observability.opentelemetry;
 
-import jakarta.inject.Inject;
-import jakarta.ws.rs.client.Client;
-import jakarta.ws.rs.client.ClientBuilder;
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.baggage.Baggage;
 import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.api.trace.Tracer;
-import org.arquillian.testcontainers.api.TestcontainersRequired;
+import jakarta.inject.Inject;
+import jakarta.ws.rs.client.Client;
+import jakarta.ws.rs.client.ClientBuilder;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.arquillian.api.ServerSetup;
@@ -27,7 +26,6 @@ import org.wildfly.test.integration.observability.opentelemetry.application.Otel
 
 @RunWith(Arquillian.class)
 @ServerSetup(OpenTelemetrySetupTask.class)
-@TestcontainersRequired
 public class BasicOpenTelemetryTestCase {
     @Inject
     private Tracer tracer;

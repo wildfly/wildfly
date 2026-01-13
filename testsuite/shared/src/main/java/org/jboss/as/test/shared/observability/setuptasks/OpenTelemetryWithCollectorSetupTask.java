@@ -10,6 +10,7 @@ import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.test.shared.ServerReload;
 import org.jboss.as.test.shared.observability.containers.OpenTelemetryCollectorContainer;
 
+@Deprecated
 @TestcontainersRequired
 public class OpenTelemetryWithCollectorSetupTask extends OpenTelemetrySetupTask {
 
