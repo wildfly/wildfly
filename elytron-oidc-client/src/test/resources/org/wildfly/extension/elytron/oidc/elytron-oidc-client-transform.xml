@@ -3,7 +3,7 @@
   ~ SPDX-License-Identifier: Apache-2.0
   -->
 
-<subsystem xmlns="urn:wildfly:elytron-oidc-client:preview:3.0">
+<subsystem xmlns="urn:wildfly:elytron-oidc-client:community:3.0">
     <secure-server name="wildfly-with-scope.war">
         <provider>keycloak</provider>
         <client-id>wildfly-console</client-id>
