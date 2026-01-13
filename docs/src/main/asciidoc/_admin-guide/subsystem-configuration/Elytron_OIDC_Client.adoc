@@ -147,8 +147,8 @@ will continue normally.
 
 === Scope Configuration
 
-NOTE: Since this attribute is a preview level feature, the WildFly server's stability level must be set to `preview`
-or lower to enable it. The stability level must not be changed to `community` or `default` after configuring the
+NOTE: Since this attribute is a community level feature, the WildFly server's stability level must be set to `community`
+or lower to enable it. The stability level must not be changed to `default` after configuring the
 `scope` attribute. For more information about the stability levels of the WildFly server, please refer to the
 link:Admin_Guide{outfilesuffix}[Admin Guide], particularly the
 link:Admin_Guide{outfilesuffix}#Feature_stability_levels[Feature stability levels] section.
