@@ -15,7 +15,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * Utility class to parse a list of strings from the Collector log file and return a list of OpenTelemetryLogRecord instances.
+ * Utility class to parse a list of strings from the Collector log file and return a list of LogEntry instances.
  */
 public class CollectorLogRecordParser {
     // Pattern for parsing key-value fields (e.g., "Field: Value")
@@ -27,7 +27,7 @@ public class CollectorLogRecordParser {
     // Formatter to parse the specific date format: 2025-11-26 22:23:39.754885 +0000 UTC
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSSSSS Z");
 
-    public List<OpenTelemetryLogRecord> retrieveLogRecords(String[] lines) {
+    public List<LogEntry> retrieveLogRecords(String[] lines) {
         // Strip unneeded metadata from the start of each line
         List<String> cleaned = Arrays.stream(lines).map(line ->
                         line.replace("[OpenTelemetryCollector] ", "")
@@ -35,7 +35,7 @@ public class CollectorLogRecordParser {
                                 .trim())
                 .toList();
         var iterator = cleaned.iterator();
-        var logRecords = new ArrayList<OpenTelemetryLogRecord>();
+        var logRecords = new ArrayList<LogEntry>();
 
         var logLines = new ArrayList<String>();
         while (iterator.hasNext()) {
@@ -67,12 +67,12 @@ public class CollectorLogRecordParser {
     }
 
     /**
-     * Parses the List<String> log entry into an OpenTelemetryLogRecord instance.
+     * Parses the List<String> log entry into an LogEntry instance.
      *
      * @param logLines The list of strings containing the log record data.
-     * @return A fully populated OpenTelemetryLogRecord.
+     * @return A fully populated LogEntry.
      */
-    private OpenTelemetryLogRecord buildLogRecord(List<String> logLines) {
+    private LogEntry buildLogRecord(List<String> logLines) {
         Map<String, String> parsedFields = new HashMap<>();
         Map<String, String> attributes = new HashMap<>();
 
@@ -125,17 +125,17 @@ public class CollectorLogRecordParser {
         }
 
         // Build the final record instance
-        return new OpenTelemetryLogRecord(
+        return new LogEntry(
+                parsedFields.getOrDefault("Trace ID", ""),
+                parsedFields.getOrDefault("Span ID", ""),
+                parsedFields.getOrDefault("Body", "Str()")
+                        .replaceAll("^Str\\(|\\)$", ""), // Removes "Str(" and ")"
                 parseDateToUnixNano(parsedFields.getOrDefault("Timestamp", "")),
                 parseDateToUnixNano(parsedFields.getOrDefault("ObservedTimestamp", "")),
                 severityNumber,
                 parsedFields.getOrDefault("SeverityText", ""),
-                parsedFields.getOrDefault("Body", "Str()")
-                        .replaceAll("^Str\\(|\\)$", ""), // Removes "Str(" and ")"
                 attributes,
-                Integer.parseInt(parsedFields.getOrDefault("Flags", "0")), // Flags is simple int
-                parsedFields.getOrDefault("Trace ID", ""),
-                parsedFields.getOrDefault("Span ID", "")
+                Integer.parseInt(parsedFields.getOrDefault("Flags", "0")) // Flags is simple int
         );
     }
 
@@ -146,21 +146,19 @@ public class CollectorLogRecordParser {
      * @param dateString The observed date string.
      * @return The Unix time in nanoseconds as a String.
      */
-    private String parseDateToUnixNano(String dateString) {
+    private long parseDateToUnixNano(String dateString) {
         if (dateString == null || dateString.trim().isEmpty()) {
-            return "0"; // Default to 0 if missing
+            return 0; // Default to 0 if missing
         }
         try {
             // Remove the ' UTC' suffix as it's handled by the 'Z' pattern
             OffsetDateTime odt = OffsetDateTime.parse(dateString.replace(" UTC", "").trim(), DATE_FORMATTER);
 
             // Calculate nanoseconds: seconds * 10^9 + nanoseconds part of the second
-            long nanoSeconds = odt.toInstant().getEpochSecond() * 1_000_000_000L + odt.toInstant().getNano();
-
-            return String.valueOf(nanoSeconds);
+            return odt.toInstant().getEpochSecond() * 1_000_000_000L + odt.toInstant().getNano();
         } catch (Exception e) {
             System.err.println("Error parsing date '" + dateString + "'. Returning 0. Error: " + e.getMessage());
-            return "0";
+            return 0;
         }
     }
 }

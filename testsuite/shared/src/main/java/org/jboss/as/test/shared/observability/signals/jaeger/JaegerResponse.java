@@ -6,6 +6,7 @@ package org.jboss.as.test.shared.observability.signals.jaeger;
 
 import java.util.List;
 
+@Deprecated
 public class JaegerResponse {
     private List<JaegerTrace> data;
     private String errors;

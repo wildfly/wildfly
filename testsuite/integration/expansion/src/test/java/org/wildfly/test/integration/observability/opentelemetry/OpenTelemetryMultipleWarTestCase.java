@@ -5,21 +5,14 @@
 package org.wildfly.test.integration.observability.opentelemetry;
 
 import java.net.MalformedURLException;
-import java.util.List;
 import java.util.Objects;
 
 import jakarta.ws.rs.client.Client;
 import jakarta.ws.rs.client.ClientBuilder;
 import jakarta.ws.rs.core.Response;
-import org.arquillian.testcontainers.api.TestcontainersRequired;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.InSequence;
-import org.jboss.as.arquillian.api.ServerSetup;
-import org.jboss.as.test.shared.observability.setuptasks.OpenTelemetryWithCollectorSetupTask;
-import org.jboss.as.test.shared.observability.signals.PrometheusMetric;
-import org.jboss.as.test.shared.observability.signals.jaeger.JaegerSpan;
-import org.jboss.as.test.shared.observability.signals.jaeger.JaegerTrace;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
 import org.junit.Test;
@@ -35,8 +28,6 @@ import org.wildfly.test.integration.observability.opentelemetry.application.Otel
  * equal <code>REQUEST_COUNT</code>.
  */
 @RunAsClient
-@ServerSetup({OpenTelemetryWithCollectorSetupTask.class})
-@TestcontainersRequired
 public class OpenTelemetryMultipleWarTestCase extends BaseOpenTelemetryTest {
     protected static final String SERVICE_ONE = "service-one";
     protected static final String SERVICE_TWO = "service-two";
@@ -59,14 +50,14 @@ public class OpenTelemetryMultipleWarTestCase extends BaseOpenTelemetryTest {
         try (Client client = ClientBuilder.newClient()) {
             for (int i = 0; i < REQUEST_COUNT; i++) {
                 Assert.assertEquals(Response.Status.OK.getStatusCode(),
-                    client.target(getDeploymentUrl(SERVICE_ONE) + "?" + SERVICE_ONE).request().get().getStatus());
+                        client.target(getDeploymentUrl(SERVICE_ONE) + "?" + SERVICE_ONE).request().get().getStatus());
                 Assert.assertEquals(Response.Status.OK.getStatusCode(),
-                    client.target(getDeploymentUrl(SERVICE_ONE) + "/metrics").request().get().getStatus());
+                        client.target(getDeploymentUrl(SERVICE_ONE) + "/metrics").request().get().getStatus());
 
                 Assert.assertEquals(Response.Status.OK.getStatusCode(),
-                    client.target(getDeploymentUrl(SERVICE_TWO) + "?" + SERVICE_TWO).request().get().getStatus());
+                        client.target(getDeploymentUrl(SERVICE_TWO) + "?" + SERVICE_TWO).request().get().getStatus());
                 Assert.assertEquals(Response.Status.OK.getStatusCode(),
-                    client.target(getDeploymentUrl(SERVICE_TWO) + "/metrics").request().get().getStatus());
+                        client.target(getDeploymentUrl(SERVICE_TWO) + "/metrics").request().get().getStatus());
             }
         }
     }
@@ -86,33 +77,32 @@ public class OpenTelemetryMultipleWarTestCase extends BaseOpenTelemetryTest {
     }
 
     private void verifyTraces(String serviceName) throws InterruptedException {
-        otelCollector.assertTraces(serviceName + ".war", traces -> {
-            Assert.assertFalse(traces.isEmpty());
+        server.assertSpans(spans -> {
+            Assert.assertFalse(spans.isEmpty());
 
-            Assert.assertTrue(traces.stream()
-                .map(JaegerTrace::getSpans).flatMap(List::stream)
-                .map(JaegerSpan::getTags).flatMap(List::stream)
-                .anyMatch(t ->
-                    Objects.equals(t.getKey(), "url.path") &&
-                        Objects.equals(t.getValue(), "/" + serviceName + "/")));
-
+            Assert.assertTrue(spans.stream()
+                    .flatMap(s -> s.attributes().entrySet().stream())
+                    .anyMatch(t -> Objects.equals(t.getKey(), "url.path") &&
+                            Objects.equals(t.getValue(), "/" + serviceName + "/")));
         });
     }
 
     private void verifyMetric(String serviceName) throws InterruptedException {
-        otelCollector.assertMetrics(prometheusMetrics -> {
-            List<PrometheusMetric> results = otelCollector.getMetricsByName(prometheusMetrics,
-                OtelMetricResource.COUNTER_NAME + "_total"); // Adjust for Prometheus naming conventions
+        server.assertMetrics(metrics -> {
+            var results = metrics.stream()
+                            .filter(m -> Objects.equals(m.name(), OtelMetricResource.COUNTER_NAME))
+                            .toList();
 
-            Assert.assertEquals(Integer.toString(REQUEST_COUNT),
-                results.stream()
-                    // Filter tag job=${serviceName}.war
+            String value = results.stream()
+                    // Filter tag service.name=${serviceName}.war
                     .filter(metric ->
-                        Objects.equals(metric.getTags().get("job"), serviceName + ".war")
+                            Objects.equals(metric.resourceAttributes().get("service.name"), serviceName + ".war")
                     )
                     .findFirst()
                     .orElseThrow(AssertionError::new)
-                    .getValue());
+                    .value();
+            Assert.assertEquals(Integer.toString(REQUEST_COUNT),
+                    value);
         });
     }
 }

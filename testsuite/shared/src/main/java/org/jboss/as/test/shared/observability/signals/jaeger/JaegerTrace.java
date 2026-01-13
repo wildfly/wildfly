@@ -7,6 +7,7 @@ package org.jboss.as.test.shared.observability.signals.jaeger;
 import java.util.List;
 import java.util.Map;
 
+@Deprecated
 public class JaegerTrace {
     private String traceID;
     private List<JaegerSpan> spans;

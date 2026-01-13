@@ -6,15 +6,15 @@ package org.jboss.as.test.shared.observability.signals.logs;
 
 import java.util.Map;
 
-public record OpenTelemetryLogRecord(
-        String timeUnixNano,
-        String observedTimeUnixNano,
+public record LogEntry(
+        String traceId,
+        String spanId,
+        String body,
+        long timeUnixNano,
+        long observedTimeUnixNano,
         int severityNumber,
         String severityText,
-        String body,
         Map<String, String> attributes,
-        int flags,
-        String traceId,
-        String spanId
+        int flags
 ) {
 }
