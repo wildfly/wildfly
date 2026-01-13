@@ -12,15 +12,12 @@ import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.InSequence;
 import org.jboss.arquillian.test.api.ArquillianResource;
-import org.jboss.as.arquillian.api.ServerSetup;
-import org.jboss.as.test.shared.observability.setuptasks.OpenTelemetryWithCollectorSetupTask;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
 import org.junit.Test;
 import org.wildfly.test.integration.observability.opentelemetry.application.OtelService2;
 
 @RunAsClient
-@ServerSetup({OpenTelemetryWithCollectorSetupTask.class})
 public class OpenTelemetryLogsTestCase extends BaseOpenTelemetryTest {
     private static final String DEPLOYMENT_NAME = "otel-logs-test";
 
@@ -54,7 +51,7 @@ public class OpenTelemetryLogsTestCase extends BaseOpenTelemetryTest {
     public void testFormattedLogMessage() throws Exception {
         makeRequests(new URL(getDeploymentUrl(DEPLOYMENT_SERVICE1) + "logging/hello"), 1, Response.noContent().build().getStatus());
 
-        otelCollector.assertOpenTelemetryLogs(logEntries ->
+        server.assertLogs(logEntries ->
                 Assert.assertTrue("Missing log entry: '" + EXPECTED_LOG_ENTRY + "'",
                         logEntries.stream().anyMatch(entry ->
                                 entry.body().contains(EXPECTED_LOG_ENTRY))));
@@ -63,7 +60,7 @@ public class OpenTelemetryLogsTestCase extends BaseOpenTelemetryTest {
     @Test
     @InSequence(3)
     public void testDuplicateLogs() {
-        var logMessages = otelCollector.getOpenTelemetryLogs().stream()
+        var logMessages = server.fetchLogs().stream()
                 .filter(log -> log.body().contains(EXPECTED_LOG_ENTRY)).toList();
 
         Assert.assertEquals("Duplicated log entry found", 1, logMessages.size());

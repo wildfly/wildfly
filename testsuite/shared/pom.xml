@@ -30,6 +30,8 @@
         <maven.deploy.skip>true</maven.deploy.skip>
         <skipNexusStagingDeployMojo>true</skipNexusStagingDeployMojo>
         <skipPublishing>${maven.deploy.skip}</skipPublishing>
+
+        <version.io.undertow>2.3.20.Final</version.io.undertow>
     </properties>
 
     <dependencyManagement>
@@ -283,6 +285,53 @@
             <groupId>org.jboss.resteasy</groupId>
             <artifactId>resteasy-client</artifactId>
             <scope>compile</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>io.opentelemetry.proto</groupId>
+            <artifactId>opentelemetry-proto</artifactId>
+            <version>${version.io.opentelemetry.proto}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>io.opentelemetry</groupId>
+            <artifactId>opentelemetry-sdk</artifactId>
+            <version>${version.io.opentelemetry.opentelemetry}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>io.opentelemetry</groupId>
+            <artifactId>opentelemetry-api</artifactId>
+            <version>${version.io.opentelemetry.opentelemetry}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>io.opentelemetry.semconv</groupId>
+            <artifactId>opentelemetry-semconv</artifactId>
+            <version>${version.io.opentelemetry.opentelemetry-semconv}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>io.undertow</groupId>
+            <artifactId>undertow-core</artifactId>
+            <version>${version.io.undertow}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.undertow</groupId>
+            <artifactId>undertow-servlet</artifactId>
+            <version>${version.io.undertow}</version>
+        </dependency>
+
+
+        <dependency>
+            <groupId>io.grpc</groupId>
+            <artifactId>grpc-netty-shaded</artifactId>
+            <version>${version.io.grpc}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.grpc</groupId>
+            <artifactId>grpc-stub</artifactId>
+            <version>${version.io.grpc}</version>
         </dependency>
 
         <!-- test -->

@@ -6,7 +6,6 @@ package org.wildfly.test.integration.observability.micrometer;
 
 import io.micrometer.core.instrument.MeterRegistry;
 import jakarta.inject.Inject;
-import org.arquillian.testcontainers.api.TestcontainersRequired;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.arquillian.api.ServerSetup;
@@ -23,7 +22,6 @@ import org.wildfly.test.integration.observability.JaxRsActivator;
 
 @RunWith(Arquillian.class)
 @ServerSetup(MicrometerSetupTask.class)
-@TestcontainersRequired
 public class BasicMicrometerTestCase {
     @Inject
     private MeterRegistry meterRegistry;
