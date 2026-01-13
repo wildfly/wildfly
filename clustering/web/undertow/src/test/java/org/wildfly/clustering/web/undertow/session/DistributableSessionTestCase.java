@@ -898,7 +898,8 @@ public class DistributableSessionTestCase {
         listeners.addSessionListener(listener);
         String oldSessionId = "old";
         String newSessionId = "new";
-        Instant now = Instant.now();
+        Instant end = Instant.now();
+        Instant start = end.minus(Duration.ofSeconds(1L));
         Duration interval = Duration.ofSeconds(10L);
 
         doReturn(context).when(this.suspendedBatch).resumeWithContext();
@@ -910,8 +911,7 @@ public class DistributableSessionTestCase {
         doReturn(oldMetaData).when(this.session).getMetaData();
         doReturn(newAttributes).when(newSession).getAttributes();
         doReturn(newMetaData).when(newSession).getMetaData();
-        doReturn(Optional.of(now)).when(oldMetaData).getLastAccessStartTime();
-        doReturn(Optional.of(now)).when(oldMetaData).getLastAccessEndTime();
+        doReturn(Optional.of(Map.entry(start, end))).when(oldMetaData).getLastAccess();
         doReturn(Optional.of(interval)).when(oldMetaData).getMaxIdle();
         doReturn(oldSessionId).when(this.session).getId();
         doReturn(newSessionId).when(newSession).getId();
@@ -923,7 +923,137 @@ public class DistributableSessionTestCase {
 
         assertSame(newSessionId, result);
 
-        verify(newMetaData).setLastAccess(now, now);
+        verify(newMetaData).setLastAccess(Map.entry(start, end));
+        verify(newMetaData).setMaxIdle(interval);
+        verify(newAttributes).putAll(oldAttributes);
+        verify(config).setSessionId(exchange, newSessionId);
+        assertEquals(oldContext, newContext);
+        verify(this.session).invalidate();
+        verify(newSession, never()).invalidate();
+        verify(listener).sessionIdChanged(session, oldSessionId);
+        verify(this.suspendedBatch).resumeWithContext();
+        verify(context).close();
+        verifyNoMoreInteractions(this.suspendedBatch);
+    }
+
+    @Test
+    public void changeSessionIdImmortal() {
+        doReturn(this.metaData).when(this.session).getMetaData();
+        doReturn(Optional.of(Instant.now())).when(this.metaData).getLastAccessTime();
+
+        io.undertow.server.session.Session session = new DistributableSession(this.manager, this.session, this.config, this.suspendedBatch, this.closeTask, this.statistics);
+
+        verify(this.metaData).getLastAccessTime();
+
+        HttpServerExchange exchange = new HttpServerExchange(null);
+        SessionConfig config = mock(SessionConfig.class);
+        Context<Batch> context = mock(Context.class);
+        SessionManager<Map<String, Object>> manager = mock(SessionManager.class);
+        Supplier<String> identifierFactory = mock(Supplier.class);
+        Session<Map<String, Object>> newSession = mock(Session.class);
+        Map<String, Object> oldAttributes = mock(Map.class);
+        Map<String, Object> newAttributes = mock(Map.class);
+        SessionMetaData oldMetaData = mock(SessionMetaData.class);
+        SessionMetaData newMetaData = mock(SessionMetaData.class);
+        Map<String, Object> oldContext = new HashMap<>();
+        oldContext.put("foo", "bar");
+        Map<String, Object> newContext = new HashMap<>();
+        SessionListener listener = mock(SessionListener.class);
+        SessionListeners listeners = new SessionListeners();
+        listeners.addSessionListener(listener);
+        String oldSessionId = "old";
+        String newSessionId = "new";
+        Instant end = Instant.now();
+        Instant start = end.minus(Duration.ofSeconds(1L));
+        Duration interval = Duration.ofSeconds(10L);
+
+        doReturn(context).when(this.suspendedBatch).resumeWithContext();
+        doReturn(manager).when(this.manager).getSessionManager();
+        doReturn(identifierFactory).when(manager).getIdentifierFactory();
+        doReturn(newSessionId).when(identifierFactory).get();
+        doReturn(newSession).when(manager).createSession(newSessionId);
+        doReturn(oldAttributes).when(this.session).getAttributes();
+        doReturn(oldMetaData).when(this.session).getMetaData();
+        doReturn(newAttributes).when(newSession).getAttributes();
+        doReturn(newMetaData).when(newSession).getMetaData();
+        doReturn(Optional.of(Map.entry(start, end))).when(oldMetaData).getLastAccess();
+        doReturn(Optional.empty()).when(oldMetaData).getMaxIdle();
+        doReturn(oldSessionId).when(this.session).getId();
+        doReturn(newSessionId).when(newSession).getId();
+        doReturn(oldContext).when(this.session).getContext();
+        doReturn(newContext).when(newSession).getContext();
+        doReturn(listeners).when(this.manager).getSessionListeners();
+
+        String result = session.changeSessionId(exchange, config);
+
+        assertSame(newSessionId, result);
+
+        verify(newMetaData).setLastAccess(Map.entry(start, end));
+        verify(newMetaData, never()).setMaxIdle(any());
+        verify(newAttributes).putAll(oldAttributes);
+        verify(config).setSessionId(exchange, newSessionId);
+        assertEquals(oldContext, newContext);
+        verify(this.session).invalidate();
+        verify(newSession, never()).invalidate();
+        verify(listener).sessionIdChanged(session, oldSessionId);
+        verify(this.suspendedBatch).resumeWithContext();
+        verify(context).close();
+        verifyNoMoreInteractions(this.suspendedBatch);
+    }
+
+    @Test
+    public void changeSessionIdNew() {
+        doReturn(this.metaData).when(this.session).getMetaData();
+        doReturn(Optional.of(Instant.now())).when(this.metaData).getLastAccessTime();
+
+        io.undertow.server.session.Session session = new DistributableSession(this.manager, this.session, this.config, this.suspendedBatch, this.closeTask, this.statistics);
+
+        verify(this.metaData).getLastAccessTime();
+
+        HttpServerExchange exchange = new HttpServerExchange(null);
+        SessionConfig config = mock(SessionConfig.class);
+        Context<Batch> context = mock(Context.class);
+        SessionManager<Map<String, Object>> manager = mock(SessionManager.class);
+        Supplier<String> identifierFactory = mock(Supplier.class);
+        Session<Map<String, Object>> newSession = mock(Session.class);
+        Map<String, Object> oldAttributes = mock(Map.class);
+        Map<String, Object> newAttributes = mock(Map.class);
+        SessionMetaData oldMetaData = mock(SessionMetaData.class);
+        SessionMetaData newMetaData = mock(SessionMetaData.class);
+        Map<String, Object> oldContext = new HashMap<>();
+        oldContext.put("foo", "bar");
+        Map<String, Object> newContext = new HashMap<>();
+        SessionListener listener = mock(SessionListener.class);
+        SessionListeners listeners = new SessionListeners();
+        listeners.addSessionListener(listener);
+        String oldSessionId = "old";
+        String newSessionId = "new";
+        Instant end = Instant.now();
+        Instant start = end.minus(Duration.ofSeconds(1L));
+        Duration interval = Duration.ofSeconds(10L);
+
+        doReturn(context).when(this.suspendedBatch).resumeWithContext();
+        doReturn(manager).when(this.manager).getSessionManager();
+        doReturn(identifierFactory).when(manager).getIdentifierFactory();
+        doReturn(newSessionId).when(identifierFactory).get();
+        doReturn(newSession).when(manager).createSession(newSessionId);
+        doReturn(oldAttributes).when(this.session).getAttributes();
+        doReturn(oldMetaData).when(this.session).getMetaData();
+        doReturn(newAttributes).when(newSession).getAttributes();
+        doReturn(newMetaData).when(newSession).getMetaData();
+        doReturn(Optional.empty()).when(oldMetaData).getLastAccess();
+        doReturn(Optional.of(interval)).when(oldMetaData).getMaxIdle();
+        doReturn(oldSessionId).when(this.session).getId();
+        doReturn(newSessionId).when(newSession).getId();
+        doReturn(oldContext).when(this.session).getContext();
+        doReturn(newContext).when(newSession).getContext();
+        doReturn(listeners).when(this.manager).getSessionListeners();
+
+        String result = session.changeSessionId(exchange, config);
+
+        assertSame(newSessionId, result);
+
+        verify(newMetaData, never()).setLastAccess(any());
         verify(newMetaData).setMaxIdle(interval);
         verify(newAttributes).putAll(oldAttributes);
         verify(config).setSessionId(exchange, newSessionId);

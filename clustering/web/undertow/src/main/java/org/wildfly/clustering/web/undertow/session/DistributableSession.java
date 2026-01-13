@@ -10,7 +10,6 @@ import io.undertow.server.session.SessionListener.SessionDestroyedReason;
 
 import java.time.Instant;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
@@ -203,11 +202,7 @@ public class DistributableSession extends AbstractSession {
                 SessionMetaData oldMetaData = currentSession.getMetaData();
                 SessionMetaData newMetaData = newSession.getMetaData();
                 oldMetaData.getMaxIdle().ifPresent(newMetaData::setMaxIdle);
-                Optional<Instant> lastAccessStartTime = oldMetaData.getLastAccessStartTime();
-                Optional<Instant> lastAccessEndTime = oldMetaData.getLastAccessEndTime();
-                if (lastAccessStartTime.isPresent() && lastAccessEndTime.isPresent()) {
-                    newMetaData.setLastAccess(lastAccessStartTime.get(), lastAccessEndTime.get());
-                }
+                oldMetaData.getLastAccess().ifPresent(newMetaData::setLastAccess);
                 newSession.getContext().putAll(currentSession.getContext());
                 currentSession.invalidate();
                 config.setSessionId(exchange, id);
