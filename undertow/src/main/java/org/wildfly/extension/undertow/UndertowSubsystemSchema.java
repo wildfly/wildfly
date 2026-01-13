@@ -6,7 +6,6 @@
 package org.wildfly.extension.undertow;
 
 import java.util.EnumSet;
-import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -15,7 +14,6 @@ import java.util.stream.Stream;
 
 import org.jboss.as.clustering.controller.Attribute;
 import org.jboss.as.controller.AttributeDefinition;
-import org.jboss.as.controller.Feature;
 import org.jboss.as.controller.PersistentResourceXMLDescription;
 import org.jboss.as.controller.PersistentSubsystemSchema;
 import org.jboss.as.controller.SubsystemSchema;
@@ -64,12 +62,12 @@ public enum UndertowSubsystemSchema implements PersistentSubsystemSchema<Underto
     VERSION_11_0(11),   // WildFly 20-22    N.B. There were no parser changes between 10.0 and 11.0 !!
     VERSION_12_0(12),   // WildFly 23-26.1, EAP 7.4
     VERSION_13_0(13),   // WildFly 27       N.B. There were no schema changes between 12.0 and 13.0!
-    VERSION_14_0(14),   // WildFly 28-32
+    VERSION_14_0(14),   // WildFly 28-present
     VERSION_14_0_PREVIEW(14, 0, Stability.PREVIEW),   // WildFly 33-35
-    VERSION_14_0_COMMUNITY(14, 0, Stability.COMMUNITY)   // WildFly 36 - present
+    VERSION_14_0_COMMUNITY(14, 0, Stability.COMMUNITY)   // WildFly 36-present
     ;
 
-    static final Map<Stability, UndertowSubsystemSchema> CURRENT = Feature.map(EnumSet.of(VERSION_14_0, VERSION_14_0_PREVIEW, VERSION_14_0_COMMUNITY));
+    static final Set<UndertowSubsystemSchema> CURRENT = EnumSet.of(VERSION_14_0, VERSION_14_0_COMMUNITY);
     private final VersionedNamespace<IntVersion, UndertowSubsystemSchema> namespace;
     private final PersistentResourceXMLDescription.Factory factory = PersistentResourceXMLDescription.factory(this);
 
