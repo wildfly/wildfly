@@ -264,6 +264,11 @@
             <scope>test</scope>
         </dependency>
         <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>failureaccess</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
             <groupId>io.netty</groupId>
             <artifactId>netty-codec</artifactId>
             <scope>test</scope>
@@ -361,6 +366,37 @@
             <groupId>${full.maven.groupId}</groupId>
             <artifactId>wildfly-opentelemetry-api</artifactId>
             <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.opentelemetry.proto</groupId>
+            <artifactId>opentelemetry-proto</artifactId>
+            <version>${version.io.opentelemetry.proto}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.grpc</groupId>
+            <artifactId>grpc-netty-shaded</artifactId>
+            <version>${version.io.grpc}</version>
+            <exclusions></exclusions>
+        </dependency>
+        <dependency>
+            <groupId>io.grpc</groupId>
+            <artifactId>grpc-api</artifactId>
+            <version>${version.io.grpc}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.grpc</groupId>
+            <artifactId>grpc-stub</artifactId>
+            <version>${version.io.grpc}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.grpc</groupId>
+            <artifactId>grpc-protobuf</artifactId>
+            <version>${version.io.grpc}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.google.protobuf</groupId>
+            <artifactId>protobuf-java</artifactId>
+            <version>${version.com.google.protobuf}</version>
         </dependency>
 
         <!-- Other test dependencies -->
