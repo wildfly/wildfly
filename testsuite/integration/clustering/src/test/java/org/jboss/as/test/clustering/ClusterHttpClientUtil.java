@@ -50,7 +50,7 @@ public final class ClusterHttpClientUtil {
         URI uri = TopologyChangeListenerServlet.createURI(baseURL, container, cache, topology, timeout);
         HttpResponse response = client.execute(new HttpGet(uri));
         try {
-            assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
+            assertEquals(String.format("Failed to establish topology %s for container=%s andcache=%s within %s", topology, container, cache, timeout), HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
         } finally {
             HttpClientUtils.closeQuietly(response);
         }
