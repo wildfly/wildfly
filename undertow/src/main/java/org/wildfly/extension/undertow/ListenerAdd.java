@@ -5,9 +5,11 @@
 
 package org.wildfly.extension.undertow;
 
+import static org.wildfly.extension.undertow.AbstractHttpListenerResourceDefinition.REQUIRE_HOST_HTTP11;
 import static org.wildfly.extension.undertow.Capabilities.REF_IO_WORKER;
 import static org.wildfly.extension.undertow.ListenerResourceDefinition.LISTENER_CAPABILITY;
 import static org.wildfly.extension.undertow.ServerDefinition.SERVER_CAPABILITY;
+import static org.wildfly.extension.undertow.logging.UndertowLogger.ROOT_LOGGER;
 
 import java.util.HashSet;
 import java.util.List;
@@ -94,4 +96,27 @@ abstract class ListenerAdd<S extends ListenerService> extends AbstractAddStepHan
     abstract S createService(final Consumer<ListenerService> serviceConsumer, final String name, final String serverName, final OperationContext context, ModelNode model, OptionMap listenerOptions, OptionMap socketOptions) throws OperationFailedException;
 
     abstract void configureAdditionalDependencies(OperationContext context, CapabilityServiceBuilder<?> serviceBuilder, ModelNode model, S service) throws OperationFailedException;
+
+
+
+    /**
+     * Logs a message if {@link AbstractHttpListenerResourceDefinition#REQUIRE_HOST_HTTP11} has a 'false' value,
+     * which no longer takes effect. The log level depends on whether the attribute was explicitly configured (WARN)
+     * or just had the default value (INFO). This more forcefully complements any future deprecation of the attribute,
+     * which would only result in an INFO log telling the user to check the read-resource-description output for details.
+     *
+     * @param context the context for an executing operation
+     * @param model model node representing a listener resource
+     * @throws OperationFailedException if resolving the attribute fails
+     */
+    static void logRequireHostHttp1Ineffective(OperationContext context, ModelNode model) throws OperationFailedException {
+        if (!REQUIRE_HOST_HTTP11.resolveModelAttribute(context, model).asBoolean()) {
+            String msg = ROOT_LOGGER.http11HostHeaderRequired(REQUIRE_HOST_HTTP11.getName(), context.getCurrentAddress().toCLIStyleString());
+            if (model.hasDefined(REQUIRE_HOST_HTTP11.getName())) {
+                ROOT_LOGGER.warn(msg);
+            } else {
+                ROOT_LOGGER.info(msg);
+            }
+        }
+    }
 }
