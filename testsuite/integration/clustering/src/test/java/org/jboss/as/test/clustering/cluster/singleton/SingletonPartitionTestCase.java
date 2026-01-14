@@ -24,7 +24,7 @@ import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.container.test.api.TargetsContainer;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
-import org.jboss.as.test.clustering.ClusterHttpClientUtil;
+import org.jboss.as.test.clustering.TopologyChangeListenerUtil;
 import org.jboss.as.test.clustering.ClusterTestUtil;
 import org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase;
 import org.jboss.as.test.clustering.cluster.singleton.partition.PartitionServlet;
@@ -189,7 +189,7 @@ public class SingletonPartitionTestCase extends AbstractClusteringTestCase {
     }
 
     private static void waitForView(URL baseURL, Set<String> topology) throws IOException, URISyntaxException {
-        ClusterHttpClientUtil.establishTopology(baseURL, CONTAINER, "default", topology, TOPOLOGY_CHANGE_TIMEOUT);
+        TopologyChangeListenerUtil.establishTopology(baseURL, CONTAINER, "default", topology, TOPOLOGY_CHANGE_TIMEOUT);
     }
 
     private static void partition(boolean partition, URL... baseURIs) {
