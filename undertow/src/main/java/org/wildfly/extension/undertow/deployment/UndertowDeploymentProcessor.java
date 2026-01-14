@@ -205,7 +205,7 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor {
 
         ResourceRoot deploymentResourceRoot = deploymentUnit.getAttachment(Attachments.DEPLOYMENT_ROOT);
         final VirtualFile deploymentRoot = deploymentResourceRoot.getRoot();
-        final Module module = deploymentUnit.getAttachment(Attachments.MODULE);
+    final Module module = deploymentUnit.getAttachment(Attachments.MODULE);
         if (module == null) {
             throw new DeploymentUnitProcessingException(UndertowLogger.ROOT_LOGGER.failedToResolveModule(deploymentUnit));
         }
