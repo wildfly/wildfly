@@ -6,7 +6,6 @@ package org.wildfly.test.integration.observability.opentelemetry;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
-import java.time.Duration;
 import java.util.List;
 
 import jakarta.ws.rs.client.Client;
@@ -82,15 +81,13 @@ public class DummyOpenTelemetryIntegrationTestCase {
     }
 
     @Test
-    public void testServiceNameOverride() throws Exception {
+    public void testTracesReceived() throws Exception {
         try (Client client = ClientBuilder.newClient()) {
             Response response = client.target(getDeploymentUrl(DEPLOYMENT_NAME)).request().get();
             Assert.assertEquals(200, response.getStatus());
         }
 
-        var list = server.assertTraces(DEPLOYMENT_NAME + ".war",
-                Duration.ofSeconds(30),
-                traces -> {
+        server.assertTraces(traces -> {
                     Assert.assertFalse("Traces not found for service", traces.isEmpty());
 
                     Trace trace = traces.get(0);
@@ -101,6 +98,18 @@ public class DummyOpenTelemetryIntegrationTestCase {
                             Assert.assertEquals("The traceId of the span did not match the first span's. Context propagation failed.",
                                     traceId, s.traceId()));
                 });
+    }
+
+    @Test
+    public void testLogsReceived() throws Exception {
+        server.assertLogs(logs ->
+                Assert.assertFalse("Logs not found", logs.isEmpty()));
+    }
+
+    @Test
+    public void testMetricsReceived() throws Exception {
+        server.assertMetrics(metrics ->
+                Assert.assertFalse("Metrics not found", metrics.isEmpty()));
     }
 
     protected String getDeploymentUrl(String deploymentName) throws MalformedURLException {

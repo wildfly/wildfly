@@ -110,7 +110,7 @@ public class OpenTelemetryCollectorContainer extends BaseContainer<OpenTelemetry
      */
     public List<PrometheusMetric> getMetricsByName(List<PrometheusMetric> metrics, String key) {
         return metrics.stream()
-                .filter(m -> Objects.equals(m.getKey(), key))
+                .filter(m -> Objects.equals(m.key(), key))
                 .toList();
     }
 
@@ -257,7 +257,7 @@ public class OpenTelemetryCollectorContainer extends BaseContainer<OpenTelemetry
         return assertMetrics(prometheusMetrics -> {
             assertTrue(
                     String.format("Metric %s not seen in Prometheus within timeout.", nameToMonitor),
-                    prometheusMetrics.stream().anyMatch(x -> x.getKey().contains(nameToMonitor))
+                    prometheusMetrics.stream().anyMatch(x -> x.key().contains(nameToMonitor))
             );
         });
     }

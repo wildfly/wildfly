@@ -7,14 +7,15 @@
 
 package org.jboss.as.test.shared.observability.signals.trace;
 
+import static org.jboss.as.test.shared.observability.signals.SignalUtil.fromKeyValueList;
+
 import java.util.List;
+import java.util.Map;
 
 import io.opentelemetry.proto.trace.v1.Status;
-import org.apache.commons.collections.KeyValue;
-import org.jboss.as.test.shared.observability.collector.InMemoryCollector;
 
 public record Span(String traceId, String spanId, String traceState, String parentSpanId, int flags, String name,
-                   int kind, long startTimeUnixNano, long endTimeUnixNano, List<KeyValue> attributes,
+                   int kind, long startTimeUnixNano, long endTimeUnixNano, Map<String, String> attributes,
                    int droppedAttributesCount, List<Event> events, int droppedEventsCount, List<Link> links,
                    int droppedLinksCount, TraceStatus status) {
 
@@ -32,7 +33,7 @@ public record Span(String traceId, String spanId, String traceState, String pare
         private int kind;
         private long startTimeUnixNano;
         private long endTimeUnixNano;
-        private List<KeyValue> attributes;
+        private Map<String, String> attributes;
         private int droppedAttributesCount;
         private List<Event> events;
         private int droppedEventsCount;
@@ -85,8 +86,8 @@ public record Span(String traceId, String spanId, String traceState, String pare
             return this;
         }
 
-        public Builder attributes(List<io.opentelemetry.proto.common.v1.KeyValue> attributes) {
-            this.attributes = attributes.stream().map(InMemoryCollector::convertKeyValue).toList();
+        public Builder attributes(Map<String, String> attributes) {
+            this.attributes = attributes;
             return this;
         }
 
@@ -97,9 +98,9 @@ public record Span(String traceId, String spanId, String traceState, String pare
 
         public Builder events(List<io.opentelemetry.proto.trace.v1.Span.Event> events) {
             this.events = events.stream().map(e ->
-                    new Event(e.getTimeUnixNano(),
-                            e.getName(),
-                            e.getAttributesList().stream().map(InMemoryCollector::convertKeyValue).toList(),
+                    new Event(e.getName(),
+                            e.getTimeUnixNano(),
+                            fromKeyValueList(e.getAttributesList()),
                             e.getDroppedAttributesCount())).toList();
             return this;
         }
@@ -114,7 +115,7 @@ public record Span(String traceId, String spanId, String traceState, String pare
                             new Link(l.getTraceId().toString(),
                                     l.getSpanId().toString(),
                                     l.getTraceState(),
-                                    l.getAttributesList().stream().map(InMemoryCollector::convertKeyValue).toList(),
+                                    fromKeyValueList(l.getAttributesList()),
                                     l.getDroppedAttributesCount(),
                                     l.getDroppedAttributesCount()))
                     .toList();

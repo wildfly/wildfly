@@ -7,18 +7,19 @@
 
 package org.jboss.as.test.shared.observability.collector;
 
+import static org.jboss.as.test.shared.observability.signals.SignalUtil.fromByteString;
+import static org.jboss.as.test.shared.observability.signals.SignalUtil.fromKeyValueList;
+
 import java.io.IOException;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
-import java.util.HexFormat;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import java.util.logging.Logger;
 
-import com.google.protobuf.ByteString;
 import io.grpc.Grpc;
 import io.grpc.InsecureServerCredentials;
 import io.grpc.Server;
@@ -32,21 +33,22 @@ import io.opentelemetry.proto.collector.metrics.v1.MetricsServiceGrpc;
 import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceRequest;
 import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceResponse;
 import io.opentelemetry.proto.collector.trace.v1.TraceServiceGrpc;
-import org.apache.commons.collections.KeyValue;
-import org.apache.commons.collections.keyvalue.DefaultKeyValue;
 import org.jboss.as.test.shared.TimeoutUtil;
-import org.jboss.as.test.shared.observability.containers.OpenTelemetryCollectorContainer;
+import org.jboss.as.test.shared.observability.signals.PrometheusMetric;
+import org.jboss.as.test.shared.observability.signals.logs.OpenTelemetryLogRecord;
 import org.jboss.as.test.shared.observability.signals.trace.Span;
 import org.jboss.as.test.shared.observability.signals.trace.Trace;
 
 public class InMemoryCollector {
     private static final Logger logger = Logger.getLogger(InMemoryCollector.class.getName());
     protected final int port;
-    private final List<Trace> tracesReceived = new ArrayList<>();
     private final Duration DEFAULT_TIMEOUT = Duration.ofSeconds(
             TimeoutUtil.adjust(
                     Integer.parseInt(
                             System.getProperty("testsuite.integration.container.timeout", "120"))));
+    private final List<Trace> tracesReceived = new ArrayList<>();
+    private final List<OpenTelemetryLogRecord> logsReceived = new ArrayList<>();
+    private final List<PrometheusMetric> metricsReceived = new ArrayList<>();
     protected Boolean loggingEnabled; // Default: null/false
     private Server server;
 
@@ -55,44 +57,26 @@ public class InMemoryCollector {
         checkForLogging();
     }
 
-    public static KeyValue convertKeyValue(io.opentelemetry.proto.common.v1.KeyValue keyValue) {
-        return new DefaultKeyValue(keyValue.getKey(), keyValue.getValue().getStringValue());
-    }
-
-    public static String fromByteString(ByteString bs) {
-        return HexFormat.of().formatHex(bs.toByteArray());
-    }
+//    public static KeyValue convertKeyValue(io.opentelemetry.proto.common.v1.KeyValue keyValue) {
+//        return new DefaultKeyValue(keyValue.getKey(), keyValue.getValue().getStringValue());
+//    }
 
     public void reset() {
+        logsReceived.clear();
         tracesReceived.clear();
+        metricsReceived.clear();
     }
 
-    public List<Trace> assertTraces(String serviceName, Consumer<List<Trace>> assertionConsumer) throws InterruptedException {
-        return assertTraces(serviceName, DEFAULT_TIMEOUT, assertionConsumer);
+    public List<OpenTelemetryLogRecord> assertLogs(Consumer<List<OpenTelemetryLogRecord>> assertionConsumer) throws InterruptedException {
+        return assertLoop(DEFAULT_TIMEOUT, logsReceived, assertionConsumer);
     }
 
-    /**
-     * Variant of {@link OpenTelemetryCollectorContainer#assertTraces(String, Consumer)} that can be configured with a
-     * timeout duration.
-     */
-    public List<Trace> assertTraces(String serviceName, Duration timeout, Consumer<List<Trace>> assertionConsumer) throws InterruptedException {
-        Instant endTime = Instant.now().plus(timeout);
-        AssertionError lastAssertionError = null;
+    public List<PrometheusMetric> assertMetrics(Consumer<List<PrometheusMetric>> assertionConsumer) throws InterruptedException {
+        return assertLoop(DEFAULT_TIMEOUT, metricsReceived, assertionConsumer);
+    }
 
-        while (Instant.now().isBefore(endTime)) {
-            try {
-                assertionConsumer.accept(tracesReceived);
-                debugLog("assertTraces(...) validation passed.");
-                return tracesReceived;
-            } catch (AssertionError assertionError) {
-                debugLog("assertTraces(...) validation failed - retrying.");
-                lastAssertionError = assertionError;
-                Thread.sleep(1000);
-            }
-        }
-
-        debugLog("assertTraces(...) validation failed. State at final check:\n" + tracesReceived);
-        throw Objects.requireNonNullElseGet(lastAssertionError, AssertionError::new);
+    public List<Trace> assertTraces(Consumer<List<Trace>> assertionConsumer) throws InterruptedException {
+        return assertLoop(DEFAULT_TIMEOUT, tracesReceived, assertionConsumer);
     }
 
     public void start() throws IOException {
@@ -118,6 +102,29 @@ public class InMemoryCollector {
         }
     }
 
+    private <T> List<T> assertLoop(Duration timeout,
+                                   List<T> received,
+                                   Consumer<List<T>> consumer) throws InterruptedException {
+        Instant endTime = Instant.now().plus(timeout);
+        AssertionError lastAssertionError = null;
+
+        while (Instant.now().isBefore(endTime)) {
+            try {
+                consumer.accept(received);
+                debugLog("assertLoop(...) validation passed.");
+                return received;
+            } catch (AssertionError assertionError) {
+                debugLog("assertLoop(...) validation failed - retrying.");
+                lastAssertionError = assertionError;
+                //noinspection BusyWait
+                Thread.sleep(1000);
+            }
+        }
+
+        debugLog("assertLoop(...) validation failed. State at final check:\n" + received);
+        throw Objects.requireNonNullElseGet(lastAssertionError, AssertionError::new);
+    }
+
     private void checkForLogging() {
         loggingEnabled =
                 Boolean.parseBoolean(System.getenv().get("TC_LOGGING")) ||
@@ -136,7 +143,7 @@ public class InMemoryCollector {
         public void export(ExportTraceServiceRequest request,
                            StreamObserver<ExportTraceServiceResponse> responseObserver) {
             try {
-                debugLog("Trace received request");
+                debugLog("Trace request received");
                 var list = request.getResourceSpansList();
                 list.forEach(rs -> {
                     rs.getScopeSpansList().forEach(ss -> {
@@ -153,7 +160,7 @@ public class InMemoryCollector {
                                     .flags(s.getFlags())
                                     .startTimeUnixNano(s.getStartTimeUnixNano())
                                     .endTimeUnixNano(s.getEndTimeUnixNano())
-                                    .attributes(s.getAttributesList())
+                                    .attributes(fromKeyValueList(s.getAttributesList()))
                                     .droppedAttributesCount(s.getDroppedAttributesCount())
                                     .events(s.getEventsList())
                                     .droppedEventsCount(s.getDroppedEventsCount())
@@ -187,12 +194,21 @@ public class InMemoryCollector {
         public void export(ExportLogsServiceRequest request,
                            StreamObserver<ExportLogsServiceResponse> responseObserver) {
             try {
-                debugLog("Logs received request");
+                debugLog("Logs request received");
                 var list = request.getResourceLogsList();
                 list.forEach(rl -> {
                     rl.getScopeLogsList().forEach(sl -> {
                         sl.getLogRecordsList().forEach(lr -> {
-                            debugLog("Log message: " + lr.getBody().getStringValue());
+                            logsReceived.add(new OpenTelemetryLogRecord(
+                                    fromByteString(lr.getTraceId()),
+                                    fromByteString(lr.getSpanId()),
+                                    lr.getBody().getStringValue(),
+                                    lr.getTimeUnixNano(),
+                                    lr.getObservedTimeUnixNano(),
+                                    lr.getSeverityNumberValue(),
+                                    lr.getSeverityText(),
+                                    fromKeyValueList(lr.getAttributesList()),
+                                    lr.getFlags()));
                         });
                     });
                 });
@@ -211,12 +227,18 @@ public class InMemoryCollector {
         public void export(ExportMetricsServiceRequest request,
                            StreamObserver<ExportMetricsServiceResponse> responseObserver) {
             try {
-                debugLog("Metrics received request");
+                debugLog("Metrics request received");
                 var list = request.getResourceMetricsList();
                 list.forEach(rm -> {
                     rm.getScopeMetricsList().forEach(sm -> {
                         sm.getMetricsList().forEach(m -> {
-                            debugLog("Metric name: " + m.getName());
+                            metricsReceived.add(new PrometheusMetric(
+                                    m.getName(),
+                                    fromKeyValueList(m.getMetadataList()),
+                                    "",
+                                    "",
+                                    m.getDescription()
+                            ));
                         });
                     });
                 });

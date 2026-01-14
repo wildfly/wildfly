@@ -126,16 +126,16 @@ public class CollectorLogRecordParser {
 
         // Build the final record instance
         return new OpenTelemetryLogRecord(
+                parsedFields.getOrDefault("Trace ID", ""),
+                parsedFields.getOrDefault("Span ID", ""),
+                parsedFields.getOrDefault("Body", "Str()")
+                        .replaceAll("^Str\\(|\\)$", ""), // Removes "Str(" and ")"
                 parseDateToUnixNano(parsedFields.getOrDefault("Timestamp", "")),
                 parseDateToUnixNano(parsedFields.getOrDefault("ObservedTimestamp", "")),
                 severityNumber,
                 parsedFields.getOrDefault("SeverityText", ""),
-                parsedFields.getOrDefault("Body", "Str()")
-                        .replaceAll("^Str\\(|\\)$", ""), // Removes "Str(" and ")"
                 attributes,
-                Integer.parseInt(parsedFields.getOrDefault("Flags", "0")), // Flags is simple int
-                parsedFields.getOrDefault("Trace ID", ""),
-                parsedFields.getOrDefault("Span ID", "")
+                Integer.parseInt(parsedFields.getOrDefault("Flags", "0")) // Flags is simple int
         );
     }
 
@@ -146,21 +146,19 @@ public class CollectorLogRecordParser {
      * @param dateString The observed date string.
      * @return The Unix time in nanoseconds as a String.
      */
-    private String parseDateToUnixNano(String dateString) {
+    private long parseDateToUnixNano(String dateString) {
         if (dateString == null || dateString.trim().isEmpty()) {
-            return "0"; // Default to 0 if missing
+            return 0; // Default to 0 if missing
         }
         try {
             // Remove the ' UTC' suffix as it's handled by the 'Z' pattern
             OffsetDateTime odt = OffsetDateTime.parse(dateString.replace(" UTC", "").trim(), DATE_FORMATTER);
 
             // Calculate nanoseconds: seconds * 10^9 + nanoseconds part of the second
-            long nanoSeconds = odt.toInstant().getEpochSecond() * 1_000_000_000L + odt.toInstant().getNano();
-
-            return String.valueOf(nanoSeconds);
+            return odt.toInstant().getEpochSecond() * 1_000_000_000L + odt.toInstant().getNano();
         } catch (Exception e) {
             System.err.println("Error parsing date '" + dateString + "'. Returning 0. Error: " + e.getMessage());
-            return "0";
+            return 0;
         }
     }
 }
