@@ -7,7 +7,7 @@
 
 package org.jboss.as.test.shared.observability.signals.trace;
 
-import static org.jboss.as.test.shared.observability.signals.SignalUtil.fromKeyValueList;
+import static org.jboss.as.test.shared.observability.collector.CollectorUtil.fromKeyValueList;
 
 import java.util.List;
 import java.util.Map;

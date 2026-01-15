@@ -7,13 +7,13 @@
 
 package org.jboss.as.test.shared.observability.collector;
 
-import static org.jboss.as.test.shared.observability.signals.SignalUtil.fromByteString;
-import static org.jboss.as.test.shared.observability.signals.SignalUtil.fromKeyValueList;
+import static org.jboss.as.test.shared.observability.collector.CollectorUtil.debugLog;
 
 import java.io.IOException;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
@@ -23,67 +23,86 @@ import java.util.logging.Logger;
 import io.grpc.Grpc;
 import io.grpc.InsecureServerCredentials;
 import io.grpc.Server;
-import io.grpc.stub.StreamObserver;
-import io.opentelemetry.proto.collector.logs.v1.ExportLogsServiceRequest;
-import io.opentelemetry.proto.collector.logs.v1.ExportLogsServiceResponse;
-import io.opentelemetry.proto.collector.logs.v1.LogsServiceGrpc;
-import io.opentelemetry.proto.collector.metrics.v1.ExportMetricsServiceRequest;
-import io.opentelemetry.proto.collector.metrics.v1.ExportMetricsServiceResponse;
-import io.opentelemetry.proto.collector.metrics.v1.MetricsServiceGrpc;
-import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceRequest;
-import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceResponse;
-import io.opentelemetry.proto.collector.trace.v1.TraceServiceGrpc;
+import jakarta.servlet.ServletException;
 import org.jboss.as.test.shared.TimeoutUtil;
-import org.jboss.as.test.shared.observability.signals.PrometheusMetric;
-import org.jboss.as.test.shared.observability.signals.logs.OpenTelemetryLogRecord;
+import org.jboss.as.test.shared.observability.collector.grpc.LogsServiceImpl;
+import org.jboss.as.test.shared.observability.collector.grpc.MetricsServiceImpl;
+import org.jboss.as.test.shared.observability.collector.grpc.TraceServiceImpl;
+import org.jboss.as.test.shared.observability.collector.http.UndertowServer;
+import org.jboss.as.test.shared.observability.signals.SimpleMetric;
+import org.jboss.as.test.shared.observability.signals.logs.LogEntry;
 import org.jboss.as.test.shared.observability.signals.trace.Span;
-import org.jboss.as.test.shared.observability.signals.trace.Trace;
 
 public class InMemoryCollector {
     private static final Logger logger = Logger.getLogger(InMemoryCollector.class.getName());
-    protected final int port;
     private final Duration DEFAULT_TIMEOUT = Duration.ofSeconds(
-            TimeoutUtil.adjust(
-                    Integer.parseInt(
-                            System.getProperty("testsuite.integration.container.timeout", "120"))));
-    private final List<Trace> tracesReceived = new ArrayList<>();
-    private final List<OpenTelemetryLogRecord> logsReceived = new ArrayList<>();
-    private final List<PrometheusMetric> metricsReceived = new ArrayList<>();
-    protected Boolean loggingEnabled; // Default: null/false
-    private Server server;
+            TimeoutUtil.adjust(Integer.parseInt(System.getProperty("testsuite.integration.container.timeout", "120"))));
 
-    public InMemoryCollector(int port) {
-        this.port = port;
-        checkForLogging();
+    private final List<Span> spansReceived = Collections.synchronizedList(new ArrayList<>());
+    private final List<LogEntry> logsReceived = Collections.synchronizedList(new ArrayList<>());
+    private final List<SimpleMetric> metricsReceived = Collections.synchronizedList(new ArrayList<>());
+
+    protected int grpcPort = 4317;
+    protected int httpPort = 4318;
+
+    private Server grpcServer;
+    private UndertowServer undertowServer;
+
+    public InMemoryCollector() {
     }
 
-//    public static KeyValue convertKeyValue(io.opentelemetry.proto.common.v1.KeyValue keyValue) {
-//        return new DefaultKeyValue(keyValue.getKey(), keyValue.getValue().getStringValue());
-//    }
+    public InMemoryCollector(int gprcPort, int httpPort) {
+        this.grpcPort = gprcPort;
+        this.httpPort = httpPort;
+    }
 
-    public void reset() {
+    public synchronized void reset() {
         logsReceived.clear();
-        tracesReceived.clear();
+        spansReceived.clear();
         metricsReceived.clear();
     }
 
-    public List<OpenTelemetryLogRecord> assertLogs(Consumer<List<OpenTelemetryLogRecord>> assertionConsumer) throws InterruptedException {
+    public List<LogEntry> assertLogs(Consumer<List<LogEntry>> assertionConsumer) throws InterruptedException {
         return assertLoop(DEFAULT_TIMEOUT, logsReceived, assertionConsumer);
     }
 
-    public List<PrometheusMetric> assertMetrics(Consumer<List<PrometheusMetric>> assertionConsumer) throws InterruptedException {
+    public List<SimpleMetric> assertMetrics(Consumer<List<SimpleMetric>> assertionConsumer) throws InterruptedException {
         return assertLoop(DEFAULT_TIMEOUT, metricsReceived, assertionConsumer);
     }
 
-    public List<Trace> assertTraces(Consumer<List<Trace>> assertionConsumer) throws InterruptedException {
-        return assertLoop(DEFAULT_TIMEOUT, tracesReceived, assertionConsumer);
+    public List<Span> assertSpans(Consumer<List<Span>> assertionConsumer) throws InterruptedException {
+        return assertLoop(DEFAULT_TIMEOUT, spansReceived, assertionConsumer);
     }
 
     public void start() throws IOException {
-        server = Grpc.newServerBuilderForPort(port, InsecureServerCredentials.create())
-                .addService(new LogsServiceImpl())
-                .addService(new MetricsServiceImpl())
-                .addService(new TraceServiceImpl())
+        startGrpcServer();
+        startHttpServer();
+        debugLog("Grpc server listening on " + grpcPort);
+        debugLog("Https server listening on " + httpPort);
+    }
+
+    public void shutdown() throws InterruptedException {
+        if (grpcServer != null) {
+            grpcServer.shutdown().awaitTermination(30, TimeUnit.SECONDS);
+        }
+        if (undertowServer != null) {
+            undertowServer.shutdown();
+        }
+    }
+
+    public List<LogEntry> fetchLogs() {
+        return Collections.unmodifiableList(logsReceived);
+    }
+
+    public List<SimpleMetric> fetchMetrics() {
+        return Collections.unmodifiableList(metricsReceived);
+    }
+
+    private void startGrpcServer() throws IOException {
+        grpcServer = Grpc.newServerBuilderForPort(grpcPort, InsecureServerCredentials.create())
+                .addService(new LogsServiceImpl(logsReceived::add))
+                .addService(new MetricsServiceImpl(metricsReceived::add))
+                .addService(new TraceServiceImpl(this::consumeSpan))
                 .build()
                 .start();
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
@@ -93,13 +112,26 @@ public class InMemoryCollector {
                 e.printStackTrace(System.err);
             }
         }));
-        debugLog("Server started, listening on " + port);
     }
 
-    public void shutdown() throws InterruptedException {
-        if (server != null) {
-            server.shutdown().awaitTermination(30, TimeUnit.SECONDS);
+    private void startHttpServer() throws IOException {
+        undertowServer = new UndertowServer(this::consumeSpan, metricsReceived::add);
+        try {
+            undertowServer.start();
+        } catch (ServletException e) {
+            throw new IOException(e);
         }
+    }
+
+    private void consumeSpan(Span s) {
+        spansReceived.add(s);
+    }
+
+    // Meters are constantly re-published, so a value for meter A will be received multiple times. We are only interested
+    // in the latest value, though, so we remove any existing meter value, then add the new.
+    private synchronized void consumeSimpleMeter(SimpleMetric sm) {
+        metricsReceived.remove(sm);
+        metricsReceived.add(sm);
     }
 
     private <T> List<T> assertLoop(Duration timeout,
@@ -110,7 +142,7 @@ public class InMemoryCollector {
 
         while (Instant.now().isBefore(endTime)) {
             try {
-                consumer.accept(received);
+                consumer.accept(new ArrayList<>(received));
                 debugLog("assertLoop(...) validation passed.");
                 return received;
             } catch (AssertionError assertionError) {
@@ -123,132 +155,5 @@ public class InMemoryCollector {
 
         debugLog("assertLoop(...) validation failed. State at final check:\n" + received);
         throw Objects.requireNonNullElseGet(lastAssertionError, AssertionError::new);
-    }
-
-    private void checkForLogging() {
-        loggingEnabled =
-                Boolean.parseBoolean(System.getenv().get("TC_LOGGING")) ||
-                        Boolean.parseBoolean(System.getProperty("testsuite.integration.container.logging")) ||
-                        Boolean.parseBoolean(System.getProperty("testsuite.integration.container.InMemoryCollector.logging"));
-    }
-
-    protected void debugLog(String message) {
-        if (loggingEnabled) {
-            System.err.println("[InMemoryCollector] " + message);
-        }
-    }
-
-    class TraceServiceImpl extends TraceServiceGrpc.TraceServiceImplBase {
-        @Override
-        public void export(ExportTraceServiceRequest request,
-                           StreamObserver<ExportTraceServiceResponse> responseObserver) {
-            try {
-                debugLog("Trace request received");
-                var list = request.getResourceSpansList();
-                list.forEach(rs -> {
-                    rs.getScopeSpansList().forEach(ss -> {
-                        ss.getSpansList().forEach(s -> {
-                            String traceId = fromByteString(s.getTraceId());
-
-                            Span span = Span.builder()
-                                    .traceId(traceId)
-                                    .spanId(fromByteString(s.getSpanId()))
-                                    .name(s.getName())
-                                    .kind(s.getKindValue())
-                                    .traceState(s.getTraceState())
-                                    .parentSpanId(fromByteString(s.getParentSpanId()))
-                                    .flags(s.getFlags())
-                                    .startTimeUnixNano(s.getStartTimeUnixNano())
-                                    .endTimeUnixNano(s.getEndTimeUnixNano())
-                                    .attributes(fromKeyValueList(s.getAttributesList()))
-                                    .droppedAttributesCount(s.getDroppedAttributesCount())
-                                    .events(s.getEventsList())
-                                    .droppedEventsCount(s.getDroppedEventsCount())
-                                    .links(s.getLinksList())
-                                    .droppedLinksCount(s.getDroppedLinksCount())
-                                    .status(s.getStatus()).build();
-
-                            Trace trace = tracesReceived.stream().filter(t ->
-                                    t.traceId().equals(traceId)).findFirst().orElseGet(() -> {
-                                var newTrace = new Trace(traceId);
-                                tracesReceived.add(newTrace);
-                                return newTrace;
-                            });
-                            trace.addSpan(span);
-                        });
-                    });
-                });
-
-                ExportTraceServiceResponse response = ExportTraceServiceResponse.newBuilder()
-                        .build();
-                responseObserver.onNext(response);
-                responseObserver.onCompleted();
-            } catch (Exception e) {
-                responseObserver.onError(e);
-            }
-        }
-    }
-
-    class LogsServiceImpl extends LogsServiceGrpc.LogsServiceImplBase {
-        @Override
-        public void export(ExportLogsServiceRequest request,
-                           StreamObserver<ExportLogsServiceResponse> responseObserver) {
-            try {
-                debugLog("Logs request received");
-                var list = request.getResourceLogsList();
-                list.forEach(rl -> {
-                    rl.getScopeLogsList().forEach(sl -> {
-                        sl.getLogRecordsList().forEach(lr -> {
-                            logsReceived.add(new OpenTelemetryLogRecord(
-                                    fromByteString(lr.getTraceId()),
-                                    fromByteString(lr.getSpanId()),
-                                    lr.getBody().getStringValue(),
-                                    lr.getTimeUnixNano(),
-                                    lr.getObservedTimeUnixNano(),
-                                    lr.getSeverityNumberValue(),
-                                    lr.getSeverityText(),
-                                    fromKeyValueList(lr.getAttributesList()),
-                                    lr.getFlags()));
-                        });
-                    });
-                });
-                ExportLogsServiceResponse response = ExportLogsServiceResponse.newBuilder()
-                        .build();
-                responseObserver.onNext(response);
-                responseObserver.onCompleted();
-            } catch (Exception e) {
-                responseObserver.onError(e);
-            }
-        }
-    }
-
-    class MetricsServiceImpl extends MetricsServiceGrpc.MetricsServiceImplBase {
-        @Override
-        public void export(ExportMetricsServiceRequest request,
-                           StreamObserver<ExportMetricsServiceResponse> responseObserver) {
-            try {
-                debugLog("Metrics request received");
-                var list = request.getResourceMetricsList();
-                list.forEach(rm -> {
-                    rm.getScopeMetricsList().forEach(sm -> {
-                        sm.getMetricsList().forEach(m -> {
-                            metricsReceived.add(new PrometheusMetric(
-                                    m.getName(),
-                                    fromKeyValueList(m.getMetadataList()),
-                                    "",
-                                    "",
-                                    m.getDescription()
-                            ));
-                        });
-                    });
-                });
-                ExportMetricsServiceResponse response = ExportMetricsServiceResponse.newBuilder()
-                        .build();
-                responseObserver.onNext(response);
-                responseObserver.onCompleted();
-            } catch (Exception e) {
-                responseObserver.onError(e);
-            }
-        }
     }
 }

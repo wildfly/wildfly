@@ -84,8 +84,8 @@ public class MicrometerOtelIntegrationTestCase {
                 "undertow_bytes_received"
         );
 
-        otelCollector.assertMetrics(prometheusMetrics -> metricsToTest.forEach(n -> Assert.assertTrue("Missing metric: " + n,
-                prometheusMetrics.stream().anyMatch(m -> m.getKey().startsWith(n)))));
+        otelCollector.assertMetrics(metrics -> metricsToTest.forEach(n -> Assert.assertTrue("Missing metric: " + n,
+                metrics.stream().anyMatch(m -> m.key().startsWith(n)))));
     }
 
     @Test
@@ -106,12 +106,12 @@ public class MicrometerOtelIntegrationTestCase {
                 "undertow_sessions_created_total"
         );
 
-        otelCollector.assertMetrics(prometheusMetrics -> {
+        otelCollector.assertMetrics(metrics -> {
             Map<String, PrometheusMetric> appMetrics =
-                    prometheusMetrics.stream().filter(m -> m.getTags().entrySet().stream()
+                    metrics.stream().filter(m -> m.tags().entrySet().stream()
                                     .anyMatch(t -> "app".equals(t.getKey()) && DEPLOYMENT_NAME.equals(t.getValue()))
                             )
-                            .collect(Collectors.toMap(PrometheusMetric::getKey, i -> i));
+                            .collect(Collectors.toMap(PrometheusMetric::key, i -> i));
 
             metricsToTest.forEach(m -> Assert.assertTrue("Missing app metric: " + m, appMetrics.containsKey(m)));
         });
@@ -132,13 +132,13 @@ public class MicrometerOtelIntegrationTestCase {
                 "cpu_available_processors"
         );
 
-        otelCollector.assertMetrics(prometheusMetrics -> {
+        otelCollector.assertMetrics(metrics -> {
             metricsToTest.forEach(m -> {
                 Assert.assertNotEquals("Metric value should be non-zero: " + m,
-                        "0", prometheusMetrics.stream().filter(e -> e.getKey().startsWith(m))
+                        "0", metrics.stream().filter(e -> e.key().startsWith(m))
                                 .findFirst()
                                 .orElseThrow()
-                                .getValue()); // Add the metrics tags to complete the key
+                                .value()); // Add the metrics tags to complete the key
             });
         });
     }

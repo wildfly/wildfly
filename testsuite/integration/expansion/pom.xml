@@ -39,6 +39,8 @@
         <!-- Use the expansion bom -->
         <dependency.management.import.artifact>wildfly-standard-expansion-bom</dependency.management.import.artifact>
         <dependency.management.import.test.artifact>wildfly-standard-test-expansion-bom</dependency.management.import.test.artifact>
+
+        <version.io.undertow>2.3.20.Final</version.io.undertow>
     </properties>
 
     <dependencyManagement>
@@ -371,6 +373,35 @@
             <groupId>io.opentelemetry.proto</groupId>
             <artifactId>opentelemetry-proto</artifactId>
             <version>${version.io.opentelemetry.proto}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>io.opentelemetry</groupId>
+            <artifactId>opentelemetry-sdk</artifactId>
+            <version>${version.io.opentelemetry.opentelemetry}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>io.opentelemetry</groupId>
+            <artifactId>opentelemetry-api</artifactId>
+            <version>${version.io.opentelemetry.opentelemetry}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>io.opentelemetry.semconv</groupId>
+            <artifactId>opentelemetry-semconv</artifactId>
+            <version>${version.io.opentelemetry.opentelemetry-semconv}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>io.undertow</groupId>
+            <artifactId>undertow-core</artifactId>
+            <version>${version.io.undertow}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.undertow</groupId>
+            <artifactId>undertow-servlet</artifactId>
+            <version>${version.io.undertow}</version>
         </dependency>
         <dependency>
             <groupId>io.grpc</groupId>

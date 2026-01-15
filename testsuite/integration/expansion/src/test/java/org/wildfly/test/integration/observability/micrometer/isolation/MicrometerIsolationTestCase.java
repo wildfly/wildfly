@@ -80,7 +80,7 @@ public class MicrometerIsolationTestCase {
         otelCollector.assertMetrics(metrics ->
                 Arrays.asList("app1_counter", "app2_counter")
                         .forEach(metric -> assertTrue("Missing metric: " + metric,
-                                metrics.stream().anyMatch(m -> m.getKey().contains(metric)))));
+                                metrics.stream().anyMatch(m -> m.key().contains(metric)))));
 
     }
 

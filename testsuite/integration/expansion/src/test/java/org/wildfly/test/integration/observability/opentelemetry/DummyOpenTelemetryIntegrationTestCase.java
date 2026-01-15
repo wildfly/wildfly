@@ -4,95 +4,46 @@
  */
 package org.wildfly.test.integration.observability.opentelemetry;
 
-import java.io.IOException;
-import java.net.MalformedURLException;
-import java.util.List;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STATISTICS_ENABLED;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 
-import jakarta.ws.rs.client.Client;
-import jakarta.ws.rs.client.ClientBuilder;
-import jakarta.ws.rs.core.Response;
+import java.net.MalformedURLException;
+import java.net.URL;
+
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.container.ManagementClient;
-import org.jboss.as.test.shared.CdiUtils;
+import org.jboss.as.controller.client.helpers.Operations;
 import org.jboss.as.test.shared.ServerReload;
 import org.jboss.as.test.shared.TestSuiteEnvironment;
-import org.jboss.as.test.shared.observability.collector.InMemoryCollector;
-import org.jboss.as.test.shared.observability.setuptasks.OpenTelemetrySetupTask;
-import org.jboss.as.test.shared.observability.signals.jaeger.JaegerResponse;
-import org.jboss.as.test.shared.observability.signals.trace.Span;
-import org.jboss.as.test.shared.observability.signals.trace.Trace;
-import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.asset.StringAsset;
+import org.jboss.as.test.shared.observability.setuptasks.AbstractSetupTask;
+import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.AfterClass;
 import org.junit.Assert;
-import org.junit.BeforeClass;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.wildfly.test.integration.observability.JaxRsActivator;
-import org.wildfly.test.integration.observability.opentelemetry.application.OtelMetricResource;
-import org.wildfly.test.integration.observability.opentelemetry.application.OtelService1;
 
-@RunWith(Arquillian.class)
-@ServerSetup({OpenTelemetrySetupTask.class})
 @RunAsClient
-public class DummyOpenTelemetryIntegrationTestCase {
+public class DummyOpenTelemetryIntegrationTestCase extends BaseOpenTelemetryTest{
     private static final String DEPLOYMENT_NAME = "otelinteg";
-    private static final String MP_CONFIG = "otel.sdk.disabled=false\n" +
-            // Lower the interval from 60 seconds to 2 seconds
-            "otel.metric.export.interval=2000";
-    private static final int port = 4317;
-    public static InMemoryCollector server;
-
-    static WebArchive buildBaseArchive(String name) {
-        return ShrinkWrap
-                .create(WebArchive.class, name + ".war")
-                .addClasses(
-                        BaseOpenTelemetryTest.class,
-                        JaxRsActivator.class,
-                        OtelService1.class,
-                        OtelMetricResource.class
-                )
-                .addPackage(JaegerResponse.class.getPackage())
-                .addAsManifestResource(new StringAsset(MP_CONFIG), "microprofile-config.properties")
-                .addAsWebInfResource(CdiUtils.createBeansXml(), "beans.xml")
-                ;
-    }
 
     @Deployment(testable = false)
     public static WebArchive getDeployment() {
         return buildBaseArchive(DEPLOYMENT_NAME);
     }
 
-    @BeforeClass
-    public static void setup() throws IOException {
-        server = new InMemoryCollector(port);
-        server.start();
-    }
-
-    @AfterClass
-    public static void stopServer() throws InterruptedException {
-        if (server != null) {
-            server.shutdown();
-        }
-    }
-
     @Test
     public void testTracesReceived() throws Exception {
-        try (Client client = ClientBuilder.newClient()) {
-            Response response = client.target(getDeploymentUrl(DEPLOYMENT_NAME)).request().get();
-            Assert.assertEquals(200, response.getStatus());
-        }
+//        try (Client client = ClientBuilder.newClient()) {
+//            Response response = client.target(getDeploymentUrl(DEPLOYMENT_NAME)).request().get();
+//            Assert.assertEquals(200, response.getStatus());
+//        }
 
-        server.assertTraces(traces -> {
-                    Assert.assertFalse("Traces not found for service", traces.isEmpty());
+        makeRequests(new URL(getDeploymentUrl(DEPLOYMENT_NAME) ), 1, 200);
 
-                    Trace trace = traces.get(0);
-                    String traceId = trace.traceId();
-                    List<Span> spans = trace.spans();
+        server.assertSpans(spans -> {
+                    Assert.assertFalse("Traces not found for service", spans.isEmpty());
+
+                    String traceId = spans.get(0).traceId();
 
                     spans.forEach(s ->
                             Assert.assertEquals("The traceId of the span did not match the first span's. Context propagation failed.",
@@ -116,46 +67,43 @@ public class DummyOpenTelemetryIntegrationTestCase {
         return TestSuiteEnvironment.getHttpUrl() + "/" + deploymentName + "/";
     }
 
-    public static class OpenTelemetryWithDummyCollectorSetupTask extends OpenTelemetrySetupTask {
+    static class DummyMicrometerSetupTask extends AbstractSetupTask {
+        private static final ModelNode micrometerExtension = Operations.createAddress("extension", "org.wildfly.extension.micrometer");
+        private static final ModelNode micrometerSubsystem = Operations.createAddress("subsystem", "micrometer");
+        private static final ModelNode otlpRegistry = Operations.createAddress(SUBSYSTEM, "micrometer", "registry", "otlp");
 
-        private static final int port = 4317;
-        public static InMemoryCollector inMemoryCollector;
-        public static DummyCollectorServer server;
 
         @Override
-        public void setup(final ManagementClient managementClient, final String containerId) throws Exception {
-            super.setup(managementClient, containerId);
-//            inMemoryCollector = new InMemoryCollector();
-//            inMemoryCollector.start(port);
+        public void setup(final ManagementClient managementClient, String containerId) throws Exception {
+            executeOp(managementClient, writeAttribute("undertow", STATISTICS_ENABLED, "true"));
 
-            server = new DummyCollectorServer();
-            new Thread(() -> {
-                try {
-                    server.start(port);
-                    server.blockUntilShutdown();
-                } catch (Exception e) {
-                    throw new RuntimeException(e);
-                }
-            }).start();
+            if (!Operations.isSuccessfulOutcome(executeRead(managementClient, micrometerExtension))) {
+                executeOp(managementClient, Operations.createAddOperation(micrometerExtension));
+            }
 
-//            executeOp(managementClient, writeAttribute(SUBSYSTEM_NAME, "endpoint",
-//                    "http://localhost:" + port));
+            if (!Operations.isSuccessfulOutcome(executeRead(managementClient, micrometerSubsystem))) {
+                executeOp(managementClient, Operations.createAddOperation(micrometerSubsystem));
+            }
 
-//            ServerReload.executeReloadAndWaitForCompletion(managementClient);
+            if (!Operations.isSuccessfulOutcome(executeRead(managementClient, otlpRegistry))) {
+                ModelNode addOtlpOp = Operations.createAddOperation(otlpRegistry);
+                addOtlpOp.get("endpoint").set("http://localhost:4318/v1/metrics");
+                addOtlpOp.get("step").set("1");
+                executeOp(managementClient, addOtlpOp);
+            } else {
+                executeOp(managementClient, writeAttribute(otlpRegistry, "endpoint", "http://localhost:4318/v1/metrics"));
+            }
+
+            ServerReload.executeReloadAndWaitForCompletion(managementClient);
         }
 
         @Override
-        public void tearDown(final ManagementClient managementClient, final String containerId) throws Exception {
-            super.tearDown(managementClient, containerId);
+        public void tearDown(final ManagementClient managementClient, String containerId) throws Exception {
+            executeOp(managementClient, clearAttribute("undertow", STATISTICS_ENABLED));
+            executeOp(managementClient, Operations.createRemoveOperation(micrometerSubsystem));
+            executeOp(managementClient, Operations.createRemoveOperation(micrometerExtension));
 
             ServerReload.executeReloadAndWaitForCompletion(managementClient);
-
-            server.stop();
-
-            // Stop the container last to avoid spurious connection errors from the GrpcExporter
-            if (inMemoryCollector != null) {
-                inMemoryCollector.shutdown();
-            }
         }
     }
 }

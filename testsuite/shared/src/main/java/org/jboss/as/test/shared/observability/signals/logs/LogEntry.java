@@ -6,7 +6,7 @@ package org.jboss.as.test.shared.observability.signals.logs;
 
 import java.util.Map;
 
-public record OpenTelemetryLogRecord(
+public record LogEntry(
         String traceId,
         String spanId,
         String body,

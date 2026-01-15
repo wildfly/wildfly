@@ -11,21 +11,19 @@ import jakarta.ws.rs.client.Client;
 import jakarta.ws.rs.client.ClientBuilder;
 import jakarta.ws.rs.client.WebTarget;
 import jakarta.ws.rs.core.Response;
-import org.arquillian.testcontainers.api.TestcontainersRequired;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
-import org.jboss.as.test.shared.observability.setuptasks.OpenTelemetryWithCollectorSetupTask;
-import org.jboss.as.test.shared.observability.signals.jaeger.JaegerSpan;
+import org.jboss.as.test.shared.observability.setuptasks.OpenTelemetrySetupTask;
+import org.jboss.as.test.shared.observability.signals.trace.Span;
 import org.jboss.shrinkwrap.api.Archive;
 import org.junit.Assert;
 import org.junit.Test;
 import org.wildfly.test.integration.observability.opentelemetry.span.AppScopedBean;
 
 @RunAsClient
-@ServerSetup({OpenTelemetryWithCollectorSetupTask.class})
-@TestcontainersRequired
+@ServerSetup({OpenTelemetrySetupTask.class})
 public class WithSpanTestCase extends BaseOpenTelemetryTest {
     private static final String DEPLOYMENT_NAME = "with-span-test";
 
@@ -45,11 +43,11 @@ public class WithSpanTestCase extends BaseOpenTelemetryTest {
             Response response = target.request().get();
             Assert.assertEquals(Response.Status.OK.getStatusCode(), response.getStatus());
 
-            otelCollector.assertTraces(DEPLOYMENT_NAME + ".war", traces -> {
-                Assert.assertFalse(traces.isEmpty());
+            server.assertSpans(spans -> {
+                Assert.assertFalse(spans.isEmpty());
 
-                Assert.assertTrue(traces.get(0).getSpans().stream()
-                    .map(JaegerSpan::getOperationName)
+                Assert.assertTrue(spans.stream()
+                    .map(Span::name)
                     .anyMatch("AppScopedBean.getString"::equals)
                 );
             });

@@ -26,7 +26,7 @@ import org.jboss.as.test.shared.TimeoutUtil;
 import org.jboss.as.test.shared.observability.signals.PrometheusMetric;
 import org.jboss.as.test.shared.observability.signals.jaeger.JaegerTrace;
 import org.jboss.as.test.shared.observability.signals.logs.CollectorLogRecordParser;
-import org.jboss.as.test.shared.observability.signals.logs.OpenTelemetryLogRecord;
+import org.jboss.as.test.shared.observability.signals.logs.LogEntry;
 import org.junit.Assert;
 import org.testcontainers.utility.MountableFile;
 
@@ -114,7 +114,7 @@ public class OpenTelemetryCollectorContainer extends BaseContainer<OpenTelemetry
                 .toList();
     }
 
-    public List<OpenTelemetryLogRecord> getOpenTelemetryLogs() {
+    public List<LogEntry> getOpenTelemetryLogs() {
         return new CollectorLogRecordParser().retrieveLogRecords(this.getLogs().split("\n"));
     }
 
@@ -161,15 +161,15 @@ public class OpenTelemetryCollectorContainer extends BaseContainer<OpenTelemetry
         throw Objects.requireNonNullElseGet(lastAssertionError, AssertionError::new);
     }
 
-    public List<OpenTelemetryLogRecord> assertOpenTelemetryLogs(Consumer<List<OpenTelemetryLogRecord>> assertionConsumer) throws InterruptedException {
+    public List<LogEntry> assertOpenTelemetryLogs(Consumer<List<LogEntry>> assertionConsumer) throws InterruptedException {
         return assertOpenTelemetryLogs(assertionConsumer, DEFAULT_TIMEOUT);
     }
 
-    public List<OpenTelemetryLogRecord> assertOpenTelemetryLogs(Consumer<List<OpenTelemetryLogRecord>> assertionConsumer, Duration timeout) throws InterruptedException {
+    public List<LogEntry> assertOpenTelemetryLogs(Consumer<List<LogEntry>> assertionConsumer, Duration timeout) throws InterruptedException {
         debugLog("assertOpenTelemetryLogs(...) validation starting.");
         Instant endTime = Instant.now().plus(timeout);
         AssertionError lastAssertionError = null;
-        List<OpenTelemetryLogRecord> logEntries = getOpenTelemetryLogs();
+        List<LogEntry> logEntries = getOpenTelemetryLogs();
 
         while (Instant.now().isBefore(endTime)) {
             try {

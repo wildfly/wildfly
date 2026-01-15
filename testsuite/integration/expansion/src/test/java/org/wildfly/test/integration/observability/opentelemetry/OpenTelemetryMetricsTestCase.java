@@ -17,13 +17,13 @@ import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.InSequence;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
-import org.jboss.as.test.shared.observability.setuptasks.OpenTelemetryWithCollectorSetupTask;
+import org.jboss.as.test.shared.observability.setuptasks.OpenTelemetrySetupTask;
 import org.jboss.shrinkwrap.api.Archive;
 import org.junit.Assert;
 import org.junit.Test;
 import org.wildfly.test.integration.observability.opentelemetry.application.OtelMetricResource;
 
-@ServerSetup(OpenTelemetryWithCollectorSetupTask.class)
+@ServerSetup(OpenTelemetrySetupTask.class)
 @RunAsClient
 public class OpenTelemetryMetricsTestCase extends BaseOpenTelemetryTest {
     private static final int REQUEST_COUNT = 5;
@@ -40,8 +40,10 @@ public class OpenTelemetryMetricsTestCase extends BaseOpenTelemetryTest {
     @Test
     @InSequence(1)
     public void metricsShouldStartPublishingImmediately() throws Exception {
-        Assert.assertFalse("Metrics should be published immediately.",
-            otelCollector.fetchMetrics("jvm_class_count").isEmpty());
+        server.assertMetrics(metrics ->
+                Assert.assertFalse("Metrics should be published immediately.",
+                        server.fetchMetrics().isEmpty())
+        );
     }
 
     @Test
@@ -65,7 +67,8 @@ public class OpenTelemetryMetricsTestCase extends BaseOpenTelemetryTest {
     public void getMetrics() throws InterruptedException {
         List<String> metricsToTest = List.of(OtelMetricResource.COUNTER_NAME);
 
-        otelCollector.assertMetrics(prometheusMetrics -> metricsToTest.forEach(n -> Assert.assertTrue("Missing metric: " + n,
-                prometheusMetrics.stream().anyMatch(m -> m.getKey().startsWith(n)))));
+        server.assertMetrics(metrics ->
+                metricsToTest.forEach(n -> Assert.assertTrue("Missing metric: " + n,
+                        metrics.stream().anyMatch(m -> m.name().startsWith(n)))));
     }
 }

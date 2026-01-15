@@ -78,27 +78,27 @@ public class FaultToleranceOpenTelemetryIntegrationTestCase {
             Optional<PrometheusMetric> prometheusMetric;
 
             // First verify total invocation count for the method + value returned + fallback applied
-            prometheusMetric = metrics.stream().filter(metric -> metric.getKey().equals("ft_invocations_total")).findFirst();
+            prometheusMetric = metrics.stream().filter(metric -> metric.key().equals("ft_invocations_total")).findFirst();
             Assert.assertTrue(prometheusMetric.isPresent());
-            Assert.assertEquals(INVOCATION_COUNT, Integer.parseInt(prometheusMetric.get().getValue()), 0);
+            Assert.assertEquals(INVOCATION_COUNT, Integer.parseInt(prometheusMetric.get().value()), 0);
 
 
             // Verify the number of timeouts being equal to the number of invocations
             prometheusMetric = metrics.stream()
-                    .filter(metric -> metric.getKey().equals("ft_timeout_calls_total"))
-                    .filter(metric -> Boolean.TRUE.toString().equalsIgnoreCase(metric.getTags().get("timedOut")))
+                    .filter(metric -> metric.key().equals("ft_timeout_calls_total"))
+                    .filter(metric -> Boolean.TRUE.toString().equalsIgnoreCase(metric.tags().get("timedOut")))
                     .findFirst();
             Assert.assertTrue(prometheusMetric.isPresent());
-            Assert.assertEquals(INVOCATION_COUNT, Integer.parseInt(prometheusMetric.get().getValue()), 0);
+            Assert.assertEquals(INVOCATION_COUNT, Integer.parseInt(prometheusMetric.get().value()), 0);
 
 
             // Verify the number of successful invocations to be none, since it always fails
             prometheusMetric = metrics.stream()
-                    .filter(metric -> metric.getKey().equals("ft_timeout_calls_total"))
-                    .filter(metric -> Boolean.FALSE.toString().equalsIgnoreCase(metric.getTags().get("timedOut")))
+                    .filter(metric -> metric.key().equals("ft_timeout_calls_total"))
+                    .filter(metric -> Boolean.FALSE.toString().equalsIgnoreCase(metric.tags().get("timedOut")))
                     .findFirst();
             Assert.assertTrue(prometheusMetric.isPresent());
-            Assert.assertEquals(0, Integer.parseInt(prometheusMetric.get().getValue()), 0);
+            Assert.assertEquals(0, Integer.parseInt(prometheusMetric.get().value()), 0);
         });
     }
 

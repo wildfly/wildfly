@@ -48,12 +48,12 @@ public class MicrometerMultipleWarTestCase extends BaseMicrometerMultipleTestCas
         makeRequests(new URI(String.format("%s/%s", serviceOne, DuplicateMetricResource1.TAG)));
         makeRequests(new URI(String.format("%s/%s", serviceTwo, DuplicateMetricResource2.TAG)));
 
-        otelCollector.assertMetrics(prometheusMetrics -> {
-            List<PrometheusMetric> results = otelCollector.getMetricsByName(prometheusMetrics,
+        otelCollector.assertMetrics(metrics -> {
+            List<PrometheusMetric> results = otelCollector.getMetricsByName(metrics,
                     DuplicateMetricResource1.METER_NAME + "_total"); // Adjust for Prometheus naming conventions
 
             assertEquals(2, results.size());
-            results.forEach(r -> assertEquals("" + REQUEST_COUNT, r.getValue()));
+            results.forEach(r -> assertEquals("" + REQUEST_COUNT, r.value()));
         });
     }
 }

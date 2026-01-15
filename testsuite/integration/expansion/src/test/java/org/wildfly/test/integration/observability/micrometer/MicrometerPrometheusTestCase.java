@@ -78,13 +78,13 @@ public class MicrometerPrometheusTestCase {
     public void basicPrometheusTest() throws Exception {
         makeRequests();
 
-        otelCollector.assertMetrics(prometheusMetrics -> {
-            List<PrometheusMetric> results = otelCollector.getMetricsByName(prometheusMetrics, "demo_counter_total"); // Adjust for Prometheus naming conventions
+        otelCollector.assertMetrics(metrics -> {
+            List<PrometheusMetric> results = otelCollector.getMetricsByName(metrics, "demo_counter_total"); // Adjust for Prometheus naming conventions
 
             Assert.assertEquals(1, results.size());
-            results.forEach(r -> Assert.assertEquals("" + REQUEST_COUNT, r.getValue()));
+            results.forEach(r -> Assert.assertEquals("" + REQUEST_COUNT, r.value()));
 
-            Assert.assertNotEquals(0, otelCollector.getMetricsByName(prometheusMetrics, "demo_timer_milliseconds_count").size());
+            Assert.assertNotEquals(0, otelCollector.getMetricsByName(metrics, "demo_timer_milliseconds_count").size());
         });
     }
 

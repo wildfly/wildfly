@@ -55,12 +55,12 @@ public class MicrometerEarDeploymentTestCase extends BaseMicrometerMultipleTestC
         makeRequests(new URI(String.format("%s/%s/%s/%s", earUrl, ENTERPRISE_APP, SERVICE_TWO, DuplicateMetricResource2.TAG)));
 
 
-        otelCollector.assertMetrics(prometheusMetrics -> {
-            List<PrometheusMetric> results = otelCollector.getMetricsByName(prometheusMetrics,
+        otelCollector.assertMetrics(metrics -> {
+            List<PrometheusMetric> results = otelCollector.getMetricsByName(metrics,
                     DuplicateMetricResource1.METER_NAME + "_total"); // Adjust for Prometheus naming conventions
 
             Assert.assertEquals(2, results.size());
-            results.forEach(r -> Assert.assertEquals("" + REQUEST_COUNT, r.getValue()));
+            results.forEach(r -> Assert.assertEquals("" + REQUEST_COUNT, r.value()));
         });
     }
 }
