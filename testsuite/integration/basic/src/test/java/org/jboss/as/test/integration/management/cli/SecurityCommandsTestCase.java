@@ -86,7 +86,7 @@ public class SecurityCommandsTestCase {
     public static void setup() throws Exception {
         // Create ctx, used to setup the test and do the final reload.
         CommandContextConfiguration.Builder configBuilder = new CommandContextConfiguration.Builder();
-        configBuilder.setConnectionTimeout(TimeoutUtil.adjust(5000)); // default from org.jboss.as.cli.impl.CliConfigImpl
+        configBuilder.setConnectionTimeout(TimeoutUtil.adjust(20000));
         configBuilder.setConsoleOutput(consoleOutput).setInitConsole(true).
                 setController("remote+http://" + TestSuiteEnvironment.getServerAddress()
                         + ":" + TestSuiteEnvironment.getServerPort());

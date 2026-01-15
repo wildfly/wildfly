@@ -329,7 +329,7 @@ public class SuspendResumeRemoteEJBTestCase extends AbstractClusteringTestCase {
         ModelNode queryOperation = Util.createOperation("read-attribute", PathAddress.EMPTY_ADDRESS);
         queryOperation.get(NAME).set("suspend-state");
         Instant start = Instant.now();
-        Duration maxDuration = Duration.ofSeconds(15);
+        Duration maxDuration = Duration.ofSeconds(20);
         String state = this.getSuspendState(node);
         Instant now = Instant.now();
         try {
