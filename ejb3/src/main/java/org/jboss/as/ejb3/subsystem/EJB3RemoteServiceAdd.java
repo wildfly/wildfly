@@ -15,12 +15,14 @@ import java.util.concurrent.Executor;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
+import io.undertow.server.handlers.PathHandler;
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.CapabilityServiceBuilder;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.ProcessType;
 import org.jboss.as.controller.RequirementServiceTarget;
 import org.jboss.as.controller.ServiceNameFactory;
 import org.jboss.as.controller.capability.RuntimeCapability;
@@ -28,8 +30,10 @@ import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.remote.AssociationService;
 import org.jboss.as.ejb3.remote.EJBRemoteConnectorService;
+import org.jboss.as.ejb3.remote.http.EJBRemoteHTTPService;
 import org.jboss.as.network.ClientMapping;
 import org.jboss.as.network.ProtocolSocketBinding;
+import org.jboss.as.txn.service.TxnServices;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 import org.jboss.msc.service.ServiceController;
@@ -45,6 +49,7 @@ import org.wildfly.common.net.Inet;
 import org.wildfly.service.descriptor.UnaryServiceDescriptor;
 import org.wildfly.subsystem.service.ServiceDependency;
 import org.wildfly.subsystem.service.ServiceInstaller;
+import org.wildfly.transaction.client.LocalTransactionContext;
 import org.wildfly.transaction.client.provider.remoting.RemotingTransactionService;
 import org.xnio.Option;
 import org.xnio.OptionMap;
@@ -68,6 +73,8 @@ public class EJB3RemoteServiceAdd extends AbstractBoottimeAddStepHandler {
     private static final UnaryServiceDescriptor<List<ClientMapping>> CLIENT_MAPPINGS = UnaryServiceDescriptor
             .of("org.wildfly.ejb.remote.client-mappings", (Class<List<ClientMapping>>) (Class<?>) List.class);
 
+    private static final String UNDERTOW_HTTP_INVOKER_CAPABILITY_NAME = "org.wildfly.undertow.http-invoker";
+
     /**
      * Override populateModel() to handle case of deprecated attribute connector-ref - if connector-ref is present, use it to
      * initialise connectors - if connector-ref is not present and connectors is not present, throw an exception
@@ -89,7 +96,23 @@ public class EJB3RemoteServiceAdd extends AbstractBoottimeAddStepHandler {
         installRuntimeServices(context, model);
     }
 
+    /**
+     * Install the services required to process remote invocations on EJBs, for both the Remoting
+     * and HTTP protocols.
+     * EJB client invocations using an http scheme can be one of two types:
+     *  - an invocation which will use HTTP upgrade to convert the initial HTTP connection
+     * to use the Remoting protocol and use the standard JBoss EJB client library to process
+     * the invocation
+     * - an invocation which will use the Undertow HTTP invoker to process the invocation
+     * using the Wildfly HTTP client library, a "pure HTTP" model of processing
+     *
+     * @param context the OperationContext
+     * @param model the subsystem model used to configure the services
+     * @throws OperationFailedException
+     */
     void installRuntimeServices(final OperationContext context, final ModelNode model) throws OperationFailedException {
+
+        final boolean appclient = context.getProcessType() == ProcessType.APPLICATION_CLIENT;
 
         final List<ModelNode> connectorNameNodes = EJB3RemoteResourceDefinition.CONNECTORS.resolveModelAttribute(context, model)
                 .asList();
@@ -98,7 +121,7 @@ public class EJB3RemoteServiceAdd extends AbstractBoottimeAddStepHandler {
         final boolean executeInWorker = EJB3RemoteResourceDefinition.EXECUTE_IN_WORKER.resolveModelAttribute(context, model)
                 .asBoolean();
 
-        // for each connector specified, we need to set up a client-mappings cache
+        // for each Remoting connector specified, we need to set up a client-mappings cache
         for (ModelNode connectorNameNode : connectorNameNodes) {
             String connectorName = connectorNameNode.asString();
 
@@ -130,27 +153,48 @@ public class EJB3RemoteServiceAdd extends AbstractBoottimeAddStepHandler {
                     .install(context);
         }
 
-        final OptionMap channelCreationOptions = this.getChannelCreationOptions(context);
         // Install the Jakarta Enterprise Beans remoting connector service which will listen for client connections on the
         // remoting channel
         // TODO: Externalize (expose via management API if needed) the version and the marshalling strategy
-        final CapabilityServiceBuilder<?> builder = context.getCapabilityServiceTarget()
-                .addCapability(EJB3RemoteResourceDefinition.EJB_REMOTE_CAPABILITY);
-        final Consumer<EJBRemoteConnectorService> serviceConsumer = builder
-                .provides(EJB3RemoteResourceDefinition.EJB_REMOTE_CAPABILITY);
-        final Supplier<Endpoint> endpointSupplier = builder
+        final OptionMap channelCreationOptions = this.getChannelCreationOptions(context);
+
+        // Install the Remoting connector service to support EJB/Remoting
+        final CapabilityServiceBuilder<?> remoteConnectorBuilder = context.getCapabilityServiceTarget()
+                .addCapability(EJB3RemoteResourceDefinition.EJB_REMOTE_CONNECTOR_CAPABILITY);
+        final Consumer<EJBRemoteConnectorService> remoteConnectorServiceConsumer = remoteConnectorBuilder
+                .provides(EJB3RemoteResourceDefinition.EJB_REMOTE_CONNECTOR_CAPABILITY);
+        final Supplier<Endpoint> endpointSupplier = remoteConnectorBuilder
                 .requiresCapability(EJB3RemoteResourceDefinition.REMOTING_ENDPOINT_CAPABILITY_NAME, Endpoint.class);
-        Supplier<Executor> executorSupplier = !executeInWorker ? builder.requires(EJB3SubsystemRootResourceDefinition.EXECUTOR_SERVICE_DESCRIPTOR, threadPoolName) : Functions.constantSupplier(null);
-        // add rest of the dependencies
-        final Supplier<AssociationService> associationServiceSupplier = builder.requires(AssociationService.SERVICE_NAME);
-        final Supplier<RemotingTransactionService> remotingTransactionServiceSupplier = builder.requiresCapability(
+        Supplier<Executor> executorSupplier = !executeInWorker ? remoteConnectorBuilder.requires(EJB3SubsystemRootResourceDefinition.EXECUTOR_SERVICE_DESCRIPTOR, threadPoolName) : Functions.constantSupplier(null);
+        final Supplier<AssociationService> associationServiceSupplier = remoteConnectorBuilder.requires(AssociationService.SERVICE_NAME);
+        final Supplier<RemotingTransactionService> remotingTransactionServiceSupplier = remoteConnectorBuilder.requiresCapability(
                 EJB3RemoteResourceDefinition.REMOTE_TRANSACTION_SERVICE_CAPABILITY_NAME, RemotingTransactionService.class);
-        builder.addAliases(EJBRemoteConnectorService.SERVICE_NAME).setInitialMode(ServiceController.Mode.LAZY);
-        final EJBRemoteConnectorService ejbRemoteConnectorService = new EJBRemoteConnectorService(serviceConsumer,
+        final EJBRemoteConnectorService ejbRemoteConnectorService = new EJBRemoteConnectorService(remoteConnectorServiceConsumer,
                 endpointSupplier, executorSupplier, associationServiceSupplier, remotingTransactionServiceSupplier,
                 channelCreationOptions, FilterSpecClassResolverFilter.getFilterForOperationContext(context));
-        builder.setInstance(ejbRemoteConnectorService);
-        builder.install();
+        remoteConnectorBuilder.setInstance(ejbRemoteConnectorService);
+        remoteConnectorBuilder.addAliases(EJBRemoteConnectorService.SERVICE_NAME);
+        remoteConnectorBuilder.setInitialMode(ServiceController.Mode.ON_DEMAND);
+        remoteConnectorBuilder.install();
+
+        // Install the HTTP connector service to support EJB/HTTP
+        if (context.hasOptionalCapability(UNDERTOW_HTTP_INVOKER_CAPABILITY_NAME, EJB3SubsystemRootResourceDefinition.EJB_CAPABILITY.getName(), null)) {
+            final CapabilityServiceBuilder<?> httpConnectorBuilder = context.getCapabilityServiceTarget()
+                    .addCapability(EJB3RemoteResourceDefinition.EJB_HTTP_CONNECTOR_CAPABILITY);
+            final Consumer<EJBRemoteHTTPService> httpConnectorServiceConsumer = httpConnectorBuilder
+                    .provides(EJB3RemoteResourceDefinition.EJB_HTTP_CONNECTOR_CAPABILITY);
+            final Supplier<PathHandler> pathHandlerSupplier = httpConnectorBuilder
+                    .requiresCapability(UNDERTOW_HTTP_INVOKER_CAPABILITY_NAME, PathHandler.class);
+            final Supplier<LocalTransactionContext> localTransactionContextSupplier = httpConnectorBuilder
+                    .requires(TxnServices.JBOSS_TXN_LOCAL_TRANSACTION_CONTEXT);
+            final Supplier<AssociationService> httpAssociationServiceSupplier = httpConnectorBuilder
+                    .requires(AssociationService.SERVICE_NAME);
+            EJBRemoteHTTPService service = new EJBRemoteHTTPService(httpConnectorServiceConsumer, pathHandlerSupplier,
+                    httpAssociationServiceSupplier, localTransactionContextSupplier, FilterSpecClassResolverFilter.getFilterForOperationContext(context));
+            httpConnectorBuilder.setInstance(service);
+            httpConnectorBuilder.setInitialMode(ServiceController.Mode.ON_DEMAND);
+            httpConnectorBuilder.install();
+        }
     }
 
     private OptionMap getChannelCreationOptions(final OperationContext context) throws OperationFailedException {
@@ -195,14 +239,14 @@ public class EJB3RemoteServiceAdd extends AbstractBoottimeAddStepHandler {
     private static ServiceDependency<ClientMappingsRegistryProvider> getClientMappingsRegistryProvider(OperationContext context,
             ModelNode model) throws OperationFailedException {
         if (context.hasOptionalCapability(ClientMappingsRegistryProvider.SERVICE_DESCRIPTOR,
-                EJB3RemoteResourceDefinition.EJB_REMOTE_CAPABILITY, null)) {
+                EJB3RemoteResourceDefinition.EJB_REMOTE_CONNECTOR_CAPABILITY, null)) {
             return ServiceDependency.on(ClientMappingsRegistryProvider.SERVICE_DESCRIPTOR);
         }
         String clusterName = EJB3RemoteResourceDefinition.CLIENT_MAPPINGS_CLUSTER_NAME.resolveModelAttribute(context, model)
                 .asString();
         context.requireOptionalCapability(
                 RuntimeCapability.resolveCapabilityName(InfinispanServiceDescriptor.CACHE_CONTAINER, clusterName),
-                EJB3RemoteResourceDefinition.EJB_REMOTE_CAPABILITY_NAME,
+                EJB3RemoteResourceDefinition.EJB_REMOTE_CONNECTOR_CAPABILITY_NAME,
                 EJB3RemoteResourceDefinition.CLIENT_MAPPINGS_CLUSTER_NAME.getName());
         EjbLogger.ROOT_LOGGER.legacyClientMappingsRegistryProviderInUse(clusterName);
         return ServiceDependency.of(LEGACY_PROVIDER_FACTORY.createClientMappingsRegistryProvider(clusterName));
