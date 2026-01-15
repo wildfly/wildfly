@@ -29,6 +29,7 @@ import org.jboss.ejb.client.EJBClientInterceptor;
 import org.jboss.ejb.client.EJBTransportProvider;
 import org.jboss.ejb.client.legacy.JBossEJBProperties;
 import org.jboss.ejb.client.legacy.LegacyPropertiesConfiguration;
+import org.jboss.logging.Logger;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
@@ -46,6 +47,8 @@ import org.wildfly.security.auth.client.AuthenticationContext;
  * @author <a href="mailto:jbaesner@redhat.com">Joerg Baesner</a>
  */
 public final class EJBClientContextService implements Service<EJBClientContextService> {
+
+    protected static final Logger log = Logger.getLogger(EJBClientContextService.class.getSimpleName());
 
     public static final ServiceName APP_CLIENT_URI_SERVICE_NAME = ServiceName.JBOSS.append("ejb3", "ejbClientContext", "appClientUri");
     public static final ServiceName APP_CLIENT_EJB_PROPERTIES_SERVICE_NAME = ServiceName.JBOSS.append("ejb3", "ejbClientContext", "appClientEjbProperties");
@@ -92,6 +95,7 @@ public final class EJBClientContextService implements Service<EJBClientContextSe
     }
 
     public void start(final StartContext context) throws StartException {
+        log.info("Starting");
         final EJBClientContext.Builder builder = new EJBClientContext.Builder();
 
 
@@ -173,9 +177,11 @@ public final class EJBClientContextService implements Service<EJBClientContextSe
                 return null;
             });
         }
+        log.info("Started");
     }
 
     public void stop(final StopContext context) {
+        log.info("Stopping");
         clientContext.close();
         clientContext = null;
         if (makeGlobal) {
@@ -184,6 +190,7 @@ public final class EJBClientContextService implements Service<EJBClientContextSe
                 return null;
             });
         }
+        log.info("Stopped");
     }
 
 
