@@ -5,7 +5,6 @@
 package org.wildfly.clustering.web.undertow.session;
 
 import java.util.Map;
-import java.util.Set;
 
 import org.wildfly.clustering.server.service.Service;
 import org.wildfly.clustering.session.SessionManager;
@@ -42,10 +41,5 @@ public interface UndertowSessionManager extends io.undertow.server.session.Sessi
     @Override
     default void stop() {
         this.getSessionManager().stop();
-    }
-
-    @Override
-    default Set<String> getTransientSessions() {
-        return Set.of();
     }
 }

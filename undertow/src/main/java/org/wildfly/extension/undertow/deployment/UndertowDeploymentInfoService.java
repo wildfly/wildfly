@@ -278,6 +278,7 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
 
             deploymentInfo.setConfidentialPortManager(getConfidentialPortManager());
 
+            handleDistributable(deploymentInfo);
             if (!isElytronActive()) {
                 if (securityDomain != null || mergedMetaData.isUseJBossAuthorization()) {
                     throw UndertowLogger.ROOT_LOGGER.legacySecurityUnsupported();
@@ -400,7 +401,7 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
 
             ControlPoint controlPoint = (this.controlPoint != null) ? this.controlPoint.get() : null;
             if (controlPoint != null) {
-                new ControlPointHandlerWrapper(controlPoint, this.allowSuspendedRequests).apply(deploymentInfo);
+                new SuspendedServerHandlerWrapper(controlPoint, this.allowSuspendedRequests).apply(deploymentInfo);
             }
 
             deploymentInfoConsumer.accept(this.deploymentInfo = deploymentInfo);
@@ -461,24 +462,25 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
         };
     }
 
-    private DeploymentInfo createDeploymentInfo() {
-        DeploymentInfo deployment = new DeploymentInfo();
-
+    private void handleDistributable(final DeploymentInfo deploymentInfo) {
         SessionManagerFactory managerFactory = this.sessionManagerFactory != null ? this.sessionManagerFactory.get() : null;
         if (managerFactory != null) {
-            deployment.setSessionManagerFactory(managerFactory);
+            deploymentInfo.setSessionManagerFactory(managerFactory);
         }
 
         SessionAffinityProvider sessionAffinityProvider = this.sessionAffinityProvider != null ? this.sessionAffinityProvider.get() : null;
         if (sessionAffinityProvider != null) {
             CookieConfig config = this.container.get().getAffinityCookieConfig();
             SessionConfigWrapper wrapper = (config != null) ? new AffinitySessionConfigWrapper(config, sessionAffinityProvider) : new CodecSessionConfigWrapper(new AffinitySessionIdentifierCodec(sessionAffinityProvider));
-            deployment.setSessionConfigWrapper(wrapper);
+            deploymentInfo.setSessionConfigWrapper(wrapper);
         }
+    }
 
+    private DeploymentInfo createDeploymentInfo() {
+        DeploymentInfo deployment = new DeploymentInfo();
         ControlPoint controlPoint = this.controlPoint != null ? this.controlPoint.get() : null;
-        // ServletRequestCompletionListener must be registered before any application listeners
-        return (controlPoint != null) ? new ServletRequestCompletionListener(controlPoint).apply(deployment) : deployment;
+        // GlobalRequestControllerListener must be registered before any application listeners
+        return (controlPoint != null) ? new SuspendedServerRequestListener(controlPoint).apply(deployment) : deployment;
     }
 
     private DeploymentInfo createServletConfig() throws StartException {
