@@ -81,7 +81,7 @@
         <preview.dist.product.release.version>${full.dist.product.release.version}</preview.dist.product.release.version>
         <preview.dist.product.stability.level>preview</preview.dist.product.stability.level>
         <preview.dist.product.min.stability.level>experimental</preview.dist.product.min.stability.level>
-        <product.docs.server.version>39</product.docs.server.version>
+        <product.docs.server.version>40</product.docs.server.version>
         <!-- The Galleon channel for the minor version with which this branch is associated.  -->
         <galleon.minor.channel>${product.docs.server.version}.0</galleon.minor.channel>
 
