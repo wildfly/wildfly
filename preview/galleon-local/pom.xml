@@ -87,6 +87,15 @@
             <groupId>org.hibernate.search</groupId>
             <artifactId>hibernate-search-mapper-orm-outbox-polling</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.hibernate.search</groupId>
+            <artifactId>hibernate-search-backend-elasticsearch-client-rest4</artifactId>
+        </dependency>
+        <!-- For newer versions of the Hibernate Search Lucene backend we also need the highlighters -->
+        <dependency>
+            <groupId>org.apache.lucene</groupId>
+            <artifactId>lucene-highlighter</artifactId>
+        </dependency>
 
         <dependency>
             <groupId>org.jboss.spec.jakarta.el</groupId>

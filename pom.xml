@@ -463,7 +463,7 @@
         <version.net.shibboleth.utilities.java-support>8.0.0</version.net.shibboleth.utilities.java-support>
         <version.org.apache.activemq.artemis>2.44.0</version.org.apache.activemq.artemis>
         <version.org.apache.activemq.artemis.native>2.0.0</version.org.apache.activemq.artemis.native>
-        <version.org.apache.avro>1.12.0</version.org.apache.avro>
+        <version.org.apache.avro>1.12.1</version.org.apache.avro>
         <version.org.apache.cxf>4.0.10</version.org.apache.cxf>
         <version.org.apache.cxf.xjcplugins>4.1.0</version.org.apache.cxf.xjcplugins>
         <version.org.apache.httpcomponents.httpasyncclient>4.1.5</version.org.apache.httpcomponents.httpasyncclient>
