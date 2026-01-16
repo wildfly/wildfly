@@ -16,14 +16,11 @@ import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.InSequence;
 import org.jboss.arquillian.test.api.ArquillianResource;
-import org.jboss.as.arquillian.api.ServerSetup;
-import org.jboss.as.test.shared.observability.setuptasks.OpenTelemetrySetupTask;
 import org.jboss.shrinkwrap.api.Archive;
 import org.junit.Assert;
 import org.junit.Test;
 import org.wildfly.test.integration.observability.opentelemetry.application.OtelMetricResource;
 
-@ServerSetup(OpenTelemetrySetupTask.class)
 @RunAsClient
 public class OpenTelemetryMetricsTestCase extends BaseOpenTelemetryTest {
     private static final int REQUEST_COUNT = 5;

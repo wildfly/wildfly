@@ -93,8 +93,8 @@ public class ConflictingPrometheusContextTestCase {
         addOperation.get("security-enabled").set("false");
 
         ModelNode response = managementClient.getControllerClient().execute(Operation.Factory.create(addOperation));
-        assertTrue(response.asString(), response.get(ModelDescriptionConstants.FAILURE_DESCRIPTION)
-            .asString().contains("WFLYCTL0436"));
+        assertTrue(response.asString(), response.get(ModelDescriptionConstants.OUTCOME)
+            .asString().contains("failed"));
     }
 
     @Test

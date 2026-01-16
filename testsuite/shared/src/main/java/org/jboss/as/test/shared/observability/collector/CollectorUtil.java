@@ -19,7 +19,9 @@ import io.opentelemetry.proto.common.v1.InstrumentationScope;
 import io.opentelemetry.proto.common.v1.KeyValue;
 import io.opentelemetry.proto.metrics.v1.Metric;
 import io.opentelemetry.proto.resource.v1.Resource;
+import io.opentelemetry.proto.trace.v1.Span;
 import org.jboss.as.test.shared.observability.signals.SimpleMetric;
+import org.jboss.as.test.shared.observability.signals.trace.SimpleSpan;
 
 public final class CollectorUtil {
     private static final Boolean loggingEnabled; // Default: null/false
@@ -49,6 +51,23 @@ public final class CollectorUtil {
                 (a, b) -> b, HashMap::new));
     }
 
+    public static void fromSpan(Consumer<SimpleSpan> consumer, Resource resource, Span s) {
+        consumer.accept(SimpleSpan.builder()
+                .traceId(fromByteString(s.getTraceId()))
+                .spanId(fromByteString(s.getSpanId()))
+                .name(s.getName())
+                .kind(s.getKindValue())
+                .traceState(s.getTraceState())
+                .parentSpanId(fromByteString(s.getParentSpanId()))
+                .flags(s.getFlags())
+                .startTimeUnixNano(s.getStartTimeUnixNano())
+                .endTimeUnixNano(s.getEndTimeUnixNano())
+                .attributes(fromKeyValueList(s.getAttributesList()))
+                .resourceAttributes(fromKeyValueList(resource.getAttributesList()))
+                .events(s.getEventsList())
+                .build());
+    }
+
     public static void fromMetric(Consumer<SimpleMetric> consumer, Resource rm, InstrumentationScope sm, Metric m) {
         if (m.hasSum()) {
             m.getSum().getDataPointsList().forEach(dp -> {
@@ -63,22 +82,30 @@ public final class CollectorUtil {
                         "summary",
                         fromKeyValueList(dp.getAttributesList())));
             });
-        }  else if (m.hasSummary()) {
+        } else if (m.hasSummary()) {
             m.getSummary().getDataPointsList().forEach(dp -> {
                 consumer.accept(createMeter(rm, sm, m, Double.toString(dp.getSum()), "summary",
                         fromKeyValueList(dp.getAttributesList())));
             });
-        } else if (m.hasHistogram() || m.hasExponentialHistogram()) {
-            // TODO: I'm not sure what this looks like, and we don't use them in WF so we can probably safely ignore
+        } else if (m.hasHistogram()) {
+            m.getHistogram().getDataPointsList().forEach(dp -> {
+                consumer.accept(createMeter(rm, sm, m, Double.toString(dp.getSum()), "histogram",
+                        fromKeyValueList(dp.getAttributesList())));
+            });
+        } else if (m.hasExponentialHistogram()) {
+            m.getExponentialHistogram().getDataPointsList().forEach(dp -> {
+                consumer.accept(createMeter(rm, sm, m, Double.toString(dp.getSum()), "exponential-histogram",
+                        fromKeyValueList(dp.getAttributesList())));
+            });
         }
     }
 
     private static SimpleMetric createMeter(Resource resource,
-                                     InstrumentationScope scope,
-                                     Metric m,
-                                     String value,
-                                     String type,
-                                     Map<String, String> tags) {
+                                            InstrumentationScope scope,
+                                            Metric m,
+                                            String value,
+                                            String type,
+                                            Map<String, String> tags) {
         return new SimpleMetric(
                 m.getName(),
                 m.getDescription(),

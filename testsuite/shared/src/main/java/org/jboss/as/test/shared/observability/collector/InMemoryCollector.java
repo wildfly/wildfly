@@ -31,29 +31,33 @@ import org.jboss.as.test.shared.observability.collector.grpc.TraceServiceImpl;
 import org.jboss.as.test.shared.observability.collector.http.UndertowServer;
 import org.jboss.as.test.shared.observability.signals.SimpleMetric;
 import org.jboss.as.test.shared.observability.signals.logs.LogEntry;
-import org.jboss.as.test.shared.observability.signals.trace.Span;
+import org.jboss.as.test.shared.observability.signals.trace.SimpleSpan;
 
 public class InMemoryCollector {
+    private static InMemoryCollector INSTANCE;
+
     private static final Logger logger = Logger.getLogger(InMemoryCollector.class.getName());
     private final Duration DEFAULT_TIMEOUT = Duration.ofSeconds(
             TimeoutUtil.adjust(Integer.parseInt(System.getProperty("testsuite.integration.container.timeout", "120"))));
 
-    private final List<Span> spansReceived = Collections.synchronizedList(new ArrayList<>());
+    private final List<SimpleSpan> spansReceived = Collections.synchronizedList(new ArrayList<>());
     private final List<LogEntry> logsReceived = Collections.synchronizedList(new ArrayList<>());
     private final List<SimpleMetric> metricsReceived = Collections.synchronizedList(new ArrayList<>());
 
-    protected int grpcPort = 4317;
-    protected int httpPort = 4318;
+    protected final int grpcPort = 4317;
+    protected final int httpPort = 4318;
 
     private Server grpcServer;
     private UndertowServer undertowServer;
 
-    public InMemoryCollector() {
+    private InMemoryCollector() {
     }
 
-    public InMemoryCollector(int gprcPort, int httpPort) {
-        this.grpcPort = gprcPort;
-        this.httpPort = httpPort;
+    public static InMemoryCollector getInstance() {
+        if (INSTANCE == null) {
+            INSTANCE = new InMemoryCollector();
+        }
+        return INSTANCE;
     }
 
     public synchronized void reset() {
@@ -66,15 +70,29 @@ public class InMemoryCollector {
         return assertLoop(DEFAULT_TIMEOUT, logsReceived, assertionConsumer);
     }
 
+    public List<LogEntry> assertLogs(Duration timeout, Consumer<List<LogEntry>> assertionConsumer) throws InterruptedException {
+        return assertLoop(timeout, logsReceived, assertionConsumer);
+    }
+
     public List<SimpleMetric> assertMetrics(Consumer<List<SimpleMetric>> assertionConsumer) throws InterruptedException {
         return assertLoop(DEFAULT_TIMEOUT, metricsReceived, assertionConsumer);
     }
 
-    public List<Span> assertSpans(Consumer<List<Span>> assertionConsumer) throws InterruptedException {
+    public List<SimpleMetric> assertMetrics(Duration timeout, Consumer<List<SimpleMetric>> assertionConsumer) throws InterruptedException {
+        return assertLoop(timeout, metricsReceived, assertionConsumer);
+
+    }
+
+    public List<SimpleSpan> assertSpans(Consumer<List<SimpleSpan>> assertionConsumer) throws InterruptedException {
         return assertLoop(DEFAULT_TIMEOUT, spansReceived, assertionConsumer);
     }
 
-    public void start() throws IOException {
+    public List<SimpleSpan> assertSpans(Duration timeout, Consumer<List<SimpleSpan>> assertionConsumer) throws InterruptedException {
+        return assertLoop(timeout, spansReceived, assertionConsumer);
+
+    }
+
+    public void start() {
         startGrpcServer();
         startHttpServer();
         debugLog("Grpc server listening on " + grpcPort);
@@ -82,54 +100,63 @@ public class InMemoryCollector {
     }
 
     public void shutdown() throws InterruptedException {
-        if (grpcServer != null) {
-            grpcServer.shutdown().awaitTermination(30, TimeUnit.SECONDS);
-        }
         if (undertowServer != null) {
             undertowServer.shutdown();
+        }
+        if (grpcServer != null) {
+            grpcServer.shutdown().awaitTermination(30, TimeUnit.SECONDS);
         }
     }
 
     public List<LogEntry> fetchLogs() {
-        return Collections.unmodifiableList(logsReceived);
+        return new ArrayList<>(logsReceived);
     }
 
     public List<SimpleMetric> fetchMetrics() {
-        return Collections.unmodifiableList(metricsReceived);
+        return new ArrayList<>(metricsReceived);
     }
 
-    private void startGrpcServer() throws IOException {
-        grpcServer = Grpc.newServerBuilderForPort(grpcPort, InsecureServerCredentials.create())
-                .addService(new LogsServiceImpl(logsReceived::add))
-                .addService(new MetricsServiceImpl(metricsReceived::add))
-                .addService(new TraceServiceImpl(this::consumeSpan))
-                .build()
-                .start();
-        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-            try {
-                shutdown();
-            } catch (InterruptedException e) {
-                e.printStackTrace(System.err);
-            }
-        }));
+    public List<SimpleSpan> fetchSpans() {
+        return new ArrayList<>(spansReceived);
     }
 
-    private void startHttpServer() throws IOException {
-        undertowServer = new UndertowServer(this::consumeSpan, metricsReceived::add);
+    private void startGrpcServer() {
         try {
-            undertowServer.start();
-        } catch (ServletException e) {
-            throw new IOException(e);
+            grpcServer = Grpc.newServerBuilderForPort(grpcPort, InsecureServerCredentials.create())
+                    .addService(new LogsServiceImpl(logsReceived::add))
+                    .addService(new MetricsServiceImpl(this::consumeMeter))
+                    .addService(new TraceServiceImpl(this::consumeSpan))
+                    .build()
+                    .start();
+            Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+                try {
+                    shutdown();
+                } catch (InterruptedException e) {
+                    e.printStackTrace(System.err);
+                }
+            }));
+        } catch (IOException e) {
+            throw new RuntimeException("Unable to start the grpc server", e);
         }
     }
 
-    private void consumeSpan(Span s) {
+    private void startHttpServer() {
+        try {
+            undertowServer = new UndertowServer(this::consumeSpan, this::consumeMeter);
+            undertowServer.start();
+        } catch (ServletException e) {
+            throw new RuntimeException("Unable to start the http server", e);
+
+        }
+    }
+
+    private void consumeSpan(SimpleSpan s) {
         spansReceived.add(s);
     }
 
     // Meters are constantly re-published, so a value for meter A will be received multiple times. We are only interested
     // in the latest value, though, so we remove any existing meter value, then add the new.
-    private synchronized void consumeSimpleMeter(SimpleMetric sm) {
+    private synchronized void consumeMeter(SimpleMetric sm) {
         metricsReceived.remove(sm);
         metricsReceived.add(sm);
     }

@@ -9,8 +9,7 @@ package org.jboss.as.test.shared.observability.signals.trace;
 
 import java.util.Map;
 
-public record Event(String name,
-                    long timeUnixNano,
-                    Map<String, String> attributes,
-                    int droppedAttributesCount) {
+public record SimpleEvent(String name,
+                          long timeUnixNano,
+                          Map<String, String> attributes) {
 }

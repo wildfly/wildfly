@@ -17,14 +17,14 @@ import io.undertow.servlet.util.ImmediateInstanceFactory;
 import jakarta.servlet.Servlet;
 import jakarta.servlet.ServletException;
 import org.jboss.as.test.shared.observability.signals.SimpleMetric;
-import org.jboss.as.test.shared.observability.signals.trace.Span;
+import org.jboss.as.test.shared.observability.signals.trace.SimpleSpan;
 
 public class UndertowServer {
-    protected Consumer<Span> traceConsumer;
+    protected Consumer<SimpleSpan> traceConsumer;
     protected Consumer<SimpleMetric> metricsConsumer;
     protected Undertow server;
 
-    public UndertowServer(Consumer<Span> traceConsumer, Consumer<SimpleMetric> metricsConsumer) {
+    public UndertowServer(Consumer<SimpleSpan> traceConsumer, Consumer<SimpleMetric> metricsConsumer) {
         this.traceConsumer = traceConsumer;
         this.metricsConsumer = metricsConsumer;
     }
@@ -35,6 +35,7 @@ public class UndertowServer {
                 .setClassLoader(UndertowServer.class.getClassLoader())
                 .setContextPath("/")
                 .setDeploymentName("traces.war")
+                // TODO: Add logs support for OTLP over HTTP if needed
                 .addServlet(Servlets.servlet("MetricsServlet", MetricsServlet.class,
                                 new ImmediateInstanceFactory<Servlet>(new MetricsServlet(metricsConsumer)))
                         .addMapping("/v1/metrics"))
@@ -54,8 +55,6 @@ public class UndertowServer {
                 .build();
 
         server.start();
-
-        System.out.println("Undertow listening on http://localhost:4318/v1/traces");
     }
 
     public void shutdown() {

@@ -8,8 +8,7 @@
 package org.jboss.as.test.shared.observability.collector.grpc;
 
 import static org.jboss.as.test.shared.observability.collector.CollectorUtil.debugLog;
-import static org.jboss.as.test.shared.observability.collector.CollectorUtil.fromByteString;
-import static org.jboss.as.test.shared.observability.collector.CollectorUtil.fromKeyValueList;
+import static org.jboss.as.test.shared.observability.collector.CollectorUtil.fromSpan;
 
 import java.util.function.Consumer;
 
@@ -17,13 +16,13 @@ import io.grpc.stub.StreamObserver;
 import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceRequest;
 import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceResponse;
 import io.opentelemetry.proto.collector.trace.v1.TraceServiceGrpc;
-import org.jboss.as.test.shared.observability.signals.trace.Span;
+import org.jboss.as.test.shared.observability.signals.trace.SimpleSpan;
 
 public class TraceServiceImpl extends TraceServiceGrpc.TraceServiceImplBase {
 
-    private final Consumer<Span> traceConsumer;
+    private final Consumer<SimpleSpan> traceConsumer;
 
-    public TraceServiceImpl(Consumer<Span> traceConsumer) {
+    public TraceServiceImpl(Consumer<SimpleSpan> traceConsumer) {
         this.traceConsumer = traceConsumer;
     }
 
@@ -32,33 +31,13 @@ public class TraceServiceImpl extends TraceServiceGrpc.TraceServiceImplBase {
                        StreamObserver<ExportTraceServiceResponse> responseObserver) {
         try {
             debugLog("Trace request received");
-            var list = request.getResourceSpansList();
-            list.forEach(rs -> {
-                rs.getScopeSpansList().forEach(ss -> {
-                    ss.getSpansList().forEach(s -> {
-                        traceConsumer.accept(Span.builder()
-                                .traceId(fromByteString(s.getTraceId()))
-                                .spanId(fromByteString(s.getSpanId()))
-                                .name(s.getName())
-                                .kind(s.getKindValue())
-                                .traceState(s.getTraceState())
-                                .parentSpanId(fromByteString(s.getParentSpanId()))
-                                .flags(s.getFlags())
-                                .startTimeUnixNano(s.getStartTimeUnixNano())
-                                .endTimeUnixNano(s.getEndTimeUnixNano())
-                                .attributes(fromKeyValueList(s.getAttributesList()))
-                                .droppedAttributesCount(s.getDroppedAttributesCount())
-                                .events(s.getEventsList())
-                                .droppedEventsCount(s.getDroppedEventsCount())
-                                .links(s.getLinksList())
-                                .droppedLinksCount(s.getDroppedLinksCount())
-                                .status(s.getStatus()).build());
-                    });
-                });
-            });
+            request.getResourceSpansList().forEach(rs ->
+                    rs.getScopeSpansList().forEach(ss -> {
+                        ss.getSpansList().forEach(s ->
+                                fromSpan(traceConsumer, rs.getResource(), s));
+                    }));
 
-            ExportTraceServiceResponse response = ExportTraceServiceResponse.newBuilder()
-                    .build();
+            ExportTraceServiceResponse response = ExportTraceServiceResponse.newBuilder().build();
             responseObserver.onNext(response);
             responseObserver.onCompleted();
         } catch (Exception e) {
