@@ -60,6 +60,15 @@
             <scope>test</scope>
         </dependency>
         <dependency>
+            <groupId>org.eclipse.microprofile.rest.client</groupId>
+            <artifactId>microprofile-rest-client-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.resteasy.microprofile</groupId>
+            <artifactId>microprofile-rest-client</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
             <groupId>org.jboss.narayana.lra</groupId>
             <artifactId>lra-test-arquillian-extension</artifactId>
             <version>${version.org.jboss.narayana.lra}</version>

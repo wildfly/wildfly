@@ -24,6 +24,10 @@
     <module name="org.jboss.narayana.lra.lra-service-base" />
 
     <!-- lra-client -->
+<!--     org.eclipse.microprofile.restclient stands for microprofile-rest-client-api -->
+    <module name="org.eclipse.microprofile.restclient"/>
+    <module name="org.jboss.resteasy.resteasy-client-microprofile"/>
+    <module name="org.jboss.resteasy.resteasy-client"/>
     <module name="jakarta.enterprise.api"/>
     <!-- Setting the cuncurrent.api optional prevents it being provisioned in a slimmed server whose provisioning config doesn't include the actual Jakarta Concurrency integration -->
     <module name="jakarta.enterprise.concurrent.api" optional="true"/>
