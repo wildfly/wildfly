@@ -4,13 +4,12 @@
  */
 package org.jboss.as.test.shared.observability.setuptasks;
 
-import org.arquillian.testcontainers.api.TestcontainersRequired;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.client.helpers.Operations;
 import org.jboss.as.test.shared.ServerReload;
 import org.jboss.dmr.ModelNode;
 
-@TestcontainersRequired
+//@TestcontainersRequired
 public class OpenTelemetrySetupTask extends AbstractSetupTask {
     protected static final String SUBSYSTEM_NAME = "opentelemetry";
     public static final ModelNode OPENTELEMETRY_EXTENSION = Operations.createAddress("extension", "org.wildfly.extension.opentelemetry");
