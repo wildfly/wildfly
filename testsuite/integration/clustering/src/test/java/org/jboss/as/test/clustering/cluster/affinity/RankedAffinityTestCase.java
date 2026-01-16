@@ -33,7 +33,7 @@ import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.test.clustering.ClusterHttpClientUtil;
+import org.jboss.as.test.clustering.TopologyChangeListenerUtil;
 import org.jboss.as.test.clustering.ClusterTestUtil;
 import org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase;
 import org.jboss.as.test.clustering.single.web.Mutable;
@@ -166,7 +166,7 @@ public class RankedAffinityTestCase extends AbstractClusteringTestCase {
     }
 
     private static void establishTopology(URL baseURL, Set<String> topology) throws URISyntaxException, IOException {
-        ClusterHttpClientUtil.establishTopology(baseURL, "web", DEPLOYMENT_NAME, topology);
+        TopologyChangeListenerUtil.establishTopology(baseURL, "web", DEPLOYMENT_NAME, topology);
     }
 
     public static class ServerSetupTask extends ManagementServerSetupTask {

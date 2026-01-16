@@ -23,7 +23,7 @@ import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.container.test.api.TargetsContainer;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
-import org.jboss.as.test.clustering.ClusterHttpClientUtil;
+import org.jboss.as.test.clustering.TopologyChangeListenerUtil;
 import org.jboss.as.test.clustering.ClusterTestUtil;
 import org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase;
 import org.jboss.as.test.clustering.cluster.web.DistributableTestCase;
@@ -108,6 +108,6 @@ public class InvalidateConversationTestCase extends AbstractClusteringTestCase {
     }
 
     private static void establishTopology(URL baseURL, Set<String> topology) throws URISyntaxException, IOException {
-        ClusterHttpClientUtil.establishTopology(baseURL, "web", DEPLOYMENT_NAME, topology);
+        TopologyChangeListenerUtil.establishTopology(baseURL, "web", DEPLOYMENT_NAME, topology);
     }
 }
