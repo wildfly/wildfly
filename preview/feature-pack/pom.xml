@@ -26,6 +26,8 @@
     <packaging>pom</packaging>
 
     <properties>
+        <!-- Some paths below reference target/ directories from other Maven modules, bypassing Maven's dependency management. -->
+        <!-- Any module referenced by these paths MUST be explicitly declared as a <dependency> in this POM to ensure the reactor schedules it to complete BEFORE this module's build starts! -->
         <license.directory>${project.build.directory}/resources/content/docs/licenses</license.directory>
 
         <!-- WildFly and ee galleon contents -->
@@ -34,7 +36,6 @@
         <galleon.client.resources.directory>${basedir}/../../client/shade/target/resources</galleon.client.resources.directory>
         <!-- WildFly Preview modules -->
         <galleon.local.resources.directory>${basedir}/../galleon-local/src/main/resources</galleon.local.resources.directory>
-
     </properties>
 
     <build>
@@ -357,6 +358,28 @@
             <artifactId>wildfly-feature-pack-galleon-shared</artifactId>
             <type>pom</type>
             <scope>provided</scope>
+        </dependency>
+
+        <!-- n.b. Add at 'test' scope to ensure wildfly-client-all is built first but is NOT included in the artifact-list.txt or manifest. -->
+        <dependency>
+            <groupId>${ee.maven.groupId}</groupId>
+            <artifactId>wildfly-client-all</artifactId>
+            <version>${ee.maven.version}</version>
+            <scope>test</scope>
+        </dependency>
+
+        <!-- Workaround for https://issues.redhat.com/browse/WFGP-308 to support building WildFly with `mvn -T`
+             The wildfly-galleon-maven-plugin and galleon itself is not thread-safe.
+             Both this module and wildfly-ee-galleon-pack use the plugin, and when built in parallel they concurrently access the same ZIP artifacts.
+             This reliably causes ClosedFileSystemException due to thread-safety issues in ZIP FileSystem access.
+             This dependency forces Maven's reactor to serialize the builds: wildfly-ee-galleon-pack completes first, then this module builds, preventing concurrent plugin execution.
+             It must be added in test scope so that it is NOT included in the resulting wildfly-preview-feature-pack-x.y.z-artifact-list.txt file. -->
+        <dependency>
+            <groupId>${ee.maven.groupId}</groupId>
+            <artifactId>wildfly-ee-galleon-pack</artifactId>
+            <version>${ee.maven.version}</version>
+            <type>zip</type>
+            <scope>test</scope>
         </dependency>
 
         <dependency>
