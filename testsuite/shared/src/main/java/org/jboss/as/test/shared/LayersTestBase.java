@@ -171,7 +171,6 @@ public abstract class LayersTestBase {
      * only when testing provisioning directly from the wildfly-ee feature pack.
      */
     public static final String[] NOT_REFERENCED_WILDFLY_EE = {
-            // Only injected by logging in 'wildfly-ee', but referenced in 'wildfly' and 'wildfly-preview'
     };
 
 
@@ -227,12 +226,6 @@ public abstract class LayersTestBase {
      * only when testing provisioning from the wildfly feature pack.
      */
     public static final String[] NOT_REFERENCED_WILDFLY = {
-            // Extension not included in the default config
-            "org.wildfly.extension.micrometer",
-            "org.wildfly.micrometer.deployment",
-            "io.micrometer",
-            "io.prometheus",
-            "io.opentelemetry.proto",
             // Extension not included in the default config
             "org.wildfly.extension.mvc-krazo",
             "jakarta.mvc.api",

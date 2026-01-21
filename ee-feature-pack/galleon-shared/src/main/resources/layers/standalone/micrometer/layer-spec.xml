@@ -21,6 +21,6 @@
     <packages>
         <!-- If a non-default-only installation, install the io.prometheus module
              in case the registry=prometheus resource is wanted. -->
-        <package name="io.prometheus" valid-for-stability="community" optional="true"/>
+        <package name="io.prometheus" optional="true"/>
     </packages>
 </layer-spec>
