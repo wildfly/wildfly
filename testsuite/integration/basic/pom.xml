@@ -290,6 +290,11 @@
             <scope>test</scope>
         </dependency>
         <dependency>
+            <groupId>org.arquillian.testcontainers</groupId>
+            <artifactId>arquillian-testcontainers</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
             <groupId>org.assertj</groupId>
             <artifactId>assertj-core</artifactId>
             <scope>test</scope>
@@ -681,6 +686,13 @@
             <artifactId>jctools-core</artifactId>
             <scope>test</scope>
         </dependency>
+
+        <dependency>
+            <groupId>io.micrometer</groupId>
+            <artifactId>micrometer-core</artifactId>
+            <scope>test</scope>
+        </dependency>
+
         <dependency>
             <groupId>io.netty</groupId>
             <artifactId>netty-buffer</artifactId>
