@@ -145,6 +145,13 @@
             </dependency>
 
             <dependency>
+                <groupId>org.arquillian.testcontainers</groupId>
+                <artifactId>arquillian-testcontainers</artifactId>
+                <version>${version.org.arquillian.testcontainers}</version>
+                <scope>test</scope>
+            </dependency>
+
+            <dependency>
                 <groupId>org.assertj</groupId>
                 <artifactId>assertj-bom</artifactId>
                 <version>${version.org.assertj}</version>
