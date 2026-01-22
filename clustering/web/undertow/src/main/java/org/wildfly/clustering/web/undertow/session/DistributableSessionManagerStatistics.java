@@ -13,6 +13,7 @@ import org.wildfly.clustering.session.SessionStatistics;
 
 /**
  * @author Paul Ferraro
+ * @author Radoslav Husar
  */
 public class DistributableSessionManagerStatistics implements RecordableSessionManagerStatistics {
 
@@ -21,6 +22,7 @@ public class DistributableSessionManagerStatistics implements RecordableSessionM
     private final OptionalInt maxActiveSessions;
     private volatile long startTime = System.currentTimeMillis();
     private final AtomicLong createdSessionCount = new AtomicLong();
+    private final AtomicLong highestSessionCount = new AtomicLong();
 
     public DistributableSessionManagerStatistics(SessionStatistics activeSessionStatistics, RecordableInactiveSessionStatistics inactiveSessionStatistics, OptionalInt maxActiveSessions) {
         this.activeSessionStatistics = activeSessionStatistics;
@@ -37,11 +39,16 @@ public class DistributableSessionManagerStatistics implements RecordableSessionM
     @Override
     public void record(ImmutableSessionMetaData metaData) {
         this.createdSessionCount.incrementAndGet();
+        // n.b. this is relatively expensive operation to be called on every session creation but needed to accurately report getHighestSessionCount()
+        long activeCount = this.activeSessionStatistics.getActiveSessionCount();
+        this.highestSessionCount.accumulateAndGet(activeCount, Math::max);
     }
 
     @Override
     public void reset() {
         this.createdSessionCount.set(0L);
+        // n.b. reset the highest count to the current active session count - those sessions still exist after a statistics reset
+        this.highestSessionCount.set(this.activeSessionStatistics.getActiveSessionCount());
         this.startTime = System.currentTimeMillis();
         this.inactiveSessionStatistics.reset();
     }
@@ -54,6 +61,11 @@ public class DistributableSessionManagerStatistics implements RecordableSessionM
     @Override
     public long getMaxActiveSessions() {
         return this.maxActiveSessions.orElse(-1);
+    }
+
+    @Override
+    public long getHighestSessionCount() {
+        return this.highestSessionCount.get();
     }
 
     @Override
