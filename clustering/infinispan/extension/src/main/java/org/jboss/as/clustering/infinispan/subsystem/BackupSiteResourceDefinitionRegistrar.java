@@ -16,7 +16,6 @@ import org.infinispan.configuration.cache.BackupConfiguration.BackupStrategy;
 import org.infinispan.configuration.cache.BackupConfigurationBuilder;
 import org.infinispan.configuration.cache.BackupFailurePolicy;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
-import org.jboss.as.clustering.controller.DurationAttributeDefinition;
 import org.jboss.as.clustering.controller.EnumAttributeDefinition;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
@@ -32,6 +31,7 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.wildfly.clustering.infinispan.service.InfinispanServiceDescriptor;
 import org.wildfly.service.descriptor.TernaryServiceDescriptor;
+import org.wildfly.subsystem.resource.DurationAttributeDefinition;
 import org.wildfly.subsystem.resource.ManagementResourceRegistrationContext;
 import org.wildfly.subsystem.resource.ResourceDescriptor;
 import org.wildfly.subsystem.resource.executor.RuntimeOperationStepHandler;
@@ -51,8 +51,8 @@ public class BackupSiteResourceDefinitionRegistrar extends ConfigurationResource
 
     static final EnumAttributeDefinition<BackupFailurePolicy> FAILURE_POLICY = new EnumAttributeDefinition.Builder<>("failure-policy", BackupFailurePolicy.WARN).build();
     static final EnumAttributeDefinition<BackupStrategy> STRATEGY = new EnumAttributeDefinition.Builder<>("strategy", BackupStrategy.ASYNC).build();
-    static final DurationAttributeDefinition TIMEOUT = new DurationAttributeDefinition.Builder("timeout", ChronoUnit.MILLIS).setDefaultValue(Duration.ofSeconds(10)).build();
-    static final DurationAttributeDefinition MIN_WAIT = new DurationAttributeDefinition.Builder("min-wait", ChronoUnit.MILLIS)
+    static final DurationAttributeDefinition TIMEOUT = DurationAttributeDefinition.builder("timeout", ChronoUnit.MILLIS).setDefaultValue(Duration.ofSeconds(10)).build();
+    static final DurationAttributeDefinition MIN_WAIT = DurationAttributeDefinition.builder("min-wait", ChronoUnit.MILLIS)
             .setDefaultValue(Duration.ZERO)
             .build();
     static final AttributeDefinition AFTER_FAILURES = new SimpleAttributeDefinitionBuilder("after-failures", ModelType.INT)

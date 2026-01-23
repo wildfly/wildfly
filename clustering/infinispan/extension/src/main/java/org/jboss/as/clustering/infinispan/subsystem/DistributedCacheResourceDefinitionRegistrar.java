@@ -13,7 +13,6 @@ import java.util.function.UnaryOperator;
 
 import org.infinispan.Cache;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
-import org.jboss.as.clustering.controller.DurationAttributeDefinition;
 import org.jboss.as.clustering.controller.validation.DoubleRangeValidator;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
@@ -25,6 +24,7 @@ import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.wildfly.subsystem.resource.AttributeDefinitionProvider;
+import org.wildfly.subsystem.resource.DurationAttributeDefinition;
 import org.wildfly.subsystem.resource.ResourceDescriptor;
 import org.wildfly.subsystem.service.ServiceDependency;
 import org.wildfly.subsystem.service.capture.FunctionExecutorRegistry;
@@ -35,7 +35,7 @@ import org.wildfly.subsystem.service.capture.FunctionExecutorRegistry;
  */
 public class DistributedCacheResourceDefinitionRegistrar extends SegmentedCacheResourceDefinitionRegistrar {
 
-    static final DurationAttributeDefinition L1_LIFESPAN = new DurationAttributeDefinition.Builder("l1-lifespan", ChronoUnit.MILLIS).setDefaultValue(Duration.ZERO).build();
+    static final DurationAttributeDefinition L1_LIFESPAN = DurationAttributeDefinition.builder("l1-lifespan", ChronoUnit.MILLIS).setDefaultValue(Duration.ZERO).build();
 
     enum Attribute implements AttributeDefinitionProvider {
         CAPACITY_FACTOR("capacity-factor", ModelType.DOUBLE, new ModelNode(1.0f), DoubleRangeValidator.NON_NEGATIVE_FLOAT),

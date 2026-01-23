@@ -24,7 +24,6 @@ import org.infinispan.client.hotrod.configuration.ExecutorFactoryConfigurationBu
 import org.infinispan.client.hotrod.impl.async.DefaultAsyncExecutorFactory;
 import org.infinispan.commons.executors.ExecutorFactory;
 import org.infinispan.commons.util.concurrent.NonBlockingRejectedExecutionHandler;
-import org.jboss.as.clustering.controller.DurationAttributeDefinition;
 import org.jboss.as.clustering.infinispan.executors.DefaultNonBlockingThreadFactory;
 import org.jboss.as.clustering.infinispan.subsystem.ConfigurationResourceDefinitionRegistrar;
 import org.jboss.as.clustering.infinispan.subsystem.ThreadPoolResourceRegistration;
@@ -34,6 +33,7 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.ResourceRegistration;
 import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.dmr.ModelNode;
+import org.wildfly.subsystem.resource.DurationAttributeDefinition;
 import org.wildfly.subsystem.resource.ResourceDescriptor;
 import org.wildfly.subsystem.service.ServiceDependency;
 
