@@ -64,10 +64,11 @@ public enum UndertowSubsystemSchema implements PersistentSubsystemSchema<Underto
     VERSION_13_0(13),   // WildFly 27       N.B. There were no schema changes between 12.0 and 13.0!
     VERSION_14_0(14),   // WildFly 28-present
     VERSION_14_0_PREVIEW(14, 0, Stability.PREVIEW),   // WildFly 33-35
-    VERSION_14_0_COMMUNITY(14, 0, Stability.COMMUNITY)   // WildFly 36-present
+    VERSION_14_0_COMMUNITY(14, 0, Stability.COMMUNITY),   // WildFly 36-present
+    VERSION_15_0(15)    // WildFly 40-present
     ;
 
-    static final Set<UndertowSubsystemSchema> CURRENT = EnumSet.of(VERSION_14_0, VERSION_14_0_COMMUNITY);
+    static final Set<UndertowSubsystemSchema> CURRENT = EnumSet.of(VERSION_15_0, VERSION_14_0_COMMUNITY);
     private final VersionedNamespace<IntVersion, UndertowSubsystemSchema> namespace;
     private final PersistentResourceXMLDescription.Factory factory = PersistentResourceXMLDescription.factory(this);
 
@@ -272,7 +273,7 @@ public enum UndertowSubsystemSchema implements PersistentSubsystemSchema<Underto
         builder.addChild(this.factory.builder(FileHandlerDefinition.PATH_ELEMENT).addAttributes(FileHandlerDefinition.ATTRIBUTES.stream()).build());
 
         Stream<AttributeDefinition> reverseProxyHandlerAttributes = ReverseProxyHandlerDefinition.ATTRIBUTES.stream();
-        if (!this.since(VERSION_14_0_COMMUNITY)) {
+        if (!this.since(VERSION_15_0) && !this.since(VERSION_14_0_COMMUNITY)) {
             reverseProxyHandlerAttributes = reverseProxyHandlerAttributes.filter(Predicate.not(Set.of(ReverseProxyHandlerDefinition.REUSE_X_FORWARDED_HEADER, ReverseProxyHandlerDefinition.REWRITE_HOST_HEADER)::contains));
         }
         if (!this.since(UndertowSubsystemSchema.VERSION_4_0)) {
