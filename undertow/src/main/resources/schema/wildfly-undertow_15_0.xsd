@@ -757,6 +757,8 @@
         <xs:attribute name="cached-connections-per-thread" use="optional" type="xs:integer" default="5"/>
         <xs:attribute name="connection-idle-timeout" use="optional" type="xs:integer" default="60000"/>
         <xs:attribute name="max-retries" type="xs:int" use="optional" default="1"/>
+        <xs:attribute name="reuse-x-forwarded-header" type="xs:boolean" use="optional" default="false"/>
+        <xs:attribute name="rewrite-host-header" type="xs:boolean" use="optional" default="false"/>
     </xs:complexType>
 
     <xs:complexType name="reverse-proxy-hostType">
