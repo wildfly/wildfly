@@ -12,7 +12,6 @@ import java.util.OptionalInt;
 import java.util.function.Function;
 
 import org.jboss.as.clustering.controller.EnumAttributeDefinition;
-import org.jboss.as.clustering.controller.ISOStandardDurationAttributeDefinition;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -36,6 +35,7 @@ import org.wildfly.clustering.infinispan.service.InfinispanCacheConfigurationAtt
 import org.wildfly.clustering.marshalling.ByteBufferMarshaller;
 import org.wildfly.clustering.server.service.CacheConfigurationAttributeGroup;
 import org.wildfly.subsystem.resource.ChildResourceDefinitionRegistrar;
+import org.wildfly.subsystem.resource.DurationAttributeDefinition;
 import org.wildfly.subsystem.resource.ManagementResourceRegistrar;
 import org.wildfly.subsystem.resource.ManagementResourceRegistrationContext;
 import org.wildfly.subsystem.resource.ResourceDescriptor;
@@ -64,7 +64,7 @@ public class InfinispanTimerManagementResourceDefinitionRegistrar implements Chi
             .setValidator(new IntRangeValidator(1))
             .build();
 
-    static final ISOStandardDurationAttributeDefinition IDLE_THRESHOLD = new ISOStandardDurationAttributeDefinition.Builder("idle-threshold")
+    static final DurationAttributeDefinition IDLE_THRESHOLD = DurationAttributeDefinition.builder("idle-threshold")
             .setRequired(false)
             .setStability(Stability.COMMUNITY)
             .build();

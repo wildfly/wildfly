@@ -9,7 +9,6 @@ import java.time.Duration;
 import java.time.temporal.ChronoUnit;
 
 import org.infinispan.configuration.global.ThreadPoolConfiguration;
-import org.jboss.as.clustering.controller.DurationAttributeDefinition;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
@@ -20,6 +19,7 @@ import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.wildfly.service.descriptor.UnaryServiceDescriptor;
+import org.wildfly.subsystem.resource.DurationAttributeDefinition;
 
 /**
  * Enumerates scheduled thread pool resource registrations for a cache container.
@@ -41,7 +41,7 @@ public enum ScheduledThreadPool implements ScheduledThreadPoolResourceRegistrati
         this.descriptor = UnaryServiceDescriptorFactory.createServiceDescriptor(this, ThreadPoolConfiguration.class);
         this.capability = RuntimeCapability.Builder.of(this.descriptor).setDynamicNameMapper(UnaryCapabilityNameResolver.PARENT).build();
         this.minThreads = createAttribute("min-threads", defaultMinThreads);
-        this.keepAlive = new DurationAttributeDefinition.Builder("keepalive-time", ChronoUnit.MILLIS).setDefaultValue(defaultKeepAlive).build();
+        this.keepAlive = DurationAttributeDefinition.builder("keepalive-time", ChronoUnit.MILLIS).setDefaultValue(defaultKeepAlive).build();
     }
 
     private static AttributeDefinition createAttribute(String name, int defaultValue) {

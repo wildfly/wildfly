@@ -13,7 +13,6 @@ import java.util.function.Supplier;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.configuration.cache.ExpirationConfiguration;
 import org.infinispan.configuration.cache.ExpirationConfigurationBuilder;
-import org.jboss.as.clustering.controller.DurationAttributeDefinition;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -23,6 +22,7 @@ import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.dmr.ModelNode;
 import org.wildfly.service.descriptor.BinaryServiceDescriptor;
 import org.wildfly.subsystem.resource.AttributeDefinitionProvider;
+import org.wildfly.subsystem.resource.DurationAttributeDefinition;
 import org.wildfly.subsystem.resource.ResourceDescriptor;
 import org.wildfly.subsystem.resource.ResourceModelResolver;
 import org.wildfly.subsystem.service.ServiceDependency;
@@ -43,7 +43,7 @@ public class ExpirationResourceDefinitionRegistrar extends ConfigurationResource
         private final DurationAttributeDefinition definition;
 
         Attribute(String name, Duration defaultValue) {
-            this.definition = new DurationAttributeDefinition.Builder(name, ChronoUnit.MILLIS)
+            this.definition = DurationAttributeDefinition.builder(name, ChronoUnit.MILLIS)
                     .setRequired(false)
                     .setDefaultValue(defaultValue)
                     .build();

@@ -12,7 +12,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.infinispan.client.hotrod.configuration.ExecutorFactoryConfiguration;
 import org.infinispan.client.hotrod.impl.async.DefaultAsyncExecutorFactory;
-import org.jboss.as.clustering.controller.DurationAttributeDefinition;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
@@ -23,6 +22,7 @@ import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.wildfly.service.descriptor.UnaryServiceDescriptor;
+import org.wildfly.subsystem.resource.DurationAttributeDefinition;
 
 /**
  * Enumerates resource registrations for thread pools of a remote cache container.
@@ -49,7 +49,7 @@ public enum ClientThreadPool implements ClientThreadPoolResourceRegistration {
         this.minThreads = createBuilder("min-threads", defaultMinThreads);
         this.maxThreads = createBuilder("max-threads", defaultMaxThreads);
         this.queueLength = createBuilder("queue-length", defaultQueueLength);
-        this.keepAlive = new DurationAttributeDefinition.Builder("keepalive-time", ChronoUnit.MILLIS).setDefaultValue(defaultKeepAlive).build();
+        this.keepAlive = DurationAttributeDefinition.builder("keepalive-time", ChronoUnit.MILLIS).setDefaultValue(defaultKeepAlive).build();
         this.factory = factory;
     }
 
