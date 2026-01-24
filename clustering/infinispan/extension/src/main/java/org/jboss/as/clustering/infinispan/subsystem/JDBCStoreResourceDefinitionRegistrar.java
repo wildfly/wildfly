@@ -18,7 +18,6 @@ import org.infinispan.persistence.jdbc.configuration.JdbcStringBasedStoreConfigu
 import org.infinispan.persistence.jdbc.configuration.TableManipulationConfiguration;
 import org.infinispan.persistence.keymappers.TwoWayKey2StringMapper;
 import org.jboss.as.clustering.controller.CommonServiceDescriptor;
-import org.jboss.as.clustering.controller.EnumAttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
@@ -28,6 +27,7 @@ import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelNode;
 import org.wildfly.clustering.cache.infinispan.persistence.jdbc.DataSourceConnectionFactoryConfigurationBuilder;
 import org.wildfly.clustering.server.service.BinaryServiceConfiguration;
+import org.wildfly.subsystem.resource.EnumAttributeDefinition;
 import org.wildfly.subsystem.resource.ManagementResourceRegistrationContext;
 import org.wildfly.subsystem.resource.ResourceDescriptor;
 import org.wildfly.subsystem.resource.capability.CapabilityReference;
@@ -41,7 +41,7 @@ import org.wildfly.subsystem.service.ServiceDependency;
 public class JDBCStoreResourceDefinitionRegistrar extends StoreResourceDefinitionRegistrar<JdbcStringBasedStoreConfiguration, JdbcStringBasedStoreConfigurationBuilder> {
 
     static final CapabilityReferenceAttributeDefinition<DataSource> DATA_SOURCE = new CapabilityReferenceAttributeDefinition.Builder<>("data-source", CapabilityReference.builder(CAPABILITY, CommonServiceDescriptor.DATA_SOURCE).build()).setRequired(true).build();
-    static final EnumAttributeDefinition<DatabaseType> DIALECT = new EnumAttributeDefinition.Builder<>("dialect", DatabaseType.class).setRequired(false).build();
+    static final EnumAttributeDefinition<DatabaseType> DIALECT = EnumAttributeDefinition.nameBuilder("dialect", DatabaseType.class).setRequired(false).build();
 
     JDBCStoreResourceDefinitionRegistrar() {
         super(new Configurator<>() {

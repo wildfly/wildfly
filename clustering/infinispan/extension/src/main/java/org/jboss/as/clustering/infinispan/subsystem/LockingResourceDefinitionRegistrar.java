@@ -16,7 +16,6 @@ import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.configuration.cache.IsolationLevel;
 import org.infinispan.configuration.cache.LockingConfiguration;
 import org.infinispan.configuration.cache.LockingConfigurationBuilder;
-import org.jboss.as.clustering.controller.EnumAttributeDefinition;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -30,6 +29,7 @@ import org.jboss.dmr.ModelType;
 import org.wildfly.service.descriptor.BinaryServiceDescriptor;
 import org.wildfly.subsystem.resource.AttributeDefinitionProvider;
 import org.wildfly.subsystem.resource.DurationAttributeDefinition;
+import org.wildfly.subsystem.resource.EnumAttributeDefinition;
 import org.wildfly.subsystem.resource.ResourceDescriptor;
 import org.wildfly.subsystem.service.ServiceDependency;
 
@@ -42,7 +42,9 @@ public class LockingResourceDefinitionRegistrar extends ConfigurationResourceDef
     static final BinaryServiceDescriptor<LockingConfiguration> SERVICE_DESCRIPTOR = BinaryServiceDescriptorFactory.createServiceDescriptor(ComponentResourceRegistration.LOCKING, LockingConfiguration.class);
     private static final RuntimeCapability<Void> CAPABILITY = RuntimeCapability.Builder.of(SERVICE_DESCRIPTOR).setDynamicNameMapper(BinaryCapabilityNameResolver.GRANDPARENT_PARENT).setAllowMultipleRegistrations(true).build();
 
-    static final EnumAttributeDefinition<IsolationLevel> ISOLATION = new EnumAttributeDefinition.Builder<>("isolation", IsolationLevel.READ_COMMITTED).build();
+    static final EnumAttributeDefinition<IsolationLevel> ISOLATION = EnumAttributeDefinition.nameBuilder("isolation", IsolationLevel.class)
+            .setDefaultValue(IsolationLevel.READ_COMMITTED)
+            .build();
     static final DurationAttributeDefinition ACQUIRE_TIMEOUT = DurationAttributeDefinition.builder("acquire-timeout", ChronoUnit.MILLIS).setDefaultValue(Duration.ofSeconds(15)).build();
 
     enum Attribute implements AttributeDefinitionProvider, UnaryOperator<SimpleAttributeDefinitionBuilder> {

@@ -29,7 +29,6 @@ import org.infinispan.client.hotrod.configuration.SecurityConfiguration;
 import org.infinispan.client.hotrod.configuration.ServerConfiguration;
 import org.infinispan.commons.jmx.MBeanServerLookup;
 import org.infinispan.commons.marshall.Marshaller;
-import org.jboss.as.clustering.controller.EnumAttributeDefinition;
 import org.jboss.as.clustering.controller.MBeanServerResolver;
 import org.jboss.as.clustering.controller.ModuleListAttributeDefinition;
 import org.jboss.as.clustering.controller.PropertiesAttributeDefinition;
@@ -60,6 +59,7 @@ import org.wildfly.clustering.infinispan.client.RemoteCacheContainer;
 import org.wildfly.clustering.infinispan.client.service.HotRodServiceDescriptor;
 import org.wildfly.subsystem.resource.AttributeDefinitionProvider;
 import org.wildfly.subsystem.resource.DurationAttributeDefinition;
+import org.wildfly.subsystem.resource.EnumAttributeDefinition;
 import org.wildfly.subsystem.resource.ManagementResourceRegistrationContext;
 import org.wildfly.subsystem.resource.ResourceDescriptor;
 import org.wildfly.subsystem.resource.StatisticsEnabledAttributeDefinition;
@@ -87,8 +87,13 @@ public class RemoteCacheContainerResourceDefinitionRegistrar extends Configurati
     public static final DurationAttributeDefinition SOCKET_TIMEOUT = DurationAttributeDefinition.builder("socket-timeout", ChronoUnit.MILLIS).setDefaultValue(Duration.ofMinutes(1)).build();
     public static final DurationAttributeDefinition TRANSACTION_TIMEOUT = DurationAttributeDefinition.builder("transaction-timeout", ChronoUnit.MILLIS).setDefaultValue(Duration.ofMinutes(1)).build();
     public static final CapabilityReferenceAttributeDefinition<ClusterConfiguration> DEFAULT_REMOTE_CLUSTER = new CapabilityReferenceAttributeDefinition.Builder<>("default-remote-cluster", CapabilityReference.builder(CAPABILITY, RemoteClusterResourceDefinitionRegistrar.SERVICE_DESCRIPTOR).withParentPath(REGISTRATION.getPathElement()).build()).setRequired(false).build();
-    public static final EnumAttributeDefinition<HotRodMarshallerFactory> MARSHALLER = new EnumAttributeDefinition.Builder<>("marshaller", HotRodMarshallerFactory.LEGACY).build();
-    public static final EnumAttributeDefinition<ProtocolVersion> PROTOCOL_VERSION = new EnumAttributeDefinition.Builder<>("protocol-version", ProtocolVersion.PROTOCOL_VERSION_41).setAllowedValues(EnumSet.complementOf(EnumSet.of(ProtocolVersion.PROTOCOL_VERSION_AUTO))).withResolver(ProtocolVersion::parseVersion).build();
+    public static final EnumAttributeDefinition<HotRodMarshallerFactory> MARSHALLER = EnumAttributeDefinition.nameBuilder("marshaller", HotRodMarshallerFactory.class)
+            .setDefaultValue(HotRodMarshallerFactory.LEGACY)
+            .build();
+    public static final EnumAttributeDefinition<ProtocolVersion> PROTOCOL_VERSION = EnumAttributeDefinition.toStringBuilder("protocol-version", ProtocolVersion.class)
+            .setDefaultValue(ProtocolVersion.PROTOCOL_VERSION_41)
+            .setAllowedValues(EnumSet.complementOf(EnumSet.of(ProtocolVersion.PROTOCOL_VERSION_AUTO)))
+            .build();
     public static final PropertiesAttributeDefinition PROPERTIES = new PropertiesAttributeDefinition.Builder("properties").build();
     public static final StatisticsEnabledAttributeDefinition STATISTICS_ENABLED = new StatisticsEnabledAttributeDefinition.Builder().build();
 

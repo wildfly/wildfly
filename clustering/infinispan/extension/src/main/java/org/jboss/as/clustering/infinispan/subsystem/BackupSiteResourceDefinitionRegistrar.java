@@ -16,7 +16,6 @@ import org.infinispan.configuration.cache.BackupConfiguration.BackupStrategy;
 import org.infinispan.configuration.cache.BackupConfigurationBuilder;
 import org.infinispan.configuration.cache.BackupFailurePolicy;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
-import org.jboss.as.clustering.controller.EnumAttributeDefinition;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -32,6 +31,7 @@ import org.jboss.dmr.ModelType;
 import org.wildfly.clustering.infinispan.service.InfinispanServiceDescriptor;
 import org.wildfly.service.descriptor.TernaryServiceDescriptor;
 import org.wildfly.subsystem.resource.DurationAttributeDefinition;
+import org.wildfly.subsystem.resource.EnumAttributeDefinition;
 import org.wildfly.subsystem.resource.ManagementResourceRegistrationContext;
 import org.wildfly.subsystem.resource.ResourceDescriptor;
 import org.wildfly.subsystem.resource.executor.RuntimeOperationStepHandler;
@@ -49,8 +49,12 @@ public class BackupSiteResourceDefinitionRegistrar extends ConfigurationResource
     static final TernaryServiceDescriptor<BackupConfiguration> SERVICE_DESCRIPTOR = TernaryServiceDescriptor.of(String.join(".", InfinispanServiceDescriptor.CACHE_CONFIGURATION.getName(), REGISTRATION.getPathElement().getKey()), BackupConfiguration.class);
     private static final RuntimeCapability<Void> CAPABILITY = RuntimeCapability.Builder.of(SERVICE_DESCRIPTOR).setDynamicNameMapper(TernaryCapabilityNameResolver.GREATGRANDPARENT_GRANDPARENT_CHILD).setAllowMultipleRegistrations(true).build();
 
-    static final EnumAttributeDefinition<BackupFailurePolicy> FAILURE_POLICY = new EnumAttributeDefinition.Builder<>("failure-policy", BackupFailurePolicy.WARN).build();
-    static final EnumAttributeDefinition<BackupStrategy> STRATEGY = new EnumAttributeDefinition.Builder<>("strategy", BackupStrategy.ASYNC).build();
+    static final EnumAttributeDefinition<BackupFailurePolicy> FAILURE_POLICY = EnumAttributeDefinition.nameBuilder("failure-policy", BackupFailurePolicy.class)
+            .setDefaultValue(BackupFailurePolicy.WARN)
+            .build();
+    static final EnumAttributeDefinition<BackupStrategy> STRATEGY = EnumAttributeDefinition.nameBuilder("strategy", BackupStrategy.class)
+            .setDefaultValue(BackupStrategy.ASYNC)
+            .build();
     static final DurationAttributeDefinition TIMEOUT = DurationAttributeDefinition.builder("timeout", ChronoUnit.MILLIS).setDefaultValue(Duration.ofSeconds(10)).build();
     static final DurationAttributeDefinition MIN_WAIT = DurationAttributeDefinition.builder("min-wait", ChronoUnit.MILLIS)
             .setDefaultValue(Duration.ZERO)

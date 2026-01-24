@@ -12,7 +12,6 @@ import org.infinispan.configuration.cache.MemoryConfiguration;
 import org.infinispan.configuration.cache.MemoryConfigurationBuilder;
 import org.infinispan.configuration.cache.StorageType;
 import org.infinispan.eviction.EvictionStrategy;
-import org.jboss.as.clustering.controller.EnumAttributeDefinition;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -24,6 +23,7 @@ import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.wildfly.service.descriptor.BinaryServiceDescriptor;
+import org.wildfly.subsystem.resource.EnumAttributeDefinition;
 import org.wildfly.subsystem.resource.ResourceDescriptor;
 import org.wildfly.subsystem.service.ServiceDependency;
 
@@ -41,7 +41,9 @@ public class MemoryResourceDefinitionRegistrar extends ConfigurationResourceDefi
             .setValidator(LongRangeValidator.POSITIVE)
             .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
             .build();
-    static final EnumAttributeDefinition<MemorySizeUnit> SIZE_UNIT = new EnumAttributeDefinition.Builder<>("size-unit", MemorySizeUnit.ENTRIES).build();
+    static final EnumAttributeDefinition<MemorySizeUnit> SIZE_UNIT = EnumAttributeDefinition.nameBuilder("size-unit", MemorySizeUnit.class)
+            .setDefaultValue(MemorySizeUnit.ENTRIES)
+            .build();
 
     interface Configurator extends ConfigurationResourceDefinitionRegistrar.Configurator<MemoryConfiguration> {
         StorageType getStorageType();
