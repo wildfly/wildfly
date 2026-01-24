@@ -9,7 +9,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.function.UnaryOperator;
 
-import org.jboss.as.clustering.controller.ModuleAttributeDefinition;
 import org.jboss.as.clustering.jgroups.logging.JGroupsLogger;
 import org.jboss.as.controller.ExpressionResolver;
 import org.jboss.as.controller.OperationFailedException;
@@ -28,6 +27,7 @@ import org.jgroups.stack.Protocol;
 import org.wildfly.subsystem.resource.ChildResourceDefinitionRegistrar;
 import org.wildfly.subsystem.resource.ManagementResourceRegistrar;
 import org.wildfly.subsystem.resource.ManagementResourceRegistrationContext;
+import org.wildfly.subsystem.resource.ModuleAttributeDefinition;
 import org.wildfly.subsystem.resource.PropertiesAttributeDefinition;
 import org.wildfly.subsystem.resource.ResourceDescriptor;
 import org.wildfly.subsystem.resource.StatisticsEnabledAttributeDefinition;
