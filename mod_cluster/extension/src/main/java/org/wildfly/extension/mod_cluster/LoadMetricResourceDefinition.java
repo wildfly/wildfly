@@ -8,11 +8,9 @@ package org.wildfly.extension.mod_cluster;
 import java.util.function.UnaryOperator;
 
 import org.jboss.as.clustering.controller.ChildResourceDefinition;
-import org.jboss.as.clustering.controller.PropertiesAttributeDefinition;
 import org.jboss.as.clustering.controller.ReloadRequiredResourceRegistrar;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.controller.AttributeDefinition;
-import org.jboss.as.controller.AttributeMarshaller;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
@@ -21,6 +19,7 @@ import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.modcluster.load.metric.LoadMetric;
+import org.wildfly.subsystem.resource.PropertiesAttributeDefinition;
 
 /**
  * Definition for resource at address /subsystem=modcluster/proxy=X/dynamic-load-provider=configuration/load-metric=Z
@@ -54,10 +53,7 @@ class LoadMetricResourceDefinition extends ChildResourceDefinition<ManagementRes
 
         SharedAttribute(String name) {
             this.definition = new PropertiesAttributeDefinition.Builder(name)
-                    .setAllowExpression(true)
-                    .setRequired(false)
                     .setRestartAllServices()
-                    .setAttributeMarshaller(AttributeMarshaller.PROPERTIES_MARSHALLER_UNWRAPPED)
                     .build();
         }
 

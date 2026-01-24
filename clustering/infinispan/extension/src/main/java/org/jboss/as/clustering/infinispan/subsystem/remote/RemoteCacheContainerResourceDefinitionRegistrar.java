@@ -31,7 +31,6 @@ import org.infinispan.commons.jmx.MBeanServerLookup;
 import org.infinispan.commons.marshall.Marshaller;
 import org.jboss.as.clustering.controller.MBeanServerResolver;
 import org.jboss.as.clustering.controller.ModuleListAttributeDefinition;
-import org.jboss.as.clustering.controller.PropertiesAttributeDefinition;
 import org.jboss.as.clustering.infinispan.jmx.MBeanServerProvider;
 import org.jboss.as.clustering.infinispan.logging.InfinispanLogger;
 import org.jboss.as.clustering.infinispan.subsystem.ConfigurationResourceDefinitionRegistrar;
@@ -47,6 +46,7 @@ import org.jboss.as.controller.RequirementServiceBuilder;
 import org.jboss.as.controller.ResourceRegistration;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.capability.RuntimeCapability;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
@@ -61,8 +61,10 @@ import org.wildfly.subsystem.resource.AttributeDefinitionProvider;
 import org.wildfly.subsystem.resource.DurationAttributeDefinition;
 import org.wildfly.subsystem.resource.EnumAttributeDefinition;
 import org.wildfly.subsystem.resource.ManagementResourceRegistrationContext;
+import org.wildfly.subsystem.resource.PropertiesAttributeDefinition;
 import org.wildfly.subsystem.resource.ResourceDescriptor;
 import org.wildfly.subsystem.resource.StatisticsEnabledAttributeDefinition;
+import org.wildfly.subsystem.resource.PropertiesAttributeDefinition.PropertyValueContextPersistence;
 import org.wildfly.subsystem.resource.capability.CapabilityReference;
 import org.wildfly.subsystem.resource.capability.CapabilityReferenceAttributeDefinition;
 import org.wildfly.subsystem.resource.executor.MetricOperationStepHandler;
@@ -94,7 +96,9 @@ public class RemoteCacheContainerResourceDefinitionRegistrar extends Configurati
             .setDefaultValue(ProtocolVersion.PROTOCOL_VERSION_41)
             .setAllowedValues(EnumSet.complementOf(EnumSet.of(ProtocolVersion.PROTOCOL_VERSION_AUTO)))
             .build();
-    public static final PropertiesAttributeDefinition PROPERTIES = new PropertiesAttributeDefinition.Builder("properties").build();
+    public static final PropertiesAttributeDefinition PROPERTIES = new PropertiesAttributeDefinition.Builder()
+            .setPropertyPersistence(new PropertyValueContextPersistence(ModelDescriptionConstants.NAME))
+            .build();
     public static final StatisticsEnabledAttributeDefinition STATISTICS_ENABLED = new StatisticsEnabledAttributeDefinition.Builder().build();
 
     public enum Attribute implements AttributeDefinitionProvider, UnaryOperator<SimpleAttributeDefinitionBuilder> {
