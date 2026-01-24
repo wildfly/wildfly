@@ -8,6 +8,8 @@ import javax.xml.stream.XMLStreamException;
 import java.util.EnumSet;
 
 import org.jboss.as.clustering.controller.Attribute;
+import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.AttributeMarshaller;
 import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
@@ -87,7 +89,12 @@ public final class ModClusterSubsystemXMLWriter implements XMLElementWriter<Subs
     }
 
     private static void writeAttribute(XMLExtendedStreamWriter writer, ModelNode model, Attribute attribute) throws XMLStreamException {
-        attribute.getDefinition().getMarshaller().marshallAsAttribute(attribute.getDefinition(), model, true, writer);
+        AttributeDefinition definition = attribute.getDefinition();
+        AttributeMarshaller marshaller = definition.getMarshaller();
+        if (marshaller.isMarshallableAsElement()) {
+            marshaller.marshallAsElement(definition, model, true, writer);
+        } else {
+            marshaller.marshallAsAttribute(definition, model, true, writer);
+        }
     }
-
 }

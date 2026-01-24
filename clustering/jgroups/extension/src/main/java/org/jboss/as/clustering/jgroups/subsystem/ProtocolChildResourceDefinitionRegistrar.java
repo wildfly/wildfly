@@ -10,12 +10,12 @@ import java.util.List;
 import java.util.function.UnaryOperator;
 
 import org.jboss.as.clustering.controller.ModuleAttributeDefinition;
-import org.jboss.as.clustering.controller.PropertiesAttributeDefinition;
 import org.jboss.as.clustering.jgroups.logging.JGroupsLogger;
 import org.jboss.as.controller.ExpressionResolver;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.ResourceDefinition;
 import org.jboss.as.controller.ResourceRegistration;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelNode;
@@ -28,8 +28,10 @@ import org.jgroups.stack.Protocol;
 import org.wildfly.subsystem.resource.ChildResourceDefinitionRegistrar;
 import org.wildfly.subsystem.resource.ManagementResourceRegistrar;
 import org.wildfly.subsystem.resource.ManagementResourceRegistrationContext;
+import org.wildfly.subsystem.resource.PropertiesAttributeDefinition;
 import org.wildfly.subsystem.resource.ResourceDescriptor;
 import org.wildfly.subsystem.resource.StatisticsEnabledAttributeDefinition;
+import org.wildfly.subsystem.resource.PropertiesAttributeDefinition.PropertyValueContextPersistence;
 
 /**
  * Registers a resource definition for a typed JGroups protocol component.
@@ -39,7 +41,9 @@ import org.wildfly.subsystem.resource.StatisticsEnabledAttributeDefinition;
  */
 public class ProtocolChildResourceDefinitionRegistrar implements ChildResourceDefinitionRegistrar, UnaryOperator<ResourceDescriptor.Builder> {
     static final ModuleAttributeDefinition MODULE = new ModuleAttributeDefinition.Builder().setDefaultValue(Module.forClass(JChannel.class)).build();
-    static final PropertiesAttributeDefinition PROPERTIES = new PropertiesAttributeDefinition.Builder().build();
+    static final PropertiesAttributeDefinition PROPERTIES = new PropertiesAttributeDefinition.Builder()
+            .setPropertyPersistence(new PropertyValueContextPersistence(ModelDescriptionConstants.NAME))
+            .build();
     static final StatisticsEnabledAttributeDefinition STATISTICS_ENABLED = new StatisticsEnabledAttributeDefinition.Builder().setDefaultValue(null).build();
 
     interface Configurator {
