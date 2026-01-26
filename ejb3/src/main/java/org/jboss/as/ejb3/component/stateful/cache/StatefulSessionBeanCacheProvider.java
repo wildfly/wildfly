@@ -5,8 +5,8 @@
 
 package org.jboss.as.ejb3.component.stateful.cache;
 
-import org.jboss.as.ee.component.ComponentConfiguration;
-import org.jboss.as.ee.component.EEModuleConfiguration;
+import java.util.Set;
+
 import org.jboss.as.ejb3.component.stateful.StatefulComponentDescription;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.wildfly.service.descriptor.NullaryServiceDescriptor;
@@ -25,18 +25,19 @@ public interface StatefulSessionBeanCacheProvider {
     /**
      * Returns configurators for services to be installed for the specified deployment.
      * @param unit a deployment unit
+     * @param beanClasses the set of stateful session bean classes in the deployment
      * @return a collection of service configurators
      */
-    Iterable<ServiceInstaller> getDeploymentServiceInstallers(DeploymentUnit unit, EEModuleConfiguration moduleConfiguration);
+    Iterable<ServiceInstaller> getDeploymentServiceInstallers(DeploymentUnit unit, Set<Class<?>> beanClasses);
 
     /**
      * Returns a configurator for a service supplying a cache factory.
      * @param unit the deployment unit containing this EJB component.
      * @param description the EJB component description
-     * @param configuration the component configuration
+     * @param componentName the component name
      * @return a service configurator
      */
-    Iterable<ServiceInstaller> getStatefulBeanCacheFactoryServiceInstallers(DeploymentUnit unit, StatefulComponentDescription description, ComponentConfiguration configuration);
+    Iterable<ServiceInstaller> getStatefulBeanCacheFactoryServiceInstallers(DeploymentUnit unit, StatefulComponentDescription description, String componentName);
 
     /**
      * Indicates whether or not cache factories provides by this object can support passivation.

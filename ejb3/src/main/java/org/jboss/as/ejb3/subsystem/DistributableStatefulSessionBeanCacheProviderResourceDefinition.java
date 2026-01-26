@@ -5,8 +5,6 @@
 package org.jboss.as.ejb3.subsystem;
 
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Function;
@@ -17,8 +15,6 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.registry.AttributeAccess;
-import org.jboss.as.ee.component.ComponentConfiguration;
-import org.jboss.as.ee.component.EEModuleConfiguration;
 import org.jboss.as.ejb3.component.stateful.StatefulComponentDescription;
 import org.jboss.as.ejb3.component.stateful.cache.StatefulSessionBeanCacheProvider;
 import org.jboss.as.ejb3.component.stateful.cache.distributable.DistributableStatefulSessionBeanCacheFactoryServiceInstallerFactory;
@@ -86,16 +82,16 @@ public class DistributableStatefulSessionBeanCacheProviderResourceDefinition ext
                     }
 
                     @Override
-                    public Iterable<ServiceInstaller> getStatefulBeanCacheFactoryServiceInstallers(DeploymentUnit unit, StatefulComponentDescription description, ComponentConfiguration configuration) {
-                        ServiceName name = unit.getServiceName().append(configuration.getComponentName()).append("bean-manager");
-                        ServiceInstaller beanManagerFactoryInstaller = provider.getBeanManagerFactoryServiceInstaller(name, new DeploymentUnitBeanConfiguration(provider, unit, configuration));
+                    public Iterable<ServiceInstaller> getStatefulBeanCacheFactoryServiceInstallers(DeploymentUnit unit, StatefulComponentDescription description, String componentName) {
+                        ServiceName name = unit.getServiceName().append(componentName).append("bean-manager");
+                        ServiceInstaller beanManagerFactoryInstaller = provider.getBeanManagerFactoryServiceInstaller(name, new DeploymentUnitBeanConfiguration(provider, unit, componentName));
                         ServiceInstaller cacheFactoryInstaller = new DistributableStatefulSessionBeanCacheFactoryServiceInstallerFactory<>().apply(description, ServiceDependency.on(name));
                         return List.of(beanManagerFactoryInstaller, cacheFactoryInstaller);
                     }
 
                     @Override
-                    public Iterable<ServiceInstaller> getDeploymentServiceInstallers(DeploymentUnit unit, EEModuleConfiguration moduleConfiguration) {
-                        return provider.getDeploymentServiceInstallers(new BeanDeploymentUnitConfiguration(provider, unit, moduleConfiguration));
+                    public Iterable<ServiceInstaller> getDeploymentServiceInstallers(DeploymentUnit unit, Set<Class<?>> beanClasses) {
+                        return provider.getDeploymentServiceInstallers(new BeanDeploymentUnitConfiguration(provider, unit, beanClasses));
                     }
                 };
             }
@@ -136,19 +132,11 @@ public class DistributableStatefulSessionBeanCacheProviderResourceDefinition ext
     }
 
     private static class BeanDeploymentUnitConfiguration extends DeploymentUnitConfiguration implements BeanDeploymentConfiguration {
-        private final Set<Class<?>> beanClasses = Collections.newSetFromMap(new IdentityHashMap<>());
+        private final Set<Class<?>> beanClasses;
 
-        BeanDeploymentUnitConfiguration(BeanManagementProvider provider, DeploymentUnit unit, EEModuleConfiguration moduleConfiguration) {
+        BeanDeploymentUnitConfiguration(BeanManagementProvider provider, DeploymentUnit unit, Set<Class<?>> beanClasses) {
             super(provider, unit);
-            for (ComponentConfiguration configuration : moduleConfiguration.getComponentConfigurations()) {
-                if (configuration.getComponentDescription() instanceof StatefulComponentDescription) {
-                    Class<?> componentClass = configuration.getComponentClass();
-                    while (componentClass != Object.class) {
-                        this.beanClasses.add(componentClass);
-                        componentClass = componentClass.getSuperclass();
-                    }
-                }
-            }
+            this.beanClasses = beanClasses;
         }
 
         @Override
@@ -159,16 +147,16 @@ public class DistributableStatefulSessionBeanCacheProviderResourceDefinition ext
 
     private static class DeploymentUnitBeanConfiguration extends DeploymentUnitConfiguration implements BeanConfiguration {
 
-        private final ComponentConfiguration configuration;
+        private final String componentName;
 
-        DeploymentUnitBeanConfiguration(BeanManagementProvider provider, DeploymentUnit unit, ComponentConfiguration configuration) {
+        DeploymentUnitBeanConfiguration(BeanManagementProvider provider, DeploymentUnit unit, String componentName) {
             super(provider, unit);
-            this.configuration = configuration;
+            this.componentName = componentName;
         }
 
         @Override
         public String getName() {
-            return this.configuration.getComponentName();
+            return this.componentName;
         }
     }
 }
