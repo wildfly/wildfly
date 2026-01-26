@@ -5,7 +5,9 @@
 
 package org.jboss.as.ejb3.deployment.processors;
 
+import java.util.Collections;
 import java.util.HashSet;
+import java.util.IdentityHashMap;
 import java.util.Set;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -13,6 +15,7 @@ import java.util.stream.Collectors;
 import org.jboss.as.controller.RequirementServiceTarget;
 import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.as.ee.component.Attachments;
+import org.jboss.as.ee.component.ComponentConfiguration;
 import org.jboss.as.ee.component.ComponentDescription;
 import org.jboss.as.ee.component.EEModuleConfiguration;
 import org.jboss.as.ee.component.EEModuleDescription;
@@ -49,7 +52,18 @@ public class CacheDependenciesProcessor implements DeploymentUnitProcessor {
             }
         }
 
+        // WFLY-21390 Compute bean classes before the lambda to avoid capturing EEModuleConfiguration
         EEModuleConfiguration moduleConfiguration = unit.getAttachment(Attachments.EE_MODULE_CONFIGURATION);
+        Set<Class<?>> beanClasses = Collections.newSetFromMap(new IdentityHashMap<>());
+        for (ComponentConfiguration configuration : moduleConfiguration.getComponentConfigurations()) {
+            if (configuration.getComponentDescription() instanceof StatefulComponentDescription) {
+                Class<?> componentClass = configuration.getComponentClass();
+                while (componentClass != Object.class) {
+                    beanClasses.add(componentClass);
+                    componentClass = componentClass.getSuperclass();
+                }
+            }
+        }
 
         ServiceInstaller installer = new ServiceInstaller() {
             @Override
@@ -57,7 +71,7 @@ public class CacheDependenciesProcessor implements DeploymentUnitProcessor {
                 // Cache provider dependencies might still contain duplicates (if referenced via alias), so ensure we collect only distinct instances.
                 Set<StatefulSessionBeanCacheProvider> providers = dependencies.stream().map(Supplier::get).distinct().collect(Collectors.toSet());
                 for (StatefulSessionBeanCacheProvider provider : providers) {
-                    for (ServiceInstaller deploymentInstaller : provider.getDeploymentServiceInstallers(unit, moduleConfiguration)) {
+                    for (ServiceInstaller deploymentInstaller : provider.getDeploymentServiceInstallers(unit, beanClasses)) {
                         deploymentInstaller.install(target);
                     }
                 }

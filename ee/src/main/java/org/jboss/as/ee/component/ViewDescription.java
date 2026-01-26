@@ -244,8 +244,10 @@ public class ViewDescription {
             boolean appclient = context.getDeploymentUnit().getAttachment(Attachments.EE_MODULE_DESCRIPTION).isAppClient();
             // Create view bindings
             final List<BindingConfiguration> bindingConfigurations = configuration.getBindingConfigurations();
+            // WFLY-21390 Extract the class loader before the lambda to avoid capturing the entire ComponentConfiguration
+            final ClassLoader moduleClassLoader = componentConfiguration.getModuleClassLoader();
             for (String bindingName : description.getBindingNames()) {
-                bindingConfigurations.add(new BindingConfiguration(bindingName, description.createInjectionSource(description.getServiceName(), () -> componentConfiguration.getModuleClassLoader(), appclient)));
+                bindingConfigurations.add(new BindingConfiguration(bindingName, description.createInjectionSource(description.getServiceName(), () -> moduleClassLoader, appclient)));
             }
         }
     }
