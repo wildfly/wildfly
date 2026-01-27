@@ -572,7 +572,7 @@
         <version.org.wildfly.transaction.client>3.0.5.Final</version.org.wildfly.transaction.client>
         <version.org.wildfly.wildfly-application-development-guide>1.0.0.Final</version.org.wildfly.wildfly-application-development-guide>
         <preview.version.org.wildfly.wildfly-ee-9-deployment-transformer>2.0.0.Final</preview.version.org.wildfly.wildfly-ee-9-deployment-transformer>
-        <version.software.amazon.awssdk>2.40.9</version.software.amazon.awssdk>
+        <version.software.amazon.awssdk>2.40.17</version.software.amazon.awssdk>
         <version.software.amazon.eventstream>1.0.1</version.software.amazon.eventstream>
         <version.org.xerial.snappy.snappy-java>1.1.10.5</version.org.xerial.snappy.snappy-java>
         <version.sun.jaxb>${version.org.glassfish.jaxb}</version.sun.jaxb>
