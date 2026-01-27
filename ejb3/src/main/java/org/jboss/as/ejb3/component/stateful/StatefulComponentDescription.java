@@ -191,6 +191,8 @@ public class StatefulComponentDescription extends SessionBeanComponentDescriptio
         }
         addStatefulSessionSynchronizationInterceptor();
 
+        // WFLY-21390 Extract component name before the lambda to avoid capturing the entire ComponentConfiguration
+        final String componentName = statefulComponentConfiguration.getComponentName();
         this.getConfigurators().add(new ComponentConfigurator() {
             @Override
             public void configure(DeploymentPhaseContext context, ComponentDescription description, ComponentConfiguration configuration) throws DeploymentUnitProcessingException {
@@ -200,7 +202,7 @@ public class StatefulComponentDescription extends SessionBeanComponentDescriptio
                 ServiceInstaller installer = new ServiceInstaller() {
                     @Override
                     public ServiceController<?> install(RequirementServiceTarget target) {
-                        for (ServiceInstaller factoryInstaller : provider.get().getStatefulBeanCacheFactoryServiceInstallers(unit, statefulDescription, statefulComponentConfiguration)) {
+                        for (ServiceInstaller factoryInstaller : provider.get().getStatefulBeanCacheFactoryServiceInstallers(unit, statefulDescription, componentName)) {
                             factoryInstaller.install(target);
                         }
                         return null;
