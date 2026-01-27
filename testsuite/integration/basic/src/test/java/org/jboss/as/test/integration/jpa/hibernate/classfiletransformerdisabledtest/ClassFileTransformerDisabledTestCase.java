@@ -3,9 +3,9 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package org.jboss.as.test.integration.jpa.hibernate.classfiletransformertest;
+package org.jboss.as.test.integration.jpa.hibernate.classfiletransformerdisabledtest;
 
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertFalse;
 
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
@@ -26,27 +26,26 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 /**
- * Hibernate "hibernate.ejb.use_class_enhancer" test that causes hibernate to add a
- * jakarta.persistence.spi.ClassTransformer to the pu.
+ * test that entity class is not bytecode enhanced by Hibernate when persistence unit hint jboss.as.jpa.classtransformer is false
  *
  * @author Scott Marlow
  */
 @RunWith(Arquillian.class)
-public class ClassFileTransformerTestCase {
+public class ClassFileTransformerDisabledTestCase {
 
-    private static final String ARCHIVE_NAME = "jpa_ClassFileTransformerTestCase";
+    private static final String ARCHIVE_NAME = "jpa_ClassFileTransformerDisabledTestCase";
 
     @Deployment
     public static Archive<?> deploy() {
 
         JavaArchive jar = ShrinkWrap.create(JavaArchive.class, ARCHIVE_NAME + ".jar");
-        jar.addClasses(ClassFileTransformerTestCase.class,
+        jar.addClasses(ClassFileTransformerDisabledTestCase.class,
                 Employee.class,
                 SFSB1.class,
                 SFSBHibernateSession.class,
                 SFSBHibernateSessionFactory.class
         );
-        jar.addAsManifestResource(ClassFileTransformerTestCase.class.getPackage(), "persistence.xml", "persistence.xml");
+        jar.addAsManifestResource(ClassFileTransformerDisabledTestCase.class.getPackage(), "persistence.xml", "persistence.xml");
         return jar;
     }
 
@@ -63,21 +62,12 @@ public class ClassFileTransformerTestCase {
         return interfaceType.cast(iniCtx.lookup("java:global/" + ARCHIVE_NAME + "/" + beanName + "!" + interfaceType.getName()));
     }
 
+    // NotByteCodeEnhancedPU
     @Test
-    public void testhibernate_ejb_use_class_enhancer() throws Exception {
-        SFSB1 sfsb1 = lookup("SFSB1", SFSB1.class);
-        sfsb1.createEmployee("Kelly Smith", "Watford, England", 10);
-        sfsb1.createEmployee("Alex Scott", "London, England", 20);
-        Employee emp = sfsb1.getEmployeeNoTX(10);
-
-        assertTrue("was able to read database row with hibernate.ejb.use_class_enhancer enabled", emp != null);
-    }
-
-    @Test
-    public void testHibernateByteCodeEnhancementIsEnabledByDefault() {
+    public void testHibernateByteCodeEnhancementIsDisabled() {
         // Note: ManagedTypeHelper is an internal Hibernate ORM class, if it is removed or renamed then this test can be updated
         // accordingly.
-        assertTrue("Employee class is bytecode enhanced by default", org.hibernate.engine.internal.ManagedTypeHelper.isManagedType(Employee.class));
+        assertFalse("Employee class is not bytecode enhanced as per persistence unit hint jboss.as.jpa.classtransformer=false", org.hibernate.engine.internal.ManagedTypeHelper.isManagedType(Employee.class));
     }
 
 }
