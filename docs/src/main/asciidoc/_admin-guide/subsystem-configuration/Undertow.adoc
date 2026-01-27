@@ -570,6 +570,50 @@ will only be persistent across redeploys, rather than restarts.
 |relative-to |The location that the path is relevant to
 |======================================================
 
+[[session-statistics]]
+=== Session Statistics
+
+When statistics are enabled in the Undertow subsystem,
+session-related metrics are collected for each deployed web application.
+These metrics can be useful for monitoring usage and capacity tuning.
+To enable statistics:
+
+[source]
+----
+/subsystem=undertow:write-attribute(name=statistics-enabled, value=true)
+----
+
+WARNING: Collecting metrics does incur a small performance cost.
+
+Session statistics are available at the deployment level via the management model:
+
+[source]
+----
+/deployment=<deployment-name>/subsystem=undertow:read-resource(include-runtime=true)
+----
+
+Or to obtain value of a specific metric:
+
+[source]
+----
+/deployment=<deployment-name>/subsystem=undertow:read-attribute(name=active-sessions)
+----
+
+The following session statistics attributes are available:
+
+[cols=",",options="header"]
+|======================================================
+|Attribute |Description
+|active-sessions |The current number of active sessions
+|expired-sessions |The number of sessions that have expired
+|highest-session-count |The maximum number of concurrent active sessions that have been active at any point in time
+|max-active-sessions |The maximum number of active sessions allowed, as configured via `<max-active-sessions>` in `jboss-web.xml` (or -1 if unlimited)
+|rejected-sessions |The number of sessions that were rejected
+|sessions-created |The total number of sessions that have been created
+|session-avg-alive-time |The average time (in seconds) that expired sessions had been alive
+|session-max-alive-time |The longest time (in seconds) that an expired session had been alive
+|======================================================
+
 :leveloffset: +1
 
 include::Undertow_AJP_listeners.adoc[]
