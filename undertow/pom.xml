@@ -119,24 +119,40 @@
             <artifactId>undertow-core</artifactId>
         </dependency>
         <dependency>
-            <groupId>io.undertow</groupId>
+            <groupId>io.undertow.ee</groupId>
             <artifactId>undertow-servlet</artifactId>
         </dependency>
         <dependency>
-            <groupId>io.undertow</groupId>
-            <artifactId>undertow-websockets-jsr</artifactId>
+            <groupId>io.undertow.ee</groupId>
+            <artifactId>undertow-websockets</artifactId>
         </dependency>
         <dependency>
             <groupId>io.undertow.jastow</groupId>
             <artifactId>jastow</artifactId>
         </dependency>
         <dependency>
+            <groupId>jakarta.annotation</groupId>
+            <artifactId>jakarta.annotation-api</artifactId>
+        </dependency>
+        <dependency>
             <groupId>jakarta.authorization</groupId>
             <artifactId>jakarta.authorization-api</artifactId>
         </dependency>
         <dependency>
+            <groupId>jakarta.servlet</groupId>
+            <artifactId>jakarta.servlet-api</artifactId>
+        </dependency>
+        <dependency>
             <groupId>jakarta.servlet.jsp</groupId>
             <artifactId>jakarta.servlet.jsp-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>jakarta.websocket</groupId>
+            <artifactId>jakarta.websocket-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>jakarta.websocket</groupId>
+            <artifactId>jakarta.websocket-client-api</artifactId>
         </dependency>
         <dependency>
             <groupId>org.jboss.metadata</groupId>

@@ -55,4 +55,9 @@ public class DetachedDistributableSession extends AbstractSession {
         // A detached session cannot change its ID
         return this.getId();
     }
+
+    @Override
+    public boolean isInvalid() {
+        return super.get().isValid();
+    }
 }

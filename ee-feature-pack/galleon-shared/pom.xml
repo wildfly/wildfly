@@ -645,7 +645,7 @@
         </dependency>
 
         <dependency>
-            <groupId>io.undertow</groupId>
+            <groupId>io.undertow.ee</groupId>
             <artifactId>undertow-servlet</artifactId>
             <!-- TODO add global excludes in the wf core depMgmt -->
             <exclusions>
@@ -657,8 +657,8 @@
         </dependency>
 
         <dependency>
-            <groupId>io.undertow</groupId>
-            <artifactId>undertow-websockets-jsr</artifactId>
+            <groupId>io.undertow.ee</groupId>
+            <artifactId>undertow-websockets</artifactId>
             <!-- TODO add global excludes in the wf core depMgmt -->
             <exclusions>
                 <exclusion>
