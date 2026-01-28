@@ -7,7 +7,6 @@ package org.jboss.as.jpa.config;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
 
 import jakarta.persistence.EntityManagerFactory;
 
@@ -272,34 +271,7 @@ public class Configuration {
         if (pu.getProperties().containsKey(Configuration.JPA_CONTAINER_CLASS_TRANSFORMER)) {
             return Boolean.parseBoolean(pu.getProperties().getProperty(Configuration.JPA_CONTAINER_CLASS_TRANSFORMER));
         }
-        if (isHibernateProvider(pu.getPersistenceProviderClassName())) {
-
-            return isAnyHibernateEnhancerPropertySpecified(pu);
-        }
         return true;
-    }
-
-    /**
-     * Consider jboss.as.jpa.classtransformer to be set to true if any hibernate.enhancer properties are set to true.
-     *
-     * @param pu
-     * @return true if any hibernate.enhancer property is detected otherwise return false
-     */
-    private static boolean isAnyHibernateEnhancerPropertySpecified(PersistenceUnitMetadata pu) {
-
-        Set<String> set = pu.getProperties().stringPropertyNames();
-        for (String key : set) {
-            if (key.startsWith(HIBERNATE_ENHANCER) &&
-                    (true == Boolean.parseBoolean(pu.getProperties().getProperty(key)))) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    private static boolean isHibernateProvider(String provider) {
-        // If the persistence provider is not specified (null case), Hibernate ORM will be used as the persistence provider.
-        return provider == null || provider.contains(HIBERNATE);
     }
 
     // key = provider class name, value = adapter module name
