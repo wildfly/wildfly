@@ -4,7 +4,6 @@
  */
 package org.wildfly.clustering.web.undertow.session;
 
-import java.util.Collections;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -15,7 +14,6 @@ import java.util.concurrent.locks.StampedLock;
 import io.undertow.UndertowMessages;
 import io.undertow.server.HttpServerExchange;
 import io.undertow.server.session.SessionConfig;
-import io.undertow.server.session.SessionListener;
 import io.undertow.server.session.SessionListeners;
 import io.undertow.server.session.SessionManagerStatistics;
 import io.undertow.util.AttachmentKey;
@@ -63,7 +61,7 @@ public class DistributableSessionManager implements UndertowSessionManager {
         throw new IllegalStateException();
     });
 
-    private final AttachmentKey<io.undertow.server.session.Session> key = AttachmentKey.create(io.undertow.server.session.Session.class);
+    private final AttachmentKey<DistributableSession> key = AttachmentKey.create(DistributableSession.class);
     private final String deploymentName;
     private final SessionListeners listeners;
     private final SessionManager<Map<String, Object>> manager;
@@ -132,7 +130,7 @@ public class DistributableSessionManager implements UndertowSessionManager {
         if (!StampedLock.isReadLockStamp(stamp)) {
             throw UndertowClusteringLogger.ROOT_LOGGER.sessionManagerStopped();
         }
-        AttachmentKey<io.undertow.server.session.Session> key = this.key;
+        AttachmentKey<DistributableSession> key = this.key;
         AtomicLong stampRef = new AtomicLong(stamp);
         return new Consumer<>() {
             @Override
@@ -245,24 +243,8 @@ public class DistributableSessionManager implements UndertowSessionManager {
     }
 
     @Override
-    public void registerSessionListener(SessionListener listener) {
-        this.listeners.addSessionListener(listener);
-    }
-
-    @Override
-    public void removeSessionListener(SessionListener listener) {
-        this.listeners.removeSessionListener(listener);
-    }
-
-    @Override
     public void setDefaultSessionTimeout(int timeout) {
         this.defaultSessionTimeout = timeout;
-    }
-
-    @Override
-    public Set<String> getTransientSessions() {
-        // We are a distributed session manager, so none of our sessions are transient
-        return Collections.emptySet();
     }
 
     @Override
