@@ -15,7 +15,6 @@ import org.infinispan.configuration.global.GlobalConfigurationBuilder;
 import org.infinispan.configuration.global.TransportConfiguration;
 import org.infinispan.configuration.global.TransportConfigurationBuilder;
 import org.infinispan.remoting.transport.jgroups.JGroupsTransport;
-import org.jboss.as.clustering.controller.DurationAttributeDefinition;
 import org.jboss.as.clustering.infinispan.transport.ChannelConfigurator;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -28,6 +27,7 @@ import org.wildfly.clustering.jgroups.spi.ForkChannelFactory;
 import org.wildfly.clustering.jgroups.spi.ForkChannelFactoryConfiguration;
 import org.wildfly.service.Installer.StartWhen;
 import org.wildfly.service.descriptor.UnaryServiceDescriptor;
+import org.wildfly.subsystem.resource.DurationAttributeDefinition;
 import org.wildfly.subsystem.resource.ResourceDescriptor;
 import org.wildfly.subsystem.resource.capability.CapabilityReference;
 import org.wildfly.subsystem.resource.capability.CapabilityReferenceAttributeDefinition;
@@ -45,7 +45,7 @@ public class JGroupsTransportResourceDefinitionRegistrar extends TransportResour
     private static final RuntimeCapability<Void> JGROUPS_CAPABILITY = RuntimeCapability.Builder.of(JGROUPS).setDynamicNameMapper(UnaryCapabilityNameResolver.PARENT).build();
 
     static final CapabilityReferenceAttributeDefinition<ForkChannelFactory> CHANNEL_FACTORY = new CapabilityReferenceAttributeDefinition.Builder<>("channel", CapabilityReference.builder(CAPABILITY, ForkChannelFactory.SERVICE_DESCRIPTOR).build()).setRequired(false).build();
-    static final DurationAttributeDefinition LOCK_TIMEOUT = new DurationAttributeDefinition.Builder("lock-timeout", ChronoUnit.MILLIS).setDefaultValue(Duration.ofMinutes(4)).build();
+    static final DurationAttributeDefinition LOCK_TIMEOUT = DurationAttributeDefinition.builder("lock-timeout", ChronoUnit.MILLIS).setDefaultValue(Duration.ofMinutes(4)).build();
 
     JGroupsTransportResourceDefinitionRegistrar() {
         super(new Configurator() {

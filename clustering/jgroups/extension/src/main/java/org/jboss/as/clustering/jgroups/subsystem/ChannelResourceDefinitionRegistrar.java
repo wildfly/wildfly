@@ -10,7 +10,6 @@ import java.util.function.BiFunction;
 import java.util.function.UnaryOperator;
 
 import org.jboss.as.clustering.controller.ModuleAttributeDefinition;
-import org.jboss.as.clustering.controller.StatisticsEnabledAttributeDefinition;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -37,6 +36,7 @@ import org.wildfly.clustering.server.service.ProvidedUnaryServiceInstallerProvid
 import org.wildfly.subsystem.resource.ManagementResourceRegistrationContext;
 import org.wildfly.subsystem.resource.ResourceDescriptor;
 import org.wildfly.subsystem.resource.ResourceModelResolver;
+import org.wildfly.subsystem.resource.StatisticsEnabledAttributeDefinition;
 import org.wildfly.subsystem.resource.capability.CapabilityReference;
 import org.wildfly.subsystem.resource.capability.CapabilityReferenceAttributeDefinition;
 import org.wildfly.subsystem.resource.executor.MetricOperationStepHandler;

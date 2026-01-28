@@ -11,11 +11,11 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.UnaryOperator;
 
 import org.infinispan.configuration.cache.ConfigurationBuilder;
-import org.jboss.as.clustering.controller.DurationAttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.capability.UnaryCapabilityNameResolver;
 import org.jboss.dmr.ModelNode;
+import org.wildfly.subsystem.resource.DurationAttributeDefinition;
 import org.wildfly.subsystem.resource.ResourceDescriptor;
 import org.wildfly.subsystem.resource.capability.ResourceCapabilityReference;
 import org.wildfly.subsystem.service.ServiceDependency;
@@ -26,7 +26,7 @@ import org.wildfly.subsystem.service.ServiceDependency;
  */
 public class ClusteredCacheResourceDefinitionRegistrar extends CacheResourceDefinitionRegistrar {
 
-    static final DurationAttributeDefinition REMOTE_TIMEOUT = new DurationAttributeDefinition.Builder("remote-timeout", ChronoUnit.MILLIS).setDefaultValue(Duration.ofMillis(17500)).build();
+    static final DurationAttributeDefinition REMOTE_TIMEOUT = DurationAttributeDefinition.builder("remote-timeout", ChronoUnit.MILLIS).setDefaultValue(Duration.ofMillis(17500)).build();
 
     public ClusteredCacheResourceDefinitionRegistrar(CacheResourceRegistration registration) {
         super(registration);

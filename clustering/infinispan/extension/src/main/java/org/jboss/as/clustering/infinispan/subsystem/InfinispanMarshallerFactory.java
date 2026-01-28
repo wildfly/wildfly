@@ -5,6 +5,7 @@
 
 package org.jboss.as.clustering.infinispan.subsystem;
 
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
 import java.util.function.BiFunction;
@@ -12,7 +13,10 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import org.infinispan.commons.marshall.Marshaller;
+import org.jboss.as.clustering.infinispan.logging.InfinispanLogger;
 import org.jboss.as.clustering.infinispan.marshalling.UserMarshallerFactory;
+import org.jboss.as.controller.ParameterCorrector;
+import org.jboss.dmr.ModelNode;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleLoader;
 
@@ -45,4 +49,14 @@ public enum InfinispanMarshallerFactory implements BiFunction<ModuleLoader, List
         }
     },
     ;
+
+    static final ParameterCorrector CORRECTOR = new ParameterCorrector() {
+        @Override
+        public ModelNode correct(ModelNode newValue, ModelNode currentValue) {
+            if (!newValue.isDefined() || newValue.asString().equals(LEGACY.name())) {
+                InfinispanLogger.ROOT_LOGGER.marshallerEnumValueDeprecated("marshaller", LEGACY, EnumSet.complementOf(EnumSet.of(LEGACY)));
+            }
+            return newValue;
+        }
+    };
 }
