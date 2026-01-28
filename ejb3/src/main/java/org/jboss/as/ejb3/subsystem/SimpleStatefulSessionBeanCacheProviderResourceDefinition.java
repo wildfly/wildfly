@@ -5,7 +5,6 @@
 package org.jboss.as.ejb3.subsystem;
 
 import java.util.List;
-import java.util.Set;
 import java.util.function.UnaryOperator;
 
 import org.jboss.as.controller.OperationContext;
@@ -35,12 +34,12 @@ public class SimpleStatefulSessionBeanCacheProviderResourceDefinition extends St
     public ServiceDependency<StatefulSessionBeanCacheProvider> resolve(OperationContext context, ModelNode model) throws OperationFailedException {
         return ServiceDependency.of(new StatefulSessionBeanCacheProvider() {
             @Override
-            public Iterable<ServiceInstaller> getDeploymentServiceInstallers(DeploymentUnit unit, Set<Class<?>> beanClasses) {
+            public Iterable<ServiceInstaller> getDeploymentServiceInstallers(DeploymentUnit unit) {
                 return List.of();
             }
 
             @Override
-            public Iterable<ServiceInstaller> getStatefulBeanCacheFactoryServiceInstallers(DeploymentUnit unit, StatefulComponentDescription description, String componentName) {
+            public Iterable<ServiceInstaller> getStatefulBeanCacheFactoryServiceInstallers(DeploymentUnit unit, StatefulComponentDescription description) {
                 return List.of(new SimpleStatefulSessionBeanCacheFactoryServiceInstallerFactory<>().apply(description));
             }
 
