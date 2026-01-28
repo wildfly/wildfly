@@ -5,8 +5,6 @@
 
 package org.wildfly.extension.microprofile.config.smallrye;
 
-import static org.jboss.as.controller.ModuleIdentifierUtil.parseCanonicalModuleIdentifier;
-
 import static org.jboss.as.controller.SimpleAttributeDefinitionBuilder.create;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FILESYSTEM_PATH;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MODULE;
@@ -25,6 +23,7 @@ import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.AttributeMarshaller;
 import org.jboss.as.controller.AttributeMarshallers;
 import org.jboss.as.controller.AttributeParsers;
+import org.jboss.as.controller.ModuleIdentifierUtil;
 import org.jboss.as.controller.ObjectTypeAttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -65,6 +64,7 @@ class ConfigSourceDefinition extends PersistentResourceDefinition {
                     .build(),
             create(MODULE, ModelType.STRING, false)
                     .setAllowExpression(false)
+                    .setCorrector(ModuleIdentifierUtil.MODULE_NAME_CORRECTOR)
                     .build())
             .setAlternatives("properties", "dir")
             .setRequired(false)
@@ -121,7 +121,7 @@ class ConfigSourceDefinition extends PersistentResourceDefinition {
         String className = classModel.get(NAME).asString();
         String moduleName = classModel.get(MODULE).asString();
         try {
-            Module module = Module.getCallerModuleLoader().loadModule(parseCanonicalModuleIdentifier(moduleName));
+            Module module = Module.getCallerModuleLoader().loadModule(moduleName);
             Class<?> clazz = module.getClassLoader().loadClass(className);
             return clazz;
         } catch (Exception e) {
