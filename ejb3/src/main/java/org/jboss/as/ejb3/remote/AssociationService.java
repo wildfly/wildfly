@@ -58,6 +58,7 @@ public final class AssociationService implements Service<AssociationService> {
     private final List<Map.Entry<Value<ProtocolSocketBinding>, Value<Registry>>> clientMappingsRegistries = new LinkedList<>();
     private final InjectedValue<SuspendController> suspendControllerInjector = new InjectedValue<>();
     private final InjectedValue<ServerEnvironment> serverEnvironmentServiceInjector = new InjectedValue<>();
+    private final InjectedValue<ModuleAvailabilityRegistrar> moduleAvailabilityRegistrarInjector = new InjectedValue<>();
 
     private final Object serviceLock = new Object();
     private final Set<EJBModuleIdentifier> ourModules = new HashSet<>();
@@ -76,7 +77,7 @@ public final class AssociationService implements Service<AssociationService> {
         for (Map.Entry<Value<ProtocolSocketBinding>, Value<Registry>> entry : this.clientMappingsRegistries) {
             clientMappingsRegistries.add(new SimpleImmutableEntry<>(entry.getKey().getValue(), entry.getValue().getValue()));
         }
-        value = new AssociationImpl(deploymentRepositoryInjector.getValue(), clientMappingsRegistries);
+        value = new AssociationImpl(deploymentRepositoryInjector.getValue(), serverEnvironmentServiceInjector.getValue(), moduleAvailabilityRegistrarInjector.getValue(), clientMappingsRegistries);
 
         String ourNodeName = serverEnvironmentServiceInjector.getValue().getNodeName();
 
@@ -167,6 +168,10 @@ public final class AssociationService implements Service<AssociationService> {
 
     public InjectedValue<DeploymentRepository> getDeploymentRepositoryInjector() {
         return deploymentRepositoryInjector;
+    }
+
+    public InjectedValue<ModuleAvailabilityRegistrar> getModuleAvailabilityRegistrarInjector() {
+        return moduleAvailabilityRegistrarInjector;
     }
 
     public Map.Entry<Injector<ProtocolSocketBinding>, Injector<Registry>> addConnectorInjectors(String connectorName) {

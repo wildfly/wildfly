@@ -11,12 +11,12 @@ import jakarta.transaction.RollbackException;
 import jakarta.transaction.Synchronization;
 import jakarta.transaction.SystemException;
 
-import org.jboss.as.ejb3.deployment.DeploymentRepository;
 import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.server.suspend.ServerActivity;
 import org.jboss.as.server.suspend.ServerActivityCallback;
 import org.jboss.as.server.suspend.SuspendController;
 import org.jboss.invocation.InterceptorContext;
+import org.jboss.logging.Logger;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
@@ -34,6 +34,7 @@ import org.wildfly.transaction.client.LocalTransactionContext;
 public class EJBSuspendHandlerService implements Service<EJBSuspendHandlerService>, ServerActivity, CreationListener,
         Synchronization {
 
+    protected static final Logger log = Logger.getLogger(EJBSuspendHandlerService.class.getSimpleName());
     /**
      * EJBSuspendHandlerService name
      */
@@ -73,11 +74,6 @@ public class EJBSuspendHandlerService implements Service<EJBSuspendHandlerServic
      * Injection of local transaction context for keeping track of active transactions
      */
     private final InjectedValue<LocalTransactionContext> localTransactionContextInjectedValue = new InjectedValue<>();
-
-    /**
-     * Injection of DeploymentRepository, for suspending and resuming deployments
-     */
-    private final InjectedValue<DeploymentRepository> deploymentRepositoryInjectedValue = new InjectedValue<>();
 
     /**
      * The number of active requests that are using this entry point
@@ -136,15 +132,6 @@ public class EJBSuspendHandlerService implements Service<EJBSuspendHandlerServic
     }
 
     /**
-     * Returns deployment repository injected value.
-     *
-     * @return local transaction context injected value
-     */
-    public InjectedValue<DeploymentRepository> getDeploymentRepositoryInjectedValue() {
-        return deploymentRepositoryInjectedValue;
-    }
-
-    /**
      * Returns service value.
      */
     @Override public EJBSuspendHandlerService getValue() {
@@ -158,6 +145,7 @@ public class EJBSuspendHandlerService implements Service<EJBSuspendHandlerServic
      * @param context start context
      */
     public void start(StartContext context) {
+        log.info("Started");
         final SuspendController suspendController = suspendControllerInjectedValue.getValue();
         suspendController.registerActivity(this);
         final LocalTransactionContext localTransactionContext = localTransactionContextInjectedValue.getValue();
@@ -173,6 +161,7 @@ public class EJBSuspendHandlerService implements Service<EJBSuspendHandlerServic
         suspendController.unRegisterActivity(this);
         final LocalTransactionContext localTransactionContext = localTransactionContextInjectedValue.getValue();
         localTransactionContext.removeCreationListener(this);
+        log.info("Stopped");
     }
 
     /**
@@ -180,6 +169,7 @@ public class EJBSuspendHandlerService implements Service<EJBSuspendHandlerServic
      * @param listener callback listener
      */
     @Override public void preSuspend(ServerActivityCallback listener) {
+        log.info("preSuspend");
         listener.done();
     }
 
@@ -190,6 +180,7 @@ public class EJBSuspendHandlerService implements Service<EJBSuspendHandlerServic
      * @param listener callback listener
      */
     @Override public void suspended(ServerActivityCallback listener) {
+        log.info("Calling suspend");
         this.suspended = true;
         listenerUpdater.set(this, listener);
         localTransactionContextInjectedValue.getValue().suspendRequests();
@@ -213,13 +204,15 @@ public class EJBSuspendHandlerService implements Service<EJBSuspendHandlerServic
      * Notifies local transaction context that server is resumed, and restarts deployment controller.
      */
     @Override public void resume() {
+        log.info("Calling resumed");
         this.suspended = false;
         localTransactionContextInjectedValue.getValue().resumeRequests();
         ServerActivityCallback listener = listenerUpdater.get(this);
         if (listener != null) {
             listenerUpdater.compareAndSet(this, listener, null);
         }
-        deploymentRepositoryInjectedValue.getValue().resume();
+        log.info("Resumed");
+        //deploymentRepositoryInjectedValue.getValue().resume();
     }
 
     /**
@@ -304,11 +297,13 @@ public class EJBSuspendHandlerService implements Service<EJBSuspendHandlerServic
      * Completes suspension: stop deployment controller.
      */
     private void doneSuspended() {
+        log.info("Calling doneSuspened");
         final ServerActivityCallback oldListener = listener;
         if (oldListener != null && listenerUpdater.compareAndSet(this, oldListener, null)) {
-            deploymentRepositoryInjectedValue.getValue().suspend();
+            //deploymentRepositoryInjectedValue.getValue().suspend();
             oldListener.done();
             EjbLogger.ROOT_LOGGER.suspensionComplete();
+            log.info("Called doneSuspended");
         }
     }
 
