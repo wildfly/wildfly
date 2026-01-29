@@ -299,7 +299,7 @@
         <version.asciidoctor.plugin>2.2.6</version.asciidoctor.plugin>
         <version.central.publishing.maven.plugin>0.9.0</version.central.publishing.maven.plugin>
         <version.org.jacoco>0.8.14</version.org.jacoco>
-        <version.org.jboss.galleon>7.0.0.Final</version.org.jboss.galleon>
+        <version.org.jboss.galleon>7.0.2.Final</version.org.jboss.galleon>
         <version.org.owasp.dependency-check>12.2.0</version.org.owasp.dependency-check>
         <version.org.wildfly.bom-builder-plugin>2.0.10.Final</version.org.wildfly.bom-builder-plugin>
         <version.org.wildfly.checkstyle-config>1.0.8.Final</version.org.wildfly.checkstyle-config>
@@ -307,7 +307,7 @@
         <version.org.wildfly.galleon-plugins>8.1.0.Final</version.org.wildfly.galleon-plugins>
         <version.org.wildfly.glow>1.5.2.Final</version.org.wildfly.glow>
         <version.org.wildfly.licenses.plugin>2.4.3.Final</version.org.wildfly.licenses.plugin>
-        <version.org.wildfly.plugin>5.1.0.Final</version.org.wildfly.plugin>
+        <version.org.wildfly.plugin>6.0.0.Beta2</version.org.wildfly.plugin>
         <version.org.wildfly.unstable.annotation.api>1.0.2.Final</version.org.wildfly.unstable.annotation.api>
         <version.org.wildfly.wildfly-channel-plugin>1.0.30</version.org.wildfly.wildfly-channel-plugin>
         <version.org.wildfly.wildfly-maven-gpg-plugin>3.2.8.SP1</version.org.wildfly.wildfly-maven-gpg-plugin>
