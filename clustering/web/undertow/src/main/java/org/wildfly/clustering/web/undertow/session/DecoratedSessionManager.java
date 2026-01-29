@@ -15,7 +15,6 @@ import org.wildfly.clustering.session.SessionManager;
 import io.undertow.server.HttpServerExchange;
 import io.undertow.server.session.Session;
 import io.undertow.server.session.SessionConfig;
-import io.undertow.server.session.SessionListener;
 import io.undertow.server.session.SessionListeners;
 import io.undertow.server.session.SessionManagerStatistics;
 
@@ -57,23 +56,8 @@ public class DecoratedSessionManager extends DecoratedService implements Underto
     }
 
     @Override
-    public void registerSessionListener(SessionListener listener) {
-        this.manager.registerSessionListener(listener);
-    }
-
-    @Override
-    public void removeSessionListener(SessionListener listener) {
-        this.manager.removeSessionListener(listener);
-    }
-
-    @Override
     public void setDefaultSessionTimeout(int timeout) {
         this.manager.setDefaultSessionTimeout(timeout);
-    }
-
-    @Override
-    public Set<String> getTransientSessions() {
-        return this.manager.getTransientSessions();
     }
 
     @Override
