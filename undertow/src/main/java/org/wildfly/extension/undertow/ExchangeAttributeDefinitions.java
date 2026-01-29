@@ -52,6 +52,7 @@ import io.undertow.attribute.ResponseHeaderAttribute;
 import io.undertow.attribute.ResponseReasonPhraseAttribute;
 import io.undertow.attribute.ResponseTimeAttribute;
 import io.undertow.attribute.SecureExchangeAttribute;
+import io.undertow.attribute.SecureProtocolAttribute;
 import io.undertow.attribute.SslCipherAttribute;
 import io.undertow.attribute.SslClientCertAttribute;
 import io.undertow.attribute.SslSessionIdAttribute;
@@ -546,6 +547,16 @@ class ExchangeAttributeDefinitions {
                 }
             });
 
+    private static final SimpleAttributeDefinition SECURE_PROTOCOL_KEY = createKey("secureProtocol");
+    private static final ObjectTypeAttributeDefinition SECURE_PROTOCOL = create(
+            ObjectTypeAttributeDefinition.create("secure-protocol", SECURE_PROTOCOL_KEY),
+            new ExceptionBiFunction<>() {
+                @Override
+                public Collection<AccessLogAttribute> apply(final OperationContext context, final ModelNode model) throws OperationFailedException {
+                    return createSingleton(SECURE_PROTOCOL_KEY, context, model, SecureProtocolAttribute.INSTANCE);
+                }
+            });
+
     private static final SimpleAttributeDefinition SSL_CLIENT_CERT_KEY = createKey("sslClientCert");
     private static final ObjectTypeAttributeDefinition SSL_CLIENT_CERT = create(
             ObjectTypeAttributeDefinition.create("ssl-client-cert", SSL_CLIENT_CERT_KEY),
@@ -626,6 +637,7 @@ class ExchangeAttributeDefinitions {
             RESPONSE_TIME,
             SECURE_EXCHANGE,
             SSL_CIPHER,
+            SECURE_PROTOCOL,
             SSL_CLIENT_CERT,
             SSL_SESSION_ID,
             STORED_RESPONSE,

@@ -432,6 +432,7 @@
         <version.io.smallrye.smallrye-opentelemetry>2.11.2</version.io.smallrye.smallrye-opentelemetry>
         <version.io.smallrye.smallrye-stork>2.7.7</version.io.smallrye.smallrye-stork>
         <version.io.smallrye.smallrye-reactive-messaging>4.32.0</version.io.smallrye.smallrye-reactive-messaging>
+        <version.io.undertow.ee>1.0.0.Alpha1-SNAPSHOT</version.io.undertow.ee>
         <version.io.undertow.jastow>2.2.9.Final</version.io.undertow.jastow>
         <version.io.vertx.vertx>4.5.24</version.io.vertx.vertx>
         <version.io.vertx.vertx-kafka-client>4.4.9</version.io.vertx.vertx-kafka-client>

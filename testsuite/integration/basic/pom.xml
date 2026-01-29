@@ -3780,14 +3780,14 @@
             </activation>
             <dependencies>
                 <dependency>
-                    <groupId>io.undertow</groupId>
+                    <groupId>io.undertow.ee</groupId>
                     <artifactId>undertow-servlet</artifactId>
                     <scope>test</scope>
                 </dependency>
 
                 <dependency>
-                    <groupId>io.undertow</groupId>
-                    <artifactId>undertow-websockets-jsr</artifactId>
+                    <groupId>io.undertow.ee</groupId>
+                    <artifactId>undertow-websockets</artifactId>
                     <scope>test</scope>
                 </dependency>
                 <dependency>

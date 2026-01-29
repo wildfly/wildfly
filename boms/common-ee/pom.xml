@@ -1286,10 +1286,33 @@
                 <version>${version.io.smallrye.smallrye-mutiny}</version>
             </dependency>
 
+
             <dependency>
                 <groupId>io.undertow.jastow</groupId>
                 <artifactId>jastow</artifactId>
                 <version>${version.io.undertow.jastow}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>io.undertow.ee</groupId>
+                <artifactId>undertow-servlet</artifactId>
+                <version>${version.io.undertow.ee}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>io.undertow.ee</groupId>
+                <artifactId>undertow-websockets</artifactId>
+                <version>${version.io.undertow.ee}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>

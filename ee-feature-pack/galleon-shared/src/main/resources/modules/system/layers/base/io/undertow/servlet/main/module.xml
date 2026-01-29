@@ -7,7 +7,7 @@
 
 <module xmlns="urn:jboss:module:1.9" name="io.undertow.servlet">
     <resources>
-        <artifact name="${io.undertow:undertow-servlet}"/>
+        <artifact name="${io.undertow.ee:undertow-servlet}"/>
     </resources>
 
     <dependencies>
