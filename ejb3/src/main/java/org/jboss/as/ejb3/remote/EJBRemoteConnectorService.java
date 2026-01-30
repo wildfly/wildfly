@@ -23,6 +23,8 @@ import org.wildfly.transaction.client.provider.remoting.RemotingTransactionServi
 import org.xnio.OptionMap;
 
 /**
+ * Provides a Remoting-based connection service for EJB/Remoting remote clients.
+ *
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */
 public class EJBRemoteConnectorService implements Service {

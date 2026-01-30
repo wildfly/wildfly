@@ -31,6 +31,7 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 import org.jboss.ejb.client.EJBClientContext;
 import org.jboss.ejb.client.EJBTransportProvider;
+import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.remoting3.RemotingOptions;
 import org.wildfly.discovery.AttributeValue;
@@ -147,6 +148,7 @@ public class RemotingProfileAdd extends AbstractAddStepHandler {
             }
             final RemotingProfileService profileService = new RemotingProfileService(consumer, localTransportProviderSupplier, urls, map, httpConnectionSpecs);
             capabilityServiceBuilder.setInstance(profileService);
+            capabilityServiceBuilder.setInitialMode(ServiceController.Mode.ON_DEMAND);
             capabilityServiceBuilder.install();
 
         } catch (IllegalArgumentException | URISyntaxException e) {
