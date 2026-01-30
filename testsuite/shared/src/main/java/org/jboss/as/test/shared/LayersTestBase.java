@@ -20,22 +20,88 @@ import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+/**
+ * Base class for tests of Galleon layers provided by WildFly feature packs as well as of the proper exposure and use
+ * of JBoss Modules modules by those feature packs. Different subclasses will extend this class to support testing
+ * of different feature packs.
+ * <p/>
+ * This class and its subclasses are somewhat misnamed as they test more than installations
+ * that have been slimmed to only provide certain Galleon layers. They also include tests that test
+ * un-slimmed installations, i.e. {@link #testUnreferencedModules()} and {@link #testDefaultConfigs()}.
+ * <p/>
+ * These tests cover a number of topics:
+ * <ol>
+ *     <li>Ensuring that each layer can be used by itself to provision a server that can boot without errors.
+ *     See {@link #testLayersBoot()}</li>
+ *     <li>Ensuring that layers don't provision 'banned' modules. See {@link #checkBannedModules()}</li>
+ *     <li>Ensuring that all modules are associated with at least one layer unless an explanation as to why not
+ *     is provided. Discourages the inclusion of functionality that is only available in an un-slimmed server.
+ *     See {@link #testLayersModuleUse()}</li>
+ *     <li>Testing that all modules in an un-slimmed server are needed to provide functionality defined
+ *     in the standard {@code standalone.xml}, unless an explanation as to why not is provided. Discourages
+ *     the accumulation of no-longer-necessary modules. See {@link #testUnreferencedModules()}</li>
+ * </ol>
+ * <p>
+ * These tests assume that before running the maven {@code test} phase the {@code pom.xml} for the maven module that
+ * includes a subclass of this class will have provisioned a number of WildFly installations in a directory
+ * whose location is available via the {@code layers.installation.root} system property.
+ * <ol>
+ *     <li>One installation for each layer provided by the feature pack being tested, not including other layers
+ *     provided by other feature packs the feature pack under test depends upon. Each layer should have an
+ *     installation that only provides that layer. There may also be other installations that provide more than one layer.
+ *     Each of these installations is tested by the {@link #testLayersBoot()} test and the
+ *     {@link #checkBannedModules()} test.</li>
+ *     <li>One installation that has not been slimmed and that therefore should include all JBoss Module modules
+ *     available from the feature pack. This installation is called the {@code test-standalone-reference} installation.
+ *     It is used in both the {@link #getExpectedUnreferenced()} and {@link #testLayersModuleUse()} tests.
+ *     </li>
+ *     <li>One installation that has been slimmed using layers, but where the list of layers includes all of those
+ *     that can be used with the feature pack (including ones provided by a dependency feature pack), excluding any
+ *     that are an alternative to one of the others. This installation is called the {@code test-all-layers} installation.
+ *     It is used in the {@link #testLayersModuleUse()} test.
+ *     </li>
+ * </ol>
+ * <p/>
+ * In addition, a set of installations will have been provisioned in a directory whose location is available via the
+ * {@code std.default.install.root} system property. There will be one installation for each of the main 'standard'
+ * configuration files -- {@code standalone.xml}, {@code standalone-ha.xml}, {@code standalone-full.xml} and
+ * {@code standalone-full-ha.xml}. These installations are tested by the {@link #testDefaultConfigs()} test.
+ * <p/>
+ * Subclasses must implement the {@link #getExpectedUnreferenced()} and {@link #getExpectedUnusedInAllLayers()} methods
+ * to provide lists of modules that meet the criteria described in the javadoc for each method. This class provides
+ * constants of type {@code String[]} that define names of modules that are applicable to different cases, i.e.
+ * relevant to one method or the other or both, and relevant to a particular feature pack or another or a combination.
+ * The expectation is subclasses will implement {@link #getExpectedUnreferenced()} and
+ * {@link #getExpectedUnusedInAllLayers()} by concatenating together the arrays that are relevant to the feature pack(s)
+ * tested by the subclass.
+ * <p/>
+ * When adding elements to the various String[] constants, maintainers should group the elements based on the
+ * reason why they are being added and preface each group with an explanatory comment.
+ */
 public abstract class LayersTestBase {
 
     /**
-     * Gets the expected set of packages that are not referenced from the module graph
-     * but need to be provisioned.
-     * This is the expected set of modules found when scanning the default configuration that are
-     * not referenced directly or transitively from a standalone server's root module or from
-     * one of the extensions used in standalone.xml.
+     * Gets the expected set of packages that are not referenced from an un-slimmed server's module graph
+     * but that need to be provisioned.
+     * <p/>
+     * This is the expected set of modules found when scanning the {@code test-standalone-reference} installation
+     * that are not referenced (i.e. depended upon) directly or transitively from a standalone server's root module
+     * or from one of the extensions used in standalone.xml.
+     * <p/>
+     * See the various constants with "NOT_REFERENCED" in their name for examples of such modules and the reason
+     * why they are not referenced.
      */
     protected abstract Set<String> getExpectedUnreferenced();
 
     /**
-     * Gets the expected set of packages that are provisioned by the test-standalone-reference installation
-     * but not used in the test-all-layers installation.
+     * Gets the expected set of packages that are provisioned by the {@code test-standalone-reference} installation
+     * but not used in the {@code test-all-layers} installation.
+     * <p/>
      * This is the expected set of not provisioned modules when all layers are provisioned; i.e.
-     * those that are not associated with any layer included in the test-all-layers installation.
+     * those that are not associated with any layer included in the {@code test-all-layers} installation.
+     * <p/>
+     * See the various constants with "NO_LAYER" in their name for examples of such modules and the reason why
+     * they are not associated with a layer used in the {@code test-all-layers} installation.
      */
     protected abstract Set<String> getExpectedUnusedInAllLayers();
 
@@ -102,6 +168,7 @@ public abstract class LayersTestBase {
     public static final String[] NO_LAYER_WILDFLY_PREVIEW = {
             // WFP standard config uses Micrometer instead of WF Metrics
             "org.wildfly.extension.metrics",
+            // Not usable with EE 11
             "org.wildfly.extension.security.manager",
     };
 
@@ -113,7 +180,7 @@ public abstract class LayersTestBase {
             "org.wildfly.naming",
             // Injected by jaxrs
             "org.jboss.resteasy.resteasy-json-binding-provider",
-            // Injected by jaxrs and also depended upon by narayano-rts, which is part of the non-OOTB rts subsystem
+            // Injected by jaxrs and also depended upon by narayana-rts, which is part of the non-OOTB rts subsystem
             "org.jboss.resteasy.resteasy-json-p-provider",
             // The console ui content is not part of the kernel nor is it provided by an extension
             "org.jboss.as.console",
@@ -171,7 +238,6 @@ public abstract class LayersTestBase {
      * only when testing provisioning directly from the wildfly-ee feature pack.
      */
     public static final String[] NOT_REFERENCED_WILDFLY_EE = {
-            // Only injected by logging in 'wildfly-ee', but referenced in 'wildfly' and 'wildfly-preview'
     };
 
 
@@ -251,10 +317,11 @@ public abstract class LayersTestBase {
             "org.wildfly.extension.metrics",
             // Extension not included in the default config
             "org.wildfly.extension.mvc-krazo",
-            "org.wildfly.extension.security.manager",
             "jakarta.mvc.api",
             "org.eclipse.krazo.core",
             "org.eclipse.krazo.resteasy",
+            // Not usable with EE 11
+            "org.wildfly.extension.security.manager",
             // Not needed for WildFly as this module is effectively replaced by org.hibernate.models.hibernate-models
             "org.hibernate.commons-annotations",
             "org.wildfly.extension.vertx"
@@ -352,9 +419,9 @@ public abstract class LayersTestBase {
     /**
      * A HashMap to configure a banned module.
      * They key is the banned module name, the value is an optional List with the installation names that are allowed to
-     * provision the banned module. This installations will be ignored.
+     * provision the banned module. The presence of the module in these installations will be ignored.
      * <p>
-     * Notice the allowed installation names does not distinguish between different parent names, e.g test-all-layers here means
+     * Notice the allowed installation names does not distinguish between different parent names, e.g. test-all-layers here means
      * allowing root/test-all-layers and servletRoot/test-all-layers.
      */
     private static final HashMap<String, List<String>> BANNED_MODULES_CONF = new HashMap<>(){{
@@ -372,6 +439,10 @@ public abstract class LayersTestBase {
         scanContext = new LayersTest.ScanContext(root);
     }
 
+    /**
+     * If the {@code layers.delete.installations} system property is set to {@code true},
+     * deletes all the provisioned installations.
+     */
     @AfterClass
     public static void cleanUp() {
         boolean delete = Boolean.getBoolean("layers.delete.installations");
@@ -408,8 +479,11 @@ public abstract class LayersTestBase {
     /**
      * Checks that all modules that were provisioned in the @{code test-standalone-reference} installation are also
      * provisioned in @{test-all-layers}, except those included in the {@link #getExpectedUnusedInAllLayers()} set.
+     * <p/>
      * The goals of this test are to check for new modules that should be provided by layers but currently are not
      * and to encourage inclusion of existing modules not used in a layer to have an associated layer.
+     * <p/>
+     * See the class javadoc for a description of the @{code test-standalone-reference} and @{test-all-layers} installations.
      *
      * @throws Exception on failure
      */
@@ -419,10 +493,13 @@ public abstract class LayersTestBase {
     }
 
     /**
-     * Checks that all modules in the @{code test-standalone-reference} installation are referenced from
-     * the installation root module or extension modules configured in standalone.xml, except those
-     * included in the {@link #getExpectedUnreferenced()} set. The goal of this test is to prevent the
-     * accumulation of 'orphaned' modules that are not usable.
+     * Checks that all modules in the @{code test-standalone-reference} installation are referenced
+     * (i.e. directly or transitively depended upon) from the installation root module or the extension modules
+     * configured in standalone.xml, except those included in the {@link #getExpectedUnreferenced()} set.
+     * <p/>
+     * The goal of this test is to prevent the accumulation of 'orphaned' modules that are not usable.
+     * <p/>
+     * See the class javadoc for a description of the @{code test-standalone-reference} installation.
      *
      * @throws Exception on failure
      */
@@ -440,11 +517,11 @@ public abstract class LayersTestBase {
     @Test
     public void checkBannedModules() throws Exception {
         final HashMap<String, String> results = LayersTest.checkBannedModules(root, BANNED_MODULES_CONF);
-        Assert.assertTrue("The following banned modules were provisioned " + results.toString(), results.isEmpty());
+        Assert.assertTrue("The following banned modules were provisioned " + results, results.isEmpty());
     }
 
     /**
-     * Checks that the installation found in the given {@code std.default.install.root} directory can be started
+     * Checks that the installations found in the given {@code std.default.install.root} directory can be started
      * without errors, i.e. with the {@code WFLYSRV0025} log message in the server's stdout stream.
      *
      * @throws Exception on failure
