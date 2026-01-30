@@ -19,8 +19,6 @@ import org.infinispan.configuration.cache.TransactionConfiguration;
 import org.infinispan.configuration.cache.TransactionConfigurationBuilder;
 import org.infinispan.transaction.LockingMode;
 import org.infinispan.transaction.tm.EmbeddedTransactionManager;
-import org.jboss.as.clustering.controller.DurationAttributeDefinition;
-import org.jboss.as.clustering.controller.EnumAttributeDefinition;
 import org.jboss.as.clustering.infinispan.tx.InfinispanXAResourceRecovery;
 import org.jboss.as.clustering.infinispan.tx.TransactionManagerProvider;
 import org.jboss.as.clustering.infinispan.tx.TransactionSynchronizationRegistryProvider;
@@ -37,6 +35,8 @@ import org.wildfly.clustering.infinispan.service.InfinispanServiceDescriptor;
 import org.wildfly.common.function.Functions;
 import org.wildfly.service.descriptor.BinaryServiceDescriptor;
 import org.wildfly.service.descriptor.NullaryServiceDescriptor;
+import org.wildfly.subsystem.resource.DurationAttributeDefinition;
+import org.wildfly.subsystem.resource.EnumAttributeDefinition;
 import org.wildfly.subsystem.resource.ResourceDescriptor;
 import org.wildfly.subsystem.resource.capability.ResourceCapabilityReference;
 import org.wildfly.subsystem.resource.operation.ResourceOperationRuntimeHandler;
@@ -57,10 +57,14 @@ public class TransactionResourceDefinitionRegistrar extends ConfigurationResourc
     static final BinaryServiceDescriptor<TransactionConfiguration> SERVICE_DESCRIPTOR = BinaryServiceDescriptorFactory.createServiceDescriptor(ComponentResourceRegistration.TRANSACTION, TransactionConfiguration.class);
     private static final RuntimeCapability<Void> CAPABILITY = RuntimeCapability.Builder.of(SERVICE_DESCRIPTOR).setDynamicNameMapper(BinaryCapabilityNameResolver.GRANDPARENT_PARENT).setAllowMultipleRegistrations(true).build();
 
-    static final EnumAttributeDefinition<LockingMode> LOCKING = new EnumAttributeDefinition.Builder<>("locking", LockingMode.PESSIMISTIC).build();
-    static final EnumAttributeDefinition<TransactionMode> MODE = new EnumAttributeDefinition.Builder<>("mode", TransactionMode.NONE).build();
-    static final DurationAttributeDefinition STOP_TIMEOUT = new DurationAttributeDefinition.Builder("stop-timeout", ChronoUnit.MILLIS).setDefaultValue(Duration.ofSeconds(10)).build();
-    static final DurationAttributeDefinition COMPLETE_TIMEOUT = new DurationAttributeDefinition.Builder("complete-timeout", ChronoUnit.MILLIS).setDefaultValue(Duration.ofMinutes(1)).build();
+    static final EnumAttributeDefinition<LockingMode> LOCKING = EnumAttributeDefinition.nameBuilder("locking", LockingMode.class)
+            .setDefaultValue(LockingMode.PESSIMISTIC)
+            .build();
+    static final EnumAttributeDefinition<TransactionMode> MODE = EnumAttributeDefinition.nameBuilder("mode", TransactionMode.class)
+            .setDefaultValue(TransactionMode.NONE)
+            .build();
+    static final DurationAttributeDefinition STOP_TIMEOUT = DurationAttributeDefinition.builder("stop-timeout", ChronoUnit.MILLIS).setDefaultValue(Duration.ofSeconds(10)).build();
+    static final DurationAttributeDefinition COMPLETE_TIMEOUT = DurationAttributeDefinition.builder("complete-timeout", ChronoUnit.MILLIS).setDefaultValue(Duration.ofMinutes(1)).build();
 
     static final NullaryServiceDescriptor<Void> LOCAL_TRANSACTION_PROVIDER = NullaryServiceDescriptor.of("org.wildfly.transactions.global-default-local-provider", Void.class);
     static final NullaryServiceDescriptor<TransactionSynchronizationRegistry> TRANSACTION_SYNCHRONIZATION_REGISTRY = NullaryServiceDescriptor.of("org.wildfly.transactions.transaction-synchronization-registry", TransactionSynchronizationRegistry.class);

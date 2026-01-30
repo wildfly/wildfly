@@ -12,7 +12,6 @@ import java.util.Set;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
-import org.jboss.as.clustering.controller.StatisticsEnabledAttributeDefinition;
 import org.jboss.as.clustering.jgroups.JChannelFactory;
 import org.jboss.as.clustering.naming.BinderServiceInstaller;
 import org.jboss.as.controller.OperationContext;
@@ -40,6 +39,7 @@ import org.wildfly.subsystem.resource.ChildResourceDefinitionRegistrar;
 import org.wildfly.subsystem.resource.ManagementResourceRegistrar;
 import org.wildfly.subsystem.resource.ManagementResourceRegistrationContext;
 import org.wildfly.subsystem.resource.ResourceDescriptor;
+import org.wildfly.subsystem.resource.StatisticsEnabledAttributeDefinition;
 import org.wildfly.subsystem.resource.capability.ResourceCapabilityReference;
 import org.wildfly.subsystem.resource.operation.ResourceOperationRuntimeHandler;
 import org.wildfly.subsystem.service.ResourceServiceConfigurator;

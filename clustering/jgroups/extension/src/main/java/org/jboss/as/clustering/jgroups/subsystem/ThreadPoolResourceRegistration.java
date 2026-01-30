@@ -5,12 +5,12 @@
 
 package org.jboss.as.clustering.jgroups.subsystem;
 
-import org.jboss.as.clustering.controller.DurationAttributeDefinition;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ResourceRegistration;
 import org.wildfly.clustering.jgroups.spi.ChannelFactory;
 import org.wildfly.service.descriptor.UnaryServiceDescriptor;
+import org.wildfly.subsystem.resource.DurationAttributeDefinition;
 
 /**
  * @author Paul Ferraro

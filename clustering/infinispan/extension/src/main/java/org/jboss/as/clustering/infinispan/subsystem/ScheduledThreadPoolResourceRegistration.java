@@ -4,11 +4,11 @@
  */
 package org.jboss.as.clustering.infinispan.subsystem;
 
-import org.jboss.as.clustering.controller.DurationAttributeDefinition;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ResourceRegistration;
 import org.jboss.as.controller.capability.RuntimeCapability;
 import org.wildfly.service.descriptor.ServiceDescriptor;
+import org.wildfly.subsystem.resource.DurationAttributeDefinition;
 
 /**
  * A resource registration for a scheduled thread pool.
