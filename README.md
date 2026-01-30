@@ -23,7 +23,7 @@ And of course Jakarta EE and MicroProfile!
 Prerequisites:
 
 * JDK 17 or newer - check `java -version`
-* Maven 3.6.0 or newer - check `mvn -v`
+* Maven 3.6.0 or newer - check mvn -v (Maven 3.9.12 or a higher Maven 3 is recommended.)
 * On *nix systems, make sure that the maximum number of open files for the user running the build is at least 4096
   (check `ulimit -n`) or more, depending on what other i/o intensive processes the user is running.
 
