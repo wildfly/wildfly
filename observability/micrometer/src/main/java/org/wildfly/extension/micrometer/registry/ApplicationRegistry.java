@@ -16,13 +16,17 @@ import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.DistributionSummary;
 import io.micrometer.core.instrument.FunctionCounter;
 import io.micrometer.core.instrument.FunctionTimer;
+import io.micrometer.core.instrument.Gauge;
 import io.micrometer.core.instrument.LongTaskTimer;
+import io.micrometer.core.instrument.Measurement;
 import io.micrometer.core.instrument.Meter;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Tag;
 import io.micrometer.core.instrument.Tags;
 import io.micrometer.core.instrument.TimeGauge;
 import io.micrometer.core.instrument.Timer;
+import io.micrometer.core.instrument.distribution.DistributionStatisticConfig;
+import io.micrometer.core.instrument.distribution.pause.PauseDetector;
 import io.micrometer.core.instrument.search.RequiredSearch;
 import io.micrometer.core.instrument.search.Search;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
@@ -157,6 +161,132 @@ public class ApplicationRegistry extends SimpleMeterRegistry {
     private boolean containsWrongDeploymentTag(Meter.Id id) {
         // If the tag doesn't match the current deployment, whether it's missing or different, it should be denied
         return !deploymentName.equals(id.getTag(TAG_WF_DEPLOYMENT));
+    }
+
+    private Meter.Id addMissingTagToId(Meter.Id id) {
+        if (id.getTag(TAG_WF_DEPLOYMENT) != null) {
+            return id;
+        }
+        return id.withTag(Tag.of(TAG_WF_DEPLOYMENT, deploymentName));
+    }
+
+    // Override protected newXxx() methods to forward Builder pattern registrations to parentRegistry
+
+    @Override
+    protected <T> Gauge newGauge(Meter.Id id, T obj, ToDoubleFunction<T> valueFunction) {
+        Meter.Id taggedId = addMissingTagToId(id);
+        Gauge.Builder<T> builder = Gauge.builder(taggedId.getName(), obj, valueFunction)
+                .tags(taggedId.getTags());
+        if (taggedId.getDescription() != null) {
+            builder.description(taggedId.getDescription());
+        }
+        if (taggedId.getBaseUnit() != null) {
+            builder.baseUnit(taggedId.getBaseUnit());
+        }
+        return builder.register(parentRegistry);
+    }
+
+    @Override
+    protected Counter newCounter(Meter.Id id) {
+        Meter.Id taggedId = addMissingTagToId(id);
+        Counter.Builder builder = Counter.builder(taggedId.getName())
+                .tags(taggedId.getTags());
+        if (taggedId.getDescription() != null) {
+            builder.description(taggedId.getDescription());
+        }
+        if (taggedId.getBaseUnit() != null) {
+            builder.baseUnit(taggedId.getBaseUnit());
+        }
+        return builder.register(parentRegistry);
+    }
+
+    @Override
+    protected Timer newTimer(Meter.Id id, DistributionStatisticConfig distributionStatisticConfig,
+                             PauseDetector pauseDetector) {
+        Meter.Id taggedId = addMissingTagToId(id);
+        Timer.Builder builder = Timer.builder(taggedId.getName())
+                .tags(taggedId.getTags());
+        if (taggedId.getDescription() != null) {
+            builder.description(taggedId.getDescription());
+        }
+        return builder.register(parentRegistry);
+    }
+
+    @Override
+    protected DistributionSummary newDistributionSummary(Meter.Id id,
+                                                          DistributionStatisticConfig distributionStatisticConfig,
+                                                          double scale) {
+        Meter.Id taggedId = addMissingTagToId(id);
+        DistributionSummary.Builder builder = DistributionSummary.builder(taggedId.getName())
+                .tags(taggedId.getTags())
+                .scale(scale);
+        if (taggedId.getDescription() != null) {
+            builder.description(taggedId.getDescription());
+        }
+        if (taggedId.getBaseUnit() != null) {
+            builder.baseUnit(taggedId.getBaseUnit());
+        }
+        return builder.register(parentRegistry);
+    }
+
+    @Override
+    protected <T> FunctionTimer newFunctionTimer(Meter.Id id, T obj, ToLongFunction<T> countFunction,
+                                                  ToDoubleFunction<T> totalTimeFunction, TimeUnit totalTimeFunctionUnit) {
+        Meter.Id taggedId = addMissingTagToId(id);
+        FunctionTimer.Builder<T> builder = FunctionTimer.builder(taggedId.getName(), obj,
+                        countFunction, totalTimeFunction, totalTimeFunctionUnit)
+                .tags(taggedId.getTags());
+        if (taggedId.getDescription() != null) {
+            builder.description(taggedId.getDescription());
+        }
+        return builder.register(parentRegistry);
+    }
+
+    @Override
+    protected <T> FunctionCounter newFunctionCounter(Meter.Id id, T obj, ToDoubleFunction<T> countFunction) {
+        Meter.Id taggedId = addMissingTagToId(id);
+        FunctionCounter.Builder<T> builder = FunctionCounter.builder(taggedId.getName(), obj, countFunction)
+                .tags(taggedId.getTags());
+        if (taggedId.getDescription() != null) {
+            builder.description(taggedId.getDescription());
+        }
+        if (taggedId.getBaseUnit() != null) {
+            builder.baseUnit(taggedId.getBaseUnit());
+        }
+        return builder.register(parentRegistry);
+    }
+
+    @Override
+    protected Meter newMeter(Meter.Id id, Meter.Type type, Iterable<Measurement> measurements) {
+        Meter.Id taggedId = addMissingTagToId(id);
+        return Meter.builder(taggedId.getName(), type, measurements)
+                .tags(taggedId.getTags())
+                .description(taggedId.getDescription())
+                .baseUnit(taggedId.getBaseUnit())
+                .register(parentRegistry);
+    }
+
+    @Override
+    protected LongTaskTimer newLongTaskTimer(Meter.Id id, DistributionStatisticConfig distributionStatisticConfig) {
+        Meter.Id taggedId = addMissingTagToId(id);
+        LongTaskTimer.Builder builder = LongTaskTimer.builder(taggedId.getName())
+                .tags(taggedId.getTags());
+        if (taggedId.getDescription() != null) {
+            builder.description(taggedId.getDescription());
+        }
+        return builder.register(parentRegistry);
+    }
+
+    @Override
+    protected <T> TimeGauge newTimeGauge(Meter.Id id, T obj, TimeUnit valueFunctionUnit,
+                                          ToDoubleFunction<T> valueFunction) {
+        Meter.Id taggedId = addMissingTagToId(id);
+        TimeGauge.Builder<T> builder = TimeGauge.builder(taggedId.getName(), obj, valueFunctionUnit, valueFunction)
+                .tags(taggedId.getTags());
+        if (taggedId.getDescription() != null) {
+            builder.description(taggedId.getDescription());
+        }
+        return builder.register(parentRegistry);
     }
 
     private class ApplicationMore extends More {
