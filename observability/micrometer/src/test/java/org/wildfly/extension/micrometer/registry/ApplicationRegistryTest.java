@@ -15,8 +15,17 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 import io.micrometer.core.instrument.Counter;
+import io.micrometer.core.instrument.DistributionSummary;
+import io.micrometer.core.instrument.FunctionCounter;
+import io.micrometer.core.instrument.FunctionTimer;
+import io.micrometer.core.instrument.Gauge;
+import io.micrometer.core.instrument.LongTaskTimer;
+import io.micrometer.core.instrument.Measurement;
 import io.micrometer.core.instrument.Meter;
+import io.micrometer.core.instrument.Statistic;
 import io.micrometer.core.instrument.Tags;
+import io.micrometer.core.instrument.TimeGauge;
+import io.micrometer.core.instrument.Timer;
 import io.micrometer.core.instrument.binder.jvm.ClassLoaderMetrics;
 import io.micrometer.core.instrument.binder.jvm.JvmGcMetrics;
 import io.micrometer.core.instrument.binder.jvm.JvmMemoryMetrics;
@@ -278,6 +287,153 @@ public class ApplicationRegistryTest {
         Assert.assertFalse(systemRegistry.getMeters().isEmpty());
         Assert.assertTrue(appRegistry1.getMeters().isEmpty());
         Assert.assertFalse(appRegistry2.getMeters().isEmpty());
+    }
+
+    // Tests for Builder pattern registration (WFLY-21339)
+
+    @Test
+    public void testCounterBuilderRegistersToParent() {
+        String meterName = "builder_counter_test";
+        Counter counter = Counter.builder(meterName)
+                .description("Test counter via builder")
+                .register(appRegistry1);
+
+        // Verify the counter is registered in the parent registry with deployment tag
+        Assert.assertNotNull("Counter should be in parent registry",
+                systemRegistry.find(meterName).tag(TAG_WF_DEPLOYMENT, DEPLOYMENT1).counter());
+        assertMetricBelongsToDeployment(counter.getId(), DEPLOYMENT1);
+    }
+
+    @Test
+    public void testGaugeBuilderRegistersToParent() {
+        String meterName = "builder_gauge_test";
+        AtomicInteger gaugeValue = new AtomicInteger(42);
+        Gauge.builder(meterName, gaugeValue, AtomicInteger::get)
+                .description("Test gauge via builder")
+                .register(appRegistry1);
+
+        // Verify the gauge is registered in the parent registry with deployment tag
+        Gauge gauge = systemRegistry.find(meterName).tag(TAG_WF_DEPLOYMENT, DEPLOYMENT1).gauge();
+        Assert.assertNotNull("Gauge should be in parent registry", gauge);
+        Assert.assertEquals(42.0, gauge.value(), 0.0);
+    }
+
+    @Test
+    public void testTimerBuilderRegistersToParent() {
+        String meterName = "builder_timer_test";
+        Timer timer = Timer.builder(meterName)
+                .description("Test timer via builder")
+                .register(appRegistry1);
+
+        // Verify the timer is registered in the parent registry with deployment tag
+        Assert.assertNotNull("Timer should be in parent registry",
+                systemRegistry.find(meterName).tag(TAG_WF_DEPLOYMENT, DEPLOYMENT1).timer());
+        assertMetricBelongsToDeployment(timer.getId(), DEPLOYMENT1);
+    }
+
+    @Test
+    public void testBuilderPatternIsolation() {
+        String meterName = "builder_isolation_test";
+
+        // Register counter via builder in app1
+        Counter counter1 = Counter.builder(meterName)
+                .register(appRegistry1);
+        counter1.increment(10);
+
+        // Register counter via builder in app2
+        Counter counter2 = Counter.builder(meterName)
+                .register(appRegistry2);
+        counter2.increment(20);
+
+        // Verify isolation - each app sees only its own counter
+        Assert.assertEquals(10.0, appRegistry1.get(meterName).tag(TAG_WF_DEPLOYMENT, DEPLOYMENT1).counter().count(), 0.0);
+        Assert.assertEquals(20.0, appRegistry2.get(meterName).tag(TAG_WF_DEPLOYMENT, DEPLOYMENT2).counter().count(), 0.0);
+
+        // Verify app1 cannot see app2's counter
+        Assert.assertThrows(MeterNotFoundException.class,
+                () -> appRegistry1.get(meterName).tag(TAG_WF_DEPLOYMENT, DEPLOYMENT2).counter());
+    }
+
+    @Test
+    public void testDistributionSummaryBuilderRegistersToParent() {
+        String meterName = "builder_summary_test";
+        DistributionSummary summary = DistributionSummary.builder(meterName)
+                .description("Test summary via builder")
+                .register(appRegistry1);
+
+        // Verify the summary is registered in the parent registry with deployment tag
+        Assert.assertNotNull("DistributionSummary should be in parent registry",
+                systemRegistry.find(meterName).tag(TAG_WF_DEPLOYMENT, DEPLOYMENT1).summary());
+        assertMetricBelongsToDeployment(summary.getId(), DEPLOYMENT1);
+    }
+
+    @Test
+    public void testFunctionCounterBuilderRegistersToParent() {
+        String meterName = "builder_function_counter_test";
+        AtomicInteger counterValue = new AtomicInteger(100);
+        FunctionCounter functionCounter = FunctionCounter.builder(meterName, counterValue, AtomicInteger::get)
+                .description("Test function counter via builder")
+                .register(appRegistry1);
+
+        // Verify the function counter is registered in the parent registry with deployment tag
+        Assert.assertNotNull("FunctionCounter should be in parent registry",
+                systemRegistry.find(meterName).tag(TAG_WF_DEPLOYMENT, DEPLOYMENT1).functionCounter());
+        assertMetricBelongsToDeployment(functionCounter.getId(), DEPLOYMENT1);
+    }
+
+    @Test
+    public void testFunctionTimerBuilderRegistersToParent() {
+        String meterName = "builder_function_timer_test";
+        AtomicInteger count = new AtomicInteger(5);
+        FunctionTimer functionTimer = FunctionTimer.builder(meterName, count,
+                        AtomicInteger::get, AtomicInteger::doubleValue, TimeUnit.MILLISECONDS)
+                .description("Test function timer via builder")
+                .register(appRegistry1);
+
+        // Verify the function timer is registered in the parent registry with deployment tag
+        Assert.assertNotNull("FunctionTimer should be in parent registry",
+                systemRegistry.find(meterName).tag(TAG_WF_DEPLOYMENT, DEPLOYMENT1).functionTimer());
+        assertMetricBelongsToDeployment(functionTimer.getId(), DEPLOYMENT1);
+    }
+
+    @Test
+    public void testLongTaskTimerBuilderRegistersToParent() {
+        String meterName = "builder_long_task_timer_test";
+        LongTaskTimer longTaskTimer = LongTaskTimer.builder(meterName)
+                .description("Test long task timer via builder")
+                .register(appRegistry1);
+
+        // Verify the long task timer is registered in the parent registry with deployment tag
+        Assert.assertNotNull("LongTaskTimer should be in parent registry",
+                systemRegistry.find(meterName).tag(TAG_WF_DEPLOYMENT, DEPLOYMENT1).longTaskTimer());
+        assertMetricBelongsToDeployment(longTaskTimer.getId(), DEPLOYMENT1);
+    }
+
+    @Test
+    public void testTimeGaugeBuilderRegistersToParent() {
+        String meterName = "builder_time_gauge_test";
+        AtomicInteger timeValue = new AtomicInteger(5000);
+        TimeGauge timeGauge = TimeGauge.builder(meterName, timeValue, TimeUnit.MILLISECONDS, AtomicInteger::get)
+                .description("Test time gauge via builder")
+                .register(appRegistry1);
+
+        // Verify the time gauge is registered in the parent registry with deployment tag
+        Assert.assertNotNull("TimeGauge should be in parent registry",
+                systemRegistry.find(meterName).tag(TAG_WF_DEPLOYMENT, DEPLOYMENT1).timeGauge());
+        assertMetricBelongsToDeployment(timeGauge.getId(), DEPLOYMENT1);
+    }
+
+    @Test
+    public void testMeterBuilderRegistersToParent() {
+        String meterName = "builder_meter_test";
+        Meter meter = Meter.builder(meterName, Meter.Type.OTHER, List.of(new Measurement(() -> 42.0, Statistic.VALUE)))
+                .description("Test meter via builder")
+                .register(appRegistry1);
+
+        // Verify the meter is registered in the parent registry with deployment tag
+        Assert.assertNotNull("Meter should be in parent registry",
+                systemRegistry.find(meterName).tag(TAG_WF_DEPLOYMENT, DEPLOYMENT1).meter());
+        assertMetricBelongsToDeployment(meter.getId(), DEPLOYMENT1);
     }
 
     private boolean containsWrongDeploymentTag(Meter.Id id, String deploymentName) {
