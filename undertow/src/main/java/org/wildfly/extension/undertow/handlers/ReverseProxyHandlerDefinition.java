@@ -96,7 +96,6 @@ public class ReverseProxyHandlerDefinition extends HandlerDefinition {
             .setRestartAllServices()
             .setAllowExpression(true)
             .setDefaultValue(ModelNode.FALSE)
-            .setStability(Stability.COMMUNITY)
             .build();
 
     public static final AttributeDefinition REWRITE_HOST_HEADER = new SimpleAttributeDefinitionBuilder(Constants.REWRITE_HOST_HEADER, ModelType.BOOLEAN)
@@ -104,7 +103,6 @@ public class ReverseProxyHandlerDefinition extends HandlerDefinition {
             .setRestartAllServices()
             .setAllowExpression(true)
             .setDefaultValue(ModelNode.FALSE)
-            .setStability(Stability.COMMUNITY)
             .build();
 
     public static final Collection<AttributeDefinition> ATTRIBUTES = List.of(CONNECTIONS_PER_THREAD, SESSION_COOKIE_NAMES, PROBLEM_SERVER_RETRY, REQUEST_QUEUE_SIZE, MAX_REQUEST_TIME, CACHED_CONNECTIONS_PER_THREAD, CONNECTION_IDLE_TIMEOUT, MAX_RETRIES,REUSE_X_FORWARDED_HEADER, REWRITE_HOST_HEADER);
