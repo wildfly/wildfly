@@ -23,11 +23,11 @@ following parameters can be adjusted to tune the operation of the utility.
 
 * enabled - Should the protection be enabled for the realm. [Default: true]
 * max-failed-attempts - The maximum number of failed authentication attempts
-before an identity should be temporarily unavailable. [Default: 25]
+before an identity should be temporarily unavailable. [Default: 10]
 * lockout-interval - The time in minutes the identity should be unavailable for
 once the maximum number of attempts is exceeded. [Default: 15]
 * session-timeout - After the most recent failed authentication, how long in
-minutes to keep the session tracking the identity alive. [Default: 60]
+minutes to keep the session tracking the identity alive. [Default: 30]
 
 These properties can be set on a realm by realm basis using system properties
 in the form:
@@ -37,13 +37,17 @@ wildfly.elytron.realm.{REALM_NAME}.brute-force.{PROPERTY_NAME}
 
 The security realms which are automatically wrapped are:
 
+ * caching-realm
  * custom-realm
  * custom-modifiable-realm
+ * distributed-realm
+ * failover-realm
  * filesystem-realm
  * jaas-realm
  * jdbc-realm
  * ldap-realm
  * properties-realm
+
 
 By wrapping the security realms this utility will automatically be applied to the following
 authentication mechanisms:
@@ -84,6 +88,11 @@ identity has exceeded the configured `max-failed-attempts` the session will trac
 that the identity is disabled for the period defined in `lockout-interval`.
 Repeated attempts after this point will restart the period the identity is locked
 for.
+
+NOTE: For the realms that delegate to other realms such as the `caching-realm`, the
+`distributed-realm`, and the `failover-realm` brute force protection will only occur
+at the first realm in the chain, this is to avoid unpredictable interactions with
+multiple realms applying the protection at once.
 
 During authentication attempts as this utility realm wraps the underlying realm
 it will check for the identity being authenticated if a session already exists
