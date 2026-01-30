@@ -406,9 +406,8 @@ public class ControlPointDeploymentInfoConfigurator implements UnaryOperator<Dep
 
         @Override
         public void invalidate(HttpServerExchange exchange) {
-            if (this.valid.compareAndSet(true, false)) {
-                this.session.invalidate(exchange);
-            }
+            this.valid.set(false);
+            this.session.invalidate(exchange);
         }
 
         @Override
