@@ -2672,9 +2672,6 @@ change once https://bugs.openjdk.java.net/browse/JDK-8209953[JDK-8209953] is res
 
 ==== Dynamic client SSLContext
 
-The `dynamic-client-ssl-context` resource is only available in the `community` stability level. For more information on how to configure stability levels, please refer to the link:Admin_Guide{outfilesuffix}[Admin Guide], particularly the
-link:Admin_Guide{outfilesuffix}#Feature_stability_levels[Feature stability levels] section.
-
 Using the Elytron subsystem, it is possible to configure an SSLContext that will delegate to alternate instances based on host and port you are connecting to.
 
 You can add such SSLContext as follows:
