@@ -7,12 +7,10 @@ package org.wildfly.test.integration.observability.micrometer.multiple;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.util.List;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.test.api.ArquillianResource;
-import org.jboss.as.test.shared.observability.signals.PrometheusMetric;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
@@ -55,12 +53,13 @@ public class MicrometerEarDeploymentTestCase extends BaseMicrometerMultipleTestC
         makeRequests(new URI(String.format("%s/%s/%s/%s", earUrl, ENTERPRISE_APP, SERVICE_TWO, DuplicateMetricResource2.TAG)));
 
 
-        otelCollector.assertMetrics(prometheusMetrics -> {
-            List<PrometheusMetric> results = otelCollector.getMetricsByName(prometheusMetrics,
-                    DuplicateMetricResource1.METER_NAME + "_total"); // Adjust for Prometheus naming conventions
+        collector.assertMetrics(metrics -> {
+            var results = metrics.stream()
+                    .filter(m -> m.name().equals(DuplicateMetricResource1.METER_NAME))
+                    .toList(); // Adjust for Prometheus naming conventions
 
             Assert.assertEquals(2, results.size());
-            results.forEach(r -> Assert.assertEquals("" + REQUEST_COUNT, r.getValue()));
+            results.forEach(r -> Assert.assertEquals(REQUEST_COUNT, Double.valueOf(r.value()).intValue()));
         });
     }
 }
