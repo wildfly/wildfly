@@ -20,7 +20,6 @@ import java.util.ServiceLoader;
 
 import org.jboss.as.connector.logging.ConnectorLogger;
 import org.jboss.as.controller.AbstractRemoveStepHandler;
-import org.jboss.as.controller.ModuleIdentifierUtil;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.dmr.ModelNode;
@@ -52,7 +51,7 @@ public class JdbcDriverRemove extends AbstractRemoveStepHandler {
 
     protected void recoverServices(OperationContext context, ModelNode operation, ModelNode model) {
         final String driverName = context.getCurrentAddressValue();
-        final String moduleName = model.require(DRIVER_MODULE_NAME.getName()).asString();
+        final String moduleId = model.require(DRIVER_MODULE_NAME.getName()).asString();
         final Integer majorVersion = model.hasDefined(DRIVER_MAJOR_VERSION.getName()) ? model.get(DRIVER_MAJOR_VERSION.getName()).asInt() : null;
         final Integer minorVersion = model.hasDefined(DRIVER_MINOR_VERSION.getName()) ? model.get(DRIVER_MINOR_VERSION.getName()).asInt() : null;
         final String driverClassName = model.hasDefined(DRIVER_CLASS_NAME.getName()) ? model.get(DRIVER_CLASS_NAME.getName()).asString() : null;
@@ -62,18 +61,18 @@ public class JdbcDriverRemove extends AbstractRemoveStepHandler {
 
         final ServiceTarget target = context.getServiceTarget();
 
-        final String moduleId;
         final Module module;
 
         try {
-            moduleId = ModuleIdentifierUtil.parseCanonicalModuleIdentifier(moduleName);
             module = Module.getCallerModuleLoader().loadModule(moduleId);
         } catch (ModuleNotFoundException e) {
-            context.getFailureDescription().set(ConnectorLogger.ROOT_LOGGER.missingDependencyInModuleDriver(moduleName, e.getMessage()));
+            context.getFailureDescription()
+                    .set(ConnectorLogger.ROOT_LOGGER.missingDependencyInModuleDriver(moduleId, e.getMessage()));
             return;
         } catch (ModuleLoadException e) {
-            context.getFailureDescription().set(ConnectorLogger.ROOT_LOGGER.failedToLoadModuleDriver(moduleName, e.getLocalizedMessage(),
-                    e.getCause() != null ? e.getCause().getLocalizedMessage() : "-"));
+            context.getFailureDescription()
+                    .set(ConnectorLogger.ROOT_LOGGER.failedToLoadModuleDriver(moduleId, e.getLocalizedMessage(),
+                            e.getCause() != null ? e.getCause().getLocalizedMessage() : "-"));
             return;
         }
 

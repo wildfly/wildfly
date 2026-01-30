@@ -15,6 +15,7 @@ import io.undertow.server.HttpHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.AttributeMarshallers;
 import org.jboss.as.controller.AttributeParsers;
+import org.jboss.as.controller.ModuleIdentifierUtil;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathElement;
@@ -44,6 +45,7 @@ public class CustomFilterDefinition extends SimpleFilterDefinition {
             .setRequired(true)
             .setAllowExpression(true)
             .setRestartAllServices()
+            .setCorrector(ModuleIdentifierUtil.MODULE_NAME_CORRECTOR)
             .build();
 
     public static final PropertiesAttributeDefinition PARAMETERS = new PropertiesAttributeDefinition.Builder("parameters", true)
