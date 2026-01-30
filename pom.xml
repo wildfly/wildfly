@@ -904,6 +904,11 @@
                 <artifactId>wildfly-producers</artifactId>
                 <version>${version.org.jboss.universe.producer.wildfly}</version>
             </dependency>
+            <dependency>
+                <groupId>org.jboss.galleon</groupId>
+                <artifactId>galleon-core</artifactId>
+                <version>${version.org.jboss.galleon}</version>
+            </dependency>
         </dependencies>
 
     </dependencyManagement>
