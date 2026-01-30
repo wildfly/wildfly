@@ -5,10 +5,12 @@
 package org.wildfly.clustering.web.undertow.session;
 
 import java.util.Map;
+import java.util.Set;
 
 import org.wildfly.clustering.server.service.Service;
 import org.wildfly.clustering.session.SessionManager;
 
+import io.undertow.server.session.SessionListener;
 import io.undertow.server.session.SessionListeners;
 
 /**
@@ -21,6 +23,16 @@ public interface UndertowSessionManager extends io.undertow.server.session.Sessi
      * @return the session listeners
      */
     SessionListeners getSessionListeners();
+
+    @Override
+    default void registerSessionListener(SessionListener listener) {
+        this.getSessionListeners().addSessionListener(listener);
+    }
+
+    @Override
+    default void removeSessionListener(SessionListener listener) {
+        this.getSessionListeners().removeSessionListener(listener);
+    }
 
     /**
      * Returns underlying distributable session manager implementation.
@@ -41,5 +53,10 @@ public interface UndertowSessionManager extends io.undertow.server.session.Sessi
     @Override
     default void stop() {
         this.getSessionManager().stop();
+    }
+
+    @Override
+    default Set<String> getTransientSessions() {
+        return Set.of();
     }
 }
