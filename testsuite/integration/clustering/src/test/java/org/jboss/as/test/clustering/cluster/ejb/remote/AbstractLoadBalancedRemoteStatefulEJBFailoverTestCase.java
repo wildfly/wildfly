@@ -73,8 +73,68 @@ public abstract class AbstractLoadBalancedRemoteStatefulEJBFailoverTestCase exte
     }
 
     @Test
-    public void test() throws Exception {
-        log.info("Running test case test()");
+    public void testFailoverForStopStart() throws Exception {
+        log.info("Running test case testFailoverForStopStart()");
+
+        // Allow sufficient time for the load balancer + cluster configuration to initialise
+        Thread.sleep(LOAD_BALANCER_WAIT);
+
+        try (EJBDirectory directory = this.directoryProvider.get()) {
+
+            Incrementor bean = directory.lookupStateful(StatefulIncrementorBean.class, Incrementor.class);
+
+            Result<Integer> result = bean.increment();
+            String target = result.getNode();
+            int count = 1;
+
+            Assert.assertEquals(count++, result.getValue().intValue());
+
+            // Bean should retain weak affinity for this node
+            for (int i = 0; i < COUNT; ++i) {
+                result = bean.increment();
+                Assert.assertEquals(count++, result.getValue().intValue());
+                Assert.assertEquals(String.valueOf(i), target, result.getNode());
+            }
+
+            stop(target);
+
+            result = bean.increment();
+            // Bean should failover to other node
+            String failoverTarget = result.getNode();
+
+            Assert.assertEquals(count++, result.getValue().intValue());
+            Assert.assertNotEquals(target, failoverTarget);
+
+            start(target);
+
+            // Allow sufficient time for client to receive new topology
+            Thread.sleep(CLIENT_TOPOLOGY_UPDATE_WAIT);
+
+            result = bean.increment();
+            String failbackTarget = result.getNode();
+            Assert.assertEquals(count++, result.getValue().intValue());
+            // Bean should retain weak affinity for this node
+            Assert.assertEquals(failoverTarget, failbackTarget);
+
+            result = bean.increment();
+            // Bean may have acquired new weak affinity
+            target = result.getNode();
+            Assert.assertEquals(count++, result.getValue().intValue());
+
+            // Bean should retain weak affinity for this node
+            for (int i = 0; i < COUNT; ++i) {
+                result = bean.increment();
+                Assert.assertEquals(count++, result.getValue().intValue());
+                Assert.assertEquals(String.valueOf(i), target, result.getNode());
+            }
+
+            bean.remove();
+        }
+    }
+
+    @Test
+    public void testFailoverForUndeployDeploy() throws Exception {
+        log.info("Running test case testFailoverForUndeployDeploy()");
 
         // Allow sufficient time for the load balancer + cluster configuration to initialise
         Thread.sleep(LOAD_BALANCER_WAIT);
@@ -118,53 +178,10 @@ public abstract class AbstractLoadBalancedRemoteStatefulEJBFailoverTestCase exte
             // Bean should retain weak affinity for this node
             Assert.assertEquals(failoverTarget, failbackTarget);
 
-            result = bean.increment();
-            // Bean may have acquired new weak affinity
-            target = result.getNode();
-            Assert.assertEquals(count++, result.getValue().intValue());
-
-            // Bean should retain weak affinity for this node
-            for (int i = 0; i < COUNT; ++i) {
-                result = bean.increment();
-                Assert.assertEquals(count++, result.getValue().intValue());
-                Assert.assertEquals(String.valueOf(i), target, result.getNode());
-            }
-
-            stop(target);
-
-            result = bean.increment();
-            // Bean should failover to other node
-            failoverTarget = result.getNode();
-
-            Assert.assertEquals(count++, result.getValue().intValue());
-            Assert.assertNotEquals(target, failoverTarget);
-
-            start(target);
-
-            // Allow sufficient time for client to receive new topology
-            Thread.sleep(CLIENT_TOPOLOGY_UPDATE_WAIT);
-
-            result = bean.increment();
-            failbackTarget = result.getNode();
-            Assert.assertEquals(count++, result.getValue().intValue());
-            // Bean should retain weak affinity for this node
-            Assert.assertEquals(failoverTarget, failbackTarget);
-
-            result = bean.increment();
-            // Bean may have acquired new weak affinity
-            target = result.getNode();
-            Assert.assertEquals(count++, result.getValue().intValue());
-
-            // Bean should retain weak affinity for this node
-            for (int i = 0; i < COUNT; ++i) {
-                result = bean.increment();
-                Assert.assertEquals(count++, result.getValue().intValue());
-                Assert.assertEquals(String.valueOf(i), target, result.getNode());
-            }
-
             bean.remove();
         }
     }
+
 
     /**
      * A server setup script to configure each backend node to register with the load balancer.

@@ -73,8 +73,8 @@ public abstract class AbstractLoadBalancedRemoteStatelessEJBFailoverTestCase ext
     }
 
     @Test
-    public void test() throws Exception {
-        log.info("Running test case test()");
+    public void testFailoverForStopStart() throws Exception {
+        log.info("Running test case testFailoverForStopStart()");
 
         // Allow sufficient time for the load balancer + cluster configuration to initialise
         Thread.sleep(LOAD_BALANCER_WAIT);
@@ -93,6 +93,65 @@ public abstract class AbstractLoadBalancedRemoteStatelessEJBFailoverTestCase ext
                 Thread.sleep(INVOCATION_WAIT);
             }
 
+            log.infof("load balancing results before stop: %s", results);
+            for (String node : NODE_1_2) {
+                int frequency = Collections.frequency(results, node);
+                assertTrue(frequency + " invocations were routed to " + node, frequency > 0);
+            }
+
+            stop(NODE_2);
+
+            for (int i = 0; i < COUNT; ++i) {
+                Result<Integer> result = bean.increment();
+                results.set(i, result.getNode());
+                Thread.sleep(INVOCATION_WAIT);
+            }
+
+            log.infof("load balancing results after stop: %s", results);
+            Assert.assertEquals(COUNT, Collections.frequency(results, NODE_1));
+            Assert.assertEquals(0, Collections.frequency(results, NODE_2));
+
+            start(NODE_2);
+
+            // Allow sufficient time for client to receive new topology
+            Thread.sleep(CLIENT_TOPOLOGY_UPDATE_WAIT);
+
+            for (int i = 0; i < COUNT; ++i) {
+                Result<Integer> result = bean.increment();
+                results.set(i, result.getNode());
+                Thread.sleep(INVOCATION_WAIT);
+            }
+
+            log.infof("load balancing results after restart: %s", results);
+            for (String node : NODE_1_2) {
+                int frequency = Collections.frequency(results, node);
+                assertTrue(frequency + " invocations were routed to " + node, frequency > 0);
+            }
+        }
+    }
+
+    @Test
+    public void testFailoverForUndeployDeploy() throws Exception {
+        log.info("Running test case testFailoverForUndeployDeploy()");
+
+        // Allow sufficient time for the load balancer + cluster configuration to initialise
+        Thread.sleep(LOAD_BALANCER_WAIT);
+
+        try (EJBDirectory directory = this.directoryProvider.get()) {
+            Incrementor bean = directory.lookupStateless(StatelessIncrementorBean.class, Incrementor.class);
+
+            // Allow sufficient time for client to receive full topology
+            Thread.sleep(CLIENT_TOPOLOGY_UPDATE_WAIT);
+
+            List<String> results = new ArrayList<>(COUNT);
+
+            for (int i = 0; i < COUNT; ++i) {
+                Result<Integer> result = bean.increment();
+                results.add(result.getNode());
+                Thread.sleep(INVOCATION_WAIT);
+            }
+
+            log.infof("load balancing results before undeploy: %s", results);
             for (String node : NODE_1_2) {
                 int frequency = Collections.frequency(results, node);
                 assertTrue(frequency + " invocations were routed to " + node, frequency > 0);
@@ -109,6 +168,7 @@ public abstract class AbstractLoadBalancedRemoteStatelessEJBFailoverTestCase ext
                 Thread.sleep(INVOCATION_WAIT);
             }
 
+            log.infof("load balancing results after undeploy: %s", results);
             Assert.assertEquals(0, Collections.frequency(results, NODE_1));
             Assert.assertEquals(COUNT, Collections.frequency(results, NODE_2));
 
@@ -123,38 +183,12 @@ public abstract class AbstractLoadBalancedRemoteStatelessEJBFailoverTestCase ext
                 Thread.sleep(INVOCATION_WAIT);
             }
 
+            log.infof("load balancing results after redeploy: %s", results);
             for (String node : NODE_1_2) {
                 int frequency = Collections.frequency(results, node);
                 assertTrue(frequency + " invocations were routed to " + node, frequency > 0);
             }
-
-            stop(NODE_2);
-
-            for (int i = 0; i < COUNT; ++i) {
-                Result<Integer> result = bean.increment();
-                results.set(i, result.getNode());
-                Thread.sleep(INVOCATION_WAIT);
-            }
-
-            Assert.assertEquals(COUNT, Collections.frequency(results, NODE_1));
-            Assert.assertEquals(0, Collections.frequency(results, NODE_2));
-
-            start(NODE_2);
-
-            // Allow sufficient time for client to receive new topology
-            Thread.sleep(CLIENT_TOPOLOGY_UPDATE_WAIT);
-
-            for (int i = 0; i < COUNT; ++i) {
-                Result<Integer> result = bean.increment();
-                results.set(i, result.getNode());
-                Thread.sleep(INVOCATION_WAIT);
-            }
-
-            for (String node : NODE_1_2) {
-                int frequency = Collections.frequency(results, node);
-                assertTrue(frequency + " invocations were routed to " + node, frequency > 0);
-            }
-        }
+       }
     }
 
     /**
