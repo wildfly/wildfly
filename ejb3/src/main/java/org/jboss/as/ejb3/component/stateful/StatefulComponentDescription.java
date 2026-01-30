@@ -16,6 +16,7 @@ import jakarta.ejb.EJBObject;
 import jakarta.ejb.TransactionManagementType;
 
 import org.jboss.as.controller.RequirementServiceTarget;
+import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.as.ee.component.Attachments;
 import org.jboss.as.ee.component.Component;
 import org.jboss.as.ee.component.ComponentConfiguration;
@@ -195,26 +196,19 @@ public class StatefulComponentDescription extends SessionBeanComponentDescriptio
             @Override
             public void configure(DeploymentPhaseContext context, ComponentDescription description, ComponentConfiguration configuration) throws DeploymentUnitProcessingException {
                 DeploymentUnit unit = context.getDeploymentUnit();
+                CapabilityServiceSupport support = unit.getAttachment(org.jboss.as.server.deployment.Attachments.CAPABILITY_SERVICE_SUPPORT);
                 StatefulComponentDescription statefulDescription = (StatefulComponentDescription) description;
-                ServiceDependency<StatefulSessionBeanCacheProvider> provider = this.getStatefulSessionBeanCacheProvider(statefulDescription);
+                ServiceDependency<StatefulSessionBeanCacheProvider> provider = ServiceDependency.on(statefulDescription.getCacheProviderServiceName(support));
                 ServiceInstaller installer = new ServiceInstaller() {
                     @Override
                     public ServiceController<?> install(RequirementServiceTarget target) {
-                        for (ServiceInstaller factoryInstaller : provider.get().getStatefulBeanCacheFactoryServiceInstallers(unit, statefulDescription, statefulComponentConfiguration)) {
-                            factoryInstaller.install(target);
+                        for (ServiceInstaller installer : provider.get().getStatefulBeanCacheFactoryServiceInstallers(unit, statefulDescription)) {
+                            installer.install(target);
                         }
                         return null;
                     }
                 };
-                ServiceInstaller.builder(installer, unit.getAttachment(org.jboss.as.server.deployment.Attachments.CAPABILITY_SERVICE_SUPPORT)).requires(provider).build().install(context);
-            }
-
-            private ServiceDependency<StatefulSessionBeanCacheProvider> getStatefulSessionBeanCacheProvider(StatefulComponentDescription description) {
-                if (!description.isPassivationApplicable()) {
-                    return ServiceDependency.on(StatefulSessionBeanCacheProvider.PASSIVATION_DISABLED_SERVICE_DESCRIPTOR);
-                }
-                CacheInfo cache = description.getCache();
-                return (cache != null) ? ServiceDependency.on(StatefulSessionBeanCacheProvider.SERVICE_DESCRIPTOR, cache.getName()) : ServiceDependency.on(StatefulSessionBeanCacheProvider.DEFAULT_SERVICE_DESCRIPTOR);
+                ServiceInstaller.builder(installer, support).requires(provider).build().install(context);
             }
         });
 
@@ -432,6 +426,11 @@ public class StatefulComponentDescription extends SessionBeanComponentDescriptio
 
     public ServiceName getDeploymentUnitServiceName() {
         return this.deploymentUnitServiceName;
+    }
+
+    public ServiceName getCacheProviderServiceName(CapabilityServiceSupport support) {
+        if (!this.passivationApplicable) return support.getCapabilityServiceName(StatefulSessionBeanCacheProvider.PASSIVATION_DISABLED_SERVICE_DESCRIPTOR);
+        return (this.cache != null) ? support.getCapabilityServiceName(StatefulSessionBeanCacheProvider.SERVICE_DESCRIPTOR, this.cache.getName()) : support.getCapabilityServiceName(StatefulSessionBeanCacheProvider.DEFAULT_SERVICE_DESCRIPTOR);
     }
 
     public ServiceName getCacheFactoryServiceName() {

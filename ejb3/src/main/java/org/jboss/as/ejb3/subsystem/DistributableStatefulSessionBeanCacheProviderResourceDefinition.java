@@ -13,6 +13,7 @@ import java.util.function.Function;
 
 import org.jboss.as.clustering.controller.SimpleResourceDescriptorConfigurator;
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.CapabilityReferenceRecorder;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
@@ -32,7 +33,7 @@ import org.wildfly.clustering.ejb.DeploymentConfiguration;
 import org.wildfly.clustering.ejb.bean.BeanConfiguration;
 import org.wildfly.clustering.ejb.bean.BeanDeploymentConfiguration;
 import org.wildfly.clustering.ejb.bean.BeanManagementProvider;
-import org.wildfly.subsystem.resource.capability.CapabilityReferenceRecorder;
+import org.wildfly.subsystem.resource.capability.CapabilityReference;
 import org.wildfly.subsystem.service.ServiceDependency;
 import org.wildfly.subsystem.service.ServiceInstaller;
 
@@ -46,11 +47,11 @@ import org.wildfly.subsystem.service.ServiceInstaller;
 public class DistributableStatefulSessionBeanCacheProviderResourceDefinition extends StatefulSessionBeanCacheProviderResourceDefinition implements Function<String, ServiceDependency<StatefulSessionBeanCacheProvider>> {
 
     public enum Attribute implements org.jboss.as.clustering.controller.Attribute {
-        BEAN_MANAGEMENT(EJB3SubsystemModel.BEAN_MANAGEMENT, ModelType.STRING, CapabilityReferenceRecorder.builder(CAPABILITY, BeanManagementProvider.SERVICE_DESCRIPTOR).build())
+        BEAN_MANAGEMENT(EJB3SubsystemModel.BEAN_MANAGEMENT, ModelType.STRING, CapabilityReference.builder(CAPABILITY, BeanManagementProvider.SERVICE_DESCRIPTOR).build())
         ;
         private final AttributeDefinition definition;
 
-        Attribute(String name, ModelType type, CapabilityReferenceRecorder<?> referenece) {
+        Attribute(String name, ModelType type, CapabilityReferenceRecorder referenece) {
             this.definition = new SimpleAttributeDefinitionBuilder(name, type)
                     .setAllowExpression(false)
                     .setRequired(false)
@@ -86,16 +87,16 @@ public class DistributableStatefulSessionBeanCacheProviderResourceDefinition ext
                     }
 
                     @Override
-                    public Iterable<ServiceInstaller> getStatefulBeanCacheFactoryServiceInstallers(DeploymentUnit unit, StatefulComponentDescription description, ComponentConfiguration configuration) {
-                        ServiceName name = unit.getServiceName().append(configuration.getComponentName()).append("bean-manager");
-                        ServiceInstaller beanManagerFactoryInstaller = provider.getBeanManagerFactoryServiceInstaller(name, new DeploymentUnitBeanConfiguration(provider, unit, configuration));
+                    public Iterable<ServiceInstaller> getStatefulBeanCacheFactoryServiceInstallers(DeploymentUnit unit, StatefulComponentDescription description) {
+                        ServiceName name = unit.getServiceName().append(description.getComponentName()).append("bean-manager");
+                        ServiceInstaller beanManagerFactoryInstaller = provider.getBeanManagerFactoryServiceInstaller(name, new DeploymentUnitBeanConfiguration(provider, unit, description));
                         ServiceInstaller cacheFactoryInstaller = new DistributableStatefulSessionBeanCacheFactoryServiceInstallerFactory<>().apply(description, ServiceDependency.on(name));
                         return List.of(beanManagerFactoryInstaller, cacheFactoryInstaller);
                     }
 
                     @Override
-                    public Iterable<ServiceInstaller> getDeploymentServiceInstallers(DeploymentUnit unit, EEModuleConfiguration moduleConfiguration) {
-                        return provider.getDeploymentServiceInstallers(new BeanDeploymentUnitConfiguration(provider, unit, moduleConfiguration));
+                    public Iterable<ServiceInstaller> getDeploymentServiceInstallers(DeploymentUnit unit) {
+                        return provider.getDeploymentServiceInstallers(new BeanDeploymentUnitConfiguration(provider, unit));
                     }
                 };
             }
@@ -138,8 +139,10 @@ public class DistributableStatefulSessionBeanCacheProviderResourceDefinition ext
     private static class BeanDeploymentUnitConfiguration extends DeploymentUnitConfiguration implements BeanDeploymentConfiguration {
         private final Set<Class<?>> beanClasses = Collections.newSetFromMap(new IdentityHashMap<>());
 
-        BeanDeploymentUnitConfiguration(BeanManagementProvider provider, DeploymentUnit unit, EEModuleConfiguration moduleConfiguration) {
+        BeanDeploymentUnitConfiguration(BeanManagementProvider provider, DeploymentUnit unit) {
             super(provider, unit);
+            EEModuleConfiguration moduleConfiguration = unit.getAttachment(org.jboss.as.ee.component.Attachments.EE_MODULE_CONFIGURATION);
+            // Collect SFSB implementation classes, including subclasses
             for (ComponentConfiguration configuration : moduleConfiguration.getComponentConfigurations()) {
                 if (configuration.getComponentDescription() instanceof StatefulComponentDescription) {
                     Class<?> componentClass = configuration.getComponentClass();
@@ -159,16 +162,16 @@ public class DistributableStatefulSessionBeanCacheProviderResourceDefinition ext
 
     private static class DeploymentUnitBeanConfiguration extends DeploymentUnitConfiguration implements BeanConfiguration {
 
-        private final ComponentConfiguration configuration;
+        private final StatefulComponentDescription description;
 
-        DeploymentUnitBeanConfiguration(BeanManagementProvider provider, DeploymentUnit unit, ComponentConfiguration configuration) {
+        DeploymentUnitBeanConfiguration(BeanManagementProvider provider, DeploymentUnit unit, StatefulComponentDescription description) {
             super(provider, unit);
-            this.configuration = configuration;
+            this.description = description;
         }
 
         @Override
         public String getName() {
-            return this.configuration.getComponentName();
+            return this.description.getComponentName();
         }
     }
 }

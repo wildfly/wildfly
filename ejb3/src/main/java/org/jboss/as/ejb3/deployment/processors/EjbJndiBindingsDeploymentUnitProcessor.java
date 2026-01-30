@@ -212,9 +212,11 @@ public class EjbJndiBindingsDeploymentUnitProcessor implements DeploymentUnitPro
         final EEModuleDescription moduleDescription = componentDescription.getModuleDescription();
         final DelegatingSupplier<ClassLoader> viewClassLoader = new DelegatingSupplier<>();
         moduleDescription.getBindingConfigurations().add(new BindingConfiguration(jndiName, new RemoteViewInjectionSource(null, moduleDescription.getEarApplicationName(), moduleDescription.getModuleName(), moduleDescription.getDistinctName(), componentDescription.getComponentName(), viewDescription.getViewClassName(), componentDescription.isStateful(), viewClassLoader, appclient)));
+        // WFLY-21390 Extract the class loader before the lambda to avoid capturing the entire ComponentConfiguration
         componentDescription.getConfigurators().add(new ComponentConfigurator() {
             public void configure(DeploymentPhaseContext context, ComponentDescription description, ComponentConfiguration configuration) throws DeploymentUnitProcessingException {
-                viewClassLoader.set(() -> configuration.getModuleClassLoader());
+                final ClassLoader moduleClassLoader = configuration.getModuleClassLoader();
+                viewClassLoader.set(() -> moduleClassLoader);
             }
         });
     }
@@ -224,8 +226,10 @@ public class EjbJndiBindingsDeploymentUnitProcessor implements DeploymentUnitPro
         final InjectedValue<ControlPoint> controlPointInjectedValue = new InjectedValue<>();
         final RemoteViewInjectionSource delegate = new RemoteViewInjectionSource(null, moduleDescription.getEarApplicationName(), moduleDescription.getModuleName(), moduleDescription.getDistinctName(), componentDescription.getComponentName(), viewDescription.getViewClassName(), componentDescription.isStateful(), viewClassLoader, appclient);
         final ServiceName depName = ControlPointService.serviceName(deploymentUnit.getParent() == null ? deploymentUnit.getName() : deploymentUnit.getParent().getName(), EJBComponentSuspendDeploymentUnitProcessor.ENTRY_POINT_NAME + deploymentUnit.getName() + "." + componentDescription.getComponentName());
+        // WFLY-21390 Extract the class loader before the lambda to avoid capturing the entire ComponentConfiguration
         componentDescription.getConfigurators().add((context, description, configuration) -> {
-            viewClassLoader.set(() -> configuration.getModuleClassLoader());
+            final ClassLoader moduleClassLoader = configuration.getModuleClassLoader();
+            viewClassLoader.set(() -> moduleClassLoader);
             configuration.getCreateDependencies().add((serviceBuilder, service) -> serviceBuilder.addDependency(depName, ControlPoint.class, controlPointInjectedValue));
         });
         //we need to wrap the injection source to allow graceful shutdown to function, although this is not ideal
