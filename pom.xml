@@ -232,7 +232,9 @@
              By default, if channels drive the provisioning we use the 'wildfly' channel.
              Profiles that focus on wildfly-preview or wildfly-ee can change that.
          -->
-        <channels.maven.groupId>${project.groupId}.channels</channels.maven.groupId>
+        <!-- TODO WFLY-21408 Apply workaround for dependabot pom.xml parsing issue "ERROR: Invalid expression: /project/groupId}.channel" -->
+        <!-- <channels.maven.groupId>${project.groupId}.channels</channels.maven.groupId> -->
+        <channels.maven.groupId>org.wildfly.channels</channels.maven.groupId>
         <channels.maven.artifactId>wildfly</channels.maven.artifactId>
         <channels.maven.version>${full.maven.version}</channels.maven.version>
 
