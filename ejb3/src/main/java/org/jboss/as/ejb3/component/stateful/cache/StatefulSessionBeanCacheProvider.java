@@ -5,9 +5,9 @@
 
 package org.jboss.as.ejb3.component.stateful.cache;
 
-import org.jboss.as.ee.component.ComponentConfiguration;
-import org.jboss.as.ee.component.EEModuleConfiguration;
 import org.jboss.as.ejb3.component.stateful.StatefulComponentDescription;
+import org.jboss.as.server.deployment.AttachmentKey;
+import org.jboss.as.server.deployment.AttachmentList;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.wildfly.service.descriptor.NullaryServiceDescriptor;
 import org.wildfly.service.descriptor.UnaryServiceDescriptor;
@@ -22,21 +22,22 @@ public interface StatefulSessionBeanCacheProvider {
     NullaryServiceDescriptor<StatefulSessionBeanCacheProvider> DEFAULT_SERVICE_DESCRIPTOR = NullaryServiceDescriptor.of("org.wildfly.ejb.stateful.default-cache", StatefulSessionBeanCacheProvider.class);
     UnaryServiceDescriptor<StatefulSessionBeanCacheProvider> SERVICE_DESCRIPTOR = UnaryServiceDescriptor.of("org.wildfly.ejb.stateful.cache", DEFAULT_SERVICE_DESCRIPTOR);
 
-    /**
-     * Returns configurators for services to be installed for the specified deployment.
-     * @param unit a deployment unit
-     * @return a collection of service configurators
-     */
-    Iterable<ServiceInstaller> getDeploymentServiceInstallers(DeploymentUnit unit, EEModuleConfiguration moduleConfiguration);
+    AttachmentKey<AttachmentList<StatefulSessionBeanCacheProvider>> ATTACHMENT_KEY = AttachmentKey.createList(StatefulSessionBeanCacheProvider.class);
 
     /**
-     * Returns a configurator for a service supplying a cache factory.
-     * @param unit the deployment unit containing this EJB component.
-     * @param description the EJB component description
-     * @param configuration the component configuration
-     * @return a service configurator
+     * Returns zero or more service installers required to support SFSB caching for a deployment.
+     * @param unit a deployment unit
+     * @return zero or more service installers
      */
-    Iterable<ServiceInstaller> getStatefulBeanCacheFactoryServiceInstallers(DeploymentUnit unit, StatefulComponentDescription description, ComponentConfiguration configuration);
+    Iterable<ServiceInstaller> getDeploymentServiceInstallers(DeploymentUnit unit);
+
+    /**
+     * Returns zero or more service installers required to support caching for the specified SFSB component.
+     * @param unit the deployment unit containing the SFSB component.
+     * @param description the description of the SFSB component
+     * @return zero or more service installers
+     */
+    Iterable<ServiceInstaller> getStatefulBeanCacheFactoryServiceInstallers(DeploymentUnit unit, StatefulComponentDescription description);
 
     /**
      * Indicates whether or not cache factories provides by this object can support passivation.
