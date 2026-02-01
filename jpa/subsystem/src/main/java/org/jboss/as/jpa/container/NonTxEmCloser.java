@@ -46,7 +46,7 @@ public class NonTxEmCloser {
             for (ScopedObjects scopedObjects : emStack.values()) {
                 try {
                     EntityManager entityManager = scopedObjects.getEntityManager();
-                    if (entityManager.isOpen()) {
+                    if (entityManager != null && entityManager.isOpen()) {
                         entityManager.close();
                     }
                 } catch (RuntimeException safeToIgnore) {
@@ -58,7 +58,9 @@ public class NonTxEmCloser {
                 }
                 try {
                     AutoCloseable statelessSession = scopedObjects.getStatelessSession();
-                    statelessSession.close();
+                    if (statelessSession != null) {
+                        statelessSession.close();
+                    }
                 } catch (Exception safeToIgnore) {
                     if (ROOT_LOGGER.isTraceEnabled()) {
                         ROOT_LOGGER.trace("Could not close (non-transactional) container managed stateless session." +
