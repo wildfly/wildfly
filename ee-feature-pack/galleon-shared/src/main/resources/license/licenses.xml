@@ -66,5 +66,29 @@
                 </license>
             </licenses>
         </dependency>
+        <dependency>
+            <groupId>jakarta.jms</groupId>
+            <artifactId>jakarta.jms-api</artifactId>
+            <licenses>
+                <license>
+                    <name>Eclipse Public License 2.0</name>
+                </license>
+                <license>
+                    <name>GNU General Public License, version 2 with the GNU Classpath Exception</name>
+                </license>
+            </licenses>
+        </dependency>
+        <dependency>
+            <groupId>jakarta.resource</groupId>
+            <artifactId>jakarta.resource-api</artifactId>
+            <licenses>
+                <license>
+                    <name>EPL 2.0</name>
+                </license>
+                <license>
+                    <name>GPL2 w/ CPE</name>
+                </license>
+            </licenses>
+        </dependency>
     </dependencies>
 </licenseSummary>

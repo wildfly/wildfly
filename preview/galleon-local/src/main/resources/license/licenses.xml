@@ -24,5 +24,17 @@
                 </license>
             </licenses>
         </dependency>
+        <dependency>
+            <groupId>jakarta.servlet</groupId>
+            <artifactId>jakarta.servlet-api</artifactId>
+            <licenses>
+                <license>
+                    <name>EPL 2.0</name>
+                </license>
+                <license>
+                    <name>GPL2 w/ CPE</name>
+                </license>
+            </licenses>
+        </dependency>
     </dependencies>
 </licenseSummary>

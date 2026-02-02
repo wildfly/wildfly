@@ -866,7 +866,13 @@
                 <artifactId>wildfly-checkstyle-config</artifactId>
                 <version>${version.org.wildfly.checkstyle-config}</version>
             </dependency>
-
+            <!-- Workaround for mysterious issue discussed in
+            https://wildfly.zulipchat.com/#narrow/channel/174184-wildfly-developers/topic/version.2Echeckstyle.2Eplugin.20problem/with/570909520 -->
+            <dependency>
+                <groupId>org.codehaus.plexus</groupId>
+                <artifactId>plexus-velocity</artifactId>
+                <version>${version.plexus-velocity.for.checkstyle}</version>
+            </dependency>
             <dependency>
                 <groupId>org.wildfly.galleon-plugins</groupId>
                 <artifactId>wildfly-config-gen</artifactId>
