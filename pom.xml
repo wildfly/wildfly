@@ -300,7 +300,7 @@
         <version.central.publishing.maven.plugin>0.9.0</version.central.publishing.maven.plugin>
         <version.org.jacoco>0.8.12</version.org.jacoco>
         <version.org.jboss.galleon>7.0.0.Final</version.org.jboss.galleon>
-        <version.org.owasp.dependency-check>12.1.6</version.org.owasp.dependency-check>
+        <version.org.owasp.dependency-check>12.1.9</version.org.owasp.dependency-check>
         <version.org.wildfly.bom-builder-plugin>2.0.10.Final</version.org.wildfly.bom-builder-plugin>
         <version.org.wildfly.checkstyle-config>1.0.8.Final</version.org.wildfly.checkstyle-config>
         <version.org.wildfly.common>1.6.0.Final</version.org.wildfly.common>
