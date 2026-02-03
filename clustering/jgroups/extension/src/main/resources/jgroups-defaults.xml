@@ -27,6 +27,16 @@
         port_range="0"
         use_virtual_threads="false"
     />
+    <!-- Disable register_shutdown_hook for all *loadable* FILE_PING-based discovery protocols -->
+    <FILE_PING
+        register_shutdown_hook="false"
+    />
+    <JDBC_PING
+        register_shutdown_hook="false"
+    />
+    <JDBC_PING2
+        register_shutdown_hook="false"
+    />
     <TCPPING
         port_range="0"
         num_discovery_runs="3"
