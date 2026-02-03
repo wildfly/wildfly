@@ -311,6 +311,7 @@
         <version.org.wildfly.unstable.annotation.api>1.0.2.Final</version.org.wildfly.unstable.annotation.api>
         <version.org.wildfly.wildfly-channel-plugin>1.0.30</version.org.wildfly.wildfly-channel-plugin>
         <version.org.wildfly.wildfly-maven-gpg-plugin>3.2.8.SP1</version.org.wildfly.wildfly-maven-gpg-plugin>
+        <version.plexus-velocity.for.checkstyle>2.3.0</version.plexus-velocity.for.checkstyle>
         <version.verifier.plugin>1.1</version.verifier.plugin>
         <version.xml.plugin>1.0.2</version.xml.plugin>
 
@@ -1008,6 +1009,13 @@
                             <groupId>org.wildfly.checkstyle</groupId>
                             <artifactId>wildfly-checkstyle-config</artifactId>
                             <version>${version.org.wildfly.checkstyle-config}</version>
+                        </dependency>
+                        <!-- Workaround for mysterious issue discussed in
+                             https://wildfly.zulipchat.com/#narrow/channel/174184-wildfly-developers/topic/version.2Echeckstyle.2Eplugin.20problem/with/570909520 -->
+                        <dependency>
+                            <groupId>org.codehaus.plexus</groupId>
+                            <artifactId>plexus-velocity</artifactId>
+                            <version>${version.plexus-velocity.for.checkstyle}</version>
                         </dependency>
                     </dependencies>
                     <configuration>
