@@ -15,10 +15,6 @@
          <params> = parameters changing the configuration like database, IP stack, etc.
 
    Params:
-     -Dds.db=<database>          Configures the AS to use given database.
-                                 Additional properties to be provided:
-                                 -Dds.jdbc.url, -Dds.jdbc.user, -Dds.jdbc.user
-
      -Dipv6                      Configures the testsuite to run with IPv6.
 
      -Dtest=<test classes mask>  Runs matching tests.
