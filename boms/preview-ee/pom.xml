@@ -65,7 +65,7 @@
         <version.org.jboss.spec.jakarta.el.jakarta.el-api>6.0.2.Final</version.org.jboss.spec.jakarta.el.jakarta.el-api>
         <version.org.jboss.weld.weld>6.0.4.Final</version.org.jboss.weld.weld>
         <version.org.jboss.weld.weld-api>6.0.Final</version.org.jboss.weld.weld-api>
-        <version.org.hibernate>7.2.1.Final</version.org.hibernate>
+        <version.org.hibernate>6.6.42.Final</version.org.hibernate>
         <version.org.hibernate.models>1.0.1</version.org.hibernate.models>
         <version.org.hibernate.search>8.2.0.Final</version.org.hibernate.search>
         <version.org.hibernate.validator>9.1.0.Final</version.org.hibernate.validator>
