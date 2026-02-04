@@ -9,8 +9,11 @@ import static org.jboss.as.cli.Util.REMOVE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYSTEM_PROPERTY;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
 import static org.jboss.as.controller.operations.common.Util.createAddOperation;
+import static org.jboss.as.controller.operations.common.Util.createRemoveOperation;
 import static org.jboss.as.controller.operations.common.Util.getUndefineAttributeOperation;
 import static org.jboss.as.test.shared.PermissionUtils.createPermissionsXmlAsset;
 import static org.junit.Assert.assertEquals;
@@ -568,6 +571,9 @@ public class IdentityPropagationTestCase {
     }
 
     static class PropagationSetup extends AbstractMgmtTestBase implements ServerSetupTask {
+
+        private static final String BRUTE_FORCE_MAX_FAILED_ATTEMPTS = "wildfly.elytron.realm.%s.brute-force.max-failed-attempts";
+
         private ManagementClient managementClient;
 
         @Override
@@ -600,9 +606,33 @@ public class IdentityPropagationTestCase {
             op.get("value").set(trustedDomains);
             updates.add(op);
 
+            updates.add(relaxBruteForceProtection("elytron-tests-ejb3-UsersRoles"));
+            updates.add(relaxBruteForceProtection("ejb-domain-ejb3-UsersRoles"));
+
             executeOperations(updates);
 
             ServerReload.executeReloadAndWaitForCompletion(managementClient, 50000);
+        }
+
+        private PathAddress bruteForceSystemProperty(final String realmName) {
+            return PathAddress.pathAddress(SYSTEM_PROPERTY, String.format(BRUTE_FORCE_MAX_FAILED_ATTEMPTS, realmName));
+        }
+
+        /**
+         * We don't want to complete disable the brute force protection as we do want to check
+         * for interactions with supported scenarios, however as this test case does legitimately
+         * test with bad passwords we need to increase the threshold to prevent lock outs causing
+         * these tests to fail.
+         */
+        private ModelNode relaxBruteForceProtection(final String realmName) {
+            ModelNode op = createAddOperation(bruteForceSystemProperty(realmName));
+            op.get(VALUE).set(25);
+
+            return op;
+        }
+
+        private ModelNode undoRelaxBruteForceProtection(final String realmName) {
+            return createRemoveOperation(bruteForceSystemProperty(realmName));
         }
 
         @Override
@@ -619,6 +649,10 @@ public class IdentityPropagationTestCase {
             op = ModelUtil.createOpNode(
                     "subsystem=ejb3/application-security-domain=" + SERVLET_SECURITY_DOMAIN_NAME, REMOVE);
             updates.add(op);
+
+            updates.add(undoRelaxBruteForceProtection("elytron-tests-ejb3-UsersRoles"));
+            updates.add(undoRelaxBruteForceProtection("ejb-domain-ejb3-UsersRoles"));
+
             executeOperations(updates);
 
             ServerReload.executeReloadAndWaitForCompletion(managementClient, 50000);
