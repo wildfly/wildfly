@@ -55,7 +55,7 @@ public class HotRodSessionManagementProvider extends AbstractSessionManagementPr
             "value" : {
                 "media-type" : "application/octet-stream"
             }
-        }
+        },
         "mode" : "SYNC",
         "transaction" : {
             "mode" : "NON_XA",
