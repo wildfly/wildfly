@@ -478,7 +478,7 @@
         <version.org.apache.santuario>3.0.6</version.org.apache.santuario>
         <version.org.apache.velocity>2.4.1</version.org.apache.velocity>
         <version.org.apache.wss4j>3.0.5</version.org.apache.wss4j>
-        <version.org.apache.ws.xmlschema>2.3.0</version.org.apache.ws.xmlschema>
+        <version.org.apache.ws.xmlschema>2.3.2</version.org.apache.ws.xmlschema>
         <version.org.bitbucket.jose4j>0.9.6</version.org.bitbucket.jose4j>
         <version.org.bytebuddy>1.17.5</version.org.bytebuddy>
         <version.org.codehaus.woodstox.stax2-api>4.2.2</version.org.codehaus.woodstox.stax2-api>
