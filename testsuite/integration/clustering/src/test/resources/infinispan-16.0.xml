@@ -8,7 +8,22 @@
                             urn:infinispan:server:16.0 https://infinispan.org/schemas/infinispan-server-16.0.xsd"
       xmlns="urn:infinispan:config:16.0" xmlns:server="urn:infinispan:server:16.0">
 
+    <jgroups>
+        <stack name="loopback">
+            <SHARED_LOOPBACK/>
+            <SHARED_LOOPBACK_PING/>
+            <MERGE3/>
+            <FD_ALL3/>
+            <VERIFY_SUSPECT/>
+            <NAKACK4/>
+            <UNICAST4/>
+            <pbcast.GMS print_local_addr="false"/>
+            <FRAG4/>
+        </stack>
+    </jgroups>
+
     <cache-container name="default" default-cache="default" statistics="true">
+        <transport stack="loopback"/>
         <security>
             <authorization>
                 <!-- Declare a role mapper that associates a security principal to each role. -->
