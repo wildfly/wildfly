@@ -560,7 +560,7 @@
         <!--
             Maintain separation between these two frequently updated artifacts to avoid merge conflicts.
         -->
-        <version.org.wildfly.core>31.0.1.Final</version.org.wildfly.core>
+        <version.org.wildfly.core>31.0.2.Final</version.org.wildfly.core>
         <version.org.wildfly.http-client>2.1.3.Final</version.org.wildfly.http-client>
         <version.org.wildfly.launcher>1.0.2.Final</version.org.wildfly.launcher>
         <version.org.wildfly.mvc.krazo>2.0.1.Final</version.org.wildfly.mvc.krazo>
