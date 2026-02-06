@@ -9,6 +9,8 @@ import org.jboss.as.test.config.ContainerConfig;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.wait.strategy.Wait;
 
+import java.time.Duration;
+
 /**
  * KeycloakContainer for testing.
  *
@@ -40,9 +42,12 @@ public class KeycloakContainer extends GenericContainer<KeycloakContainer> {
         withEnv("SSO_ADMIN_PASSWORD", ADMIN_PASSWORD);
         if (isUsedRHSSOImage()) {
             waitingFor(Wait.forHttp("/auth").forPort(PORT_HTTP));
-        }else{
-            waitingFor(Wait.forLogMessage(".*Keycloak.*started.*", 1));
-            withCommand("start-dev");
+        } else {
+            withCommand("start-dev", "--health-enabled=true");
+            waitingFor(Wait.forHttp("/health/ready")
+                    .forPort(PORT_HTTP)
+                    .forStatusCode(200)
+                    .withStartupTimeout(Duration.ofSeconds(180)));
         }
     }
 
