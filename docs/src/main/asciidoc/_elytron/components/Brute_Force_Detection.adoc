@@ -28,6 +28,8 @@ before an identity should be temporarily unavailable. [Default: 10]
 once the maximum number of attempts is exceeded. [Default: 15]
 * session-timeout - After the most recent failed authentication, how long in
 minutes to keep the session tracking the identity alive. [Default: 30]
+* max-cached-sessions - The maximum number of sessions to cache for tracking failed
+authentication attempts. [Default: 25,000]
 
 These properties can be set on a realm by realm basis using system properties
 in the form:
@@ -81,7 +83,11 @@ be incremented.
 
 Once created a session will remain in the cache for the duration of the `session-timeout`
 except where a successful authentication event is received for the identity, in that
-case the session will be discarded.
+case the session will be discarded. The cache is implemented as a simple LRU cache so
+once the `max-cached-sessions` limit is reached the least recently used session will be
+discarded to make room for a new session. If eviction does occur due to the cache limit
+being reached a WARN message will be logged indicating this has occurred, to avoid spamming
+the logs this message will be logged no more that once every 15 minutes for each realm.
 
 After it has been identified that the number of failed authentications for an
 identity has exceeded the configured `max-failed-attempts` the session will track
