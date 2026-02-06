@@ -148,8 +148,10 @@ EntityManager em;
 [[extended-persistence-context-inheritance]]
 === Extended Persistence Context Inheritance
 
+From section 7.6.3.1 of the JPA 2.2 specification:
+
+[quote, JPA 2.2 specification section 7.6.3.1]
 ----
-JPA 2.2 specification section 7.6.3.1
 
 If a stateful session bean instantiates a stateful session bean (executing in the same EJB container instance) which also has such an extended persistence context with the same synchronization type, the extended persistence context of the first stateful session bean is inherited by the second stateful session bean and bound to it, and this rule recursively applies independently of whether transactions are active or not at the point of the creation of the stateful session beans. If the stateful session beans differ in declared synchronization type, the EJBException is thrown by the container.  If the persistence context has been inherited by any stateful session beans, the container does not close the persistence context until all such stateful session beans have been removed or otherwise destroyed.
 
@@ -181,36 +183,42 @@ deployment descriptor that may be included in the *jboss-all.xml*. Below
 is an example of using *SHALLOW* extended persistence context
 inheritance:
 
-________________________________________________________
-<jboss> +
-<jboss-jpa xmlns="http://www.jboss.com/xml/ns/javaee"> +
-<extended-persistence inheritance="SHALLOW"/> +
-</jboss-jpa> +
+[source,xml,options="nowrap"]
+----
+<jboss>
+  <jboss-jpa xmlns="http://www.jboss.com/xml/ns/javaee">
+    <extended-persistence inheritance="SHALLOW"/>
+  </jboss-jpa>
 </jboss>
-________________________________________________________
+----
 
 Below is an example of using *DEEP* extended persistence inheritance:
 
-________________________________________________________
-<jboss> +
-<jboss-jpa xmlns="http://www.jboss.com/xml/ns/javaee"> +
-<extended-persistence inheritance="DEEP"/> +
-</jboss-jpa> +
+[source,xml,options="nowrap"]
+----
+<jboss>
+  <jboss-jpa xmlns="http://www.jboss.com/xml/ns/javaee">
+    <extended-persistence inheritance="DEEP"/>
+  </jboss-jpa>
 </jboss>
-________________________________________________________
+----
 
-The AS console/cli can change the *default* extended persistence context
+
+The WildFly console/cli can change the *default* extended persistence context
 setting (DEEP or SHALLOW). The following cli commands will read the
 current JPA settings and enable SHALLOW extended persistence context
 inheritance for applications that do not include the *jboss-jpa*
 deployment descriptor:
 
-_______________________________________________________________________________
-./jboss-cli.sh +
-cd subsystem=jpa +
-:read-resource +
+
+[source]
+----
+./jboss-cli.sh
+cd subsystem=jpa
+:read-resource
 :write-attribute(name=default-extended-persistence-inheritance,value="SHALLOW")
-_______________________________________________________________________________
+----
+
 
 [[entities]]
 == Entities
@@ -255,8 +263,8 @@ persistence.xml file is termed the root of the persistence unit. In Java
 EE environments, the root of a persistence unit must be one of the
 following (quoted directly from the JPA 2.0 specification):
 
-"
-
+[quote,JPA 2.0 specification]
+----
 * an EJB-JAR file
 * the WEB-INF/classes directory of a WAR file
 * a jar file in the WEB-INF/lib directory of a WAR file
@@ -273,19 +281,18 @@ NOTE: Java Persistence 1.0 supported use of a jar file in the root of
 the EAR as the root of a persistence unit. This use is no longer
 supported. Portable applications should use the EAR library directory
 for this case instead.
+----
 
-"
+**Question**: Can you have a EAR/META-INF/persistence.xml?
 
-Question: Can you have a EAR/META-INF/persistence.xml?
-
-Answer: No, the above may deploy but it could include other archives
+**Answer**: No, the above may deploy but it could include other archives
 also in the EAR, so you may have deployment issues for other reasons.
 Better to put the persistence.xml in an EAR/lib/somePuJar.jar.
 
 [[troubleshooting]]
 == Troubleshooting
 
-The *org.jboss.as.jpa* logging can be enabled to get the following
+The *org.jboss.as.jpa* logger category level can be configured to get the following
 information:
 
 * INFO - when persistence.xml has been parsed, starting of persistence
@@ -303,7 +310,7 @@ xmlns="urn:jboss:domain:logging:1.0">* and add the *org.jboss.as.jpa*
 category. You need to change the console-handler level from *INFO* to
 *TRACE*.
 
-[source,java,options="nowrap"]
+[source,xml,options="nowrap"]
 ----
 <subsystem xmlns="urn:jboss:domain:logging:1.0">
      <console-handler name="CONSOLE">
@@ -329,7 +336,7 @@ category. You need to change the console-handler level from *INFO* to
 To see what is going on at the JDBC level, enable *jboss.jdbc.spy* TRACE
 and add spy="true" to the datasource.
 
-[source,java,options="nowrap"]
+[source,xml,options="nowrap"]
 ----
 <datasource jndi-name="java:jboss/datasources/..." pool-name="..." enabled="true" spy="true">
 <logger category="jboss.jdbc.spy">
@@ -338,10 +345,9 @@ and add spy="true" to the datasource.
 ----
 
 To troubleshoot issues with the Hibernate second level cache, try
-enabling trace for *org.hibernate.SQL + org.hibernate.cache.infinispan +
-org.infinispan:*
+enabling trace for *org.hibernate.SQL*, *org.hibernate.cache.infinispan* and *org.infinispan*:
 
-[source,java,options="nowrap"]
+[source,xml,options="nowrap"]
 ----
 <subsystem xmlns="urn:jboss:domain:logging:1.0">
      <console-handler name="CONSOLE">
@@ -522,16 +528,15 @@ persistence provider in the application and
 
 [source,xml,options="nowrap"]
 ----
-<?xml version="1.0" encoding="UTF-8"?> +
-<persistence xmlns="http://java.sun.com/xml/ns/persistence"
-version="1.0"> +
-<persistence-unit name="myOwnORMVersion_pu"> +
-<description>Hibernate Persistence Unit.</description> +
-<jta-data-source>java:jboss/datasources/PlannerDS</jta-data-source> +
-<properties> +
-<property name="jboss.as.jpa.providerModule" value="application" /> +
-</properties> +
-</persistence-unit> +
+<?xml version="1.0" encoding="UTF-8"?>
+<persistence xmlns="http://java.sun.com/xml/ns/persistence" version="1.0">
+    <persistence-unit name="myOwnORMVersion_pu">
+        <description>Hibernate Persistence Unit.</description>
+        <jta-data-source>java:jboss/datasources/PlannerDS</jta-data-source>
+        <properties>
+            <property name="jboss.as.jpa.providerModule" value="application"/>
+        </properties>
+    </persistence-unit>
 </persistence>
 ----
 
@@ -851,16 +856,11 @@ specified in the persistence.xml. The mapping is:
 
 By default WildFly does *not* bind the entity manager factory to JNDI.
 However, you can explicitly configure this in the persistence.xml of
-your application by setting the `jboss.entity.manager.factory.jndi.name`
-`hint. The value of that property should be the JNDI name to which the entity manager factory should be bound.`
+your application by setting the `jboss.entity.manager.factory.jndi.name` hint. The value of that property should be the JNDI name to which the entity manager factory should be bound.
 
-`You can also bind a container managed (transaction scoped) entity manager to JNDI as well, }}via hint`
-`jboss.entity.manager.jndi.name`\{
-`}{{. As a reminder, a transaction scoped entity manager (persistence context), acts as a proxy that always gets an unique underlying entity manager (at the persistence provider level).`
+You can also bind a container managed (transaction scoped) entity manager to JNDI as well, via hint `jboss.entity.manager.jndi.name`. As a reminder, a transaction scoped entity manager (persistence context), acts as a proxy that always gets an unique underlying entity manager (at the persistence provider level).`
 
-`Here's an example:`
-
-persistence.xml
+Here's an example `persistence.xml`:
 
 [source,xml,options="nowrap"]
 ----

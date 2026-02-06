@@ -9,7 +9,7 @@
 
     <properties>
         <property name="jboss.api" value="private"/>
-        <property name="jboss.require-java-version" value="1.7"/>
+        <property name="jboss.require-java-version" value="17"/>
     </properties>
 
     <main-class name="org.jboss.as.jdr.CommandLineMain"/>

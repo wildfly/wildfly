@@ -429,4 +429,8 @@ public interface UndertowLogger extends BasicLogger {
     @Message(id = 111, value = "The annotation: '%s' will have no effect on Servlet: '%s'")
     void badAnnotationOnServlet(String annotation, String servlet);
 
+    @Message(id = 112, value = "The value '%s' attribute in the '%s' resource is 'false', which will be ignored. " +
+            "The server now always enforces the RFC 9112 requirement that HTTP/1.1 request messages include a Host header.")
+    String http11HostHeaderRequired(String attribute, String resource);
+
 }

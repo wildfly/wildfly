@@ -17,7 +17,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>39.0.0.Final-SNAPSHOT</version>
+        <version>40.0.0.Beta1-SNAPSHOT</version>
         <relativePath>../../pom.xml</relativePath>
     </parent>
 
@@ -1165,17 +1165,6 @@
                 <groupId>io.vertx</groupId>
                 <artifactId>vertx-grpc-common</artifactId>
                 <version>${version.io.vertx.vertx}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>io.vertx</groupId>
-                <artifactId>vertx-kafka-client</artifactId>
-                <version>${version.io.vertx.vertx-kafka-client}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>

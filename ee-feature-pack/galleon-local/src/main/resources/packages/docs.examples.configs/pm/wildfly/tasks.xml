@@ -149,7 +149,7 @@
                         </feature>
                         <feature spec="subsystem.jgroups.stack.protocol">
                             <param name="protocol" value="azure.AZURE_PING"/>
-                            <param name="properties" value="{storage_account_name=&quot;${jboss.jgroups.azure_ping.storage_account_name}&quot;,storage_access_key=&quot;${jboss.jgroups.azure_ping.storage_access_key}&quot;,container=&quot;${jboss.jgroups.azure_ping.container}&quot;}"/>
+                            <param name="properties" value="{storage_account_name=&quot;${jboss.jgroups.azure_ping.storage_account_name}&quot;,storage_access_key=&quot;${jboss.jgroups.azure_ping.storage_access_key}&quot;,container=&quot;${jboss.jgroups.azure_ping.container}&quot;,register_shutdown_hook=&quot;false&quot;}"/>
                         </feature>
                         <feature spec="subsystem.jgroups.stack.protocol">
                             <param name="protocol" value="MERGE3"/>
@@ -193,7 +193,7 @@
                         </feature>
                         <feature spec="subsystem.jgroups.stack.protocol">
                             <param name="protocol" value="azure.AZURE_PING"/>
-                            <param name="properties" value="{storage_account_name=&quot;${jboss.jgroups.azure_ping.storage_account_name}&quot;,storage_access_key=&quot;${jboss.jgroups.azure_ping.storage_access_key}&quot;,container=&quot;${jboss.jgroups.azure_ping.container}&quot;}"/>
+                            <param name="properties" value="{storage_account_name=&quot;${jboss.jgroups.azure_ping.storage_account_name}&quot;,storage_access_key=&quot;${jboss.jgroups.azure_ping.storage_access_key}&quot;,container=&quot;${jboss.jgroups.azure_ping.container}&quot;,register_shutdown_hook=&quot;false&quot;}"/>
                         </feature>
                         <feature spec="subsystem.jgroups.stack.protocol">
                             <param name="protocol" value="MERGE3"/>
@@ -288,7 +288,7 @@
                         </feature>
                         <feature spec="subsystem.jgroups.stack.protocol">
                             <param name="protocol" value="azure.AZURE_PING"/>
-                            <param name="properties" value="{storage_account_name=&quot;${jboss.jgroups.azure_ping.storage_account_name}&quot;,storage_access_key=&quot;${jboss.jgroups.azure_ping.storage_access_key}&quot;,container=&quot;${jboss.jgroups.azure_ping.container}&quot;}"/>
+                            <param name="properties" value="{storage_account_name=&quot;${jboss.jgroups.azure_ping.storage_account_name}&quot;,storage_access_key=&quot;${jboss.jgroups.azure_ping.storage_access_key}&quot;,container=&quot;${jboss.jgroups.azure_ping.container}&quot;,register_shutdown_hook=&quot;false&quot;}"/>
                         </feature>
                         <feature spec="subsystem.jgroups.stack.protocol">
                             <param name="protocol" value="MERGE3"/>
@@ -332,7 +332,7 @@
                         </feature>
                         <feature spec="subsystem.jgroups.stack.protocol">
                             <param name="protocol" value="azure.AZURE_PING"/>
-                            <param name="properties" value="{storage_account_name=&quot;${jboss.jgroups.azure_ping.storage_account_name}&quot;,storage_access_key=&quot;${jboss.jgroups.azure_ping.storage_access_key}&quot;,container=&quot;${jboss.jgroups.azure_ping.container}&quot;}"/>
+                            <param name="properties" value="{storage_account_name=&quot;${jboss.jgroups.azure_ping.storage_account_name}&quot;,storage_access_key=&quot;${jboss.jgroups.azure_ping.storage_access_key}&quot;,container=&quot;${jboss.jgroups.azure_ping.container}&quot;,register_shutdown_hook=&quot;false&quot;}"/>
                         </feature>
                         <feature spec="subsystem.jgroups.stack.protocol">
                             <param name="protocol" value="MERGE3"/>
@@ -428,7 +428,7 @@
                         <feature spec="subsystem.jgroups.stack.protocol">
                             <param name="protocol" value="org.jgroups.protocols.aws.S3_PING"/>
                             <param name="module" value="org.jgroups.aws"/>
-                            <param name="properties" value="{region_name=&quot;${jboss.jgroups.aws.s3_ping.region_name}&quot;,bucket_name=&quot;${jboss.jgroups.aws.s3_ping.bucket_name}&quot;}"/>
+                            <param name="properties" value="{region_name=&quot;${jboss.jgroups.aws.s3_ping.region_name}&quot;,bucket_name=&quot;${jboss.jgroups.aws.s3_ping.bucket_name}&quot;,register_shutdown_hook=&quot;false&quot;}"/>
                         </feature>
                         <feature spec="subsystem.jgroups.stack.protocol">
                             <param name="protocol" value="MERGE3"/>
@@ -473,7 +473,7 @@
                         <feature spec="subsystem.jgroups.stack.protocol">
                             <param name="protocol" value="org.jgroups.protocols.aws.S3_PING"/>
                             <param name="module" value="org.jgroups.aws"/>
-                            <param name="properties" value="{region_name=&quot;${jboss.jgroups.aws.s3_ping.region_name}&quot;,bucket_name=&quot;${jboss.jgroups.aws.s3_ping.bucket_name}&quot;}"/>
+                            <param name="properties" value="{region_name=&quot;${jboss.jgroups.aws.s3_ping.region_name}&quot;,bucket_name=&quot;${jboss.jgroups.aws.s3_ping.bucket_name}&quot;,register_shutdown_hook=&quot;false&quot;}"/>
                         </feature>
                         <feature spec="subsystem.jgroups.stack.protocol">
                             <param name="protocol" value="MERGE3"/>
@@ -568,7 +568,7 @@
                         <feature spec="subsystem.jgroups.stack.protocol">
                             <param name="protocol" value="org.jgroups.protocols.aws.S3_PING"/>
                             <param name="module" value="org.jgroups.aws"/>
-                            <param name="properties" value="{region_name=&quot;${jboss.jgroups.aws.s3_ping.region_name}&quot;,bucket_name=&quot;${jboss.jgroups.aws.s3_ping.bucket_name}&quot;}"/>
+                            <param name="properties" value="{region_name=&quot;${jboss.jgroups.aws.s3_ping.region_name}&quot;,bucket_name=&quot;${jboss.jgroups.aws.s3_ping.bucket_name}&quot;,register_shutdown_hook=&quot;false&quot;}"/>
                         </feature>
                         <feature spec="subsystem.jgroups.stack.protocol">
                             <param name="protocol" value="MERGE3"/>
@@ -613,7 +613,7 @@
                         <feature spec="subsystem.jgroups.stack.protocol">
                             <param name="protocol" value="org.jgroups.protocols.aws.S3_PING"/>
                             <param name="module" value="org.jgroups.aws"/>
-                            <param name="properties" value="{region_name=&quot;${jboss.jgroups.aws.s3_ping.region_name}&quot;,bucket_name=&quot;${jboss.jgroups.aws.s3_ping.bucket_name}&quot;}"/>
+                            <param name="properties" value="{region_name=&quot;${jboss.jgroups.aws.s3_ping.region_name}&quot;,bucket_name=&quot;${jboss.jgroups.aws.s3_ping.bucket_name}&quot;,register_shutdown_hook=&quot;false&quot;}"/>
                         </feature>
                         <feature spec="subsystem.jgroups.stack.protocol">
                             <param name="protocol" value="MERGE3"/>

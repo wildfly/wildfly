@@ -21,7 +21,7 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
-import org.jboss.as.test.clustering.ClusterHttpClientUtil;
+import org.jboss.as.test.clustering.TopologyChangeListenerUtil;
 import org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase;
 import org.jboss.as.test.clustering.single.web.SimpleServlet;
 import org.jboss.as.test.http.util.TestHttpClientUtils;
@@ -150,7 +150,7 @@ public abstract class AbstractImmutableWebFailoverTestCase extends AbstractClust
     }
 
     private void establishTopology(URL baseURL, Set<String> topology) throws URISyntaxException, IOException, InterruptedException {
-        ClusterHttpClientUtil.establishTopology(baseURL, "web", this.deploymentName, topology);
+        TopologyChangeListenerUtil.establishTopology(baseURL, "web", this.deploymentName, topology);
 
         // TODO we should be able to speed this up by observing changes in the routing registry
         // prevents failing assertions when topology information is expected, e.g.:

@@ -86,8 +86,6 @@ They also prepare WildFly instances and resources for respective
 testsuite submodules.
 
 * jpda.profile - sets surefire.jpda.args (debug)
-* ds.profile - sets database properties and prepares the datasource (ds=<db id>)
-** Has related database-specific profiles, like mysql51.profile etc.
 
 Integration testsuite profiles configure surefire executions.
 

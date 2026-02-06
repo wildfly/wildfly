@@ -7,6 +7,8 @@ package org.wildfly.extension.undertow;
 import java.util.Map;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
+import java.util.function.UnaryOperator;
+
 import jakarta.servlet.Servlet;
 
 import io.undertow.server.HttpHandler;
@@ -26,8 +28,7 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StopContext;
 import org.wildfly.extension.requestcontroller.ControlPoint;
 import org.wildfly.extension.requestcontroller.RequestController;
-import org.wildfly.extension.undertow.deployment.ServletRequestCompletionListener;
-import org.wildfly.extension.undertow.deployment.ControlPointHandlerWrapper;
+import org.wildfly.extension.undertow.deployment.ControlPointDeploymentInfoConfigurator;
 
 /**
  * Implementation of WebHost from common web, service starts with few more dependencies than default Host
@@ -54,9 +55,7 @@ final class WebHostService implements Service<WebHost>, WebHost {
     public WebDeploymentController addWebDeployment(final WebDeploymentBuilder webDeploymentBuilder) {
         DeploymentInfo d = new DeploymentInfo();
 
-        if (this.controlPoint != null) {
-            new ServletRequestCompletionListener(this.controlPoint).apply(d);
-        }
+        UnaryOperator<DeploymentInfo> decorator = (this.controlPoint != null) ? new ControlPointDeploymentInfoConfigurator(this.controlPoint, webDeploymentBuilder.getAllowRequestPredicates()) : UnaryOperator.identity();
 
         d.setDeploymentName(webDeploymentBuilder.getContextRoot());
         d.setContextPath(webDeploymentBuilder.getContextRoot());
@@ -80,11 +79,7 @@ final class WebHostService implements Service<WebHost>, WebHost {
             d.addServlet(s);
         }
 
-        if (this.controlPoint != null) {
-            new ControlPointHandlerWrapper(this.controlPoint, webDeploymentBuilder.getAllowRequestPredicates()).apply(d);
-        }
-
-        return new WebDeploymentControllerImpl(d);
+        return new WebDeploymentControllerImpl(decorator.apply(d));
     }
 
     private class WebDeploymentControllerImpl implements WebDeploymentController {

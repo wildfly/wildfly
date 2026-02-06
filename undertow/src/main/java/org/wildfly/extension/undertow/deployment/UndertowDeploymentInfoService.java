@@ -149,6 +149,7 @@ import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
+import java.util.function.UnaryOperator;
 
 import static io.undertow.servlet.api.SecurityInfo.EmptyRoleSemantic.AUTHENTICATE;
 import static io.undertow.servlet.api.SecurityInfo.EmptyRoleSemantic.DENY;
@@ -398,11 +399,6 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
                 deploymentInfo.setMetricsCollector(new UndertowMetricsCollector());
             }
 
-            ControlPoint controlPoint = (this.controlPoint != null) ? this.controlPoint.get() : null;
-            if (controlPoint != null) {
-                new ControlPointHandlerWrapper(controlPoint, this.allowSuspendedRequests).apply(deploymentInfo);
-            }
-
             deploymentInfoConsumer.accept(this.deploymentInfo = deploymentInfo);
         } finally {
             Thread.currentThread().setContextClassLoader(oldTccl);
@@ -476,9 +472,9 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
             deployment.setSessionConfigWrapper(wrapper);
         }
 
-        ControlPoint controlPoint = this.controlPoint != null ? this.controlPoint.get() : null;
-        // ServletRequestCompletionListener must be registered before any application listeners
-        return (controlPoint != null) ? new ServletRequestCompletionListener(controlPoint).apply(deployment) : deployment;
+        UnaryOperator<DeploymentInfo> decorator = this.controlPoint != null ? new ControlPointDeploymentInfoConfigurator(this.controlPoint.get(), this.allowSuspendedRequests) : UnaryOperator.identity();
+
+        return decorator.apply(deployment);
     }
 
     private DeploymentInfo createServletConfig() throws StartException {
