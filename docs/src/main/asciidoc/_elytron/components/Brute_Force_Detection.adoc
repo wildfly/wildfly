@@ -26,8 +26,10 @@ following parameters can be adjusted to tune the operation of the utility.
 before an identity should be temporarily unavailable. [Default: 10]
 * lockout-interval - The time in minutes the identity should be unavailable for
 once the maximum number of attempts is exceeded. [Default: 15]
-* session-timeout - After the most recent failed authentication, how long in
-minutes to keep the session tracking the identity alive. [Default: 30]
+* session-timeout - How long in minutes to keep tracking failed authentication
+attempts for the identity. If tracking for an identity has ended and a new failed
+authentication attempt occurs it will again be tracked, but the tracking will
+treat the attempt as if that was the first failed attempt. [Default: 30]
 * max-cached-sessions - The maximum number of sessions to cache for tracking failed
 authentication attempts. [Default: 25,000]
 
@@ -69,42 +71,42 @@ APIs directly for authentication.
 
 Internally within WildFly Elytron, as authentication attempts occur the mechanisms
 emit events to indicate if an authentication has been successful or not for a
-specific identity, the wrapper realm defined here processes the events as follows.
+specific identity. The wrapper realm defined here processes the events as follows.
 
 Under normal operation, provided there has not previously been a failed
-authentication for an identity events indicating a successful authentication are
+authentication for an identity, events indicating a successful authentication are
 ignored.
 
-Where an event is received indicating a failed authentication attempt this utility
+Where an event is received indicating a failed authentication attempt, this utility
 will first check if a session has been established for the specific identity to
 track failed authentications and if that session does not exist it will be created.
-Within this session the counter tracking the number of failed authentications will
+Within this session a counter tracking the number of failed authentications will
 be incremented.
 
-Once created a session will remain in the cache for the duration of the `session-timeout`
-except where a successful authentication event is received for the identity, in that
+Once created, a session will remain in the cache for the duration of the `session-timeout`
+except where a successful authentication event is received for the identity. In that
 case the session will be discarded. The cache is implemented as a simple LRU cache so
 once the `max-cached-sessions` limit is reached the least recently used session will be
 discarded to make room for a new session. If eviction does occur due to the cache limit
-being reached a WARN message will be logged indicating this has occurred, to avoid spamming
+being reached a WARN message will be logged indicating this has occurred. To avoid spamming
 the logs this message will be logged no more that once every 15 minutes for each realm.
 
 After it has been identified that the number of failed authentications for an
-identity has exceeded the configured `max-failed-attempts` the session will track
+identity has exceeded the configured `max-failed-attempts`, the session will track
 that the identity is disabled for the period defined in `lockout-interval`.
 Repeated attempts after this point will restart the period the identity is locked
 for.
 
 NOTE: For the realms that delegate to other realms such as the `caching-realm`, the
-`distributed-realm`, and the `failover-realm` brute force protection will only occur
-at the first realm in the chain, this is to avoid unpredictable interactions with
+`distributed-realm`, and the `failover-realm`, brute force protection will only occur
+at the first realm in the chain. This is to avoid unpredictable interactions with
 multiple realms applying the protection at once.
 
 During authentication attempts as this utility realm wraps the underlying realm
-it will check for the identity being authenticated if a session already exists
+it will check if a session already exists
 tracking failed authentication attempts for that identity and if so are we
-presently in a lockout period. Where the identity is not presently locked out the
-call will be passed to the wrapped realm for authentication to proceed as normal,
-however if the identity is locked a dummy `RealmIdentity` will be returned for
-authentication that is guaranteed to fail all authentication attempts even if at
+presently in a lockout period. Where the identity is not presently locked out, the
+call will be passed to the wrapped realm for authentication to proceed as normal.
+However, if the identity is locked a dummy `RealmIdentity` will be returned for
+authentication that is guaranteed to fail all authentication attempts -- even if at
 this point the caller supplies valid credentials.
