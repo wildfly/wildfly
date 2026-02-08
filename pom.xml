@@ -422,18 +422,19 @@
         <version.io.reactivex.rxjava3>3.1.12</version.io.reactivex.rxjava3>
         <version.io.smallrye.open-api>4.2.4</version.io.smallrye.open-api>
         <version.io.smallrye.reactive-utils>2.6.0</version.io.smallrye.reactive-utils>
-        <version.io.smallrye.smallrye-config>3.13.4</version.io.smallrye.smallrye-config>
+        <version.io.smallrye.smallrye-config>3.15.0</version.io.smallrye.smallrye-config>
         <version.io.smallrye.smallrye-fault-tolerance>6.10.0</version.io.smallrye.smallrye-fault-tolerance>
         <version.io.smallrye.smallrye-health>4.3.0</version.io.smallrye.smallrye-health>
         <version.io.smallrye.smallrye-jwt>4.3.1</version.io.smallrye.smallrye-jwt>
-        <version.io.smallrye.smallrye-mutiny>2.8.0</version.io.smallrye.smallrye-mutiny>
+        <version.io.smallrye.smallrye-mutiny>3.1.0</version.io.smallrye.smallrye-mutiny>
         <version.io.smallrye.smallrye-mutiny-vertx>3.17.1</version.io.smallrye.smallrye-mutiny-vertx>
         <version.io.smallrye.smallrye-mutiny-zero>1.1.1</version.io.smallrye.smallrye-mutiny-zero>
         <version.io.smallrye.smallrye-opentelemetry>2.11.2</version.io.smallrye.smallrye-opentelemetry>
         <version.io.smallrye.smallrye-stork>2.7.7</version.io.smallrye.smallrye-stork>
-        <version.io.smallrye.smallrye-reactive-messaging>4.30.0</version.io.smallrye.smallrye-reactive-messaging>
+        <version.io.smallrye.smallrye-reactive-messaging>4.32.0</version.io.smallrye.smallrye-reactive-messaging>
         <version.io.undertow.jastow>2.2.9.Final</version.io.undertow.jastow>
         <version.io.vertx.vertx>4.5.24</version.io.vertx.vertx>
+        <version.io.vertx.vertx-kafka-client>4.4.9</version.io.vertx.vertx-kafka-client>
         <version.jakarta.activation.jakarta.activation-api>2.1.4</version.jakarta.activation.jakarta.activation-api>
         <version.jakarta.annotation.jakarta-annotation-api>2.1.1</version.jakarta.annotation.jakarta-annotation-api>
         <version.jakarta.batch.jakarta.batch-api>2.1.1</version.jakarta.batch.jakarta.batch-api>
@@ -470,8 +471,8 @@
         <version.org.apache.cxf.xjcplugins>4.1.0</version.org.apache.cxf.xjcplugins>
         <version.org.apache.httpcomponents.httpasyncclient>4.1.5</version.org.apache.httpcomponents.httpasyncclient>
         <version.org.apache.james.apache-mime4j>0.8.13</version.org.apache.james.apache-mime4j>
-        <version.org.apache.kafka>3.9.1</version.org.apache.kafka>
-        <version.org.apache.kafka.test-image>3.8.0</version.org.apache.kafka.test-image>
+        <version.org.apache.kafka>4.1.1</version.org.apache.kafka>
+        <version.org.apache.kafka.test-image>4.1.1</version.org.apache.kafka.test-image>
         <version.org.apache.lucene>9.11.1</version.org.apache.lucene>
         <version.org.apache.neethi>3.2.1</version.org.apache.neethi>
         <version.org.apache.qpid.proton>0.34.1</version.org.apache.qpid.proton>
