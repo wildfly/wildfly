@@ -13,6 +13,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.UUID;
 import org.apache.commons.io.FileUtils;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
@@ -64,7 +65,8 @@ public class CachingFilesystemRealmTestCase {
     private static final String PASSWORD_C = "passwordC";
 
     private static final String TARGET_FOLDER = System.getProperty("project.build.directory", "target");
-    private static final String FILESYSTEM_REALM_PATH = TARGET_FOLDER + File.separator + NAME;
+    // Initialized in setup() with a unique directory per test run to avoid issues with locked files from previous runs on Windows OS
+    private static String filesystemRealmPath;
 
     @Deployment(name = DEPLOYMENT_NAME)
     public static WebArchive createDeployment() {
@@ -206,13 +208,14 @@ public class CachingFilesystemRealmTestCase {
         static final String HTTP_AUTH_FACTORY = "httpAuthFactory-" + NAME;
 
         @Override
-        public void setup(ManagementClient managementClient, java.lang.String s) throws Exception {
+        public void setup(ManagementClient managementClient, String s) throws Exception {
+            filesystemRealmPath = TARGET_FOLDER + File.separator + NAME + "-" + UUID.randomUUID();
             configureServer();
             prepareFilesystemUsers();
         }
 
         @Override
-        public void tearDown(ManagementClient managementClient, java.lang.String s) throws Exception {
+        public void tearDown(ManagementClient managementClient, String s) throws Exception {
             try (CLIWrapper cli = new CLIWrapper(true)) {
                 cli.sendLine(String.format("/subsystem=undertow/application-security-domain=%s:remove()", SECURITY_DOMAIN));
                 cli.sendLine(String.format("/subsystem=elytron/http-authentication-factory=%s:remove()", HTTP_AUTH_FACTORY));
@@ -222,14 +225,14 @@ public class CachingFilesystemRealmTestCase {
                 cli.sendLine(String.format("/subsystem=elytron/filesystem-realm=%s:remove()", FILESYSTEM_REALM2));
             }
             ServerReload.reloadIfRequired(managementClient);
-            FileUtils.deleteDirectory(new File(FILESYSTEM_REALM_PATH));
+            FileUtils.deleteDirectory(new File(filesystemRealmPath));
         }
 
         private static void configureServer() {
             try (CLIWrapper cli =  new CLIWrapper(true)) {
-                cli.sendLine(String.format("/subsystem=elytron/filesystem-realm=%s:add(path=%s)", FILESYSTEM_REALM, FILESYSTEM_REALM_PATH));
+                cli.sendLine(String.format("/subsystem=elytron/filesystem-realm=%s:add(path=%s)", FILESYSTEM_REALM, filesystemRealmPath));
                 // Passwords and attributes have to be changed through another filesystem-realm for the cache not to be updated
-                cli.sendLine(String.format("/subsystem=elytron/filesystem-realm=%s:add(path=%s)", FILESYSTEM_REALM2, FILESYSTEM_REALM_PATH));
+                cli.sendLine(String.format("/subsystem=elytron/filesystem-realm=%s:add(path=%s)", FILESYSTEM_REALM2, filesystemRealmPath));
                 cli.sendLine(String.format("/subsystem=elytron/caching-realm=%s:add(realm=%s, maximum-entries=2)", CACHING_REALM, FILESYSTEM_REALM));
                 cli.sendLine(String.format("/subsystem=elytron/security-domain=%1$s:add(realms=[{realm=%2$s, role-decoder=groups-to-roles}], "
                         + "default-realm=%2$s, permission-mapper=default-permission-mapper)", SECURITY_DOMAIN, CACHING_REALM));
