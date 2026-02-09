@@ -89,7 +89,7 @@ case the session will be discarded. The cache is implemented as a simple LRU cac
 once the `max-cached-sessions` limit is reached the least recently used session will be
 discarded to make room for a new session. If eviction does occur due to the cache limit
 being reached a WARN message will be logged indicating this has occurred. To avoid spamming
-the logs this message will be logged no more that once every 15 minutes for each realm.
+the logs this message will be logged no more than once every 15 minutes for each realm.
 
 After it has been identified that the number of failed authentications for an
 identity has exceeded the configured `max-failed-attempts`, the session will track
@@ -103,7 +103,7 @@ at the first realm in the chain. This is to avoid unpredictable interactions wit
 multiple realms applying the protection at once.
 
 During authentication attempts as this utility realm wraps the underlying realm
-it will check if a session already exists
+it will check if a session already exists that is
 tracking failed authentication attempts for that identity and if so are we
 presently in a lockout period. Where the identity is not presently locked out, the
 call will be passed to the wrapped realm for authentication to proceed as normal.
