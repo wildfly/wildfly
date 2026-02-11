@@ -1,18 +1,10 @@
 name: Build with Upstream Undertow and WildFly Core Snapshots for WFLY-21381
 
+
 on:
-  workflow_dispatch:
-    inputs:
-      undertow-branch:
-        description: "Undertow Branch"
-        required: true
-        default: "2.4.x"
-        type: string
-      wildfly-core-branch:
-        description: "WildFly Core Branch"
-        required: true
-        default: "main"
-        type: string
+  push:
+    branches:
+      - WFLY-21381
 
 jobs:
   build-undertow:
@@ -24,7 +16,7 @@ jobs:
         uses: actions/checkout@v6
         with:
           repository: undertow-io/undertow
-          ref: ${{ inputs.undertow-branch }}
+          ref: 2.4.x
       
       - name: Set up JDK 17
         uses: actions/setup-java@v5
@@ -62,7 +54,7 @@ jobs:
         uses: actions/checkout@v6
         with:
           repository: wildfly/wildfly-core
-          ref: ${{ inputs.wildfly-core-branch }}
+          ref: main
       
       - name: Download Undertow Maven Repository
         uses: actions/download-artifact@v6
