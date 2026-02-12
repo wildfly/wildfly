@@ -5,6 +5,7 @@
 
 package org.jboss.as.test.integration.jpa.hibernate.classfiletransformertest;
 
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import javax.naming.InitialContext;
@@ -74,10 +75,10 @@ public class ClassFileTransformerTestCase {
     }
 
     @Test
-    public void testHibernateByteCodeEnhancementIsEnabledByDefault() {
+    public void testHibernateByteCodeEnhancementIsDisabledByDefault() {
         // Note: ManagedTypeHelper is an internal Hibernate ORM class, if it is removed or renamed then this test can be updated
         // accordingly.
-        assertTrue("Employee class is bytecode enhanced by default", org.hibernate.engine.internal.ManagedTypeHelper.isManagedType(Employee.class));
+        assertFalse("Employee class is not bytecode enhanced", org.hibernate.engine.internal.ManagedTypeHelper.isManagedType(Employee.class));
     }
 
 }
