@@ -3,8 +3,10 @@
   ~ SPDX-License-Identifier: Apache-2.0
   -->
 
-<subsystem xmlns="urn:jboss:domain:undertow:14.0" default-server="default-server" default-servlet-container="default-container" default-virtual-host="default-host" instance-id="foo">
+<subsystem xmlns="urn:jboss:domain:undertow:15.0" default-server="default-server" default-servlet-container="default-container" default-virtual-host="default-host" instance-id="foo">
+    <byte-buffer-pool name="default" thread-local-cache-size="45" buffer-size="1000" direct="false" leak-detection-percent="50" max-pool-size="1000"/>
     <server name="default-server" default-host="default-host">
+        <ajp-listener name="ajp" allowed-request-attributes-pattern="test" socket-binding="ajp"/>
         <host name="default-host"/>
     </server>
     <servlet-container name="default-container"/>
