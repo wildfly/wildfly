@@ -293,6 +293,12 @@
         <dependency>
             <groupId>org.jboss.galleon</groupId>
             <artifactId>galleon-core</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
             <scope>provided</scope>
         </dependency>
 
