@@ -412,7 +412,7 @@
         <version.io.github.resilience4j>2.3.0</version.io.github.resilience4j>
         <version.io.grpc>1.70.0</version.io.grpc>
         <version.io.micrometer>1.15.8</version.io.micrometer>
-        <version.io.netty>4.1.130.Final</version.io.netty>
+        <version.io.netty>4.1.131.Final</version.io.netty>
         <version.io.opentelemetry.instrumentation>2.14.0</version.io.opentelemetry.instrumentation>
         <version.io.opentelemetry.opentelemetry-semconv>1.32.0</version.io.opentelemetry.opentelemetry-semconv>
         <version.io.opentelemetry.opentelemetry>1.48.0</version.io.opentelemetry.opentelemetry>
