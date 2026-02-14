@@ -35,6 +35,10 @@
         <glow.phase.observability>none</glow.phase.observability>
         <glow.phase.sar>none</glow.phase.sar>
         <glow.phase.jakarta.data>none</glow.phase.jakarta.data>
+
+        <!-- Annotation processor version used by the maven-compile plugin.
+             Overridden in a profile for EE 11 testing -->
+        <version.org.hibernate.jpamodelgen>${version.org.hibernate}</version.org.hibernate.jpamodelgen>
     </properties>
 
     <dependencies>
@@ -466,7 +470,7 @@
                                      like org.wildfly.bom:wildfly-ee that includes this artifact.
                                      Perhaps it should switch; if it does this version config
                                      could be removed. -->
-                                <version>${version.org.hibernate}</version>
+                                <version>${version.org.hibernate.jpamodelgen}</version>
                             </path>
                         </annotationProcessorPaths>
                     </configuration>
@@ -604,16 +608,9 @@
                         <goals>
                             <goal>scan</goal>
                         </goals>
-                        <!--<phase>${glow.phase.jakarta.data}</phase>-->
-                        <!--
-                        Glow Arquillian plugin generates a provisioning.xml that doesn't
-                        provision preview stability artifacts, so this doesn't work.
-                        See https://github.com/wildfly/wildfly-glow/issues/134
-                        Leave all the config here to ease promotion to community stability.
-                        -->
-                        <phase>none</phase>
+                        <phase>${glow.phase.jakarta.data}</phase>
                         <configuration>
-                            <expected-discovery>[cdi, ee-integration, h2-datasource, jakarta-data, jaxrs, jpa, jsonb, jsonp]==>ee-core-profile-server,h2-datasource,jakarta-data,jaxrs</expected-discovery>
+                            <expected-discovery>[cdi, ee-integration, h2-datasource, jakarta-data, jaxrs, jpa, jsonb, jsonp, transactions]==>ee-core-profile-server,h2-datasource,jakarta-data,jaxrs</expected-discovery>
                             <surefire-execution-for-included-classes>jakarta-data-layers.surefire</surefire-execution-for-included-classes>
                         </configuration>
                     </execution>
@@ -861,14 +858,7 @@
                                 <goals>
                                     <goal>provision</goal>
                                 </goals>
-                                <!--<phase>process-test-classes</phase>-->
-                                <!--
-                                Glow Arquillian plugin generates a provisioning.xml that doesn't
-                                provision preview stability artifacts, so this doesn't work.
-                                See https://github.com/wildfly/wildfly-glow/issues/134
-                                Leave all the config here to ease promotion to community stability.
-                                -->
-                                <phase>none</phase>
+                                <phase>process-test-classes</phase>
                                 <configuration>
                                     <provisioning-dir>${project.build.directory}/wildfly-jakarta-data</provisioning-dir>
                                     <record-provisioning-state>false</record-provisioning-state>
@@ -942,14 +932,7 @@
                             <!-- Tests against the install with jakarta data support -->
                             <execution>
                                 <id>jakarta-data-layers.surefire</id>
-                                <!--<phase>test</phase>-->
-                                <!--
-                                Glow Arquillian plugin generates a provisioning.xml that doesn't
-                                provision preview stability artifacts, so this doesn't work.
-                                See https://github.com/wildfly/wildfly-glow/issues/134
-                                Leave all the config here to ease promotion to community stability.
-                                -->
-                                <phase>none</phase>
+                                <phase>test</phase>
                                 <goals>
                                     <goal>test</goal>
                                 </goals>
@@ -963,6 +946,7 @@
                                         <!-- Override the standard module path that points at the shared module set from dist -->
                                         <module.path>${project.build.directory}/wildfly-jakarta-data/modules${path.separator}${basedir}/target/modules</module.path>
                                         <jboss.server.config.file.name>standalone.xml</jboss.server.config.file.name>
+                                        <jboss.args>${jboss.args} --stability=preview</jboss.args>
                                     </systemPropertyVariables>
                                     <environmentVariables>
                                         <JBOSS_HOME>${project.build.directory}/wildfly-jakarta-data</JBOSS_HOME>
@@ -1188,33 +1172,17 @@
         </profile>
 
         <profile>
-            <id>no.jakarta.data.preview.profile</id>
+            <id>jakarta.data.preview.profile</id>
             <activation>
                 <property>
                     <name>preview-server-tests</name>
                 </property>
             </activation>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-compiler-plugin</artifactId>
-                        <executions>
-                            <execution>
-                                <id>default-testCompile</id>
-                                <configuration>
-                                    <testExcludes>
-                                        <!-- The classes generated with the standard WF hibernate-jpamodelgen
-                                             won't run with WFP's ORM version -->
-                                        <exclude>org/jboss/as/test/smoke/jakarta/data/**</exclude>
-                                    </testExcludes>
-                                </configuration>
-                            </execution>
-                        </executions>
-                    </plugin>
-                </plugins>
-            </build>
-
+            <properties>
+                <!-- Use the version of the hibernate-jpamodelgen annotation processor
+                     that aligns with the ORM version in WildFly Preview. -->
+                <version.org.hibernate.jpamodelgen>${version.org.hibernate.preview}</version.org.hibernate.jpamodelgen>
+            </properties>
         </profile>
     </profiles>
 

@@ -82,7 +82,7 @@ public class JakartaDataEarTestCase {
 
         @Override
         public void setup(ManagementClient client, String containerId) throws Exception {
-            if (noneOf("ts.layers", "ts.bootable", "ts.bootable.preview")) {
+            if (noneOf("ts.layers", "ts.bootable", "ts.bootable.preview", "ts.preview")) {
                 super.setup(client, containerId);
             }
         }
