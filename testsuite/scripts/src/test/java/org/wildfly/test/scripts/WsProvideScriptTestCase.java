@@ -8,9 +8,9 @@ package org.wildfly.test.scripts;
 /**
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
-public class WsProduceScriptTestCase extends ScriptTestCase {
+public class WsProvideScriptTestCase extends ScriptTestCase {
 
-    public WsProduceScriptTestCase() {
-        super("wsconsume");
+    public WsProvideScriptTestCase() {
+        super("wsprovide");
     }
 }
