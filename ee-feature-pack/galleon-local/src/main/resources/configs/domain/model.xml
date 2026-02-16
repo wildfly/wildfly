@@ -25,6 +25,7 @@
         <package name="cleanup.domain.servers.dir" optional="true"/>
         <package name="cleanup.domain.log.dir" optional="true"/>
         <package name="cleanup.domain.data.dir" optional="true"/>
+        <package name="cleanup.domain.tmp.dir" optional="true"/>
         <!-- Unstable API Annotation Index -->
         <package name="unstable-api-annotation-index.wildfly-ee-feature-pack" optional="true" valid-for-stability="preview"/>
         <package name="org.wildfly.unstable.annotation.api.indexer" optional="true" valid-for-stability="preview" />
