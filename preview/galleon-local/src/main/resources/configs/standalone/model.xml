@@ -25,7 +25,7 @@
         <package name="cleanup.standalone.config.history.dir" optional="true"/>
         <package name="cleanup.standalone.log.dir" optional="true"/>
         <package name="cleanup.standalone.data.dir" optional="true"/>
-        <package name="cleanup.standalone.tmp.vfs" optional="true"/>
+        <package name="cleanup.standalone.tmp" optional="true"/>
 
         <package name="org.wildfly.bootable-jar" optional="true"/>
         <package name="org.wildfly.embedded"/>
