@@ -24,13 +24,9 @@
     <packaging>jar</packaging>
 
     <name>WildFly Test Suite: Shared</name>
-
-    <properties>
-        <!-- Don't try to deploy the module -->
-        <maven.deploy.skip>true</maven.deploy.skip>
-        <skipNexusStagingDeployMojo>true</skipNexusStagingDeployMojo>
-        <skipPublishing>${maven.deploy.skip}</skipPublishing>
-    </properties>
+    <description>
+        Test utilities for shared used across testsuite modules in the main WildFly repo. Not for use elsewhere.
+    </description>
 
     <dependencyManagement>
         <dependencies>
