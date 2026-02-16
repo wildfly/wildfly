@@ -4,6 +4,7 @@
  */
 package org.jboss.as.ee.concurrent;
 
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
@@ -36,21 +37,26 @@ class IdentityAwareProxyInvocationHandler extends ContextProxyInvocationHandler 
 
     @Override
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-        if (securityIdentity != null) {
-            try {
-                return securityIdentity.runAs((PrivilegedExceptionAction<Object>) (() -> {
-                    try {
-                        return super.invoke(proxy, method, args);
-                    } catch (Throwable e) {
-                        throw new WrapperException(e);
-                    }
-                }));
-            } catch (PrivilegedActionException e) {
-                Throwable cause = e.getCause();
-                throw cause instanceof WrapperException ? cause.getCause() : cause;
+        try {
+            if (securityIdentity != null) {
+                try {
+                    return securityIdentity.runAs((PrivilegedExceptionAction<Object>) (() -> {
+                        try {
+                            return super.invoke(proxy, method, args);
+                        } catch (Throwable e) {
+                            throw new WrapperException(e);
+                        }
+                    }));
+                } catch (PrivilegedActionException e) {
+                    Throwable cause = e.getCause();
+                    throw cause instanceof WrapperException ? cause.getCause() : cause;
+                }
+            } else {
+                return super.invoke(proxy, method, args);
             }
-        } else {
-            return super.invoke(proxy, method, args);
+        } catch (InvocationTargetException e) {
+            // WFLY-21469 rethrow the original exception, not InvocationTargetException
+            throw e.getCause();
         }
     }
 
