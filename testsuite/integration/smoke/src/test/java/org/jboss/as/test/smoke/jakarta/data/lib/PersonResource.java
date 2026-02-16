@@ -6,6 +6,7 @@
 package org.jboss.as.test.smoke.jakarta.data.lib;
 
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Optional;
 
 import jakarta.inject.Inject;
@@ -41,5 +42,11 @@ public class PersonResource {
     @Produces(MediaType.APPLICATION_JSON)
     public Person recruit(@PathParam("name") String name, @QueryParam("birthday") String birthday) {
         return recruiter.recruit(name, LocalDate.parse(birthday));
+    }
+
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    public List<Person> getAll() {
+        return recruiter.findAllPeople();
     }
 }
