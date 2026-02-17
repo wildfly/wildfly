@@ -271,7 +271,7 @@ public class ModClusterDefinition extends AbstractFilterDefinition {
             .setRestartAllServices()
             .setAllowExpression(true)
             .setMeasurementUnit(MeasurementUnit.BYTES)
-            .setDefaultValue(new ModelNode(Http2Channel.DEFAULT_INITIAL_WINDOW_SIZE))
+            .setDefaultValue(new ModelNode(UndertowOptions.DEFAULT_HTTP2_SETTINGS_INITIAL_WINDOW_SIZE))
             .setValidator(new IntRangeValidator(1))
             .build();
 
