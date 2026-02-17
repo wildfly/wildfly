@@ -101,9 +101,7 @@ public class OrphanSession implements Session {
         return this.id;
     }
 
-    /*
-     * New method in io.undertow.server.session.Session that can add the @Override annotation when Undertow is upgraded
-     */
+    @Override
     public boolean isInvalid() {
         return false;
     }

@@ -402,9 +402,7 @@ public class ControlPointDeploymentInfoConfigurator implements UnaryOperator<Dep
             return this.session.changeSessionId(exchange, config);
         }
 
-        /*
-         * New method in io.undertow.server.session.Session that can add the @Override annotation when Undertow is upgraded
-         */
+        @Override
         public boolean isInvalid() {
             // TODO Delegate method call following Undertow upgrade.
             try {
