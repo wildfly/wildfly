@@ -432,6 +432,9 @@
         <version.io.smallrye.smallrye-opentelemetry>2.11.2</version.io.smallrye.smallrye-opentelemetry>
         <version.io.smallrye.smallrye-stork>2.7.7</version.io.smallrye.smallrye-stork>
         <version.io.smallrye.smallrye-reactive-messaging>4.32.1</version.io.smallrye.smallrye-reactive-messaging>
+        <!-- TODO (jrp) temporary override until the new version of Undertow is integrated into core and that version of core is integrated here -->
+        <version.io.undertow>2.4.0.Beta1</version.io.undertow>
+        <version.io.undertow.ee>1.0.0.Beta1</version.io.undertow.ee>
         <version.io.undertow.jastow>2.2.9.Final</version.io.undertow.jastow>
         <version.io.vertx.vertx>4.5.25</version.io.vertx.vertx>
         <version.io.vertx.vertx-kafka-client>4.4.9</version.io.vertx.vertx-kafka-client>
