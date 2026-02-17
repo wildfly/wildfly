@@ -134,4 +134,9 @@ public abstract class AbstractSession implements io.undertow.server.session.Sess
     public void invalidate(HttpServerExchange exchange) {
         this.reference.get().invalidate();
     }
+
+    @Override
+    public boolean isInvalid() {
+        return !this.reference.get().isValid();
+    }
 }
