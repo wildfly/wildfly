@@ -68,7 +68,7 @@
         <!-- The ORM version is controlled in the root pom because we need to use its value in contexts not controlled by this bom -->
         <version.org.hibernate>${version.org.hibernate.preview}</version.org.hibernate>
         <version.org.hibernate.models>1.0.1</version.org.hibernate.models>
-        <version.org.hibernate.search>8.2.0.Final</version.org.hibernate.search>
+        <version.org.hibernate.search>8.2.2.Final</version.org.hibernate.search>
         <version.org.hibernate.validator>9.1.0.Final</version.org.hibernate.validator>
         <version.org.wildfly.security.jakarta.elytron-ee>4.0.0.Beta4</version.org.wildfly.security.jakarta.elytron-ee>
     </properties>
