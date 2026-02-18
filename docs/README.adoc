@@ -93,6 +93,10 @@ command.
 asciidoctor index.adoc archives.adoc
 ----
 
+=== Update publish GitHub pages workflow
+
+In your `wildfly.github.io` checkout, edit the `.github/workflows/jekyll-gh-pages.yml` file and update the `WILDFLY_DOC_DIR_VERSION_TO_SCAN` environment variable with the value of the new documentation version directory (for example, `16` for WildFly 16). The value of this variable indicates the new documentation directory that needs to be scanned to prepare the pre-built search index.
+
 === Update the Docs sitemap
 
 In your `wildfly.github.io` checkout, edit the `sitemap.xml` file. In all lines with URLs that include the previous WildFly version, update to the new WildFly version.
