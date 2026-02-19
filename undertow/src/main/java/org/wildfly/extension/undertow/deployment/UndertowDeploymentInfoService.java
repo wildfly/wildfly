@@ -995,6 +995,8 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
 
             d.setPreservePathOnForward(servletContainer.isPreservePathOnForward());
 
+            d.setDefaultAsyncConextTimeout(servletContainer.getDefaultAsyncContextTimeout());
+
             return d;
         } catch (ClassNotFoundException e) {
             throw new StartException(e);
