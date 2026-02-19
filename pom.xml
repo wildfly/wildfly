@@ -306,7 +306,7 @@
         <version.org.wildfly.common>1.6.0.Final</version.org.wildfly.common>
         <version.org.wildfly.galleon-plugins>8.1.0.Final</version.org.wildfly.galleon-plugins>
         <version.org.wildfly.glow>1.5.2.Final</version.org.wildfly.glow>
-        <version.org.wildfly.licenses.plugin>2.4.3.Final</version.org.wildfly.licenses.plugin>
+        <version.org.wildfly.licenses.plugin>2.4.4.Final</version.org.wildfly.licenses.plugin>
         <version.org.wildfly.plugin>6.0.0.Beta2</version.org.wildfly.plugin>
         <version.org.wildfly.unstable.annotation.api>1.0.2.Final</version.org.wildfly.unstable.annotation.api>
         <version.org.wildfly.wildfly-channel-plugin>1.0.30</version.org.wildfly.wildfly-channel-plugin>
