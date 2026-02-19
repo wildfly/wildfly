@@ -9,9 +9,9 @@ import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.test.shared.ManagementServerSetupTask;
-import org.jboss.as.test.shared.SnapshotRestoreSetupTask;
 import org.jboss.shrinkwrap.api.Archive;
 import org.junit.runner.RunWith;
+import org.wildfly.test.stabilitylevel.StabilityServerSetupSnapshotRestoreTasks;
 
 /**
  * Validates the correctness of session passivation events for a distributed session manager using a local,
@@ -21,8 +21,8 @@ import org.junit.runner.RunWith;
  */
 @RunWith(Arquillian.class)
 @ServerSetup({
-        SnapshotRestoreSetupTask.class, // MUST be first!
-        LocalIdleThresholdDefaultSessionManagerSessionPassivationTestCase.ServerSetupTask.class
+        StabilityServerSetupSnapshotRestoreTasks.Community.class,
+        LocalIdleThresholdDefaultSessionManagerSessionPassivationTestCase.ServerSetupTask.class,
 })
 public class LocalIdleThresholdDefaultSessionManagerSessionPassivationTestCase extends LocalIdleThresholdSessionPassivationTestCase {
 
