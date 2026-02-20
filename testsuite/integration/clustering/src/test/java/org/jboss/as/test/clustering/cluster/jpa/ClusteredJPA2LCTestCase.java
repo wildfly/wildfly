@@ -20,6 +20,7 @@ import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.test.clustering.ClusterDatabaseTestUtil;
 import org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase;
+import org.jboss.as.test.shared.IntermittentFailure;
 import org.jboss.as.test.shared.ManagementServerSetupTask;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -65,6 +66,7 @@ public class ClusteredJPA2LCTestCase extends AbstractClusteringTestCase {
     @BeforeClass
     public static void beforeClass() throws Exception {
         ClusterDatabaseTestUtil.startH2();
+        IntermittentFailure.thisTestIsFailingIntermittently("https://issues.redhat.com/browse/WFLY-21506");
     }
 
     @AfterClass
