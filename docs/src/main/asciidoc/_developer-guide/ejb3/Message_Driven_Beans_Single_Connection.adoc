@@ -1,0 +1,123 @@
+[[Message_Driven_Beans_Single_Connection]]
+= Message Driven Beans singleConnection Activation Config Property
+
+== Overview
+
+The `singleConnection` activation configuration property controls how Message-Driven Beans (MDBs) manage JMS connections when multiple concurrent sessions are configured.
+It works in conjunction with the `maxSession` property (which specifies the maximum number of concurrent JMS sessions) to determine the connection topology.
+
+By default (`singleConnection` set to false), there is a one-to-one mapping between sessions and connections, so you will have as many connections opened as sessions defined.
+
+
+== Behavior
+
+* *`true`*: All MDB sessions share a single JMS connection (note: load cannot be balanced across multiple connections)
+* *`false` (default)*: Each MDB session creates its own dedicated JMS connection
+
+== Configuration
+
+=== Basic Usage
+
+[source,java]
+----
+@MessageDriven(
+    activationConfig = {
+        @ActivationConfigProperty(propertyName = "destinationLookup", propertyValue = "jms/queue/myQueue"),
+        @ActivationConfigProperty(propertyName = "maxSession", propertyValue = "15"),
+        @ActivationConfigProperty(propertyName = "singleConnection", propertyValue = "true")
+    }
+)
+public class MyMDB implements MessageListener {
+    @Override
+    public void onMessage(Message message) {
+        // Process message
+    }
+}
+----
+
+=== With Expression Support
+
+The property supports expression resolution, allowing runtime configuration via system properties:
+
+[source,java]
+----
+@MessageDriven(
+    activationConfig = {
+        @ActivationConfigProperty(propertyName = "destinationLookup", propertyValue = "jms/queue/myQueue"),
+        @ActivationConfigProperty(propertyName = "maxSession", propertyValue = "15"),
+        @ActivationConfigProperty(propertyName = "singleConnection", propertyValue = "${mdb.single.connection:true}")
+    }
+)
+public class ConfigurableMDB implements MessageListener {
+    // ...
+}
+----
+
+To override at runtime:
+[source,bash]
+----
+./standalone.sh -Dmdb.single.connection=false
+----
+
+== Examples
+
+=== Example 1: Single Connection (Resource Efficient)
+
+[source,java]
+----
+@MessageDriven(
+    activationConfig = {
+        @ActivationConfigProperty(propertyName = "destinationLookup", propertyValue = "jms/queue/orders"),
+        @ActivationConfigProperty(propertyName = "maxSession", propertyValue = "20"),
+        @ActivationConfigProperty(propertyName = "singleConnection", propertyValue = "true")
+    }
+)
+public class OrderProcessorMDB implements MessageListener {
+    // Result: 1 connection, 20 sessions
+}
+----
+
+*Resource Usage*:
+
+* JMS Connections: 1
+* JMS Sessions: 20
+
+=== Example 2: Multiple Connections (Isolation)
+
+[source,java]
+----
+@MessageDriven(
+    activationConfig = {
+        @ActivationConfigProperty(propertyName = "destinationLookup", propertyValue = "jms/queue/orders"),
+        @ActivationConfigProperty(propertyName = "maxSession", propertyValue = "20"),
+        @ActivationConfigProperty(propertyName = "singleConnection", propertyValue = "false")
+    }
+)
+public class IsolatedOrderProcessorMDB implements MessageListener {
+    // Result: 20 connections, 20 sessions
+}
+----
+
+*Resource Usage*:
+
+* JMS Connections: 20
+* JMS Sessions: 20
+
+== When to Use Each Setting
+
+=== Use `singleConnection=true` when:
+
+* ✅ You want to minimize resource consumption on the messaging broker
+* ✅ Connection pooling overhead should be minimized
+* ✅ The messaging workload is standard request/response processing
+* ✅ Load balancing across connections is not required
+
+[NOTE]
+Since there is a single connection to the broker that means that the load cannot be balanced.
+
+=== Use `singleConnection=false` when:
+
+* ✅ You need connection-level isolation between sessions
+* ✅ You need to distribute load across multiple broker connections (load balancing)
+* ✅ Your broker has connection-specific rate limiting or quotas
+* ✅ Debugging connection-specific issues

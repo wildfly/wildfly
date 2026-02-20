@@ -194,6 +194,13 @@ include::ejb3/Message_Driven_Beans_Controlled_Delivery.adoc[]
 
 :leveloffset: -3
 
+:leveloffset: +3
+
+include::ejb3/Message_Driven_Beans_Single_Connection.adoc[]
+
+:leveloffset: -3
+
+
 [[timer-service]]
 === Timer service
 
