@@ -124,9 +124,6 @@ import jakarta.servlet.http.HttpServletRequest;
 
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.net.InetSocketAddress;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
@@ -293,11 +290,11 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
             if(sharedSessionManagerConfig != null && sharedSessionManagerConfig.getSessionConfig() != null) {
                 sessionConfig = sharedSessionManagerConfig.getSessionConfig();
             }
-            ReflectiveServletSessionConfig config = null;
+            ServletSessionConfig config = null;
             //default session config
             CookieConfig defaultSessionConfig = container.get().getSessionCookieConfig();
             if (defaultSessionConfig != null) {
-                config = new ReflectiveServletSessionConfig();
+                config = new ServletSessionConfig();
                 if (defaultSessionConfig.getName() != null) {
                     config.setName(defaultSessionConfig.getName());
                 }
@@ -326,7 +323,7 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
                 }
                 CookieConfigMetaData cookieConfig = sessionConfig.getCookieConfig();
                 if (config == null) {
-                    config = new ReflectiveServletSessionConfig();
+                    config = new ServletSessionConfig();
                 }
                 if (cookieConfig != null) {
                     if (cookieConfig.getName() != null) {
@@ -363,8 +360,7 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
                 deploymentInfo.setDefaultSessionTimeout(container.get().getDefaultSessionTimeout() * 60);
             }
             if (config != null) {
-                //deploymentInfo.setServletSessionConfig(config);
-                config.storeInDeploymentInfo(deploymentInfo); // temp workaround
+                deploymentInfo.setServletSessionConfig(config);
             }
 
             for (final SetupAction action : setupActions) {
@@ -1433,89 +1429,6 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
                     UndertowThreadSetupAction.this.action.teardown(Collections.emptyMap());
                 }
             };
-        }
-    }
-
-    /**
-     * Temporary reflective workaround to deal with the fact that ServletSessionConfig
-     * is binary-incompatible in the Undertow versions used for EE 10 and EE 11.
-     */
-    private static class ReflectiveServletSessionConfig {
-        private static final Constructor<?> CONSTRUCTOR;
-        private static final Method SET_NAME;
-        private static final Method SET_DOMAIN;
-        private static final Method SET_HTTP_ONLY;
-        private static final Method SET_SECURE;
-        private static final Method SET_MAX_AGE;
-        private static final Method SET_PATH;
-        private static final Method SET_SESSION_TRACKING_MODES;
-        private static final Method SET_SERVLET_SESSION_CONFIG;
-
-        static {
-            Class<?> ssc = ServletSessionConfig.class;
-            try {
-                CONSTRUCTOR = ssc.getConstructor();
-                SET_NAME = ssc.getMethod("setName", String.class);
-                SET_DOMAIN = ssc.getMethod("setDomain", String.class);
-                SET_PATH = ssc.getMethod("setPath", String.class);
-                SET_HTTP_ONLY = ssc.getMethod("setHttpOnly", boolean.class);
-                SET_SECURE = ssc.getMethod("setSecure", boolean.class);
-                SET_MAX_AGE = ssc.getMethod("setMaxAge", int.class);
-                SET_SESSION_TRACKING_MODES = ssc.getMethod("setSessionTrackingModes", Set.class);
-                SET_SERVLET_SESSION_CONFIG = DeploymentInfo.class.getMethod("setServletSessionConfig", ssc);
-            } catch (NoSuchMethodException e) {
-                throw new RuntimeException(e);
-            }
-        }
-
-        private final Object target;
-
-        ReflectiveServletSessionConfig() {
-            try {
-                target = CONSTRUCTOR.newInstance();
-            } catch (InstantiationException | IllegalAccessException | InvocationTargetException e) {
-                throw new RuntimeException(e);
-            }
-        }
-
-        void storeInDeploymentInfo(DeploymentInfo deploymentInfo) {
-            invoke(SET_SERVLET_SESSION_CONFIG, deploymentInfo, target);
-        }
-
-        void setName(String name) {
-            invoke(SET_NAME, target, name);
-        }
-
-        void setDomain(String domain) {
-            invoke(SET_DOMAIN, target, domain);
-        }
-
-        void setHttpOnly(boolean httpOnly) {
-            invoke(SET_HTTP_ONLY, target, httpOnly);
-        }
-
-        void setSecure(boolean secure) {
-            invoke(SET_SECURE, target, secure);
-        }
-
-        void setMaxAge(int maxAge) {
-            invoke(SET_MAX_AGE, target, maxAge);
-        }
-
-        void setPath(String path) {
-            invoke(SET_PATH, target, path);
-        }
-
-        void setSessionTrackingModes(final Set<SessionTrackingMode> sessionTrackingModes) {
-            invoke(SET_SESSION_TRACKING_MODES, target, sessionTrackingModes);
-        }
-
-        private void invoke(Method method, Object target, Object... args) {
-            try {
-                method.invoke(target, args);
-            } catch (IllegalAccessException | InvocationTargetException e) {
-                throw new RuntimeException(e);
-            }
         }
     }
 }
