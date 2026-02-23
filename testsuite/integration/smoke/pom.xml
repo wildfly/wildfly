@@ -38,7 +38,7 @@
 
         <!-- Annotation processor version used by the maven-compile plugin.
              Overridden in a profile for EE 11 testing -->
-        <version.org.hibernate.jpamodelgen>${version.org.hibernate}</version.org.hibernate.jpamodelgen>
+        <version.org.hibernate.jpamodelgen>6.6.43.Final</version.org.hibernate.jpamodelgen>
     </properties>
 
     <dependencies>
