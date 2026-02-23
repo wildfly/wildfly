@@ -4,6 +4,12 @@
  */
 package org.jboss.as.test.integration.web.reverseproxy;
 
+import static org.jboss.as.test.integration.management.util.ModelUtil.createOpNode;
+
+import java.net.URL;
+import java.util.HashSet;
+import java.util.Set;
+
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
@@ -18,24 +24,17 @@ import org.jboss.as.arquillian.api.ContainerResource;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.test.integration.management.ManagementOperations;
+import org.jboss.as.test.shared.ServerReload;
+import org.jboss.as.test.shared.ServerSnapshot;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.AfterClass;
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import java.net.URL;
-import java.util.HashSet;
-import java.util.Set;
-
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ALLOW_RESOURCE_SERVICE_RESTART;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_HEADERS;
-import static org.jboss.as.test.integration.management.util.ModelUtil.createOpNode;
-import org.jboss.as.test.shared.ServerReload;
-import org.junit.FixMethodOrder;
 import org.junit.runners.MethodSorters;
 
 /**
@@ -48,64 +47,63 @@ public class ReverseProxyTestCase {
     @ContainerResource
     private ManagementClient managementClient;
     private static ManagementClient mc;
+    private AutoCloseable serverSnapshot;
 
     @Before
     public void setup() throws Exception {
-        if (mc == null) {
-            mc = managementClient;
-            //add the reverse proxy
-            ModelNode op = new ModelNode();
-            ModelNode addr = new ModelNode();
-            addr.add(ModelDescriptionConstants.SUBSYSTEM, "undertow");
-            addr.add("configuration", "handler");
-            addr.add("reverse-proxy", "myproxy");
-            op.get(ModelDescriptionConstants.OP_ADDR).set(addr);
-            op.get(ModelDescriptionConstants.OP).set(ModelDescriptionConstants.ADD);
-            op.get("max-request-time").set(60000);
-            op.get("connection-idle-timeout").set(60000);
-            ManagementOperations.executeOperation(managementClient.getControllerClient(), op);
+        serverSnapshot = ServerSnapshot.takeSnapshot(managementClient);
+        // add the reverse proxy
+        ModelNode op = new ModelNode();
+        ModelNode addr = new ModelNode();
+        addr.add(ModelDescriptionConstants.SUBSYSTEM, "undertow");
+        addr.add("configuration", "handler");
+        addr.add("reverse-proxy", "myproxy");
+        op.get(ModelDescriptionConstants.OP_ADDR).set(addr);
+        op.get(ModelDescriptionConstants.OP).set(ModelDescriptionConstants.ADD);
+        op.get("max-request-time").set(60000);
+        op.get("connection-idle-timeout").set(60000);
+        ManagementOperations.executeOperation(managementClient.getControllerClient(), op);
 
-            //add the hosts
-            ModelNode addSocketBindingOp = getOutboundSocketBinding(managementClient.getWebUri().getHost(), managementClient.getWebUri().getPort());
-            ManagementOperations.executeOperation(managementClient.getControllerClient(),addSocketBindingOp);
+        // add the hosts
+        ModelNode addSocketBindingOp = getOutboundSocketBinding(managementClient.getWebUri().getHost(),
+                managementClient.getWebUri().getPort());
+        ManagementOperations.executeOperation(managementClient.getControllerClient(), addSocketBindingOp);
 
-            op = new ModelNode();
-            addr = new ModelNode();
-            addr.add(ModelDescriptionConstants.SUBSYSTEM, "undertow");
-            addr.add("configuration", "handler");
-            addr.add("reverse-proxy", "myproxy");
-            addr.add("host", "server1");
-            op.get(ModelDescriptionConstants.OP_ADDR).set(addr);
-            op.get(ModelDescriptionConstants.OP).set(ModelDescriptionConstants.ADD);
-            op.get("outbound-socket-binding").set("proxy-host");
-            op.get("path").set("/server1");
-            ManagementOperations.executeOperation(managementClient.getControllerClient(), op);
+        op = new ModelNode();
+        addr = new ModelNode();
+        addr.add(ModelDescriptionConstants.SUBSYSTEM, "undertow");
+        addr.add("configuration", "handler");
+        addr.add("reverse-proxy", "myproxy");
+        addr.add("host", "server1");
+        op.get(ModelDescriptionConstants.OP_ADDR).set(addr);
+        op.get(ModelDescriptionConstants.OP).set(ModelDescriptionConstants.ADD);
+        op.get("outbound-socket-binding").set("proxy-host");
+        op.get("path").set("/server1");
+        ManagementOperations.executeOperation(managementClient.getControllerClient(), op);
 
-            op = new ModelNode();
-            addr = new ModelNode();
-            addr.add(ModelDescriptionConstants.SUBSYSTEM, "undertow");
-            addr.add("configuration", "handler");
-            addr.add("reverse-proxy", "myproxy");
-            addr.add("host", "server2");
-            op.get(ModelDescriptionConstants.OP_ADDR).set(addr);
-            op.get(ModelDescriptionConstants.OP).set(ModelDescriptionConstants.ADD);
-            op.get("outbound-socket-binding").set("proxy-host");
-            op.get("path").set("/server2");
+        op = new ModelNode();
+        addr = new ModelNode();
+        addr.add(ModelDescriptionConstants.SUBSYSTEM, "undertow");
+        addr.add("configuration", "handler");
+        addr.add("reverse-proxy", "myproxy");
+        addr.add("host", "server2");
+        op.get(ModelDescriptionConstants.OP_ADDR).set(addr);
+        op.get(ModelDescriptionConstants.OP).set(ModelDescriptionConstants.ADD);
+        op.get("outbound-socket-binding").set("proxy-host");
+        op.get("path").set("/server2");
 
-            ManagementOperations.executeOperation(managementClient.getControllerClient(), op);
+        ManagementOperations.executeOperation(managementClient.getControllerClient(), op);
 
-
-            op = new ModelNode();
-            addr = new ModelNode();
-            addr.add(ModelDescriptionConstants.SUBSYSTEM, "undertow");
-            addr.add("server", "default-server");
-            addr.add("host", "default-host");
-            addr.add("location", "/proxy");
-            op.get(ModelDescriptionConstants.OP_ADDR).set(addr);
-            op.get("handler").set("myproxy");
-            op.get(ModelDescriptionConstants.OP).set(ModelDescriptionConstants.ADD);
-            ManagementOperations.executeOperation(managementClient.getControllerClient(), op);
-        }
+        op = new ModelNode();
+        addr = new ModelNode();
+        addr.add(ModelDescriptionConstants.SUBSYSTEM, "undertow");
+        addr.add("server", "default-server");
+        addr.add("host", "default-host");
+        addr.add("location", "/proxy");
+        op.get(ModelDescriptionConstants.OP_ADDR).set(addr);
+        op.get("handler").set("myproxy");
+        op.get(ModelDescriptionConstants.OP).set(ModelDescriptionConstants.ADD);
+        ManagementOperations.executeOperation(managementClient.getControllerClient(), op);
     }
 
     private static ModelNode getOutboundSocketBinding(String address, int port) {
@@ -115,54 +113,10 @@ public class ReverseProxyTestCase {
         return op;
     }
 
-    @AfterClass
-    public static void tearDown() throws Exception {
 
-        ModelNode op = new ModelNode();
-        ModelNode addr = new ModelNode();
-        addr.add(ModelDescriptionConstants.SUBSYSTEM, "undertow");
-        addr.add("configuration", "handler");
-        addr.add("reverse-proxy", "myproxy");
-        addr.add("host", "server2");
-        op.get(ModelDescriptionConstants.OP_ADDR).set(addr);
-        op.get(ModelDescriptionConstants.OP).set(ModelDescriptionConstants.REMOVE);
-        op.get(OPERATION_HEADERS, ALLOW_RESOURCE_SERVICE_RESTART).set(true);
-        ManagementOperations.executeOperation(mc.getControllerClient(), op);
-
-        op = new ModelNode();
-        addr = new ModelNode();
-        addr.add(ModelDescriptionConstants.SUBSYSTEM, "undertow");
-        addr.add("configuration", "handler");
-        addr.add("reverse-proxy", "myproxy");
-        addr.add("host", "server1");
-        op.get(ModelDescriptionConstants.OP_ADDR).set(addr);
-        op.get(ModelDescriptionConstants.OP).set(ModelDescriptionConstants.REMOVE);
-        op.get(OPERATION_HEADERS, ALLOW_RESOURCE_SERVICE_RESTART).set(true);
-        ManagementOperations.executeOperation(mc.getControllerClient(), op);
-
-        op = new ModelNode();
-        addr = new ModelNode();
-        addr.add(ModelDescriptionConstants.SUBSYSTEM, "undertow");
-        addr.add("server", "default-server");
-        addr.add("host", "default-host");
-        addr.add("location", "/proxy");
-        op.get(ModelDescriptionConstants.OP_ADDR).set(addr);
-        op.get(ModelDescriptionConstants.OP).set(ModelDescriptionConstants.REMOVE);
-        op.get(OPERATION_HEADERS, ALLOW_RESOURCE_SERVICE_RESTART).set(true);
-        ManagementOperations.executeOperation(mc.getControllerClient(), op);
-
-        op = new ModelNode();
-        addr = new ModelNode();
-        addr.add(ModelDescriptionConstants.SUBSYSTEM, "undertow");
-        addr.add("configuration", "handler");
-        addr.add("reverse-proxy", "myproxy");
-        op.get(ModelDescriptionConstants.OP_ADDR).set(addr);
-        op.get(ModelDescriptionConstants.OP).set(ModelDescriptionConstants.REMOVE);
-        op.get(OPERATION_HEADERS, ALLOW_RESOURCE_SERVICE_RESTART).set(true);
-        ManagementOperations.executeOperation(mc.getControllerClient(), op);
-
-        op = createOpNode("socket-binding-group=standard-sockets/remote-destination-outbound-socket-binding=proxy-host", "remove");
-        ManagementOperations.executeOperation(mc.getControllerClient(), op);
+    @After
+    public void tearDown() throws Exception {
+        serverSnapshot.close();
     }
 
     @ArquillianResource

@@ -4,11 +4,10 @@
  */
 package org.jboss.as.test.integration.web.reverseproxy.headers;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ALLOW_RESOURCE_SERVICE_RESTART;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_HEADERS;
 import static org.jboss.as.test.integration.management.util.ModelUtil.createOpNode;
 
 import java.io.IOException;
+import java.net.InetAddress;
 import java.net.URL;
 
 import org.apache.http.HttpResponse;
@@ -27,10 +26,11 @@ import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.test.integration.management.ManagementOperations;
 import org.jboss.as.test.integration.management.util.MgmtOperationException;
 import org.jboss.as.test.shared.ServerReload;
+import org.jboss.as.test.shared.ServerSnapshot;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.AfterClass;
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.FixMethodOrder;
@@ -47,50 +47,49 @@ public class ReverseProxyForwardedForTestCase {
 
     @ContainerResource
     private ManagementClient managementClient;
-    private static ManagementClient mc;
+    private AutoCloseable serverSnapshot;
 
     @Before
     public void setup() throws Exception {
-        if (mc == null) {
-            mc = managementClient;
-            //add the reverse proxy
-            ModelNode op = new ModelNode();
-            ModelNode addr = new ModelNode();
-            addr.add(ModelDescriptionConstants.SUBSYSTEM, "undertow");
-            addr.add("configuration", "handler");
-            addr.add("reverse-proxy", "myproxy");
-            op.get(ModelDescriptionConstants.OP_ADDR).set(addr);
-            op.get(ModelDescriptionConstants.OP).set(ModelDescriptionConstants.ADD);
-            op.get("max-request-time").set(60000);
-            op.get("connection-idle-timeout").set(60000);
-            ManagementOperations.executeOperation(managementClient.getControllerClient(), op);
+        serverSnapshot = ServerSnapshot.takeSnapshot(managementClient);
+        // add the reverse proxy
+        ModelNode op = new ModelNode();
+        ModelNode addr = new ModelNode();
+        addr.add(ModelDescriptionConstants.SUBSYSTEM, "undertow");
+        addr.add("configuration", "handler");
+        addr.add("reverse-proxy", "myproxy");
+        op.get(ModelDescriptionConstants.OP_ADDR).set(addr);
+        op.get(ModelDescriptionConstants.OP).set(ModelDescriptionConstants.ADD);
+        op.get("max-request-time").set(60000);
+        op.get("connection-idle-timeout").set(60000);
+        ManagementOperations.executeOperation(managementClient.getControllerClient(), op);
 
-            //add the hosts
-            ModelNode addSocketBindingOp = getOutboundSocketBinding(managementClient.getWebUri().getHost(), managementClient.getWebUri().getPort());
-            ManagementOperations.executeOperation(managementClient.getControllerClient(),addSocketBindingOp);
+        // add the hosts
+        ModelNode addSocketBindingOp = getOutboundSocketBinding(managementClient.getWebUri().getHost(),
+                managementClient.getWebUri().getPort());
+        ManagementOperations.executeOperation(managementClient.getControllerClient(), addSocketBindingOp);
 
-            op = new ModelNode();
-            addr = new ModelNode();
-            addr.add(ModelDescriptionConstants.SUBSYSTEM, "undertow");
-            addr.add("configuration", "handler");
-            addr.add("reverse-proxy", "myproxy");
-            addr.add("host", "server1");
-            op.get(ModelDescriptionConstants.OP_ADDR).set(addr);
-            op.get(ModelDescriptionConstants.OP).set(ModelDescriptionConstants.ADD);
-            op.get("outbound-socket-binding").set("proxy-host");
-            op.get("path").set("/server1");
-            ManagementOperations.executeOperation(managementClient.getControllerClient(), op);
-            op = new ModelNode();
-            addr = new ModelNode();
-            addr.add(ModelDescriptionConstants.SUBSYSTEM, "undertow");
-            addr.add("server", "default-server");
-            addr.add("host", "default-host");
-            addr.add("location", "/proxy");
-            op.get(ModelDescriptionConstants.OP_ADDR).set(addr);
-            op.get("handler").set("myproxy");
-            op.get(ModelDescriptionConstants.OP).set(ModelDescriptionConstants.ADD);
-            ManagementOperations.executeOperation(managementClient.getControllerClient(), op);
-        }
+        op = new ModelNode();
+        addr = new ModelNode();
+        addr.add(ModelDescriptionConstants.SUBSYSTEM, "undertow");
+        addr.add("configuration", "handler");
+        addr.add("reverse-proxy", "myproxy");
+        addr.add("host", "server1");
+        op.get(ModelDescriptionConstants.OP_ADDR).set(addr);
+        op.get(ModelDescriptionConstants.OP).set(ModelDescriptionConstants.ADD);
+        op.get("outbound-socket-binding").set("proxy-host");
+        op.get("path").set("/server1");
+        ManagementOperations.executeOperation(managementClient.getControllerClient(), op);
+        op = new ModelNode();
+        addr = new ModelNode();
+        addr.add(ModelDescriptionConstants.SUBSYSTEM, "undertow");
+        addr.add("server", "default-server");
+        addr.add("host", "default-host");
+        addr.add("location", "/proxy");
+        op.get(ModelDescriptionConstants.OP_ADDR).set(addr);
+        op.get("handler").set("myproxy");
+        op.get(ModelDescriptionConstants.OP).set(ModelDescriptionConstants.ADD);
+        ManagementOperations.executeOperation(managementClient.getControllerClient(), op);
     }
 
     private static ModelNode getOutboundSocketBinding(String address, int port) {
@@ -100,44 +99,9 @@ public class ReverseProxyForwardedForTestCase {
         return op;
     }
 
-    @AfterClass
-    public static void tearDown() throws Exception {
-
-        ModelNode op = new ModelNode();
-        ModelNode addr = new ModelNode();
-
-        addr.add(ModelDescriptionConstants.SUBSYSTEM, "undertow");
-        addr.add("configuration", "handler");
-        addr.add("reverse-proxy", "myproxy");
-        addr.add("host", "server1");
-        op.get(ModelDescriptionConstants.OP_ADDR).set(addr);
-        op.get(ModelDescriptionConstants.OP).set(ModelDescriptionConstants.REMOVE);
-        op.get(OPERATION_HEADERS, ALLOW_RESOURCE_SERVICE_RESTART).set(true);
-        ManagementOperations.executeOperation(mc.getControllerClient(), op);
-
-        op = new ModelNode();
-        addr = new ModelNode();
-        addr.add(ModelDescriptionConstants.SUBSYSTEM, "undertow");
-        addr.add("server", "default-server");
-        addr.add("host", "default-host");
-        addr.add("location", "/proxy");
-        op.get(ModelDescriptionConstants.OP_ADDR).set(addr);
-        op.get(ModelDescriptionConstants.OP).set(ModelDescriptionConstants.REMOVE);
-        op.get(OPERATION_HEADERS, ALLOW_RESOURCE_SERVICE_RESTART).set(true);
-        ManagementOperations.executeOperation(mc.getControllerClient(), op);
-
-        op = new ModelNode();
-        addr = new ModelNode();
-        addr.add(ModelDescriptionConstants.SUBSYSTEM, "undertow");
-        addr.add("configuration", "handler");
-        addr.add("reverse-proxy", "myproxy");
-        op.get(ModelDescriptionConstants.OP_ADDR).set(addr);
-        op.get(ModelDescriptionConstants.OP).set(ModelDescriptionConstants.REMOVE);
-        op.get(OPERATION_HEADERS, ALLOW_RESOURCE_SERVICE_RESTART).set(true);
-        ManagementOperations.executeOperation(mc.getControllerClient(), op);
-
-        op = createOpNode("socket-binding-group=standard-sockets/remote-destination-outbound-socket-binding=proxy-host", "remove");
-        ManagementOperations.executeOperation(mc.getControllerClient(), op);
+    @After
+    public void tearDown() throws Exception {
+        serverSnapshot.close();
     }
 
     @ArquillianResource
@@ -163,24 +127,30 @@ public class ReverseProxyForwardedForTestCase {
     @Test
     public void testNoForwarded() throws Exception {
         try (CloseableHttpClient httpclient = HttpClients.createDefault()) {
-            setReuseForawrdedTo(false);// thats default
+            setReuseForwardedTo(false);// thats default
             final String result = performCall(httpclient, "name?header=X_Forwarded_For");
-            Assert.assertEquals(url.getHost(), result);
+            final InetAddress resultAddress = InetAddress.getByName(result);
+            final InetAddress hostAddress = InetAddress.getByName(url.getHost());
+            Assert.assertEquals(hostAddress, resultAddress);
         }
     }
 
     @Test
     public void testWithForwarded() throws Exception {
         try (CloseableHttpClient httpclient = HttpClients.createDefault()) {
-            setReuseForawrdedTo(true);
+            setReuseForwardedTo(true);
             final String result = performCall(httpclient, "name?header=X_Forwarded_For");
-            Assert.assertEquals("1.1.1.1,"+url.getHost(), result);
+            final String[] parts = result.split(",");
+            Assert.assertEquals(parts.length, 2);
+            final InetAddress resultAddress = InetAddress.getByName(parts[1]);
+            final InetAddress hostAddress = InetAddress.getByName(url.getHost());
+            Assert.assertEquals("1.1.1.1,"+hostAddress.toString(), parts[0]+","+resultAddress.toString());
         } finally {
-            setReuseForawrdedTo(false);
+            setReuseForwardedTo(false);
         }
     }
 
-    private void setReuseForawrdedTo(final boolean value) throws IOException, MgmtOperationException {
+    private void setReuseForwardedTo(final boolean value) throws IOException, MgmtOperationException {
         ModelNode op = new ModelNode();
         ModelNode addr = new ModelNode();
         addr.add(ModelDescriptionConstants.SUBSYSTEM, "undertow");
