@@ -509,7 +509,7 @@
         <version.org.glassfish.soteria>3.0.3</version.org.glassfish.soteria>
         <version.org.glassfish.web.jakarta.servlet.jsp.jstl>3.0.1-jbossorg-1</version.org.glassfish.web.jakarta.servlet.jsp.jstl>
         <version.org.hibernate.commons.annotations>7.0.3.Final</version.org.hibernate.commons.annotations>
-        <version.org.hibernate>6.6.40.Final</version.org.hibernate>
+        <version.org.hibernate>7.2.5.Final</version.org.hibernate>
         <!-- We need to use this value in configuring maven plugins, so simply overriding version.org.hibernate
              in boms/preview-ee is inadequate. So we'll declare the value here and reference it in boms/preview-ee. -->
         <version.org.hibernate.preview>7.2.4.Final</version.org.hibernate.preview>

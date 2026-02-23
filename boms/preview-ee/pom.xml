@@ -66,7 +66,7 @@
         <version.org.jboss.weld.weld>6.0.4.Final</version.org.jboss.weld.weld>
         <version.org.jboss.weld.weld-api>6.0.Final</version.org.jboss.weld.weld-api>
         <!-- The ORM version is controlled in the root pom because we need to use its value in contexts not controlled by this bom -->
-        <version.org.hibernate>${version.org.hibernate.preview}</version.org.hibernate>
+        <version.org.hibernate>7.2.5.Final</version.org.hibernate>
         <version.org.hibernate.models>1.0.1</version.org.hibernate.models>
         <version.org.hibernate.search>8.2.0.Final</version.org.hibernate.search>
         <version.org.hibernate.validator>9.1.0.Final</version.org.hibernate.validator>
