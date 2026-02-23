@@ -11,6 +11,7 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.SubDeploymentMarker;
 import org.jboss.as.server.deployment.module.ModuleRootMarker;
+import org.jboss.as.server.deployment.module.ModuleSpecification;
 import org.jboss.as.server.deployment.module.ResourceRoot;
 import org.jboss.as.server.logging.ServerLogger;
 import org.jboss.metadata.ear.spec.ModuleMetaData;
@@ -26,7 +27,8 @@ import java.util.jar.Manifest;
 /**
  * Processor that sets up application clients. If this is an ear deployment it will mark the client as
  * a sub deployment.
- * If this is an application client deployment it will set the deployment type.
+ * If this is an application client deployment it will set the deployment type. If the client deployment
+ * is a subdeployment, it will mark the deployment module as private so it is not made visible to other subdeployment modules.
  * <p/>
  *
  * @author Stuart Douglas
@@ -34,6 +36,14 @@ import java.util.jar.Manifest;
 public class ApplicationClientDeploymentProcessor implements DeploymentUnitProcessor {
 
     private static final String META_INF_APPLICATION_CLIENT_XML = "META-INF/application-client.xml";
+
+    /**
+     * Allowing appclient jar modules to be visible to other subdeployments in an ear is contrary
+     * to various EE 10 section 8.3 requirements, but WildFly did it for many years, so allow users
+     * who rely on that behavior to have a workaround to restore it by setting a system property to 'false'
+     */
+    private static final boolean APP_CLIENT_ISOLATED =
+            Boolean.parseBoolean(System.getProperty("wildfly.appclient.subdeployment.isolated", "true"));
 
     @Override
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
@@ -87,6 +97,20 @@ public class ApplicationClientDeploymentProcessor implements DeploymentUnitProce
                         }
                     }
                 }
+            }
+
+            // TODO perhaps limit this to non-appclient processes
+            if (APP_CLIENT_ISOLATED && deploymentUnit.getParent() != null
+                    && DeploymentTypeMarker.isType(DeploymentType.APPLICATION_CLIENT, deploymentUnit)) {
+                // Don't allow other ear submodules to see application client archives
+                // See 'must not have access' discussions in:
+                // https://jakarta.ee/specifications/platform/10/jakarta-platform-spec-10.0#a3046
+                // https://jakarta.ee/specifications/platform/10/jakarta-platform-spec-10.0#jakarta-enterprise-beans-container-class-loading-requirements
+                // https://jakarta.ee/specifications/platform/10/jakarta-platform-spec-10.0#application-client-container-class-loading-requirements
+                final ModuleSpecification moduleSpecification = deploymentUnit.getAttachment(Attachments.MODULE_SPECIFICATION);
+                if (moduleSpecification != null) {
+                    moduleSpecification.setPrivateModule(true);
+                } // TODO WarStructureDeploymentProcessor accounts for the null case so this does too but it's not clear why it would legitimately be null
             }
         }
     }
