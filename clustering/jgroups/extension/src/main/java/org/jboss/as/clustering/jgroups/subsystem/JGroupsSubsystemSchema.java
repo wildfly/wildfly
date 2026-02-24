@@ -51,10 +51,11 @@ public enum JGroupsSubsystemSchema implements SubsystemResourceXMLSchema<JGroups
     VERSION_6_0(6, 0), // WildFly 12-16, EAP 7.2
     VERSION_7_0(7, 0), // WildFly 17-19, EAP 7.3
     VERSION_8_0(8, 0), // WildFly 20-26, EAP 7.4
-    VERSION_9_0(9, 0), // WildFly 27-present, EAP 8.0-8.1
-    VERSION_9_0_COMMUNITY(9, 0, Stability.COMMUNITY), // WildFly 39-present
+    VERSION_9_0(9, 0), // WildFly 27-39, EAP 8.0-8.1
+    VERSION_9_0_COMMUNITY(9, 0, Stability.COMMUNITY), // WildFly 39
+    VERSION_10_0(10, 0), // WildFly 40-present
     ;
-    static final Set<JGroupsSubsystemSchema> CURRENT = Set.of(VERSION_9_0_COMMUNITY, VERSION_9_0);
+    static final Set<JGroupsSubsystemSchema> CURRENT = Set.of(VERSION_10_0);
 
     private final ResourceXMLParticleFactory factory = ResourceXMLParticleFactory.newInstance(this);
     private final VersionedNamespace<IntVersion, JGroupsSubsystemSchema> namespace;
@@ -241,7 +242,7 @@ public enum JGroupsSubsystemSchema implements SubsystemResourceXMLSchema<JGroups
             });
         }
 
-        if (this.since(JGroupsSubsystemSchema.VERSION_9_0_COMMUNITY)) {
+        if (this.since(JGroupsSubsystemSchema.VERSION_10_0) || this.since(JGroupsSubsystemSchema.VERSION_9_0_COMMUNITY)) {
             ResourceXMLElement ssl = this.factory.element(this.factory.resolve("ssl-context"))
                     .withCardinality(XMLCardinality.Single.OPTIONAL)
                     .addAttributes(List.of(SocketTransportResourceDefinitionRegistrar.CLIENT_SSL_CONTEXT, SocketTransportResourceDefinitionRegistrar.SERVER_SSL_CONTEXT))

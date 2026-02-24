@@ -23,7 +23,10 @@ import org.jboss.as.test.clustering.ejb.RemoteEJBDirectory;
  *
  * @author Radoslav Husar
  */
-@ServerSetup({TLSServerSetupTasks.PhysicalKeyStoresServerSetupTask_NODE_1_2.class, TLSServerSetupTasks.UnsharedSecureJGroupsTransportServerSetupTask_NODE_1_2.class})
+@ServerSetup({
+        TLSServerSetupTasks.PhysicalKeyStoresServerSetupTask_NODE_1_2.class,
+        TLSServerSetupTasks.UnsharedSecureJGroupsTransportServerSetupTask_NODE_1_2.class,
+})
 public class TLSUnsharedKeyCommandDispatcherTestCase extends CommandDispatcherTestCase {
 
     @Override

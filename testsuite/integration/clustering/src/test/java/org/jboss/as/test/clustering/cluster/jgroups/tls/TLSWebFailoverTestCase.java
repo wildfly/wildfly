@@ -12,7 +12,10 @@ import org.jboss.as.test.clustering.cluster.web.CoarseWebFailoverTestCase;
  *
  * @author Radoslav Husar
  */
-@ServerSetup({TLSServerSetupTasks.SharedPhysicalKeyStoresServerSetupTask.class, TLSServerSetupTasks.SharedStoreSecureJGroupsTransportServerSetupTask_NODE_1_2_3.class})
+@ServerSetup({
+        TLSServerSetupTasks.SharedPhysicalKeyStoresServerSetupTask.class,
+        TLSServerSetupTasks.SharedStoreSecureJGroupsTransportServerSetupTask_NODE_1_2_3.class,
+})
 public class TLSWebFailoverTestCase extends CoarseWebFailoverTestCase {
 
     // No changes to the tests are necessary, securing the channel is transparent to the underlying test.
