@@ -18,7 +18,6 @@ import org.wildfly.clustering.cache.infinispan.embedded.EmbeddedCacheConfigurati
 import org.wildfly.clustering.ejb.bean.BeanInstance;
 import org.wildfly.clustering.ejb.cache.bean.BeanGroupKey;
 import org.wildfly.clustering.function.Consumer;
-import org.wildfly.clustering.function.Supplier;
 import org.wildfly.clustering.function.UnaryOperator;
 import org.wildfly.clustering.marshalling.MarshalledValue;
 
@@ -43,12 +42,12 @@ public class InfinispanBeanGroupManager<K, V extends BeanInstance<K>, C> impleme
 
     @Override
     public CompletionStage<MarshalledValue<Map<K, V>, C>> createValueAsync(K id, MarshalledValue<Map<K, V>, C> defaultValue) {
-        return this.cache.putIfAbsentAsync(new InfinispanBeanGroupKey<>(id), defaultValue).thenApply(UnaryOperator.<MarshalledValue<Map<K, V>, C>>identity().orDefault(Objects::nonNull, Supplier.of(defaultValue)));
+        return this.cache.putIfAbsentAsync(new InfinispanBeanGroupKey<>(id), defaultValue).thenApply(UnaryOperator.when(Objects::nonNull, UnaryOperator.identity(), UnaryOperator.of(defaultValue)));
     }
 
     @Override
     public CompletionStage<Void> removeAsync(K id) {
-        return this.removeCache.removeAsync(new InfinispanBeanGroupKey<>(id)).thenAccept(Consumer.empty());
+        return this.removeCache.removeAsync(new InfinispanBeanGroupKey<>(id)).thenAccept(Consumer.of());
     }
 
     @Override

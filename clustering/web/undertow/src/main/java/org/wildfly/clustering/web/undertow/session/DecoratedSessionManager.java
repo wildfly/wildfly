@@ -16,7 +16,6 @@ import io.undertow.server.HttpServerExchange;
 import io.undertow.server.session.Session;
 import io.undertow.server.session.SessionConfig;
 import io.undertow.server.session.SessionListeners;
-import io.undertow.server.session.SessionManagerStatistics;
 
 /**
  * Decorator of an Undertow session manager.
@@ -71,7 +70,7 @@ public class DecoratedSessionManager extends DecoratedService implements Underto
     }
 
     @Override
-    public SessionManagerStatistics getStatistics() {
+    public RecordableSessionManagerStatistics getStatistics() {
         return this.manager.getStatistics();
     }
 

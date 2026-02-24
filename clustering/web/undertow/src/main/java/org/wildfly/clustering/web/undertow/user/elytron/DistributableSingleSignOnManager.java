@@ -67,7 +67,7 @@ public class DistributableSingleSignOnManager implements SingleSignOnManager {
     }
 
     private static SingleSignOn close(Supplier<Batch> batchProvider) {
-        close(batchProvider, Consumer.empty());
+        close(batchProvider, Consumer.of());
         return null;
     }
 
