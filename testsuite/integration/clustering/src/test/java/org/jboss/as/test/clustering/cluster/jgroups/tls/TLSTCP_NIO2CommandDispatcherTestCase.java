@@ -14,7 +14,10 @@ import org.junit.jupiter.api.Test;
  *
  * @author Radoslav Husar
  */
-@ServerSetup({TCP_NIO2ServerSetupTask.class, TLSServerSetupTasks.SharedStoreSecureJGroupsTCP_NIO2TransportServerSetupTask_NODE_1_2.class,})
+@ServerSetup({
+        TCP_NIO2ServerSetupTask.class,
+        TLSServerSetupTasks.SharedStoreSecureJGroupsTCP_NIO2TransportServerSetupTask_NODE_1_2.class,
+})
 class TLSTCP_NIO2CommandDispatcherTestCase extends CommandDispatcherTestCase {
 
     @Override
