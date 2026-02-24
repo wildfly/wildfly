@@ -8,6 +8,7 @@ package org.jboss.as.test.clustering.single.web.passivation;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.arquillian.api.ServerSetup;
+import org.jboss.as.test.shared.SnapshotRestoreSetupTask;
 import org.jboss.shrinkwrap.api.Archive;
 import org.junit.runner.RunWith;
 import org.wildfly.test.stabilitylevel.StabilityServerSetupSnapshotRestoreTasks;
@@ -20,7 +21,10 @@ import org.wildfly.test.stabilitylevel.StabilityServerSetupSnapshotRestoreTasks;
  * @author Radoslav Husar
  */
 @RunWith(Arquillian.class)
-@ServerSetup(StabilityServerSetupSnapshotRestoreTasks.Community.class)
+@ServerSetup({
+        SnapshotRestoreSetupTask.class, // MUST be first!
+        StabilityServerSetupSnapshotRestoreTasks.Community.class,
+})
 public class LocalIdleThresholdFineSessionPassivationTestCase extends LocalIdleThresholdSessionPassivationTestCase {
 
     private static final String MODULE_NAME = LocalIdleThresholdFineSessionPassivationTestCase.class.getSimpleName();
