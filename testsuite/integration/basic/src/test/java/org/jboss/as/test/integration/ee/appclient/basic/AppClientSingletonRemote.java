@@ -18,4 +18,6 @@ public interface AppClientSingletonRemote {
     void makeAppClientCall(final String value);
 
     String awaitAppClientCall();
+
+    String echo(String toEcho);
 }

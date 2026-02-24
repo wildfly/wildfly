@@ -28,7 +28,12 @@ import org.junit.runner.RunWith;
 @RunAsClient
 public class SimpleApplicationClientTestCase2 extends AbstractSimpleApplicationClientTestCase {
 
-    private static Archive archive;
+    private static final String APP_NAME = SimpleApplicationClientTestCase2.class.getSimpleName();
+    private static EnterpriseArchive archive;
+
+    public SimpleApplicationClientTestCase2() {
+        super(APP_NAME);
+    }
 
     @Override
     public Archive<?> getArchive() {
