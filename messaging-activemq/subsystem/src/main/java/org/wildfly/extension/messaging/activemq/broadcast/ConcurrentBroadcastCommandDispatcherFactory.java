@@ -11,9 +11,9 @@ import java.util.Set;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.BiFunction;
-import java.util.function.Consumer;
 import java.util.function.Supplier;
 
+import org.wildfly.clustering.function.Consumer;
 import org.wildfly.clustering.server.Group;
 import org.wildfly.clustering.server.GroupMember;
 import org.wildfly.clustering.server.Registration;
@@ -22,7 +22,6 @@ import org.wildfly.clustering.server.cache.CacheStrategy;
 import org.wildfly.clustering.server.dispatcher.Command;
 import org.wildfly.clustering.server.dispatcher.CommandDispatcher;
 import org.wildfly.clustering.server.dispatcher.CommandDispatcherFactory;
-import org.wildfly.common.function.Functions;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
@@ -33,12 +32,7 @@ public class ConcurrentBroadcastCommandDispatcherFactory implements BroadcastCom
 
     private final Set<BroadcastReceiver> receivers = ConcurrentHashMap.newKeySet();
     private final CommandDispatcherFactory<GroupMember> dispatcherFactory;
-    private final Cache<Object, CachedCommandDispatcher<?>> cache = CacheStrategy.CONCURRENT.createCache(Functions.discardingConsumer(), new Consumer<>() {
-        @Override
-        public void accept(CachedCommandDispatcher<?> dispatcher) {
-            dispatcher.get().close();
-        }
-    });
+    private final Cache<Object, CachedCommandDispatcher<?>> cache = CacheStrategy.CONCURRENT.createCache(Consumer.of(), Consumer.close().compose(CachedCommandDispatcher::get));
 
     public ConcurrentBroadcastCommandDispatcherFactory(CommandDispatcherFactory<GroupMember> dispatcherFactory) {
         this.dispatcherFactory = dispatcherFactory;

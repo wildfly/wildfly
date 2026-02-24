@@ -163,7 +163,7 @@ public class InfinispanTimerManager<I, C> implements TimerManager<I> {
             }
         };
         TimerMetaDataFactory<I, RemappableTimerMetaDataEntry<C>> metaDataFactory = config.getTimerFactory().getMetaDataFactory();
-        CacheEntrySchedulerService<I, TimerMetaDataKey<I>, RemappableTimerMetaDataEntry<C>, TimeoutMetaData> cacheEntryScheduler = new CacheEntrySchedulerService<>(localScheduler.compose(UnaryOperator.identity(), TimeoutMetaData::getNextTimeout), BiFunction.applyLatter(metaDataFactory::createImmutableTimerMetaData)) {
+        CacheEntrySchedulerService<I, TimerMetaDataKey<I>, RemappableTimerMetaDataEntry<C>, TimeoutMetaData> cacheEntryScheduler = new CacheEntrySchedulerService<>(localScheduler.compose(UnaryOperator.identity(), TimeoutMetaData::getNextTimeout), BiFunction.latter(metaDataFactory::createImmutableTimerMetaData)) {
             @Override
             public void start() {
                 super.start();
@@ -272,8 +272,7 @@ public class InfinispanTimerManager<I, C> implements TimerManager<I> {
         if (metaDataFactory.createValue(id, new AbstractMap.SimpleImmutableEntry<>(entry, index)) == null) return null; // Timer with index already exists
 
         ImmutableTimerMetaData metaData = metaDataFactory.createImmutableTimerMetaData(entry);
-        Timer<I> timer = this.factory.createTimer(id, metaData, this, this.scheduler);
-        return timer;
+        return this.factory.createTimer(id, metaData, this, this.scheduler);
     }
 
     @Override

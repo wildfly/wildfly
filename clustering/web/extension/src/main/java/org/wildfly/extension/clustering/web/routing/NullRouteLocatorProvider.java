@@ -20,7 +20,7 @@ import org.wildfly.subsystem.service.ServiceInstaller;
 public class NullRouteLocatorProvider implements RouteLocatorProvider {
     @Override
     public DeploymentServiceInstaller getServiceInstaller(BinaryServiceConfiguration configuration, WebDeploymentConfiguration deployment) {
-        return ServiceInstaller.builder(UnaryOperator.empty())
+        return ServiceInstaller.builder(UnaryOperator.of(null))
                 .provides(WebDeploymentServiceDescriptor.ROUTE_LOCATOR.resolve(deployment.getDeploymentUnit()))
                 .startWhen(StartWhen.REQUIRED)
                 .build();

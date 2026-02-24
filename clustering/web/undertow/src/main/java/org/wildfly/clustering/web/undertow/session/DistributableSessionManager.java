@@ -47,21 +47,10 @@ public class DistributableSessionManager implements UndertowSessionManager {
     private static final Predicate<Session<Map<String, Object>>> EXISTING_SESSION = Objects::nonNull;
     private static final Predicate<Session<Map<String, Object>>> VALID_SESSION = EXISTING_SESSION.and(Session::isValid);
     // If session exists, verify that it was not invalidated by a concurrent thread
-    private static final UnaryOperator<Session<Map<String, Object>>> VALIDATE_SESSION = new UnaryOperator<>() {
-        @Override
-        public Session<Map<String, Object>> apply(Session<Map<String, Object>> session) {
-            if (!VALID_SESSION.test(session)) {
-                Consumer.close().accept(session);
-                return null;
-            }
-            return session;
-        }
-    };
-    private static final UnaryOperator<Session<Map<String, Object>>> REQUIRE_SESSION = UnaryOperator.<Session<Map<String, Object>>>identity().orDefault(EXISTING_SESSION, () -> {
-        throw new IllegalStateException();
-    });
+    private static final UnaryOperator<Session<Map<String, Object>>> VALIDATE_SESSION = UnaryOperator.when(VALID_SESSION, UnaryOperator.identity(), UnaryOperator.of(Consumer.close(), Supplier.of(null)));
+    private static final UnaryOperator<Session<Map<String, Object>>> REQUIRE_SESSION = UnaryOperator.when(EXISTING_SESSION, UnaryOperator.identity(), UnaryOperator.of(Consumer.<Session<Map<String, Object>>>of().thenThrow(IllegalStateException::new), Supplier.of(null)));
 
-    private final AttachmentKey<DistributableSession> key = AttachmentKey.create(DistributableSession.class);
+    private final AttachmentKey<DetachableSession> key = AttachmentKey.create(DetachableSession.class);
     private final String deploymentName;
     private final SessionListeners listeners;
     private final SessionManager<Map<String, Object>> manager;
@@ -71,7 +60,6 @@ public class DistributableSessionManager implements UndertowSessionManager {
     private final Supplier<Map.Entry<SuspendedBatch, Consumer<HttpServerExchange>>> batchEntryFactory = this::createBatchEntry;
     private final Function<String, Session<Map<String, Object>>> createSession;
     private final Function<String, Session<Map<String, Object>>> findSession;
-    private final Function<String, Session<Map<String, Object>>> getDetachedSession;
 
     // Matches io.undertow.server.session.InMemorySessionManager
     private volatile int defaultSessionTimeout = 30 * 60;
@@ -82,14 +70,10 @@ public class DistributableSessionManager implements UndertowSessionManager {
         this.listeners = config.getSessionListeners();
         this.statistics = config.getStatistics();
 
-        Function<String, Session<Map<String, Object>>> createSession = this.manager::createSession;
-        this.createSession = createSession.withDefault(VALID_IDENTIFIER, this.manager.getIdentifierFactory()).andThen(REQUIRE_SESSION);
+        UnaryOperator<String> validateIdentifier = UnaryOperator.when(VALID_IDENTIFIER, UnaryOperator.identity(), UnaryOperator.of(Consumer.of(), this.manager.getIdentifierFactory()));
+        this.createSession = validateIdentifier.thenApply(Function.of(this.manager::createSession, REQUIRE_SESSION));
 
-        Function<String, Session<Map<String, Object>>> findSession = this.manager::findSession;
-        this.findSession = findSession.orDefault(VALID_IDENTIFIER, Supplier.of(null)).andThen(VALIDATE_SESSION);
-
-        Function<String, Session<Map<String, Object>>> getDetachedSession = this.manager::getDetachedSession;
-        this.getDetachedSession = getDetachedSession.orDefault(VALID_IDENTIFIER, Supplier.of(null)).andThen(VALIDATE_SESSION);
+        this.findSession = Function.when(VALID_IDENTIFIER, Function.of(this.manager::findSession, VALIDATE_SESSION), Function.of(null));
     }
 
     @Override
@@ -130,7 +114,7 @@ public class DistributableSessionManager implements UndertowSessionManager {
         if (!StampedLock.isReadLockStamp(stamp)) {
             throw UndertowClusteringLogger.ROOT_LOGGER.sessionManagerStopped();
         }
-        AttachmentKey<DistributableSession> key = this.key;
+        AttachmentKey<DetachableSession> key = this.key;
         AtomicLong stampRef = new AtomicLong(stamp);
         return new Consumer<>() {
             @Override
@@ -200,7 +184,7 @@ public class DistributableSessionManager implements UndertowSessionManager {
                     this.statistics.record(metaData);
                 }
             }
-            DistributableSession result = new DistributableSession(this, session, config, suspendedBatch, closeTask, this.statistics);
+            DetachableSession result = new DetachableSession(new DistributableSession(this, session, config, suspendedBatch, closeTask, this.statistics));
             if (exchange != null) {
                 exchange.putAttachment(this.key, result);
             }
@@ -218,7 +202,7 @@ public class DistributableSessionManager implements UndertowSessionManager {
     }
 
     private static io.undertow.server.session.Session close(java.util.function.Supplier<Batch> batchProvider, Consumer<HttpServerExchange> closeTask) {
-        close(batchProvider, Consumer.empty(), closeTask);
+        close(batchProvider, Consumer.of(), closeTask);
         return null;
     }
 
@@ -259,10 +243,7 @@ public class DistributableSessionManager implements UndertowSessionManager {
 
     @Override
     public io.undertow.server.session.Session getSession(String sessionId) {
-        try (Batch batch = this.manager.getBatchFactory().get()) {
-            Session<Map<String, Object>> session = this.getDetachedSession.apply(sessionId);
-            return (session != null) ? new DetachedDistributableSession(this, session, this.statistics) : null;
-        }
+        return VALID_IDENTIFIER.test(sessionId) ? new ReferencedSession(new DistributableSessionReference(this, sessionId)) : null;
     }
 
     @Override

@@ -393,7 +393,7 @@ public class DistributableSessionTestCase {
 
     @Test
     public void getWebSocketChannelsSessionAttribute() {
-        this.getLocalContextSessionAttribute(AbstractSession.WEB_SOCKET_CHANNELS_ATTRIBUTE);
+        this.getLocalContextSessionAttribute(DistributableSession.WEB_SOCKET_CHANNELS_ATTRIBUTE);
     }
 
     private void getLocalContextSessionAttribute(String name) {
@@ -620,7 +620,7 @@ public class DistributableSessionTestCase {
 
     @Test
     public void setWebSocketChannelsSessionAttribute() {
-        this.setLocalContextSessionAttribute(AbstractSession.WEB_SOCKET_CHANNELS_ATTRIBUTE);
+        this.setLocalContextSessionAttribute(DistributableSession.WEB_SOCKET_CHANNELS_ATTRIBUTE);
     }
 
     private void setLocalContextSessionAttribute(String name) {
@@ -762,7 +762,7 @@ public class DistributableSessionTestCase {
 
     @Test
     public void removeWebSocketChannelsSessionAttribute() {
-        this.removeLocalContextSessionAttribute(AbstractSession.WEB_SOCKET_CHANNELS_ATTRIBUTE);
+        this.removeLocalContextSessionAttribute(DistributableSession.WEB_SOCKET_CHANNELS_ATTRIBUTE);
     }
 
     private void removeLocalContextSessionAttribute(String name) {
