@@ -8,7 +8,6 @@
            xmlns:tns="urn:jboss:domain:jgroups:10.0"
            xmlns:credential-reference="urn:wildfly:credential-reference:1.1"
            elementFormDefault="qualified"
-           attributeFormDefault="unqualified"
            version="10.0">
 
     <xs:import namespace="urn:wildfly:credential-reference:1.1" schemaLocation="wildfly-credential-reference_1_1.xsd"/>
@@ -343,7 +342,7 @@
         <xs:complexContent>
             <xs:extension base="tns:protocol">
                 <xs:sequence>
-                    <xs:element name="default-thread-pool" type="tns:thread-pool" minOccurs="0" maxOccurs="1">
+                    <xs:element name="default-thread-pool" type="tns:thread-pool" minOccurs="0">
                         <xs:annotation>
                             <xs:documentation>Defines the thread pool used for default messages received by this transport.</xs:documentation>
                         </xs:annotation>
@@ -402,17 +401,17 @@
     </xs:complexType>
 
     <xs:complexType name="thread-pool">
-        <xs:attribute name="min-threads" type="xs:int" use="optional">
+        <xs:attribute name="min-threads" type="xs:int">
             <xs:annotation>
                 <xs:documentation>Minimum thread pool size for the thread pool.</xs:documentation>
             </xs:annotation>
         </xs:attribute>
-        <xs:attribute name="max-threads" type="xs:int" use="optional">
+        <xs:attribute name="max-threads" type="xs:int">
             <xs:annotation>
                 <xs:documentation>Maximum thread pool size for the thread pool.</xs:documentation>
             </xs:annotation>
         </xs:attribute>
-        <xs:attribute name="keepalive-time" type="xs:long" use="optional">
+        <xs:attribute name="keepalive-time" type="xs:long">
             <xs:annotation>
                 <xs:documentation>Timeout in milliseconds to remove idle thread from the pool.</xs:documentation>
             </xs:annotation>
