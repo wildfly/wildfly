@@ -15,13 +15,9 @@ import io.undertow.UndertowMessages;
 import io.undertow.server.HttpServerExchange;
 import io.undertow.server.session.SessionConfig;
 import io.undertow.server.session.SessionListeners;
-import io.undertow.server.session.SessionManagerStatistics;
 import io.undertow.util.AttachmentKey;
 
 import org.jboss.logging.Logger;
-import org.wildfly.clustering.cache.batch.Batch;
-import org.wildfly.clustering.cache.batch.SuspendedBatch;
-import org.wildfly.clustering.context.Context;
 import org.wildfly.clustering.function.Consumer;
 import org.wildfly.clustering.function.Function;
 import org.wildfly.clustering.function.Predicate;
@@ -47,31 +43,18 @@ public class DistributableSessionManager implements UndertowSessionManager {
     private static final Predicate<Session<Map<String, Object>>> EXISTING_SESSION = Objects::nonNull;
     private static final Predicate<Session<Map<String, Object>>> VALID_SESSION = EXISTING_SESSION.and(Session::isValid);
     // If session exists, verify that it was not invalidated by a concurrent thread
-    private static final UnaryOperator<Session<Map<String, Object>>> VALIDATE_SESSION = new UnaryOperator<>() {
-        @Override
-        public Session<Map<String, Object>> apply(Session<Map<String, Object>> session) {
-            if (!VALID_SESSION.test(session)) {
-                Consumer.close().accept(session);
-                return null;
-            }
-            return session;
-        }
-    };
-    private static final UnaryOperator<Session<Map<String, Object>>> REQUIRE_SESSION = UnaryOperator.<Session<Map<String, Object>>>identity().orDefault(EXISTING_SESSION, () -> {
-        throw new IllegalStateException();
-    });
+    private static final UnaryOperator<Session<Map<String, Object>>> VALIDATE_SESSION = UnaryOperator.when(VALID_SESSION, UnaryOperator.identity(), UnaryOperator.of(Consumer.close(), Supplier.of(null)));
+    private static final UnaryOperator<Session<Map<String, Object>>> REQUIRE_SESSION = UnaryOperator.when(EXISTING_SESSION, UnaryOperator.identity(), UnaryOperator.of(Consumer.<Session<Map<String, Object>>>of().thenThrow(IllegalStateException::new), Supplier.of(null)));
 
-    private final AttachmentKey<DistributableSession> key = AttachmentKey.create(DistributableSession.class);
+    private final AttachmentKey<DetachableSession> key = AttachmentKey.create(DetachableSession.class);
     private final String deploymentName;
     private final SessionListeners listeners;
     private final SessionManager<Map<String, Object>> manager;
     private final RecordableSessionManagerStatistics statistics;
     private final StampedLock lifecycleLock = new StampedLock();
     private final AtomicLong lifecycleStamp = new AtomicLong(0L);
-    private final Supplier<Map.Entry<SuspendedBatch, Consumer<HttpServerExchange>>> batchEntryFactory = this::createBatchEntry;
     private final Function<String, Session<Map<String, Object>>> createSession;
     private final Function<String, Session<Map<String, Object>>> findSession;
-    private final Function<String, Session<Map<String, Object>>> getDetachedSession;
 
     // Matches io.undertow.server.session.InMemorySessionManager
     private volatile int defaultSessionTimeout = 30 * 60;
@@ -82,14 +65,10 @@ public class DistributableSessionManager implements UndertowSessionManager {
         this.listeners = config.getSessionListeners();
         this.statistics = config.getStatistics();
 
-        Function<String, Session<Map<String, Object>>> createSession = this.manager::createSession;
-        this.createSession = createSession.withDefault(VALID_IDENTIFIER, this.manager.getIdentifierFactory()).andThen(REQUIRE_SESSION);
+        UnaryOperator<String> validateIdentifier = UnaryOperator.when(VALID_IDENTIFIER, UnaryOperator.identity(), UnaryOperator.of(Consumer.of(), this.manager.getIdentifierFactory()));
+        this.createSession = validateIdentifier.thenApply(Function.of(this.manager::createSession, REQUIRE_SESSION));
 
-        Function<String, Session<Map<String, Object>>> findSession = this.manager::findSession;
-        this.findSession = findSession.orDefault(VALID_IDENTIFIER, Supplier.of(null)).andThen(VALIDATE_SESSION);
-
-        Function<String, Session<Map<String, Object>>> getDetachedSession = this.manager::getDetachedSession;
-        this.getDetachedSession = getDetachedSession.orDefault(VALID_IDENTIFIER, Supplier.of(null)).andThen(VALIDATE_SESSION);
+        this.findSession = Function.when(VALID_IDENTIFIER, Function.of(this.manager::findSession, VALIDATE_SESSION), Function.of(null));
     }
 
     @Override
@@ -130,7 +109,7 @@ public class DistributableSessionManager implements UndertowSessionManager {
         if (!StampedLock.isReadLockStamp(stamp)) {
             throw UndertowClusteringLogger.ROOT_LOGGER.sessionManagerStopped();
         }
-        AttachmentKey<DistributableSession> key = this.key;
+        AttachmentKey<DetachableSession> key = this.key;
         AtomicLong stampRef = new AtomicLong(stamp);
         return new Consumer<>() {
             @Override
@@ -159,7 +138,7 @@ public class DistributableSessionManager implements UndertowSessionManager {
             return session;
         }
 
-        io.undertow.server.session.Session session = this.getSession(exchange, config, this.batchEntryFactory, this.createSession);
+        io.undertow.server.session.Session session = this.getSession(exchange, config, this.createSession);
         try {
             this.listeners.sessionCreated(session, exchange);
         } catch (RuntimeException | Error e) {
@@ -177,20 +156,22 @@ public class DistributableSessionManager implements UndertowSessionManager {
                 return session;
             }
         }
-        return this.getSession(exchange, config, this.batchEntryFactory, this.findSession);
+        return this.getSession(exchange, config, this.findSession);
     }
 
-    private io.undertow.server.session.Session getSession(HttpServerExchange exchange, SessionConfig config, Supplier<Map.Entry<SuspendedBatch, Consumer<HttpServerExchange>>> batchEntryFactory, Function<String, Session<Map<String, Object>>> sessionFactory) {
+    private io.undertow.server.session.Session getSession(HttpServerExchange exchange, SessionConfig config, Function<String, Session<Map<String, Object>>> sessionFactory) {
         if (config == null) {
             throw UndertowMessages.MESSAGES.couldNotFindSessionCookieConfig();
         }
-        Map.Entry<SuspendedBatch, Consumer<HttpServerExchange>> entry = batchEntryFactory.get();
-        SuspendedBatch suspendedBatch = entry.getKey();
-        Consumer<HttpServerExchange> closeTask = entry.getValue();
-        try (Context<Batch> context = suspendedBatch.resumeWithContext()) {
+        Consumer<HttpServerExchange> closeTask = this.getSessionCloseTask();
+        try {
             Session<Map<String, Object>> session = sessionFactory.apply(config.findSessionId(exchange));
-            if (session == null) {
-                return close(context, closeTask);
+            if ((session == null) || !session.isValid()) {
+                try (Session<Map<String, Object>> invalidSession = session) {
+                    return null;
+                } finally {
+                    closeTask.accept(exchange);
+                }
             }
             // Apply session ID encoding
             config.setSessionId(exchange, session.getId());
@@ -200,44 +181,13 @@ public class DistributableSessionManager implements UndertowSessionManager {
                     this.statistics.record(metaData);
                 }
             }
-            DistributableSession result = new DistributableSession(this, session, config, suspendedBatch, closeTask, this.statistics);
+            DetachableSession result = new DetachableSession(new DistributableSession(this, session, closeTask));
             if (exchange != null) {
                 exchange.putAttachment(this.key, result);
             }
             return result;
         } catch (RuntimeException | Error e) {
-            try (Context<Batch> context = suspendedBatch.resumeWithContext()) {
-                rollback(context, closeTask);
-            }
-            throw e;
-        }
-    }
-
-    private static void rollback(java.util.function.Supplier<Batch> batchProvider, Consumer<HttpServerExchange> closeTask) {
-        close(batchProvider, Batch::discard, closeTask);
-    }
-
-    private static io.undertow.server.session.Session close(java.util.function.Supplier<Batch> batchProvider, Consumer<HttpServerExchange> closeTask) {
-        close(batchProvider, Consumer.empty(), closeTask);
-        return null;
-    }
-
-    private static void close(java.util.function.Supplier<Batch> batchProvider, Consumer<Batch> batchTask, Consumer<HttpServerExchange> closeTask) {
-        try (Batch batch = batchProvider.get()) {
-            batchTask.accept(batch);
-        } catch (RuntimeException | Error e) {
-            LOGGER.error(e.getLocalizedMessage(), e);
-        } finally {
-            closeTask.accept(null);
-        }
-    }
-
-    private Map.Entry<SuspendedBatch, Consumer<HttpServerExchange>> createBatchEntry() {
-        Consumer<HttpServerExchange> closeTask = this.getSessionCloseTask();
-        try {
-            return Map.entry(this.manager.getBatchFactory().get().suspend(), closeTask);
-        } catch (RuntimeException | Error e) {
-            closeTask.accept(null);
+            closeTask.accept(exchange);
             throw e;
         }
     }
@@ -259,10 +209,7 @@ public class DistributableSessionManager implements UndertowSessionManager {
 
     @Override
     public io.undertow.server.session.Session getSession(String sessionId) {
-        try (Batch batch = this.manager.getBatchFactory().get()) {
-            Session<Map<String, Object>> session = this.getDetachedSession.apply(sessionId);
-            return (session != null) ? new DetachedDistributableSession(this, session, this.statistics) : null;
-        }
+        return VALID_IDENTIFIER.test(sessionId) ? new DetachedSession(this, sessionId) : null;
     }
 
     @Override
@@ -271,7 +218,7 @@ public class DistributableSessionManager implements UndertowSessionManager {
     }
 
     @Override
-    public SessionManagerStatistics getStatistics() {
+    public RecordableSessionManagerStatistics getStatistics() {
         return this.statistics;
     }
 

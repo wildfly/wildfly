@@ -97,7 +97,7 @@ public class ManagedRemoteCacheContainer extends RemoteCacheContainerDecorator i
             @Override
             public void stop() {
                 super.stop();
-                Runner.runAll(stopTasks);
+                Runner.of(stopTasks);
             }
         }: null;
     }
