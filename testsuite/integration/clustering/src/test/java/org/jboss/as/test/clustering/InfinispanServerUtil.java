@@ -7,7 +7,6 @@ package org.jboss.as.test.clustering;
 
 import static org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase.INFINISPAN_SERVER_HOME;
 import static org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase.INFINISPAN_SERVER_PROFILE;
-import static org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase.INFINISPAN_SERVER_PROFILE_DEFAULT;
 
 import java.net.URISyntaxException;
 import java.nio.file.Paths;
@@ -26,33 +25,26 @@ import org.junit.rules.TestRule;
  */
 public class InfinispanServerUtil {
 
-    public static final InfinispanServerRule INFINISPAN_SERVER_RULE;
+    public static final InfinispanServerRule INFINISPAN_SERVER_RULE = !GlowUtil.isGlowScan() ? createInfinispanServerRule() : null;
 
-    static {
-        String profile = (INFINISPAN_SERVER_PROFILE == null || INFINISPAN_SERVER_PROFILE.isEmpty()) ? INFINISPAN_SERVER_PROFILE_DEFAULT : INFINISPAN_SERVER_PROFILE;
-        // Workaround for "ISPN-13107 ServerRunMode.FORKED yields InvalidPathException with relative server config paths on Windows platform" by using absolute file path which won't get mangled.
-        String absoluteConfigurationFile = null;
+    public static InfinispanServerRule createInfinispanServerRule() {
         try {
-            absoluteConfigurationFile = Paths.get(Objects.requireNonNull(AbstractClusteringTestCase.class.getClassLoader().getResource(profile)).toURI()).toFile().toString();
-        } catch (URISyntaxException ignore) {
-        }
+            // Workaround for "ISPN-13107 ServerRunMode.FORKED yields InvalidPathException with relative server config paths on Windows platform" by using absolute file path which won't get mangled.
+            String path = Paths.get(Objects.requireNonNull(AbstractClusteringTestCase.class.getClassLoader().getResource(INFINISPAN_SERVER_PROFILE), INFINISPAN_SERVER_PROFILE).toURI()).toFile().toString();
 
-        InfinispanServerRuleBuilder builder = InfinispanServerRuleBuilder
-                .config(absoluteConfigurationFile);
-        // When WildFly Glow is instantiating the deployment outside of the test excution, INFINISPAN_SERVER_HOME is null
-        if (!GlowUtil.isGlowScan()) {
-            builder.property(TestSystemPropertyNames.INFINISPAN_TEST_SERVER_DIR, INFINISPAN_SERVER_HOME);
+            return InfinispanServerRuleBuilder.config(path)
+                    .property("infinispan.client.rest.auth_username", "testsuite-driver-user")
+                    .property("infinispan.client.rest.auth_password", "testsuite-driver-password")
+                    .property(TestSystemPropertyNames.INFINISPAN_TEST_SERVER_DIR, INFINISPAN_SERVER_HOME)
+                    .numServers(1)
+                    .runMode(ServerRunMode.FORKED)
+                    .build();
+        } catch (URISyntaxException e) {
+            throw new IllegalStateException(e);
         }
-        INFINISPAN_SERVER_RULE = builder.property("infinispan.client.rest.auth_username", "testsuite-driver-user")
-                .property("infinispan.client.rest.auth_password", "testsuite-driver-password")
-                // When WildFly Glow is instantiating the deployment, we don't want to start any server.
-                .numServers(GlowUtil.isGlowScan() ? 0 : 1)
-                .runMode(ServerRunMode.FORKED)
-                .build();
     }
 
     public static TestRule infinispanServerTestRule() {
         return INFINISPAN_SERVER_RULE;
     }
-
 }
