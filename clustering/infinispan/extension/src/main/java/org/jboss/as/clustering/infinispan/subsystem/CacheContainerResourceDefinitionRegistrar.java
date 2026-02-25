@@ -33,10 +33,7 @@ import org.infinispan.globalstate.ConfigurationStorage;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.infinispan.protostream.SerializationContext;
 import org.infinispan.protostream.SerializationContextInitializer;
-import org.jboss.as.clustering.controller.EnumAttributeDefinition;
 import org.jboss.as.clustering.controller.MBeanServerResolver;
-import org.jboss.as.clustering.controller.ModuleListAttributeDefinition;
-import org.jboss.as.clustering.controller.StatisticsEnabledAttributeDefinition;
 import org.jboss.as.clustering.infinispan.jmx.MBeanServerProvider;
 import org.jboss.as.clustering.infinispan.logging.InfinispanLogger;
 import org.jboss.as.clustering.naming.BinderServiceInstaller;
@@ -50,7 +47,6 @@ import org.jboss.as.controller.StringListAttributeDefinition;
 import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
-import org.jboss.as.controller.operations.validation.ParameterValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
@@ -69,9 +65,12 @@ import org.wildfly.clustering.singleton.service.SingletonServiceTargetFactory;
 import org.wildfly.service.Installer.StartWhen;
 import org.wildfly.service.descriptor.UnaryServiceDescriptor;
 import org.wildfly.subsystem.resource.ChildResourceDefinitionRegistrar;
+import org.wildfly.subsystem.resource.EnumAttributeDefinition;
 import org.wildfly.subsystem.resource.ManagementResourceRegistrar;
 import org.wildfly.subsystem.resource.ManagementResourceRegistrationContext;
+import org.wildfly.subsystem.resource.ModuleListAttributeDefinition;
 import org.wildfly.subsystem.resource.ResourceDescriptor;
+import org.wildfly.subsystem.resource.StatisticsEnabledAttributeDefinition;
 import org.wildfly.subsystem.resource.capability.CapabilityReference;
 import org.wildfly.subsystem.resource.capability.CapabilityReferenceAttributeDefinition;
 import org.wildfly.subsystem.resource.executor.MetricOperationStepHandler;
@@ -94,15 +93,9 @@ public class CacheContainerResourceDefinitionRegistrar implements ChildResourceD
 
     static final CapabilityReferenceAttributeDefinition<Configuration> DEFAULT_CACHE = new CapabilityReferenceAttributeDefinition.Builder<>("default-cache", CapabilityReference.builder(CAPABILITY, InfinispanServiceDescriptor.CACHE_CONFIGURATION).withParentPath(REGISTRATION.getPathElement()).build()).setRequired(false).build();
     static final StatisticsEnabledAttributeDefinition STATISTICS_ENABLED = new StatisticsEnabledAttributeDefinition.Builder().build();
-    static final EnumAttributeDefinition<InfinispanMarshallerFactory> MARSHALLER = new EnumAttributeDefinition.Builder<>("marshaller", InfinispanMarshallerFactory.LEGACY)
-            .setValidator(new ParameterValidator() {
-                @Override
-                public void validateParameter(String parameterName, ModelNode value) throws OperationFailedException {
-                    if (!value.isDefined() || value.asString().equals(InfinispanMarshallerFactory.LEGACY.name())) {
-                        InfinispanLogger.ROOT_LOGGER.marshallerEnumValueDeprecated(parameterName, InfinispanMarshallerFactory.LEGACY, EnumSet.complementOf(EnumSet.of(InfinispanMarshallerFactory.LEGACY)));
-                    }
-                }
-            })
+    static final EnumAttributeDefinition<InfinispanMarshallerFactory> MARSHALLER = EnumAttributeDefinition.nameBuilder("marshaller", InfinispanMarshallerFactory.class)
+            .setDefaultValue(InfinispanMarshallerFactory.LEGACY)
+            .setCorrector(InfinispanMarshallerFactory.CORRECTOR)
             .build();
     static final StringListAttributeDefinition ALIASES = new StringListAttributeDefinition.Builder("aliases").setRequired(false).setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES).build();
     static final ModuleListAttributeDefinition MODULES = new ModuleListAttributeDefinition.Builder().setRequired(false).setDefaultValue(Module.forClass(WildFlyClusteringModuleLifecycle.class)).build();

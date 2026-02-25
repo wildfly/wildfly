@@ -12,7 +12,6 @@ import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.UnaryOperator;
 
-import org.jboss.as.clustering.controller.EnumAttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathElement;
@@ -33,6 +32,7 @@ import org.wildfly.clustering.web.service.session.DistributableSessionManagement
 import org.wildfly.clustering.web.service.session.DistributableSessionManagementProvider;
 import org.wildfly.extension.clustering.web.session.DistributableSessionManagementProviderFactory;
 import org.wildfly.subsystem.resource.ChildResourceDefinitionRegistrar;
+import org.wildfly.subsystem.resource.EnumAttributeDefinition;
 import org.wildfly.subsystem.resource.ManagementResourceRegistrar;
 import org.wildfly.subsystem.resource.ManagementResourceRegistrationContext;
 import org.wildfly.subsystem.resource.ResourceDescriptor;
@@ -52,8 +52,10 @@ public abstract class SessionManagementResourceDefinitionRegistrar implements Ch
             .setAllowMultipleRegistrations(true)
             .build();
 
-    static final EnumAttributeDefinition<SessionGranularity> GRANULARITY = new EnumAttributeDefinition.Builder<>("granularity", SessionGranularity.class).build();
-    static final EnumAttributeDefinition<SessionMarshallerFactory> MARSHALLER = new EnumAttributeDefinition.Builder<>("marshaller", SessionMarshallerFactory.JBOSS).build();
+    static final EnumAttributeDefinition<SessionGranularity> GRANULARITY = EnumAttributeDefinition.nameBuilder("granularity", SessionGranularity.class).build();
+    static final EnumAttributeDefinition<SessionMarshallerFactory> MARSHALLER = EnumAttributeDefinition.nameBuilder("marshaller", SessionMarshallerFactory.class)
+            .setDefaultValue(SessionMarshallerFactory.JBOSS)
+            .build();
 
     private final ResourceRegistration registration;
     private final CacheConfigurationAttributeGroup cacheAttributeGroup;

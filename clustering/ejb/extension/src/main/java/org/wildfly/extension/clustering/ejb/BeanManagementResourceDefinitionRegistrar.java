@@ -12,7 +12,6 @@ import java.util.OptionalInt;
 import java.util.function.Function;
 import java.util.function.UnaryOperator;
 
-import org.jboss.as.clustering.controller.ISOStandardDurationAttributeDefinition;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -35,6 +34,7 @@ import org.wildfly.clustering.ejb.cache.bean.BeanMarshallerFactory;
 import org.wildfly.clustering.ejb.remote.ClientMappingsRegistryProvider;
 import org.wildfly.clustering.marshalling.ByteBufferMarshaller;
 import org.wildfly.subsystem.resource.ChildResourceDefinitionRegistrar;
+import org.wildfly.subsystem.resource.DurationAttributeDefinition;
 import org.wildfly.subsystem.resource.ManagementResourceRegistrar;
 import org.wildfly.subsystem.resource.ManagementResourceRegistrationContext;
 import org.wildfly.subsystem.resource.ResourceDescriptor;
@@ -61,7 +61,7 @@ public abstract class BeanManagementResourceDefinitionRegistrar implements Child
             .setValidator(new IntRangeValidator(1))
             .build();
 
-    static final ISOStandardDurationAttributeDefinition IDLE_THRESHOLD = new ISOStandardDurationAttributeDefinition.Builder("idle-threshold")
+    static final DurationAttributeDefinition IDLE_THRESHOLD = DurationAttributeDefinition.builder("idle-threshold")
             .setRequired(false)
             .setStability(Stability.COMMUNITY)
             .build();

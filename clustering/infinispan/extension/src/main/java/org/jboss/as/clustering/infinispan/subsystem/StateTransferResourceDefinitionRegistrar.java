@@ -13,7 +13,6 @@ import java.util.function.Supplier;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.configuration.cache.StateTransferConfiguration;
 import org.infinispan.configuration.cache.StateTransferConfigurationBuilder;
-import org.jboss.as.clustering.controller.DurationAttributeDefinition;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -26,6 +25,7 @@ import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.wildfly.service.descriptor.BinaryServiceDescriptor;
+import org.wildfly.subsystem.resource.DurationAttributeDefinition;
 import org.wildfly.subsystem.resource.ResourceDescriptor;
 import org.wildfly.subsystem.service.ServiceDependency;
 
@@ -37,7 +37,7 @@ public class StateTransferResourceDefinitionRegistrar extends ConfigurationResou
     static final BinaryServiceDescriptor<StateTransferConfiguration> SERVICE_DESCRIPTOR = BinaryServiceDescriptorFactory.createServiceDescriptor(ComponentResourceRegistration.STATE_TRANSFER, StateTransferConfiguration.class);
     static final RuntimeCapability<Void> CAPABILITY = RuntimeCapability.Builder.of(SERVICE_DESCRIPTOR).setDynamicNameMapper(BinaryCapabilityNameResolver.GRANDPARENT_PARENT).setAllowMultipleRegistrations(true).build();
 
-    static final DurationAttributeDefinition TIMEOUT = new DurationAttributeDefinition.Builder("timeout", ChronoUnit.MILLIS).setDefaultValue(Duration.ofMinutes(4)).build();
+    static final DurationAttributeDefinition TIMEOUT = DurationAttributeDefinition.builder("timeout", ChronoUnit.MILLIS).setDefaultValue(Duration.ofMinutes(4)).build();
     static final AttributeDefinition CHUNK_SIZE = new SimpleAttributeDefinitionBuilder("chunk-size", ModelType.INT)
             .setAllowExpression(true)
             .setRequired(false)
