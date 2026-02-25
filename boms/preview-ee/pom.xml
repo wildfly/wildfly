@@ -36,7 +36,7 @@
         <!-- Thus, in preview, ORM 7.1 uses 2.4 so keep this at current 2.4.x until standard moves to EE 11 -->
         <version.com.h2database>2.4.240</version.com.h2database>
         <version.io.undertow>2.4.0.Alpha1</version.io.undertow>
-        <version.io.undertow.ee>2.0.0.Alpha2</version.io.undertow.ee>
+        <version.io.undertow.ee>2.0.0.Beta2</version.io.undertow.ee>
         <version.jakarta.annotation.jakarta-annotation-api>3.0.0</version.jakarta.annotation.jakarta-annotation-api>
         <version.jakarta.authentication.jakarta-authentication-api>3.1.0</version.jakarta.authentication.jakarta-authentication-api>
         <version.jakarta.authorization.jakarta-authorization-api>3.0.0</version.jakarta.authorization.jakarta-authorization-api>
