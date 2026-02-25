@@ -23,24 +23,17 @@ import org.jboss.as.test.shared.GlowUtil;
  */
 public class InfinispanServerUtil {
 
-    public static final InfinispanServerExtension INFINISPAN_SERVER_EXTENSION;
+    public static final InfinispanServerExtension INFINISPAN_SERVER_EXTENSION = !GlowUtil.isGlowScan() ? createInfinispanServerExtension() : null;
 
-    static {
-        String profile = (INFINISPAN_SERVER_PROFILE == null || INFINISPAN_SERVER_PROFILE.isEmpty()) ? INFINISPAN_SERVER_PROFILE_DEFAULT : INFINISPAN_SERVER_PROFILE;
+    public static InfinispanServerExtension createInfinispanServerExtension() {
         // Workaround for "ISPN-13107 ServerRunMode.FORKED yields InvalidPathException with relative server config paths on Windows platform" by using absolute file path which won't get mangled.
-        String absoluteConfigurationFile = Paths.get(URI.create(Objects.requireNonNull(AbstractClusteringTestCase.class.getClassLoader().getResource(profile)).toString())).toFile().toString();
+        String path = Paths.get(URI.create(Objects.requireNonNull(AbstractClusteringTestCase.class.getClassLoader().getResource(INFINISPAN_SERVER_PROFILE), INFINISPAN_SERVER_PROFILE).toString())).toFile().toString();
 
-        InfinispanServerExtensionBuilder builder = InfinispanServerExtensionBuilder
-                .config(absoluteConfigurationFile);
-        // When WildFly Glow is instantiating the deployment outside the test execution, INFINISPAN_SERVER_HOME is null
-        if (!GlowUtil.isGlowScan()) {
-            builder.property(TestSystemPropertyNames.INFINISPAN_TEST_SERVER_DIR, INFINISPAN_SERVER_HOME);
-        }
-        INFINISPAN_SERVER_EXTENSION = builder
+        return InfinispanServerExtensionBuilder.config(path)
                 .property("infinispan.client.rest.auth_username", "testsuite-driver-user")
                 .property("infinispan.client.rest.auth_password", "testsuite-driver-password")
-                // When WildFly Glow is instantiating the deployment, we don't want to start any server.
-                .numServers(GlowUtil.isGlowScan() ? 0 : 1)
+                .property(TestSystemPropertyNames.INFINISPAN_TEST_SERVER_DIR, INFINISPAN_SERVER_HOME)
+                .numServers(1)
                 .runMode(ServerRunMode.FORKED)
                 .build();
     }
@@ -48,5 +41,4 @@ public class InfinispanServerUtil {
     public static InfinispanServerExtension infinispanServerExtension() {
         return INFINISPAN_SERVER_EXTENSION;
     }
-
 }
