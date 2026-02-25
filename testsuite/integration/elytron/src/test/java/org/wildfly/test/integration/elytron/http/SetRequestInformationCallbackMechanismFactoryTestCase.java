@@ -66,7 +66,7 @@ public class SetRequestInformationCallbackMechanismFactoryTestCase {
                 .addClass(CustomRealm.class);
         File jarFile = new File(tmpDir.getRoot(), "testJaas.jar");
         jar.as(ZipExporter.class).exportTo(jarFile, true);
-        CLIWrapper cli = new CLIWrapper(true, null, null, 10000);
+        CLIWrapper cli = new CLIWrapper(true);
 
         cli.sendLine("module add --name=customRealmModule "
                 + " --resources=" + jarFile.getAbsolutePath()
@@ -114,7 +114,7 @@ public class SetRequestInformationCallbackMechanismFactoryTestCase {
 
     @AfterClass
     public static void cleanUp() throws Exception {
-        CLIWrapper cli = new CLIWrapper(true, null, null, 10000);
+        CLIWrapper cli = new CLIWrapper(true);
         cli.sendLine("/subsystem=undertow/application-security-domain=RequestInfoDomain:remove");
         cli.sendLine("/subsystem=elytron/http-authentication-factory=example-fs-http-auth:remove");
         cli.sendLine("/subsystem=elytron/security-domain=RequestInfoApplicationDomain:remove");

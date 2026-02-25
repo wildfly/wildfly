@@ -50,7 +50,7 @@ public class DataSourceTestCase extends AbstractCliTestBase {
 
     @BeforeClass
     public static void before() throws Exception {
-        AbstractCliTestBase.initCLI(20000);
+        AbstractCliTestBase.initCLI();
     }
 
     @AfterClass

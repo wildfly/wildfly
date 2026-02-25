@@ -17,9 +17,9 @@ import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.InSequence;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
+import org.jboss.as.arquillian.setup.SnapshotServerSetupTask;
 import org.jboss.as.test.integration.jaxrs.cfg.resources.ErrorResource;
 import org.jboss.as.test.integration.jaxrs.cfg.resources.TestApplication;
-import org.jboss.as.test.shared.ExtendedSnapshotServerSetupTask;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
@@ -36,7 +36,7 @@ import org.junit.Test;
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
 @RunAsClient
-@ServerSetup(ExtendedSnapshotServerSetupTask.class)
+@ServerSetup(SnapshotServerSetupTask.class)
 public class ResteasyDisableHtmlSanitizerTestCase extends AbstractResteasyAttributeTest {
     private static final String HTML = "<html><body><h1>Error: Failed on purpose</h1></body></html>";
     private static final String ESCAPED_HTML = "&lt;html&gt;&lt;body&gt;&lt;h1&gt;Error: Failed on purpose&lt;&#x2F;h1&gt;&lt;&#x2F;body&gt;&lt;&#x2F;html&gt;";

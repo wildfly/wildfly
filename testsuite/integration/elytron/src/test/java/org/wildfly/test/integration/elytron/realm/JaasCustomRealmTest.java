@@ -77,7 +77,7 @@ public class JaasCustomRealmTest {
                 .addClass(TestCallbackHandler.class);
         File jarFile = new File(tmpDir.getRoot(), "testJaas.jar");
         jar.as(ZipExporter.class).exportTo(jarFile, true);
-        CLIWrapper cli = new CLIWrapper(true, null, null, 10000);
+        CLIWrapper cli = new CLIWrapper(true);
         // ignore error on windows where the testJaas.jar might exist from previous run
         cli.sendLine("module add --name=jaasLoginModule "
                 + " --resources=" + jarFile.getAbsolutePath()
@@ -142,7 +142,7 @@ public class JaasCustomRealmTest {
     @AfterClass
     public static void cleanUp() throws Exception {
         if (System.getProperty("ts.layers") == null) {
-            CLIWrapper cli = new CLIWrapper(true, null, null, 10000);
+            CLIWrapper cli = new CLIWrapper(true);
             cli.sendLine("/subsystem=undertow/application-security-domain=JAASSecurityDomain:remove");
             cli.sendLine("/subsystem=elytron/http-authentication-factory=example-fs-http-auth:remove");
             cli.sendLine("/subsystem=elytron/security-domain=JAASSecurityDomain:remove");

@@ -277,7 +277,7 @@ public class CertificateRevocationListTestBase extends CommonBase {
     }
 
     protected static void configureSSLContext(String sslContextName) throws Exception {
-        try (CLIWrapper cli = new CLIWrapper(true, null, null, 10000)) {
+        try(CLIWrapper cli = new CLIWrapper(true)) {
             cli.sendLine("batch");
             cli.sendLine(String.format("/subsystem=undertow/server=default-server/https-listener=%s:write-attribute" +
                     "(name=ssl-context,value=%s)", HTTPS, sslContextName));
@@ -287,7 +287,7 @@ public class CertificateRevocationListTestBase extends CommonBase {
     }
 
     protected void restoreConfiguration() throws Exception {
-        try (CLIWrapper cli = new CLIWrapper(true, null, null, 10000)) {
+        try (CLIWrapper cli = new CLIWrapper(true)) {
             cli.sendLine("batch");
             cli.sendLine(String.format("/subsystem=undertow/server=default-server/https-listener=%s:write-attribute" +
                     "(name=ssl-context,value=%s)", HTTPS, "applicationSSC"));

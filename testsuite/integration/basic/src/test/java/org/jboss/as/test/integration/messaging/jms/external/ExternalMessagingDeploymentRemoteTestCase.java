@@ -24,12 +24,12 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.container.ManagementClient;
+import org.jboss.as.arquillian.setup.SnapshotServerSetupTask;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.client.helpers.Operations;
 import org.jboss.as.test.integration.common.HttpRequest;
 import org.jboss.as.test.integration.common.jms.JMSOperations;
 import org.jboss.as.test.integration.common.jms.JMSOperationsProvider;
-import org.jboss.as.test.shared.ExtendedSnapshotServerSetupTask;
 import org.jboss.as.test.shared.PermissionUtils;
 import org.jboss.as.test.shared.ServerReload;
 import org.jboss.as.test.shared.TimeoutUtil;
@@ -65,7 +65,7 @@ public class ExternalMessagingDeploymentRemoteTestCase {
     @ArquillianResource
     private ManagementClient managementClient;
 
-    static class SetupTask extends ExtendedSnapshotServerSetupTask {
+    static class SetupTask extends SnapshotServerSetupTask {
 
         private static final Logger logger = Logger.getLogger(ExternalMessagingDeploymentRemoteTestCase.SetupTask.class);
 

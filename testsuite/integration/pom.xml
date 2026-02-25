@@ -41,6 +41,7 @@
             -Djboss.dist=${jboss.dist}
             -Djava.io.tmpdir=${basedir}/target
         </jvm.args.dirs>
+        <extra.server.jvm.args>${jvm.args.narayana}</extra.server.jvm.args>
         <server.jvm.args>${surefire.system.args} ${jvm.args.ip.server} ${jvm.args.other} ${jvm.args.timeouts} -Dnode0=${node0} -Dnode1=${node1} -Dmcast=${mcast} -Dmcast.ttl=${mcast.ttl} ${jvm.args.dirs} ${extra.server.jvm.args}</server.jvm.args>
 
         <!-- Used to provide an absolute location for the distribution under test. -->

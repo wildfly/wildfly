@@ -95,6 +95,7 @@ public class RemoteStatefulEJBConcurrentFailoverTestCase extends AbstractCluster
                 }
 
                 bean.remove();
+                lifecycle.waitUntilStopped(target);
                 lifecycle.start(target);
 
                 latch = new CountDownLatch(1);
@@ -109,6 +110,7 @@ public class RemoteStatefulEJBConcurrentFailoverTestCase extends AbstractCluster
                 } catch (CancellationException e) {
                     // Ignore
                 }
+                lifecycle.waitUntilStopped(target);
                 lifecycle.start(target);
             } finally {
                 executor.shutdownNow();

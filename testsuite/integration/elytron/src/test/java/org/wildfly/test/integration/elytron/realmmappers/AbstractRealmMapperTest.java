@@ -32,7 +32,7 @@ public abstract class AbstractRealmMapperTest {
     }
 
     protected void setupRealmMapper(String realmMapperName) throws Exception {
-        try (CLIWrapper cli = new CLIWrapper(true, null, null, 10000)) {
+        try (CLIWrapper cli = new CLIWrapper(true)) {
             cli.sendLine(String.format("/subsystem=elytron/security-domain=%s:write-attribute(name=realm-mapper,value=%s)",
                     RealmMapperServerSetupTask.SECURITY_DOMAIN_NAME, realmMapperName));
             cli.sendLine(String.format("reload"));
@@ -40,7 +40,7 @@ public abstract class AbstractRealmMapperTest {
     }
 
     protected void undefineRealmMapper() throws Exception {
-        try (CLIWrapper cli = new CLIWrapper(true, null, null, 10000)) {
+        try (CLIWrapper cli = new CLIWrapper(true)) {
             cli.sendLine(String.format("/subsystem=elytron/security-domain=%s:undefine-attribute(name=realm-mapper)",
                     RealmMapperServerSetupTask.SECURITY_DOMAIN_NAME));
             cli.sendLine(String.format("reload"));

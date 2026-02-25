@@ -142,15 +142,14 @@ public class EEConcurrencySuspendTestCase {
     }
 
     private void waitUntilSuspendStateResult(ModelNode op, String expectedResult) throws IOException, InterruptedException {
-        final long delay = 20000L;
-        final long deadline = System.currentTimeMillis() + delay;
+        final long deadline = System.currentTimeMillis() + 4000;
         while (true) {
             String result = executeForStringResult(managementClient.getControllerClient(), op);
             if (result.equals(expectedResult)) {
                 break;
             }
             if (System.currentTimeMillis() > deadline) {
-                Assert.fail("Server suspend-state is not in " + expectedResult + " after " + delay + " milliseconds.");
+                Assert.fail("Server suspend-state is not in " + expectedResult + " after " + deadline + " milliseconds.");
             }
             TimeUnit.MILLISECONDS.sleep(500);
         }

@@ -161,7 +161,7 @@ public class WildFlyElytronClientDefaultSSLContextProviderTestCase {
             Assert.assertTrue(managementClient.getControllerClient().execute(modelNode).asString().contains("\"outcome\" => \"success\""));
 
             // Remove the reference to the legacy security realm and update the https-listener to use the ssl-context we just created
-            CLIWrapper cli = new CLIWrapper(true, null, null, 10000);
+            CLIWrapper cli = new CLIWrapper(true);
             cli.sendLine("batch");
             cli.sendLine("/subsystem=undertow/server=default-server/https-listener=https:write-attribute(name=ssl-context,value=twoWaySSC)");
             cli.sendLine("run-batch");

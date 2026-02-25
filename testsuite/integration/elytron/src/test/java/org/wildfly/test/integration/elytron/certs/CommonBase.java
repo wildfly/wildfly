@@ -50,7 +50,7 @@ public class CommonBase {
     private Logger logger = Logger.getLogger(CommonBase.class);
 
     protected void setSoftFail(boolean value) throws Exception {
-        try (CLIWrapper cli = new CLIWrapper(true, null, null, 10000)) {
+        try (CLIWrapper cli = new CLIWrapper(true)) {
             try {
                 cli.sendLine(String.format(
                         "/subsystem=elytron/trust-manager=serverTrustManager:write-attribute(name=soft-fail, value=\"%s\")",
@@ -62,7 +62,7 @@ public class CommonBase {
     }
 
     protected void setCrl(String crlFile) throws Exception {
-        try (CLIWrapper cli = new CLIWrapper(true, null, null, 10000)) {
+        try (CLIWrapper cli = new CLIWrapper(true)) {
             try {
                 if (crlFile != null) {
                     cli.sendLine(String.format(
@@ -79,7 +79,7 @@ public class CommonBase {
     }
 
     protected void setPreferCrls(Boolean preferCrls) throws Exception {
-        try (CLIWrapper cli = new CLIWrapper(true, null, null, 10000)) {
+        try (CLIWrapper cli = new CLIWrapper(true)) {
             try {
                 if (preferCrls != null) {
                     cli.sendLine(String.format(
@@ -96,7 +96,7 @@ public class CommonBase {
     }
 
     protected void setOcspUrl(String ocspResponderUrl) throws Exception {
-        try (CLIWrapper cli = new CLIWrapper(true, null, null, 10000)) {
+        try (CLIWrapper cli = new CLIWrapper(true)) {
             try {
                 if (ocspResponderUrl != null) {
                     cli.sendLine(String.format(
@@ -113,7 +113,7 @@ public class CommonBase {
     }
 
     protected void setMaxCertChain(Integer maximumCertPath) throws Exception {
-        try (CLIWrapper cli = new CLIWrapper(true, null, null, 10000)) {
+        try (CLIWrapper cli = new CLIWrapper(true)) {
             try {
                 if (maximumCertPath != null) {
                     cli.sendLine(String.format(

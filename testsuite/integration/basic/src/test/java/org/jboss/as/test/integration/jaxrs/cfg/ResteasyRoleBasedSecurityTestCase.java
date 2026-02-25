@@ -27,10 +27,10 @@ import org.jboss.arquillian.junit.InSequence;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.container.ManagementClient;
+import org.jboss.as.arquillian.setup.SnapshotServerSetupTask;
 import org.jboss.as.controller.client.helpers.Operations;
 import org.jboss.as.test.integration.jaxrs.cfg.resources.SecureResource;
 import org.jboss.as.test.integration.jaxrs.cfg.resources.TestApplication;
-import org.jboss.as.test.shared.ExtendedSnapshotServerSetupTask;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -56,7 +56,7 @@ import org.wildfly.testing.tools.deployments.DeploymentDescriptors;
 @ServerSetup(ResteasyRoleBasedSecurityTestCase.SecurityDomainServerSetupTask.class)
 public class ResteasyRoleBasedSecurityTestCase extends AbstractResteasyAttributeTest {
 
-    static class SecurityDomainServerSetupTask extends ExtendedSnapshotServerSetupTask {
+    static class SecurityDomainServerSetupTask extends SnapshotServerSetupTask {
         private static final Logger LOGGER = Logger.getLogger(SecurityDomainServerSetupTask.class);
         // Properties file path
         private static final String USERS_FILENAME = "test-users.properties";

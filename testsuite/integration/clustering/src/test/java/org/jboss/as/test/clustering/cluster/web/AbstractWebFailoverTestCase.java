@@ -27,10 +27,12 @@ import org.infinispan.transaction.TransactionMode;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
+import org.jboss.as.test.clustering.NodeUtil;
 import org.jboss.as.test.clustering.TopologyChangeListenerUtil;
 import org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase;
 import org.jboss.as.test.clustering.single.web.SimpleServlet;
 import org.jboss.as.test.http.util.TestHttpClientUtils;
+import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -66,6 +68,11 @@ public abstract class AbstractWebFailoverTestCase extends AbstractClusteringTest
                 }
             }
         };
+    }
+
+    @AfterClass
+    public static void cleanup() {
+        NodeUtil.stop(controller, NODE_1_2_3);
     }
 
     @Test
@@ -141,6 +148,7 @@ public abstract class AbstractWebFailoverTestCase extends AbstractClusteringTest
             this.nonTxWait.run();
 
             lifecycle.stop(NODE_1);
+            lifecycle.waitUntilStopped(NODE_1);
 
             this.establishTopology(baseURL2, Set.of(NODE_2, NODE_3));
 
@@ -231,6 +239,7 @@ public abstract class AbstractWebFailoverTestCase extends AbstractClusteringTest
             this.nonTxWait.run();
 
             lifecycle.stop(NODE_2);
+            lifecycle.waitUntilStopped(NODE_2);
 
             this.establishTopology(baseURL1, Set.of(NODE_1, NODE_3));
 

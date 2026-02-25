@@ -17,9 +17,9 @@ import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.InSequence;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
+import org.jboss.as.arquillian.setup.SnapshotServerSetupTask;
 import org.jboss.as.test.integration.jaxrs.cfg.resources.PreconditionRfc7232PrecedenceResource;
 import org.jboss.as.test.integration.jaxrs.cfg.resources.TestApplication;
-import org.jboss.as.test.shared.ExtendedSnapshotServerSetupTask;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
@@ -37,7 +37,7 @@ import org.junit.Test;
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
 @RunAsClient
-@ServerSetup(ExtendedSnapshotServerSetupTask.class)
+@ServerSetup(SnapshotServerSetupTask.class)
 public class ResteasyRfc7232PreconditionsTestCase extends AbstractResteasyAttributeTest {
 
     @ArquillianResource

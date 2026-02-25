@@ -8,11 +8,13 @@ import org.infinispan.transaction.TransactionMode;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.TargetsContainer;
 import org.jboss.as.test.clustering.ClusterTestUtil;
+import org.jboss.as.test.clustering.NodeUtil;
 import org.jboss.as.test.clustering.single.web.Mutable;
 import org.jboss.as.test.clustering.single.web.SimpleServlet;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.junit.AfterClass;
 
 public class CoarseWebFailoverTestCase extends AbstractWebFailoverTestCase {
 
@@ -39,6 +41,11 @@ public class CoarseWebFailoverTestCase extends AbstractWebFailoverTestCase {
     @TargetsContainer(NODE_3)
     public static Archive<?> deployment3() {
         return getDeployment();
+    }
+
+    @AfterClass
+    public static void cleanup() {
+        NodeUtil.stop(controller, NODE_1_2_3);
     }
 
     private static Archive<?> getDeployment() {

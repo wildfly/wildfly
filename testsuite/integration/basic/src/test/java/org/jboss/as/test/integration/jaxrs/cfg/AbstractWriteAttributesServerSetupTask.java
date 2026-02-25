@@ -8,14 +8,14 @@ package org.jboss.as.test.integration.jaxrs.cfg;
 import java.util.Map;
 
 import org.jboss.as.arquillian.container.ManagementClient;
+import org.jboss.as.arquillian.setup.SnapshotServerSetupTask;
 import org.jboss.as.controller.client.helpers.Operations;
-import org.jboss.as.test.shared.ExtendedSnapshotServerSetupTask;
 import org.jboss.dmr.ModelNode;
 
 /**
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
-abstract class AbstractWriteAttributesServerSetupTask extends ExtendedSnapshotServerSetupTask {
+abstract class AbstractWriteAttributesServerSetupTask extends SnapshotServerSetupTask {
     private static final ModelNode ADDRESS = Operations.createAddress("subsystem", "jaxrs");
     private final Map<String, ModelNode> attributes;
 

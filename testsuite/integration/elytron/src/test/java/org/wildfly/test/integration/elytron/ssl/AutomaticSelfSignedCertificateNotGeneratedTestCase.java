@@ -115,7 +115,7 @@ public class AutomaticSelfSignedCertificateNotGeneratedTestCase {
     @Test
     public void testSelfSignedCertificateNotGeneratedWithGenerateAttributeUndefined() throws Exception {
         // undefine generate-self-signed-certificate-host
-        try (CLIWrapper cli = new CLIWrapper(true, null, null, 10000)) {
+        try (CLIWrapper cli = new CLIWrapper(true)) {
             cli.sendLine(String.format("/subsystem=elytron/key-manager=%s:undefine-attribute(name=generate-self-signed-certificate-host)",
                     NAME));
             cli.sendLine(String.format("reload"));
@@ -143,7 +143,7 @@ public class AutomaticSelfSignedCertificateNotGeneratedTestCase {
             }
         } finally {
             // clean up
-            try (CLIWrapper cli = new CLIWrapper(true, null, null, 10000)) {
+            try (CLIWrapper cli = new CLIWrapper(true)) {
                 cli.sendLine(String.format("/subsystem=elytron/key-manager=%s:write-attribute(name=generate-self-signed-certificate-host,value=%s)",
                         NAME, GENERATE_SELF_SIGNED_CERTIFICATE_HOST));
                 cli.sendLine(String.format("reload"));

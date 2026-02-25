@@ -24,12 +24,12 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.container.ManagementClient;
+import org.jboss.as.arquillian.setup.SnapshotServerSetupTask;
 import org.jboss.as.controller.client.helpers.Operations;
 import org.jboss.as.test.integration.management.util.CLIWrapper;
 import org.jboss.as.test.integration.security.common.Utils;
 import org.jboss.as.test.integration.security.common.servlets.SimpleSecuredServlet;
 import org.jboss.as.test.integration.security.common.servlets.SimpleServlet;
-import org.jboss.as.test.shared.ExtendedSnapshotServerSetupTask;
 import org.jboss.as.test.shared.ServerReload;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -124,7 +124,7 @@ public class PropertiesRealmTestCase {
         return new URL(url.toExternalForm() + SimpleSecuredServlet.SERVLET_PATH.substring(1));
     }
 
-    static class SetUpTask extends ExtendedSnapshotServerSetupTask {
+    static class SetUpTask extends SnapshotServerSetupTask {
 
         private static final String REALM_NAME_ENCODED = "propRealmEncoded";
         private static final String REALM_NAME_ENCODING_CHARSET = "propRealmEncodingCharset";

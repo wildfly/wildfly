@@ -37,7 +37,7 @@ public class JDBCRealmAdminOnlyModeTestCase {
     @ContainerResource
     protected ManagementClient managementClient;
 
-    protected static final int CONNECTION_TIMEOUT_IN_MS = TimeoutUtil.adjust(10 * 1000);
+    protected static final int CONNECTION_TIMEOUT_IN_MS = TimeoutUtil.adjust(6 * 1000);
     protected static final boolean ADMIN_ONLY_MODE = true;
 
     @Test

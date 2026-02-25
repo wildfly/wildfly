@@ -30,7 +30,7 @@
         <jbossas.ts.integ.dir>${basedir}/..</jbossas.ts.integ.dir>
         <jbossas.ts.dir>${jbossas.ts.integ.dir}/..</jbossas.ts.dir>
         <jbossas.project.dir>${jbossas.ts.dir}/..</jbossas.project.dir>
-        <surefire.forked.process.timeout>5400</surefire.forked.process.timeout>
+        <surefire.forked.process.timeout>3600</surefire.forked.process.timeout>
         <!-- properties to enable bootable phases -->
         <bootable-jar-maven-jar-plugin.create.modules.phase>none</bootable-jar-maven-jar-plugin.create.modules.phase>
         <bootable-jar-copy-module-files.phase>none</bootable-jar-copy-module-files.phase>
