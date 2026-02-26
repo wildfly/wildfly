@@ -97,6 +97,7 @@ public class JcaExtension implements Extension {
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.JCA_4_0.getUriString(), () -> ConnectorSubsystemParser.INSTANCE);
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.JCA_5_0.getUriString(), () -> ConnectorSubsystemParser.INSTANCE);
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.JCA_6_0.getUriString(), () -> ConnectorSubsystemParser.INSTANCE);
+        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.JCA_6_1.getUriString(), () -> ConnectorSubsystemParser.INSTANCE);
     }
 
     static final class ConnectorSubsystemParser implements XMLStreamConstants, XMLElementReader<List<ModelNode>>,
@@ -309,6 +310,7 @@ public class JcaExtension implements Extension {
             while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
                 Namespace readerNs = Namespace.forUri(reader.getNamespaceURI());
                 switch (readerNs) {
+                    case JCA_6_1:
                     case JCA_6_0:
                     case JCA_5_0:
                     case JCA_4_0:
@@ -371,7 +373,8 @@ public class JcaExtension implements Extension {
                                 if (Namespace.forUri(reader.getNamespaceURI()).equals(Namespace.JCA_3_0) ||
                                     Namespace.forUri(reader.getNamespaceURI()).equals(Namespace.JCA_4_0) ||
                                     Namespace.forUri(reader.getNamespaceURI()).equals(Namespace.JCA_5_0) ||
-                                    Namespace.forUri(reader.getNamespaceURI()).equals(Namespace.JCA_6_0))
+                                    Namespace.forUri(reader.getNamespaceURI()).equals(Namespace.JCA_6_0) ||
+                                    Namespace.forUri(reader.getNamespaceURI()).equals(Namespace.JCA_6_1))
                                 {
                                     list.add(parseTracer(reader, address));
                                 } else {
@@ -512,7 +515,8 @@ public class JcaExtension implements Extension {
                     case ELYTRON_ENABLED: {
                         switch (readerNS) {
                             case JCA_5_0:
-                            case JCA_6_0: {
+                            case JCA_6_0:
+                            case JCA_6_1: {
                                 String value = rawElementText(reader);
                                 JcaWorkManagerDefinition.WmParameters.ELYTRON_ENABLED.getAttribute().parseAndSetParameter(value, workManagerOperation, reader);
                                 break;
@@ -602,7 +606,8 @@ public class JcaExtension implements Extension {
                             case JCA_3_0:
                             case JCA_4_0:
                             case JCA_5_0:
-                            case JCA_6_0:{
+                            case JCA_6_0:
+                            case JCA_6_1:{
                                 parsePolicy(reader, distributedWorkManagerOperation);
                                 break;
                             }
@@ -618,7 +623,8 @@ public class JcaExtension implements Extension {
                             case JCA_3_0:
                             case JCA_4_0:
                             case JCA_5_0:
-                            case JCA_6_0:{
+                            case JCA_6_0:
+                            case JCA_6_1:{
                                 parseSelector(reader, distributedWorkManagerOperation);
                                 break;
                             }
@@ -632,6 +638,7 @@ public class JcaExtension implements Extension {
                         switch (readerNS) {
                             case JCA_5_0:
                             case JCA_6_0:
+                            case JCA_6_1:
                             {
                                 String value = rawElementText(reader);
                                 ((SimpleAttributeDefinition) JcaDistributedWorkManagerDefinition.DWmParameters.ELYTRON_ENABLED.getAttribute()).parseAndSetParameter(value, distributedWorkManagerOperation, reader);

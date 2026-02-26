@@ -39,12 +39,12 @@ public class JcaSubsystemTestCase extends AbstractSubsystemBaseTest {
 
     @Override
     protected String getSubsystemXml() throws IOException {
-        return readResource("jca.xml");
+        return readResource("jca-full.xml");
     }
 
     @Override
     protected String getSubsystemXsdPath() throws Exception {
-        return "schema/wildfly-jca_6_0.xsd";
+        return "schema/wildfly-jca_6_1.xsd";
     }
 
     @Override
