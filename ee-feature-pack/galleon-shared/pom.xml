@@ -850,7 +850,7 @@
         </dependency>
 
         <dependency>
-            <groupId>org.apache.activemq</groupId>
+            <groupId>org.apache.artemis</groupId>
             <artifactId>artemis-amqp-protocol</artifactId>
             <exclusions>
                 <exclusion>
@@ -861,7 +861,7 @@
         </dependency>
 
         <dependency>
-            <groupId>org.apache.activemq</groupId>
+            <groupId>org.apache.artemis</groupId>
             <artifactId>artemis-cli</artifactId>
             <exclusions>
                 <exclusion>
@@ -871,7 +871,7 @@
             </exclusions>
         </dependency>
         <dependency>
-            <groupId>org.apache.activemq</groupId>
+            <groupId>org.apache.artemis</groupId>
             <artifactId>artemis-commons</artifactId>
             <exclusions>
                 <exclusion>
@@ -882,7 +882,7 @@
         </dependency>
 
         <dependency>
-            <groupId>org.apache.activemq</groupId>
+            <groupId>org.apache.artemis</groupId>
             <artifactId>artemis-core-client</artifactId>
             <exclusions>
                 <exclusion>
@@ -893,7 +893,7 @@
         </dependency>
 
         <dependency>
-            <groupId>org.apache.activemq</groupId>
+            <groupId>org.apache.artemis</groupId>
             <artifactId>artemis-dto</artifactId>
             <exclusions>
                 <exclusion>
@@ -904,7 +904,7 @@
         </dependency>
 
         <dependency>
-            <groupId>org.apache.activemq</groupId>
+            <groupId>org.apache.artemis</groupId>
             <artifactId>artemis-hornetq-protocol</artifactId>
             <exclusions>
                 <exclusion>
@@ -915,7 +915,7 @@
         </dependency>
 
         <dependency>
-            <groupId>org.apache.activemq</groupId>
+            <groupId>org.apache.artemis</groupId>
             <artifactId>artemis-hqclient-protocol</artifactId>
             <exclusions>
                 <exclusion>
@@ -926,7 +926,7 @@
         </dependency>
 
         <dependency>
-            <groupId>org.apache.activemq</groupId>
+            <groupId>org.apache.artemis</groupId>
             <artifactId>artemis-jakarta-client</artifactId>
             <exclusions>
                 <exclusion>
@@ -937,7 +937,7 @@
         </dependency>
 
         <dependency>
-            <groupId>org.apache.activemq</groupId>
+            <groupId>org.apache.artemis</groupId>
             <artifactId>artemis-jakarta-server</artifactId>
             <exclusions>
                 <exclusion>
@@ -948,7 +948,7 @@
         </dependency>
 
         <dependency>
-            <groupId>org.apache.activemq</groupId>
+            <groupId>org.apache.artemis</groupId>
             <artifactId>artemis-jakarta-ra</artifactId>
             <exclusions>
                 <exclusion>
@@ -959,7 +959,7 @@
         </dependency>
 
         <dependency>
-            <groupId>org.apache.activemq</groupId>
+            <groupId>org.apache.artemis</groupId>
             <artifactId>artemis-jakarta-service-extensions</artifactId>
             <exclusions>
                 <exclusion>
@@ -970,7 +970,7 @@
         </dependency>
 
         <dependency>
-            <groupId>org.apache.activemq</groupId>
+            <groupId>org.apache.artemis</groupId>
             <artifactId>artemis-jdbc-store</artifactId>
             <exclusions>
                 <exclusion>
@@ -981,7 +981,7 @@
         </dependency>
 
         <dependency>
-            <groupId>org.apache.activemq</groupId>
+            <groupId>org.apache.artemis</groupId>
             <artifactId>artemis-journal</artifactId>
             <exclusions>
                 <exclusion>
@@ -1003,7 +1003,7 @@
         </dependency>
 
         <dependency>
-            <groupId>org.apache.activemq</groupId>
+            <groupId>org.apache.artemis</groupId>
             <artifactId>artemis-selector</artifactId>
             <exclusions>
                 <exclusion>
@@ -1014,7 +1014,7 @@
         </dependency>
 
         <dependency>
-            <groupId>org.apache.activemq</groupId>
+            <groupId>org.apache.artemis</groupId>
             <artifactId>artemis-server</artifactId>
             <exclusions>
                 <exclusion>
@@ -1025,7 +1025,7 @@
         </dependency>
 
         <dependency>
-            <groupId>org.apache.activemq</groupId>
+            <groupId>org.apache.artemis</groupId>
             <artifactId>artemis-stomp-protocol</artifactId>
             <exclusions>
                 <exclusion>

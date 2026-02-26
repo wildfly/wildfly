@@ -1637,172 +1637,84 @@
                 <version>${version.org.apache.activemq.artemis.native}</version>
                 <exclusions>
                     <exclusion>
-                        <groupId>org.jboss.logging</groupId>
-                        <artifactId>jboss-logging</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jboss.logmanager</groupId>
-                        <artifactId>jboss-logmanager</artifactId>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
             <dependency>
-                <groupId>org.apache.activemq</groupId>
+                <groupId>org.apache.artemis</groupId>
                 <artifactId>artemis-amqp-protocol</artifactId>
                 <version>${version.org.apache.activemq.artemis}</version>
                 <exclusions>
                     <exclusion>
-                        <groupId>io.netty</groupId>
+                        <groupId>*</groupId>
                         <artifactId>*</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
             <dependency>
-                <groupId>org.apache.activemq</groupId>
+                <groupId>org.apache.artemis</groupId>
                 <artifactId>artemis-cli</artifactId>
                 <version>${version.org.apache.activemq.artemis}</version>
                 <exclusions>
                     <exclusion>
-                        <groupId>javax.inject</groupId>
-                        <artifactId>javax.inject</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.apache.activemq</groupId>
-                        <artifactId>artemis-lockmanager-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.apache.commons</groupId>
-                        <artifactId>commons-lang3</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.apache.commons</groupId>
-                        <artifactId>commons-configuration2</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.apache.geronimo.specs</groupId>
+                        <groupId>*</groupId>
                         <artifactId>*</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.hdrhistogram</groupId>
-                        <artifactId>HdrHistogram</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jboss.logging</groupId>
-                        <artifactId>jboss-logging</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>io.airlift</groupId>
-                        <artifactId>airline</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.apache.qpid</groupId>
-                        <artifactId>qpid-jms-client</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
             <dependency>
-                <groupId>org.apache.activemq</groupId>
+                <groupId>org.apache.artemis</groupId>
                 <artifactId>artemis-commons</artifactId>
                 <version>${version.org.apache.activemq.artemis}</version>
                 <exclusions>
                     <exclusion>
-                        <groupId>org.apache.geronimo.specs</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jboss.logmanager</groupId>
-                        <artifactId>jboss-logmanager</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>commons-logging</groupId>
-                        <artifactId>commons-logging</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>io.netty</groupId>
+                        <groupId>*</groupId>
                         <artifactId>*</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
             <dependency>
-                <groupId>org.apache.activemq</groupId>
+                <groupId>org.apache.artemis</groupId>
                 <artifactId>artemis-core-client</artifactId>
                 <version>${version.org.apache.activemq.artemis}</version>
                 <exclusions>
                     <exclusion>
-                        <groupId>commons-logging</groupId>
-                        <artifactId>commons-logging</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.apache.geronimo.specs</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.apache.johnzon</groupId>
-                        <artifactId>johnzon-core</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>io.netty</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.bouncycastle</groupId>
+                        <groupId>*</groupId>
                         <artifactId>*</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
             <dependency>
-                <groupId>org.apache.activemq</groupId>
+                <groupId>org.apache.artemis</groupId>
                 <artifactId>artemis-dto</artifactId>
                 <version>${version.org.apache.activemq.artemis}</version>
                 <exclusions>
                     <exclusion>
-                        <groupId>com.sun.xml.bind</groupId>
-                        <artifactId>jaxb-jxc</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>com.sun.xml.bind</groupId>
-                        <artifactId>jaxb-impl</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>javax.xml.bind</groupId>
-                        <artifactId>jaxb-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>com.sun.xml.bind</groupId>
-                        <artifactId>jaxb-osgi</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>javax.activation</groupId>
-                        <artifactId>activation</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jboss.spec.javax.xml.bind</groupId>
-                        <artifactId>jboss-jaxb-api_2.2_spec</artifactId>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
             <dependency>
-                <groupId>org.apache.activemq</groupId>
+                <groupId>org.apache.artemis</groupId>
                 <artifactId>artemis-hornetq-protocol</artifactId>
                 <version>${version.org.apache.activemq.artemis}</version>
             </dependency>
             <dependency>
-                <groupId>org.apache.activemq</groupId>
+                <groupId>org.apache.artemis</groupId>
                 <artifactId>artemis-hqclient-protocol</artifactId>
                 <version>${version.org.apache.activemq.artemis}</version>
                 <exclusions>
                     <exclusion>
-                        <groupId>org.apache.geronimo.specs</groupId>
+                        <groupId>*</groupId>
                         <artifactId>*</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.apache.johnzon</groupId>
-                        <artifactId>johnzon-core</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
             <dependency>
-                <groupId>org.apache.activemq</groupId>
+                <groupId>org.apache.artemis</groupId>
                 <artifactId>artemis-jakarta-client</artifactId>
                 <version>${version.org.apache.activemq.artemis}</version>
                 <exclusions>
@@ -1814,7 +1726,7 @@
             </dependency>
 
             <dependency>
-                <groupId>org.apache.activemq</groupId>
+                <groupId>org.apache.artemis</groupId>
                 <artifactId>artemis-jakarta-ra</artifactId>
                 <version>${version.org.apache.activemq.artemis}</version>
                 <exclusions>
@@ -1825,7 +1737,7 @@
                 </exclusions>
             </dependency>
             <dependency>
-                <groupId>org.apache.activemq</groupId>
+                <groupId>org.apache.artemis</groupId>
                 <artifactId>artemis-jakarta-server</artifactId>
                 <version>${version.org.apache.activemq.artemis}</version>
                 <exclusions>
@@ -1836,7 +1748,7 @@
                 </exclusions>
             </dependency>
             <dependency>
-                <groupId>org.apache.activemq</groupId>
+                <groupId>org.apache.artemis</groupId>
                 <artifactId>artemis-jakarta-service-extensions</artifactId>
                 <version>${version.org.apache.activemq.artemis}</version>
                 <exclusions>
@@ -1847,120 +1759,56 @@
                 </exclusions>
             </dependency>
             <dependency>
-                <groupId>org.apache.activemq</groupId>
+                <groupId>org.apache.artemis</groupId>
                 <artifactId>artemis-jdbc-store</artifactId>
                 <version>${version.org.apache.activemq.artemis}</version>
                 <exclusions>
                     <exclusion>
-                        <groupId>commons-logging</groupId>
-                        <artifactId>commons-logging</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.apache.commons</groupId>
-                        <artifactId>commons-dbcp2</artifactId>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
             <dependency>
-                <groupId>org.apache.activemq</groupId>
+                <groupId>org.apache.artemis</groupId>
                 <artifactId>artemis-journal</artifactId>
                 <version>${version.org.apache.activemq.artemis}</version>
                 <exclusions>
                     <exclusion>
-                        <groupId>io.netty</groupId>
-                        <artifactId>netty-buffer</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>io.netty</groupId>
-                        <artifactId>netty-common</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jboss.logmanager</groupId>
-                        <artifactId>jboss-logmanager</artifactId>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
             <dependency>
-                <groupId>org.apache.activemq</groupId>
+                <groupId>org.apache.artemis</groupId>
                 <artifactId>artemis-selector</artifactId>
                 <version>${version.org.apache.activemq.artemis}</version>
                 <exclusions>
                     <exclusion>
-                        <groupId>org.apache.geronimo.specs</groupId>
+                        <groupId>*</groupId>
                         <artifactId>*</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
             <dependency>
-                <groupId>org.apache.activemq</groupId>
+                <groupId>org.apache.artemis</groupId>
                 <artifactId>artemis-server</artifactId>
                 <version>${version.org.apache.activemq.artemis}</version>
                 <exclusions>
                     <exclusion>
-                        <groupId>io.micrometer</groupId>
-                        <artifactId>micrometer-core</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>io.netty</groupId>
-                        <artifactId>netty-buffer</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>io.netty</groupId>
-                        <artifactId>netty-transport</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>io.netty</groupId>
-                        <artifactId>netty-codec-http</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>io.netty</groupId>
-                        <artifactId>netty-common</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>io.netty</groupId>
-                        <artifactId>netty-handler</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>io.netty</groupId>
-                        <artifactId>netty-transport-native-epoll</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>io.netty</groupId>
-                        <artifactId>netty-transport-native-kqueue</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>io.netty</groupId>
-                        <artifactId>netty-codec</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.apache.activemq</groupId>
-                        <artifactId>artemis-lockmanager-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.apache.geronimo.specs</groupId>
+                        <groupId>*</groupId>
                         <artifactId>*</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.apache.commons</groupId>
-                        <artifactId>commons-configuration2</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jctools</groupId>
-                        <artifactId>jctools-core</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>com.google.guava</groupId>
-                        <artifactId>guava</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
             <dependency>
-                <groupId>org.apache.activemq</groupId>
+                <groupId>org.apache.artemis</groupId>
                 <artifactId>artemis-stomp-protocol</artifactId>
                 <version>${version.org.apache.activemq.artemis}</version>
                 <exclusions>
                     <exclusion>
-                        <groupId>io.netty</groupId>
+                        <groupId>*</groupId>
                         <artifactId>*</artifactId>
                     </exclusion>
                 </exclusions>
