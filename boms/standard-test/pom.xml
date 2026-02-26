@@ -394,6 +394,22 @@
                 <scope>import</scope>
             </dependency>
             <dependency>
+                <groupId>net.sourceforge.htmlunit</groupId>
+                <artifactId>htmlunit</artifactId>
+                <version>${version.net.sourceforge.htmlunit.htmlunit}</version>
+                <scope>test</scope>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.apache.httpcomponents</groupId>
+                        <artifactId>httpmime</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>commons-logging</groupId>
+                        <artifactId>commons-logging</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
                 <groupId>org.jboss.arquillian.jakarta</groupId>
                 <artifactId>arquillian-jakarta-bom</artifactId>
                 <version>${version.org.jboss.arquillian.jakarta}</version>

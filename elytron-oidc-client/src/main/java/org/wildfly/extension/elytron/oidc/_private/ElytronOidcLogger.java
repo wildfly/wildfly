@@ -27,7 +27,8 @@ public interface ElytronOidcLogger extends BasicLogger {
     /**
      * The root logger with a category of the package name.
      */
-    ElytronOidcLogger ROOT_LOGGER = Logger.getMessageLogger(MethodHandles.lookup(), ElytronOidcLogger.class, ElytronOidcLogger.class.getPackage().getName());
+    ElytronOidcLogger ROOT_LOGGER = Logger.getMessageLogger(MethodHandles.lookup(),
+            ElytronOidcLogger.class, ElytronOidcLogger.class.getPackage().getName());
 
     /**
      * Logs an informational message indicating the naming subsystem is being activated.

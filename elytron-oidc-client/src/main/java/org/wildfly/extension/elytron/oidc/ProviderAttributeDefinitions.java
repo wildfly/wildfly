@@ -10,7 +10,9 @@ import static org.wildfly.extension.elytron.oidc.ElytronOidcDescriptionConstants
 import static org.wildfly.extension.elytron.oidc.ElytronOidcDescriptionConstants.REQUEST;
 import static org.wildfly.extension.elytron.oidc.ElytronOidcDescriptionConstants.REQUEST_URI;
 
+import java.util.Arrays;
 import java.util.EnumSet;
+import java.util.function.Function;
 
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
@@ -50,6 +52,13 @@ class ProviderAttributeDefinitions {
                     .setAllowExpression(true)
                     .setValidator(new StringLengthValidator(1, Integer.MAX_VALUE, true, true))
                     .setAlternatives(ElytronOidcDescriptionConstants.AUTH_SERVER_URL)
+                    .build();
+
+    protected static final SimpleAttributeDefinition PROVIDER_JWT_CLAIMS_TYP =
+            new SimpleAttributeDefinitionBuilder(ElytronOidcDescriptionConstants.PROVIDER_JWT_CLAIMS_TYP, ModelType.STRING, true)
+                    .setAllowExpression(true)
+                    .setValidator(new StringLengthValidator(1, Integer.MAX_VALUE, false, true))
+                    .setStability(Stability.PREVIEW)
                     .build();
 
     protected static final SimpleAttributeDefinition SSL_REQUIRED =
@@ -305,4 +314,14 @@ class ProviderAttributeDefinitions {
             REQUEST_OBJECT_SIGNING_KEYSTORE_FILE, REQUEST_OBJECT_SIGNING_KEYSTORE_PASSWORD,
             REQUEST_OBJECT_SIGNING_KEY_ALIAS, REQUEST_OBJECT_SIGNING_KEY_PASSWORD, REQUEST_OBJECT_SIGNING_KEYSTORE_TYPE};
 
+    protected static final SimpleAttributeDefinition[] ATTRIBUTES_VERSION_4_0 = addElement(ATTRIBUTES, PROVIDER_JWT_CLAIMS_TYP);
+
+    private static <T> T[] addElement(T[] array, T element) {
+        Function<T[], T[]> addAndCreate = arr -> {
+            T[] newArray = Arrays.copyOf(arr, arr.length + 1);
+            newArray[newArray.length - 1] = element;
+            return newArray;
+        };
+        return addAndCreate.apply(array);
+    }
 }
