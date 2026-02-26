@@ -4,12 +4,11 @@
  */
 package org.jboss.as.test.clustering.single.web;
 
-import static org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase.CONTAINER_SINGLE;
-import static org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase.DEPLOYMENT_1;
 import static org.jboss.as.test.shared.util.AssumeTestGroupUtil.isBootableJar;
 
 import java.net.URI;
 import java.net.URL;
+import java.util.Set;
 
 import jakarta.servlet.http.HttpServletResponse;
 
@@ -17,23 +16,18 @@ import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpHead;
 import org.apache.http.impl.client.CloseableHttpClient;
-import org.jboss.arquillian.container.test.api.Deployer;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
-import org.jboss.as.arquillian.api.WildFlyContainerController;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.test.clustering.ClusterTestUtil;
-import org.jboss.as.test.clustering.NodeUtil;
 import org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase;
 import org.jboss.as.test.http.util.TestHttpClientUtils;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.After;
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -43,15 +37,13 @@ import org.junit.runner.RunWith;
  * @author Radoslav Husar
  */
 @RunWith(Arquillian.class)
-public class NonHaWebSessionPersistenceTestCase {
+public class NonHaWebSessionPersistenceTestCase extends AbstractClusteringTestCase {
     private static final String MODULE_NAME = NonHaWebSessionPersistenceTestCase.class.getSimpleName();
     private static final String APPLICATION_NAME = MODULE_NAME + ".war";
 
-    @ArquillianResource
-    private WildFlyContainerController controller;
-
-    @ArquillianResource
-    private Deployer deployer;
+    public NonHaWebSessionPersistenceTestCase() {
+        super(Set.of(CONTAINER_SINGLE), Set.of(DEPLOYMENT_1));
+    }
 
     @Deployment(name = DEPLOYMENT_1, managed = false, testable = false)
     public static Archive<?> deployment() {
@@ -59,18 +51,6 @@ public class NonHaWebSessionPersistenceTestCase {
         war.addClasses(SimpleServlet.class, Mutable.class);
         war.setWebXML(NonHaWebSessionPersistenceTestCase.class.getPackage(), "web.xml");
         return war;
-    }
-
-    @Before
-    public void beforeTestMethod() {
-        NodeUtil.start(this.controller, CONTAINER_SINGLE);
-        NodeUtil.deploy(this.deployer, DEPLOYMENT_1);
-    }
-
-    @After
-    public void afterTestMethod() {
-        NodeUtil.undeploy(this.deployer, DEPLOYMENT_1);
-        NodeUtil.stop(this.controller, CONTAINER_SINGLE);
     }
 
     @Test
@@ -93,10 +73,11 @@ public class NonHaWebSessionPersistenceTestCase {
                 Assert.assertEquals(sessionId, response.getFirstHeader(SimpleServlet.SESSION_ID_HEADER).getValue());
             }
 
-            NodeUtil.stop(this.controller, CONTAINER_SINGLE, AbstractClusteringTestCase.SUSPEND_TIMEOUT_S);
-            NodeUtil.start(this.controller, CONTAINER_SINGLE);
+            stop(CONTAINER_SINGLE, SUSPEND_TIMEOUT_S);
+            waitUntilStopped(CONTAINER_SINGLE);
+            start(CONTAINER_SINGLE);
             if (isBootableJar()) {
-                NodeUtil.deploy(this.deployer, DEPLOYMENT_1);
+                deploy(DEPLOYMENT_1);
             }
 
             try (CloseableHttpResponse response = client.execute(new HttpGet(url))) {

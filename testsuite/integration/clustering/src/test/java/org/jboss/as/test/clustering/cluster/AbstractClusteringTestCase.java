@@ -315,7 +315,7 @@ public abstract class AbstractClusteringTestCase {
 
     public static int getPortOffsetForNode(String node) {
         return switch (node) {
-            case NODE_1 -> 0;
+            case NODE_1,CONTAINER_SINGLE -> 0;
             case NODE_2 -> 100;
             case NODE_3 -> 200;
             case NODE_4 -> 300;
