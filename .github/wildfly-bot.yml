@@ -20,6 +20,10 @@ wildfly:
         - pferraro
         - rhusar
 
+    - id: concurrency
+      directories: [ concurrency ]
+      notify: [ emmartins ]
+
     - id: connector
       directories: [ connector ]
       notify: [ tadamski ]
@@ -44,11 +48,17 @@ wildfly:
         - health
         - microprofile/health-smallrye
         - testsuite/integration/microprofile-tck/health
-      notify: [ xstefank ]
+      notify: [ pferraro ]
 
     - id: iiop
-      directories: [ iiop-openjdk ]
+      directories:
+        - iiop-openjdk
+        - testsuite/integration/iiop
       notify: [ tadamski ]
+
+    - id: jakarta-data
+      directories: [ jakarta-data ]
+      notify: [ scottmarlow ]
 
     - id: jaxrs
       directories: [ jaxrs ]
@@ -71,7 +81,9 @@ wildfly:
       notify: [ yersan ]
 
     - id: messaging-activemq
-      directories: [ messaging-activemq ]
+      directories:
+        - messaging-activemq
+        - testsuite/integration/legacy
       notify: [ ehsavoie ]
 
     - id: metrics
@@ -84,7 +96,7 @@ wildfly:
         - observability/micrometer-api
       notify: [ jasondlee ]
       
-    - id: opentelemtry
+    - id: opentelemetry
       directories:
         - observability/opentelemetry
         - observability/opentelemetry-api
@@ -198,11 +210,6 @@ wildfly:
         - testsuite/integration/vdx
       notify: [ bstansberry ]
       
-    - id: testsuite-ws
-      directories:
-        - testsuite/integration/ws
-      notify: [ ropalka ]
-      
     - id: testsuite-mixed-domain
       directories:
         - testsuite/mixed-domain
@@ -224,8 +231,10 @@ wildfly:
       notify: [ pferraro, fl4via, ropalka ]
 
     - id: webservices
-      directories: [ webservices ]
-      notify: [ ropalka ]
+      directories:
+        - webservices
+        - testsuite/integration/ws
+      notify: [ fabiobrz ]
 
     - id: weld
       directories: [ weld ]

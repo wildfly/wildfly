@@ -7,8 +7,8 @@ package org.jboss.as.clustering.infinispan.subsystem;
 import java.util.EnumSet;
 
 import org.infinispan.configuration.cache.StorageType;
-import org.jboss.as.clustering.controller.EnumAttributeDefinition;
 import org.jboss.as.controller.ResourceRegistration;
+import org.wildfly.subsystem.resource.EnumAttributeDefinition;
 
 /**
  * Registers a resource definition for the heap memory component of a cache.
@@ -16,7 +16,7 @@ import org.jboss.as.controller.ResourceRegistration;
  */
 public class HeapMemoryResourceDefinitionRegistrar extends MemoryResourceDefinitionRegistrar {
 
-    static final EnumAttributeDefinition<MemorySizeUnit> SIZE_UNIT = new EnumAttributeDefinition.Builder<>(MemoryResourceDefinitionRegistrar.SIZE_UNIT).setAllowedValues(EnumSet.of(MemorySizeUnit.ENTRIES)).build();
+    static final EnumAttributeDefinition<MemorySizeUnit> SIZE_UNIT = new EnumAttributeDefinition.Builder<>(MemoryResourceDefinitionRegistrar.SIZE_UNIT.getName(), MemoryResourceDefinitionRegistrar.SIZE_UNIT).setAllowedValues(EnumSet.of(MemorySizeUnit.ENTRIES)).build();
 
     HeapMemoryResourceDefinitionRegistrar() {
         super(new Configurator() {

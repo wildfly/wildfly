@@ -228,6 +228,15 @@
                     </xs:annotation>
                 </xs:attribute>
                 <xs:attribute name="max-ajp-packet-size" type="xs:int"/>
+                <xs:attribute name="allowed-request-attributes-pattern" use="optional" type="xs:string">
+                    <xs:annotation>
+                        <xs:documentation>
+                            <![CDATA[
+                                Pattern which will be used to match AJP attributes that should be supported as part of request. Value is simple java regex.
+                            ]]>
+                        </xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
             </xs:extension>
         </xs:complexContent>
     </xs:complexType>

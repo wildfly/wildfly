@@ -41,7 +41,8 @@ public class UndertowSubsystemTransformerTestCase extends AbstractSubsystemTest 
     @Parameters
     public static Collection<Object[]> parameters() {
         return List.<Object[]>of(
-                new Object[] { ModelTestControllerVersion.EAP_7_4_0, UndertowSubsystemModel.VERSION_11_0_0 }
+                new Object[] { ModelTestControllerVersion.EAP_7_4_0, UndertowSubsystemModel.VERSION_11_0_0 },
+                new Object[] { ModelTestControllerVersion.EAP_8_1_0, UndertowSubsystemModel.VERSION_14_0_0 }
         );
     }
 
@@ -53,17 +54,26 @@ public class UndertowSubsystemTransformerTestCase extends AbstractSubsystemTest 
                 .addMavenResourceURL(this.controllerVersion.createGAV("wildfly-clustering-web-container"))
                 .addParentFirstClassPattern("org.jboss.msc.service.ServiceName")
                 .addParentFirstClassPattern("org.jboss.as.clustering.controller.CapabilityServiceConfigurator")
-        ;
-        switch (this.controllerVersion) {
-            case EAP_7_4_0:
-                initializer.addMavenResourceURL("io.undertow:undertow-core:2.2.5.Final");
-                initializer.addMavenResourceURL("io.undertow:undertow-servlet:2.2.5.Final");
-                initializer.addMavenResourceURL("org.jboss.spec.javax.security.jacc:jboss-jacc-api_1.5_spec:2.0.0.Final");
-                break;
-            default: {
-                throw new IllegalArgumentException();
-            }
-        }
+                .addMavenResourceURL(getDependencies());
+    }
+
+    private String[] getDependencies() {
+        return switch (this.controllerVersion) {
+            case EAP_7_4_0 -> new String[] {
+                    "io.undertow:undertow-core:2.2.5.Final",
+                    "io.undertow:undertow-servlet:2.2.5.Final",
+                    "org.jboss.spec.javax.security.jacc:jboss-jacc-api_1.5_spec:2.0.0.Final",
+            };
+            case EAP_8_1_0 -> new String[] {
+                    this.controllerVersion.createCoreGAV("wildfly-controller"),
+                    this.controllerVersion.createCoreGAV("wildfly-service"),
+                    this.controllerVersion.createCoreGAV("wildfly-subsystem"),
+                    this.controllerVersion.createCoreGAV("wildfly-io"),
+                    this.controllerVersion.createGAV("wildfly-clustering-service"),
+                    this.controllerVersion.createGAV("wildfly-undertow"),
+            };
+            default -> throw new IllegalArgumentException();
+        };
     }
 
     private final ModelTestControllerVersion controllerVersion;
@@ -80,7 +90,8 @@ public class UndertowSubsystemTransformerTestCase extends AbstractSubsystemTest 
                 RuntimeCapability.resolveCapabilityName(SocketBinding.SERVICE_DESCRIPTOR, "ajp"),
                 RuntimeCapability.resolveCapabilityName(SocketBinding.SERVICE_DESCRIPTOR, "http"),
                 RuntimeCapability.resolveCapabilityName(SocketBinding.SERVICE_DESCRIPTOR, "https"),
-                RuntimeCapability.buildDynamicCapabilityName(Capabilities.REF_SSL_CONTEXT, "ssl")
+                RuntimeCapability.buildDynamicCapabilityName(Capabilities.REF_SSL_CONTEXT, "ssl"),
+                "org.wildfly.io.worker.default"
                 );
     }
 
@@ -129,10 +140,17 @@ public class UndertowSubsystemTransformerTestCase extends AbstractSubsystemTest 
 
         FailedOperationTransformationConfig config = new FailedOperationTransformationConfig();
         PathAddress subsystemAddress = PathAddress.pathAddress(UndertowRootDefinition.PATH_ELEMENT);
-        PathAddress servletContainerAddress = subsystemAddress.append(PathElement.pathElement(ServletContainerDefinition.PATH_ELEMENT.getKey(), "rejected-container"));
-        PathAddress affinityCookiePath = subsystemAddress.append(PathElement.pathElement(ServletContainerDefinition.PATH_ELEMENT.getKey(), "affinity-cookie-container")).append(AffinityCookieDefinition.PATH_ELEMENT);
 
+        if (UndertowSubsystemModel.VERSION_15_0_0.requiresTransformation(this.modelVersion)) {
+            PathAddress ajpListenerAddress = subsystemAddress.append(PathElement.pathElement(ServerDefinition.PATH_ELEMENT.getKey(), "default-server"))
+                    .append(PathElement.pathElement(AjpListenerResourceDefinition.PATH_ELEMENT.getKey(), "ajp"));
+
+            config.addFailedAttribute(ajpListenerAddress, new FailedOperationTransformationConfig.NewAttributesConfig(AjpListenerResourceDefinition.ALLOWED_REQUEST_ATTRIBUTES_PATTERN));
+        }
         if (UndertowSubsystemModel.VERSION_13_0_0.requiresTransformation(this.modelVersion)) {
+            PathAddress servletContainerAddress = subsystemAddress.append(PathElement.pathElement(ServletContainerDefinition.PATH_ELEMENT.getKey(), "rejected-container"));
+            PathAddress affinityCookiePath = subsystemAddress.append(PathElement.pathElement(ServletContainerDefinition.PATH_ELEMENT.getKey(), "affinity-cookie-container")).append(AffinityCookieDefinition.PATH_ELEMENT);
+
             config.addFailedAttribute(servletContainerAddress, new FailedOperationTransformationConfig.NewAttributesConfig(ServletContainerDefinition.ORPHAN_SESSION_ALLOWED));
 
             config.addFailedAttribute(affinityCookiePath, FailedOperationTransformationConfig.REJECTED_RESOURCE);

@@ -7,8 +7,10 @@ package org.jboss.as.test.clustering.single.web.passivation;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.shrinkwrap.api.Archive;
 import org.junit.runner.RunWith;
+import org.wildfly.test.stabilitylevel.StabilityServerSetupSnapshotRestoreTasks;
 
 /**
  * Validates the correctness of session passivation events for a distributed session manager using a local,
@@ -18,6 +20,7 @@ import org.junit.runner.RunWith;
  * @author Radoslav Husar
  */
 @RunWith(Arquillian.class)
+@ServerSetup(StabilityServerSetupSnapshotRestoreTasks.Community.class)
 public class LocalIdleThresholdFineSessionPassivationTestCase extends LocalIdleThresholdSessionPassivationTestCase {
 
     private static final String MODULE_NAME = LocalIdleThresholdFineSessionPassivationTestCase.class.getSimpleName();

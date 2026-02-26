@@ -27,12 +27,13 @@
     <packaging>pom</packaging>
 
     <properties>
+        <!-- Some paths below reference target/ directories from other Maven modules, bypassing Maven's dependency management. -->
+        <!-- Any module referenced by these paths MUST be explicitly declared as a <dependency> in this POM to ensure the reactor schedules it to complete BEFORE this module's build starts! -->
         <galleon.shared.resources.directory>${basedir}/../galleon-shared/src/main/resources</galleon.shared.resources.directory>
         <galleon.shared.generated.resources.directory>${basedir}/../galleon-shared/target/index</galleon.shared.generated.resources.directory>
         <galleon.local.resources.directory>${basedir}/../galleon-local/src/main/resources</galleon.local.resources.directory>
         <galleon.client.resources.directory>${basedir}/../../client/shade/target/resources</galleon.client.resources.directory>
         <license.directory>${project.build.directory}/resources/content/docs/licenses</license.directory>
-        <pruned.resources.directory>${basedir}/../pruned/src/main/resources</pruned.resources.directory>
     </properties>
 
     <build>
@@ -269,6 +270,17 @@
             <artifactId>wildfly-producers</artifactId>
             <scope>provided</scope>
         </dependency>
+        <dependency>
+            <groupId>org.jboss.galleon</groupId>
+            <artifactId>galleon-core</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
+            <scope>provided</scope>
+        </dependency>
 
         <!-- module and copy artifact dependencies -->
 
@@ -301,6 +313,14 @@
             <version>${ee.maven.version}</version>
             <type>pom</type>
             <scope>provided</scope>
+        </dependency>
+
+        <!-- n.b. Add at 'test' scope to ensure wildfly-client-all is built first but is NOT included in the artifact-list.txt or manifest. -->
+        <dependency>
+            <groupId>${ee.maven.groupId}</groupId>
+            <artifactId>wildfly-client-all</artifactId>
+            <version>${ee.maven.version}</version>
+            <scope>test</scope>
         </dependency>
 
     </dependencies>

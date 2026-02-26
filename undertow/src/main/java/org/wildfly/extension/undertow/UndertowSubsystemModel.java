@@ -18,8 +18,9 @@ public enum UndertowSubsystemModel implements SubsystemModel {
     VERSION_12_0_0(12), // WildFly 27
     VERSION_13_0_0(13), // WildFly 28
     VERSION_14_0_0(14), // WildFly 32-present
+    VERSION_15_0_0(15), // WildFly 32-present
     ;
-    static final UndertowSubsystemModel CURRENT = VERSION_14_0_0;
+    static final UndertowSubsystemModel CURRENT = VERSION_15_0_0;
 
     private final ModelVersion version;
 

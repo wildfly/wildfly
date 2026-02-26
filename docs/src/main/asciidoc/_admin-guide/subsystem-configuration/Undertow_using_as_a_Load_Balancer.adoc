@@ -117,7 +117,7 @@ Then we need to define `outbound-socket-binding`-s for remote hosts:
 /socket-binding-group=standard-sockets/remote-destination-outbound-socket-binding=remote-host2:add(host=sv2.foo.com, port=8009)
 ----
 
-and than we add them as hosts to reverse proxy handler:
+and then we add them as hosts to reverse proxy handler:
 
 [source,options="nowrap"]
 ----

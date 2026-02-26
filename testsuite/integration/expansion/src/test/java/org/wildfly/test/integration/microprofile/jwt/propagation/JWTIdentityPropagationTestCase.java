@@ -85,8 +85,6 @@ public class JWTIdentityPropagationTestCase {
     private static final String ANOTHER_EJB_SECURITY_REALM = "AnotherBusinessRealm";
     private static final String ANOTHER_EJB_SECURITY_REALM_PATH = "another-business-realm-users";
 
-    private final CloseableHttpClient httpClient = HttpClientBuilder.create().build();
-
     @ArquillianResource
     private URL deploymentUrl;
 
@@ -318,14 +316,13 @@ public class JWTIdentityPropagationTestCase {
         HttpGet httpGet = new HttpGet(deploymentUrl.toString() + rootPath + SUBSCRIPTION);
         httpGet.addHeader(AUTHORIZATION, BEARER + " " + jwtToken);
 
-        CloseableHttpResponse httpResponse = httpClient.execute(httpGet);
-
-        assertEquals("Successful call", 200, httpResponse.getStatusLine().getStatusCode());
-        String body = EntityUtils.toString(httpResponse.getEntity());
-        // rls tmp disable   assertTrue("Call was authenticated", body.contains(expectedMessage));
-        assertTrue("expectedMessage:["+ expectedMessage +
-                "] returned msg:[" +body+ "]", body.contains(expectedMessage)); // rls debug
-        httpResponse.close();
+        try (CloseableHttpClient httpClient = HttpClientBuilder.create().build();
+             CloseableHttpResponse httpResponse = httpClient.execute(httpGet)) {
+            assertEquals("Successful call", 200, httpResponse.getStatusLine().getStatusCode());
+            String body = EntityUtils.toString(httpResponse.getEntity());
+            assertTrue("Call was authenticated: expectedMessage:[" + expectedMessage + "] returned msg:[" + body + "]",
+                    body.contains(expectedMessage));
+        }
     }
 
     private String getExpectedMessage(String expectedUser, boolean shouldHaveAdminRole) {

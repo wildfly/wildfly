@@ -18,7 +18,7 @@ The following minimal example updates the existing `tcp` stack to use this disco
 ----
 batch
 /subsystem=jgroups/stack=tcp/protocol=MPING:remove()
-/subsystem=jgroups/stack=tcp/protocol=org.jgroups.protocols.aws.S3_PING:add(add-index=1, module="org.jgroups.aws", properties={region_name="eu-central-1", bucket_name="jgroups-s3"})
+/subsystem=jgroups/stack=tcp/protocol=org.jgroups.protocols.aws.S3_PING:add(add-index=1, module="org.jgroups.aws", properties={region_name="eu-central-1", bucket_name="jgroups-s3", register_shutdown_hook="false"})
 run-batch
 ----
 

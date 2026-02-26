@@ -6,7 +6,8 @@
 
 <jboss xmlns="urn:jboss:1.0">
     <distributable-web xmlns="urn:jboss:distributable-web:5.0">
-        <hotrod-session-management remote-cache-container="web" cache-configuration="default" granularity="ATTRIBUTE">
+        <!-- Do not define 'cache-configuration' here in order to test HotRodSessionManagementProvider.DEFAULT_CONFIGURATION -->
+        <hotrod-session-management remote-cache-container="web" granularity="ATTRIBUTE">
             <local-affinity/>
         </hotrod-session-management>
     </distributable-web>

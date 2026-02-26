@@ -50,7 +50,7 @@ public class UndertowExtensionTransformerRegistration implements ExtensionTransf
                 }
             }
 
-            if (UndertowSubsystemModel.VERSION_14_0_0.requiresTransformation(version)) {
+            if (UndertowSubsystemModel.VERSION_15_0_0.requiresTransformation(version)) {
                 final ResourceTransformationDescriptionBuilder handlers = subsystem.addChildResource(HandlerDefinitions.PATH_ELEMENT);
                 final ResourceTransformationDescriptionBuilder reverseProxy = handlers.addChildResource(ReverseProxyHandlerDefinition.PATH_ELEMENT);
                 final AttributeTransformationDescriptionBuilder reverseProxyAttributeTransformationDescriptionBuilder = reverseProxy.getAttributeBuilder();

@@ -387,11 +387,6 @@
 
         <dependency>
             <groupId>io.vertx</groupId>
-            <artifactId>vertx-kafka-client</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>io.vertx</groupId>
             <artifactId>vertx-proton</artifactId>
         </dependency>
 

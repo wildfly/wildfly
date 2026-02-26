@@ -6,10 +6,6 @@
 
 <project>
 
-    <propertyset id="ds.properties">
-        <propertyref prefix="ds"/>
-    </propertyset>
-
     <!--
         Overwrite some config files, replace tokens.
     -->

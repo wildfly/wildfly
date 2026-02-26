@@ -95,15 +95,6 @@ public void test() {
 @ArquillianResource Deployer deployer;
 ----
 
-See
-https://docs.jboss.org/author/display/ARQ/Resource+injection[Arquillian's
-Resource Injection docs] for more info,
-https://github.com/arquillian/arquillian-examples for examples.
-
-See also
-https://docs.jboss.org/author/display/ARQ/Reference+Guide[Arquillian
-Reference].
-
 Note to @ServerSetup annotation: It works as expected only on non-manual
 containers. In case of manual mode containers it calls setup() method
 after each server start up which is right (or actually before

@@ -364,57 +364,6 @@ NOTE: Container start timeout in Arquillian is currently set to 60 seconds,
 you may need to increase the timeout depending on your swiftness with connecting the remote debugger.
 
 
-[[running-tests-with-custom-database]]
-=== Running tests with custom database
-
-To run with different database, specify the `-Dds` and use these
-properties (with the following defaults):
-
-[source,shell,options="nowrap"]
-----
--Dds.jdbc.driver=
--Dds.jdbc.driver.version=
--Dds.jdbc.url=
--Dds.jdbc.user=test
--Dds.jdbc.pass=test
--Dds.jdbc.driver.jar=${ds.db}-jdbc-driver.jar
-----
-
-`driver` is JDBC driver class. JDBC `url`, `user` and `pass` is as
-expected.
-
-`driver.version` is used for automated JDBC driver downloading. Users
-can set up internal Maven repository hosting JDBC drivers, with
-artifacts with
-
-GAV = `jdbcdrivers:${ds.db}:${ds.jdbc.driver.version`}
-
-Internally, JBoss has such repo at
-http://nexus.qa.jboss.com:8081/nexus/content/repositories/thirdparty/jdbcdrivers/
-.
-
-The `ds.db` value is set depending on ds. E.g. `-Dds=mssql2005` sets
-`ds.db=mssql` (since they have the same driver). `-Dds.db` may be
-overridden to use different driver.
-
-[line-through]*In case you don't want to use such driver, set just
--Dds.db= (empty) and provide the driver to the AS manually.* +
-_Not supported; work in progress on parameter to provide JDBC Driver
-jar._
-
-[[default-values]]
-==== Default values
-
-For WildFly continuous integration, there are some predefined values for
-some of databases, which can be set using:
-
-[source,shell,options="nowrap"]
-----
--Dds.db=<database-identifier>
-----
-
-Where database-identifier is one of: `h2`, `mysql51`
-
 [[running-tests-with-ipv6]]
 === Running tests with IPv6
 

@@ -5,7 +5,6 @@
 
 package org.wildfly.test.manual.management;
 
-
 import org.wildfly.test.distribution.validation.ProvisioningConsistencyBaseTest;
 
 /**

@@ -232,7 +232,9 @@
              By default, if channels drive the provisioning we use the 'wildfly' channel.
              Profiles that focus on wildfly-preview or wildfly-ee can change that.
          -->
-        <channels.maven.groupId>${project.groupId}.channels</channels.maven.groupId>
+        <!-- TODO WFLY-21408 Apply workaround for dependabot pom.xml parsing issue "ERROR: Invalid expression: /project/groupId}.channel" -->
+        <!-- <channels.maven.groupId>${project.groupId}.channels</channels.maven.groupId> -->
+        <channels.maven.groupId>org.wildfly.channels</channels.maven.groupId>
         <channels.maven.artifactId>wildfly</channels.maven.artifactId>
         <channels.maven.version>${full.maven.version}</channels.maven.version>
 
@@ -296,19 +298,20 @@
         <version.ant.junit>1.10.15</version.ant.junit>
         <version.asciidoctor.plugin>2.2.6</version.asciidoctor.plugin>
         <version.central.publishing.maven.plugin>0.9.0</version.central.publishing.maven.plugin>
-        <version.org.jacoco>0.8.12</version.org.jacoco>
-        <version.org.jboss.galleon>7.0.0.Final</version.org.jboss.galleon>
-        <version.org.owasp.dependency-check>12.1.6</version.org.owasp.dependency-check>
+        <version.org.jacoco>0.8.14</version.org.jacoco>
+        <version.org.jboss.galleon>7.0.3.Final</version.org.jboss.galleon>
+        <version.org.owasp.dependency-check>12.2.0</version.org.owasp.dependency-check>
         <version.org.wildfly.bom-builder-plugin>2.0.10.Final</version.org.wildfly.bom-builder-plugin>
         <version.org.wildfly.checkstyle-config>1.0.8.Final</version.org.wildfly.checkstyle-config>
         <version.org.wildfly.common>1.6.0.Final</version.org.wildfly.common>
         <version.org.wildfly.galleon-plugins>8.1.0.Final</version.org.wildfly.galleon-plugins>
         <version.org.wildfly.glow>1.5.2.Final</version.org.wildfly.glow>
-        <version.org.wildfly.licenses.plugin>2.4.2.Final</version.org.wildfly.licenses.plugin>
-        <version.org.wildfly.plugin>5.1.0.Final</version.org.wildfly.plugin>
+        <version.org.wildfly.licenses.plugin>2.4.4.Final</version.org.wildfly.licenses.plugin>
+        <version.org.wildfly.plugin>6.0.0.Beta2</version.org.wildfly.plugin>
         <version.org.wildfly.unstable.annotation.api>1.0.2.Final</version.org.wildfly.unstable.annotation.api>
         <version.org.wildfly.wildfly-channel-plugin>1.0.30</version.org.wildfly.wildfly-channel-plugin>
         <version.org.wildfly.wildfly-maven-gpg-plugin>3.2.8.SP1</version.org.wildfly.wildfly-maven-gpg-plugin>
+        <version.plexus-velocity.for.checkstyle>2.3.0</version.plexus-velocity.for.checkstyle>
         <version.verifier.plugin>1.1</version.verifier.plugin>
         <version.xml.plugin>1.0.2</version.xml.plugin>
 
@@ -323,7 +326,7 @@
         <version.dom4j>2.1.5</version.dom4j>
         <version.httpunit>1.7.3</version.httpunit>
         <legacy.version.io.netty>4.0.19.Final</legacy.version.io.netty>
-        <version.io.rest-assured>5.5.6</version.io.rest-assured>
+        <version.io.rest-assured>5.5.7</version.io.rest-assured>
         <legacy.version.jakarta.enterprise>2.0.2</legacy.version.jakarta.enterprise>
         <legacy.version.jakarta.inject.jakarta.inject-api>1.0.5</legacy.version.jakarta.inject.jakarta.inject-api>
         <version.jakarta.mvc>2.1.0</version.jakarta.mvc>
@@ -331,8 +334,8 @@
         <version.jsoup>1.15.4</version.jsoup>
         <version.junit>4.13.2</version.junit>
         <version.org.apache.ds>2.0.0.AM26</version.org.apache.ds>
-        <version.org.apache.groovy>4.0.27</version.org.apache.groovy>
-        <version.org.assertj>3.26.3</version.org.assertj>
+        <version.org.apache.groovy>4.0.30</version.org.apache.groovy>
+        <version.org.assertj>3.27.7</version.org.assertj>
         <version.org.awaitility.awaitility>4.0.3</version.org.awaitility.awaitility>
         <version.org.codehaus.plexus.plexus-utils>3.5.1</version.org.codehaus.plexus.plexus-utils>
         <version.org.eclipse.jetty>11.0.25</version.org.eclipse.jetty>
@@ -355,7 +358,7 @@
         <version.org.jboss.shrinkwrap.shrinkwrap>1.2.6</version.org.jboss.shrinkwrap.shrinkwrap>
         <legacy.version.org.jboss.spec.javax.jms.jboss-jms-api_2.0_spec>2.0.0.Final</legacy.version.org.jboss.spec.javax.jms.jboss-jms-api_2.0_spec>
         <version.org.jboss.spec.javax.servlet.jboss-servlet-api_4.0_spec>2.0.0.Final</version.org.jboss.spec.javax.servlet.jboss-servlet-api_4.0_spec>
-        <version.org.junit>5.14.1</version.org.junit>
+        <version.org.junit>5.14.3</version.org.junit>
         <version.org.keycloak>25.0.6</version.org.keycloak>
         <version.org.mockito>5.21.0</version.org.mockito>
         <version.org.syslog4j>0.9.30</version.org.syslog4j>
@@ -376,18 +379,18 @@
             Properties for dependencies that solely relate to tests go in the test code section above.
          -->
         <version.antlr>4.13.0</version.antlr>
-        <version.at.yawk.lz4.lz4-java>1.10.2</version.at.yawk.lz4.lz4-java>
+        <version.at.yawk.lz4.lz4-java>1.10.3</version.at.yawk.lz4.lz4-java>
         <version.com.carrotsearch.hppc>0.10.0</version.com.carrotsearch.hppc>
         <version.com.fasterxml.classmate>1.5.1</version.com.fasterxml.classmate>
-        <version.com.fasterxml.jackson>2.20.1</version.com.fasterxml.jackson>
+        <version.com.fasterxml.jackson>2.20.2</version.com.fasterxml.jackson>
         <version.com.github.ben-manes.caffeine>3.2.3</version.com.github.ben-manes.caffeine>
         <version.com.github.fge.btf>1.2</version.com.github.fge.btf>
         <version.com.github.fge.jackson-coreutils>1.8</version.com.github.fge.jackson-coreutils>
         <version.com.github.fge.json-patch>1.9</version.com.github.fge.json-patch>
         <version.com.github.fge.msg-simple>1.1</version.com.github.fge.msg-simple>
-        <version.com.github.luben.zstd-jni>1.5.7-6</version.com.github.luben.zstd-jni>
+        <version.com.github.luben.zstd-jni>1.5.7-7</version.com.github.luben.zstd-jni>
         <version.com.google.api.grpc>2.0.1</version.com.google.api.grpc>
-        <version.com.google.code.gson>2.13.1</version.com.google.code.gson>
+        <version.com.google.code.gson>2.13.2</version.com.google.code.gson>
         <version.com.google.guava>33.0.0-jre</version.com.google.guava>
         <version.com.google.guava.failureaccess>1.0.3</version.com.google.guava.failureaccess>
         <version.com.google.protobuf>4.28.3</version.com.google.protobuf>
@@ -408,8 +411,8 @@
         <version.io.agroal>2.0</version.io.agroal>
         <version.io.github.resilience4j>2.3.0</version.io.github.resilience4j>
         <version.io.grpc>1.70.0</version.io.grpc>
-        <version.io.micrometer>1.15.7</version.io.micrometer>
-        <version.io.netty>4.1.130.Final</version.io.netty>
+        <version.io.micrometer>1.16.3</version.io.micrometer>
+        <version.io.netty>4.1.131.Final</version.io.netty>
         <version.io.opentelemetry.instrumentation>2.14.0</version.io.opentelemetry.instrumentation>
         <version.io.opentelemetry.opentelemetry-semconv>1.32.0</version.io.opentelemetry.opentelemetry-semconv>
         <version.io.opentelemetry.opentelemetry>1.48.0</version.io.opentelemetry.opentelemetry>
@@ -417,20 +420,20 @@
         <version.io.prometheus>1.3.3</version.io.prometheus>
         <version.io.reactivex.rxjava2>2.2.21</version.io.reactivex.rxjava2>
         <version.io.reactivex.rxjava3>3.1.12</version.io.reactivex.rxjava3>
-        <version.io.smallrye.open-api>4.2.3</version.io.smallrye.open-api>
+        <version.io.smallrye.open-api>4.2.4</version.io.smallrye.open-api>
         <version.io.smallrye.reactive-utils>2.6.0</version.io.smallrye.reactive-utils>
-        <version.io.smallrye.smallrye-config>3.13.4</version.io.smallrye.smallrye-config>
+        <version.io.smallrye.smallrye-config>3.15.1</version.io.smallrye.smallrye-config>
         <version.io.smallrye.smallrye-fault-tolerance>6.10.0</version.io.smallrye.smallrye-fault-tolerance>
         <version.io.smallrye.smallrye-health>4.3.0</version.io.smallrye.smallrye-health>
         <version.io.smallrye.smallrye-jwt>4.3.1</version.io.smallrye.smallrye-jwt>
-        <version.io.smallrye.smallrye-mutiny>2.8.0</version.io.smallrye.smallrye-mutiny>
+        <version.io.smallrye.smallrye-mutiny>3.1.1</version.io.smallrye.smallrye-mutiny>
         <version.io.smallrye.smallrye-mutiny-vertx>3.17.1</version.io.smallrye.smallrye-mutiny-vertx>
         <version.io.smallrye.smallrye-mutiny-zero>1.1.1</version.io.smallrye.smallrye-mutiny-zero>
         <version.io.smallrye.smallrye-opentelemetry>2.11.2</version.io.smallrye.smallrye-opentelemetry>
         <version.io.smallrye.smallrye-stork>2.7.7</version.io.smallrye.smallrye-stork>
-        <version.io.smallrye.smallrye-reactive-messaging>4.30.0</version.io.smallrye.smallrye-reactive-messaging>
-        <version.io.undertow.jastow>2.2.8.Final</version.io.undertow.jastow>
-        <version.io.vertx.vertx>4.5.23</version.io.vertx.vertx>
+        <version.io.smallrye.smallrye-reactive-messaging>4.32.1</version.io.smallrye.smallrye-reactive-messaging>
+        <version.io.undertow.jastow>2.2.9.Final</version.io.undertow.jastow>
+        <version.io.vertx.vertx>4.5.25</version.io.vertx.vertx>
         <version.io.vertx.vertx-kafka-client>4.4.9</version.io.vertx.vertx-kafka-client>
         <version.jakarta.activation.jakarta.activation-api>2.1.4</version.jakarta.activation.jakarta.activation-api>
         <version.jakarta.annotation.jakarta-annotation-api>2.1.1</version.jakarta.annotation.jakarta-annotation-api>
@@ -440,7 +443,7 @@
         <version.jakarta.enterprise.concurrent.jakarta-enterprise.concurrent-api>3.0.3</version.jakarta.enterprise.concurrent.jakarta-enterprise.concurrent-api>
         <version.jakarta.enterprise>4.0.1</version.jakarta.enterprise>
         <version.jakarta.faces.jakarta-faces-api>4.0.1</version.jakarta.faces.jakarta-faces-api>
-        <version.jakarta.faces>4.0.13</version.jakarta.faces>
+        <version.jakarta.faces>4.0.14</version.jakarta.faces>
         <version.jakarta.inject.jakarta.inject-api>2.0.1</version.jakarta.inject.jakarta.inject-api>
         <version.jakarta.jms.jakarta-jms-api>3.1.0</version.jakarta.jms.jakarta-jms-api>
         <version.jakarta.json.bind.api>3.0.1</version.jakarta.json.bind.api>
@@ -456,27 +459,27 @@
         <version.jakarta.validation.jakarta-validation-api>3.0.2</version.jakarta.validation.jakarta-validation-api>
         <version.jakarta.websocket.jakarta-websocket-api>2.1.1</version.jakarta.websocket.jakarta-websocket-api>
         <version.jakarta.ws.rs.jakarta-ws-rs-api>3.1.0</version.jakarta.ws.rs.jakarta-ws-rs-api>
-        <version.jakarta.xml.bind.jakarta-xml-bind-api>4.0.4</version.jakarta.xml.bind.jakarta-xml-bind-api>
+        <version.jakarta.xml.bind.jakarta-xml-bind-api>4.0.5</version.jakarta.xml.bind.jakarta-xml-bind-api>
         <version.jboss.jaxbintros>2.0.1</version.jboss.jaxbintros>
         <version.joda-time>2.12.7</version.joda-time>
         <version.net.jcip>1.0</version.net.jcip>
         <version.net.shibboleth.utilities.java-support>8.0.0</version.net.shibboleth.utilities.java-support>
         <version.org.apache.activemq.artemis>2.44.0</version.org.apache.activemq.artemis>
         <version.org.apache.activemq.artemis.native>2.0.0</version.org.apache.activemq.artemis.native>
-        <version.org.apache.avro>1.12.0</version.org.apache.avro>
-        <version.org.apache.cxf>4.0.10</version.org.apache.cxf>
-        <version.org.apache.cxf.xjcplugins>4.1.0</version.org.apache.cxf.xjcplugins>
+        <version.org.apache.avro>1.12.1</version.org.apache.avro>
+        <version.org.apache.cxf>4.0.11</version.org.apache.cxf>
+        <version.org.apache.cxf.xjcplugins>4.1.2</version.org.apache.cxf.xjcplugins>
         <version.org.apache.httpcomponents.httpasyncclient>4.1.5</version.org.apache.httpcomponents.httpasyncclient>
         <version.org.apache.james.apache-mime4j>0.8.13</version.org.apache.james.apache-mime4j>
-        <version.org.apache.kafka>3.9.1</version.org.apache.kafka>
-        <version.org.apache.kafka.test-image>3.8.0</version.org.apache.kafka.test-image>
+        <version.org.apache.kafka>4.1.1</version.org.apache.kafka>
+        <version.org.apache.kafka.test-image>4.1.1</version.org.apache.kafka.test-image>
         <version.org.apache.lucene>9.11.1</version.org.apache.lucene>
         <version.org.apache.neethi>3.2.1</version.org.apache.neethi>
         <version.org.apache.qpid.proton>0.34.1</version.org.apache.qpid.proton>
         <version.org.apache.santuario>3.0.6</version.org.apache.santuario>
         <version.org.apache.velocity>2.4.1</version.org.apache.velocity>
         <version.org.apache.wss4j>3.0.5</version.org.apache.wss4j>
-        <version.org.apache.ws.xmlschema>2.3.0</version.org.apache.ws.xmlschema>
+        <version.org.apache.ws.xmlschema>2.3.2</version.org.apache.ws.xmlschema>
         <version.org.bitbucket.jose4j>0.9.6</version.org.bitbucket.jose4j>
         <version.org.bytebuddy>1.17.5</version.org.bytebuddy>
         <version.org.codehaus.woodstox.stax2-api>4.2.2</version.org.codehaus.woodstox.stax2-api>
@@ -490,13 +493,13 @@
         <version.org.eclipse.microprofile.fault-tolerance.api>4.1.2</version.org.eclipse.microprofile.fault-tolerance.api>
         <version.org.eclipse.microprofile.health.api>4.0.1</version.org.eclipse.microprofile.health.api>
         <version.org.eclipse.microprofile.jwt.api>2.1</version.org.eclipse.microprofile.jwt.api>
-        <version.org.eclipse.microprofile.lra.api>2.0.1</version.org.eclipse.microprofile.lra.api>
+        <version.org.eclipse.microprofile.lra.api>2.0.2</version.org.eclipse.microprofile.lra.api>
         <version.org.eclipse.microprofile.openapi>4.1.1</version.org.eclipse.microprofile.openapi>
         <version.org.eclipse.microprofile.reactive-messaging.api>3.0.1</version.org.eclipse.microprofile.reactive-messaging.api>
         <version.org.eclipse.microprofile.reactive-streams-operators.api>3.0.1</version.org.eclipse.microprofile.reactive-streams-operators.api>
         <version.org.eclipse.microprofile.rest.client.api>4.0</version.org.eclipse.microprofile.rest.client.api>
         <version.org.eclipse.microprofile.telemetry>2.1</version.org.eclipse.microprofile.telemetry>
-        <version.org.eclipse.persistence.eclipselink>4.0.8</version.org.eclipse.persistence.eclipselink>
+        <version.org.eclipse.persistence.eclipselink>4.0.9</version.org.eclipse.persistence.eclipselink>
         <version.org.eclipse.yasson>3.0.4</version.org.eclipse.yasson>
         <version.org.elasticsearch.client.rest-client>8.15.4</version.org.elasticsearch.client.rest-client>
         <version.org.glassfish.expressly>5.0.0</version.org.glassfish.expressly>
@@ -507,6 +510,9 @@
         <version.org.glassfish.web.jakarta.servlet.jsp.jstl>3.0.1-jbossorg-1</version.org.glassfish.web.jakarta.servlet.jsp.jstl>
         <version.org.hibernate.commons.annotations>7.0.3.Final</version.org.hibernate.commons.annotations>
         <version.org.hibernate>6.6.40.Final</version.org.hibernate>
+        <!-- We need to use this value in configuring maven plugins, so simply overriding version.org.hibernate
+             in boms/preview-ee is inadequate. So we'll declare the value here and reference it in boms/preview-ee. -->
+        <version.org.hibernate.preview>7.2.5.Final</version.org.hibernate.preview>
         <version.org.hibernate.search>7.2.5.Final</version.org.hibernate.search>
         <version.org.hibernate.validator>8.0.3.Final</version.org.hibernate.validator>
         <version.org.hornetq>2.4.11.Final</version.org.hornetq>
@@ -518,14 +524,14 @@
         <version.org.jboss.ejb-client>5.0.8.Final</version.org.jboss.ejb-client>
         <version.org.jboss.ejb3.ext-api>2.4.0.Final</version.org.jboss.ejb3.ext-api>
         <version.org.jboss.genericjms>3.0.0.Final</version.org.jboss.genericjms>
-        <version.org.jboss.hal.console>3.7.16.Final</version.org.jboss.hal.console>
+        <version.org.jboss.hal.console>3.7.18.Final</version.org.jboss.hal.console>
         <version.org.jboss.iiop-client>2.0.1.Final</version.org.jboss.iiop-client>
-        <version.org.jboss.ironjacamar>3.0.16.Final</version.org.jboss.ironjacamar>
+        <version.org.jboss.ironjacamar>3.0.18.Final</version.org.jboss.ironjacamar>
         <version.org.jboss.jboss-transaction-spi>8.0.0.Final</version.org.jboss.jboss-transaction-spi>
         <version.org.jboss.metadata>17.0.0</version.org.jboss.metadata>
         <version.org.jboss.mod_cluster>2.1.0.Final</version.org.jboss.mod_cluster>
         <version.org.jboss.narayana>7.3.3.Final</version.org.jboss.narayana>
-        <version.org.jboss.narayana.lra>1.0.3.Final</version.org.jboss.narayana.lra>
+        <version.org.jboss.narayana.lra>1.1.0.Final</version.org.jboss.narayana.lra>
         <version.org.jboss.openjdk-orb>10.1.3.Final</version.org.jboss.openjdk-orb>
         <version.org.jboss.resteasy>6.2.15.Final</version.org.jboss.resteasy>
         <version.org.jboss.resteasy.extensions>2.0.1.Final</version.org.jboss.resteasy.extensions>
@@ -535,8 +541,8 @@
         <version.org.jboss.spec.jakarta.xml.soap.saaj-api_3.0_spec>1.0.0.Final</version.org.jboss.spec.jakarta.xml.soap.saaj-api_3.0_spec>
         <version.org.jboss.spec.jakarta.xml.ws.api_4.0_spec>1.0.0.Final</version.org.jboss.spec.jakarta.xml.ws.api_4.0_spec>
         <version.org.jboss.universe.community>1.2.0.Final</version.org.jboss.universe.community>
-        <version.org.jboss.universe.producer.wildfly>1.3.16.Final</version.org.jboss.universe.producer.wildfly>
-        <version.org.jboss.weld.weld>5.1.6.Final</version.org.jboss.weld.weld>
+        <version.org.jboss.universe.producer.wildfly>1.3.17.Final</version.org.jboss.universe.producer.wildfly>
+        <version.org.jboss.weld.weld>5.1.7.Final</version.org.jboss.weld.weld>
         <version.org.jboss.weld.weld-api>5.0.SP3</version.org.jboss.weld.weld-api>
         <version.org.jboss.ws.api>3.0.0.Final</version.org.jboss.ws.api>
         <version.org.jboss.ws.common>5.1.0.Final</version.org.jboss.ws.common>
@@ -557,11 +563,11 @@
         <version.org.opensaml.opensaml>4.3.2</version.org.opensaml.opensaml>
         <version.org.ow2.asm>9.7.1</version.org.ow2.asm>
         <version.org.reactivestreams>1.0.4</version.org.reactivestreams>
-        <version.org.wildfly.clustering>9.0.1.Final</version.org.wildfly.clustering>
+        <version.org.wildfly.clustering>9.0.2.Final</version.org.wildfly.clustering>
         <!--
             Maintain separation between these two frequently updated artifacts to avoid merge conflicts.
         -->
-        <version.org.wildfly.core>31.0.1.Final</version.org.wildfly.core>
+        <version.org.wildfly.core>32.0.0.Beta4</version.org.wildfly.core>
         <version.org.wildfly.http-client>2.1.3.Final</version.org.wildfly.http-client>
         <version.org.wildfly.launcher>1.0.2.Final</version.org.wildfly.launcher>
         <version.org.wildfly.mvc.krazo>2.0.1.Final</version.org.wildfly.mvc.krazo>
@@ -572,9 +578,9 @@
         <version.org.wildfly.transaction.client>3.0.5.Final</version.org.wildfly.transaction.client>
         <version.org.wildfly.wildfly-application-development-guide>1.0.0.Final</version.org.wildfly.wildfly-application-development-guide>
         <preview.version.org.wildfly.wildfly-ee-9-deployment-transformer>2.0.0.Final</preview.version.org.wildfly.wildfly-ee-9-deployment-transformer>
-        <version.software.amazon.awssdk>2.40.9</version.software.amazon.awssdk>
+        <version.software.amazon.awssdk>2.40.17</version.software.amazon.awssdk>
         <version.software.amazon.eventstream>1.0.1</version.software.amazon.eventstream>
-        <version.org.xerial.snappy.snappy-java>1.1.10.5</version.org.xerial.snappy.snappy-java>
+        <version.org.xerial.snappy.snappy-java>1.1.10.8</version.org.xerial.snappy.snappy-java>
         <version.sun.jaxb>${version.org.glassfish.jaxb}</version.sun.jaxb>
         <version.wsdl4j>1.6.3</version.wsdl4j>
         <version.xml-resolver>1.2</version.xml-resolver>
@@ -904,6 +910,11 @@
                 <artifactId>wildfly-producers</artifactId>
                 <version>${version.org.jboss.universe.producer.wildfly}</version>
             </dependency>
+            <dependency>
+                <groupId>org.jboss.galleon</groupId>
+                <artifactId>galleon-core</artifactId>
+                <version>${version.org.jboss.galleon}</version>
+            </dependency>
         </dependencies>
 
     </dependencyManagement>
@@ -1006,6 +1017,13 @@
                             <groupId>org.wildfly.checkstyle</groupId>
                             <artifactId>wildfly-checkstyle-config</artifactId>
                             <version>${version.org.wildfly.checkstyle-config}</version>
+                        </dependency>
+                        <!-- Workaround for mysterious issue discussed in
+                             https://wildfly.zulipchat.com/#narrow/channel/174184-wildfly-developers/topic/version.2Echeckstyle.2Eplugin.20problem/with/570909520 -->
+                        <dependency>
+                            <groupId>org.codehaus.plexus</groupId>
+                            <artifactId>plexus-velocity</artifactId>
+                            <version>${version.plexus-velocity.for.checkstyle}</version>
                         </dependency>
                     </dependencies>
                     <configuration>

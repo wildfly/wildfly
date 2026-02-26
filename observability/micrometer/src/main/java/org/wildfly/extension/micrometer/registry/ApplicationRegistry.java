@@ -16,13 +16,17 @@ import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.DistributionSummary;
 import io.micrometer.core.instrument.FunctionCounter;
 import io.micrometer.core.instrument.FunctionTimer;
+import io.micrometer.core.instrument.Gauge;
 import io.micrometer.core.instrument.LongTaskTimer;
+import io.micrometer.core.instrument.Measurement;
 import io.micrometer.core.instrument.Meter;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Tag;
 import io.micrometer.core.instrument.Tags;
 import io.micrometer.core.instrument.TimeGauge;
 import io.micrometer.core.instrument.Timer;
+import io.micrometer.core.instrument.distribution.DistributionStatisticConfig;
+import io.micrometer.core.instrument.distribution.pause.PauseDetector;
 import io.micrometer.core.instrument.search.RequiredSearch;
 import io.micrometer.core.instrument.search.Search;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
@@ -154,9 +158,99 @@ public class ApplicationRegistry extends SimpleMeterRegistry {
         return hasWfTag ? tags : Tags.concat(tags, TAG_WF_DEPLOYMENT, deploymentName);
     }
 
+    private Iterable<Tag> addMissingTag(Meter.Id id) {
+        return (id.getTag(TAG_WF_DEPLOYMENT) != null) ? id.getTags() :
+                Tags.concat(id.getTags(), TAG_WF_DEPLOYMENT, deploymentName);
+    }
+
     private boolean containsWrongDeploymentTag(Meter.Id id) {
         // If the tag doesn't match the current deployment, whether it's missing or different, it should be denied
         return !deploymentName.equals(id.getTag(TAG_WF_DEPLOYMENT));
+    }
+
+    // Override protected newXxx() methods to forward Builder pattern registrations to parentRegistry
+
+    @Override
+    protected <T> Gauge newGauge(Meter.Id id, T obj, ToDoubleFunction<T> valueFunction) {
+        return Gauge.builder(id.getName(), obj, valueFunction)
+                .tags(addMissingTag(id))
+                .description(id.getDescription())
+                .baseUnit(id.getBaseUnit())
+                .register(parentRegistry);
+    }
+
+    @Override
+    protected Counter newCounter(Meter.Id id) {
+        return Counter.builder(id.getName())
+                .tags(addMissingTag(id))
+                .description(id.getDescription())
+                .baseUnit(id.getBaseUnit())
+                .register(parentRegistry);
+    }
+
+    @Override
+    protected Timer newTimer(Meter.Id id, DistributionStatisticConfig distributionStatisticConfig,
+                             PauseDetector pauseDetector) {
+        return Timer.builder(id.getName())
+                .tags(addMissingTag(id))
+                .description(id.getDescription())
+                .register(parentRegistry);
+    }
+
+    @Override
+    protected DistributionSummary newDistributionSummary(Meter.Id id,
+                                                          DistributionStatisticConfig distributionStatisticConfig,
+                                                          double scale) {
+        return DistributionSummary.builder(id.getName())
+                .tags(addMissingTag(id))
+                .scale(scale)
+                .description(id.getDescription())
+                .baseUnit(id.getBaseUnit())
+                .register(parentRegistry);
+    }
+
+    @Override
+    protected <T> FunctionTimer newFunctionTimer(Meter.Id id, T obj, ToLongFunction<T> countFunction,
+                                                  ToDoubleFunction<T> totalTimeFunction, TimeUnit totalTimeFunctionUnit) {
+        return FunctionTimer.builder(id.getName(), obj, countFunction, totalTimeFunction, totalTimeFunctionUnit)
+                .tags(addMissingTag(id))
+                .description(id.getDescription())
+                .register(parentRegistry);
+    }
+
+    @Override
+    protected <T> FunctionCounter newFunctionCounter(Meter.Id id, T obj, ToDoubleFunction<T> countFunction) {
+        return FunctionCounter.builder(id.getName(), obj, countFunction)
+                .tags(addMissingTag(id))
+                .description(id.getDescription())
+                .baseUnit(id.getBaseUnit())
+                .register(parentRegistry);
+    }
+
+    @Override
+    protected Meter newMeter(Meter.Id id, Meter.Type type, Iterable<Measurement> measurements) {
+        return Meter.builder(id.getName(), type, measurements)
+                .tags(addMissingTag(id))
+                .description(id.getDescription())
+                .baseUnit(id.getBaseUnit())
+                .register(parentRegistry);
+    }
+
+    @Override
+    protected LongTaskTimer newLongTaskTimer(Meter.Id id, DistributionStatisticConfig distributionStatisticConfig) {
+        return LongTaskTimer.builder(id.getName())
+                .tags(addMissingTag(id))
+                .description(id.getDescription())
+                .register(parentRegistry);
+    }
+
+    @Override
+    protected <T> TimeGauge newTimeGauge(Meter.Id id, T obj, TimeUnit valueFunctionUnit,
+                                          ToDoubleFunction<T> valueFunction) {
+        return TimeGauge.builder(id.getName(), obj, valueFunctionUnit, valueFunction)
+                .tags(addMissingTag(id))
+                .description(id.getDescription())
+                .register(parentRegistry);
     }
 
     private class ApplicationMore extends More {

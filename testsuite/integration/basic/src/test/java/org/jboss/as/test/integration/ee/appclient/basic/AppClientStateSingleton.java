@@ -59,4 +59,9 @@ public class AppClientStateSingleton implements AppClientSingletonRemote {
             throw new RuntimeException(e);
         }
     }
+
+    @Override
+    public String echo(String toEcho) {
+        return toEcho;
+    }
 }

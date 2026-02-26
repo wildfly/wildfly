@@ -145,7 +145,7 @@ public enum UndertowSubsystemSchema implements PersistentSubsystemSchema<Underto
     private PersistentResourceXMLDescription ajpListener() {
         PersistentResourceXMLDescription.Builder builder = this.factory.builder(AjpListenerResourceDefinition.PATH_ELEMENT);
         Stream<AttributeDefinition> attributes = AjpListenerResourceDefinition.ATTRIBUTES.stream();
-        if (!this.since(VERSION_14_0_COMMUNITY)) {
+        if (!this.since(VERSION_15_0) && !this.since(VERSION_14_0_COMMUNITY)) {
             attributes = attributes.filter(Predicate.isEqual(AjpListenerResourceDefinition.ALLOWED_REQUEST_ATTRIBUTES_PATTERN).negate());
         }
         Stream.concat(this.listenerAttributes(), attributes).forEach(builder::addAttribute);

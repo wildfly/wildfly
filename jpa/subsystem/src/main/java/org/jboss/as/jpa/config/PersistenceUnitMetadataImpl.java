@@ -100,6 +100,8 @@ public class PersistenceUnitMetadataImpl implements PersistenceUnitMetadata {
     private volatile List<String> qualifierAnnotationNames = List.of();
     private volatile boolean isDuplicate;
 
+    private static final String ORG_HIBERNATE_ORM_PROVIDER_CLASS_ENHANCER_CLASS = "org.hibernate.jpa.internal.enhance.EnhancingClassTransformerImpl";
+
     @Override
     public void setPersistenceUnitName(String name) {
         this.name = name;
@@ -376,6 +378,13 @@ public class PersistenceUnitMetadataImpl implements PersistenceUnitMetadata {
 
     @Override
     public void addTransformer(ClassTransformer classTransformer) {
+        // WFLY-19694 Do not add Hibernate ORM 6.x/7.x bytecode enhancement class transformers
+        // (e.g. org.hibernate.jpa.internal.enhance.EnhancingClassTransformerImpl)
+        // which were already added earlier via org.jboss.as.jpa.hibernate.WildFlyClassTransformer
+        // or org.wildfly.persistence.jipijapa.hibernate7.WildFlyClassTransformer
+        if (classTransformer.getClass().getName().equals(ORG_HIBERNATE_ORM_PROVIDER_CLASS_ENHANCER_CLASS)) {
+            return;
+        }
         transformers.add(classTransformer);
         if (ROOT_LOGGER.isTraceEnabled()) {
             ROOT_LOGGER.tracef("added entity class transformer '%s' for '%s'",
