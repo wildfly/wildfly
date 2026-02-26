@@ -93,6 +93,7 @@ import static org.jboss.as.connector.subsystems.datasources.Constants.USERNAME;
 import static org.jboss.as.connector.subsystems.datasources.Constants.USE_CCM;
 import static org.jboss.as.connector.subsystems.datasources.Constants.USE_TRY_LOCK;
 import static org.jboss.as.connector.subsystems.datasources.Constants.VALIDATE_ON_MATCH;
+import static org.jboss.as.connector.subsystems.datasources.Constants.VALIDATION_TIMEOUT_SECONDS;
 import static org.jboss.as.connector.subsystems.datasources.Constants.VALID_CONNECTION_CHECKER_CLASSNAME;
 import static org.jboss.as.connector.subsystems.datasources.Constants.VALID_CONNECTION_CHECKER_MODULE;
 import static org.jboss.as.connector.subsystems.datasources.Constants.VALID_CONNECTION_CHECKER_PROPERTIES;
@@ -236,7 +237,7 @@ public class DsParser extends AbstractParser {
                                     parseXADataSource_4_0(reader, list, parentAddress);
                                     break;
                                 default:
-                                    parseXADataSource_7_0(reader, list, parentAddress);
+                                    parseXADataSource(reader, list, parentAddress);
                                     break;
                             }
                             break;
@@ -1316,7 +1317,7 @@ public class DsParser extends AbstractParser {
         throw new ParserException(bundle.unexpectedEndOfDocument());
     }
 
-    private void parseXADataSource_7_0(XMLExtendedStreamReader reader, final List<ModelNode> list, final ModelNode parentAddress) throws XMLStreamException, ParserException,
+    private void parseXADataSource(XMLExtendedStreamReader reader, final List<ModelNode> list, final ModelNode parentAddress) throws XMLStreamException, ParserException,
             ValidateException {
 
         String poolName = null;
@@ -1510,7 +1511,14 @@ public class DsParser extends AbstractParser {
                             break;
                         }
                         case TIMEOUT: {
-                            parseTimeOutSettings(reader, operation);
+                            switch (Namespace.forUri(reader.getNamespaceURI())) {
+                                case DATASOURCES_8_0:
+                                    parseTimeOutSettings_8_0(reader, operation);
+                                    break;
+                                default:
+                                    parseTimeOutSettings(reader, operation);
+                                    break;
+                            }
                             break;
                         }
                         case VALIDATION: {
@@ -2524,7 +2532,13 @@ public class DsParser extends AbstractParser {
                             break;
                         }
                         case TIMEOUT: {
-                            parseTimeOutSettings(reader, operation);
+                            switch (Namespace.forUri(reader.getNamespaceURI())) {
+                                case DATASOURCES_8_0:
+                                    parseTimeOutSettings_8_0(reader, operation);
+                                    break;
+                                default:
+                                    parseTimeOutSettings(reader, operation);
+                            }
                             break;
                         }
                         case VALIDATION: {
@@ -3126,6 +3140,81 @@ public class DsParser extends AbstractParser {
                         default: {
                             throw new ParserException(bundle.unexpectedElement(reader.getLocalName()));
                         }
+                    }
+                    break;
+                }
+            }
+        }
+        throw new ParserException(bundle.unexpectedEndOfDocument());
+    }
+
+    private void parseTimeOutSettings_8_0(XMLExtendedStreamReader reader, final ModelNode operation) throws XMLStreamException, ParserException,
+            ValidateException {
+
+        while (reader.hasNext()) {
+            switch (reader.nextTag()) {
+                case END_ELEMENT: {
+                    if (DataSource.Tag.forName(reader.getLocalName()) == DataSource.Tag.TIMEOUT) {
+
+                        return;
+                    } else {
+                        if (TimeOut.Tag.forName(reader.getLocalName()) == TimeOut.Tag.UNKNOWN) {
+                            throw new ParserException(bundle.unexpectedEndTag(reader.getLocalName()));
+                        }
+                    }
+                    break;
+                }
+                case START_ELEMENT: {
+                    switch (TimeOut.Tag.forName(reader.getLocalName())) {
+                        case ALLOCATION_RETRY: {
+                            String value = rawElementText(reader);
+                            ALLOCATION_RETRY.parseAndSetParameter(value, operation, reader);
+                            break;
+                        }
+                        case ALLOCATION_RETRY_WAIT_MILLIS: {
+                            String value = rawElementText(reader);
+                            ALLOCATION_RETRY_WAIT_MILLIS.parseAndSetParameter(value, operation, reader);
+                            break;
+                        }
+                        case BLOCKING_TIMEOUT_MILLIS: {
+                            String value = rawElementText(reader);
+                            BLOCKING_TIMEOUT_WAIT_MILLIS.parseAndSetParameter(value, operation, reader);
+                            break;
+                        }
+                        case IDLE_TIMEOUT_MINUTES: {
+                            String value = rawElementText(reader);
+                            IDLETIMEOUTMINUTES.parseAndSetParameter(value, operation, reader);
+                            break;
+                        }
+                        case QUERY_TIMEOUT: {
+                            String value = rawElementText(reader);
+                            QUERY_TIMEOUT.parseAndSetParameter(value, operation, reader);
+                            break;
+                        }
+                        case SET_TX_QUERY_TIMEOUT: {
+                            //tag presence is sufficient to set it to true
+                            String value = rawElementText(reader);
+                            value = value == null ? "true" : value;
+                            SET_TX_QUERY_TIMEOUT.parseAndSetParameter(value, operation, reader);
+                            break;
+                        }
+                        case USE_TRY_LOCK: {
+                            String value = rawElementText(reader);
+                            USE_TRY_LOCK.parseAndSetParameter(value, operation, reader);
+                            break;
+                        }
+                        case XA_RESOURCE_TIMEOUT: {
+                            String value = rawElementText(reader);
+                            XA_RESOURCE_TIMEOUT.parseAndSetParameter(value, operation, reader);
+                            break;
+                        }
+                        case VALIDATION_TIMEOUT_SECONDS: {
+                            String value = rawElementText(reader);
+                            VALIDATION_TIMEOUT_SECONDS.parseAndSetParameter(value, operation, reader);
+                            break;
+                        }
+                        default:
+                            throw new ParserException(bundle.unexpectedElement(reader.getLocalName()));
                     }
                     break;
                 }
