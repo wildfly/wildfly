@@ -165,6 +165,7 @@ abstract class ListenerResourceDefinition extends PersistentResourceDefinition {
     static final OptionAttributeDefinition REQUEST_PARSE_TIMEOUT = OptionAttributeDefinition.builder("request-parse-timeout", UndertowOptions.REQUEST_PARSE_TIMEOUT).setMeasurementUnit(MeasurementUnit.MILLISECONDS).setRequired(false).setAllowExpression(true).build();
     static final OptionAttributeDefinition RFC6265_COOKIE_VALIDATION = OptionAttributeDefinition.builder("rfc6265-cookie-validation", UndertowOptions.ENABLE_RFC6265_COOKIE_VALIDATION).setDefaultValue(ModelNode.FALSE).setRequired(false).setAllowExpression(true).build();
     static final OptionAttributeDefinition ALLOW_UNESCAPED_CHARACTERS_IN_URL = OptionAttributeDefinition.builder("allow-unescaped-characters-in-url", UndertowOptions.ALLOW_UNESCAPED_CHARACTERS_IN_URL).setDefaultValue(ModelNode.FALSE).setRequired(false).setAllowExpression(true).build();
+    static final OptionAttributeDefinition MEMORY_STORAGE_THRESHOLD = OptionAttributeDefinition.builder("memory-storage-threshold", UndertowOptions.MEMORY_STORAGE_THRESHOLD).setDefaultValue(new ModelNode(UndertowOptions.DEFAULT_MEMORY_STORAGE_THRESHOLD)).setMeasurementUnit(MeasurementUnit.BYTES).setValidator(new LongRangeValidator(1)).setAllowExpression(true).build();
 
     public enum ConnectorStat {
         REQUEST_COUNT(new SimpleAttributeDefinitionBuilder("request-count", ModelType.LONG)
@@ -226,7 +227,7 @@ abstract class ListenerResourceDefinition extends PersistentResourceDefinition {
             BUFFER_PIPELINED_DATA, MAX_PARAMETERS, MAX_HEADERS, MAX_COOKIES, ALLOW_ENCODED_SLASH, DECODE_URL,
             URL_CHARSET, ALWAYS_SET_KEEP_ALIVE, MAX_BUFFERED_REQUEST_SIZE, RECORD_REQUEST_START_TIME,
             ALLOW_EQUALS_IN_COOKIE_VALUE, NO_REQUEST_TIMEOUT, REQUEST_PARSE_TIMEOUT, RFC6265_COOKIE_VALIDATION,
-            ALLOW_UNESCAPED_CHARACTERS_IN_URL);
+            ALLOW_UNESCAPED_CHARACTERS_IN_URL, MEMORY_STORAGE_THRESHOLD);
 
     static final Collection<OptionAttributeDefinition> SOCKET_OPTIONS = List.of(BACKLOG, RECEIVE_BUFFER, SEND_BUFFER, KEEP_ALIVE, READ_TIMEOUT, WRITE_TIMEOUT, MAX_CONNECTIONS);
     private static final Collection<AttributeDefinition> SIMPLE_ATTRIBUTES = List.of(SOCKET_BINDING, WORKER, BUFFER_POOL, ENABLED, RESOLVE_PEER_ADDRESS, DISALLOWED_METHODS, SECURE);
