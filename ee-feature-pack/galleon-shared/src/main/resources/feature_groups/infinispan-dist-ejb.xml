@@ -34,7 +34,7 @@
                 </feature>
             </feature>
             <feature spec="subsystem.infinispan.cache-container.replicated-cache">
-                <param name="replicated-cache" value="client-mappings"/>
+                <param name="replicated-cache" value="client-services"/>
                 <feature spec="subsystem.infinispan.cache-container.replicated-cache.component.expiration">
                     <param name="interval" value="0"/>
                 </feature>

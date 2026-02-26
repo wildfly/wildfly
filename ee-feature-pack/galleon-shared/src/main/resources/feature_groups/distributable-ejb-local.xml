@@ -14,7 +14,7 @@
             <param name="cache" value="passivation"/>
             <param name="max-active-beans" value="10000"/>
         </feature>
-        <feature spec="subsystem.distributable-ejb.client-mappings-registry.local"/>
+        <feature spec="subsystem.distributable-ejb.ejb-client-services.local"/>
         <feature spec="subsystem.distributable-ejb.infinispan-timer-management">
             <param name="infinispan-timer-management" value="persistent"/>
             <param name="cache-container" value="ejb"/>

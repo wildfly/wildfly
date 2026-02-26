@@ -23,6 +23,9 @@ public class DistributableEjbSubsystemResourceTransformer implements Function<Mo
         // Transform infinispan-bean-management resource
         new BeanManagementResourceTransformer(builder).accept(version);
 
+        // Transform infinispan-ejb-client-services resource
+        new EjbClientServicesResourceTransformer(builder).accept(version);
+
         // Transform infinispan-timer-management resource
         new TimerManagementResourceTransformer(builder).accept(version);
 

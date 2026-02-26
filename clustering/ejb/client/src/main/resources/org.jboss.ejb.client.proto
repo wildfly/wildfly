@@ -10,3 +10,9 @@ package org.jboss.ejb.client;
 message SessionID {
 	bytes	encoded	= 1;
 }
+
+message EJBModuleIdentifier {
+	string	application	= 1;
+	string	module	= 2;
+	string	distinct	= 3;
+}

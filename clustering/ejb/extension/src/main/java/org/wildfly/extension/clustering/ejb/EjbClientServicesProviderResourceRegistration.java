@@ -11,15 +11,15 @@ import org.jboss.as.controller.ResourceRegistration;
  * Enumerates resource registrations for client-mappings registry providers.
  * @author Paul Ferraro
  */
-public enum ClientMappingsRegistryProviderResourceRegistration implements ResourceRegistration {
+public enum EjbClientServicesProviderResourceRegistration implements ResourceRegistration {
     WILDCARD(PathElement.WILDCARD_VALUE),
     LOCAL("local"),
     INFINISPAN("infinispan")
     ;
     private final PathElement path;
 
-    ClientMappingsRegistryProviderResourceRegistration(String value) {
-        this.path = PathElement.pathElement("client-mappings-registry", value);
+    EjbClientServicesProviderResourceRegistration(String value) {
+        this.path = PathElement.pathElement("ejb-client-services", value);
     }
 
     @Override
