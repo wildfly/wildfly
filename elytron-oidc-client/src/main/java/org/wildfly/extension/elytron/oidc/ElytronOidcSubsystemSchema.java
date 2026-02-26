@@ -91,7 +91,6 @@ public enum ElytronOidcSubsystemSchema implements PersistentSubsystemSchema<Elyt
 
     VERSION_1_0(1, Stability.DEFAULT),
     VERSION_2_0(2, Stability.DEFAULT),
-    VERSION_2_0_PREVIEW(2, 0, Stability.PREVIEW), // WildFly 32
     VERSION_3_0_PREVIEW(3, 0, Stability.PREVIEW), // WildFly 33-present
     ;
 
@@ -155,7 +154,7 @@ public enum ElytronOidcSubsystemSchema implements PersistentSubsystemSchema<Elyt
             Stream.of(requestObjectAttributes).forEach(attribute -> providerDefinitionBuilder.addAttribute(attribute, SIMPLE_ATTRIBUTE_PARSER, SIMPLE_ATTRIBUTE_MARSHALLER));
         }
 
-        if (this.since(VERSION_2_0_PREVIEW) && this.enables(SCOPE)) {
+      if (this.since(VERSION_2_0) && this.enables(SCOPE)) {
             secureDeploymentDefinitionBuilder.addAttribute(SCOPE, SIMPLE_ATTRIBUTE_PARSER, SIMPLE_ATTRIBUTE_MARSHALLER);
             secureServerDefinitionBuilder.addAttribute(SCOPE, SIMPLE_ATTRIBUTE_PARSER, SIMPLE_ATTRIBUTE_MARSHALLER);
         }

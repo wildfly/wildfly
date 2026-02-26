@@ -38,9 +38,12 @@
         <ssl-required>EXTERNAL</ssl-required>
         <principal-attribute>sub</principal-attribute>
     </provider>
-    <secure-deployment name="web-console">
+    <provider name="keycloak">
+        <provider-url>http://localhost:8080/realms/WildFly</provider-url>
+    </provider>
+    <secure-deployment name="myAppWithSecret.war">
         <realm>main</realm>
-        <resource>web-console</resource>
+        <resource>myAppId</resource>
         <use-resource-role-mappings>true</use-resource-role-mappings>
         <turn-off-change-session-id-on-login>false</turn-off-change-session-id-on-login>
         <token-minimum-time-to-live>10</token-minimum-time-to-live>
@@ -55,9 +58,9 @@
         <proxy-url>http://localhost:9000</proxy-url>
         <verify-token-audience>true</verify-token-audience>
         <credential name="secret" secret="0aa31d98-e0aa-404c-b6e0-e771dba1e798" />
-        <redirect-rewrite-rule name="^/wsmain/api/(.*)$" replacement="api/$1" />
+        <redirect-rewrite-rule name="^/wsmain/api/(.*)$" replacement="/api/$1/" />
     </secure-deployment>
-    <secure-deployment name="http-endpoint">
+    <secure-deployment name="myAppWithJwt.war">
         <realm>main</realm>
         <resource>http-endpoint</resource>
         <use-resource-role-mappings>true</use-resource-role-mappings>
@@ -72,7 +75,7 @@
                     client-keystore-type="jks" />
         <redirect-rewrite-rule name="^/wsmain/api/(.*)$" replacement="/api/$1/" />
     </secure-deployment>
-    <secure-deployment name="some-endpoint">
+    <secure-deployment name="myAppWithSecretJwt.war">
         <realm>main</realm>
         <resource>some-endpoint</resource>
         <use-resource-role-mappings>true</use-resource-role-mappings>
@@ -82,12 +85,26 @@
         </realm-public-key>
         <auth-server-url>http://localhost:8080/auth</auth-server-url>
         <ssl-required>EXTERNAL</ssl-required>
-        <credential name="secret-jwt" secret="fd8f54e1-6994-413a-acf8-90bc67f05412" />
+        <credential name="secret-jwt" secret="fd8f54e1-6994-413a-acf8-90bc67f05412" algorithm="HS512"/>
         <redirect-rewrite-rule name="^/wsmain/api/(.*)$" replacement="/api/$1/" />
     </secure-deployment>
-    <secure-deployment name="wildfly-management">
+    <secure-deployment name="myAppWithRealmInline.war">
+        <realm>demo</realm>
+        <auth-server-url>http://localhost:8081/auth</auth-server-url>
+        <ssl-required>external</ssl-required>
+        <resource>customer-portal</resource>
+        <credential name="secret" secret="password" />
+    </secure-deployment>
+    <secure-deployment name="myAppWithProvider.war">
+        <provider>google</provider>
+        <ssl-required>external</ssl-required>
+        <client-id>customer-portal</client-id>
+        <principal-attribute>firstName</principal-attribute>
+        <credential name="secret" secret="password" />
+    </secure-deployment>
+    <secure-deployment name="myBearerOnlyApp.war">
         <realm>jboss-infra</realm>
-        <resource>wildfly-management</resource>
+        <resource>myBearerOnlyApp</resource>
         <bearer-only>true</bearer-only>
         <ssl-required>EXTERNAL</ssl-required>
         <socket-timeout-millis>10000</socket-timeout-millis>
@@ -95,14 +112,33 @@
         <connection-timeout-millis>50000</connection-timeout-millis>
         <principal-attribute>preferred_username</principal-attribute>
     </secure-deployment>
-    <secure-deployment name="wildfly-test">
-        <provider-url>http://localhost:8080/auth/realms/WildFly</provider-url>
-        <client-id>wildfly-management</client-id>
+    <secure-deployment name="wildfly-management">
+        <realm>jboss-infra</realm>
+        <resource>wildfly-management</resource>
+        <bearer-only>true</bearer-only>
         <ssl-required>EXTERNAL</ssl-required>
-        <socket-timeout-millis>10000</socket-timeout-millis>
-        <connection-ttl-millis>40000</connection-ttl-millis>
-        <connection-timeout-millis>50000</connection-timeout-millis>
         <principal-attribute>preferred_username</principal-attribute>
-        <token-signature-algorithm>HS256</token-signature-algorithm>
     </secure-deployment>
+    <secure-deployment name="wildfly-management-provider-url">
+        <provider>keycloak</provider>
+        <client-id>wildfly-management</client-id>
+        <bearer-only>true</bearer-only>
+        <ssl-required>EXTERNAL</ssl-required>
+        <principal-attribute>preferred_username</principal-attribute>
+    </secure-deployment>
+    <secure-server name="wildfly-console">
+        <realm>jboss-infra</realm>
+        <resource>wildfly-console</resource>
+        <public-client>true</public-client>
+        <adapter-state-cookie-path>/</adapter-state-cookie-path>
+        <ssl-required>EXTERNAL</ssl-required>
+        <confidential-port>443</confidential-port>
+        <proxy-url>http://localhost:9000</proxy-url>
+    </secure-server>
+    <secure-server name="another-wildfly-console">
+        <provider>keycloak</provider>
+        <client-id>wildfly-console</client-id>
+        <public-client>true</public-client>
+        <ssl-required>EXTERNAL</ssl-required>
+    </secure-server>
 </subsystem>
