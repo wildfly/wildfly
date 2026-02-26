@@ -3,9 +3,9 @@
   ~ SPDX-License-Identifier: Apache-2.0
   -->
 
-<subsystem xmlns="urn:jboss:domain:resource-adapters:7.1">
+<subsystem xmlns="urn:jboss:domain:resource-adapters:7.2">
     <resource-adapters>
-        <resource-adapter>
+        <resource-adapter id="ra">
             <module slot="main" id="org.jboss.ironjacamar.ra16out"/>
             <connection-definitions>
                 <connection-definition

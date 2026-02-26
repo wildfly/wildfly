@@ -3,21 +3,21 @@
   ~ SPDX-License-Identifier: Apache-2.0
   -->
 
-<subsystem xmlns="urn:jboss:domain:resource-adapters:1.0">
+<subsystem xmlns="urn:jboss:domain:resource-adapters:7.2">
     <resource-adapters>
-        <resource-adapter>
+        <resource-adapter id="ra16">
             <archive>ra16anno.rar</archive>
             <transaction-support>NoTransaction</transaction-support>
             <connection-definitions>
                 <connection-definition
                         class-name="org.jboss.as.test.integration.jca.annorar.AnnoManagedConnectionFactory"
-                        jndi-name="java:/eis/ra16anno" pool-name="Pool1">
-                </connection-definition>
+                        jndi-name="java:/eis/ra16anno" pool-name="Pool1"/>
             </connection-definitions>
-            <admin-object
-                    class-name="org.jboss.as.test.integration.jca.annorar.AnnoAdminObjectImpl"
-                    jndi-name="java:/eis/ao/ra16anno" pool-name="Pool2">
-            </admin-object>
+            <admin-objects>
+                <admin-object
+                        class-name="org.jboss.as.test.integration.jca.annorar.AnnoAdminObjectImpl"
+                        jndi-name="java:/eis/ao/ra16anno" pool-name="Pool2"/>
+            </admin-objects>
         </resource-adapter>
     </resource-adapters>
 </subsystem>
