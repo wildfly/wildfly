@@ -811,7 +811,9 @@ public abstract class EJBComponentDescription extends ComponentDescription {
                     @Override
                     public void configureDependency(final ServiceBuilder<?> serviceBuilder, final ViewService service) throws DeploymentUnitProcessingException {
                         CapabilityServiceSupport support = context.getDeploymentUnit().getAttachment(org.jboss.as.server.deployment.Attachments.CAPABILITY_SERVICE_SUPPORT);
-                        serviceBuilder.requires(support.getCapabilityServiceName(EJB3RemoteResourceDefinition.EJB_REMOTE_CAPABILITY_NAME));
+                        // this just makes sure that remote invocations can be accepted
+                        serviceBuilder.requires(support.getCapabilityServiceName(EJB3RemoteResourceDefinition.EJB_REMOTE_CONNECTOR_CAPABILITY_NAME));
+                        serviceBuilder.requires(support.getCapabilityServiceName(EJB3RemoteResourceDefinition.EJB_HTTP_CONNECTOR_CAPABILITY_NAME));
                     }
                 });
             }
