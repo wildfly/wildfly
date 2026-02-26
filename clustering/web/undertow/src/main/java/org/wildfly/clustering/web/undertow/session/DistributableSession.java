@@ -220,9 +220,7 @@ public class DistributableSession extends AbstractSession {
         return id;
     }
 
-    /*
-     * New method in io.undertow.server.session.Session that can add the @Override annotation when Undertow is upgraded
-     */
+    @Override
     public boolean isInvalid() {
         return !this.reference.get().getKey().isValid();
     }

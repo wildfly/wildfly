@@ -1286,6 +1286,41 @@
                 <version>${version.io.smallrye.smallrye-mutiny}</version>
             </dependency>
 
+            <!-- TODO (jrp) temporary override until the new version of Undertow is integrated into core and that version of core is integrated here -->
+            <dependency>
+                <groupId>io.undertow</groupId>
+                <artifactId>undertow-core</artifactId>
+                <version>${version.io.undertow}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>io.undertow.ee</groupId>
+                <artifactId>undertow-servlet</artifactId>
+                <version>${version.io.undertow.ee}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>io.undertow.ee</groupId>
+                <artifactId>undertow-websockets</artifactId>
+                <version>${version.io.undertow.ee}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
             <dependency>
                 <groupId>io.undertow.jastow</groupId>
                 <artifactId>jastow</artifactId>

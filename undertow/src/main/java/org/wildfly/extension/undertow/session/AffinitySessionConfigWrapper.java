@@ -11,11 +11,11 @@ import java.util.Map;
 
 import io.undertow.server.session.PathParameterSessionConfig;
 import io.undertow.server.session.SessionConfig;
+import io.undertow.server.session.SessionCookieConfig;
 import io.undertow.servlet.api.Deployment;
 import io.undertow.servlet.api.SessionConfigWrapper;
 
 import org.wildfly.extension.undertow.CookieConfig;
-import org.wildfly.extension.undertow.ReflectiveSessionCookieConfig;
 
 /**
  * Adds affinity locator handling to a {@link SessionConfig}.
@@ -33,7 +33,7 @@ public class AffinitySessionConfigWrapper implements SessionConfigWrapper {
         // Setup SessionCookieSource->SessionConfig mapping:
 
         // SessionConfig.SessionCookieSource.COOKIE
-        ReflectiveSessionCookieConfig cookieSessionConfig = new ReflectiveSessionCookieConfig();
+        SessionCookieConfig cookieSessionConfig = new SessionCookieConfig();
 
         cookieSessionConfig.setCookieName(config.getName());
         if (config.getDomain() != null) {
@@ -49,7 +49,7 @@ public class AffinitySessionConfigWrapper implements SessionConfigWrapper {
             cookieSessionConfig.setMaxAge(config.getMaxAge());
         }
 
-        affinityConfigMap.put(SessionConfig.SessionCookieSource.COOKIE, cookieSessionConfig.getTarget());
+        affinityConfigMap.put(SessionConfig.SessionCookieSource.COOKIE, cookieSessionConfig);
 
         // SessionConfig.SessionCookieSource.URL
 

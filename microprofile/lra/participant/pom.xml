@@ -50,6 +50,10 @@
       <artifactId>wildfly-jaxrs</artifactId>
     </dependency>
 
+    <dependency>
+      <groupId>jakarta.servlet</groupId>
+      <artifactId>jakarta.servlet-api</artifactId>
+    </dependency>
 
     <dependency>
       <groupId>org.eclipse.microprofile.lra</groupId>
@@ -84,7 +88,7 @@
       <artifactId>wildfly-undertow</artifactId>
     </dependency>
     <dependency>
-      <groupId>io.undertow</groupId>
+      <groupId>io.undertow.ee</groupId>
       <artifactId>undertow-servlet</artifactId>
     </dependency>
     <dependency>
