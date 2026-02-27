@@ -29,7 +29,7 @@
         <jbossas.project.dir>${jbossas.ts.dir}/..</jbossas.project.dir>
         <wildfly.build.output.dir>build/target/${server.output.dir.prefix}-${server.output.dir.version}</wildfly.build.output.dir>
         <maven.repo.local>${settings.localRepository}</maven.repo.local>
-        <microprofile.jvm.args>-server -Xms64m -Xmx512m ${modular.jdk.args} -Dmaven.repo.local=${maven.repo.local}</microprofile.jvm.args>
+        <microprofile.jvm.args>-server -Xms64m -Xmx512m ${modular.jdk.args} -Dmaven.repo.local=${maven.repo.local} ${jvm.args.narayana}</microprofile.jvm.args>
         <!-- Properties that set the phase used for different plugin executions.
              Profiles can override the values here to enable/disable executions.
              A value of 'none' disables the execution; to enable set the value to the

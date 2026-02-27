@@ -4,6 +4,8 @@
  */
 package org.jboss.as.test.clustering.cluster;
 
+import java.io.IOException;
+import java.net.InetAddress;
 import java.util.AbstractMap;
 import java.util.Map;
 import java.util.Set;
@@ -17,8 +19,12 @@ import org.jboss.arquillian.container.spi.ContainerRegistry;
 import org.jboss.arquillian.container.test.api.Deployer;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.WildFlyContainerController;
+import org.jboss.as.controller.client.ModelControllerClient;
+import org.jboss.as.controller.client.helpers.ClientConstants;
 import org.jboss.as.test.clustering.NodeUtil;
+import org.jboss.as.test.shared.TestSuiteEnvironment;
 import org.jboss.as.test.shared.TimeoutUtil;
+import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
 import org.junit.After;
 import org.junit.Before;
@@ -113,11 +119,11 @@ public abstract class AbstractClusteringTestCase {
     }
 
     @ArquillianResource
-    protected ContainerRegistry containerRegistry;
+    protected static ContainerRegistry containerRegistry;
     @ArquillianResource
-    protected WildFlyContainerController controller;
+    protected static WildFlyContainerController controller;
     @ArquillianResource
-    protected Deployer deployer;
+    protected static Deployer deployer;
 
     private final Set<String> containers;
     private final Set<String> deployments;
@@ -162,7 +168,7 @@ public abstract class AbstractClusteringTestCase {
      */
     @Before
     public void beforeTestMethod() throws Exception {
-        this.containerRegistry.getContainers().forEach(container -> {
+        containerRegistry.getContainers().forEach(container -> {
             if (container.getState() == Container.State.STARTED && !this.containers.contains(container.getName())) {
                 // Even though we should be able to just stop the container object this currently fails with:
                 // WFARQ-47 Calling "container.stop();" always ends exceptionally "Caught exception closing ManagementClient: java.lang.NullPointerException"
@@ -189,7 +195,7 @@ public abstract class AbstractClusteringTestCase {
     // Container.start(..) methods
 
     protected boolean isStarted(String container) {
-        return NodeUtil.isStarted(this.controller, container);
+        return NodeUtil.isStarted(controller, container);
     }
 
     protected void start() {
@@ -197,11 +203,11 @@ public abstract class AbstractClusteringTestCase {
     }
 
     protected void start(String container) {
-        NodeUtil.start(this.controller, container);
+        NodeUtil.start(controller, container);
     }
 
     protected void start(Set<String> containers) {
-        NodeUtil.start(this.controller, containers);
+        NodeUtil.start(controller, containers);
     }
 
     // Container.stop(..) methods
@@ -222,7 +228,7 @@ public abstract class AbstractClusteringTestCase {
      * To stop the container without waiting for all requests to finish, use {@link #stop(java.lang.String, int)} with suspend timeout of 0.
      */
     protected void stop(String container) {
-        NodeUtil.stop(this.controller, container, SUSPEND_TIMEOUT_S);
+        NodeUtil.stop(controller, container, SUSPEND_TIMEOUT_S);
     }
 
     /**
@@ -237,28 +243,54 @@ public abstract class AbstractClusteringTestCase {
      * Gracefully stops given container with a given suspend timeout.
      */
     protected void stop(String container, int suspendTimeout) {
-        NodeUtil.stop(this.controller, container, suspendTimeout);
+        NodeUtil.stop(controller, container, suspendTimeout);
     }
 
     /**
      * Gracefully stops given set of containers with a given suspend timeout.
      */
     protected void stop(Set<String> containers, int suspendTimeout) {
-        NodeUtil.stop(this.controller, containers, suspendTimeout);
+        NodeUtil.stop(controller, containers, suspendTimeout);
     }
 
-    // Container deployment methods
+    /**
+     * Waits until the given container's management interface becomes unreachable,
+     * confirming the server has fully stopped.
+     */
+    protected void waitUntilStopped(String container) {
+        int port = TestSuiteEnvironment.getServerPort() + getPortOffsetForNode(container);
+        ModelNode op = new ModelNode();
+        op.get(ClientConstants.OP).set(ClientConstants.READ_ATTRIBUTE_OPERATION);
+        op.get(ClientConstants.OP_ADDR).setEmptyList();
+        op.get(ClientConstants.NAME).set("server-state");
+
+        for (int i = 0; i < SUSPEND_TIMEOUT_S; i++) {
+            try (ModelControllerClient client = ModelControllerClient.Factory.create(
+                InetAddress.getByName(TestSuiteEnvironment.getServerAddress()), port)) {
+                client.execute(op);
+                Thread.sleep(TimeoutUtil.adjust(1000));
+            } catch (IOException e) {
+                // Connection refused, the server should be fully stopped
+                break;
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                break;
+            }
+        }
+    }
+
+    // Container deployment methods.
 
     protected void deploy() {
         this.deploy(this.deployments);
     }
 
     protected void deploy(String deployment) {
-        NodeUtil.deploy(this.deployer, deployment);
+        NodeUtil.deploy(deployer, deployment);
     }
 
     protected void deploy(Set<String> deployments) {
-        NodeUtil.deploy(this.deployer, deployments);
+        NodeUtil.deploy(deployer, deployments);
     }
 
     protected void undeploy() {
@@ -266,11 +298,11 @@ public abstract class AbstractClusteringTestCase {
     }
 
     protected void undeploy(String deployment) {
-        NodeUtil.undeploy(this.deployer, deployment);
+        NodeUtil.undeploy(deployer, deployment);
     }
 
     protected void undeploy(Set<String> deployments) {
-        NodeUtil.undeploy(this.deployer, deployments);
+        NodeUtil.undeploy(deployer, deployments);
     }
 
     protected static String findDeployment(String container) {
@@ -283,7 +315,7 @@ public abstract class AbstractClusteringTestCase {
 
     public static int getPortOffsetForNode(String node) {
         return switch (node) {
-            case NODE_1 -> 0;
+            case NODE_1,CONTAINER_SINGLE -> 0;
             case NODE_2 -> 100;
             case NODE_3 -> 200;
             case NODE_4 -> 300;
@@ -302,8 +334,12 @@ public abstract class AbstractClusteringTestCase {
         default void stop(String container) {
             this.stop(Set.of(container));
         }
+        default void waitUntilStopped(String container) throws Exception {
+            this.waitUntilStopped(Set.of(container));
+        }
         void start(Set<String> containers);
         void stop(Set<String> containers);
+        void waitUntilStopped(Set<String> containers) throws Exception;
     }
 
     /**
@@ -321,6 +357,13 @@ public abstract class AbstractClusteringTestCase {
         @Override
         public void stop(Set<String> containers) {
             AbstractClusteringTestCase.this.stop(containers, 0);
+        }
+
+        @Override
+        public void waitUntilStopped(Set<String> containers) throws Exception {
+            for (String container : containers) {
+                AbstractClusteringTestCase.this.waitUntilStopped(container);
+            }
         }
     }
 
@@ -340,6 +383,11 @@ public abstract class AbstractClusteringTestCase {
         @Override
         public void stop(Set<String> containers) {
             AbstractClusteringTestCase.this.undeploy(toDeployments(containers));
+        }
+
+        @Override
+        public void waitUntilStopped(Set<String> containers) {
+            // No-op: redeploy does not stop the server
         }
     }
 }

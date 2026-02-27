@@ -7,12 +7,12 @@ package org.jboss.as.test.integration.ejb.transaction.cmt.fail;
 
 import static org.jboss.as.test.shared.PermissionUtils.createPermissionsXmlAsset;
 
+import java.io.File;
 import java.util.PropertyPermission;
 
 import jakarta.ejb.EJBException;
 import jakarta.inject.Inject;
 import javax.naming.InitialContext;
-import javax.naming.NamingException;
 import javax.transaction.xa.XAResource;
 
 import org.jboss.arquillian.container.test.api.Deployment;
@@ -27,6 +27,7 @@ import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.tm.LastResource;
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -58,8 +59,34 @@ public class TransactionFirstPhaseErrorTestCase {
     }
 
     @Before
-    public void startUp() throws NamingException {
+    public void startUp() {
         checker.resetAll();
+    }
+
+    @After
+    public void tearDown() {
+        String jbossHome = System.getProperty("jboss.home.dir");
+        String defaultStorePath = jbossHome + "/standalone/data/tx-object-store";
+        File rootDir = new File(defaultStorePath);
+        if (rootDir.exists() && rootDir.isDirectory()) {
+            deleteContents(rootDir);
+        }
+    }
+
+    private void deleteContents(File dir) {
+        File[] files = dir.listFiles();
+        if (files == null) {
+            return;
+        }
+
+        for (File file : files) {
+            if (file.isDirectory()) {
+                deleteContents(file);
+            }
+            if (!file.delete()) {
+                throw new RuntimeException("Failed to delete: " + file.getAbsolutePath());
+            }
+        }
     }
 
     /**

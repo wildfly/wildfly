@@ -67,6 +67,7 @@ public class SingletonBackupServiceTestCase extends AbstractClusteringTestCase {
 
         // Needed to be able to inject ArquillianResource
         stop(NODE_2);
+        waitUntilStopped(NODE_2);
 
         try (CloseableHttpClient client = TestHttpClientUtils.promiscuousCookieHttpClient()) {
             HttpResponse response = client.execute(new HttpGet(ValueServiceServlet.createURI(baseURL1, ValueServiceActivator.SERVICE_NAME)));
@@ -96,6 +97,7 @@ public class SingletonBackupServiceTestCase extends AbstractClusteringTestCase {
             }
 
             stop(NODE_2);
+            waitUntilStopped(NODE_2);
 
             response = client.execute(new HttpGet(ValueServiceServlet.createURI(baseURL1, ValueServiceActivator.SERVICE_NAME)));
             try {
@@ -124,6 +126,7 @@ public class SingletonBackupServiceTestCase extends AbstractClusteringTestCase {
             }
 
             stop(NODE_1);
+            waitUntilStopped(NODE_1);
 
             response = client.execute(new HttpGet(ValueServiceServlet.createURI(baseURL2, ValueServiceActivator.SERVICE_NAME)));
             try {

@@ -38,6 +38,7 @@
         <oidc.jboss.home>${project.build.directory}/stability-preview</oidc.jboss.home>
         <multichannel.jboss.home>${project.build.directory}/wildfly-multi-channel</multichannel.jboss.home>
         <channel.provisioning.phase>process-test-resources</channel.provisioning.phase>
+        <extra.server.jvm.args/>
     </properties>
 
     <dependencies>

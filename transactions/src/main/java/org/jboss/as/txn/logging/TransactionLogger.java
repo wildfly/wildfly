@@ -254,4 +254,12 @@ public interface TransactionLogger extends BasicLogger {
 
     @Message(id = 45, value = "Could not register initial reference for InboundTransactionCurrent implementation")
     RuntimeException cannotRegister(@Cause Exception e);
+
+    @LogMessage()
+    @Message(id = 46, value = "Transactions subsystem: starting transactions recovery suspension")
+    void scanSuspensionInitiated();
+
+    @LogMessage()
+    @Message(id = 47, value = "Transactions subsystem: transactions recovery suspension completed")
+    void scanSuspensionCompleted();
 }
