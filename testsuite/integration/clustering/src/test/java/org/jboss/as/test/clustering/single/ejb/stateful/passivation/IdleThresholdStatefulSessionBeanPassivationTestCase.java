@@ -27,6 +27,7 @@ import org.jboss.as.test.clustering.single.ejb.stateful.bean.Result;
 import org.jboss.as.test.clustering.single.ejb.stateful.passivation.bean.PassivatingIncrementor;
 import org.jboss.as.test.clustering.single.ejb.stateful.passivation.bean.PassivatingIncrementorBean;
 import org.jboss.as.test.shared.ManagementServerSetupTask;
+import org.jboss.as.test.shared.SnapshotRestoreSetupTask;
 import org.jboss.as.test.shared.TimeoutUtil;
 import org.wildfly.test.stabilitylevel.StabilityServerSetupSnapshotRestoreTasks;
 import org.jboss.shrinkwrap.api.Archive;
@@ -45,6 +46,7 @@ import org.junit.runner.RunWith;
  */
 @RunWith(Arquillian.class)
 @ServerSetup({
+        SnapshotRestoreSetupTask.class, // MUST be first!
         StabilityServerSetupSnapshotRestoreTasks.Community.class,
         IdleThresholdStatefulSessionBeanPassivationTestCase.ServerSetupTask.class,
 })
