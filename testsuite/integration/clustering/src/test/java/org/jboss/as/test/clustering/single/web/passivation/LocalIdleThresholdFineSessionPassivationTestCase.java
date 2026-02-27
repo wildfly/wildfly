@@ -13,7 +13,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 /**
  * Validates the correctness of session passivation events for a distributed session manager using a local,
  * passivating cache with time-based (idle-threshold) eviction and ATTRIBUTE granularity.
- * Also, verifies functionality of community namespace, i.e. xmlns="urn:jboss:distributable-web:community:5.0"
  *
  * @author Radoslav Husar
  */

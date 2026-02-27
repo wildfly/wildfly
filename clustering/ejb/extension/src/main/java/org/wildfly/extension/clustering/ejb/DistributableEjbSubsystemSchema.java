@@ -27,14 +27,16 @@ import org.jboss.staxmapper.IntVersion;
  * Enumerates the schema versions for the distributable-ejb subsystem.
  * @author Paul Ferraro
  * @author Richard Achmatowicz
+ * @author Radoslav Husar
  */
 public enum DistributableEjbSubsystemSchema implements SubsystemResourceXMLSchema<DistributableEjbSubsystemSchema> {
 
     VERSION_1_0(1, 0), // WildFly 27-35
-    VERSION_2_0(2, 0), // WildFly 36-present
-    VERSION_2_0_COMMUNITY(2, 0, Stability.COMMUNITY), // WildFly 39-present
+    VERSION_2_0(2, 0), // WildFly 36-39
+    VERSION_2_0_COMMUNITY(2, 0, Stability.COMMUNITY), // WildFly 39
+    VERSION_3_0(3, 0), // WildFly 40-present
     ;
-    static final Set<DistributableEjbSubsystemSchema> CURRENT = Set.of(VERSION_2_0, VERSION_2_0_COMMUNITY);
+    static final Set<DistributableEjbSubsystemSchema> CURRENT = Set.of(VERSION_3_0);
 
     private final VersionedNamespace<IntVersion, DistributableEjbSubsystemSchema> namespace;
     private final ResourceXMLParticleFactory factory = ResourceXMLParticleFactory.newInstance(this);
@@ -89,7 +91,7 @@ public enum DistributableEjbSubsystemSchema implements SubsystemResourceXMLSchem
         NamedResourceRegistrationXMLElement.Builder builder = this.factory.namedElement(registration)
                 .addAttribute(BeanManagementResourceDefinitionRegistrar.MAX_ACTIVE_BEANS)
                 ;
-        if (this.since(VERSION_2_0_COMMUNITY)) {
+        if (this.since(VERSION_3_0) || this.since(VERSION_2_0_COMMUNITY)) {
             builder.addAttribute(BeanManagementResourceDefinitionRegistrar.IDLE_THRESHOLD);
         }
         return builder;
@@ -125,7 +127,7 @@ public enum DistributableEjbSubsystemSchema implements SubsystemResourceXMLSchem
         NamedResourceRegistrationXMLElement.Builder builder = this.factory.namedElement(InfinispanTimerManagementResourceDefinitionRegistrar.REGISTRATION)
                 .addAttributes(InfinispanTimerManagementResourceDefinitionRegistrar.CACHE_ATTRIBUTE_GROUP.getAttributes())
                 .addAttributes(List.of(InfinispanTimerManagementResourceDefinitionRegistrar.MARSHALLER, InfinispanTimerManagementResourceDefinitionRegistrar.MAX_ACTIVE_TIMERS));
-        if (this.since(VERSION_2_0_COMMUNITY)) {
+        if (this.since(VERSION_3_0) || this.since(VERSION_2_0_COMMUNITY)) {
             builder.addAttribute(InfinispanTimerManagementResourceDefinitionRegistrar.IDLE_THRESHOLD);
         }
         return builder.build();

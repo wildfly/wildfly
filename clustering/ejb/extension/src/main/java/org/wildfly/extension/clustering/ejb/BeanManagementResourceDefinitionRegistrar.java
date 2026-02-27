@@ -24,7 +24,6 @@ import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.operations.validation.IntRangeValidator;
 import org.jboss.as.controller.registry.AttributeAccess.Flag;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.as.version.Stability;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.wildfly.clustering.ejb.bean.BeanDeploymentMarshallingContext;
@@ -63,7 +62,6 @@ public abstract class BeanManagementResourceDefinitionRegistrar implements Child
 
     static final DurationAttributeDefinition IDLE_THRESHOLD = DurationAttributeDefinition.builder("idle-threshold")
             .setRequired(false)
-            .setStability(Stability.COMMUNITY)
             .build();
 
     private final ResourceRegistration registration;
