@@ -185,7 +185,7 @@ jobs:
           done
           echo "${newVersionFiles}" > ${ARTIFACTS}/newVersions
 
-      - uses: actions/upload-artifact@v6
+      - uses: actions/upload-artifact@v7
         with:
           name: input-artifacts
           path: ${{ steps.prepare.outputs.artifacts }}

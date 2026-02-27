@@ -96,14 +96,14 @@ jobs:
           mvn -B verify -DnoCompile -Dcontainer.java.home=${{ steps.jre-home.outputs.JRE_HOME }} -fae
 
       - name: Upload Surefire Reports on Failure
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         if: failure()
         with:
           name: surefire-reports-${{ matrix.java }}
           path: '**/surefire-reports/'
 
       - name: Upload Server Logs on Failure
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         if: failure()
         with:
           name: server-logs-${{ matrix.java }}
