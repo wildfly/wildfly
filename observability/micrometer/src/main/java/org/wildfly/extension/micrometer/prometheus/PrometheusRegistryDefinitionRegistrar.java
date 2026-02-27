@@ -42,7 +42,7 @@ import org.wildfly.subsystem.service.ServiceDependency;
 import org.wildfly.subsystem.service.ServiceInstaller;
 
 public class PrometheusRegistryDefinitionRegistrar implements ChildResourceDefinitionRegistrar, ResourceServiceConfigurator {
-    private static final Stability FEATURE_STABILITY = Stability.COMMUNITY;
+    private static final Stability FEATURE_STABILITY = Stability.DEFAULT;
 
     public static final String NAME = "prometheus";
     public static final PathElement PATH = PathElement.pathElement("registry", NAME);

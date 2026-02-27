@@ -238,13 +238,6 @@
                 <scope>test</scope>
             </dependency>
 
-            <dependency>
-                <groupId>org.arquillian.testcontainers</groupId>
-                <artifactId>arquillian-testcontainers</artifactId>
-                <version>${version.org.arquillian.testcontainers}</version>
-                <scope>test</scope>
-            </dependency>
-
             <!-- Used for the MP REST Client test to add the required permissions when running with the security manager
                  enabled.
              -->

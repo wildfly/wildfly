@@ -30,6 +30,24 @@
                         </xs:attribute>
                     </xs:complexType>
                 </xs:element>
+                <xs:element name="prometheus-registry" minOccurs="0">
+                    <xs:complexType>
+                        <xs:attribute name="context" type="xs:string">
+                            <xs:annotation>
+                                <xs:documentation>
+                                    The context root from which to serve Prometheus metrics (e.g., "/metrics" or "/prometheus")
+                                </xs:documentation>
+                            </xs:annotation>
+                        </xs:attribute>
+                        <xs:attribute name="security-enabled" type="xs:boolean" default="false">
+                            <xs:annotation>
+                                <xs:documentation>
+                                    Whether the context should be secured
+                                </xs:documentation>
+                            </xs:annotation>
+                        </xs:attribute>
+                    </xs:complexType>
+                </xs:element>
             </xs:sequence>
 
             <xs:attribute name="exposed-subsystems" type="xs:string" default="[&quot;*&quot;]">
