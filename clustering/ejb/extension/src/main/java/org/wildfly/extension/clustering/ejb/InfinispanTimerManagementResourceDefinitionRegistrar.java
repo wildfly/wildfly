@@ -23,7 +23,6 @@ import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.operations.validation.IntRangeValidator;
 import org.jboss.as.controller.registry.AttributeAccess.Flag;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.as.version.Stability;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.modules.Module;
@@ -68,7 +67,6 @@ public class InfinispanTimerManagementResourceDefinitionRegistrar implements Chi
 
     static final DurationAttributeDefinition IDLE_THRESHOLD = DurationAttributeDefinition.builder("idle-threshold")
             .setRequired(false)
-            .setStability(Stability.COMMUNITY)
             .build();
 
     @Override
