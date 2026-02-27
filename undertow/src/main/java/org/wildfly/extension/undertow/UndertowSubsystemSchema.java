@@ -273,7 +273,7 @@ public enum UndertowSubsystemSchema implements PersistentSubsystemSchema<Underto
         builder.addChild(this.factory.builder(FileHandlerDefinition.PATH_ELEMENT).addAttributes(FileHandlerDefinition.ATTRIBUTES.stream()).build());
 
         Stream<AttributeDefinition> reverseProxyHandlerAttributes = ReverseProxyHandlerDefinition.ATTRIBUTES.stream();
-        if (!this.since(VERSION_14_0_COMMUNITY)) {
+        if (!this.since(VERSION_15_0) && !this.since(VERSION_14_0_COMMUNITY)) {
             reverseProxyHandlerAttributes = reverseProxyHandlerAttributes.filter(Predicate.not(Set.of(ReverseProxyHandlerDefinition.REUSE_X_FORWARDED_HEADER, ReverseProxyHandlerDefinition.REWRITE_HOST_HEADER)::contains));
         }
         if (!this.since(UndertowSubsystemSchema.VERSION_4_0)) {
