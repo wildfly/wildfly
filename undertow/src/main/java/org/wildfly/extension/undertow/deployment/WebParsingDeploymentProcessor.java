@@ -28,6 +28,7 @@ import org.jboss.metadata.parser.util.XMLResourceResolver;
 import org.jboss.metadata.parser.util.XMLSchemaValidator;
 import org.jboss.metadata.web.spec.WebMetaData;
 import org.jboss.vfs.VirtualFile;
+import org.wildfly.common.xml.XMLInputFactoryUtil;
 import org.wildfly.extension.undertow.logging.UndertowLogger;
 import org.wildfly.security.manager.WildFlySecurityManager;
 import org.xml.sax.SAXException;
@@ -70,7 +71,7 @@ public class WebParsingDeploymentProcessor implements DeploymentUnitProcessor {
                 InputStream is = null;
                 try {
                     is = webXml.openStream();
-                    final XMLInputFactory inputFactory = XMLInputFactory.newInstance();
+                    final XMLInputFactory inputFactory = XMLInputFactoryUtil.create();
 
                     MetaDataElementParser.DTDInfo dtdInfo = new MetaDataElementParser.DTDInfo();
                     inputFactory.setXMLResolver(dtdInfo);

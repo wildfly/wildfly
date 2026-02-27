@@ -21,6 +21,7 @@ import org.jboss.as.service.descriptor.JBossServiceXmlDescriptor;
 import org.jboss.as.service.descriptor.JBossServiceXmlDescriptorParser;
 import org.jboss.as.service.descriptor.ParseResult;
 import org.jboss.as.service.logging.SarLogger;
+import org.jboss.metadata.parser.util.NoopXMLResolver;
 import org.jboss.staxmapper.XMLMapper;
 import org.jboss.vfs.VFSUtils;
 import org.jboss.vfs.VirtualFile;
@@ -39,6 +40,15 @@ public class ServiceDeploymentParsingProcessor implements DeploymentUnitProcesso
      * Construct a new instance.
      */
     public ServiceDeploymentParsingProcessor() {
+        setIfSupported(inputFactory, XMLInputFactory.SUPPORT_DTD, Boolean.FALSE);
+        setIfSupported(inputFactory, XMLInputFactory.IS_SUPPORTING_EXTERNAL_ENTITIES, false);
+        inputFactory.setXMLResolver(NoopXMLResolver.create());
+    }
+
+    private void setIfSupported(final XMLInputFactory inputFactory, final String property, final Object value) {
+        if (inputFactory.isPropertySupported(property)) {
+            inputFactory.setProperty(property, value);
+        }
     }
 
     /**

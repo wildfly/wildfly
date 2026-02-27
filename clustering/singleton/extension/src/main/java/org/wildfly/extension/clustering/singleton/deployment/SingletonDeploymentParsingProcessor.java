@@ -24,8 +24,10 @@ import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.logging.ServerLogger;
+import org.jboss.metadata.parser.util.NoopXMLResolver;
 import org.jboss.staxmapper.XMLMapper;
 import org.jboss.vfs.VirtualFile;
+import org.wildfly.common.xml.XMLInputFactoryUtil;
 
 /**
  * Parses a deployment descriptor defining the singleton deployment policy.
@@ -34,7 +36,10 @@ import org.jboss.vfs.VirtualFile;
 public class SingletonDeploymentParsingProcessor implements DeploymentUnitProcessor {
 
     private static final String SINGLETON_DEPLOYMENT_DESCRIPTOR = "META-INF/singleton-deployment.xml";
-    private static final XMLInputFactory XML_INPUT_FACTORY = XMLInputFactory.newInstance();
+    private static final XMLInputFactory XML_INPUT_FACTORY = XMLInputFactoryUtil.create();
+    static {
+        XML_INPUT_FACTORY.setXMLResolver(NoopXMLResolver.create());
+    }
 
     private final XMLMapper mapper = XMLElementSchema.createXMLMapper(EnumSet.allOf(SingletonDeploymentSchema.class));
 
