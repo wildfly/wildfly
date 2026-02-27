@@ -41,10 +41,13 @@ interface ElytronOidcDescriptionConstants {
     String ENABLE_BASIC_AUTH = "enable-basic-auth";
     String ENABLE_CORS = "enable-cors";
     String EXPOSE_TOKEN = "expose-token";
+    String POST_LOGOUT_PATH ="post-logout-path";
     String IGNORE_OAUTH_QUERY_PARAMTER = "ignore-oauth-query-parameter";
+    String LOGOUT_SESSION_REQUIRED ="logout-session-required";
     String MIN_TIME_BETWEEN_JWKS_REQUESTS = "min-time-between-jwks-requests";
     String OAUTH2 = "oauth2";
     String PATTERN = "pattern";
+    String LOGOUT_CALLBACK_PATH = "logout-callback-path";
     String PRINCIPAL_ATTRIBUTE = "principal-attribute";
     String PROVIDER = "provider";
     String PROVIDER_URL = "provider-url";
@@ -68,6 +71,7 @@ interface ElytronOidcDescriptionConstants {
     String REQUEST_OBJECT_SIGNING_KEYSTORE_TYPE = "request-object-signing-keystore-type";
     String REQUEST_URI = "request_uri";
     String RESOURCE = "resource";
+    String LOGOUT_PATH = "logout-path";
     String SCOPE = "scope";
     String SECRET = "secret";
     String SECURE_DEPLOYMENT = "secure-deployment";
