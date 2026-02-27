@@ -6,7 +6,6 @@ package org.jboss.as.test.clustering.cluster.jgroups.tls;
 
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.test.clustering.cluster.web.CoarseWebFailoverTestCase;
-import org.wildfly.test.stabilitylevel.StabilityServerSetupSnapshotRestoreTasks;
 
 /**
  * Variation of the standard {@link CoarseWebFailoverTestCase} that uses TLS/SSL-secured JGroups communication channel.
@@ -14,7 +13,6 @@ import org.wildfly.test.stabilitylevel.StabilityServerSetupSnapshotRestoreTasks;
  * @author Radoslav Husar
  */
 @ServerSetup({
-        StabilityServerSetupSnapshotRestoreTasks.Community.class,
         TLSServerSetupTasks.SharedPhysicalKeyStoresServerSetupTask.class,
         TLSServerSetupTasks.SharedStoreSecureJGroupsTransportServerSetupTask_NODE_1_2_3.class,
 })
