@@ -37,7 +37,7 @@
 
         <!-- Common infinispan server configuration -->
         <version.org.infinispan.server>${version.org.infinispan}</version.org.infinispan.server>
-        <version.org.infinispan.server.driver>${version.org.infinispan}</version.org.infinispan.server.driver>
+        <version.org.infinispan.server.driver>16.0.7</version.org.infinispan.server.driver>
         <infinispan.server.home.override/>
         <infinispan.server.profile.override/>
 
