@@ -93,12 +93,12 @@
                                 <!-- artemis jakarta jms client, the main artifact -->
                                 <!-- replaces org.apache.activemq:artemis-jms-client -->
                                 <dependency>
-                                    <groupId>org.apache.activemq</groupId>
+                                    <groupId>org.apache.artemis</groupId>
                                     <artifactId>artemis-jakarta-client</artifactId>
                                 </dependency>
                                 <!-- required to allow Artemis client to connect to HornetQ servers -->
                                 <dependency>
-                                    <groupId>org.apache.activemq</groupId>
+                                    <groupId>org.apache.artemis</groupId>
                                     <artifactId>artemis-hqclient-protocol</artifactId>
                                 </dependency>
                                 <!-- Required by the artemis-core-client, replaces geronimo's json spec artifact -->

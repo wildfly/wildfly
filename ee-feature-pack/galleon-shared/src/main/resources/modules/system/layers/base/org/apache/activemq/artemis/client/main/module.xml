@@ -7,10 +7,10 @@
 
 <module xmlns="urn:jboss:module:1.9" name="org.apache.activemq.artemis.client">
     <resources>
-        <artifact name="${org.apache.activemq:artemis-core-client}"/>
-        <artifact name="${org.apache.activemq:artemis-selector}"/>
-        <artifact name="${org.apache.activemq:artemis-hqclient-protocol}"/>
-        <artifact name="${org.apache.activemq:artemis-jakarta-client}"/>
+        <artifact name="${org.apache.artemis:artemis-core-client}"/>
+        <artifact name="${org.apache.artemis:artemis-selector}"/>
+        <artifact name="${org.apache.artemis:artemis-hqclient-protocol}"/>
+        <artifact name="${org.apache.artemis:artemis-jakarta-client}"/>
     </resources>
 
     <dependencies>
