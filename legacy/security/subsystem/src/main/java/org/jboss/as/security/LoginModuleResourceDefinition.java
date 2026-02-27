@@ -6,6 +6,7 @@
 package org.jboss.as.security;
 
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.ModuleIdentifierUtil;
 import org.jboss.as.controller.ModelOnlyAddStepHandler;
 import org.jboss.as.controller.ModelOnlyRemoveStepHandler;
 import org.jboss.as.controller.ModelOnlyWriteAttributeHandler;
@@ -38,6 +39,7 @@ class LoginModuleResourceDefinition extends SimpleResourceDefinition {
             .setRequired(false)
             .setAllowExpression(false)
             .setMinSize(1)
+            .setCorrector(ModuleIdentifierUtil.MODULE_NAME_CORRECTOR)
             .build();
     static final PropertiesAttributeDefinition MODULE_OPTIONS = new PropertiesAttributeDefinition.Builder(Constants.MODULE_OPTIONS, true)
             .setAllowExpression(true)

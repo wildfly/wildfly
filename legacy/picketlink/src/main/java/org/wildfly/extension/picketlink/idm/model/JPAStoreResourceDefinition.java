@@ -5,6 +5,7 @@
 
 package org.wildfly.extension.picketlink.idm.model;
 
+import org.jboss.as.controller.ModuleIdentifierUtil;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
@@ -29,6 +30,7 @@ public class JPAStoreResourceDefinition extends AbstractIdentityStoreResourceDef
         .build();
     public static final SimpleAttributeDefinition ENTITY_MODULE = new SimpleAttributeDefinitionBuilder(ModelElement.JPA_STORE_ENTITY_MODULE.getName(), ModelType.STRING, true)
         .setAllowExpression(true)
+        .setCorrector(ModuleIdentifierUtil.MODULE_NAME_CORRECTOR)
         .build();
     public static final SimpleAttributeDefinition ENTITY_MODULE_UNIT_NAME = new SimpleAttributeDefinitionBuilder(ModelElement.JPA_STORE_ENTITY_MODULE_UNIT_NAME.getName(), ModelType.STRING, true)
         .setDefaultValue(new ModelNode("identity"))

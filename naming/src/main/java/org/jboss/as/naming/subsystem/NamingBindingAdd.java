@@ -4,7 +4,6 @@
  */
 package org.jboss.as.naming.subsystem;
 
-import static org.jboss.as.controller.ModuleIdentifierUtil.parseCanonicalModuleIdentifier;
 import static org.jboss.as.naming.subsystem.NamingSubsystemModel.TYPE;
 
 import java.net.MalformedURLException;
@@ -144,7 +143,7 @@ public class NamingBindingAdd extends AbstractAddStepHandler {
     }
 
     private ObjectFactory createObjectFactory(OperationContext context, ModelNode model) throws OperationFailedException {
-        final String moduleID = parseCanonicalModuleIdentifier(NamingBindingResourceDefinition.MODULE.resolveModelAttribute(context, model).asString());
+        final String moduleID = NamingBindingResourceDefinition.MODULE.resolveModelAttribute(context, model).asString();
         final String className = NamingBindingResourceDefinition.CLASS.resolveModelAttribute(context, model).asString();
         final Module module;
         try {

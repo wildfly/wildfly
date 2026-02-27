@@ -12,6 +12,7 @@ import static org.jboss.as.controller.SimpleAttributeDefinitionBuilder.create;
 import java.util.Collection;
 
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.ModuleIdentifierUtil;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.PersistentResourceDefinition;
 import org.jboss.as.controller.PropertiesAttributeDefinition;
@@ -41,6 +42,7 @@ class DriverDefinition extends PersistentResourceDefinition {
     static final SimpleAttributeDefinition MODULE_ATTRIBUTE = create("module", ModelType.STRING)
             .setRestartAllServices()
             .setValidator(new StringLengthValidator(1))
+            .setCorrector(ModuleIdentifierUtil.MODULE_NAME_CORRECTOR)
             .build();
 
     static final SimpleAttributeDefinition CLASS_ATTRIBUTE = create("class", ModelType.STRING)
