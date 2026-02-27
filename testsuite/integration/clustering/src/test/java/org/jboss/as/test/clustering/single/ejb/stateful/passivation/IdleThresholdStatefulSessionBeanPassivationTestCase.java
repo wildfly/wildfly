@@ -28,6 +28,7 @@ import org.jboss.as.test.clustering.single.ejb.stateful.bean.Result;
 import org.jboss.as.test.clustering.single.ejb.stateful.passivation.bean.PassivatingIncrementor;
 import org.jboss.as.test.clustering.single.ejb.stateful.passivation.bean.PassivatingIncrementorBean;
 import org.jboss.as.test.shared.ManagementServerSetupTask;
+import org.jboss.as.test.shared.SnapshotRestoreSetupTask;
 import org.jboss.as.test.shared.TimeoutUtil;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -46,8 +47,8 @@ import org.wildfly.test.stabilitylevel.StabilityServerSetupSnapshotRestoreTasks;
  */
 @ExtendWith(ArquillianExtension.class)
 @ServerSetup({
-        StabilityServerSetupSnapshotRestoreTasks.Community.class,
-        IdleThresholdStatefulSessionBeanPassivationTestCase.ServerSetupTask.class,
+        SnapshotRestoreSetupTask.class, // MUST be first!
+        IdleThresholdStatefulSessionBeanPassivationTestCase.ServerSetupTask.class
 })
 public class IdleThresholdStatefulSessionBeanPassivationTestCase {
     private static final String SFSB_METRIC_PATTERN = "/deployment=%s/subsystem=ejb3/stateful-session-bean=%s:read-attribute(name=%s)";
