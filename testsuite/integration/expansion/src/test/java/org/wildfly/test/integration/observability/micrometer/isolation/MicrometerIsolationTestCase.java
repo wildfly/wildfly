@@ -14,8 +14,6 @@ import jakarta.ws.rs.client.Client;
 import jakarta.ws.rs.client.ClientBuilder;
 import jakarta.ws.rs.client.WebTarget;
 import jakarta.ws.rs.core.Response;
-import org.arquillian.testcontainers.api.Testcontainer;
-import org.arquillian.testcontainers.api.TestcontainersRequired;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
@@ -23,7 +21,7 @@ import org.jboss.arquillian.junit.InSequence;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.test.shared.CdiUtils;
 import org.jboss.as.test.shared.TestSuiteEnvironment;
-import org.jboss.as.test.shared.observability.containers.OpenTelemetryCollectorContainer;
+import org.jboss.as.test.shared.observability.collector.InMemoryCollector;
 import org.jboss.as.test.shared.observability.setuptasks.MicrometerSetupTask;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
@@ -48,11 +46,11 @@ import org.wildfly.test.integration.observability.JaxRsActivator;
  */
 @RunWith(Arquillian.class)
 @ServerSetup(MicrometerSetupTask.class)
-@TestcontainersRequired
 @RunAsClient
 public class MicrometerIsolationTestCase {
-    protected static final String SERVICE_ONE = IsolationResource1.DEPLOYMENT_NAME;
-    protected static final String SERVICE_TWO = IsolationResource2.DEPLOYMENT_NAME;
+    private static final String SERVICE_ONE = IsolationResource1.DEPLOYMENT_NAME;
+    private static final String SERVICE_TWO = IsolationResource2.DEPLOYMENT_NAME;
+    private final InMemoryCollector collector = InMemoryCollector.getInstance();
 
     @Deployment(name = SERVICE_ONE, order = 1, testable = false)
     public static WebArchive createDeployment1() {
@@ -68,37 +66,17 @@ public class MicrometerIsolationTestCase {
                 .addAsWebInfResource(CdiUtils.createBeansXml(), "beans.xml");
     }
 
-    @Testcontainer
-    private OpenTelemetryCollectorContainer otelCollector;
-
     @Test
     @InSequence
     public void initializeApps() throws MalformedURLException, InterruptedException {
         makeRequests(getDeploymentUrl(SERVICE_ONE));
         makeRequests(getDeploymentUrl(SERVICE_TWO));
 
-        otelCollector.assertMetrics(metrics ->
+        collector.assertMetrics(metrics ->
                 Arrays.asList("app1_counter", "app2_counter")
                         .forEach(metric -> assertTrue("Missing metric: " + metric,
-                                metrics.stream().anyMatch(m -> m.getKey().contains(metric)))));
+                                metrics.stream().anyMatch(m -> m.name().contains(metric)))));
 
-    }
-
-    private void makeRequests(String url) throws MalformedURLException {
-        try (Client client = ClientBuilder.newClient()) {
-            WebTarget target = client.target(url);
-            for (int i = 0; i < 5; i++) {
-                Assert.assertEquals(200, target.request().get().getStatus());
-            }
-        }
-    }
-
-    protected String getDeploymentUrl(String deploymentName)  {
-        try {
-            return TestSuiteEnvironment.getHttpUrl() + "/" + deploymentName;
-        } catch (MalformedURLException e) {
-            throw new RuntimeException(e);
-        }
     }
 
     @Test
@@ -154,5 +132,22 @@ public class MicrometerIsolationTestCase {
                         200, response.getStatus());
             }
         });
+    }
+
+    private void makeRequests(String url) throws MalformedURLException {
+        try (Client client = ClientBuilder.newClient()) {
+            WebTarget target = client.target(url);
+            for (int i = 0; i < 5; i++) {
+                Assert.assertEquals(200, target.request().get().getStatus());
+            }
+        }
+    }
+
+    protected String getDeploymentUrl(String deploymentName)  {
+        try {
+            return TestSuiteEnvironment.getHttpUrl() + "/" + deploymentName;
+        } catch (MalformedURLException e) {
+            throw new RuntimeException(e);
+        }
     }
 }

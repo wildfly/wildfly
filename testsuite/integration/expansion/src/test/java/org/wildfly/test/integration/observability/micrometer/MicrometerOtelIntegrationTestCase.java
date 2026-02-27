@@ -6,6 +6,7 @@ package org.wildfly.test.integration.observability.micrometer;
 
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.time.Duration;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -14,17 +15,15 @@ import java.util.stream.Collectors;
 import jakarta.ws.rs.client.Client;
 import jakarta.ws.rs.client.ClientBuilder;
 import jakarta.ws.rs.client.WebTarget;
-import org.arquillian.testcontainers.api.Testcontainer;
-import org.arquillian.testcontainers.api.TestcontainersRequired;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.junit.InSequence;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
-import org.jboss.as.test.shared.observability.containers.OpenTelemetryCollectorContainer;
+import org.jboss.as.test.shared.observability.collector.InMemoryCollector;
 import org.jboss.as.test.shared.observability.setuptasks.MicrometerSetupTask;
-import org.jboss.as.test.shared.observability.signals.PrometheusMetric;
+import org.jboss.as.test.shared.observability.signals.SimpleMetric;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
@@ -35,17 +34,14 @@ import org.wildfly.test.integration.observability.JaxRsActivator;
 
 @RunWith(Arquillian.class)
 @ServerSetup(MicrometerSetupTask.class)
-@TestcontainersRequired
 @RunAsClient
 public class MicrometerOtelIntegrationTestCase {
     public static final int REQUEST_COUNT = 5;
     public static final String DEPLOYMENT_NAME = "micrometer-test.war";
+    private final InMemoryCollector collector = InMemoryCollector.getInstance();
 
     @ArquillianResource
     private URL url;
-
-    @Testcontainer
-    private OpenTelemetryCollectorContainer otelCollector;
 
     @Deployment(testable = false)
     public static Archive<?> deploy() {
@@ -65,7 +61,7 @@ public class MicrometerOtelIntegrationTestCase {
     }
 
     // Request the published metrics from the OpenTelemetry Collector via the configured Prometheus exporter and check
-    // a few metrics to verify there existence
+    // a few metrics to verify their existence
     @Test
     @InSequence(4)
     public void getMetrics() throws InterruptedException {
@@ -76,16 +72,18 @@ public class MicrometerOtelIntegrationTestCase {
                 "demo_counter",
                 "demo_timer",
                 "gc_time",
-                "jvm_classes_loaded",
-                "memory_commited_heap_bytes",
+                "jvm.classes.loaded",
                 "memory_used_heap",
-                "system_cpu_count",
+                "system.cpu.count",
                 "thread_count",
-                "undertow_bytes_received"
+                "undertow.bytes.received"
         );
 
-        otelCollector.assertMetrics(prometheusMetrics -> metricsToTest.forEach(n -> Assert.assertTrue("Missing metric: " + n,
-                prometheusMetrics.stream().anyMatch(m -> m.getKey().startsWith(n)))));
+        collector.assertMetrics(Duration.ofSeconds(10),
+                metrics -> {
+                    metricsToTest.forEach(n -> Assert.assertTrue("Missing metric: " + n,
+                            metrics.stream().anyMatch(m -> m.name().startsWith(n))));
+                });
     }
 
     @Test
@@ -93,28 +91,29 @@ public class MicrometerOtelIntegrationTestCase {
     @InSequence(5)
     public void testApplicationModelMetrics() throws InterruptedException {
         List<String> metricsToTest = List.of(
-                "undertow_active_sessions",
-                "undertow_expired_sessions_total",
-                "undertow_highest_session_count",
-                "undertow_max_active_sessions",
-                "undertow_max_request_time_seconds",
-                "undertow_min_request_time_seconds",
-                "undertow_rejected_sessions_total",
-                "undertow_request_time_seconds_total",
-                "undertow_session_avg_alive_time_seconds",
-                "undertow_session_max_alive_time_seconds",
-                "undertow_sessions_created_total"
+                "undertow.active.sessions",
+                "undertow.expired.sessions",
+                "undertow.highest.session.count",
+                "undertow.max.active.sessions",
+                "undertow.max.request.time",
+                "undertow.min.request.time",
+                "undertow.rejected.sessions",
+                "undertow.total.request.time",
+                "undertow.session.avg.alive.time",
+                "undertow.session.max.alive.time",
+                "undertow.sessions.created"
         );
 
-        otelCollector.assertMetrics(prometheusMetrics -> {
-            Map<String, PrometheusMetric> appMetrics =
-                    prometheusMetrics.stream().filter(m -> m.getTags().entrySet().stream()
-                                    .anyMatch(t -> "app".equals(t.getKey()) && DEPLOYMENT_NAME.equals(t.getValue()))
-                            )
-                            .collect(Collectors.toMap(PrometheusMetric::getKey, i -> i));
+        collector.assertMetrics(Duration.ofSeconds(10),
+                metrics -> {
+                    Map<String, SimpleMetric> appMetrics =
+                            metrics.stream().filter(m -> m.tags().entrySet().stream()
+                                            .anyMatch(t -> "app".equals(t.getKey()) && DEPLOYMENT_NAME.equals(t.getValue()))
+                                    )
+                                    .collect(Collectors.toMap(SimpleMetric::name, i -> i));
 
-            metricsToTest.forEach(m -> Assert.assertTrue("Missing app metric: " + m, appMetrics.containsKey(m)));
-        });
+                    metricsToTest.forEach(m -> Assert.assertTrue("Missing app metric: " + m, appMetrics.containsKey(m)));
+                });
     }
 
 
@@ -132,51 +131,14 @@ public class MicrometerOtelIntegrationTestCase {
                 "cpu_available_processors"
         );
 
-        otelCollector.assertMetrics(prometheusMetrics -> {
+        collector.assertMetrics(metrics -> {
             metricsToTest.forEach(m -> {
                 Assert.assertNotEquals("Metric value should be non-zero: " + m,
-                        "0", prometheusMetrics.stream().filter(e -> e.getKey().startsWith(m))
+                        "0", metrics.stream().filter(e -> e.name().startsWith(m))
                                 .findFirst()
                                 .orElseThrow()
-                                .getValue()); // Add the metrics tags to complete the key
+                                .value()); // Add the metrics tags to complete the key
             });
         });
-    }
-
-    private Map<String, String> getMetricsMap(String response) {
-        return Arrays.stream(response.split("\n"))
-                .filter(s -> !s.startsWith("#"))
-                .map(this::splitMetric)
-                .collect(Collectors.toMap(e -> e[0], e -> e[1]));
-    }
-
-    private String[] splitMetric(String entry) {
-        int index = entry.lastIndexOf(" ");
-        return new String[] {
-                entry.substring(0, index),
-                entry.substring(index + 1)
-        };
-    }
-
-    private String fetchMetrics(String nameToMonitor) throws InterruptedException {
-        String body = "";
-        try (Client client = ClientBuilder.newClient()) {
-            WebTarget target = client.target(otelCollector.getPrometheusUrl());
-
-            int attemptCount = 0;
-            boolean found = false;
-
-            // Request counts can vary. Setting high to help ensure test stability
-            while (!found && attemptCount < 30) {
-                // Wait to give Micrometer time to export
-                Thread.sleep(1000);
-
-                body = target.request().get().readEntity(String.class);
-                found = body.contains(nameToMonitor);
-                attemptCount++;
-            }
-        }
-
-        return body;
     }
 }

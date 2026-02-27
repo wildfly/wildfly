@@ -13,12 +13,12 @@ import jakarta.ws.rs.client.Client;
 import jakarta.ws.rs.client.ClientBuilder;
 import jakarta.ws.rs.client.WebTarget;
 import jakarta.ws.rs.core.Response;
-import org.arquillian.testcontainers.api.Testcontainer;
-import org.arquillian.testcontainers.api.TestcontainersRequired;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.test.shared.CdiUtils;
 import org.jboss.as.test.shared.TestSuiteEnvironment;
-import org.jboss.as.test.shared.observability.containers.OpenTelemetryCollectorContainer;
+import org.jboss.as.test.shared.observability.collector.InMemoryCollector;
+import org.jboss.as.test.shared.observability.setuptasks.OpenTelemetrySetupTask;
 import org.jboss.as.test.shared.observability.signals.jaeger.JaegerResponse;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
@@ -30,10 +30,9 @@ import org.wildfly.test.integration.observability.opentelemetry.application.Otel
 import org.wildfly.test.integration.observability.opentelemetry.application.OtelService1;
 
 @RunWith(Arquillian.class)
-@TestcontainersRequired
+@ServerSetup(OpenTelemetrySetupTask.class)
 public abstract class BaseOpenTelemetryTest {
-    @Testcontainer
-    protected OpenTelemetryCollectorContainer otelCollector;
+    public static InMemoryCollector server = InMemoryCollector.getInstance();
 
     private static final String MP_CONFIG = "otel.sdk.disabled=false\n" +
             // Lower the interval from 60 seconds to 2 seconds
