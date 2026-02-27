@@ -8,6 +8,7 @@ package org.jboss.as.test.integration.web.websocket;
 import static org.jboss.as.test.shared.PermissionUtils.createPermissionsXmlAsset;
 
 import java.io.IOException;
+import java.lang.reflect.ReflectPermission;
 import java.net.SocketPermission;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -62,6 +63,10 @@ public class WebSocketTestCase {
                                 new SocketPermission(
                                         TestSuiteEnvironment.getServerAddress() + ":" + TestSuiteEnvironment.getHttpPort(),
                                         "connect,resolve"),
+                                // These two permissions are required for the serverContainer.connectToServer() until
+                                // UNDERTOW-2715 is fixed
+                                new RuntimePermission("accessDeclaredMembers"),
+                                new ReflectPermission("suppressAccessChecks"),
                                 // Needed for xnio's WorkerThread which binds to Xnio.ANY_INET_ADDRESS, see WFLY-7538
                                 new SocketPermission("*:0", "listen,resolve")),
                         "permissions.xml");

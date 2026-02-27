@@ -24,12 +24,14 @@ import org.jboss.jandex.DotName;
 import org.jboss.modules.Module;
 import org.wildfly.extension.undertow.UndertowExtension;
 import org.wildfly.extension.undertow.logging.UndertowLogger;
+import org.wildfly.security.manager.WildFlySecurityManager;
 
 import jakarta.websocket.ClientEndpoint;
 import jakarta.websocket.Endpoint;
 import jakarta.websocket.server.ServerApplicationConfig;
 import jakarta.websocket.server.ServerEndpoint;
 import jakarta.websocket.server.ServerEndpointConfig;
+
 import java.lang.reflect.Modifier;
 import java.util.HashSet;
 import java.util.List;
@@ -47,6 +49,7 @@ public class UndertowJSRWebSocketDeploymentProcessor implements DeploymentUnitPr
     private static final DotName CLIENT_ENDPOINT = DotName.createSimple(ClientEndpoint.class.getName());
     private static final DotName SERVER_APPLICATION_CONFIG = DotName.createSimple(ServerApplicationConfig.class.getName());
     private static final DotName ENDPOINT = DotName.createSimple(Endpoint.class.getName());
+    private static final String ENABLE_CLIENT_ENDPOINT_SCANNING = "org.wildfly.extension.undertow.deployment.enableClientEndpointScanning";
 
 
     @Override
@@ -94,31 +97,42 @@ public class UndertowJSRWebSocketDeploymentProcessor implements DeploymentUnitPr
                 }
             }
 
-            final List<AnnotationInstance> clientEndpoints = index.getAnnotations(CLIENT_ENDPOINT);
-            if (clientEndpoints != null) {
-                for (AnnotationInstance endpoint : clientEndpoints) {
-                    if (endpoint.target() instanceof ClassInfo) {
-                        ClassInfo clazz = (ClassInfo) endpoint.target();
-                        // Check for a default no-arg constructor as per the Jakarta WebSocket 2.2 specification
-                        // section 6.2. It only mentions scanning for classes with @ServerEndpoint and not classes
-                        // with @ClientEndpoint. However, we've been adding deployed client endpoints since this
-                        // specification was implemented in WildFly. If there is not a no-arg constructor, we'll
-                        // log a warning and not process the type.
-                        if (!clazz.hasNoArgsConstructor()) {
-                            UndertowLogger.ROOT_LOGGER.debugf("The client endpoint '%s' annotated with @ClientEndpoint does not have a no-arg constructor. " +
-                                    "The endpoint will not be available for use without manual instantiation.", clazz.name());
-                            continue;
-                        }
-                        try {
-                            Class<?> moduleClass = ClassLoadingUtils.loadClass(clazz.name().toString(), module);
-                            if (!Modifier.isAbstract(moduleClass.getModifiers())) {
-                                annotatedEndpoints.add(moduleClass);
+            // Client endpoint scanning is not specified in the Jakarta WebSocket specification. See the comment
+            // below about section 6.2. However, WildFly has been doing this since WebSocket became part of the
+            // platform specification. Instead of completely removing it, we will allow it to be enabled. This is
+            // more for backwards compatibility for those who want to validate these endpoints during the deployment
+            // process.
+            if (isClientScanningEnabled()) {
+                final List<AnnotationInstance> clientEndpoints = index.getAnnotations(CLIENT_ENDPOINT);
+                if (clientEndpoints != null) {
+                    for (AnnotationInstance endpoint : clientEndpoints) {
+                        if (endpoint.target() instanceof ClassInfo) {
+                            ClassInfo clazz = (ClassInfo) endpoint.target();
+                            // Check for a default no-arg constructor as per the Jakarta WebSocket 2.2 specification
+                            // section 6.2. It only mentions scanning for classes with @ServerEndpoint and not classes
+                            // with @ClientEndpoint. However, we've been adding deployed client endpoints since this
+                            // specification was implemented in WildFly. If there is not a no-arg constructor, we'll
+                            // log a debug message and not process the type.
+                            if (!clazz.hasNoArgsConstructor()) {
+                                UndertowLogger.ROOT_LOGGER.debugf("The client endpoint '%s' annotated with @ClientEndpoint does not have a no-arg constructor. " +
+                                        "The endpoint will not be available for use without manual instantiation.", clazz.name());
+                                continue;
                             }
-                        } catch (ClassNotFoundException e) {
-                            UndertowLogger.ROOT_LOGGER.couldNotLoadWebSocketEndpoint(clazz.name().toString(), e);
+                            try {
+                                Class<?> moduleClass = ClassLoadingUtils.loadClass(clazz.name().toString(), module);
+                                if (!Modifier.isAbstract(moduleClass.getModifiers())) {
+                                    annotatedEndpoints.add(moduleClass);
+                                }
+                            } catch (ClassNotFoundException e) {
+                                UndertowLogger.ROOT_LOGGER.couldNotLoadWebSocketEndpoint(clazz.name().toString(), e);
+                            }
                         }
                     }
                 }
+            } else {
+                UndertowLogger.ROOT_LOGGER.debugf("The Jakarta WebSocket specification does not include client " +
+                        "endpoint scanning, endpoints annotated with @ClientEndpoint. This can be enabled by setting the %s system property to \"true\".",
+                        ENABLE_CLIENT_ENDPOINT_SCANNING);
             }
 
             final Set<ClassInfo> subclasses = index.getAllKnownImplementors(SERVER_APPLICATION_CONFIG);
@@ -230,5 +244,10 @@ public class UndertowJSRWebSocketDeploymentProcessor implements DeploymentUnitPr
         } catch (Exception e) {
             UndertowLogger.ROOT_LOGGER.failedToRegisterWebsocket(endpoint, path, e);
         }
+    }
+
+    private static boolean isClientScanningEnabled() {
+        final String value = WildFlySecurityManager.getPropertyPrivileged(ENABLE_CLIENT_ENDPOINT_SCANNING, "false");
+        return value.isEmpty() || Boolean.parseBoolean(value);
     }
 }
