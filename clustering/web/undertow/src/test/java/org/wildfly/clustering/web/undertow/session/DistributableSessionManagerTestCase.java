@@ -9,12 +9,11 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 import java.time.Instant;
@@ -78,6 +77,9 @@ public class DistributableSessionManagerTestCase {
         when(config.getStatistics()).thenReturn(this.statistics);
 
         this.adapter = new DistributableSessionManager(config);
+
+        verify(this.manager).getIdentifierFactory();
+
         this.adapter.registerSessionListener(this.listener);
     }
 
@@ -325,17 +327,13 @@ public class DistributableSessionManagerTestCase {
 
         assertNull(sessionAdapter);
 
-        verify(this.manager, never()).findSession(sessionId);
-        verify(batch, never()).discard();
+        verify(this.manager).getBatchFactory();
+        verifyNoMoreInteractions(this.manager);
+        verify(this.batchFactory).get();
+        verifyNoMoreInteractions(this.batchFactory);
+        verify(batch).suspend();
         verify(batch).close();
-
-        sessionAdapter = this.adapter.getSession(sessionId);
-
-        assertNull(sessionAdapter);
-
-        verify(this.manager, never()).findSession(sessionId);
-        verify(batch, never()).discard();
-        verify(batch, times(2)).close();
+        verifyNoMoreInteractions(batch);
     }
 
     @Test
@@ -437,23 +435,16 @@ public class DistributableSessionManagerTestCase {
     @Test
     public void getSessionByIdentifier() {
         Session<Map<String, Object>> session = mock(Session.class);
-        SessionMetaData metaData = mock(SessionMetaData.class);
         String id = "ABC123";
-
-        doReturn(session).when(this.manager).getDetachedSession(id);
-        doReturn(id).when(session).getId();
-        doReturn(metaData).when(session).getMetaData();
-        doReturn(false).when(session).isValid();
 
         io.undertow.server.session.Session result = this.adapter.getSession(id);
 
-        Assert.assertNull(result);
+        // We should not have queried manager
+        verifyNoMoreInteractions(this.manager);
 
-        doReturn(true).when(session).isValid();
-
-        result = this.adapter.getSession(id);
-
+        Assert.assertNotNull(result);
         Assert.assertSame(id, result.getId());
+        Assert.assertSame(this.adapter, result.getSessionManager());
     }
 
     @Test

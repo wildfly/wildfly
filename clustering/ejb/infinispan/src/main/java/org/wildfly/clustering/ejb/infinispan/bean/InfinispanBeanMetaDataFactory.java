@@ -69,7 +69,7 @@ public class InfinispanBeanMetaDataFactory<K> implements BeanMetaDataFactory<K, 
 
     @Override
     public CompletionStage<Void> removeAsync(K id) {
-        return this.writeOnlyCache.removeAsync(new InfinispanBeanMetaDataKey<>(id)).thenAccept(Consumer.empty());
+        return this.writeOnlyCache.removeAsync(new InfinispanBeanMetaDataKey<>(id)).thenAccept(Consumer.of());
     }
 
     @Override

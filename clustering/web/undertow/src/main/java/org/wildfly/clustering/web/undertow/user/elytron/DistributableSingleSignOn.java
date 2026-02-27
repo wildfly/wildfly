@@ -99,7 +99,7 @@ public class DistributableSingleSignOn implements SingleSignOn {
 
     @Override
     public void close() {
-        this.close(Consumer.empty());
+        this.close(Consumer.of());
     }
 
     private void close(Consumer<User<CachedIdentity, AtomicReference<SecurityIdentity>, String, Map.Entry<String, URI>>> action) {
