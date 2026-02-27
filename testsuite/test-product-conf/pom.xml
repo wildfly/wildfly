@@ -36,6 +36,13 @@
     </properties>
 
     <build>
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+                <filtering>true</filtering>
+            </resource>
+        </resources>
+
         <pluginManagement>
             <plugins>
                 <plugin>
@@ -78,6 +85,21 @@
                             <packaging>jar</packaging>
                         </configuration>
                     </execution>
+                    <execution>
+                        <id>custom-product-conf-version-txt-install</id>
+                        <phase>install</phase>
+                        <goals>
+                            <goal>install-file</goal>
+                        </goals>
+                        <configuration>
+                            <file>${project.build.directory}/classes/version.txt</file>
+                            <groupId>${project.groupId}</groupId>
+                            <artifactId>${project.artifactId}</artifactId>
+                            <version>100000.0.1.TEST-stable-SNAPSHOT</version>
+                            <packaging>txt</packaging>
+                            <classifier>version</classifier>
+                        </configuration>
+                    </execution>
                 </executions>
             </plugin>
             <plugin>
@@ -101,7 +123,42 @@
                             <JBoss-Product-Release-Version>1.2 GA Update 1</JBoss-Product-Release-Version>
                         </manifestEntries>
                     </archive>
+                    <excludes>
+                        <exclude>version.txt</exclude>
+                    </excludes>
                 </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>build-helper-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>parse-versions</id>
+                        <phase>initialize</phase>
+                        <goals>
+                            <goal>parse-version</goal>
+                        </goals>
+                        <configuration>
+                            <propertyPrefix>release</propertyPrefix>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>attach-version-artifact</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>attach-artifact</goal>
+                        </goals>
+                        <configuration>
+                            <artifacts>
+                                <artifact>
+                                    <file>${project.build.directory}/classes/version.txt</file>
+                                    <type>txt</type>
+                                    <classifier>version</classifier>
+                                </artifact>
+                            </artifacts>
+                        </configuration>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>

@@ -19,6 +19,7 @@
                 <include name="bin"/>
                 <include name="product.conf"/>
                 <exclude name="org.jboss.as.product"/>
+                <include name="version.txt"/>
             </packages>
             <default-configs inherit="false">
                 <include name="host.xml" model="host"/>

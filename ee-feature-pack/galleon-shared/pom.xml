@@ -3886,6 +3886,13 @@
 
         <dependency>
             <groupId>${ee.maven.groupId}</groupId>
+            <artifactId>wildfly-ee-feature-pack-product-conf</artifactId>
+            <classifier>version</classifier>
+            <type>txt</type>
+        </dependency>
+
+        <dependency>
+            <groupId>${ee.maven.groupId}</groupId>
             <artifactId>wildfly-ee-security</artifactId>
             <exclusions>
                 <exclusion>
