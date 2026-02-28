@@ -139,7 +139,11 @@ public class ApplicationRegistry extends SimpleMeterRegistry {
 
     @Override
     public Config config() {
-        MicrometerExtensionLogger.MICROMETER_LOGGER.configNotSupported();
+        // Micrometer calls this internally, but if application code does, the returned Config cannot be used normally
+        // since this isn't the real MeterRegistry
+        if (!StackWalker.getInstance(StackWalker.Option.RETAIN_CLASS_REFERENCE).getCallerClass().getName().startsWith("io.micrometer")) {
+            MicrometerExtensionLogger.MICROMETER_LOGGER.configNotSupported();
+        }
         return super.config();
     }
 
