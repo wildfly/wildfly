@@ -7,8 +7,8 @@ package org.jboss.as.test.clustering.cluster.ejb.remote;
 
 import java.util.function.UnaryOperator;
 
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
 import org.wildfly.security.auth.client.AuthenticationContext;
 
 /**
@@ -19,14 +19,14 @@ import org.wildfly.security.auth.client.AuthenticationContext;
 public class GlobalAuthContextRemoteStatelessEJBFailoverTestCase extends AuthContextRemoteStatelessEJBFailoverTestCase {
     private static AuthenticationContext previousContext;
 
-    @BeforeClass
-    public static void before() {
+    @BeforeAll
+    static void before() {
         previousContext = AuthenticationContext.captureCurrent();
         AuthenticationContext.getContextManager().setGlobalDefault(AUTHENTICATION_CONTEXT);
     }
 
-    @AfterClass
-    public static void after() {
+    @AfterAll
+    static void after() {
         AuthenticationContext.getContextManager().setGlobalDefault(previousContext);
     }
 

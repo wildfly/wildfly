@@ -5,10 +5,10 @@
 package org.jboss.as.test.clustering.single.dispatcher;
 
 import static org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase.NODE_1;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.as.test.clustering.cluster.dispatcher.bean.ClusterTopology;
 import org.jboss.as.test.clustering.cluster.dispatcher.bean.ClusterTopologyRetriever;
 import org.jboss.as.test.clustering.cluster.dispatcher.bean.ClusterTopologyRetrieverBean;
@@ -19,14 +19,14 @@ import org.jboss.as.test.shared.PermissionUtils;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * Validates that a command dispatcher works in a non-clustered environment.
  * @author Paul Ferraro
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class CommandDispatcherTestCase {
     private static final String MODULE_NAME = CommandDispatcherTestCase.class.getSimpleName();
 
@@ -41,12 +41,12 @@ public class CommandDispatcherTestCase {
     }
 
     @Test
-    public void test() throws Exception {
+    void test() throws Exception {
         this.test(ClusterTopologyRetrieverBean.class);
     }
 
     @Test
-    public void legacy() throws Exception {
+    void legacy() throws Exception {
         this.test(LegacyClusterTopologyRetrieverBean.class);
     }
 
@@ -55,8 +55,8 @@ public class CommandDispatcherTestCase {
             ClusterTopologyRetriever bean = directory.lookupStateless(beanClass, ClusterTopologyRetriever.class);
             ClusterTopology topology = bean.getClusterTopology();
             assertEquals(1, topology.getNodes().size());
-            assertTrue(topology.getNodes().toString(), topology.getNodes().contains(NODE_1));
-            assertTrue(topology.getRemoteNodes().toString() + " should be empty", topology.getRemoteNodes().isEmpty());
+            assertTrue(topology.getNodes().contains(NODE_1), topology.getNodes().toString());
+            assertTrue(topology.getRemoteNodes().isEmpty(), topology.getRemoteNodes().toString() + " should be empty");
         }
     }
 }

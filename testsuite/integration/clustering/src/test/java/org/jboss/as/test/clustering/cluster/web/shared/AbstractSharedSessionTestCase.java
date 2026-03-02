@@ -4,11 +4,12 @@
  */
 package org.jboss.as.test.clustering.cluster.web.shared;
 
-import java.io.IOException;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.net.URL;
+
 import jakarta.servlet.http.HttpServletResponse;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
@@ -25,8 +26,7 @@ import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /**
  * Base class for distributed shared session tests.
@@ -58,7 +58,7 @@ public abstract class AbstractSharedSessionTestCase extends AbstractClusteringTe
     public void test(
             @ArquillianResource @OperateOnDeployment(DEPLOYMENT_1) URL baseURLDep1,
             @ArquillianResource @OperateOnDeployment(DEPLOYMENT_2) URL baseURLDep2)
-            throws URISyntaxException, IOException {
+            throws Exception {
         URI baseURI1 = new URI(baseURLDep1.toExternalForm() + "/");
         URI baseURI2 = new URI(baseURLDep2.toExternalForm() + "/");
 
@@ -70,23 +70,23 @@ public abstract class AbstractSharedSessionTestCase extends AbstractClusteringTe
         try (CloseableHttpClient client = TestHttpClientUtils.promiscuousCookieHttpClient()) {
             int expected = 1;
             try (CloseableHttpResponse response = client.execute(new HttpGet(uri11))) {
-                Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
-                Assert.assertEquals(expected++, Integer.parseInt(response.getFirstHeader(SimpleServlet.VALUE_HEADER).getValue()));
+                assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
+                assertEquals(expected++, Integer.parseInt(response.getFirstHeader(SimpleServlet.VALUE_HEADER).getValue()));
             }
 
             try (CloseableHttpResponse response = client.execute(new HttpGet(uri12))) {
-                Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
-                Assert.assertEquals(expected++, Integer.parseInt(response.getFirstHeader(SimpleServlet.VALUE_HEADER).getValue()));
+                assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
+                assertEquals(expected++, Integer.parseInt(response.getFirstHeader(SimpleServlet.VALUE_HEADER).getValue()));
             }
 
             try (CloseableHttpResponse response = client.execute(new HttpGet(uri21))) {
-                Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
-                Assert.assertEquals(expected++, Integer.parseInt(response.getFirstHeader(SimpleServlet.VALUE_HEADER).getValue()));
+                assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
+                assertEquals(expected++, Integer.parseInt(response.getFirstHeader(SimpleServlet.VALUE_HEADER).getValue()));
             }
 
             try (CloseableHttpResponse response = client.execute(new HttpGet(uri22))) {
-                Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
-                Assert.assertEquals(expected++, Integer.parseInt(response.getFirstHeader(SimpleServlet.VALUE_HEADER).getValue()));
+                assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
+                assertEquals(expected++, Integer.parseInt(response.getFirstHeader(SimpleServlet.VALUE_HEADER).getValue()));
             }
         }
     }

@@ -5,13 +5,13 @@
 
 package org.jboss.as.test.clustering.single.infinispan.cdi.embedded;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import jakarta.inject.Inject;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.as.test.clustering.single.infinispan.cdi.embedded.deployment.CdiConfig;
 import org.jboss.as.test.clustering.single.infinispan.cdi.embedded.deployment.GreetingCache;
 import org.jboss.as.test.clustering.single.infinispan.cdi.embedded.deployment.GreetingService;
@@ -21,16 +21,16 @@ import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.jboss.shrinkwrap.descriptor.api.Descriptors;
 import org.jboss.shrinkwrap.descriptor.api.spec.se.manifest.ManifestDescriptor;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * @author Radoslav Husar
  * @author Kevin Pollet &lt;pollet.kevin@gmail.com&gt; (C) 2011
  * @since 27
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class GreetingServiceTestCase {
 
     @Deployment
@@ -50,19 +50,19 @@ public class GreetingServiceTestCase {
     @Inject
     private GreetingService greetingService;
 
-    @Before
-    public void init() {
+    @BeforeEach
+    void init() {
         greetingCache.clear();
         assertEquals(0, greetingCache.size());
     }
 
     @Test
-    public void testGreetMethod() {
+    void greetMethod() {
         assertEquals("Hello Pete :)", greetingService.greet("Pete"));
     }
 
     @Test
-    public void testGreetMethodCache() {
+    void greetMethodCache() {
         greetingService.greet("Pete");
 
         assertEquals(1, greetingCache.size());

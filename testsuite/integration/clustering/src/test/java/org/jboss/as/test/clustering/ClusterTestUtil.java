@@ -5,6 +5,7 @@
 package org.jboss.as.test.clustering;
 
 import static org.jboss.as.test.shared.PermissionUtils.createPermissionsXmlAsset;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.PropertyPermission;
 import java.util.Set;
@@ -18,7 +19,6 @@ import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.container.ClassContainer;
 import org.jboss.shrinkwrap.api.container.ManifestContainer;
-import org.junit.Assert;
 
 /**
  * Utility class for clustering tests.
@@ -44,7 +44,7 @@ public class ClusterTestUtil {
     public static ModelNode execute(ManagementClient client, String request) throws Exception {
         ModelNode operation = CLITestUtil.getCommandContext().buildRequest(request);
         ModelNode result = client.getControllerClient().execute(operation);
-        Assert.assertEquals(result.toString(), ModelDescriptionConstants.SUCCESS, result.get(ModelDescriptionConstants.OUTCOME).asStringOrNull());
+        assertEquals(ModelDescriptionConstants.SUCCESS, result.get(ModelDescriptionConstants.OUTCOME).asStringOrNull(), result.toString());
         return result.get(ModelDescriptionConstants.RESULT);
     }
 

@@ -10,6 +10,9 @@ import java.util.Hashtable;
 import java.util.PropertyPermission;
 
 import jakarta.ejb.NoSuchEJBException;
+
+import static org.junit.jupiter.api.Assertions.*;
+
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
@@ -19,7 +22,7 @@ import jakarta.transaction.UserTransaction;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.container.test.api.TargetsContainer;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase;
 import org.jboss.as.test.clustering.cluster.ejb.remote.bean.Incrementor;
@@ -35,10 +38,9 @@ import org.jboss.as.test.shared.PermissionUtils;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * <p>
@@ -60,7 +62,7 @@ import org.junit.runner.RunWith;
  * </ul>
  * </p>
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @RunAsClient
 public class TransactionalRemoteStatelessTestCase extends AbstractClusteringTestCase {
     private static final String MODULE_NAME = TransactionalRemoteStatelessTestCase.class.getSimpleName();
@@ -96,8 +98,8 @@ public class TransactionalRemoteStatelessTestCase extends AbstractClusteringTest
                         new PropertyPermission(NODE_NAME_PROPERTY, "read")), "permissions.xml");
     }
 
-    @Before
-    public void setUp() {
+    @BeforeEach
+    void setUp() {
         try {
             checkerNode0 = RemoteLookups.lookupEjbStateless(
                     TESTSUITE_NODE0, node0Port, MODULE_NAME,
@@ -130,17 +132,17 @@ public class TransactionalRemoteStatelessTestCase extends AbstractClusteringTest
     }
 
     @Test
-    public void affinityCommit_remoteHttp() throws Exception {
+    void affinityCommit_remoteHttp() throws Exception {
         affinityCommit(InitialContextLookupType.REMOTE_HTTP);
     }
 
     @Test
-    public void affinityCommit_http() throws Exception {
+    void affinityCommit_http() throws Exception {
         affinityCommit(InitialContextLookupType.HTTP);
     }
 
     @Test
-    public void affinityCommit_wildflyConfig() throws Exception {
+    void affinityCommit_wildflyConfig() throws Exception {
         affinityCommit(InitialContextLookupType.WILDFLY_CONFIG);
     }
 
@@ -161,7 +163,7 @@ public class TransactionalRemoteStatelessTestCase extends AbstractClusteringTest
 
             Incrementor bean  = getStatelessRemoteBean(initCtx, StatelessTransactionBean.class);
             Result<Integer> result = bean.increment();
-            Assert.assertEquals(1, result.getValue().intValue());
+            assertEquals(1, result.getValue().intValue());
 
             targetNode = result.getNode();
 
@@ -169,8 +171,8 @@ public class TransactionalRemoteStatelessTestCase extends AbstractClusteringTest
             InitialContext initCtx2 = getInitialContext(lookupType, TESTSUITE_NODE1);
             Incrementor bean2  = getStatelessRemoteBean(initCtx2, StatelessTransactionNoResourceBean.class);
             Result<Integer> resultSecondCall = bean2.increment();
-            Assert.assertEquals(1, resultSecondCall.getValue().intValue());
-            Assert.assertEquals(targetNode, resultSecondCall.getNode());
+            assertEquals(1, resultSecondCall.getValue().intValue());
+            assertEquals(targetNode, resultSecondCall.getNode());
 
             txn.commit();
         } catch (Exception e) {
@@ -181,23 +183,23 @@ public class TransactionalRemoteStatelessTestCase extends AbstractClusteringTest
         }
 
         if(targetNode.equals(NODE_1)) {
-            Assert.assertEquals("Transaction affinity was to '" + NODE_1 + "' the commit should be processed there",
-                    1, checkerNode0.getCommitted());
-            Assert.assertEquals("Rollback at '" + NODE_1 + "' should not be called", 0, checkerNode0.getRolledback());
-            Assert.assertEquals("Two synchronizations were registered at '" + NODE_1 + "'",
-                    2, checkerNode0.countSynchronizedAfterCommitted());
-            Assert.assertEquals("Expected no commit to be run at " + NODE_2, 0, checkerNode1.getCommitted());
-            Assert.assertEquals("Expected no rollback to be run at " + NODE_2, 0, checkerNode1.getRolledback());
+            assertEquals(1,
+                    checkerNode0.getCommitted(), "Transaction affinity was to '" + NODE_1 + "' the commit should be processed there");
+            assertEquals(0, checkerNode0.getRolledback(), "Rollback at '" + NODE_1 + "' should not be called");
+            assertEquals(2,
+                    checkerNode0.countSynchronizedAfterCommitted(), "Two synchronizations were registered at '" + NODE_1 + "'");
+            assertEquals(0, checkerNode1.getCommitted(), "Expected no commit to be run at " + NODE_2);
+            assertEquals(0, checkerNode1.getRolledback(), "Expected no rollback to be run at " + NODE_2);
         } else if (targetNode.equals(NODE_2)) {
-            Assert.assertEquals("Expected no commit to be run at " + NODE_1, 0, checkerNode0.getCommitted());
-            Assert.assertEquals("Expected no rollback to be run at " + NODE_1, 0, checkerNode0.getRolledback());
-            Assert.assertEquals("Transaction affinity was to '" + NODE_2 + "' the commit should be processed there",
-                    1, checkerNode1.getCommitted());
-            Assert.assertEquals("Rollback at '" + NODE_2 + "' should not be called", 0, checkerNode1.getRolledback());
-            Assert.assertEquals("Two synchronizations were registered at '" + NODE_2 + "'",
-                    2, checkerNode1.countSynchronizedAfterCommitted());
+            assertEquals(0, checkerNode0.getCommitted(), "Expected no commit to be run at " + NODE_1);
+            assertEquals(0, checkerNode0.getRolledback(), "Expected no rollback to be run at " + NODE_1);
+            assertEquals(1,
+                    checkerNode1.getCommitted(), "Transaction affinity was to '" + NODE_2 + "' the commit should be processed there");
+            assertEquals(0, checkerNode1.getRolledback(), "Rollback at '" + NODE_2 + "' should not be called");
+            assertEquals(2,
+                    checkerNode1.countSynchronizedAfterCommitted(), "Two synchronizations were registered at '" + NODE_2 + "'");
         } else {
-            Assert.fail(String.format("Expecting one of the nodes [%s,%s] should be hit "
+            fail(String.format("Expecting one of the nodes [%s,%s] should be hit "
                     + "by the bean call but the target node was not expected '%s'",
                     NODE_1, NODE_2, targetNode));
         }
@@ -210,13 +212,13 @@ public class TransactionalRemoteStatelessTestCase extends AbstractClusteringTest
      * then the failure is expected.
      */
     @Test
-    public void directLookupFailure () throws Exception {
+    void directLookupFailure() throws Exception {
         InitialContext initCtx = getInitialContext(InitialContextLookupType.REMOTE_HTTP, "non-existing-hostname");
 
         try {
             Incrementor bean  = getStatelessRemoteBean(initCtx, StatelessTransactionBean.class);
             bean.increment();
-            Assert.fail("Expected a Exception as the bean is not deployed at 'node-3'"
+            fail("Expected a Exception as the bean is not deployed at 'node-3'"
                     + "while the initial context points the lookup there");
         } catch (org.jboss.ejb.client.RequestSendFailedException expected) {
             // expected as the deployment was removed from the node
@@ -224,17 +226,17 @@ public class TransactionalRemoteStatelessTestCase extends AbstractClusteringTest
     }
 
     @Test
-    public void rollback_remoteHttp() throws Exception {
+    void rollback_remoteHttp() throws Exception {
         rollback(InitialContextLookupType.REMOTE_HTTP);
     }
 
     @Test
-    public void rollback_http() throws Exception {
+    void rollback_http() throws Exception {
         rollback(InitialContextLookupType.HTTP);
     }
 
     @Test
-    public void rollback_wildflyConfig() throws Exception {
+    void rollback_wildflyConfig() throws Exception {
         rollback(InitialContextLookupType.WILDFLY_CONFIG);
     }
 
@@ -254,7 +256,7 @@ public class TransactionalRemoteStatelessTestCase extends AbstractClusteringTest
             txn.begin();
 
             Result<Integer> result = bean.increment();
-            Assert.assertEquals(1, result.getValue().intValue());
+            assertEquals(1, result.getValue().intValue());
             targetNode = result.getNode();
 
             txn.rollback();
@@ -266,19 +268,19 @@ public class TransactionalRemoteStatelessTestCase extends AbstractClusteringTest
         }
 
         if(targetNode.equals(NODE_1)) {
-            Assert.assertEquals("Commit at '" + NODE_1 + "' should not be called", 0, checkerNode0.getCommitted());
-            Assert.assertEquals("Transaction affinity was to '" + NODE_1 + "' the rollback should be processed there", 1, checkerNode0.getRolledback());
-            Assert.assertEquals("A synchronization was registered at '" + NODE_1 + "'", 1, checkerNode0.countSynchronizedAfterRolledBack());
-            Assert.assertEquals("Expected no commit to be run at " + NODE_2, 0, checkerNode1.getCommitted());
-            Assert.assertEquals("Expected no rollback to be run at " + NODE_2, 0, checkerNode1.getRolledback());
+            assertEquals(0, checkerNode0.getCommitted(), "Commit at '" + NODE_1 + "' should not be called");
+            assertEquals(1, checkerNode0.getRolledback(), "Transaction affinity was to '" + NODE_1 + "' the rollback should be processed there");
+            assertEquals(1, checkerNode0.countSynchronizedAfterRolledBack(), "A synchronization was registered at '" + NODE_1 + "'");
+            assertEquals(0, checkerNode1.getCommitted(), "Expected no commit to be run at " + NODE_2);
+            assertEquals(0, checkerNode1.getRolledback(), "Expected no rollback to be run at " + NODE_2);
         } else if (targetNode.equals(NODE_2)) {
-            Assert.assertEquals("Expected no commit to be run at " + NODE_1, 0, checkerNode0.getCommitted());
-            Assert.assertEquals("Expected no rollback to be run at " + NODE_1, 0, checkerNode0.getRolledback());
-            Assert.assertEquals("Commit at '" + NODE_2 + "' should not be called", 0, checkerNode1.getCommitted());
-            Assert.assertEquals("Transaction affinity was to '" + NODE_2 + "' the rollback should be processed there", 1, checkerNode1.getRolledback());
-            Assert.assertEquals("A synchronization was registered at '" + NODE_2 + "'", 1, checkerNode1.countSynchronizedAfterRolledBack());
+            assertEquals(0, checkerNode0.getCommitted(), "Expected no commit to be run at " + NODE_1);
+            assertEquals(0, checkerNode0.getRolledback(), "Expected no rollback to be run at " + NODE_1);
+            assertEquals(0, checkerNode1.getCommitted(), "Commit at '" + NODE_2 + "' should not be called");
+            assertEquals(1, checkerNode1.getRolledback(), "Transaction affinity was to '" + NODE_2 + "' the rollback should be processed there");
+            assertEquals(1, checkerNode1.countSynchronizedAfterRolledBack(), "A synchronization was registered at '" + NODE_2 + "'");
         } else {
-            Assert.fail(String.format("Expecting one of the nodes [%s,%s] should be hit "
+            fail(String.format("Expecting one of the nodes [%s,%s] should be hit "
                     + "by the bean call but the target node was not expected '%s'",
                     NODE_1, NODE_2, targetNode));
         }
@@ -289,7 +291,7 @@ public class TransactionalRemoteStatelessTestCase extends AbstractClusteringTest
      * despite there is no real resource enlisted to the transaction at the server side.
      */
     @Test
-    public void rollbackWithNoXAResourceEnlistment () throws Exception {
+    void rollbackWithNoXAResourceEnlistment() throws Exception {
         InitialContext initCtx = getInitialContext(InitialContextLookupType.REMOTE_HTTP, TESTSUITE_NODE0);
         Result<Integer> result = null;
         UserTransaction txn = null;
@@ -301,7 +303,7 @@ public class TransactionalRemoteStatelessTestCase extends AbstractClusteringTest
             txn.begin();
 
             result = bean.increment();
-            Assert.assertEquals(1, result.getValue().intValue());
+            assertEquals(1, result.getValue().intValue());
 
             txn.rollback();
         } catch (Exception e) {
@@ -312,21 +314,21 @@ public class TransactionalRemoteStatelessTestCase extends AbstractClusteringTest
         }
 
         if(result.getNode().equals(NODE_1)) {
-            Assert.assertFalse("Transaction was rolled-back at " + NODE_1 +
-                    "Synchronization.beforeCompletion can't be called", checkerNode0.isSynchronizedBefore());
-            Assert.assertEquals("Transaction was rolled-back at " + NODE_1 +
-                    ", after synchronization callback needs to be called", 1, checkerNode0.countSynchronizedAfterRolledBack());
-            Assert.assertFalse("Expected no beforeCompletion to be run at " + NODE_2, checkerNode1.isSynchronizedBefore());
-            Assert.assertFalse("Expected no afterCompletion to be run at " + NODE_2, checkerNode1.isSynchronizedAfter());
+            assertFalse(checkerNode0.isSynchronizedBefore(), "Transaction was rolled-back at " + NODE_1 +
+                    "Synchronization.beforeCompletion can't be called");
+            assertEquals(1, checkerNode0.countSynchronizedAfterRolledBack(), "Transaction was rolled-back at " + NODE_1 +
+                    ", after synchronization callback needs to be called");
+            assertFalse(checkerNode1.isSynchronizedBefore(), "Expected no beforeCompletion to be run at " + NODE_2);
+            assertFalse(checkerNode1.isSynchronizedAfter(), "Expected no afterCompletion to be run at " + NODE_2);
         } else if (result.getNode().equals(NODE_2)) {
-            Assert.assertFalse("Expected no beforeCompletion to be run at " + NODE_1, checkerNode0.isSynchronizedBefore());
-            Assert.assertFalse("Expected no afterCompletion to be run at " + NODE_1, checkerNode0.isSynchronizedAfter());
-            Assert.assertFalse("Transaction was rolled-back at " + NODE_2 +
-                    "Synchronization.beforeCompletion can't be called", checkerNode1.isSynchronizedBefore());
-            Assert.assertEquals("Transaction was rolled-back at " + NODE_2 +
-                    ", after synchronization callback needs to be called", 1, checkerNode1.countSynchronizedAfterRolledBack());
+            assertFalse(checkerNode0.isSynchronizedBefore(), "Expected no beforeCompletion to be run at " + NODE_1);
+            assertFalse(checkerNode0.isSynchronizedAfter(), "Expected no afterCompletion to be run at " + NODE_1);
+            assertFalse(checkerNode1.isSynchronizedBefore(), "Transaction was rolled-back at " + NODE_2 +
+                    "Synchronization.beforeCompletion can't be called");
+            assertEquals(1, checkerNode1.countSynchronizedAfterRolledBack(), "Transaction was rolled-back at " + NODE_2 +
+                    ", after synchronization callback needs to be called");
         } else {
-            Assert.fail(String.format("Expecting one of the nodes [%s,%s] should be hit "
+            fail(String.format("Expecting one of the nodes [%s,%s] should be hit "
                     + "by the bean call but the target node was not expected '%s'",
                     NODE_1, NODE_2, result.getNode()));
         }
@@ -338,7 +340,7 @@ public class TransactionalRemoteStatelessTestCase extends AbstractClusteringTest
      * but this test works with a stateless bean.
      */
     @Test
-    public void affinityNodeFailure () throws Exception {
+    void affinityNodeFailure() throws Exception {
         InitialContext initCtx = getInitialContext(InitialContextLookupType.REMOTE_HTTP, TESTSUITE_NODE0);
         String targetNode = null;
         UserTransaction txn = null;
@@ -351,7 +353,7 @@ public class TransactionalRemoteStatelessTestCase extends AbstractClusteringTest
             Incrementor bean  = getStatelessRemoteBean(initCtx, StatelessTransactionBean.class);
             Result<Integer> result = bean.increment();
             int count = 1;
-            Assert.assertEquals(count++, result.getValue().intValue());
+            assertEquals(count++, result.getValue().intValue());
 
             targetNode = result.getNode();
 
@@ -359,7 +361,7 @@ public class TransactionalRemoteStatelessTestCase extends AbstractClusteringTest
 
             try {
                 result = bean.increment();
-                Assert.fail("Expected a NoSuchEJBException as transaction affinity needs to be maintained");
+                fail("Expected a NoSuchEJBException as transaction affinity needs to be maintained");
             } catch (NoSuchEJBException | AssertionError expected) {
                 // expected as the deployment was removed from the node
             }

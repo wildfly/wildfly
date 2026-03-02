@@ -5,12 +5,12 @@
 
 package org.jboss.as.test.clustering.single.infinispan.cdi.embedded;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import jakarta.inject.Inject;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.as.test.clustering.single.infinispan.cdi.embedded.deployment.CdiConfig;
 import org.jboss.as.test.clustering.single.infinispan.cdi.embedded.deployment.GreetingCacheManager;
 import org.jboss.as.test.clustering.single.infinispan.cdi.embedded.deployment.GreetingService;
@@ -20,16 +20,16 @@ import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.jboss.shrinkwrap.descriptor.api.Descriptors;
 import org.jboss.shrinkwrap.descriptor.api.spec.se.manifest.ManifestDescriptor;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * @author Radoslav Husar
  * @author Kevin Pollet &lt;pollet.kevin@gmail.com&gt; (C) 2011
  * @since 27
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class GreetingCacheManagerTestCase {
 
     @Inject
@@ -48,14 +48,14 @@ public class GreetingCacheManagerTestCase {
                 ;
     }
 
-    @Before
-    public void init() {
+    @BeforeEach
+    void init() {
         greetingCacheManager.clearCache();
         assertEquals(0, greetingCacheManager.getNumberOfEntries());
     }
 
     @Test
-    public void testGreetingCacheConfiguration() {
+    void greetingCacheConfiguration() {
         // Cache name
         assertEquals("greeting-cache", greetingCacheManager.getCacheName());
 
@@ -67,7 +67,7 @@ public class GreetingCacheManagerTestCase {
     }
 
     @Test
-    public void testGreetingCacheCachedValues() {
+    void greetingCacheCachedValues() {
         greetingService.greet("Pete");
 
         assertEquals(1, greetingCacheManager.getCachedValues().length);
@@ -75,7 +75,7 @@ public class GreetingCacheManagerTestCase {
     }
 
     @Test
-    public void testClearGreetingCache() {
+    void clearGreetingCache() {
         greetingService.greet("Pete");
 
         assertEquals(1, greetingCacheManager.getNumberOfEntries());

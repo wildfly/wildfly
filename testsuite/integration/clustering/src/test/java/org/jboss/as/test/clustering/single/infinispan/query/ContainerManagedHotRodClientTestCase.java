@@ -5,15 +5,15 @@
 
 package org.jboss.as.test.clustering.single.infinispan.query;
 
-import static org.junit.Assert.assertEquals;
-
 import jakarta.annotation.Resource;
 
 import org.infinispan.client.hotrod.RemoteCache;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import org.infinispan.client.hotrod.RemoteCacheContainer;
 import org.infinispan.protostream.SerializationContextInitializer;
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.test.clustering.single.infinispan.query.data.Person;
 import org.jboss.as.test.clustering.single.infinispan.query.data.PersonSchema;
@@ -23,8 +23,8 @@ import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.jboss.shrinkwrap.descriptor.api.Descriptors;
 import org.jboss.shrinkwrap.descriptor.api.spec.se.manifest.ManifestDescriptor;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * Variant of the {@link HotRodClientTestCase} using container-managed objects.
@@ -32,7 +32,7 @@ import org.junit.runner.RunWith;
  * @author Radoslav Husar
  * @since 27
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @ServerSetup({ ServerSetupTask.class })
 public class ContainerManagedHotRodClientTestCase {
 
@@ -51,7 +51,7 @@ public class ContainerManagedHotRodClientTestCase {
     private RemoteCacheContainer remoteCacheContainer;
 
     @Test
-    public void testPutGetCustomObject() {
+    void putGetCustomObject() {
         RemoteCache<String, Person> cache = this.remoteCacheContainer.getCache("query");
         cache.start();
         try {

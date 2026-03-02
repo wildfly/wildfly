@@ -4,8 +4,6 @@
  */
 package org.jboss.as.test.clustering;
 
-import static org.junit.Assert.assertEquals;
-
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -14,6 +12,8 @@ import java.time.Duration;
 import java.util.Set;
 
 import jakarta.servlet.http.HttpServletResponse;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -41,7 +41,7 @@ public final class TopologyChangeListenerUtil {
     public static void establishTopology(HttpClient client, URL baseURL, String container, String cache, Set<String> topology, Duration timeout) throws URISyntaxException, IOException {
         URI uri = TopologyChangeListenerServlet.createURI(baseURL, container, cache, topology, timeout);
         try (CloseableHttpResponse response = (CloseableHttpResponse) client.execute(new HttpGet(uri))) {
-            assertEquals(String.format("Failed to establish topology %s for container=%s andcache=%s within %s", topology, container, cache, timeout), HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
+            assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode(), String.format("Failed to establish topology %s for container=%s andcache=%s within %s", topology, container, cache, timeout));
         }
     }
 

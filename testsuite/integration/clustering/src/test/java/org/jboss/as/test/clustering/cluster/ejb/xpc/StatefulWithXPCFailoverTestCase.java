@@ -5,8 +5,6 @@
 
 package org.jboss.as.test.clustering.cluster.ejb.xpc;
 
-import static org.junit.Assert.assertEquals;
-
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -14,6 +12,9 @@ import java.net.URL;
 import java.util.Date;
 
 import jakarta.servlet.http.HttpServletResponse;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import org.apache.http.Header;
 import org.apache.http.HttpResponse;
@@ -24,7 +25,7 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.container.test.api.TargetsContainer;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase;
 import org.jboss.as.test.clustering.cluster.ejb.xpc.bean.StatefulBean;
@@ -35,15 +36,14 @@ import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * @author Paul Ferraro
  * @author Scott Marlow
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class StatefulWithXPCFailoverTestCase extends AbstractClusteringTestCase {
 
     private static final String persistence_xml =
@@ -99,10 +99,10 @@ public class StatefulWithXPCFailoverTestCase extends AbstractClusteringTestCase 
      * @throws URISyntaxException
      */
     @Test
-    public void testSecondLevelCache(
+    void secondLevelCache(
             @ArquillianResource() @OperateOnDeployment(DEPLOYMENT_1) URL baseURL1,
             @ArquillianResource() @OperateOnDeployment(DEPLOYMENT_2) URL baseURL2)
-            throws IOException, URISyntaxException {
+            throws Exception {
 
         URI xpc1_create_url = StatefulServlet.createEmployeeURI(baseURL1);
         URI xpc2_create_url = StatefulServlet.createEmployeeURI(baseURL2);
@@ -123,29 +123,29 @@ public class StatefulWithXPCFailoverTestCase extends AbstractClusteringTestCase 
             assertExecuteUrl(client, StatefulServlet.echoURI(baseURL2, "StartingTestSecondLevelCache")); // echo message to server.log
 
             String employeeName = executeUrlWithAnswer(client, xpc1_create_url, "create entity in node1 in memory db");
-            assertEquals(employeeName, "Tom Brady");
+            assertEquals("Tom Brady", employeeName);
             log.trace(new Date() + "about to read entity on node1 (from xpc queue)");
 
             employeeName = executeUrlWithAnswer(client, xpc1_get_url, "on node1, node1 should be able to read entity on node1");
-            assertEquals(employeeName, "Tom Brady");
+            assertEquals("Tom Brady", employeeName);
 
             String employeesInCache = executeUrlWithAnswer(client, xpc1_secondLevelCacheEntries_url, "get number of elements in node1 second level cache (should be zero)");
-            assertEquals(employeesInCache, "0");    // we read the entity from the extended persistence context (hasn't been flushed yet)
+            assertEquals("0", employeesInCache);    // we read the entity from the extended persistence context (hasn't been flushed yet)
 
             assertExecuteUrl(client, xpc1_flush_url); // flush changes to db
 
             assertExecuteUrl(client, xpc1_clear_url); // clear xpc state so we have to reload
 
             employeeName = executeUrlWithAnswer(client, xpc2_create_url, "create entity in node2 in memory db (each node has its own database)");
-            assertEquals(employeeName, "Tom Brady");
+            assertEquals("Tom Brady", employeeName);
             assertExecuteUrl(client, xpc2_flush_url); // flush changes to db on second node
             assertExecuteUrl(client, xpc2_clear_url); // clear xpc state so we have to reload
             employeeName = executeUrlWithAnswer(client, xpc2_get_url, "node2 should be able to read entity from 2lc");
-            assertEquals(employeeName, "Tom Brady");
+            assertEquals("Tom Brady", employeeName);
 
             // we should of read one Employee entity on node2, ensure the second level cache contains one entry
             employeesInCache = executeUrlWithAnswer(client, xpc2_secondLevelCacheEntries_url, "get number of elements in node2 second level cache (should be zero)");
-            assertEquals(employeesInCache, "1");
+            assertEquals("1", employeesInCache);
 
             assertExecuteUrl(client, StatefulServlet.echoURI(baseURL1, "testSecondLevelCacheclearedXPC"));
             assertExecuteUrl(client, StatefulServlet.echoURI(baseURL2, "testSecondLevelCacheclearedXPC"));
@@ -155,24 +155,24 @@ public class StatefulWithXPCFailoverTestCase extends AbstractClusteringTestCase 
             assertExecuteUrl(client, StatefulServlet.echoURI(baseURL1, "2lcOnNode1ShouldHaveZeroElemementsLoaded"));
 
             employeesInCache = executeUrlWithAnswer(client, xpc1_secondLevelCacheEntries_url, "get number of elements in node1 second level cache (should be zero)");
-            assertEquals(employeesInCache, "0");
+            assertEquals("0", employeesInCache);
 
             employeesInCache = executeUrlWithAnswer(client, xpc2_secondLevelCacheEntries_url, "get number of elements in node2 second level cache (should be zero)");
-            assertEquals(employeesInCache, "0");
+            assertEquals("0", employeesInCache);
 
             assertExecuteUrl(client, xpc1_delete_url);
 
             String destroyed = executeUrlWithAnswer(client, xpc1_getdestroy_url, "destroy the bean on node1");
-            assertEquals(destroyed, "DESTROY");
+            assertEquals("DESTROY", destroyed);
 
         }
     }
 
     @Test
-    public void testBasicXPC(
+    void basicXPC(
             @ArquillianResource() @OperateOnDeployment(DEPLOYMENT_1) URL baseURL1,
             @ArquillianResource() @OperateOnDeployment(DEPLOYMENT_2) URL baseURL2)
-            throws IOException, URISyntaxException {
+            throws Exception {
 
         URI xpc1_create_url = StatefulServlet.createEmployeeURI(baseURL1);
         URI xpc1_get_url = StatefulServlet.getEmployeeURI(baseURL1);
@@ -188,23 +188,23 @@ public class StatefulWithXPCFailoverTestCase extends AbstractClusteringTestCase 
 
             log.trace(new Date() + "create employee entity ");
             String employeeName = executeUrlWithAnswer(client, xpc1_create_url, "create entity that lives in the extended persistence context that this test will verify is always available");
-            assertEquals(employeeName, "Tom Brady");
+            assertEquals("Tom Brady", employeeName);
 
             log.trace(new Date() + "1. about to read entity on node1");
             // ensure that we can get it from node 1
             employeeName = executeUrlWithAnswer(client, xpc1_get_url, "1. xpc on node1, node1 should be able to read entity on node1");
-            assertEquals(employeeName, "Tom Brady");
+            assertEquals("Tom Brady", employeeName);
             employeeName = executeUrlWithAnswer(client, xpc1_getempsecond_url, "1. xpc on node1, node1 should be able to read entity from second bean on node1");
-            assertEquals(employeeName, "Tom Brady");
+            assertEquals("Tom Brady", employeeName);
 
             start(NODE_2);
 
             log.trace(new Date() + "2. started node2 + deployed, about to read entity on node1");
 
             employeeName = executeUrlWithAnswer(client, xpc2_get_url, "2. started node2, xpc on node1, node1 should be able to read entity on node1");
-            assertEquals(employeeName, "Tom Brady");
+            assertEquals("Tom Brady", employeeName);
             employeeName = executeUrlWithAnswer(client, xpc2_getempsecond_url, "2. started node2, xpc on node1, node1 should be able to read entity from second bean on node1");
-            assertEquals(employeeName, "Tom Brady");
+            assertEquals("Tom Brady", employeeName);
 
             // failover to deployment2
             stop(NODE_1); // failover #1 to node 2
@@ -212,12 +212,12 @@ public class StatefulWithXPCFailoverTestCase extends AbstractClusteringTestCase 
             log.trace(new Date() + "3. stopped node1 to force failover, about to read entity on node2");
 
             employeeName = executeUrlWithAnswer(client, xpc2_get_url, "3. stopped deployment on node1, xpc should failover to node2, node2 should be able to read entity from xpc");
-            assertEquals(employeeName, "Tom Brady");
+            assertEquals("Tom Brady", employeeName);
             employeeName = executeUrlWithAnswer(client, xpc2_getempsecond_url, "3. stopped deployment on node1, xpc should failover to node2, node2 should be able to read entity from xpc that is on node2 (second bean)");
-            assertEquals(employeeName, "Tom Brady");
+            assertEquals("Tom Brady", employeeName);
 
             String destroyed = executeUrlWithAnswer(client, xpc2_getdestroy_url, "4. destroy the bean on node2");
-            assertEquals(destroyed, "DESTROY");
+            assertEquals("DESTROY", destroyed);
             log.trace(new Date() + "4. test is done");
 
         }
@@ -228,7 +228,7 @@ public class StatefulWithXPCFailoverTestCase extends AbstractClusteringTestCase 
         try {
             assertEquals(200, response.getStatusLine().getStatusCode());
             Header header = response.getFirstHeader("answer");
-            Assert.assertNotNull(message, header);
+            assertNotNull(header, message);
             return header.getValue();
         } finally {
             HttpClientUtils.closeQuietly(response);

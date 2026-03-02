@@ -16,6 +16,8 @@ import java.util.concurrent.Future;
 
 import jakarta.servlet.http.HttpServletResponse;
 
+import static org.junit.jupiter.api.Assertions.*;
+
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
@@ -24,7 +26,7 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.container.test.api.TargetsContainer;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase;
 import org.jboss.as.test.clustering.single.web.Mutable;
@@ -33,9 +35,8 @@ import org.jboss.as.test.http.util.TestHttpClientUtils;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * Validate that <distributable/> works for a two-node cluster.
@@ -43,7 +44,7 @@ import org.junit.runner.RunWith;
  * @author Paul Ferraro
  * @author Radoslav Husar
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class DistributableTestCase extends AbstractClusteringTestCase {
 
     private static final String MODULE_NAME = DistributableTestCase.class.getSimpleName();
@@ -71,7 +72,7 @@ public class DistributableTestCase extends AbstractClusteringTestCase {
 
     @Test
     @OperateOnDeployment(DEPLOYMENT_1)
-    public void testSerialized(@ArquillianResource(SimpleServlet.class) URL baseURL) throws IOException, URISyntaxException {
+    void serialized(@ArquillianResource(SimpleServlet.class) URL baseURL) throws Exception {
 
         // returns the URL of the deployment (http://127.0.0.1:8180/distributable)
         URI uri = SimpleServlet.createURI(baseURL);
@@ -79,31 +80,32 @@ public class DistributableTestCase extends AbstractClusteringTestCase {
         try (CloseableHttpClient client = TestHttpClientUtils.promiscuousCookieHttpClient()) {
             HttpResponse response = client.execute(new HttpGet(uri));
             try {
-                Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
-                Assert.assertEquals(1, Integer.parseInt(response.getFirstHeader("value").getValue()));
-                Assert.assertFalse(Boolean.valueOf(response.getFirstHeader("serialized").getValue()));
+                assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
+                assertEquals(1, Integer.parseInt(response.getFirstHeader("value").getValue()));
+                assertFalse(Boolean.valueOf(response.getFirstHeader("serialized").getValue()));
             } finally {
                 HttpClientUtils.closeQuietly(response);
             }
 
             response = client.execute(new HttpGet(uri));
             try {
-                Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
-                Assert.assertEquals(2, Integer.parseInt(response.getFirstHeader("value").getValue()));
+                assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
+                assertEquals(2, Integer.parseInt(response.getFirstHeader("value").getValue()));
                 // This won't be true unless we have somewhere to which to replicate
-                Assert.assertTrue(Boolean.valueOf(response.getFirstHeader("serialized").getValue()));
+                assertTrue(Boolean.valueOf(response.getFirstHeader("serialized").getValue()));
             } finally {
                 HttpClientUtils.closeQuietly(response);
             }
         }
     }
 
+    // For change, operate on the 2nd deployment first
     @Test
-    @OperateOnDeployment(DEPLOYMENT_2) // For change, operate on the 2nd deployment first
-    public void testSessionReplication(
+    @OperateOnDeployment(DEPLOYMENT_2)
+    void sessionReplication(
             @ArquillianResource(SimpleServlet.class) @OperateOnDeployment(DEPLOYMENT_1) URL baseURL1,
             @ArquillianResource(SimpleServlet.class) @OperateOnDeployment(DEPLOYMENT_2) URL baseURL2)
-            throws IOException, URISyntaxException, InterruptedException {
+            throws Exception {
 
         URI url1 = SimpleServlet.createURI(baseURL1);
         URI url2 = SimpleServlet.createURI(baseURL2);
@@ -111,8 +113,8 @@ public class DistributableTestCase extends AbstractClusteringTestCase {
         try (CloseableHttpClient client = TestHttpClientUtils.promiscuousCookieHttpClient()) {
             HttpResponse response = client.execute(new HttpGet(url1));
             try {
-                Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
-                Assert.assertEquals(1, Integer.parseInt(response.getFirstHeader("value").getValue()));
+                assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
+                assertEquals(1, Integer.parseInt(response.getFirstHeader("value").getValue()));
             } finally {
                 HttpClientUtils.closeQuietly(response);
             }
@@ -120,8 +122,8 @@ public class DistributableTestCase extends AbstractClusteringTestCase {
             // Lets do this twice to have more debug info if failover is slow.
             response = client.execute(new HttpGet(url1));
             try {
-                Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
-                Assert.assertEquals(2, Integer.parseInt(response.getFirstHeader("value").getValue()));
+                assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
+                assertEquals(2, Integer.parseInt(response.getFirstHeader("value").getValue()));
             } finally {
                 HttpClientUtils.closeQuietly(response);
             }
@@ -132,8 +134,8 @@ public class DistributableTestCase extends AbstractClusteringTestCase {
             // Now check on the 2nd server
             response = client.execute(new HttpGet(url2));
             try {
-                Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
-                Assert.assertEquals(3, Integer.parseInt(response.getFirstHeader("value").getValue()));
+                assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
+                assertEquals(3, Integer.parseInt(response.getFirstHeader("value").getValue()));
             } finally {
                 HttpClientUtils.closeQuietly(response);
             }
@@ -141,8 +143,8 @@ public class DistributableTestCase extends AbstractClusteringTestCase {
             // Lets do one more check.
             response = client.execute(new HttpGet(url2));
             try {
-                Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
-                Assert.assertEquals(4, Integer.parseInt(response.getFirstHeader("value").getValue()));
+                assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
+                assertEquals(4, Integer.parseInt(response.getFirstHeader("value").getValue()));
             } finally {
                 HttpClientUtils.closeQuietly(response);
             }
@@ -153,7 +155,7 @@ public class DistributableTestCase extends AbstractClusteringTestCase {
      * Test that a session is gracefully served when a clustered application is undeployed.
      */
     @Test
-    public void testGracefulServeOnUndeploy(
+    void gracefulServeOnUndeploy(
             @ArquillianResource(SimpleServlet.class) @OperateOnDeployment(DEPLOYMENT_1) URL baseURL1)
             throws Exception {
         this.testGracefulServe(baseURL1, new RedeployLifecycle());
@@ -163,7 +165,7 @@ public class DistributableTestCase extends AbstractClusteringTestCase {
      * Test that a session is gracefully served when clustered AS instanced is shutdown.
      */
     @Test
-    public void testGracefulServeOnShutdown(
+    void gracefulServeOnShutdown(
             @ArquillianResource(SimpleServlet.class) @OperateOnDeployment(DEPLOYMENT_1) URL baseURL1)
             throws Exception {
         this.testGracefulServe(baseURL1, new GracefulRestartLifecycle());
@@ -177,7 +179,7 @@ public class DistributableTestCase extends AbstractClusteringTestCase {
             // Make sure a normal request will succeed
             HttpResponse response = client.execute(new HttpGet(uri));
             try {
-                Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
+                assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
             } finally {
                 HttpClientUtils.closeQuietly(response);
             }
@@ -197,14 +199,14 @@ public class DistributableTestCase extends AbstractClusteringTestCase {
             try {
                 response = future.get();
                 try {
-                    Assert.assertEquals("Request should succeed since it initiated before undeply or shutdown.",
-                            HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
+                    assertEquals(HttpServletResponse.SC_OK,
+                            response.getStatusLine().getStatusCode(), "Request should succeed since it initiated before undeply or shutdown.");
                 } finally {
                     HttpClientUtils.closeQuietly(response);
                 }
             } catch (ExecutionException e) {
                 e.printStackTrace(System.err);
-                Assert.fail(e.getCause().getMessage());
+                fail(e.getCause().getMessage());
             }
         }
     }

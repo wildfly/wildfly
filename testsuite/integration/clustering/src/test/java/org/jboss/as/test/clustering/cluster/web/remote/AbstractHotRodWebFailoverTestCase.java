@@ -6,6 +6,8 @@
 package org.jboss.as.test.clustering.cluster.web.remote;
 
 import static org.jboss.as.test.clustering.ClusterTestUtil.execute;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
 import java.net.URL;
 
@@ -17,8 +19,8 @@ import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.test.clustering.InfinispanServerUtil;
 import org.jboss.as.test.clustering.cluster.web.AbstractWebFailoverTestCase;
 import org.jboss.dmr.ModelNode;
-import org.junit.Assert;
 import org.junit.ClassRule;
+import org.junit.jupiter.api.Test;
 import org.junit.rules.TestRule;
 
 /**
@@ -48,6 +50,7 @@ public abstract class AbstractHotRodWebFailoverTestCase extends AbstractWebFailo
     }
 
     @Override
+    @Test
     public void testGracefulSimpleFailover(URL baseURL1, URL baseURL2, URL baseURL3) throws Exception {
         super.testGracefulSimpleFailover(baseURL1, baseURL2, baseURL3);
 
@@ -55,16 +58,16 @@ public abstract class AbstractHotRodWebFailoverTestCase extends AbstractWebFailo
         String resetStatistics = String.format("/subsystem=infinispan/remote-cache-container=web/remote-cache=%s:reset-statistics", this.deploymentName);
 
         ModelNode result = execute(this.client1, readResource);
-        Assert.assertNotEquals(0L, result.get("hits").asLong());
-        Assert.assertNotEquals(0L, result.get("writes").asLong());
+        assertNotEquals(0L, result.get("hits").asLong());
+        assertNotEquals(0L, result.get("writes").asLong());
 
         result = execute(this.client2, readResource);
-        Assert.assertEquals(0L, result.get("hits").asLong());
-        Assert.assertEquals(0L, result.get("writes").asLong());
+        assertEquals(0L, result.get("hits").asLong());
+        assertEquals(0L, result.get("writes").asLong());
 
         result = execute(this.client3, readResource);
-        Assert.assertNotEquals(0L, result.get("hits").asLong());
-        Assert.assertNotEquals(0L, result.get("writes").asLong());
+        assertNotEquals(0L, result.get("hits").asLong());
+        assertNotEquals(0L, result.get("writes").asLong());
 
         execute(this.client1, resetStatistics);
         execute(this.client2, resetStatistics);
@@ -72,15 +75,15 @@ public abstract class AbstractHotRodWebFailoverTestCase extends AbstractWebFailo
 
         // These metrics should have reset
         result = execute(this.client1, readResource);
-        Assert.assertEquals(0L, result.get("hits").asLong());
-        Assert.assertEquals(0L, result.get("writes").asLong());
+        assertEquals(0L, result.get("hits").asLong());
+        assertEquals(0L, result.get("writes").asLong());
 
         result = execute(this.client2, readResource);
-        Assert.assertEquals(0L, result.get("hits").asLong());
-        Assert.assertEquals(0L, result.get("writes").asLong());
+        assertEquals(0L, result.get("hits").asLong());
+        assertEquals(0L, result.get("writes").asLong());
 
         result = execute(this.client3, readResource);
-        Assert.assertEquals(0L, result.get("hits").asLong());
-        Assert.assertEquals(0L, result.get("writes").asLong());
+        assertEquals(0L, result.get("hits").asLong());
+        assertEquals(0L, result.get("writes").asLong());
     }
 }

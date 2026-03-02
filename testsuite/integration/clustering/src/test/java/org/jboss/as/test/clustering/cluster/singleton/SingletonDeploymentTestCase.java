@@ -6,6 +6,7 @@
 package org.jboss.as.test.clustering.cluster.singleton;
 
 import static org.jboss.as.test.clustering.ClusterTestUtil.execute;
+import static org.junit.jupiter.api.Assertions.*;
 
 import java.net.URI;
 import java.net.URL;
@@ -21,7 +22,7 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.container.test.api.TargetsContainer;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.container.ManagementClient;
@@ -34,14 +35,13 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * @author Paul Ferraro
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @ServerSetup(SingletonDeploymentTestCase.ServerSetupTask.class)
 public abstract class SingletonDeploymentTestCase extends AbstractClusteringTestCase {
 
@@ -96,93 +96,93 @@ public abstract class SingletonDeploymentTestCase extends AbstractClusteringTest
         String isPrimaryRequest = String.format("/subsystem=singleton/singleton-policy=default/deployment=%s:read-attribute(name=is-primary)", this.deploymentName);
         String getProvidersRequest = String.format("/subsystem=singleton/singleton-policy=default/deployment=%s:read-attribute(name=providers)", this.deploymentName);
 
-        Assert.assertEquals(NODE_1, execute(client1, primaryProviderRequest).asStringOrNull());
-        Assert.assertTrue(execute(client1, isPrimaryRequest).asBoolean(false));
-        Assert.assertEquals(List.of(NODE_1, NODE_2), execute(client1, getProvidersRequest).asList().stream().map(ModelNode::asString).sorted().collect(Collectors.toList()));
-        Assert.assertEquals(NODE_1, execute(client2, primaryProviderRequest).asStringOrNull());
-        Assert.assertFalse(execute(client2, isPrimaryRequest).asBoolean(true));
-        Assert.assertEquals(List.of(NODE_1, NODE_2), execute(client2, getProvidersRequest).asList().stream().map(ModelNode::asString).sorted().collect(Collectors.toList()));
+        assertEquals(NODE_1, execute(client1, primaryProviderRequest).asStringOrNull());
+        assertTrue(execute(client1, isPrimaryRequest).asBoolean(false));
+        assertEquals(List.of(NODE_1, NODE_2), execute(client1, getProvidersRequest).asList().stream().map(ModelNode::asString).sorted().collect(Collectors.toList()));
+        assertEquals(NODE_1, execute(client2, primaryProviderRequest).asStringOrNull());
+        assertFalse(execute(client2, isPrimaryRequest).asBoolean(true));
+        assertEquals(List.of(NODE_1, NODE_2), execute(client2, getProvidersRequest).asList().stream().map(ModelNode::asString).sorted().collect(Collectors.toList()));
 
         URI uri1 = TraceServlet.createURI(new URL(baseURL1.getProtocol(), baseURL1.getHost(), baseURL1.getPort(), "/" + this.moduleName + "/"));
         URI uri2 = TraceServlet.createURI(new URL(baseURL2.getProtocol(), baseURL2.getHost(), baseURL2.getPort(), "/" + this.moduleName + "/"));
 
         try (CloseableHttpClient client = TestHttpClientUtils.promiscuousCookieHttpClient()) {
             try (CloseableHttpResponse response = client.execute(new HttpGet(uri1))) {
-                Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
+                assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
             }
 
             try (CloseableHttpResponse response = client.execute(new HttpGet(uri2))) {
-                Assert.assertEquals(HttpServletResponse.SC_NOT_FOUND, response.getStatusLine().getStatusCode());
+                assertEquals(HttpServletResponse.SC_NOT_FOUND, response.getStatusLine().getStatusCode());
             }
 
             this.undeploy(SINGLETON_DEPLOYMENT_1);
 
             Thread.sleep(DELAY);
 
-            Assert.assertEquals(NODE_2, execute(client2, primaryProviderRequest).asStringOrNull());
-            Assert.assertTrue(execute(client2, isPrimaryRequest).asBoolean(false));
-            Assert.assertEquals(Collections.singletonList(NODE_2), execute(client2, getProvidersRequest).asList().stream().map(ModelNode::asString).collect(Collectors.toList()));
+            assertEquals(NODE_2, execute(client2, primaryProviderRequest).asStringOrNull());
+            assertTrue(execute(client2, isPrimaryRequest).asBoolean(false));
+            assertEquals(Collections.singletonList(NODE_2), execute(client2, getProvidersRequest).asList().stream().map(ModelNode::asString).collect(Collectors.toList()));
 
             try (CloseableHttpResponse response = client.execute(new HttpGet(uri1))) {
-                Assert.assertEquals(HttpServletResponse.SC_NOT_FOUND, response.getStatusLine().getStatusCode());
+                assertEquals(HttpServletResponse.SC_NOT_FOUND, response.getStatusLine().getStatusCode());
             }
 
             try (CloseableHttpResponse response = client.execute(new HttpGet(uri2))) {
-                Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
+                assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
             }
 
             this.deploy(SINGLETON_DEPLOYMENT_1);
 
             Thread.sleep(DELAY);
 
-            Assert.assertEquals(NODE_1, execute(client1, primaryProviderRequest).asStringOrNull());
-            Assert.assertTrue(execute(client1, isPrimaryRequest).asBoolean(false));
-            Assert.assertEquals(List.of(NODE_1, NODE_2), execute(client1, getProvidersRequest).asList().stream().map(ModelNode::asString).sorted().collect(Collectors.toList()));
-            Assert.assertEquals(NODE_1, execute(client2, primaryProviderRequest).asStringOrNull());
-            Assert.assertFalse(execute(client2, isPrimaryRequest).asBoolean(true));
-            Assert.assertEquals(List.of(NODE_1, NODE_2), execute(client2, getProvidersRequest).asList().stream().map(ModelNode::asString).sorted().collect(Collectors.toList()));
+            assertEquals(NODE_1, execute(client1, primaryProviderRequest).asStringOrNull());
+            assertTrue(execute(client1, isPrimaryRequest).asBoolean(false));
+            assertEquals(List.of(NODE_1, NODE_2), execute(client1, getProvidersRequest).asList().stream().map(ModelNode::asString).sorted().collect(Collectors.toList()));
+            assertEquals(NODE_1, execute(client2, primaryProviderRequest).asStringOrNull());
+            assertFalse(execute(client2, isPrimaryRequest).asBoolean(true));
+            assertEquals(List.of(NODE_1, NODE_2), execute(client2, getProvidersRequest).asList().stream().map(ModelNode::asString).sorted().collect(Collectors.toList()));
 
             try (CloseableHttpResponse response = client.execute(new HttpGet(uri1))) {
-                Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
+                assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
             }
 
             try (CloseableHttpResponse response = client.execute(new HttpGet(uri2))) {
-                Assert.assertEquals(HttpServletResponse.SC_NOT_FOUND, response.getStatusLine().getStatusCode());
+                assertEquals(HttpServletResponse.SC_NOT_FOUND, response.getStatusLine().getStatusCode());
             }
 
             this.undeploy(SINGLETON_DEPLOYMENT_2);
 
             Thread.sleep(DELAY);
 
-            Assert.assertEquals(NODE_1, execute(client1, primaryProviderRequest).asStringOrNull());
-            Assert.assertTrue(execute(client1, isPrimaryRequest).asBoolean(false));
-            Assert.assertEquals(Collections.singletonList(NODE_1), execute(client1, getProvidersRequest).asList().stream().map(ModelNode::asString).collect(Collectors.toList()));
+            assertEquals(NODE_1, execute(client1, primaryProviderRequest).asStringOrNull());
+            assertTrue(execute(client1, isPrimaryRequest).asBoolean(false));
+            assertEquals(Collections.singletonList(NODE_1), execute(client1, getProvidersRequest).asList().stream().map(ModelNode::asString).collect(Collectors.toList()));
 
             try (CloseableHttpResponse response = client.execute(new HttpGet(uri1))) {
-                Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
+                assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
             }
 
             try (CloseableHttpResponse response = client.execute(new HttpGet(uri2))) {
-                Assert.assertEquals(HttpServletResponse.SC_NOT_FOUND, response.getStatusLine().getStatusCode());
+                assertEquals(HttpServletResponse.SC_NOT_FOUND, response.getStatusLine().getStatusCode());
             }
 
             this.deploy(SINGLETON_DEPLOYMENT_2);
 
             Thread.sleep(DELAY);
 
-            Assert.assertEquals(NODE_1, execute(client1, primaryProviderRequest).asStringOrNull());
-            Assert.assertTrue(execute(client1, isPrimaryRequest).asBoolean(false));
-            Assert.assertEquals(List.of(NODE_1, NODE_2), execute(client1, getProvidersRequest).asList().stream().map(ModelNode::asString).sorted().collect(Collectors.toList()));
-            Assert.assertEquals(NODE_1, execute(client2, primaryProviderRequest).asStringOrNull());
-            Assert.assertFalse(execute(client2, isPrimaryRequest).asBoolean(true));
-            Assert.assertEquals(List.of(NODE_1, NODE_2), execute(client2, getProvidersRequest).asList().stream().map(ModelNode::asString).sorted().collect(Collectors.toList()));
+            assertEquals(NODE_1, execute(client1, primaryProviderRequest).asStringOrNull());
+            assertTrue(execute(client1, isPrimaryRequest).asBoolean(false));
+            assertEquals(List.of(NODE_1, NODE_2), execute(client1, getProvidersRequest).asList().stream().map(ModelNode::asString).sorted().collect(Collectors.toList()));
+            assertEquals(NODE_1, execute(client2, primaryProviderRequest).asStringOrNull());
+            assertFalse(execute(client2, isPrimaryRequest).asBoolean(true));
+            assertEquals(List.of(NODE_1, NODE_2), execute(client2, getProvidersRequest).asList().stream().map(ModelNode::asString).sorted().collect(Collectors.toList()));
 
             try (CloseableHttpResponse response = client.execute(new HttpGet(uri1))) {
-                Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
+                assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
             }
 
             try (CloseableHttpResponse response = client.execute(new HttpGet(uri2))) {
-                Assert.assertEquals(HttpServletResponse.SC_NOT_FOUND, response.getStatusLine().getStatusCode());
+                assertEquals(HttpServletResponse.SC_NOT_FOUND, response.getStatusLine().getStatusCode());
             }
         } finally {
             this.undeploy(SINGLETON_DEPLOYMENT_1);

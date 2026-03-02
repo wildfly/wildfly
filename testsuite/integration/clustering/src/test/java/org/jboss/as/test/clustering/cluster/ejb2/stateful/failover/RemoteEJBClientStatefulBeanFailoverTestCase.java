@@ -11,15 +11,15 @@ import java.util.PropertyPermission;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.TargetsContainer;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.as.test.clustering.NodeNameGetter;
 import org.jboss.as.test.clustering.cluster.ejb2.stateful.failover.bean.shared.CounterRemote;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * Tests that invocations on a clustered stateful session Enterprise Beans 2 bean from a remote Jakarta Enterprise Beans client, failover to
@@ -30,7 +30,7 @@ import org.junit.runner.RunWith;
  * @author Radoslav Husar
  * @author Ondrej Chaloupka
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class RemoteEJBClientStatefulBeanFailoverTestCase extends RemoteEJBClientStatefulFailoverTestBase {
 
     @Deployment(name = DEPLOYMENT_HELPER_1, managed = false, testable = false)

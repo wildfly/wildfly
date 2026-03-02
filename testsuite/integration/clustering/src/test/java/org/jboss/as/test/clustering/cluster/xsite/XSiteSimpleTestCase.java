@@ -4,10 +4,10 @@
  */
 package org.jboss.as.test.clustering.cluster.xsite;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import jakarta.servlet.http.HttpServletResponse;
-import java.io.IOException;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.net.URL;
 
 import org.apache.http.HttpResponse;
@@ -16,7 +16,7 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.container.test.api.TargetsContainer;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase;
@@ -26,9 +26,9 @@ import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * Test xsite functionality on a 4-node, 3-site test deployment:
@@ -50,7 +50,7 @@ import org.junit.runner.RunWith;
  *
  * @author Richard Achmatowicz
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @ServerSetup({ XSiteSimpleTestCase.CacheSetupTask.class, XSiteSimpleTestCase.ServerSetupTask.class })
 public class XSiteSimpleTestCase extends AbstractClusteringTestCase {
 
@@ -92,6 +92,7 @@ public class XSiteSimpleTestCase extends AbstractClusteringTestCase {
         return war;
     }
 
+    @BeforeEach
     @Override
     public void beforeTestMethod() throws Exception {
         // Orchestrate startup of clusters to purge previously discovered views.
@@ -107,11 +108,11 @@ public class XSiteSimpleTestCase extends AbstractClusteringTestCase {
     }
 
     @Test
-    public void test(@ArquillianResource(CacheAccessServlet.class) @OperateOnDeployment(DEPLOYMENT_1) URL baseURL1,
-                     @ArquillianResource(CacheAccessServlet.class) @OperateOnDeployment(DEPLOYMENT_2) URL baseURL2,
-                     @ArquillianResource(CacheAccessServlet.class) @OperateOnDeployment(DEPLOYMENT_3) URL baseURL3,
-                     @ArquillianResource(CacheAccessServlet.class) @OperateOnDeployment(DEPLOYMENT_4) URL baseURL4
-    ) throws IllegalStateException, IOException, URISyntaxException, InterruptedException {
+    void test(@ArquillianResource(CacheAccessServlet.class) @OperateOnDeployment(DEPLOYMENT_1) URL baseURL1,
+              @ArquillianResource(CacheAccessServlet.class) @OperateOnDeployment(DEPLOYMENT_2) URL baseURL2,
+              @ArquillianResource(CacheAccessServlet.class) @OperateOnDeployment(DEPLOYMENT_3) URL baseURL3,
+              @ArquillianResource(CacheAccessServlet.class) @OperateOnDeployment(DEPLOYMENT_4) URL baseURL4
+    ) throws Exception {
         /*
          * Tests that puts get relayed to their backup sites
          *
@@ -130,7 +131,7 @@ public class XSiteSimpleTestCase extends AbstractClusteringTestCase {
         try (CloseableHttpClient client = TestHttpClientUtils.promiscuousCookieHttpClient()) {
             // put a value to LON-0
             HttpResponse response = client.execute(new HttpGet(url1));
-            Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
+            assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
             response.getEntity().getContent().close();
 
             // Lets wait for the session to replicate
@@ -138,20 +139,20 @@ public class XSiteSimpleTestCase extends AbstractClusteringTestCase {
 
             // do a get on LON-1
             response = client.execute(new HttpGet(url2));
-            Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
-            Assert.assertEquals(value, response.getFirstHeader("value").getValue());
+            assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
+            assertEquals(value, response.getFirstHeader("value").getValue());
             response.getEntity().getContent().close();
 
             // do a get on NYC-0
             response = client.execute(new HttpGet(url3));
-            Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
-            Assert.assertEquals(value, response.getFirstHeader("value").getValue());
+            assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
+            assertEquals(value, response.getFirstHeader("value").getValue());
             response.getEntity().getContent().close();
 
             // do a get on SFO-0
             response = client.execute(new HttpGet(url4));
-            Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
-            Assert.assertEquals(value, response.getFirstHeader("value").getValue());
+            assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
+            assertEquals(value, response.getFirstHeader("value").getValue());
             response.getEntity().getContent().close();
         }
 
@@ -168,7 +169,7 @@ public class XSiteSimpleTestCase extends AbstractClusteringTestCase {
         try (CloseableHttpClient client = TestHttpClientUtils.promiscuousCookieHttpClient()) {
             // put a value to NYC-0
             HttpResponse response = client.execute(new HttpGet(url3));
-            Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
+            assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
             response.getEntity().getContent().close();
 
             // Lets wait for the session to replicate
@@ -176,7 +177,7 @@ public class XSiteSimpleTestCase extends AbstractClusteringTestCase {
 
             // do a get on LON-1 - this should fail
             response = client.execute(new HttpGet(url1));
-            Assert.assertEquals(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, response.getStatusLine().getStatusCode());
+            assertEquals(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, response.getStatusLine().getStatusCode());
             response.getEntity().getContent().close();
         }
     }

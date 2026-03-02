@@ -6,10 +6,10 @@
 package org.jboss.as.test.clustering.cluster.web.authentication;
 
 import static org.jboss.as.test.shared.PermissionUtils.createPermissionsXmlAsset;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
-import java.io.IOException;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.net.URL;
 
 import jakarta.servlet.http.HttpServletResponse;
@@ -21,7 +21,7 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.container.test.api.TargetsContainer;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase;
@@ -34,9 +34,8 @@ import org.jboss.as.test.shared.ManagementServerSetupTask;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.wildfly.security.permission.ElytronPermission;
 import org.wildfly.test.security.common.elytron.ServletElytronDomainSetup;
 
@@ -44,7 +43,7 @@ import org.wildfly.test.security.common.elytron.ServletElytronDomainSetup;
  * Validates that a user remains authenticated following failover when using FORM authentication.
  * @author Paul Ferraro
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @ServerSetup({ CustomAuthenticationWebFailoverTestCase.ElytronDomainSetupOverride.class, CustomAuthenticationWebFailoverTestCase.ServletElytronDomainSetupOverride.class, CustomAuthenticationWebFailoverTestCase.ServerSetup.class })
 public class CustomAuthenticationWebFailoverTestCase extends AbstractClusteringTestCase {
 
@@ -75,23 +74,23 @@ public class CustomAuthenticationWebFailoverTestCase extends AbstractClusteringT
     }
 
     @Test
-    public void test(
+    void test(
             @ArquillianResource(SecuredServlet.class) @OperateOnDeployment(DEPLOYMENT_1) URL baseURL1,
             @ArquillianResource(SecuredServlet.class) @OperateOnDeployment(DEPLOYMENT_2) URL baseURL2)
-            throws IOException, URISyntaxException {
+            throws Exception {
 
         URI uri1 = SecuredServlet.createURI(baseURL1);
         URI uri2 = SecuredServlet.createURI(baseURL2);
 
         try (CloseableHttpClient client = TestHttpClientUtils.promiscuousCookieHttpClient()) {
             try (CloseableHttpResponse response = client.execute(new HttpGet(uri1))) {
-                Assert.assertEquals(HttpServletResponse.SC_UNAUTHORIZED, response.getStatusLine().getStatusCode());
-                Assert.assertEquals(CustomAuthenticationMechanism.CREDENTIAL_REQUIRED_MESSAGE, response.getFirstHeader(CustomAuthenticationMechanism.MESSAGE_HEADER).getValue());
+                assertEquals(HttpServletResponse.SC_UNAUTHORIZED, response.getStatusLine().getStatusCode());
+                assertEquals(CustomAuthenticationMechanism.CREDENTIAL_REQUIRED_MESSAGE, response.getFirstHeader(CustomAuthenticationMechanism.MESSAGE_HEADER).getValue());
             }
 
             try (CloseableHttpResponse response = client.execute(new HttpGet(uri2))) {
-                Assert.assertEquals(HttpServletResponse.SC_UNAUTHORIZED, response.getStatusLine().getStatusCode());
-                Assert.assertEquals(CustomAuthenticationMechanism.CREDENTIAL_REQUIRED_MESSAGE, response.getFirstHeader(CustomAuthenticationMechanism.MESSAGE_HEADER).getValue());
+                assertEquals(HttpServletResponse.SC_UNAUTHORIZED, response.getStatusLine().getStatusCode());
+                assertEquals(CustomAuthenticationMechanism.CREDENTIAL_REQUIRED_MESSAGE, response.getFirstHeader(CustomAuthenticationMechanism.MESSAGE_HEADER).getValue());
             }
 
             HttpUriRequest request = new HttpGet(uri1);
@@ -100,8 +99,8 @@ public class CustomAuthenticationWebFailoverTestCase extends AbstractClusteringT
             request.setHeader(CustomAuthenticationMechanism.PASSWORD_HEADER, "wrong");
 
             try (CloseableHttpResponse response = client.execute(request)) {
-                Assert.assertEquals(HttpServletResponse.SC_UNAUTHORIZED, response.getStatusLine().getStatusCode());
-                Assert.assertEquals(CustomAuthenticationMechanism.INVALID_CREDENTIAL_MESSAGE, response.getFirstHeader(CustomAuthenticationMechanism.MESSAGE_HEADER).getValue());
+                assertEquals(HttpServletResponse.SC_UNAUTHORIZED, response.getStatusLine().getStatusCode());
+                assertEquals(CustomAuthenticationMechanism.INVALID_CREDENTIAL_MESSAGE, response.getFirstHeader(CustomAuthenticationMechanism.MESSAGE_HEADER).getValue());
             }
 
             // Login as unauthorized user
@@ -109,12 +108,12 @@ public class CustomAuthenticationWebFailoverTestCase extends AbstractClusteringT
             request.setHeader(CustomAuthenticationMechanism.PASSWORD_HEADER, "password");
 
             try (CloseableHttpResponse response = client.execute(request)) {
-                Assert.assertEquals(HttpServletResponse.SC_FORBIDDEN, response.getStatusLine().getStatusCode());
+                assertEquals(HttpServletResponse.SC_FORBIDDEN, response.getStatusLine().getStatusCode());
             }
 
             // Logout so we can login again as an authorized user
             try (CloseableHttpResponse response = client.execute(new HttpGet(LogoutServlet.createURI(baseURL1)))) {
-                Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
+                assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
             }
 
             // Validate login with correct credentials
@@ -122,50 +121,50 @@ public class CustomAuthenticationWebFailoverTestCase extends AbstractClusteringT
             request.setHeader(CustomAuthenticationMechanism.PASSWORD_HEADER, "password");
 
             try (CloseableHttpResponse response = client.execute(request)) {
-                Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
-                Assert.assertNotNull(response.getFirstHeader(SecuredServlet.PRINCIPAL_HEADER));
-                Assert.assertEquals("allowed", response.getFirstHeader(SecuredServlet.PRINCIPAL_HEADER).getValue());
+                assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
+                assertNotNull(response.getFirstHeader(SecuredServlet.PRINCIPAL_HEADER));
+                assertEquals("allowed", response.getFirstHeader(SecuredServlet.PRINCIPAL_HEADER).getValue());
             }
 
             // Validate that subsequent request is already authenticated
             try (CloseableHttpResponse response = client.execute(new HttpGet(uri1))) {
-                Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
-                Assert.assertNotNull(response.getFirstHeader(SecuredServlet.PRINCIPAL_HEADER));
-                Assert.assertEquals("allowed", response.getFirstHeader(SecuredServlet.PRINCIPAL_HEADER).getValue());
+                assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
+                assertNotNull(response.getFirstHeader(SecuredServlet.PRINCIPAL_HEADER));
+                assertEquals("allowed", response.getFirstHeader(SecuredServlet.PRINCIPAL_HEADER).getValue());
             }
 
             undeploy(DEPLOYMENT_1);
 
             // Validate that failover request is auto-authenticated
             try (CloseableHttpResponse response = client.execute(new HttpGet(uri2))) {
-                Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
-                Assert.assertNotNull(response.getFirstHeader(SecuredServlet.PRINCIPAL_HEADER));
-                Assert.assertEquals("allowed", response.getFirstHeader(SecuredServlet.PRINCIPAL_HEADER).getValue());
+                assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
+                assertNotNull(response.getFirstHeader(SecuredServlet.PRINCIPAL_HEADER));
+                assertEquals("allowed", response.getFirstHeader(SecuredServlet.PRINCIPAL_HEADER).getValue());
             }
 
             deploy(DEPLOYMENT_1);
 
             // Validate that failback request is auto-authenticated
             try (CloseableHttpResponse response = client.execute(new HttpGet(uri1))) {
-                Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
-                Assert.assertNotNull(response.getFirstHeader(SecuredServlet.PRINCIPAL_HEADER));
-                Assert.assertEquals("allowed", response.getFirstHeader(SecuredServlet.PRINCIPAL_HEADER).getValue());
+                assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
+                assertNotNull(response.getFirstHeader(SecuredServlet.PRINCIPAL_HEADER));
+                assertEquals("allowed", response.getFirstHeader(SecuredServlet.PRINCIPAL_HEADER).getValue());
             }
 
             // Logout
             try (CloseableHttpResponse response = client.execute(new HttpGet(LogoutServlet.createURI(baseURL1)))) {
-                Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
+                assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
             }
 
             // Verify that we are no longer authenticated on either server
             try (CloseableHttpResponse response = client.execute(new HttpGet(uri1))) {
-                Assert.assertEquals(HttpServletResponse.SC_UNAUTHORIZED, response.getStatusLine().getStatusCode());
-                Assert.assertEquals(CustomAuthenticationMechanism.CREDENTIAL_REQUIRED_MESSAGE, response.getFirstHeader(CustomAuthenticationMechanism.MESSAGE_HEADER).getValue());
+                assertEquals(HttpServletResponse.SC_UNAUTHORIZED, response.getStatusLine().getStatusCode());
+                assertEquals(CustomAuthenticationMechanism.CREDENTIAL_REQUIRED_MESSAGE, response.getFirstHeader(CustomAuthenticationMechanism.MESSAGE_HEADER).getValue());
             }
 
             try (CloseableHttpResponse response = client.execute(new HttpGet(uri2))) {
-                Assert.assertEquals(HttpServletResponse.SC_UNAUTHORIZED, response.getStatusLine().getStatusCode());
-                Assert.assertEquals(CustomAuthenticationMechanism.CREDENTIAL_REQUIRED_MESSAGE, response.getFirstHeader(CustomAuthenticationMechanism.MESSAGE_HEADER).getValue());
+                assertEquals(HttpServletResponse.SC_UNAUTHORIZED, response.getStatusLine().getStatusCode());
+                assertEquals(CustomAuthenticationMechanism.CREDENTIAL_REQUIRED_MESSAGE, response.getFirstHeader(CustomAuthenticationMechanism.MESSAGE_HEADER).getValue());
             }
         }
     }

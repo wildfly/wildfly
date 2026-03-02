@@ -4,12 +4,13 @@
  */
 package org.jboss.as.test.clustering.cluster.web.authentication;
 
-import java.io.IOException;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.net.URL;
 
 import jakarta.servlet.http.HttpServletResponse;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.auth.AuthScope;
@@ -23,23 +24,22 @@ import org.apache.http.impl.client.HttpClients;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.container.test.api.TargetsContainer;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.wildfly.test.security.common.elytron.ServletElytronDomainSetup;
 
 /**
  * Validates that a user remains authenticated following failover when using BASIC authentication.
  * @author Paul Ferraro
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @ServerSetup({BasicAuthenticationWebFailoverTestCase.ElytronDomainSetupOverride.class, BasicAuthenticationWebFailoverTestCase.ServletElytronDomainSetupOverride.class})
 public class BasicAuthenticationWebFailoverTestCase extends AbstractClusteringTestCase {
 
@@ -67,10 +67,10 @@ public class BasicAuthenticationWebFailoverTestCase extends AbstractClusteringTe
     }
 
     @Test
-    public void test(
+    void test(
             @ArquillianResource(SecureServlet.class) @OperateOnDeployment(DEPLOYMENT_1) URL baseURL1,
             @ArquillianResource(SecureServlet.class) @OperateOnDeployment(DEPLOYMENT_2) URL baseURL2)
-            throws IOException, URISyntaxException {
+            throws Exception {
 
         CredentialsProvider provider = new BasicCredentialsProvider();
         HttpClient client = HttpClients.custom().setDefaultCredentialsProvider(provider).build();
@@ -83,7 +83,7 @@ public class BasicAuthenticationWebFailoverTestCase extends AbstractClusteringTe
             setCredentials(provider, "forbidden", "password", baseURL1, baseURL2);
             HttpResponse response = client.execute(new HttpGet(uri1));
             try {
-                Assert.assertEquals(HttpServletResponse.SC_FORBIDDEN, response.getStatusLine().getStatusCode());
+                assertEquals(HttpServletResponse.SC_FORBIDDEN, response.getStatusLine().getStatusCode());
             } finally {
                 HttpClientUtils.closeQuietly(response);
             }
@@ -92,7 +92,7 @@ public class BasicAuthenticationWebFailoverTestCase extends AbstractClusteringTe
             setCredentials(provider, "allowed", "bad", baseURL1, baseURL2);
             response = client.execute(new HttpGet(uri1));
             try {
-                Assert.assertEquals(HttpServletResponse.SC_UNAUTHORIZED, response.getStatusLine().getStatusCode());
+                assertEquals(HttpServletResponse.SC_UNAUTHORIZED, response.getStatusLine().getStatusCode());
             } finally {
                 HttpClientUtils.closeQuietly(response);
             }
@@ -102,8 +102,8 @@ public class BasicAuthenticationWebFailoverTestCase extends AbstractClusteringTe
             String sessionId = null;
             response = client.execute(new HttpGet(uri1));
             try {
-                Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
-                Assert.assertNotNull(response.getFirstHeader(SecureServlet.SESSION_ID_HEADER));
+                assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
+                assertNotNull(response.getFirstHeader(SecureServlet.SESSION_ID_HEADER));
                 sessionId = response.getFirstHeader(SecureServlet.SESSION_ID_HEADER).getValue();
             } finally {
                 HttpClientUtils.closeQuietly(response);
@@ -113,8 +113,8 @@ public class BasicAuthenticationWebFailoverTestCase extends AbstractClusteringTe
 
             response = client.execute(new HttpGet(uri2));
             try {
-                Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
-                Assert.assertEquals(sessionId, response.getFirstHeader(SecureServlet.SESSION_ID_HEADER).getValue());
+                assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
+                assertEquals(sessionId, response.getFirstHeader(SecureServlet.SESSION_ID_HEADER).getValue());
             } finally {
                 HttpClientUtils.closeQuietly(response);
             }
@@ -123,8 +123,8 @@ public class BasicAuthenticationWebFailoverTestCase extends AbstractClusteringTe
 
             response = client.execute(new HttpGet(uri1));
             try {
-                Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
-                Assert.assertEquals(sessionId, response.getFirstHeader(SecureServlet.SESSION_ID_HEADER).getValue());
+                assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
+                assertEquals(sessionId, response.getFirstHeader(SecureServlet.SESSION_ID_HEADER).getValue());
             } finally {
                 HttpClientUtils.closeQuietly(response);
             }

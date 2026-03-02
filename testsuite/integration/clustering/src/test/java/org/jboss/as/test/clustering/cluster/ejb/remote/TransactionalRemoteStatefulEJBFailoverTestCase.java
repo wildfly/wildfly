@@ -8,12 +8,16 @@ package org.jboss.as.test.clustering.cluster.ejb.remote;
 import java.util.PropertyPermission;
 
 import jakarta.ejb.NoSuchEJBException;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
+
 import jakarta.transaction.UserTransaction;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.container.test.api.TargetsContainer;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase;
@@ -29,15 +33,14 @@ import org.jboss.ejb.client.EJBClient;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * Validates inhibition of failover behavior of a remotely accessed @Stateful EJB within the context of a transaction.
  * @author Paul Ferraro
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class TransactionalRemoteStatefulEJBFailoverTestCase extends AbstractClusteringTestCase {
     private static final String MODULE_NAME = TransactionalRemoteStatefulEJBFailoverTestCase.class.getSimpleName();
 
@@ -62,7 +65,7 @@ public class TransactionalRemoteStatefulEJBFailoverTestCase extends AbstractClus
     }
 
     @Test
-    public void test(
+    void test(
             @ArquillianResource @OperateOnDeployment(DEPLOYMENT_1) ManagementClient client1,
             @ArquillianResource @OperateOnDeployment(DEPLOYMENT_2) ManagementClient client2
     ) throws Exception {
@@ -74,7 +77,7 @@ public class TransactionalRemoteStatefulEJBFailoverTestCase extends AbstractClus
             String target = result.getNode();
             int count = 1;
 
-            Assert.assertEquals(count++, result.getValue().intValue());
+            assertEquals(count++, result.getValue().intValue());
 
             // Validate that multi-invocations function correctly within a tx
             UserTransaction tx = EJBClient.getUserTransaction(target);
@@ -83,12 +86,12 @@ public class TransactionalRemoteStatefulEJBFailoverTestCase extends AbstractClus
             tx.begin();
 
             result = bean.increment();
-            Assert.assertEquals(count++, result.getValue().intValue());
-            Assert.assertEquals(target, result.getNode());
+            assertEquals(count++, result.getValue().intValue());
+            assertEquals(target, result.getNode());
 
             result = bean.increment();
-            Assert.assertEquals(count++, result.getValue().intValue());
-            Assert.assertEquals(target, result.getNode());
+            assertEquals(count++, result.getValue().intValue());
+            assertEquals(target, result.getNode());
 
             tx.commit();
 
@@ -96,15 +99,15 @@ public class TransactionalRemoteStatefulEJBFailoverTestCase extends AbstractClus
             tx.begin();
 
             result = bean.increment();
-            Assert.assertEquals(count++, result.getValue().intValue());
-            Assert.assertEquals(target, result.getNode());
+            assertEquals(count++, result.getValue().intValue());
+            assertEquals(target, result.getNode());
 
             undeploy(this.findDeployment(target));
 
             try {
                 result = bean.increment();
 
-                Assert.fail("Expected a NoSuchEJBException");
+                fail("Expected a NoSuchEJBException");
             } catch (NoSuchEJBException e) {
                 // Expected
             } finally {

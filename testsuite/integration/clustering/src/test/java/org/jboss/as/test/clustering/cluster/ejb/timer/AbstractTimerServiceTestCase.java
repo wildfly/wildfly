@@ -4,9 +4,7 @@
  */
 package org.jboss.as.test.clustering.cluster.ejb.timer;
 
-import java.io.IOException;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.time.Duration;
 import java.time.Instant;
@@ -19,6 +17,8 @@ import java.util.concurrent.TimeUnit;
 
 import jakarta.servlet.http.HttpServletResponse;
 
+import static org.junit.jupiter.api.Assertions.*;
+
 import org.apache.http.Header;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpDelete;
@@ -28,7 +28,7 @@ import org.apache.http.client.methods.HttpPut;
 import org.apache.http.client.utils.DateUtils;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase;
 import org.jboss.as.test.clustering.cluster.ejb.timer.beans.AutoTimerBean;
@@ -43,15 +43,14 @@ import org.jboss.as.test.http.util.TestHttpClientUtils;
 import org.jboss.as.test.shared.TimeoutUtil;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * Validates failover of distributed EJB timers.
  * @author Paul Ferraro
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public abstract class AbstractTimerServiceTestCase extends AbstractClusteringTestCase {
 
     protected static WebArchive createArchive(Class<? extends AbstractTimerServiceTestCase> testClass) {
@@ -70,7 +69,7 @@ public abstract class AbstractTimerServiceTestCase extends AbstractClusteringTes
     }
 
     @Test
-    public void test(@ArquillianResource(TimerServlet.class) @OperateOnDeployment(DEPLOYMENT_1) URL baseURL1, @ArquillianResource(TimerServlet.class) @OperateOnDeployment(DEPLOYMENT_2) URL baseURL2) throws IOException, URISyntaxException {
+    public void test(@ArquillianResource(TimerServlet.class) @OperateOnDeployment(DEPLOYMENT_1) URL baseURL1, @ArquillianResource(TimerServlet.class) @OperateOnDeployment(DEPLOYMENT_2) URL baseURL2) throws Exception {
 
         Map<String, URI> uris = Map.of(NODE_1, TimerServlet.createURI(baseURL1, this.moduleName), NODE_2, TimerServlet.createURI(baseURL2, this.moduleName));
 
@@ -82,18 +81,18 @@ public abstract class AbstractTimerServiceTestCase extends AbstractClusteringTes
 
             // Create manual timers on node 1 only
             try (CloseableHttpResponse response = client.execute(new HttpPut(uris.get(NODE_1)))) {
-                Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
+                assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
             }
 
             for (Map.Entry<String, URI> entry : uris.entrySet()) {
                 try (CloseableHttpResponse response = client.execute(new HttpHead(entry.getValue()))) {
-                    Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
+                    assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
                     for (Class<? extends TimerBean> beanClass : TimerServlet.TIMER_CLASSES) {
                         int count = Integer.parseInt(response.getFirstHeader(beanClass.getName()).getValue());
                         if (TimerServlet.MANUAL_TRANSIENT_TIMER_CLASSES.contains(beanClass) && entry.getKey().equals(NODE_2)) {
-                            Assert.assertEquals(entry.getKey() + ": " + beanClass.getName(), 0, count);
+                            assertEquals(0, count, entry.getKey() + ": " + beanClass.getName());
                         } else {
-                            Assert.assertEquals(entry.getKey() + ": " + beanClass.getName(), 1, count);
+                            assertEquals(1, count, entry.getKey() + ": " + beanClass.getName());
                         }
                     }
                 }
@@ -108,7 +107,7 @@ public abstract class AbstractTimerServiceTestCase extends AbstractClusteringTes
 
             for (Map.Entry<String, URI> entry : uris.entrySet()) {
                 try (CloseableHttpResponse response = client.execute(new HttpGet(entry.getValue()))) {
-                    Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
+                    assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
                     for (Map.Entry<Class<? extends TimerBean>, Map<String, List<Instant>>> beanEntry : timeouts.entrySet()) {
                         beanEntry.getValue().put(entry.getKey(), parseTimeouts(response.getHeaders(beanEntry.getKey().getName())));
                     }
@@ -118,34 +117,34 @@ public abstract class AbstractTimerServiceTestCase extends AbstractClusteringTes
             // Single action timer should have exactly 1 timeout on node 1
             for (Class<? extends TimerBean> beanClass : singleActionTimerBeanClasses) {
                 Map<String, List<Instant>> singleActionTimeouts = timeouts.remove(beanClass);
-                Assert.assertEquals(singleActionTimeouts.toString(), 1, singleActionTimeouts.get(NODE_1).size());
-                Assert.assertEquals(singleActionTimeouts.toString(), 0, singleActionTimeouts.get(NODE_2).size());
+                assertEquals(1, singleActionTimeouts.get(NODE_1).size(), singleActionTimeouts.toString());
+                assertEquals(0, singleActionTimeouts.get(NODE_2).size(), singleActionTimeouts.toString());
             }
 
             for (Map.Entry<Class<? extends TimerBean>, Map<String, List<Instant>>> beanEntry : timeouts.entrySet()) {
                 if (ManualTimerBean.class.isAssignableFrom(beanEntry.getKey())) {
                     // Other timer timeouts should only have been received on node 1
-                    Assert.assertFalse(beanEntry.toString(), beanEntry.getValue().get(NODE_1).isEmpty());
-                    Assert.assertTrue(beanEntry.toString(), beanEntry.getValue().get(NODE_2).isEmpty());
+                    assertFalse(beanEntry.getValue().get(NODE_1).isEmpty(), beanEntry.toString());
+                    assertTrue(beanEntry.getValue().get(NODE_2).isEmpty(), beanEntry.toString());
                 } else if (AutoTransientTimerBean.class.equals(beanEntry.getKey())) {
                     // Transient auto-timers will exist on both nodes
-                    Assert.assertFalse(beanEntry.toString(), beanEntry.getValue().get(NODE_1).isEmpty());
-                    Assert.assertFalse(beanEntry.toString(), beanEntry.getValue().get(NODE_2).isEmpty());
+                    assertFalse(beanEntry.getValue().get(NODE_1).isEmpty(), beanEntry.toString());
+                    assertFalse(beanEntry.getValue().get(NODE_2).isEmpty(), beanEntry.toString());
                 } else {
                     // Auto-timers might have been rescheduled during startup
-                    Assert.assertTrue(beanEntry.toString(), !beanEntry.getValue().get(NODE_1).isEmpty() || !beanEntry.getValue().get(NODE_2).isEmpty());
+                    assertTrue(!beanEntry.getValue().get(NODE_1).isEmpty() || !beanEntry.getValue().get(NODE_2).isEmpty(), beanEntry.toString());
                 }
             }
 
             for (Map.Entry<String, URI> entry : uris.entrySet()) {
                 try (CloseableHttpResponse response = client.execute(new HttpHead(entry.getValue()))) {
-                    Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
+                    assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
                     for (Class<? extends TimerBean> beanClass : TimerServlet.TIMER_CLASSES) {
                         int count = Integer.parseInt(response.getFirstHeader(beanClass.getName()).getValue());
                         if (TimerServlet.SINGLE_ACTION_TIMER_CLASSES.contains(beanClass) || (TimerServlet.MANUAL_TRANSIENT_TIMER_CLASSES.contains(beanClass) && entry.getKey().equals(NODE_2))) {
-                            Assert.assertEquals(entry.getKey() + ": " + beanClass.getName(), 0, count);
+                            assertEquals(0, count, entry.getKey() + ": " + beanClass.getName());
                         } else {
-                            Assert.assertEquals(entry.getKey() + ": " + beanClass.getName(), 1, count);
+                            assertEquals(1, count, entry.getKey() + ": " + beanClass.getName());
                         }
                     }
                 }
@@ -162,7 +161,7 @@ public abstract class AbstractTimerServiceTestCase extends AbstractClusteringTes
 
             for (Map.Entry<String, URI> entry : uris.entrySet()) {
                 try (CloseableHttpResponse response = client.execute(new HttpGet(entry.getValue()))) {
-                    Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
+                    assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
                     for (Map.Entry<Class<? extends TimerBean>, Map<String, List<Instant>>> beanEntry : timeouts.entrySet()) {
                         beanEntry.getValue().put(entry.getKey(), parseTimeouts(response.getHeaders(beanEntry.getKey().getName())));
                     }
@@ -172,18 +171,18 @@ public abstract class AbstractTimerServiceTestCase extends AbstractClusteringTes
             // Single action timers will already have expired
             for (Class<? extends TimerBean> singleActionTimerBeanClass : singleActionTimerBeanClasses) {
                 Map<String, List<Instant>> singleActionTimers = timeouts.remove(singleActionTimerBeanClass);
-                Assert.assertEquals(singleActionTimers.toString(), 0, singleActionTimers.get(NODE_1).size());
-                Assert.assertEquals(singleActionTimers.toString(), 0, singleActionTimers.get(NODE_2).size());
+                assertEquals(0, singleActionTimers.get(NODE_1).size(), singleActionTimers.toString());
+                assertEquals(0, singleActionTimers.get(NODE_2).size(), singleActionTimers.toString());
             }
 
             // Other timer timeouts should only have been received on one member or the other
             for (Map.Entry<Class<? extends TimerBean>, Map<String, List<Instant>>> beanEntry : timeouts.entrySet()) {
                 if (ManualTimerBean.class.isAssignableFrom(beanEntry.getKey())) {
-                    Assert.assertFalse(beanEntry.toString(), beanEntry.getValue().get(NODE_1).isEmpty());
-                    Assert.assertTrue(beanEntry.toString(), beanEntry.getValue().get(NODE_2).isEmpty());
+                    assertFalse(beanEntry.getValue().get(NODE_1).isEmpty(), beanEntry.toString());
+                    assertTrue(beanEntry.getValue().get(NODE_2).isEmpty(), beanEntry.toString());
                 } else {
                     // Auto-timers might have been rescheduled during startup
-                    Assert.assertTrue(beanEntry.toString(), !beanEntry.getValue().get(NODE_1).isEmpty() || !beanEntry.getValue().get(NODE_2).isEmpty());
+                    assertTrue(!beanEntry.getValue().get(NODE_1).isEmpty() || !beanEntry.getValue().get(NODE_2).isEmpty(), beanEntry.toString());
                 }
             }
 
@@ -192,13 +191,13 @@ public abstract class AbstractTimerServiceTestCase extends AbstractClusteringTes
             TimeUnit.SECONDS.sleep(GRACE_PERIOD.getSeconds());
 
             try (CloseableHttpResponse response = client.execute(new HttpHead(uris.get(NODE_2)))) {
-                Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
+                assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
                 for (Class<? extends TimerBean> beanClass : TimerServlet.TIMER_CLASSES) {
                     int count = Integer.parseInt(response.getFirstHeader(beanClass.getName()).getValue());
                     if (TimerServlet.SINGLE_ACTION_TIMER_CLASSES.contains(beanClass) || TimerServlet.MANUAL_TRANSIENT_TIMER_CLASSES.contains(beanClass)) {
-                        Assert.assertEquals(beanClass.getName(), 0, count);
+                        assertEquals(0, count, beanClass.getName());
                     } else {
-                        Assert.assertEquals(beanClass.getName(), 1, count);
+                        assertEquals(1, count, beanClass.getName());
                     }
                 }
             }
@@ -208,7 +207,7 @@ public abstract class AbstractTimerServiceTestCase extends AbstractClusteringTes
             }
 
             try (CloseableHttpResponse response = client.execute(new HttpGet(uris.get(NODE_2)))) {
-                Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
+                assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
                 for (Map.Entry<Class<? extends TimerBean>, Map<String, List<Instant>>> beanEntry : timeouts.entrySet()) {
                     beanEntry.getValue().put(NODE_2, parseTimeouts(response.getHeaders(beanEntry.getKey().getName())));
                 }
@@ -216,10 +215,10 @@ public abstract class AbstractTimerServiceTestCase extends AbstractClusteringTes
 
             for (Map.Entry<Class<? extends TimerBean>, Map<String, List<Instant>>> entry : timeouts.entrySet()) {
                 if (TimerServlet.PERSISTENT_TIMER_CLASSES.contains(entry.getKey()) || AutoTimerBean.class.isAssignableFrom(entry.getKey())) {
-                    Assert.assertNotEquals(entry.toString(), 0, entry.getValue().get(NODE_2).size());
+                    assertNotEquals(0, entry.getValue().get(NODE_2).size(), entry.toString());
                 } else {
                     // Manual transient timers were never created on node 2
-                    Assert.assertEquals(entry.toString(), 0, entry.getValue().get(NODE_2).size());
+                    assertEquals(0, entry.getValue().get(NODE_2).size(), entry.toString());
                 }
             }
 
@@ -232,7 +231,7 @@ public abstract class AbstractTimerServiceTestCase extends AbstractClusteringTes
             }
             for (Map.Entry<String, URI> entry : uris.entrySet()) {
                 try (CloseableHttpResponse response = client.execute(new HttpGet(entry.getValue()))) {
-                    Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
+                    assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
                     for (Map.Entry<Class<? extends TimerBean>, Map<String, List<Instant>>> beanEntry : timeouts.entrySet()) {
                         beanEntry.getValue().put(entry.getKey(), parseTimeouts(response.getHeaders(beanEntry.getKey().getName())));
                     }
@@ -242,15 +241,15 @@ public abstract class AbstractTimerServiceTestCase extends AbstractClusteringTes
             for (Map.Entry<Class<? extends TimerBean>, Map<String, List<Instant>>> entry : timeouts.entrySet()) {
                 if (AutoTransientTimerBean.class.equals(entry.getKey())) {
                     // Manual auto timers will be triggered on both nodes
-                    Assert.assertFalse(entry.toString(), entry.getValue().get(NODE_1).isEmpty());
-                    Assert.assertFalse(entry.toString(), entry.getValue().get(NODE_2).isEmpty());
+                    assertFalse(entry.getValue().get(NODE_1).isEmpty(), entry.toString());
+                    assertFalse(entry.getValue().get(NODE_2).isEmpty(), entry.toString());
                 } else if (TimerServlet.TRANSIENT_TIMER_CLASSES.contains(entry.getKey())) {
                     // Manual transient timers will not exist on either node
-                    Assert.assertTrue(entry.toString(), entry.getValue().get(NODE_1).isEmpty());
-                    Assert.assertTrue(entry.toString(), entry.getValue().get(NODE_2).isEmpty());
+                    assertTrue(entry.getValue().get(NODE_1).isEmpty(), entry.toString());
+                    assertTrue(entry.getValue().get(NODE_2).isEmpty(), entry.toString());
                 } else {
                     // Verify that at least 1 timeout was received on either member
-                    Assert.assertFalse(entry.toString(), entry.getValue().get(NODE_1).isEmpty() && entry.getValue().get(NODE_2).isEmpty());
+                    assertFalse(entry.getValue().get(NODE_1).isEmpty() && entry.getValue().get(NODE_2).isEmpty(), entry.toString());
                 }
             }
 
@@ -261,7 +260,7 @@ public abstract class AbstractTimerServiceTestCase extends AbstractClusteringTes
             }
             for (Map.Entry<String, URI> entry : uris.entrySet()) {
                 try (CloseableHttpResponse response = client.execute(new HttpGet(entry.getValue()))) {
-                    Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
+                    assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
                     for (Map.Entry<Class<? extends TimerBean>, Map<String, List<Instant>>> beanEntry : timeouts.entrySet()) {
                         beanEntry.getValue().put(entry.getKey(), parseTimeouts(response.getHeaders(beanEntry.getKey().getName())));
                     }
@@ -271,15 +270,15 @@ public abstract class AbstractTimerServiceTestCase extends AbstractClusteringTes
             for (Map.Entry<Class<? extends TimerBean>, Map<String, List<Instant>>> entry : timeouts.entrySet()) {
                 if (AutoTransientTimerBean.class.equals(entry.getKey())) {
                     // Manual auto timers will be triggered on both nodes
-                    Assert.assertFalse(entry.toString(), entry.getValue().get(NODE_1).isEmpty());
-                    Assert.assertFalse(entry.toString(), entry.getValue().get(NODE_2).isEmpty());
+                    assertFalse(entry.getValue().get(NODE_1).isEmpty(), entry.toString());
+                    assertFalse(entry.getValue().get(NODE_2).isEmpty(), entry.toString());
                 } else if (TimerServlet.TRANSIENT_TIMER_CLASSES.contains(entry.getKey())) {
                     // Manual transient timers will not exist on either node
-                    Assert.assertTrue(entry.toString(), entry.getValue().get(NODE_1).isEmpty());
-                    Assert.assertTrue(entry.toString(), entry.getValue().get(NODE_2).isEmpty());
+                    assertTrue(entry.getValue().get(NODE_1).isEmpty(), entry.toString());
+                    assertTrue(entry.getValue().get(NODE_2).isEmpty(), entry.toString());
                 } else {
                     // Verify that at least 1 timeout was received on a single member
-                    Assert.assertTrue(entry.toString(), entry.getValue().get(NODE_1).isEmpty() ^ entry.getValue().get(NODE_2).isEmpty());
+                    assertTrue(entry.getValue().get(NODE_1).isEmpty() ^ entry.getValue().get(NODE_2).isEmpty(), entry.toString());
                 }
             }
 
@@ -292,7 +291,7 @@ public abstract class AbstractTimerServiceTestCase extends AbstractClusteringTes
             }
 
             try (CloseableHttpResponse response = client.execute(new HttpGet(uris.get(NODE_1)))) {
-                Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
+                assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
                 for (Map.Entry<Class<? extends TimerBean>, Map<String, List<Instant>>> beanEntry : timeouts.entrySet()) {
                     beanEntry.getValue().put(NODE_1, parseTimeouts(response.getHeaders(beanEntry.getKey().getName())));
                 }
@@ -300,10 +299,10 @@ public abstract class AbstractTimerServiceTestCase extends AbstractClusteringTes
 
             for (Map.Entry<Class<? extends TimerBean>, Map<String, List<Instant>>> entry : timeouts.entrySet()) {
                 if (TimerServlet.PERSISTENT_TIMER_CLASSES.contains(entry.getKey()) || AutoTimerBean.class.isAssignableFrom(entry.getKey())) {
-                    Assert.assertNotEquals(entry.toString(), 0, entry.getValue().get(NODE_1).size());
+                    assertNotEquals(0, entry.getValue().get(NODE_1).size(), entry.toString());
                 } else {
                     // Manual transient timers were never created on node 2
-                    Assert.assertEquals(entry.toString(), 0, entry.getValue().get(NODE_1).size());
+                    assertEquals(0, entry.getValue().get(NODE_1).size(), entry.toString());
                 }
             }
 
@@ -312,7 +311,7 @@ public abstract class AbstractTimerServiceTestCase extends AbstractClusteringTes
             TimeUnit.SECONDS.sleep(GRACE_PERIOD.getSeconds());
 
             try (CloseableHttpResponse response = client.execute(new HttpDelete(uris.get(NODE_1)))) {
-                Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
+                assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
             }
 
             Instant cancellation = Instant.now();
@@ -325,7 +324,7 @@ public abstract class AbstractTimerServiceTestCase extends AbstractClusteringTes
 
             for (Map.Entry<String, URI> entry : uris.entrySet()) {
                 try (CloseableHttpResponse response = client.execute(new HttpGet(entry.getValue()))) {
-                    Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
+                    assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
                     for (Map.Entry<Class<? extends TimerBean>, Map<String, List<Instant>>> beanEntry : timeouts.entrySet()) {
                         beanEntry.getValue().put(entry.getKey(), parseTimeouts(response.getHeaders(beanEntry.getKey().getName())));
                     }
@@ -336,9 +335,9 @@ public abstract class AbstractTimerServiceTestCase extends AbstractClusteringTes
             for (Map.Entry<Class<? extends TimerBean>, Map<String, List<Instant>>> entry : timeouts.entrySet()) {
                 for (String node : uris.keySet()) {
                     if (ManualTimerBean.class.isAssignableFrom(entry.getKey())) {
-                        Assert.assertTrue(cancellation + " " + entry.toString(), entry.getValue().get(node).stream().allMatch(instant -> instant.isBefore(cancellation)));
+                        assertTrue(entry.getValue().get(node).stream().allMatch(instant -> instant.isBefore(cancellation)), cancellation + " " + entry.toString());
                     } else {
-                        Assert.assertTrue(entry.toString(), !entry.getValue().get(NODE_1).isEmpty() || !entry.getValue().get(NODE_2).isEmpty());
+                        assertTrue(!entry.getValue().get(NODE_1).isEmpty() || !entry.getValue().get(NODE_2).isEmpty(), entry.toString());
                     }
                 }
             }

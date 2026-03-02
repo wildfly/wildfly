@@ -5,10 +5,10 @@
 package org.jboss.as.test.clustering.single.ejb.timer;
 
 import static org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase.DEPLOYMENT_1;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.io.IOException;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.time.Duration;
 import java.time.Instant;
@@ -26,7 +26,7 @@ import org.apache.http.client.utils.DateUtils;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.PathAddress;
@@ -49,16 +49,15 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * Validates that the distributed timer service does not reschedule a timer whose next timeout is in the past.
  * This has the effect of consolidating missed timer events into a single application callback.
  * @author Paul Ferraro
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class CoalesceMissedTimeoutsTestCase {
     private static final String MODULE_NAME = CoalesceMissedTimeoutsTestCase.class.getSimpleName();
     private static final Duration GRACE_PERIOD = Duration.ofSeconds(TimeoutUtil.adjust(2));
@@ -73,7 +72,7 @@ public class CoalesceMissedTimeoutsTestCase {
     }
 
     @Test
-    public void test(@ArquillianResource(BurstTimerServlet.class) @OperateOnDeployment(DEPLOYMENT_1) URL baseURL, @ArquillianResource @OperateOnDeployment(DEPLOYMENT_1) ManagementClient managementClient) throws IOException, URISyntaxException {
+    void test(@ArquillianResource(BurstTimerServlet.class) @OperateOnDeployment(DEPLOYMENT_1) URL baseURL, @ArquillianResource @OperateOnDeployment(DEPLOYMENT_1) ManagementClient managementClient) throws Exception {
 
         URI uri = BurstTimerServlet.createURI(baseURL, MODULE_NAME);
 
@@ -81,7 +80,7 @@ public class CoalesceMissedTimeoutsTestCase {
 
             // Burst timer will begin firing 5 seconds after creation.
             try (CloseableHttpResponse response = client.execute(new HttpPut(uri))) {
-                Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
+                assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
             }
 
             suspend(managementClient);
@@ -94,10 +93,10 @@ public class CoalesceMissedTimeoutsTestCase {
             TimeUnit.SECONDS.sleep(GRACE_PERIOD.getSeconds());
 
             try (CloseableHttpResponse response = client.execute(new HttpGet(uri))) {
-                Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
+                assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
                 // Missed timeouts should have been consolidated into a single application callback
-                Assert.assertEquals(1, parseTimeouts(response.getHeaders(BurstPersistentIntervalTimerBean.class.getName())).size());
-                Assert.assertEquals(1, parseTimeouts(response.getHeaders(BurstPersistentCalendarTimerBean.class.getName())).size());
+                assertEquals(1, parseTimeouts(response.getHeaders(BurstPersistentIntervalTimerBean.class.getName())).size());
+                assertEquals(1, parseTimeouts(response.getHeaders(BurstPersistentCalendarTimerBean.class.getName())).size());
             }
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
@@ -122,6 +121,6 @@ public class CoalesceMissedTimeoutsTestCase {
 
     private static void execute(ManagementClient client, String operation) throws IOException {
         ModelNode result = client.getControllerClient().execute(Util.createOperation(operation, PathAddress.EMPTY_ADDRESS));
-        Assert.assertEquals(result.toString(), ModelDescriptionConstants.SUCCESS, result.get(ModelDescriptionConstants.OUTCOME).asString());
+        assertEquals(ModelDescriptionConstants.SUCCESS, result.get(ModelDescriptionConstants.OUTCOME).asString(), result.toString());
     }
 }

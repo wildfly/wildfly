@@ -5,10 +5,6 @@
 
 package org.jboss.as.test.clustering.single.web.passivation;
 
-import static org.junit.Assert.*;
-
-import java.io.IOException;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.time.Duration;
 import java.time.Instant;
@@ -19,6 +15,8 @@ import java.util.Queue;
 import java.util.stream.Stream;
 
 import jakarta.servlet.http.HttpServletResponse;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 import org.apache.http.Header;
 import org.apache.http.HttpResponse;
@@ -35,7 +33,7 @@ import org.jboss.as.test.clustering.single.web.SimpleServlet;
 import org.jboss.as.test.shared.TimeoutUtil;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /**
  * Validates the correctness of session activation/passivation events for a distributed session manager using a local, passivating cache.
@@ -56,7 +54,7 @@ public abstract class LocalMaxActiveSessionsSessionPassivationTestCase {
     }
 
     @Test
-    public void test(@ArquillianResource(SessionOperationServlet.class) URL baseURL) throws IOException, URISyntaxException {
+    public void test(@ArquillianResource(SessionOperationServlet.class) URL baseURL) throws Exception {
 
         try (CloseableHttpClient client1 = HttpClients.createDefault()) {
             try (CloseableHttpClient client2 = HttpClients.createDefault()) {
@@ -192,9 +190,8 @@ public abstract class LocalMaxActiveSessionsSessionPassivationTestCase {
         events.entrySet().forEach((Map.Entry<String, Queue<EventType>> entry) -> {
             String sessionId = entry.getKey();
             if (response.containsHeader(sessionId)) {
-                Stream.of(response.getHeaders(sessionId)).forEach((Header header) -> {
-                    entry.getValue().add(EventType.valueOf(header.getValue()));
-                });
+                Stream.of(response.getHeaders(sessionId)).forEach((Header header) ->
+                    entry.getValue().add(EventType.valueOf(header.getValue())));
             }
         });
     }

@@ -4,11 +4,11 @@
  */
 package org.jboss.as.test.clustering.cluster.singleton;
 
-import java.io.IOException;
-import java.net.URISyntaxException;
 import java.net.URL;
 
 import jakarta.servlet.http.HttpServletResponse;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
@@ -17,7 +17,7 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.container.test.api.TargetsContainer;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.server.security.ServerPermission;
 import org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase;
@@ -29,11 +29,10 @@ import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class SingletonBackupServiceTestCase extends AbstractClusteringTestCase {
 
     private static final String MODULE_NAME = SingletonBackupServiceTestCase.class.getSimpleName();
@@ -60,10 +59,10 @@ public class SingletonBackupServiceTestCase extends AbstractClusteringTestCase {
     }
 
     @Test
-    public void testSingletonService(
+    void singletonService(
             @ArquillianResource(ValueServiceServlet.class) @OperateOnDeployment(DEPLOYMENT_1) URL baseURL1,
             @ArquillianResource(ValueServiceServlet.class) @OperateOnDeployment(DEPLOYMENT_2) URL baseURL2)
-            throws IOException, URISyntaxException {
+            throws Exception {
 
         // Needed to be able to inject ArquillianResource
         stop(NODE_2);
@@ -71,8 +70,8 @@ public class SingletonBackupServiceTestCase extends AbstractClusteringTestCase {
         try (CloseableHttpClient client = TestHttpClientUtils.promiscuousCookieHttpClient()) {
             HttpResponse response = client.execute(new HttpGet(ValueServiceServlet.createURI(baseURL1, ValueServiceActivator.SERVICE_NAME)));
             try {
-                Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
-                Assert.assertEquals("true", response.getFirstHeader(ValueServiceServlet.PRIMARY_HEADER).getValue());
+                assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
+                assertEquals("true", response.getFirstHeader(ValueServiceServlet.PRIMARY_HEADER).getValue());
             } finally {
                 HttpClientUtils.closeQuietly(response);
             }
@@ -81,16 +80,16 @@ public class SingletonBackupServiceTestCase extends AbstractClusteringTestCase {
 
             response = client.execute(new HttpGet(ValueServiceServlet.createURI(baseURL1, ValueServiceActivator.SERVICE_NAME)));
             try {
-                Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
-                Assert.assertEquals("true", response.getFirstHeader(ValueServiceServlet.PRIMARY_HEADER).getValue());
+                assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
+                assertEquals("true", response.getFirstHeader(ValueServiceServlet.PRIMARY_HEADER).getValue());
             } finally {
                 HttpClientUtils.closeQuietly(response);
             }
 
             response = client.execute(new HttpGet(ValueServiceServlet.createURI(baseURL2, ValueServiceActivator.SERVICE_NAME)));
             try {
-                Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
-                Assert.assertEquals("false", response.getFirstHeader(ValueServiceServlet.PRIMARY_HEADER).getValue());
+                assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
+                assertEquals("false", response.getFirstHeader(ValueServiceServlet.PRIMARY_HEADER).getValue());
             } finally {
                 HttpClientUtils.closeQuietly(response);
             }
@@ -99,8 +98,8 @@ public class SingletonBackupServiceTestCase extends AbstractClusteringTestCase {
 
             response = client.execute(new HttpGet(ValueServiceServlet.createURI(baseURL1, ValueServiceActivator.SERVICE_NAME)));
             try {
-                Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
-                Assert.assertEquals("true", response.getFirstHeader(ValueServiceServlet.PRIMARY_HEADER).getValue());
+                assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
+                assertEquals("true", response.getFirstHeader(ValueServiceServlet.PRIMARY_HEADER).getValue());
             } finally {
                 HttpClientUtils.closeQuietly(response);
             }
@@ -109,16 +108,16 @@ public class SingletonBackupServiceTestCase extends AbstractClusteringTestCase {
 
             response = client.execute(new HttpGet(ValueServiceServlet.createURI(baseURL1, ValueServiceActivator.SERVICE_NAME)));
             try {
-                Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
-                Assert.assertEquals("true", response.getFirstHeader(ValueServiceServlet.PRIMARY_HEADER).getValue());
+                assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
+                assertEquals("true", response.getFirstHeader(ValueServiceServlet.PRIMARY_HEADER).getValue());
             } finally {
                 HttpClientUtils.closeQuietly(response);
             }
 
             response = client.execute(new HttpGet(ValueServiceServlet.createURI(baseURL2, ValueServiceActivator.SERVICE_NAME)));
             try {
-                Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
-                Assert.assertEquals("false", response.getFirstHeader(ValueServiceServlet.PRIMARY_HEADER).getValue());
+                assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
+                assertEquals("false", response.getFirstHeader(ValueServiceServlet.PRIMARY_HEADER).getValue());
             } finally {
                 HttpClientUtils.closeQuietly(response);
             }
@@ -127,8 +126,8 @@ public class SingletonBackupServiceTestCase extends AbstractClusteringTestCase {
 
             response = client.execute(new HttpGet(ValueServiceServlet.createURI(baseURL2, ValueServiceActivator.SERVICE_NAME)));
             try {
-                Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
-                Assert.assertEquals("true", response.getFirstHeader(ValueServiceServlet.PRIMARY_HEADER).getValue());
+                assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
+                assertEquals("true", response.getFirstHeader(ValueServiceServlet.PRIMARY_HEADER).getValue());
             } finally {
                 HttpClientUtils.closeQuietly(response);
             }
@@ -137,16 +136,16 @@ public class SingletonBackupServiceTestCase extends AbstractClusteringTestCase {
 
             response = client.execute(new HttpGet(ValueServiceServlet.createURI(baseURL1, ValueServiceActivator.SERVICE_NAME)));
             try {
-                Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
-                Assert.assertEquals("false", response.getFirstHeader(ValueServiceServlet.PRIMARY_HEADER).getValue());
+                assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
+                assertEquals("false", response.getFirstHeader(ValueServiceServlet.PRIMARY_HEADER).getValue());
             } finally {
                 HttpClientUtils.closeQuietly(response);
             }
 
             response = client.execute(new HttpGet(ValueServiceServlet.createURI(baseURL2, ValueServiceActivator.SERVICE_NAME)));
             try {
-                Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
-                Assert.assertEquals("true", response.getFirstHeader(ValueServiceServlet.PRIMARY_HEADER).getValue());
+                assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
+                assertEquals("true", response.getFirstHeader(ValueServiceServlet.PRIMARY_HEADER).getValue());
             } finally {
                 HttpClientUtils.closeQuietly(response);
             }

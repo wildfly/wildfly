@@ -4,15 +4,15 @@
  */
 package org.jboss.as.test.clustering.cluster.web.authentication;
 
-import java.io.IOException;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
 import jakarta.servlet.http.HttpServletResponse;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
@@ -25,7 +25,7 @@ import org.apache.http.message.BasicNameValuePair;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.container.test.api.TargetsContainer;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase;
@@ -33,16 +33,15 @@ import org.jboss.as.test.http.util.TestHttpClientUtils;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.wildfly.test.security.common.elytron.ServletElytronDomainSetup;
 
 /**
  * Validates that a user remains authenticated following failover when using FORM authentication.
  * @author Paul Ferraro
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @ServerSetup({FormAuthenticationWebFailoverTestCase.ElytronDomainSetupOverride.class, FormAuthenticationWebFailoverTestCase.ServletElytronDomainSetupOverride.class})
 public class FormAuthenticationWebFailoverTestCase extends AbstractClusteringTestCase {
 
@@ -72,10 +71,10 @@ public class FormAuthenticationWebFailoverTestCase extends AbstractClusteringTes
     }
 
     @Test
-    public void test(
+    void test(
             @ArquillianResource(SecureServlet.class) @OperateOnDeployment(DEPLOYMENT_1) URL baseURL1,
             @ArquillianResource(SecureServlet.class) @OperateOnDeployment(DEPLOYMENT_2) URL baseURL2)
-            throws IOException, URISyntaxException {
+            throws Exception {
 
         URI uri1 = SecureServlet.createURI(baseURL1);
         URI uri2 = SecureServlet.createURI(baseURL2);
@@ -83,8 +82,8 @@ public class FormAuthenticationWebFailoverTestCase extends AbstractClusteringTes
         try (CloseableHttpClient client = TestHttpClientUtils.promiscuousCookieHttpClient()) {
             HttpResponse response = client.execute(new HttpGet(uri1));
             try {
-                Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
-                Assert.assertNull(response.getFirstHeader(SecureServlet.SESSION_ID_HEADER));
+                assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
+                assertNull(response.getFirstHeader(SecureServlet.SESSION_ID_HEADER));
             } finally {
                 HttpClientUtils.closeQuietly(response);
             }
@@ -98,7 +97,7 @@ public class FormAuthenticationWebFailoverTestCase extends AbstractClusteringTes
             login.setEntity(new UrlEncodedFormEntity(pairs, StandardCharsets.UTF_8));
             response = client.execute(login);
             try {
-                Assert.assertEquals(HttpServletResponse.SC_FOUND, response.getStatusLine().getStatusCode());
+                assertEquals(HttpServletResponse.SC_FOUND, response.getStatusLine().getStatusCode());
             } finally {
                 HttpClientUtils.closeQuietly(response);
             }
@@ -106,8 +105,8 @@ public class FormAuthenticationWebFailoverTestCase extends AbstractClusteringTes
             String sessionId = null;
             response = client.execute(new HttpGet(uri1));
             try {
-                Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
-                Assert.assertNotNull(response.getFirstHeader(SecureServlet.SESSION_ID_HEADER));
+                assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
+                assertNotNull(response.getFirstHeader(SecureServlet.SESSION_ID_HEADER));
                 sessionId = response.getFirstHeader(SecureServlet.SESSION_ID_HEADER).getValue();
             } finally {
                 HttpClientUtils.closeQuietly(response);
@@ -117,8 +116,8 @@ public class FormAuthenticationWebFailoverTestCase extends AbstractClusteringTes
 
             response = client.execute(new HttpGet(uri2));
             try {
-                Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
-                Assert.assertEquals(sessionId, response.getFirstHeader(SecureServlet.SESSION_ID_HEADER).getValue());
+                assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
+                assertEquals(sessionId, response.getFirstHeader(SecureServlet.SESSION_ID_HEADER).getValue());
             } finally {
                 HttpClientUtils.closeQuietly(response);
             }
@@ -127,8 +126,8 @@ public class FormAuthenticationWebFailoverTestCase extends AbstractClusteringTes
 
             response = client.execute(new HttpGet(uri1));
             try {
-                Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
-                Assert.assertEquals(sessionId, response.getFirstHeader(SecureServlet.SESSION_ID_HEADER).getValue());
+                assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
+                assertEquals(sessionId, response.getFirstHeader(SecureServlet.SESSION_ID_HEADER).getValue());
             } finally {
                 HttpClientUtils.closeQuietly(response);
             }

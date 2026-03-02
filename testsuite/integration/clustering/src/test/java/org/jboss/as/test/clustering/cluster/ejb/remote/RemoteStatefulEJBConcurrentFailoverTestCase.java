@@ -15,8 +15,10 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.jboss.arquillian.container.test.api.Deployment;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import org.jboss.arquillian.container.test.api.TargetsContainer;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase;
 import org.jboss.as.test.clustering.cluster.ejb.remote.bean.Incrementor;
 import org.jboss.as.test.clustering.cluster.ejb.remote.bean.IncrementorBean;
@@ -29,15 +31,14 @@ import org.jboss.as.test.shared.PermissionUtils;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * Validates mid-invocation failover behavior of a remotely accessed @Stateful EJB.
  * @author Paul Ferraro
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class RemoteStatefulEJBConcurrentFailoverTestCase extends AbstractClusteringTestCase {
     private static final String MODULE_NAME = RemoteStatefulEJBConcurrentFailoverTestCase.class.getSimpleName();
 
@@ -64,7 +65,7 @@ public class RemoteStatefulEJBConcurrentFailoverTestCase extends AbstractCluster
     }
 
     @Test
-    public void test() throws Exception {
+    void test() throws Exception {
         this.test(new GracefulRestartLifecycle());
     }
 
@@ -131,7 +132,7 @@ public class RemoteStatefulEJBConcurrentFailoverTestCase extends AbstractCluster
         public void run() {
             try {
                 int value = this.bean.increment().getValue();
-                Assert.assertEquals(this.value.incrementAndGet(), value);
+                assertEquals(this.value.incrementAndGet(), value);
             } finally {
                 this.latch.countDown();
             }

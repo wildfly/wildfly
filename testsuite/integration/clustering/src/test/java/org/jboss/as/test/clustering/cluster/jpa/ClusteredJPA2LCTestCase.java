@@ -9,13 +9,16 @@ import java.net.URISyntaxException;
 import java.net.URL;
 
 import jakarta.ws.rs.client.Client;
+
+import static org.junit.jupiter.api.Assertions.*;
+
 import jakarta.ws.rs.client.ClientBuilder;
 import jakarta.ws.rs.client.WebTarget;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.container.test.api.TargetsContainer;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.test.clustering.ClusterDatabaseTestUtil;
@@ -25,19 +28,18 @@ import org.jboss.as.test.shared.ManagementServerSetupTask;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * Smoke test of clustered Jakarta Persistence 2nd level cache implemented by Infinispan.
  * @author Jan Martiska
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @ServerSetup(ClusteredJPA2LCTestCase.ServerSetupTask.class)
 public class ClusteredJPA2LCTestCase extends AbstractClusteringTestCase {
 
@@ -63,46 +65,46 @@ public class ClusteredJPA2LCTestCase extends AbstractClusteringTestCase {
         return war;
     }
 
-    @BeforeClass
-    public static void beforeClass() throws Exception {
+    @BeforeAll
+    static void beforeClass() throws Exception {
         ClusterDatabaseTestUtil.startH2();
         IntermittentFailure.thisTestIsFailingIntermittently("https://issues.redhat.com/browse/WFLY-21506");
     }
 
-    @AfterClass
-    public static void afterClass() throws Exception {
+    @AfterAll
+    static void afterClass() throws Exception {
         ClusterDatabaseTestUtil.stopH2();
     }
 
     // REST client to control entity creation, caching, eviction,... on the servers
     private Client restClient;
 
-    @Before
-    public void init() {
+    @BeforeEach
+    void init() {
         this.restClient = ClientBuilder.newClient();
     }
 
-    @After
-    public void destroy() {
+    @AfterEach
+    void destroy() {
         this.restClient.close();
     }
 
     @Test
-    public void testEntityCacheInvalidation(@ArquillianResource @OperateOnDeployment(DEPLOYMENT_1) URL url0,
-                                           @ArquillianResource @OperateOnDeployment(DEPLOYMENT_2) URL url1)
+    void entityCacheInvalidation(@ArquillianResource @OperateOnDeployment(DEPLOYMENT_1) URL url0,
+                                 @ArquillianResource @OperateOnDeployment(DEPLOYMENT_2) URL url1)
             throws Exception {
         final WebTarget node0 = getWebTarget(url0);
         final WebTarget node1 = getWebTarget(url1);
 
         final String entityId = "1";
         createEntity(node0, entityId);
-        Assert.assertTrue(isInCache(node0, entityId));
+        assertTrue(isInCache(node0, entityId));
         Thread.sleep(GRACE_TIME_TO_REPLICATE);
         addToCache(node1, entityId);
-        Assert.assertTrue(isInCache(node1, entityId));
+        assertTrue(isInCache(node1, entityId));
         evictFromCache(node1, entityId);
-        Assert.assertFalse(isInCache(node0, entityId));
-        Assert.assertFalse(isInCache(node1, entityId));
+        assertFalse(isInCache(node0, entityId));
+        assertFalse(isInCache(node1, entityId));
     }
 
     private boolean isInCache(WebTarget node, String entityId) {
@@ -112,17 +114,17 @@ public class ClusteredJPA2LCTestCase extends AbstractClusteringTestCase {
 
     private void addToCache(WebTarget node, String entityId) {
         int status = node.path("cache").path(entityId).request().get().getStatus();
-        Assert.assertEquals(204, status);
+        assertEquals(204, status);
     }
 
     private void evictFromCache(WebTarget node, String entityId) {
         int status = node.path("evict").path(entityId).request().get().getStatus();
-        Assert.assertEquals(204, status);
+        assertEquals(204, status);
     }
 
     private void createEntity(WebTarget node, String entityId) {
         int status = node.path("create").path(entityId).request().get().getStatus();
-        Assert.assertEquals(204, status);
+        assertEquals(204, status);
     }
 
     protected WebTarget getWebTarget(URL url) throws URISyntaxException {

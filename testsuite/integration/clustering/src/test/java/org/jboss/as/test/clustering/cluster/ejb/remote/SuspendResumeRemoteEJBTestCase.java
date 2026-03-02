@@ -8,8 +8,7 @@ package org.jboss.as.test.clustering.cluster.ejb.remote;
 import org.apache.commons.lang3.RandomUtils;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.TargetsContainer;
-import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.arquillian.junit.InSequence;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.PathAddress;
@@ -26,11 +25,13 @@ import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.MethodOrderer;
+import org.junit.jupiter.api.Order;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestMethodOrder;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import java.io.IOException;
 import java.time.Duration;
@@ -43,6 +44,7 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
@@ -56,7 +58,8 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAM
  *
  * @author Richard Achmatowicz
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
+@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class SuspendResumeRemoteEJBTestCase extends AbstractClusteringTestCase {
 
     static final Logger LOGGER = Logger.getLogger(SuspendResumeRemoteEJBTestCase.class);
@@ -103,14 +106,14 @@ public class SuspendResumeRemoteEJBTestCase extends AbstractClusteringTestCase {
     // the set of nodes available, according to suspend/resume
     private final Set<String> nodesAvailable = new TreeSet<>(NODE_1_2);
 
-    @Before
-    public void initialiseNodesAvailable() {
+    @BeforeEach
+    void initialiseNodesAvailable() {
         this.clients.put(NODE_1, this.client1);
         this.clients.put(NODE_2, this.client2);
     }
 
-    @After
-    public void resumeAll() {
+    @AfterEach
+    void resumeAll() {
         for (String node : NODE_1_2) {
             if (!this.nodesAvailable.contains(node)) {
                 try {
@@ -129,8 +132,8 @@ public class SuspendResumeRemoteEJBTestCase extends AbstractClusteringTestCase {
      * The test assertion is checked after each invocation result, and verifies that no invocation is sent to a suspended node.
      */
     @Test
-    @InSequence(1)
-    public void testSuspendResumeAfterProxyInit() {
+    @Order(1)
+    void suspendResumeAfterProxyInit() {
         LOGGER.info("testSuspendResumeAfterProxyInit() - start");
         try (EJBDirectory directory = new RemoteEJBDirectory(MODULE_NAME)) {
             Heartbeat bean = directory.lookupStateless(HeartbeatBean.class, Heartbeat.class);
@@ -152,7 +155,7 @@ public class SuspendResumeRemoteEJBTestCase extends AbstractClusteringTestCase {
             }
         } catch (Exception e) {
             LOGGER.info("Caught exception! e = " + e.getMessage());
-            Assert.fail("Test failed with exception: e = " + e.getMessage());
+            fail("Test failed with exception: e = " + e.getMessage());
         } finally {
             LOGGER.info("testSuspendResumeAfterProxyInit() - end");
         }
@@ -165,8 +168,8 @@ public class SuspendResumeRemoteEJBTestCase extends AbstractClusteringTestCase {
      * The test assertion is checked after each invocation result, and verifies that no invocation is sent to a suspended node.
      */
     @Test
-    @InSequence(2)
-    public void testSuspendResumeBeforeProxyInit() {
+    @Order(2)
+    void suspendResumeBeforeProxyInit() {
         LOGGER.info("testSuspendResumeBeforeProxyInit() - start");
         try (EJBDirectory directory = new RemoteEJBDirectory(MODULE_NAME)) {
 
@@ -185,7 +188,7 @@ public class SuspendResumeRemoteEJBTestCase extends AbstractClusteringTestCase {
             }
         } catch (Exception e) {
             LOGGER.info("Caught exception! e = " + e.getMessage());
-            Assert.fail("Test failed with exception: e = " + e.getMessage());
+            fail("Test failed with exception: e = " + e.getMessage());
         } finally {
             LOGGER.info("testSuspendResumeBeforeProxyInit() - end");
         }
@@ -198,8 +201,8 @@ public class SuspendResumeRemoteEJBTestCase extends AbstractClusteringTestCase {
      * The test assertion is checked after each invocation result, and verifies that no invocation is sent to a suspended node.
      */
     @Test
-    @InSequence(3)
-    public void testSuspendResumeContinuous() {
+    @Order(3)
+    void suspendResumeContinuous() {
         LOGGER.info("testSuspendResumeContinuous() - start");
         try (EJBDirectory directory = new RemoteEJBDirectory(MODULE_NAME)) {
 
@@ -238,7 +241,7 @@ public class SuspendResumeRemoteEJBTestCase extends AbstractClusteringTestCase {
             Thread.currentThread().interrupt();
         } catch (Exception e) {
             LOGGER.info("Caught exception! e = " + e.getMessage());
-            Assert.fail("Test failed with exception: e = " + e.getMessage());
+            fail("Test failed with exception: e = " + e.getMessage());
         } finally {
             LOGGER.info("testSuspendResumeContinuous() - end");
         }
@@ -271,7 +274,7 @@ public class SuspendResumeRemoteEJBTestCase extends AbstractClusteringTestCase {
         Result<Date> result = bean.pulse();
 
         LOGGER.info("invoked pulse(), result: node = " + result.getNode() + ", value = " + result.getValue());
-        Assert.assertTrue(this.nodesAvailable.contains(result.getNode()));
+        assertTrue(this.nodesAvailable.contains(result.getNode()));
 
         try {
             Thread.sleep(INV_WAIT_DURATION_MSECS);
@@ -323,7 +326,7 @@ public class SuspendResumeRemoteEJBTestCase extends AbstractClusteringTestCase {
 
     private boolean suspendResume(String node, ModelNode operation, String targetState) throws IOException {
         ModelNode result = this.clients.get(node).getControllerClient().execute(operation);
-        Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
+        assertEquals(SUCCESS, result.get(OUTCOME).asString());
 
         // Do not return until suspend state reaches target value, or timeout
         ModelNode queryOperation = Util.createOperation("read-attribute", PathAddress.EMPTY_ADDRESS);
@@ -355,7 +358,7 @@ public class SuspendResumeRemoteEJBTestCase extends AbstractClusteringTestCase {
         ModelNode op = Util.createOperation("read-attribute", PathAddress.EMPTY_ADDRESS);
         op.get(NAME).set("suspend-state");
         ModelNode result = this.clients.get(node).getControllerClient().execute(op);
-        Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
+        assertEquals(SUCCESS, result.get(OUTCOME).asString());
         return result.get(RESULT).asString();
     }
 }

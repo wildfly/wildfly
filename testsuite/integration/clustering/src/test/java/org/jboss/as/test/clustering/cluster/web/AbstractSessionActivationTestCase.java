@@ -11,6 +11,8 @@ import java.net.URL;
 
 import jakarta.servlet.http.HttpServletResponse;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpDelete;
@@ -20,19 +22,18 @@ import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.client.utils.HttpClientUtils;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase;
 import org.jboss.as.test.clustering.cluster.web.event.SessionActivationServlet;
 import org.jboss.as.test.http.util.TestHttpClientUtils;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * @author Paul Ferraro
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public abstract class AbstractSessionActivationTestCase extends AbstractClusteringTestCase {
 
     private final boolean transactional;
@@ -87,7 +88,7 @@ public abstract class AbstractSessionActivationTestCase extends AbstractClusteri
 
         HttpResponse response = client.execute(request);
         try {
-            Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
+            assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
         } finally {
             HttpClientUtils.closeQuietly(response);
         }

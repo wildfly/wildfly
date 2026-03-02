@@ -5,12 +5,12 @@
 
 package org.jboss.as.test.clustering.cluster.infinispan.lock;
 
-import java.io.IOException;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.UUID;
 
 import jakarta.servlet.http.HttpServletResponse;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
@@ -19,7 +19,7 @@ import org.apache.http.util.EntityUtils;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.container.test.api.TargetsContainer;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase;
@@ -32,9 +32,8 @@ import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * Test case to verify Infinispan lock module usage.
@@ -43,7 +42,7 @@ import org.junit.runner.RunWith;
  *
  * @author Radoslav Husar
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @ServerSetup(InfinispanLockTestCase.ServerSetupTask.class)
 public class InfinispanLockTestCase extends AbstractClusteringTestCase {
 
@@ -70,59 +69,59 @@ public class InfinispanLockTestCase extends AbstractClusteringTestCase {
     }
 
     @Test
-    public void test(@ArquillianResource(InfinispanLockServlet.class) @OperateOnDeployment(DEPLOYMENT_1) URL baseURL1,
-                     @ArquillianResource(InfinispanLockServlet.class) @OperateOnDeployment(DEPLOYMENT_2) URL baseURL2)
-            throws IOException, URISyntaxException {
+    void test(@ArquillianResource(InfinispanLockServlet.class) @OperateOnDeployment(DEPLOYMENT_1) URL baseURL1,
+              @ArquillianResource(InfinispanLockServlet.class) @OperateOnDeployment(DEPLOYMENT_2) URL baseURL2)
+            throws Exception {
 
         String lockName = UUID.randomUUID().toString();
 
         try (CloseableHttpClient client = TestHttpClientUtils.promiscuousCookieHttpClient()) {
 
             try (CloseableHttpResponse response = client.execute(new HttpGet(InfinispanLockServlet.createURI(baseURL1, lockName, LockOperation.DEFINE)))) {
-                Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
-                Assert.assertTrue(Boolean.parseBoolean(EntityUtils.toString(response.getEntity())));
+                assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
+                assertTrue(Boolean.parseBoolean(EntityUtils.toString(response.getEntity())));
             }
 
             try (CloseableHttpResponse response = client.execute(new HttpGet(InfinispanLockServlet.createURI(baseURL1, lockName, LockOperation.IS_LOCKED)))) {
-                Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
-                Assert.assertFalse(Boolean.parseBoolean(EntityUtils.toString(response.getEntity())));
+                assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
+                assertFalse(Boolean.parseBoolean(EntityUtils.toString(response.getEntity())));
             }
 
             try (CloseableHttpResponse response = client.execute(new HttpGet(InfinispanLockServlet.createURI(baseURL1, lockName, LockOperation.LOCK)))) {
-                Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
-                Assert.assertTrue(Boolean.parseBoolean(EntityUtils.toString(response.getEntity())));
+                assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
+                assertTrue(Boolean.parseBoolean(EntityUtils.toString(response.getEntity())));
             }
 
             try (CloseableHttpResponse response = client.execute(new HttpGet(InfinispanLockServlet.createURI(baseURL1, lockName, LockOperation.IS_LOCKED)))) {
-                Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
-                Assert.assertTrue(Boolean.parseBoolean(EntityUtils.toString(response.getEntity())));
+                assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
+                assertTrue(Boolean.parseBoolean(EntityUtils.toString(response.getEntity())));
             }
 
             // -> node2
 
             try (CloseableHttpResponse response = client.execute(new HttpGet(InfinispanLockServlet.createURI(baseURL2, lockName, LockOperation.IS_LOCKED)))) {
-                Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
-                Assert.assertTrue(Boolean.parseBoolean(EntityUtils.toString(response.getEntity())));
+                assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
+                assertTrue(Boolean.parseBoolean(EntityUtils.toString(response.getEntity())));
             }
 
             // -> node 1
             try (CloseableHttpResponse response = client.execute(new HttpGet(InfinispanLockServlet.createURI(baseURL1, lockName, LockOperation.UNLOCK)));) {
-                Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
+                assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
                 // unlock has no output – only check SC
             }
 
             // -> node 2
 
             try (CloseableHttpResponse response = client.execute(new HttpGet(InfinispanLockServlet.createURI(baseURL2, lockName, LockOperation.IS_LOCKED)));) {
-                Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
-                Assert.assertFalse(Boolean.parseBoolean(EntityUtils.toString(response.getEntity())));
+                assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
+                assertFalse(Boolean.parseBoolean(EntityUtils.toString(response.getEntity())));
             }
 
             // -> node1
 
             try (CloseableHttpResponse response = client.execute(new HttpGet(InfinispanLockServlet.createURI(baseURL1, lockName, LockOperation.IS_LOCKED)));) {
-                Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
-                Assert.assertFalse(Boolean.parseBoolean(EntityUtils.toString(response.getEntity())));
+                assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
+                assertFalse(Boolean.parseBoolean(EntityUtils.toString(response.getEntity())));
             }
 
         }

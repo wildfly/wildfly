@@ -6,14 +6,15 @@
 package org.jboss.as.test.clustering.cluster.registry;
 
 import static org.jboss.as.test.shared.PermissionUtils.createPermissionsXmlAsset;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.Collection;
 import java.util.PropertyPermission;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.TargetsContainer;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase;
 import org.jboss.as.test.clustering.cluster.registry.bean.RegistryRetriever;
 import org.jboss.as.test.clustering.cluster.registry.bean.RegistryRetrieverBean;
@@ -23,10 +24,10 @@ import org.jboss.as.test.clustering.ejb.RemoteEJBDirectory;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class RegistryTestCase extends AbstractClusteringTestCase {
     private static final String MODULE_NAME = RegistryTestCase.class.getSimpleName();
 
@@ -52,12 +53,12 @@ public class RegistryTestCase extends AbstractClusteringTestCase {
     }
 
     @Test
-    public void test() throws Exception {
+    void test() throws Exception {
         this.test(RegistryRetrieverBean.class);
     }
 
     @Test
-    public void legacy() throws Exception {
+    void legacy() throws Exception {
         this.test(LegacyRegistryRetrieverBean.class);
     }
 
@@ -67,8 +68,8 @@ public class RegistryTestCase extends AbstractClusteringTestCase {
 
             Collection<String> names = bean.getNodes();
             assertEquals(2, names.size());
-            assertTrue(names.toString(), names.contains(NODE_1));
-            assertTrue(names.toString(), names.contains(NODE_2));
+            assertTrue(names.contains(NODE_1), names.toString());
+            assertTrue(names.contains(NODE_2), names.toString());
 
             undeploy(DEPLOYMENT_1);
 

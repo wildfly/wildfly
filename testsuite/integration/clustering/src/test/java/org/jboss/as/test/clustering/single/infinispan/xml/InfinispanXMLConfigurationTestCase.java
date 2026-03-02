@@ -5,12 +5,11 @@
 package org.jboss.as.test.clustering.single.infinispan.xml;
 
 import static org.jboss.as.test.shared.PermissionUtils.createPermissionsXmlAsset;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.io.FilePermission;
-import java.io.IOException;
 import java.lang.reflect.ReflectPermission;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.PropertyPermission;
 import javax.management.MBeanServerPermission;
@@ -24,7 +23,7 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.util.EntityUtils;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.clustering.single.infinispan.xml.deployment.InfinispanXMLConfigurationServlet;
 import org.jboss.as.test.clustering.single.web.SimpleServlet;
@@ -35,9 +34,8 @@ import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.jboss.shrinkwrap.descriptor.api.Descriptors;
 import org.jboss.shrinkwrap.descriptor.api.spec.se.manifest.ManifestDescriptor;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * Tests that Infinispan can be configured via an infinispan.xml file packaged directly in WEB-INF/classes.
@@ -45,7 +43,7 @@ import org.junit.runner.RunWith;
  * @author Radoslav Husar
  * @see <a href="https://issues.redhat.com/browse/WFLY-21156">WFLY-21156</a>
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @RunAsClient
 public class InfinispanXMLConfigurationTestCase {
 
@@ -73,15 +71,15 @@ public class InfinispanXMLConfigurationTestCase {
     }
 
     @Test
-    public void testInfinispanXmlConfiguration(@ArquillianResource URL baseURL) throws IOException, URISyntaxException {
+    void infinispanXmlConfiguration(@ArquillianResource URL baseURL) throws Exception {
         URI uri = InfinispanXMLConfigurationServlet.createURI(baseURL);
 
         try (CloseableHttpClient client = TestHttpClientUtils.promiscuousCookieHttpClient()) {
             HttpResponse response = client.execute(new HttpGet(uri));
             try {
-                Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
+                assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
                 String content = EntityUtils.toString(response.getEntity()).trim();
-                Assert.assertEquals("", content);
+                assertEquals("", content);
             } finally {
                 HttpClientUtils.closeQuietly(response);
             }

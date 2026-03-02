@@ -6,7 +6,7 @@
 package org.jboss.as.test.clustering.cluster.ejb.forwarding;
 
 import static org.jboss.as.test.shared.PermissionUtils.createPermissionsXmlAsset;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.FilePermission;
 import java.net.SocketPermission;
@@ -18,7 +18,7 @@ import javax.naming.NamingException;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.TargetsContainer;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase;
 import org.jboss.as.test.clustering.cluster.ejb.forwarding.bean.common.CommonStatefulSB;
@@ -37,9 +37,9 @@ import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.wildfly.common.function.ExceptionSupplier;
 
 /**
@@ -58,11 +58,11 @@ import org.wildfly.common.function.ExceptionSupplier;
  * @author Richard Achmatowicz
  * @author Radoslav Husar
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @ServerSetup(AbstractRemoteEJBForwardingTestCase.ServerSetupTask.class)
 public abstract class AbstractRemoteEJBForwardingTestCase extends AbstractClusteringTestCase {
 
-    @BeforeClass
+    @BeforeAll
     public static void beforeClass() {
         IntermittentFailure.thisTestIsFailingIntermittently("https://issues.redhat.com/browse/WFLY-10607");
     }

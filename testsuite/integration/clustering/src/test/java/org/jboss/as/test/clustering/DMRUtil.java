@@ -6,10 +6,9 @@
 package org.jboss.as.test.clustering;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import org.jboss.logging.Logger;
-import org.junit.Assert;
-
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.test.integration.management.ManagementOperations;
 import org.jboss.dmr.ModelNode;
@@ -52,7 +51,7 @@ public class DMRUtil {
         operation.get("value").set(maxSize);
         // ModelNode result = client.execute(operation);
         ModelNode result = ManagementOperations.executeOperationRaw(client, operation);
-        Assert.assertEquals("Setting of max-size attribute was not successful", SUCCESS, result.get(OUTCOME).asString());
+        assertEquals(SUCCESS, result.get(OUTCOME).asString(), "Setting of max-size attribute was not successful");
     }
 
     /**
@@ -65,7 +64,7 @@ public class DMRUtil {
         operation.get(OP_ADDR).set(address);
         operation.get("name").set(attrName);
         ModelNode result = client.execute(operation);
-        Assert.assertEquals("Unset of attribute " + attrName + " on server was not successful", SUCCESS, result.get(OUTCOME).asString());
+        assertEquals(SUCCESS, result.get(OUTCOME).asString(), "Unset of attribute " + attrName + " on server was not successful");
         log.trace("unset modelnode operation " + UNDEFINE_ATTRIBUTE_OPERATION + " on " + attrName + ": " + result);
     }
 

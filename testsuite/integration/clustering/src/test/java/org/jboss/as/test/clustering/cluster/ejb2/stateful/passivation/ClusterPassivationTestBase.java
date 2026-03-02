@@ -6,6 +6,8 @@
 package org.jboss.as.test.clustering.cluster.ejb2.stateful.passivation;
 
 import static org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase.WAIT_FOR_PASSIVATION_MS;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -22,9 +24,8 @@ import org.jboss.as.test.clustering.ejb.EJBDirectory;
 import org.jboss.as.test.clustering.ejb.RemoteEJBDirectory;
 import org.jboss.ejb.client.EJBClientContext;
 import org.jboss.logging.Logger;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 
 /**
  * Base class for passivation tests on Enterprise Beans 2 beans.
@@ -37,12 +38,12 @@ public abstract class ClusterPassivationTestBase {
 
     protected EJBDirectory directory;
 
-    @Before
+    @BeforeEach
     public void beforeTest() throws NamingException {
         directory = new RemoteEJBDirectory(MODULE_NAME);
     }
 
-    @After
+    @AfterEach
     public void afterTest() throws Exception {
         directory.close();
     }
@@ -105,14 +106,14 @@ public abstract class ClusterPassivationTestBase {
      * Testing passivation over nodes - switching a node on and off. Testing ejbPassivate bean function.
      */
     protected void runPassivation(StatefulRemote statefulBean, ContainerController controller, Deployer deployer) throws Exception {
-        Assert.assertNotNull(statefulBean);
+        assertNotNull(statefulBean);
 
         // Calling on server one
         int clientNumber = 40;
         String calledNodeFirst = statefulBean.setNumber(clientNumber);
         statefulBean.setPassivationNode(calledNodeFirst);
         statefulBean.incrementNumber(); // 41
-        Assert.assertEquals(++clientNumber, statefulBean.getNumber()); // 41
+        assertEquals(++clientNumber, statefulBean.getNumber()); // 41
         // nodeName of nested bean should be the same as the node of parent
         log.trace("Called node name first: " + calledNodeFirst);
         Thread.sleep(WAIT_FOR_PASSIVATION_MS); // waiting for passivation
@@ -122,7 +123,7 @@ public abstract class ClusterPassivationTestBase {
         // TODO Elytron: Determine how this should be adapted once the clustering and Jakarta Enterprise Beans client changes are in
         //EJBClientContext.requireCurrent().getClusterContext(CLUSTER_NAME).removeClusterNode(calledNodeFirst);
 
-        Assert.assertEquals("Supposing to get passivation node which was set", calledNodeFirst, statefulBean.getPassivatedBy());
+        assertEquals(calledNodeFirst, statefulBean.getPassivatedBy(), "Supposing to get passivation node which was set");
 
         String calledNodeSecond = statefulBean.incrementNumber(); // 42
         statefulBean.setPassivationNode(calledNodeSecond);
@@ -139,16 +140,16 @@ public abstract class ClusterPassivationTestBase {
         controller.stop(node2container.get(calledNodeSecond));
 
         // We killed second node and we check the value on first node
-        Assert.assertEquals(++clientNumber, statefulBean.getNumber()); // 42
+        assertEquals(++clientNumber, statefulBean.getNumber()); // 42
         // Calling on first server
         String calledNode = statefulBean.incrementNumber(); // 43
         // Checking called node and set number
-        Assert.assertEquals("It can't be node " + calledNodeSecond + " because is switched off", calledNodeFirst, calledNode);
+        assertEquals(calledNodeFirst, calledNode, "It can't be node " + calledNodeSecond + " because is switched off");
 
-        Assert.assertEquals("Supposing to get passivation node which was set", calledNodeSecond, statefulBean.getPassivatedBy());
+        assertEquals(calledNodeSecond, statefulBean.getPassivatedBy(), "Supposing to get passivation node which was set");
 
         Thread.sleep(WAIT_FOR_PASSIVATION_MS); // waiting for passivation
-        Assert.assertEquals(++clientNumber, statefulBean.getNumber()); // 43
+        assertEquals(++clientNumber, statefulBean.getNumber()); // 43
     }
 
 }

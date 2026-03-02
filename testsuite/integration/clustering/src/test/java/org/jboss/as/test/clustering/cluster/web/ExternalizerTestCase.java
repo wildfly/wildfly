@@ -7,10 +7,11 @@ package org.jboss.as.test.clustering.cluster.web;
 
 import java.io.IOException;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.net.URL;
 
 import jakarta.servlet.http.HttpServletResponse;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
@@ -20,7 +21,7 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.container.test.api.TargetsContainer;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase;
 import org.jboss.as.test.clustering.cluster.web.externalizer.CounterExternalizer;
@@ -29,15 +30,14 @@ import org.jboss.as.test.http.util.TestHttpClientUtils;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.wildfly.clustering.marshalling.Externalizer;
 
 /**
  * @author Paul Ferraro
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class ExternalizerTestCase extends AbstractClusteringTestCase {
 
     private static final String MODULE_NAME = ExternalizerTestCase.class.getSimpleName();
@@ -64,10 +64,10 @@ public class ExternalizerTestCase extends AbstractClusteringTestCase {
     }
 
     @Test
-    public void test(
+    void test(
             @ArquillianResource(CounterServlet.class) @OperateOnDeployment(DEPLOYMENT_1) URL baseURL1,
             @ArquillianResource(CounterServlet.class) @OperateOnDeployment(DEPLOYMENT_2) URL baseURL2)
-            throws IOException, URISyntaxException {
+            throws Exception {
 
         URI uri1 = CounterServlet.createURI(baseURL1);
         URI uri2 = CounterServlet.createURI(baseURL2);
@@ -87,8 +87,8 @@ public class ExternalizerTestCase extends AbstractClusteringTestCase {
     private static void assertValue(HttpClient client, URI uri, int value) throws IOException {
         HttpResponse response = client.execute(new HttpGet(uri));
         try {
-            Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
-            Assert.assertEquals(value, Integer.parseInt(response.getFirstHeader(CounterServlet.COUNT_HEADER).getValue()));
+            assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
+            assertEquals(value, Integer.parseInt(response.getFirstHeader(CounterServlet.COUNT_HEADER).getValue()));
         } finally {
             HttpClientUtils.closeQuietly(response);
         }

@@ -14,6 +14,9 @@ import java.util.Set;
 
 import jakarta.servlet.http.HttpServletResponse;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+
 import org.apache.http.Header;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
@@ -22,7 +25,7 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.container.test.api.TargetsContainer;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.clustering.TopologyChangeListenerUtil;
 import org.jboss.as.test.clustering.ClusterTestUtil;
@@ -40,9 +43,9 @@ import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * Test case for BZ-1190029 and https://issues.jboss.org/browse/WFLY-4748.
@@ -54,7 +57,7 @@ import org.junit.runner.RunWith;
  * @author Tomas Hofman
  * @author Radoslav Husar
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class SingletonPartitionTestCase extends AbstractClusteringTestCase {
 
     // maximum time in ms to wait for cluster topology change in case the injected merge event fails for some reason
@@ -86,7 +89,7 @@ public class SingletonPartitionTestCase extends AbstractClusteringTestCase {
     }
 
     @Test
-    public void testSingletonService(
+    void singletonService(
             @ArquillianResource() @OperateOnDeployment(DEPLOYMENT_1) URL baseURL1,
             @ArquillianResource() @OperateOnDeployment(DEPLOYMENT_2) URL baseURL2) throws Exception {
 
@@ -162,6 +165,7 @@ public class SingletonPartitionTestCase extends AbstractClusteringTestCase {
         checkSingletonNode(baseURL2, SingletonServiceActivator.SERVICE_B_NAME, NODE_2);
     }
 
+    @AfterEach
     @Override
     public void afterTestMethod() throws Exception {
         super.afterTestMethod();
@@ -175,12 +179,12 @@ public class SingletonPartitionTestCase extends AbstractClusteringTestCase {
         try (CloseableHttpClient client = TestHttpClientUtils.promiscuousCookieHttpClient()) {
             HttpResponse response = client.execute(new HttpGet(uri));
             try {
-                Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
+                assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
                 Header header = response.getFirstHeader("node");
                 if (header != null) {
-                    Assert.assertEquals("Expected different provider node", expectedProviderNode, header.getValue());
+                    assertEquals(expectedProviderNode, header.getValue(), "Expected different provider node");
                 } else {
-                    Assert.assertNull("Unexpected provider node", expectedProviderNode);
+                    assertNull(expectedProviderNode, "Unexpected provider node");
                 }
             } finally {
                 HttpClientUtils.closeQuietly(response);
@@ -197,7 +201,7 @@ public class SingletonPartitionTestCase extends AbstractClusteringTestCase {
             try (CloseableHttpClient client = TestHttpClientUtils.promiscuousCookieHttpClient()) {
                 HttpResponse response = client.execute(new HttpGet(PartitionServlet.createURI(baseURI, partition)));
                 try {
-                    Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
+                    assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
                 } finally {
                     HttpClientUtils.closeQuietly(response);
                 }

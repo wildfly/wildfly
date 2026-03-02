@@ -8,6 +8,9 @@ package org.jboss.as.test.clustering.cluster.ejb2.stateful.failover;
 import javax.naming.NamingException;
 
 import org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase;
+
+import static org.junit.jupiter.api.Assertions.*;
+
 import org.jboss.as.test.clustering.cluster.ejb2.stateful.failover.bean.shared.CounterRemote;
 import org.jboss.as.test.clustering.cluster.ejb2.stateful.failover.bean.shared.CounterRemoteHome;
 import org.jboss.as.test.clustering.cluster.ejb2.stateful.failover.bean.shared.CounterResult;
@@ -19,9 +22,8 @@ import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 
 /**
  * @author Ondrej Chaloupka
@@ -57,6 +59,7 @@ public abstract class RemoteEJBClientStatefulFailoverTestBase extends AbstractCl
         this.deploy(DEPLOYMENT_HELPER_1_2);
     }
 
+    @AfterEach
     @Override
     public void afterTestMethod() {
         start();
@@ -64,13 +67,13 @@ public abstract class RemoteEJBClientStatefulFailoverTestBase extends AbstractCl
         undeploy(DEPLOYMENT_HELPER_1_2);
     }
 
-    @Before
+    @BeforeEach
     public void beforeTest() throws NamingException {
         directory = new RemoteEJBDirectory(MODULE_NAME);
         singletonDirectory = new RemoteEJBDirectory(MODULE_NAME_SINGLE);
     }
 
-    @After
+    @AfterEach
     public void afterTest() throws Exception {
         directory.close();
         singletonDirectory.close();
@@ -95,7 +98,7 @@ public abstract class RemoteEJBClientStatefulFailoverTestBase extends AbstractCl
     protected void failoverFromRemoteClient(boolean undeployOnly) throws Exception {
         CounterRemoteHome home = directory.lookupHome(CounterBean.class, CounterRemoteHome.class);
         CounterRemote remoteCounter = home.create();
-        Assert.assertNotNull(remoteCounter);
+        assertNotNull(remoteCounter);
 
         final CounterSingletonRemote destructionCounter = singletonDirectory.lookupSingleton(CounterSingleton.class, CounterSingletonRemote.class);
         destructionCounter.resetDestroyCount();
@@ -107,9 +110,9 @@ public abstract class RemoteEJBClientStatefulFailoverTestBase extends AbstractCl
             log.trace("Counter incremented to " + result.getCount() + " on node " + result.getNodeName());
         }
         final CounterResult result = remoteCounter.getCount();
-        Assert.assertNotNull("Result from remote stateful counter was null", result);
-        Assert.assertEquals("Unexpected count from remote counter", NUM_TIMES, result.getCount());
-        Assert.assertEquals("Nothing should have been destroyed yet", 0, destructionCounter.getDestroyCount());
+        assertNotNull(result, "Result from remote stateful counter was null");
+        assertEquals(NUM_TIMES, result.getCount(), "Unexpected count from remote counter");
+        assertEquals(0, destructionCounter.getDestroyCount(), "Nothing should have been destroyed yet");
 
         // shutdown the node on which the previous invocation happened
         final int totalCountBeforeShuttingDownANode = result.getCount();
@@ -132,29 +135,29 @@ public abstract class RemoteEJBClientStatefulFailoverTestBase extends AbstractCl
         }
         // invoke again
         CounterResult resultAfterShuttingDownANode = remoteCounter.increment();
-        Assert.assertNotNull("Result from remote stateful counter, after shutting down a node was null", resultAfterShuttingDownANode);
-        Assert.assertEquals("Unexpected count from remote counter, after shutting down a node", totalCountBeforeShuttingDownANode + 1, resultAfterShuttingDownANode.getCount());
-        Assert.assertNotEquals("Result was received from an unexpected node, after shutting down a node", previousInvocationNodeName, resultAfterShuttingDownANode.getNodeName());
+        assertNotNull(resultAfterShuttingDownANode, "Result from remote stateful counter, after shutting down a node was null");
+        assertEquals(totalCountBeforeShuttingDownANode + 1, resultAfterShuttingDownANode.getCount(), "Unexpected count from remote counter, after shutting down a node");
+        assertNotEquals(previousInvocationNodeName, resultAfterShuttingDownANode.getNodeName(), "Result was received from an unexpected node, after shutting down a node");
 
         // repeat invocations
         final int countBeforeDecrementing = resultAfterShuttingDownANode.getCount();
         final String aliveNode = resultAfterShuttingDownANode.getNodeName();
         for (int i = NUM_TIMES; i > 0; i--) {
             resultAfterShuttingDownANode = remoteCounter.decrement();
-            Assert.assertNotNull("Result from remote stateful counter, after shutting down a node was null", resultAfterShuttingDownANode);
-            Assert.assertEquals("Result was received from an unexpected node, after shutting down a node", aliveNode, resultAfterShuttingDownANode.getNodeName());
+            assertNotNull(resultAfterShuttingDownANode, "Result from remote stateful counter, after shutting down a node was null");
+            assertEquals(aliveNode, resultAfterShuttingDownANode.getNodeName(), "Result was received from an unexpected node, after shutting down a node");
             log.trace("Counter decremented to " + resultAfterShuttingDownANode.getCount() + " on node " + resultAfterShuttingDownANode.getNodeName());
         }
         final CounterResult finalResult = remoteCounter.getCount();
-        Assert.assertNotNull("Result from remote stateful counter, after shutting down a node was null", finalResult);
+        assertNotNull(finalResult, "Result from remote stateful counter, after shutting down a node was null");
         final int finalCount = finalResult.getCount();
         final String finalNodeName = finalResult.getNodeName();
-        Assert.assertEquals("Result was received from an unexpected node, after shutting down a node", aliveNode, finalNodeName);
-        Assert.assertEquals("Unexpected count from remote counter, after shutting down a node", countBeforeDecrementing - NUM_TIMES, finalCount);
+        assertEquals(aliveNode, finalNodeName, "Result was received from an unexpected node, after shutting down a node");
+        assertEquals(countBeforeDecrementing - NUM_TIMES, finalCount, "Unexpected count from remote counter, after shutting down a node");
 
 
-        Assert.assertEquals("Nothing should have been destroyed yet", 0, destructionCounter.getDestroyCount());
+        assertEquals(0, destructionCounter.getDestroyCount(), "Nothing should have been destroyed yet");
         remoteCounter.remove();
-        Assert.assertEquals("SFSB was not destroyed", 1, destructionCounter.getDestroyCount());
+        assertEquals(1, destructionCounter.getDestroyCount(), "SFSB was not destroyed");
     }
 }

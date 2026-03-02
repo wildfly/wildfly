@@ -4,15 +4,15 @@
  */
 package org.jboss.as.test.clustering.single.ejb.timer.passivation;
 
-import static org.junit.Assert.*;
-
 import java.time.Duration;
 import java.util.Map;
 import java.util.Objects;
 
 import org.awaitility.Awaitility;
+
+import static org.junit.jupiter.api.Assertions.*;
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.test.clustering.PassivationEventTracker;
 import org.jboss.as.test.clustering.PassivationEventTrackerBean;
@@ -23,14 +23,14 @@ import org.jboss.as.test.clustering.single.ejb.timer.passivation.bean.TimerTrack
 import org.jboss.as.test.clustering.single.ejb.timer.passivation.bean.TimerTrackerBean;
 import org.jboss.as.test.shared.ManagementServerSetupTask;
 import org.jboss.as.test.shared.TimeoutUtil;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.wildfly.test.stabilitylevel.StabilityServerSetupSnapshotRestoreTasks;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 /**
  * Tests that EJB timers are passivated after the configured idle threshold and that
@@ -38,7 +38,7 @@ import org.junit.runner.RunWith;
  *
  * @author Radoslav Husar
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @ServerSetup({
         StabilityServerSetupSnapshotRestoreTasks.Community.class,
         IdleThresholdTimerPassivationTestCase.ServerSetupTask.class,
@@ -81,18 +81,18 @@ public class IdleThresholdTimerPassivationTestCase {
 
     private EJBDirectory directory;
 
-    @Before
-    public void before() throws Exception {
+    @BeforeEach
+    void before() throws Exception {
         this.directory = new RemoteEJBDirectory(MODULE_NAME);
     }
 
-    @After
-    public void after() throws Exception {
+    @AfterEach
+    void after() throws Exception {
         this.directory.close();
     }
 
     @Test
-    public void test() throws Exception {
+    void test() throws Exception {
         TimerTracker bean = this.directory.lookupSingleton(TimerTrackerBean.class, TimerTracker.class);
 
         // First, clear any existing events on the server; e.g. from previous failed run
@@ -113,9 +113,9 @@ public class IdleThresholdTimerPassivationTestCase {
                 .pollInterval(POLL_INTERVAL)
                 .until(bean::pollPassivationEvent, Objects::nonNull);
 
-        assertNotNull("Should have passivation event", event);
-        assertEquals("Event should be for correct timer", timerName, event.getKey());
-        assertEquals("Event should be PASSIVATION", PassivationEventTrackerUtil.EventType.PASSIVATION, event.getValue());
+        assertNotNull(event, "Should have passivation event");
+        assertEquals(timerName, event.getKey(), "Event should be for correct timer");
+        assertEquals(PassivationEventTrackerUtil.EventType.PASSIVATION, event.getValue(), "Event should be PASSIVATION");
 
         // Clear remaining passivation events triggered by size calculation in ByteBufferMarshaller / ByteBufferMarshalledValue
         bean.pollPassivationEvent();
@@ -131,9 +131,9 @@ public class IdleThresholdTimerPassivationTestCase {
                 .pollInterval(POLL_INTERVAL)
                 .until(bean::pollPassivationEvent, Objects::nonNull);
 
-        assertNotNull("Should have activation event", event);
-        assertEquals("Event should be for correct timer", timerName, event.getKey());
-        assertEquals("Event should be ACTIVATION", PassivationEventTrackerUtil.EventType.ACTIVATION, event.getValue());
+        assertNotNull(event, "Should have activation event");
+        assertEquals(timerName, event.getKey(), "Event should be for correct timer");
+        assertEquals(PassivationEventTrackerUtil.EventType.ACTIVATION, event.getValue(), "Event should be ACTIVATION");
 
         // Step 6: Remaining cleanup happens in TimerTrackerBean#preDestroy
     }

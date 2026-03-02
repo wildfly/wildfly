@@ -5,11 +5,11 @@
 
 package org.jboss.as.test.clustering.cluster.group;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.TargetsContainer;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase;
 import org.jboss.as.test.clustering.cluster.group.bean.ClusterTopology;
 import org.jboss.as.test.clustering.cluster.group.bean.ClusterTopologyRetriever;
@@ -22,14 +22,14 @@ import org.jboss.as.test.shared.PermissionUtils;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * Integration test for the listener facility of a {@link LegacyGroup}.
  * @author Paul Ferraro
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class GroupListenerTestCase extends AbstractClusteringTestCase {
     private static final String MODULE_NAME = GroupListenerTestCase.class.getSimpleName();
     private static final long VIEW_CHANGE_WAIT = TimeoutUtil.adjust(2000);
@@ -56,12 +56,12 @@ public class GroupListenerTestCase extends AbstractClusteringTestCase {
     }
 
     @Test
-    public void test() throws Exception {
+    void test() throws Exception {
         this.test(ClusterTopologyRetrieverBean.class);
     }
 
     @Test
-    public void legacy() throws Exception {
+    void legacy() throws Exception {
         this.test(LegacyClusterTopologyRetrieverBean.class);
     }
 
@@ -70,35 +70,35 @@ public class GroupListenerTestCase extends AbstractClusteringTestCase {
             ClusterTopologyRetriever bean = directory.lookupStateless(LegacyClusterTopologyRetrieverBean.class, ClusterTopologyRetriever.class);
 
             ClusterTopology topology = bean.getClusterTopology();
-            assertEquals(topology.getCurrentMembers().toString(), 2, topology.getCurrentMembers().size());
-            assertTrue(topology.getCurrentMembers().toString(), topology.getCurrentMembers().contains(NODE_1));
-            assertTrue(topology.getCurrentMembers().toString(), topology.getCurrentMembers().contains(NODE_2));
+            assertEquals(2, topology.getCurrentMembers().size(), topology.getCurrentMembers().toString());
+            assertTrue(topology.getCurrentMembers().contains(NODE_1), topology.getCurrentMembers().toString());
+            assertTrue(topology.getCurrentMembers().contains(NODE_2), topology.getCurrentMembers().toString());
 
             stop(NODE_2);
 
             Thread.sleep(VIEW_CHANGE_WAIT);
 
             topology = bean.getClusterTopology();
-            assertEquals(topology.getCurrentMembers().toString(), 1, topology.getCurrentMembers().size());
-            assertTrue(topology.getCurrentMembers().toString(), topology.getCurrentMembers().contains(NODE_1));
-            assertEquals(topology.getPreviousMembers().toString(), 2, topology.getPreviousMembers().size());
-            assertTrue(topology.getPreviousMembers().toString(), topology.getPreviousMembers().contains(NODE_1));
-            assertTrue(topology.getPreviousMembers().toString(), topology.getPreviousMembers().contains(NODE_2));
+            assertEquals(1, topology.getCurrentMembers().size(), topology.getCurrentMembers().toString());
+            assertTrue(topology.getCurrentMembers().contains(NODE_1), topology.getCurrentMembers().toString());
+            assertEquals(2, topology.getPreviousMembers().size(), topology.getPreviousMembers().toString());
+            assertTrue(topology.getPreviousMembers().contains(NODE_1), topology.getPreviousMembers().toString());
+            assertTrue(topology.getPreviousMembers().contains(NODE_2), topology.getPreviousMembers().toString());
 
             start(NODE_2);
 
             Thread.sleep(VIEW_CHANGE_WAIT);
 
             topology = bean.getClusterTopology();
-            assertEquals(topology.getCurrentMembers().toString(), 2, topology.getCurrentMembers().size());
-            assertTrue(topology.getCurrentMembers().toString(), topology.getCurrentMembers().contains(NODE_1));
-            assertTrue(topology.getCurrentMembers().toString(), topology.getCurrentMembers().contains(NODE_2));
+            assertEquals(2, topology.getCurrentMembers().size(), topology.getCurrentMembers().toString());
+            assertTrue(topology.getCurrentMembers().contains(NODE_1), topology.getCurrentMembers().toString());
+            assertTrue(topology.getCurrentMembers().contains(NODE_2), topology.getCurrentMembers().toString());
             if (topology.getTargetMember().equals(NODE_1)) {
-                assertEquals(topology.getPreviousMembers().toString(), 1, topology.getPreviousMembers().size());
-                assertTrue(topology.getPreviousMembers().toString(), topology.getPreviousMembers().contains(NODE_1));
+                assertEquals(1, topology.getPreviousMembers().size(), topology.getPreviousMembers().toString());
+                assertTrue(topology.getPreviousMembers().contains(NODE_1), topology.getPreviousMembers().toString());
             } else {
                 // Since node 2 was just started, its previous membership will be empty
-                assertEquals(topology.getPreviousMembers().toString(), 0, topology.getPreviousMembers().size());
+                assertEquals(0, topology.getPreviousMembers().size(), topology.getPreviousMembers().toString());
             }
 
             stop(NODE_1);
@@ -106,26 +106,26 @@ public class GroupListenerTestCase extends AbstractClusteringTestCase {
             Thread.sleep(VIEW_CHANGE_WAIT);
 
             topology = bean.getClusterTopology();
-            assertEquals(topology.getCurrentMembers().toString(), 1, topology.getCurrentMembers().size());
-            assertTrue(topology.getCurrentMembers().toString(), topology.getCurrentMembers().contains(NODE_2));
-            assertEquals(topology.getPreviousMembers().toString(), 2, topology.getPreviousMembers().size());
-            assertTrue(topology.getPreviousMembers().toString(), topology.getPreviousMembers().contains(NODE_1));
-            assertTrue(topology.getPreviousMembers().toString(), topology.getPreviousMembers().contains(NODE_2));
+            assertEquals(1, topology.getCurrentMembers().size(), topology.getCurrentMembers().toString());
+            assertTrue(topology.getCurrentMembers().contains(NODE_2), topology.getCurrentMembers().toString());
+            assertEquals(2, topology.getPreviousMembers().size(), topology.getPreviousMembers().toString());
+            assertTrue(topology.getPreviousMembers().contains(NODE_1), topology.getPreviousMembers().toString());
+            assertTrue(topology.getPreviousMembers().contains(NODE_2), topology.getPreviousMembers().toString());
 
             start(NODE_1);
 
             Thread.sleep(VIEW_CHANGE_WAIT);
 
             topology = bean.getClusterTopology();
-            assertEquals(topology.getCurrentMembers().toString(), 2, topology.getCurrentMembers().size());
-            assertTrue(topology.getCurrentMembers().toString(), topology.getCurrentMembers().contains(NODE_1));
-            assertTrue(topology.getCurrentMembers().toString(), topology.getCurrentMembers().contains(NODE_2));
+            assertEquals(2, topology.getCurrentMembers().size(), topology.getCurrentMembers().toString());
+            assertTrue(topology.getCurrentMembers().contains(NODE_1), topology.getCurrentMembers().toString());
+            assertTrue(topology.getCurrentMembers().contains(NODE_2), topology.getCurrentMembers().toString());
             if (topology.getTargetMember().equals(NODE_2)) {
-                assertEquals(topology.getPreviousMembers().toString(), 1, topology.getPreviousMembers().size());
-                assertTrue(topology.getPreviousMembers().toString(), topology.getPreviousMembers().contains(NODE_2));
+                assertEquals(1, topology.getPreviousMembers().size(), topology.getPreviousMembers().toString());
+                assertTrue(topology.getPreviousMembers().contains(NODE_2), topology.getPreviousMembers().toString());
             } else {
                 // Since node 1 was just started, its previous membership will be empty
-                assertEquals(topology.getPreviousMembers().toString(), 0, topology.getPreviousMembers().size());
+                assertEquals(0, topology.getPreviousMembers().size(), topology.getPreviousMembers().toString());
             }
         }
     }

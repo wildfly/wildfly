@@ -5,10 +5,9 @@
 package org.jboss.as.test.clustering.single.web.shared;
 
 import static org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase.DEPLOYMENT_1;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import java.io.IOException;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.net.URL;
 import jakarta.servlet.http.HttpServletResponse;
 
@@ -17,7 +16,7 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ContainerResource;
 import org.jboss.as.arquillian.container.ManagementClient;
@@ -31,15 +30,14 @@ import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * Validates that web applications within an ear can share sessions if configured appropriately, but that its sessions are non-distributable.
  * @author Martin Simka
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class NonDistributableSharedSessionTestCase {
 
     private static final String MODULE = NonDistributableSharedSessionTestCase.class.getSimpleName();
@@ -72,9 +70,9 @@ public class NonDistributableSharedSessionTestCase {
     }
 
     @Test
-    public void test(
+    void test(
             @ArquillianResource @OperateOnDeployment(DEPLOYMENT_1) URL baseURLDep)
-            throws URISyntaxException, IOException {
+            throws Exception {
         URI baseURI = new URI(baseURLDep.toExternalForm() + "/");
         URI uri1 = SimpleServlet.createURI(baseURI.resolve(MODULE_1 + "/"));
         URI uri2 = SimpleServlet.createURI(baseURI.resolve(MODULE_2 + "/"));
@@ -83,13 +81,13 @@ public class NonDistributableSharedSessionTestCase {
             int expected = 1;
 
             try (CloseableHttpResponse response = client.execute(new HttpGet(uri1))) {
-                Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
-                Assert.assertEquals(expected++, Integer.parseInt(response.getFirstHeader(SimpleServlet.VALUE_HEADER).getValue()));
+                assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
+                assertEquals(expected++, Integer.parseInt(response.getFirstHeader(SimpleServlet.VALUE_HEADER).getValue()));
             }
 
             try (CloseableHttpResponse response = client.execute(new HttpGet(uri2))) {
-                Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
-                Assert.assertEquals(expected++, Integer.parseInt(response.getFirstHeader(SimpleServlet.VALUE_HEADER).getValue()));
+                assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
+                assertEquals(expected++, Integer.parseInt(response.getFirstHeader(SimpleServlet.VALUE_HEADER).getValue()));
             }
 
             // A distributable web application preserves its web sessions across server restarts, a non-distributable web application does not.
@@ -97,13 +95,13 @@ public class NonDistributableSharedSessionTestCase {
 
             expected = 1;
             try (CloseableHttpResponse response = client.execute(new HttpGet(uri1))) {
-                Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
-                Assert.assertEquals(expected++, Integer.parseInt(response.getFirstHeader(SimpleServlet.VALUE_HEADER).getValue()));
+                assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
+                assertEquals(expected++, Integer.parseInt(response.getFirstHeader(SimpleServlet.VALUE_HEADER).getValue()));
             }
 
             try (CloseableHttpResponse response = client.execute(new HttpGet(uri2))) {
-                Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
-                Assert.assertEquals(expected++, Integer.parseInt(response.getFirstHeader(SimpleServlet.VALUE_HEADER).getValue()));
+                assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
+                assertEquals(expected++, Integer.parseInt(response.getFirstHeader(SimpleServlet.VALUE_HEADER).getValue()));
             }
         }
     }
