@@ -52,7 +52,6 @@ public class RegistryTestCase {
         this.test(LegacyRegistryRetrieverBean.class);
     }
 
-    @Test
     void test(Class<? extends RegistryRetriever> beanClass) throws Exception {
         try (EJBDirectory context = new RemoteEJBDirectory(MODULE_NAME)) {
             RegistryRetriever bean = context.lookupStateless(LegacyRegistryRetrieverBean.class, RegistryRetriever.class);

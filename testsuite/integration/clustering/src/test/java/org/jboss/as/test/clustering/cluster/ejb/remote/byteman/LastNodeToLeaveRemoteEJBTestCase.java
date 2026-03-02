@@ -8,9 +8,10 @@ package org.jboss.as.test.clustering.cluster.ejb.remote.byteman;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.container.test.api.TargetsContainer;
-import org.jboss.arquillian.extension.byteman.api.BMRules;
 import org.jboss.arquillian.junit5.ArquillianExtension;
-import org.jboss.arquillian.extension.byteman.api.BMRule;
+import org.jboss.byteman.contrib.bmunit.BMRule;
+import org.jboss.byteman.contrib.bmunit.BMRules;
+import org.jboss.byteman.contrib.bmunit.WithByteman;
 import org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase;
 import org.jboss.as.test.clustering.cluster.ejb.remote.bean.Incrementor;
 import org.jboss.as.test.clustering.cluster.ejb.remote.bean.IncrementorBean;
@@ -67,6 +68,7 @@ import java.util.concurrent.Future;
  * @author Richard Achmatowicz
  */
 @ExtendWith(ArquillianExtension.class)
+@WithByteman
 public class LastNodeToLeaveRemoteEJBTestCase extends AbstractClusteringTestCase {
 
     public LastNodeToLeaveRemoteEJBTestCase() {
@@ -116,7 +118,7 @@ public class LastNodeToLeaveRemoteEJBTestCase extends AbstractClusteringTestCase
     }
 
     // Byteman rules to capture the DNR contents after each invocation
-    @BMRules({
+    @BMRules(rules = {
             @BMRule(name = "Set up results linkMap (SETUP)",
                     targetClass = "org.jboss.ejb.protocol.remote.RemotingEJBDiscoveryProvider",
                     targetMethod = "<init>",

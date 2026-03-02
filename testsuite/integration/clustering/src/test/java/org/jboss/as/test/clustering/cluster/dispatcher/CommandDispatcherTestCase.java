@@ -52,12 +52,12 @@ public class CommandDispatcherTestCase extends AbstractClusteringTestCase {
     }
 
     @Test
-    void test() throws Exception {
+    protected void test() throws Exception {
         this.test(ClusterTopologyRetrieverBean.class);
     }
 
     @Test
-    void legacy() throws Exception {
+    protected void legacy() throws Exception {
         this.test(LegacyClusterTopologyRetrieverBean.class);
     }
 

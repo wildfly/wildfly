@@ -71,8 +71,7 @@ public class DistributableTestCase extends AbstractClusteringTestCase {
     }
 
     @Test
-    @OperateOnDeployment(DEPLOYMENT_1)
-    void serialized(@ArquillianResource(SimpleServlet.class) URL baseURL) throws Exception {
+    void serialized(@ArquillianResource(SimpleServlet.class) @OperateOnDeployment(DEPLOYMENT_1) URL baseURL) throws Exception {
 
         // returns the URL of the deployment (http://127.0.0.1:8180/distributable)
         URI uri = SimpleServlet.createURI(baseURL);
@@ -212,9 +211,9 @@ public class DistributableTestCase extends AbstractClusteringTestCase {
     }
 
     /**
-     * Request task to request a long running URL and then undeploy / shutdown the server.
+     * Request task to request a long-running URL and then undeploy / shutdown the server.
      */
-    private class RequestTask implements Callable<HttpResponse> {
+    private static class RequestTask implements Callable<HttpResponse> {
 
         private final HttpClient client;
         private final URI uri;

@@ -5,16 +5,15 @@
 
 package org.jboss.as.test.clustering.cluster.ejb.timer.remote;
 
-import static org.jboss.as.test.clustering.InfinispanServerUtil.infinispanServerTestRule;
-
+import org.infinispan.server.test.junit5.InfinispanServerExtension;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.TargetsContainer;
 import org.jboss.as.arquillian.api.ServerSetup;
+import org.jboss.as.test.clustering.InfinispanServerUtil;
 import org.jboss.as.test.clustering.cluster.ejb.timer.AbstractTimerServiceTestCase;
 import org.jboss.as.test.shared.ManagementServerSetupTask;
 import org.jboss.shrinkwrap.api.Archive;
-import org.junit.ClassRule;
-import org.junit.rules.TestRule;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 /**
  * @author Paul Ferraro
@@ -22,8 +21,8 @@ import org.junit.rules.TestRule;
 @ServerSetup({ InfinispanServerSetupTask.class, HotRodPersistentTimerServiceTestCase.TimerManagementSetupTask.class })
 public class HotRodPersistentTimerServiceTestCase extends AbstractTimerServiceTestCase {
 
-    @ClassRule
-    public static final TestRule INFINISPAN_SERVER_RULE = infinispanServerTestRule();
+    @RegisterExtension
+    public static final InfinispanServerExtension SERVER = InfinispanServerUtil.infinispanServerExtension();
 
     @Deployment(name = DEPLOYMENT_1, managed = false, testable = false)
     @TargetsContainer(NODE_1)
