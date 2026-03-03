@@ -147,6 +147,9 @@ public class JakartaDataEarTestCase {
             performCheck(performGet(client, base, PUBLISHER, API, PERSON, Constants.CHANTAL), 200, Constants.CHANTAL, Constants.CHANTAL_BDAY.toString());
             performCheck(performGet(client, base, LIBRARY_BOARD, API, PERSON, Constants.BARRY), 200, Constants.BARRY, Constants.BARRY_BDAY.toString());
 
+            // WFLY-21461 check findAll behavior
+            performCheck(performGet(client, base, PUBLISHER, API, PERSON), 200, Constants.CHANTAL, Constants.ANDREA_BDAY.toString(), Constants.CHANTAL_BDAY.toString(), Constants.BARRY_BDAY.toString());
+
             // Sign an author
             performCheck(performGet(client, base, PUBLISHER, API, AUTHOR, Constants.BARRY), 404);
             performCheck(performPut(client, base, PUBLISHER, API, AUTHOR, Constants.BARRY), 200, Constants.BARRY, Constants.BARRY_BDAY.toString());
