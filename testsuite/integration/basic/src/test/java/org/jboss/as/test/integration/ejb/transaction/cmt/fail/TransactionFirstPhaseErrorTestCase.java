@@ -7,17 +7,20 @@ package org.jboss.as.test.integration.ejb.transaction.cmt.fail;
 
 import static org.jboss.as.test.shared.PermissionUtils.createPermissionsXmlAsset;
 
+import java.io.File;
 import java.util.PropertyPermission;
 
 import jakarta.ejb.EJBException;
 import jakarta.inject.Inject;
 import javax.naming.InitialContext;
-import javax.naming.NamingException;
 import javax.transaction.xa.XAResource;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
+import org.jboss.as.arquillian.api.ServerSetup;
+import org.jboss.as.arquillian.api.ServerSetupTask;
+import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.test.integration.transactions.TransactionCheckerSingleton;
 import org.jboss.as.test.integration.transactions.RemoteLookups;
 import org.jboss.as.test.integration.transactions.TxTestUtil;
@@ -36,7 +39,39 @@ import org.junit.runner.RunWith;
  * Test of behavior when one phase commit is used.
  */
 @RunWith(Arquillian.class)
+@ServerSetup(TransactionFirstPhaseErrorTestCase.ObjectStoreCleanupTask.class)
 public class TransactionFirstPhaseErrorTestCase {
+
+    static class ObjectStoreCleanupTask implements ServerSetupTask {
+        @Override
+        public void setup(ManagementClient managementClient, String containerId) throws Exception {
+        }
+
+        @Override
+        public void tearDown(ManagementClient managementClient, String containerId) throws Exception {
+            String jbossHome = System.getProperty("jboss.home");
+            if (jbossHome == null) {
+                return;
+            }
+            File rootDir = new File(jbossHome, "standalone" + File.separator + "data" + File.separator + "tx-object-store");
+            if (rootDir.exists() && rootDir.isDirectory()) {
+                deleteContents(rootDir);
+            }
+        }
+
+        private void deleteContents(File dir) {
+            File[] files = dir.listFiles();
+            if (files == null) {
+                return;
+            }
+            for (File file : files) {
+                if (file.isDirectory()) {
+                    deleteContents(file);
+                }
+                file.delete();
+            }
+        }
+    }
 
     @ArquillianResource
     private InitialContext initCtx;
@@ -58,7 +93,7 @@ public class TransactionFirstPhaseErrorTestCase {
     }
 
     @Before
-    public void startUp() throws NamingException {
+    public void startUp() {
         checker.resetAll();
     }
 
