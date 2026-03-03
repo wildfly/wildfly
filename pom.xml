@@ -551,7 +551,7 @@
         <version.org.jboss.ws.jaxws-undertow-httpspi>2.0.0.Final</version.org.jboss.ws.jaxws-undertow-httpspi>
         <version.org.jboss.ws.spi>5.0.0.Final</version.org.jboss.ws.spi>
         <version.org.jboss.xnio.netty.netty-xnio-transport>0.1.10.Final</version.org.jboss.xnio.netty.netty-xnio-transport>
-        <version.org.jctools.jctools-core>4.0.5</version.org.jctools.jctools-core>
+        <version.org.jctools.jctools-core>4.0.6</version.org.jctools.jctools-core>
         <version.org.jgroups>5.5.2.Final</version.org.jgroups>
         <version.org.jgroups.aws>4.0.0.Final</version.org.jgroups.aws>
         <version.org.jgroups.azure>2.0.2.Final</version.org.jgroups.azure>
