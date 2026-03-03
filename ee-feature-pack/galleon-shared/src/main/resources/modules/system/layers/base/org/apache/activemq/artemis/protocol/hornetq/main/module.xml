@@ -27,7 +27,7 @@
     </properties>
 
     <resources>
-        <artifact name="${org.apache.activemq:artemis-hornetq-protocol}"/>
+        <artifact name="${org.apache.artemis:artemis-hornetq-protocol}"/>
     </resources>
 
     <dependencies>
