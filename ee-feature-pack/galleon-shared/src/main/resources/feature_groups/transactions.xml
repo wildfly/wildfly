@@ -9,6 +9,7 @@
         <param name="node-identifier" value="${jboss.tx.node.id:1}"/>
         <param name="status-socket-binding" value="txn-status-manager"/>
         <param name="socket-binding" value="txn-recovery-environment"/>
+        <param name="transactions-recovery-graceful-shutdown" value="false"/>
         <param name="process-id-uuid" value="true"/>
         <param name="object-store-path" value="tx-object-store"/>
         <param name="object-store-relative-to" value="jboss.server.data.dir"/>

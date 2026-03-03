@@ -27,11 +27,13 @@ import java.util.concurrent.CompletionStage;
 public class RecoverySuspendController implements SuspendableActivity, PropertyChangeListener {
 
     private final RecoveryManagerService recoveryManagerService;
+    private final boolean gracefulRecoveryShutdown;
     private boolean suspended;
     private boolean running;
 
-    public RecoverySuspendController(RecoveryManagerService recoveryManagerService) {
+    public RecoverySuspendController(RecoveryManagerService recoveryManagerService, boolean gracefulRecoveryShutdown) {
         this.recoveryManagerService = recoveryManagerService;
+        this.gracefulRecoveryShutdown = gracefulRecoveryShutdown;
     }
 
     @Override
@@ -53,7 +55,7 @@ public class RecoverySuspendController implements SuspendableActivity, PropertyC
             return CompletableFuture.runAsync(() ->
             {
                 TransactionLogger.ROOT_LOGGER.scanSuspensionInitiated();
-                recoveryManagerService.suspend(false, true);
+                recoveryManagerService.suspend(false, gracefulRecoveryShutdown);
                 TransactionLogger.ROOT_LOGGER.scanSuspensionCompleted();
             });
         }

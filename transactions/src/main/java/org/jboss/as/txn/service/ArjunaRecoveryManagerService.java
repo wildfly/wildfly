@@ -61,6 +61,7 @@ public class ArjunaRecoveryManagerService implements Service {
     private RecoverySuspendController recoverySuspendController;
     private boolean recoveryListener;
     private final boolean jts;
+    private final boolean gracefulRecoveryShutdown;
     private final Supplier<SocketBindingManager> bindingManagerSupplier;
 
     public ArjunaRecoveryManagerService(final Consumer<RecoveryManagerService> consumer,
@@ -70,7 +71,8 @@ public class ArjunaRecoveryManagerService implements Service {
                                         final Supplier<SuspendController> suspendControllerSupplier,
                                         final Supplier<ProcessStateNotifier> processStateSupplier,
                                         final Supplier<ORB> orbSupplier,
-                                        final boolean recoveryListener, final boolean jts) {
+                                        final boolean recoveryListener, final boolean jts,
+                                        final boolean gracefulRecoveryShutdown) {
         this.consumer = consumer;
         this.recoveryBindingSupplier = recoveryBindingSupplier;
         this.statusBindingSupplier = statusBindingSupplier;
@@ -80,6 +82,7 @@ public class ArjunaRecoveryManagerService implements Service {
         this.recoveryListener = recoveryListener;
         this.orbSupplier = orbSupplier;
         this.jts = jts;
+        this.gracefulRecoveryShutdown = gracefulRecoveryShutdown;
     }
 
     public void start(final StartContext context) throws StartException {
@@ -156,7 +159,7 @@ public class ArjunaRecoveryManagerService implements Service {
                 throw TransactionLogger.ROOT_LOGGER.managerStartFailure(e, "Recovery");
             }
         }
-        recoverySuspendController = new RecoverySuspendController(recoveryManagerService);
+        recoverySuspendController = new RecoverySuspendController(recoveryManagerService, gracefulRecoveryShutdown);
         processStateSupplier.get().addPropertyChangeListener(recoverySuspendController);
         suspendControllerSupplier.get().registerActivity(recoverySuspendController, SuspendableActivityRegistry.SuspendPriority.LAST);
         consumer.accept(recoveryManagerService);
