@@ -4,11 +4,11 @@
  */
 package org.jboss.as.test.clustering.cluster.singleton;
 
+import static org.junit.jupiter.api.Assertions.*;
+
 import java.net.URL;
 
 import jakarta.servlet.http.HttpServletResponse;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;

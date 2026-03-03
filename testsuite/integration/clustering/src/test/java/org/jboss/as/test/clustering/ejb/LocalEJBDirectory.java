@@ -6,7 +6,6 @@
 package org.jboss.as.test.clustering.ejb;
 
 import java.util.Properties;
-
 import javax.naming.NamingException;
 
 /**

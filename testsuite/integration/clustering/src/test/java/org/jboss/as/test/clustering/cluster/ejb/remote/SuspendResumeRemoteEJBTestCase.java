@@ -5,6 +5,19 @@
 
 package org.jboss.as.test.clustering.cluster.ejb.remote;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.*;
+import static org.junit.jupiter.api.Assertions.*;
+
+import java.io.IOException;
+import java.time.Duration;
+import java.time.Instant;
+import java.util.Date;
+import java.util.Map;
+import java.util.PropertyPermission;
+import java.util.Set;
+import java.util.TreeMap;
+import java.util.TreeSet;
+
 import org.apache.commons.lang3.RandomUtils;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.TargetsContainer;
@@ -32,22 +45,6 @@ import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
 import org.junit.jupiter.api.extension.ExtendWith;
-
-import java.io.IOException;
-import java.time.Duration;
-import java.time.Instant;
-import java.util.Date;
-import java.util.Map;
-import java.util.PropertyPermission;
-import java.util.Set;
-import java.util.TreeMap;
-import java.util.TreeSet;
-
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
-import static org.junit.jupiter.api.Assertions.*;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 
 /**
  * Test for WFLY-13871.

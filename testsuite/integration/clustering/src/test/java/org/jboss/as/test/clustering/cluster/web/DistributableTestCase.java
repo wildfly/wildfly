@@ -4,6 +4,8 @@
  */
 package org.jboss.as.test.clustering.cluster.web;
 
+import static org.junit.jupiter.api.Assertions.*;
+
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -15,8 +17,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
 import jakarta.servlet.http.HttpServletResponse;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;

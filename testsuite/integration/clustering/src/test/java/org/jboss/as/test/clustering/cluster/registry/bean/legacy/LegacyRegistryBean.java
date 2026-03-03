@@ -9,6 +9,9 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.AbstractMap;
 import java.util.Map;
+import javax.naming.Context;
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
 
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
@@ -16,9 +19,6 @@ import jakarta.annotation.Resource;
 import jakarta.ejb.Local;
 import jakarta.ejb.Singleton;
 import jakarta.ejb.Startup;
-import javax.naming.Context;
-import javax.naming.InitialContext;
-import javax.naming.NamingException;
 
 import org.wildfly.clustering.Registration;
 import org.wildfly.clustering.group.Group;

@@ -11,9 +11,9 @@ import static org.jboss.as.controller.client.helpers.ClientConstants.READ_RESOUR
 import static org.jboss.as.controller.client.helpers.ClientConstants.RECURSIVE;
 import static org.jboss.as.controller.client.helpers.ClientConstants.STATUS;
 import static org.jboss.as.controller.client.helpers.ClientConstants.SUCCESS;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.*;
 import static org.jboss.as.test.integration.management.util.ModelUtil.createOpNode;
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
 
 import java.util.Set;
 

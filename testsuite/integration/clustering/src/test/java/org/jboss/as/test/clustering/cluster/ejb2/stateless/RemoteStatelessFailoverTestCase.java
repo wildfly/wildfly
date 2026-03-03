@@ -7,15 +7,13 @@ package org.jboss.as.test.clustering.cluster.ejb2.stateless;
 
 import static org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase.*;
 import static org.jboss.as.test.shared.PermissionUtils.createPermissionsXmlAsset;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.PropertyPermission;
-
 import javax.naming.NamingException;
 
 import org.jboss.arquillian.container.test.api.ContainerController;

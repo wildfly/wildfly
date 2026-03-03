@@ -5,6 +5,19 @@
 
 package org.jboss.as.test.clustering.cluster.ejb2.remote;
 
+import static org.jboss.as.controller.client.helpers.ClientConstants.CONTROLLER_PROCESS_STATE_STARTING;
+import static org.jboss.as.controller.client.helpers.ClientConstants.CONTROLLER_PROCESS_STATE_STOPPING;
+import static org.jboss.as.controller.client.helpers.ClientConstants.RUNNING_STATE_SUSPENDED;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.*;
+import static org.junit.jupiter.api.Assertions.*;
+
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.PropertyPermission;
+import java.util.Set;
+
 import org.apache.commons.lang3.RandomUtils;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.TargetsContainer;
@@ -33,23 +46,6 @@ import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
 import org.junit.jupiter.api.extension.ExtendWith;
-
-import java.io.IOException;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.PropertyPermission;
-import java.util.Set;
-
-import static org.jboss.as.controller.client.helpers.ClientConstants.CONTROLLER_PROCESS_STATE_STARTING;
-import static org.jboss.as.controller.client.helpers.ClientConstants.CONTROLLER_PROCESS_STATE_STOPPING;
-import static org.jboss.as.controller.client.helpers.ClientConstants.RUNNING_STATE_SUSPENDED;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assertions.fail;
 
 /**
  * Test for WFLY-13871.

@@ -5,13 +5,12 @@
 
 package org.jboss.as.test.clustering.cluster.jpa.custom;
 
+import static org.junit.jupiter.api.Assertions.*;
+
 import java.net.URISyntaxException;
 import java.net.URL;
 
 import jakarta.ws.rs.client.Client;
-
-import static org.junit.jupiter.api.Assertions.*;
-
 import jakarta.ws.rs.client.ClientBuilder;
 import jakarta.ws.rs.client.WebTarget;
 import jakarta.ws.rs.core.Response;

@@ -5,11 +5,11 @@
 
 package org.jboss.as.test.clustering.single.infinispan.query;
 
+import static org.junit.jupiter.api.Assertions.*;
+
 import jakarta.annotation.Resource;
 
 import org.infinispan.client.hotrod.RemoteCache;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import org.infinispan.client.hotrod.RemoteCacheContainer;
 import org.infinispan.protostream.SerializationContextInitializer;
 import org.jboss.arquillian.container.test.api.Deployment;

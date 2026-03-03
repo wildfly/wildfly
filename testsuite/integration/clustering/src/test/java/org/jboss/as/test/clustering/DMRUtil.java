@@ -6,12 +6,12 @@
 package org.jboss.as.test.clustering;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.*;
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
 
-import org.jboss.logging.Logger;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.test.integration.management.ManagementOperations;
 import org.jboss.dmr.ModelNode;
+import org.jboss.logging.Logger;
 
 /**
  * @author Ondrej Chaloupka

@@ -5,11 +5,11 @@
 
 package org.jboss.as.test.clustering.cluster.ejb.remote;
 
+import static org.junit.jupiter.api.Assertions.*;
+
 import java.util.PropertyPermission;
 
 import jakarta.ejb.EJBException;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.TargetsContainer;

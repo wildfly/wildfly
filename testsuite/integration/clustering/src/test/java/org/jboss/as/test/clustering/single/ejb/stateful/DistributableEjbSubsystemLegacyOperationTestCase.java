@@ -4,7 +4,7 @@
  */
 package org.jboss.as.test.clustering.single.ejb.stateful;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit5.ArquillianExtension;
@@ -15,12 +15,12 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.common.Util;
+import org.jboss.as.test.clustering.ejb.EJBDirectory;
 import org.jboss.as.test.clustering.ejb.RemoteEJBDirectory;
 import org.jboss.as.test.clustering.single.ejb.stateful.bean.Incrementor;
 import org.jboss.as.test.clustering.single.ejb.stateful.bean.Result;
 import org.jboss.as.test.clustering.single.ejb.stateful.bean.StatefulIncrementorBean;
 import org.jboss.as.test.clustering.single.ejb.stateful.bean.TransientStatefulIncrementorBean;
-import org.jboss.as.test.clustering.ejb.EJBDirectory;
 import org.jboss.as.test.shared.ManagementServerSetupTask;
 import org.jboss.as.test.shared.SnapshotRestoreSetupTask;
 import org.jboss.dmr.ModelNode;

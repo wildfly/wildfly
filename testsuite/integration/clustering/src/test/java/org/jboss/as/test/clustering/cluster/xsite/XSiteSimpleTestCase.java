@@ -4,11 +4,12 @@
  */
 package org.jboss.as.test.clustering.cluster.xsite;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
 
-import jakarta.servlet.http.HttpServletResponse;
 import java.net.URI;
 import java.net.URL;
+
+import jakarta.servlet.http.HttpServletResponse;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;

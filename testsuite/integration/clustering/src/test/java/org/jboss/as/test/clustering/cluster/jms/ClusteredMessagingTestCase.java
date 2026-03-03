@@ -5,8 +5,7 @@
 
 package org.jboss.as.test.clustering.cluster.jms;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.*;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -14,13 +13,14 @@ import java.util.Arrays;
 import java.util.Properties;
 import java.util.Set;
 import java.util.UUID;
+import javax.naming.Context;
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
+
 import jakarta.jms.ConnectionFactory;
 import jakarta.jms.Destination;
 import jakarta.jms.JMSConsumer;
 import jakarta.jms.JMSContext;
-import javax.naming.Context;
-import javax.naming.InitialContext;
-import javax.naming.NamingException;
 
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit5.ArquillianExtension;

@@ -5,11 +5,11 @@
 
 package org.jboss.as.test.clustering.cluster.ejb.remote.bean;
 
+import java.util.Date;
 import java.util.concurrent.TimeUnit;
 
 import jakarta.ejb.Remote;
 import jakarta.ejb.Stateless;
-import java.util.Date;
 
 @Stateless
 @Remote(Heartbeat.class)

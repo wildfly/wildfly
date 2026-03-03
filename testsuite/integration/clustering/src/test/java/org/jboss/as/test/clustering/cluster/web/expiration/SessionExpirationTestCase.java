@@ -4,6 +4,8 @@
  */
 package org.jboss.as.test.clustering.cluster.web.expiration;
 
+import static org.junit.jupiter.api.Assertions.*;
+
 import java.net.URL;
 import java.time.Duration;
 import java.time.Instant;
@@ -15,11 +17,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
-
 import org.infinispan.transaction.TransactionMode;
-
-import static org.junit.jupiter.api.Assertions.*;
-
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;

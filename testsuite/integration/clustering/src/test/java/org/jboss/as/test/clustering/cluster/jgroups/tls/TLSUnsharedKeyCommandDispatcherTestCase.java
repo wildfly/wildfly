@@ -4,7 +4,7 @@
  */
 package org.jboss.as.test.clustering.cluster.jgroups.tls;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
 
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.test.clustering.cluster.dispatcher.CommandDispatcherTestCase;

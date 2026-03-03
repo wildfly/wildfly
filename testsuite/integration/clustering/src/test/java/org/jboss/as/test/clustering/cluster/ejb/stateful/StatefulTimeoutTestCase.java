@@ -5,13 +5,13 @@
 
 package org.jboss.as.test.clustering.cluster.ejb.stateful;
 
+import static org.junit.jupiter.api.Assertions.*;
+
 import java.io.IOException;
 import java.net.URI;
 import java.net.URL;
 
 import jakarta.servlet.http.HttpServletResponse;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;

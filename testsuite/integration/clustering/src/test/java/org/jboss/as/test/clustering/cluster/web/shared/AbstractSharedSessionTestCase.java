@@ -4,12 +4,12 @@
  */
 package org.jboss.as.test.clustering.cluster.web.shared;
 
+import static org.junit.jupiter.api.Assertions.*;
+
 import java.net.URI;
 import java.net.URL;
 
 import jakarta.servlet.http.HttpServletResponse;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;

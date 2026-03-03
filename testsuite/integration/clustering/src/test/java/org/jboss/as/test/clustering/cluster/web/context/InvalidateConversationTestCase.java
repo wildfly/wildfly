@@ -5,15 +5,14 @@
 
 package org.jboss.as.test.clustering.cluster.web.context;
 
+import static org.junit.jupiter.api.Assertions.*;
+
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Set;
 
 import jakarta.servlet.http.HttpServletResponse;
-
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
@@ -24,8 +23,8 @@ import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.container.test.api.TargetsContainer;
 import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
-import org.jboss.as.test.clustering.TopologyChangeListenerUtil;
 import org.jboss.as.test.clustering.ClusterTestUtil;
+import org.jboss.as.test.clustering.TopologyChangeListenerUtil;
 import org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase;
 import org.jboss.as.test.clustering.cluster.web.DistributableTestCase;
 import org.jboss.as.test.http.util.TestHttpClientUtils;

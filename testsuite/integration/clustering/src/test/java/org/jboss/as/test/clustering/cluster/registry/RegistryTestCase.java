@@ -6,8 +6,7 @@
 package org.jboss.as.test.clustering.cluster.registry;
 
 import static org.jboss.as.test.shared.PermissionUtils.createPermissionsXmlAsset;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
 
 import java.util.Collection;
 import java.util.PropertyPermission;

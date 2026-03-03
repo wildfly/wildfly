@@ -4,6 +4,8 @@
  */
 package org.jboss.as.test.clustering.cluster.ejb.timer;
 
+import static org.junit.jupiter.api.Assertions.*;
+
 import java.net.URI;
 import java.net.URL;
 import java.time.Duration;
@@ -16,8 +18,6 @@ import java.util.TreeMap;
 import java.util.concurrent.TimeUnit;
 
 import jakarta.servlet.http.HttpServletResponse;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 import org.apache.http.Header;
 import org.apache.http.client.methods.CloseableHttpResponse;

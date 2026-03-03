@@ -5,40 +5,7 @@
 
 package org.jboss.as.test.clustering.cluster.ejb.remote.byteman;
 
-import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.container.test.api.TargetsContainer;
-import org.jboss.arquillian.junit5.ArquillianExtension;
-import org.jboss.byteman.contrib.bmunit.BMRule;
-import org.jboss.byteman.contrib.bmunit.BMRules;
-import org.jboss.byteman.contrib.bmunit.WithByteman;
-import org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase;
-import org.jboss.as.test.clustering.cluster.ejb.remote.bean.Incrementor;
-import org.jboss.as.test.clustering.cluster.ejb.remote.bean.IncrementorBean;
-import org.jboss.as.test.clustering.cluster.ejb.remote.bean.Result;
-import org.jboss.as.test.clustering.cluster.ejb.remote.bean.StatelessIncrementorBean;
-import org.jboss.as.test.clustering.ejb.EJBDirectory;
-import org.jboss.as.test.clustering.ejb.NamingEJBDirectory;
-import org.jboss.as.test.clustering.ejb.RemoteEJBDirectory;
-import org.jboss.as.test.shared.TimeoutUtil;
-import org.jboss.as.test.shared.PermissionUtils;
-import org.jboss.ejb.client.ClusterNodeSelector;
-import org.jboss.ejb.client.EJBClientConnection;
-import org.jboss.ejb.client.EJBClientContext;
-import org.jboss.ejb.protocol.remote.RemoteTransportProvider;
-import org.jboss.logging.Logger;
-import org.jboss.shrinkwrap.api.Archive;
-import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import jakarta.ejb.EJBException;
-
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
-import jakarta.ejb.NoSuchEJBException;
-import javax.naming.NamingException;
+import static org.junit.jupiter.api.Assertions.*;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -50,6 +17,38 @@ import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import javax.naming.NamingException;
+
+import jakarta.ejb.EJBException;
+import jakarta.ejb.NoSuchEJBException;
+
+import org.jboss.arquillian.container.test.api.Deployment;
+import org.jboss.arquillian.container.test.api.RunAsClient;
+import org.jboss.arquillian.container.test.api.TargetsContainer;
+import org.jboss.arquillian.junit5.ArquillianExtension;
+import org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase;
+import org.jboss.as.test.clustering.cluster.ejb.remote.bean.Incrementor;
+import org.jboss.as.test.clustering.cluster.ejb.remote.bean.IncrementorBean;
+import org.jboss.as.test.clustering.cluster.ejb.remote.bean.Result;
+import org.jboss.as.test.clustering.cluster.ejb.remote.bean.StatelessIncrementorBean;
+import org.jboss.as.test.clustering.ejb.EJBDirectory;
+import org.jboss.as.test.clustering.ejb.NamingEJBDirectory;
+import org.jboss.as.test.clustering.ejb.RemoteEJBDirectory;
+import org.jboss.as.test.shared.PermissionUtils;
+import org.jboss.as.test.shared.TimeoutUtil;
+import org.jboss.byteman.contrib.bmunit.BMRule;
+import org.jboss.byteman.contrib.bmunit.BMRules;
+import org.jboss.byteman.contrib.bmunit.WithByteman;
+import org.jboss.ejb.client.ClusterNodeSelector;
+import org.jboss.ejb.client.EJBClientConnection;
+import org.jboss.ejb.client.EJBClientContext;
+import org.jboss.ejb.protocol.remote.RemoteTransportProvider;
+import org.jboss.logging.Logger;
+import org.jboss.shrinkwrap.api.Archive;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  *

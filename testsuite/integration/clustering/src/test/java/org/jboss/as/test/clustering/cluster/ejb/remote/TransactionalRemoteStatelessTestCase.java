@@ -5,17 +5,16 @@
 
 package org.jboss.as.test.clustering.cluster.ejb.remote;
 
+import static org.junit.jupiter.api.Assertions.*;
+
 import java.net.URISyntaxException;
 import java.util.Hashtable;
 import java.util.PropertyPermission;
-
-import jakarta.ejb.NoSuchEJBException;
-
-import static org.junit.jupiter.api.Assertions.*;
-
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
+
+import jakarta.ejb.NoSuchEJBException;
 import jakarta.transaction.Status;
 import jakarta.transaction.UserTransaction;
 
@@ -31,9 +30,9 @@ import org.jboss.as.test.clustering.cluster.ejb.remote.bean.Result;
 import org.jboss.as.test.clustering.cluster.ejb.remote.bean.StatelessTransactionBean;
 import org.jboss.as.test.clustering.cluster.ejb.remote.bean.StatelessTransactionNoResourceBean;
 import org.jboss.as.test.clustering.ejb.EJBDirectory;
+import org.jboss.as.test.integration.transactions.RemoteLookups;
 import org.jboss.as.test.integration.transactions.TransactionCheckerSingleton;
 import org.jboss.as.test.integration.transactions.TransactionCheckerSingletonRemote;
-import org.jboss.as.test.integration.transactions.RemoteLookups;
 import org.jboss.as.test.shared.PermissionUtils;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;

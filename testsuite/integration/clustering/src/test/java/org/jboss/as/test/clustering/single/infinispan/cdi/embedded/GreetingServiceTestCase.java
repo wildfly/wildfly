@@ -5,8 +5,7 @@
 
 package org.jboss.as.test.clustering.single.infinispan.cdi.embedded;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 import jakarta.inject.Inject;
 

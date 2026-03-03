@@ -6,8 +6,7 @@
 package org.jboss.as.test.clustering.cluster.web.authentication;
 
 import static org.jboss.as.test.shared.PermissionUtils.createPermissionsXmlAsset;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.*;
 
 import java.net.URI;
 import java.net.URL;

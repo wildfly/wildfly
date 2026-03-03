@@ -4,6 +4,8 @@
  */
 package org.jboss.as.test.clustering.cluster.web;
 
+import static org.junit.jupiter.api.Assertions.*;
+
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -22,11 +24,7 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.impl.client.CloseableHttpClient;
-
 import org.infinispan.configuration.cache.CacheMode;
-
-import static org.junit.jupiter.api.Assertions.*;
-
 import org.infinispan.transaction.TransactionMode;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.junit5.ArquillianExtension;

@@ -4,7 +4,7 @@
  */
 package org.jboss.as.test.clustering.single.dispatcher;
 
-import static org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase.NODE_1;
+import static org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 import org.jboss.arquillian.container.test.api.Deployment;

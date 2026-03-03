@@ -7,10 +7,9 @@ package org.jboss.as.test.clustering.cluster.web.persistence;
 
 import org.infinispan.configuration.cache.CacheMode;
 import org.infinispan.transaction.TransactionMode;
-
 import org.jboss.arquillian.junit5.ArquillianExtension;
-import org.jboss.as.test.clustering.ClusterTestUtil;
 import org.jboss.as.test.clustering.ClusterDatabaseTestUtil;
+import org.jboss.as.test.clustering.ClusterTestUtil;
 import org.jboss.as.test.clustering.cluster.web.AbstractWebFailoverTestCase;
 import org.jboss.as.test.clustering.single.web.Mutable;
 import org.jboss.as.test.clustering.single.web.SimpleServlet;

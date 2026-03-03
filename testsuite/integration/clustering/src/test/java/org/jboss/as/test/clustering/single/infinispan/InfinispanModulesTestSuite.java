@@ -11,8 +11,8 @@ import org.jboss.as.test.clustering.single.infinispan.cdi.embedded.GreetingCache
 import org.jboss.as.test.clustering.single.infinispan.cdi.embedded.GreetingServiceTestCase;
 import org.jboss.as.test.clustering.single.infinispan.cdi.remote.RemoteGreetingServiceTestCase;
 import org.jboss.as.test.clustering.single.infinispan.query.ContainerManagedHotRodClientTestCase;
-import org.jboss.as.test.clustering.single.infinispan.query.HotRodClientTestCase;
 import org.jboss.as.test.clustering.single.infinispan.query.ContainerRemoteQueryTestCase;
+import org.jboss.as.test.clustering.single.infinispan.query.HotRodClientTestCase;
 import org.jboss.as.test.clustering.single.infinispan.query.RemoteQueryTestCase;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.junit.runner.RunWith;

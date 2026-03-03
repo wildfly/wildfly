@@ -5,6 +5,8 @@
 
 package org.jboss.as.test.clustering.single.web.passivation;
 
+import static org.junit.jupiter.api.Assertions.*;
+
 import java.net.URL;
 import java.time.Duration;
 import java.time.Instant;
@@ -15,8 +17,6 @@ import java.util.Queue;
 import java.util.stream.Stream;
 
 import jakarta.servlet.http.HttpServletResponse;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 import org.apache.http.Header;
 import org.apache.http.HttpResponse;

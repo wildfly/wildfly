@@ -5,12 +5,11 @@
 
 package org.jboss.as.test.clustering.cluster.provider;
 
+import static org.junit.jupiter.api.Assertions.*;
+
 import java.util.Collection;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import org.jboss.arquillian.container.test.api.TargetsContainer;
 import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase;

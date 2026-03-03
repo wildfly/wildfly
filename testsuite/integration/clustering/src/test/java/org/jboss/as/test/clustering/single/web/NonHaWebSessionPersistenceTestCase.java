@@ -4,8 +4,7 @@
  */
 package org.jboss.as.test.clustering.single.web;
 
-import static org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase.CONTAINER_SINGLE;
-import static org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase.DEPLOYMENT_1;
+import static org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase.*;
 import static org.jboss.as.test.shared.util.AssumeTestGroupUtil.isBootableJar;
 import static org.junit.jupiter.api.Assertions.*;
 

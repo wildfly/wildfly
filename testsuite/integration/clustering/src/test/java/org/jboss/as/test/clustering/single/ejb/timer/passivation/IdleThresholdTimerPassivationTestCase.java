@@ -4,13 +4,13 @@
  */
 package org.jboss.as.test.clustering.single.ejb.timer.passivation;
 
+import static org.junit.jupiter.api.Assertions.*;
+
 import java.time.Duration;
 import java.util.Map;
 import java.util.Objects;
 
 import org.awaitility.Awaitility;
-
-import static org.junit.jupiter.api.Assertions.*;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.as.arquillian.api.ServerSetup;
@@ -23,14 +23,14 @@ import org.jboss.as.test.clustering.single.ejb.timer.passivation.bean.TimerTrack
 import org.jboss.as.test.clustering.single.ejb.timer.passivation.bean.TimerTrackerBean;
 import org.jboss.as.test.shared.ManagementServerSetupTask;
 import org.jboss.as.test.shared.TimeoutUtil;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.wildfly.test.stabilitylevel.StabilityServerSetupSnapshotRestoreTasks;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.wildfly.test.stabilitylevel.StabilityServerSetupSnapshotRestoreTasks;
 
 /**
  * Tests that EJB timers are passivated after the configured idle threshold and that

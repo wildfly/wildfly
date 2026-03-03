@@ -5,12 +5,11 @@
 
 package org.jboss.as.test.clustering.cluster.ejb2.stateful.failover;
 
+import static org.junit.jupiter.api.Assertions.*;
+
 import javax.naming.NamingException;
 
 import org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase;
-
-import static org.junit.jupiter.api.Assertions.*;
-
 import org.jboss.as.test.clustering.cluster.ejb2.stateful.failover.bean.shared.CounterRemote;
 import org.jboss.as.test.clustering.cluster.ejb2.stateful.failover.bean.shared.CounterRemoteHome;
 import org.jboss.as.test.clustering.cluster.ejb2.stateful.failover.bean.shared.CounterResult;

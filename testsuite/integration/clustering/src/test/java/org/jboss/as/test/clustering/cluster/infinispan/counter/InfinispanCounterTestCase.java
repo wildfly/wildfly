@@ -6,7 +6,7 @@
 package org.jboss.as.test.clustering.cluster.infinispan.counter;
 
 import static org.jboss.as.test.shared.PermissionUtils.createPermissionsXmlAsset;
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
 
 import java.io.FilePermission;
 import java.io.IOException;

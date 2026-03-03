@@ -4,6 +4,8 @@
  */
 package org.jboss.as.test.clustering.cluster.jsf;
 
+import static org.junit.jupiter.api.Assertions.*;
+
 import java.io.IOException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
@@ -14,9 +16,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import jakarta.servlet.http.HttpServletResponse;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;

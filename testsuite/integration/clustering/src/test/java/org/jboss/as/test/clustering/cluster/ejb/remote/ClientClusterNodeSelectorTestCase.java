@@ -5,7 +5,15 @@
 
 package org.jboss.as.test.clustering.cluster.ejb.remote;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
+
+import java.net.URI;
+import java.net.URL;
+import java.util.Date;
+import java.util.Properties;
+import java.util.PropertyPermission;
+import javax.naming.Context;
+import javax.naming.InitialContext;
 
 import org.apache.commons.lang3.RandomUtils;
 import org.jboss.arquillian.container.test.api.Deployment;
@@ -18,8 +26,8 @@ import org.jboss.as.test.clustering.cluster.ejb.remote.bean.Heartbeat;
 import org.jboss.as.test.clustering.cluster.ejb.remote.bean.HeartbeatBean;
 import org.jboss.as.test.clustering.cluster.ejb.remote.bean.Result;
 import org.jboss.as.test.clustering.ejb.EJBDirectory;
-import org.jboss.as.test.shared.TimeoutUtil;
 import org.jboss.as.test.shared.PermissionUtils;
+import org.jboss.as.test.shared.TimeoutUtil;
 import org.jboss.ejb.client.ClusterNodeSelector;
 import org.jboss.ejb.client.EJBClientConnection;
 import org.jboss.ejb.client.EJBClientContext;
@@ -30,14 +38,6 @@ import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.wildfly.naming.client.WildFlyInitialContextFactory;
-
-import javax.naming.Context;
-import javax.naming.InitialContext;
-import java.net.URI;
-import java.net.URL;
-import java.util.Date;
-import java.util.Properties;
-import java.util.PropertyPermission;
 
 /**
  * <p>Validates that the provided implementation of {@link ClusterNodeSelector} is being used by the Jakarta Enterprise Beans client to

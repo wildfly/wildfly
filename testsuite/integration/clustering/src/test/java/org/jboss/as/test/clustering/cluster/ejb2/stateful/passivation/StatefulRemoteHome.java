@@ -6,6 +6,7 @@
 package org.jboss.as.test.clustering.cluster.ejb2.stateful.passivation;
 
 import java.rmi.RemoteException;
+
 import jakarta.ejb.CreateException;
 import jakarta.ejb.EJBHome;
 

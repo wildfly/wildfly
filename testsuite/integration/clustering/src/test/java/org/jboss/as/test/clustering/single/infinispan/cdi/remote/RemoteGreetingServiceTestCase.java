@@ -5,11 +5,11 @@
 
 package org.jboss.as.test.clustering.single.infinispan.cdi.remote;
 
+import static org.junit.jupiter.api.Assertions.*;
+
 import jakarta.inject.Inject;
 
 import org.infinispan.client.hotrod.DataFormat;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import org.infinispan.client.hotrod.RemoteCache;
 import org.infinispan.commons.dataconversion.MediaType;
 import org.jboss.arquillian.container.test.api.Deployment;

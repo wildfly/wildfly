@@ -4,6 +4,8 @@
  */
 package org.jboss.as.test.clustering.cluster.web.authentication;
 
+import static org.junit.jupiter.api.Assertions.*;
+
 import java.net.URI;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
@@ -11,8 +13,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import jakarta.servlet.http.HttpServletResponse;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;

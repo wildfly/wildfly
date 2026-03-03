@@ -4,8 +4,8 @@
  */
 package org.jboss.as.test.clustering.single.ejb.timer;
 
-import static org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase.DEPLOYMENT_1;
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 import java.io.IOException;
 import java.net.URI;

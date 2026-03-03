@@ -5,8 +5,7 @@
 
 package org.jboss.as.test.clustering.cluster.singleton.partition;
 
-import static org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase.NODE_1;
-import static org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase.NODE_2;
+import static org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase.*;
 
 import java.util.function.Consumer;
 import java.util.function.Supplier;

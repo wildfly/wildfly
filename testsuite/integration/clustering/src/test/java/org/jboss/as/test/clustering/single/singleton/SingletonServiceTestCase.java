@@ -4,9 +4,8 @@
  */
 package org.jboss.as.test.clustering.single.singleton;
 
-import static org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase.NODE_1;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 import java.net.URI;
 import java.net.URL;

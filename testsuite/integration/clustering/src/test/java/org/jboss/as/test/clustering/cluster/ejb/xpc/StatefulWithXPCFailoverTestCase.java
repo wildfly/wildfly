@@ -5,6 +5,8 @@
 
 package org.jboss.as.test.clustering.cluster.ejb.xpc;
 
+import static org.junit.jupiter.api.Assertions.*;
+
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -12,9 +14,6 @@ import java.net.URL;
 import java.util.Date;
 
 import jakarta.servlet.http.HttpServletResponse;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import org.apache.http.Header;
 import org.apache.http.HttpResponse;

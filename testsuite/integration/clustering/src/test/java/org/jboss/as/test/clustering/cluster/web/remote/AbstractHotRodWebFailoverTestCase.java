@@ -6,12 +6,12 @@
 package org.jboss.as.test.clustering.cluster.web.remote;
 
 import static org.jboss.as.test.clustering.ClusterTestUtil.execute;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.*;
 
 import java.net.URL;
 
 import org.infinispan.configuration.cache.CacheMode;
+import org.infinispan.server.test.junit5.InfinispanServerExtension;
 import org.infinispan.transaction.TransactionMode;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.test.api.ArquillianResource;
@@ -20,7 +20,6 @@ import org.jboss.as.test.clustering.InfinispanServerUtil;
 import org.jboss.as.test.clustering.cluster.web.AbstractWebFailoverTestCase;
 import org.jboss.as.test.clustering.single.web.SimpleServlet;
 import org.jboss.dmr.ModelNode;
-import org.infinispan.server.test.junit5.InfinispanServerExtension;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 

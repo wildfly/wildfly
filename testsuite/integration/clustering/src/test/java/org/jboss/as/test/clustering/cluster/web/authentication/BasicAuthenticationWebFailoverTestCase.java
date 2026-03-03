@@ -4,13 +4,12 @@
  */
 package org.jboss.as.test.clustering.cluster.web.authentication;
 
+import static org.junit.jupiter.api.Assertions.*;
+
 import java.net.URI;
 import java.net.URL;
 
 import jakarta.servlet.http.HttpServletResponse;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.auth.AuthScope;

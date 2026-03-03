@@ -5,6 +5,7 @@
 package org.jboss.as.test.clustering.cluster.cdi.webapp;
 
 import java.io.Serializable;
+
 import jakarta.annotation.Priority;
 import jakarta.decorator.Decorator;
 import jakarta.decorator.Delegate;

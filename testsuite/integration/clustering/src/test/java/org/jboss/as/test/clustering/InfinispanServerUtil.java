@@ -5,9 +5,7 @@
 
 package org.jboss.as.test.clustering;
 
-import static org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase.INFINISPAN_SERVER_HOME;
-import static org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase.INFINISPAN_SERVER_PROFILE;
-import static org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase.INFINISPAN_SERVER_PROFILE_DEFAULT;
+import static org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase.*;
 
 import java.net.URI;
 import java.nio.file.Paths;

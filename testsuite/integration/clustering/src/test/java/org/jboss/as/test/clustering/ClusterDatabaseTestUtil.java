@@ -5,7 +5,7 @@
 
 package org.jboss.as.test.clustering;
 
-import static org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase.DB_PORT;
+import static org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase.*;
 
 import java.sql.SQLException;
 

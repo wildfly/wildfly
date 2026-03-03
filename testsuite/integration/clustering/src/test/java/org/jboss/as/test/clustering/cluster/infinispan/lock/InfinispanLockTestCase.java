@@ -5,12 +5,12 @@
 
 package org.jboss.as.test.clustering.cluster.infinispan.lock;
 
+import static org.junit.jupiter.api.Assertions.*;
+
 import java.net.URL;
 import java.util.UUID;
 
 import jakarta.servlet.http.HttpServletResponse;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;

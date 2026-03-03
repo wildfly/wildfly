@@ -5,11 +5,8 @@
 
 package org.jboss.as.test.clustering.single.infinispan.query;
 
-import static org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase.INFINISPAN_APPLICATION_PASSWORD;
-import static org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase.INFINISPAN_APPLICATION_USER;
-import static org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase.INFINISPAN_SERVER_ADDRESS;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 import java.util.List;
 import java.util.ServiceLoader;
