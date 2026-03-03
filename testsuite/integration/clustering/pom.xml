@@ -358,8 +358,8 @@
             </exclusions>
         </dependency>
         <dependency>
-            <groupId>org.jboss.arquillian.junit</groupId>
-            <artifactId>arquillian-junit-container</artifactId>
+            <groupId>org.jboss.arquillian.junit5</groupId>
+            <artifactId>arquillian-junit5-container</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -400,6 +400,11 @@
         <dependency>
             <groupId>org.wildfly.core</groupId>
             <artifactId>wildfly-cli</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -1479,7 +1484,7 @@
                             <profile>ha</profile>
                         </configuration>
                         <executions>
-                            
+
                             <!-- wildfly-server -->
                             <!-- Provision the configuration that the ts.surefire.clustering.all
                             surefire execution tests. -->
@@ -1555,7 +1560,7 @@
                                     <surefireExecutionForIncludedClasses>ts.surefire.clustering.microprofile</surefireExecutionForIncludedClasses>
                                 </configuration>
                             </execution>
-                            
+
                             <!-- wildfly-server-mod-cluster -->
                             <execution>
                                 <id>scan-clustering-cloud-profile-mod-cluster</id>
@@ -1629,7 +1634,7 @@
                                     <surefireExecutionForIncludedClasses>ts.surefire.clustering.mod_cluster</surefireExecutionForIncludedClasses>
                                 </configuration>
                             </execution>
-                            
+
                             <!-- wildfly-server-jpa-dist -->
                             <execution>
                                 <id>scan-clustering-jpa-dist</id>
@@ -1665,7 +1670,7 @@
                                     <surefireExecutionForIncludedClasses>ts.surefire.clustering.all.jpa2lc</surefireExecutionForIncludedClasses>
                                 </configuration>
                             </execution>
-                            
+
                             <!-- wildfly-server-ejb -->
                             <execution>
                                 <id>scan-clustering-ejb</id>
@@ -1703,7 +1708,7 @@
                                     <surefireExecutionForIncludedClasses>ts.surefire.clustering.ejb</surefireExecutionForIncludedClasses>
                                 </configuration>
                             </execution>
-                            
+
                             <!-- wildfly-server-jaxrs-jsf -->
                             <execution>
                                 <id>scan-clustering-jaxrs-jsf</id>
@@ -1731,7 +1736,7 @@
                                     <surefireExecutionForIncludedClasses>ts.surefire.clustering.jsf</surefireExecutionForIncludedClasses>
                                 </configuration>
                             </execution>
-                            
+
                             <!-- wildfly-server-singleton-ha -->
                             <execution>
                                 <id>scan-clustering-singleton-ha</id>
@@ -1759,7 +1764,7 @@
                                     <surefireExecutionForIncludedClasses>ts.surefire.clustering.singleton-ha</surefireExecutionForIncludedClasses>
                                 </configuration>
                             </execution>
-                            
+
                             <!-- wildfly-server-web-passivation -->
                             <execution>
                                 <id>scan-clustering-web-passivation</id>
@@ -1773,7 +1778,7 @@
                                     <surefireExecutionForIncludedClasses>ts.surefire.clustering.web-passivation</surefireExecutionForIncludedClasses>
                                 </configuration>
                             </execution>
-                            
+
                             <!-- wildfly-server-singleton-local -->
                             <execution>
                                 <id>scan-clustering-singleton-local</id>
@@ -2426,7 +2431,9 @@
                                     <resources>
                                         <resource>
                                             <directory>../../shared/src/main/resources</directory>
-                                            <includes><include>*.properties</include></includes>
+                                            <includes>
+                                                <include>*.properties</include>
+                                            </includes>
                                         </resource>
                                     </resources>
                                 </configuration>
