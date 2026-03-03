@@ -57,8 +57,21 @@
         <surefire.default-test.phase>none</surefire.default-test.phase>
 
         <modular.jdk.testsuite.args>${modular.jdk.args} --add-opens=java.base/javax.crypto=ALL-UNNAMED --add-opens=java.base/sun.security.validator=ALL-UNNAMED --add-opens=java.base/sun.security.x509=ALL-UNNAMED --add-opens=java.base/sun.security.util=ALL-UNNAMED  --add-opens=java.xml/com.sun.org.apache.xalan.internal.xsltc.trax=ALL-UNNAMED</modular.jdk.testsuite.args>
-
+        <!-- Use expansion bom since it managed Awaitility -->
+        <dependency.management.import.test.artifact>wildfly-standard-test-expansion-bom</dependency.management.import.test.artifact>
     </properties>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>${full.maven.groupId}</groupId>
+                <artifactId>${dependency.management.import.test.artifact}</artifactId>
+                <version>${full.maven.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
 
     <dependencies>
         <!-- These seem to be required first so that jbossws-cxf-client ends up on the class path first. Also required for Java 11 -->
@@ -823,6 +836,11 @@
         <dependency>
             <groupId>org.kohsuke.metainf-services</groupId>
             <artifactId>metainf-services</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.awaitility</groupId>
+            <artifactId>awaitility</artifactId>
             <scope>test</scope>
         </dependency>
     </dependencies>
@@ -3196,6 +3214,7 @@
                                         <!-- exclude tests sending messages -->
                                         <exclude>org/jboss/as/test/integration/messaging/jms/localtransaction/LocalTransactionTestCase.java</exclude>
                                         <exclude>org/jboss/as/test/integration/messaging/jms/naming/JndiLookupMessagingDeploymentTestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/messaging/jms/deployment/SingleConnectionActivationPropertyTestCase.java</exclude>
                                     </excludes>
                                     <!-- Starting and stopping the remote broker -->
                                     <properties>
