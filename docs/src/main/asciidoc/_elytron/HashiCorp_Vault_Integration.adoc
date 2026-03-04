@@ -1,0 +1,46 @@
+[[Vault_Integration]]
+= HashiCorp Vault Integration
+
+To use credential stores backed by HashiCorp Vault in the WildFly management model, the Galleon Vault feature pack can be used. This feature pack adds the `hashicorp-vault` subsystem to WildFly, which allows you to define Elytron credential store resources that read secrets from a HashiCorp Vault server. It also allows you to define expressions backed by HashiCorp Vault.
+
+There are several ways to install the Vault feature pack. Refer to the Galleon documentation for these.
+
+== HashiCorp Vault credential store
+
+After the feature pack is installed, define one or more credential store resources in the `hashicorp-vault` subsystem. You can then reference credentials from these stores elsewhere in the configuration using the standard `credential-reference` pattern with `store` and `alias`.
+
+Aliases use the form _`<vault-path>.<key>`_: the path to the secret in Vault (e.g. `secret/database`) followed by a dot and the key name (e.g. `password`), giving `secret/database.password`.
+
+The following management CLI operation adds a minimal credential store that uses a clear-text Vault token (adjust `host-address` and paths for your environment):
+
+[source,options="nowrap"]
+----
+/subsystem=hashicorp-vault/credential-store=my-vault:add( \
+    host-address="http://localhost:8200", \
+    credential-reference={clear-text="myroot"})
+----
+
+=== Credential references backed by HashiCorp Vault
+
+Use the credential store name and alias in any resource that supports `credential-reference` (e.g. datasources, Elytron key stores, etc.). The following XML illustrates that pattern in configuration:
+
+[source,xml,options="nowrap"]
+----
+<credential-reference store="my-vault" alias="secret/database.password"/>
+----
+
+=== Encrypted expressions backed by HashiCorp Vault
+
+You can reference a HashiCorp Vault credential store anywhere expressions are allowed in the management model. The pattern for these expressions is:
+
+[source,text,options="nowrap"]
+----
+${HC_VAULT::hashicorp-vault-credential-store-name:alias}
+----
+
+For example, a system property value might use an expression as follows:
+
+[source,xml,options="nowrap"]
+----
+<property name="example.secret" value="${HC_VAULT::my-vault:secret/database.password}"/>
+----
