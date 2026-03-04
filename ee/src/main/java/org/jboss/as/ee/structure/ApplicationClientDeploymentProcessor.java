@@ -99,8 +99,12 @@ public class ApplicationClientDeploymentProcessor implements DeploymentUnitProce
                 }
             }
 
-            // TODO perhaps limit this to non-appclient processes
             if (APP_CLIENT_ISOLATED && deploymentUnit.getParent() != null
+                    // limit this to non-appclient processes
+                    // See 'Components in the application client container must have access to the following classes and resources.' discussion in:
+                    // https://jakarta.ee/specifications/platform/10/jakarta-platform-spec-10.0#application-client-container-class-loading-requirements
+                    && deploymentUnit.getParent().getAttachment(org.jboss.as.ee.component.Attachments.EE_MODULE_DESCRIPTION) != null
+                    && !deploymentUnit.getParent().getAttachment(org.jboss.as.ee.component.Attachments.EE_MODULE_DESCRIPTION).isAppClient()
                     && DeploymentTypeMarker.isType(DeploymentType.APPLICATION_CLIENT, deploymentUnit)) {
                 // Don't allow other ear submodules to see application client archives
                 // See 'must not have access' discussions in:
