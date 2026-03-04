@@ -4,15 +4,17 @@
  */
 package org.wildfly.extension.clustering.ejb;
 
+import org.jboss.as.clustering.controller.SimpleAliasEntry;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ResourceDefinition;
 import org.jboss.as.controller.ResourceRegistration;
 import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelNode;
-import org.wildfly.clustering.ejb.remote.ClientMappingsRegistryProvider;
+import org.wildfly.clustering.ejb.remote.EjbClientServicesProvider;
 import org.wildfly.subsystem.resource.ChildResourceDefinitionRegistrar;
 import org.wildfly.subsystem.resource.ManagementResourceRegistrar;
 import org.wildfly.subsystem.resource.ManagementResourceRegistrationContext;
@@ -30,13 +32,13 @@ import java.util.function.UnaryOperator;
  * @author Paul Ferraro
  * @author Richard Achmatowicz
  */
-public abstract class ClientMappingsRegistryProviderResourceDefinitionRegistrar implements ChildResourceDefinitionRegistrar, ResourceServiceConfigurator, ResourceModelResolver<ClientMappingsRegistryProvider>, UnaryOperator<ResourceDescriptor.Builder> {
+public abstract class EjbClientServicesProviderResourceDefinitionRegistrar implements ChildResourceDefinitionRegistrar, ResourceServiceConfigurator, ResourceModelResolver<EjbClientServicesProvider>, UnaryOperator<ResourceDescriptor.Builder> {
 
-    static final RuntimeCapability<Void> CAPABILITY = RuntimeCapability.Builder.of(ClientMappingsRegistryProvider.SERVICE_DESCRIPTOR).setAllowMultipleRegistrations(true).build();
+    static final RuntimeCapability<Void> CAPABILITY = RuntimeCapability.Builder.of(EjbClientServicesProvider.SERVICE_DESCRIPTOR).setAllowMultipleRegistrations(true).build();
 
     private final ResourceRegistration registration;
 
-    ClientMappingsRegistryProviderResourceDefinitionRegistrar(ClientMappingsRegistryProviderResourceRegistration registration) {
+    EjbClientServicesProviderResourceDefinitionRegistrar(EjbClientServicesProviderResourceRegistration registration) {
         this.registration = registration;
     }
 
@@ -49,9 +51,11 @@ public abstract class ClientMappingsRegistryProviderResourceDefinitionRegistrar 
 
     @Override
     public ManagementResourceRegistration register(ManagementResourceRegistration parent, ManagementResourceRegistrationContext context) {
-        ResourceDescriptionResolver resolver = DistributableEjbSubsystemResourceDefinitionRegistrar.RESOLVER.createChildResolver(this.registration.getPathElement(), ClientMappingsRegistryProviderResourceRegistration.WILDCARD.getPathElement());
+        ResourceDescriptionResolver resolver = DistributableEjbSubsystemResourceDefinitionRegistrar.RESOLVER.createChildResolver(this.registration.getPathElement(), EjbClientServicesProviderResourceRegistration.WILDCARD.getPathElement());
         ResourceDescriptor descriptor = this.apply(ResourceDescriptor.builder(resolver)).build();
         ManagementResourceRegistration registration = parent.registerSubModel(ResourceDefinition.builder(this.registration, descriptor.getResourceDescriptionResolver()).build());
+        // register an alias from this resource to the legacy resource name client-mappings-registry
+        parent.registerAlias(PathElement.pathElement("client-mappings-registry", this.registration.getPathElement().getValue()), new SimpleAliasEntry(registration));
         ManagementResourceRegistrar.of(descriptor).register(registration);
         return registration;
     }

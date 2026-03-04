@@ -31,7 +31,7 @@ import org.wildfly.clustering.ejb.bean.BeanDeploymentMarshallingContext;
 import org.wildfly.clustering.ejb.bean.BeanManagementConfiguration;
 import org.wildfly.clustering.ejb.bean.BeanManagementProvider;
 import org.wildfly.clustering.ejb.cache.bean.BeanMarshallerFactory;
-import org.wildfly.clustering.ejb.remote.ClientMappingsRegistryProvider;
+import org.wildfly.clustering.ejb.remote.EjbClientServicesProvider;
 import org.wildfly.clustering.marshalling.ByteBufferMarshaller;
 import org.wildfly.subsystem.resource.ChildResourceDefinitionRegistrar;
 import org.wildfly.subsystem.resource.DurationAttributeDefinition;
@@ -50,7 +50,7 @@ import org.wildfly.subsystem.service.ResourceServiceConfigurator;
 public abstract class BeanManagementResourceDefinitionRegistrar implements ChildResourceDefinitionRegistrar, ResourceServiceConfigurator, ResourceModelResolver<BeanManagementConfiguration>, UnaryOperator<ResourceDescriptor.Builder> {
 
     static final RuntimeCapability<Void> CAPABILITY = RuntimeCapability.Builder.of(BeanManagementProvider.SERVICE_DESCRIPTOR)
-            .addRequirements(ClientMappingsRegistryProvider.SERVICE_DESCRIPTOR.getName())
+            .addRequirements(EjbClientServicesProvider.SERVICE_DESCRIPTOR.getName())
             .setAllowMultipleRegistrations(true)
             .build();
 
