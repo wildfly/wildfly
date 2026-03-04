@@ -31,7 +31,6 @@
 
         <layer name="microprofile-config" optional="true"/>
         <layer name="microprofile-jwt" optional="true"/>
-        <layer name="micrometer" optional="true"/>
         <layer name="hibernate-search" optional="true"/>
         <layer name="web-console" optional="true"/>
         <layer name="jakarta-data" optional="true"/>

@@ -152,6 +152,7 @@
                 <extension>org.wildfly.extension.jakarta.data</extension>
                 <extension>org.wildfly.extension.io</extension>
                 <extension>org.wildfly.extension.messaging-activemq</extension>
+                <extension>org.wildfly.extension.micrometer</extension>
                 <extension>org.wildfly.extension.microprofile.config-smallrye</extension>
                 <extension>org.wildfly.extension.microprofile.fault-tolerance-smallrye</extension>
                 <extension>org.wildfly.extension.microprofile.health-smallrye</extension>

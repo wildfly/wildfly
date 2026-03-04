@@ -709,6 +709,28 @@
             </dependency>
             <dependency>
                 <groupId>${ee.maven.groupId}</groupId>
+                <artifactId>wildfly-micrometer</artifactId>
+                <version>${ee.maven.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>${ee.maven.groupId}</groupId>
+                <artifactId>wildfly-micrometer-deployment</artifactId>
+                <version>${ee.maven.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>${ee.maven.groupId}</groupId>
                 <artifactId>wildfly-mod_cluster-extension</artifactId>
                 <version>${ee.maven.version}</version>
             </dependency>
@@ -958,6 +980,19 @@
             </dependency>
 
             <dependency>
+                <groupId>com.fasterxml.jackson.jr</groupId>
+                <artifactId>jackson-jr-objects</artifactId>
+                <version>${version.com.fasterxml.jackson}</version>
+<!--                <version>${version.com.fasterxml.jackson.jr.jackson-jr-objects}</version>-->
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
                 <groupId>com.fasterxml.woodstox</groupId>
                 <artifactId>woodstox-core</artifactId>
                 <version>${version.org.codehaus.woodstox.woodstox-core}</version>
@@ -1052,6 +1087,40 @@
                     <exclusion>
                         <groupId>org.checkerframework</groupId>
                         <artifactId>checker-qual</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>com.google.api.grpc</groupId>
+                <artifactId>proto-google-common-protos</artifactId>
+                <version>${version.com.google.api.grpc}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>com.google.protobuf</groupId>
+                <artifactId>protobuf-java</artifactId>
+                <version>${version.com.google.protobuf}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>com.google.protobuf</groupId>
+                <artifactId>protobuf-java-util</artifactId>
+                <version>${version.com.google.protobuf}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
@@ -1262,11 +1331,337 @@
             </dependency>
 
             <dependency>
+                <groupId>io.grpc</groupId>
+                <artifactId>grpc-api</artifactId>
+                <version>${version.io.grpc}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>io.micrometer</groupId>
+                <artifactId>micrometer-commons</artifactId>
+                <version>${version.io.micrometer}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>io.micrometer</groupId>
+                <artifactId>micrometer-core</artifactId>
+                <version>${version.io.micrometer}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>io.micrometer</groupId>
+                <artifactId>micrometer-registry-otlp</artifactId>
+                <version>${version.io.micrometer}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>io.micrometer</groupId>
+                <artifactId>micrometer-registry-prometheus</artifactId>
+                <version>${version.io.micrometer}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
                 <groupId>io.netty</groupId>
                 <artifactId>netty-bom</artifactId>
                 <version>${version.io.netty}</version>
                 <type>pom</type>
                 <scope>import</scope>
+            </dependency>
+
+            <!-- OpenTelemetry -->
+            <dependency>
+                <groupId>io.opentelemetry</groupId>
+                <artifactId>opentelemetry-api</artifactId>
+                <version>${version.io.opentelemetry.opentelemetry}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>io.opentelemetry</groupId>
+                <artifactId>opentelemetry-api-incubator</artifactId>
+                <version>${version.io.opentelemetry.opentelemetry}-alpha</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>io.opentelemetry</groupId>
+                <artifactId>opentelemetry-context</artifactId>
+                <version>${version.io.opentelemetry.opentelemetry}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>io.opentelemetry</groupId>
+                <artifactId>opentelemetry-exporter-common</artifactId>
+                <version>${version.io.opentelemetry.opentelemetry}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>io.opentelemetry</groupId>
+                <artifactId>opentelemetry-exporter-logging</artifactId>
+                <version>${version.io.opentelemetry.opentelemetry}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>io.opentelemetry</groupId>
+                <artifactId>opentelemetry-exporter-otlp-common</artifactId>
+                <version>${version.io.opentelemetry.opentelemetry}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>io.opentelemetry</groupId>
+                <artifactId>opentelemetry-sdk</artifactId>
+                <version>${version.io.opentelemetry.opentelemetry}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>io.opentelemetry</groupId>
+                <artifactId>opentelemetry-sdk-common</artifactId>
+                <version>${version.io.opentelemetry.opentelemetry}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>io.opentelemetry</groupId>
+                <artifactId>opentelemetry-sdk-extension-autoconfigure</artifactId>
+                <version>${version.io.opentelemetry.opentelemetry}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>io.opentelemetry</groupId>
+                <artifactId>opentelemetry-sdk-extension-autoconfigure-spi</artifactId>
+                <version>${version.io.opentelemetry.opentelemetry}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>io.opentelemetry</groupId>
+                <artifactId>opentelemetry-sdk-logs</artifactId>
+                <version>${version.io.opentelemetry.opentelemetry}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>io.opentelemetry</groupId>
+                <artifactId>opentelemetry-sdk-metrics</artifactId>
+                <version>${version.io.opentelemetry.opentelemetry}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>io.opentelemetry</groupId>
+                <artifactId>opentelemetry-sdk-trace</artifactId>
+                <version>${version.io.opentelemetry.opentelemetry}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>io.opentelemetry.instrumentation</groupId>
+                <artifactId>opentelemetry-instrumentation-api</artifactId>
+                <version>${version.io.opentelemetry.instrumentation}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>io.opentelemetry.instrumentation</groupId>
+                <artifactId>opentelemetry-instrumentation-api-incubator</artifactId>
+                <version>${version.io.opentelemetry.instrumentation}-alpha</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>io.opentelemetry.instrumentation</groupId>
+                <artifactId>opentelemetry-instrumentation-annotations</artifactId>
+                <version>${version.io.opentelemetry.instrumentation}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>io.opentelemetry.instrumentation</groupId>
+                <artifactId>opentelemetry-instrumentation-annotations-support</artifactId>
+                <version>${version.io.opentelemetry.instrumentation}-alpha</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>io.opentelemetry.instrumentation</groupId>
+                <artifactId>opentelemetry-runtime-telemetry-java8</artifactId>
+                <version>${version.io.opentelemetry.instrumentation}-alpha</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>io.opentelemetry.proto</groupId>
+                <artifactId>opentelemetry-proto</artifactId>
+                <version>${version.io.opentelemetry.proto}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>io.opentelemetry.semconv</groupId>
+                <artifactId>opentelemetry-semconv</artifactId>
+                <version>${version.io.opentelemetry.opentelemetry-semconv}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>io.opentelemetry.semconv</groupId>
+                <artifactId>opentelemetry-semconv-incubating</artifactId>
+                <version>${version.io.opentelemetry.opentelemetry-semconv}-alpha</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <!-- OpenTelemetry -->
+
+            <dependency>
+                <groupId>io.prometheus</groupId>
+                <artifactId>prometheus-metrics-exposition-formats</artifactId>
+                <version>${version.io.prometheus}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>io.prometheus</groupId>
+                <artifactId>prometheus-metrics-config</artifactId>
+                <version>${version.io.prometheus}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>io.prometheus</groupId>
+                <artifactId>prometheus-metrics-model</artifactId>
+                <version>${version.io.prometheus}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
 
             <dependency>
@@ -1281,6 +1676,62 @@
             </dependency>
 
             <dependency>
+                <groupId>io.smallrye.opentelemetry</groupId>
+                <artifactId>smallrye-opentelemetry-api</artifactId>
+                <version>${version.io.smallrye.smallrye-opentelemetry}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>io.smallrye.opentelemetry</groupId>
+                <artifactId>smallrye-opentelemetry-cdi</artifactId>
+                <version>${version.io.smallrye.smallrye-opentelemetry}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>io.smallrye.opentelemetry</groupId>
+                <artifactId>smallrye-opentelemetry-propagation</artifactId>
+                <version>${version.io.smallrye.smallrye-opentelemetry}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>io.smallrye.opentelemetry</groupId>
+                <artifactId>smallrye-opentelemetry-exporters</artifactId>
+                <version>${version.io.smallrye.smallrye-opentelemetry}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>io.smallrye.opentelemetry</groupId>
+                <artifactId>smallrye-opentelemetry-rest</artifactId>
+                <version>${version.io.smallrye.smallrye-opentelemetry}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
                 <groupId>io.smallrye.reactive</groupId>
                 <artifactId>mutiny</artifactId>
                 <version>${version.io.smallrye.smallrye-mutiny}</version>
@@ -1290,6 +1741,85 @@
                 <groupId>io.undertow.jastow</groupId>
                 <artifactId>jastow</artifactId>
                 <version>${version.io.undertow.jastow}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>io.vertx</groupId>
+                <artifactId>vertx-core</artifactId>
+                <version>${version.io.vertx.vertx}</version>
+                <exclusions>
+                    <!--
+                        For some reason a wildcard exclusion here triggers a dependency convergence
+                        error in the enforcer plugin. List them all individually.
+                        TODO replace with a wildcard exclusion once the world is on maven 3.6.2+
+                    -->
+                    <exclusion>
+                        <groupId>io.netty</groupId>
+                        <artifactId>netty-common</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>io.netty</groupId>
+                        <artifactId>netty-buffer</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>io.netty</groupId>
+                        <artifactId>netty-transport</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>io.netty</groupId>
+                        <artifactId>netty-handler</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>io.netty</groupId>
+                        <artifactId>netty-handler-proxy</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>io.netty</groupId>
+                        <artifactId>netty-codec-http</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>io.netty</groupId>
+                        <artifactId>netty-codec-http2</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>io.netty</groupId>
+                        <artifactId>netty-resolver</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>io.netty</groupId>
+                        <artifactId>netty-resolver-dns</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>com.fasterxml.jackson.core</groupId>
+                        <artifactId>jackson-core</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>com.fasterxml.jackson.core</groupId>
+                        <artifactId>jackson-databind</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>io.vertx</groupId>
+                <artifactId>vertx-grpc-client</artifactId>
+                <version>${version.io.vertx.vertx}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>io.vertx</groupId>
+                <artifactId>vertx-grpc-common</artifactId>
+                <version>${version.io.vertx.vertx}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>
@@ -4153,6 +4683,18 @@
                 <groupId>org.wildfly.wildfly-http-client</groupId>
                 <artifactId>wildfly-http-transaction-client</artifactId>
                 <version>${version.org.wildfly.http-client}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>${full.maven.groupId}</groupId>
+                <artifactId>wildfly-opentelemetry-api</artifactId>
+                <version>${full.maven.version}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>
