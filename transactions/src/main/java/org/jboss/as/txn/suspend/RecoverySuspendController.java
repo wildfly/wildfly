@@ -16,6 +16,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
+import java.util.concurrent.Executor;
 
 /**
  * Listens for notifications from a {@code SuspendController} and a {@code ProcessStateNotifier} and reacts
@@ -28,12 +29,14 @@ public class RecoverySuspendController implements SuspendableActivity, PropertyC
 
     private final RecoveryManagerService recoveryManagerService;
     private final boolean gracefulRecoveryShutdown;
+    private final Executor executor;
     private boolean suspended;
     private boolean running;
 
-    public RecoverySuspendController(RecoveryManagerService recoveryManagerService, boolean gracefulRecoveryShutdown) {
+    public RecoverySuspendController(RecoveryManagerService recoveryManagerService, boolean gracefulRecoveryShutdown, Executor executor) {
         this.recoveryManagerService = recoveryManagerService;
         this.gracefulRecoveryShutdown = gracefulRecoveryShutdown;
+        this.executor = executor;
     }
 
     @Override
@@ -57,7 +60,7 @@ public class RecoverySuspendController implements SuspendableActivity, PropertyC
                 TransactionLogger.ROOT_LOGGER.scanSuspensionInitiated();
                 recoveryManagerService.suspend(false, gracefulRecoveryShutdown);
                 TransactionLogger.ROOT_LOGGER.scanSuspensionCompleted();
-            });
+            }, executor);
         }
 
         return COMPLETED;
@@ -77,7 +80,7 @@ public class RecoverySuspendController implements SuspendableActivity, PropertyC
             doResume = running;
         }
         if (doResume) {
-            return CompletableFuture.runAsync(this::resumeRecovery);
+            return CompletableFuture.runAsync(this::resumeRecovery, executor);
         }
 
         return COMPLETED;
