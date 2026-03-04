@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+<jboss xmlns="http://www.jboss.com/xml/ns/javaee"
+       xmlns:jee="http://java.sun.com/xml/ns/javaee"
+       xmlns:ci="urn:container-interceptors:1.0">
+
+    <jee:assembly-descriptor>
+        <ci:container-interceptors>
+            <jee:interceptor-binding>
+                <ejb-name>TestRemote</ejb-name>
+                <interceptor-class>
+                    org.jboss.as.test.integration.ejb.container.interceptor.regex.TestInterceptorFullName
+                </interceptor-class>
+            </jee:interceptor-binding>
+            <jee:interceptor-binding>
+                <ejb-name>[A-Z,a-z,0-9]*Remote[A-Z,a-z,0-9]*</ejb-name>
+                <interceptor-class>
+                    org.jboss.as.test.integration.ejb.container.interceptor.regex.TestInterceptorRegex
+                </interceptor-class>
+            </jee:interceptor-binding>
+            <jee:interceptor-binding>
+                <ejb-name>[A-Z,a-z,0-9]*RemoteWrong[A-Z,a-z,0-9]*</ejb-name>
+                <interceptor-class>
+                    org.jboss.as.test.integration.ejb.container.interceptor.regex.TestInterceptorWrongRegex
+                </interceptor-class>
+            </jee:interceptor-binding>
+        </ci:container-interceptors>
+    </jee:assembly-descriptor>
+</jboss>

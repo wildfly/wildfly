@@ -396,7 +396,7 @@ class EJB3SubsystemAdd extends AbstractBoottimeAddStepHandler {
                     processorTarget.addDeploymentProcessor(EJB3Extension.SUBSYSTEM_NAME, Phase.POST_MODULE, Phase.POST_MODULE_EJB_SLSB_POOL_NAME_MERGE, new StatelessSessionBeanPoolMergingProcessor());
                     processorTarget.addDeploymentProcessor(EJB3Extension.SUBSYSTEM_NAME, Phase.POST_MODULE, Phase.POST_MODULE_EJB_MDB_POOL_NAME_MERGE, new MessageDrivenBeanPoolMergingProcessor());
                     // Add the deployment unit processor responsible for processing the user application specific container interceptors configured in jboss-ejb3.xml
-                    processorTarget.addDeploymentProcessor(EJB3Extension.SUBSYSTEM_NAME, Phase.POST_MODULE, Phase.POST_MODULE_EJB_USER_APP_SPECIFIC_CONTAINER_INTERCEPTORS, new ContainerInterceptorBindingsDDProcessor());
+                    processorTarget.addDeploymentProcessor(EJB3Extension.SUBSYSTEM_NAME, Phase.POST_MODULE, Phase.POST_MODULE_EJB_USER_APP_SPECIFIC_CONTAINER_INTERCEPTORS, new ContainerInterceptorBindingsDDProcessor(ejbNameRegexService));
                     processorTarget.addDeploymentProcessor(EJB3Extension.SUBSYSTEM_NAME, Phase.POST_MODULE, Phase.POST_MODULE_EJB_HIBERNATE_VALIDATOR, new HibernateValidatorDeploymentUnitProcessor());
 
                     processorTarget.addDeploymentProcessor(EJB3Extension.SUBSYSTEM_NAME, Phase.INSTALL, Phase.INSTALL_DEPENDS_ON_ANNOTATION, new EjbDependsOnMergingProcessor());
