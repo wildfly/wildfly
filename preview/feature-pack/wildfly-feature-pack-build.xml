@@ -18,6 +18,7 @@
         <!-- appclient is not referenced from standalone nor domain configuration models.-->
         <package name="appclient"/>
         <package name="bin"/>
+        <package name="version.txt"/>
     </default-packages>
 
     <stability-levels>

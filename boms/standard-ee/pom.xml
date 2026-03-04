@@ -71,12 +71,6 @@
                     </exclusion>
                 </exclusions>
             </dependency>
-
-            <dependency>
-                <groupId>${ee.maven.groupId}</groupId>
-                <artifactId>wildfly-ee-feature-pack-product-conf</artifactId>
-                <version>${ee.maven.version}</version>
-            </dependency>
             <dependency>
                 <groupId>org.glassfish</groupId>
                 <artifactId>jakarta.enterprise.concurrent</artifactId>
@@ -87,6 +81,19 @@
                         <artifactId>*</artifactId>
                     </exclusion>
                 </exclusions>
+			</dependency>
+
+            <dependency>
+                <groupId>${ee.maven.groupId}</groupId>
+                <artifactId>wildfly-ee-feature-pack-product-conf</artifactId>
+                <version>${ee.maven.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>${ee.maven.groupId}</groupId>
+                <artifactId>wildfly-ee-feature-pack-product-conf</artifactId>
+                <classifier>version</classifier>
+                <type>txt</type>
+                <version>${ee.maven.version}</version>
             </dependency>
 
         </dependencies>

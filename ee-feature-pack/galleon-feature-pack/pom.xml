@@ -166,9 +166,14 @@
                             <resources>
                                 <resource>
                                     <directory>${galleon.local.resources.directory}</directory>
+                                    <filtering>true</filtering>
                                 </resource>
                             </resources>
                             <overwrite>true</overwrite>
+                            <!-- Limit build-time resource filtering to @xxx@ expressions to avoid ambiguity with runtime expressions -->
+                            <delimiters>
+                                <delimiter>@@</delimiter>
+                            </delimiters>
                         </configuration>
                     </execution>
                     <execution>
