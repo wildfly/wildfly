@@ -20,8 +20,8 @@ import org.jboss.as.arquillian.api.WildFlyContainerController;
 import org.jboss.as.test.clustering.NodeUtil;
 import org.jboss.as.test.shared.TimeoutUtil;
 import org.jboss.logging.Logger;
-import org.junit.After;
-import org.junit.Before;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 
 /**
  * Base implementation for every clustering test which guarantees a framework contract as follows:
@@ -160,7 +160,7 @@ public abstract class AbstractClusteringTestCase {
      * (2) all requested containers are running and,
      * (3) all requested deployments are deployed thus allowing all necessary test resource injection.
      */
-    @Before
+    @BeforeEach
     public void beforeTestMethod() throws Exception {
         this.containerRegistry.getContainers().forEach(container -> {
             if (container.getState() == Container.State.STARTED && !this.containers.contains(container.getName())) {
@@ -178,7 +178,7 @@ public abstract class AbstractClusteringTestCase {
     /**
      * Guarantees that all deployments are undeployed after the test method has been executed.
      */
-    @After
+    @AfterEach
     public void afterTestMethod() throws Exception {
         this.start();
         this.undeploy();

@@ -6,6 +6,7 @@
 package org.jboss.as.test.clustering.cluster.web.remote;
 
 import org.infinispan.configuration.cache.CacheMode;
+import org.infinispan.server.test.junit5.InfinispanServerExtension;
 import org.infinispan.transaction.TransactionMode;
 import org.jboss.as.test.clustering.ClusterTestUtil;
 import org.jboss.as.test.clustering.InfinispanServerUtil;
@@ -16,8 +17,7 @@ import org.jboss.as.test.shared.ManagementServerSetupTask;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.ClassRule;
-import org.junit.rules.TestRule;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 /**
  * Variation of {@link AbstractWebFailoverTestCase} using invalidation cache with HotRod-based store implementation referencing
@@ -27,8 +27,8 @@ import org.junit.rules.TestRule;
  */
 public abstract class AbstractHotRodPersistenceWebFailoverTestCase extends AbstractWebFailoverTestCase {
 
-    @ClassRule
-    public static final TestRule INFINISPAN_SERVER_RULE = InfinispanServerUtil.infinispanServerTestRule();
+    @RegisterExtension
+    public static final InfinispanServerExtension SERVER = InfinispanServerUtil.infinispanServerExtension();
 
     static Archive<?> getDeployment(String deploymentName, String deploymentDescriptor) {
         WebArchive war = ShrinkWrap.create(WebArchive.class, deploymentName);

@@ -16,10 +16,10 @@ import jakarta.ejb.Local;
 import jakarta.ejb.Singleton;
 import jakarta.ejb.Startup;
 
+import org.wildfly.clustering.server.GroupMember;
 import org.wildfly.clustering.server.dispatcher.Command;
 import org.wildfly.clustering.server.dispatcher.CommandDispatcher;
 import org.wildfly.clustering.server.dispatcher.CommandDispatcherFactory;
-import org.wildfly.clustering.server.GroupMember;
 
 @Singleton
 @Startup

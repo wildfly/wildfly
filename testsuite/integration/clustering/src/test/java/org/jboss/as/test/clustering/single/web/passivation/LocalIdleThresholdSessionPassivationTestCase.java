@@ -5,10 +5,8 @@
 
 package org.jboss.as.test.clustering.single.web.passivation;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
-import java.io.IOException;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.time.Duration;
 import java.util.HashMap;
@@ -35,7 +33,7 @@ import org.jboss.as.test.clustering.single.web.SimpleServlet;
 import org.jboss.as.test.shared.TimeoutUtil;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /**
  * Validates the correctness of session activation/passivation events for a distributed session manager using a local,
@@ -59,7 +57,7 @@ public abstract class LocalIdleThresholdSessionPassivationTestCase {
     }
 
     @Test
-    public void test(@ArquillianResource(SessionOperationServlet.class) URL baseURL) throws IOException, URISyntaxException {
+    public void test(@ArquillianResource(SessionOperationServlet.class) URL baseURL) throws Exception {
 
         try (CloseableHttpClient client = HttpClients.createDefault()) {
             String sessionId;
@@ -94,8 +92,8 @@ public abstract class LocalIdleThresholdSessionPassivationTestCase {
                         }
                     });
 
-            assertFalse("Session should have been passivated after idle timeout", events.get(sessionId).isEmpty());
-            assertEquals("First event should be PASSIVATION", PassivationEventTrackerUtil.EventType.PASSIVATION, events.get(sessionId).peek());
+            assertFalse(events.get(sessionId).isEmpty(), "Session should have been passivated after idle timeout");
+            assertEquals(PassivationEventTrackerUtil.EventType.PASSIVATION, events.get(sessionId).peek(), "First event should be PASSIVATION");
 
             // Step 4: Access the session again - should trigger activation
             try (CloseableHttpResponse response = client.execute(new HttpGet(SessionOperationServlet.createURI(baseURL, "testAttr")))) {
@@ -108,7 +106,7 @@ public abstract class LocalIdleThresholdSessionPassivationTestCase {
             }
 
             // Verify activation occurred
-            assertTrue("Session should have been activated", events.get(sessionId).contains(PassivationEventTrackerUtil.EventType.ACTIVATION));
+            assertTrue(events.get(sessionId).contains(PassivationEventTrackerUtil.EventType.ACTIVATION), "Session should have been activated");
             validateEvents(sessionId, events);
 
             // Step 5: Test a second idle cycle
@@ -130,8 +128,8 @@ public abstract class LocalIdleThresholdSessionPassivationTestCase {
                         }
                     });
 
-            assertFalse("Session should have been passivated again after second idle timeout", events.get(sessionId).isEmpty());
-            assertEquals("First event of second cycle should be PASSIVATION", PassivationEventTrackerUtil.EventType.PASSIVATION, events.get(sessionId).peek());
+            assertFalse(events.get(sessionId).isEmpty(), "Session should have been passivated again after second idle timeout");
+            assertEquals(PassivationEventTrackerUtil.EventType.PASSIVATION, events.get(sessionId).peek(), "First event of second cycle should be PASSIVATION");
 
             // Step 7: Access the session again - should trigger second activation
             try (CloseableHttpResponse response = client.execute(new HttpGet(SessionOperationServlet.createURI(baseURL, "testAttr")))) {
@@ -144,7 +142,7 @@ public abstract class LocalIdleThresholdSessionPassivationTestCase {
             }
 
             // Verify second activation occurred
-            assertTrue("Session should have been activated again", events.get(sessionId).contains(PassivationEventTrackerUtil.EventType.ACTIVATION));
+            assertTrue(events.get(sessionId).contains(PassivationEventTrackerUtil.EventType.ACTIVATION), "Session should have been activated again");
             validateEvents(sessionId, events);
 
             // Cleanup
@@ -157,9 +155,8 @@ public abstract class LocalIdleThresholdSessionPassivationTestCase {
     private static void collectEvents(HttpResponse response, Map<String, Queue<PassivationEventTrackerUtil.EventType>> events) {
         events.forEach((sessionId, value) -> {
             if (response.containsHeader(sessionId)) {
-                Stream.of(response.getHeaders(sessionId)).forEach((Header header) -> {
-                    value.add(PassivationEventTrackerUtil.EventType.valueOf(header.getValue()));
-                });
+                Stream.of(response.getHeaders(sessionId)).forEach((Header header) ->
+                    value.add(PassivationEventTrackerUtil.EventType.valueOf(header.getValue())));
             }
         });
     }
@@ -169,7 +166,7 @@ public abstract class LocalIdleThresholdSessionPassivationTestCase {
         PassivationEventTrackerUtil.EventType expected = PassivationEventTrackerUtil.EventType.PASSIVATION;
 
         for (PassivationEventTrackerUtil.EventType type : types) {
-            assertEquals("Events should alternate between PASSIVATION and ACTIVATION", expected, type);
+            assertEquals(expected, type, "Events should alternate between PASSIVATION and ACTIVATION");
             // ACTIVATION event must follow PASSIVATION event and vice versa
             expected = PassivationEventTrackerUtil.EventType.values()[(expected.ordinal() + 1) % 2];
         }

@@ -4,7 +4,7 @@
  */
 package org.jboss.as.test.clustering.cluster.jgroups;
 
-import static org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase.NODE_1_2;
+import static org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase.*;
 
 import org.jboss.as.test.shared.ManagementServerSetupTask;
 

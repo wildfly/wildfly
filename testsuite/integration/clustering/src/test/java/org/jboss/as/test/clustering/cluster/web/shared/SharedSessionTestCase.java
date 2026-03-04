@@ -7,16 +7,16 @@ package org.jboss.as.test.clustering.cluster.web.shared;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.TargetsContainer;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.shrinkwrap.api.Archive;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * Validates that web applications within an ear can share sessions if configured appropriately.
  *
  * @author Paul Ferraro
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class SharedSessionTestCase extends AbstractSharedSessionTestCase {
     private static final String MODULE = SharedSessionTestCase.class.getSimpleName();
 

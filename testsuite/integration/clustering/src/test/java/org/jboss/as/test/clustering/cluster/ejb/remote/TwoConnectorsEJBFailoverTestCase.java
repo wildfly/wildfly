@@ -5,12 +5,15 @@
 
 package org.jboss.as.test.clustering.cluster.ejb.remote;
 
+import static org.junit.jupiter.api.Assertions.*;
+
 import java.util.Properties;
 import java.util.PropertyPermission;
+import javax.naming.Context;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.TargetsContainer;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase;
 import org.jboss.as.test.clustering.cluster.ejb.remote.bean.Incrementor;
@@ -21,18 +24,15 @@ import org.jboss.as.test.clustering.ejb.EJBDirectory;
 import org.jboss.as.test.clustering.ejb.RemoteEJBDirectory;
 import org.jboss.as.test.shared.IntermittentFailure;
 import org.jboss.as.test.shared.ManagementServerSetupTask;
-import org.jboss.as.test.shared.TimeoutUtil;
 import org.jboss.as.test.shared.PermissionUtils;
+import org.jboss.as.test.shared.TimeoutUtil;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.wildfly.common.function.ExceptionSupplier;
-
-import javax.naming.Context;
 
 /**
  * A test of failover when both legacy remoting connector and HTTP Upgrade connector are enabled.
@@ -40,11 +40,11 @@ import javax.naming.Context;
  * @author Richard Achmatowicz
  */
 @ServerSetup(TwoConnectorsEJBFailoverTestCase.ServerSetupTask.class)
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class TwoConnectorsEJBFailoverTestCase extends AbstractClusteringTestCase {
 
-    @BeforeClass
-    public static void beforeClass() {
+    @BeforeAll
+    static void beforeClass() {
         IntermittentFailure.thisTestIsFailingIntermittently("https://issues.redhat.com/browse/WFLY-17605");
     }
 
@@ -102,7 +102,7 @@ public class TwoConnectorsEJBFailoverTestCase extends AbstractClusteringTestCase
      * Run a failover test where the client communicates with the server via HTTP Upgrade over port 8080/8081
      */
     @Test
-    public void testEJBClientUsingHttpUpgradeProtocol() throws Exception {
+    void ejbClientUsingHttpUpgradeProtocol() throws Exception {
         log.infof(MODULE_NAME + " : testing failover with client using HTTP Upgrade");
         test(() -> new RemoteEJBDirectory(MODULE_NAME, getProperties(false)));
     }
@@ -111,7 +111,7 @@ public class TwoConnectorsEJBFailoverTestCase extends AbstractClusteringTestCase
      * Run a failover test where the client communicates with the server via legacy Remoting protocol over port 4447/4448
      */
     @Test
-    public void testEJBClientUsingLegacyRemotingProtocol() throws Exception {
+    void ejbClientUsingLegacyRemotingProtocol() throws Exception {
         log.infof(MODULE_NAME + " : testing failover with client using legacy Remoting");
         test(() -> new RemoteEJBDirectory(MODULE_NAME, getProperties(true)));
     }
@@ -132,13 +132,13 @@ public class TwoConnectorsEJBFailoverTestCase extends AbstractClusteringTestCase
             String target = result.getNode();
             int count = 1;
 
-            Assert.assertEquals(count++, result.getValue().intValue());
+            assertEquals(count++, result.getValue().intValue());
 
             // Bean should retain weak affinity for this node
             for (int i = 0; i < COUNT; ++i) {
                 result = bean.increment();
-                Assert.assertEquals(count++, result.getValue().intValue());
-                Assert.assertEquals(String.valueOf(i), target, result.getNode());
+                assertEquals(count++, result.getValue().intValue());
+                assertEquals(target, result.getNode(), String.valueOf(i));
             }
 
             undeploy(findDeployment(target));
@@ -149,8 +149,8 @@ public class TwoConnectorsEJBFailoverTestCase extends AbstractClusteringTestCase
             // Bean should failover to other node
             String failoverTarget = result.getNode();
 
-            Assert.assertEquals(count++, result.getValue().intValue());
-            Assert.assertNotEquals(target, failoverTarget);
+            assertEquals(count++, result.getValue().intValue());
+            assertNotEquals(target, failoverTarget);
 
             deploy(findDeployment(target));
 
@@ -159,20 +159,20 @@ public class TwoConnectorsEJBFailoverTestCase extends AbstractClusteringTestCase
 
             result = bean.increment();
             String failbackTarget = result.getNode();
-            Assert.assertEquals(count++, result.getValue().intValue());
+            assertEquals(count++, result.getValue().intValue());
             // Bean should retain weak affinity for this node
-            Assert.assertEquals(failoverTarget, failbackTarget);
+            assertEquals(failoverTarget, failbackTarget);
 
             result = bean.increment();
             // Bean may have acquired new weak affinity
             target = result.getNode();
-            Assert.assertEquals(count++, result.getValue().intValue());
+            assertEquals(count++, result.getValue().intValue());
 
             // Bean should retain weak affinity for this node
             for (int i = 0; i < COUNT; ++i) {
                 result = bean.increment();
-                Assert.assertEquals(count++, result.getValue().intValue());
-                Assert.assertEquals(String.valueOf(i), target, result.getNode());
+                assertEquals(count++, result.getValue().intValue());
+                assertEquals(target, result.getNode(), String.valueOf(i));
             }
 
             stop(target);
@@ -184,8 +184,8 @@ public class TwoConnectorsEJBFailoverTestCase extends AbstractClusteringTestCase
             // Bean should failover to other node
             failoverTarget = result.getNode();
 
-            Assert.assertEquals(count++, result.getValue().intValue());
-            Assert.assertNotEquals(target, failoverTarget);
+            assertEquals(count++, result.getValue().intValue());
+            assertNotEquals(target, failoverTarget);
 
             start(target);
 
@@ -194,20 +194,20 @@ public class TwoConnectorsEJBFailoverTestCase extends AbstractClusteringTestCase
 
             result = bean.increment();
             failbackTarget = result.getNode();
-            Assert.assertEquals(count++, result.getValue().intValue());
+            assertEquals(count++, result.getValue().intValue());
             // Bean should retain weak affinity for this node
-            Assert.assertEquals(failoverTarget, failbackTarget);
+            assertEquals(failoverTarget, failbackTarget);
 
             result = bean.increment();
             // Bean may have acquired new weak affinity
             target = result.getNode();
-            Assert.assertEquals(count++, result.getValue().intValue());
+            assertEquals(count++, result.getValue().intValue());
 
             // Bean should retain weak affinity for this node
             for (int i = 0; i < COUNT; ++i) {
                 result = bean.increment();
-                Assert.assertEquals(count++, result.getValue().intValue());
-                Assert.assertEquals(String.valueOf(i), target, result.getNode());
+                assertEquals(count++, result.getValue().intValue());
+                assertEquals(target, result.getNode(), String.valueOf(i));
             }
 
             bean.remove();

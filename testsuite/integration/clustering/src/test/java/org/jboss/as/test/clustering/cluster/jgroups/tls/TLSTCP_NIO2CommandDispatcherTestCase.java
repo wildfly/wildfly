@@ -7,6 +7,7 @@ package org.jboss.as.test.clustering.cluster.jgroups.tls;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.test.clustering.cluster.dispatcher.CommandDispatcherTestCase;
 import org.jboss.as.test.clustering.cluster.jgroups.TCP_NIO2ServerSetupTask;
+import org.junit.jupiter.api.Test;
 import org.wildfly.test.stabilitylevel.StabilityServerSetupSnapshotRestoreTasks;
 
 /**
@@ -19,9 +20,10 @@ import org.wildfly.test.stabilitylevel.StabilityServerSetupSnapshotRestoreTasks;
         TCP_NIO2ServerSetupTask.class,
         TLSServerSetupTasks.SharedStoreSecureJGroupsTCP_NIO2TransportServerSetupTask_NODE_1_2.class,
 })
-public class TLSTCP_NIO2CommandDispatcherTestCase extends CommandDispatcherTestCase {
+class TLSTCP_NIO2CommandDispatcherTestCase extends CommandDispatcherTestCase {
 
     @Override
+    @Test
     public void legacy() throws Exception {
         // This test variant is redundant
     }

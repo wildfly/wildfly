@@ -6,16 +6,16 @@ package org.jboss.as.test.clustering.cluster.web.shared;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.TargetsContainer;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.shrinkwrap.api.Archive;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * Validates that web applications within an ear can share sessions if configured appropriately.
  * This test uses shared-session-config:1.0 where sessions are shared by default when WildFly is started with HA config.
  * @author Martin Simka
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class LegacySharedSessionTestCase extends AbstractSharedSessionTestCase {
     private static final String MODULE = LegacySharedSessionTestCase.class.getSimpleName();
 

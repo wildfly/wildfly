@@ -7,7 +7,7 @@ package org.jboss.as.test.clustering.cluster.web.remote;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.TargetsContainer;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.test.clustering.cluster.web.AbstractWebFailoverTestCase;
 import org.jboss.as.test.clustering.single.web.Mutable;
@@ -15,12 +15,12 @@ import org.jboss.as.test.clustering.single.web.SimpleServlet;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * @author Paul Ferraro
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @ServerSetup({ InfinispanServerSetupTask.class })
 public class CoarseTransactionalHotRodWebFailoverTestCase extends AbstractHotRodWebFailoverTestCase {
 

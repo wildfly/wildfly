@@ -5,13 +5,13 @@
 
 package org.jboss.as.test.clustering.cluster.provider;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 import java.util.Collection;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.TargetsContainer;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase;
 import org.jboss.as.test.clustering.cluster.provider.bean.ServiceProviderRetriever;
 import org.jboss.as.test.clustering.cluster.provider.bean.ServiceProviderRetrieverBean;
@@ -22,10 +22,10 @@ import org.jboss.as.test.shared.PermissionUtils;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class ServiceProviderRegistrationTestCase extends AbstractClusteringTestCase {
     private static final String MODULE_NAME = ServiceProviderRegistrationTestCase.class.getSimpleName();
 
@@ -51,12 +51,12 @@ public class ServiceProviderRegistrationTestCase extends AbstractClusteringTestC
     }
 
     @Test
-    public void test() throws Exception {
+    void test() throws Exception {
         this.test(ServiceProviderRetrieverBean.class);
     }
 
     @Test
-    public void legacy() throws Exception {
+    void legacy() throws Exception {
         this.test(LegacyServiceProviderRetrieverBean.class);
     }
 
@@ -66,8 +66,8 @@ public class ServiceProviderRegistrationTestCase extends AbstractClusteringTestC
 
             Collection<String> names = bean.getProviders();
             assertEquals(2, names.size());
-            assertTrue(names.toString(), names.contains(NODE_1));
-            assertTrue(names.toString(), names.contains(NODE_2));
+            assertTrue(names.contains(NODE_1), names.toString());
+            assertTrue(names.contains(NODE_2), names.toString());
 
             undeploy(DEPLOYMENT_1);
 

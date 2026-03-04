@@ -5,7 +5,7 @@
 
 package org.jboss.as.test.clustering.cluster.web;
 
-import static org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase.NODE_1_2_3;
+import static org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase.*;
 
 import org.jboss.as.test.shared.CLIServerSetupTask;
 

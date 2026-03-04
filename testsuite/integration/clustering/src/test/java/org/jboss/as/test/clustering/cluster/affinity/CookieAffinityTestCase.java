@@ -5,6 +5,8 @@
 
 package org.jboss.as.test.clustering.cluster.affinity;
 
+import static org.junit.jupiter.api.Assertions.*;
+
 import java.net.URI;
 import java.net.URL;
 
@@ -18,7 +20,7 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.container.test.api.TargetsContainer;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.test.clustering.ClusterTestUtil;
@@ -30,9 +32,8 @@ import org.jboss.as.test.shared.ManagementServerSetupTask;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 
 /**
@@ -42,7 +43,7 @@ import org.junit.runner.RunWith;
  * @author Radoslav Husar
  * @see <a href="https://issues.redhat.com/browse/WFLY-16043">WFLY-16043</a>
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @ServerSetup(CookieAffinityTestCase.ServerSetupTask.class)
 public class CookieAffinityTestCase extends AbstractClusteringTestCase {
 
@@ -96,8 +97,8 @@ public class CookieAffinityTestCase extends AbstractClusteringTestCase {
      * (3) verify requesting same session on a different node that correct affinity is overridden.
      */
     @Test
-    public void test(@ArquillianResource() @OperateOnDeployment(DEPLOYMENT_1) URL baseURL1,
-                     @ArquillianResource() @OperateOnDeployment(DEPLOYMENT_2) URL baseURL2) throws Exception {
+    void test(@ArquillianResource() @OperateOnDeployment(DEPLOYMENT_1) URL baseURL1,
+              @ArquillianResource() @OperateOnDeployment(DEPLOYMENT_2) URL baseURL2) throws Exception {
 
         URI uri1 = SimpleServlet.createURI(baseURL1);
         URI uri2 = SimpleServlet.createURI(baseURL2);
@@ -110,12 +111,12 @@ public class CookieAffinityTestCase extends AbstractClusteringTestCase {
             // 1 -> node 1
             HttpResponse response = client.execute(new HttpGet(uri1));
             try {
-                Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
-                Assert.assertEquals(value++, Integer.parseInt(response.getFirstHeader(SimpleServlet.VALUE_HEADER).getValue()));
+                assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
+                assertEquals(value++, Integer.parseInt(response.getFirstHeader(SimpleServlet.VALUE_HEADER).getValue()));
 
                 String affinity = parseCookieAffinity(response);
                 log.infof("Response #1: %s; affinity=%s", response, affinity);
-                Assert.assertNotNull(affinity);
+                assertNotNull(affinity);
 
                 sessionAffinity = affinity;
             } finally {
@@ -125,14 +126,14 @@ public class CookieAffinityTestCase extends AbstractClusteringTestCase {
             // 2
             response = client.execute(new HttpGet(uri1));
             try {
-                Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
-                Assert.assertEquals(value++, Integer.parseInt(response.getFirstHeader(SimpleServlet.VALUE_HEADER).getValue()));
+                assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
+                assertEquals(value++, Integer.parseInt(response.getFirstHeader(SimpleServlet.VALUE_HEADER).getValue()));
 
                 String affinity = parseCookieAffinity(response);
                 log.infof("Response #2: %s; affinity=%s", response, affinity);
 
-                Assert.assertNotNull(affinity);
-                Assert.assertEquals(sessionAffinity, affinity);
+                assertNotNull(affinity);
+                assertEquals(sessionAffinity, affinity);
             } finally {
                 HttpClientUtils.closeQuietly(response);
             }
@@ -140,14 +141,14 @@ public class CookieAffinityTestCase extends AbstractClusteringTestCase {
             // 3 -> node 2
             response = client.execute(new HttpGet(uri2));
             try {
-                Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
-                Assert.assertEquals(value++, Integer.parseInt(response.getFirstHeader(SimpleServlet.VALUE_HEADER).getValue()));
+                assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
+                assertEquals(value++, Integer.parseInt(response.getFirstHeader(SimpleServlet.VALUE_HEADER).getValue()));
 
                 String affinity = parseCookieAffinity(response);
                 log.infof("Response #3: %s; affinity=%s", response, affinity);
 
-                Assert.assertNotNull(affinity);
-                Assert.assertEquals(sessionAffinity, affinity);
+                assertNotNull(affinity);
+                assertEquals(sessionAffinity, affinity);
             } finally {
                 HttpClientUtils.closeQuietly(response);
             }

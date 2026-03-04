@@ -5,10 +5,8 @@
 
 package org.jboss.as.test.clustering.single.infinispan.query;
 
-import static org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase.INFINISPAN_APPLICATION_PASSWORD;
-import static org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase.INFINISPAN_APPLICATION_USER;
-import static org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase.INFINISPAN_SERVER_ADDRESS;
-import static org.junit.Assert.assertEquals;
+import static org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 import java.util.List;
 import java.util.ServiceLoader;
@@ -25,7 +23,7 @@ import org.infinispan.commons.marshall.ProtoStreamMarshaller;
 import org.infinispan.protostream.GeneratedSchema;
 import org.infinispan.protostream.SerializationContextInitializer;
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.as.test.clustering.single.infinispan.query.data.Book;
 import org.jboss.as.test.clustering.single.infinispan.query.data.BookSchema;
 import org.jboss.shrinkwrap.api.Archive;
@@ -34,9 +32,8 @@ import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.jboss.shrinkwrap.descriptor.api.Descriptors;
 import org.jboss.shrinkwrap.descriptor.api.spec.se.manifest.ManifestDescriptor;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * Test remote query.
@@ -46,7 +43,7 @@ import org.junit.runner.RunWith;
  * @author Adrian Nistor
  * @since 27
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class IndexedRemoteQueryTestCase {
 
     @Deployment
@@ -60,7 +57,7 @@ public class IndexedRemoteQueryTestCase {
     }
 
     @Test
-    public void test() {
+    void test() {
         try (RemoteCacheManager container = this.createRemoteCacheManager()) {
             String config = """
 {
@@ -117,7 +114,7 @@ public class IndexedRemoteQueryTestCase {
                     // Index may still reference the book schema
                     if (!(schema instanceof BookSchema)) {
                         SchemaOpResult result = admin.remove(schema.getName());
-                        Assert.assertFalse(result.getError(), result.hasError());
+                        assertFalse(result.hasError(), result.getError());
                     }
                 }
                 super.close();
@@ -126,7 +123,7 @@ public class IndexedRemoteQueryTestCase {
         RemoteSchemasAdmin admin = container.administration().schemas();
         for (GeneratedSchema schema : schemas) {
             SchemaOpResult result = admin.create(schema);
-            Assert.assertFalse(result.getError(), result.hasError());
+            assertFalse(result.hasError(), result.getError());
         }
         return container;
     }

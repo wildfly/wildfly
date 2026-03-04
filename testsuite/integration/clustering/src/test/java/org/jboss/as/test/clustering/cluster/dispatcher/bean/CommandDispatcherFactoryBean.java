@@ -4,23 +4,24 @@
  */
 package org.jboss.as.test.clustering.cluster.dispatcher.bean;
 
+import javax.naming.Context;
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
+
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
 import jakarta.annotation.Resource;
 import jakarta.ejb.Local;
 import jakarta.ejb.Singleton;
 import jakarta.ejb.Startup;
-import javax.naming.Context;
-import javax.naming.InitialContext;
-import javax.naming.NamingException;
 
-import org.wildfly.clustering.server.Registration;
-import org.wildfly.clustering.server.dispatcher.CommandDispatcher;
-import org.wildfly.clustering.server.dispatcher.CommandDispatcherFactory;
 import org.wildfly.clustering.server.Group;
 import org.wildfly.clustering.server.GroupMember;
 import org.wildfly.clustering.server.GroupMembershipEvent;
 import org.wildfly.clustering.server.GroupMembershipListener;
+import org.wildfly.clustering.server.Registration;
+import org.wildfly.clustering.server.dispatcher.CommandDispatcher;
+import org.wildfly.clustering.server.dispatcher.CommandDispatcherFactory;
 
 @Singleton
 @Startup

@@ -5,16 +5,16 @@
 
 package org.jboss.as.test.clustering.single.infinispan;
 
+import org.infinispan.server.test.junit5.InfinispanServerExtension;
 import org.jboss.as.test.clustering.InfinispanServerUtil;
 import org.jboss.as.test.clustering.single.infinispan.cdi.embedded.GreetingCacheManagerTestCase;
 import org.jboss.as.test.clustering.single.infinispan.cdi.embedded.GreetingServiceTestCase;
 import org.jboss.as.test.clustering.single.infinispan.cdi.remote.RemoteGreetingServiceTestCase;
 import org.jboss.as.test.clustering.single.infinispan.query.ContainerManagedHotRodClientTestCase;
-import org.jboss.as.test.clustering.single.infinispan.query.HotRodClientTestCase;
 import org.jboss.as.test.clustering.single.infinispan.query.ContainerRemoteQueryTestCase;
+import org.jboss.as.test.clustering.single.infinispan.query.HotRodClientTestCase;
 import org.jboss.as.test.clustering.single.infinispan.query.RemoteQueryTestCase;
-import org.junit.ClassRule;
-import org.junit.rules.TestRule;
+import org.junit.jupiter.api.extension.RegisterExtension;
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 import org.junit.runners.Suite.SuiteClasses;
@@ -42,7 +42,7 @@ import org.junit.runners.Suite.SuiteClasses;
 })
 public class InfinispanModulesTestSuite {
 
-    @ClassRule
-    public static final TestRule INFINISPAN_SERVER_RULE = InfinispanServerUtil.INFINISPAN_SERVER_RULE;
+    @RegisterExtension
+    public static final InfinispanServerExtension SERVER = InfinispanServerUtil.infinispanServerExtension();
 
 }

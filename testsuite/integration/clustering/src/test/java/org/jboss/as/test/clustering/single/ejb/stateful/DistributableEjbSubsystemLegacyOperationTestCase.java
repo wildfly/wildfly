@@ -4,8 +4,10 @@
  */
 package org.jboss.as.test.clustering.single.ejb.stateful;
 
+import static org.junit.jupiter.api.Assertions.*;
+
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.container.ManagementClient;
@@ -13,28 +15,27 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.common.Util;
+import org.jboss.as.test.clustering.ejb.EJBDirectory;
 import org.jboss.as.test.clustering.ejb.RemoteEJBDirectory;
 import org.jboss.as.test.clustering.single.ejb.stateful.bean.Incrementor;
 import org.jboss.as.test.clustering.single.ejb.stateful.bean.Result;
 import org.jboss.as.test.clustering.single.ejb.stateful.bean.StatefulIncrementorBean;
 import org.jboss.as.test.clustering.single.ejb.stateful.bean.TransientStatefulIncrementorBean;
-import org.jboss.as.test.clustering.ejb.EJBDirectory;
 import org.jboss.as.test.shared.ManagementServerSetupTask;
 import org.jboss.as.test.shared.SnapshotRestoreSetupTask;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * Validates legacy operation of EJB deployments when the distributable-ejb subsystem is removed.
  *
  * @author Richard Achmatowicz
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @ServerSetup({
         SnapshotRestoreSetupTask.class,
         DistributableEjbSubsystemLegacyOperationTestCase.ServerSetupTask.class
@@ -52,12 +53,12 @@ public class DistributableEjbSubsystemLegacyOperationTestCase {
     }
 
     @Test
-    public void test(@ArquillianResource ManagementClient managementClient) throws Exception {
+    void test(@ArquillianResource ManagementClient managementClient) throws Exception {
         // Confirm absence of distributable-ejb subsystem
         PathAddress address = PathAddress.pathAddress(PathElement.pathElement("subsystem", "distributable-ejb"));
         ModelNode operation = Util.createOperation(ModelDescriptionConstants.READ_RESOURCE_OPERATION, address);
         ModelNode result = managementClient.getControllerClient().execute(operation);
-        Assert.assertEquals(ModelDescriptionConstants.FAILED, result.get(ModelDescriptionConstants.OUTCOME).asString());
+        assertEquals(ModelDescriptionConstants.FAILED, result.get(ModelDescriptionConstants.OUTCOME).asString());
 
         // lookup the deployed stateful session bean
         try (EJBDirectory directory = new RemoteEJBDirectory(MODULE_NAME)) {
@@ -73,7 +74,7 @@ public class DistributableEjbSubsystemLegacyOperationTestCase {
         for (int i = 1; i <= 5; i++) {
             Result<Integer> invResult = bean.increment();
 
-            Assert.assertEquals(i, invResult.getValue().intValue());
+            assertEquals(i, invResult.getValue().intValue());
         }
     }
 

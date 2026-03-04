@@ -4,15 +4,16 @@
  */
 package org.jboss.as.test.clustering.cluster.dispatcher.bean.legacy;
 
+import javax.naming.Context;
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
+
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
 import jakarta.annotation.Resource;
 import jakarta.ejb.Local;
 import jakarta.ejb.Singleton;
 import jakarta.ejb.Startup;
-import javax.naming.Context;
-import javax.naming.InitialContext;
-import javax.naming.NamingException;
 
 import org.wildfly.clustering.Registration;
 import org.wildfly.clustering.dispatcher.CommandDispatcher;

@@ -44,11 +44,11 @@ public abstract class AbstractStabilityServerSetupTaskTest {
 
 
     @Test
-    public void testStabilityMatchesSetupTask() throws Exception {
+    public void testStabilityEnablesDesiredSetupTask() throws Exception {
         ModelNode op = Util.getReadAttributeOperation(PathAddress.pathAddress(CORE_SERVICE, SERVER_ENVIRONMENT), STABILITY);
         ModelNode result = ManagementOperations.executeOperation(managementClient.getControllerClient(), op);
-        Stability stability = Stability.fromString(result.asString());
-        Assertions.assertEquals(desiredStability, stability);
+        Stability actualStability = Stability.fromString(result.asString());
+        Assertions.assertTrue(actualStability.enables(desiredStability));
     }
 
     @Test
