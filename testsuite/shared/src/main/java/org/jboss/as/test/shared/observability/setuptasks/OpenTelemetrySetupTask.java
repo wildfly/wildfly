@@ -4,14 +4,13 @@
  */
 package org.jboss.as.test.shared.observability.setuptasks;
 
-import org.arquillian.testcontainers.api.TestcontainersRequired;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.client.helpers.Operations;
 import org.jboss.as.test.shared.ServerReload;
 import org.jboss.dmr.ModelNode;
 
-@TestcontainersRequired
-public class OpenTelemetrySetupTask extends AbstractSetupTask {
+//@TestcontainersRequired
+public class OpenTelemetrySetupTask extends InMemoryCollectorSetupTask {
     protected static final String SUBSYSTEM_NAME = "opentelemetry";
     public static final ModelNode OPENTELEMETRY_EXTENSION = Operations.createAddress("extension", "org.wildfly.extension.opentelemetry");
     public static final ModelNode OPENTELEMETRY_ADDRESS = Operations.createAddress("subsystem", SUBSYSTEM_NAME);
@@ -21,6 +20,8 @@ public class OpenTelemetrySetupTask extends AbstractSetupTask {
 
     @Override
     public void setup(final ManagementClient managementClient, final String containerId) throws Exception {
+        super.setup(managementClient, containerId);
+
         if (!Operations.isSuccessfulOutcome(executeRead(managementClient, OPENTELEMETRY_EXTENSION))) {
             executeOp(managementClient, Operations.createAddOperation(OPENTELEMETRY_EXTENSION));
             addedExtension = true;
@@ -47,5 +48,6 @@ public class OpenTelemetrySetupTask extends AbstractSetupTask {
         }
 
         ServerReload.executeReloadAndWaitForCompletion(managementClient);
+        super.tearDown(managementClient, containerId);
     }
 }

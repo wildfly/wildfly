@@ -17,9 +17,9 @@ import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.client.Operation;
 import org.jboss.as.controller.client.helpers.Operations;
 import org.jboss.as.test.shared.ServerReload;
+import org.jboss.as.test.shared.logging.LoggingUtil;
 import org.jboss.as.test.shared.observability.setuptasks.MicrometerSetupTask;
 import org.jboss.as.test.shared.observability.setuptasks.OpenTelemetrySetupTask;
-import org.jboss.as.test.shared.logging.LoggingUtil;
 import org.jboss.dmr.ModelNode;
 import org.junit.Assert;
 import org.junit.Test;
@@ -38,6 +38,7 @@ public class MultipleMetricsTestCase {
     private static final ModelNode ADDRESS_ROOT_LOGGER = Operations.createAddress("subsystem", "logging", "root-logger", "ROOT");
 
     private static final ModelNode ADDRESS_METRICS_EXTENSION = Operations.createAddress("extension", "org.wildfly.extension.metrics");
+    private static final ModelNode ADDRESS_METRICS_SUBSYSTEM = Operations.createAddress("subsystem", "metrics");
 
     private static final ModelNode ADDRESS_MICROMETER_EXTENSION = MicrometerSetupTask.MICROMETER_EXTENSION;
     private static final ModelNode ADDRESS_MICROMETER_SUBSYSTEM = MicrometerSetupTask.MICROMETER_SUBSYSTEM;
@@ -52,12 +53,18 @@ public class MultipleMetricsTestCase {
     private ManagementClient managementClient;
 
     // WildFly Metrics is not enabled for bootable jars, so that changes the number of messages logged.
-    private static boolean wildflyMetricsAvailable = true;
+    private boolean wildflyMetricsAvailable = true;
+    private boolean micrometerAvailable = true;
+    private boolean opentelemetryAvailable = true;
+    private boolean mptelemetryAvailable = true;
 
     @Test
     @InSequence
     public void setup() throws Exception {
-        wildflyMetricsAvailable = Operations.isSuccessfulOutcome(executeRead(managementClient, ADDRESS_METRICS_EXTENSION));
+        wildflyMetricsAvailable = canBeRead(ADDRESS_METRICS_SUBSYSTEM);
+        micrometerAvailable = canBeRead(ADDRESS_MICROMETER_SUBSYSTEM);
+        opentelemetryAvailable = canBeRead(ADDRESS_OPENTELEMETRY_SUBSYSTEM);
+        mptelemetryAvailable = canBeRead(ADDRESS_MPTELEMETRY_SUBSYSTEM);
     }
 
     @Test
@@ -127,8 +134,21 @@ public class MultipleMetricsTestCase {
     @Test
     @InSequence(Integer.MAX_VALUE)
     public void shutdown() {
-        disableOpenTelemetry();
-        disableMicrometer();
+        restoreSubsystemState (micrometerAvailable, ADDRESS_MICROMETER_EXTENSION, ADDRESS_MICROMETER_SUBSYSTEM);
+        restoreSubsystemState (opentelemetryAvailable, ADDRESS_OPENTELEMETRY_EXTENSION, ADDRESS_OPENTELEMETRY_SUBSYSTEM);
+        restoreSubsystemState (mptelemetryAvailable, ADDRESS_MPTELEMETRY_EXTENSION, ADDRESS_MPTELEMETRY_SUBSYSTEM);
+        restoreSubsystemState(wildflyMetricsAvailable, ADDRESS_METRICS_EXTENSION, ADDRESS_METRICS_SUBSYSTEM);
+        reloadServer();
+    }
+
+    private void restoreSubsystemState(boolean presentAtStart, ModelNode extensionAddress, ModelNode subsystemAddress) {
+        if (presentAtStart) {
+            safeAdd(extensionAddress);
+            safeAdd(subsystemAddress);
+        } else {
+            safeRemove(subsystemAddress);
+            safeRemove(extensionAddress);
+        }
     }
 
     private void assertExpectedCount(String loggerName, int expected) throws Exception {
@@ -199,15 +219,19 @@ public class MultipleMetricsTestCase {
     }
 
     private void safeAdd(ModelNode address) {
-        if (!Operations.isSuccessfulOutcome(executeRead(managementClient, address))) {
+        if (!canBeRead(address)) {
             executeOp(managementClient, Operations.createAddOperation(address));
         }
     }
 
     private void safeRemove(ModelNode address) {
-        if (Operations.isSuccessfulOutcome(executeRead(managementClient, address))) {
+        if (canBeRead(address)) {
             executeOp(managementClient, Operations.createRemoveOperation(address));
         }
+    }
+
+    private boolean canBeRead(ModelNode address) {
+        return Operations.isSuccessfulOutcome(executeRead(managementClient, address));
     }
 
     private void executeOp(final ManagementClient client, final ModelNode op) {

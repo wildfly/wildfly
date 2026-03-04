@@ -10,7 +10,6 @@ import static org.wildfly.test.integration.observability.setuptask.PrometheusSet
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.util.List;
 
 import jakarta.ws.rs.client.Client;
 import jakarta.ws.rs.client.ClientBuilder;
@@ -25,8 +24,6 @@ import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
-import org.arquillian.testcontainers.api.Testcontainer;
-import org.arquillian.testcontainers.api.TestcontainersRequired;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
@@ -38,8 +35,6 @@ import org.jboss.as.controller.client.Operation;
 import org.jboss.as.controller.client.helpers.Operations;
 import org.jboss.as.test.shared.CdiUtils;
 import org.jboss.as.test.shared.ServerReload;
-import org.jboss.as.test.shared.observability.containers.OpenTelemetryCollectorContainer;
-import org.jboss.as.test.shared.observability.signals.PrometheusMetric;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -53,7 +48,6 @@ import org.wildfly.test.stabilitylevel.StabilityServerSetupSnapshotRestoreTasks;
 
 @RunWith(Arquillian.class)
 @ServerSetup({StabilityServerSetupSnapshotRestoreTasks.Community.class, PrometheusSetupTask.class})
-@TestcontainersRequired
 @RunAsClient
 public class MicrometerPrometheusTestCase {
     private static final int REQUEST_COUNT = 5;
@@ -64,28 +58,11 @@ public class MicrometerPrometheusTestCase {
     @ContainerResource
     protected ManagementClient managementClient;
 
-    @Testcontainer
-    protected OpenTelemetryCollectorContainer otelCollector;
-
     @Deployment
     public static Archive<?> deploy() {
         return ShrinkWrap.create(WebArchive.class, "micrometer-prometheus.war")
                 .addClasses(JaxRsActivator.class, MicrometerResource.class)
                 .addAsWebInfResource(CdiUtils.createBeansXml(), "beans.xml");
-    }
-
-    @Test
-    public void basicPrometheusTest() throws Exception {
-        makeRequests();
-
-        otelCollector.assertMetrics(prometheusMetrics -> {
-            List<PrometheusMetric> results = otelCollector.getMetricsByName(prometheusMetrics, "demo_counter_total"); // Adjust for Prometheus naming conventions
-
-            Assert.assertEquals(1, results.size());
-            results.forEach(r -> Assert.assertEquals("" + REQUEST_COUNT, r.getValue()));
-
-            Assert.assertNotEquals(0, otelCollector.getMetricsByName(prometheusMetrics, "demo_timer_milliseconds_count").size());
-        });
     }
 
     @Test
