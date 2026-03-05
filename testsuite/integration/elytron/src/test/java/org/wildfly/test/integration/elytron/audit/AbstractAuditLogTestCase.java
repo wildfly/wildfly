@@ -16,7 +16,7 @@ import org.jboss.as.test.shared.ServerReload;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.wildfly.test.security.common.elytron.SimpleSecurityDomain;
-import org.wildfly.test.security.common.elytron.UndertowDomainMapper;
+import org.wildfly.test.undertow.common.UndertowApplicationSecurityDomain;
 
 /**
  * Abstract class for Elytron Audit Logging tests. It provides a deployment with {@link SimpleServlet} and a couple of helper
@@ -39,8 +39,10 @@ public abstract class AbstractAuditLogTestCase {
     protected static final String PASSWORD = "password1";
     protected static final String WRONG_PASSWORD = "wrongPassword";
     protected static final String EMPTY_PASSWORD = "";
-    protected static final String SD_DEFAULT = "other";
-    protected static final String SD_WITHOUT_LOGIN_PERMISSION = "no-login-permission";
+    protected static final String SD_DEFAULT_BASIC = "other";
+    protected static final String SD_WITHOUT_LOGIN_PERMISSION_BASIC = "no-login-permission";
+    protected static final String SD_DEFAULT_DIGEST = "other-digest";
+    protected static final String SD_WITHOUT_LOGIN_PERMISSION_DIGEST = "no-login-permission-digest";
 
     private static final String NAME = "AuditlogTestCase";
 
@@ -48,19 +50,49 @@ public abstract class AbstractAuditLogTestCase {
      * Creates WAR with a secured servlet and BASIC authentication configured in web.xml deployment descriptor.
      * It uses default security domain.
      */
-    @Deployment(testable = false, name = SD_DEFAULT)
+    @Deployment(testable = false, name = SD_DEFAULT_BASIC)
     public static WebArchive standardDeployment() {
-        return createWar(SD_DEFAULT);
+        return createWar(SD_DEFAULT_BASIC);
     }
 
     /**
-     * Creates WAR with a secured servlet and BASIC authentication configured in web.xml deployment descriptor.
-     * It uses newly created security domain {@link SD_WITHOUT_LOGIN_PERMISSION}.
+     * Creates WAR with a secured servlet and BASIC authentication configured in
+     * web.xml deployment descriptor.
+     * It uses newly created security domain
+     * {@link #SD_WITHOUT_LOGIN_PERMISSION_BASIC}.
      */
-    @Deployment(testable = false, name = SD_WITHOUT_LOGIN_PERMISSION)
+    @Deployment(testable = false, name = SD_WITHOUT_LOGIN_PERMISSION_BASIC)
     public static WebArchive customizedDeployment() {
-        return createWar(SD_WITHOUT_LOGIN_PERMISSION)
-                .addAsWebInfResource(Utils.getJBossWebXmlAsset(SD_WITHOUT_LOGIN_PERMISSION), "jboss-web.xml");
+        return createWar(SD_WITHOUT_LOGIN_PERMISSION_BASIC)
+                .addAsWebInfResource(Utils.getJBossWebXmlAsset(SD_WITHOUT_LOGIN_PERMISSION_BASIC), "jboss-web.xml");
+    }
+
+    /**
+     * Creates WAR with a secured servlet and DIGEST authentication configured in
+     * web.xml deployment descriptor.
+     * It uses default security domain.
+     */
+    @Deployment(testable = false, name = SD_DEFAULT_DIGEST)
+    public static WebArchive digestDeployment() {
+        return ShrinkWrap.create(WebArchive.class, SD_DEFAULT_DIGEST + ".war")
+                .addClasses(SimpleServlet.class)
+                .addAsWebInfResource(AbstractAuditLogTestCase.class.getPackage(), "DigestAuthentication-web.xml",
+                        "web.xml");
+    }
+
+    /**
+     * Creates WAR with a secured servlet and DIGEST authentication configured in
+     * web.xml deployment descriptor.
+     * It uses the security domain without a permission mapper
+     * ({@link #SD_WITHOUT_LOGIN_PERMISSION_DIGEST}).
+     */
+    @Deployment(testable = false, name = SD_WITHOUT_LOGIN_PERMISSION_DIGEST)
+    public static WebArchive digestCustomizedDeployment() {
+        return ShrinkWrap.create(WebArchive.class, SD_WITHOUT_LOGIN_PERMISSION_DIGEST + ".war")
+                .addClasses(SimpleServlet.class)
+                .addAsWebInfResource(AbstractAuditLogTestCase.class.getPackage(), "DigestAuthentication-web.xml",
+                        "web.xml")
+                .addAsWebInfResource(Utils.getJBossWebXmlAsset(SD_WITHOUT_LOGIN_PERMISSION_DIGEST), "jboss-web.xml");
     }
 
     /**
@@ -68,18 +100,38 @@ public abstract class AbstractAuditLogTestCase {
      * permission check fail event.
      */
     static class SecurityDomainSetupTask implements ServerSetupTask {
-        SimpleSecurityDomain securityDomain;
-        UndertowDomainMapper applicationSecurityDomain;
+        SimpleSecurityDomain basicSecurityDomain;
+        UndertowApplicationSecurityDomain basicApplicationSecurityDomain;
+        SimpleSecurityDomain digestSecurityDomain;
+        UndertowApplicationSecurityDomain defaultDigestUndertowDomain;
+        UndertowApplicationSecurityDomain digestUndertowDomain;
 
         @Override
         public void setup(ManagementClient managementClient, String string) throws Exception {
             try (CLIWrapper cli = new CLIWrapper(true)) {
-                securityDomain = createSecurityDomainWithoutPermissionMapper(SD_WITHOUT_LOGIN_PERMISSION);
-                securityDomain.create(managementClient.getControllerClient(), cli);
+                basicSecurityDomain = createSecurityDomainWithoutPermissionMapper(SD_WITHOUT_LOGIN_PERMISSION_BASIC);
+                basicSecurityDomain.create(managementClient.getControllerClient(), cli);
 
-                applicationSecurityDomain =  UndertowDomainMapper.builder().withName(SD_WITHOUT_LOGIN_PERMISSION)
-                        .withApplicationDomains(SD_WITHOUT_LOGIN_PERMISSION).build();
-                applicationSecurityDomain.create(cli);
+                basicApplicationSecurityDomain = UndertowApplicationSecurityDomain.builder()
+                        .withName(SD_WITHOUT_LOGIN_PERMISSION_BASIC)
+                        .withSecurityDomain(SD_WITHOUT_LOGIN_PERMISSION_BASIC)
+                        .build();
+                basicApplicationSecurityDomain.create(managementClient.getControllerClient(), cli);
+
+                digestSecurityDomain = createSecurityDomainWithoutPermissionMapper(SD_WITHOUT_LOGIN_PERMISSION_DIGEST);
+                digestSecurityDomain.create(managementClient.getControllerClient(), cli);
+
+                defaultDigestUndertowDomain = UndertowApplicationSecurityDomain.builder()
+                        .withName(SD_DEFAULT_DIGEST)
+                        .withSecurityDomain("ApplicationDomain")
+                        .build();
+                defaultDigestUndertowDomain.create(managementClient.getControllerClient(), cli);
+
+                digestUndertowDomain = UndertowApplicationSecurityDomain.builder()
+                        .withName(SD_WITHOUT_LOGIN_PERMISSION_DIGEST)
+                        .withSecurityDomain(SD_WITHOUT_LOGIN_PERMISSION_DIGEST)
+                        .build();
+                digestUndertowDomain.create(managementClient.getControllerClient(), cli);
             }
             ServerReload.reloadIfRequired(managementClient);
         }
@@ -87,17 +139,18 @@ public abstract class AbstractAuditLogTestCase {
         @Override
         public void tearDown(ManagementClient managementClient, String containerId) throws Exception {
             try (CLIWrapper cli = new CLIWrapper(true)) {
-                applicationSecurityDomain.remove(cli);
-                securityDomain.remove(managementClient.getControllerClient(), cli);
+                basicApplicationSecurityDomain.remove(managementClient.getControllerClient(), cli);
+                basicSecurityDomain.remove(managementClient.getControllerClient(), cli);
+                digestUndertowDomain.remove(managementClient.getControllerClient(), cli);
+                digestSecurityDomain.remove(managementClient.getControllerClient(), cli);
+                defaultDigestUndertowDomain.remove(managementClient.getControllerClient(), cli);
             }
             ServerReload.reloadIfRequired(managementClient);
         }
-
     }
 
     protected static void setDefaultEventListenerOfApplicationDomain(CLIWrapper cli) {
         setEventListenerOfApplicationDomain(cli, "local-audit");
-
     }
 
     protected static void setEventListenerOfApplicationDomain(CLIWrapper cli, String auditlog) {
@@ -106,7 +159,10 @@ public abstract class AbstractAuditLogTestCase {
                 auditlog));
         cli.sendLine(String.format(
                 "/subsystem=elytron/security-domain=%s:write-attribute(name=security-event-listener,value=%s)",
-                SD_WITHOUT_LOGIN_PERMISSION, auditlog));
+                SD_WITHOUT_LOGIN_PERMISSION_BASIC, auditlog));
+        cli.sendLine(String.format(
+                "/subsystem=elytron/security-domain=%s:write-attribute(name=security-event-listener,value=%s)",
+                SD_WITHOUT_LOGIN_PERMISSION_DIGEST, auditlog));
     }
 
     protected static SimpleSecurityDomain createSecurityDomainWithoutPermissionMapper(String domainName) {

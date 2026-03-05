@@ -4,6 +4,7 @@
  */
 package org.wildfly.test.integration.elytron.audit;
 
+import static jakarta.servlet.http.HttpServletResponse.SC_FORBIDDEN;
 import static jakarta.servlet.http.HttpServletResponse.SC_OK;
 import static jakarta.servlet.http.HttpServletResponse.SC_UNAUTHORIZED;
 import static org.jboss.as.test.shared.CliUtils.asAbsolutePath;
@@ -29,6 +30,7 @@ import org.jboss.as.test.integration.management.util.CLIWrapper;
 import org.jboss.as.test.integration.security.common.Utils;
 import org.jboss.as.test.shared.ServerReload;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.wildfly.test.security.common.elytron.FileAuditLog;
@@ -49,105 +51,133 @@ public class FileAuditLogTestCase extends AbstractAuditLogTestCase {
     private static final File AUDIT_LOG_FILE = new File(WORK_DIR, AUDIT_LOG_NAME);
     private static final String ENCODING_16BE = "UTF-16BE";
 
-    /**
-     * Tests whether successful authentication was logged.
-     */
-    @Test
-    @OperateOnDeployment(SD_DEFAULT)
-    public void testSuccessfulAuth() throws Exception {
-        final URL servletUrl = new URL(url.toExternalForm() + "role1");
-
+    @Before
+    public void before() throws Exception {
         discardCurrentContents(AUDIT_LOG_FILE);
-        Utils.makeCallWithBasicAuthn(servletUrl, USER, PASSWORD, SC_OK);
+    }
 
+    private void runTestSuccessfulAuth() throws Exception {
+        Utils.makeCallWithBasicAuthn(new URL(url.toExternalForm() + "role1"), USER, PASSWORD, SC_OK);
         assertTrue("Successful authentication was not logged", loggedSuccessfulAuth(AUDIT_LOG_FILE, USER));
     }
 
-    /**
-     * Tests whether failed authentication with wrong user was logged.
-     */
-    @Test
-    @OperateOnDeployment(SD_DEFAULT)
-    public void testFailedAuthWrongUser() throws Exception {
-        final URL servletUrl = new URL(url.toExternalForm() + "role1");
-
-        discardCurrentContents(AUDIT_LOG_FILE);
-        Utils.makeCallWithBasicAuthn(servletUrl, UNKNOWN_USER, PASSWORD, SC_UNAUTHORIZED);
-
-        assertTrue("Failed authentication with wrong user was not logged", loggedFailedAuth(AUDIT_LOG_FILE, UNKNOWN_USER));
+    private void runTestFailedAuthWrongUser() throws Exception {
+        Utils.makeCallWithBasicAuthn(new URL(url.toExternalForm() + "role1"), UNKNOWN_USER, PASSWORD, SC_UNAUTHORIZED);
+        assertTrue("Failed authentication with wrong user was not logged",
+                loggedFailedAuth(AUDIT_LOG_FILE, UNKNOWN_USER));
     }
 
-    /**
-     * Tests whether failed authentication with wrong password was logged.
-     */
-    @Test
-    @OperateOnDeployment(SD_DEFAULT)
-    public void testFailedAuthWrongPassword() throws Exception {
-        final URL servletUrl = new URL(url.toExternalForm() + "role1");
-
-        discardCurrentContents(AUDIT_LOG_FILE);
-        Utils.makeCallWithBasicAuthn(servletUrl, USER, WRONG_PASSWORD, SC_UNAUTHORIZED);
-
+    private void runTestFailedAuthWrongPassword() throws Exception {
+        Utils.makeCallWithBasicAuthn(new URL(url.toExternalForm() + "role1"), USER, WRONG_PASSWORD, SC_UNAUTHORIZED);
         assertTrue("Failed authentication with wrong password was not logged", loggedFailedAuth(AUDIT_LOG_FILE, USER));
     }
 
-    /**
-     * Tests whether failed authentication with empty password was logged.
-     */
-    @Test
-    @OperateOnDeployment(SD_DEFAULT)
-    public void testFailedAuthEmptyPassword() throws Exception {
-        final URL servletUrl = new URL(url.toExternalForm() + "role1");
-
-        discardCurrentContents(AUDIT_LOG_FILE);
-        Utils.makeCallWithBasicAuthn(servletUrl, USER, EMPTY_PASSWORD, SC_UNAUTHORIZED);
-
+    private void runTestFailedAuthEmptyPassword() throws Exception {
+        Utils.makeCallWithBasicAuthn(new URL(url.toExternalForm() + "role1"), USER, EMPTY_PASSWORD, SC_UNAUTHORIZED);
         assertTrue("Failed authentication with empty password was not logged", loggedFailedAuth(AUDIT_LOG_FILE, USER));
     }
 
-    /**
-     * Tests whether successful permission check was logged.
-     */
-    @Test
-    @OperateOnDeployment(SD_DEFAULT)
-    public void testSuccessfulPermissionCheck() throws Exception {
-        final URL servletUrl = new URL(url.toExternalForm() + "role1");
-
-        discardCurrentContents(AUDIT_LOG_FILE);
-        Utils.makeCallWithBasicAuthn(servletUrl, USER, PASSWORD, SC_OK);
-
+    private void runTestSuccessfulPermissionCheck() throws Exception {
+        Utils.makeCallWithBasicAuthn(new URL(url.toExternalForm() + "role1"), USER, PASSWORD, SC_OK);
         assertTrue("Successful permission check was not logged", loggedSuccessfulPermissionCheck(AUDIT_LOG_FILE, USER));
     }
 
-    /**
-     * Tests whether failed permission check was logged.
-     */
-    @Test
-    @OperateOnDeployment(SD_WITHOUT_LOGIN_PERMISSION)
-    public void testFailedPermissionCheck() throws Exception {
-        final URL servletUrl = new URL(url.toExternalForm() + "role1");
-
-        discardCurrentContents(AUDIT_LOG_FILE);
-        Utils.makeCallWithBasicAuthn(servletUrl, USER, PASSWORD, SC_UNAUTHORIZED);
-
-        assertTrue("Failed permission check was not logged", loggedFailedPermissionCheck(AUDIT_LOG_FILE, USER));
+    private void runTestFailedPermissionCheck(int expectedStatusCode) throws Exception {
+        Utils.makeCallWithBasicAuthn(new URL(url.toExternalForm() + "role1"), USER, PASSWORD, expectedStatusCode);
+        assertTrue("Failed permission check was not logged",
+                loggedFailedPermissionCheck(AUDIT_LOG_FILE, USER));
     }
 
-    /**
-     * Tests audit log file encoding.
-     */
+    private void runTestAuditLogFileEncoding(int expectedStatusCode) throws Exception {
+        Utils.makeCallWithBasicAuthn(new URL(url.toExternalForm() + "role1"), USER, PASSWORD, expectedStatusCode);
+        assertTrue(
+                loggedAuthResult(AUDIT_LOG_FILE, USER, UNSUCCESSFUL_PERMISSION_CHECK_EVENT, StandardCharsets.UTF_16BE));
+        assertFalse(
+                loggedAuthResult(AUDIT_LOG_FILE, USER, UNSUCCESSFUL_PERMISSION_CHECK_EVENT, StandardCharsets.UTF_8));
+    }
+
     @Test
-    @OperateOnDeployment(SD_WITHOUT_LOGIN_PERMISSION)
-    public void testAuditLogFileEncoding() throws Exception {
-        final URL servletUrl = new URL(url.toExternalForm() + "role1");
+    @OperateOnDeployment(SD_DEFAULT_BASIC)
+    public void testSuccessfulAuthBasic() throws Exception {
+        runTestSuccessfulAuth();
+    }
 
-        discardCurrentContents(AUDIT_LOG_FILE);
-        Utils.makeCallWithBasicAuthn(servletUrl, USER, PASSWORD, SC_UNAUTHORIZED);
+    @Test
+    @OperateOnDeployment(SD_DEFAULT_BASIC)
+    public void testFailedAuthWrongUserBasic() throws Exception {
+        runTestFailedAuthWrongUser();
+    }
 
-        //Read the logged event using the same encoding "UTF-16BE" as the audit log file setup
-        assertTrue(loggedAuthResult(AUDIT_LOG_FILE, USER, UNSUCCESSFUL_PERMISSION_CHECK_EVENT, StandardCharsets.UTF_16BE));
-        //Read the logged event using different encoding
-        assertFalse(loggedAuthResult(AUDIT_LOG_FILE, USER, UNSUCCESSFUL_PERMISSION_CHECK_EVENT, StandardCharsets.UTF_8));
+    @Test
+    @OperateOnDeployment(SD_DEFAULT_BASIC)
+    public void testFailedAuthWrongPasswordBasic() throws Exception {
+        runTestFailedAuthWrongPassword();
+    }
+
+    @Test
+    @OperateOnDeployment(SD_DEFAULT_BASIC)
+    public void testFailedAuthEmptyPasswordBasic() throws Exception {
+        runTestFailedAuthEmptyPassword();
+    }
+
+    @Test
+    @OperateOnDeployment(SD_DEFAULT_BASIC)
+    public void testSuccessfulPermissionCheckBasic() throws Exception {
+        runTestSuccessfulPermissionCheck();
+    }
+
+    @Test
+    @OperateOnDeployment(SD_WITHOUT_LOGIN_PERMISSION_BASIC)
+    public void testFailedPermissionCheckBasic() throws Exception {
+        runTestFailedPermissionCheck(SC_UNAUTHORIZED);
+    }
+
+    @Test
+    @OperateOnDeployment(SD_WITHOUT_LOGIN_PERMISSION_BASIC)
+    public void testAuditLogFileEncodingBasic() throws Exception {
+        runTestAuditLogFileEncoding(SC_UNAUTHORIZED);
+    }
+
+    @Test
+    @OperateOnDeployment(SD_DEFAULT_DIGEST)
+    public void testSuccessfulAuthDigest() throws Exception {
+        runTestSuccessfulAuth();
+    }
+
+    @Test
+    @OperateOnDeployment(SD_DEFAULT_DIGEST)
+    public void testFailedAuthWrongUserDigest() throws Exception {
+        runTestFailedAuthWrongUser();
+    }
+
+    @Test
+    @OperateOnDeployment(SD_DEFAULT_DIGEST)
+    public void testFailedAuthWrongPasswordDigest() throws Exception {
+        runTestFailedAuthWrongPassword();
+    }
+
+    @Test
+    @OperateOnDeployment(SD_DEFAULT_DIGEST)
+    public void testFailedAuthEmptyPasswordDigest() throws Exception {
+        runTestFailedAuthEmptyPassword();
+    }
+
+    @Test
+    @OperateOnDeployment(SD_DEFAULT_DIGEST)
+    public void testSuccessfulPermissionCheckDigest() throws Exception {
+        runTestSuccessfulPermissionCheck();
+    }
+
+    @Test
+    @OperateOnDeployment(SD_WITHOUT_LOGIN_PERMISSION_DIGEST)
+    public void testFailedPermissionCheckDigest() throws Exception {
+        runTestFailedPermissionCheck(SC_FORBIDDEN);
+    }
+
+    @Test
+    @OperateOnDeployment(SD_WITHOUT_LOGIN_PERMISSION_DIGEST)
+    public void testAuditLogFileEncodingDigest() throws Exception {
+        runTestAuditLogFileEncoding(SC_FORBIDDEN);
     }
 
     /**
@@ -159,9 +189,8 @@ public class FileAuditLogTestCase extends AbstractAuditLogTestCase {
 
         @Override
         public void setup(ManagementClient managementClient, String string) throws Exception {
+            createEmptyDirectory(WORK_DIR);
             try (CLIWrapper cli = new CLIWrapper(true)) {
-                createEmptyDirectory(WORK_DIR);
-
                 auditLog = FileAuditLog.builder().withName(NAME)
                         .withPath(asAbsolutePath(AUDIT_LOG_FILE))
                         .withEncoding(ENCODING_16BE)
