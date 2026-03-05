@@ -253,7 +253,7 @@ that are behind a load balancer that supports the same protocol.
 
 |read-timeout
 |Configure a read timeout for a socket, in milliseconds.  If the given amount of time elapses without a 
-successful read taking place, the socket's next read will throw a {@link ReadTimeoutException}.
+successful read taking place, the socket's next read will throw a {@link ReadTimeoutException}. Default value is currently set to 90000ms(90s). No timeout require value to be set to -1. NOTE: this value applies to all I/O operations, including WebSockets/SSE.
 
 |receive-buffer
 |The receive buffer size, in bytes.
@@ -300,7 +300,7 @@ is not using HTTPS.
 |write-timeout
 |Configure a write timeout for a socket, in milliseconds.  If the given amount of time 
 elapses without a successful write taking place, the socket's next write will throw
-a {@link WriteTimeoutException}.
+a {@link WriteTimeoutException}. Default value is currently set to 90000ms(90s). No timeout require value to be set to -1. NOTE: this value applies to all I/O operations, including WebSockets/SSE.
 
 |=======================================================================
 
