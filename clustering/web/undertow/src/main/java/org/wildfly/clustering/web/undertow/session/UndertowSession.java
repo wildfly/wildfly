@@ -17,6 +17,7 @@ import org.wildfly.clustering.function.ToLongFunction;
 
 import io.undertow.server.HttpServerExchange;
 import io.undertow.server.session.Session;
+import io.undertow.server.session.SessionReference;
 
 /**
  * @author Paul Ferraro
@@ -38,10 +39,16 @@ public interface UndertowSession extends Session {
 
     boolean isValid();
 
+    @Override
     default boolean isInvalid() {
         return !this.isValid();
     }
 
     @Override
     UndertowSessionManager getSessionManager();
+
+    @Override
+    default SessionReference getReference() {
+        return new DistributableSessionReference(this.getSessionManager(), this.getId());
+    }
 }
