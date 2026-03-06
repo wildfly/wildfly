@@ -192,7 +192,7 @@ public class UndertowEventHandlerAdapterService implements UndertowEventListener
     }
 
     @Override
-    public void resume() {
+    public synchronized void resume() {
         for (Context context : this.contexts) {
             this.configuration.getContainerEventHandler().start(context);
         }
