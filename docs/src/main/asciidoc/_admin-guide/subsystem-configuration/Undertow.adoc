@@ -614,6 +614,90 @@ The following session statistics attributes are available:
 |session-max-alive-time |The longest time (in seconds) that an expired session had been alive
 |======================================================
 
+== Handlers
+
+Handler element allows to define server specific handlers, distinct from filters or predicates. Currently list of available is limited to *file* and *reverse-proxy*.
+
+=== File
+
+File handler is terminating handler for incoming request. It allows configuration of static content that will be served by server if certain criteria are met - ie. default access to `/` of server.
+
+[source,xml,options="nowrap"]
+----
+<handlers>
+   <file name="welcome-content" path="${jboss.home.dir}/welcome-content"/>
+</handlers>
+----
+
+[cols=",",options="header"]
+|=======================================================================
+|Attribute |Description
+
+|name|Simply a name/alias by which file handler will be referenced in server.
+|path|Absolute path to resource being served via this file handler.
+
+|=======================================================================
+
+Example use:
+
+[source,xml,options="nowrap"]
+----
+<host name="default-host" alias="localhost">
+   <location name="/" handler="welcome-content"/>
+</host>
+----
+
+=== Reverse Proxy
+
+Reverse proxy handler allow to configure server in reverse proxy role. For example please check out <<Undertow_using_as_a_Load_Balancer, Undertow as Load Balancer>>.
+In such role server acts as frontend for content serving endpoints.
+
+[source,xml,options="nowrap"]
+----
+<handlers>
+   <reverse-proxy name="proxy-name">
+      <host name="proxy-host"/>
+   </reverse-proxy>
+</handlers>
+----
+
+[cols=",",options="header"]
+|=======================================================================
+|Attribute |Description
+
+|name|Simply a name/alias by which proxy handler will be referenced in server.
+|connections-per-thread|Number of connections that will be maintained to backend servers, per IO thread.
+|session-cookie-names|Comma separated list of session cookie names.
+|problem-server-retry|Delay in seconds between connection attempts to server that is down.
+|max-request-time|Maximum life time, in milliseconds, of a request, before it is terminated.
+|request-queue-size|Number of requests that can linger in queue if connection pool is full. Overflowing requests will be terminated with 503 response.
+|cached-connections-per-thread|Number of connection per thread that will be kept alive indefinitely.
+|connection-idle-timeout|Time in milliseconds connection can be inactive before it is reclaimed - unless number of active/alive connections is below or equal `cached-connections-per-thread`
+|max-retries|Number of times to attempt to retry a request if it fails. Note that if a request is not considered idempotent then it will only be retried if the proxy can be sure it was not sent to the backend server).
+|reuse-x-forwarded-header|Append(reuse existing) remote hop to x-forwarded-* headers, if not, previous value is discarded and remote hop becomes the value.
+|rewrite-host-header|Set host header to connection remote end and create x-forwarded-host header. This is done to adhere to host header validation on remote end.
+
+|=======================================================================
+
+
+==== Proxy Host
+
+Host element represents host/connection that will be target of requests routed via reverse proxy.
+
+[cols=",",options="header"]
+|=======================================================================
+|Attribute |Description
+
+|name|Simply a name/alias by which host will be referenced in server.
+|instance-id|The instance id (aka JVM route) that will be used to enable sticky sessions
+|outbound-socket-binding|Outbound socket binding for this host
+|scheme|What kind of scheme is used
+|path|Optional path if host is using non root resource
+
+
+|=======================================================================
+
+
 :leveloffset: +1
 
 include::Undertow_AJP_listeners.adoc[]
