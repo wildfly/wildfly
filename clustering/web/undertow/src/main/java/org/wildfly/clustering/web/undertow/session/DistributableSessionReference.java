@@ -14,16 +14,21 @@ import org.wildfly.clustering.web.undertow.logging.UndertowClusteringLogger;
 
 import io.undertow.server.HttpServerExchange;
 import io.undertow.server.session.SessionConfig;
+import io.undertow.server.session.SessionReference;
 
 /**
  * A reference to an Undertow session, for use by {@link jakarta.servlet.http.HttpSession#getAccessor()}.
  * @author Paul Ferraro
  */
-public class DistributableSessionReference implements Reference<UndertowSession> {
+public class DistributableSessionReference implements Reference<UndertowSession>, SessionReference {
 
+    private final UndertowSessionManager manager;
+    private final String id;
     private final Reader<UndertowSession> reader;
 
     public DistributableSessionReference(UndertowSessionManager manager, String id) {
+        this.manager = manager;
+        this.id = id;
         this.reader = manager.getSessionManager().getSessionReference(id).getReader().map(new Function<>() {
             @Override
             public UndertowSession apply(Session<Map<String, Object>> session) {
@@ -45,6 +50,16 @@ public class DistributableSessionReference implements Reference<UndertowSession>
                 };
             }
         });
+    }
+
+    @Override
+    public String getId() {
+        return this.id;
+    }
+
+    @Override
+    public UndertowSessionManager getSessionManager() {
+        return this.manager;
     }
 
     @Override
