@@ -23,6 +23,10 @@ import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
+import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController.Mode;
@@ -152,8 +156,10 @@ public class ConnectionFactoryAdd extends AbstractAddStepHandler {
     }
 
     @Override
-    protected void populateModel(final ModelNode operation, final ModelNode model) throws OperationFailedException {
-        for (AttributeDefinition attr : attributes) {
+    protected void populateModel(final OperationContext context, final ModelNode operation, final Resource resource) throws  OperationFailedException {
+        ImmutableManagementResourceRegistration registration = context.getResourceRegistration();
+        ModelNode model = resource.getModel();
+        for (AttributeDefinition attr : registration.getOperationEntry(PathAddress.EMPTY_ADDRESS, ModelDescriptionConstants.ADD).getOperationDefinition().getParameters()) {
             if (DESERIALIZATION_BLACKLIST.equals(attr)) {
                 if (operation.hasDefined(DESERIALIZATION_BLACKLIST.getName())) {
                     DESERIALIZATION_BLOCKLIST.validateAndSet(operation, model);
