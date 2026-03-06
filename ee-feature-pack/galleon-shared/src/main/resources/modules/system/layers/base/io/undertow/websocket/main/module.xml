@@ -11,7 +11,7 @@
     </properties>
 
     <resources>
-        <artifact name="${io.undertow:undertow-websockets-jsr}"/>
+        <artifact name="${io.undertow.ee:undertow-websockets}"/>
     </resources>
 
     <dependencies>

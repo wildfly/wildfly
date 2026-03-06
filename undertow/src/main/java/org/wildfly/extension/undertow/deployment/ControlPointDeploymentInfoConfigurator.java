@@ -9,7 +9,6 @@ import java.security.PrivilegedAction;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.UnaryOperator;
 
 import io.undertow.predicate.Predicate;
@@ -22,6 +21,7 @@ import io.undertow.server.session.SessionConfig;
 import io.undertow.server.session.SessionListener;
 import io.undertow.server.session.SessionManager;
 import io.undertow.server.session.SessionManagerStatistics;
+import io.undertow.server.session.SessionReference;
 import io.undertow.servlet.api.Deployment;
 import io.undertow.servlet.api.DeploymentInfo;
 import io.undertow.servlet.api.SessionManagerFactory;
@@ -236,7 +236,7 @@ public class ControlPointDeploymentInfoConfigurator implements UnaryOperator<Dep
         }
 
         private Session decorate(Session session) {
-            return session instanceof CompletableSession ? session : new CompletableSession(this, session);
+            return (session instanceof CompletableSession completable) ? completable : new CompletableSession(this, session);
         }
 
         @Override
@@ -330,14 +330,10 @@ public class ControlPointDeploymentInfoConfigurator implements UnaryOperator<Dep
     static class CompletableSession implements Session {
         private final SessionManager manager;
         private final Session session;
-        // TODO Remove following Undertow 2.4 upgrade
-        private final AtomicBoolean valid = new AtomicBoolean(true);
-        private volatile int maxInactiveInterval;
 
         CompletableSession(SessionManager manager, Session session) {
             this.manager = manager;
             this.session = session;
-            this.maxInactiveInterval = session.getMaxInactiveInterval();
         }
 
         @Override
@@ -370,18 +366,11 @@ public class ControlPointDeploymentInfoConfigurator implements UnaryOperator<Dep
         @Override
         public void setMaxInactiveInterval(int interval) {
             this.session.setMaxInactiveInterval(interval);
-            this.maxInactiveInterval = interval;
         }
 
         @Override
         public int getMaxInactiveInterval() {
-            // TODO Replace with direct delegation following Undertow upgrade.
-            // return this.session.getMaxInactiveInterval();
-            if (this.isInvalid()) {
-                // As required by HttpSessionImpl.isInvalid()
-                throw new IllegalStateException();
-            }
-            return this.maxInactiveInterval;
+            return this.session.getMaxInactiveInterval();
         }
 
         @Override
@@ -406,7 +395,6 @@ public class ControlPointDeploymentInfoConfigurator implements UnaryOperator<Dep
 
         @Override
         public void invalidate(HttpServerExchange exchange) {
-            this.valid.set(false);
             this.session.invalidate(exchange);
         }
 
@@ -415,22 +403,14 @@ public class ControlPointDeploymentInfoConfigurator implements UnaryOperator<Dep
             return this.session.changeSessionId(exchange, config);
         }
 
-        /*
-         * New method in io.undertow.server.session.Session that can add the @Override annotation when Undertow is upgraded
-         */
+        @Override
         public boolean isInvalid() {
-            // TODO Delegate to new method following Undertow upgrade.
-            // return this.session.isInvalid();
-            return !this.valid.get();
+            return this.session.isInvalid();
         }
 
-        /*
-         * New method in io.undertow.server.session.Session that can add the @Override annotation when Undertow is upgraded
-         */
-        public io.undertow.server.session.Session detach() {
-            // TODO Delegate to new method following Undertow upgrade.
-            // return this.session.detach();
-            return this.manager.getSession(this.session.getId());
+        @Override
+        public SessionReference getReference() {
+            return this.session.getReference();
         }
     }
 }

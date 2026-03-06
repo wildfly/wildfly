@@ -15,6 +15,7 @@ import io.undertow.server.HttpHandler;
 import io.undertow.server.handlers.PathHandler;
 import io.undertow.server.session.SecureRandomSessionIdGenerator;
 import io.undertow.server.session.SessionConfig;
+import io.undertow.server.session.SessionCookieConfig;
 import io.undertow.servlet.api.SessionConfigWrapper;
 import io.undertow.util.StatusCodes;
 
@@ -62,7 +63,7 @@ final class HttpInvokerHostService implements Service {
             handler = secureAccess(handler, httpAuthenticationFactory.get());
         }
 
-        ReflectiveSessionCookieConfig sessionConfig = new ReflectiveSessionCookieConfig();
+        SessionCookieConfig sessionConfig = new SessionCookieConfig();
         sessionConfig.setPath(this.path);
         Server server = this.host.get().getServer();
         ServletContainerService container = server.getServletContainer();
@@ -85,9 +86,7 @@ final class HttpInvokerHostService implements Service {
         SessionAffinityProvider affinityProvider = new NonDistributableSessionAffinityProvider(server);
         SessionConfigWrapper wrapper = (affinityCookeConfig != null) ? new AffinitySessionConfigWrapper(affinityCookeConfig, affinityProvider) : new CodecSessionConfigWrapper(new AffinitySessionIdentifierCodec(affinityProvider));
 
-        //SessionConfig wrapped = wrapper.wrap(sessionConfig, null);
-        SessionConfig wrapped = sessionConfig.wrap(wrapper); // todo replace with ^^^
-        handler = setupRoutes(handler, wrapped);
+        handler = setupRoutes(handler, wrapper.wrap(sessionConfig, null));
         host.get().registerHandler(path, handler);
         host.get().registerLocation(path);
     }

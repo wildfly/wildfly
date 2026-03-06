@@ -8,14 +8,15 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertThrows;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.same;
+import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.reset;
+import static org.mockito.Mockito.only;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
@@ -23,12 +24,12 @@ import static org.mockito.Mockito.verifyNoMoreInteractions;
 
 import java.time.Duration;
 import java.time.Instant;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.function.Consumer;
+import java.util.TreeMap;
+import java.util.UUID;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSessionActivationListener;
@@ -51,9 +52,8 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.junit.function.ThrowingRunnable;
 import org.mockito.ArgumentCaptor;
-import org.wildfly.clustering.cache.batch.Batch;
-import org.wildfly.clustering.cache.batch.SuspendedBatch;
-import org.wildfly.clustering.context.Context;
+import org.mockito.InOrder;
+import org.wildfly.clustering.function.Consumer;
 import org.wildfly.clustering.function.Supplier;
 import org.wildfly.clustering.session.ImmutableSessionMetaData;
 import org.wildfly.clustering.session.Session;
@@ -75,51 +75,54 @@ import org.xnio.conduits.StreamSourceConduit;
 public class DistributableSessionTestCase {
     private final SessionMetaData metaData = mock(SessionMetaData.class);
     private final UndertowSessionManager manager = mock(UndertowSessionManager.class);
-    private final SessionConfig config = mock(SessionConfig.class);
     private final Session<Map<String, Object>> session = mock(Session.class);
-    private final SuspendedBatch suspendedBatch = mock(SuspendedBatch.class);
     private final Consumer<HttpServerExchange> closeTask = mock(Consumer.class);
-    private final RecordableSessionManagerStatistics statistics = mock(RecordableSessionManagerStatistics.class);
+    private final SessionListener listener = mock(SessionListener.class);
+    private final Instant creationTime = Instant.now();
+
+    private UndertowSession getSession(Optional<Instant> lastAccessStart) {
+        SessionListeners listeners = new SessionListeners();
+        listeners.addSessionListener(this.listener);
+
+        doReturn(listeners).when(this.manager).getSessionListeners();
+        doReturn(this.metaData).when(this.session).getMetaData();
+        doReturn(this.creationTime).when(this.metaData).getCreationTime();
+        doReturn(lastAccessStart).when(this.metaData).getLastAccessStartTime();
+
+        UndertowSession session = new DistributableSession(this.manager, this.session, this.closeTask);
+
+        verify(this.session).getMetaData();
+        verify(this.metaData).getLastAccessStartTime();
+        if (lastAccessStart.isEmpty()) {
+            verify(this.metaData).getCreationTime();
+        }
+        verifyNoMoreInteractions(this.session, this.metaData, this.session, this.closeTask);
+
+        doReturn(true).when(this.session).isValid();
+
+        return session;
+    }
 
     @Test
     public void getId() {
         String id = "id";
-
-        doReturn(this.metaData).when(this.session).getMetaData();
-        doReturn(Optional.empty()).when(this.metaData).getLastAccessTime();
-
-        io.undertow.server.session.Session session = new DistributableSession(this.manager, this.session, this.config, this.suspendedBatch, this.closeTask, this.statistics);
-
-        verify(this.metaData).getLastAccessTime();
+        io.undertow.server.session.Session session = this.getSession(Optional.empty());
 
         doReturn(id).when(this.session).getId();
 
         String result = session.getId();
-
-        verifyNoInteractions(this.suspendedBatch);
 
         assertSame(id, result);
     }
 
     @Test
     public void newSessionRequestDone() {
-        Instant creationTime = Instant.now();
-        doReturn(this.metaData).when(this.session).getMetaData();
-        doReturn(Optional.empty()).when(this.metaData).getLastAccessTime();
-        doReturn(creationTime).when(this.metaData).getCreationTime();
-
-        io.undertow.server.session.Session session = new DistributableSession(this.manager, this.session, this.config, this.suspendedBatch, this.closeTask, this.statistics);
-
-        verify(this.metaData).getLastAccessTime();
+        io.undertow.server.session.Session session = this.getSession(Optional.empty());
 
         HttpServerExchange exchange = new HttpServerExchange(null);
-        Context<Batch> context = mock(Context.class);
-        Batch batch = mock(Batch.class);
         ArgumentCaptor<Instant> capturedLastAccessStartTime = ArgumentCaptor.forClass(Instant.class);
         ArgumentCaptor<Instant> capturedLastAccessEndTime = ArgumentCaptor.forClass(Instant.class);
 
-        doReturn(context).when(this.suspendedBatch).resumeWithContext();
-        doReturn(batch).when(context).get();
         doReturn(true).when(this.session).isValid();
         doNothing().when(this.metaData).setLastAccess(capturedLastAccessStartTime.capture(), capturedLastAccessEndTime.capture());
 
@@ -128,32 +131,29 @@ public class DistributableSessionTestCase {
         Instant lastAccessStartTime = capturedLastAccessStartTime.getValue();
         Instant lastAccessEndTime = capturedLastAccessEndTime.getValue();
 
-        Assert.assertSame(creationTime, lastAccessStartTime);
-        Assert.assertNotSame(creationTime, lastAccessEndTime);
+        Assert.assertSame(this.creationTime, lastAccessStartTime);
+        Assert.assertNotSame(this.creationTime, lastAccessEndTime);
         Assert.assertFalse(lastAccessStartTime.isAfter(lastAccessEndTime));
 
         verify(this.session).close();
-        verify(batch).close();
-        verify(this.closeTask).accept(exchange);
+        verify(this.closeTask, only()).accept(exchange);
+
+        // Verify no double close
+        session.requestDone(exchange);
+
+        verify(this.session).close();
+        verifyNoMoreInteractions(this.closeTask);
     }
 
     @Test
     public void existingSessionRequestDone() {
-        doReturn(this.metaData).when(this.session).getMetaData();
-        doReturn(Optional.of(Instant.now())).when(this.metaData).getLastAccessTime();
-
-        io.undertow.server.session.Session session = new DistributableSession(this.manager, this.session, this.config, this.suspendedBatch, this.closeTask, this.statistics);
-
-        verify(this.metaData).getLastAccessTime();
+        Instant lastAccessTime = Instant.now();
+        io.undertow.server.session.Session session = this.getSession(Optional.of(lastAccessTime));
 
         HttpServerExchange exchange = new HttpServerExchange(null);
-        Context<Batch> context = mock(Context.class);
-        Batch batch = mock(Batch.class);
         ArgumentCaptor<Instant> capturedLastAccessStartTime = ArgumentCaptor.forClass(Instant.class);
         ArgumentCaptor<Instant> capturedLastAccessEndTime = ArgumentCaptor.forClass(Instant.class);
 
-        doReturn(context).when(this.suspendedBatch).resumeWithContext();
-        doReturn(batch).when(context).get();
         doReturn(true).when(this.session).isValid();
         doNothing().when(this.metaData).setLastAccess(capturedLastAccessStartTime.capture(), capturedLastAccessEndTime.capture());
 
@@ -167,93 +167,67 @@ public class DistributableSessionTestCase {
 
         verify(this.metaData).setLastAccess(any(Instant.class), any(Instant.class));
         verify(this.session).close();
-        verify(batch).close();
-        verify(this.closeTask).accept(exchange);
+        verify(this.closeTask, only()).accept(exchange);
+
+        // Verify no double close
+        session.requestDone(exchange);
+
+        verify(this.session).close();
+        verifyNoMoreInteractions(this.closeTask);
     }
 
     @Test
     public void invalidSessionRequestDone() {
-        doReturn(this.metaData).when(this.session).getMetaData();
-        doReturn(Optional.of(Instant.now())).when(this.metaData).getLastAccessTime();
-
-        io.undertow.server.session.Session session = new DistributableSession(this.manager, this.session, this.config, this.suspendedBatch, this.closeTask, this.statistics);
-
-        verify(this.metaData).getLastAccessTime();
+        io.undertow.server.session.Session session = this.getSession(Optional.empty());
 
         HttpServerExchange exchange = new HttpServerExchange(null);
-        Context<Batch> context = mock(Context.class);
-        Batch batch = mock(Batch.class);
 
-        doReturn(context).when(this.suspendedBatch).resumeWithContext();
-        doReturn(batch).when(context).get();
         doReturn(false).when(this.session).isValid();
 
         session.requestDone(exchange);
 
         verifyNoMoreInteractions(this.metaData);
         verify(this.session).close();
-        verify(batch).close();
-        verify(this.closeTask).accept(exchange);
+        verify(this.closeTask, only()).accept(exchange);
+
+        // Verify no double close
+        session.requestDone(exchange);
+
+        verify(this.session).close();
+        verifyNoMoreInteractions(this.closeTask);
     }
 
     @Test
     public void getCreationTime() {
-        doReturn(this.metaData).when(this.session).getMetaData();
-        doReturn(Optional.of(Instant.now())).when(this.metaData).getLastAccessTime();
-
-        io.undertow.server.session.Session session = new DistributableSession(this.manager, this.session, this.config, this.suspendedBatch, this.closeTask, this.statistics);
-
-        verify(this.session).getMetaData();
-
-        Instant now = Instant.now();
-
-        doReturn(now).when(this.metaData).getCreationTime();
+        io.undertow.server.session.Session session = this.getSession(Optional.empty());
 
         long result = session.getCreationTime();
 
-        assertEquals(now.toEpochMilli(), result);
+        assertEquals(this.creationTime.toEpochMilli(), result);
 
-        verify(this.session, times(2)).getMetaData();
-        verifyNoMoreInteractions(this.session);
-        verifyNoInteractions(this.suspendedBatch);
         verifyNoInteractions(this.closeTask);
 
-        this.verifyInvalidMetaData(session, session::getCreationTime);
+        this.verifyWhenInvalid(session::getCreationTime);
     }
 
     @Test
     public void getLastAccessedTime() {
-        doReturn(this.metaData).when(this.session).getMetaData();
-        doReturn(Optional.of(Instant.now())).when(this.metaData).getLastAccessTime();
+        Instant expected = Instant.now();
 
-        io.undertow.server.session.Session session = new DistributableSession(this.manager, this.session, this.config, this.suspendedBatch, this.closeTask, this.statistics);
-
-        verify(this.session).getMetaData();
-
-        Instant now = Instant.now();
-
-        doReturn(Optional.of(now)).when(this.metaData).getLastAccessStartTime();
+        io.undertow.server.session.Session session = this.getSession(Optional.of(expected));
 
         long result = session.getLastAccessedTime();
 
-        assertEquals(now.toEpochMilli(), result);
+        assertEquals(expected.toEpochMilli(), result);
 
-        verify(this.session, times(2)).getMetaData();
-        verifyNoMoreInteractions(this.session);
-        verifyNoInteractions(this.suspendedBatch);
         verifyNoInteractions(this.closeTask);
 
-        this.verifyInvalidMetaData(session, session::getLastAccessedTime);
+        this.verifyWhenInvalid(session::getLastAccessedTime);
     }
 
     @Test
     public void getMaxInactiveInterval() {
-        doReturn(this.metaData).when(this.session).getMetaData();
-        doReturn(Optional.of(Instant.now())).when(this.metaData).getLastAccessTime();
-
-        io.undertow.server.session.Session session = new DistributableSession(this.manager, this.session, this.config, this.suspendedBatch, this.closeTask, this.statistics);
-
-        verify(this.session).getMetaData();
+        io.undertow.server.session.Session session = this.getSession(Optional.empty());
 
         long expected = 3600L;
 
@@ -263,22 +237,14 @@ public class DistributableSessionTestCase {
 
         assertEquals(expected, result);
 
-        verify(this.session, times(2)).getMetaData();
-        verifyNoMoreInteractions(this.session);
-        verifyNoInteractions(this.suspendedBatch);
         verifyNoInteractions(this.closeTask);
 
-        this.verifyInvalidMetaData(session, session::getMaxInactiveInterval);
+        this.verifyWhenInvalid(session::getLastAccessedTime);
     }
 
     @Test
     public void setMaxInactiveInterval() {
-        doReturn(this.metaData).when(this.session).getMetaData();
-        doReturn(Optional.of(Instant.now())).when(this.metaData).getLastAccessTime();
-
-        io.undertow.server.session.Session session = new DistributableSession(this.manager, this.session, this.config, this.suspendedBatch, this.closeTask, this.statistics);
-
-        verify(this.session).getMetaData();
+        io.undertow.server.session.Session session = this.getSession(Optional.empty());
 
         int interval = 3600;
 
@@ -286,603 +252,427 @@ public class DistributableSessionTestCase {
 
         verify(this.metaData).setMaxIdle(Duration.ofSeconds(interval));
 
-        verifyNoInteractions(this.suspendedBatch);
-        verify(this.session, never()).close();
-        verify(this.closeTask, never()).accept(null);
+        session.setMaxInactiveInterval(0);
 
-        this.verifyInvalidMetaData(session, () -> session.setMaxInactiveInterval(interval));
+        verify(this.metaData).setMaxIdle(Duration.ZERO);
+
+        session.setMaxInactiveInterval(-1);
+
+        verify(this.metaData, times(2)).setMaxIdle(Duration.ZERO);
+
+        verifyNoInteractions(this.closeTask);
+
+        this.verifyWhenInvalid(() -> session.setMaxInactiveInterval(interval));
     }
 
     @Test
     public void getAttributeNames() {
-        doReturn(this.metaData).when(this.session).getMetaData();
-        doReturn(Optional.of(Instant.now())).when(this.metaData).getLastAccessTime();
+        io.undertow.server.session.Session session = this.getSession(Optional.empty());
 
-        io.undertow.server.session.Session session = new DistributableSession(this.manager, this.session, this.config, this.suspendedBatch, this.closeTask, this.statistics);
-
-        verify(this.session).getMetaData();
-
-        Map<String, Object> attributes = mock(Map.class);
-        Set<String> expected = Collections.singleton("name");
+        Map<String, Object> attributes = Map.of("foo", UUID.randomUUID());
+        Map<String, Object> context = mock(Map.class);
 
         doReturn(attributes).when(this.session).getAttributes();
-        doReturn(expected).when(attributes).keySet();
+        doReturn(context).when(this.session).getContext();
 
-        Object result = session.getAttributeNames();
+        assertEquals(Set.of("foo"), session.getAttributeNames());
 
-        assertSame(expected, result);
+        verifyNoInteractions(context, this.closeTask);
 
-        verifyNoInteractions(this.suspendedBatch);
-        verify(this.session, never()).close();
-        verify(this.closeTask, never()).accept(null);
-
-        this.verifyInvalidAttributes(session, session::getAttributeNames);
+        this.verifyWhenInvalid(session::getAttributeNames);
     }
 
     @Test
     public void getAttribute() {
-        doReturn(this.metaData).when(this.session).getMetaData();
-        doReturn(Optional.of(Instant.now())).when(this.metaData).getLastAccessTime();
+        io.undertow.server.session.Session session = this.getSession(Optional.empty());
 
-        io.undertow.server.session.Session session = new DistributableSession(this.manager, this.session, this.config, this.suspendedBatch, this.closeTask, this.statistics);
+        String name = "foo";
+        Object value = UUID.randomUUID();
 
-        verify(this.session).getMetaData();
-
-        String name = "name";
-
-        Map<String, Object> attributes = mock(Map.class);
-        Object expected = new Object();
+        Map<String, Object> attributes = Map.of(name, value);
+        Map<String, Object> context = mock(Map.class);
 
         doReturn(attributes).when(this.session).getAttributes();
-        doReturn(expected).when(attributes).get(name);
+        doReturn(context).when(this.session).getContext();
 
-        Object result = session.getAttribute(name);
+        assertSame(value, session.getAttribute(name));
+        assertNull(session.getAttribute("missing"));
 
-        assertSame(expected, result);
+        verifyNoInteractions(context, this.listener, this.closeTask);
 
-        verifyNoInteractions(this.suspendedBatch);
-        verify(this.session, never()).close();
-        verify(this.closeTask, never()).accept(null);
-
-        this.verifyInvalidAttributes(session, () -> session.getAttribute(name));
+        this.verifyWhenInvalid(() -> session.getAttribute(name));
     }
 
     @Test
     public void getAuthenticatedSessionAttribute() {
-        doReturn(this.metaData).when(this.session).getMetaData();
-        doReturn(Optional.of(Instant.now())).when(this.metaData).getLastAccessTime();
-
-        io.undertow.server.session.Session session = new DistributableSession(this.manager, this.session, this.config, this.suspendedBatch, this.closeTask, this.statistics);
-
-        verify(this.session).getMetaData();
+        io.undertow.server.session.Session session = this.getSession(Optional.empty());
 
         String name = CachedAuthenticatedSessionHandler.class.getName() + ".AuthenticatedSession";
 
-        Map<String, Object> attributes = mock(Map.class);
         Account account = mock(Account.class);
         AuthenticatedSession auth = new AuthenticatedSession(account, HttpServletRequest.FORM_AUTH);
+        Map<String, Object> attributes = new TreeMap<>(Map.of(name, auth));
+        Map<String, Object> context = new TreeMap<>();
 
         doReturn(attributes).when(this.session).getAttributes();
-        doReturn(auth).when(attributes).get(name);
+        doReturn(context).when(this.session).getContext();
 
         AuthenticatedSession result = (AuthenticatedSession) session.getAttribute(name);
 
         assertSame(account, result.getAccount());
         assertSame(HttpServletRequest.FORM_AUTH, result.getMechanism());
 
-        verifyNoInteractions(this.suspendedBatch);
-        verify(this.session, never()).close();
-        verify(this.closeTask, never()).accept(null);
+        verifyNoInteractions(this.closeTask);
 
         AuthenticatedSession expected = new AuthenticatedSession(account, HttpServletRequest.BASIC_AUTH);
-        Map<String, Object> localContext = Collections.singletonMap(name, expected);
+        context.put(name, expected);
 
-        doReturn(null).when(attributes).get(name);
-        doReturn(localContext).when(this.session).getContext();
+        assertSame(expected, session.getAttribute(name));
 
-        result = (AuthenticatedSession) session.getAttribute(name);
+        verifyNoInteractions(this.listener, this.closeTask);
 
-        assertSame(expected, result);
-
-        verifyNoInteractions(this.suspendedBatch);
-        verify(this.session, never()).close();
-        verify(this.closeTask, never()).accept(null);
-
-        this.verifyInvalidAttributes(session, () -> session.getAttribute(name));
+        this.verifyWhenInvalid(() -> session.getAttribute(name));
     }
 
     @Test
     public void getWebSocketChannelsSessionAttribute() {
-        this.getLocalContextSessionAttribute(AbstractSession.WEB_SOCKET_CHANNELS_ATTRIBUTE);
+        this.getLocalContextSessionAttribute(UndertowSession.WEB_SOCKET_CHANNELS_ATTRIBUTE);
     }
 
     private void getLocalContextSessionAttribute(String name) {
-        doReturn(this.metaData).when(this.session).getMetaData();
-        doReturn(Optional.of(Instant.now())).when(this.metaData).getLastAccessTime();
-
-        io.undertow.server.session.Session session = new DistributableSession(this.manager, this.session, this.config, this.suspendedBatch, this.closeTask, this.statistics);
+        io.undertow.server.session.Session session = this.getSession(Optional.empty());
 
         Map<String, Object> attributes = mock(Map.class);
         Object expected = new Object();
-        Map<String, Object> localContext = Collections.singletonMap(name, expected);
+        Map<String, Object> context = Map.of(name, expected);
 
-        doReturn(localContext).when(this.session).getContext();
+        doReturn(attributes).when(this.session).getAttributes();
+        doReturn(context).when(this.session).getContext();
 
         Object result = session.getAttribute(name);
 
         assertSame(expected, result);
 
-        verifyNoInteractions(this.suspendedBatch);
         verify(attributes, never()).get(name);
+
+        verifyNoInteractions(attributes, this.listener, this.closeTask);
+
+        this.verifyWhenInvalid(() -> session.getAttribute(name));
     }
 
     @Test
     public void setAttribute() {
-        doReturn(this.metaData).when(this.session).getMetaData();
-        doReturn(Optional.of(Instant.now())).when(this.metaData).getLastAccessTime();
+        io.undertow.server.session.Session session = this.getSession(Optional.empty());
 
-        io.undertow.server.session.Session session = new DistributableSession(this.manager, this.session, this.config, this.suspendedBatch, this.closeTask, this.statistics);
+        String name = "foo";
+        Object expected = UUID.randomUUID();
+        Object replacement = UUID.randomUUID();
 
-        verify(this.session).getMetaData();
-
-        String name = "name";
-        Integer value = 1;
-
-        Map<String, Object> attributes = mock(Map.class);
-        SessionListener listener = mock(SessionListener.class);
-        SessionListeners listeners = new SessionListeners();
-        listeners.addSessionListener(listener);
-
-        Object expected = new Object();
+        Map<String, Object> attributes = new TreeMap<>(Map.of(name, expected));
+        Map<String, Object> context = mock(Map.class);
 
         doReturn(attributes).when(this.session).getAttributes();
-        doReturn(expected).when(attributes).put(name, value);
-        doReturn(listeners).when(this.manager).getSessionListeners();
+        doReturn(context).when(this.session).getContext();
 
-        Object result = session.setAttribute(name, value);
+        assertSame(expected, session.setAttribute(name, replacement));
+        assertSame(replacement, attributes.get(name));
 
-        assertSame(expected, result);
+        verify(this.session).getAttributes();
+        verify(this.listener, only()).attributeUpdated(session, name, replacement, expected);
+        verifyNoInteractions(context, this.closeTask);
 
-        verify(listener, never()).attributeAdded(session, name, value);
-        verify(listener).attributeUpdated(session, name, value, expected);
-        verify(listener, never()).attributeRemoved(same(session), same(name), any());
-        verifyNoInteractions(this.suspendedBatch);
-        verify(this.session, never()).close();
-        verify(this.closeTask, never()).accept(null);
-
-        this.verifyInvalidAttributes(session, () -> session.setAttribute(name, value));
+        this.verifyWhenInvalid(() -> session.setAttribute(name, UUID.randomUUID()));
     }
 
     @Test
     public void setNewAttribute() {
-        doReturn(this.metaData).when(this.session).getMetaData();
-        doReturn(Optional.of(Instant.now())).when(this.metaData).getLastAccessTime();
+        io.undertow.server.session.Session session = this.getSession(Optional.empty());
 
-        io.undertow.server.session.Session session = new DistributableSession(this.manager, this.session, this.config, this.suspendedBatch, this.closeTask, this.statistics);
+        String name = "foo";
+        Object value = UUID.randomUUID();
 
-        verify(this.metaData).getLastAccessTime();
-
-        String name = "name";
-        Integer value = 1;
-
-        Map<String, Object> attributes = mock(Map.class);
+        Map<String, Object> attributes = new TreeMap<>();
+        Map<String, Object> context = mock(Map.class);
         SessionListener listener = mock(SessionListener.class);
         SessionListeners listeners = new SessionListeners();
         listeners.addSessionListener(listener);
-        Object expected = null;
 
         doReturn(attributes).when(this.session).getAttributes();
-        doReturn(expected).when(attributes).put(name, value);
+        doReturn(context).when(this.session).getContext();
         doReturn(listeners).when(this.manager).getSessionListeners();
 
-        Object result = session.setAttribute(name, value);
+        assertNull(session.setAttribute(name, value));
+        assertSame(value, attributes.get(name));
 
-        assertSame(expected, result);
+        verify(this.session).getAttributes();
+        verify(listener, only()).attributeAdded(session, name, value);
+        verifyNoInteractions(context, this.closeTask);
 
-        verify(listener).attributeAdded(session, name, value);
-        verify(listener, never()).attributeUpdated(same(session), same(name), same(value), any());
-        verify(listener, never()).attributeRemoved(same(session), same(name), any());
-        verifyNoInteractions(this.suspendedBatch);
+        this.verifyWhenInvalid(() -> session.setAttribute(name, UUID.randomUUID()));
     }
 
     @Test
     public void setNullAttribute() {
-        doReturn(this.metaData).when(this.session).getMetaData();
-        doReturn(Optional.of(Instant.now())).when(this.metaData).getLastAccessTime();
-
-        io.undertow.server.session.Session session = new DistributableSession(this.manager, this.session, this.config, this.suspendedBatch, this.closeTask, this.statistics);
+        io.undertow.server.session.Session session = this.getSession(Optional.empty());
 
         String name = "name";
-        Object value = null;
+        Object value = UUID.randomUUID();
 
-        Map<String, Object> attributes = mock(Map.class);
+        Map<String, Object> attributes = new TreeMap<>(Map.of(name, value));
+        Map<String, Object> context = mock(Map.class);
         SessionListener listener = mock(SessionListener.class);
         SessionListeners listeners = new SessionListeners();
         listeners.addSessionListener(listener);
-        Object expected = new Object();
 
         doReturn(attributes).when(this.session).getAttributes();
-        doReturn(expected).when(attributes).remove(name);
+        doReturn(context).when(this.session).getContext();
         doReturn(listeners).when(this.manager).getSessionListeners();
 
-        Object result = session.setAttribute(name, value);
+        assertSame(value, session.setAttribute(name, null));
+        assertTrue(attributes.isEmpty());
 
-        assertSame(expected, result);
+        verify(this.session).getAttributes();
+        verify(listener, only()).attributeRemoved(session, name, value);
+        verifyNoInteractions(context, this.closeTask);
 
-        verify(listener, never()).attributeAdded(session, name, value);
-        verify(listener, never()).attributeUpdated(same(session), same(name), same(value), any());
-        verify(listener).attributeRemoved(session, name, expected);
-        verifyNoInteractions(this.suspendedBatch);
+        this.verifyWhenInvalid(() -> session.setAttribute(name, UUID.randomUUID()));
     }
 
     @Test
     public void setSameAttribute() {
-        doReturn(this.metaData).when(this.session).getMetaData();
-        doReturn(Optional.of(Instant.now())).when(this.metaData).getLastAccessTime();
-
-        io.undertow.server.session.Session session = new DistributableSession(this.manager, this.session, this.config, this.suspendedBatch, this.closeTask, this.statistics);
-
-        verify(this.metaData).getLastAccessTime();
+        io.undertow.server.session.Session session = this.getSession(Optional.empty());
 
         String name = "name";
-        Integer value = 1;
+        Object value = UUID.randomUUID();
 
-        Map<String, Object> attributes = mock(Map.class);
+        Map<String, Object> attributes = new TreeMap<>(Map.of(name, value));
+        Map<String, Object> context = mock(Map.class);
         SessionListener listener = mock(SessionListener.class);
         SessionListeners listeners = new SessionListeners();
         listeners.addSessionListener(listener);
-        Object expected = value;
 
         doReturn(attributes).when(this.session).getAttributes();
-        doReturn(expected).when(attributes).put(name, value);
+        doReturn(context).when(this.session).getContext();
         doReturn(listeners).when(this.manager).getSessionListeners();
 
-        Object result = session.setAttribute(name, value);
+        assertSame(value, session.setAttribute(name, value));
 
-        assertSame(expected, result);
+        verify(this.session).getAttributes();
+        // Verify no listener invocations
+        verifyNoInteractions(context, listener, this.closeTask);
 
-        verify(listener, never()).attributeAdded(session, name, value);
-        verify(listener, never()).attributeUpdated(same(session), same(name), same(value), any());
-        verify(listener, never()).attributeRemoved(same(session), same(name), any());
-        verifyNoInteractions(this.suspendedBatch);
+        this.verifyWhenInvalid(() -> session.setAttribute(name, UUID.randomUUID()));
     }
 
     @Test
     public void setAuthenticatedSessionAttribute() {
-        doReturn(this.metaData).when(this.session).getMetaData();
-        doReturn(Optional.of(Instant.now())).when(this.metaData).getLastAccessTime();
+        io.undertow.server.session.Session session = this.getSession(Optional.empty());
 
-        io.undertow.server.session.Session session = new DistributableSession(this.manager, this.session, this.config, this.suspendedBatch, this.closeTask, this.statistics);
-
-        verify(this.metaData).getLastAccessTime();
-
+        // Verify non-auto-reauthenticating methods use session attributes
         String name = CachedAuthenticatedSessionHandler.class.getName() + ".AuthenticatedSession";
+        Account oldAccount = mock(Account.class);
         Account account = mock(Account.class);
+        AuthenticatedSession oldAuth = new AuthenticatedSession(oldAccount, HttpServletRequest.FORM_AUTH);
         AuthenticatedSession auth = new AuthenticatedSession(account, HttpServletRequest.FORM_AUTH);
 
-        Map<String, Object> attributes = mock(Map.class);
-        Account oldAccount = mock(Account.class);
-        AuthenticatedSession oldAuth = new AuthenticatedSession(oldAccount, HttpServletRequest.FORM_AUTH);
-        ArgumentCaptor<AuthenticatedSession> capturedAuth = ArgumentCaptor.forClass(AuthenticatedSession.class);
+        Map<String, Object> attributes = new TreeMap<>(Map.of(name, oldAuth));
+        Map<String, Object> context = new TreeMap<>();
 
         doReturn(attributes).when(this.session).getAttributes();
-        doReturn(oldAuth).when(attributes).put(same(name), capturedAuth.capture());
+        doReturn(context).when(this.session).getContext();
 
-        AuthenticatedSession result = (AuthenticatedSession) session.setAttribute(name, auth);
+        Assert.assertSame(oldAuth, session.setAttribute(name, auth));
+        Assert.assertSame(auth, attributes.get(name));
+        Assert.assertTrue(context.isEmpty());
 
-        assertSame(auth.getAccount(), capturedAuth.getValue().getAccount());
-        assertSame(auth.getMechanism(), capturedAuth.getValue().getMechanism());
+        // Verify this does not trigger application listeners
+        verifyNoInteractions(this.listener, this.closeTask);
 
-        assertSame(oldAccount, result.getAccount());
-        assertSame(HttpServletRequest.FORM_AUTH, result.getMechanism());
+        Assert.assertSame(auth, session.setAttribute(name, null));
+        Assert.assertTrue(attributes.isEmpty());
+        Assert.assertTrue(context.isEmpty());
 
-        verifyNoInteractions(this.suspendedBatch);
-        verify(this.session, never()).close();
-        verify(this.closeTask, never()).accept(null);
+        verifyNoInteractions(this.listener, this.closeTask);
 
-        reset(attributes);
-
-        capturedAuth = ArgumentCaptor.forClass(AuthenticatedSession.class);
-
-        doReturn(null).when(attributes).put(same(name), capturedAuth.capture());
-
-        result = (AuthenticatedSession) session.setAttribute(name, auth);
-
-        assertSame(auth.getAccount(), capturedAuth.getValue().getAccount());
-        assertSame(auth.getMechanism(), capturedAuth.getValue().getMechanism());
-
-        assertNull(result);
-
-        verifyNoInteractions(this.suspendedBatch);
-        verify(this.session, never()).close();
-        verify(this.closeTask, never()).accept(null);
-
-        reset(attributes);
-
+        // Verify auto-reauthenticating methods use session context
         auth = new AuthenticatedSession(account, HttpServletRequest.BASIC_AUTH);
-        AuthenticatedSession oldSession = new AuthenticatedSession(oldAccount, HttpServletRequest.BASIC_AUTH);
+        oldAuth = new AuthenticatedSession(oldAccount, HttpServletRequest.BASIC_AUTH);
+        context.put(name, oldAuth);
 
-        Map<String, Object> localContext = new HashMap<>();
-        localContext.put(name, oldSession);
+        Assert.assertSame(oldAuth, session.setAttribute(name, auth));
+        Assert.assertTrue(attributes.isEmpty());
+        Assert.assertSame(auth, context.get(name));
 
-        doReturn(localContext).when(this.session).getContext();
-
-        result = (AuthenticatedSession) session.setAttribute(name, auth);
-
-        assertSame(auth, localContext.get(name));
-
-        verifyNoInteractions(this.suspendedBatch);
-        verify(this.session, never()).close();
-        verify(this.closeTask, never()).accept(null);
-
-        this.verifyInvalidAttributes(session, () -> session.setAttribute(name, oldAuth));
+        verifyNoInteractions(this.listener, this.closeTask);
     }
 
     @Test
     public void setWebSocketChannelsSessionAttribute() {
-        this.setLocalContextSessionAttribute(AbstractSession.WEB_SOCKET_CHANNELS_ATTRIBUTE);
+        this.setLocalContextSessionAttribute(UndertowSession.WEB_SOCKET_CHANNELS_ATTRIBUTE);
     }
 
     private void setLocalContextSessionAttribute(String name) {
-        doReturn(this.metaData).when(this.session).getMetaData();
-        doReturn(Optional.of(Instant.now())).when(this.metaData).getLastAccessTime();
+        io.undertow.server.session.Session session = this.getSession(Optional.empty());
 
-        io.undertow.server.session.Session session = new DistributableSession(this.manager, this.session, this.config, this.suspendedBatch, this.closeTask, this.statistics);
-
-        Object newValue = new Object();
-        Object oldValue = new Object();
+        Object newValue = UUID.randomUUID();
+        Object oldValue = UUID.randomUUID();
 
         Map<String, Object> attributes = mock(Map.class);
-        Map<String, Object> localContext = new HashMap<>();
-        localContext.put(name, oldValue);
+        Map<String, Object> context = new TreeMap<>(Map.of(name, oldValue));
 
-        doReturn(localContext).when(this.session).getContext();
+        doReturn(attributes).when(this.session).getAttributes();
+        doReturn(context).when(this.session).getContext();
 
-        Object result = session.setAttribute(name, newValue);
+        assertSame(oldValue,  session.setAttribute(name, newValue));
+        assertSame(newValue, context.get(name));
 
-        assertSame(oldValue, result);
+        verifyNoInteractions(attributes, this.listener, this.closeTask);
 
-        assertSame(newValue, localContext.get(name));
-        verify(attributes, never()).put(name, newValue);
-        verifyNoInteractions(this.suspendedBatch);
+        this.verifyWhenInvalid(() -> session.setAttribute(name, UUID.randomUUID()));
     }
 
     @Test
     public void removeAttribute() {
-        doReturn(this.metaData).when(this.session).getMetaData();
-        doReturn(Optional.of(Instant.now())).when(this.metaData).getLastAccessTime();
-
-        io.undertow.server.session.Session session = new DistributableSession(this.manager, this.session, this.config, this.suspendedBatch, this.closeTask, this.statistics);
-
-        verify(this.metaData).getLastAccessTime();
+        io.undertow.server.session.Session session = this.getSession(Optional.empty());
 
         String name = "name";
+        Object value = UUID.randomUUID();
 
-        Map<String, Object> attributes = mock(Map.class);
-        SessionListener listener = mock(SessionListener.class);
-        SessionListeners listeners = new SessionListeners();
-        listeners.addSessionListener(listener);
-        Object expected = new Object();
+        Map<String, Object> attributes = new TreeMap<>(Map.of(name, value));
+        Map<String, Object> context = mock(Map.class);
 
         doReturn(attributes).when(this.session).getAttributes();
-        doReturn(expected).when(attributes).remove(name);
-        doReturn(listeners).when(this.manager).getSessionListeners();
+        doReturn(context).when(this.session).getContext();
 
-        Object result = session.removeAttribute(name);
+        assertNull(session.removeAttribute("missing"));
 
-        assertSame(expected, result);
+        verifyNoInteractions(context, this.listener, this.closeTask);
 
-        verify(listener).attributeRemoved(session, name, expected);
-        verifyNoInteractions(this.suspendedBatch);
-        verify(this.session, never()).close();
-        verify(this.closeTask, never()).accept(null);
+        assertSame(value, session.removeAttribute(name));
+        assertTrue(attributes.isEmpty());
 
-        this.verifyInvalidAttributes(session, () -> session.removeAttribute(name));
-    }
+        verify(this.listener, only()).attributeRemoved(session, name, value);
+        verifyNoInteractions(context, this.closeTask);
 
-    @Test
-    public void removeNonExistingAttribute() {
-        doReturn(this.metaData).when(this.session).getMetaData();
-        doReturn(Optional.of(Instant.now())).when(this.metaData).getLastAccessTime();
-
-        io.undertow.server.session.Session session = new DistributableSession(this.manager, this.session, this.config, this.suspendedBatch, this.closeTask, this.statistics);
-
-        verify(this.metaData).getLastAccessTime();
-
-        String name = "name";
-
-        Map<String, Object> attributes = mock(Map.class);
-        SessionListener listener = mock(SessionListener.class);
-        SessionListeners listeners = new SessionListeners();
-        listeners.addSessionListener(listener);
-
-        doReturn(attributes).when(this.session).getAttributes();
-        doReturn(null).when(attributes).remove(name);
-        doReturn(listeners).when(this.manager).getSessionListeners();
-
-        Object result = session.removeAttribute(name);
-
-        assertNull(result);
-
-        verify(listener, never()).attributeRemoved(same(session), same(name), any());
-        verifyNoInteractions(this.suspendedBatch);
+        this.verifyWhenInvalid(() -> session.setAttribute(name, UUID.randomUUID()));
     }
 
     @Test
     public void removeAuthenticatedSessionAttribute() {
-        doReturn(this.metaData).when(this.session).getMetaData();
-        doReturn(Optional.of(Instant.now())).when(this.metaData).getLastAccessTime();
-
-        io.undertow.server.session.Session session = new DistributableSession(this.manager, this.session, this.config, this.suspendedBatch, this.closeTask, this.statistics);
-
-        verify(this.metaData).getLastAccessTime();
+        io.undertow.server.session.Session session = this.getSession(Optional.empty());
 
         String name = CachedAuthenticatedSessionHandler.class.getName() + ".AuthenticatedSession";
 
-        Map<String, Object> attributes = mock(Map.class);
         Account oldAccount = mock(Account.class);
         AuthenticatedSession oldAuth = new AuthenticatedSession(oldAccount, HttpServletRequest.FORM_AUTH);
+        Map<String, Object> attributes = new TreeMap<>(Map.of(name, oldAuth));
+        Map<String, Object> context = new TreeMap<>();
+        SessionListener listener = mock(SessionListener.class);
+        SessionListeners listeners = new SessionListeners();
+        listeners.addSessionListener(listener);
 
         doReturn(attributes).when(this.session).getAttributes();
-        doReturn(oldAuth).when(attributes).remove(same(name));
+        doReturn(context).when(this.session).getContext();
 
-        AuthenticatedSession result = (AuthenticatedSession) session.removeAttribute(name);
+        assertSame(oldAuth, session.removeAttribute(name));
 
-        assertSame(oldAccount, result.getAccount());
-        assertSame(HttpServletRequest.FORM_AUTH, result.getMechanism());
-        verifyNoInteractions(this.suspendedBatch);
+        verifyNoInteractions(this.listener, this.closeTask);
 
-        reset(attributes);
+        assertNull(session.removeAttribute(name));
 
-        Map<String, Object> localContext = new HashMap<>();
-        AuthenticatedSession oldSession = new AuthenticatedSession(oldAccount, HttpServletRequest.BASIC_AUTH);
-        localContext.put(name, oldSession);
+        verifyNoInteractions(this.listener, this.closeTask);
 
-        doReturn(null).when(attributes).remove(same(name));
-        doReturn(localContext).when(this.session).getContext();
+        oldAuth = new AuthenticatedSession(oldAccount, HttpServletRequest.BASIC_AUTH);
+        context.put(name, oldAuth);
 
-        result = (AuthenticatedSession) session.removeAttribute(name);
+        assertSame(oldAuth, session.removeAttribute(name));
+        assertTrue(context.isEmpty());
 
-        assertSame(result, oldSession);
-        assertNull(localContext.get(name));
-        verifyNoInteractions(this.suspendedBatch);
+        verifyNoInteractions(this.listener, this.closeTask);
 
-        reset(attributes);
+        assertNull(session.removeAttribute(name));
 
-        result = (AuthenticatedSession) session.removeAttribute(name);
+        verifyNoInteractions(this.listener, this.closeTask);
 
-        assertNull(result);
-
-        verifyNoInteractions(this.suspendedBatch);
-        verify(this.session, never()).close();
-        verify(this.closeTask, never()).accept(null);
-
-        this.verifyInvalidAttributes(session, () -> session.removeAttribute(name));
+        this.verifyWhenInvalid(() -> session.removeAttribute(name));
     }
 
     @Test
     public void removeWebSocketChannelsSessionAttribute() {
-        this.removeLocalContextSessionAttribute(AbstractSession.WEB_SOCKET_CHANNELS_ATTRIBUTE);
+        this.removeLocalContextSessionAttribute(UndertowSession.WEB_SOCKET_CHANNELS_ATTRIBUTE);
     }
 
     private void removeLocalContextSessionAttribute(String name) {
-        doReturn(this.metaData).when(this.session).getMetaData();
-        doReturn(Optional.of(Instant.now())).when(this.metaData).getLastAccessTime();
-
-        io.undertow.server.session.Session session = new DistributableSession(this.manager, this.session, this.config, this.suspendedBatch, this.closeTask, this.statistics);
-
-        verify(this.metaData).getLastAccessTime();
+        io.undertow.server.session.Session session = this.getSession(Optional.empty());
 
         Object oldValue = new Object();
-
         Map<String, Object> attributes = mock(Map.class);
-        Map<String, Object> localContext = new HashMap<>();
-        localContext.put(name, oldValue);
+        Map<String, Object> context = new TreeMap<>(Map.of(name, oldValue));
 
-        doReturn(localContext).when(this.session).getContext();
+        doReturn(attributes).when(this.session).getAttributes();
+        doReturn(context).when(this.session).getContext();
 
-        Object result = session.removeAttribute(name);
+        assertSame(oldValue, session.removeAttribute(name));
+        assertTrue(context.isEmpty());
 
-        assertSame(oldValue, result);
+        verifyNoInteractions(attributes, this.listener, this.closeTask);
 
-        assertNull(localContext.get(name));
-        verify(attributes, never()).remove(name);
-        verifyNoInteractions(this.suspendedBatch);
+        this.verifyWhenInvalid(() -> session.removeAttribute(name));
     }
 
     @Test
     public void invalidate() {
-        doReturn(this.metaData).when(this.session).getMetaData();
-        doReturn(Optional.of(Instant.now())).when(this.metaData).getLastAccessTime();
+        io.undertow.server.session.Session session = this.getSession(Optional.empty());
 
-        io.undertow.server.session.Session session = new DistributableSession(this.manager, this.session, this.config, this.suspendedBatch, this.closeTask, this.statistics);
-
-        verify(this.metaData).getLastAccessTime();
-
+        RecordableSessionManagerStatistics statistics = mock(RecordableSessionManagerStatistics.class);
+        SessionConfig config = mock(SessionConfig.class);
         HttpServerExchange exchange = new HttpServerExchange(null);
+        exchange.putAttachment(SessionConfig.ATTACHMENT_KEY, config);
 
-        Context<Batch> context = mock(Context.class);
-        Batch batch = mock(Batch.class);
-        SessionListener listener = mock(SessionListener.class);
-        Map<String, Object> attributes = mock(Map.class);
-        SessionListeners listeners = new SessionListeners();
-        listeners.addSessionListener(listener);
         String sessionId = "session";
         String attributeName = "attribute";
         Object attributeValue = mock(HttpSessionActivationListener.class);
+        Map<String, Object> attributes = Map.of(attributeName, attributeValue);
         Recordable<ImmutableSessionMetaData> recorder = mock(Recordable.class);
 
-        doReturn(listeners).when(this.manager).getSessionListeners();
-        doReturn(true).when(this.session).isValid();
         doReturn(sessionId).when(this.session).getId();
         doReturn(attributes).when(this.session).getAttributes();
-        doReturn(Set.of(Map.entry("attribute", attributeValue))).when(attributes).entrySet();
-        doReturn(recorder).when(this.statistics).getInactiveSessionRecorder();
-        doReturn(context).when(this.suspendedBatch).resumeWithContext();
-        doReturn(batch).when(context).get();
+        doReturn(statistics).when(this.manager).getStatistics();
+        doReturn(recorder).when(statistics).getInactiveSessionRecorder();
+
+        InOrder order = inOrder(recorder, this.session, config, this.listener, this.closeTask);
 
         session.invalidate(exchange);
 
-        verify(recorder).record(this.metaData);
-        verify(this.session).invalidate();
-        verify(this.config).clearSession(exchange, sessionId);
-        verify(listener).sessionDestroyed(session, exchange, SessionDestroyedReason.INVALIDATED);
-        verify(listener).attributeRemoved(session, attributeName, attributeValue);
-        verify(batch).close();
-        verify(this.closeTask).accept(exchange);
-    }
+        order.verify(this.session).isValid();
+        order.verify(this.listener).sessionDestroyed(session, exchange, SessionDestroyedReason.INVALIDATED);
+        order.verify(this.listener).attributeRemoved(session, attributeName, attributeValue);
+        order.verify(recorder).record(this.metaData);
+        order.verify(this.session).invalidate();
+        order.verify(config).clearSession(exchange, sessionId);
+        order.verify(this.closeTask).accept(exchange);
+        verifyNoMoreInteractions(this.listener);
 
-    @Test
-    public void invalidateInvalid() {
-        String sessionId = "session";
-        HttpServerExchange exchange = new HttpServerExchange(null);
-        Context<Batch> context = mock(Context.class);
-        Batch batch = mock(Batch.class);
-
-        doReturn(this.metaData).when(this.session).getMetaData();
-        doReturn(Optional.of(Instant.now())).when(this.metaData).getLastAccessTime();
-        doReturn(sessionId).when(this.session).getId();
-
-        io.undertow.server.session.Session session = new DistributableSession(this.manager, this.session, this.config, this.suspendedBatch, this.closeTask, this.statistics);
-
-        verify(this.metaData).getLastAccessTime();
-
-        doReturn(context).when(this.suspendedBatch).resumeWithContext();
-        doReturn(batch).when(context).get();
         doReturn(false).when(this.session).isValid();
-        doThrow(IllegalStateException.class).when(this.session).invalidate();
 
         assertThrows(IllegalStateException.class, () -> session.invalidate(exchange));
 
-        verify(this.config).clearSession(exchange, sessionId);
-        verify(batch).close();
-        verify(this.closeTask).accept(exchange);
+        verifyNoMoreInteractions(this.listener, recorder, config, this.closeTask);
     }
 
     @Test
     public void getSessionManager() {
-        doReturn(this.metaData).when(this.session).getMetaData();
-        doReturn(Optional.of(Instant.now())).when(this.metaData).getLastAccessTime();
-
-        io.undertow.server.session.Session session = new DistributableSession(this.manager, this.session, this.config, this.suspendedBatch, this.closeTask, this.statistics);
-
-        verify(this.metaData).getLastAccessTime();
+        io.undertow.server.session.Session session = this.getSession(Optional.empty());
 
         assertSame(this.manager, session.getSessionManager());
     }
 
     @Test
     public void changeSessionId() {
-        doReturn(this.metaData).when(this.session).getMetaData();
-        doReturn(Optional.of(Instant.now())).when(this.metaData).getLastAccessTime();
-
-        io.undertow.server.session.Session session = new DistributableSession(this.manager, this.session, this.config, this.suspendedBatch, this.closeTask, this.statistics);
-
-        verify(this.metaData).getLastAccessTime();
+        io.undertow.server.session.Session session = this.getSession(Optional.empty());
 
         HttpServerExchange exchange = new HttpServerExchange(null);
         SessionConfig config = mock(SessionConfig.class);
-        Context<Batch> context = mock(Context.class);
         SessionManager<Map<String, Object>> manager = mock(SessionManager.class);
         Supplier<String> identifierFactory = mock(Supplier.class);
         Session<Map<String, Object>> newSession = mock(Session.class);
@@ -902,7 +692,6 @@ public class DistributableSessionTestCase {
         Instant start = end.minus(Duration.ofSeconds(1L));
         Duration interval = Duration.ofSeconds(10L);
 
-        doReturn(context).when(this.suspendedBatch).resumeWithContext();
         doReturn(manager).when(this.manager).getSessionManager();
         doReturn(identifierFactory).when(manager).getIdentifierFactory();
         doReturn(newSessionId).when(identifierFactory).get();
@@ -931,23 +720,12 @@ public class DistributableSessionTestCase {
         verify(this.session).invalidate();
         verify(newSession, never()).invalidate();
         verify(listener).sessionIdChanged(session, oldSessionId);
-        verify(this.suspendedBatch).resumeWithContext();
-        verify(context).close();
-        verifyNoMoreInteractions(this.suspendedBatch);
     }
 
     @Test
     public void changeSessionIdImmortal() {
-        doReturn(this.metaData).when(this.session).getMetaData();
-        doReturn(Optional.of(Instant.now())).when(this.metaData).getLastAccessTime();
-
-        io.undertow.server.session.Session session = new DistributableSession(this.manager, this.session, this.config, this.suspendedBatch, this.closeTask, this.statistics);
-
-        verify(this.metaData).getLastAccessTime();
-
         HttpServerExchange exchange = new HttpServerExchange(null);
         SessionConfig config = mock(SessionConfig.class);
-        Context<Batch> context = mock(Context.class);
         SessionManager<Map<String, Object>> manager = mock(SessionManager.class);
         Supplier<String> identifierFactory = mock(Supplier.class);
         Session<Map<String, Object>> newSession = mock(Session.class);
@@ -965,9 +743,9 @@ public class DistributableSessionTestCase {
         String newSessionId = "new";
         Instant end = Instant.now();
         Instant start = end.minus(Duration.ofSeconds(1L));
-        Duration interval = Duration.ofSeconds(10L);
 
-        doReturn(context).when(this.suspendedBatch).resumeWithContext();
+        io.undertow.server.session.Session session = this.getSession(Optional.of(start));
+
         doReturn(manager).when(this.manager).getSessionManager();
         doReturn(identifierFactory).when(manager).getIdentifierFactory();
         doReturn(newSessionId).when(identifierFactory).get();
@@ -996,23 +774,14 @@ public class DistributableSessionTestCase {
         verify(this.session).invalidate();
         verify(newSession, never()).invalidate();
         verify(listener).sessionIdChanged(session, oldSessionId);
-        verify(this.suspendedBatch).resumeWithContext();
-        verify(context).close();
-        verifyNoMoreInteractions(this.suspendedBatch);
     }
 
     @Test
     public void changeSessionIdNew() {
-        doReturn(this.metaData).when(this.session).getMetaData();
-        doReturn(Optional.of(Instant.now())).when(this.metaData).getLastAccessTime();
-
-        io.undertow.server.session.Session session = new DistributableSession(this.manager, this.session, this.config, this.suspendedBatch, this.closeTask, this.statistics);
-
-        verify(this.metaData).getLastAccessTime();
+        io.undertow.server.session.Session session = this.getSession(Optional.empty());
 
         HttpServerExchange exchange = new HttpServerExchange(null);
         SessionConfig config = mock(SessionConfig.class);
-        Context<Batch> context = mock(Context.class);
         SessionManager<Map<String, Object>> manager = mock(SessionManager.class);
         Supplier<String> identifierFactory = mock(Supplier.class);
         Session<Map<String, Object>> newSession = mock(Session.class);
@@ -1028,11 +797,8 @@ public class DistributableSessionTestCase {
         listeners.addSessionListener(listener);
         String oldSessionId = "old";
         String newSessionId = "new";
-        Instant end = Instant.now();
-        Instant start = end.minus(Duration.ofSeconds(1L));
         Duration interval = Duration.ofSeconds(10L);
 
-        doReturn(context).when(this.suspendedBatch).resumeWithContext();
         doReturn(manager).when(this.manager).getSessionManager();
         doReturn(identifierFactory).when(manager).getIdentifierFactory();
         doReturn(newSessionId).when(identifierFactory).get();
@@ -1061,19 +827,39 @@ public class DistributableSessionTestCase {
         verify(this.session).invalidate();
         verify(newSession, never()).invalidate();
         verify(listener).sessionIdChanged(session, oldSessionId);
-        verify(this.suspendedBatch).resumeWithContext();
-        verify(context).close();
-        verifyNoMoreInteractions(this.suspendedBatch);
+    }
+
+    @Test
+    public void changeSessionIdInvalid() {
+        io.undertow.server.session.Session session = this.getSession(Optional.empty());
+
+        HttpServerExchange exchange = new HttpServerExchange(null);
+        SessionConfig config = mock(SessionConfig.class);
+        SessionManager<Map<String, Object>> manager = mock(SessionManager.class);
+        String id = "current";
+        String newId = "next";
+
+        doReturn(false).when(this.session).isValid();
+        doReturn(id).when(this.session).getId();
+        doReturn(manager).when(this.manager).getSessionManager();
+        doReturn(Supplier.of(newId)).when(manager).getIdentifierFactory();
+
+        assertThrows(IllegalStateException.class, () -> session.changeSessionId(exchange, config));
+
+        verify(this.session).isValid();
+        verify(this.session).close();
+        verify(this.closeTask, only()).accept(exchange);
+
+        // Verify one-time close
+        assertThrows(IllegalStateException.class, () -> session.changeSessionId(exchange, config));
+
+        // Verify close was not called again
+        verify(this.session).close();
+        verifyNoMoreInteractions(this.closeTask);
     }
 
     public void changeSessionIdResponseCommitted() {
-        doReturn(this.metaData).when(this.session).getMetaData();
-        doReturn(Optional.of(Instant.now())).when(this.metaData).getLastAccessTime();
-        doReturn(true).when(this.session).isValid();
-
-        io.undertow.server.session.Session session = new DistributableSession(this.manager, this.session, this.config, this.suspendedBatch, this.closeTask, this.statistics);
-
-        verify(this.metaData).getLastAccessTime();
+        io.undertow.server.session.Session session = this.getSession(Optional.empty());
 
         // Ugh - all this, just to get HttpServerExchange.isResponseStarted() to return true
         Configurable configurable = mock(Configurable.class);
@@ -1098,109 +884,21 @@ public class DistributableSessionTestCase {
         Assert.assertThrows(IllegalStateException.class, () -> session.changeSessionId(exchange, config));
     }
 
-    @Test
-    public void changeSessionIdConcurrentInvalidate() {
-        doReturn(this.metaData).when(this.session).getMetaData();
-        doReturn(Optional.of(Instant.now())).when(this.metaData).getLastAccessTime();
+    void verifyWhenInvalid(ThrowingRunnable operation) {
 
-        io.undertow.server.session.Session session = new DistributableSession(this.manager, this.session, this.config, this.suspendedBatch, this.closeTask, this.statistics);
+        doReturn(false).when(this.session).isValid();
 
-        verify(this.metaData).getLastAccessTime();
+        assertThrows(IllegalStateException.class, operation);
 
-        HttpServerExchange exchange = new HttpServerExchange(null);
-        SessionConfig config = mock(SessionConfig.class);
-        Context<Batch> context = mock(Context.class);
-        SessionManager<Map<String, Object>> manager = mock(SessionManager.class);
-        Supplier<String> identifierFactory = mock(Supplier.class);
-        Session<Map<String, Object>> newSession = mock(Session.class);
-        Map<String, Object> oldAttributes = mock(Map.class);
-        Map<String, Object> newAttributes = mock(Map.class);
-        SessionMetaData oldMetaData = mock(SessionMetaData.class);
-        SessionMetaData newMetaData = mock(SessionMetaData.class);
-        Map<String, Object> oldContext = new HashMap<>();
-        oldContext.put("foo", "bar");
-        Map<String, Object> newContext = new HashMap<>();
-        SessionListener listener = mock(SessionListener.class);
-        SessionListeners listeners = new SessionListeners();
-        listeners.addSessionListener(listener);
-        String oldSessionId = "old";
-        String newSessionId = "new";
-        Instant now = Instant.now();
-        Duration interval = Duration.ofSeconds(10L);
-
-        doReturn(context).when(this.suspendedBatch).resumeWithContext();
-        doReturn(manager).when(this.manager).getSessionManager();
-        doReturn(identifierFactory).when(manager).getIdentifierFactory();
-        doReturn(newSessionId).when(identifierFactory).get();
-        doReturn(newSession).when(manager).createSession(newSessionId);
-        doReturn(oldAttributes).when(this.session).getAttributes();
-        doReturn(oldMetaData).when(this.session).getMetaData();
-        doReturn(newAttributes).when(newSession).getAttributes();
-        doReturn(newMetaData).when(newSession).getMetaData();
-        doReturn(Optional.of(now)).when(oldMetaData).getLastAccessStartTime();
-        doReturn(Optional.of(now)).when(oldMetaData).getLastAccessEndTime();
-        doReturn(Optional.of(interval)).when(oldMetaData).getMaxIdle();
-        doReturn(oldSessionId).when(this.session).getId();
-        doReturn(newSessionId).when(newSession).getId();
-        doReturn(oldContext).when(this.session).getContext();
-        doReturn(newContext).when(newSession).getContext();
-
-        doThrow(IllegalStateException.class).when(this.session).invalidate();
-
-        assertThrows(IllegalStateException.class, () -> session.changeSessionId(exchange, config));
-
-        verify(listener, never()).sessionIdChanged(session, oldSessionId);
+        verify(this.session, atLeastOnce()).isValid();
         verify(this.session).close();
-        verify(this.closeTask).accept(exchange);
-        verify(newSession).invalidate();
-        verify(this.suspendedBatch, times(2)).resumeWithContext();
-        verify(context, times(2)).close();
-        verifyNoMoreInteractions(this.suspendedBatch);
-    }
+        verify(this.closeTask, only()).accept(null);
 
-    void verifyInvalidMetaData(io.undertow.server.session.Session session, ThrowingRunnable action) {
-        this.verifyInvalidSession(session, action, Session::getMetaData);
-    }
+        // Verify one-time close
+        assertThrows(IllegalStateException.class, operation);
 
-    void verifyInvalidAttributes(io.undertow.server.session.Session session, ThrowingRunnable action) {
-        this.verifyInvalidSession(session, action, Session::getAttributes);
-    }
-
-    void verifyInvalidSession(io.undertow.server.session.Session session, ThrowingRunnable action, Consumer<Session<Map<String, Object>>> verifiedAction) {
-        reset(this.session);
-
-        verifiedAction.accept(doThrow(IllegalStateException.class).when(this.session));
-        doReturn(true, false).when(this.session).isValid();
-
-        assertThrows(IllegalStateException.class, action);
-
-        // Session should not close, since it is still valid
-        verifiedAction.accept(verify(this.session));
-        verify(this.session).isValid();
-        verifyNoMoreInteractions(this.session);
-        verifyNoInteractions(this.suspendedBatch);
-        verifyNoInteractions(this.closeTask);
-
-        Context<Batch> context = mock(Context.class);
-        Batch batch = mock(Batch.class);
-
-        doReturn(context).when(this.suspendedBatch).resumeWithContext();
-        doReturn(batch).when(context).get();
-
-        assertThrows(IllegalStateException.class, action);
-
-        verifiedAction.accept(verify(this.session, times(2)));
-        verify(this.session, times(2)).isValid();
+        // Verify close was not called again
         verify(this.session).close();
-        verify(batch).close();
-        verify(this.closeTask).accept(null);
-
-        assertThrows(IllegalStateException.class, action);
-
-        verifiedAction.accept(verify(this.session, times(3)));
-        verify(this.session, times(3)).isValid();
-        verifyNoMoreInteractions(this.session);
-        verifyNoMoreInteractions(batch);
         verifyNoMoreInteractions(this.closeTask);
     }
 }

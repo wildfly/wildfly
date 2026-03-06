@@ -16,6 +16,6 @@ import org.wildfly.clustering.marshalling.Formatter;
 public class ServiceNameFormatter extends Formatter.Provided<ServiceName> {
 
     public ServiceNameFormatter() {
-        super(Formatter.IDENTITY.wrap(ServiceName.class, ServiceName::getCanonicalName, ServiceName::parse));
+        super(Formatter.Identity.INSTANCE.wrap(ServiceName.class, ServiceName::getCanonicalName, ServiceName::parse));
     }
 }
