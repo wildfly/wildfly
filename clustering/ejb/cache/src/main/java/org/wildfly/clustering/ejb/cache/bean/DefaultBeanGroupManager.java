@@ -46,9 +46,9 @@ public class DefaultBeanGroupManager<K, V extends BeanInstance<K>, C> implements
         this.mutatorFactory = configuration.getMutatorFactory();
         this.factory = configuration.getMarshalledValueFactory();
         boolean persistent = configuration.getCacheProperties().isPersistent();
-        this.postActivateTask = persistent ? new MapValuesTask<>(BeanInstance::postActivate) : Consumer.empty();
-        this.prePassivateTask = persistent ? new MapValuesTask<>(BeanInstance::prePassivate) : Consumer.empty();
-        this.cache = CacheStrategy.CONCURRENT.createCache(Consumer.empty(), new NewBeanGroupCloseTask<>(configuration.getRemover()));
+        this.postActivateTask = persistent ? new MapValuesTask<>(BeanInstance::postActivate) : Consumer.of();
+        this.prePassivateTask = persistent ? new MapValuesTask<>(BeanInstance::prePassivate) : Consumer.of();
+        this.cache = CacheStrategy.CONCURRENT.createCache(Consumer.of(), new NewBeanGroupCloseTask<>(configuration.getRemover()));
         this.beanGroupFactory = (id, closeTask) -> {
             Map<K, V> instances = new ConcurrentHashMap<>();
             MarshalledValue<Map<K, V>, C> newValue = this.factory.createMarshalledValue(instances);

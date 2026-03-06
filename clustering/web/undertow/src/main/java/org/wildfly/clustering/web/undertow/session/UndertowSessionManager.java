@@ -25,6 +25,9 @@ public interface UndertowSessionManager extends io.undertow.server.session.Sessi
     SessionListeners getSessionListeners();
 
     @Override
+    RecordableSessionManagerStatistics getStatistics();
+
+    @Override
     default void registerSessionListener(SessionListener listener) {
         this.getSessionListeners().addSessionListener(listener);
     }

@@ -14,7 +14,6 @@ import org.jboss.as.controller.capability.BinaryCapabilityNameResolver;
 import org.jboss.dmr.ModelNode;
 import org.wildfly.clustering.function.Function;
 import org.wildfly.clustering.function.Predicate;
-import org.wildfly.clustering.function.Supplier;
 import org.wildfly.clustering.infinispan.service.InfinispanServiceDescriptor;
 import org.wildfly.service.capture.FunctionExecutor;
 import org.wildfly.subsystem.resource.executor.Metric;
@@ -28,7 +27,7 @@ import org.wildfly.subsystem.service.capture.FunctionExecutorRegistry;
  * @author Paul Ferraro
  */
 public abstract class CacheMetricExecutor<C> implements MetricExecutor<C>, Function<Cache<?, ?>, C> {
-    private static final Predicate<Cache<?, ?>> STATISTICS_ENABLED = Predicate.<StatisticsConfiguration>always().and(StatisticsConfiguration::enabled).compose(Configuration::statistics).compose(Cache::getCacheConfiguration);
+    private static final Predicate<Cache<?, ?>> STATISTICS_ENABLED = Predicate.of(Function.of(Cache::getCacheConfiguration, Configuration::statistics), StatisticsConfiguration::enabled);
 
     private final FunctionExecutorRegistry<Cache<?, ?>> executors;
     private final BinaryCapabilityNameResolver resolver;
@@ -46,6 +45,6 @@ public abstract class CacheMetricExecutor<C> implements MetricExecutor<C>, Funct
     public ModelNode execute(OperationContext context, Metric<C> metric) throws OperationFailedException {
         String[] resolved = this.resolver.apply(context.getCurrentAddress());
         FunctionExecutor<Cache<?, ?>> executor = this.executors.getExecutor(ServiceDependency.on(InfinispanServiceDescriptor.CACHE, resolved[0], resolved[1]));
-        return (executor != null) ? executor.execute(new MetricFunction<>(this.orDefault(STATISTICS_ENABLED, Supplier.of(null)), metric)) : null;
+        return (executor != null) ? executor.execute(new MetricFunction<>(Function.when(STATISTICS_ENABLED, this, Function.of(null)), metric)) : null;
     }
 }
