@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.List;
 
 import jakarta.servlet.http.HttpServletResponse;
 
@@ -76,15 +77,15 @@ public class AsyncServletTestCase extends AbstractClusteringTestCase {
 
         HttpClient client = TestHttpClientUtils.promiscuousCookieHttpClient();
 
+        int expected = 0;
+        List<URI> uris = List.of(uri1, uri2);
         try {
-            assertValue(client, uri1, 1);
-            assertValue(client, uri1, 2);
-
-            assertValue(client, uri2, 3);
-            assertValue(client, uri2, 4);
-
-            assertValue(client, uri1, 5);
-            assertValue(client, uri1, 6);
+            for (int i = 0; i < 10; ++i) {
+                for (URI uri : uris) {
+                    assertValue(client, uri, ++expected);
+                    assertValue(client, uri, ++expected);
+                }
+            }
         } finally {
             HttpClientUtils.closeQuietly(client);
         }
