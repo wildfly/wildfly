@@ -260,7 +260,7 @@ set to "true". For example, from the CLI:
         "no-request-timeout" => undefined,
         "processing-time" => 0L,
         "proxy-address-forwarding" => false,
-        "read-timeout" => undefined,
+        "read-timeout" => 90000,
         "receive-buffer" => undefined,
         "record-request-start-time" => false,
         "redirect-socket" => "https",
@@ -273,7 +273,7 @@ set to "true". For example, from the CLI:
         "tcp-keep-alive" => undefined,
         "url-charset" => "UTF-8",
         "worker" => "default",
-        "write-timeout" => undefined
+        "write-timeout" => 90000
     }
 }
 ----
@@ -307,7 +307,7 @@ configuration:
         "max-post-size" => 10485760L,
         "no-request-timeout" => undefined,
         "proxy-address-forwarding" => false,
-        "read-timeout" => undefined,
+        "read-timeout" => 90000,
         "receive-buffer" => undefined,
         "record-request-start-time" => false,
         "redirect-socket" => "https",
@@ -319,7 +319,7 @@ configuration:
         "tcp-keep-alive" => undefined,
         "url-charset" => "UTF-8",
         "worker" => "default",
-        "write-timeout" => undefined
+        "write-timeout" => 90000
     }
 }
 ----
