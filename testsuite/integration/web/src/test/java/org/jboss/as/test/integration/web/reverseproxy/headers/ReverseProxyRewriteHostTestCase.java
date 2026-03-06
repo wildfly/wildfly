@@ -33,16 +33,14 @@ import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.junit.runners.MethodSorters;
 
 /**
+ * Test if rewrite-host-header attribute work properly
  */
 @RunWith(Arquillian.class)
 @RunAsClient
-@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class ReverseProxyRewriteHostTestCase {
 
     @ContainerResource
@@ -127,7 +125,7 @@ public class ReverseProxyRewriteHostTestCase {
     @Test
     public void testNoRewrite() throws Exception {
         try (CloseableHttpClient httpclient = HttpClients.createDefault()) {
-            setReuseForwardedTo(false);// thats default
+            setRewriteHostHeader(false);// thats default
             final String result = performCall(httpclient, "name?header=X_Forwarded_Host"); //this is side effect, but Host header is localhost in both, so checking it makes sense
             final InetAddress resultAddress = InetAddress.getByName(result);
             final InetAddress hostAddress = InetAddress.getByName(url.getHost());
@@ -138,7 +136,7 @@ public class ReverseProxyRewriteHostTestCase {
     @Test
     public void testWithRewrite() throws Exception {
         try (CloseableHttpClient httpclient = HttpClients.createDefault()) {
-            setReuseForwardedTo(true);
+            setRewriteHostHeader(true);
             final String result = performCall(httpclient, "name?header=X_Forwarded_Host");
             final int lastInd = result.lastIndexOf(":"); //ipv6 will have more :, we cant split on it.
             Assert.assertNotEquals(-1, lastInd);
@@ -147,12 +145,10 @@ public class ReverseProxyRewriteHostTestCase {
             final InetAddress hostAddress = InetAddress.getByName(url.getHost());
             Assert.assertEquals(hostAddress.toString(), resultAddress.toString());
             Assert.assertEquals(url.getPort()+"", parts[1]);
-        } finally {
-            setReuseForwardedTo(false);
         }
     }
 
-    private void setReuseForwardedTo(final boolean value) throws IOException, MgmtOperationException {
+    private void setRewriteHostHeader(final boolean value) throws IOException, MgmtOperationException {
         ModelNode op = new ModelNode();
         ModelNode addr = new ModelNode();
         addr.add(ModelDescriptionConstants.SUBSYSTEM, "undertow");

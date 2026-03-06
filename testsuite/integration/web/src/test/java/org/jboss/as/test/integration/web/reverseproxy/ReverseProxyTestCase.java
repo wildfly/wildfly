@@ -46,7 +46,6 @@ public class ReverseProxyTestCase {
 
     @ContainerResource
     private ManagementClient managementClient;
-    private static ManagementClient mc;
     private AutoCloseable serverSnapshot;
 
     @Before

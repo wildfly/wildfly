@@ -33,16 +33,14 @@ import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.junit.runners.MethodSorters;
 
 /**
+ * Test if reuse-x-forwarded-header attribute work properly.
  */
 @RunWith(Arquillian.class)
 @RunAsClient
-@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class ReverseProxyForwardedForTestCase {
 
     @ContainerResource
@@ -141,12 +139,10 @@ public class ReverseProxyForwardedForTestCase {
             setReuseForwardedTo(true);
             final String result = performCall(httpclient, "name?header=X_Forwarded_For");
             final String[] parts = result.split(",");
-            Assert.assertEquals(parts.length, 2);
+            Assert.assertEquals(2, parts.length);
             final InetAddress resultAddress = InetAddress.getByName(parts[1]);
             final InetAddress hostAddress = InetAddress.getByName(url.getHost());
             Assert.assertEquals("1.1.1.1,"+hostAddress.toString(), parts[0]+","+resultAddress.toString());
-        } finally {
-            setReuseForwardedTo(false);
         }
     }
 
@@ -162,17 +158,5 @@ public class ReverseProxyForwardedForTestCase {
         op.get(ModelDescriptionConstants.VALUE).set(value);
         ManagementOperations.executeOperation(managementClient.getControllerClient(), op);
         ServerReload.executeReloadAndWaitForCompletion(managementClient);
-    }
-
-    public void testReverseProxyMaxRequestTime2() throws Exception {
-        // set the max-request-time to a lower value than the wait
-        try (CloseableHttpClient httpclient = HttpClients.createDefault()) {
-            HttpGet get = new HttpGet("http://" + url.getHost() + ":" + url.getPort() + "/proxy/name?wait=50");
-            get.addHeader("X-Forwarded-For", "1.1.1.1");
-            HttpResponse res = httpclient.execute(get);
-            // With https://issues.redhat.com/browse/UNDERTOW-1459 fix, status code should be 504
-            // FIXME: after undertow 2.2.13.Final integrated into WildFly, this should be updated to 504 only
-            Assert.assertTrue("Service Unaviable expected because max-request-time is set to 10ms", res.getStatusLine().getStatusCode() == 504 || res.getStatusLine().getStatusCode() == 503);
-        }
     }
 }
