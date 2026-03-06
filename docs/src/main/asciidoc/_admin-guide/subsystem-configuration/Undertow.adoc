@@ -161,7 +161,7 @@ equals sign. The remainder of the cookie value will be dropped.
 |allow-unescaped-characters-in-url
 |If this is true Undertow will accept non-encoded characters that are disallowed by the URI specification.
 This defaults to false, and in general should not be needed as most clients correctly encode characters.
-Note that setting this to true can be considered a security risk, as allowing non-standard characters can 
+Note that setting this to true can be considered a security risk, as allowing non-standard characters can
 allow request smuggling attacks in some circumstances.
 
 |always-set-keep-alive
@@ -213,8 +213,8 @@ per connection for compression. Larger values use more memory but may give bette
 |The maximum size of request headers the server is prepared to accept
 
 |max-buffered-request-size
-|Maximum size of a buffered request, in bytes. Requests are not usually buffered, the most common case is 
-when performing SSL renegotiation for a POST request, and the post data must be fully buffered in order 
+|Maximum size of a buffered request, in bytes. Requests are not usually buffered, the most common case is
+when performing SSL renegotiation for a POST request, and the post data must be fully buffered in order
 to perform the renegotiation.
 
 |max-connections
@@ -247,8 +247,8 @@ to set the remote address. This should only be used behind a trusted proxy that 
 a remote user can spoof their IP address.
 
 |proxy-protocol
-|If this is true then the listener will use the proxy protocol v1, as defined by 
-https://www.haproxy.org/download/1.8/doc/proxy-protocol.txt. This option MUST only be enabled for listeners 
+|If this is true then the listener will use the proxy protocol v1, as defined by
+https://www.haproxy.org/download/1.8/doc/proxy-protocol.txt. This option MUST only be enabled for listeners
 that are behind a load balancer that supports the same protocol.
 
 |read-timeout
@@ -298,7 +298,7 @@ is not using HTTPS.
 |The listeners XNIO worker
 
 |write-timeout
-|Configure a write timeout for a socket, in milliseconds.  If the given amount of time 
+|Configure a write timeout for a socket, in milliseconds.  If the given amount of time
 elapses without a successful write taking place, the socket's next write will throw
 a {@link WriteTimeoutException}. Default value is currently set to 90000ms(90s). No timeout require value to be set to -1. NOTE: this value applies to all I/O operations, including WebSockets/SSE.
 
@@ -318,8 +318,8 @@ The HTTPS listener provides access to the server using unencrypted requests and 
 |Attribute |Description
 
 |redirect-socket
-|If this listener is supporting non-SSL requests, and a request is received for which a matching 
-<security-constraint> requires SSL transport, undertow will automatically redirect the request to the 
+|If this listener is supporting non-SSL requests, and a request is received for which a matching
+<security-constraint> requires SSL transport, undertow will automatically redirect the request to the
 socket binding port specified here.
 
 |=======================================================================
@@ -340,7 +340,7 @@ SSL Context instance.
 |=======================================================================
 |Attribute |Description
 
-|enable-spdy (Deprecated) 
+|enable-spdy (Deprecated)
 |Enables SPDY support for this listener. This has been deprecated and has no effect, HTTP/2 should be used instead
 
 |enabled-cipher-suites (Deprecated)
@@ -613,6 +613,100 @@ The following session statistics attributes are available:
 |session-avg-alive-time |The average time (in seconds) that expired sessions had been alive
 |session-max-alive-time |The longest time (in seconds) that an expired session had been alive
 |======================================================
+
+== Handlers
+
+A handler element allows you to define server specific HTTP request handlers, distinct from filters or predicates. Currently the available handler types are limited to:
+
+* file
+* reverse-proxy
+
+=== File
+
+A file handler is a terminating handler for an incoming request. It allows configuration of static content that will be served in response to a request for the location to which it is mapped if not otherwise handled.
+
+[source,xml,options="nowrap"]
+----
+<handlers>
+   <file name="welcome-content" path="${jboss.home.dir}/welcome-content"/>
+</handlers>
+----
+
+[cols=",",options="header"]
+|=======================================================================
+|Attribute |Description
+
+|name|Simply a name by which the file handler will be referenced in other parts of the server configuration.
+|path|Absolute path to resources being served via this file handler.
+|cache-buffer-size|Size of I/O buffer in bytes.
+|cache-buffers|Number of buffers.
+|directory-listing|Enable directory listing in output.
+|follow-symlink|Enable following of symlinks in FS.
+|safe-symlink-paths|Comma separated list of paths that are safe to be targets of symbolic links.
+|case-sensitive|Enable case sensitivity.
+
+|=======================================================================
+
+Example use:
+
+[source,xml,options="nowrap"]
+----
+<host name="default-host" alias="localhost">
+   <location name="/" handler="welcome-content"/>
+</host>
+----
+
+=== Reverse Proxy
+
+A reverse proxy handler allows you to configure the server in a reverse proxy role. For example, see <<Undertow_using_as_a_Load_Balancer, Undertow as Load Balancer>>.
+In such role server acts as frontend for content serving endpoints.
+
+[source,xml,options="nowrap"]
+----
+<handlers>
+   <reverse-proxy name="proxy-name">
+      <host name="proxy-host"/>
+   </reverse-proxy>
+</handlers>
+----
+
+[cols=",",options="header"]
+|=======================================================================
+|Attribute |Description
+
+|name|Simply a name by which the proxy handler will be referenced in other parts of the server configuration.
+|connections-per-thread|Number of connections that will be maintained to backend servers, per IO thread.
+|session-cookie-names|Comma separated list of session cookie names.
+|problem-server-retry|Delay in seconds between connection attempts to server that is down.
+|max-request-time|Maximum life time, in milliseconds, of a request, before it is terminated.
+|request-queue-size|Number of requests that can linger in queue if connection pool is full. Overflowing requests will be terminated with 503 response.
+|cached-connections-per-thread|Number of connection per thread that will be kept alive indefinitely.
+|connection-idle-timeout|Time in milliseconds connection can be inactive before it is reclaimed - unless number of active/alive connections is below or equal `cached-connections-per-thread`
+|max-retries|Number of times to attempt to retry a request if it fails. Note that if a request is not considered idempotent then it will only be retried if the proxy can be sure it was not sent to the backend server).
+|reuse-x-forwarded-header|Append(reuse existing) remote hop to x-forwarded-* headers, if not, previous value is discarded and remote hop becomes the value.
+|rewrite-host-header|Set host header to connection remote end and create x-forwarded-host header. This is done to adhere to host header validation on remote end.
+
+|=======================================================================
+
+
+==== Proxy Host
+
+A host element represents host/connection that will be the target of requests routed via the reverse proxy.
+
+[cols=",",options="header"]
+|=======================================================================
+|Attribute |Description
+
+|name|Simply a names by which host will be referenced in other parts of the server configuration
+|instance-id|The instance id (aka JVM route) that will be used to enable sticky sessions
+|outbound-socket-binding|Outbound socket binding for this host
+|scheme|What kind of scheme is used
+|path|Optional path if host is using non root resource
+|ssl-context|Reference to the SSLContext to be used by this handler.
+|enable-http2|If this is true then the proxy will attempt to use HTTP/2 to connect to the backend. If it is not supported it will fall back to HTTP/1.1.
+
+|=======================================================================
+
 
 :leveloffset: +1
 
