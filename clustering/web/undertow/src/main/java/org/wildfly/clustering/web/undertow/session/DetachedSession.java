@@ -17,7 +17,7 @@ public class DetachedSession extends AbstractReferencedSession {
     private final String id;
 
     public DetachedSession(UndertowSessionManager manager, String id) {
-        super(manager, new SessionReference(manager, id));
+        super(manager, new DistributableSessionReference(manager, id));
         this.id = id;
     }
 
