@@ -202,7 +202,7 @@ public class PooledConnectionFactoryAdd extends AbstractAddStepHandler {
     static void installStatistics(OperationContext context, String name) {
         ServiceName raActivatorsServiceName = PooledConnectionFactoryService.getResourceAdapterActivatorsServiceName(name);
         PooledConnectionFactoryStatisticsService statsService = new PooledConnectionFactoryStatisticsService(context.getResourceRegistrationForUpdate(), true);
-        context.getServiceTarget().addService(raActivatorsServiceName.append("statistics"), statsService)
+        context.getCapabilityServiceTarget().addService(raActivatorsServiceName.append("statistics"), statsService)
                 .addDependency(raActivatorsServiceName, ResourceAdapterDeployment.class, statsService.getRADeploymentInjector())
                 .setInitialMode(ServiceController.Mode.PASSIVE)
                 .install();

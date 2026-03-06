@@ -60,7 +60,7 @@ public class JdbcDriverRemove extends AbstractRemoveStepHandler {
         final String xaDataSourceClassName = model.hasDefined(DRIVER_XA_DATASOURCE_CLASS_NAME.getName()) ? model.get(
                 DRIVER_XA_DATASOURCE_CLASS_NAME.getName()).asString() : null;
 
-        final ServiceTarget target = context.getServiceTarget();
+        final ServiceTarget target = context.getCapabilityServiceTarget();
 
         final String moduleId;
         final Module module;

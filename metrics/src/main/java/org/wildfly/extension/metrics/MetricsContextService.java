@@ -38,7 +38,7 @@ public class MetricsContextService implements Service {
     private HttpHandler overrideableMetricHandler;
 
     static void install(OperationContext context, boolean securityEnabled) {
-        ServiceBuilder<?> serviceBuilder = context.getServiceTarget().addService(METRICS_HTTP_CONTEXT_CAPABILITY.getCapabilityServiceName());
+        ServiceBuilder<?> serviceBuilder = context.getCapabilityServiceTarget().addService(METRICS_HTTP_CONTEXT_CAPABILITY.getCapabilityServiceName());
 
         Supplier<ExtensibleHttpManagement> extensibleHttpManagement = serviceBuilder.requires(context.getCapabilityServiceName(HTTP_EXTENSIBILITY_CAPABILITY, ExtensibleHttpManagement.class));
         Supplier<WildFlyMetricRegistry> wildflyMetricRegistry = serviceBuilder.requires(METRICS_REGISTRY_RUNTIME_CAPABILITY.getCapabilityServiceName());

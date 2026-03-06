@@ -25,6 +25,7 @@ import com.sun.corba.se.impl.orbutil.ORBConstants;
 import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.CapabilityServiceBuilder;
+import org.jboss.as.controller.CapabilityServiceTarget;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
@@ -169,7 +170,8 @@ public class IIOPSubsystemAdd extends AbstractBoottimeAddStepHandler {
         final boolean sslConfigured = this.setupSSLFactories(props);
 
         // create the service that initializes and starts the CORBA ORB.
-        final CapabilityServiceBuilder<?> builder = context.getCapabilityServiceTarget().addCapability(org.wildfly.iiop.openjdk.IIOPRootDefinition.IIOP_CAPABILITY);
+        final CapabilityServiceTarget serviceTarget = context.getCapabilityServiceTarget();
+        final CapabilityServiceBuilder<?> builder = serviceTarget.addCapability(org.wildfly.iiop.openjdk.IIOPRootDefinition.IIOP_CAPABILITY);
         final Consumer<ORB> serviceConsumer = builder.provides(org.wildfly.iiop.openjdk.IIOPRootDefinition.IIOP_CAPABILITY, CorbaORBService.SERVICE_NAME);
         Supplier<ExecutorService> executorServiceSupplier = Services.requireServerExecutor(builder);
         Supplier<SocketBinding> iiopSocketBindingSupplier = Functions.constantSupplier(null);
@@ -223,7 +225,7 @@ public class IIOPSubsystemAdd extends AbstractBoottimeAddStepHandler {
         final IORSecurityConfigMetaData securityConfigMetaData = this.createIORSecurityConfigMetaData(context,
                 model, sslConfigured, serverRequiresSsl);
         final IORSecConfigMetaDataService securityConfigMetaDataService = new IORSecConfigMetaDataService(securityConfigMetaData);
-        context.getServiceTarget()
+        serviceTarget
                 .addService(IORSecConfigMetaDataService.SERVICE_NAME, securityConfigMetaDataService)
                 .setInitialMode(ServiceController.Mode.ACTIVE).install();
 
@@ -239,14 +241,14 @@ public class IIOPSubsystemAdd extends AbstractBoottimeAddStepHandler {
 
         // create the service the initializes the Root POA.
         CorbaPOAService rootPOAService = new CorbaPOAService("RootPOA", "poa", serverRequiresSsl);
-        context.getServiceTarget().addService(CorbaPOAService.ROOT_SERVICE_NAME, rootPOAService)
+        serviceTarget.addService(CorbaPOAService.ROOT_SERVICE_NAME, rootPOAService)
                 .addDependency(CorbaORBService.SERVICE_NAME, ORB.class, rootPOAService.getORBInjector())
                 .setInitialMode(ServiceController.Mode.ACTIVE).install();
 
         // create the service the initializes the interface repository POA.
         final CorbaPOAService irPOAService = new CorbaPOAService("IRPOA", "irpoa", serverRequiresSsl, IdAssignmentPolicyValue.USER_ID, null, null,
                 LifespanPolicyValue.PERSISTENT, null, null, null);
-        context.getServiceTarget()
+        serviceTarget
                 .addService(CorbaPOAService.INTERFACE_REPOSITORY_SERVICE_NAME, irPOAService)
                 .addDependency(CorbaPOAService.ROOT_SERVICE_NAME, POA.class, irPOAService.getParentPOAInjector())
                 .setInitialMode(ServiceController.Mode.ACTIVE).install();
@@ -254,15 +256,14 @@ public class IIOPSubsystemAdd extends AbstractBoottimeAddStepHandler {
         // create the service that initializes the naming service POA.
         final CorbaPOAService namingPOAService = new CorbaPOAService("Naming", null, serverRequiresSsl, IdAssignmentPolicyValue.USER_ID, null,
                 null, LifespanPolicyValue.PERSISTENT, null, null, null);
-        context.getServiceTarget()
+        serviceTarget
                 .addService(CorbaPOAService.SERVICE_NAME.append("namingpoa"), namingPOAService)
                 .addDependency(CorbaPOAService.ROOT_SERVICE_NAME, POA.class, namingPOAService.getParentPOAInjector())
                 .setInitialMode(ServiceController.Mode.ACTIVE).install();
 
         // create the CORBA naming service.
         final CorbaNamingService namingService = new CorbaNamingService(props);
-        context
-                .getServiceTarget()
+        serviceTarget
                 .addService(CorbaNamingService.SERVICE_NAME, namingService)
                 .addDependency(CorbaORBService.SERVICE_NAME, ORB.class, namingService.getORBInjector())
                 .addDependency(CorbaPOAService.ROOT_SERVICE_NAME, POA.class, namingService.getRootPOAInjector())

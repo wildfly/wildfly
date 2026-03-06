@@ -44,7 +44,7 @@ public class ConfigPropertyAdd extends AbstractAddStepHandler {
         ServiceName serviceName = ServiceName.of(ConnectorServices.RA_SERVICE, archiveName, configPropertyName);
         ServiceName raServiceName = ServiceName.of(ConnectorServices.RA_SERVICE, archiveName);
 
-        final ServiceTarget serviceTarget = context.getServiceTarget();
+        final ServiceTarget serviceTarget = context.getCapabilityServiceTarget();
 
         final ConfigPropertiesService service = new ConfigPropertiesService(configPropertyName, configPropertyValue);
         serviceTarget.addService(serviceName, service).setInitialMode(ServiceController.Mode.ACTIVE)

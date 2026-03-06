@@ -53,7 +53,7 @@ public class ConnectionPropertyAdd extends AbstractAddStepHandler {
         if (dataSourceConfigController == null || !((DataSource) dataSourceConfigController.getValue()).isEnabled()) {
 
 
-            final ServiceTarget serviceTarget = context.getServiceTarget();
+            final ServiceTarget serviceTarget = context.getCapabilityServiceTarget();
 
             final ConnectionPropertiesService service = new ConnectionPropertiesService(configPropertyName, configPropertyValue);
             serviceTarget.addService(serviceName, service).setInitialMode(ServiceController.Mode.NEVER)

@@ -36,7 +36,7 @@ public class BeanValidationAdd extends AbstractBoottimeAddStepHandler {
         ServiceName serviceName = ConnectorServices.BEAN_VALIDATION_CONFIG_SERVICE;
         ServiceName jcaConfigServiceName = ConnectorServices.CONNECTOR_CONFIG_SERVICE;
 
-        final ServiceTarget serviceTarget = context.getServiceTarget();
+        final ServiceTarget serviceTarget = context.getCapabilityServiceTarget();
 
         final BeanValidationService.BeanValidation config = new BeanValidationService.BeanValidation(enabled);
         final BeanValidationService service = new BeanValidationService(config);

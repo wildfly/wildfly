@@ -66,7 +66,7 @@ final class HandlerChainAdd extends AbstractAddStepHandler {
             }
 
             final ServiceName handlerChainServiceName = getHandlerChainServiceName(configServiceName, handlerChainType, handlerChainId);
-            final ServiceTarget target = context.getServiceTarget();
+            final ServiceTarget target = context.getCapabilityServiceTarget();
             final ServiceBuilder<?> handlerChainServiceBuilder = target.addService(handlerChainServiceName);
             final Consumer<UnifiedHandlerChainMetaData> handlerChainConsumer = handlerChainServiceBuilder.provides(handlerChainServiceName);
             final List<Supplier<UnifiedHandlerMetaData>> handlerSuppliers = new ArrayList<>();

@@ -65,7 +65,7 @@ class WSSubsystemAdd extends AbstractBoottimeAddStepHandler {
             }
         }, OperationContext.Stage.RUNTIME);
 
-        ServiceTarget serviceTarget = context.getServiceTarget();
+        ServiceTarget serviceTarget = context.getCapabilityServiceTarget();
         final boolean jmxAvailable = isJMXSubsystemAvailable(context);
         if (appclient && model.hasDefined(WSDL_HOST)) {
             ServerConfigImpl serverConfig = createServerConfig(model, true, context);

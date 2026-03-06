@@ -60,7 +60,7 @@ public class InMemoryJobRepositoryDefinition extends SimpleResourceDefinition {
             final String name = context.getCurrentAddressValue();
             final Integer executionRecordsLimit = CommonAttributes.EXECUTION_RECORDS_LIMIT.resolveModelAttribute(context, model).asIntOrNull();
             final ServiceName inMemorySN = context.getCapabilityServiceName(Capabilities.JOB_REPOSITORY_CAPABILITY.getName(), name, JobRepository.class);
-            final ServiceBuilder<?> sb = context.getServiceTarget().addService(inMemorySN);
+            final ServiceBuilder<?> sb = context.getCapabilityServiceTarget().addService(inMemorySN);
             final Consumer<JobRepository> jobRepositoryConsumer = sb.provides(inMemorySN);
             sb.setInstance(new InMemoryJobRepositoryService(jobRepositoryConsumer, executionRecordsLimit));
             sb.install();

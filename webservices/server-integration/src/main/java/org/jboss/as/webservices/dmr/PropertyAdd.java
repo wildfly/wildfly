@@ -52,7 +52,7 @@ final class PropertyAdd extends AbstractAddStepHandler {
             final String configType = confElem.getKey();
             final String configName = confElem.getValue();
             final String propertyValue = Attributes.VALUE.resolveModelAttribute(context, model).asStringOrNull();
-            final ServiceTarget target = context.getServiceTarget();
+            final ServiceTarget target = context.getCapabilityServiceTarget();
             final ServiceName configServiceName = getConfigServiceName(configType, configName);
             if (context.getServiceRegistry(false).getService(configServiceName) == null) {
                 throw WSLogger.ROOT_LOGGER.missingConfig(configName);

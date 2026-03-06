@@ -271,7 +271,7 @@ public class ExternalPooledConnectionFactoryService implements Service<ExternalP
             Set<String> connectorsSocketBindings,
             Set<String> sslContextNames,
             ModelNode model) throws OperationFailedException {
-        ServiceBuilder<?> serviceBuilder = context.getServiceTarget().addService(serviceName);
+        ServiceBuilder<?> serviceBuilder = context.getCapabilityServiceTarget().addService(serviceName);
         serviceBuilder.requires(context.getCapabilityServiceName(MessagingServices.LOCAL_TRANSACTION_PROVIDER_CAPABILITY, null));
         // ensures that Artemis client thread pools are not stopped before any deployment depending on a pooled-connection-factory
         serviceBuilder.requires(MessagingServices.ACTIVEMQ_CLIENT_THREAD_POOL);

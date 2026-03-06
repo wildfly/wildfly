@@ -76,7 +76,7 @@ public class ExternalConnectionFactoryAdd extends AbstractAddStepHandler {
         final ExternalConnectionFactoryConfiguration config = createConfiguration(context, name, model);
         JMSFactoryType jmsFactoryType = ConnectionFactoryType.valueOf(ConnectionFactoryAttributes.Regular.FACTORY_TYPE.resolveModelAttribute(context, model).asString()).getType();
         List<String> connectorNames = Common.CONNECTORS.unwrap(context, model);
-        ServiceBuilder<?> builder = context.getServiceTarget()
+        ServiceBuilder<?> builder = context.getCapabilityServiceTarget()
                 .addService(serviceName)
                 .addAliases(JMSServices.getConnectionFactoryBaseServiceName(MessagingServices.getActiveMQServiceName()).append(name));
         ExternalConnectionFactoryService service;
@@ -137,7 +137,7 @@ public class ExternalConnectionFactoryAdd extends AbstractAddStepHandler {
         builder.install();
         for (String entry : Common.ENTRIES.unwrap(context, model)) {
             MessagingLogger.ROOT_LOGGER.debugf("Referencing %s with JNDI name %s", serviceName, entry);
-            BinderServiceUtil.installBinderService(context.getServiceTarget(), entry, service, serviceName);
+            BinderServiceUtil.installBinderService(context.getCapabilityServiceTarget(), entry, service, serviceName);
         }
     }
 

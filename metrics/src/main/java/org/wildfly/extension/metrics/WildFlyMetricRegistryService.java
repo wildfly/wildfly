@@ -26,7 +26,7 @@ public class WildFlyMetricRegistryService implements Service<WildFlyMetricRegist
     private WildFlyMetricRegistry registry;
 
     static void install(OperationContext context) {
-        ServiceBuilder<?> serviceBuilder = context.getServiceTarget().addService(METRICS_REGISTRY_RUNTIME_CAPABILITY.getCapabilityServiceName());
+        ServiceBuilder<?> serviceBuilder = context.getCapabilityServiceTarget().addService(METRICS_REGISTRY_RUNTIME_CAPABILITY.getCapabilityServiceName());
 
         Consumer<WildFlyMetricRegistry> registry = serviceBuilder.provides(METRICS_REGISTRY_RUNTIME_CAPABILITY.getCapabilityServiceName());
         serviceBuilder.setInstance(new WildFlyMetricRegistryService(registry)).install();

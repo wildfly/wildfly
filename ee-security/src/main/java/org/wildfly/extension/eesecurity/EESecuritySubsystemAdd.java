@@ -30,7 +30,7 @@ class EESecuritySubsystemAdd extends AbstractBoottimeAddStepHandler {
 
     protected void performBoottime(final OperationContext context, ModelNode operation, Resource resource) {
 
-        final ServiceTarget serviceTarget = context.getServiceTarget();
+        final ServiceTarget serviceTarget = context.getCapabilityServiceTarget();
         context.addStep(new AbstractDeploymentChainStep() {
             public void execute(DeploymentProcessorTarget processorTarget) {
                 processorTarget.addDeploymentProcessor(EESecurityExtension.SUBSYSTEM_NAME, Phase.PARSE, Phase.PARSE_EE_SECURITY_ANNOTATIONS, new EESecurityAnnotationProcessor());

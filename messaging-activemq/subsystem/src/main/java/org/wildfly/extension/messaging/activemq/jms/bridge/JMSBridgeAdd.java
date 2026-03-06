@@ -66,7 +66,7 @@ public class JMSBridgeAdd extends AbstractAddStepHandler {
                 final String bridgeName = context.getCurrentAddressValue();
                 final ServiceName bridgeServiceName = MessagingServices.getJMSBridgeServiceName(bridgeName);
 
-                final ServiceBuilder jmsBridgeServiceBuilder = context.getServiceTarget().addService(bridgeServiceName);
+                final ServiceBuilder jmsBridgeServiceBuilder = context.getCapabilityServiceTarget().addService(bridgeServiceName);
                 jmsBridgeServiceBuilder.requires(context.getCapabilityServiceName(MessagingServices.LOCAL_TRANSACTION_PROVIDER_CAPABILITY, null));
                 jmsBridgeServiceBuilder.setInitialMode(Mode.ACTIVE);
                 Supplier<ExecutorService> executorSupplier = requireServerExecutor(jmsBridgeServiceBuilder);

@@ -192,7 +192,7 @@ public class BatchSubsystemDefinition extends SimpleResourceDefinition {
             final ModelNode securityDomain = SECURITY_DOMAIN.resolveModelAttribute(context, model);
             final boolean restartOnResume = RESTART_JOBS_ON_RESUME.resolveModelAttribute(context, model).asBoolean();
 
-            final ServiceTarget target = context.getServiceTarget();
+            final ServiceTarget target = context.getCapabilityServiceTarget();
             final ServiceName sn = context.getCapabilityServiceName(Capabilities.BATCH_CONFIGURATION_CAPABILITY.getName(), BatchConfiguration.class);
             final ServiceBuilder<?> serviceBuilder = target.addService(sn);
             final Consumer<BatchConfiguration> batchConfigurationConsumer = serviceBuilder.provides(sn);

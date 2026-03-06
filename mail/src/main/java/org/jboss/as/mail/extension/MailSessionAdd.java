@@ -115,7 +115,7 @@ class MailSessionAdd extends AbstractAddStepHandler {
     static void installSessionProviderService(OperationContext context, PathAddress address, ModelNode fullModel) throws OperationFailedException {
         ServiceName serviceName = SESSION_CAPABILITY.getCapabilityServiceName(address).append("provider");
 
-        ServiceBuilder<?> builder = context.getServiceTarget().addService(serviceName);
+        ServiceBuilder<?> builder = context.getCapabilityServiceTarget().addService(serviceName);
 
         MailSessionConfig config = from(context, fullModel, builder);
 
@@ -135,7 +135,7 @@ class MailSessionAdd extends AbstractAddStepHandler {
         ContextNames.BindInfo bindInfo = ContextNames.bindInfoFor(jndiName);
         String bindName = bindInfo.getBindName();
         BinderService service = new BinderService(bindName);
-        ServiceBuilder<?> builder = context.getServiceTarget().addService(bindInfo.getBinderServiceName(), service).addAliases(ContextNames.JAVA_CONTEXT_SERVICE_NAME.append(bindName));
+        ServiceBuilder<?> builder = context.getCapabilityServiceTarget().addService(bindInfo.getBinderServiceName(), service).addAliases(ContextNames.JAVA_CONTEXT_SERVICE_NAME.append(bindName));
         Supplier<SessionProvider> provider = builder.requires(SESSION_CAPABILITY.getCapabilityServiceName(context.getCurrentAddress()).append("provider"));
         service.getManagedObjectInjector().inject(new MailSessionManagedReferenceFactory(provider));
         builder.addDependency(bindInfo.getParentContextServiceName(), ServiceBasedNamingStore.class, service.getNamingStoreInjector());

@@ -75,7 +75,7 @@ public class JdbcDriverAdd extends AbstractAddStepHandler {
         final String dataSourceClassName = model.hasDefined(DRIVER_DATASOURCE_CLASS_NAME.getName()) ? DRIVER_DATASOURCE_CLASS_NAME.resolveModelAttribute(context, model).asString() : null;
         final String xaDataSourceClassName = model.hasDefined(DRIVER_XA_DATASOURCE_CLASS_NAME.getName()) ? DRIVER_XA_DATASOURCE_CLASS_NAME.resolveModelAttribute(context, model).asString() : null;
 
-        final ServiceTarget target = context.getServiceTarget();
+        final ServiceTarget target = context.getCapabilityServiceTarget();
 
         final String moduleId;
         final Module module;

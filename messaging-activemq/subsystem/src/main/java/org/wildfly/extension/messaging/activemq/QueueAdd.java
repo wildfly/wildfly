@@ -58,7 +58,7 @@ public class QueueAdd extends AbstractAddStepHandler {
             final String queueName = context.getCurrentAddressValue();
             final CoreQueueConfiguration queueConfiguration = ConfigurationHelper.createCoreQueueConfiguration(context, queueName, model);
             final ServiceName queueServiceName = MessagingServices.getQueueBaseServiceName(serviceName).append(queueName);
-            final ServiceBuilder sb = context.getServiceTarget().addService(queueServiceName);
+            final ServiceBuilder sb = context.getCapabilityServiceTarget().addService(queueServiceName);
             sb.requires(ActiveMQActivationService.getServiceName(serviceName));
             Supplier<ActiveMQBroker> serverSupplier = sb.requires(serviceName);
             final QueueService service = new QueueService(serverSupplier, queueConfiguration, false, true);

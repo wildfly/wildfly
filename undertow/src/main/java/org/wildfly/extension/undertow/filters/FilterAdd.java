@@ -32,7 +32,7 @@ class FilterAdd extends AbstractAddStepHandler {
     @Override
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
         final String name = context.getCurrentAddressValue();
-        final ServiceTarget target = context.getServiceTarget();
+        final ServiceTarget target = context.getCapabilityServiceTarget();
         final ServiceBuilder<?> sb = target.addService(UndertowService.FILTER.append(name));
         final Consumer<PredicateHandlerWrapper> serviceConsumer = sb.provides(UndertowService.FILTER.append(name));
         PredicateHandlerWrapper wrapper = this.factory.createHandlerWrapper(context, model);

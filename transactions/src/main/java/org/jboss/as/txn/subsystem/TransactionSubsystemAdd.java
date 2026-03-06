@@ -256,7 +256,7 @@ class TransactionSubsystemAdd extends AbstractBoottimeAddStepHandler {
 
         //bind the TransactionManger and the TSR into JNDI
         final BinderService tmBinderService = new BinderService("TransactionManager");
-        final ServiceBuilder<ManagedReferenceFactory> tmBuilder = context.getServiceTarget().addService(ContextNames.JBOSS_CONTEXT_SERVICE_NAME.append("TransactionManager"), tmBinderService);
+        final ServiceBuilder<ManagedReferenceFactory> tmBuilder = context.getCapabilityServiceTarget().addService(ContextNames.JBOSS_CONTEXT_SERVICE_NAME.append("TransactionManager"), tmBinderService);
         tmBuilder.addDependency(ContextNames.JBOSS_CONTEXT_SERVICE_NAME, ServiceBasedNamingStore.class, tmBinderService.getNamingStoreInjector());
         tmBuilder.addDependency(TransactionManagerService.INTERNAL_SERVICE_NAME, jakarta.transaction.TransactionManager.class, new Injector<jakarta.transaction.TransactionManager>() {
             @Override
@@ -272,7 +272,7 @@ class TransactionSubsystemAdd extends AbstractBoottimeAddStepHandler {
         tmBuilder.install();
 
         final BinderService tmLegacyBinderService = new BinderService("TransactionManager");
-        final ServiceBuilder<ManagedReferenceFactory> tmLegacyBuilder = context.getServiceTarget().addService(ContextNames.JAVA_CONTEXT_SERVICE_NAME.append("TransactionManager"), tmLegacyBinderService);
+        final ServiceBuilder<ManagedReferenceFactory> tmLegacyBuilder = context.getCapabilityServiceTarget().addService(ContextNames.JAVA_CONTEXT_SERVICE_NAME.append("TransactionManager"), tmLegacyBinderService);
         tmLegacyBuilder.addDependency(ContextNames.JAVA_CONTEXT_SERVICE_NAME, ServiceBasedNamingStore.class, tmLegacyBinderService.getNamingStoreInjector());
         tmLegacyBuilder.addDependency(TransactionManagerService.INTERNAL_SERVICE_NAME, jakarta.transaction.TransactionManager.class, new Injector<jakarta.transaction.TransactionManager>() {
             @Override
@@ -288,7 +288,7 @@ class TransactionSubsystemAdd extends AbstractBoottimeAddStepHandler {
         tmLegacyBuilder.install();
 
         final BinderService tsrBinderService = new BinderService("TransactionSynchronizationRegistry");
-        final ServiceBuilder<ManagedReferenceFactory> tsrBuilder = context.getServiceTarget().addService(ContextNames.JBOSS_CONTEXT_SERVICE_NAME.append("TransactionSynchronizationRegistry"), tsrBinderService);
+        final ServiceBuilder<ManagedReferenceFactory> tsrBuilder = context.getCapabilityServiceTarget().addService(ContextNames.JBOSS_CONTEXT_SERVICE_NAME.append("TransactionSynchronizationRegistry"), tsrBinderService);
         tsrBuilder.addDependency(ContextNames.JBOSS_CONTEXT_SERVICE_NAME, ServiceBasedNamingStore.class, tsrBinderService.getNamingStoreInjector());
         tsrBuilder.addDependency(TransactionSynchronizationRegistryService.INTERNAL_SERVICE_NAME, TransactionSynchronizationRegistry.class, new Injector<TransactionSynchronizationRegistry>() {
             @Override

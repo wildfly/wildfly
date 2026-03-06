@@ -56,7 +56,7 @@ public class ConnectionFactoryAdd extends AbstractAddStepHandler {
         final ConnectionFactoryService service = new ConnectionFactoryService(configuration);
         final ServiceName aliasServiceName = JMSServices.getConnectionFactoryBaseServiceName(activeMQServiceName).append(name);
         final ServiceName serviceName = ConnectionFactoryDefinition.CAPABILITY.getCapabilityServiceName(context.getCurrentAddress());
-        ServiceBuilder<?> serviceBuilder = context.getServiceTarget()
+        ServiceBuilder<?> serviceBuilder = context.getCapabilityServiceTarget()
                 .addService(serviceName, service)
                 .addAliases(aliasServiceName);
         serviceBuilder.requires(ActiveMQActivationService.getServiceName(activeMQServiceName));
