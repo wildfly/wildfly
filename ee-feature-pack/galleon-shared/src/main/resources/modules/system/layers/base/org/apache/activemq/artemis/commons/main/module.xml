@@ -7,7 +7,7 @@
 
 <module xmlns="urn:jboss:module:1.9" name="org.apache.activemq.artemis.commons">
     <resources>
-        <artifact name="${org.apache.activemq:artemis-commons}"/>
+        <artifact name="${org.apache.artemis:artemis-commons}"/>
     </resources>
 
     <dependencies>
