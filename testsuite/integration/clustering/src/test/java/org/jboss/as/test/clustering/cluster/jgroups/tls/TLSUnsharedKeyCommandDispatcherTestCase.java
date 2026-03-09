@@ -13,7 +13,6 @@ import org.jboss.as.test.clustering.cluster.dispatcher.bean.ClusterTopologyRetri
 import org.jboss.as.test.clustering.cluster.dispatcher.bean.ClusterTopologyRetrieverBean;
 import org.jboss.as.test.clustering.ejb.EJBDirectory;
 import org.jboss.as.test.clustering.ejb.RemoteEJBDirectory;
-import org.wildfly.test.stabilitylevel.StabilityServerSetupSnapshotRestoreTasks;
 
 /**
  * Variation of the standard {@link CommandDispatcherTestCase} that uses SSL/TLS-secured JGroups communication channel,
@@ -25,7 +24,6 @@ import org.wildfly.test.stabilitylevel.StabilityServerSetupSnapshotRestoreTasks;
  * @author Radoslav Husar
  */
 @ServerSetup({
-        StabilityServerSetupSnapshotRestoreTasks.Community.class,
         TLSServerSetupTasks.PhysicalKeyStoresServerSetupTask_NODE_1_2.class,
         TLSServerSetupTasks.UnsharedSecureJGroupsTransportServerSetupTask_NODE_1_2.class,
 })

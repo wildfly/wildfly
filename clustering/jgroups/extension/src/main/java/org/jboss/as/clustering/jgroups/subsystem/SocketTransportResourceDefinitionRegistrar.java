@@ -21,7 +21,6 @@ import org.jboss.as.controller.RequirementServiceBuilder;
 import org.jboss.as.controller.ResourceRegistration;
 import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraintDefinition;
 import org.jboss.as.network.SocketBinding;
-import org.jboss.as.version.Stability;
 import org.jboss.dmr.ModelNode;
 import org.jgroups.protocols.BasicTCP;
 import org.wildfly.clustering.jgroups.spi.ChannelFactoryConfiguration;
@@ -61,7 +60,6 @@ public class SocketTransportResourceDefinitionRegistrar<T extends BasicTCP> exte
 
     static final CapabilityReferenceAttributeDefinition<SSLContext> CLIENT_SSL_CONTEXT = new CapabilityReferenceAttributeDefinition.Builder<>(CLIENT_SSL_CONTEXT_NAME, CapabilityReference.builder(CAPABILITY, CommonServiceDescriptor.SSL_CONTEXT).build())
             .setRequired(false)
-            .setStability(Stability.COMMUNITY)
             .setAccessConstraints(SensitiveTargetAccessConstraintDefinition.SSL_REF)
             .setRequires(SERVER_SSL_CONTEXT_NAME)
             .setXmlName("client")
@@ -69,7 +67,6 @@ public class SocketTransportResourceDefinitionRegistrar<T extends BasicTCP> exte
 
     static final CapabilityReferenceAttributeDefinition<SSLContext> SERVER_SSL_CONTEXT = new CapabilityReferenceAttributeDefinition.Builder<>(SERVER_SSL_CONTEXT_NAME, CapabilityReference.builder(CAPABILITY, CommonServiceDescriptor.SSL_CONTEXT).build())
             .setRequired(false)
-            .setStability(Stability.COMMUNITY)
             .setAccessConstraints(SensitiveTargetAccessConstraintDefinition.SSL_REF)
             .setRequires(CLIENT_SSL_CONTEXT_NAME)
             .setXmlName("server")
