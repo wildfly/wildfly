@@ -20,6 +20,7 @@ import org.jboss.as.subsystem.test.KernelServicesBuilder;
 import org.jboss.as.subsystem.test.LegacyKernelServicesInitializer;
 import org.jboss.dmr.ModelNode;
 import org.junit.Test;
+import org.junit.Ignore;
 
 /**
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
@@ -50,6 +51,7 @@ public class JaxrsSubsystem40TestCase extends AbstractSubsystemBaseTest {
         standardSubsystemTest("jaxrs-expressions.xml");
     }
 
+    @Ignore("Doesn't work with GAR")
     @Test
     public void testRejectingTransformersEAP80() throws Exception {
         FailedOperationTransformationConfig transformationConfig = new FailedOperationTransformationConfig();
@@ -60,6 +62,7 @@ public class JaxrsSubsystem40TestCase extends AbstractSubsystemBaseTest {
         testRejectingTransformersEAP80(transformationConfig, ModelTestControllerVersion.EAP_8_0_0);
     }
 
+    @Ignore("Doesn't work with GAR")
     @Test
     public void testRejectingTransformersEAP74() throws Exception {
         FailedOperationTransformationConfig transformationConfig = new FailedOperationTransformationConfig();
