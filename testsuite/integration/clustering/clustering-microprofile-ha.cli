@@ -39,12 +39,6 @@ batch
 /subsystem=jgroups/stack=tcp-bridge/protocol=FRAG4:add
 run-batch
 
-# TODO Remove workaround - WFLY-21180 Failures in variants of *WebFailoverTestCase showing inconsistent topology
-/socket-binding-group=standard-sockets/socket-binding=jgroups-tcp-fd:add(interface=private,port=57600)
-/subsystem=jgroups/stack=tcp/protocol=FD_SOCK2:add(add-index=3,socket-binding=jgroups-tcp-fd)
-/socket-binding-group=standard-sockets/socket-binding=jgroups-tcp-fd-bridge:add(interface=private,port=57601)
-/subsystem=jgroups/stack=tcp-bridge/protocol=FD_SOCK2:add(add-index=3,socket-binding=jgroups-tcp-fd-bridge)
-
 # Remove UDP stack configuration
 /subsystem=jgroups/stack=udp:remove
 /socket-binding-group=standard-sockets/socket-binding=jgroups-udp:remove
