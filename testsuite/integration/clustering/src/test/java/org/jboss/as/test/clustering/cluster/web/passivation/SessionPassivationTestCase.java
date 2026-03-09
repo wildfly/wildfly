@@ -5,13 +5,8 @@
 
 package org.jboss.as.test.clustering.cluster.web.passivation;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertSame;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
-import java.io.IOException;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.time.Duration;
 import java.time.Instant;
@@ -44,7 +39,7 @@ import org.jboss.as.test.http.util.TestHttpClientUtils;
 import org.jboss.as.test.shared.TimeoutUtil;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 @ServerSetup(EnableUndertowStatisticsSetupTask.class)
 public abstract class SessionPassivationTestCase extends AbstractClusteringTestCase {
@@ -62,7 +57,7 @@ public abstract class SessionPassivationTestCase extends AbstractClusteringTestC
 
     @Test
     public void test(@ArquillianResource(SessionOperationServlet.class) @OperateOnDeployment(DEPLOYMENT_1) URL baseURL)
-            throws IOException, URISyntaxException {
+            throws Exception {
 
         String session1;
         String session2;
@@ -183,9 +178,8 @@ public abstract class SessionPassivationTestCase extends AbstractClusteringTestC
         events.entrySet().forEach((Map.Entry<String, Queue<PassivationEventTrackerUtil.EventType>> entry) -> {
             String sessionId = entry.getKey();
             if (response.containsHeader(sessionId)) {
-                Stream.of(response.getHeaders(sessionId)).forEach((Header header) -> {
-                    entry.getValue().add(PassivationEventTrackerUtil.EventType.valueOf(header.getValue()));
-                });
+                Stream.of(response.getHeaders(sessionId)).forEach((Header header) ->
+                    entry.getValue().add(PassivationEventTrackerUtil.EventType.valueOf(header.getValue())));
             }
         });
     }
@@ -204,7 +198,7 @@ public abstract class SessionPassivationTestCase extends AbstractClusteringTestC
     }
 
     private static String getRequiredHeaderValue(HttpResponse response, String name) {
-        assertTrue(String.format("response doesn't contain header '%s', all response headers = %s", name, showHeaders(response.getAllHeaders())), response.containsHeader(name));
+        assertTrue(response.containsHeader(name), String.format("response doesn't contain header '%s', all response headers = %s", name, showHeaders(response.getAllHeaders())));
         return response.getFirstHeader(name).getValue();
     }
 

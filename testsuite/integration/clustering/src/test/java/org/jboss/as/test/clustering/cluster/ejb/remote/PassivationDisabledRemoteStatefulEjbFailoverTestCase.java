@@ -5,12 +5,15 @@
 
 package org.jboss.as.test.clustering.cluster.ejb.remote;
 
+import static org.junit.jupiter.api.Assertions.*;
+
 import java.util.PropertyPermission;
+
 import jakarta.ejb.NoSuchEJBException;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.TargetsContainer;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase;
 import org.jboss.as.test.clustering.cluster.ejb.remote.bean.Incrementor;
 import org.jboss.as.test.clustering.cluster.ejb.remote.bean.IncrementorBean;
@@ -18,14 +21,13 @@ import org.jboss.as.test.clustering.cluster.ejb.remote.bean.PassivationDisabledS
 import org.jboss.as.test.clustering.cluster.ejb.remote.bean.Result;
 import org.jboss.as.test.clustering.ejb.EJBDirectory;
 import org.jboss.as.test.clustering.ejb.RemoteEJBDirectory;
-import org.jboss.as.test.shared.TimeoutUtil;
 import org.jboss.as.test.shared.PermissionUtils;
+import org.jboss.as.test.shared.TimeoutUtil;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.wildfly.common.function.ExceptionSupplier;
 
 /**
@@ -35,7 +37,7 @@ import org.wildfly.common.function.ExceptionSupplier;
  * .
  * @author Paul Ferraro
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class PassivationDisabledRemoteStatefulEjbFailoverTestCase extends AbstractClusteringTestCase {
     private static final int COUNT = 20;
     private static final long CLIENT_TOPOLOGY_UPDATE_WAIT = TimeoutUtil.adjust(5000);
@@ -68,7 +70,7 @@ public class PassivationDisabledRemoteStatefulEjbFailoverTestCase extends Abstra
     }
 
     @Test
-    public void test() throws Exception {
+    void test() throws Exception {
         try (EJBDirectory directory = this.directoryProvider.get()) {
             Incrementor bean = directory.lookupStateful(PassivationDisabledStatefulIncrementorBean.class, Incrementor.class);
 
@@ -76,13 +78,13 @@ public class PassivationDisabledRemoteStatefulEjbFailoverTestCase extends Abstra
             String target = result.getNode();
             int count = 1;
 
-            Assert.assertEquals(count++, result.getValue().intValue());
+            assertEquals(count++, result.getValue().intValue());
 
             // Bean should retain strong affinity for this node
             for (int i = 0; i < COUNT; ++i) {
                 result = bean.increment();
-                Assert.assertEquals(count++, result.getValue().intValue());
-                Assert.assertEquals(String.valueOf(i), target, result.getNode());
+                assertEquals(count++, result.getValue().intValue());
+                assertEquals(target, result.getNode(), String.valueOf(i));
             }
 
             undeploy(this.findDeployment(target));
@@ -93,7 +95,7 @@ public class PassivationDisabledRemoteStatefulEjbFailoverTestCase extends Abstra
                 result = bean.increment();
 
                 // Bean should fail to failover to other node
-                Assert.fail(result.getNode());
+                fail(result.getNode());
             } catch (NoSuchEJBException e) {
                 // Failover should fail
             }

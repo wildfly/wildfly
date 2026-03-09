@@ -4,7 +4,7 @@
  */
 package org.jboss.as.test.clustering.single.ejb.stateful.passivation;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 import java.time.Duration;
 import java.util.Map;
@@ -12,7 +12,7 @@ import java.util.Objects;
 
 import org.awaitility.Awaitility;
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.container.ManagementClient;
@@ -28,14 +28,14 @@ import org.jboss.as.test.clustering.single.ejb.stateful.passivation.bean.Passiva
 import org.jboss.as.test.clustering.single.ejb.stateful.passivation.bean.PassivatingIncrementorBean;
 import org.jboss.as.test.shared.ManagementServerSetupTask;
 import org.jboss.as.test.shared.TimeoutUtil;
-import org.wildfly.test.stabilitylevel.StabilityServerSetupSnapshotRestoreTasks;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.wildfly.test.stabilitylevel.StabilityServerSetupSnapshotRestoreTasks;
 
 /**
  * Tests idle time-based (idle-threshold) passivation for stateful session beans.
@@ -43,7 +43,7 @@ import org.junit.runner.RunWith;
  *
  * @author Radoslav Husar
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @ServerSetup({
         StabilityServerSetupSnapshotRestoreTasks.Community.class,
         IdleThresholdStatefulSessionBeanPassivationTestCase.ServerSetupTask.class,
@@ -77,13 +77,13 @@ public class IdleThresholdStatefulSessionBeanPassivationTestCase {
 
     private EJBDirectory directory;
 
-    @Before
-    public void before() throws Exception {
+    @BeforeEach
+    void before() throws Exception {
         this.directory = new RemoteEJBDirectory(MODULE_NAME);
     }
 
-    @After
-    public void after() throws Exception {
+    @AfterEach
+    void after() throws Exception {
         this.directory.close();
     }
 
@@ -93,7 +93,7 @@ public class IdleThresholdStatefulSessionBeanPassivationTestCase {
     private static final Duration POLL_INTERVAL = Duration.ofMillis(100);
 
     @Test
-    public void test(@ArquillianResource ManagementClient managementClient) throws Exception {
+    void test(@ArquillianResource ManagementClient managementClient) throws Exception {
         PassivatingIncrementor bean = this.directory.lookupStateful(PassivatingIncrementorBean.class, PassivatingIncrementor.class);
         PassivationEventTracker eventTracker = this.directory.lookupStateless(PassivationEventTrackerBean.class, PassivationEventTracker.class);
 
@@ -102,7 +102,7 @@ public class IdleThresholdStatefulSessionBeanPassivationTestCase {
 
         // Step 1: Set initial state on the bean
         String beanIdentifier = bean.getIdentifier();
-        assertEquals("Initial value should be 1", 1, bean.increment().getValue().intValue());
+        assertEquals(1, bean.increment().getValue().intValue(), "Initial value should be 1");
 
         // Ensure no passivation/activation event has occurred yet
         Map.Entry<Object, PassivationEventTrackerUtil.EventType> event = eventTracker.pollPassivationEvent();
@@ -115,20 +115,20 @@ public class IdleThresholdStatefulSessionBeanPassivationTestCase {
                 .until(eventTracker::pollPassivationEvent, Objects::nonNull);
 
         // Step 3: Poll to verify bean was passivated due to idle timeout
-        assertEquals("Bean should have been passivated due to idle timeout", PassivationEventTrackerUtil.EventType.PASSIVATION, event.getValue());
+        assertEquals(PassivationEventTrackerUtil.EventType.PASSIVATION, event.getValue(), "Bean should have been passivated due to idle timeout");
 
         // Step 4: Access the bean - this should trigger activation
         // The bean should have been passivated while idle
-        assertEquals("Value should be preserved and incremented after passivation", 2, bean.increment().getValue().intValue());
+        assertEquals(2, bean.increment().getValue().intValue(), "Value should be preserved and incremented after passivation");
 
         // Verify activation event
         event = eventTracker.pollPassivationEvent();
-        assertNotNull("Activation event should be present", event);
-        assertEquals("Event should be for the correct bean", beanIdentifier, event.getKey());
-        assertEquals("Event should be ACTIVATION", PassivationEventTrackerUtil.EventType.ACTIVATION, event.getValue());
+        assertNotNull(event, "Activation event should be present");
+        assertEquals(beanIdentifier, event.getKey(), "Event should be for the correct bean");
+        assertEquals(PassivationEventTrackerUtil.EventType.ACTIVATION, event.getValue(), "Event should be ACTIVATION");
 
         // Step 5: Test a second idle cycle
-        assertEquals("Value should be incremented to 3", 3, bean.increment().getValue().intValue());
+        assertEquals(3, bean.increment().getValue().intValue(), "Value should be incremented to 3");
 
         // Step 2: Poll for PASSIVATION event from the server (without accessing the bean directly as to not activate it)
         event = Awaitility.await("stateful bean to passivate")
@@ -136,16 +136,16 @@ public class IdleThresholdStatefulSessionBeanPassivationTestCase {
                 .pollInterval(POLL_INTERVAL)
                 .until(eventTracker::pollPassivationEvent, Objects::nonNull);
 
-        assertNotNull("Bean should have been passivated again after second idle timeout", event);
+        assertNotNull(event, "Bean should have been passivated again after second idle timeout");
 
         // Access the bean again - should trigger second activation
-        assertEquals("Value should be preserved and incremented after second passivation", 4, bean.increment().getValue().intValue());
+        assertEquals(4, bean.increment().getValue().intValue(), "Value should be preserved and incremented after second passivation");
 
         // Verify second activation event
         event = eventTracker.pollPassivationEvent();
-        assertNotNull("Second activation event should be present", event);
-        assertEquals("Event should be for the correct bean", beanIdentifier, event.getKey());
-        assertEquals("Event should be ACTIVATION", PassivationEventTrackerUtil.EventType.ACTIVATION, event.getValue());
+        assertNotNull(event, "Second activation event should be present");
+        assertEquals(beanIdentifier, event.getKey(), "Event should be for the correct bean");
+        assertEquals(PassivationEventTrackerUtil.EventType.ACTIVATION, event.getValue(), "Event should be ACTIVATION");
 
         // Cleanup
         bean.remove();

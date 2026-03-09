@@ -4,7 +4,7 @@
  */
 package org.jboss.as.test.clustering.cluster.jgroups.tls;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
 
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.test.clustering.cluster.dispatcher.CommandDispatcherTestCase;
@@ -13,6 +13,7 @@ import org.jboss.as.test.clustering.cluster.dispatcher.bean.ClusterTopologyRetri
 import org.jboss.as.test.clustering.cluster.dispatcher.bean.ClusterTopologyRetrieverBean;
 import org.jboss.as.test.clustering.ejb.EJBDirectory;
 import org.jboss.as.test.clustering.ejb.RemoteEJBDirectory;
+import org.junit.jupiter.api.Test;
 import org.wildfly.test.stabilitylevel.StabilityServerSetupSnapshotRestoreTasks;
 
 /**
@@ -29,9 +30,10 @@ import org.wildfly.test.stabilitylevel.StabilityServerSetupSnapshotRestoreTasks;
         TLSServerSetupTasks.PhysicalKeyStoresServerSetupTask_NODE_1_2.class,
         TLSServerSetupTasks.UnsharedSecureJGroupsTransportServerSetupTask_NODE_1_2.class,
 })
-public class TLSUnsharedKeyCommandDispatcherTestCase extends CommandDispatcherTestCase {
+class TLSUnsharedKeyCommandDispatcherTestCase extends CommandDispatcherTestCase {
 
     @Override
+    @Test
     public void test() throws Exception {
         try (EJBDirectory directory = new RemoteEJBDirectory(MODULE_NAME)) {
             ClusterTopologyRetriever bean = directory.lookupStateless(ClusterTopologyRetrieverBean.class, ClusterTopologyRetriever.class);
@@ -41,11 +43,12 @@ public class TLSUnsharedKeyCommandDispatcherTestCase extends CommandDispatcherTe
             // These server should never cluster and end up with singleton clusters
             // Server log will contain a similar log – which is expected as keys are not preshared:
             // WARN  [org.jgroups.protocols.TCP] (TcpServer.Acceptor[7600]-1,null,null) JGRP000006: 127.0.0.1:7600: failed accepting connection from peer SSLSocket[....]: java.net.SocketException: Socket is closed
-            assertEquals("TLS/SSL-secured cluster nodes formed a cluster while they shouldn't have since they did not have a pre-shared key", 1, topology.getNodes().size());
+            assertEquals(1, topology.getNodes().size(), "TLS/SSL-secured cluster nodes formed a cluster while they shouldn't have since they did not have a pre-shared key");
         }
     }
 
     @Override
+    @Test
     public void legacy() throws Exception {
         // This test variant is redundant
     }

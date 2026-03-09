@@ -5,6 +5,8 @@
 
 package org.jboss.as.test.clustering.cluster.jpa.custom;
 
+import static org.junit.jupiter.api.Assertions.*;
+
 import java.net.URISyntaxException;
 import java.net.URL;
 
@@ -16,7 +18,7 @@ import jakarta.ws.rs.core.Response;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.container.test.api.TargetsContainer;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase;
@@ -27,11 +29,10 @@ import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.jboss.shrinkwrap.descriptor.api.Descriptors;
 import org.jboss.shrinkwrap.descriptor.api.spec.se.manifest.ManifestDescriptor;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * Test of clustered Jakarta Persistence 2nd level cache implemented by Infinispan using entity custom region.
@@ -70,7 +71,7 @@ import org.junit.runner.RunWith;
  * </ul>
  * </p>
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @ServerSetup(ClusteredJPA2LCCustomRegionTestCase.ServerSetupTask.class)
 public class ClusteredJPA2LCCustomRegionTestCase extends AbstractClusteringTestCase {
 
@@ -120,13 +121,13 @@ public class ClusteredJPA2LCCustomRegionTestCase extends AbstractClusteringTestC
     // REST client to control entity creation, caching, eviction,... on the servers
     private Client restClient;
 
-    @Before
-    public void init() {
+    @BeforeEach
+    void init() {
         this.restClient = ClientBuilder.newClient();
     }
 
-    @After
-    public void destroy() {
+    @AfterEach
+    void destroy() {
         this.restClient.close();
     }
 
@@ -139,8 +140,8 @@ public class ClusteredJPA2LCCustomRegionTestCase extends AbstractClusteringTestC
      * The two nodes don't actually have a shared database instance, but that doesn't matter for this test.
      */
     @Test
-    public void testEntityInCustomCache(@ArquillianResource @OperateOnDeployment(DEPLOYMENT_1) URL url0,
-                                        @ArquillianResource @OperateOnDeployment(DEPLOYMENT_2) URL url1)
+    void entityInCustomCache(@ArquillianResource @OperateOnDeployment(DEPLOYMENT_1) URL url0,
+                             @ArquillianResource @OperateOnDeployment(DEPLOYMENT_2) URL url1)
             throws Exception {
         final WebTarget node0 = getWebTarget(url0);
         final WebTarget node1 = getWebTarget(url1);
@@ -155,21 +156,21 @@ public class ClusteredJPA2LCCustomRegionTestCase extends AbstractClusteringTestC
 
         // get the name of the cache containing the entity
         String regionName = getRegionNameForEntity(node1, entityId);
-        Assert.assertNotNull(
-                String.format("Region name for entity '%s' should NOT be null!", DummyEntityCustomRegion.class.getCanonicalName()),
-                regionName);
-        Assert.assertTrue(
+        assertNotNull(
+                regionName,
+                String.format("Region name for entity '%s' should NOT be null!", DummyEntityCustomRegion.class.getCanonicalName()));
+        assertTrue(
+                regionName.contains(DummyEntityCustomRegion.DUMMY_ENTITY_REGION_NAME),
                 String.format("Region name for entity '%s' should be something like %s.war#MainPUCustomRegion.%s",
                         DummyEntityCustomRegion.class.getCanonicalName(),
                         ClusteredJPA2LCCustomRegionTestCase.class.getName(),
-                        DummyEntityCustomRegion.DUMMY_ENTITY_REGION_NAME),
-                regionName.contains(DummyEntityCustomRegion.DUMMY_ENTITY_REGION_NAME));
+                        DummyEntityCustomRegion.DUMMY_ENTITY_REGION_NAME));
 
         // verify that cache is actually a replicated one
         Boolean isReplicated = getCustomRegionCacheIsReplicated(node1, regionName);
-        Assert.assertTrue(String.format("Cache '%s' should be a replicated-cache!", regionName), isReplicated);
+        assertTrue(isReplicated, String.format("Cache '%s' should be a replicated-cache!", regionName));
         Boolean isInvalidation = getCustomRegionCacheIsInvalidation(node0, regionName);
-        Assert.assertFalse(String.format("Cache '%s' should NOT be an invalidation-cache!", regionName), isInvalidation);
+        assertFalse(isInvalidation, String.format("Cache '%s' should NOT be an invalidation-cache!", regionName));
     }
 
     /**
@@ -180,8 +181,8 @@ public class ClusteredJPA2LCCustomRegionTestCase extends AbstractClusteringTestC
      * The two nodes don't actually have a shared database instance, but that doesn't matter for this test.
      */
     @Test
-    public void testPropsInCustomCache(@ArquillianResource @OperateOnDeployment(DEPLOYMENT_1) URL url0,
-                                       @ArquillianResource @OperateOnDeployment(DEPLOYMENT_2) URL url1)
+    void propsInCustomCache(@ArquillianResource @OperateOnDeployment(DEPLOYMENT_1) URL url0,
+                            @ArquillianResource @OperateOnDeployment(DEPLOYMENT_2) URL url1)
             throws Exception {
         final WebTarget node0 = getWebTarget(url0);
         final WebTarget node1 = getWebTarget(url1);
@@ -196,35 +197,35 @@ public class ClusteredJPA2LCCustomRegionTestCase extends AbstractClusteringTestC
 
         // get the name of the cache containing the entity
         String regionName = getRegionNameForEntity(node1, entityId);
-        Assert.assertNotNull(
-                String.format("Region name for entity '%s' should NOT be null!", DummyEntityCustomRegion.class.getCanonicalName()),
-                regionName);
+        assertNotNull(
+                regionName,
+                String.format("Region name for entity '%s' should NOT be null!", DummyEntityCustomRegion.class.getCanonicalName()));
 
         // max_entries
         Long evictionMaxEntries = getEvictionMaxEntries(node0, regionName);
-        Assert.assertEquals(String.format("Cache '%s' should have attribute memory.size=99991", regionName), evictionMaxEntries.longValue(), 99991);
+        assertEquals(99991, evictionMaxEntries.longValue(), String.format("Cache '%s' should have attribute memory.size=99991", regionName));
 
         // lifespan
         Long expirationLifespan = getExpirationLifespan(node0, regionName);
-        Assert.assertEquals(String.format("Cache '%s' should have attribute expiration.lifespan=99993", regionName), expirationLifespan.longValue(), 99993);
+        assertEquals(99993, expirationLifespan.longValue(), String.format("Cache '%s' should have attribute expiration.lifespan=99993", regionName));
 
         // max_idle
         Long expirationMaxIdle = getExpirationMaxIdle(node0, regionName);
-        Assert.assertEquals(String.format("Cache '%s' should have attribute expiration.maxIdle=99992", regionName), expirationMaxIdle.longValue(), 99992);
+        assertEquals(99992, expirationMaxIdle.longValue(), String.format("Cache '%s' should have attribute expiration.maxIdle=99992", regionName));
 
         // wake_up_interval
         Long expirationWakeUpInterval = getExpirationWakeUpInterval(node0, regionName);
-        Assert.assertEquals(String.format("Cache '%s' should have attribute expiration.wakeUpInterval=9994", regionName), expirationWakeUpInterval.longValue(), 9994);
+        assertEquals(9994, expirationWakeUpInterval.longValue(), String.format("Cache '%s' should have attribute expiration.wakeUpInterval=9994", regionName));
     }
 
     private static void createEntity(WebTarget node, String entityId) {
         int status = node.path("custom-region").path("create").path(entityId).request().get().getStatus();
-        Assert.assertEquals(204, status);
+        assertEquals(204, status);
     }
 
     private static void addEntityToCache(WebTarget node, String entityId) {
         int status = node.path("custom-region").path("cache").path(entityId).request().get().getStatus();
-        Assert.assertEquals(204, status);
+        assertEquals(204, status);
     }
 
     private static String getRegionNameForEntity(WebTarget node, String entityId) {
@@ -233,49 +234,49 @@ public class ClusteredJPA2LCCustomRegionTestCase extends AbstractClusteringTestC
                 .queryParam("id", entityId)
                 .request().get();
         int status = response.getStatus();
-        Assert.assertEquals(200, status);
+        assertEquals(200, status);
         return response.readEntity(String.class);
     }
 
     private static Boolean getCustomRegionCacheIsReplicated(WebTarget node, String regionName) {
         Response response = node.path("custom-region").path("is-replicated").path(regionName).request().get();
         int status = response.getStatus();
-        Assert.assertEquals(200, status);
+        assertEquals(200, status);
         return (response.readEntity(Boolean.class));
     }
 
     private static Boolean getCustomRegionCacheIsInvalidation(WebTarget node, String regionName) {
         Response response = node.path("custom-region").path("is-invalidation").path(regionName).request().get();
         int status = response.getStatus();
-        Assert.assertEquals(200, status);
+        assertEquals(200, status);
         return (response.readEntity(Boolean.class));
     }
 
     private static Long getEvictionMaxEntries(WebTarget node, String cacheName) {
         Response response = node.path("custom-region").path("eviction-max-entries").path(cacheName).request().get();
         int status = response.getStatus();
-        Assert.assertEquals(200, status);
+        assertEquals(200, status);
         return (response.readEntity(Long.class));
     }
 
     private static Long getExpirationLifespan(WebTarget node, String cacheName) {
         Response response = node.path("custom-region").path("expiration-lifespan").path(cacheName).request().get();
         int status = response.getStatus();
-        Assert.assertEquals(200, status);
+        assertEquals(200, status);
         return (response.readEntity(Long.class));
     }
 
     private static Long getExpirationMaxIdle(WebTarget node, String cacheName) {
         Response response = node.path("custom-region").path("expiration-max-idle").path(cacheName).request().get();
         int status = response.getStatus();
-        Assert.assertEquals(200, status);
+        assertEquals(200, status);
         return (response.readEntity(Long.class));
     }
 
     private static Long getExpirationWakeUpInterval(WebTarget node, String cacheName) {
         Response response = node.path("custom-region").path("expiration-wake-up-interval").path(cacheName).request().get();
         int status = response.getStatus();
-        Assert.assertEquals(200, status);
+        assertEquals(200, status);
         return (response.readEntity(Long.class));
     }
 

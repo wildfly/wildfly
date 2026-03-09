@@ -6,6 +6,9 @@
 package org.jboss.as.test.clustering.cluster.provider.bean.legacy;
 
 import java.util.Set;
+import javax.naming.Context;
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
 
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
@@ -13,9 +16,6 @@ import jakarta.annotation.Resource;
 import jakarta.ejb.Local;
 import jakarta.ejb.Singleton;
 import jakarta.ejb.Startup;
-import javax.naming.Context;
-import javax.naming.InitialContext;
-import javax.naming.NamingException;
 
 import org.jboss.logging.Logger;
 import org.wildfly.clustering.group.Node;

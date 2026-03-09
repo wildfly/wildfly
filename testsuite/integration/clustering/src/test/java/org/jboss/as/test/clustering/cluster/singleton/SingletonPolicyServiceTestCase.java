@@ -5,6 +5,7 @@
 package org.jboss.as.test.clustering.cluster.singleton;
 
 import static org.jboss.as.test.clustering.ClusterTestUtil.execute;
+import static org.junit.jupiter.api.Assertions.*;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -13,7 +14,7 @@ import java.util.stream.Collectors;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.container.test.api.TargetsContainer;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase;
@@ -23,11 +24,10 @@ import org.jboss.msc.service.ServiceActivator;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class SingletonPolicyServiceTestCase extends AbstractClusteringTestCase {
 
     private static final String MODULE_NAME = SingletonPolicyServiceTestCase.class.getSimpleName();
@@ -52,7 +52,7 @@ public class SingletonPolicyServiceTestCase extends AbstractClusteringTestCase {
     }
 
     @Test
-    public void testSingletonService(
+    void singletonService(
             @ArquillianResource @OperateOnDeployment(DEPLOYMENT_1) ManagementClient client1,
             @ArquillianResource @OperateOnDeployment(DEPLOYMENT_2) ManagementClient client2)
             throws Exception {
@@ -64,47 +64,47 @@ public class SingletonPolicyServiceTestCase extends AbstractClusteringTestCase {
         String isPrimaryRequest = String.format("/subsystem=singleton/singleton-policy=default/service=%s:read-attribute(name=is-primary)", NodeServicePolicyActivator.SERVICE_NAME.getCanonicalName());
         String getProvidersRequest = String.format("/subsystem=singleton/singleton-policy=default/service=%s:read-attribute(name=providers)", NodeServicePolicyActivator.SERVICE_NAME.getCanonicalName());
 
-        Assert.assertEquals(NODE_1, execute(client1, primaryProviderRequest).asStringOrNull());
-        Assert.assertTrue(execute(client1, isPrimaryRequest).asBoolean(false));
-        Assert.assertEquals(Collections.singletonList(NODE_1), execute(client1, getProvidersRequest).asList().stream().map(ModelNode::asString).collect(Collectors.toList()));
+        assertEquals(NODE_1, execute(client1, primaryProviderRequest).asStringOrNull());
+        assertTrue(execute(client1, isPrimaryRequest).asBoolean(false));
+        assertEquals(Collections.singletonList(NODE_1), execute(client1, getProvidersRequest).asList().stream().map(ModelNode::asString).collect(Collectors.toList()));
 
         start(NODE_2);
 
-        Assert.assertEquals(NODE_1, execute(client1, primaryProviderRequest).asStringOrNull());
-        Assert.assertTrue(execute(client1, isPrimaryRequest).asBoolean(false));
-        Assert.assertEquals(Arrays.asList(NODE_1, NODE_2), execute(client1, getProvidersRequest).asList().stream().map(ModelNode::asString).sorted().collect(Collectors.toList()));
-        Assert.assertEquals(NODE_1, execute(client2, primaryProviderRequest).asStringOrNull());
-        Assert.assertFalse(execute(client2, isPrimaryRequest).asBoolean(true));
-        Assert.assertEquals(Arrays.asList(NODE_1, NODE_2), execute(client2, getProvidersRequest).asList().stream().map(ModelNode::asString).sorted().collect(Collectors.toList()));
+        assertEquals(NODE_1, execute(client1, primaryProviderRequest).asStringOrNull());
+        assertTrue(execute(client1, isPrimaryRequest).asBoolean(false));
+        assertEquals(Arrays.asList(NODE_1, NODE_2), execute(client1, getProvidersRequest).asList().stream().map(ModelNode::asString).sorted().collect(Collectors.toList()));
+        assertEquals(NODE_1, execute(client2, primaryProviderRequest).asStringOrNull());
+        assertFalse(execute(client2, isPrimaryRequest).asBoolean(true));
+        assertEquals(Arrays.asList(NODE_1, NODE_2), execute(client2, getProvidersRequest).asList().stream().map(ModelNode::asString).sorted().collect(Collectors.toList()));
 
         stop(NODE_2);
 
-        Assert.assertEquals(NODE_1, execute(client1, primaryProviderRequest).asStringOrNull());
-        Assert.assertTrue(execute(client1, isPrimaryRequest).asBoolean(false));
-        Assert.assertEquals(Collections.singletonList(NODE_1), execute(client1, getProvidersRequest).asList().stream().map(ModelNode::asString).collect(Collectors.toList()));
+        assertEquals(NODE_1, execute(client1, primaryProviderRequest).asStringOrNull());
+        assertTrue(execute(client1, isPrimaryRequest).asBoolean(false));
+        assertEquals(Collections.singletonList(NODE_1), execute(client1, getProvidersRequest).asList().stream().map(ModelNode::asString).collect(Collectors.toList()));
 
         start(NODE_2);
 
-        Assert.assertEquals(NODE_1, execute(client1, primaryProviderRequest).asStringOrNull());
-        Assert.assertTrue(execute(client1, isPrimaryRequest).asBoolean(false));
-        Assert.assertEquals(Arrays.asList(NODE_1, NODE_2), execute(client1, getProvidersRequest).asList().stream().map(ModelNode::asString).sorted().collect(Collectors.toList()));
-        Assert.assertEquals(NODE_1, execute(client2, primaryProviderRequest).asStringOrNull());
-        Assert.assertFalse(execute(client2, isPrimaryRequest).asBoolean(true));
-        Assert.assertEquals(Arrays.asList(NODE_1, NODE_2), execute(client2, getProvidersRequest).asList().stream().map(ModelNode::asString).sorted().collect(Collectors.toList()));
+        assertEquals(NODE_1, execute(client1, primaryProviderRequest).asStringOrNull());
+        assertTrue(execute(client1, isPrimaryRequest).asBoolean(false));
+        assertEquals(Arrays.asList(NODE_1, NODE_2), execute(client1, getProvidersRequest).asList().stream().map(ModelNode::asString).sorted().collect(Collectors.toList()));
+        assertEquals(NODE_1, execute(client2, primaryProviderRequest).asStringOrNull());
+        assertFalse(execute(client2, isPrimaryRequest).asBoolean(true));
+        assertEquals(Arrays.asList(NODE_1, NODE_2), execute(client2, getProvidersRequest).asList().stream().map(ModelNode::asString).sorted().collect(Collectors.toList()));
 
         stop(NODE_1);
 
-        Assert.assertEquals(NODE_2, execute(client2, primaryProviderRequest).asStringOrNull());
-        Assert.assertTrue(execute(client2, isPrimaryRequest).asBoolean(false));
-        Assert.assertEquals(Collections.singletonList(NODE_2), execute(client2, getProvidersRequest).asList().stream().map(ModelNode::asString).collect(Collectors.toList()));
+        assertEquals(NODE_2, execute(client2, primaryProviderRequest).asStringOrNull());
+        assertTrue(execute(client2, isPrimaryRequest).asBoolean(false));
+        assertEquals(Collections.singletonList(NODE_2), execute(client2, getProvidersRequest).asList().stream().map(ModelNode::asString).collect(Collectors.toList()));
 
         start(NODE_1);
 
-        Assert.assertEquals(NODE_2, execute(client1, primaryProviderRequest).asStringOrNull());
-        Assert.assertFalse(execute(client1, isPrimaryRequest).asBoolean(true));
-        Assert.assertEquals(Arrays.asList(NODE_1, NODE_2), execute(client1, getProvidersRequest).asList().stream().map(ModelNode::asString).sorted().collect(Collectors.toList()));
-        Assert.assertEquals(NODE_2, execute(client2, primaryProviderRequest).asStringOrNull());
-        Assert.assertTrue(execute(client2, isPrimaryRequest).asBoolean(false));
-        Assert.assertEquals(Arrays.asList(NODE_1, NODE_2), execute(client2, getProvidersRequest).asList().stream().map(ModelNode::asString).sorted().collect(Collectors.toList()));
+        assertEquals(NODE_2, execute(client1, primaryProviderRequest).asStringOrNull());
+        assertFalse(execute(client1, isPrimaryRequest).asBoolean(true));
+        assertEquals(Arrays.asList(NODE_1, NODE_2), execute(client1, getProvidersRequest).asList().stream().map(ModelNode::asString).sorted().collect(Collectors.toList()));
+        assertEquals(NODE_2, execute(client2, primaryProviderRequest).asStringOrNull());
+        assertTrue(execute(client2, isPrimaryRequest).asBoolean(false));
+        assertEquals(Arrays.asList(NODE_1, NODE_2), execute(client2, getProvidersRequest).asList().stream().map(ModelNode::asString).sorted().collect(Collectors.toList()));
     }
 }

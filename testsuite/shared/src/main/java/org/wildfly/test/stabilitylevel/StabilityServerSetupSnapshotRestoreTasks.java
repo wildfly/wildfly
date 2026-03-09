@@ -71,20 +71,18 @@ public abstract class StabilityServerSetupSnapshotRestoreTasks implements Server
         Stability reloadOpStability = getReloadEnhancedOperationStabilityLevel(managementClient);
         Assume.assumeTrue(desiredStability.enables(reloadOpStability));
 
-
         originalStability = readCurrentStability(managementClient.getControllerClient());
-
-        // We only want to reload to lower stability levels (e.g. when running the ts.preview tests, that contains
-        // some configuration at 'preview' level, so the reload to 'community' fails
-        Assume.assumeTrue(desiredStability.enables(originalStability));
 
         // Take a snapshot, indicating that when reloading we want to go back to the original stability
         snapshot = takeSnapshot(managementClient, originalStability);
 
-        // All good, let's do it!
-        reloadToDesiredStability(managementClient.getControllerClient(), desiredStability);
+        // We only want to reload to lower stability levels if necessary (e.g. when running the ts.preview tests,
+        // container that contains any configuration at 'preview' level the reload to 'community' would fail)
+        if (!originalStability.enables(desiredStability)) {
+            reloadToDesiredStability(managementClient.getControllerClient(), desiredStability);
+        }
 
-        // Do any additional setup from the sub-classes
+        // Do any additional setup from the subclasses
         doSetup(managementClient);
     }
 

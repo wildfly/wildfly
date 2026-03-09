@@ -5,19 +5,29 @@
 
 package org.jboss.as.test.clustering.cluster.ejb.remote;
 
+import static org.junit.jupiter.api.Assertions.*;
+
+import java.net.URI;
+import java.net.URL;
+import java.util.Date;
+import java.util.Properties;
+import java.util.PropertyPermission;
+import javax.naming.Context;
+import javax.naming.InitialContext;
+
 import org.apache.commons.lang3.RandomUtils;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.container.test.api.TargetsContainer;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase;
 import org.jboss.as.test.clustering.cluster.ejb.remote.bean.Heartbeat;
 import org.jboss.as.test.clustering.cluster.ejb.remote.bean.HeartbeatBean;
 import org.jboss.as.test.clustering.cluster.ejb.remote.bean.Result;
 import org.jboss.as.test.clustering.ejb.EJBDirectory;
-import org.jboss.as.test.shared.TimeoutUtil;
 import org.jboss.as.test.shared.PermissionUtils;
+import org.jboss.as.test.shared.TimeoutUtil;
 import org.jboss.ejb.client.ClusterNodeSelector;
 import org.jboss.ejb.client.EJBClientConnection;
 import org.jboss.ejb.client.EJBClientContext;
@@ -25,18 +35,9 @@ import org.jboss.ejb.protocol.remote.RemoteTransportProvider;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.wildfly.naming.client.WildFlyInitialContextFactory;
-
-import javax.naming.Context;
-import javax.naming.InitialContext;
-import java.net.URI;
-import java.net.URL;
-import java.util.Date;
-import java.util.Properties;
-import java.util.PropertyPermission;
 
 /**
  * <p>Validates that the provided implementation of {@link ClusterNodeSelector} is being used by the Jakarta Enterprise Beans client to
@@ -52,7 +53,7 @@ import java.util.PropertyPermission;
  *
  * @author <a href="mailto:tborgato@redhat.com">Tommaso Borgato</a>
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class ClientClusterNodeSelectorTestCase extends AbstractClusteringTestCase {
 
     private static final String MODULE_NAME = ClientClusterNodeSelectorTestCase.class.getSimpleName();
@@ -106,7 +107,7 @@ public class ClientClusterNodeSelectorTestCase extends AbstractClusteringTestCas
      * comes from that very node;
      */
     @Test
-    public void test(
+    void test(
             @ArquillianResource() @OperateOnDeployment(DEPLOYMENT_1) URL baseURL1
     ) throws Exception {
         EJBClientContext BKP = null;
@@ -158,12 +159,11 @@ public class ClientClusterNodeSelectorTestCase extends AbstractClusteringTestCas
     private void callBeanOnNode(Heartbeat bean, String node) {
         CustomClusterNodeSelector.PICK_NODE = node;
         Result<Date> res = bean.pulse();
-        Assert.assertEquals(
-                String.format("%s not being used by the client to select cluster node! Request was routed to node %s instead of node %s! (check affinity value in logs)"
+        assertEquals(
+                CustomClusterNodeSelector.PICK_NODE, res.getNode(), String.format("%s not being used by the client to select cluster node! Request was routed to node %s instead of node %s! (check affinity value in logs)"
                         , CustomClusterNodeSelector.class.getName()
                         , res.getNode()
-                        , CustomClusterNodeSelector.PICK_NODE)
-                , CustomClusterNodeSelector.PICK_NODE, res.getNode());
+                        , CustomClusterNodeSelector.PICK_NODE));
     }
 
     /**

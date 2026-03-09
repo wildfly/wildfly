@@ -7,21 +7,20 @@ package org.jboss.as.test.clustering.cluster.ejb2.stateless;
 
 import static org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase.*;
 import static org.jboss.as.test.shared.PermissionUtils.createPermissionsXmlAsset;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.PropertyPermission;
-
 import javax.naming.NamingException;
 
 import org.jboss.arquillian.container.test.api.ContainerController;
 import org.jboss.arquillian.container.test.api.Deployer;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.TargetsContainer;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.clustering.NodeNameGetter;
 import org.jboss.as.test.clustering.cluster.ejb2.stateless.bean.StatelessRemote;
@@ -32,12 +31,11 @@ import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * Enterprise Beans 2 stateless bean - basic cluster tests - failover and load balancing.
@@ -45,7 +43,7 @@ import org.junit.runner.RunWith;
  * @author Paul Ferraro
  * @author Ondrej Chaloupka
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class RemoteStatelessFailoverTestCase {
     private static final Logger log = Logger.getLogger(RemoteStatelessFailoverTestCase.class);
 
@@ -59,8 +57,8 @@ public class RemoteStatelessFailoverTestCase {
     private EJBDirectory directoryAnnotation;
     private EJBDirectory directoryDD;
 
-    @BeforeClass
-    public static void init() throws NamingException {
+    @BeforeAll
+    static void init() throws NamingException {
         deployed.put(DEPLOYMENT_1, false);
         deployed.put(DEPLOYMENT_2, false);
         deployed.put(DEPLOYMENT_HELPER_1, false);
@@ -79,14 +77,14 @@ public class RemoteStatelessFailoverTestCase {
     }
 
 
-    @Before
-    public void beforeTest() throws Exception {
+    @BeforeEach
+    void beforeTest() throws Exception {
         directoryAnnotation = new RemoteEJBDirectory(MODULE_NAME);
         directoryDD = new RemoteEJBDirectory(MODULE_NAME_DD);
     }
 
-    @After
-    public void afterTest() throws Exception {
+    @AfterEach
+    void afterTest() throws Exception {
         directoryAnnotation.close();
         directoryDD.close();
     }
@@ -144,22 +142,22 @@ public class RemoteStatelessFailoverTestCase {
     }
 
     @Test
-    public void testFailoverOnStopAnnotatedBean() throws Exception {
+    void failoverOnStopAnnotatedBean() throws Exception {
         doFailover(true, directoryAnnotation, DEPLOYMENT_1, DEPLOYMENT_2);
     }
 
     @Test
-    public void testFailoverOnStopBeanSpecifiedByDescriptor() throws Exception {
+    void failoverOnStopBeanSpecifiedByDescriptor() throws Exception {
         doFailover(true, directoryDD, DEPLOYMENT_HELPER_1, DEPLOYMENT_HELPER_2);
     }
 
     @Test
-    public void testFailoverOnUndeployAnnotatedBean() throws Exception {
+    void failoverOnUndeployAnnotatedBean() throws Exception {
         doFailover(false, directoryAnnotation, DEPLOYMENT_1, DEPLOYMENT_2);
     }
 
     @Test
-    public void testFailoverOnUndeploySpecifiedByDescriptor() throws Exception {
+    void failoverOnUndeploySpecifiedByDescriptor() throws Exception {
         doFailover(false, directoryDD, DEPLOYMENT_HELPER_1, DEPLOYMENT_HELPER_2);
     }
 
@@ -176,7 +174,7 @@ public class RemoteStatelessFailoverTestCase {
             StatelessRemoteHome home = directory.lookupHome(StatelessBean.class, StatelessRemoteHome.class);
             StatelessRemote bean = home.create();
 
-            assertEquals("The only " + NODE_1 + " is active. Bean had to be invoked on it but it wasn't.", NODE_1, bean.getNodeName());
+            assertEquals(NODE_1, bean.getNodeName(), "The only " + NODE_1 + " is active. Bean had to be invoked on it but it wasn't.");
 
             this.start(NODE_2);
             this.deploy(NODE_2, deployment2);
@@ -187,7 +185,7 @@ public class RemoteStatelessFailoverTestCase {
                 this.undeploy(NODE_1, deployment1);
             }
 
-            assertEquals("Only " + NODE_2 + " is active. The bean had to be invoked on it but it wasn't.", NODE_2, bean.getNodeName());
+            assertEquals(NODE_2, bean.getNodeName(), "Only " + NODE_2 + " is active. The bean had to be invoked on it but it wasn't.");
         } finally {
             // need to have the container started to undeploy deployment afterward
             this.start(NODE_1);
@@ -198,12 +196,12 @@ public class RemoteStatelessFailoverTestCase {
     }
 
     @Test
-    public void testLoadbalanceAnnotatedBean() throws Exception {
+    void loadbalanceAnnotatedBean() throws Exception {
         loadbalance(directoryAnnotation, DEPLOYMENT_1, DEPLOYMENT_2);
     }
 
     @Test
-    public void testLoadbalanceSpecifiedByDescriptor() throws Exception {
+    void loadbalanceSpecifiedByDescriptor() throws Exception {
         loadbalance(directoryDD, DEPLOYMENT_HELPER_1, DEPLOYMENT_HELPER_2);
     }
 
@@ -268,15 +266,15 @@ public class RemoteStatelessFailoverTestCase {
             count = count == null ? 1 : ++count;
             callCount.put(nodeName, count);
         }
-        Assert.assertEquals("It was running " + expectedServers + " servers but not all of them were used for loadbalancing.",
-                expectedServers, callCount.size());
+        assertEquals(expectedServers,
+                callCount.size(), "It was running " + expectedServers + " servers but not all of them were used for loadbalancing.");
 
         for (Integer count : callCount.values()) {
             maxNumOfProcessedCalls = count > maxNumOfProcessedCalls ? count : maxNumOfProcessedCalls;
             minNumOfProcessedCalls = count < minNumOfProcessedCalls ? count : minNumOfProcessedCalls;
         }
-        Assert.assertTrue("Minimal number of calls done to all servers have to be " + minPercentage * numCalls + " but was " + minNumOfProcessedCalls,
-                minPercentage * numCalls <= minNumOfProcessedCalls);
+        assertTrue(minPercentage * numCalls <= minNumOfProcessedCalls,
+                "Minimal number of calls done to all servers have to be " + minPercentage * numCalls + " but was " + minNumOfProcessedCalls);
         log.trace("All " + expectedServers + " servers processed at least " + minNumOfProcessedCalls + " of calls");
     }
 

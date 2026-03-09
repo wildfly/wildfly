@@ -5,7 +5,7 @@
 
 package org.jboss.as.test.clustering.cluster.ejb.stateful;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
 
 import java.io.IOException;
 import java.net.URI;
@@ -30,7 +30,7 @@ import org.jboss.as.test.clustering.cluster.ejb.stateful.bean.SimpleIncrementorB
 import org.jboss.as.test.clustering.cluster.ejb.stateful.servlet.SessionScopedStatefulServlet;
 import org.jboss.as.test.clustering.cluster.ejb.stateful.servlet.StatefulServlet;
 import org.jboss.as.test.http.util.TestHttpClientUtils;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /**
  * Validates failover of a SFSB in different contexts

@@ -15,8 +15,7 @@ import org.jboss.arquillian.container.test.api.Deployer;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.container.test.api.TargetsContainer;
-import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.arquillian.junit.InSequence;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.test.clustering.NodeInfoServlet;
@@ -30,17 +29,21 @@ import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Ignore;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.MethodOrderer;
+import org.junit.jupiter.api.Order;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestMethodOrder;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * Clustering ejb passivation of EJB2 bean defined by descriptor.
  *
  * @author Ondrej Chaloupka
  */
-@Ignore("Uses legacy client hack")
-@RunWith(Arquillian.class)
+@Disabled("Uses legacy client hack")
+@ExtendWith(ArquillianExtension.class)
+@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class ClusterPassivationDDTestCase extends ClusterPassivationTestBase {
     private static Logger log = Logger.getLogger(ClusterPassivationDDTestCase.class);
 
@@ -84,8 +87,8 @@ public class ClusterPassivationDDTestCase extends ClusterPassivationTestBase {
     }
 
     @Test
-    @InSequence(-2)
-    public void startServersForTests() {
+    @Order(-2)
+    void startServersForTests() {
         startServers(null, null);
     }
 
@@ -93,11 +96,11 @@ public class ClusterPassivationDDTestCase extends ClusterPassivationTestBase {
      * Association of node names to deployment,container names and client context
      */
     @Test
-    @InSequence(-1)
-    public void defineMaps(@ArquillianResource @OperateOnDeployment(DEPLOYMENT_1) URL baseURL1,
-                           @ArquillianResource @OperateOnDeployment(DEPLOYMENT_2) URL baseURL2,
-                           @ArquillianResource @OperateOnDeployment(DEPLOYMENT_1) ManagementClient client1,
-                           @ArquillianResource @OperateOnDeployment(DEPLOYMENT_2) ManagementClient client2) throws Exception {
+    @Order(-1)
+    void defineMaps(@ArquillianResource @OperateOnDeployment(DEPLOYMENT_1) URL baseURL1,
+                    @ArquillianResource @OperateOnDeployment(DEPLOYMENT_2) URL baseURL2,
+                    @ArquillianResource @OperateOnDeployment(DEPLOYMENT_1) ManagementClient client1,
+                    @ArquillianResource @OperateOnDeployment(DEPLOYMENT_2) ManagementClient client2) throws Exception {
         String nodeName1 = HttpRequest.get(baseURL1.toString() + NodeInfoServlet.SERVLET_NAME, HTTP_REQUEST_WAIT_TIME_S, TimeUnit.SECONDS);
         node2deployment.put(nodeName1, DEPLOYMENT_1);
         node2container.put(nodeName1, NODE_1);
@@ -109,8 +112,8 @@ public class ClusterPassivationDDTestCase extends ClusterPassivationTestBase {
     }
 
     @Test
-    @InSequence(1)
-    public void testPassivationBeanDefinedByDescriptor(
+    @Order(1)
+    void passivationBeanDefinedByDescriptor(
             @ArquillianResource @OperateOnDeployment(DEPLOYMENT_1) ManagementClient client1,
             @ArquillianResource @OperateOnDeployment(DEPLOYMENT_2) ManagementClient client2) throws Exception {
         setPassivationAttributes(client1.getControllerClient());
@@ -128,8 +131,8 @@ public class ClusterPassivationDDTestCase extends ClusterPassivationTestBase {
 
 
     @Test
-    @InSequence(100)
-    public void stopAndClean(
+    @Order(100)
+    void stopAndClean(
             @OperateOnDeployment(DEPLOYMENT_1) @ArquillianResource ManagementClient client1,
             @OperateOnDeployment(DEPLOYMENT_2) @ArquillianResource ManagementClient client2) throws Exception {
         log.trace("Stop&Clean...");

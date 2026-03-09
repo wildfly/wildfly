@@ -7,9 +7,9 @@ package org.jboss.as.test.clustering.cluster.web.persistence;
 
 import org.infinispan.configuration.cache.CacheMode;
 import org.infinispan.transaction.TransactionMode;
-import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.as.test.clustering.ClusterTestUtil;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.as.test.clustering.ClusterDatabaseTestUtil;
+import org.jboss.as.test.clustering.ClusterTestUtil;
 import org.jboss.as.test.clustering.cluster.web.AbstractWebFailoverTestCase;
 import org.jboss.as.test.clustering.single.web.Mutable;
 import org.jboss.as.test.clustering.single.web.SimpleServlet;
@@ -17,9 +17,9 @@ import org.jboss.as.test.shared.ManagementServerSetupTask;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * Tests session failover where sessions are stored in a shared H2 database using invalidation cache mode.
@@ -27,7 +27,7 @@ import org.junit.runner.RunWith;
  * @author Tomas Remes
  * @author Radoslav Husar
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public abstract class AbstractDatabasePersistenceWebFailoverTestCase extends AbstractWebFailoverTestCase {
 
     public AbstractDatabasePersistenceWebFailoverTestCase(String deploymentName) {
@@ -43,12 +43,12 @@ public abstract class AbstractDatabasePersistenceWebFailoverTestCase extends Abs
         return war;
     }
 
-    @BeforeClass
+    @BeforeAll
     public static void beforeClass() throws Exception {
         ClusterDatabaseTestUtil.startH2();
     }
 
-    @AfterClass
+    @AfterAll
     public static void afterClass() throws Exception {
         ClusterDatabaseTestUtil.stopH2();
     }

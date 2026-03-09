@@ -5,37 +5,7 @@
 
 package org.jboss.as.test.clustering.cluster.ejb.remote.byteman;
 
-import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.container.test.api.TargetsContainer;
-import org.jboss.arquillian.extension.byteman.api.BMRules;
-import org.jboss.arquillian.extension.byteman.api.BMRule;
-import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase;
-import org.jboss.as.test.clustering.cluster.ejb.remote.bean.Incrementor;
-import org.jboss.as.test.clustering.cluster.ejb.remote.bean.IncrementorBean;
-import org.jboss.as.test.clustering.cluster.ejb.remote.bean.Result;
-import org.jboss.as.test.clustering.cluster.ejb.remote.bean.StatelessIncrementorBean;
-import org.jboss.as.test.clustering.ejb.EJBDirectory;
-import org.jboss.as.test.clustering.ejb.NamingEJBDirectory;
-import org.jboss.as.test.clustering.ejb.RemoteEJBDirectory;
-import org.jboss.as.test.shared.TimeoutUtil;
-import org.jboss.as.test.shared.PermissionUtils;
-import org.jboss.ejb.client.ClusterNodeSelector;
-import org.jboss.ejb.client.EJBClientConnection;
-import org.jboss.ejb.client.EJBClientContext;
-import org.jboss.ejb.protocol.remote.RemoteTransportProvider;
-import org.jboss.logging.Logger;
-import org.jboss.shrinkwrap.api.Archive;
-import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-
-import jakarta.ejb.EJBException;
-import jakarta.ejb.NoSuchEJBException;
-import javax.naming.NamingException;
+import static org.junit.jupiter.api.Assertions.*;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -47,8 +17,38 @@ import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import javax.naming.NamingException;
 
-import static org.junit.Assert.assertNull;
+import jakarta.ejb.EJBException;
+import jakarta.ejb.NoSuchEJBException;
+
+import org.jboss.arquillian.container.test.api.Deployment;
+import org.jboss.arquillian.container.test.api.RunAsClient;
+import org.jboss.arquillian.container.test.api.TargetsContainer;
+import org.jboss.arquillian.junit5.ArquillianExtension;
+import org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase;
+import org.jboss.as.test.clustering.cluster.ejb.remote.bean.Incrementor;
+import org.jboss.as.test.clustering.cluster.ejb.remote.bean.IncrementorBean;
+import org.jboss.as.test.clustering.cluster.ejb.remote.bean.Result;
+import org.jboss.as.test.clustering.cluster.ejb.remote.bean.StatelessIncrementorBean;
+import org.jboss.as.test.clustering.ejb.EJBDirectory;
+import org.jboss.as.test.clustering.ejb.NamingEJBDirectory;
+import org.jboss.as.test.clustering.ejb.RemoteEJBDirectory;
+import org.jboss.as.test.shared.PermissionUtils;
+import org.jboss.as.test.shared.TimeoutUtil;
+import org.jboss.byteman.contrib.bmunit.BMRule;
+import org.jboss.byteman.contrib.bmunit.BMRules;
+import org.jboss.byteman.contrib.bmunit.WithByteman;
+import org.jboss.ejb.client.ClusterNodeSelector;
+import org.jboss.ejb.client.EJBClientConnection;
+import org.jboss.ejb.client.EJBClientContext;
+import org.jboss.ejb.protocol.remote.RemoteTransportProvider;
+import org.jboss.logging.Logger;
+import org.jboss.shrinkwrap.api.Archive;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  *
@@ -66,7 +66,8 @@ import static org.junit.Assert.assertNull;
  *
  * @author Richard Achmatowicz
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
+@WithByteman
 public class LastNodeToLeaveRemoteEJBTestCase extends AbstractClusteringTestCase {
 
     public LastNodeToLeaveRemoteEJBTestCase() {
@@ -116,43 +117,43 @@ public class LastNodeToLeaveRemoteEJBTestCase extends AbstractClusteringTestCase
     }
 
     // Byteman rules to capture the DNR contents after each invocation
-    @BMRules({
-        @BMRule(name = "Set up results linkMap (SETUP)",
-            targetClass = "org.jboss.ejb.protocol.remote.RemotingEJBDiscoveryProvider",
-            targetMethod = "<init>",
-            helper = "org.jboss.as.test.clustering.cluster.ejb.remote.byteman.LastNodeToLeaveTestHelper",
-            targetLocation = "EXIT",
-            condition = "debug(\" setting up the map \")",
-            action = "createNodeListMap();"),
+    @BMRules(rules = {
+            @BMRule(name = "Set up results linkMap (SETUP)",
+                    targetClass = "org.jboss.ejb.protocol.remote.RemotingEJBDiscoveryProvider",
+                    targetMethod = "<init>",
+                    helper = "org.jboss.as.test.clustering.cluster.ejb.remote.byteman.LastNodeToLeaveTestHelper",
+                    targetLocation = "EXIT",
+                    condition = "debug(\" setting up the map \")",
+                    action = "createNodeListMap();"),
 
-        @BMRule(name = "Track calls to start (COLLECT)",
-            targetClass = "org.jboss.as.test.clustering.cluster.ejb.remote.byteman.LastNodeToLeaveRemoteEJBTestCase",
-            targetMethod = "getStartedNodes",
-            helper = "org.jboss.as.test.clustering.cluster.ejb.remote.byteman.LastNodeToLeaveTestHelper",
-            targetLocation = "EXIT",
-            binding = "startedNodes = $!;",
-            condition = "debug(\"checking for started nodes\")",
-            action = "updateStartedNodes(startedNodes);"),
+            @BMRule(name = "Track calls to start (COLLECT)",
+                    targetClass = "org.jboss.as.test.clustering.cluster.ejb.remote.byteman.LastNodeToLeaveRemoteEJBTestCase",
+                    targetMethod = "getStartedNodes",
+                    helper = "org.jboss.as.test.clustering.cluster.ejb.remote.byteman.LastNodeToLeaveTestHelper",
+                    targetLocation = "EXIT",
+                    binding = "startedNodes = $!;",
+                    condition = "debug(\"checking for started nodes\")",
+                    action = "updateStartedNodes(startedNodes);"),
 
-        @BMRule(name = "Track calls to ClusterNodeSelector (COLLECT)",
-            targetClass = "org.jboss.as.test.clustering.cluster.ejb.remote.byteman.LastNodeToLeaveRemoteEJBTestCase$CustomClusterNodeSelector",
-            targetMethod = "selectNode",
-            helper = "org.jboss.as.test.clustering.cluster.ejb.remote.byteman.LastNodeToLeaveTestHelper",
-            binding = "clusterName : String = $1;connectedNodes : String[] = $2; totalAvailableNodes : String[] = $3;",
-            condition = "debug(\"checking call to cluster node selector\")",
-            action = "addConnectedNodesEntryForThread(clusterName, connectedNodes, totalAvailableNodes);"),
+            @BMRule(name = "Track calls to ClusterNodeSelector (COLLECT)",
+                    targetClass = "org.jboss.as.test.clustering.cluster.ejb.remote.byteman.LastNodeToLeaveRemoteEJBTestCase$CustomClusterNodeSelector",
+                    targetMethod = "selectNode",
+                    helper = "org.jboss.as.test.clustering.cluster.ejb.remote.byteman.LastNodeToLeaveTestHelper",
+                    binding = "clusterName : String = $1;connectedNodes : String[] = $2; totalAvailableNodes : String[] = $3;",
+                    condition = "debug(\"checking call to cluster node selector\")",
+                    action = "addConnectedNodesEntryForThread(clusterName, connectedNodes, totalAvailableNodes);"),
 
-        @BMRule(name="Return test result to test case (RETURN)",
-            targetClass = "org.jboss.as.test.clustering.cluster.ejb.remote.byteman.LastNodeToLeaveRemoteEJBTestCase",
-            targetMethod = "getTestResult",
-            helper = "org.jboss.as.test.clustering.cluster.ejb.remote.byteman.LastNodeToLeaveTestHelper",
-            targetLocation = "ENTRY",
-            condition = "debug(\"returning the result\")",
-            action = "return getNodeListMap();")
+            @BMRule(name = "Return test result to test case (RETURN)",
+                    targetClass = "org.jboss.as.test.clustering.cluster.ejb.remote.byteman.LastNodeToLeaveRemoteEJBTestCase",
+                    targetMethod = "getTestResult",
+                    helper = "org.jboss.as.test.clustering.cluster.ejb.remote.byteman.LastNodeToLeaveTestHelper",
+                    targetLocation = "ENTRY",
+                    condition = "debug(\"returning the result\")",
+                    action = "return getNodeListMap();")
     })
     @Test
     @RunAsClient
-    public void testDNRContentsAfterLastNodeToLeave() throws Exception {
+    void dnrContentsAfterLastNodeToLeave() throws Exception {
 
         List<Future<?>> futures = new ArrayList<>(THREADS);
         LOGGER.debugf("%n *** Starting test case test()%n");
@@ -192,7 +193,7 @@ public class LastNodeToLeaveRemoteEJBTestCase extends AbstractClusteringTestCase
                         }
                     } catch (NamingException | EJBException e) {
                         LOGGER.errorf("%n +++ Exception looking up bean for thread %s%n", Thread.currentThread().getName());
-                        assertNull("Cause of EJBException has not been removed", e.getCause());
+                        assertNull(e.getCause(), "Cause of EJBException has not been removed");
                     }
                     LOGGER.debugf("%n *** Stopping test thread %s%n", Thread.currentThread().getName());
                 } finally {
@@ -254,9 +255,9 @@ public class LastNodeToLeaveRemoteEJBTestCase extends AbstractClusteringTestCase
                 Set<String> totalAvailableNodes = nodeEntry.get(2);
                 LOGGER.debugf("started nodes = %s, connected nodes = %s, total available nodes = %s", startedNodes, connectedNodes, totalAvailableNodes);
 
-                Assert.assertTrue("Assertion violation: thread " + thread + " has stale nodes in discovered node registry(DNR): " +
-                        " started = " + startedNodes + ", connected = " + connectedNodes + ", total available = " + totalAvailableNodes,
-                        startedNodes.containsAll(connectedNodes) && startedNodes.containsAll(totalAvailableNodes));
+                assertTrue(startedNodes.containsAll(connectedNodes) && startedNodes.containsAll(totalAvailableNodes),
+                        "Assertion violation: thread " + thread + " has stale nodes in discovered node registry(DNR): " +
+                        " started = " + startedNodes + ", connected = " + connectedNodes + ", total available = " + totalAvailableNodes);
             }
         }
         System.out.println("\n *** Stopping test case test() \n");

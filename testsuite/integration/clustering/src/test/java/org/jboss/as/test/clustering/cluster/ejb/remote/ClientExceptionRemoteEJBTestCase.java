@@ -5,7 +5,7 @@
 
 package org.jboss.as.test.clustering.cluster.ejb.remote;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 import java.util.PropertyPermission;
 
@@ -13,7 +13,7 @@ import jakarta.ejb.EJBException;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.TargetsContainer;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase;
 import org.jboss.as.test.clustering.cluster.ejb.remote.bean.Incrementor;
 import org.jboss.as.test.clustering.cluster.ejb.remote.bean.IncrementorBean;
@@ -26,15 +26,15 @@ import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * Test for WFLY-5788 and WFLY-9951.
  *
  * @author Radoslav Husar
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class ClientExceptionRemoteEJBTestCase extends AbstractClusteringTestCase {
     private static final String MODULE_NAME = ClientExceptionRemoteEJBTestCase.class.getSimpleName();
 
@@ -60,7 +60,7 @@ public class ClientExceptionRemoteEJBTestCase extends AbstractClusteringTestCase
     }
 
     @Test
-    public void test() throws Exception {
+    void test() throws Exception {
         try (EJBDirectory directory = new RemoteEJBDirectory(MODULE_NAME)) {
             Incrementor bean = directory.lookupStateful(InfinispanExceptionThrowingIncrementorBean.class, Incrementor.class);
 
@@ -68,7 +68,7 @@ public class ClientExceptionRemoteEJBTestCase extends AbstractClusteringTestCase
 
             fail("Expected EJBException but didn't catch it");
         } catch (EJBException e) {
-            assertNull("Cause of EJBException has not been removed", e.getCause());
+            assertNull(e.getCause(), "Cause of EJBException has not been removed");
         }
     }
 }

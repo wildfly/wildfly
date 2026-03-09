@@ -4,9 +4,7 @@
  */
 package org.jboss.as.test.clustering.cluster.jgroups.tls;
 
-import static org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase.NODE_1;
-import static org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase.NODE_1_2;
-import static org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase.NODE_1_2_3;
+import static org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase.*;
 
 import java.util.Set;
 

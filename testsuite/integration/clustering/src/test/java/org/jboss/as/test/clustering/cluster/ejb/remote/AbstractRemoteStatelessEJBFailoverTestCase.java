@@ -5,7 +5,7 @@
 
 package org.jboss.as.test.clustering.cluster.ejb.remote;
 
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -14,7 +14,7 @@ import java.util.PropertyPermission;
 import java.util.concurrent.Callable;
 import java.util.function.UnaryOperator;
 
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase;
 import org.jboss.as.test.clustering.cluster.ejb.remote.bean.Incrementor;
 import org.jboss.as.test.clustering.cluster.ejb.remote.bean.IncrementorBean;
@@ -22,21 +22,20 @@ import org.jboss.as.test.clustering.cluster.ejb.remote.bean.Result;
 import org.jboss.as.test.clustering.cluster.ejb.remote.bean.SecureStatelessIncrementorBean;
 import org.jboss.as.test.clustering.cluster.ejb.remote.bean.StatelessIncrementorBean;
 import org.jboss.as.test.clustering.ejb.EJBDirectory;
-import org.jboss.as.test.shared.TimeoutUtil;
 import org.jboss.as.test.shared.PermissionUtils;
+import org.jboss.as.test.shared.TimeoutUtil;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.wildfly.common.function.ExceptionSupplier;
 
 /**
  * Validates failover behavior of a remotely accessed @Stateless EJB.
  * @author Paul Ferraro
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public abstract class AbstractRemoteStatelessEJBFailoverTestCase extends AbstractClusteringTestCase {
 
     private static final int COUNT = 20;
@@ -79,7 +78,7 @@ public abstract class AbstractRemoteStatelessEJBFailoverTestCase extends Abstrac
 
                 for (String node : NODE_1_2) {
                     int frequency = Collections.frequency(results, node);
-                    assertTrue(frequency + " invocations were routed to " + node, frequency > 0);
+                    assertTrue(frequency > 0, frequency + " invocations were routed to " + node);
                 }
 
                 undeploy(DEPLOYMENT_1);
@@ -90,8 +89,8 @@ public abstract class AbstractRemoteStatelessEJBFailoverTestCase extends Abstrac
                     Thread.sleep(INVOCATION_WAIT);
                 }
 
-                Assert.assertEquals(0, Collections.frequency(results, NODE_1));
-                Assert.assertEquals(COUNT, Collections.frequency(results, NODE_2));
+                assertEquals(0, Collections.frequency(results, NODE_1));
+                assertEquals(COUNT, Collections.frequency(results, NODE_2));
 
                 deploy(DEPLOYMENT_1);
 
@@ -106,7 +105,7 @@ public abstract class AbstractRemoteStatelessEJBFailoverTestCase extends Abstrac
 
                 for (String node : NODE_1_2) {
                     int frequency = Collections.frequency(results, node);
-                    assertTrue(frequency + " invocations were routed to " + node, frequency > 0);
+                    assertTrue(frequency > 0, frequency + " invocations were routed to " + node);
                 }
 
                 stop(NODE_2);
@@ -117,8 +116,8 @@ public abstract class AbstractRemoteStatelessEJBFailoverTestCase extends Abstrac
                     Thread.sleep(INVOCATION_WAIT);
                 }
 
-                Assert.assertEquals(COUNT, Collections.frequency(results, NODE_1));
-                Assert.assertEquals(0, Collections.frequency(results, NODE_2));
+                assertEquals(COUNT, Collections.frequency(results, NODE_1));
+                assertEquals(0, Collections.frequency(results, NODE_2));
 
                 start(NODE_2);
 
@@ -133,7 +132,7 @@ public abstract class AbstractRemoteStatelessEJBFailoverTestCase extends Abstrac
 
                 for (String node : NODE_1_2) {
                     int frequency = Collections.frequency(results, node);
-                    assertTrue(frequency + " invocations were routed to " + node, frequency > 0);
+                    assertTrue(frequency > 0, frequency + " invocations were routed to " + node);
                 }
             }
             return null;

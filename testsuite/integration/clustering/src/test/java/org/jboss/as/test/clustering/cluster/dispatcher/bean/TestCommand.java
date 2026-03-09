@@ -5,13 +5,12 @@
 package org.jboss.as.test.clustering.cluster.dispatcher.bean;
 
 import java.io.Serializable;
-
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
-import org.wildfly.clustering.server.dispatcher.Command;
 import org.wildfly.clustering.server.GroupMember;
+import org.wildfly.clustering.server.dispatcher.Command;
 
 public class TestCommand implements Command<String, GroupMember, RuntimeException>, Serializable {
     private static final long serialVersionUID = -3405593925871250676L;

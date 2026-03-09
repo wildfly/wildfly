@@ -12,12 +12,12 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.TimeoutException;
 import java.util.stream.Collectors;
-
-import jakarta.ejb.Remote;
-import jakarta.ejb.Stateless;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
+
+import jakarta.ejb.Remote;
+import jakarta.ejb.Stateless;
 
 import org.infinispan.Cache;
 import org.infinispan.distribution.DistributionManager;

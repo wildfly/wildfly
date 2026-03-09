@@ -12,7 +12,7 @@ import org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase;
 import org.jboss.as.test.integration.web.sso.LogoutServlet;
 import org.jboss.as.test.integration.web.sso.SSOTestBase;
 import org.jboss.logging.Logger;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /**
  * @author <a href="mailto:dpospisi@redhat.com">Dominik Pospisil</a>
@@ -25,7 +25,7 @@ public abstract class AbstractSingleSignOnTestCase extends AbstractClusteringTes
      * Test single sign-on across two web apps using form based auth
      */
     @Test
-    public void testFormAuthSingleSignOn(
+    public void formAuthSingleSignOn(
             @ArquillianResource(LogoutServlet.class) @OperateOnDeployment(DEPLOYMENT_1) URL baseURL1,
             @ArquillianResource(LogoutServlet.class) @OperateOnDeployment(DEPLOYMENT_2) URL baseURL2) throws Exception {
         log.trace("+++ testFormAuthSingleSignOn");
@@ -36,7 +36,7 @@ public abstract class AbstractSingleSignOnTestCase extends AbstractClusteringTes
      * Test single sign-on across two web apps using form based auth
      */
     @Test
-    public void testNoAuthSingleSignOn(
+    public void noAuthSingleSignOn(
             @ArquillianResource(LogoutServlet.class) @OperateOnDeployment(DEPLOYMENT_1) URL baseURL1,
             @ArquillianResource(LogoutServlet.class) @OperateOnDeployment(DEPLOYMENT_2) URL baseURL2) throws Exception {
         log.trace("+++ testNoAuthSingleSignOn");
@@ -49,7 +49,7 @@ public abstract class AbstractSingleSignOnTestCase extends AbstractClusteringTes
      * Testing https://issues.jboss.org/browse/WFLY-5422
      */
     @Test
-    public void testSessionTimeoutDestroysSSO(
+    public void sessionTimeoutDestroysSSO(
             @ArquillianResource(LogoutServlet.class) @OperateOnDeployment(DEPLOYMENT_1) URL baseURL1,
             @ArquillianResource(LogoutServlet.class) @OperateOnDeployment(DEPLOYMENT_2) URL baseURL2) throws Exception {
         log.trace("+++ testSessionTimeoutDestroysSSO");

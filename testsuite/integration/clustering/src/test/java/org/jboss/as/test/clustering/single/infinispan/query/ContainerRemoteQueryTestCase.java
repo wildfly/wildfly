@@ -5,8 +5,7 @@
 
 package org.jboss.as.test.clustering.single.infinispan.query;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 import java.util.List;
 
@@ -17,7 +16,7 @@ import org.infinispan.client.hotrod.RemoteCacheContainer;
 import org.infinispan.commons.api.query.Query;
 import org.infinispan.protostream.SerializationContextInitializer;
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.test.clustering.single.infinispan.query.data.Book;
 import org.jboss.as.test.clustering.single.infinispan.query.data.BookSchema;
@@ -27,8 +26,8 @@ import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.jboss.shrinkwrap.descriptor.api.Descriptors;
 import org.jboss.shrinkwrap.descriptor.api.spec.se.manifest.ManifestDescriptor;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * Test for remote query using container-managed objects.
@@ -36,7 +35,7 @@ import org.junit.runner.RunWith;
  * @author Radoslav Husar
  * @since 27
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @ServerSetup(ServerSetupTask.class)
 public class ContainerRemoteQueryTestCase {
 
@@ -55,7 +54,7 @@ public class ContainerRemoteQueryTestCase {
     private RemoteCacheContainer container;
 
     @Test
-    public void testRemoteBookQuery() {
+    void remoteBookQuery() {
         RemoteCache<String, Book> cache = this.container.getCache("query");
         cache.start();
         try {

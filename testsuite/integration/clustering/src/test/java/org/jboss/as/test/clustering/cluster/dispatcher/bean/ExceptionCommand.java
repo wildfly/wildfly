@@ -5,11 +5,10 @@
 
 package org.jboss.as.test.clustering.cluster.dispatcher.bean;
 
-import org.wildfly.clustering.server.dispatcher.Command;
-
 import java.io.Serializable;
 
 import org.wildfly.clustering.server.GroupMember;
+import org.wildfly.clustering.server.dispatcher.Command;
 
 /**
  * @author Paul Ferraro
