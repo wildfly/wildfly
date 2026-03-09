@@ -5,7 +5,7 @@
   -->
 
 <distributable-web xmlns="urn:jboss:distributable-web:6.0">
-    <infinispan-session-management cache-container="web" granularity="ATTRIBUTE" idle-threshold="PT1S">
-        <local-affinity/>
-    </infinispan-session-management>
+    <hotrod-session-management remote-cache-container="foo" cache-configuration="bar" granularity="ATTRIBUTE">
+        <no-affinity/>
+    </hotrod-session-management>
 </distributable-web>
