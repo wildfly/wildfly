@@ -164,10 +164,16 @@ public abstract class AbstractClusteringTestCase {
     public void beforeTestMethod() throws Exception {
         this.containerRegistry.getContainers().forEach(container -> {
             if (container.getState() == Container.State.STARTED && !this.containers.contains(container.getName())) {
-                // Even though we should be able to just stop the container object this currently fails with:
-                // WFARQ-47 Calling "container.stop();" always ends exceptionally "Caught exception closing ManagementClient: java.lang.NullPointerException"
-                this.stop(container.getName());
-                log.debugf("Stopped container '%s' which was started but not requested for this test.", container.getName());
+                try {
+                    // Also keep use graceful shutdown here instead of plain "container.stop()"; e.g. for EJB client topology handling
+                    this.stop(container.getName());
+                } catch (Exception ex) {
+                    // TODO Workaround for https://issues.redhat.com/browse/WFLY-21519
+                    // The actual exception is LifecycleException (checked), sneakily rethrown by Arquillian's UncheckedThrow util
+                    // after WildFlyContainerLifecycleController sets the container state to STOPPED_FAILED.
+                    log.errorf(ex, "Failed to stop container %s! This container might be tainted for future tests!", container.getName());
+                }
+                log.infof("Stopped container %s which was started but not requested for this test.", container.getName());
             }
         });
 
