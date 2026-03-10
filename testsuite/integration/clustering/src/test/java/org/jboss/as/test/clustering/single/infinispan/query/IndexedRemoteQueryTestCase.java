@@ -100,7 +100,7 @@ public class IndexedRemoteQueryTestCase {
     private RemoteCacheManager createRemoteCacheManager() {
         List<GeneratedSchema> schemas = ServiceLoader.load(SerializationContextInitializer.class, this.getClass().getClassLoader()).stream().map(ServiceLoader.Provider::get).filter(GeneratedSchema.class::isInstance).map(GeneratedSchema.class::cast).collect(Collectors.toList());
         ConfigurationBuilder builder = new ConfigurationBuilder();
-        builder.addServer().host(INFINISPAN_SERVER_ADDRESS);
+        builder.addServer().host(INFINISPAN_SERVER_ADDRESS).port(INFINISPAN_SERVER_PORT);
         for (GeneratedSchema schema : schemas) {
             builder.addContextInitializer(schema);
         }

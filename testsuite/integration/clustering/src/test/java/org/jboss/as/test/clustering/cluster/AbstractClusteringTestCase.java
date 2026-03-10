@@ -76,7 +76,7 @@ public abstract class AbstractClusteringTestCase {
     public static final String INFINISPAN_SERVER_PROFILE = System.getProperty("infinispan.server.profile");
     public static final String INFINISPAN_SERVER_PROFILE_DEFAULT = String.format("infinispan-%s.xml", Version.getMajorMinor());
     public static final String INFINISPAN_SERVER_ADDRESS = "127.0.0.1";
-    public static final int INFINISPAN_SERVER_PORT = 11222;
+    public static final int INFINISPAN_SERVER_PORT = 11322;
     public static final String INFINISPAN_APPLICATION_USER = "testsuite-application-user";
     public static final String INFINISPAN_APPLICATION_PASSWORD = "testsuite-application-password";
 

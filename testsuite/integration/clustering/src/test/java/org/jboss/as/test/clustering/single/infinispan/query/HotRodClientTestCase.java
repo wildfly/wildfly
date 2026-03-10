@@ -61,7 +61,7 @@ public class HotRodClientTestCase {
     void initialize() {
 
         ConfigurationBuilder config = new ConfigurationBuilder();
-        config.addServer().host(INFINISPAN_SERVER_ADDRESS);
+        config.addServer().host(INFINISPAN_SERVER_ADDRESS).port(INFINISPAN_SERVER_PORT);
         for (GeneratedSchema schema : this.schemas) {
             config.addContextInitializer(schema);
         }

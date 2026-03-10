@@ -249,6 +249,7 @@ public class RemoteCacheContainerResourceDefinitionRegistrar extends Configurati
                 for (ServiceDependency<ClusterConfiguration> dependency : remoteClusters) {
                     dependency.accept(builder);
                 }
+                defaultRemoteCluster.accept(builder);
                 executorFactory.accept(builder);
                 server.accept(builder);
                 modules.accept(builder);
