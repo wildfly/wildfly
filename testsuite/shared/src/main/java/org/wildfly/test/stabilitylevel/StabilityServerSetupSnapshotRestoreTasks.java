@@ -35,7 +35,7 @@ import org.junit.Assume;
  * For tests that need to run under a specific server stability level,
  * the server setup tasks from the inner classes can be used to change the stability level of the server to the desired level.
  * Once the test is done, the original stability level is restored.
- *
+ * <p/>
  * In order to not pollute the configuration with XML from a different stability level following the run of the test,
  * it takes a snapshot of the server configuration in the {@code setup()} method, and then restores to that snapshot in
  * the {@code teardown()} method
@@ -209,6 +209,14 @@ public abstract class StabilityServerSetupSnapshotRestoreTasks implements Server
                     if (reloadToStability != null) {
                         parameters.setStability(reloadToStability);
                     }
+
+                    if (client.getMgmtAddress() != null) {
+                        parameters.setServerAddress(client.getMgmtAddress());
+                    }
+                    if (client.getMgmtPort() > 0) {
+                        parameters.setServerPort(client.getMgmtPort());
+                    }
+
                     ServerReload.executeReloadAndWaitForCompletion(client.getControllerClient(), parameters);
 
                     ModelNode node = new ModelNode();
