@@ -5,11 +5,25 @@
 
 package org.jboss.as.test.integration.domain;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.*;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD_INDEX;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADMIN_ONLY;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHILD_TYPE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROFILE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROTOCOL;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_CHILDREN_NAMES_OPERATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_OPERATION_DESCRIPTION_OPERATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_OPERATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RELOAD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQUEST_PROPERTIES;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 
 import java.io.IOException;
 import java.util.Iterator;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.client.helpers.domain.DomainClient;
@@ -111,12 +125,15 @@ public class OrderedChildResourcesTestCase extends BuildConfigurationTestBase {
 
         if (!adminOnly) {
             //Wait for the secondary to reconnect, look for the secondary in the list of hosts
-            long end = System.currentTimeMillis() + 20 * ADJUSTED_SECOND;
-            boolean reconnected = false;
+            int timeout = 60 * ADJUSTED_SECOND;
+            long end = System.currentTimeMillis() + timeout;
+            boolean reconnected;
             do {
-                Thread.sleep(ADJUSTED_SECOND);
+                TimeUnit.MILLISECONDS.sleep(ADJUSTED_SECOND);
                 reconnected = checkSecondaryReconnected(primaryUtil.getDomainClient());
             } while (!reconnected && System.currentTimeMillis() < end);
+
+            Assert.assertTrue(String.format("Secondary host did not reconnect after %d milliseconds", timeout), reconnected);
         }
     }
 
@@ -134,6 +151,7 @@ public class OrderedChildResourcesTestCase extends BuildConfigurationTestBase {
                 }
             }
         } catch (Exception e) {
+            // explicitly ignored
         }
         return false;
     }
