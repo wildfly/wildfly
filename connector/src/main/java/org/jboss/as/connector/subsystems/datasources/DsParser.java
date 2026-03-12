@@ -2806,6 +2806,8 @@ public class DsParser extends AbstractParser {
                                     parseCredential(reader, operation);
                                     break;
                                 case DATASOURCES_5_0:
+                                case DATASOURCES_6_0:
+                                case DATASOURCES_7_0:
                                     parseCredential_5_0(reader, operation);
                                     break;
                                 default:

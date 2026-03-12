@@ -59,6 +59,16 @@ public class DatasourcesSubsystemTestCase extends AbstractSubsystemBaseTest {
     }
 
     @Test
+    public void testFullConfig7_0() throws Exception {
+        standardSubsystemTest("datasources-full-7.0.xml", false);
+    }
+
+    @Test
+    public void testFullConfig6_0() throws Exception {
+        standardSubsystemTest("datasources-full-6.0.xml", false);
+    }
+
+    @Test
     public void testElytronConfig() throws Exception {
         standardSubsystemTest("datasources-elytron-enabled.xml");
     }
