@@ -58,7 +58,7 @@
 
     <mailingLists>
         <mailingList>
-            <name>WildFly</name>
+            <name>WildFly User Forum</name>
             <subscribe>https://groups.google.com/forum/#!forum/wildfly</subscribe>
             <unsubscribe>https://groups.google.com/forum/#!forum/wildfly</unsubscribe>
             <archive>https://groups.google.com/forum/#!forum/wildfly</archive>
