@@ -51,9 +51,6 @@ public class FineDatabasePersistenceWebFailoverTestCase extends AbstractDatabase
                 .setupScript(createScriptBuilder()
                         .add("/subsystem=distributable-web/infinispan-session-management=database:add(cache-container=web, cache=database-persistence, granularity=ATTRIBUTE)")
                         .build())
-                .tearDownScript(createScriptBuilder()
-                        .add("/subsystem=distributable-web/infinispan-session-management=database:remove")
-                        .build())
                 .build());
         }
     }

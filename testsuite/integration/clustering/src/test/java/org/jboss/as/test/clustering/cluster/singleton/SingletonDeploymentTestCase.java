@@ -198,9 +198,6 @@ public abstract class SingletonDeploymentTestCase extends AbstractClusteringTest
                     .setupScript(createScriptBuilder()
                         .add("/subsystem=singleton/singleton-policy=default/election-policy=simple:write-attribute(name=name-preferences,value=%s)", List.of(NODE_1, NODE_2))
                         .build())
-                    .tearDownScript(createScriptBuilder()
-                        .add("/subsystem=singleton/singleton-policy=default/election-policy=simple:undefine-attribute(name=name-preferences)")
-                        .build())
                     .build());
         }
     }

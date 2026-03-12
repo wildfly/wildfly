@@ -55,9 +55,6 @@ public abstract class AbstractHotRodPersistenceWebFailoverTestCase extends Abstr
                                 .add("/subsystem=infinispan/cache-container=web/invalidation-cache=hotrod-persistence/store=hotrod:add(remote-cache-container=web, cache-configuration=default, shared=true)")
                             .endBatch()
                             .build())
-                    .tearDownScript(createScriptBuilder()
-                            .add("/subsystem=infinispan/cache-container=web/invalidation-cache=hotrod-persistence:remove")
-                            .build())
                     .build());
         }
     }

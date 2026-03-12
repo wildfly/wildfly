@@ -163,11 +163,6 @@ public class CookieAffinityTestCase extends AbstractClusteringTestCase {
                             .add("/subsystem=undertow/servlet-container=default/setting=affinity-cookie:add(name=%s)", AFFINITY_COOKIE_NAME)
                             .endBatch()
                             .build())
-                    .tearDownScript(createScriptBuilder()
-                            .startBatch()
-                            .add("/subsystem=undertow/servlet-container=default/setting=affinity-cookie:remove()")
-                            .endBatch()
-                            .build())
                     .build());
         }
     }

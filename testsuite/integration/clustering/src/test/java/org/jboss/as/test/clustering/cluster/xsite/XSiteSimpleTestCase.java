@@ -173,7 +173,7 @@ public class XSiteSimpleTestCase extends AbstractClusteringTestCase {
             assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
             response.getEntity().getContent().close();
 
-            // Lets wait for the session to replicate
+            // Let's wait for the session to replicate
             Thread.sleep(GRACE_TIME_TO_REPLICATE);
 
             // do a get on LON-1 - this should fail
@@ -192,9 +192,6 @@ public class XSiteSimpleTestCase extends AbstractClusteringTestCase {
                                 .add("/subsystem=infinispan/cache-container=foo/transport=jgroups:add")
                                 .add("/subsystem=infinispan/cache-container=foo/distributed-cache=bar:add")
                             .endBatch()
-                            .build())
-                    .tearDownScript(createScriptBuilder()
-                            .add("/subsystem=infinispan/cache-container=foo:remove")
                             .build())
                     .build());
         }
@@ -216,15 +213,6 @@ public class XSiteSimpleTestCase extends AbstractClusteringTestCase {
                                 .add("/subsystem=jgroups/stack=tcp/protocol=TCPPING:write-attribute(name=socket-bindings, value=[node-1, node-2])")
                             .endBatch()
                             .build())
-                        .tearDownScript(createScriptBuilder()
-                            .startBatch()
-                                .add("/subsystem=jgroups/stack=tcp/protocol=TCPPING:write-attribute(name=socket-bindings, value=[node-1, node-2, node-3, node-4])")
-                                .add("/subsystem=jgroups/stack=tcp/relay=relay.RELAY2:remove")
-                                .add("/subsystem=jgroups/channel=bridge:remove")
-                                .add("/subsystem=infinispan/cache-container=foo/distributed-cache=bar/component=backups/backup=SFO:remove")
-                                .add("/subsystem=infinispan/cache-container=foo/distributed-cache=bar/component=backups/backup=NYC:remove")
-                            .endBatch()
-                            .build())
                         .build())
                     // NYC
                     .addContainer(NODE_3, createContainerConfigurationBuilder()
@@ -237,13 +225,6 @@ public class XSiteSimpleTestCase extends AbstractClusteringTestCase {
                                 .add("/subsystem=jgroups/stack=tcp/protocol=TCPPING:write-attribute(name=socket-bindings, value=[node-3])")
                             .endBatch()
                             .build())
-                        .tearDownScript(createScriptBuilder()
-                            .startBatch()
-                                .add("/subsystem=jgroups/stack=tcp/protocol=TCPPING:write-attribute(name=socket-bindings, value=[node-1, node-2, node-3, node-4])")
-                                .add("/subsystem=jgroups/stack=tcp/relay=relay.RELAY2:remove")
-                                .add("/subsystem=jgroups/channel=bridge:remove")
-                            .endBatch()
-                            .build())
                         .build())
                     // SFO
                     .addContainer(NODE_4, createContainerConfigurationBuilder()
@@ -254,13 +235,6 @@ public class XSiteSimpleTestCase extends AbstractClusteringTestCase {
                                 .add("/subsystem=jgroups/stack=tcp/relay=relay.RELAY2/remote-site=LON:add(channel=bridge)")
                                 .add("/subsystem=jgroups/stack=tcp/relay=relay.RELAY2/remote-site=NYC:add(channel=bridge)")
                                 .add("/subsystem=jgroups/stack=tcp/protocol=TCPPING:write-attribute(name=socket-bindings, value=[node-4])")
-                            .endBatch()
-                            .build())
-                        .tearDownScript(createScriptBuilder()
-                            .startBatch()
-                                .add("/subsystem=jgroups/stack=tcp/protocol=TCPPING:write-attribute(name=socket-bindings, value=[node-1, node-2, node-3, node-4])")
-                                .add("/subsystem=jgroups/stack=tcp/relay=relay.RELAY2:remove")
-                                .add("/subsystem=jgroups/channel=bridge:remove")
                             .endBatch()
                             .build())
                         .build())

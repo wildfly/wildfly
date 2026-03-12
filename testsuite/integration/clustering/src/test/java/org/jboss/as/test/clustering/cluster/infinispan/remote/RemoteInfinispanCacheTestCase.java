@@ -51,12 +51,6 @@ public class RemoteInfinispanCacheTestCase extends AbstractCacheTestCase {
                             .add("/subsystem=infinispan/remote-cache-container=remote/remote-cluster=infinispan-server-cluster:add(socket-bindings=[infinispan-server])")
                         .endBatch()
                         .build())
-                    .tearDownScript(createScriptBuilder()
-                        .startBatch()
-                            .add("/subsystem=infinispan/remote-cache-container=remote:remove")
-                            .add("/socket-binding-group=standard-sockets/remote-destination-outbound-socket-binding=infinispan-server:remove")
-                        .endBatch()
-                        .build())
                     .build());
         }
     }

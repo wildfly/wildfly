@@ -229,13 +229,6 @@ public class TwoConnectorsEJBFailoverTestCase extends AbstractClusteringTestCase
                             .add("/subsystem=ejb3/service=remote:list-add(name=connectors, value=remoting-connector)")
                             .endBatch()
                             .build())
-                    .tearDownScript(createScriptBuilder()
-                            .startBatch()
-                            .add("/subsystem=ejb3/service=remote:list-remove(name=connectors, value=remoting-connector)")
-                            .add("/subsystem=remoting/connector=remoting-connector:remove")
-                            .add("/socket-binding-group=standard-sockets/socket-binding=remoting:remove")
-                            .endBatch()
-                            .build())
                     .build());
         }
     }

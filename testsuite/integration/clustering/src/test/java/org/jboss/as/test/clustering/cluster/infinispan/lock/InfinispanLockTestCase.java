@@ -137,11 +137,6 @@ public class InfinispanLockTestCase extends AbstractClusteringTestCase {
                             .add("/subsystem=infinispan/cache-container=lock/replicated-cache=repl:add")
                             .endBatch()
                             .build())
-                    .tearDownScript(createScriptBuilder()
-                            .startBatch()
-                            .add("/subsystem=infinispan/cache-container=lock:remove")
-                            .endBatch()
-                            .build())
                     .build());
         }
     }

@@ -23,12 +23,6 @@ public class TCP_NIO2ServerSetupTask extends ManagementServerSetupTask {
                                 .add("/subsystem=jgroups/stack=tcp/transport=TCP_NIO2:add(socket-binding=jgroups-tcp)")
                                 .endBatch()
                                 .build())
-                        .tearDownScript(createScriptBuilder()
-                                .startBatch()
-                                .add("/subsystem=jgroups/stack=tcp/transport=TCP_NIO2:remove")
-                                .add("/subsystem=jgroups/stack=tcp/transport=TCP:add(socket-binding=jgroups-tcp)")
-                                .endBatch()
-                                .build())
                         .build())
                 .build());
     }

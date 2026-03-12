@@ -72,7 +72,7 @@ public class SimpleWebTestCase {
             try {
                 assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
                 assertEquals(1, Integer.parseInt(response.getFirstHeader("value").getValue()));
-                assertFalse(Boolean.valueOf(response.getFirstHeader("serialized").getValue()));
+                assertFalse(Boolean.parseBoolean(response.getFirstHeader("serialized").getValue()));
             } finally {
                 HttpClientUtils.closeQuietly(response);
             }
@@ -82,7 +82,7 @@ public class SimpleWebTestCase {
                 assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
                 assertEquals(2, Integer.parseInt(response.getFirstHeader("value").getValue()));
                 // This won't be true unless we have somewhere to which to replicate or session persistence is configured (current default)
-                assertFalse(Boolean.valueOf(response.getFirstHeader("serialized").getValue()));
+                assertFalse(Boolean.parseBoolean(response.getFirstHeader("serialized").getValue()));
             } finally {
                 HttpClientUtils.closeQuietly(response);
             }
@@ -103,14 +103,6 @@ public class SimpleWebTestCase {
                             .add("/subsystem=distributable-web/infinispan-session-management=default/affinity=primary-owner:add")
                             .endBatch()
                             .add("/subsystem=infinispan/cache-container=web/local-cache=passivation:write-attribute(name=statistics-enabled, value=true)")
-                            .build())
-                    .tearDownScript(createScriptBuilder()
-                            .add("/subsystem=infinispan/cache-container=web/local-cache=passivation:undefine-attribute(name=statistics-enabled)")
-                            .startBatch()
-                            .add("/subsystem=distributable-web/infinispan-session-management=default/affinity=local:add")
-                            .add("/subsystem=distributable-web/routing=infinispan:remove")
-                            .add("/subsystem=infinispan/cache-container=web/local-cache=routing:remove")
-                            .endBatch()
                             .build())
                     .build());
         }

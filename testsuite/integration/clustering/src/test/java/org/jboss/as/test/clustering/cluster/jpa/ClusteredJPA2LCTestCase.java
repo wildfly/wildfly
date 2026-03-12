@@ -135,10 +135,6 @@ public class ClusteredJPA2LCTestCase extends AbstractClusteringTestCase {
                             .add("/subsystem=datasources/data-source=h2:add(jndi-name=java:jboss/datasources/H2, enabled=true, use-java-context=true, connection-url=\"jdbc:h2:tcp://localhost:%s/MainPU;VARIABLE_BINARY=TRUE\", driver-name=h2)", DB_PORT)
                             .add("/subsystem=infinispan/cache-container=hibernate:write-attribute(name=marshaller, value=PROTOSTREAM)")
                             .build())
-                    .tearDownScript(createScriptBuilder()
-                            .add("/subsystem=infinispan/cache-container=hibernate:write-attribute(name=marshaller, value=JBOSS)")
-                            .add("/subsystem=datasources/data-source=h2:remove")
-                            .build())
                     .build()
                     );
         }
