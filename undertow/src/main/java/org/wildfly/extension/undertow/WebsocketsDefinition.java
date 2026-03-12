@@ -10,7 +10,6 @@ import static org.wildfly.extension.undertow.Capabilities.REF_IO_WORKER;
 
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 
 import org.jboss.as.controller.AttributeDefinition;
@@ -117,7 +116,7 @@ class WebsocketsDefinition extends PersistentResourceDefinition {
 
     private static class WebsocketsAdd extends RestartParentResourceAddHandler {
         protected WebsocketsAdd() {
-            super(ServletContainerDefinition.PATH_ELEMENT.getKey(), Collections.singleton(WEBSOCKET_CAPABILITY), ATTRIBUTES);
+            super(ServletContainerDefinition.PATH_ELEMENT.getKey());
         }
 
         @Override
