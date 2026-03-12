@@ -63,6 +63,12 @@
             <unsubscribe>https://groups.google.com/forum/#!forum/wildfly</unsubscribe>
             <archive>https://groups.google.com/forum/#!forum/wildfly</archive>
         </mailingList>
+        <mailingList>
+            <name>WildFly Development</name>
+            <subscribe>https://lists.jboss.org/admin/lists/wildfly-dev.lists.jboss.org/</subscribe>
+            <unsubscribe>https://lists.jboss.org/admin/lists/wildfly-dev.lists.jboss.org/</unsubscribe>
+            <archive>https://lists.jboss.org/archives/list/wildfly-dev@lists.jboss.org/</archive>
+        </mailingList>
     </mailingLists>
 
     <properties>
