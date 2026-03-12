@@ -85,6 +85,13 @@
                             <includePlugins>
                                 <includePlugin>org.wildfly.plugins:wildfly-maven-plugin</includePlugin>
                             </includePlugins>
+                            <excludeDependencies>
+                                <!--PJFCB-21940-->
+                                <dependency>
+                                    <groupId>io.opentelemetry.instrumentation</groupId>
+                                    <artifactId>opentelemetry-java-http-client</artifactId>
+                                </dependency>
+                            </excludeDependencies>
                         </configuration>
                     </execution>
                 </executions>
