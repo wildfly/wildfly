@@ -6,7 +6,12 @@
 package org.wildfly.extension.clustering.server.group.legacy;
 
 import org.infinispan.remoting.transport.Address;
+import org.jgroups.PhysicalAddress;
+import org.wildfly.clustering.jgroups.spi.PhysicalAddressCache;
 import org.wildfly.clustering.server.infinispan.CacheContainerGroupMember;
+
+import java.net.InetSocketAddress;
+import java.util.Optional;
 
 /**
  * @author Paul Ferraro
@@ -16,6 +21,17 @@ public interface LegacyCacheContainerGroupMember extends LegacyGroupMember<Addre
 
     @Override
     CacheContainerGroupMember unwrap();
+
+    @Override
+    default InetSocketAddress getSocketAddress() {
+        return Optional.ofNullable(this.unwrap().getId())
+                .map(Address::toExtendedUUID)
+                .map(PhysicalAddressCache.INSTANCE)
+                .map(PhysicalAddress::getSocketAddress)
+                .filter(InetSocketAddress.class::isInstance)
+                .map(InetSocketAddress.class::cast)
+                .orElse(null);
+    }
 
     static LegacyCacheContainerGroupMember wrap(CacheContainerGroupMember member) {
         return () -> member;

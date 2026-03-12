@@ -57,6 +57,7 @@ import org.wildfly.clustering.jgroups.spi.ChannelConfiguration;
 import org.wildfly.clustering.jgroups.spi.ForkChannelFactory;
 import org.wildfly.clustering.jgroups.spi.ForkChannelFactoryConfiguration;
 import org.wildfly.clustering.jgroups.spi.JGroupsServiceDescriptor;
+import org.wildfly.clustering.jgroups.spi.PhysicalAddressCache;
 import org.wildfly.common.function.Functions;
 import org.wildfly.service.Installer.StartWhen;
 import org.wildfly.subsystem.resource.ChildResourceDefinitionRegistrar;
@@ -258,27 +259,33 @@ public abstract class AbstractChannelResourceDefinitionRegistrar<C extends Chann
         ServiceDependency<JChannel> registryKey = ServiceDependency.on(JGroupsServiceDescriptor.CHANNEL, name);
         Consumer<JChannel> connect = new Consumer<>() {
             @Override
-            public void accept(JChannel disconnectedChannel) {
-                TP transport = disconnectedChannel.getProtocolStack().getTransport();
+            public void accept(JChannel channel) {
+                TP transport = channel.getProtocolStack().getTransport();
                 ChannelConfiguration configuration = channelConfiguration.get();
-                JGroupsLogger.ROOT_LOGGER.connecting(name, disconnectedChannel.getName(), configuration.getClusterName(), new InetSocketAddress(transport.getBindAddress(), transport.getBindPort()));
+                JGroupsLogger.ROOT_LOGGER.connecting(name, channel.getName(), configuration.getClusterName(), new InetSocketAddress(transport.getBindAddress(), transport.getBindPort()));
                 try {
-                    registry.add(registryKey).accept(disconnectedChannel.connect(configuration.getClusterName()));
+                    registry.add(registryKey).accept(channel.connect(configuration.getClusterName()));
                 } catch (Exception e) {
-                    disconnectedChannel.close();
+                    channel.close();
                     throw new IllegalStateException(e);
                 }
-                JGroupsLogger.ROOT_LOGGER.connected(name, disconnectedChannel.getName(), configuration.getClusterName(), disconnectedChannel.getView());
+                JGroupsLogger.ROOT_LOGGER.connected(name, channel.getName(), configuration.getClusterName(), channel.getView());
+                if (!(channel instanceof ForkChannel)) {
+                    PhysicalAddressCache.INSTANCE.channelConnected(channel);
+                }
             }
         };
         Consumer<JChannel> disconnect = new Consumer<>() {
             @Override
-            public void accept(JChannel connectedChannel) {
+            public void accept(JChannel channel) {
                 registry.remove(registryKey);
                 ChannelConfiguration configuration = channelConfiguration.get();
-                JGroupsLogger.ROOT_LOGGER.disconnecting(name, connectedChannel.getName(), configuration.getClusterName(), connectedChannel.getView());
-                connectedChannel.disconnect();
-                JGroupsLogger.ROOT_LOGGER.disconnected(name, connectedChannel.getName(), configuration.getClusterName());
+                JGroupsLogger.ROOT_LOGGER.disconnecting(name, channel.getName(), configuration.getClusterName(), channel.getView());
+                channel.disconnect();
+                JGroupsLogger.ROOT_LOGGER.disconnected(name, channel.getName(), configuration.getClusterName());
+                if (!(channel instanceof ForkChannel)) {
+                    PhysicalAddressCache.INSTANCE.channelDisconnected(channel);
+                }
             }
         };
         installers.add(CapabilityServiceInstaller.builder(CHANNEL, factory).blocking()

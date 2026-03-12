@@ -6,7 +6,12 @@
 package org.wildfly.extension.clustering.server.group.legacy;
 
 import org.jgroups.Address;
+import org.jgroups.PhysicalAddress;
+import org.wildfly.clustering.jgroups.spi.PhysicalAddressCache;
 import org.wildfly.clustering.server.jgroups.ChannelGroupMember;
+
+import java.net.InetSocketAddress;
+import java.util.Optional;
 
 /**
  * @author Paul Ferraro
@@ -16,6 +21,15 @@ public interface LegacyChannelGroupMember extends LegacyGroupMember<Address> {
 
     @Override
     ChannelGroupMember unwrap();
+
+    @Override
+    default InetSocketAddress getSocketAddress() {
+        return Optional.ofNullable(PhysicalAddressCache.INSTANCE.apply(this.unwrap().getId()))
+                .map(PhysicalAddress::getSocketAddress)
+                .filter(InetSocketAddress.class::isInstance)
+                .map(InetSocketAddress.class::cast)
+                .orElse(null);
+    }
 
     static LegacyChannelGroupMember wrap(ChannelGroupMember member) {
         return () -> member;
