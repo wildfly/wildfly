@@ -57,6 +57,11 @@
                     <configuration>
                         <!-- bom builder plugin config common to all Server EE BOMs -->
                         <includeDependencies combine.children="append">
+                            <!-- include Micrometer API -->
+                            <dependency>
+                                <groupId>io.micrometer</groupId>
+                                <artifactId>micrometer-core</artifactId>
+                            </dependency>
                             <!-- Jakarta EE original and forked APIs -->
                             <!-- replaces com.sun.activation:jakarta.activation -->
                             <dependency>

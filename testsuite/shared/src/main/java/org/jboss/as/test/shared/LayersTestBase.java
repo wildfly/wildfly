@@ -129,7 +129,7 @@ public abstract class LayersTestBase {
             // which is not part of test-all-layers. It is used in a layer in 'wildfly' and 'wildfly-preview'
             "org.apache.qpid.proton",
             // 'preview' stability module so not yet included in "all-layers" installation
-            "jakarta.data.api"
+            "jakarta.data.api",
     };
 
     /**
@@ -238,6 +238,12 @@ public abstract class LayersTestBase {
      * only when testing provisioning directly from the wildfly-ee feature pack.
      */
     public static final String[] NOT_REFERENCED_WILDFLY_EE = {
+            // Extension not included in the default config
+            "org.wildfly.extension.micrometer",
+            "org.wildfly.micrometer.deployment",
+            "io.micrometer",
+            "io.opentelemetry.proto",
+            "io.prometheus",
     };
 
 
@@ -286,6 +292,12 @@ public abstract class LayersTestBase {
             // Injected by jaxrs subsystem
             "org.jboss.resteasy.microprofile.config",
             "org.jboss.resteasy.resteasy-client-microprofile",
+            // Extension not included in the default config (from wildfly-ee)
+            "org.wildfly.extension.micrometer",
+            "org.wildfly.micrometer.deployment",
+            "io.micrometer",
+            "io.opentelemetry.proto",
+            "io.prometheus",
     };
 
     /**
@@ -293,12 +305,6 @@ public abstract class LayersTestBase {
      * only when testing provisioning from the wildfly feature pack.
      */
     public static final String[] NOT_REFERENCED_WILDFLY = {
-            // Extension not included in the default config
-            "org.wildfly.extension.micrometer",
-            "org.wildfly.micrometer.deployment",
-            "io.micrometer",
-            "io.prometheus",
-            "io.opentelemetry.proto",
             // Extension not included in the default config
             "org.wildfly.extension.mvc-krazo",
             "jakarta.mvc.api",

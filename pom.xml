@@ -1772,6 +1772,11 @@
             <properties>
                 <!-- If we are using channel-driven provisioning, use the wildfly-preview channel -->
                 <channel.maven.artifactId>wildfly-preview</channel.maven.artifactId>
+                <!-- Use wildfly-preview feature packs for provisioning -->
+                <wildfly.build.output.dir>preview/build/target/${server.output.dir.prefix}-preview-${server.output.dir.version}</wildfly.build.output.dir>
+                <testsuite.ee.galleon.pack.artifactId>wildfly-preview-feature-pack</testsuite.ee.galleon.pack.artifactId>
+                <testsuite.full.galleon.pack.artifactId>wildfly-preview-feature-pack</testsuite.full.galleon.pack.artifactId>
+                <testsuite.test.feature.pack.artifactId>wildfly-test-feature-pack-preview</testsuite.test.feature.pack.artifactId>
                 <!-- Disable the surefire tests (at least the default ones) for all modules except for
                      those where this profile turns them back on. -->
                 <surefire.default-test.phase>none</surefire.default-test.phase>
