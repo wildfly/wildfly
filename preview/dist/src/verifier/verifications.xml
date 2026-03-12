@@ -20,6 +20,7 @@
    10) the .galleon dir exists
    11) no .galleon/history dir exists
    12) the .installation dir exists and contains channel metadata
+   13) version.txt exists
 -->
   <files>
     <file>
@@ -132,6 +133,12 @@
       <exists>true</exists>
     </file>
     <!-- end of (#12) -->
+    <!-- start of (#13) -->
+    <file>
+      <location>target/${server.output.dir.prefix}-preview-${server.output.dir.version}/version.txt</location>
+      <exists>true</exists>
+    </file>
+    <!-- end of (#13) -->
 
   </files>
 </verifications>

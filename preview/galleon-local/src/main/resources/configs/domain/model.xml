@@ -18,6 +18,7 @@
         <package name="product.conf" optional="true"/>
         <package name="misc.domain"/>
         <package name="org.jboss.as.domain-management"/>
+        <package name="version.txt"/>
         <!-- is not required but useful even if elytron subsystem is not installed -->
         <package name="org.wildfly.security.elytron"/>
         <!-- cleanup runtime dirs -->
