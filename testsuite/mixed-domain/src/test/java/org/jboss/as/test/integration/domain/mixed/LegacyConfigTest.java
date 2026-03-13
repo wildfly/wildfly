@@ -98,6 +98,7 @@ public abstract class LegacyConfigTest {
             try {
                 ModelNode state = DomainTestUtils.executeForResult(op, client);
                 if ("running".equalsIgnoreCase(state.asString())) {
+                    MixedDomainTestSupport.assertNoBootErrors(client, TEST_SERVER);
                     return;
                 }
             } catch (IOException | MgmtOperationException e) {
