@@ -28,6 +28,11 @@
     <description>WildFly: Parent Aggregator</description>
     <url>https://wildfly.org</url>
 
+    <organization>
+        <name>WildFly</name>
+        <url>https://wildfly.org</url>
+    </organization>
+
     <licenses>
         <license>
             <name>Apache License 2.0</name>
@@ -50,6 +55,21 @@
             <organizationUrl>https://wildfly.org</organizationUrl>
         </developer>
     </developers>
+
+    <mailingLists>
+        <mailingList>
+            <name>WildFly User Forum</name>
+            <subscribe>https://groups.google.com/forum/#!forum/wildfly</subscribe>
+            <unsubscribe>https://groups.google.com/forum/#!forum/wildfly</unsubscribe>
+            <archive>https://groups.google.com/forum/#!forum/wildfly</archive>
+        </mailingList>
+        <mailingList>
+            <name>WildFly Development</name>
+            <subscribe>https://lists.jboss.org/admin/lists/wildfly-dev.lists.jboss.org/</subscribe>
+            <unsubscribe>https://lists.jboss.org/admin/lists/wildfly-dev.lists.jboss.org/</unsubscribe>
+            <archive>https://lists.jboss.org/archives/list/wildfly-dev@lists.jboss.org/</archive>
+        </mailingList>
+    </mailingLists>
 
     <properties>
         <!-- Release Info.
