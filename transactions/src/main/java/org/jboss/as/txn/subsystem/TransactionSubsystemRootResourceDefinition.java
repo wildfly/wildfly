@@ -33,6 +33,7 @@ import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.client.helpers.MeasurementUnit;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.validation.IntRangeValidator;
+import org.jboss.as.controller.operations.validation.EnumValidator;
 import org.jboss.as.controller.operations.validation.StringBytesLengthValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
@@ -40,6 +41,7 @@ import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.txn.config.RecoveryGracefulShutdown;
 import org.jboss.as.txn.logging.TransactionLogger;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -101,6 +103,13 @@ public class TransactionSubsystemRootResourceDefinition extends SimpleResourceDe
             .setDefaultValue(ModelNode.FALSE)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .setXmlName(Attribute.RECOVERY_LISTENER.getLocalName())
+            .setAllowExpression(true).build();
+
+    public static final SimpleAttributeDefinition TRANSACTIONS_RECOVERY_GRACEFUL_SHUTDOWN = new SimpleAttributeDefinitionBuilder(CommonAttributes.TRANSACTIONS_RECOVERY_GRACEFUL_SHUTDOWN, ModelType.STRING, true)
+            .setDefaultValue(new ModelNode().set("ignore"))
+            .setValidator(EnumValidator.create(RecoveryGracefulShutdown.class))
+            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+            .setXmlName(Attribute.TRANSACTIONS_RECOVERY_GRACEFUL_SHUTDOWN.getLocalName())
             .setAllowExpression(true).build();
 
     //core environment
@@ -290,7 +299,7 @@ public class TransactionSubsystemRootResourceDefinition extends SimpleResourceDe
 
     // all attributes
     static final AttributeDefinition[] add_attributes = new AttributeDefinition[] {
-            BINDING, STATUS_BINDING, RECOVERY_LISTENER, NODE_IDENTIFIER, PROCESS_ID_UUID, PROCESS_ID_SOCKET_BINDING,
+            BINDING, STATUS_BINDING, RECOVERY_LISTENER, TRANSACTIONS_RECOVERY_GRACEFUL_SHUTDOWN, NODE_IDENTIFIER, PROCESS_ID_UUID, PROCESS_ID_SOCKET_BINDING,
             PROCESS_ID_SOCKET_MAX_PORTS, STATISTICS_ENABLED, ENABLE_TSM_STATUS, DEFAULT_TIMEOUT, MAXIMUM_TIMEOUT,
             OBJECT_STORE_RELATIVE_TO, OBJECT_STORE_PATH, JTS, USE_HORNETQ_STORE_PARAM, USE_JOURNAL_STORE_PARAM, USE_JDBC_STORE, JDBC_STORE_DATASOURCE,
             JDBC_ACTION_STORE_DROP_TABLE, JDBC_ACTION_STORE_TABLE_PREFIX, JDBC_COMMUNICATION_STORE_DROP_TABLE,
