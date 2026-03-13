@@ -361,6 +361,7 @@
         <version.org.junit>5.14.3</version.org.junit>
         <version.org.keycloak>25.0.6</version.org.keycloak>
         <version.org.mockito>5.21.0</version.org.mockito>
+        <version.org.htmlunit.htmlunit>4.21.0</version.org.htmlunit.htmlunit>
         <version.org.syslog4j>0.9.30</version.org.syslog4j>
         <version.org.testcontainers>2.0.3</version.org.testcontainers>
         <version.org.testng>7.8.0</version.org.testng>
