@@ -72,6 +72,11 @@
             </security-realms>
         </security>
 
-        <endpoints socket-binding="default" security-realm="default"/>
+        <endpoints>
+            <endpoint socket-binding="default" security-realm="default">
+                <hotrod-connector/>
+                <rest-connector/>
+            </endpoint>
+        </endpoints>
     </server>
 </infinispan>

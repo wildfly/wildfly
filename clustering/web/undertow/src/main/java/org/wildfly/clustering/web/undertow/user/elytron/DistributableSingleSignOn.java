@@ -7,8 +7,6 @@ package org.wildfly.clustering.web.undertow.user.elytron;
 
 import java.net.URI;
 import java.util.AbstractMap;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
@@ -18,7 +16,6 @@ import org.wildfly.clustering.cache.batch.SuspendedBatch;
 import org.wildfly.clustering.context.Context;
 import org.wildfly.clustering.function.Consumer;
 import org.wildfly.clustering.session.user.User;
-import org.wildfly.clustering.session.user.UserSessions;
 import org.wildfly.security.auth.server.SecurityIdentity;
 import org.wildfly.security.cache.CachedIdentity;
 import org.wildfly.security.http.util.sso.SingleSignOn;
@@ -64,12 +61,7 @@ public class DistributableSingleSignOn implements SingleSignOn {
 
     @Override
     public Map<String, Map.Entry<String, URI>> getParticipants() {
-        UserSessions<String, Map.Entry<String, URI>> sessions = this.user.getSessions();
-        Map<String, Map.Entry<String, URI>> participants = new HashMap<>();
-        for (String deployment : sessions.getDeployments()) {
-            participants.put(deployment, sessions.getSession(deployment));
-        }
-        return Collections.unmodifiableMap(participants);
+        return this.user.getSessions().getSessions();
     }
 
     @Override
@@ -79,16 +71,12 @@ public class DistributableSingleSignOn implements SingleSignOn {
 
     @Override
     public boolean addParticipant(String applicationId, String sessionId, URI participant) {
-        try (Context<Batch> context = this.suspendedBatch.resumeWithContext()) {
-            return this.user.getSessions().addSession(applicationId, new AbstractMap.SimpleImmutableEntry<>(sessionId, participant));
-        }
+        return this.user.getSessions().addSession(applicationId, new AbstractMap.SimpleImmutableEntry<>(sessionId, participant));
     }
 
     @Override
     public Map.Entry<String, URI> removeParticipant(String applicationId) {
-        try (Context<Batch> context = this.suspendedBatch.resumeWithContext()) {
-            return this.user.getSessions().removeSession(applicationId);
-        }
+        return this.user.getSessions().removeSession(applicationId);
     }
 
     @Override
@@ -99,7 +87,7 @@ public class DistributableSingleSignOn implements SingleSignOn {
 
     @Override
     public void close() {
-        this.close(Consumer.empty());
+        this.close(Consumer.of());
     }
 
     private void close(Consumer<User<CachedIdentity, AtomicReference<SecurityIdentity>, String, Map.Entry<String, URI>>> action) {

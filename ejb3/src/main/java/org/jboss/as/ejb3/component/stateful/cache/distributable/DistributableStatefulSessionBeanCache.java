@@ -120,7 +120,7 @@ public class DistributableStatefulSessionBeanCache<K, V extends StatefulSessionB
     }
 
     private StatefulSessionBean<K, V> close(Supplier<Batch> batch) {
-        close(batch, Consumer.empty());
+        close(batch, Consumer.of());
         return null;
     }
 
