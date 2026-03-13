@@ -91,11 +91,12 @@ public enum ElytronOidcSubsystemSchema implements PersistentSubsystemSchema<Elyt
 
     VERSION_1_0(1, Stability.DEFAULT),
     VERSION_2_0(2, Stability.DEFAULT),
-    VERSION_2_0_PREVIEW(2, 0, Stability.PREVIEW), // WildFly 32
-    VERSION_3_0_PREVIEW(3, 0, Stability.PREVIEW), // WildFly 33-present
+    VERSION_2_0_PREVIEW(2, 0, Stability.PREVIEW), // WildFly 32.0-present
+    VERSION_3_0_PREVIEW(3, 0, Stability.PREVIEW), // WildFly 33.0-present
+    VERSION_4_0_PREVIEW(4, 0, Stability.PREVIEW), // WildFly 34.0-present
     ;
 
-    static final Map<Stability, ElytronOidcSubsystemSchema> CURRENT = Feature.map(EnumSet.of(VERSION_3_0_PREVIEW, VERSION_2_0));
+    static final Map<Stability, ElytronOidcSubsystemSchema> CURRENT = Feature.map(EnumSet.of(VERSION_4_0_PREVIEW, VERSION_2_0));
     private static final AttributeParser SIMPLE_ATTRIBUTE_PARSER = new AttributeElementParser();
     private static final AttributeMarshaller SIMPLE_ATTRIBUTE_MARSHALLER = new AttributeElementMarshaller();
 
@@ -147,6 +148,13 @@ public enum ElytronOidcSubsystemSchema implements PersistentSubsystemSchema<Elyt
         Stream.of(secureDeploymentDefaultAttributes).forEach(attribute -> secureServerDefinitionBuilder.addAttribute(attribute, SIMPLE_ATTRIBUTE_PARSER, SIMPLE_ATTRIBUTE_MARSHALLER));
         Stream.of(providerDefaultAttributes).forEach(attribute -> secureDeploymentDefinitionBuilder.addAttribute(attribute, SIMPLE_ATTRIBUTE_PARSER, SIMPLE_ATTRIBUTE_MARSHALLER));
         Stream.of(providerDefaultAttributes).forEach(attribute -> secureServerDefinitionBuilder.addAttribute(attribute, SIMPLE_ATTRIBUTE_PARSER, SIMPLE_ATTRIBUTE_MARSHALLER));
+
+        if (this.since(VERSION_4_0_PREVIEW) && this.enables(AUTHENTICATION_REQUEST_FORMAT)) {
+            Stream.of(requestObjectAttributes).forEach(attribute -> secureDeploymentDefinitionBuilder.addAttribute(attribute, SIMPLE_ATTRIBUTE_PARSER, SIMPLE_ATTRIBUTE_MARSHALLER));
+            Stream.of(requestObjectAttributes).forEach(attribute -> secureServerDefinitionBuilder.addAttribute(attribute, SIMPLE_ATTRIBUTE_PARSER, SIMPLE_ATTRIBUTE_MARSHALLER));
+            Stream.of(requestObjectAttributes).forEach(attribute -> realmDefinitionBuilder.addAttribute(attribute, SIMPLE_ATTRIBUTE_PARSER, SIMPLE_ATTRIBUTE_MARSHALLER));
+            Stream.of(requestObjectAttributes).forEach(attribute -> providerDefinitionBuilder.addAttribute(attribute, SIMPLE_ATTRIBUTE_PARSER, SIMPLE_ATTRIBUTE_MARSHALLER));
+        }
 
         if (this.since(VERSION_3_0_PREVIEW) && this.enables(AUTHENTICATION_REQUEST_FORMAT)) {
             Stream.of(requestObjectAttributes).forEach(attribute -> secureDeploymentDefinitionBuilder.addAttribute(attribute, SIMPLE_ATTRIBUTE_PARSER, SIMPLE_ATTRIBUTE_MARSHALLER));
