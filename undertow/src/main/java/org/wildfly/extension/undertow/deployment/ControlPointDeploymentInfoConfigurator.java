@@ -21,6 +21,7 @@ import io.undertow.server.session.SessionConfig;
 import io.undertow.server.session.SessionListener;
 import io.undertow.server.session.SessionManager;
 import io.undertow.server.session.SessionManagerStatistics;
+import io.undertow.server.session.SessionReference;
 import io.undertow.servlet.api.Deployment;
 import io.undertow.servlet.api.DeploymentInfo;
 import io.undertow.servlet.api.SessionManagerFactory;
@@ -402,26 +403,14 @@ public class ControlPointDeploymentInfoConfigurator implements UnaryOperator<Dep
             return this.session.changeSessionId(exchange, config);
         }
 
-        /*
-         * New method in io.undertow.server.session.Session that can add the @Override annotation when Undertow is upgraded
-         */
+        @Override
         public boolean isInvalid() {
-            // TODO Delegate method call following Undertow upgrade.
-            try {
-                this.getMaxInactiveInterval();
-                return false;
-            } catch (IllegalStateException e) {
-                return true;
-            }
+            return this.session.isInvalid();
         }
 
-        /*
-         * New method in io.undertow.server.session.Session that can add the @Override annotation when Undertow is upgraded
-         */
-        public io.undertow.server.session.Session detach() {
-            // TODO Replace with getSessionReference() following Undertow 2.4.x upgrade
-            // return this.session.detach();
-            return this.manager.getSession(this.session.getId());
+        @Override
+        public SessionReference getReference() {
+            return this.session.getReference();
         }
     }
 }

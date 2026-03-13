@@ -107,9 +107,7 @@ public class DistributableImmutableSession implements Session {
         return null;
     }
 
-    /*
-     * New method in io.undertow.server.session.Session that can add the @Override annotation when Undertow is upgraded
-     */
+    @Override
     public boolean isInvalid() {
         return this.invalid;
     }
