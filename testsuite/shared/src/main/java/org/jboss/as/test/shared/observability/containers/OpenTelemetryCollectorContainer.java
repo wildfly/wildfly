@@ -26,7 +26,7 @@ import org.jboss.as.test.shared.TimeoutUtil;
 import org.jboss.as.test.shared.observability.signals.PrometheusMetric;
 import org.jboss.as.test.shared.observability.signals.jaeger.JaegerTrace;
 import org.jboss.as.test.shared.observability.signals.logs.CollectorLogRecordParser;
-import org.jboss.as.test.shared.observability.signals.logs.OpenTelemetryLogRecord;
+import org.jboss.as.test.shared.observability.signals.logs.LogEntry;
 import org.junit.Assert;
 import org.testcontainers.utility.MountableFile;
 
@@ -34,6 +34,7 @@ import org.testcontainers.utility.MountableFile;
  * @author Jason Lee
  * @author Radoslav Husar
  */
+@Deprecated
 public class OpenTelemetryCollectorContainer extends BaseContainer<OpenTelemetryCollectorContainer> {
     public static final int OTLP_GRPC_PORT = 4317;
     public static final int OTLP_HTTP_PORT = 4318;
@@ -110,11 +111,11 @@ public class OpenTelemetryCollectorContainer extends BaseContainer<OpenTelemetry
      */
     public List<PrometheusMetric> getMetricsByName(List<PrometheusMetric> metrics, String key) {
         return metrics.stream()
-                .filter(m -> Objects.equals(m.getKey(), key))
+                .filter(m -> Objects.equals(m.key(), key))
                 .toList();
     }
 
-    public List<OpenTelemetryLogRecord> getOpenTelemetryLogs() {
+    public List<LogEntry> getOpenTelemetryLogs() {
         return new CollectorLogRecordParser().retrieveLogRecords(this.getLogs().split("\n"));
     }
 
@@ -161,15 +162,15 @@ public class OpenTelemetryCollectorContainer extends BaseContainer<OpenTelemetry
         throw Objects.requireNonNullElseGet(lastAssertionError, AssertionError::new);
     }
 
-    public List<OpenTelemetryLogRecord> assertOpenTelemetryLogs(Consumer<List<OpenTelemetryLogRecord>> assertionConsumer) throws InterruptedException {
+    public List<LogEntry> assertOpenTelemetryLogs(Consumer<List<LogEntry>> assertionConsumer) throws InterruptedException {
         return assertOpenTelemetryLogs(assertionConsumer, DEFAULT_TIMEOUT);
     }
 
-    public List<OpenTelemetryLogRecord> assertOpenTelemetryLogs(Consumer<List<OpenTelemetryLogRecord>> assertionConsumer, Duration timeout) throws InterruptedException {
+    public List<LogEntry> assertOpenTelemetryLogs(Consumer<List<LogEntry>> assertionConsumer, Duration timeout) throws InterruptedException {
         debugLog("assertOpenTelemetryLogs(...) validation starting.");
         Instant endTime = Instant.now().plus(timeout);
         AssertionError lastAssertionError = null;
-        List<OpenTelemetryLogRecord> logEntries = getOpenTelemetryLogs();
+        List<LogEntry> logEntries = getOpenTelemetryLogs();
 
         while (Instant.now().isBefore(endTime)) {
             try {
@@ -257,7 +258,7 @@ public class OpenTelemetryCollectorContainer extends BaseContainer<OpenTelemetry
         return assertMetrics(prometheusMetrics -> {
             assertTrue(
                     String.format("Metric %s not seen in Prometheus within timeout.", nameToMonitor),
-                    prometheusMetrics.stream().anyMatch(x -> x.getKey().contains(nameToMonitor))
+                    prometheusMetrics.stream().anyMatch(x -> x.key().contains(nameToMonitor))
             );
         });
     }

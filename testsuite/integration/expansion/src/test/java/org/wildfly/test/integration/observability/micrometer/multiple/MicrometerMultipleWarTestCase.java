@@ -9,16 +9,15 @@ import static org.junit.Assert.assertEquals;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.util.List;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.junit.InSequence;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.shared.CdiUtils;
-import org.jboss.as.test.shared.observability.signals.PrometheusMetric;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.junit.Assert;
 import org.junit.Test;
 import org.wildfly.test.integration.observability.JaxRsActivator;
 import org.wildfly.test.integration.observability.micrometer.multiple.application.DuplicateMetricResource1;
@@ -48,12 +47,13 @@ public class MicrometerMultipleWarTestCase extends BaseMicrometerMultipleTestCas
         makeRequests(new URI(String.format("%s/%s", serviceOne, DuplicateMetricResource1.TAG)));
         makeRequests(new URI(String.format("%s/%s", serviceTwo, DuplicateMetricResource2.TAG)));
 
-        otelCollector.assertMetrics(prometheusMetrics -> {
-            List<PrometheusMetric> results = otelCollector.getMetricsByName(prometheusMetrics,
-                    DuplicateMetricResource1.METER_NAME + "_total"); // Adjust for Prometheus naming conventions
+        collector.assertMetrics(metrics -> {
+            var results = metrics.stream()
+                    .filter(m -> m.name().equals(DuplicateMetricResource1.METER_NAME))
+                    .toList(); // Adjust for Prometheus naming conventions
 
             assertEquals(2, results.size());
-            results.forEach(r -> assertEquals("" + REQUEST_COUNT, r.getValue()));
+            results.forEach(r -> Assert.assertEquals(REQUEST_COUNT, Double.valueOf(r.value()).intValue()));
         });
     }
 }

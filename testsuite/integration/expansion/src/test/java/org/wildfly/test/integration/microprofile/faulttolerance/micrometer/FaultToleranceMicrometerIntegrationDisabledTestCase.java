@@ -4,7 +4,6 @@
  */
 package org.wildfly.test.integration.microprofile.faulttolerance.micrometer;
 
-import org.arquillian.testcontainers.api.TestcontainersRequired;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.arquillian.api.ServerSetup;
@@ -19,8 +18,7 @@ import org.junit.runner.RunWith;
  * @author Radoslav Husar
  */
 @RunWith(Arquillian.class)
-@TestcontainersRequired
-@ServerSetup({MicrometerSetupTask.class})
+@ServerSetup(MicrometerSetupTask.class)
 public class FaultToleranceMicrometerIntegrationDisabledTestCase extends AbstractFaultToleranceMicrometerIntegrationTestCase {
 
     public FaultToleranceMicrometerIntegrationDisabledTestCase() {
