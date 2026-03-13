@@ -232,6 +232,7 @@ public abstract class DomainHostExcludesTest {
             try {
                 ModelNode state = DomainTestUtils.executeForResult(op, client);
                 if ("running".equalsIgnoreCase(state.asString())) {
+                    MixedDomainTestSupport.assertNoBootErrors(client, serverAddr);
                     return;
                 }
             } catch (IOException | MgmtOperationException e) {
