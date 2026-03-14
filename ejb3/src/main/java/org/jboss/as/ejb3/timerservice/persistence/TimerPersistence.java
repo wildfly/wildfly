@@ -72,8 +72,11 @@ public interface TimerPersistence {
      *
      * @param externalId The external id to load timers for
      * @return A list of all active timers
+     * @throws UnsupportedOperationException if the underlying persistence store does not support querying by external ID.
      */
-    List<TimerImpl> loadActiveTimersByExternalId(String externalId, final TimerServiceImpl timerService);
+    default List<TimerImpl> loadActiveTimersByExternalId(String externalId, final TimerServiceImpl timerService) {
+        throw new UnsupportedOperationException("Loading active timers by external ID is not supported by this timer persistence implementation.");
+    }
 
     /**
      *

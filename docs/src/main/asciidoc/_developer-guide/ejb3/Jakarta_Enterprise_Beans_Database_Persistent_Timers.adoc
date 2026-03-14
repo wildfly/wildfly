@@ -186,6 +186,68 @@ be invoked by other parts of the application when needed. For example,
     }
 ----
 
+[[external-id-timers]]
+== Querying Timers by External Identifier
+
+WildFly provides an extension API that allows applications to associate an external identifier with a persistent timer upon creation and then efficiently query timers by that identifier. This is useful for applications such as process automation managers that need to correlate EJB timers with external business entities without scanning and deserializing timer info objects.
+
+The API is provided by the `jboss-ejb3-ext-api` library (module `org.jboss.ejb3`), which is automatically available to all EJB deployments. It consists of two classes:
+
+* `org.jboss.ejb3.timerservice.ExtendedTimerConfig` -- extends `jakarta.ejb.TimerConfig` with an `externalId` property.
+* `org.jboss.ejb3.timerservice.ExtendedTimerService` -- extends `jakarta.ejb.TimerService` with a `getTimersByExternalId(String)` method.
+
+=== Creating a timer with an external ID
+
+To associate an external identifier with a timer, create an `ExtendedTimerConfig` and pass it to any of the standard `TimerService.createTimer` methods that accept a `TimerConfig`:
+
+[source,java,options="nowrap"]
+----
+import org.jboss.ejb3.timerservice.ExtendedTimerConfig;
+
+@Singleton
+@Startup
+public class MyTimerBean {
+
+    @Resource
+    private TimerService timerService;
+
+    public void scheduleTask(String processId) {
+        ExtendedTimerConfig config = new ExtendedTimerConfig(null, true, processId);
+        timerService.createSingleActionTimer(60000, config);
+    }
+}
+----
+
+The `externalId` is persisted in the `EXTERNAL_ID` column of the timer database table and is indexed for fast lookups.
+
+=== Querying timers by external ID
+
+To retrieve all active timers associated with a given external identifier, cast the injected `TimerService` to `ExtendedTimerService`:
+
+[source,java,options="nowrap"]
+----
+import org.jboss.ejb3.timerservice.ExtendedTimerService;
+
+@Singleton
+public class MyTimerBean {
+
+    @Resource
+    private TimerService timerService;
+
+    public Collection<Timer> getTimersForProcess(String processId) {
+        ExtendedTimerService extTimerService = (ExtendedTimerService) timerService;
+        return extTimerService.getTimersByExternalId(processId);
+    }
+}
+----
+
+This executes an indexed SQL query against the `EXTERNAL_ID` column, which is significantly more efficient than iterating over all timers and deserializing their info objects.
+
+[NOTE]
+====
+The `ExtendedTimerConfig` and `ExtendedTimerService` APIs are WildFly-specific extensions. Applications using these classes will not be portable to other Jakarta EE application servers.
+====
+
 [[technical-details]]
 == Technical details
 
