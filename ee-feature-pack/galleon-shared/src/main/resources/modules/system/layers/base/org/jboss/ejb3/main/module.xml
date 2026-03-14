@@ -8,4 +8,8 @@
     <resources>
         <artifact name="${org.jboss.ejb3:jboss-ejb3-ext-api}"/>
     </resources>
+
+    <dependencies>
+        <module name="jakarta.ejb.api"/>
+    </dependencies>
 </module>

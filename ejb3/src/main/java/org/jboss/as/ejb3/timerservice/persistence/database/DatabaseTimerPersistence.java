@@ -755,8 +755,8 @@ public class DatabaseTimerPersistence implements TimerPersistence, Service {
      */
     private Holder timerFromResult(final ResultSet resultSet, final TimerServiceImpl timerService,
                                    final String timerId, final TimerState timerState) throws SQLException {
-        boolean calendarTimer = resultSet.getBoolean(24);
-        final String nodeName = resultSet.getString(25);
+        boolean calendarTimer = resultSet.getBoolean(25);
+        final String nodeName = resultSet.getString(26);
         boolean requiresReset = false;
 
         TimerImpl.Builder builder;
@@ -765,24 +765,24 @@ public class DatabaseTimerPersistence implements TimerPersistence, Service {
             builder = cb;
             //set calendar timer specifics first
             final ScheduleExpression scheduleExpression = new ScheduleExpression();
-            scheduleExpression.second(resultSet.getString(10));
-            scheduleExpression.minute(resultSet.getString(11));
-            scheduleExpression.hour(resultSet.getString(12));
-            scheduleExpression.dayOfWeek(resultSet.getString(13));
-            scheduleExpression.dayOfMonth(resultSet.getString(14));
-            scheduleExpression.month(resultSet.getString(15));
-            scheduleExpression.year(resultSet.getString(16));
-            scheduleExpression.start(stringAsSchedulerDate(resultSet.getString(17), timerId));
-            scheduleExpression.end(stringAsSchedulerDate(resultSet.getString(18), timerId));
-            scheduleExpression.timezone(resultSet.getString(19));
+            scheduleExpression.second(resultSet.getString(11));
+            scheduleExpression.minute(resultSet.getString(12));
+            scheduleExpression.hour(resultSet.getString(13));
+            scheduleExpression.dayOfWeek(resultSet.getString(14));
+            scheduleExpression.dayOfMonth(resultSet.getString(15));
+            scheduleExpression.month(resultSet.getString(16));
+            scheduleExpression.year(resultSet.getString(17));
+            scheduleExpression.start(stringAsSchedulerDate(resultSet.getString(18), timerId));
+            scheduleExpression.end(stringAsSchedulerDate(resultSet.getString(19), timerId));
+            scheduleExpression.timezone(resultSet.getString(20));
 
             cb.setScheduleExpression(scheduleExpression);
-            cb.setAutoTimer(resultSet.getBoolean(20));
+            cb.setAutoTimer(resultSet.getBoolean(21));
 
-            final String clazz = resultSet.getString(21);
-            final String methodName = resultSet.getString(22);
+            final String clazz = resultSet.getString(22);
+            final String methodName = resultSet.getString(23);
             if (methodName != null) {
-                final String paramString = resultSet.getString(23);
+                final String paramString = resultSet.getString(24);
                 final String[] params = paramString == null || paramString.isEmpty() ? EMPTY_STRING_ARRAY : TIMER_PARAM_1_ARRAY;
                 final Method timeoutMethod = CalendarTimer.getTimeoutMethod(new TimeoutMethod(clazz, methodName, params), timerService.getInvoker().getClassLoader());
                 if (timeoutMethod == null) {
@@ -798,13 +798,14 @@ public class DatabaseTimerPersistence implements TimerPersistence, Service {
 
         builder.setId(timerId);
         builder.setTimedObjectId(resultSet.getString(2));
-        builder.setInitialDate(resultSet.getTimestamp(3));
-        builder.setRepeatInterval(resultSet.getLong(4));
-        builder.setNextDate(resultSet.getTimestamp(5));
-        builder.setPreviousRun(resultSet.getTimestamp(6));
-//        builder.setPrimaryKey(deSerialize(resultSet.getString(7)));
-        builder.setInfo((Serializable) deSerialize(resultSet.getString(8)));
-        builder.setTimerState(timerState != null ? timerState : TimerState.valueOf(resultSet.getString(9)));
+        builder.setExternalId(resultSet.getString(3));
+        builder.setInitialDate(resultSet.getTimestamp(4));
+        builder.setRepeatInterval(resultSet.getLong(5));
+        builder.setNextDate(resultSet.getTimestamp(6));
+        builder.setPreviousRun(resultSet.getTimestamp(7));
+//        builder.setPrimaryKey(deSerialize(resultSet.getString(8)));
+        builder.setInfo((Serializable) deSerialize(resultSet.getString(9)));
+        builder.setTimerState(timerState != null ? timerState : TimerState.valueOf(resultSet.getString(10)));
         builder.setPersistent(true);
 
         TimerImpl ret =  builder.build(timerService);
