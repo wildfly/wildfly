@@ -61,6 +61,11 @@ public class DecoratedTimerService extends DecoratedService implements ManagedTi
     }
 
     @Override
+    public Collection<Timer> getTimersByExternalId(String externalId) {
+        return this.service.getTimersByExternalId(externalId);
+    }
+
+    @Override
     public void close() {
         this.service.close();
     }

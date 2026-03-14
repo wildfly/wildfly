@@ -14,7 +14,6 @@ import jakarta.ejb.EJBException;
 import jakarta.ejb.ScheduleExpression;
 import jakarta.ejb.Timer;
 import jakarta.ejb.TimerConfig;
-import jakarta.ejb.TimerService;
 import jakarta.transaction.Status;
 import jakarta.transaction.SystemException;
 import jakarta.transaction.Transaction;
@@ -23,6 +22,7 @@ import org.jboss.as.ejb3.component.allowedmethods.AllowedMethodsInformation;
 import org.jboss.as.ejb3.component.allowedmethods.MethodType;
 import org.jboss.as.ejb3.component.stateful.CurrentSynchronizationCallback;
 import org.jboss.as.ejb3.context.CurrentInvocationContext;
+import org.jboss.as.ejb3.timerservice.ExtendedTimerService;
 import org.jboss.invocation.InterceptorContext;
 import org.wildfly.clustering.server.service.Service;
 import org.wildfly.transaction.client.ContextTransactionManager;
@@ -31,7 +31,7 @@ import org.wildfly.transaction.client.ContextTransactionManager;
  * Interface for managed {@link jakarta.ejb.TimerService} implementations.
  * @author Paul Ferraro
  */
-public interface ManagedTimerService extends TimerService, Service, AutoCloseable {
+public interface ManagedTimerService extends ExtendedTimerService, Service, AutoCloseable {
 
     @Override
     void close();

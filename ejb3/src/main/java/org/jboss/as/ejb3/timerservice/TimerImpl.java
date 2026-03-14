@@ -445,6 +445,14 @@ public class TimerImpl extends AbstractManagedTimer {
         this.executingThread = thread;
     }
 
+    public String getExternalId() {
+        return externalId;
+    }
+
+    public void setExternalId(String externalId) {
+        this.externalId = externalId;
+    }
+
     @Override
     public void activate() {
         this.scheduleTimeout(true);
