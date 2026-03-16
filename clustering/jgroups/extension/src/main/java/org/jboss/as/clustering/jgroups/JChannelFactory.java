@@ -11,8 +11,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.ServiceLoader;
 
 import org.jboss.as.network.SocketBinding;
+import org.jgroups.Address;
 import org.jgroups.EmptyMessage;
 import org.jgroups.JChannel;
 import org.jgroups.Message;
@@ -22,12 +24,15 @@ import org.jgroups.conf.ClassConfigurator;
 import org.jgroups.fork.UnknownForkHandler;
 import org.jgroups.protocols.FORK;
 import org.jgroups.protocols.TP;
+import org.jgroups.stack.AddressGenerator;
 import org.jgroups.stack.Protocol;
+import org.wildfly.clustering.jgroups.spi.AddressFactory;
 import org.wildfly.clustering.jgroups.spi.ChannelFactory;
 import org.wildfly.clustering.jgroups.spi.PhysicalAddressCache;
 import org.wildfly.clustering.jgroups.spi.ProtocolConfiguration;
 import org.wildfly.clustering.jgroups.spi.ChannelFactoryConfiguration;
 import org.wildfly.clustering.jgroups.spi.TLSConfiguration;
+import org.wildfly.clustering.jgroups.spi.TransportConfiguration;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
@@ -35,6 +40,8 @@ import org.wildfly.security.manager.WildFlySecurityManager;
  * @author Paul Ferraro
  */
 public class JChannelFactory implements ChannelFactory {
+    // Typically contributed by Infinispan subsystem
+    static final AddressFactory ADDRESS_FACTORY = ServiceLoader.load(AddressFactory.class, AddressFactory.class.getClassLoader()).findFirst().orElse(null);
 
     private final ChannelFactoryConfiguration configuration;
 
@@ -109,6 +116,20 @@ public class JChannelFactory implements ChannelFactory {
         JChannel channel = createChannel(protocols);
 
         channel.setName(this.configuration.getMemberName());
+        if (ADDRESS_FACTORY != null) {
+            TransportConfiguration.Topology topology = this.configuration.getTransport().getTopology();
+            channel.addAddressGenerator(new AddressGenerator() {
+                @Override
+                public Address generateAddress(String name) {
+                    return ADDRESS_FACTORY.createAddress(name, topology);
+                }
+
+                @Override
+                public Address generateAddress() {
+                    return this.generateAddress(null);
+                }
+            });
+        }
         // Populate cache of physical addresses
         channel.addChannelListener(PhysicalAddressCache.INSTANCE);
 

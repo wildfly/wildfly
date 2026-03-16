@@ -8,6 +8,7 @@ import java.util.List;
 
 import org.jboss.as.clustering.jgroups.logging.JGroupsLogger;
 import org.jgroups.JChannel;
+import org.jgroups.stack.AddressGenerator;
 import org.jgroups.stack.Protocol;
 import org.wildfly.clustering.jgroups.spi.ProtocolConfiguration;
 import org.wildfly.clustering.jgroups.spi.ChannelFactoryConfiguration;
@@ -62,6 +63,13 @@ public class ForkChannelFactory implements org.wildfly.clustering.jgroups.spi.Fo
         @Override
         public JChannel name(String name) {
             // No-op, super implementation logs error
+            return this;
+        }
+
+        @Override
+        public org.jgroups.fork.ForkChannel addAddressGenerator(AddressGenerator generator) {
+            // Default implementation is not thread-safe
+            // Delegating calls to the JChannel does not really make sense
             return this;
         }
     }
