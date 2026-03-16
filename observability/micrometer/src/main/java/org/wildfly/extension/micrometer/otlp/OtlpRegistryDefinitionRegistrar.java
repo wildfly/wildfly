@@ -26,6 +26,7 @@ import org.wildfly.extension.micrometer.MicrometerConfigurationConstants;
 import org.wildfly.extension.micrometer.MicrometerSubsystemRegistrar;
 import org.wildfly.extension.micrometer.WildFlyMicrometerConfig;
 import org.wildfly.extension.micrometer.registry.WildFlyCompositeRegistry;
+import org.wildfly.service.BlockingLifecycle;
 import org.wildfly.service.Installer.StartWhen;
 import org.wildfly.subsystem.resource.ChildResourceDefinitionRegistrar;
 import org.wildfly.subsystem.resource.ManagementResourceRegistrar;
@@ -88,18 +89,10 @@ public class OtlpRegistryDefinitionRegistrar implements ChildResourceDefinitionR
             .endpoint(OtlpRegistryDefinitionRegistrar.ENDPOINT.resolveModelAttribute(context, model).asStringOrNull())
             .step(OtlpRegistryDefinitionRegistrar.STEP.resolveModelAttribute(context, model).asLong())
             .build();
-
-        return ServiceInstaller.builder(
-                () -> {
-                    if (otlpConfig.url() != null) {
-                        compositeRegistry.addRegistry(new WildFlyOtlpRegistry(otlpConfig));
-                    }
-                },
-                () -> {
-                    // No-op stop task
-                }
-            )
+        return (otlpConfig.url() != null) ? ServiceInstaller.BlockingBuilder.of(() -> new WildFlyOtlpRegistry(otlpConfig))
+            .withLifecycle(BlockingLifecycle.compose(this.compositeRegistry::add, this.compositeRegistry::remove))
             .startWhen(StartWhen.INSTALLED)
-            .build();
+            .build()
+        : ResourceServiceInstaller.NONE;
     }
 }

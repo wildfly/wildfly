@@ -6,6 +6,7 @@ package org.wildfly.extension.micrometer.prometheus;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.function.Consumer;
 import java.util.function.UnaryOperator;
 
 import io.undertow.util.Headers;
@@ -31,6 +32,7 @@ import org.wildfly.extension.micrometer.MicrometerConfigurationConstants;
 import org.wildfly.extension.micrometer.MicrometerExtensionLogger;
 import org.wildfly.extension.micrometer.MicrometerSubsystemRegistrar;
 import org.wildfly.extension.micrometer.registry.WildFlyCompositeRegistry;
+import org.wildfly.service.BlockingLifecycle;
 import org.wildfly.service.Installer.StartWhen;
 import org.wildfly.subsystem.resource.ChildResourceDefinitionRegistrar;
 import org.wildfly.subsystem.resource.ManagementResourceRegistrar;
@@ -97,17 +99,15 @@ public class PrometheusRegistryDefinitionRegistrar implements ChildResourceDefin
         String serviceContext = CONTEXT.resolveModelAttribute(context, model).asString();
         boolean securityEnabled = SECURITY_ENABLED.resolveModelAttribute(context, model).asBoolean();
 
-        return ServiceInstaller.builder(ServiceDependency.on(HTTP_EXTENSIBILITY_CAPABILITY, ExtensibleHttpManagement.class))
-                .onStart(ehm -> {
-                    WildFlyPrometheusRegistry prometheusRegistry = new WildFlyPrometheusRegistry();
-                    wildFlyRegistry.add(prometheusRegistry);
-                    ehm.addManagementHandler(serviceContext, securityEnabled,
-                            exchange -> {
-                                exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, PROMETHEUS_CONTENT_TYPE);
-                                exchange.getResponseSender().send(prometheusRegistry.scrape(PROMETHEUS_CONTENT_TYPE));
-                            }
-                    );
-                })
+        ServiceDependency<ExtensibleHttpManagement> management = ServiceDependency.on(HTTP_EXTENSIBILITY_CAPABILITY, ExtensibleHttpManagement.class);
+        Consumer<WildFlyPrometheusRegistry> start = registry -> management.get().addManagementHandler(serviceContext, securityEnabled, exchange -> {
+            exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, PROMETHEUS_CONTENT_TYPE);
+            exchange.getResponseSender().send(registry.scrape(PROMETHEUS_CONTENT_TYPE));
+        });
+        Consumer<WildFlyPrometheusRegistry> stop = registry -> management.get().removeContext(serviceContext);
+        return ServiceInstaller.BlockingBuilder.of(WildFlyPrometheusRegistry::new)
+                .requires(management)
+                .withLifecycle(BlockingLifecycle.compose(start.andThen(this.wildFlyRegistry::add), stop.andThen(this.wildFlyRegistry::remove)))
                 .startWhen(StartWhen.INSTALLED)
                 .build();
     }
