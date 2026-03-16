@@ -34,13 +34,13 @@ public class NonDistributableWebDeploymentServiceInstallerProvider implements We
     @Override
     public DeploymentServiceInstaller getSessionManagerFactoryServiceInstaller(SessionManagerFactoryConfiguration configuration) {
         Supplier<SessionManagerFactory> provider = () -> this.factory.apply(configuration);
-        return ServiceInstaller.builder(provider).provides(WebDeploymentServiceDescriptor.SESSION_MANAGER_FACTORY.resolve(configuration.getDeploymentUnit())).build();
+        return ServiceInstaller.BlockingBuilder.of(provider).provides(WebDeploymentServiceDescriptor.SESSION_MANAGER_FACTORY.resolve(configuration.getDeploymentUnit())).build();
     }
 
     @Override
     public DeploymentServiceInstaller getSessionAffinityProviderServiceInstaller(WebDeploymentConfiguration configuration) {
         ServiceDependency<Server> server = ServiceDependency.on(Server.SERVICE_DESCRIPTOR, configuration.getServerName());
-        return ServiceInstaller.builder(server.map(NonDistributableSessionAffinityProvider::new))
+        return ServiceInstaller.BlockingBuilder.of(server.map(NonDistributableSessionAffinityProvider::new))
                 .provides(WebDeploymentServiceDescriptor.SESSION_AFFINITY_PROVIDER.resolve(configuration.getDeploymentUnit()))
                 .build();
     }

@@ -22,13 +22,14 @@ import org.jboss.as.remoting.HttpListenerRegistryService;
 import org.jboss.as.server.Services;
 import org.jboss.as.server.moduleservice.ServiceModuleLoader;
 import org.jboss.as.server.suspend.SuspendController;
-import org.jboss.as.server.suspend.SuspendableActivityRegistry;
+import org.jboss.as.server.suspend.SuspendableActivityRegistrar;
 import org.jboss.msc.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.mockito.Mockito;
+import org.wildfly.common.function.Functions;
 import org.wildfly.extension.io.IOServices;
 import org.wildfly.extension.io.WorkerService;
 import org.wildfly.security.auth.server.HttpAuthenticationFactory;
@@ -90,8 +91,7 @@ class RuntimeInitialization extends DefaultInitialization {
         try {
             SSLContext sslContext = SSLContext.getDefault();
 
-            SuspendController suspendController = new SuspendController();
-            ServiceInstaller.builder(suspendController).provides(ServiceName.parse(SuspendableActivityRegistry.SERVICE_DESCRIPTOR.getName())).build().install(target);
+            ServiceInstaller.BlockingBuilder.of(SuspendController::new).provides(ServiceName.parse(SuspendableActivityRegistrar.SERVICE_DESCRIPTOR.getName())).build().install(target);
 
             target.addService(Services.JBOSS_SERVICE_MODULE_LOADER).setInstance(new ServiceModuleLoader(null)).install();
             target.addService(ContextNames.JAVA_CONTEXT_SERVICE_NAME).setInstance(new NamingStoreService()).install();
@@ -117,7 +117,7 @@ class RuntimeInitialization extends DefaultInitialization {
 
             ProcessStateNotifier notifier = Mockito.mock(ProcessStateNotifier.class);
             Mockito.doReturn(ControlledProcessState.State.RUNNING).when(notifier).getCurrentState();
-            ServiceInstaller.builder(notifier).provides(ServiceName.parse(ProcessStateNotifier.SERVICE_DESCRIPTOR.getName())).build().install(target);
+            ServiceInstaller.BlockingBuilder.of(Functions.constantSupplier(notifier)).provides(ServiceName.parse(ProcessStateNotifier.SERVICE_DESCRIPTOR.getName())).build().install(target);
 
             // ListenerRegistry.Listener listener = new ListenerRegistry.Listener("http", "default", "default",
             // InetSocketAddress.createUnresolved("localhost",8080));
