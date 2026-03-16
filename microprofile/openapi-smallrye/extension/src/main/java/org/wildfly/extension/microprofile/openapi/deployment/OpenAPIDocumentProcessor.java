@@ -39,6 +39,7 @@ import org.wildfly.microprofile.openapi.OpenAPIModelRegistry;
 import org.wildfly.microprofile.openapi.OpenAPIModelRegistry.Registration;
 import org.wildfly.microprofile.openapi.host.HostOpenAPIModelConfiguration;
 import org.wildfly.microprofile.openapi.host.OpenAPIHttpHandlerServiceInstaller;
+import org.wildfly.service.BlockingLifecycle;
 import org.wildfly.service.Installer.StartWhen;
 import org.wildfly.subsystem.service.ServiceDependency;
 import org.wildfly.subsystem.service.ServiceInstaller;
@@ -146,10 +147,10 @@ public class OpenAPIDocumentProcessor implements DeploymentUnitProcessor {
                                     return registry.register(contextName, model);
                                 }
                             });
-                            ServiceInstaller.builder(registration)
+                            ServiceInstaller.BlockingBuilder.of(registration)
                                     .requires(deployment)
                                     .startWhen(StartWhen.INSTALLED)
-                                    .onStop(OpenAPIModelRegistry.Registration::close)
+                                    .withLifecycle(BlockingLifecycle.autoClose())
                                     .build()
                                     .install(context);
                         }

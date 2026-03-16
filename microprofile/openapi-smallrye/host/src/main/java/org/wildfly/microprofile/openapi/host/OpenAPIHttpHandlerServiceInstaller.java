@@ -15,6 +15,7 @@ import io.undertow.server.HttpHandler;
 import org.jboss.as.controller.RequirementServiceTarget;
 import org.jboss.msc.service.ServiceController;
 import org.wildfly.microprofile.openapi.OpenAPIModelProvider;
+import org.wildfly.service.BlockingLifecycle;
 import org.wildfly.extension.undertow.Host;
 import org.wildfly.microprofile.openapi.OpenAPIModelConfiguration;
 import org.wildfly.subsystem.service.ServiceDependency;
@@ -60,11 +61,9 @@ public class OpenAPIHttpHandlerServiceInstaller implements ServiceInstaller {
                 host.get().unregisterHandler(path);
             }
         };
-        return ServiceInstaller.builder(factory)
-                .startWhen(StartWhen.AVAILABLE)
+        return ServiceInstaller.BlockingBuilder.of(factory)
                 .requires(List.of(host, provider))
-                .onStart(start)
-                .onStop(stop)
+                .withLifecycle(BlockingLifecycle.compose(start, stop))
                 .build()
                 .install(target);
     }
