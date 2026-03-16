@@ -24,6 +24,7 @@ import org.jgroups.protocols.FORK;
 import org.jgroups.protocols.TP;
 import org.jgroups.stack.Protocol;
 import org.wildfly.clustering.jgroups.spi.ChannelFactory;
+import org.wildfly.clustering.jgroups.spi.PhysicalAddressCache;
 import org.wildfly.clustering.jgroups.spi.ProtocolConfiguration;
 import org.wildfly.clustering.jgroups.spi.ChannelFactoryConfiguration;
 import org.wildfly.clustering.jgroups.spi.TLSConfiguration;
@@ -108,6 +109,8 @@ public class JChannelFactory implements ChannelFactory {
         JChannel channel = createChannel(protocols);
 
         channel.setName(this.configuration.getMemberName());
+        // Populate cache of physical addresses
+        channel.addChannelListener(PhysicalAddressCache.INSTANCE);
 
         return channel;
     }

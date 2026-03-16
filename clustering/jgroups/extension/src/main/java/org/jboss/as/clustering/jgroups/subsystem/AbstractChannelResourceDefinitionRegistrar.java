@@ -57,7 +57,6 @@ import org.wildfly.clustering.jgroups.spi.ChannelConfiguration;
 import org.wildfly.clustering.jgroups.spi.ForkChannelFactory;
 import org.wildfly.clustering.jgroups.spi.ForkChannelFactoryConfiguration;
 import org.wildfly.clustering.jgroups.spi.JGroupsServiceDescriptor;
-import org.wildfly.clustering.jgroups.spi.PhysicalAddressCache;
 import org.wildfly.common.function.Functions;
 import org.wildfly.service.Installer.StartWhen;
 import org.wildfly.subsystem.resource.ChildResourceDefinitionRegistrar;
@@ -270,9 +269,6 @@ public abstract class AbstractChannelResourceDefinitionRegistrar<C extends Chann
                     throw new IllegalStateException(e);
                 }
                 JGroupsLogger.ROOT_LOGGER.connected(name, channel.getName(), configuration.getClusterName(), channel.getView());
-                if (!(channel instanceof ForkChannel)) {
-                    PhysicalAddressCache.INSTANCE.channelConnected(channel);
-                }
             }
         };
         Consumer<JChannel> disconnect = new Consumer<>() {
@@ -283,9 +279,6 @@ public abstract class AbstractChannelResourceDefinitionRegistrar<C extends Chann
                 JGroupsLogger.ROOT_LOGGER.disconnecting(name, channel.getName(), configuration.getClusterName(), channel.getView());
                 channel.disconnect();
                 JGroupsLogger.ROOT_LOGGER.disconnected(name, channel.getName(), configuration.getClusterName());
-                if (!(channel instanceof ForkChannel)) {
-                    PhysicalAddressCache.INSTANCE.channelDisconnected(channel);
-                }
             }
         };
         installers.add(CapabilityServiceInstaller.builder(CHANNEL, factory).blocking()
