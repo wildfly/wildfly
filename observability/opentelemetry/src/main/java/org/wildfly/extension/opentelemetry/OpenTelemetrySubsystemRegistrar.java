@@ -30,6 +30,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 
+import io.smallrye.common.function.Functions;
+
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -45,6 +47,7 @@ import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.wildfly.extension.opentelemetry.api.WildFlyOpenTelemetryConfig;
+import org.wildfly.service.Installer.StartWhen;
 import org.wildfly.subsystem.resource.ManagementResourceRegistrar;
 import org.wildfly.subsystem.resource.ManagementResourceRegistrationContext;
 import org.wildfly.subsystem.resource.ResourceDescriptor;
@@ -236,7 +239,8 @@ class OpenTelemetrySubsystemRegistrar implements SubsystemResourceDefinitionRegi
             .setInjectVertx(context.hasOptionalCapability("org.wildfly.extension.vertx", OPENTELEMETRY_CAPABILITY, null))
             .build();
 
-        return CapabilityServiceInstaller.builder(OPENTELEMETRY_CONFIG_CAPABILITY, config)
+        return CapabilityServiceInstaller.BlockingBuilder.of(OPENTELEMETRY_CONFIG_CAPABILITY, Functions.constantSupplier(config))
+                .startWhen(StartWhen.INSTALLED)
                 .withCaptor(openTelemetryConfig::set)
                 .build();
     }

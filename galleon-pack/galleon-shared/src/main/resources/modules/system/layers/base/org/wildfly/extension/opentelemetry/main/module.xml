@@ -22,6 +22,7 @@
         <module name="io.opentelemetry.sdk" />
         <module name="io.opentelemetry.context" />
         <module name="io.opentelemetry.exporter" />
+        <module name="io.smallrye.common.function"/>
         <module name="io.smallrye.opentelemetry" services="import"/>
         <!-- Needed to initialise the vert.x logger if the module is present -->
         <module name="io.vertx.core"/>
@@ -44,6 +45,7 @@
         <module name="org.jboss.weld.spi"/>
 
         <module name="org.wildfly.security.manager"/>
+        <module name="org.wildfly.service"/>
         <module name="org.wildfly.subsystem"/>
     </dependencies>
 </module>
