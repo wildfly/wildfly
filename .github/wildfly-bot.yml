@@ -254,6 +254,6 @@ wildfly:
   format:
     description:
       regexes:
-        - pattern: "https://issues.redhat.com/browse/WFLY-\\d+"
-          message: "The description must contain a link to the JIRA issue \n(https://issues.redhat.com/browse/WFLY-XYZ)"
+        - pattern: "https://redhat.atlassian.net/browse/WFLY-\\d+"
+          message: "The description must contain a link to the JIRA issue \n(https://redhat.atlassian.net/browse/WFLY-XYZ)"
 
