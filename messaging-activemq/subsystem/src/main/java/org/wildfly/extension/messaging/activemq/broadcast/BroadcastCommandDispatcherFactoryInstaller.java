@@ -33,7 +33,8 @@ public class BroadcastCommandDispatcherFactoryInstaller implements BiConsumer<Op
         // N.B. BroadcastCommandDispatcherFactory implementations are shared across multiple server resources
         if (this.names.add(name)) {
             ServiceDependency<CommandDispatcherFactory<GroupMember>> factory = ServiceDependency.on(ClusteringServiceDescriptor.COMMAND_DISPATCHER_FACTORY, channelName);
-            ServiceInstaller.builder(ConcurrentBroadcastCommandDispatcherFactory::new, factory)
+            ServiceInstaller.BlockingBuilder.of(factory)
+                    .map(ConcurrentBroadcastCommandDispatcherFactory::new)
                     .provides(name)
                     .requires(factory)
                     .build()
