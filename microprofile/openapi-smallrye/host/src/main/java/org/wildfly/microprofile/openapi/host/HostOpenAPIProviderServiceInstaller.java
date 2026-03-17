@@ -104,7 +104,7 @@ public class HostOpenAPIProviderServiceInstaller implements ResourceServiceInsta
                         }
 
                         for (String virtualHost : virtualHosts) {
-                            Server server = createServer(listener.getProtocol(), virtualHost, binding.getPort());
+                            Server server = createServer(listener.getProtocol(), virtualHost, binding.getAbsolutePort());
                             if (server != null) {
                                 servers.add(server);
                             }
