@@ -5,13 +5,13 @@
 
 package org.wildfly.extension.clustering.server.group.legacy;
 
+import java.net.InetSocketAddress;
+import java.util.Optional;
+
 import org.jgroups.Address;
 import org.jgroups.PhysicalAddress;
 import org.wildfly.clustering.jgroups.spi.PhysicalAddressCache;
 import org.wildfly.clustering.server.jgroups.ChannelGroupMember;
-
-import java.net.InetSocketAddress;
-import java.util.Optional;
 
 /**
  * @author Paul Ferraro

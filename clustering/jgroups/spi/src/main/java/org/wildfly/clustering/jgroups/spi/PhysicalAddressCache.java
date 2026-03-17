@@ -4,15 +4,15 @@
  */
 package org.wildfly.clustering.jgroups.spi;
 
-import org.jgroups.Address;
-import org.jgroups.ChannelListener;
-import org.jgroups.JChannel;
-import org.jgroups.PhysicalAddress;
-
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
+
+import org.jgroups.Address;
+import org.jgroups.ChannelListener;
+import org.jgroups.JChannel;
+import org.jgroups.PhysicalAddress;
 
 /**
  * Cache of physical addresses.
@@ -20,8 +20,8 @@ import java.util.function.Function;
  */
 public enum PhysicalAddressCache implements Function<Address, PhysicalAddress>, ChannelListener {
     INSTANCE;
-
-    private final Map<String, Function<Address, PhysicalAddress>> caches = new ConcurrentHashMap<>();
+    // Map by local address, rather than cluster name, since JChannel.getClusterName() returns null when disconnected
+    private final Map<Address, Function<Address, PhysicalAddress>> caches = new ConcurrentHashMap<>();
 
     @Override
     public PhysicalAddress apply(Address address) {
@@ -30,11 +30,11 @@ public enum PhysicalAddressCache implements Function<Address, PhysicalAddress>, 
 
     @Override
     public void channelConnected(JChannel channel) {
-        this.caches.put(channel.getClusterName(), channel.getProtocolStack().getTransport()::getPhysicalAddressFromCache);
+        this.caches.put(channel.getAddress(), channel.getProtocolStack().getTransport()::getPhysicalAddressFromCache);
     }
 
     @Override
     public void channelDisconnected(JChannel channel) {
-        this.caches.remove(channel.getClusterName());
+        this.caches.remove(channel.getAddress());
     }
 }
