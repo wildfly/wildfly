@@ -4,7 +4,9 @@
  */
 package org.jboss.as.test.integration.domain.mixed;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CORE_SERVICE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT;
 
 import java.io.File;
 import java.io.IOException;
@@ -12,10 +14,12 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.client.helpers.domain.DomainClient;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.test.integration.domain.management.util.DomainLifecycleUtil;
@@ -115,6 +119,18 @@ public class MixedDomainTestSupport extends DomainTestSupport {
             startAndAdjust();
         } else {
             super.start();
+
+            try {
+                DomainLifecycleUtil primaryUtil = getDomainPrimaryLifecycleUtil();
+                assertNoBootErrors(primaryUtil.getDomainClient(), PathAddress.pathAddress(HOST, "primary"));
+
+                DomainLifecycleUtil secondaryUtil = getDomainSecondaryLifecycleUtil();
+                if (secondaryUtil != null) {
+                    assertNoBootErrors(secondaryUtil.getDomainClient(), PathAddress.pathAddress(HOST, "secondary"));
+                }
+            } catch (IOException | MgmtOperationException e) {
+                throw new RuntimeException(e);
+            }
         }
 
         if (!legacyConfig) {
@@ -142,6 +158,7 @@ public class MixedDomainTestSupport extends DomainTestSupport {
             try {
                 ModelNode state = DomainTestUtils.executeForResult(op, client);
                 if ("running".equalsIgnoreCase(state.asString())) {
+                    assertNoBootErrors(client, PathAddress.pathAddress(hostElement, PathElement.pathElement("server", "server-one")));
                     return;
                 }
             } catch (IOException | MgmtOperationException e) {
@@ -204,16 +221,34 @@ public class MixedDomainTestSupport extends DomainTestSupport {
             primaryUtil.executeAwaitConnectionClosed(Util.createEmptyOperation("reload", PathAddress.pathAddress(HOST, "primary")));
             primaryUtil.connect();
             primaryUtil.awaitHostController(System.currentTimeMillis());
+            assertNoBootErrors(primaryUtil.getDomainClient(), PathAddress.pathAddress(HOST, "primary"));
 
             //Start the secondary hosts
             DomainLifecycleUtil secondaryUtil = getDomainSecondaryLifecycleUtil();
             if (secondaryUtil != null) {
                 //secondaryUtil.getConfiguration().addHostCommandLineProperty("-agentlib:jdwp=transport=dt_socket,address=8787,server=y,suspend=y");
                 secondaryUtil.start();
+                assertNoBootErrors(primaryUtil.getDomainClient(), PathAddress.pathAddress(HOST, "secondary"));
             }
 
         } catch (Exception e) {
             throw new RuntimeException(e);
+        }
+    }
+
+    /**
+     * Asserts that the host controller or managed server at the given address did not report any boot errors.
+     *
+     * @param client  the client to use
+     * @param address the address of the host or managed server
+     */
+    static void assertNoBootErrors(ModelControllerClient client, PathAddress address) throws IOException, MgmtOperationException {
+        PathAddress bootErrorsAddr = address.append(PathElement.pathElement(CORE_SERVICE, MANAGEMENT));
+        ModelNode op = Util.createEmptyOperation("read-boot-errors", bootErrorsAddr);
+        ModelNode result = DomainTestUtils.executeForResult(op, client);
+        if (result.isDefined()) {
+            List<ModelNode> errors = result.asList();
+            Assert.assertTrue("Boot errors detected at " + address.toCLIStyleString() + ": " + result, errors.isEmpty());
         }
     }
 
