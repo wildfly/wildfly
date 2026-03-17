@@ -90,7 +90,7 @@
             <artifactId>jboss-remoting</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.apache.activemq</groupId>
+            <groupId>org.apache.artemis</groupId>
             <artifactId>artemis-commons</artifactId>
         </dependency>
         <!-- Required for activemq compatibility -->

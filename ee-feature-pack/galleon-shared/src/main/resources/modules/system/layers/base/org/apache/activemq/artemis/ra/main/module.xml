@@ -12,7 +12,7 @@
     </properties>
 
     <resources>
-        <artifact name="${org.apache.activemq:artemis-jakarta-ra}"/>
+        <artifact name="${org.apache.artemis:artemis-jakarta-ra}"/>
     </resources>
 
     <dependencies>
