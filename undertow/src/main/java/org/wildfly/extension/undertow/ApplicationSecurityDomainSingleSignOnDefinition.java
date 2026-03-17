@@ -28,12 +28,14 @@ import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraintDefinition;
 import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.capability.UnaryCapabilityNameResolver;
+import org.jboss.as.controller.management.Capabilities;
 import org.jboss.as.controller.security.CredentialReference;
 import org.jboss.as.controller.security.CredentialReferenceWriteAttributeHandler;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.wildfly.clustering.web.container.SingleSignOnManagerConfiguration;
 import org.wildfly.clustering.web.container.SingleSignOnManagerServiceInstallerProvider;
+import org.wildfly.common.function.Functions;
 import org.wildfly.extension.undertow.logging.UndertowLogger;
 import org.wildfly.extension.undertow.sso.elytron.NonDistributableSingleSignOnManagementProvider;
 import org.wildfly.extension.undertow.sso.elytron.SingleSignOnIdentifierFactory;
@@ -47,7 +49,7 @@ import org.wildfly.security.password.interfaces.ClearPassword;
 import org.wildfly.service.descriptor.UnaryServiceDescriptor;
 import org.wildfly.subsystem.resource.AttributeDefinitionProvider;
 import org.wildfly.subsystem.resource.ResourceDescriptor;
-import org.wildfly.subsystem.resource.capability.CapabilityReferenceRecorder;
+import org.wildfly.subsystem.resource.capability.CapabilityReference;
 import org.wildfly.subsystem.resource.operation.ResourceOperationRuntimeHandler;
 import org.wildfly.subsystem.service.ResourceServiceConfigurator;
 import org.wildfly.subsystem.service.ResourceServiceInstaller;
@@ -67,10 +69,10 @@ public class ApplicationSecurityDomainSingleSignOnDefinition extends SingleSignO
     private static final RuntimeCapability<Void> SESSION_FACTORY_CAPABILITY = RuntimeCapability.Builder.of(SSO_SESSION_FACTORY).setDynamicNameMapper(UnaryCapabilityNameResolver.PARENT).build();
 
     enum Attribute implements AttributeDefinitionProvider {
-        CREDENTIAL(CredentialReference.getAttributeBuilder(CredentialReference.CREDENTIAL_REFERENCE, CredentialReference.CREDENTIAL_REFERENCE, false, CapabilityReferenceRecorder.builder(CONFIGURATION_CAPABILITY, CommonServiceDescriptor.CREDENTIAL_STORE).build()).setAccessConstraints(SensitiveTargetAccessConstraintDefinition.CREDENTIAL).build()),
+        CREDENTIAL(CredentialReference.getAttributeBuilder(CredentialReference.CREDENTIAL_REFERENCE, CredentialReference.CREDENTIAL_REFERENCE, false, CapabilityReference.builder(CONFIGURATION_CAPABILITY, CommonServiceDescriptor.CREDENTIAL_STORE).build()).setAccessConstraints(SensitiveTargetAccessConstraintDefinition.CREDENTIAL).build()),
         KEY_ALIAS("key-alias", ModelType.STRING, builder -> builder.setAllowExpression(true).addAccessConstraint(SensitiveTargetAccessConstraintDefinition.SSL_REF)),
-        KEY_STORE("key-store", ModelType.STRING, builder -> builder.setCapabilityReference(CapabilityReferenceRecorder.builder(CONFIGURATION_CAPABILITY, CommonServiceDescriptor.KEY_STORE).build()).addAccessConstraint(SensitiveTargetAccessConstraintDefinition.SSL_REF)),
-        SSL_CONTEXT("client-ssl-context", ModelType.STRING, builder -> builder.setRequired(false).setCapabilityReference(CapabilityReferenceRecorder.builder(CONFIGURATION_CAPABILITY, CommonServiceDescriptor.SSL_CONTEXT).build()).setAccessConstraints(SensitiveTargetAccessConstraintDefinition.SSL_REF)),
+        KEY_STORE("key-store", ModelType.STRING, builder -> builder.setCapabilityReference(CapabilityReference.builder(CONFIGURATION_CAPABILITY, CommonServiceDescriptor.KEY_STORE).build()).addAccessConstraint(SensitiveTargetAccessConstraintDefinition.SSL_REF)),
+        SSL_CONTEXT("client-ssl-context", ModelType.STRING, builder -> builder.setRequired(false).setCapabilityReference(CapabilityReference.builder(CONFIGURATION_CAPABILITY, CommonServiceDescriptor.SSL_CONTEXT).build()).setAccessConstraints(SensitiveTargetAccessConstraintDefinition.SSL_REF)),
         ;
         private final AttributeDefinition definition;
 
@@ -95,7 +97,7 @@ public class ApplicationSecurityDomainSingleSignOnDefinition extends SingleSignO
             @Override
             public ResourceDescriptor.Builder apply(ResourceDescriptor.Builder builder, ResourceServiceConfigurator configurator) {
                 return builder.provideAttributes(EnumSet.complementOf(EnumSet.of(Attribute.CREDENTIAL)))
-                        .addAttribute(Attribute.CREDENTIAL.get(), new CredentialReferenceWriteAttributeHandler(Attribute.CREDENTIAL.get()))
+                        .addAttribute(Attribute.CREDENTIAL.get(), CredentialReferenceWriteAttributeHandler.INSTANCE)
                         .addCapabilities(List.of(CONFIGURATION_CAPABILITY, SESSION_FACTORY_CAPABILITY))
                         .withRuntimeHandler(ResourceOperationRuntimeHandler.combine(ResourceOperationRuntimeHandler.configureService(configurator), ResourceOperationRuntimeHandler.restartParent(parentHandler)))
                         ;
@@ -106,7 +108,7 @@ public class ApplicationSecurityDomainSingleSignOnDefinition extends SingleSignO
     @Override
     public ResourceServiceInstaller configure(OperationContext context, ModelNode model) throws OperationFailedException {
 
-        ResourceServiceInstaller configurationInstaller = CapabilityServiceInstaller.builder(CONFIGURATION_CAPABILITY, this.resolve(context, model)).build();
+        ResourceServiceInstaller configurationInstaller = CapabilityServiceInstaller.BlockingBuilder.of(CONFIGURATION_CAPABILITY, Functions.constantSupplier(this.resolve(context, model))).build();
 
         String securityDomainName = context.getCurrentAddress().getParent().getLastElement().getValue();
 
@@ -160,7 +162,7 @@ public class ApplicationSecurityDomainSingleSignOnDefinition extends SingleSignO
                 }
             }
         };
-        ResourceServiceInstaller factoryInstaller = CapabilityServiceInstaller.builder(SESSION_FACTORY_CAPABILITY, factory).blocking()
+        ResourceServiceInstaller factoryInstaller = CapabilityServiceInstaller.BlockingBuilder.of(SESSION_FACTORY_CAPABILITY, factory, ServiceDependency.on(Capabilities.MANAGEMENT_EXECUTOR))
                 .requires(List.of(manager, keyStore, credentialSource, sslContext))
                 .build();
 

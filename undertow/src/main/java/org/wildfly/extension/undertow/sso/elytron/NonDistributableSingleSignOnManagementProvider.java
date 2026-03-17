@@ -31,7 +31,7 @@ public enum NonDistributableSingleSignOnManagementProvider implements SingleSign
                 return new DefaultSingleSignOnManager(new ConcurrentHashMap<>(), configuration.getIdentifierGenerator());
             }
         };
-        return ServiceInstaller.builder(factory)
+        return ServiceInstaller.BlockingBuilder.of(factory)
                 .provides(ServiceNameFactory.resolveServiceName(SingleSignOnManagerServiceInstallerProvider.SINGLE_SIGN_ON_MANAGER, configuration.getSecurityDomainName()))
                 .build();
     }
