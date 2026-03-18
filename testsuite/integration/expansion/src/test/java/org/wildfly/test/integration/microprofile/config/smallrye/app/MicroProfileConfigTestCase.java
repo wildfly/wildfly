@@ -46,7 +46,8 @@ public class MicroProfileConfigTestCase extends AbstractMicroProfileConfigTestCa
     @Deployment(testable = false)
     public static Archive<?> deploy() {
         WebArchive war = ShrinkWrap.create(WebArchive.class, "MicroProfileConfigTestCase.war")
-                .addClasses(TestApplication.class)
+                .addClasses(TestApplication.class, ConfigCapabilityValidator.class)
+                .addAsServiceProvider(org.jboss.msc.service.ServiceActivator.class, ConfigCapabilityValidator.class)
                 .addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml")
                 .addAsManifestResource(MicroProfileConfigTestCase.class.getPackage(),
                         "microprofile-config.properties", "microprofile-config.properties")
@@ -325,6 +326,27 @@ public class MicroProfileConfigTestCase extends AbstractMicroProfileConfigTestCa
 
             // not defined anywhere...
             assertTextContainsProperty(text, SubsystemConfigSourceTask.PROPERTIES_PROP_NAME5, "Custom file property not defined!");
+        }
+    }
+
+    /**
+     * Tests that the microprofile-config capability service is properly installed and working.
+     * This verifies:
+     * - The ConfigProviderResolver service is available via MSC
+     * - The capability service provides the same instance as the static singleton
+     * - Config sources are visible through the capability service
+     *
+     * @throws Exception
+     */
+    @Test
+    public void testCapabilityServiceInstalled() throws Exception {
+        try (CloseableHttpClient client = HttpClientBuilder.create().build()) {
+            HttpResponse response = client.execute(new HttpGet(url + appContext + TestApplication.CAPABILITY_TEST_PATH));
+            Assert.assertEquals("Capability test should return 200", 200, response.getStatusLine().getStatusCode());
+            String text = EntityUtils.toString(response.getEntity());
+            Assert.assertTrue("Response should indicate success", text.contains("SUCCESS"));
+            Assert.assertTrue("Should validate capability resolver", text.contains("Capability resolver == static resolver: true"));
+            Assert.assertTrue("Should see subsystem config sources", text.contains("Capability config sees subsystem sources: true"));
         }
     }
 }
