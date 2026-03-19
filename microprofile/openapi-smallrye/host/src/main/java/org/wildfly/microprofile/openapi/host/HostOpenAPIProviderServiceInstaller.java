@@ -32,7 +32,6 @@ import org.wildfly.extension.undertow.Host;
 import org.wildfly.extension.undertow.UndertowListener;
 import org.wildfly.microprofile.openapi.OpenAPIModelProvider;
 import org.wildfly.microprofile.openapi.OpenAPIModelRegistry;
-import org.wildfly.service.Installer.StartWhen;
 import org.wildfly.subsystem.service.ResourceServiceInstaller;
 import org.wildfly.subsystem.service.ServiceDependency;
 import org.wildfly.subsystem.service.ServiceInstaller;
@@ -136,8 +135,7 @@ public class HostOpenAPIProviderServiceInstaller implements ResourceServiceInsta
             }
         });
 
-        return ServiceInstaller.builder(provider)
-                .startWhen(StartWhen.REQUIRED)
+        return ServiceInstaller.BlockingBuilder.of(provider)
                 .provides(ServiceNameFactory.resolveServiceName(OpenAPIModelProvider.DEFAULT_SERVICE_DESCRIPTOR, serverName, hostName))
                 .provides(ServiceNameFactory.resolveServiceName(OpenAPIModelRegistry.SERVICE_DESCRIPTOR, serverName, hostName))
                 .build()

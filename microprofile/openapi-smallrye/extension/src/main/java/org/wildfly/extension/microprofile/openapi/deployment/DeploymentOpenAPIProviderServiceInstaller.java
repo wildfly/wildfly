@@ -331,7 +331,7 @@ public class DeploymentOpenAPIProviderServiceInstaller implements DeploymentServ
                 return OpenAPIModelProvider.of(builder.build().model());
             }
         };
-        ServiceInstaller.builder(factory)
+        ServiceInstaller.BlockingBuilder.of(factory)
                 .provides(OpenAPIModelProvider.SERVICE_DESCRIPTOR, serverName, hostName, modelName)
                 .requires(List.of(host, deployment))
                 .startWhen(StartWhen.INSTALLED)
