@@ -112,7 +112,7 @@ class SecureServerDefinition extends SimpleResourceDefinition {
             OidcConfigService oidcConfigService = OidcConfigService.getInstance();
             oidcConfigService.addSecureDeployment(context.getCurrentAddressValue(), context.resolveExpressions(model));
 
-            ServiceTarget serviceTarget = context.getServiceTarget();
+            ServiceTarget serviceTarget = context.getCapabilityServiceTarget();
             InjectedValue<ExtensibleHttpManagement> extensibleHttpManagement = new InjectedValue<>();
             String secureServerName = context.getCurrentAddressValue();
             ServiceName serviceName = ServiceName.of(SECURE_SERVER, secureServerName);

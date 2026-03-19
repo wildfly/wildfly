@@ -36,7 +36,7 @@ public class TracerAdd extends AbstractAddStepHandler {
         ServiceName serviceName = ConnectorServices.TRACER_CONFIG_SERVICE;
         ServiceName jcaConfigServiceName = ConnectorServices.CONNECTOR_CONFIG_SERVICE;
 
-        final ServiceTarget serviceTarget = context.getServiceTarget();
+        final ServiceTarget serviceTarget = context.getCapabilityServiceTarget();
 
         final TracerService.Tracer config = new TracerService.Tracer(enabled);
         final TracerService service = new TracerService(config);

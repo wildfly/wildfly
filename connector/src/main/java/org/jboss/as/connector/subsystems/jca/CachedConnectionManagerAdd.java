@@ -99,7 +99,7 @@ public class CachedConnectionManagerAdd extends AbstractBoottimeAddStepHandler {
 
         final boolean install = JcaCachedConnectionManagerDefinition.CcmParameters.INSTALL.getAttribute().resolveModelAttribute(context, model).asBoolean();
 
-        final ServiceTarget serviceTarget = context.getServiceTarget();
+        final ServiceTarget serviceTarget = context.getCapabilityServiceTarget();
 
         if (install) {
             ROOT_LOGGER.debug("Enabling the Cache Connection Manager valve and interceptor...");

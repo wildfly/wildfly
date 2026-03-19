@@ -76,7 +76,7 @@ class EJBRemoteInvocationPassByValueWriteHandler extends AbstractWriteAttributeH
         }
         // now install the new default local Jakarta Enterprise Beans receiver service which points to an existing Local Jakarta Enterprise Beans receiver service
         final ServiceName sn = LocalTransportProvider.DEFAULT_LOCAL_TRANSPORT_PROVIDER_SERVICE_NAME;
-        final ServiceBuilder<?> sb = context.getServiceTarget().addService(sn);
+        final ServiceBuilder<?> sb = context.getCapabilityServiceTarget().addService(sn);
         final Consumer<LocalTransportProvider> transportConsumer = sb.provides(sn);
         final Supplier<LocalTransportProvider> transportSupplier = sb.requires(localTransportProviderServiceName);
         sb.setInstance(new DefaultLocalTransportProviderService(transportConsumer, transportSupplier));

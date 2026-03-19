@@ -116,7 +116,7 @@ public class EeSubsystemAdd extends AbstractBoottimeAddStepHandler {
     protected void performBoottime(final OperationContext context, final ModelNode operation, final Resource resource) throws OperationFailedException {
         ModelNode model = resource.getModel();
         final EEJndiViewExtension extension = new EEJndiViewExtension();
-        context.getServiceTarget().addService(EEJndiViewExtension.SERVICE_NAME, extension)
+        context.getCapabilityServiceTarget().addService(EEJndiViewExtension.SERVICE_NAME, extension)
                 .addDependency(JndiViewExtensionRegistry.SERVICE_NAME, JndiViewExtensionRegistry.class, extension.getRegistryInjector())
                 .install();
 
@@ -201,7 +201,7 @@ public class EeSubsystemAdd extends AbstractBoottimeAddStepHandler {
             }
         }, OperationContext.Stage.RUNTIME);
 
-        context.getServiceTarget().addService(ReflectiveClassIntrospector.SERVICE_NAME, new ReflectiveClassIntrospector()).install();
+        context.getCapabilityServiceTarget().addService(ReflectiveClassIntrospector.SERVICE_NAME, new ReflectiveClassIntrospector()).install();
 
         ConcurrencyImplementation.INSTANCE.installSubsystemServices(context);
     }

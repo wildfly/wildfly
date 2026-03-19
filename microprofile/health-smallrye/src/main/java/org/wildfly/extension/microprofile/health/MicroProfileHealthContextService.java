@@ -29,7 +29,7 @@ public class MicroProfileHealthContextService implements Service {
     private Supplier<HealthContextService> healthContextService;
 
     static void install(OperationContext context) {
-        ServiceBuilder<?> serviceBuilder = context.getServiceTarget().addService(HTTP_CONTEXT_SERVICE);
+        ServiceBuilder<?> serviceBuilder = context.getCapabilityServiceTarget().addService(HTTP_CONTEXT_SERVICE);
 
         Supplier<HealthContextService> healthContextService = serviceBuilder.requires(context.getCapabilityServiceName(MicroProfileHealthSubsystemDefinition.HEALTH_HTTP_CONTEXT_CAPABILITY, HealthContextService.class));
         Supplier<MicroProfileHealthReporter> healthReporter = serviceBuilder.requires(context.getCapabilityServiceName(MicroProfileHealthSubsystemDefinition.MICROPROFILE_HEALTH_REPORTER_CAPABILITY, MicroProfileHealthReporter.class));

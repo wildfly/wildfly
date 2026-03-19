@@ -252,7 +252,7 @@ class SecureDeploymentDefinition extends SimpleResourceDefinition {
             oidcConfigService.addSecureDeployment(secureDeploymentName, context.resolveExpressions(model));
 
             if (! isWarDeployment(context)) {
-                ServiceTarget serviceTarget = context.getServiceTarget();
+                ServiceTarget serviceTarget = context.getCapabilityServiceTarget();
 
                 ServiceName virtualMechanismFactoryName = virtualMechanismFactoryName(context);
                 ServiceBuilder<?> serviceBuilder = serviceTarget.addService(virtualMechanismFactoryName);

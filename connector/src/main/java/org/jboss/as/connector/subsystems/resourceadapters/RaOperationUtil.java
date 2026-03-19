@@ -385,7 +385,7 @@ public class RaOperationUtil {
     }
 
     public static ServiceName installRaServices(OperationContext context, String name, ModifiableResourceAdapter resourceAdapter, final List<ServiceController<?>> newControllers) {
-        final ServiceTarget serviceTarget = context.getServiceTarget();
+        final ServiceTarget serviceTarget = context.getCapabilityServiceTarget();
 
         final ServiceController<?> resourceAdaptersService = context.getServiceRegistry(false).getService(
                 ConnectorServices.RESOURCEADAPTERS_SERVICE);
@@ -434,7 +434,7 @@ public class RaOperationUtil {
     public static void installRaServicesAndDeployFromModule(OperationContext context, String name, ModifiableResourceAdapter resourceAdapter, String fullModuleName, final List<ServiceController<?>> newControllers) throws OperationFailedException{
         ServiceName raServiceName =  installRaServices(context, name, resourceAdapter, newControllers);
         final boolean resolveProperties = true;
-        final ServiceTarget serviceTarget = context.getServiceTarget();
+        final ServiceTarget serviceTarget = context.getCapabilityServiceTarget();
         final String moduleName;
         final CapabilityServiceSupport support = context.getCapabilityServiceSupport();
 

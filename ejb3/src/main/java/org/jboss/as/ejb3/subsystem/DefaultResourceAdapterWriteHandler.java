@@ -56,7 +56,7 @@ public class DefaultResourceAdapterWriteHandler extends AbstractWriteAttributeHa
             // create a new one and install
             final DefaultResourceAdapterService defaultResourceAdapterService = new DefaultResourceAdapterService(adapterName);
             ServiceController<?> newController =
-                context.getServiceTarget().addService(DefaultResourceAdapterService.DEFAULT_RA_NAME_SERVICE_NAME, defaultResourceAdapterService)
+                context.getCapabilityServiceTarget().addService(DefaultResourceAdapterService.DEFAULT_RA_NAME_SERVICE_NAME, defaultResourceAdapterService)
                     .install();
         }
 

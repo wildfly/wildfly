@@ -63,7 +63,7 @@ public class DistributedWorkManagerAdd extends AbstractAddStepHandler {
         String policy = JcaDistributedWorkManagerDefinition.DWmParameters.POLICY.getAttribute().resolveModelAttribute(context, model).asString();
         String selector = JcaDistributedWorkManagerDefinition.DWmParameters.SELECTOR.getAttribute().resolveModelAttribute(context, model).asString();
 
-        ServiceTarget serviceTarget = context.getServiceTarget();
+        ServiceTarget serviceTarget = context.getCapabilityServiceTarget();
         NamedDistributedWorkManager namedDistributedWorkManager = new NamedDistributedWorkManager(name, elytronEnabled);
 
         if (policy != null && !policy.trim().isEmpty()) {

@@ -42,7 +42,7 @@ public class JMSQueueAdd extends AbstractAddStepHandler {
     @Override
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
         final String name = context.getCurrentAddressValue();
-        final ServiceTarget serviceTarget = context.getServiceTarget();
+        final ServiceTarget serviceTarget = context.getCapabilityServiceTarget();
         final ServiceName serviceName = MessagingServices.getActiveMQServiceName(context.getCurrentAddress());
 
         final ModelNode selectorNode = SELECTOR.resolveModelAttribute(context, model);

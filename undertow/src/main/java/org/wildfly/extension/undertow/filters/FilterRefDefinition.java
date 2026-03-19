@@ -109,7 +109,7 @@ public class FilterRefDefinition extends PersistentResourceDefinition {
             }
 
             int priority = PRIORITY.resolveModelAttribute(context, operation).asInt();
-            final ServiceTarget target = context.getServiceTarget();
+            final ServiceTarget target = context.getCapabilityServiceTarget();
             final ServiceName sn = UndertowService.getFilterRefServiceName(address, name);
             final ServiceBuilder<?> sb = target.addService(sn);
             final Consumer<UndertowFilter> frConsumer = sb.provides(sn);

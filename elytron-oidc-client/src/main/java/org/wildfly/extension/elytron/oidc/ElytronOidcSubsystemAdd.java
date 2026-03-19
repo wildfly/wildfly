@@ -37,7 +37,7 @@ class ElytronOidcSubsystemAdd extends AbstractBoottimeAddStepHandler {
     public void performBoottime(OperationContext context, ModelNode operation, ModelNode model) {
         ROOT_LOGGER.activatingSubsystem();
         OidcConfigService.getInstance().clear();
-        ServiceTarget target = context.getServiceTarget();
+        ServiceTarget target = context.getCapabilityServiceTarget();
         installService(OIDC_VIRTUAL_SECURITY_DOMAIN_CREATION_SERVICE, new OidcVirtualSecurityDomainCreationService(), target);
 
         if (context.isNormalServer()) {

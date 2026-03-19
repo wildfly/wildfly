@@ -86,7 +86,7 @@ public class SocketBroadcastGroupAdd extends AbstractAddStepHandler {
             context.reloadRequired();
         } else {
             final String name = context.getCurrentAddressValue();
-            final ServiceTarget target = context.getServiceTarget();
+            final ServiceTarget target = context.getCapabilityServiceTarget();
                 ServiceBuilder builder = target.addService(GroupBindingService.getBroadcastBaseServiceName(serviceName).append(name));
                 builder.setInstance(new GroupBindingService(builder.requires(SOCKET_BINDING_CAPABILITY.getCapabilityServiceName(model.get(SOCKET_BINDING).asString()))));
                 builder.install();

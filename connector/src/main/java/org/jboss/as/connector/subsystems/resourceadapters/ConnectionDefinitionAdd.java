@@ -121,7 +121,7 @@ public class ConnectionDefinitionAdd extends AbstractAddStepHandler {
             final ModifiableResourceAdapter ravalue = ((ModifiableResourceAdapter) context.getServiceRegistry(false).getService(raServiceName).getValue());
             boolean isXa = ravalue.getTransactionSupport() == TransactionSupportEnum.XATransaction;
 
-            final ServiceTarget serviceTarget = context.getServiceTarget();
+            final ServiceTarget serviceTarget = context.getCapabilityServiceTarget();
 
             final ConnectionDefinitionService service = new ConnectionDefinitionService();
             service.getConnectionDefinitionSupplierInjector().inject(

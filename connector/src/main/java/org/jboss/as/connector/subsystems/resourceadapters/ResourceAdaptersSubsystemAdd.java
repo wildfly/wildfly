@@ -47,7 +47,7 @@ class ResourceAdaptersSubsystemAdd extends AbstractAddStepHandler {
         for (Resource.ResourceEntry re : subsystemResource.getChildren(RESOURCEADAPTER_NAME)) {
             value.putIfAbsent(re.getModel().get(ARCHIVE.getName()).asString(), ConnectorServices.RA_SERVICE.append(re.getName()));
         }
-        final ServiceBuilder<?> configuredAdaptersServiceBuilder = context.getServiceTarget().addService(ConnectorServices.RESOURCEADAPTERS_CONFIGURED_ADAPTERS_SERVICE, configuredAdaptersService);
+        final ServiceBuilder<?> configuredAdaptersServiceBuilder = context.getCapabilityServiceTarget().addService(ConnectorServices.RESOURCEADAPTERS_CONFIGURED_ADAPTERS_SERVICE, configuredAdaptersService);
         configuredAdaptersServiceBuilder.setInitialMode(ServiceController.Mode.ACTIVE).install();
 
         final String reportDirectoryName = Constants.REPORT_DIRECTORY.resolveModelAttribute(context, operation).asString();
@@ -56,7 +56,7 @@ class ResourceAdaptersSubsystemAdd extends AbstractAddStepHandler {
             throw ConnectorLogger.SUBSYSTEM_RA_LOGGER.reportDirectoryDoesNotExist(reportDirectoryName);
         }
         ReportDirectoryService reportDirectoryService = new ReportDirectoryService(reportDirectory);
-        final ServiceBuilder<?> reportDirectoryServiceBuilder = context.getServiceTarget().addService(ConnectorServices.RESOURCEADAPTERS_REPORT_DIRECTORY_SERVICE, reportDirectoryService);
+        final ServiceBuilder<?> reportDirectoryServiceBuilder = context.getCapabilityServiceTarget().addService(ConnectorServices.RESOURCEADAPTERS_REPORT_DIRECTORY_SERVICE, reportDirectoryService);
         reportDirectoryServiceBuilder.setInitialMode(ServiceController.Mode.ACTIVE).install();
     }
 }

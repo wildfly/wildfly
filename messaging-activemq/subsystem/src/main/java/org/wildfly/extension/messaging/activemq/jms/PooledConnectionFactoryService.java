@@ -273,7 +273,7 @@ public class PooledConnectionFactoryService implements Service<Void> {
                                         ServiceName serviceName,
                                         PooledConnectionFactoryService service,
                                         ModelNode model) throws OperationFailedException {
-        ServiceBuilder serviceBuilder = createServiceBuilder(context.getServiceTarget(), serverServiceName, serviceName, service);
+        ServiceBuilder serviceBuilder = createServiceBuilder(context.getCapabilityServiceTarget(), serverServiceName, serviceName, service);
         ModelNode credentialReference = ConnectionFactoryAttributes.Pooled.CREDENTIAL_REFERENCE.resolveModelAttribute(context, model);
         if (credentialReference.isDefined()) {
             service.getCredentialSourceSupplierInjector().inject(CredentialReference.getCredentialSourceSupplier(context, ConnectionFactoryAttributes.Pooled.CREDENTIAL_REFERENCE, model, serviceBuilder));

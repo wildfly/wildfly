@@ -39,7 +39,7 @@ public class RemoteNamingAdd extends AbstractAddStepHandler {
 
         final RemoteNamingServerService remoteNamingServerService = new RemoteNamingServerService();
 
-        final ServiceBuilder<RemoteNamingService> builder = context.getServiceTarget().addService(RemoteNamingServerService.SERVICE_NAME, remoteNamingServerService);
+        final ServiceBuilder<RemoteNamingService> builder = context.getCapabilityServiceTarget().addService(RemoteNamingServerService.SERVICE_NAME, remoteNamingServerService);
         builder.addDependency(context.getCapabilityServiceName(REMOTING_ENDPOINT_CAPABILITY_NAME, Endpoint.class), Endpoint.class, remoteNamingServerService.getEndpointInjector())
                 .addDependency(ContextNames.EXPORTED_CONTEXT_SERVICE_NAME, NamingStore.class, remoteNamingServerService.getNamingStoreInjector())
                 .install();

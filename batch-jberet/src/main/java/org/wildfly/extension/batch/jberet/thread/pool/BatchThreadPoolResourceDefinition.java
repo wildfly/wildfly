@@ -85,7 +85,7 @@ public class BatchThreadPoolResourceDefinition extends SimpleResourceDefinition 
         protected void performRuntime(final OperationContext context, final ModelNode operation, final ModelNode model) throws OperationFailedException {
             super.performRuntime(context, operation, model);
             final String name = context.getCurrentAddressValue();
-            final ServiceTarget target = context.getServiceTarget();
+            final ServiceTarget target = context.getCapabilityServiceTarget();
             final ServiceName serviceName = context.getCapabilityServiceName(Capabilities.THREAD_POOL_CAPABILITY.getName(), name, JobExecutor.class);
             final ServiceBuilder<?> serviceBuilder = target.addService(serviceName);
             final Consumer<JobExecutor> jobExecutorConsumer = serviceBuilder.provides(serviceName);

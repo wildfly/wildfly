@@ -24,6 +24,7 @@ import org.jboss.as.appclient.deployment.ApplicationClientStartProcessor;
 import org.jboss.as.appclient.service.ApplicationClientDeploymentService;
 import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.CapabilityServiceBuilder;
+import org.jboss.as.controller.CapabilityServiceTarget;
 import org.jboss.as.controller.ModelControllerClientFactory;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -90,7 +91,8 @@ class AppClientSubsystemAdd extends AbstractBoottimeAddStepHandler {
             }
         }, OperationContext.Stage.RUNTIME);
 
-        CapabilityServiceBuilder<?> builder = context.getCapabilityServiceTarget().addCapability(APPCLIENT_CAPABILITY);
+        CapabilityServiceTarget serviceTarget = context.getCapabilityServiceTarget();
+        CapabilityServiceBuilder<?> builder = serviceTarget.addCapability(APPCLIENT_CAPABILITY);
         Consumer<ApplicationClientDeploymentService> consumer = builder.provides(APPCLIENT_CAPABILITY);
         Supplier<ModelControllerClientFactory> mcfSupplier = builder.requires(ModelControllerClientFactory.SERVICE_DESCRIPTOR);
         Supplier<Executor> executorSupplier = builder.requires(Capabilities.MANAGEMENT_EXECUTOR);
@@ -99,9 +101,9 @@ class AppClientSubsystemAdd extends AbstractBoottimeAddStepHandler {
 
         try {
             if(connectionPropertiesUrl != null) {
-                context.getServiceTarget().addService(APP_CLIENT_URI_SERVICE_NAME, new ConstantService<>(null))
+                serviceTarget.addService(APP_CLIENT_URI_SERVICE_NAME, new ConstantService<>(null))
                         .install();
-                context.getServiceTarget().addService(APP_CLIENT_EJB_PROPERTIES_SERVICE_NAME, new ConstantService<>(connectionPropertiesUrl))
+                serviceTarget.addService(APP_CLIENT_EJB_PROPERTIES_SERVICE_NAME, new ConstantService<>(connectionPropertiesUrl))
                         .install();
             } else {
                 URI uri;
@@ -110,9 +112,9 @@ class AppClientSubsystemAdd extends AbstractBoottimeAddStepHandler {
                 } else {
                     uri = new URI(hostUrl);
                 }
-                context.getServiceTarget().addService(APP_CLIENT_URI_SERVICE_NAME, new ConstantService<>(uri))
+                serviceTarget.addService(APP_CLIENT_URI_SERVICE_NAME, new ConstantService<>(uri))
                         .install();
-                context.getServiceTarget().addService(APP_CLIENT_EJB_PROPERTIES_SERVICE_NAME, new ConstantService<>(connectionPropertiesUrl))
+                serviceTarget.addService(APP_CLIENT_EJB_PROPERTIES_SERVICE_NAME, new ConstantService<>(connectionPropertiesUrl))
                         .install();
             }
         } catch (URISyntaxException e) {

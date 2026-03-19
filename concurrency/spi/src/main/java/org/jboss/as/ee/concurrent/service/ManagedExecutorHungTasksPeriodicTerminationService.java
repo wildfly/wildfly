@@ -31,7 +31,7 @@ public class ManagedExecutorHungTasksPeriodicTerminationService implements Servi
     private Consumer<ManagedExecutorHungTasksPeriodicTerminationService> consumer;
 
     public void install(OperationContext context) {
-        ServiceBuilder serviceBuilder = context.getServiceTarget()
+        ServiceBuilder serviceBuilder = context.getCapabilityServiceTarget()
                 .addService(ConcurrentServiceNames.HUNG_TASK_PERIODIC_TERMINATION_SERVICE_NAME)
                 .setInstance(this);
         consumer = serviceBuilder.provides(ConcurrentServiceNames.HUNG_TASK_PERIODIC_TERMINATION_SERVICE_NAME);

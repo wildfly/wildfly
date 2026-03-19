@@ -31,7 +31,8 @@ public class RestartParentResourceWriteAttributeHandler extends RestartParentWri
 
     @Override
     protected void recreateParentService(OperationContext context, PathAddress parentAddress, ModelNode parentModel) throws OperationFailedException {
-        this.parentFactory.createServiceConfigurator(parentAddress).configure(context, parentModel).build(context.getServiceTarget()).install();
+        this.parentFactory.createServiceConfigurator(parentAddress).configure(context, parentModel)
+                .build(context.getCapabilityServiceTarget()).install();
     }
 
     @Override

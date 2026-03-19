@@ -34,7 +34,7 @@ public class ExternalJMSTopicAdd extends AbstractAddStepHandler {
     @Override
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
         final String name = context.getCurrentAddressValue();
-        final ServiceTarget serviceTarget = context.getServiceTarget();
+        final ServiceTarget serviceTarget = context.getCapabilityServiceTarget();
 
         // Do not pass the JNDI bindings to ActiveMQ but install them directly instead so that the
         // dependencies from the BinderServices to the JMSQueueService are not broken

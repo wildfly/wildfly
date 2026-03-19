@@ -39,7 +39,7 @@ public class JMSTopicAdd extends AbstractAddStepHandler {
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
         final String name = context.getCurrentAddressValue();
         final ServiceName serviceName = MessagingServices.getActiveMQServiceName(context.getCurrentAddress());
-        final ServiceTarget serviceTarget = context.getServiceTarget();
+        final ServiceTarget serviceTarget = context.getCapabilityServiceTarget();
 
         // Do not pass the JNDI bindings to ActiveMQ but install them directly instead so that the
         // dependencies from the BinderServices to the JMSQueueService are not broken

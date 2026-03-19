@@ -42,7 +42,7 @@ final class BufferCacheAdd extends AbstractAddStepHandler {
         final int maxRegions = BufferCacheDefinition.MAX_REGIONS.resolveModelAttribute(context, model).asInt();
 
         final BufferCacheService service = new BufferCacheService(bufferSize, buffersPerRegions, maxRegions);
-        final ServiceTarget target = context.getServiceTarget();
+        final ServiceTarget target = context.getCapabilityServiceTarget();
         target.addService(BufferCacheService.SERVICE_NAME.append(name)).setInstance(service)
                 .setInitialMode(ServiceController.Mode.ON_DEMAND).install();
     }

@@ -25,7 +25,7 @@ public class PropertiesConfigSourceRegistrationService implements Service {
     }
 
     static void install(OperationContext context, String name, PropertiesConfigSource configSource, Registry registry) {
-        context.getServiceTarget()
+        context.getCapabilityServiceTarget()
                 .addService(ServiceNames.CONFIG_SOURCE.append(name))
                 .setInstance(new PropertiesConfigSourceRegistrationService(name, configSource, registry))
                 .install();

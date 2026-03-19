@@ -69,7 +69,7 @@ public class SocketDiscoveryGroupAdd extends AbstractAddStepHandler {
         if (service != null) {
             context.reloadRequired();
         } else {
-            final ServiceTarget target = context.getServiceTarget();
+            final ServiceTarget target = context.getCapabilityServiceTarget();
             if (model.hasDefined(JGROUPS_CLUSTER.getName())) {
                 // nothing to do, in that case, the clustering.jgroups subsystem will have setup the stack
             } else if(model.hasDefined(RemoteTransportDefinition.SOCKET_BINDING.getName())) {

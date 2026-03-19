@@ -106,7 +106,7 @@ class JPASubSystemAdd extends AbstractBoottimeAddStepHandler {
         final String dataSourceName = DEFAULT_DATASOURCE.resolveModelAttribute(context, model).asStringOrNull();
         final ExtendedPersistenceInheritance defaultExtendedPersistenceInheritance = ExtendedPersistenceInheritance.valueOf(DEFAULT_EXTENDEDPERSISTENCE_INHERITANCE.resolveModelAttribute(context, model).asString());
 
-        final ServiceTarget target = context.getServiceTarget();
+        final ServiceTarget target = context.getCapabilityServiceTarget();
         JPAService.addService(target, dataSourceName, defaultExtendedPersistenceInheritance);
         JPAUserTransactionListenerService.addService(target);
 

@@ -138,13 +138,13 @@ class MessagingSubsystemAdd extends AbstractBoottimeAddStepHandler {
             MessagingLogger.ROOT_LOGGER.debugf("Setting global client thread pool size to: regular=%s, scheduled=%s", threadPoolMaxSizeValue, scheduledThreadPoolMaxSizeValue);
             ActiveMQClient.setGlobalThreadPoolProperties(threadPoolMaxSizeValue, scheduledThreadPoolMaxSizeValue, ActiveMQClient.DEFAULT_FLOW_CONTROL_THREAD_POOL_MAX_SIZE);
         }
-        context.getServiceTarget().addService(MessagingServices.ACTIVEMQ_CLIENT_THREAD_POOL)
+        context.getCapabilityServiceTarget().addService(MessagingServices.ACTIVEMQ_CLIENT_THREAD_POOL)
                 .setInstance( new ThreadPoolService())
                 .install();
         context.addStep(new OperationStepHandler() {
             @Override
             public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-                final ServiceTarget serviceTarget = context.getServiceTarget();
+                final ServiceTarget serviceTarget = context.getCapabilityServiceTarget();
                 final ServiceBuilder serviceBuilder = serviceTarget.addService(CONFIGURATION_CAPABILITY.getCapabilityServiceName());
                 // Transform the configuration based on the recursive model
                 final ModelNode model = Resource.Tools.readModel(context.readResource(PathAddress.EMPTY_ADDRESS));

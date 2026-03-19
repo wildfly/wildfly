@@ -45,7 +45,7 @@ public class WorkManagerAdd extends AbstractAddStepHandler {
 
         String name = JcaWorkManagerDefinition.WmParameters.NAME.getAttribute().resolveModelAttribute(context, resource.getModel()).asString();
 
-        ServiceTarget serviceTarget = context.getServiceTarget();
+        ServiceTarget serviceTarget = context.getCapabilityServiceTarget();
 
 
         NamedWorkManager wm = new NamedWorkManager(name);

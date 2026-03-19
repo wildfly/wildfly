@@ -462,7 +462,7 @@ class ServerAdd extends AbstractAddStepHandler {
                 for (CoreQueueConfiguration queueConfiguration : configuration.getQueueConfigurations()) {
                     if (coreQueues.has(queueConfiguration.getName())) {
                         final ServiceName queueServiceName = activeMQServiceName.append(queueConfiguration.getName());
-                        final ServiceBuilder sb = context.getServiceTarget().addService(queueServiceName);
+                        final ServiceBuilder sb = context.getCapabilityServiceTarget().addService(queueServiceName);
                         sb.requires(ActiveMQActivationService.getServiceName(activeMQServiceName));
                         Supplier<ActiveMQBroker> serverSupplier = sb.requires(activeMQServiceName);
                         final QueueService queueService = new QueueService(serverSupplier, queueConfiguration, false, false);

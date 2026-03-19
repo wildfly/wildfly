@@ -104,7 +104,7 @@ public class NamingBindingAdd extends AbstractAddStepHandler {
         binderService.getManagedObjectInjector().inject(new MutableManagedReferenceFactory(referenceFactory));
         final ContextNames.BindInfo bindInfo = ContextNames.bindInfoFor(name);
 
-        final ServiceTarget serviceTarget = context.getServiceTarget();
+        final ServiceTarget serviceTarget = context.getCapabilityServiceTarget();
         ServiceBuilder<ManagedReferenceFactory> builder = serviceTarget.addService(bindInfo.getBinderServiceName(), binderService)
                 .addDependency(bindInfo.getParentContextServiceName(), ServiceBasedNamingStore.class, binderService.getNamingStoreInjector());
 
@@ -131,7 +131,7 @@ public class NamingBindingAdd extends AbstractAddStepHandler {
         final Hashtable<String, String> environment = getObjectFactoryEnvironment(context, model);
         ContextListAndJndiViewManagedReferenceFactory factory = new ObjectFactoryManagedReference(objectFactoryClassInstance, name, environment);
 
-        final ServiceTarget serviceTarget = context.getServiceTarget();
+        final ServiceTarget serviceTarget = context.getCapabilityServiceTarget();
         final ContextNames.BindInfo bindInfo = ContextNames.bindInfoFor(name);
 
 
@@ -186,7 +186,7 @@ public class NamingBindingAdd extends AbstractAddStepHandler {
 
         final ObjectFactory objectFactoryClassInstance = new ExternalContextObjectFactory();
 
-        final ServiceTarget serviceTarget = context.getServiceTarget();
+        final ServiceTarget serviceTarget = context.getCapabilityServiceTarget();
         final ContextNames.BindInfo bindInfo = ContextNames.bindInfoFor(name);
 
         final Hashtable<String, String> environment = getObjectFactoryEnvironment(context, model);
@@ -241,7 +241,7 @@ public class NamingBindingAdd extends AbstractAddStepHandler {
 
         final String lookup = NamingBindingResourceDefinition.LOOKUP.resolveModelAttribute(context, model).asString();
 
-        final ServiceTarget serviceTarget = context.getServiceTarget();
+        final ServiceTarget serviceTarget = context.getCapabilityServiceTarget();
         final ContextNames.BindInfo bindInfo = ContextNames.bindInfoFor(name);
 
         final BinderService binderService = new BinderService(name);

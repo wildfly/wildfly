@@ -52,7 +52,7 @@ class ConfigSourceRootRegistrationService implements Service {
     }
 
     static void install(OperationContext context, String name, String path, String relativeTo, int ordinal, Registry<ConfigSourceProvider> registry) {
-        ServiceBuilder<?> builder = context.getServiceTarget()
+        ServiceBuilder<?> builder = context.getCapabilityServiceTarget()
                 .addService(ServiceNames.CONFIG_SOURCE_ROOT.append(name));
         Supplier<PathManager> pathManager = builder.requires(context.getCapabilityServiceName(PathManager.SERVICE_DESCRIPTOR));
 
