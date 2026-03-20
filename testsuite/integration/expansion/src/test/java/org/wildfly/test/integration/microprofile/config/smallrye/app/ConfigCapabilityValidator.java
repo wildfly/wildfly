@@ -16,7 +16,6 @@ import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StopContext;
-import org.wildfly.service.descriptor.UnaryServiceDescriptor;
 
 /**
  * ServiceActivator that validates the microprofile-config capability service is properly installed.
@@ -26,10 +25,6 @@ import org.wildfly.service.descriptor.UnaryServiceDescriptor;
  */
 public class ConfigCapabilityValidator implements ServiceActivator {
 
-    // The capability descriptor - matches what's defined in MicroProfileSubsystemDefinition
-    private static final UnaryServiceDescriptor<ConfigProviderResolver> CONFIG_CAPABILITY_DESCRIPTOR =
-            UnaryServiceDescriptor.of("org.wildfly.microprofile.config", ConfigProviderResolver.class);
-
     // Static holder for the resolver from the capability service
     private static volatile ConfigProviderResolver capabilityResolver;
     private static volatile Config capabilityConfig;
@@ -37,11 +32,11 @@ public class ConfigCapabilityValidator implements ServiceActivator {
     @Override
     public void activate(ServiceActivatorContext context) {
         ServiceBuilder<?> builder = context.getServiceTarget()
-                .addService(ServiceName.of("test", "config-capability-validator"));
+                .addService();
 
         // Require the microprofile-config capability service
         // Use parse() to treat the whole string as a single service name
-        ServiceName capabilityServiceName = ServiceName.parse(CONFIG_CAPABILITY_DESCRIPTOR.getName());
+        ServiceName capabilityServiceName = ServiceName.parse("org.wildfly.microprofile.config");
 
         Supplier<ConfigProviderResolver> resolverSupplier = builder.requires(capabilityServiceName);
 

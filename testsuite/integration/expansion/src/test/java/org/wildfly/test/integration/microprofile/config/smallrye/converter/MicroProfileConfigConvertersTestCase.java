@@ -16,7 +16,6 @@ import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
-import org.jboss.as.arquillian.setup.ReloadServerSetupTask;
 import org.jboss.as.test.shared.PermissionUtils;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -33,7 +32,7 @@ import org.wildfly.test.integration.microprofile.config.smallrye.AssertUtils;
  */
 @RunWith(Arquillian.class)
 @RunAsClient
-@ServerSetup({SetupTask.class, ReloadServerSetupTask.class})
+@ServerSetup({SetupTask.class})
 public class MicroProfileConfigConvertersTestCase extends AbstractMicroProfileConfigTestCase {
 
     @Deployment

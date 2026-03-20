@@ -21,6 +21,7 @@ import org.jboss.as.server.AbstractDeploymentChainStep;
 import org.jboss.as.server.DeploymentProcessorTarget;
 import org.jboss.as.server.deployment.Phase;
 import org.jboss.dmr.ModelNode;
+import org.jboss.msc.Service;
 import org.wildfly.extension.microprofile.config.smallrye._private.MicroProfileConfigLogger;
 import org.wildfly.extension.microprofile.config.smallrye.deployment.DependencyProcessor;
 import org.wildfly.extension.microprofile.config.smallrye.deployment.SubsystemDeploymentProcessor;
@@ -79,7 +80,7 @@ class MicroProfileConfigSubsystemAdd extends AbstractBoottimeAddStepHandler {
         // Install the capability service so dependent subsystems can wait on config availability
         ConfigProviderResolver resolver = ConfigProviderResolver.instance();
         CapabilityServiceBuilder<?> sb = context.getCapabilityServiceTarget().addService();
-        sb.setInstance(org.jboss.msc.Service.newInstance(sb.provides(MicroProfileSubsystemDefinition.CONFIG_CAPABILITY), resolver));
+        sb.setInstance(Service.newInstance(sb.provides(MicroProfileSubsystemDefinition.CONFIG_CAPABILITY), resolver));
 
         // Add dependencies on all config-source and config-source-provider child resources
         // This ensures all config sources are registered before this service starts
