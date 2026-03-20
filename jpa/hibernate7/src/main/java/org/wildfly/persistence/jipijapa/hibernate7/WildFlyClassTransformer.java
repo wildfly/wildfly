@@ -6,6 +6,7 @@ package org.wildfly.persistence.jipijapa.hibernate7;
 
 import org.hibernate.bytecode.enhance.spi.DefaultEnhancementContext;
 import org.hibernate.bytecode.enhance.spi.UnloadedClass;
+import org.hibernate.bytecode.enhance.spi.UnloadedField;
 import org.hibernate.jpa.internal.enhance.EnhancingClassTransformerImpl;
 
 /**
@@ -18,6 +19,11 @@ public class WildFlyClassTransformer extends EnhancingClassTransformerImpl {
 
     public WildFlyClassTransformer() {
         super(new DefaultEnhancementContext() {
+
+            @Override
+            public boolean doBiDirectionalAssociationManagement(UnloadedField field) {
+                return false;
+            }
 
             @Override
             public boolean doExtendedEnhancement(UnloadedClass classDescriptor) {
