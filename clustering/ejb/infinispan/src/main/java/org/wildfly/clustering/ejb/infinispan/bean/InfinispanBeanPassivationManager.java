@@ -9,7 +9,10 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executor;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.IntUnaryOperator;
 
 import org.infinispan.Cache;
 import org.wildfly.clustering.cache.Key;
@@ -19,20 +22,28 @@ import org.wildfly.clustering.cache.infinispan.embedded.listener.PassivationCach
 import org.wildfly.clustering.ejb.bean.BeanInstance;
 import org.wildfly.clustering.ejb.cache.bean.BeanGroupKey;
 import org.wildfly.clustering.ejb.infinispan.logging.InfinispanEjbLogger;
+import org.wildfly.clustering.function.Consumer;
+import org.wildfly.clustering.function.Function;
+import org.wildfly.clustering.function.IntPredicate;
 import org.wildfly.clustering.marshalling.MarshalledValue;
-import org.wildfly.clustering.server.Registration;
 
 /**
  * @author Paul Ferraro
  */
-public class InfinispanBeanGroupListener<K, V extends BeanInstance<K>, C> implements Registration {
+public class InfinispanBeanPassivationManager<K, V extends BeanInstance<K>, C> implements BeanPassivationManager {
+    private static final Function<String, AtomicInteger> COUNTER_FACTORY = Consumer.<String>of().thenReturn(AtomicInteger::new);
+    private static final IntUnaryOperator INCREMENT = Math::incrementExact;
+    private static final IntUnaryOperator DECREMENT = org.wildfly.clustering.function.IntUnaryOperator.when(IntPredicate.POSITIVE, Math::decrementExact, IntUnaryOperator.identity());
 
     private final Cache<Key<K>, ?> cache;
     private final C context;
     private final Executor executor;
     private final ListenerRegistration passivationListenerRegistration;
+    // Track number of passivated bean instances per component
+    // Filtering and counting cache store entries is prohibitively expensive
+    private final Map<String, AtomicInteger> passivations = new ConcurrentHashMap<>();
 
-    public InfinispanBeanGroupListener(EmbeddedCacheConfiguration configuration, C context) {
+    public InfinispanBeanPassivationManager(EmbeddedCacheConfiguration configuration, C context) {
         this.cache = configuration.getCache();
         this.context = context;
         // We only need to listen for activation/passivation events for non-persistent caches
@@ -40,6 +51,12 @@ public class InfinispanBeanGroupListener<K, V extends BeanInstance<K>, C> implem
         this.executor = !configuration.getCacheProperties().isPersistent() ? configuration.getExecutor() : null;
         Cache<BeanGroupKey<K>, MarshalledValue<Map<K, V>, C>> beanGroupCache = configuration.getCache();
         this.passivationListenerRegistration = (this.executor != null) ? new PassivationCacheEventListenerRegistrar<>(beanGroupCache, this::prePassivate, this::postActivate).register(BeanGroupKey.class) : ListenerRegistration.EMPTY;
+    }
+
+    @Override
+    public int applyAsInt(String name) {
+        AtomicInteger count = this.passivations.get(name);
+        return (count != null) ? count.get() : 0;
     }
 
     @Override
@@ -54,6 +71,7 @@ public class InfinispanBeanGroupListener<K, V extends BeanInstance<K>, C> implem
             for (V instance : instances.values()) {
                 InfinispanEjbLogger.ROOT_LOGGER.tracef("Invoking post-activate callback for bean %s", instance.getId());
                 instance.postActivate();
+                this.passivations.computeIfAbsent(instance.getName(), COUNTER_FACTORY).updateAndGet(DECREMENT);
             }
         } catch (IOException e) {
             InfinispanEjbLogger.ROOT_LOGGER.warn(e.getLocalizedMessage(), e);
@@ -70,6 +88,7 @@ public class InfinispanBeanGroupListener<K, V extends BeanInstance<K>, C> implem
                     K id = instance.getId();
                     InfinispanEjbLogger.ROOT_LOGGER.tracef("Invoking pre-passivate callback for bean %s", id);
                     instance.prePassivate();
+                    this.passivations.computeIfAbsent(instance.getName(), COUNTER_FACTORY).updateAndGet(INCREMENT);
                     passivated.add(instance);
                     // Cascade eviction to creation meta data entry
                     this.executor.execute(() -> this.cache.evict(new InfinispanBeanMetaDataKey<>(id)));

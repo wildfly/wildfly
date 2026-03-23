@@ -19,6 +19,12 @@ public interface BeanInstance<K> {
     K getId();
 
     /**
+     * Returns the name of the bean component.
+     * @return the name of the bean component.
+     */
+    String getName();
+
+    /**
      * Invoked prior to serializing this bean instance for the purpose of replication or persistence.
      */
     void prePassivate();

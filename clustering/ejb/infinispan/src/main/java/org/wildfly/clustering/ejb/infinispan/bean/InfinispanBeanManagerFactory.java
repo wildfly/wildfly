@@ -6,6 +6,7 @@ package org.wildfly.clustering.ejb.infinispan.bean;
 
 import java.time.Duration;
 import java.util.Optional;
+import java.util.function.IntSupplier;
 
 import org.infinispan.Cache;
 import org.wildfly.clustering.ejb.bean.BeanInstance;
@@ -62,6 +63,11 @@ public class InfinispanBeanManagerFactory<K, V extends BeanInstance<K>> implemen
         @Override
         public String getBeanName() {
             return this.managerConfiguration.getBeanName();
+        }
+
+        @Override
+        public IntSupplier getPassivations() {
+            return this.factoryConfiguration.getPassivations();
         }
 
         @Override

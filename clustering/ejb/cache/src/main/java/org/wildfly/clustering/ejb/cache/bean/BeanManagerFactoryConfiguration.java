@@ -5,6 +5,8 @@
 
 package org.wildfly.clustering.ejb.cache.bean;
 
+import java.util.function.IntSupplier;
+
 import org.wildfly.clustering.ejb.bean.BeanConfiguration;
 import org.wildfly.clustering.ejb.bean.BeanInstance;
 import org.wildfly.clustering.server.Group;
@@ -22,4 +24,5 @@ public interface BeanManagerFactoryConfiguration<K, V extends BeanInstance<K>, M
     BeanConfiguration getBeanConfiguration();
     EvictionConfiguration getPassivationConfiguration();
     Group<M> getGroup();
+    IntSupplier getPassivations();
 }
