@@ -45,6 +45,6 @@ class JaegerContainer extends BaseContainer<JaegerContainer> {
     }
 
     private String getJaegerEndpoint() {
-        return "http://localhost:" + getMappedPort(PORT_JAEGER_QUERY);
+        return String.format("http://%s:%d", getHost(), getMappedPort(PORT_JAEGER_QUERY));
     }
 }
