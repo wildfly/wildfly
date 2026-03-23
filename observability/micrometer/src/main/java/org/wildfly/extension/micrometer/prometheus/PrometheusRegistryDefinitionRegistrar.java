@@ -8,6 +8,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.function.UnaryOperator;
 
+import io.undertow.util.Headers;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -64,6 +65,9 @@ public class PrometheusRegistryDefinitionRegistrar implements ChildResourceDefin
             .build();
     public static final Collection<AttributeDefinition> ATTRIBUTES = List.of(CONTEXT, SECURITY_ENABLED);
 
+    // https://prometheus.io/docs/instrumenting/exposition_formats/#prometheus-text-format
+    private static final String PROMETHEUS_CONTENT_TYPE = "text/plain; version=0.0.4; charset=utf-8";
+
     private final WildFlyCompositeRegistry wildFlyRegistry;
 
     public PrometheusRegistryDefinitionRegistrar(WildFlyCompositeRegistry wildFlyRegistry) {
@@ -99,7 +103,8 @@ public class PrometheusRegistryDefinitionRegistrar implements ChildResourceDefin
                     wildFlyRegistry.add(prometheusRegistry);
                     ehm.addManagementHandler(serviceContext, securityEnabled,
                             exchange -> {
-                                exchange.getResponseSender().send(prometheusRegistry.scrape());
+                                exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, PROMETHEUS_CONTENT_TYPE);
+                                exchange.getResponseSender().send(prometheusRegistry.scrape(PROMETHEUS_CONTENT_TYPE));
                             }
                     );
                 })
