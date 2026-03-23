@@ -446,5 +446,26 @@
                 </plugins>
             </build>
         </profile>
+        <profile>
+            <id>legacy-secondary-java17-home</id>
+            <activation>
+                <jdk>[18,)</jdk>
+                <property>
+                    <name>java17.home</name>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <artifactId>maven-surefire-plugin</artifactId>
+                        <configuration>
+                            <systemPropertyVariables>
+                                <jboss.test.legacy.host.java17.home>${java17.home}</jboss.test.legacy.host.java17.home>
+                            </systemPropertyVariables>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
     </profiles>
 </project>
