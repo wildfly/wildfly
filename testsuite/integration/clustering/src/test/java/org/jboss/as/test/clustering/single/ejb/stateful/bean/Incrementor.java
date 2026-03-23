@@ -4,13 +4,8 @@
  */
 package org.jboss.as.test.clustering.single.ejb.stateful.bean;
 
-import jakarta.ejb.Remove;
-
 public interface Incrementor {
     Result<Integer> increment();
 
-    @Remove
-    default void remove() {
-        // Do nothing
-    }
+    void remove();
 }
