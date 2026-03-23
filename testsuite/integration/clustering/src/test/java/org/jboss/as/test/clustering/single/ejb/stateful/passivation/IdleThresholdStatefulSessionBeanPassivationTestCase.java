@@ -16,6 +16,7 @@ import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.container.ManagementClient;
+import org.jboss.as.test.clustering.ClusterTestUtil;
 import org.jboss.as.test.clustering.PassivationEventTracker;
 import org.jboss.as.test.clustering.PassivationEventTrackerBean;
 import org.jboss.as.test.clustering.PassivationEventTrackerUtil;
@@ -49,6 +50,7 @@ import org.wildfly.test.stabilitylevel.StabilityServerSetupSnapshotRestoreTasks;
         IdleThresholdStatefulSessionBeanPassivationTestCase.ServerSetupTask.class,
 })
 public class IdleThresholdStatefulSessionBeanPassivationTestCase {
+    private static final String SFSB_METRIC_PATTERN = "/deployment=%s/subsystem=ejb3/stateful-session-bean=%s:read-attribute(name=%s)";
 
     static class ServerSetupTask extends ManagementServerSetupTask {
         ServerSetupTask() {
@@ -94,6 +96,12 @@ public class IdleThresholdStatefulSessionBeanPassivationTestCase {
 
     @Test
     void test(@ArquillianResource ManagementClient managementClient) throws Exception {
+        String activeBeansOperation = String.format(SFSB_METRIC_PATTERN, APPLICATION_NAME, PassivatingIncrementorBean.class.getSimpleName(), "cache-size");
+        String passiveBeansOperation = String.format(SFSB_METRIC_PATTERN, APPLICATION_NAME, PassivatingIncrementorBean.class.getSimpleName(), "passivated-count");
+
+        assertEquals(0L, ClusterTestUtil.execute(managementClient, activeBeansOperation).asLong());
+        assertEquals(0L, ClusterTestUtil.execute(managementClient, passiveBeansOperation).asLong());
+
         PassivatingIncrementor bean = this.directory.lookupStateful(PassivatingIncrementorBean.class, PassivatingIncrementor.class);
         PassivationEventTracker eventTracker = this.directory.lookupStateless(PassivationEventTrackerBean.class, PassivationEventTracker.class);
 
@@ -108,6 +116,9 @@ public class IdleThresholdStatefulSessionBeanPassivationTestCase {
         Map.Entry<Object, PassivationEventTrackerUtil.EventType> event = eventTracker.pollPassivationEvent();
         assertNull(event);
 
+        assertEquals(1L, ClusterTestUtil.execute(managementClient, activeBeansOperation).asLong());
+        assertEquals(0L, ClusterTestUtil.execute(managementClient, passiveBeansOperation).asLong());
+
         // Step 2: Poll for PASSIVATION event from the server (without accessing the bean directly as to not activate it)
         event = Awaitility.await("stateful bean to passivate")
                 .atMost(PASSIVATION_POLLING_DURATION)
@@ -116,6 +127,9 @@ public class IdleThresholdStatefulSessionBeanPassivationTestCase {
 
         // Step 3: Poll to verify bean was passivated due to idle timeout
         assertEquals(PassivationEventTrackerUtil.EventType.PASSIVATION, event.getValue(), "Bean should have been passivated due to idle timeout");
+
+        assertEquals(0L, ClusterTestUtil.execute(managementClient, activeBeansOperation).asLong());
+        assertEquals(1L, ClusterTestUtil.execute(managementClient, passiveBeansOperation).asLong());
 
         // Step 4: Access the bean - this should trigger activation
         // The bean should have been passivated while idle
@@ -126,6 +140,9 @@ public class IdleThresholdStatefulSessionBeanPassivationTestCase {
         assertNotNull(event, "Activation event should be present");
         assertEquals(beanIdentifier, event.getKey(), "Event should be for the correct bean");
         assertEquals(PassivationEventTrackerUtil.EventType.ACTIVATION, event.getValue(), "Event should be ACTIVATION");
+
+        assertEquals(1L, ClusterTestUtil.execute(managementClient, activeBeansOperation).asLong());
+        assertEquals(0L, ClusterTestUtil.execute(managementClient, passiveBeansOperation).asLong());
 
         // Step 5: Test a second idle cycle
         assertEquals(3, bean.increment().getValue().intValue(), "Value should be incremented to 3");
@@ -138,6 +155,9 @@ public class IdleThresholdStatefulSessionBeanPassivationTestCase {
 
         assertNotNull(event, "Bean should have been passivated again after second idle timeout");
 
+        assertEquals(0L, ClusterTestUtil.execute(managementClient, activeBeansOperation).asLong());
+        assertEquals(1L, ClusterTestUtil.execute(managementClient, passiveBeansOperation).asLong());
+
         // Access the bean again - should trigger second activation
         assertEquals(4, bean.increment().getValue().intValue(), "Value should be preserved and incremented after second passivation");
 
@@ -147,9 +167,15 @@ public class IdleThresholdStatefulSessionBeanPassivationTestCase {
         assertEquals(beanIdentifier, event.getKey(), "Event should be for the correct bean");
         assertEquals(PassivationEventTrackerUtil.EventType.ACTIVATION, event.getValue(), "Event should be ACTIVATION");
 
+        assertEquals(1L, ClusterTestUtil.execute(managementClient, activeBeansOperation).asLong());
+        assertEquals(0L, ClusterTestUtil.execute(managementClient, passiveBeansOperation).asLong());
+
         // Cleanup
         bean.remove();
         eventTracker.clearPassivationEvents();
+
+        assertEquals(0L, ClusterTestUtil.execute(managementClient, activeBeansOperation).asLong());
+        assertEquals(0L, ClusterTestUtil.execute(managementClient, passiveBeansOperation).asLong());
     }
 
 }
