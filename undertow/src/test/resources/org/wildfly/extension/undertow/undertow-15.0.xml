@@ -37,6 +37,7 @@
                </request-header>
                <response-code/>
                <response-time time-unit="MICROSECONDS"/>
+               <secure-protocol/>
             </attributes>
             <metadata>
                <property name="@version" value="1"/>
