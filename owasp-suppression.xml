@@ -414,5 +414,15 @@
         <cve>CVE-2025-27817</cve>
         <cve>CVE-2025-27818</cve>
     </suppress>
+
+    <!--  Fix was backported from newer version of Wildfly   -->
+    <suppress>
+        <notes><![CDATA[
+   file name: wildfly-*.jar
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org\.wildfly\.core/wildfly-.*@.*$</packageUrl>
+        <cve>CVE-2025-23368</cve>
+    </suppress>
+
     <!-- ___End of Wildfly-dist suppressions___ -->
 </suppressions>
