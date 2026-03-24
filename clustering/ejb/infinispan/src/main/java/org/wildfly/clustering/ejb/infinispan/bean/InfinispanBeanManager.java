@@ -6,12 +6,11 @@ package org.wildfly.clustering.ejb.infinispan.bean;
 
 import java.time.Duration;
 import java.time.Instant;
-import java.util.EnumSet;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeoutException;
+import java.util.function.IntSupplier;
 import java.util.stream.Stream;
 
 import org.infinispan.Cache;
@@ -76,6 +75,7 @@ public class InfinispanBeanManager<K, V extends BeanInstance<K>, M> implements B
     private final Function<K, CacheContainerGroupMember> primaryOwnerLocator;
     private final Affinity strongAffinity;
     private final SchedulerService<K, ExpirationMetaData> scheduler;
+    private final IntSupplier passivations;
 
     private volatile UnaryOperator<Bean<K, V>> transformer;
 
@@ -182,6 +182,7 @@ public class InfinispanBeanManager<K, V extends BeanInstance<K>, M> implements B
             }
         } : null;
         this.transformer = (closeTask != null) ? bean -> new OnCloseBean<>(bean, closeTask) : UnaryOperator.identity();
+        this.passivations = configuration.getPassivations();
     }
 
     @Override
@@ -298,18 +299,14 @@ public class InfinispanBeanManager<K, V extends BeanInstance<K>, M> implements B
 
     @Override
     public int getActiveCount() {
-        return this.count(EnumSet.of(Flag.SKIP_CACHE_LOAD));
+        CacheStreamFilter<Map.Entry<BeanMetaDataKey<K>, M>> filter = CacheStreamFilter.local(this.cache);
+        try (Stream<Map.Entry<BeanMetaDataKey<K>, M>> entries = filter.apply(this.cache.getAdvancedCache().withFlags(Flag.SKIP_CACHE_LOAD).entrySet().stream())) {
+            return (int) entries.filter(this.filter).count();
+        }
     }
 
     @Override
     public int getPassiveCount() {
-        return this.count(Set.of()) - this.getActiveCount();
-    }
-
-    private int count(Set<Flag> flags) {
-        CacheStreamFilter<Map.Entry<BeanMetaDataKey<K>, M>> filter = CacheStreamFilter.local(this.cache);
-        try (Stream<Map.Entry<BeanMetaDataKey<K>, M>> entries = filter.apply(this.cache.getAdvancedCache().withFlags(flags).entrySet().stream())) {
-            return (int) entries.filter(this.filter).count();
-        }
+        return this.passivations.getAsInt();
     }
 }

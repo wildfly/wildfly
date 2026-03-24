@@ -5,6 +5,8 @@
 
 package org.wildfly.clustering.ejb.cache.bean;
 
+import java.util.function.IntSupplier;
+
 import org.wildfly.clustering.ejb.bean.BeanInstance;
 import org.wildfly.clustering.server.Group;
 import org.wildfly.clustering.server.GroupMember;
@@ -18,4 +20,5 @@ import org.wildfly.clustering.server.GroupMember;
 public interface BeanManagerConfiguration<K, V extends BeanInstance<K>, M, GM extends GroupMember> extends org.wildfly.clustering.ejb.bean.BeanManagerConfiguration<K, V>, BeanMetaDataFactoryConfiguration {
     BeanFactory<K, V, M> getBeanFactory();
     Group<GM> getGroup();
+    IntSupplier getPassivations();
 }
