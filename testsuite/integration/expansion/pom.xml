@@ -542,6 +542,7 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
+                    <runOrder>reversealphabetical</runOrder>
                     <!-- TODO Remove workaround for https://issues.redhat.com/browse/WFLY-20030 *ReactiveMessaging* tests fail with podman -->
                     <reuseForks>false</reuseForks>
                     <environmentVariables>
@@ -695,6 +696,7 @@
                                 <!-- Override the standard module path that points at the shared module set from the dist -->
                                 <module.path>${project.build.directory}/wildfly/modules</module.path>
                             </systemPropertyVariables>
+                            <runOrder>reversealphabetical</runOrder>
                         </configuration>
                     </plugin>
                 </plugins>
@@ -797,6 +799,7 @@
                             </execution>
                         </executions>
                         <configuration>
+                            <runOrder>reversealphabetical</runOrder>
                             <systemPropertyVariables>
                                 <!-- Override the standard module path that points at the shared module set from the dist -->
                                 <module.path>${project.build.directory}/wildfly/modules</module.path>
@@ -949,6 +952,9 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-surefire-plugin</artifactId>
+                        <configuration>
+                            <runOrder>reversealphabetical</runOrder>
+                        </configuration>
                         <executions>
                             <!-- Re-enable the default surefire execution -->
                             <execution>
@@ -1047,6 +1053,9 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-surefire-plugin</artifactId>
+                        <configuration>
+                            <runOrder>reversealphabetical</runOrder>
+                        </configuration>
                         <executions>
                             <!-- Re-enable the default surefire execution -->
                             <execution>
