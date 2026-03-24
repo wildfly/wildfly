@@ -76,7 +76,7 @@
             <artifactId>smallrye-open-api-core</artifactId>
         </dependency>
         <dependency>
-            <groupId>io.undertow</groupId>
+            <groupId>io.undertow.ee</groupId>
             <artifactId>undertow-servlet</artifactId>
         </dependency>
         <dependency>
