@@ -456,7 +456,7 @@
         <version.io.undertow>2.4.0.RC4</version.io.undertow>
         <version.io.undertow.ee>1.0.0.CR1</version.io.undertow.ee>
         <version.io.undertow.jastow>2.2.9.Final</version.io.undertow.jastow>
-        <version.io.vertx.vertx>4.5.25</version.io.vertx.vertx>
+        <version.io.vertx.vertx>4.5.26</version.io.vertx.vertx>
         <version.io.vertx.vertx-kafka-client>4.4.9</version.io.vertx.vertx-kafka-client>
         <version.jakarta.activation.jakarta.activation-api>2.1.4</version.jakarta.activation.jakarta.activation-api>
         <version.jakarta.annotation.jakarta-annotation-api>2.1.1</version.jakarta.annotation.jakarta-annotation-api>
