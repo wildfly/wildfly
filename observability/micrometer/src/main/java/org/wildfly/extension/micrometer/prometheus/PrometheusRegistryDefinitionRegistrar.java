@@ -8,7 +8,14 @@ import java.util.Collection;
 import java.util.List;
 import java.util.function.UnaryOperator;
 
+import io.prometheus.metrics.expositionformats.OpenMetricsTextFormatWriter;
+import io.prometheus.metrics.expositionformats.PrometheusProtobufWriter;
+import io.prometheus.metrics.expositionformats.PrometheusTextFormatWriter;
+import io.undertow.server.HttpServerExchange;
+import io.undertow.util.HeaderValues;
 import io.undertow.util.Headers;
+import io.undertow.util.StatusCodes;
+import jakarta.ws.rs.core.MediaType;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -27,6 +34,7 @@ import org.jboss.as.server.mgmt.domain.ExtensibleHttpManagement;
 import org.jboss.as.version.Stability;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
+import org.jboss.resteasy.util.MediaTypeHelper;
 import org.wildfly.extension.micrometer.MicrometerConfigurationConstants;
 import org.wildfly.extension.micrometer.MicrometerExtensionLogger;
 import org.wildfly.extension.micrometer.MicrometerSubsystemRegistrar;
@@ -65,8 +73,10 @@ public class PrometheusRegistryDefinitionRegistrar implements ChildResourceDefin
             .build();
     public static final Collection<AttributeDefinition> ATTRIBUTES = List.of(CONTEXT, SECURITY_ENABLED);
 
-    // https://prometheus.io/docs/instrumenting/exposition_formats/#prometheus-text-format
-    private static final String PROMETHEUS_CONTENT_TYPE = "text/plain; version=0.0.4; charset=utf-8";
+    // Formats supported in io.prometheus.metrics.expositionformats.ExpositionFormats
+    private static final MediaType PROMETHEUS_TEXT_MEDIA_TYPE = MediaType.valueOf(PrometheusTextFormatWriter.CONTENT_TYPE);
+    private static final MediaType OPENMETRICS_TEXT_MEDIA_TYPE = MediaType.valueOf(OpenMetricsTextFormatWriter.CONTENT_TYPE);
+    private static final MediaType PROMETHEUS_PROTOBUF_MEDIA_TYPE = MediaType.valueOf(PrometheusProtobufWriter.CONTENT_TYPE);
 
     private final WildFlyCompositeRegistry wildFlyRegistry;
 
@@ -102,14 +112,61 @@ public class PrometheusRegistryDefinitionRegistrar implements ChildResourceDefin
                     WildFlyPrometheusRegistry prometheusRegistry = new WildFlyPrometheusRegistry();
                     wildFlyRegistry.add(prometheusRegistry);
                     ehm.addManagementHandler(serviceContext, securityEnabled,
-                            exchange -> {
-                                exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, PROMETHEUS_CONTENT_TYPE);
-                                exchange.getResponseSender().send(prometheusRegistry.scrape(PROMETHEUS_CONTENT_TYPE));
-                            }
+                            exchange -> handleRequest(exchange, prometheusRegistry)
                     );
                 })
                 .startWhen(StartWhen.INSTALLED)
                 .build();
+    }
+
+    private void handleRequest(HttpServerExchange exchange, WildFlyPrometheusRegistry prometheusRegistry) {
+        HeaderValues headerValues = exchange.getRequestHeaders().get(Headers.ACCEPT);
+        List<MediaType> mediaTypes = getSortedMediaTypes(String.join(", ", headerValues));
+        boolean sent = false;
+        for (MediaType mediaType : mediaTypes) {
+            MediaType metricsMediaType = getMetricsMediaType(mediaType);
+            if (metricsMediaType != null) {
+                sendMetrics(metricsMediaType, prometheusRegistry, exchange);
+                sent = true;
+                break;
+            }
+        }
+        if (!sent) {
+            if (headerValues.isEmpty()) {
+                sendMetrics(PROMETHEUS_TEXT_MEDIA_TYPE, prometheusRegistry, exchange);
+            } else {
+                exchange.setStatusCode(StatusCodes.UNSUPPORTED_MEDIA_TYPE);
+                exchange.getResponseSender().send("Unsupported Media Type");
+            }
+        }
+    }
+
+    private static MediaType getMetricsMediaType(MediaType mediaType) {
+        MediaType metricsMediaType = null;
+        if (PROMETHEUS_TEXT_MEDIA_TYPE.isCompatible(mediaType)) {
+            metricsMediaType = PROMETHEUS_TEXT_MEDIA_TYPE;
+        } else if (OPENMETRICS_TEXT_MEDIA_TYPE.isCompatible(mediaType)) {
+            metricsMediaType = OPENMETRICS_TEXT_MEDIA_TYPE;
+        } else if (PROMETHEUS_PROTOBUF_MEDIA_TYPE.isCompatible(mediaType)) {
+            metricsMediaType = PROMETHEUS_PROTOBUF_MEDIA_TYPE;
+        }
+        return metricsMediaType;
+    }
+
+    private void sendMetrics(MediaType mediaType, WildFlyPrometheusRegistry prometheusRegistry, HttpServerExchange exchange) {
+        String metrics = prometheusRegistry.scrape(mediaType.toString());
+        exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, mediaType.toString());
+        exchange.getResponseSender().send(metrics);
+    }
+
+    private List<MediaType> getSortedMediaTypes(String acceptHeaderValues) {
+        if (acceptHeaderValues == null || acceptHeaderValues.isEmpty()) {
+            return List.of(PROMETHEUS_TEXT_MEDIA_TYPE);
+        } else {
+            List<MediaType> types = MediaTypeHelper.parseHeader(acceptHeaderValues);
+            MediaTypeHelper.sortByWeight(types);
+            return types;
+        }
     }
 
     private static class AddHandler implements UnaryOperator<OperationStepHandler> {
