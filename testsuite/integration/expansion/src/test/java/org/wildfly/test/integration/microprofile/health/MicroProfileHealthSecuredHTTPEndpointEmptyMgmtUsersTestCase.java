@@ -17,10 +17,8 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.arquillian.api.ContainerResource;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.container.ManagementClient;
+import org.jboss.as.test.shared.util.AssumeTestGroupUtil;
 import org.jboss.shrinkwrap.api.Archive;
-import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.asset.EmptyAsset;
-import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -32,11 +30,10 @@ public class MicroProfileHealthSecuredHTTPEndpointEmptyMgmtUsersTestCase {
     @ContainerResource
     ManagementClient managementClient;
 
+    // Dummy deployment to trigger @ServerSetup
     @Deployment(testable = false)
-    public static Archive<?> deployment() {
-        // Dummy deployment to trigger @ServerSetup
-        return ShrinkWrap.create(JavaArchive.class, "MicroProfileHealthSecuredHTTPEndpointEmptyMgmtUsersTestCase.jar")
-                .addAsManifestResource(EmptyAsset.INSTANCE, "beans.xml");
+    public static Archive<?> createDummyDeployment() {
+        return AssumeTestGroupUtil.emptyJar(MicroProfileHealthSecuredHTTPEndpointEmptyMgmtUsersTestCase.class.getSimpleName());
     }
 
     @Test

@@ -24,8 +24,7 @@ import org.jboss.as.test.shared.observability.setuptasks.MicrometerSetupTask;
 import org.jboss.as.test.shared.observability.setuptasks.OpenTelemetrySetupTask;
 import org.jboss.as.test.shared.logging.LoggingUtil;
 import org.jboss.dmr.ModelNode;
-import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.asset.StringAsset;
+import org.jboss.as.test.shared.util.AssumeTestGroupUtil;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
 import org.junit.Test;
@@ -45,7 +44,7 @@ public class MultipleMetricsTestCase {
     // Dummy deployment to trigger @ServerSetup
     @Deployment(testable = false)
     public static WebArchive createDummyDeployment() {
-        return ShrinkWrap.create(WebArchive.class, MultipleMetricsTestCase.class.getSimpleName() + ".war").addAsWebResource(new StringAsset(""), "index.html");
+        return AssumeTestGroupUtil.emptyWar(MultipleMetricsTestCase.class.getSimpleName());
     }
 
     private static final ModelNode ADDRESS_ROOT_LOGGER = Operations.createAddress("subsystem", "logging", "root-logger", "ROOT");
