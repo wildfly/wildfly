@@ -23,6 +23,7 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
 
+import io.micrometer.core.instrument.composite.CompositeMeterRegistry;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ModelControllerClientFactory;
 import org.jboss.as.controller.OperationContext;
@@ -33,7 +34,6 @@ import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ProcessStateNotifier;
 import org.jboss.as.controller.ResourceDefinition;
 import org.jboss.as.controller.ResourceRegistration;
-import org.jboss.as.controller.ServiceNameFactory;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.StringListAttributeDefinition;
@@ -46,11 +46,9 @@ import org.jboss.as.controller.management.Capabilities;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
-import org.jboss.msc.service.ServiceName;
 import org.wildfly.common.function.Functions;
 import org.wildfly.extension.micrometer.otlp.OtlpRegistryDefinitionRegistrar;
 import org.wildfly.extension.micrometer.prometheus.PrometheusRegistryDefinitionRegistrar;
@@ -78,10 +76,10 @@ public class MicrometerSubsystemRegistrar implements SubsystemResourceDefinition
     public static final PathElement SUBSYSTEM_PATH = SubsystemResourceDefinitionRegistrar.pathElement(MicrometerConfigurationConstants.NAME);
     public static final ParentResourceDescriptionResolver RESOLVER =
             new SubsystemResourceDescriptionResolver(MicrometerConfigurationConstants.NAME, MicrometerSubsystemRegistrar.class);
-    public static final ServiceName MICROMETER_SERVICE_SERVICE_NAME =
-        ServiceNameFactory.parseServiceName(MICROMETER_MODULE + ".service");
-    static final NullaryServiceDescriptor<MicrometerService> SERVICE_DESCRIPTOR =
-        NullaryServiceDescriptor.of(MICROMETER_SERVICE_SERVICE_NAME.getCanonicalName(), MicrometerService.class);
+    static final NullaryServiceDescriptor<MicrometerService> MICROMETER_SERVICE = NullaryServiceDescriptor.of(MICROMETER_MODULE + ".service", MicrometerService.class);
+
+    public static final NullaryServiceDescriptor<CompositeMeterRegistry> COMPOSITE_METER_REGISTRY = NullaryServiceDescriptor.of(MICROMETER_MODULE + ".registry", CompositeMeterRegistry.class);
+    private static final NullaryServiceDescriptor<WildFlyCompositeRegistry> WILDFLY_METER_REGISTRY = COMPOSITE_METER_REGISTRY.asType(WildFlyCompositeRegistry.class);
 
     static final String[] EXPORTED_MODULES = {
             MICROMETER_API_MODULE,
@@ -116,7 +114,6 @@ public class MicrometerSubsystemRegistrar implements SubsystemResourceDefinition
                     .build();
 
     static final Collection<AttributeDefinition> ATTRIBUTES = List.of(EXPOSED_SUBSYSTEMS);
-    private final WildFlyCompositeRegistry compositeRegistry = new WildFlyCompositeRegistry();
 
     @Override
     public ManagementResourceRegistration register(SubsystemRegistration parent, ManagementResourceRegistrationContext context) {
@@ -139,13 +136,11 @@ public class MicrometerSubsystemRegistrar implements SubsystemResourceDefinition
                     POST_MODULE_MICROMETER,
                     new MicrometerDeploymentProcessor());
             })
-            .withAddOperationRestartFlag(OperationEntry.Flag.RESTART_ALL_SERVICES)
-            .withRemoveOperationRestartFlag(OperationEntry.Flag.RESTART_ALL_SERVICES)
             .build();
 
         ManagementResourceRegistrar.of(descriptor).register(registration);
-        new OtlpRegistryDefinitionRegistrar(compositeRegistry).register(registration, context);
-        new PrometheusRegistryDefinitionRegistrar(compositeRegistry).register(registration, context);
+        new OtlpRegistryDefinitionRegistrar().register(registration, context);
+        new PrometheusRegistryDefinitionRegistrar().register(registration, context);
 
         return registration;
     }
@@ -165,20 +160,27 @@ public class MicrometerSubsystemRegistrar implements SubsystemResourceDefinition
             }
         }
 
+        List<ResourceServiceInstaller> installers = new ArrayList<>(2);
+
+        installers.add(ServiceInstaller.BlockingBuilder.of(WildFlyCompositeRegistry::new)
+                .provides(WILDFLY_METER_REGISTRY)
+                .withLifecycle(BlockingLifecycle.autoClose())
+                .build());
+
         WildFlyMicrometerConfig micrometerConfig = new WildFlyMicrometerConfig.Builder()
             .exposedSubsystems(MicrometerSubsystemRegistrar.EXPOSED_SUBSYSTEMS.unwrap(context, model))
             .build();
 
+        ServiceDependency<WildFlyCompositeRegistry> registry = ServiceDependency.on(WILDFLY_METER_REGISTRY);
         ServiceDependency<ModelControllerClientFactory> mccf = ServiceDependency.on(ModelControllerClientFactory.SERVICE_DESCRIPTOR);
         ServiceDependency<Executor> executor = ServiceDependency.on(Capabilities.MANAGEMENT_EXECUTOR);
         ServiceDependency<ProcessStateNotifier> processStateNotifier = ServiceDependency.on(ProcessStateNotifier.SERVICE_DESCRIPTOR);
 
-        Supplier<MicrometerService> serviceSupplier = () ->
-            new MicrometerService.Builder()
+        Supplier<MicrometerService> serviceSupplier = () -> new MicrometerService.Builder()
                 .micrometerConfig(micrometerConfig)
                 .modelControllerClient(mccf.get().createClient(executor.get()))
                 .processStateNotifier(processStateNotifier.get())
-                .micrometerRegistry(compositeRegistry)
+                .micrometerRegistry(registry.get())
                 .build();
 
         AtomicReference<MicrometerService> captor = new AtomicReference<>();
@@ -193,13 +195,15 @@ public class MicrometerSubsystemRegistrar implements SubsystemResourceDefinition
             }
         }, OperationContext.Stage.VERIFY);
 
-        return ServiceInstaller.BlockingBuilder.of(serviceSupplier)
-            .provides(MICROMETER_SERVICE_SERVICE_NAME)
-            .requires(List.of(mccf, executor, processStateNotifier))
-            .withLifecycle(BlockingLifecycle.compose(MicrometerService::start, Functions.closingConsumer()))
+        installers.add(ServiceInstaller.BlockingBuilder.of(serviceSupplier)
+            .provides(MICROMETER_SERVICE)
+            .requires(List.of(registry, mccf, executor, processStateNotifier))
+            .withLifecycle(BlockingLifecycle.compose(MicrometerService::start, Functions.discardingConsumer()))
             .withCaptor(captor::set) // capture the provided value
             .startWhen(StartWhen.INSTALLED)
-            .build();
+            .build());
+
+        return ResourceServiceInstaller.combine(installers);
     }
 
     private static class TranslateOtlpHandler implements UnaryOperator<OperationStepHandler> {

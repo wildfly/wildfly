@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.UnaryOperator;
 
+import io.micrometer.core.instrument.composite.CompositeMeterRegistry;
 import io.undertow.util.Headers;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
@@ -28,10 +29,10 @@ import org.jboss.as.server.mgmt.domain.ExtensibleHttpManagement;
 import org.jboss.as.version.Stability;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
+import org.wildfly.extension.micrometer.MeterRegistryLifecycle;
 import org.wildfly.extension.micrometer.MicrometerConfigurationConstants;
 import org.wildfly.extension.micrometer.MicrometerExtensionLogger;
 import org.wildfly.extension.micrometer.MicrometerSubsystemRegistrar;
-import org.wildfly.extension.micrometer.registry.WildFlyCompositeRegistry;
 import org.wildfly.service.BlockingLifecycle;
 import org.wildfly.service.Installer.StartWhen;
 import org.wildfly.subsystem.resource.ChildResourceDefinitionRegistrar;
@@ -70,12 +71,6 @@ public class PrometheusRegistryDefinitionRegistrar implements ChildResourceDefin
     // https://prometheus.io/docs/instrumenting/exposition_formats/#prometheus-text-format
     private static final String PROMETHEUS_CONTENT_TYPE = "text/plain; version=0.0.4; charset=utf-8";
 
-    private final WildFlyCompositeRegistry wildFlyRegistry;
-
-    public PrometheusRegistryDefinitionRegistrar(WildFlyCompositeRegistry wildFlyRegistry) {
-        this.wildFlyRegistry = wildFlyRegistry;
-    }
-
     @Override
     public ManagementResourceRegistration register(ManagementResourceRegistration parent, ManagementResourceRegistrationContext context) {
 
@@ -99,16 +94,17 @@ public class PrometheusRegistryDefinitionRegistrar implements ChildResourceDefin
         String serviceContext = CONTEXT.resolveModelAttribute(context, model).asString();
         boolean securityEnabled = SECURITY_ENABLED.resolveModelAttribute(context, model).asBoolean();
 
+        ServiceDependency<CompositeMeterRegistry> compositeRegistry = ServiceDependency.on(MicrometerSubsystemRegistrar.COMPOSITE_METER_REGISTRY);
         ServiceDependency<ExtensibleHttpManagement> management = ServiceDependency.on(HTTP_EXTENSIBILITY_CAPABILITY, ExtensibleHttpManagement.class);
-        Consumer<WildFlyPrometheusRegistry> start = registry -> management.get().addManagementHandler(serviceContext, securityEnabled, exchange -> {
+        Consumer<WildFlyPrometheusRegistry> addHandler = registry -> management.get().addManagementHandler(serviceContext, securityEnabled, exchange -> {
             exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, PROMETHEUS_CONTENT_TYPE);
             exchange.getResponseSender().send(registry.scrape(PROMETHEUS_CONTENT_TYPE));
         });
-        Consumer<WildFlyPrometheusRegistry> stop = registry -> management.get().removeContext(serviceContext);
+        Consumer<WildFlyPrometheusRegistry> removeHandler = registry -> management.get().removeContext(serviceContext);
         return ServiceInstaller.BlockingBuilder.of(WildFlyPrometheusRegistry::new)
-                .requires(management)
-                .withLifecycle(BlockingLifecycle.compose(start.andThen(this.wildFlyRegistry::add), stop.andThen(this.wildFlyRegistry::remove)))
-                .startWhen(StartWhen.INSTALLED)
+                .requires(List.of(management, compositeRegistry))
+                .withLifecycle(BlockingLifecycle.combine(List.of(BlockingLifecycle.compose(addHandler, removeHandler), registry -> new MeterRegistryLifecycle(registry, compositeRegistry.get()))))
+                .startWhen(StartWhen.AVAILABLE)
                 .build();
     }
 

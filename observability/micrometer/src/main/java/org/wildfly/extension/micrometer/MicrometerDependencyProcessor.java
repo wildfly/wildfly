@@ -6,7 +6,7 @@ package org.wildfly.extension.micrometer;
 
 import static org.wildfly.extension.micrometer.MicrometerDeploymentProcessor.CONFIG_ATTACHMENT_KEY;
 import static org.wildfly.extension.micrometer.MicrometerSubsystemRegistrar.EXPORTED_MODULES;
-import static org.wildfly.extension.micrometer.MicrometerSubsystemRegistrar.SERVICE_DESCRIPTOR;
+import static org.wildfly.extension.micrometer.MicrometerSubsystemRegistrar.MICROMETER_SERVICE;
 
 import org.jboss.as.controller.ServiceNameFactory;
 import org.jboss.as.server.deployment.Attachments;
@@ -26,7 +26,7 @@ class MicrometerDependencyProcessor implements DeploymentUnitProcessor {
         // Ensure the MicrometerService is available to the Phase.POST_MODULE MicrometerDeploymentProcessor
         // TODO WFCORE-6941 the kernel should support an API such that an OSH can record this requirement without
         // needing to involve a DUP like this one that is separate from the one that consumes the dependency.
-        phaseContext.addDeploymentDependency(ServiceNameFactory.resolveServiceName(SERVICE_DESCRIPTOR), CONFIG_ATTACHMENT_KEY);
+        phaseContext.addDeploymentDependency(ServiceNameFactory.resolveServiceName(MICROMETER_SERVICE), CONFIG_ATTACHMENT_KEY);
     }
 
     private void addDependencies(DeploymentUnit deploymentUnit) {
