@@ -25,10 +25,9 @@ import org.junit.jupiter.api.Test;
  * @author Radoslav Husar
  */
 @ServerSetup({
-        TLSServerSetupTasks.PhysicalKeyStoresServerSetupTask_NODE_1_2.class,
-        TLSServerSetupTasks.UnsharedSecureJGroupsTransportServerSetupTask_NODE_1_2.class,
+        TLSServerSetupTask.UntrustedCertSecureJGroupsTransport_TCP_NODE_1_2.class,
 })
-class TLSUnsharedKeyCommandDispatcherTestCase extends CommandDispatcherTestCase {
+class UntrustedCertTLSCommandDispatcherTestCase extends CommandDispatcherTestCase {
 
     @Override
     @Test

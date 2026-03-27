@@ -9,7 +9,7 @@ import static org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase.*;
 import org.jboss.as.test.shared.ManagementServerSetupTask;
 
 /**
- * {@link org.jboss.as.arquillian.api.ServerSetupTask}s that replaces a TCP transport with TCP_NIO2.
+ * {@link org.jboss.as.arquillian.api.ServerSetupTask} that replaces a TCP transport with TCP_NIO2 transport.
  *
  * @author Radoslav Husar
  */

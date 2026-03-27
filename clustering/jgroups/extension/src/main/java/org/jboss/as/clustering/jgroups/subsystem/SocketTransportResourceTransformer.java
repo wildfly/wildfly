@@ -22,15 +22,15 @@ public class SocketTransportResourceTransformer implements Consumer<ModelVersion
     private final ResourceTransformationDescriptionBuilder builder;
 
     SocketTransportResourceTransformer(ResourceTransformationDescriptionBuilder parent) {
-        this.builder = parent.addChildResource(SocketTransportResourceDefinitionRegistrar.Transport.TCP.getPathElement());
+        this.builder = parent.addChildResource(SecurableSocketTransportResourceDefinitionRegistrar.Transport.TCP.getPathElement());
     }
 
     @Override
     public void accept(ModelVersion version) {
         if (JGroupsSubsystemModel.VERSION_11_0_0.requiresTransformation(version)) {
             this.builder.getAttributeBuilder()
-                    .addRejectCheck(RejectAttributeChecker.DEFINED, SocketTransportResourceDefinitionRegistrar.CLIENT_SSL_CONTEXT, SocketTransportResourceDefinitionRegistrar.SERVER_SSL_CONTEXT)
-                    .setDiscard(DiscardAttributeChecker.UNDEFINED, SocketTransportResourceDefinitionRegistrar.CLIENT_SSL_CONTEXT, SocketTransportResourceDefinitionRegistrar.SERVER_SSL_CONTEXT)
+                    .addRejectCheck(RejectAttributeChecker.DEFINED, SecurableSocketTransportResourceDefinitionRegistrar.CLIENT_SSL_CONTEXT, SecurableSocketTransportResourceDefinitionRegistrar.SERVER_SSL_CONTEXT)
+                    .setDiscard(DiscardAttributeChecker.UNDEFINED, SecurableSocketTransportResourceDefinitionRegistrar.CLIENT_SSL_CONTEXT, SecurableSocketTransportResourceDefinitionRegistrar.SERVER_SSL_CONTEXT)
                     .end();
         }
     }

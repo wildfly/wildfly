@@ -169,4 +169,16 @@ public interface JGroupsLogger extends BasicLogger {
 
     @Message(id = 36, value = "Unable to load module %s for protocol %s")
     OperationFailedException unableToLoadProtocolModule(String moduleName, String protocolName);
+
+    /**
+     * Warning for when a service requests a non-blocking NIO channel from TLS-secured ManagedSocketFactory.
+     * TLS can only be supported for blocking socket-based communication and NIO channels used by protocols such as FD_SOCK2 cannot be wrapped with TLS.
+     * The channel will be created without TLS encryption, so to secure failure detection communication, use TCP transport-based failure detection (TCP.enable_suspect_events) or the socket-based FD_SOCK protocol.
+     * TCP_NIO2 cannot be configured with TLS in the model; so this does not apply to it.
+     *
+     * @param serviceName name of the service that requested the channel to be created
+     */
+    @LogMessage(level = WARN)
+    @Message(id = 37, value = "Transport of the stack is configured to create TLS sockets and service '%s' requires non-blocking channel for which TLS support is not available. Use TCP transport-based failure detection or socket-based FD_SOCK protocol for also securing the failure detection communication.")
+    void channelTlsNotAvailable(String serviceName);
 }
