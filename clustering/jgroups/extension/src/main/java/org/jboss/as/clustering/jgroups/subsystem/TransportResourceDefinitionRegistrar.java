@@ -43,6 +43,9 @@ public class TransportResourceDefinitionRegistrar extends AbstractTransportResou
         for (MulticastTransportResourceDefinitionRegistrar.Transport transport : EnumSet.allOf(MulticastTransportResourceDefinitionRegistrar.Transport.class)) {
             new MulticastTransportResourceDefinitionRegistrar(transport, this.parentRuntimeHandler).register(parent, context);
         }
+        for (SecurableSocketTransportResourceDefinitionRegistrar.Transport transport : EnumSet.allOf(SecurableSocketTransportResourceDefinitionRegistrar.Transport.class)) {
+            new SecurableSocketTransportResourceDefinitionRegistrar<>(transport, this.parentRuntimeHandler).register(parent, context);
+        }
         for (SocketTransportResourceDefinitionRegistrar.Transport transport : EnumSet.allOf(SocketTransportResourceDefinitionRegistrar.Transport.class)) {
             new SocketTransportResourceDefinitionRegistrar<>(transport, this.parentRuntimeHandler).register(parent, context);
         }

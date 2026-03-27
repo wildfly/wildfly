@@ -189,6 +189,9 @@ public enum JGroupsSubsystemSchema implements SubsystemResourceXMLSchema<JGroups
         NamedResourceRegistrationXMLChoice.Builder builder = this.factory.namedElementChoice(transportElement);
 
         if (JGroupsSubsystemSchema.this.since(VERSION_7_0)) {
+            for (SecurableSocketTransportResourceDefinitionRegistrar.Transport transport : EnumSet.allOf(SecurableSocketTransportResourceDefinitionRegistrar.Transport.class)) {
+                builder.addElement(this.transportBuilder(transport).withElementLocalName(ResourceXMLElementLocalName.KEY).addAttribute(SocketTransportResourceDefinitionRegistrar.CLIENT_SOCKET_BINDING).build());
+            }
             for (SocketTransportResourceDefinitionRegistrar.Transport transport : EnumSet.allOf(SocketTransportResourceDefinitionRegistrar.Transport.class)) {
                 builder.addElement(this.transportBuilder(transport).withElementLocalName(ResourceXMLElementLocalName.KEY).addAttribute(SocketTransportResourceDefinitionRegistrar.CLIENT_SOCKET_BINDING).build());
             }
@@ -242,10 +245,10 @@ public enum JGroupsSubsystemSchema implements SubsystemResourceXMLSchema<JGroups
             });
         }
 
-        if (this.since(JGroupsSubsystemSchema.VERSION_10_0) || this.since(JGroupsSubsystemSchema.VERSION_9_0_COMMUNITY)) {
+        if ((this.since(JGroupsSubsystemSchema.VERSION_10_0) || this.since(JGroupsSubsystemSchema.VERSION_9_0_COMMUNITY)) && registration instanceof SecurableSocketTransportResourceDefinitionRegistrar.Transport) {
             ResourceXMLElement ssl = this.factory.element(this.factory.resolve("ssl-context"))
                     .withCardinality(XMLCardinality.Single.OPTIONAL)
-                    .addAttributes(List.of(SocketTransportResourceDefinitionRegistrar.CLIENT_SSL_CONTEXT, SocketTransportResourceDefinitionRegistrar.SERVER_SSL_CONTEXT))
+                    .addAttributes(List.of(SecurableSocketTransportResourceDefinitionRegistrar.CLIENT_SSL_CONTEXT, SecurableSocketTransportResourceDefinitionRegistrar.SERVER_SSL_CONTEXT))
                     .build();
             contentBuilder.addElement(ssl);
         }

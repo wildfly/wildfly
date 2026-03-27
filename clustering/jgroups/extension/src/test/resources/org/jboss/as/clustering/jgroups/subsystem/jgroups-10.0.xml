@@ -65,5 +65,8 @@
                 <remote-site name="NYC" channel="bridge"/>
             </relay>
         </stack>
+        <stack name="unsecured">
+            <transport type="TCP" socket-binding="some-binding"/>
+        </stack>
     </stacks>
 </subsystem>
