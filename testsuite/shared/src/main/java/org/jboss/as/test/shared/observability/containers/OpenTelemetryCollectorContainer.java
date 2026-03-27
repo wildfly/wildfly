@@ -84,15 +84,15 @@ public class OpenTelemetryCollectorContainer extends BaseContainer<OpenTelemetry
     }
 
     public String getOtlpGrpcEndpoint() {
-        return "http://localhost:" + getMappedPort(OTLP_GRPC_PORT);
+        return String.format("http://%s:%d", getHost(), getMappedPort(OTLP_GRPC_PORT));
     }
 
     public String getOtlpHttpEndpoint() {
-        return "http://localhost:" + getMappedPort(OTLP_HTTP_PORT);
+        return String.format("http://%s:%d", getHost(), getMappedPort(OTLP_HTTP_PORT));
     }
 
     public String getPrometheusUrl() {
-        return "http://localhost:" + getMappedPort(PROMETHEUS_PORT) + "/metrics";
+        return String.format("http://%s:%d/metrics", getHost(), getMappedPort(PROMETHEUS_PORT));
     }
 
     public List<JaegerTrace> getTraces(String serviceName) throws InterruptedException {

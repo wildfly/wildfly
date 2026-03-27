@@ -11,10 +11,9 @@ import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.test.integration.management.base.AbstractCliTestBase;
+import org.jboss.as.test.shared.util.AssumeTestGroupUtil;
 import org.jboss.shrinkwrap.api.Archive;
-import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.exporter.ZipExporter;
-import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.AfterClass;
 import org.junit.Assert;
@@ -32,9 +31,10 @@ public abstract class AbstractReactiveMessagingKafkaWithNativeCompressionFailsOn
         this.propertiesFileName = propertiesFileName;
     }
 
-    @Deployment
-    public static Archive<?> getDeployment() {
-        return ShrinkWrap.create(JavaArchive.class, "dummy.jar");
+    // Dummy deployment to trigger @ServerSetup
+    @Deployment(testable = false)
+    public static Archive<?> createDummyDeployment() {
+        return AssumeTestGroupUtil.emptyJar(AbstractReactiveMessagingKafkaWithNativeCompressionFailsOnWindowsAndMacTestCase.class.getSimpleName());
     }
 
     @BeforeClass
