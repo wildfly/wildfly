@@ -158,11 +158,4 @@ public abstract class AbstractDistributableSession extends AbstractSession {
             }
         });
     }
-
-    /*
-     * New method in io.undertow.server.session.Session that can add the @Override annotation when Undertow is upgraded
-     */
-    public io.undertow.server.session.Session detach() {
-        return new DetachedSession(this.getSessionManager(), this.getId());
-    }
 }
