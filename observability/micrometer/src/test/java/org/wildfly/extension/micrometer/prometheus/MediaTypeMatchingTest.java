@@ -6,6 +6,7 @@ package org.wildfly.extension.micrometer.prometheus;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Map;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -28,14 +29,14 @@ public class MediaTypeMatchingTest {
     @Parameterized.Parameters
     public static Collection<Object[]> data() {
         return Arrays.asList(new Object[][] {
-                { new MediaType("text", "plain", 1), new MediaType("text", "plain", 1), true },
+                { new MediaType("text", "plain", Map.of()), new MediaType("text", "plain", Map.of("q", "1.0")), true },
                 // */plain -> invalid
-                { new MediaType("*", "plain", 1), new MediaType("text", "*", 1), true },
-                { new MediaType("*", "*", 1), new MediaType("application", "plain", 1), true },
-                { new MediaType("text", "plain", 1), new MediaType("text", "*", 1), true },
-                { new MediaType("text", "*", 1), new MediaType("text", "plain", 1), true },
-                { new MediaType("text", "*", 1), new MediaType("application", "plain", 1), false },
-                { new MediaType("text", "plain", 1), new MediaType("application", "vnd.google.protobuf", 0.8), false }
+                { new MediaType("*", "plain", Map.of()), new MediaType("text", "*", Map.of("q", "1.0")), true },
+                { new MediaType("*", "*", Map.of()), new MediaType("application", "plain", Map.of("q", "1.0")), true },
+                { new MediaType("text", "plain", Map.of()), new MediaType("text", "*", Map.of("q", "1.0")), true },
+                { new MediaType("text", "*", Map.of()), new MediaType("text", "plain", Map.of("q", "1.0")), true },
+                { new MediaType("text", "*", Map.of()), new MediaType("application", "plain", Map.of("q", "1.0")), false },
+                { new MediaType("text", "plain", Map.of()), new MediaType("application", "vnd.google.protobuf", Map.of("q", "0.8")), false }
         });
     }
 

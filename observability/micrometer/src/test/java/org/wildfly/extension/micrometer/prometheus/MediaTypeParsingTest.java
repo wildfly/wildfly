@@ -6,6 +6,7 @@ package org.wildfly.extension.micrometer.prometheus;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Map;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -25,18 +26,19 @@ public class MediaTypeParsingTest {
 
     @Parameterized.Parameters
     public static Collection<Object[]> data() {
-        return Arrays.asList(new Object[][] { { "", new MediaType("*", "*", 1) },
-                { "text/plain; version=0.0.4; charset=utf-8", new MediaType("text", "plain", 1) },
+        return Arrays.asList(new Object[][] { { "", new MediaType("*", "*", Map.of("q", "1.0")) },
+                { "text/plain; version=0.0.4; charset=utf-8",
+                        new MediaType("text", "plain", Map.of("version", "0.0.4", "charset", "utf-8", "q", "1.0")) },
                 { "application/openmetrics-text; version=1.0.0; charset=utf-8",
-                        new MediaType("application", "openmetrics-text", 1) },
+                        new MediaType("application", "openmetrics-text", Map.of("version", "1.0.0", "charset", "utf-8", "q", "1.0")) },
                 { "application/vnd.google.protobuf; proto=io.prometheus.client.MetricFamily; encoding=delimited",
-                        new MediaType("application", "vnd.google.protobuf", 1) },
+                        new MediaType("application", "vnd.google.protobuf", Map.of("proto", "io.prometheus.client.MetricFamily", "encoding", "delimited", "q", "1.0")) },
                 { "application/vnd.google.protobuf; proto=io.prometheus.client.MetricFamily; encoding=delimited; q=0.8",
-                        new MediaType("application", "vnd.google.protobuf", 0.8) } });
+                        new MediaType("application", "vnd.google.protobuf", Map.of("proto", "io.prometheus.client.MetricFamily", "encoding", "delimited", "q", "0.8")) } });
     }
 
     @Test
-    public void testParse() {
+    public void testParsing() {
         MediaType parsedMediaType = MediaType.parse(mediaTypeString);
         Assert.assertEquals(expectedMediaType, parsedMediaType);
     }

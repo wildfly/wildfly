@@ -4,7 +4,10 @@
  */
 package org.wildfly.extension.micrometer.prometheus;
 
-record MediaType(String type, String subtype, double q) implements Comparable<MediaType> {
+import java.util.HashMap;
+import java.util.Map;
+
+record MediaType(String type, String subtype, Map<String, String> parameters) implements Comparable<MediaType> {
 
     static final String WILDCARD = "*";
 
@@ -16,25 +19,39 @@ record MediaType(String type, String subtype, double q) implements Comparable<Me
         type = type.isEmpty() ? WILDCARD : type;
         String subtype = types.length > 1 ? types[1].trim() : WILDCARD;
 
-        double q = 1.0;
-        for (String p : parts) {
-            p = p.trim();
-            if (p.startsWith("q=")) {
+        Map<String, String> params = new HashMap<>();
+        params.put("q", "1.0");
+        for (int i = 1; i < parts.length; i++) {
+            String param = parts[i].trim();
+            if (param.isEmpty()) continue;
+
+            String[] kv = param.split("=", 2);
+            String key = kv[0].trim();
+            String value = kv.length > 1 ? kv[1].trim() : "";
+
+            if (value.startsWith("\"") && value.endsWith("\"") && value.length() >= 2) {
+                value = value.substring(1, value.length() - 1);
+            }
+
+            if ("q".equalsIgnoreCase(key)) {
                 try {
-                    q = Double.parseDouble(p.substring(2));
+                    double q = Double.parseDouble(value);
                     // https://datatracker.ietf.org/doc/html/rfc9110#section-12.4.2
                     q = Math.max(0, Math.min(1, q));
+                    params.put(key, Double.toString(q));
                 } catch (NumberFormatException ignored) {
                 }
+            } else {
+                params.put(key, value);
             }
         }
 
-        return new MediaType(type, subtype, q);
+        return new MediaType(type, subtype, params);
     }
 
     boolean matches(String otherType, String otherSubtype) {
-        return (type.equalsIgnoreCase(otherType) || WILDCARD.equals(type) || WILDCARD.equals(otherType)) && (
-                subtype.equalsIgnoreCase(otherSubtype) || WILDCARD.equals(subtype) || WILDCARD.equals(otherSubtype));
+        return (type.equalsIgnoreCase(otherType) || WILDCARD.equals(type) || WILDCARD.equals(otherType)) &&
+                (subtype.equalsIgnoreCase(otherSubtype) || WILDCARD.equals(subtype) || WILDCARD.equals(otherSubtype));
     }
 
     private int specificity() {
@@ -49,7 +66,7 @@ record MediaType(String type, String subtype, double q) implements Comparable<Me
 
     @Override
     public int compareTo(MediaType o) {
-        int qCompare = Double.compare(o.q, this.q);
+        int qCompare = Double.compare(Double.parseDouble(o.parameters.get("q")), Double.parseDouble(this.parameters.get("q")));
         if (qCompare != 0) {
             return qCompare;
         }
@@ -59,11 +76,24 @@ record MediaType(String type, String subtype, double q) implements Comparable<Me
 
     @Override
     public String toString() {
-        return asHeaderString() + ";q=" + q;
+        return asHeaderString() + ";q=" + parameters.get("q");
     }
 
     public String asHeaderString() {
-        return type + "/" + subtype;
+        return type + "/" + subtype + parametersStringWithoutQ();
+    }
+
+    private String parametersStringWithoutQ() {
+        if (parameters.isEmpty()) {
+            return "";
+        }
+        StringBuilder sb = new StringBuilder();
+        for (Map.Entry<String, String> entry : parameters.entrySet()) {
+            if (!"q".equals(entry.getKey())) {
+                sb.append(";").append(entry.getKey()).append("=").append(entry.getValue());
+            }
+        }
+        return sb.toString();
     }
 
 }

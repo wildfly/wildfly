@@ -7,6 +7,7 @@ package org.wildfly.extension.micrometer.prometheus;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.function.UnaryOperator;
 
 import io.prometheus.metrics.expositionformats.OpenMetricsTextFormatWriter;
@@ -168,7 +169,7 @@ public class PrometheusRegistryDefinitionRegistrar implements ChildResourceDefin
 
     private static List<MediaType> parseMediaType(String acceptHeaderValues) {
         if (acceptHeaderValues == null || acceptHeaderValues.isEmpty()) {
-            return List.of(new MediaType(MediaType.WILDCARD, MediaType.WILDCARD, 1.0));
+            return List.of(new MediaType(MediaType.WILDCARD, MediaType.WILDCARD, Map.of()));
         }
 
         return Arrays.stream(acceptHeaderValues.split(",")).map(String::trim).filter(s -> !s.isEmpty()).map(MediaType::parse).sorted()
