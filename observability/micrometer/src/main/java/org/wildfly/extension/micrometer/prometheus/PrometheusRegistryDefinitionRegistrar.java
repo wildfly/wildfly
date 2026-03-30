@@ -134,8 +134,8 @@ public class PrometheusRegistryDefinitionRegistrar implements ChildResourceDefin
             if (headerValues== null || headerValues.isEmpty()) {
                 sendMetrics(PROMETHEUS_TEXT_MEDIA_TYPE, prometheusRegistry, exchange);
             } else {
-                exchange.setStatusCode(StatusCodes.UNSUPPORTED_MEDIA_TYPE);
-                exchange.getResponseSender().send("Unsupported Media Type");
+                exchange.setStatusCode(StatusCodes.NOT_ACCEPTABLE);
+                exchange.getResponseSender().send("Not Acceptable");
             }
         }
     }
@@ -153,8 +153,8 @@ public class PrometheusRegistryDefinitionRegistrar implements ChildResourceDefin
     }
 
     private void sendMetrics(MediaType mediaType, WildFlyPrometheusRegistry prometheusRegistry, HttpServerExchange exchange) {
-        String metrics = prometheusRegistry.scrape(mediaType.toString());
-        exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, mediaType.toString());
+        String metrics = prometheusRegistry.scrape(mediaType.asHeaderString());
+        exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, mediaType.asHeaderString());
         exchange.getResponseSender().send(metrics);
     }
 

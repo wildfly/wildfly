@@ -59,7 +59,11 @@ record MediaType(String type, String subtype, double q) implements Comparable<Me
 
     @Override
     public String toString() {
-        return type + "/" + subtype + ";q=" + q;
+        return asHeaderString() + ";q=" + q;
+    }
+
+    public String asHeaderString() {
+        return type + "/" + subtype;
     }
 
 }
