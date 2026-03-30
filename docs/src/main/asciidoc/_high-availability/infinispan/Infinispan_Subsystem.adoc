@@ -410,6 +410,7 @@ e.g. To persist cache entries to $HOME/foo/bar.dat:
 ===== JDBC store
 
 A JDBC store persists cache entries to a database.
+Cache entries are serialized and stored as binary data – the store does not map cache keys and values directly to columns.
 
 e.g. To persist cache entries to an H2 database via the ExampleDS data-source:
 
@@ -417,6 +418,94 @@ e.g. To persist cache entries to an H2 database via the ExampleDS data-source:
 ----
 /subsystem=infinispan/cache-container=foo/local-cache=bar/store=jdbc:add(data-source=ExampleDS, dialect=H2)
 ----
+
+The `dialect` attribute is optional.
+It should be specified when the default column types (e.g. `BINARY`, see defaults below) are not compatible with the target database and database-specific types need to be used instead.
+
+====== Table configuration
+
+A JDBC store requires a table configuration, defined as a child resource with the fixed path `table=string` (noting that `string` refers to the type of the indexable key).
+If not explicitly configured, a default table configuration is created automatically.
+
+e.g. To configure the JDBC store table:
+
+[source,options="nowrap"]
+----
+/subsystem=infinispan/cache-container=foo/local-cache=bar/store=jdbc/table=string:add(prefix=my_cache)
+----
+
+The table resource supports the following attributes:
+
+prefix::
+    The prefix used to generate the database table name.
+    Default is `ispn_entry`.
+fetch-size::
+    The number of rows fetched from the database at a time.
+    Default is `100`.
+create-on-start::
+    Whether the table should be created when the cache starts, if it does not already exist.
+    Default is `true`.
+drop-on-stop::
+    Whether the table should be dropped when the cache stops.
+    Default is `false`.
+
+====== Column configuration
+
+Each table defines 4 columns.
+All columns have sensible defaults and do not need to be explicitly configured unless custom column names or SQL types are required by the dialect.
+Each column attribute accepts an object with `name` (the database table column name) and `type` (the SQL type) fields.
+
+id-column::
+    Stores the cache entry key.
+    Default name is `id`, default type is `VARCHAR`.
+data-column::
+    Stores the serialized cache entry value as binary data.
+    Default name is `datum`, default type is `BINARY`.
+segment-column::
+    Stores the consistent hash segment of the cache entry.
+    Default name is `segment`, default type is `INTEGER`.
+timestamp-column::
+    Stores the cache entry version/timestamp.
+    Default name is `version`, default type is `BIGINT`.
+
+IMPORTANT: The `data-column` stores serialized binary data, not the raw cache value,
+thus its SQL type must be a binary type.
+Some databases require a database-specific type, e.g. `BYTEA` for PostgreSQL instead of `BINARY`.
+
+====== Complete JDBC store example
+
+The following batch configures a distributed cache with a JDBC store persisting to a PostgreSQL database as a example:
+
+[source,options="nowrap"]
+----
+batch
+/subsystem=infinispan/cache-container=foo/distributed-cache=bar:add()
+/subsystem=infinispan/cache-container=foo/distributed-cache=bar/store=jdbc:add(data-source=PostgresDS, dialect=POSTGRES)
+/subsystem=infinispan/cache-container=foo/distributed-cache=bar/store=jdbc/table=string:add(prefix=my_cache)
+/subsystem=infinispan/cache-container=foo/distributed-cache=bar/store=jdbc/table=string:write-attribute(name=id-column, value={name=id, type=VARCHAR})
+/subsystem=infinispan/cache-container=foo/distributed-cache=bar/store=jdbc/table=string:write-attribute(name=data-column, value={name=datum, type=BYTEA})
+/subsystem=infinispan/cache-container=foo/distributed-cache=bar/store=jdbc/table=string:write-attribute(name=segment-column, value={name=segment, type=INTEGER})
+/subsystem=infinispan/cache-container=foo/distributed-cache=bar/store=jdbc/table=string:write-attribute(name=timestamp-column, value={name=version, type=BIGINT})
+run-batch
+----
+
+The resulting XML configuration:
+
+[source,xml,options="nowrap"]
+----
+<distributed-cache name="bar">
+    <jdbc-store data-source="PostgresDS" dialect="POSTGRES">
+        <table prefix="my_cache">
+            <id-column name="id" type="VARCHAR"/>
+            <data-column name="datum" type="BYTEA"/>
+            <segment-column name="segment" type="INTEGER"/>
+            <timestamp-column name="version" type="BIGINT"/>
+        </table>
+    </jdbc-store>
+</distributed-cache>
+----
+
+For a complete list of JDBC store attributes, refer to the link:feature-pack/doc/reference/index.html[WildFly management model documentation^].
 
 [[hotrod_store]]
 ===== HotRod store
@@ -464,7 +553,7 @@ e.g. To configure a non-blocking state transfer:
 /subsystem=infinispan/cache-container=foo/local-cache=bar/component=state-transfer:add(timeout=0)
 ----
 
-For a complete list of state-transfer attributes, refer to the link:feature-pack/doc/reference/index.html[WildFly management model documentation^]
+For a complete list of state-transfer attributes, refer to the link:feature-pack/doc/reference/index.html[WildFly management model documentation^].
 
 
 ==== Injecting a cache into Jakarta EE applications
