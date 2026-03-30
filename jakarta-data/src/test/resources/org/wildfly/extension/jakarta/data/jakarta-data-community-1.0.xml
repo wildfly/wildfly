@@ -3,4 +3,4 @@
   ~ SPDX-License-Identifier: Apache-2.0
   -->
 
-<subsystem xmlns="urn:wildfly:jakarta-data:preview:1.0"/>
+<subsystem xmlns="urn:wildfly:jakarta-data:community:1.0"/>

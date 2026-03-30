@@ -15,7 +15,7 @@ The `jakarta-data` subsystem provides support for the use of Jakarta Data in dep
 
 [WARNING]
 
-The `jakarta-data` subsystem is currently provided at xref:Admin_Guide.adoc#Feature_stability_levels[`preview` stability]. This means use of the subsystem requires running xref:WildFly_and_WildFly_Preview.adoc[WildFly Preview] or using the `--stability=preview` parameter when starting standard WildFly.
+The `jakarta-data` subsystem is currently provided at xref:Admin_Guide.adoc#Feature_stability_levels[`community` stability]. This means use of the subsystem is not supported when using the `--stability=default` parameter when starting WildFly.
 
 [[jakarta-data-subsystem-provision]]
 == Provisioning the subsystem
