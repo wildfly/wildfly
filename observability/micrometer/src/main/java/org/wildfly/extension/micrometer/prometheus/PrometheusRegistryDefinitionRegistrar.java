@@ -131,7 +131,7 @@ public class PrometheusRegistryDefinitionRegistrar implements ChildResourceDefin
             }
         }
         if (!sent) {
-            if (headerValues== null || headerValues.isEmpty()) {
+            if (headerValues == null || headerValues.isEmpty()) {
                 sendMetrics(PROMETHEUS_TEXT_MEDIA_TYPE, prometheusRegistry, exchange);
             } else {
                 exchange.setStatusCode(StatusCodes.NOT_ACCEPTABLE);
