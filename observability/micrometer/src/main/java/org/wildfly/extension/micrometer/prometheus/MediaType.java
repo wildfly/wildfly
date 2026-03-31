@@ -23,15 +23,13 @@ record MediaType(String type, String subtype, Map<String, String> parameters) im
         params.put("q", "1.0");
         for (int i = 1; i < parts.length; i++) {
             String param = parts[i].trim();
-            if (param.isEmpty()) continue;
+            if (param.isEmpty()) {
+                continue;
+            }
 
             String[] kv = param.split("=", 2);
             String key = kv[0].trim();
-            String value = kv.length > 1 ? kv[1].trim() : "";
-
-            if (value.startsWith("\"") && value.endsWith("\"") && value.length() >= 2) {
-                value = value.substring(1, value.length() - 1);
-            }
+            String value = kv.length > 1 ? kv[1].trim().replace("\"", "") : "";
 
             if ("q".equalsIgnoreCase(key)) {
                 try {
@@ -66,11 +64,11 @@ record MediaType(String type, String subtype, Map<String, String> parameters) im
 
     @Override
     public int compareTo(MediaType o) {
-        int qCompare = Double.compare(Double.parseDouble(o.parameters.get("q")), Double.parseDouble(this.parameters.get("q")));
+        int qCompare = Double.compare(Double.parseDouble(o.parameters.getOrDefault("q", "1.0")),
+                Double.parseDouble(this.parameters.getOrDefault("q", "1.0")));
         if (qCompare != 0) {
             return qCompare;
         }
-
         return Integer.compare(o.specificity(), this.specificity());
     }
 
@@ -79,7 +77,7 @@ record MediaType(String type, String subtype, Map<String, String> parameters) im
         return asHeaderString() + ";q=" + parameters.get("q");
     }
 
-    public String asHeaderString() {
+    String asHeaderString() {
         return type + "/" + subtype + parametersStringWithoutQ();
     }
 
@@ -89,7 +87,7 @@ record MediaType(String type, String subtype, Map<String, String> parameters) im
         }
         StringBuilder sb = new StringBuilder();
         for (Map.Entry<String, String> entry : parameters.entrySet()) {
-            if (!"q".equals(entry.getKey())) {
+            if (entry.getKey() != null && entry.getValue() != null && !"q".equalsIgnoreCase(entry.getKey())) {
                 sb.append(";").append(entry.getKey()).append("=").append(entry.getValue());
             }
         }
