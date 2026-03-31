@@ -6,7 +6,8 @@
 package org.jboss.as.clustering.infinispan.subsystem.remote;
 
 import java.util.List;
-import java.util.function.Consumer;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionStage;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -24,6 +25,7 @@ import org.jboss.modules.ModuleLoader;
 import org.wildfly.clustering.infinispan.client.RemoteCacheContainer;
 import org.wildfly.clustering.infinispan.client.service.HotRodServiceDescriptor;
 import org.wildfly.clustering.server.Registrar;
+import org.wildfly.service.NonBlockingLifecycle;
 import org.wildfly.subsystem.service.ResourceServiceConfigurator;
 import org.wildfly.subsystem.service.ResourceServiceInstaller;
 import org.wildfly.subsystem.service.ServiceDependency;
@@ -48,19 +50,35 @@ public enum RemoteCacheContainerServiceConfigurator implements ResourceServiceCo
 
         Registrar<String> registrar = (RemoteCacheContainerResource) context.readResource(PathAddress.EMPTY_ADDRESS);
 
-        Supplier<RemoteCacheManager> factory = configuration.map(RemoteCacheContainerServiceConfigurator::createRemoteCacheManager);
-        Consumer<RemoteCacheManager> start = new Consumer<>() {
+        Supplier<CompletionStage<RemoteCacheManager>> factory = new Supplier<>() {
             @Override
-            public void accept(RemoteCacheManager manager) {
-                manager.start();
-                InfinispanLogger.ROOT_LOGGER.remoteCacheContainerStarted(name);
+            public CompletionStage<RemoteCacheManager> get() {
+                return CompletableFuture.completedStage(new RemoteCacheManager(configuration.get(), false));
             }
         };
-        Consumer<RemoteCacheManager> stop = new Consumer<>() {
+        Function<RemoteCacheManager, NonBlockingLifecycle> lifecycle = new Function<>() {
             @Override
-            public void accept(RemoteCacheManager manager) {
-                manager.stop();
-                InfinispanLogger.ROOT_LOGGER.remoteCacheContainerStopped(name);
+            public NonBlockingLifecycle apply(RemoteCacheManager manager) {
+                return new NonBlockingLifecycle() {
+                    @Override
+                    public boolean isStarted() {
+                        return manager.isStarted();
+                    }
+
+                    @Override
+                    public CompletionStage<Void> start() {
+                        CompletionStage<Void> result = manager.startAsync();
+                        result.thenRun(() -> InfinispanLogger.ROOT_LOGGER.remoteCacheContainerStarted(name));
+                        return result;
+                    }
+
+                    @Override
+                    public CompletionStage<Void> stop() {
+                        CompletionStage<Void> result = manager.stopAsync();
+                        result.thenRun(() -> InfinispanLogger.ROOT_LOGGER.remoteCacheContainerStopped(name));
+                        return result;
+                    }
+                };
             }
         };
         Function<RemoteCacheManager, RemoteCacheContainer> wrapper = new Function<>() {
@@ -69,9 +87,8 @@ public enum RemoteCacheContainerServiceConfigurator implements ResourceServiceCo
                 return new ManagedRemoteCacheContainer(manager, name, loader.get(), registrar);
             }
         };
-        return CapabilityServiceInstaller.builder(CAPABILITY, wrapper, factory).blocking()
-                .onStart(start)
-                .onStop(stop)
+        return CapabilityServiceInstaller.NonBlockingBuilder.of(CAPABILITY, factory).map(wrapper)
+                .withLifecycle(lifecycle)
                 .requires(List.of(configuration, loader))
                 .build();
     }

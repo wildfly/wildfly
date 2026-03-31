@@ -60,7 +60,7 @@ public class JGroupsTransportResourceDefinitionRegistrar extends TransportResour
             }
 
             @Override
-            public CapabilityServiceInstaller.Builder<TransportConfiguration, TransportConfiguration> apply(CapabilityServiceInstaller.Builder<TransportConfiguration, TransportConfiguration> builder) {
+            public CapabilityServiceInstaller.BlockingBuilder<TransportConfiguration, TransportConfiguration> apply(CapabilityServiceInstaller.BlockingBuilder<TransportConfiguration, TransportConfiguration> builder) {
                 // Allow cache manager to auto-start when the channel starts
                 return builder.startWhen(StartWhen.AVAILABLE);
             }

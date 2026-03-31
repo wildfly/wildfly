@@ -11,8 +11,10 @@ import java.util.function.Supplier;
 
 import org.infinispan.client.hotrod.configuration.RemoteCacheConfiguration;
 import org.infinispan.client.hotrod.configuration.RemoteCacheConfigurationBuilder;
+import org.jboss.as.controller.management.Capabilities;
 import org.wildfly.clustering.infinispan.client.RemoteCacheContainer;
 import org.wildfly.clustering.server.service.BinaryServiceConfiguration;
+import org.wildfly.service.BlockingLifecycle;
 import org.wildfly.subsystem.service.ServiceDependency;
 import org.wildfly.subsystem.service.ServiceInstaller;
 
@@ -38,16 +40,16 @@ public class RemoteCacheConfigurationServiceInstallerFactory implements Function
                 return container.get().getConfiguration().addRemoteCache(cacheName, configurator);
             }
         };
-        Consumer<RemoteCacheConfiguration> stopTask = new Consumer<>() {
+        Consumer<RemoteCacheConfiguration> remove = new Consumer<>() {
             @Override
             public void accept(RemoteCacheConfiguration config) {
                 container.get().getConfiguration().removeRemoteCache(cacheName);
             }
         };
-        return ServiceInstaller.builder(cacheConfiguration).blocking()
-                .onStop(stopTask)
+        return ServiceInstaller.BlockingBuilder.of(cacheConfiguration, ServiceDependency.on(Capabilities.MANAGEMENT_EXECUTOR))
                 .provides(configuration.resolveServiceName(HotRodServiceDescriptor.REMOTE_CACHE_CONFIGURATION))
                 .requires(container)
+                .withLifecycle(BlockingLifecycle.compose(remove))
                 .build();
     }
 }

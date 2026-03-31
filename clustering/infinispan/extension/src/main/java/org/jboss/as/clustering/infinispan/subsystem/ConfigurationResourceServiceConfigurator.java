@@ -4,7 +4,6 @@
  */
 package org.jboss.as.clustering.infinispan.subsystem;
 
-import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
 
 import org.infinispan.commons.configuration.Builder;
@@ -26,11 +25,11 @@ import org.wildfly.subsystem.service.capability.CapabilityServiceInstaller;
  */
 public class ConfigurationResourceServiceConfigurator<C, B extends Builder<C>> implements ResourceServiceConfigurator {
 
-    public interface Configurator<C> extends UnaryOperator<CapabilityServiceInstaller.Builder<C, C>> {
+    public interface Configurator<C> extends UnaryOperator<CapabilityServiceInstaller.BlockingBuilder<C, C>> {
         RuntimeCapability<Void> getCapability();
 
         @Override
-        default CapabilityServiceInstaller.Builder<C, C> apply(CapabilityServiceInstaller.Builder<C, C> builder) {
+        default CapabilityServiceInstaller.BlockingBuilder<C, C> apply(CapabilityServiceInstaller.BlockingBuilder<C, C> builder) {
             return builder;
         }
     }
@@ -45,8 +44,6 @@ public class ConfigurationResourceServiceConfigurator<C, B extends Builder<C>> i
 
     @Override
     public ResourceServiceInstaller configure(OperationContext context, ModelNode model) throws OperationFailedException {
-        ServiceDependency<B> builder = this.resolver.resolve(context, model);
-        Supplier<C> factory = builder.map(Builder::create);
-        return this.configurator.apply(CapabilityServiceInstaller.builder(this.configurator.getCapability(), factory).requires(builder)).build();
+        return this.configurator.apply(CapabilityServiceInstaller.BlockingBuilder.of(this.configurator.getCapability(), this.resolver.resolve(context, model).map(Builder::create))).build();
     }
 }

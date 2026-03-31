@@ -10,8 +10,10 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 import org.infinispan.client.hotrod.RemoteCache;
+import org.jboss.as.controller.management.Capabilities;
 import org.wildfly.clustering.infinispan.client.RemoteCacheContainer;
 import org.wildfly.clustering.server.service.BinaryServiceConfiguration;
+import org.wildfly.service.BlockingLifecycle;
 import org.wildfly.subsystem.service.ServiceDependency;
 import org.wildfly.subsystem.service.ServiceInstaller;
 
@@ -34,9 +36,8 @@ public enum RemoteCacheServiceInstallerFactory implements Function<BinaryService
                 return container.get().getCache(cacheName);
             }
         };
-        return ServiceInstaller.builder(cache).blocking()
-                .onStart(RemoteCache::start)
-                .onStop(RemoteCache::stop)
+        return ServiceInstaller.BlockingBuilder.of(cache, ServiceDependency.on(Capabilities.MANAGEMENT_EXECUTOR))
+                .withLifecycle(BlockingLifecycle.compose(RemoteCache::start, RemoteCache::stop))
                 .provides(configuration.resolveServiceName(HotRodServiceDescriptor.REMOTE_CACHE))
                 .requires(List.of(container, configuration.getServiceDependency(HotRodServiceDescriptor.REMOTE_CACHE_CONFIGURATION)))
                 .build();

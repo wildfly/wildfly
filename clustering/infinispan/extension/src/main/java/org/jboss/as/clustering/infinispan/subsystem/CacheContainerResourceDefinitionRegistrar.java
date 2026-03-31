@@ -47,6 +47,7 @@ import org.jboss.as.controller.StringListAttributeDefinition;
 import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
+import org.jboss.as.controller.management.Capabilities;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
@@ -235,7 +236,7 @@ public class CacheContainerResourceDefinitionRegistrar implements ChildResourceD
 
                 builder.shutdown().hookBehavior(ShutdownHookBehavior.DONT_REGISTER);
                 // Disable native Micrometer registration - we register metrics via management model
-                builder.metrics().gauges(false).histograms(false).accurateSize(true);
+                builder.metrics().gauges(false).histograms(false).accurateSize(!statisticsEnabled);
 
                 MBeanServerLookup mbeanServerProvider = Optional.ofNullable(mbeanServer.get()).map(MBeanServerProvider::new).orElse(null);
                 builder.jmx().domain("org.wildfly.clustering.infinispan")
@@ -257,22 +258,22 @@ public class CacheContainerResourceDefinitionRegistrar implements ChildResourceD
                 return builder.build();
             }
         };
-        CapabilityServiceInstaller.Builder<GlobalConfiguration, GlobalConfiguration> builder = CapabilityServiceInstaller.builder(CAPABILITY, factory);
+        CapabilityServiceInstaller.BlockingBuilder<GlobalConfiguration, GlobalConfiguration> builder = CapabilityServiceInstaller.BlockingBuilder.of(CAPABILITY, factory, ServiceDependency.on(Capabilities.MANAGEMENT_EXECUTOR))
+                .requires(List.of(mbeanServer, loader, containerModules, transport, environment))
+                .requires(pools.values())
+                .requires(scheduledPools.values())
+                .startWhen(StartWhen.AVAILABLE)
+                ;
         for (String alias : aliases) {
             builder.provides(ServiceNameFactory.resolveServiceName(InfinispanServiceDescriptor.CACHE_CONTAINER_CONFIGURATION, alias));
         }
-        installers.add(builder.blocking()
-            .requires(List.of(mbeanServer, loader, containerModules, transport, environment))
-            .requires(pools.values())
-            .requires(scheduledPools.values())
-            .startWhen(StartWhen.AVAILABLE)
-            .build());
+        installers.add(builder.build());
 
         String defaultCache = DEFAULT_CACHE.resolveModelAttribute(context, model).asString(null);
         if (defaultCache != null) {
             BinaryServiceConfiguration configuration = BinaryServiceConfiguration.of(name, defaultCache);
-            installers.add(CapabilityServiceInstaller.builder(DefaultCacheCapability.CACHE_CONFIGURATION.get(), configuration.getServiceDependency(InfinispanServiceDescriptor.CACHE_CONFIGURATION)).build());
-            installers.add(CapabilityServiceInstaller.builder(DefaultCacheCapability.CACHE.get(), configuration.getServiceDependency(InfinispanServiceDescriptor.CACHE)).build());
+            installers.add(CapabilityServiceInstaller.BlockingBuilder.of(DefaultCacheCapability.CACHE_CONFIGURATION.get(), configuration.getServiceDependency(InfinispanServiceDescriptor.CACHE_CONFIGURATION)).startWhen(StartWhen.AVAILABLE).build());
+            installers.add(CapabilityServiceInstaller.BlockingBuilder.of(DefaultCacheCapability.CACHE.get(), configuration.getServiceDependency(InfinispanServiceDescriptor.CACHE)).startWhen(StartWhen.AVAILABLE).build());
 
             // Install bindings for default cache
             if (!defaultCache.equals(ModelDescriptionConstants.DEFAULT)) {
