@@ -21,6 +21,7 @@ import org.jboss.as.server.AbstractDeploymentChainStep;
 import org.jboss.as.server.DeploymentProcessorTarget;
 import org.jboss.as.server.deployment.Phase;
 import org.jboss.dmr.ModelNode;
+import org.wildfly.service.BlockingLifecycle;
 import org.wildfly.subsystem.service.capability.CapabilityServiceInstaller;
 
 /**
@@ -53,7 +54,7 @@ public class TimerServiceAdd extends AbstractBoottimeAddStepHandler {
         }, OperationContext.Stage.RUNTIME);
 
         if (threadPoolName != null) {
-            CapabilityServiceInstaller.builder(TimerServiceResourceDefinition.TIMER_SERVICE_CAPABILITY, Timer::new).onStop(Timer::cancel).build().install(context);
+            CapabilityServiceInstaller.BlockingBuilder.of(TimerServiceResourceDefinition.TIMER_SERVICE_CAPABILITY, Timer::new).withLifecycle(BlockingLifecycle.compose(Timer::cancel)).build().install(context);
         }
     }
 }

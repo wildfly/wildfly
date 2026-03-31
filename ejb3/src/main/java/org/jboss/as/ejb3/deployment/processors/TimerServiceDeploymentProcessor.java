@@ -47,6 +47,7 @@ import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
 import org.wildfly.clustering.ejb.timer.TimerManagementProvider;
 import org.wildfly.clustering.ejb.timer.TimerServiceConfiguration;
+import org.wildfly.common.function.Functions;
 import org.wildfly.subsystem.service.ServiceDependency;
 import org.wildfly.subsystem.service.ServiceInstaller;
 
@@ -175,7 +176,7 @@ public class TimerServiceDeploymentProcessor implements DeploymentUnitProcessor 
                         } else {
                             // the EJB is of a type that could have a timer service, but has no timer methods. just bind the non-functional timer service
                             String message = ejbComponentDescription.isStateful() ? EjbLogger.ROOT_LOGGER.timerServiceMethodNotAllowedForSFSB(ejbComponentDescription.getComponentName()) : EjbLogger.ROOT_LOGGER.ejbHasNoTimerMethods();
-                            ServiceInstaller.builder(new NonFunctionalTimerServiceFactory(message, factoryConfiguration))
+                            ServiceInstaller.BlockingBuilder.of(Functions.constantSupplier(new NonFunctionalTimerServiceFactory(message, factoryConfiguration)))
                                     .provides(serviceName)
                                     .build()
                                     .install(context);
@@ -227,7 +228,7 @@ public class TimerServiceDeploymentProcessor implements DeploymentUnitProcessor 
 
         CapabilityServiceSupport support = unit.getAttachment(org.jboss.as.server.deployment.Attachments.CAPABILITY_SERVICE_SUPPORT);
         ServiceDependency<TimerManagementProvider> provider = ServiceDependency.on(TimerManagementProvider.SERVICE_DESCRIPTOR, providerName);
-        ServiceInstaller.builder(new DistributableTimerServiceFactoryServiceInstaller(name, factoryConfiguration, configuration, provider, filter), support)
+        ServiceInstaller.Builder.of(new DistributableTimerServiceFactoryServiceInstaller(name, factoryConfiguration, configuration, provider, filter), support)
                 .requires(provider)
                 .build()
                 .install(context);

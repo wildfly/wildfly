@@ -32,7 +32,6 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.stream.Collectors;
 
 import javax.naming.NamingException;
 
@@ -590,23 +589,23 @@ class EJB3SubsystemAdd extends AbstractBoottimeAddStepHandler {
                 public ServiceController<?> install(RequirementServiceTarget target) {
                     // Install on-demand singleton service
                     // We don't want this to start until a deployment requires it
-                    ServiceController<?> controller = org.wildfly.service.ServiceInstaller.builder(Functions.constantSupplier(Boolean.TRUE))
+                    ServiceController<?> controller = org.wildfly.service.ServiceInstaller.BlockingBuilder.of(Functions.constantSupplier(null))
                             .provides(CLUSTERED_SINGLETON_CAPABILITY.getCapabilityServiceName())
                             .build()
                             .install(targetFactory.get().createSingletonServiceTarget(target));
 
                     // Install well-known on-demand service that, once started, will force singleton service instrumentation to start.
-                    ServiceInstaller.builder(Functions.constantSupplier(Boolean.TRUE))
+                    ServiceInstaller.BlockingBuilder.of(Functions.constantSupplier(null))
                             .provides(ServiceNameFactory.resolveServiceName(CLUSTERED_SINGLETON_BARRIER))
                             // N.B. Depend on ServiceName(s) provided by singleton service instrumentation
-                            .requires(controller.provides().stream().map(ServiceDependency::on).collect(Collectors.toList()))
+                            .requires(controller.provides().stream().map(ServiceDependency::on).toList())
                             .build()
                             .install(target);
 
                     return controller;
                 }
             };
-            ServiceInstaller.builder(installer, context.getCapabilityServiceSupport()).requires(targetFactory).build().install(context);
+            ServiceInstaller.Builder.of(installer, context.getCapabilityServiceSupport()).requires(targetFactory).build().install(context);
         }
     }
 

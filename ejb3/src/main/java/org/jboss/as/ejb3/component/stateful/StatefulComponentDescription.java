@@ -208,7 +208,7 @@ public class StatefulComponentDescription extends SessionBeanComponentDescriptio
                         return null;
                     }
                 };
-                ServiceInstaller.builder(installer, support).requires(provider).build().install(context);
+                ServiceInstaller.Builder.of(installer, support).requires(provider).build().install(context);
             }
         });
 

@@ -84,7 +84,7 @@ public class CompositeTimerServiceFactoryServiceInstaller implements DeploymentS
                 });
             }
         };
-        ServiceInstaller.builder(Functions.constantSupplier(factory))
+        ServiceInstaller.BlockingBuilder.of(Functions.constantSupplier(factory))
                 .provides(this.name)
                 .requires(List.of(transientFactory, persistentFactory))
                 .build()

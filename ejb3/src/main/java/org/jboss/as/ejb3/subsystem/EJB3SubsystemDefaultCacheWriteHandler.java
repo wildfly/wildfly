@@ -53,7 +53,7 @@ public class EJB3SubsystemDefaultCacheWriteHandler extends AbstractWriteAttribut
             remover.accept(context);
         }
         if (cacheName != null) {
-            this.remover.set(CapabilityServiceInstaller.builder(this.capability, ServiceDependency.on(StatefulSessionBeanCacheProvider.SERVICE_DESCRIPTOR, cacheName)).build().install(context));
+            this.remover.set(CapabilityServiceInstaller.BlockingBuilder.of(this.capability, ServiceDependency.on(StatefulSessionBeanCacheProvider.SERVICE_DESCRIPTOR, cacheName)).build().install(context));
         }
     }
 }

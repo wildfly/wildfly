@@ -16,6 +16,7 @@ import org.jboss.dmr.ModelNode;
 import org.wildfly.clustering.ejb.bean.BeanManagementProvider;
 import org.wildfly.clustering.ejb.bean.LegacyBeanManagementConfiguration;
 import org.wildfly.clustering.ejb.bean.LegacyBeanManagementProviderFactory;
+import org.wildfly.common.function.Functions;
 import org.wildfly.subsystem.service.ServiceInstaller;
 
 /**
@@ -51,7 +52,7 @@ public class PassivationStoreAdd extends AbstractAddStepHandler {
                 return OptionalInt.of(maxSize);
             }
         };
-        ServiceInstaller.builder(LEGACY_PROVIDER_FACTORY.createBeanManagementProvider(context.getCurrentAddressValue(), config))
+        ServiceInstaller.BlockingBuilder.of(Functions.constantSupplier(LEGACY_PROVIDER_FACTORY.createBeanManagementProvider(context.getCurrentAddressValue(), config)))
                 .provides(ServiceNameFactory.resolveServiceName(BeanManagementProvider.SERVICE_DESCRIPTOR, context.getCurrentAddressValue()))
                 .build().install(context);
     }
