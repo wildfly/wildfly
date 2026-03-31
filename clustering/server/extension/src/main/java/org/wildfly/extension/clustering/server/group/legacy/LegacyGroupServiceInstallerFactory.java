@@ -32,9 +32,8 @@ public class LegacyGroupServiceInstallerFactory<M extends GroupMember, G extends
     @Override
     public ServiceInstaller apply(String name) {
         ServiceDependency<G> group = ServiceDependency.on(ClusteringServiceDescriptor.GROUP, name).map(this.groupType::cast);
-        return ServiceInstaller.builder(this.wrapper, group)
+        return ServiceInstaller.BlockingBuilder.of(group.map(this.wrapper))
                 .provides(ServiceNameFactory.resolveServiceName(LegacyClusteringServiceDescriptor.GROUP, name))
-                .requires(group)
                 .build();
     }
 }

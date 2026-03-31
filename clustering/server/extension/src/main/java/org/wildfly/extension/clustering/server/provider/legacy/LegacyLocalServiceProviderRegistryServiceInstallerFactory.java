@@ -20,7 +20,8 @@ public class LegacyLocalServiceProviderRegistryServiceInstallerFactory<T> extend
     @Override
     public ServiceInstaller apply(BinaryServiceConfiguration configuration) {
         ServiceDependency<LocalServiceProviderRegistrar<Object>> registrar = configuration.getServiceDependency(ClusteringServiceDescriptor.SERVICE_PROVIDER_REGISTRAR).map(LocalServiceProviderRegistrar.class::cast);
-        return ServiceInstaller.builder(LegacyLocalServiceProviderRegistry::wrap, registrar)
+        return ServiceInstaller.BlockingBuilder.of(registrar)
+                .map(LegacyLocalServiceProviderRegistry::wrap)
                 .provides(configuration.resolveServiceName(this.getServiceDescriptor()))
                 .requires(registrar)
                 .build();

@@ -20,7 +20,8 @@ public class LegacyCacheServiceProviderRegistryServiceInstallerFactory<T> extend
     @Override
     public ServiceInstaller apply(BinaryServiceConfiguration configuration) {
         ServiceDependency<CacheContainerServiceProviderRegistrar<Object>> registrar = configuration.getServiceDependency(ClusteringServiceDescriptor.SERVICE_PROVIDER_REGISTRAR).map(CacheContainerServiceProviderRegistrar.class::cast);
-        return ServiceInstaller.builder(LegacyCacheServiceProviderRegistry::wrap, registrar)
+        return ServiceInstaller.BlockingBuilder.of(registrar)
+                .map(LegacyCacheServiceProviderRegistry::wrap)
                 .provides(configuration.resolveServiceName(this.getServiceDescriptor()))
                 .requires(registrar)
                 .build();

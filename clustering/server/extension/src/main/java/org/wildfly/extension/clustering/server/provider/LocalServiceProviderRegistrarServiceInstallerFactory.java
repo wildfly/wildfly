@@ -21,7 +21,7 @@ public class LocalServiceProviderRegistrarServiceInstallerFactory<T> extends Ser
     @Override
     public ServiceInstaller apply(BinaryServiceConfiguration configuration) {
         ServiceDependency<LocalGroup> group = ServiceDependency.on(ClusteringServiceDescriptor.GROUP, ModelDescriptionConstants.LOCAL).map(LocalGroup.class::cast);
-        return ServiceInstaller.builder(group.map(LocalServiceProviderRegistrar::of))
+        return ServiceInstaller.BlockingBuilder.of(group.map(LocalServiceProviderRegistrar::of))
                 .provides(configuration.resolveServiceName(this.getServiceDescriptor()))
                 .build();
     }

@@ -23,7 +23,7 @@ public class DefaultSingletonServiceTargetFactoryServiceInstallerProvider implem
     @Override
     public Iterable<ServiceInstaller> apply(BinaryServiceConfiguration configuration) {
         BinaryServiceConfiguration defaultConfiguration = configuration.withChildName(null);
-        return List.of(ServiceInstaller.builder(configuration.getServiceDependency(SingletonServiceTargetFactory.SERVICE_DESCRIPTOR))
+        return List.of(ServiceInstaller.BlockingBuilder.of(configuration.getServiceDependency(SingletonServiceTargetFactory.SERVICE_DESCRIPTOR))
                 .provides(defaultConfiguration.resolveServiceName(SingletonServiceTargetFactory.SERVICE_DESCRIPTOR))
                 .provides(defaultConfiguration.resolveServiceName(org.wildfly.clustering.singleton.service.SingletonServiceConfiguratorFactory.SERVICE_DESCRIPTOR))
                 .provides(defaultConfiguration.resolveServiceName(org.wildfly.clustering.singleton.SingletonServiceBuilderFactory.SERVICE_DESCRIPTOR))

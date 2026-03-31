@@ -12,6 +12,7 @@ import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.server.ServerEnvironment;
 import org.wildfly.clustering.server.local.LocalGroup;
 import org.wildfly.clustering.server.service.ClusteringServiceDescriptor;
+import org.wildfly.service.Installer;
 import org.wildfly.subsystem.service.ServiceDependency;
 import org.wildfly.subsystem.service.ServiceInstaller;
 
@@ -29,8 +30,9 @@ public enum LocalGroupServiceInstallerFactory implements Function<String, Servic
                 return LocalGroup.of(ModelDescriptionConstants.LOCAL, environment.getNodeName());
             }
         };
-        return ServiceInstaller.builder(ServiceDependency.on(ServerEnvironment.SERVICE_DESCRIPTOR).map(factory))
+        return ServiceInstaller.BlockingBuilder.of(ServiceDependency.on(ServerEnvironment.SERVICE_DESCRIPTOR).map(factory))
                 .provides(ServiceNameFactory.resolveServiceName(ClusteringServiceDescriptor.GROUP, name))
+                .startWhen(Installer.StartWhen.AVAILABLE)
                 .build();
     }
 }

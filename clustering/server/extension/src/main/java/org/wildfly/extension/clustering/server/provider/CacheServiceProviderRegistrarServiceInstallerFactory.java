@@ -5,21 +5,22 @@
 package org.wildfly.extension.clustering.server.provider;
 
 import java.util.List;
-import java.util.function.Supplier;
 
 import org.infinispan.Cache;
+import org.jboss.as.controller.management.Capabilities;
 import org.jboss.msc.service.ServiceName;
-import org.wildfly.clustering.function.Consumer;
+import org.wildfly.clustering.function.Supplier;
 import org.wildfly.clustering.infinispan.service.InfinispanServiceDescriptor;
 import org.wildfly.clustering.server.infinispan.CacheContainerGroup;
 import org.wildfly.clustering.server.infinispan.provider.CacheServiceProviderRegistrar;
 import org.wildfly.clustering.server.service.BinaryServiceConfiguration;
 import org.wildfly.clustering.server.service.ClusteringServiceDescriptor;
+import org.wildfly.service.BlockingLifecycle;
 import org.wildfly.subsystem.service.ServiceDependency;
 import org.wildfly.subsystem.service.ServiceInstaller;
 
 /**
- * Builds a cache-based {@link ServiceProviderRegistrationFactory} service.
+ * Builds a cache-based {@link org.wildfly.clustering.server.provider.ServiceProviderRegistrar} service.
  * @author Paul Ferraro
  */
 public class CacheServiceProviderRegistrarServiceInstallerFactory<T> extends ServiceProviderRegistrarServiceInstallerFactory<T> {
@@ -41,16 +42,10 @@ public class CacheServiceProviderRegistrarServiceInstallerFactory<T> extends Ser
                 return group.get();
             }
         };
-        Supplier<CacheServiceProviderRegistrar<Object>> factory = new Supplier<>() {
-            @Override
-            public CacheServiceProviderRegistrar<Object> get() {
-                return new CacheServiceProviderRegistrar<>(config);
-            }
-        };
-        return ServiceInstaller.builder(factory).blocking()
+        return ServiceInstaller.BlockingBuilder.of(Supplier.of(config).thenApply(CacheServiceProviderRegistrar::new), ServiceDependency.on(Capabilities.MANAGEMENT_EXECUTOR))
                 .provides(name)
                 .requires(List.of(group, cache))
-                .onStop(Consumer.close())
+                .withLifecycle(BlockingLifecycle.autoClose())
                 .build();
     }
 }

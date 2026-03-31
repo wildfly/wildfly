@@ -15,6 +15,7 @@ import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.as.naming.deployment.JndiName;
 import org.jboss.msc.service.ServiceName;
+import org.wildfly.service.Installer;
 import org.wildfly.service.descriptor.UnaryServiceDescriptor;
 import org.wildfly.subsystem.service.ServiceDependency;
 import org.wildfly.subsystem.service.ServiceInstaller;
@@ -36,7 +37,7 @@ public class DefaultUnaryServiceInstallerProvider<T> implements Function<String,
     public Iterable<ServiceInstaller> apply(String value) {
         ServiceName name = ServiceNameFactory.resolveServiceName(this.descriptor, null);
         List<ServiceInstaller> installers = new ArrayList<>(2);
-        installers.add(ServiceInstaller.builder(ServiceDependency.on(this.descriptor, value)).provides(name).build());
+        installers.add(ServiceInstaller.BlockingBuilder.of(ServiceDependency.on(this.descriptor, value)).provides(name).startWhen(Installer.StartWhen.AVAILABLE).build());
         if (!value.equals(ModelDescriptionConstants.DEFAULT)) {
             ContextNames.BindInfo binding = ContextNames.bindInfoFor(this.jndiNameFactory.apply(ModelDescriptionConstants.DEFAULT).getAbsoluteName());
             installers.add(new BinderServiceInstaller(binding, name));
