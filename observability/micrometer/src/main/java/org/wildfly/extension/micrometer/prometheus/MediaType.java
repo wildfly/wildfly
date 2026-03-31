@@ -44,7 +44,7 @@ record MediaType(String type, String subtype, Map<String, String> parameters) im
             }
         }
 
-        return new MediaType(type, subtype, params);
+        return new MediaType(type, subtype, Map.copyOf(params));
     }
 
     boolean matches(String otherType, String otherSubtype) {
