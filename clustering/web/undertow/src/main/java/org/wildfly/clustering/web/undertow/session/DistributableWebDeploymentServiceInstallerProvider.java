@@ -24,7 +24,8 @@ import io.undertow.servlet.util.SavedRequest;
 import org.jboss.as.controller.management.Capabilities;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentUnit;
-import org.jboss.as.server.suspend.SuspendableActivityRegistry;
+import org.jboss.as.server.suspend.SuspendPriority;
+import org.jboss.as.server.suspend.SuspendableActivityRegistrar;
 import org.jboss.as.web.common.WarMetaData;
 import org.jboss.metadata.web.jboss.JBossWebMetaData;
 import org.jboss.metadata.web.jboss.ReplicationConfig;
@@ -48,10 +49,12 @@ import org.wildfly.clustering.web.undertow.logging.UndertowClusteringLogger;
 import org.wildfly.elytron.web.undertow.server.servlet.ServletSecurityContextImpl.IdentityContainer;
 import org.wildfly.extension.undertow.session.SessionAffinityProvider;
 import org.wildfly.security.cache.CachedIdentity;
-import org.wildfly.service.Installer.StartWhen;
+import org.wildfly.service.BlockingLifecycle;
+import org.wildfly.service.NonBlockingLifecycle;
 import org.wildfly.subsystem.service.DeploymentServiceInstaller;
 import org.wildfly.subsystem.service.ServiceDependency;
 import org.wildfly.subsystem.service.ServiceInstaller;
+import org.wildfly.subsystem.service.SuspendableNonBlockingLifecycle;
 
 /**
  * {@link SessionManagementProvider} for Undertow.
@@ -80,7 +83,7 @@ public class DistributableWebDeploymentServiceInstallerProvider implements WebDe
         Immutability immutability = Immutability.classes(immutableClasses);
         DeploymentServiceInstaller providedInstaller = provider.getSessionManagerFactoryServiceInstaller(new SessionManagerFactoryConfigurationAdapter<>(configuration, provider.getSessionManagementConfiguration(), immutability));
 
-        ServiceDependency<SuspendableActivityRegistry> activityRegistry = ServiceDependency.on(SuspendableActivityRegistry.SERVICE_DESCRIPTOR);
+        ServiceDependency<SuspendableActivityRegistrar> activityRegistry = ServiceDependency.on(SuspendableActivityRegistrar.SERVICE_DESCRIPTOR);
         ServiceDependency<Executor> executor = ServiceDependency.on(Capabilities.MANAGEMENT_EXECUTOR);
         ServiceDependency<io.undertow.servlet.api.SessionManagerFactory> factory = ServiceDependency.<SessionManagerFactory<ServletContext, Map<String, Object>>>on(WebDeploymentServiceDescriptor.SESSION_MANAGER_FACTORY.resolve(unit)).map(new Function<>() {
             @Override
@@ -88,14 +91,14 @@ public class DistributableWebDeploymentServiceInstallerProvider implements WebDe
                 return new DistributableSessionManagerFactory(factory, configuration) {
                     @Override
                     public UndertowSessionManager createSessionManager(Deployment deployment) {
-                        return new SuspendableSessionManager(super.createSessionManager(deployment), activityRegistry.get(), executor.get());
+                        UndertowSessionManager manager = super.createSessionManager(deployment);
+                        return new DecoratedSessionManager(manager, BlockingLifecycle.join(new SuspendableNonBlockingLifecycle(NonBlockingLifecycle.async(manager, executor.get()), activityRegistry.get(), SuspendPriority.DEFAULT)));
                     }
                 };
             }
         });
-        DeploymentServiceInstaller installer = ServiceInstaller.builder(factory)
+        DeploymentServiceInstaller installer = ServiceInstaller.BlockingBuilder.of(factory)
                 .provides(org.wildfly.extension.undertow.deployment.WebDeploymentServiceDescriptor.SESSION_MANAGER_FACTORY.resolve(unit))
-                .startWhen(StartWhen.REQUIRED)
                 .requires(List.of(activityRegistry, executor))
                 .build();
 
@@ -109,9 +112,8 @@ public class DistributableWebDeploymentServiceInstallerProvider implements WebDe
 
         DeploymentServiceInstaller locatorInstaller = provider.getRouteLocatorServiceInstaller(new WebDeploymentConfigurationAdapter(configuration));
         ServiceDependency<UnaryOperator<String>> locator = ServiceDependency.on(WebDeploymentServiceDescriptor.ROUTE_LOCATOR.resolve(configuration.getDeploymentUnit()));
-        DeploymentServiceInstaller affinityInstaller = ServiceInstaller.builder(locator.map(SessionAffinityProviderAdapter::new))
+        DeploymentServiceInstaller affinityInstaller = ServiceInstaller.BlockingBuilder.of(locator.map(SessionAffinityProviderAdapter::new))
                 .provides(org.wildfly.extension.undertow.deployment.WebDeploymentServiceDescriptor.SESSION_AFFINITY_PROVIDER.resolve(unit))
-                .startWhen(StartWhen.REQUIRED)
                 .build();
         return DeploymentServiceInstaller.combine(locatorInstaller, affinityInstaller);
     }

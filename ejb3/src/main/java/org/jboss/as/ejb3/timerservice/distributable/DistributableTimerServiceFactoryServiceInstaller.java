@@ -17,7 +17,7 @@ import jakarta.ejb.TimerConfig;
 import org.jboss.as.controller.RequirementServiceTarget;
 import org.jboss.as.controller.management.Capabilities;
 import org.jboss.as.ejb3.component.EJBComponent;
-import org.jboss.as.ejb3.timerservice.SuspendableTimerService;
+import org.jboss.as.ejb3.timerservice.DecoratedTimerService;
 import org.jboss.as.ejb3.timerservice.spi.ManagedTimerService;
 import org.jboss.as.ejb3.timerservice.spi.ManagedTimerServiceFactory;
 import org.jboss.as.ejb3.timerservice.spi.ManagedTimerServiceFactoryConfiguration;
@@ -26,7 +26,8 @@ import org.jboss.as.ejb3.timerservice.spi.TimedObjectInvokerFactory;
 import org.jboss.as.ejb3.timerservice.spi.TimerListener;
 import org.jboss.as.ejb3.timerservice.spi.TimerServiceRegistry;
 import org.jboss.msc.service.ServiceController;
-import org.jboss.as.server.suspend.SuspendableActivityRegistry;
+import org.jboss.as.server.suspend.SuspendPriority;
+import org.jboss.as.server.suspend.SuspendableActivityRegistrar;
 import org.jboss.msc.service.ServiceName;
 import org.wildfly.clustering.ejb.timer.TimeoutListener;
 import org.wildfly.clustering.ejb.timer.Timer;
@@ -39,8 +40,11 @@ import org.wildfly.clustering.ejb.timer.TimerRegistry;
 import org.wildfly.clustering.ejb.timer.TimerServiceConfiguration;
 import org.wildfly.clustering.function.Supplier;
 import org.wildfly.clustering.server.util.UUIDFactory;
+import org.wildfly.service.BlockingLifecycle;
+import org.wildfly.service.NonBlockingLifecycle;
 import org.wildfly.subsystem.service.ServiceDependency;
 import org.wildfly.subsystem.service.ServiceInstaller;
+import org.wildfly.subsystem.service.SuspendableNonBlockingLifecycle;
 
 /**
  * Installs a service that provides a distributed {@link TimerServiceFactory}.
@@ -125,7 +129,7 @@ public class DistributableTimerServiceFactoryServiceInstaller implements Service
         }
 
         ServiceDependency<TimerManagerFactory<UUID>> managerFactory = ServiceDependency.on(timerManagerFactoryName);
-        ServiceDependency<SuspendableActivityRegistry> activityRegistry = ServiceDependency.on(SuspendableActivityRegistry.SERVICE_DESCRIPTOR);
+        ServiceDependency<SuspendableActivityRegistrar> activityRegistrar = ServiceDependency.on(SuspendableActivityRegistrar.SERVICE_DESCRIPTOR);
         ServiceDependency<Executor> executor = ServiceDependency.on(Capabilities.MANAGEMENT_EXECUTOR);
 
         ManagedTimerServiceFactory factory = new ManagedTimerServiceFactory() {
@@ -205,13 +209,13 @@ public class DistributableTimerServiceFactoryServiceInstaller implements Service
                         return synchronizationFactory;
                     }
                 };
-                return new SuspendableTimerService(new DistributableTimerService<>(serviceConfiguration, manager), activityRegistry.get(), executor.get());
+                ManagedTimerService service = new DistributableTimerService<>(serviceConfiguration, manager);
+                return new DecoratedTimerService(service, BlockingLifecycle.join(new SuspendableNonBlockingLifecycle(NonBlockingLifecycle.async(service, executor.get()), activityRegistrar.get(), SuspendPriority.DEFAULT)));
             }
         };
-        return ServiceInstaller.builder(factory)
+        return ServiceInstaller.BlockingBuilder.of(Supplier.of(factory))
                 .provides(this.name)
-                .startWhen(StartWhen.REQUIRED)
-                .requires(List.of(managerFactory, activityRegistry, executor))
+                .requires(List.of(managerFactory, activityRegistrar, executor))
                 .build()
                 .install(target);
     }

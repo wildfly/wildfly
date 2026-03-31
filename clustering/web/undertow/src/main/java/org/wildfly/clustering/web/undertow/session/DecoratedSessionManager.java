@@ -8,20 +8,19 @@ package org.wildfly.clustering.web.undertow.session;
 import java.util.Map;
 import java.util.Set;
 
-import org.wildfly.clustering.server.service.DecoratedService;
-import org.wildfly.clustering.server.service.Service;
-import org.wildfly.clustering.session.SessionManager;
-
 import io.undertow.server.HttpServerExchange;
 import io.undertow.server.session.Session;
 import io.undertow.server.session.SessionConfig;
 import io.undertow.server.session.SessionListeners;
+import org.jboss.as.clustering.service.DecoratedBlockingLifecycle;
+import org.wildfly.clustering.session.SessionManager;
+import org.wildfly.service.BlockingLifecycle;
 
 /**
  * Decorator of an Undertow session manager.
  * @author Paul Ferraro
  */
-public class DecoratedSessionManager extends DecoratedService implements UndertowSessionManager {
+public class DecoratedSessionManager extends DecoratedBlockingLifecycle implements UndertowSessionManager {
 
     private final UndertowSessionManager manager;
 
@@ -29,8 +28,8 @@ public class DecoratedSessionManager extends DecoratedService implements Underto
         this(manager, manager);
     }
 
-    protected DecoratedSessionManager(UndertowSessionManager manager, Service service) {
-        super(service);
+    public DecoratedSessionManager(UndertowSessionManager manager, BlockingLifecycle lifecycle) {
+        super(lifecycle);
         this.manager = manager;
     }
 

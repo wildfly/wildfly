@@ -8,21 +8,21 @@ package org.jboss.as.ejb3.timerservice;
 import java.util.Collection;
 import java.util.Date;
 
-import org.jboss.as.ejb3.timerservice.spi.ManagedTimer;
-import org.jboss.as.ejb3.timerservice.spi.ManagedTimerService;
-import org.jboss.as.ejb3.timerservice.spi.TimedObjectInvoker;
-import org.wildfly.clustering.server.service.DecoratedService;
-import org.wildfly.clustering.server.service.Service;
-
 import jakarta.ejb.ScheduleExpression;
 import jakarta.ejb.Timer;
 import jakarta.ejb.TimerConfig;
+
+import org.jboss.as.clustering.service.DecoratedBlockingLifecycle;
+import org.jboss.as.ejb3.timerservice.spi.ManagedTimer;
+import org.jboss.as.ejb3.timerservice.spi.ManagedTimerService;
+import org.jboss.as.ejb3.timerservice.spi.TimedObjectInvoker;
+import org.wildfly.service.BlockingLifecycle;
 
 /**
  * Decorator of a managed TimerService.
  * @author Paul Ferraro
  */
-public class DecoratedTimerService extends DecoratedService implements ManagedTimerService {
+public class DecoratedTimerService extends DecoratedBlockingLifecycle implements ManagedTimerService {
 
     private final ManagedTimerService service;
 
@@ -30,9 +30,9 @@ public class DecoratedTimerService extends DecoratedService implements ManagedTi
         this(service, service);
     }
 
-    protected DecoratedTimerService(ManagedTimerService timerService, Service service) {
-        super(service);
-        this.service = timerService;
+    public DecoratedTimerService(ManagedTimerService service, BlockingLifecycle lifecycle) {
+        super(lifecycle);
+        this.service = service;
     }
 
     @Override
