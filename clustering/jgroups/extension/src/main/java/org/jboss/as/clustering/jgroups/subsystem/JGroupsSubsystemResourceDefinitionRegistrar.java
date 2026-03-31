@@ -32,6 +32,7 @@ import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.ParentResourceDescriptionResolver;
 import org.jboss.as.controller.descriptions.SubsystemResourceDescriptionResolver;
+import org.jboss.as.controller.management.Capabilities;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
@@ -47,6 +48,7 @@ import org.wildfly.clustering.jgroups.spi.JGroupsServiceDescriptor;
 import org.wildfly.clustering.server.service.ClusteringServiceDescriptor;
 import org.wildfly.clustering.server.service.DefaultChannelServiceInstallerProvider;
 import org.wildfly.clustering.server.service.ProvidedUnaryServiceInstallerProvider;
+import org.wildfly.service.Installer;
 import org.wildfly.subsystem.resource.ManagementResourceRegistrar;
 import org.wildfly.subsystem.resource.ManagementResourceRegistrationContext;
 import org.wildfly.subsystem.resource.ResourceDescriptor;
@@ -179,15 +181,13 @@ public class JGroupsSubsystemResourceDefinitionRegistrar implements SubsystemRes
                 };
             }
         };
-        installers.add(ServiceInstaller.builder(factory).provides(ServiceNameFactory.resolveServiceName(ProtocolPropertiesRepository.SERVICE_DESCRIPTOR))
-                .blocking()
-                .build());
+        installers.add(ServiceInstaller.BlockingBuilder.of(factory, ServiceDependency.on(Capabilities.MANAGEMENT_EXECUTOR)).provides(ServiceNameFactory.resolveServiceName(ProtocolPropertiesRepository.SERVICE_DESCRIPTOR)).build());
 
         String defaultChannel = DEFAULT_CHANNEL.resolveModelAttribute(context, model).asStringOrNull();
         if (defaultChannel != null) {
-            installers.add(CapabilityServiceInstaller.builder(DEFAULT_CHANNEL_CAPABILITY, ServiceDependency.on(JGroupsServiceDescriptor.CHANNEL, defaultChannel)).build());
-            installers.add(CapabilityServiceInstaller.builder(DEFAULT_CHANNEL_CONFIGURATION_CAPABILITY, ServiceDependency.on(ChannelConfiguration.SERVICE_DESCRIPTOR, defaultChannel)).build());
-            installers.add(CapabilityServiceInstaller.builder(DEFAULT_CHANNEL_FACTORY_CAPABILITY, ServiceDependency.on(ForkChannelFactory.SERVICE_DESCRIPTOR, defaultChannel)).build());
+            installers.add(CapabilityServiceInstaller.BlockingBuilder.of(DEFAULT_CHANNEL_CAPABILITY, ServiceDependency.on(JGroupsServiceDescriptor.CHANNEL, defaultChannel)).startWhen(Installer.StartWhen.AVAILABLE).build());
+            installers.add(CapabilityServiceInstaller.BlockingBuilder.of(DEFAULT_CHANNEL_CONFIGURATION_CAPABILITY, ServiceDependency.on(ChannelConfiguration.SERVICE_DESCRIPTOR, defaultChannel)).startWhen(Installer.StartWhen.AVAILABLE).build());
+            installers.add(CapabilityServiceInstaller.BlockingBuilder.of(DEFAULT_CHANNEL_FACTORY_CAPABILITY, ServiceDependency.on(ForkChannelFactory.SERVICE_DESCRIPTOR, defaultChannel)).startWhen(Installer.StartWhen.AVAILABLE).build());
 
             if (!defaultChannel.equals(ModelDescriptionConstants.DEFAULT)) {
                 installers.add(new BinderServiceInstaller(JGroupsBindingFactory.CHANNEL.apply(ModelDescriptionConstants.DEFAULT), context.getCapabilityServiceName(JGroupsServiceDescriptor.CHANNEL, defaultChannel)));

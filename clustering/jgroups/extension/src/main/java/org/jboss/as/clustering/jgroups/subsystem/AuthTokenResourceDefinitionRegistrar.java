@@ -7,7 +7,9 @@ package org.jboss.as.clustering.jgroups.subsystem;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.List;
 import java.util.function.Function;
+import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
 
 import org.jboss.as.clustering.controller.CredentialReferenceAttributeDefinition;
@@ -19,6 +21,7 @@ import org.jboss.as.controller.ResourceRegistration;
 import org.jboss.as.controller.capability.BinaryCapabilityNameResolver;
 import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
+import org.jboss.as.controller.management.Capabilities;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.security.CredentialReferenceWriteAttributeHandler;
 import org.jboss.dmr.ModelNode;
@@ -112,6 +115,7 @@ public abstract class AuthTokenResourceDefinitionRegistrar<T extends AuthToken> 
     public ResourceServiceInstaller configure(OperationContext context, ModelNode model) throws OperationFailedException {
         ServiceDependency<Function<byte[], T>> tokenFactory = this.resolve(context, model);
         ServiceDependency<byte[]> secret = SHARED_SECRET.resolve(context, model).map(CLEAR_PASSWORD_CREDENTIAL).map(CHARS_TO_BYTES);
-        return CapabilityServiceInstaller.builder(CAPABILITY, tokenFactory.combine(secret, Function::apply)).blocking().build();
+        Supplier<T> factory = tokenFactory.combine(secret, Function::apply);
+        return CapabilityServiceInstaller.BlockingBuilder.of(CAPABILITY, factory, ServiceDependency.on(Capabilities.MANAGEMENT_EXECUTOR)).requires(List.of(tokenFactory, secret)).build();
     }
 }

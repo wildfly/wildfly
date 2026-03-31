@@ -24,6 +24,8 @@ import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
+import org.wildfly.clustering.function.Supplier;
+import org.wildfly.service.Installer;
 import org.wildfly.subsystem.resource.ChildResourceDefinitionRegistrar;
 import org.wildfly.subsystem.resource.DurationAttributeDefinition;
 import org.wildfly.subsystem.resource.ManagementResourceRegistrar;
@@ -113,7 +115,7 @@ public enum ThreadPoolResourceDefinitionRegistrar implements ChildResourceDefini
                 return keepAlive;
             }
         };
-        return CapabilityServiceInstaller.builder(this.capability, configuration).build();
+        return CapabilityServiceInstaller.BlockingBuilder.of(this.capability, Supplier.of(configuration)).startWhen(Installer.StartWhen.INSTALLED).build();
     }
 
     @Override

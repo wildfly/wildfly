@@ -43,7 +43,7 @@ public class StackOperationHandler extends AbstractRuntimeOnlyHandler implements
         String name = op.get(ModelDescriptionConstants.OP).asString();
         RuntimeOperation<ChannelFactory> operation = this.operations.get(name);
         CompletableFuture<ChannelFactory> future = new CompletableFuture<>();
-        ServiceController<?> controller = ServiceInstaller.builder(ServiceDependency.on(ChannelFactory.SERVICE_DESCRIPTOR, context.getCurrentAddressValue()))
+        ServiceController<?> controller = ServiceInstaller.BlockingBuilder.of(ServiceDependency.on(ChannelFactory.SERVICE_DESCRIPTOR, context.getCurrentAddressValue()))
                 .withCaptor(future::complete)
                 .startWhen(StartWhen.INSTALLED) // Force ChannelFactory service to start
                 .build()
