@@ -14,6 +14,7 @@ import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelNode;
+import org.wildfly.clustering.function.Supplier;
 import org.wildfly.clustering.web.service.routing.RoutingProvider;
 import org.wildfly.subsystem.resource.ChildResourceDefinitionRegistrar;
 import org.wildfly.subsystem.resource.ManagementResourceRegistrar;
@@ -57,6 +58,6 @@ public abstract class RoutingProviderResourceDefinitionRegistrar implements Chil
 
     @Override
     public ResourceServiceInstaller configure(OperationContext context, ModelNode model) throws OperationFailedException {
-        return CapabilityServiceInstaller.builder(CAPABILITY, this.resolve(context, model)).build();
+        return CapabilityServiceInstaller.BlockingBuilder.of(CAPABILITY, Supplier.of(this.resolve(context, model))).build();
     }
 }

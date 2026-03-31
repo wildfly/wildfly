@@ -21,6 +21,6 @@ public class LocalRoutingProvider implements RoutingProvider {
 
     @Override
     public Iterable<ServiceInstaller> getServiceInstallers(String serverName, ServiceDependency<String> route) {
-        return List.of(ServiceInstaller.builder(route).provides(ServiceNameFactory.resolveServiceName(LOCAL_ROUTE, serverName)).build());
+        return List.of(ServiceInstaller.BlockingBuilder.of(route).provides(ServiceNameFactory.resolveServiceName(LOCAL_ROUTE, serverName)).build());
     }
 }

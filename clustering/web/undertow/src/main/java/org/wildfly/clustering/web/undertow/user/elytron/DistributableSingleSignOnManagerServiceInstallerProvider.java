@@ -12,6 +12,7 @@ import java.util.ServiceLoader;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 
+import org.jboss.as.clustering.service.ServiceLifecycle;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.RequirementServiceTarget;
 import org.jboss.as.controller.ServiceNameFactory;
@@ -56,7 +57,7 @@ public class DistributableSingleSignOnManagerServiceInstallerProvider implements
             @Override
             public Consumer<OperationContext> install(OperationContext context) {
                 ServiceDependency<DistributableUserManagementProvider> provider = DistributableSingleSignOnManagerServiceInstallerProvider.this.getUserManagementProvider(context, securityDomainName);
-                return ServiceInstaller.builder(new ServiceInstaller() {
+                return ServiceInstaller.Builder.of(new ServiceInstaller() {
                     @Override
                     public ServiceController<?> install(RequirementServiceTarget target) {
                         for (ServiceInstaller installer : provider.get().getServiceInstallers(securityDomainName)) {
@@ -93,11 +94,11 @@ public class DistributableSingleSignOnManagerServiceInstallerProvider implements
                 return userManagerFactory.get().createUserManager(userManagerConfiguration);
             }
         };
-        ResourceServiceInstaller userManagerInstaller = ServiceInstaller.builder(DistributableSingleSignOnManager::new, factory)
+        ResourceServiceInstaller userManagerInstaller = ServiceInstaller.BlockingBuilder.of(factory)
+                .map(DistributableSingleSignOnManager::new)
                 .provides(ServiceNameFactory.resolveServiceName(SingleSignOnManagerServiceInstallerProvider.SINGLE_SIGN_ON_MANAGER, securityDomainName))
                 .requires(List.of(loader, userManagerFactory))
-                .onStart(UserManager::start)
-                .onStop(UserManager::stop)
+                .withLifecycle(ServiceLifecycle::new)
                 .build();
 
         return ResourceServiceInstaller.combine(providerInstaller, userManagerInstaller);

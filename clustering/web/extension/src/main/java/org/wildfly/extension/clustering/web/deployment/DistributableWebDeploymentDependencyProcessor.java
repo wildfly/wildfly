@@ -18,6 +18,7 @@ import org.jboss.as.web.common.WarMetaData;
 import org.jboss.as.web.session.SharedSessionManagerConfig;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.ServiceName;
+import org.wildfly.clustering.function.Supplier;
 import org.wildfly.clustering.web.service.session.DistributableSessionManagementProvider;
 import org.wildfly.subsystem.service.ServiceInstaller;
 
@@ -55,7 +56,7 @@ public class DistributableWebDeploymentDependencyProcessor implements Deployment
                 String deploymentName = (parentUnit != null) ? parentUnit.getName() + "." + unit.getName() : unit.getName();
                 ServiceName serviceName = ServiceNameFactory.resolveServiceName(DistributableSessionManagementProvider.SERVICE_DESCRIPTOR, deploymentName);
 
-                ServiceInstaller.builder(provider).provides(serviceName).build().install(context);
+                ServiceInstaller.BlockingBuilder.of(Supplier.of(provider)).provides(serviceName).build().install(context);
 
                 context.addDependency(serviceName, DistributableSessionManagementProvider.ATTACHMENT_KEY);
             } else {

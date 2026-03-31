@@ -48,7 +48,7 @@ public class InfinispanRouteLocatorProvider extends LocalRouteLocatorProvider {
         ServiceDependency<Cache<Key<String>, ?>> cache = configuration.withChildName(deployment.getDeploymentName()).getServiceDependency(InfinispanServiceDescriptor.CACHE).map(Cache.class::cast);
         ServiceDependency<CacheContainerRegistry<String, Void>> registry = configuration.withChildName(deployment.getServerName()).getServiceDependency(ClusteringServiceDescriptor.REGISTRY).map(CacheContainerRegistry.class::cast);
         Supplier<UnaryOperator<String>> factory = cache.combine(registry, this.factory);
-        return ServiceInstaller.builder(new ServiceInstaller() {
+        return ServiceInstaller.Builder.of(new ServiceInstaller() {
             @Override
             public ServiceController<?> install(RequirementServiceTarget target) {
                 // Fallback to local routing if cache is local
@@ -56,7 +56,7 @@ public class InfinispanRouteLocatorProvider extends LocalRouteLocatorProvider {
                     return localInstaller.install(target);
                 }
 
-                return ServiceInstaller.builder(factory)
+                return ServiceInstaller.BlockingBuilder.of(factory)
                         .provides(WebDeploymentServiceDescriptor.ROUTE_LOCATOR.resolve(unit))
                         .requires(List.of(cache, registry))
                         .build()

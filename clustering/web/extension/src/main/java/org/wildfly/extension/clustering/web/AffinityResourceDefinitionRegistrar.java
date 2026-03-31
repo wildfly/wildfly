@@ -72,6 +72,6 @@ public abstract class AffinityResourceDefinitionRegistrar implements ChildResour
 
     @Override
     public ResourceServiceInstaller configure(OperationContext context, ModelNode model) throws OperationFailedException {
-        return CapabilityServiceInstaller.builder(this.capability, this.resolve(context, model)).build();
+        return CapabilityServiceInstaller.BlockingBuilder.of(this.capability, this.resolve(context, model)).build();
     }
 }

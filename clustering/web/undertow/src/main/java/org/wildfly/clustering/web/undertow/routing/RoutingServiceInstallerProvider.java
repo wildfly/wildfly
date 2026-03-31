@@ -57,7 +57,7 @@ public class RoutingServiceInstallerProvider implements ServerServiceInstallerPr
                         return null;
                     }
                 };
-                return ServiceInstaller.builder(installer, context.getCapabilityServiceSupport()).requires(provider).build().install(context);
+                return ServiceInstaller.Builder.of(installer, context.getCapabilityServiceSupport()).requires(provider).build().install(context);
             }
         };
     }

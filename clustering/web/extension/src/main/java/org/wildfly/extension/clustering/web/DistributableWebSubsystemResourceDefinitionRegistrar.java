@@ -81,8 +81,8 @@ public class DistributableWebSubsystemResourceDefinitionRegistrar implements Sub
 
     @Override
     public ResourceServiceInstaller configure(OperationContext context, ModelNode model) throws OperationFailedException {
-        CapabilityServiceInstaller defaultSessionManagementInstaller = CapabilityServiceInstaller.builder(DEFAULT_SESSION_MANAGEMENT_PROVIDER, DEFAULT_SESSION_MANAGEMENT.resolve(context, model)).build();
-        CapabilityServiceInstaller defaultUserManagementInstaller = CapabilityServiceInstaller.builder(DEFAULT_USER_MANAGEMENT_PROVIDER, DEFAULT_USER_MANAGEMENT.resolve(context, model)).build();
+        CapabilityServiceInstaller defaultSessionManagementInstaller = CapabilityServiceInstaller.BlockingBuilder.of(DEFAULT_SESSION_MANAGEMENT_PROVIDER, DEFAULT_SESSION_MANAGEMENT.resolve(context, model)).build();
+        CapabilityServiceInstaller defaultUserManagementInstaller = CapabilityServiceInstaller.BlockingBuilder.of(DEFAULT_USER_MANAGEMENT_PROVIDER, DEFAULT_USER_MANAGEMENT.resolve(context, model)).build();
 
         return ResourceServiceInstaller.combine(defaultSessionManagementInstaller, defaultUserManagementInstaller);
     }

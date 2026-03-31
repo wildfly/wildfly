@@ -14,6 +14,7 @@ import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelNode;
+import org.wildfly.clustering.function.Supplier;
 import org.wildfly.clustering.server.service.BinaryServiceConfiguration;
 import org.wildfly.clustering.server.service.CacheConfigurationAttributeGroup;
 import org.wildfly.clustering.web.service.user.DistributableUserManagementProvider;
@@ -59,6 +60,6 @@ public abstract class UserManagementResourceDefinitionRegistrar implements Child
     @Override
     public ResourceServiceInstaller configure(OperationContext context, ModelNode model) throws OperationFailedException {
         BinaryServiceConfiguration configuration = this.cacheAttributeGroup.resolve(context, model);
-        return CapabilityServiceInstaller.builder(CAPABILITY, this.apply(configuration)).build();
+        return CapabilityServiceInstaller.BlockingBuilder.of(CAPABILITY, Supplier.of(this.apply(configuration))).build();
     }
 }
