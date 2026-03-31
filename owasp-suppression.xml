@@ -152,9 +152,9 @@
     <!-- CVE-2020-1695 is regarding reasteasy but it is not inside this jar, it could only work if it would import this resteasy library in older version but thanks to dependency-management it should not. -->
     <suppress>
         <notes><![CDATA[
-       file name: jakarta-client-resteasy-3.0.3.Final.jar
+       file name: jakarta-client-resteasy-3.2.0.Final.jar
        ]]></notes>
-        <packageUrl regex="true">^pkg:maven/org\.wildfly\.security\.jakarta/jakarta\-client\-resteasy@3.0.3.Final$
+        <packageUrl regex="true">^pkg:maven/org\.wildfly\.security\.jakarta/jakarta\-client\-resteasy@3.2.0.Final$
         </packageUrl>
         <cve>CVE-2016-9606</cve>
         <cve>CVE-2014-3490</cve>
