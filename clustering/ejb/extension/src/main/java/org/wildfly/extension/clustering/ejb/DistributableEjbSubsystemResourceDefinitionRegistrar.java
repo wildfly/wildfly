@@ -69,6 +69,6 @@ public class DistributableEjbSubsystemResourceDefinitionRegistrar implements Sub
 
     @Override
     public ResourceServiceInstaller configure(OperationContext context, ModelNode model) throws OperationFailedException {
-        return CapabilityServiceInstaller.builder(CAPABILITY, DEFAULT_BEAN_MANAGEMENT_PROVIDER.resolve(context, model)).build();
+        return CapabilityServiceInstaller.BlockingBuilder.of(CAPABILITY, DEFAULT_BEAN_MANAGEMENT_PROVIDER.resolve(context, model)).build();
     }
 }

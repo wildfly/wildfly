@@ -38,7 +38,6 @@ import org.wildfly.clustering.marshalling.ByteBufferMarshaller;
 import org.wildfly.clustering.server.infinispan.dispatcher.CacheContainerCommandDispatcherFactory;
 import org.wildfly.clustering.server.service.BinaryServiceConfiguration;
 import org.wildfly.clustering.server.service.ClusteringServiceDescriptor;
-import org.wildfly.service.Installer.StartWhen;
 import org.wildfly.subsystem.service.ServiceDependency;
 import org.wildfly.subsystem.service.ServiceInstaller;
 
@@ -101,9 +100,8 @@ public class InfinispanTimerManagementProvider implements TimerManagementProvide
                 return commandDispatcherFactory.get();
             }
         };
-        ServiceInstaller factoryInstaller = ServiceInstaller.builder(new InfinispanTimerManagerFactory<>(factoryConfiguration))
+        ServiceInstaller factoryInstaller = ServiceInstaller.BlockingBuilder.of(Supplier.of(new InfinispanTimerManagerFactory<>(factoryConfiguration)))
                 .provides(name)
-                .startWhen(StartWhen.REQUIRED)
                 .requires(List.of(commandDispatcherFactory, cache))
                 .build();
         return List.of(cacheConfigurationInstaller, cacheInstaller, factoryInstaller);

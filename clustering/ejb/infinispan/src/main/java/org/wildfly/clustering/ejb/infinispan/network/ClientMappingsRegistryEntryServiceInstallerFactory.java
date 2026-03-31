@@ -40,7 +40,7 @@ public class ClientMappingsRegistryEntryServiceInstallerFactory implements Funct
                 return new ClientMappingsRegistryEntry(group.get().getLocalMember().getName(), clientMappings.get());
             }
         };
-        return ServiceInstaller.builder(entry)
+        return ServiceInstaller.BlockingBuilder.of(entry)
                 .provides(configuration.resolveServiceName(ClusteringServiceDescriptor.REGISTRY_ENTRY))
                 .requires(List.of(group, this.clientMappings))
                 .build();
