@@ -146,7 +146,7 @@ We should put AS7's repository into pom.xml:
 <repository>
     <id>jboss-public-repository-group</id>
     <name>JBoss Public Repository Group</name>
-    <url>https://repository.jboss.org/nexus/content/groups/public/</url>
+    <url>https://repository.jboss.org/nexus/repository/public/</url>
     <layout>default</layout>
     <releases>
         <enabled>true</enabled>
@@ -166,7 +166,7 @@ And also the plugin repository:
 <pluginRepository>
     <id>jboss-public-repository-group</id>
     <name>JBoss Public Repository Group</name>
-    <url>https://repository.jboss.org/nexus/content/groups/public/</url>
+    <url>https://repository.jboss.org/nexus/repository/public/</url>
     <releases>
         <enabled>true</enabled>
     </releases>
