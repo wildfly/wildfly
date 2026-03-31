@@ -37,6 +37,16 @@
             'legacy', 'standard', and 'preview' builds.
             -->
 
+            <!-- BOMs -->
+
+            <dependency>
+                <groupId>com.fasterxml.jackson</groupId>
+                <artifactId>jackson-bom</artifactId>
+                <version>${version.com.fasterxml.jackson}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+
             <!-- Keep sorted -->
 
             <dependency>
@@ -336,7 +346,6 @@
             <dependency>
                 <groupId>com.fasterxml.jackson.jr</groupId>
                 <artifactId>jackson-jr-objects</artifactId>
-                <version>${version.com.fasterxml.jackson.jr.jackson-jr-objects}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>
