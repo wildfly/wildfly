@@ -270,7 +270,6 @@ class EJB3SubsystemAdd extends AbstractBoottimeAddStepHandler {
         final CapabilityServiceTarget serviceTarget = context.getCapabilityServiceTarget();
         final ServiceBuilder<AssociationService> associationServiceBuilder = serviceTarget.addService(AssociationService.SERVICE_NAME, associationService);
         associationServiceBuilder.addDependency(DeploymentRepositoryService.SERVICE_NAME, DeploymentRepository.class, associationService.getDeploymentRepositoryInjector())
-                .addDependency(suspendControllerServiceName, SuspendController.class, associationService.getSuspendControllerInjector())
                 .addDependency(ServerEnvironmentService.SERVICE_NAME, ServerEnvironment.class, associationService.getServerEnvironmentServiceInjector())
                 .setInitialMode(ServiceController.Mode.LAZY);
 

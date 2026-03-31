@@ -20,7 +20,6 @@ import org.jboss.as.ejb3.deployment.DeploymentRepository;
 import org.jboss.as.network.ClientMapping;
 import org.jboss.as.network.ProtocolSocketBinding;
 import org.jboss.as.server.ServerEnvironment;
-import org.jboss.as.server.suspend.SuspendController;
 import org.jboss.ejb.client.Affinity;
 import org.jboss.ejb.client.EJBClientContext;
 import org.jboss.ejb.client.EJBModuleIdentifier;
@@ -56,7 +55,6 @@ public final class AssociationService implements Service<AssociationService> {
     private final InjectedValue<DeploymentRepository> deploymentRepositoryInjector = new InjectedValue<>();
     @SuppressWarnings("rawtypes")
     private final List<Map.Entry<Value<ProtocolSocketBinding>, Value<Registry>>> clientMappingsRegistries = new LinkedList<>();
-    private final InjectedValue<SuspendController> suspendControllerInjector = new InjectedValue<>();
     private final InjectedValue<ServerEnvironment> serverEnvironmentServiceInjector = new InjectedValue<>();
 
     private final Object serviceLock = new Object();
@@ -174,10 +172,6 @@ public final class AssociationService implements Service<AssociationService> {
         InjectedValue<Registry> registry = new InjectedValue<>();
         this.clientMappingsRegistries.add(new AbstractMap.SimpleImmutableEntry<>(info, registry));
         return new AbstractMap.SimpleImmutableEntry<>(info, registry);
-    }
-
-    public InjectedValue<SuspendController> getSuspendControllerInjector() {
-        return suspendControllerInjector;
     }
 
     public DiscoveryProvider getLocalDiscoveryProvider() {
