@@ -28,6 +28,7 @@ import jakarta.jms.Queue;
 import jakarta.json.Json;
 import jakarta.json.JsonArray;
 import jakarta.json.JsonObject;
+import jakarta.json.JsonReader;
 import org.awaitility.Awaitility;
 import org.jboss.arquillian.container.test.api.Deployer;
 import org.jboss.arquillian.container.test.api.Deployment;
@@ -227,10 +228,12 @@ public class SingleConnectionActivationPropertyTestCase extends ContainerResourc
     private int countConnectionsOnQueue() throws Exception {
         ModelNode result = executeOperation(listConsumersOnQueueOperation);
         Set<String> connectionSet = new HashSet<>();
-        JsonArray jsonArray = Json.createReader(new StringReader(result.asString())).readArray();
-        for (int i = 0; i < jsonArray.size(); i++) {
-            JsonObject obj = jsonArray.getJsonObject(i);
-            connectionSet.add(obj.getString("connectionID"));
+        try (JsonReader jsonReader = Json.createReader(new StringReader(result.asString()))) {
+            JsonArray jsonArray = jsonReader.readArray();
+            for (int i = 0; i < jsonArray.size(); i++) {
+                JsonObject obj = jsonArray.getJsonObject(i);
+                connectionSet.add(obj.getString("connectionID"));
+            }
         }
         return connectionSet.size();
     }
@@ -241,10 +244,12 @@ public class SingleConnectionActivationPropertyTestCase extends ContainerResourc
     private int countSessionsOnQueue() throws Exception {
         ModelNode result = executeOperation(listConsumersOnQueueOperation);
         Set<String> sessionSet = new HashSet<>();
-        JsonArray jsonArray = Json.createReader(new StringReader(result.asString())).readArray();
-        for (int i = 0; i < jsonArray.size(); i++) {
-            JsonObject obj = jsonArray.getJsonObject(i);
-            sessionSet.add(obj.getString("sessionID"));
+        try (JsonReader jsonReader = Json.createReader(new StringReader(result.asString()))) {
+            JsonArray jsonArray = jsonReader.readArray();
+            for (int i = 0; i < jsonArray.size(); i++) {
+                JsonObject obj = jsonArray.getJsonObject(i);
+                sessionSet.add(obj.getString("sessionID"));
+            }
         }
         return sessionSet.size();
     }
