@@ -28,6 +28,7 @@ import jakarta.jms.Queue;
 import jakarta.json.Json;
 import jakarta.json.JsonArray;
 import jakarta.json.JsonObject;
+import jakarta.json.JsonReader;
 import org.awaitility.Awaitility;
 import org.jboss.arquillian.container.test.api.Deployer;
 import org.jboss.arquillian.container.test.api.Deployment;
@@ -77,17 +78,25 @@ public class SingleConnectionActivationPropertyTestCase extends ContainerResourc
         @Override
         public void setup(ManagementClient managementClient, String containerId) throws Exception {
             JMSOperations jmsOperations = JMSOperationsProvider.getInstance(managementClient.getControllerClient());
-            jmsOperations.createJmsQueue(QUEUE_NAME, QUEUE_LOOKUP);
-            executeOperation(managementClient, Operations.createWriteAttributeOperation(
-                    new ModelNode().add("subsystem", "ee"), "annotation-property-replacement", true));
+            try {
+                jmsOperations.createJmsQueue(QUEUE_NAME, QUEUE_LOOKUP);
+                executeOperation(managementClient, Operations.createWriteAttributeOperation(
+                        new ModelNode().add("subsystem", "ee"), "annotation-property-replacement", true));
+            } finally {
+                jmsOperations.close();
+            }
         }
 
         @Override
         public void tearDown(ManagementClient managementClient, String containerId) throws Exception {
             JMSOperations jmsOperations = JMSOperationsProvider.getInstance(managementClient.getControllerClient());
-            jmsOperations.removeJmsQueue(QUEUE_NAME);
-            executeOperation(managementClient, Operations.createWriteAttributeOperation(
-                    new ModelNode().add("subsystem", "ee"), "annotation-property-replacement", false));
+            try {
+                jmsOperations.removeJmsQueue(QUEUE_NAME);
+                executeOperation(managementClient, Operations.createWriteAttributeOperation(
+                        new ModelNode().add("subsystem", "ee"), "annotation-property-replacement", false));
+            } finally {
+                jmsOperations.close();
+            }
         }
     }
 
@@ -123,7 +132,9 @@ public class SingleConnectionActivationPropertyTestCase extends ContainerResourc
             Awaitility.await("MDB deployment should create exactly 1 connection with singleConnection=true")
                     .atMost(Duration.ofMillis(TimeoutUtil.adjust(5000)))
                     .until(() -> countConnectionsOnQueue() == 1);
-            assertEquals("Number of JMS sessions on queue does not match.", 15, countSessionsOnQueue());
+            Awaitility.await("MDB deployment should create exactly 15 sessions with singleConnection=true")
+                    .atMost(Duration.ofMillis(TimeoutUtil.adjust(5000)))
+                    .until(() -> countSessionsOnQueue() == 15);
             sendAndReceiveMessage();
 
             // Undeploy the MDB
@@ -138,7 +149,9 @@ public class SingleConnectionActivationPropertyTestCase extends ContainerResourc
             Awaitility.await("MDB deployment should create exactly 1 connection with singleConnection=true")
                     .atMost(Duration.ofMillis(TimeoutUtil.adjust(5000)))
                     .until(() -> countConnectionsOnQueue() == 1);
-            assertEquals("Number of JMS sessions on queue does not match.", 15, countSessionsOnQueue());
+            Awaitility.await("MDB deployment should create exactly 15 sessions with singleConnection=true")
+                    .atMost(Duration.ofMillis(TimeoutUtil.adjust(5000)))
+                    .until(() -> countSessionsOnQueue() == 15);
             sendAndReceiveMessage();
         } finally {
             deployer.undeploy(SINGLE_CONNECTION_MDB);
@@ -174,7 +187,9 @@ public class SingleConnectionActivationPropertyTestCase extends ContainerResourc
             Awaitility.await("MDB deployment should create exactly 1 connection.")
                     .atMost(Duration.ofMillis(TimeoutUtil.adjust(5000)))
                     .until(() -> countConnectionsOnQueue() == 1);
-            assertEquals("Number of JMS sessions on queue does not match.", 15, countSessionsOnQueue());
+            Awaitility.await("MDB deployment should create exactly 15 sessions.")
+                    .atMost(Duration.ofMillis(TimeoutUtil.adjust(5000)))
+                    .until(() -> countSessionsOnQueue() == 15);
             sendAndReceiveMessage();
         } finally {
             deployer.undeploy(SINGLE_CONNECTION_WITH_EXPRESSION_MDB);
@@ -193,7 +208,9 @@ public class SingleConnectionActivationPropertyTestCase extends ContainerResourc
             Awaitility.await("MDB deployment should create exactly 1 connection.")
                     .atMost(Duration.ofMillis(TimeoutUtil.adjust(5000)))
                     .until(() -> countConnectionsOnQueue() == 1);
-            assertEquals("Number of JMS sessions on queue does not match.", 15, countSessionsOnQueue());
+            Awaitility.await("MDB deployment should create exactly 15 sessions.")
+                    .atMost(Duration.ofMillis(TimeoutUtil.adjust(5000)))
+                    .until(() -> countSessionsOnQueue() == 15);
             sendAndReceiveMessage();
         } finally {
             deployer.undeploy(SINGLE_CONNECTION_WITH_EXPRESSION_MDB);
@@ -227,10 +244,12 @@ public class SingleConnectionActivationPropertyTestCase extends ContainerResourc
     private int countConnectionsOnQueue() throws Exception {
         ModelNode result = executeOperation(listConsumersOnQueueOperation);
         Set<String> connectionSet = new HashSet<>();
-        JsonArray jsonArray = Json.createReader(new StringReader(result.asString())).readArray();
-        for (int i = 0; i < jsonArray.size(); i++) {
-            JsonObject obj = jsonArray.getJsonObject(i);
-            connectionSet.add(obj.getString("connectionID"));
+        try (JsonReader reader = Json.createReader(new StringReader(result.asString()))) {
+            JsonArray jsonArray = reader.readArray();
+            for (int i = 0; i < jsonArray.size(); i++) {
+                JsonObject obj = jsonArray.getJsonObject(i);
+                connectionSet.add(obj.getString("connectionID"));
+            }
         }
         return connectionSet.size();
     }
@@ -241,10 +260,12 @@ public class SingleConnectionActivationPropertyTestCase extends ContainerResourc
     private int countSessionsOnQueue() throws Exception {
         ModelNode result = executeOperation(listConsumersOnQueueOperation);
         Set<String> sessionSet = new HashSet<>();
-        JsonArray jsonArray = Json.createReader(new StringReader(result.asString())).readArray();
-        for (int i = 0; i < jsonArray.size(); i++) {
-            JsonObject obj = jsonArray.getJsonObject(i);
-            sessionSet.add(obj.getString("sessionID"));
+        try (JsonReader reader = Json.createReader(new StringReader(result.asString()))) {
+            JsonArray jsonArray = reader.readArray();
+            for (int i = 0; i < jsonArray.size(); i++) {
+                JsonObject obj = jsonArray.getJsonObject(i);
+                sessionSet.add(obj.getString("sessionID"));
+            }
         }
         return sessionSet.size();
     }
