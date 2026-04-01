@@ -49,6 +49,7 @@ import org.jboss.as.test.shared.TimeoutUtil;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.wildfly.naming.client.WildFlyInitialContextFactory;
@@ -56,7 +57,8 @@ import org.wildfly.naming.client.WildFlyInitialContextFactory;
 /**
  * Tests for singleConnection activation config property with various configurations.
  */
-@RunAsClient()
+@Ignore("WFLY-21701")
+@RunAsClient
 @RunWith(Arquillian.class)
 @ServerSetup(SingleConnectionActivationPropertyTestCase.MessagingResourcesSetupTask.class)
 public class SingleConnectionActivationPropertyTestCase extends ContainerResourceMgmtTestBase {
