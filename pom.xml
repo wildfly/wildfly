@@ -315,7 +315,7 @@
             This is not limited to plugin versions. Other artifacts that those plugins depend upon can go here
             if they are not otherwise used.
          -->
-        <version.ant.junit>1.10.15</version.ant.junit>
+        <version.ant.junit>1.10.16</version.ant.junit>
         <version.asciidoctor.plugin>2.2.6</version.asciidoctor.plugin>
         <version.central.publishing.maven.plugin>0.9.0</version.central.publishing.maven.plugin>
         <version.org.jacoco>0.8.14</version.org.jacoco>
