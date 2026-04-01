@@ -11,12 +11,12 @@ import java.util.Map;
 import java.util.function.Consumer;
 import java.util.function.UnaryOperator;
 
+import io.micrometer.core.instrument.composite.CompositeMeterRegistry;
 import io.prometheus.metrics.expositionformats.OpenMetricsTextFormatWriter;
 import io.prometheus.metrics.expositionformats.PrometheusProtobufWriter;
 import io.prometheus.metrics.expositionformats.PrometheusTextFormatWriter;
 import io.undertow.server.HttpServerExchange;
 import io.undertow.util.HeaderValues;
-import io.micrometer.core.instrument.composite.CompositeMeterRegistry;
 import io.undertow.util.Headers;
 import io.undertow.util.StatusCodes;
 import org.jboss.as.controller.AttributeDefinition;
