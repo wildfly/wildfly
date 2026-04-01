@@ -7,7 +7,7 @@ registries:
     url: https://repo.maven.apache.org/maven2/
   jboss-public-repository-group:
     type: maven-repository
-    url: https://repository.jboss.org/nexus/content/groups/public/
+    url: https://repository.jboss.org/nexus/repository/public/
 updates:
   - package-ecosystem: "maven"
     directory: "/"

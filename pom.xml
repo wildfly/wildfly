@@ -218,7 +218,7 @@
              to non-snapshot public maven repos -->
         <maven.repository.protocol>https</maven.repository.protocol>
         <!-- The full remote maven repo URL; can be overridden via -D for special use cases -->
-        <maven.repository.url>${maven.repository.protocol}://repository.jboss.org/nexus/content/groups/public/</maven.repository.url>
+        <maven.repository.url>${maven.repository.protocol}://repository.jboss.org/nexus/repository/public/</maven.repository.url>
 
         <!-- Surefire args -->
         <surefire.extra.args></surefire.extra.args>
