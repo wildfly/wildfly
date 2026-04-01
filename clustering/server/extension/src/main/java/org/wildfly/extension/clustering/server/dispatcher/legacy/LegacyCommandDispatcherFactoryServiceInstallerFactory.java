@@ -32,7 +32,8 @@ public class LegacyCommandDispatcherFactoryServiceInstallerFactory<M extends Gro
     @Override
     public ServiceInstaller apply(String name) {
         ServiceDependency<F> commandDispatcherFactory = ServiceDependency.on(ClusteringServiceDescriptor.COMMAND_DISPATCHER_FACTORY, name).map(this.commandDispatcherFactoryType::cast);
-        return ServiceInstaller.builder(this.wrapper, commandDispatcherFactory)
+        return ServiceInstaller.BlockingBuilder.of(commandDispatcherFactory)
+                .map(this.wrapper)
                 .provides(ServiceNameFactory.resolveServiceName(LegacyClusteringServiceDescriptor.COMMAND_DISPATCHER_FACTORY, name))
                 .requires(commandDispatcherFactory)
                 .build();

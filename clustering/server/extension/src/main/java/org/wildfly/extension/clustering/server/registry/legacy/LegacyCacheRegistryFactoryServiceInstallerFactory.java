@@ -21,9 +21,8 @@ public class LegacyCacheRegistryFactoryServiceInstallerFactory<K, V> extends Leg
     @Override
     public ServiceInstaller apply(BinaryServiceConfiguration configuration) {
         ServiceDependency<RegistryFactory<CacheContainerGroupMember, K, V>> factory = configuration.getServiceDependency(ClusteringServiceDescriptor.REGISTRY_FACTORY).map(RegistryFactory.class::cast);
-        return ServiceInstaller.builder(LegacyCacheRegistryFactory::wrap, factory)
+        return ServiceInstaller.BlockingBuilder.of(factory.map(LegacyCacheRegistryFactory::wrap))
                 .provides(configuration.resolveServiceName(this.getServiceDescriptor()))
-                .requires(factory)
                 .build();
     }
 }

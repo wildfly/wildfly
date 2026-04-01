@@ -112,7 +112,7 @@ public abstract class SessionManagementResourceDefinitionRegistrar implements Ch
         };
         BinaryServiceConfiguration cacheConfiguration = this.cacheAttributeGroup.resolve(context, model);
         DistributableSessionManagementProviderFactory providerFactory = this.providerFactory;
-        return CapabilityServiceInstaller.builder(CAPABILITY, ServiceDependency.on(RouteLocatorProvider.SERVICE_DESCRIPTOR, context.getCurrentAddressValue()).map(new Function<>() {
+        return CapabilityServiceInstaller.BlockingBuilder.of(CAPABILITY, ServiceDependency.on(RouteLocatorProvider.SERVICE_DESCRIPTOR, context.getCurrentAddressValue()).map(new Function<>() {
             @Override
             public DistributableSessionManagementProvider apply(RouteLocatorProvider locatorProvider) {
                 return providerFactory.createSessionManagementProvider(configuration, cacheConfiguration, locatorProvider);

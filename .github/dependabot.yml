@@ -7,7 +7,7 @@ registries:
     url: https://repo.maven.apache.org/maven2/
   jboss-public-repository-group:
     type: maven-repository
-    url: https://repository.jboss.org/nexus/content/groups/public/
+    url: https://repository.jboss.org/nexus/repository/public/
 updates:
   - package-ecosystem: "maven"
     directory: "/"
@@ -30,6 +30,21 @@ updates:
     registries:
       - maven-central
       - jboss-public-repository-group
+    groups:
+      webservices:
+        patterns:
+          - 'com.sun.xml.fastinfoset*'
+          - 'net.shibboleth.utilities*'
+          - 'org.apache.cxf*'
+          - 'org.apache.neethi*'
+          - 'org.apache.santuario*'
+          - 'org.apache.velocity*'
+          - 'org.apache.ws.xmlschema*'
+          - 'org.apache.wss4j*'
+          - 'org.jasypt*'
+          - 'org.jboss.ws*'
+          - 'org.opensaml*'
+          - 'wsdl4j*'
   - package-ecosystem: "github-actions"
     # Workflow files stored in the
     # default location of `.github/workflows`

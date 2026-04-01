@@ -73,7 +73,8 @@ public class HotRodUserManagementProvider implements DistributableUserManagement
                 return (RemoteCache<K, V>) cache.get();
             }
         };
-        ServiceInstaller installer = ServiceInstaller.builder(HotRodUserManagerFactory::new, Functions.constantSupplier(cacheConfiguration))
+        ServiceInstaller installer = ServiceInstaller.BlockingBuilder.of(Functions.constantSupplier(cacheConfiguration))
+                .map(HotRodUserManagerFactory::new)
                 .provides(ServiceNameFactory.resolveServiceName(DistributableUserManagementProvider.USER_MANAGER_FACTORY, name))
                 .requires(cache)
                 .build();

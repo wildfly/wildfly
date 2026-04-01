@@ -47,7 +47,8 @@ public class InfinispanUserManagementProvider implements DistributableUserManage
                 return (Cache<K, V>) cache.get();
             }
         };
-        ServiceInstaller installer = ServiceInstaller.builder(InfinispanUserManagerFactory::new, Functions.constantSupplier(cacheConfiguration))
+        ServiceInstaller installer = ServiceInstaller.BlockingBuilder.of(Functions.constantSupplier(cacheConfiguration))
+                .map(InfinispanUserManagerFactory::new)
                 .provides(ServiceNameFactory.resolveServiceName(DistributableUserManagementProvider.USER_MANAGER_FACTORY, name))
                 .requires(cache)
                 .build();

@@ -167,7 +167,7 @@ public class SingletonPolicyResourceDefinitionRegistrar implements ChildResource
                 };
             }
         });
-        return CapabilityServiceInstaller.builder(CAPABILITY, factory)
+        return CapabilityServiceInstaller.BlockingBuilder.of(CAPABILITY, factory)
                 .requires(List.of(electionPolicy, targetFactory))
                 .provides(ServiceNameFactory.resolveServiceName(SingletonPolicy.SERVICE_DESCRIPTOR, name))
                 .provides(ServiceNameFactory.resolveServiceName(org.wildfly.clustering.singleton.SingletonPolicy.SERVICE_DESCRIPTOR, name))

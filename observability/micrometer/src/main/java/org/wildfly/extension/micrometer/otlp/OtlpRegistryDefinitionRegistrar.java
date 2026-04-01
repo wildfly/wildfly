@@ -6,9 +6,11 @@ package org.wildfly.extension.micrometer.otlp;
 
 import static org.wildfly.extension.micrometer.MicrometerConfigurationConstants.MICROMETER_MODULE;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import io.micrometer.core.instrument.composite.CompositeMeterRegistry;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -22,10 +24,10 @@ import org.jboss.as.controller.client.helpers.MeasurementUnit;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
+import org.wildfly.extension.micrometer.MeterRegistryLifecycle;
 import org.wildfly.extension.micrometer.MicrometerConfigurationConstants;
 import org.wildfly.extension.micrometer.MicrometerSubsystemRegistrar;
 import org.wildfly.extension.micrometer.WildFlyMicrometerConfig;
-import org.wildfly.extension.micrometer.registry.WildFlyCompositeRegistry;
 import org.wildfly.service.Installer.StartWhen;
 import org.wildfly.subsystem.resource.ChildResourceDefinitionRegistrar;
 import org.wildfly.subsystem.resource.ManagementResourceRegistrar;
@@ -34,6 +36,7 @@ import org.wildfly.subsystem.resource.ResourceDescriptor;
 import org.wildfly.subsystem.resource.operation.ResourceOperationRuntimeHandler;
 import org.wildfly.subsystem.service.ResourceServiceConfigurator;
 import org.wildfly.subsystem.service.ResourceServiceInstaller;
+import org.wildfly.subsystem.service.ServiceDependency;
 import org.wildfly.subsystem.service.ServiceInstaller;
 
 public class OtlpRegistryDefinitionRegistrar implements ChildResourceDefinitionRegistrar, ResourceServiceConfigurator {
@@ -60,11 +63,6 @@ public class OtlpRegistryDefinitionRegistrar implements ChildResourceDefinitionR
             .build();
 
     public static final Collection<AttributeDefinition> ATTRIBUTES = List.of(ENDPOINT, STEP);
-    private final WildFlyCompositeRegistry compositeRegistry;
-
-    public OtlpRegistryDefinitionRegistrar(WildFlyCompositeRegistry compositeRegistry) {
-        this.compositeRegistry = compositeRegistry;
-    }
 
     @Override
     public ManagementResourceRegistration register(ManagementResourceRegistration parent, ManagementResourceRegistrationContext context) {
@@ -88,18 +86,15 @@ public class OtlpRegistryDefinitionRegistrar implements ChildResourceDefinitionR
             .endpoint(OtlpRegistryDefinitionRegistrar.ENDPOINT.resolveModelAttribute(context, model).asStringOrNull())
             .step(OtlpRegistryDefinitionRegistrar.STEP.resolveModelAttribute(context, model).asLong())
             .build();
-
-        return ServiceInstaller.builder(
-                () -> {
-                    if (otlpConfig.url() != null) {
-                        compositeRegistry.addRegistry(new WildFlyOtlpRegistry(otlpConfig));
-                    }
-                },
-                () -> {
-                    // No-op stop task
-                }
-            )
-            .startWhen(StartWhen.INSTALLED)
-            .build();
+        List<ResourceServiceInstaller> installers = new ArrayList<>(1);
+        if (otlpConfig.url() != null) {
+            ServiceDependency<CompositeMeterRegistry> compositeRegistry = ServiceDependency.on(MicrometerSubsystemRegistrar.COMPOSITE_METER_REGISTRY);
+            installers.add(ServiceInstaller.BlockingBuilder.of(() -> new WildFlyOtlpRegistry(otlpConfig))
+                    .requires(compositeRegistry)
+                    .withLifecycle(registry -> new MeterRegistryLifecycle(registry, compositeRegistry.get()))
+                    .startWhen(StartWhen.AVAILABLE)
+                    .build());
+        }
+        return ResourceServiceInstaller.combine(installers);
     }
 }

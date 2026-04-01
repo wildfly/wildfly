@@ -80,7 +80,7 @@ public class SingletonSubsystemResourceDefinitionRegistrar implements SubsystemR
 
     @Override
     public ResourceServiceInstaller configure(OperationContext context, ModelNode model) throws OperationFailedException {
-        return CapabilityServiceInstaller.builder(CAPABILITY, DEFAULT_SERVICE_TARGET_FACTORY.resolve(context, model))
+        return CapabilityServiceInstaller.BlockingBuilder.of(CAPABILITY, DEFAULT_SERVICE_TARGET_FACTORY.resolve(context, model))
                 .provides(ServiceNameFactory.resolveServiceName(SingletonPolicy.DEFAULT_SERVICE_DESCRIPTOR))
                 .provides(ServiceNameFactory.resolveServiceName(org.wildfly.clustering.singleton.SingletonPolicy.DEFAULT_SERVICE_DESCRIPTOR))
                 .build();

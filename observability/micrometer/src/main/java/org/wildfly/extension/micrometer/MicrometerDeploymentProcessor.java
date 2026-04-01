@@ -8,7 +8,7 @@ package org.wildfly.extension.micrometer;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBDEPLOYMENT;
 import static org.wildfly.extension.micrometer.MicrometerExtensionLogger.MICROMETER_LOGGER;
-import static org.wildfly.extension.micrometer.MicrometerSubsystemRegistrar.MICROMETER_SERVICE_SERVICE_NAME;
+import static org.wildfly.extension.micrometer.MicrometerSubsystemRegistrar.MICROMETER_SERVICE;
 
 import java.util.function.Supplier;
 
@@ -27,6 +27,7 @@ import org.jboss.as.weld.WeldCapability;
 import org.wildfly.extension.micrometer.api.MicrometerCdiExtension;
 import org.wildfly.extension.micrometer.metrics.MetricRegistration;
 import org.wildfly.extension.micrometer.registry.ApplicationRegistry;
+import org.wildfly.service.BlockingLifecycle;
 import org.wildfly.service.Installer.StartWhen;
 import org.wildfly.subsystem.service.ServiceDependency;
 import org.wildfly.subsystem.service.ServiceInstaller;
@@ -43,16 +44,16 @@ class MicrometerDeploymentProcessor implements DeploymentUnitProcessor {
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
 
-        ServiceDependency<MicrometerService> serviceDependency = ServiceDependency.on(MICROMETER_SERVICE_SERVICE_NAME);
+        ServiceDependency<MicrometerService> serviceDependency = ServiceDependency.on(MICROMETER_SERVICE);
         Supplier<MetricRegistration> factory = () -> serviceDependency.get().collectResourceMetrics(
                 deploymentUnit.getAttachment(DeploymentModelUtils.DEPLOYMENT_RESOURCE),
                 deploymentUnit.getAttachment(DeploymentModelUtils.MUTABLE_REGISTRATION_ATTACHMENT),
                 createDeploymentAddressPrefix(deploymentUnit)::append);
-        ServiceInstaller.builder(factory)
+        ServiceInstaller.BlockingBuilder.of(factory)
                 .requires(ServiceDependency.on(DeploymentCompleteServiceProcessor.serviceName(deploymentUnit.getServiceName())))
                 .requires(serviceDependency)
                 .startWhen(StartWhen.INSTALLED)
-                .onStop(MetricRegistration::unregister)
+                .withLifecycle(BlockingLifecycle.compose(MetricRegistration::unregister))
                 .build()
                 .install(phaseContext);
 

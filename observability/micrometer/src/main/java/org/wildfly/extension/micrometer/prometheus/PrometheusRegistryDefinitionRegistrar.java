@@ -8,6 +8,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
 import java.util.function.UnaryOperator;
 
 import io.prometheus.metrics.expositionformats.OpenMetricsTextFormatWriter;
@@ -15,6 +16,7 @@ import io.prometheus.metrics.expositionformats.PrometheusProtobufWriter;
 import io.prometheus.metrics.expositionformats.PrometheusTextFormatWriter;
 import io.undertow.server.HttpServerExchange;
 import io.undertow.util.HeaderValues;
+import io.micrometer.core.instrument.composite.CompositeMeterRegistry;
 import io.undertow.util.Headers;
 import io.undertow.util.StatusCodes;
 import org.jboss.as.controller.AttributeDefinition;
@@ -35,10 +37,11 @@ import org.jboss.as.server.mgmt.domain.ExtensibleHttpManagement;
 import org.jboss.as.version.Stability;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
+import org.wildfly.extension.micrometer.MeterRegistryLifecycle;
 import org.wildfly.extension.micrometer.MicrometerConfigurationConstants;
 import org.wildfly.extension.micrometer.MicrometerExtensionLogger;
 import org.wildfly.extension.micrometer.MicrometerSubsystemRegistrar;
-import org.wildfly.extension.micrometer.registry.WildFlyCompositeRegistry;
+import org.wildfly.service.BlockingLifecycle;
 import org.wildfly.service.Installer.StartWhen;
 import org.wildfly.subsystem.resource.ChildResourceDefinitionRegistrar;
 import org.wildfly.subsystem.resource.ManagementResourceRegistrar;
@@ -78,12 +81,6 @@ public class PrometheusRegistryDefinitionRegistrar implements ChildResourceDefin
     private static final MediaType OPENMETRICS_TEXT_MEDIA_TYPE = MediaType.parse(OpenMetricsTextFormatWriter.CONTENT_TYPE);
     private static final MediaType PROMETHEUS_PROTOBUF_MEDIA_TYPE = MediaType.parse(PrometheusProtobufWriter.CONTENT_TYPE);
 
-    private final WildFlyCompositeRegistry wildFlyRegistry;
-
-    public PrometheusRegistryDefinitionRegistrar(WildFlyCompositeRegistry wildFlyRegistry) {
-        this.wildFlyRegistry = wildFlyRegistry;
-    }
-
     @Override
     public ManagementResourceRegistration register(ManagementResourceRegistration parent, ManagementResourceRegistrationContext context) {
 
@@ -107,15 +104,14 @@ public class PrometheusRegistryDefinitionRegistrar implements ChildResourceDefin
         String serviceContext = CONTEXT.resolveModelAttribute(context, model).asString();
         boolean securityEnabled = SECURITY_ENABLED.resolveModelAttribute(context, model).asBoolean();
 
-        return ServiceInstaller.builder(ServiceDependency.on(HTTP_EXTENSIBILITY_CAPABILITY, ExtensibleHttpManagement.class))
-                .onStart(ehm -> {
-                    WildFlyPrometheusRegistry prometheusRegistry = new WildFlyPrometheusRegistry();
-                    wildFlyRegistry.add(prometheusRegistry);
-                    ehm.addManagementHandler(serviceContext, securityEnabled,
-                            exchange -> handleRequest(exchange, prometheusRegistry)
-                    );
-                })
-                .startWhen(StartWhen.INSTALLED)
+        ServiceDependency<CompositeMeterRegistry> compositeRegistry = ServiceDependency.on(MicrometerSubsystemRegistrar.COMPOSITE_METER_REGISTRY);
+        ServiceDependency<ExtensibleHttpManagement> management = ServiceDependency.on(HTTP_EXTENSIBILITY_CAPABILITY, ExtensibleHttpManagement.class);
+        Consumer<WildFlyPrometheusRegistry> addHandler = registry -> management.get().addManagementHandler(serviceContext, securityEnabled, exchange -> handleRequest(exchange, registry));
+        Consumer<WildFlyPrometheusRegistry> removeHandler = registry -> management.get().removeContext(serviceContext);
+        return ServiceInstaller.BlockingBuilder.of(WildFlyPrometheusRegistry::new)
+                .requires(List.of(management, compositeRegistry))
+                .withLifecycle(BlockingLifecycle.combine(List.of(BlockingLifecycle.compose(addHandler, removeHandler), registry -> new MeterRegistryLifecycle(registry, compositeRegistry.get()))))
+                .startWhen(StartWhen.AVAILABLE)
                 .build();
     }
 

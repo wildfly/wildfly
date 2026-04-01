@@ -41,7 +41,7 @@ public class InfinispanRoutingProvider extends LocalRoutingProvider {
         BinaryServiceConfiguration serverConfiguration = this.configuration.withChildName(serverName);
         List<ServiceInstaller> installers = new LinkedList<>();
 
-        installers.add(ServiceInstaller.builder(route.map(SessionAffinityRegistryEntry::new))
+        installers.add(ServiceInstaller.BlockingBuilder.of(route.map(SessionAffinityRegistryEntry::new))
                 .provides(serverConfiguration.resolveServiceName(ClusteringServiceDescriptor.REGISTRY_ENTRY))
                 .build());
 

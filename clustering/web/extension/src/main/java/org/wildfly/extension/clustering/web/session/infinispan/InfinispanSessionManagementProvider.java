@@ -36,8 +36,8 @@ import org.wildfly.clustering.web.service.routing.RouteLocatorProvider;
 import org.wildfly.clustering.web.service.session.DistributableSessionManagementConfiguration;
 import org.wildfly.clustering.web.service.session.DistributableSessionManagementProvider;
 import org.wildfly.clustering.web.service.session.SessionManagerFactoryConfiguration;
-import org.wildfly.common.function.Functions;
 import org.wildfly.extension.clustering.web.session.AbstractSessionManagementProvider;
+import org.wildfly.service.BlockingLifecycle;
 import org.wildfly.subsystem.service.DeploymentServiceInstaller;
 import org.wildfly.subsystem.service.ServiceDependency;
 import org.wildfly.subsystem.service.ServiceInstaller;
@@ -131,10 +131,10 @@ public class InfinispanSessionManagementProvider extends AbstractSessionManageme
                 });
             }
         };
-        DeploymentServiceInstaller installer = ServiceInstaller.builder(factory)
+        DeploymentServiceInstaller installer = ServiceInstaller.BlockingBuilder.of(factory)
                 .provides(WebDeploymentServiceDescriptor.SESSION_MANAGER_FACTORY.resolve(configuration.getDeploymentUnit()))
                 .requires(List.of(cache, commandDispatcherFactory))
-                .onStop(Functions.closingConsumer())
+                .withLifecycle(BlockingLifecycle.autoClose())
                 .build();
 
         return DeploymentServiceInstaller.combine(configurationInstaller, cacheInstaller, installer);

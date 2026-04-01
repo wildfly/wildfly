@@ -25,7 +25,7 @@ import org.wildfly.extension.micrometer.metrics.MetricRegistration;
 import org.wildfly.extension.micrometer.metrics.MicrometerCollector;
 import org.wildfly.extension.micrometer.registry.WildFlyCompositeRegistry;
 
-public class MicrometerService implements AutoCloseable {
+public class MicrometerService {
     private final WildFlyMicrometerConfig micrometerConfig;
     private final LocalModelControllerClient modelControllerClient;
     private final ProcessStateNotifier processStateNotifier;
@@ -79,11 +79,6 @@ public class MicrometerService implements AutoCloseable {
         } catch (IOException e) {
             throw MICROMETER_LOGGER.failedInitializeJMXRegistrar(e);
         }
-    }
-
-    @Override
-    public void close() {
-        micrometerRegistry.close();
     }
 
     public static class Builder {

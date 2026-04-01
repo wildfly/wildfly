@@ -14,6 +14,7 @@ import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.kohsuke.MetaInfServices;
+import org.wildfly.clustering.function.Supplier;
 import org.wildfly.clustering.server.GroupMember;
 import org.wildfly.clustering.server.dispatcher.CommandDispatcherFactory;
 import org.wildfly.clustering.server.provider.ServiceProviderRegistrar;
@@ -161,7 +162,7 @@ public class CacheSingletonServiceTargetFactoryServiceInstallerProvider implemen
                 };
             }
         };
-        return List.of(ServiceInstaller.builder(factory)
+        return List.of(ServiceInstaller.BlockingBuilder.of(Supplier.of(factory))
                 .provides(configuration.resolveServiceName(SingletonServiceTargetFactory.SERVICE_DESCRIPTOR))
                 .provides(configuration.resolveServiceName(org.wildfly.clustering.singleton.service.SingletonServiceConfiguratorFactory.SERVICE_DESCRIPTOR))
                 .provides(configuration.resolveServiceName(org.wildfly.clustering.singleton.SingletonServiceBuilderFactory.SERVICE_DESCRIPTOR))

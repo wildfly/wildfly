@@ -22,7 +22,7 @@ public class LocalRouteLocatorProvider implements RouteLocatorProvider {
     @Override
     public ServiceInstaller getServiceInstaller(BinaryServiceConfiguration configuration, WebDeploymentConfiguration deployment) {
         ServiceDependency<String> locator = ServiceDependency.on(LocalRoutingProvider.LOCAL_ROUTE, deployment.getServerName());
-        return ServiceInstaller.builder(locator.map(UnaryOperator::of))
+        return ServiceInstaller.BlockingBuilder.of(locator.map(UnaryOperator::of))
                 .provides(WebDeploymentServiceDescriptor.ROUTE_LOCATOR.resolve(deployment.getDeploymentUnit()))
                 .startWhen(StartWhen.REQUIRED)
                 .build();

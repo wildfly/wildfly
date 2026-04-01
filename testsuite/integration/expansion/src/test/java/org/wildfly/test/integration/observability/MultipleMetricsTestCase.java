@@ -9,11 +9,14 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUB
 import java.io.IOException;
 import java.nio.file.Files;
 
+import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.junit.InSequence;
 import org.jboss.as.arquillian.api.ContainerResource;
+import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.container.ManagementClient;
+import org.jboss.as.arquillian.setup.SnapshotServerSetupTask;
 import org.jboss.as.controller.client.Operation;
 import org.jboss.as.controller.client.helpers.Operations;
 import org.jboss.as.test.shared.ServerReload;
@@ -21,6 +24,8 @@ import org.jboss.as.test.shared.observability.setuptasks.MicrometerSetupTask;
 import org.jboss.as.test.shared.observability.setuptasks.OpenTelemetrySetupTask;
 import org.jboss.as.test.shared.logging.LoggingUtil;
 import org.jboss.dmr.ModelNode;
+import org.jboss.as.test.shared.util.AssumeTestGroupUtil;
+import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -32,8 +37,15 @@ import org.junit.runner.RunWith;
  */
 @RunWith(Arquillian.class)
 @RunAsClient
+@ServerSetup(SnapshotServerSetupTask.class)
 public class MultipleMetricsTestCase {
     private static final String MESSAGE_PREAMBLE = "Additional metrics systems discovered";
+
+    // Dummy deployment to trigger @ServerSetup
+    @Deployment(testable = false)
+    public static WebArchive createDummyDeployment() {
+        return AssumeTestGroupUtil.emptyWar(MultipleMetricsTestCase.class.getSimpleName());
+    }
 
     private static final ModelNode ADDRESS_ROOT_LOGGER = Operations.createAddress("subsystem", "logging", "root-logger", "ROOT");
 
@@ -122,13 +134,6 @@ public class MultipleMetricsTestCase {
         } finally {
             removeLogHandler(loggerName);
         }
-    }
-
-    @Test
-    @InSequence(Integer.MAX_VALUE)
-    public void shutdown() {
-        disableOpenTelemetry();
-        disableMicrometer();
     }
 
     private void assertExpectedCount(String loggerName, int expected) throws Exception {

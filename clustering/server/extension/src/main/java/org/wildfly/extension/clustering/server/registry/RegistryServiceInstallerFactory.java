@@ -9,14 +9,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
 
+import org.jboss.as.controller.management.Capabilities;
 import org.kohsuke.MetaInfServices;
-import org.wildfly.clustering.function.Consumer;
 import org.wildfly.clustering.server.GroupMember;
 import org.wildfly.clustering.server.registry.Registry;
 import org.wildfly.clustering.server.registry.RegistryFactory;
 import org.wildfly.clustering.server.service.ClusteringServiceDescriptor;
 import org.wildfly.clustering.server.service.BinaryServiceConfiguration;
 import org.wildfly.clustering.server.service.BinaryServiceInstallerFactory;
+import org.wildfly.service.BlockingLifecycle;
 import org.wildfly.service.descriptor.BinaryServiceDescriptor;
 import org.wildfly.subsystem.service.ServiceDependency;
 import org.wildfly.subsystem.service.ServiceInstaller;
@@ -37,8 +38,8 @@ public class RegistryServiceInstallerFactory implements BinaryServiceInstallerFa
                 return registryFactory.get().createRegistry(registryEntry.get());
             }
         };
-        return ServiceInstaller.builder(factory).blocking()
-                .onStop(Consumer.close())
+        return ServiceInstaller.BlockingBuilder.of(factory, ServiceDependency.on(Capabilities.MANAGEMENT_EXECUTOR))
+                .withLifecycle(BlockingLifecycle.autoClose())
                 .provides(configuration.resolveServiceName(this.getServiceDescriptor()))
                 .requires(List.of(registryFactory, registryEntry))
                 .build();

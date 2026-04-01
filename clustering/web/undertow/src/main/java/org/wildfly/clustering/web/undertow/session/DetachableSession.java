@@ -5,7 +5,7 @@
 
 package org.wildfly.clustering.web.undertow.session;
 
-import java.util.OptionalInt;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.wildfly.clustering.server.util.BlockingReference;
 
@@ -38,12 +38,20 @@ public class DetachableSession extends AbstractReferencedSession {
     }
 
     private UndertowSession detach(UndertowSession session) {
-        // Workaround for Undertow 2.3.x, which uses exception handling to determine session validity
-        OptionalInt maxInactiveInterval = session.isValid() ? OptionalInt.of(session.getMaxInactiveInterval()) : OptionalInt.empty();
+        // Because WildFly overrides the timing of Session.requestDone(...), Undertow may still test session validity.
+        // Typically, this is the only method called on a complete session.
+        // Caching this value prevents unnecessary session reference resolution.
+        AtomicBoolean valid = new AtomicBoolean(session.isValid());
         return new DetachedSession(session.getSessionManager(), session.getId()) {
             @Override
-            public int getMaxInactiveInterval() {
-                return maxInactiveInterval.orElseThrow(IllegalStateException::new);
+            public boolean isValid() {
+                return valid.get();
+            }
+
+            @Override
+            public void invalidate(HttpServerExchange exchange) {
+                super.invalidate(exchange);
+                valid.set(false);
             }
         };
     }

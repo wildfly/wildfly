@@ -5,6 +5,7 @@
 
 package org.wildfly.extension.clustering.web.routing;
 
+import org.wildfly.clustering.function.Supplier;
 import org.wildfly.clustering.function.UnaryOperator;
 import org.wildfly.clustering.server.service.BinaryServiceConfiguration;
 import org.wildfly.clustering.web.service.deployment.WebDeploymentConfiguration;
@@ -20,7 +21,7 @@ import org.wildfly.subsystem.service.ServiceInstaller;
 public class NullRouteLocatorProvider implements RouteLocatorProvider {
     @Override
     public DeploymentServiceInstaller getServiceInstaller(BinaryServiceConfiguration configuration, WebDeploymentConfiguration deployment) {
-        return ServiceInstaller.builder(UnaryOperator.of(null))
+        return ServiceInstaller.BlockingBuilder.of(Supplier.of(UnaryOperator.of(null)))
                 .provides(WebDeploymentServiceDescriptor.ROUTE_LOCATOR.resolve(deployment.getDeploymentUnit()))
                 .startWhen(StartWhen.REQUIRED)
                 .build();
