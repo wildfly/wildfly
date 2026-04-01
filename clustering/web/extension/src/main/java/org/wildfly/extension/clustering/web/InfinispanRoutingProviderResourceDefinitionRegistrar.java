@@ -10,6 +10,7 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.dmr.ModelNode;
+import org.wildfly.clustering.function.Supplier;
 import org.wildfly.clustering.infinispan.service.InfinispanCacheConfigurationAttributeGroup;
 import org.wildfly.clustering.server.service.CacheConfigurationAttributeGroup;
 import org.wildfly.clustering.web.service.routing.RoutingProvider;
@@ -48,7 +49,7 @@ public class InfinispanRoutingProviderResourceDefinitionRegistrar extends Routin
     public ResourceServiceInstaller configure(OperationContext context, ModelNode model) throws OperationFailedException {
         // Additionally provide an implementation-specific capability
         // This allows an affinity resource to require a specific routing provider
-        return CapabilityServiceInstaller.builder(RoutingProviderResourceDefinitionRegistrar.CAPABILITY, this.resolve(context, model))
+        return CapabilityServiceInstaller.BlockingBuilder.of(RoutingProviderResourceDefinitionRegistrar.CAPABILITY, Supplier.of(this.resolve(context, model)))
                 .provides(CAPABILITY.getCapabilityServiceName())
                 .build();
     }
