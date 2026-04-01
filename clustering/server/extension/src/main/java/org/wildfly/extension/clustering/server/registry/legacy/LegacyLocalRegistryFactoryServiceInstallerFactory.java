@@ -21,9 +21,8 @@ public class LegacyLocalRegistryFactoryServiceInstallerFactory<K, V> extends Leg
     @Override
     public ServiceInstaller apply(BinaryServiceConfiguration configuration) {
         ServiceDependency<RegistryFactory<LocalGroupMember, K, V>> factory = configuration.getServiceDependency(ClusteringServiceDescriptor.REGISTRY_FACTORY).map(RegistryFactory.class::cast);
-        return ServiceInstaller.builder(LegacyLocalRegistryFactory::wrap, factory)
+        return ServiceInstaller.BlockingBuilder.of(factory.map(LegacyLocalRegistryFactory::wrap))
                 .provides(configuration.resolveServiceName(this.getServiceDescriptor()))
-                .requires(factory)
                 .build();
     }
 }

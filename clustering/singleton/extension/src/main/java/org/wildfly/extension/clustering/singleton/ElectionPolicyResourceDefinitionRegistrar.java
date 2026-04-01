@@ -127,7 +127,7 @@ public abstract class ElectionPolicyResourceDefinitionRegistrar implements Child
         List<ModelNode> socketBindingPreferences = SOCKET_BINDING_PREFERENCES.resolveModelAttribute(context, model).asListOrEmpty();
         SingletonElectionPolicy electionPolicy = this.resolve(context, model);
         List<Predicate<GroupMember>> preferences = new LinkedList<>();
-        CapabilityServiceInstaller.Builder<SingletonElectionPolicy, SingletonElectionPolicy> builder = CapabilityServiceInstaller.builder(CAPABILITY, new Supplier<>() {
+        CapabilityServiceInstaller.BlockingBuilder<SingletonElectionPolicy, SingletonElectionPolicy> builder = CapabilityServiceInstaller.BlockingBuilder.of(CAPABILITY, new Supplier<>() {
             @Override
             public SingletonElectionPolicy get() {
                 return electionPolicy.prefer(Collections.unmodifiableList(preferences));

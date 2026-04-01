@@ -22,7 +22,7 @@ public enum GroupServiceInstallerFactory implements Function<String, ServiceInst
 
     @Override
     public ServiceInstaller apply(String name) {
-        return ServiceInstaller.builder(ServiceDependency.on(ClusteringServiceDescriptor.COMMAND_DISPATCHER_FACTORY, name).map(CommandDispatcherFactory::getGroup))
+        return ServiceInstaller.BlockingBuilder.of(ServiceDependency.on(ClusteringServiceDescriptor.COMMAND_DISPATCHER_FACTORY, name).map(CommandDispatcherFactory::getGroup))
                 .provides(ServiceNameFactory.resolveServiceName(ClusteringServiceDescriptor.GROUP, name))
                 .startWhen(StartWhen.AVAILABLE)
                 .build();

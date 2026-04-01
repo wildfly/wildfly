@@ -46,7 +46,7 @@ public interface SingletonServiceActivator extends ServiceActivator {
                 return null;
             }
         };
-        ServiceInstaller.builder(installer).requires(singletonTargetFactory).build().install(context.getServiceTarget());
+        ServiceInstaller.Builder.of(installer).requires(singletonTargetFactory).build().install(context.getServiceTarget());
     }
 
     /**

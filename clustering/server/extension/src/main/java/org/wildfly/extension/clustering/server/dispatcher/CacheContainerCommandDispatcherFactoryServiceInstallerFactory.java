@@ -56,7 +56,7 @@ public enum CacheContainerCommandDispatcherFactoryServiceInstallerFactory implem
                     });
                 }
             };
-            return ServiceInstaller.builder(factory)
+            return ServiceInstaller.BlockingBuilder.of(factory)
                     .provides(ServiceNameFactory.resolveServiceName(ClusteringServiceDescriptor.COMMAND_DISPATCHER_FACTORY, containerName))
                     .requires(List.of(container, dispatcherFactory))
                     .build();
@@ -77,7 +77,7 @@ public enum CacheContainerCommandDispatcherFactoryServiceInstallerFactory implem
                     });
                 }
             };
-            return ServiceInstaller.builder(factory)
+            return ServiceInstaller.BlockingBuilder.of(factory)
                     .provides(ServiceNameFactory.resolveServiceName(ClusteringServiceDescriptor.COMMAND_DISPATCHER_FACTORY, containerName))
                     .requires(List.of(container))
                     .build();

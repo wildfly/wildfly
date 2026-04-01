@@ -9,6 +9,7 @@ import java.util.Map;
 import java.util.function.BiFunction;
 
 import org.infinispan.Cache;
+import org.wildfly.clustering.function.Supplier;
 import org.wildfly.clustering.infinispan.service.InfinispanServiceDescriptor;
 import org.wildfly.clustering.server.infinispan.CacheContainerGroup;
 import org.wildfly.clustering.server.infinispan.CacheContainerGroupMember;
@@ -17,7 +18,6 @@ import org.wildfly.clustering.server.registry.Registry;
 import org.wildfly.clustering.server.registry.RegistryFactory;
 import org.wildfly.clustering.server.service.BinaryServiceConfiguration;
 import org.wildfly.clustering.server.service.ClusteringServiceDescriptor;
-import org.wildfly.service.Installer.StartWhen;
 import org.wildfly.subsystem.service.ServiceDependency;
 import org.wildfly.subsystem.service.ServiceInstaller;
 
@@ -58,9 +58,8 @@ public class CacheRegistryFactoryServiceInstallerFactory<K, V> extends AbstractR
                 });
             }
         });
-        return ServiceInstaller.builder(factory).blocking()
+        return ServiceInstaller.BlockingBuilder.of(Supplier.of(factory))
                 .provides(configuration.resolveServiceName(this.getServiceDescriptor()))
-                .startWhen(StartWhen.REQUIRED)
                 .requires(List.of(group, cache))
                 .build();
     }
