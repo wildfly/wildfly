@@ -25,7 +25,7 @@ public class LRUMapMarshallerTestCase {
     @ParameterizedTest
     @TesterFactorySource(MarshallingTesterFactory.class)
     public void test(TesterFactory factory) {
-        Tester<LRUMap<Object, Object>> tester = factory.createOrderedMapTester();
+        Tester<LRUMap<Object, Object>> tester = factory.createSequencedMapTester();
         int capacity = 10;
         LRUMap<Object, Object> map = new LRUMap<>(capacity);
         tester.accept(map);
