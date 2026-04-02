@@ -22,6 +22,9 @@
             <feature spec="subsystem.jgroups.stack.protocol">
                 <param name="protocol" value="MERGE3"/>
             </feature>
+            <feature spec="subsystem.jgroups.stack.protocol.FD_SOCK2">
+                <param name="socket-binding" value="jgroups-tcp-fd"/>
+            </feature>
             <feature spec="subsystem.jgroups.stack.protocol">
                 <param name="protocol" value="FD_ALL3"/>
             </feature>
@@ -29,13 +32,22 @@
                 <param name="protocol" value="VERIFY_SUSPECT2"/>
             </feature>
             <feature spec="subsystem.jgroups.stack.protocol">
-                <param name="protocol" value="NAKACK4"/>
+                <param name="protocol" value="pbcast.NAKACK2"/>
             </feature>
             <feature spec="subsystem.jgroups.stack.protocol">
-                <param name="protocol" value="UNICAST4"/>
+                <param name="protocol" value="UNICAST3"/>
+            </feature>
+            <feature spec="subsystem.jgroups.stack.protocol">
+                <param name="protocol" value="pbcast.STABLE"/>
             </feature>
             <feature spec="subsystem.jgroups.stack.protocol">
                 <param name="protocol" value="pbcast.GMS"/>
+            </feature>
+            <feature spec="subsystem.jgroups.stack.protocol">
+                <param name="protocol" value="UFC"/>
+            </feature>
+            <feature spec="subsystem.jgroups.stack.protocol">
+                <param name="protocol" value="MFC"/>
             </feature>
             <feature spec="subsystem.jgroups.stack.protocol">
                 <param name="protocol" value="FRAG4"/>
@@ -66,13 +78,22 @@
                 <param name="protocol" value="VERIFY_SUSPECT2"/>
             </feature>
             <feature spec="subsystem.jgroups.stack.protocol">
-                <param name="protocol" value="NAKACK4"/>
+                <param name="protocol" value="pbcast.NAKACK2"/>
             </feature>
             <feature spec="subsystem.jgroups.stack.protocol">
-                <param name="protocol" value="UNICAST4"/>
+                <param name="protocol" value="UNICAST3"/>
+            </feature>
+            <feature spec="subsystem.jgroups.stack.protocol">
+                <param name="protocol" value="pbcast.STABLE"/>
             </feature>
             <feature spec="subsystem.jgroups.stack.protocol">
                 <param name="protocol" value="pbcast.GMS"/>
+            </feature>
+            <feature spec="subsystem.jgroups.stack.protocol">
+                <param name="protocol" value="UFC"/>
+            </feature>
+            <feature spec="subsystem.jgroups.stack.protocol">
+                <param name="protocol" value="MFC"/>
             </feature>
             <feature spec="subsystem.jgroups.stack.protocol">
                 <param name="protocol" value="FRAG4"/>

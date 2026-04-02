@@ -7,6 +7,7 @@
 <!-- This file supplies the internal defaults per protocol -->
 <config xmlns="urn:org:jgroups">
     <UDP
+        bundler_type="transfer-queue"
         ip_ttl="2"
         mcast_recv_buf_size="25m"
         mcast_send_buf_size="1m"
