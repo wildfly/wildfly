@@ -43,7 +43,7 @@ import org.wildfly.test.integration.microprofile.config.smallrye.AssertUtils;
  */
 @RunWith(Arquillian.class)
 @RunAsClient
-@ServerSetup(SetupTask.class)
+@ServerSetup({SetupTask.class})
 public class ConfigSourceFromDirTestCase extends AbstractMicroProfileConfigTestCase {
 
     @Deployment(testable = false)

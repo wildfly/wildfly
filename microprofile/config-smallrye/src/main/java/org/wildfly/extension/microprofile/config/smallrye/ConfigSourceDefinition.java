@@ -6,7 +6,6 @@
 package org.wildfly.extension.microprofile.config.smallrye;
 
 import static org.jboss.as.controller.ModuleIdentifierUtil.parseCanonicalModuleIdentifier;
-
 import static org.jboss.as.controller.SimpleAttributeDefinitionBuilder.create;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FILESYSTEM_PATH;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MODULE;
@@ -17,10 +16,9 @@ import java.util.Arrays;
 import java.util.Collection;
 
 import io.smallrye.config.PropertiesConfigSource;
-
 import org.eclipse.microprofile.config.spi.ConfigSource;
 import org.eclipse.microprofile.config.spi.ConfigSourceProvider;
-import org.jboss.as.controller.AbstractAddStepHandler;
+import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.AttributeMarshaller;
 import org.jboss.as.controller.AttributeMarshallers;
@@ -34,6 +32,7 @@ import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.as.controller.services.path.PathManager;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -109,7 +108,9 @@ class ConfigSourceDefinition extends PersistentResourceDefinition {
         super(new SimpleResourceDefinition.Parameters(MicroProfileConfigExtension.CONFIG_SOURCE_PATH,
                 MicroProfileConfigExtension.getResourceDescriptionResolver(MicroProfileConfigExtension.CONFIG_SOURCE_PATH.getKey()))
                 .setAddHandler(new ConfigSourceDefinitionAddHandler(providers, sources))
-                .setRemoveHandler(ReloadRequiredRemoveStepHandler.INSTANCE));
+                .setAddRestartLevel(OperationEntry.Flag.RESTART_ALL_SERVICES)
+                .setRemoveHandler(ReloadRequiredRemoveStepHandler.INSTANCE)
+                .setRemoveRestartLevel(OperationEntry.Flag.RESTART_ALL_SERVICES));
     }
 
     @Override
@@ -129,7 +130,7 @@ class ConfigSourceDefinition extends PersistentResourceDefinition {
         }
     }
 
-    private static class ConfigSourceDefinitionAddHandler extends AbstractAddStepHandler {
+    private static class ConfigSourceDefinitionAddHandler extends AbstractBoottimeAddStepHandler {
         private Registry<ConfigSourceProvider> providers;
         private final Registry<ConfigSource> sources;
 
@@ -139,8 +140,9 @@ class ConfigSourceDefinition extends PersistentResourceDefinition {
             this.sources = sources;
         }
 
+
         @Override
-        protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
+        public void performBoottime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
             super.performRuntime(context, operation, model);
             String name = context.getCurrentAddressValue();
             int ordinal = ORDINAL.resolveModelAttribute(context, model).asInt();
