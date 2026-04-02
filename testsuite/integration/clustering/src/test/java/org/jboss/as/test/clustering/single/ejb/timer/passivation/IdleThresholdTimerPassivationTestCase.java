@@ -22,6 +22,7 @@ import org.jboss.as.test.clustering.ejb.RemoteEJBDirectory;
 import org.jboss.as.test.clustering.single.ejb.timer.passivation.bean.TimerTracker;
 import org.jboss.as.test.clustering.single.ejb.timer.passivation.bean.TimerTrackerBean;
 import org.jboss.as.test.shared.ManagementServerSetupTask;
+import org.jboss.as.test.shared.SnapshotRestoreSetupTask;
 import org.jboss.as.test.shared.TimeoutUtil;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -30,7 +31,6 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.wildfly.test.stabilitylevel.StabilityServerSetupSnapshotRestoreTasks;
 
 /**
  * Tests that EJB timers are passivated after the configured idle threshold and that
@@ -40,8 +40,8 @@ import org.wildfly.test.stabilitylevel.StabilityServerSetupSnapshotRestoreTasks;
  */
 @ExtendWith(ArquillianExtension.class)
 @ServerSetup({
-        StabilityServerSetupSnapshotRestoreTasks.Community.class,
-        IdleThresholdTimerPassivationTestCase.ServerSetupTask.class,
+        SnapshotRestoreSetupTask.class, // MUST be first
+        IdleThresholdTimerPassivationTestCase.ServerSetupTask.class
 })
 public class IdleThresholdTimerPassivationTestCase {
 

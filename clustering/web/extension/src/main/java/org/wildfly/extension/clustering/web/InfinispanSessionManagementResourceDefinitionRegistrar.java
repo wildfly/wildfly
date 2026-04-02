@@ -7,7 +7,6 @@ package org.wildfly.extension.clustering.web;
 import java.util.List;
 
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.as.version.Stability;
 import org.wildfly.clustering.infinispan.service.InfinispanCacheConfigurationAttributeGroup;
 import org.wildfly.clustering.server.service.CacheConfigurationAttributeGroup;
 import org.wildfly.extension.clustering.web.session.infinispan.InfinispanSessionManagementProvider;
@@ -25,7 +24,6 @@ public class InfinispanSessionManagementResourceDefinitionRegistrar extends Sess
 
     static final DurationAttributeDefinition IDLE_THRESHOLD = DurationAttributeDefinition.builder("idle-threshold")
             .setRequired(false)
-            .setStability(Stability.COMMUNITY)
             .build();
 
     InfinispanSessionManagementResourceDefinitionRegistrar() {

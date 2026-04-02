@@ -39,10 +39,11 @@ public enum DistributableWebSubsystemSchema implements SubsystemResourceXMLSchem
     VERSION_2_0(2, 0), // WildFly 18-26.1, EAP 7.4
     VERSION_3_0(3, 0), // WildFly 27-29
     VERSION_4_0(4, 0), // WildFly 30-35, EAP 8.0-8.1
-    VERSION_5_0(5, 0), // WildFly 36-present
-    VERSION_5_0_COMMUNITY(5, 0, Stability.COMMUNITY), // WildFly 39-present
+    VERSION_5_0(5, 0), // WildFly 36-39
+    VERSION_5_0_COMMUNITY(5, 0, Stability.COMMUNITY), // WildFly 39
+    VERSION_6_0(6, 0), // WildFly 40-present
     ;
-    static final Set<DistributableWebSubsystemSchema> CURRENT = Set.of(VERSION_5_0, VERSION_5_0_COMMUNITY);
+    static final Set<DistributableWebSubsystemSchema> CURRENT = Set.of(VERSION_6_0);
 
     private final ResourceXMLParticleFactory factory = ResourceXMLParticleFactory.newInstance(this);
     private final VersionedNamespace<IntVersion, DistributableWebSubsystemSchema> namespace;
@@ -131,7 +132,7 @@ public enum DistributableWebSubsystemSchema implements SubsystemResourceXMLSchem
         if (this.since(VERSION_3_0)) {
             builder.addAttribute(SessionManagementResourceDefinitionRegistrar.MARSHALLER);
         }
-        if (this.since(VERSION_5_0_COMMUNITY)) {
+        if (this.since(VERSION_5_0_COMMUNITY) || this.since(VERSION_6_0)) {
             builder.addAttribute(InfinispanSessionManagementResourceDefinitionRegistrar.IDLE_THRESHOLD);
         }
         return builder;
