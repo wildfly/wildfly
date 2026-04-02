@@ -71,7 +71,34 @@ If you provision your own server and include the `microprofile-lra-participant` 
 WildFly's MicroProfile LRA Participant subsystem implements MicroProfile
 LRA {eclipse-mp-lra-api-version}, which adds support for Long Running Actions based on the saga pattern. The MicroProfile LRA Coordinator subsystem is used to provide coordination of such transactions which LRA Participants contact in order to enlist into the LRAs.
 
-Tha LRA Coordinator can also run independently in the distributed system and can be started with for instance Docker like this:
+It is possible to run multiple LRA Coordinators in the same distributed system, but the following rules must be observed:
+
+* Each LRA Coordinator (the component responsible for starting and managing LRAs) needs its own dedicated object store. Sharing an object store between coordinators is not supported and can lead to data corruption or unexpected behavior.
+* All participants of a given LRA must communicate with the same coordinator — the one that created the LRA. Two different coordinators must not manage the same LRA.
+
+In other words, an LRA is always handled by the coordinator that created it, and that coordinator alone is responsible for driving it to completion or compensation.
+
+=== Multiple Coordinators and Load Balancing
+
+The `NarayanaLRAClient` has built-in support for https://smallrye.io/smallrye-stork[SmallRye Stork], which enables service discovery and client-side load balancing across multiple LRA Coordinator instances. Multiple coordinator URLs can be provided as a comma-separated list via the `lra.coordinator.url` configuration property:
+
+[source,options="nowrap"]
+----
+lra.coordinator.url=http://coord1:8080/lra-coordinator,http://coord2:8080/lra-coordinator,http://coord3:8080/lra-coordinator
+----
+
+The load balancing strategy is configured via the `lra.coordinator.lb-method` property and defaults to `round-robin`. The following strategies are supported:
+
+* `round-robin` — distributes new LRAs across coordinators in order (also supports failover)
+* `sticky` — pins requests to a specific coordinator instance
+* `random` — selects a coordinator at random
+* `least-requests` — selects the coordinator with the fewest in-flight requests
+* `least-response-time` — selects the coordinator with the lowest response time
+* `power-of-two-choices` — picks two candidates at random, then selects the one with fewer in-flight requests
+
+Load balancing only applies when *creating* new LRAs. Once an LRA is created, the coordinator URL is embedded in the LRA ID itself, so all subsequent operations on that LRA (join, close, cancel, status queries) are automatically routed to the same coordinator that created it. This ensures that a single coordinator drives the LRA through its entire lifecycle, regardless of which load balancing strategy is in use.
+
+The LRA Coordinator can also run independently in the distributed system and can be started with for instance Docker like this:
 
 [source,options="nowrap"]
 ----
