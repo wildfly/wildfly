@@ -9,7 +9,7 @@ import java.util.function.Supplier;
 
 import org.wildfly.clustering.ejb.bean.BeanStatistics;
 import org.wildfly.clustering.ejb.remote.AffinitySupport;
-import org.wildfly.clustering.server.service.Service;
+import org.wildfly.service.BlockingLifecycle;
 
 /**
  * A stateful session bean cache.
@@ -18,7 +18,7 @@ import org.wildfly.clustering.server.service.Service;
  * @param <K> the bean identifier type
  * @param <V> the bean instance type
  */
-public interface StatefulSessionBeanCache<K, V extends StatefulSessionBeanInstance<K>> extends Service, BeanStatistics, AffinitySupport<K>, AutoCloseable {
+public interface StatefulSessionBeanCache<K, V extends StatefulSessionBeanInstance<K>> extends BlockingLifecycle, BeanStatistics, AffinitySupport<K> {
     ThreadLocal<Object> CURRENT_GROUP = new ThreadLocal<>();
 
     /**
@@ -45,7 +45,4 @@ public interface StatefulSessionBeanCache<K, V extends StatefulSessionBeanInstan
      * @return an identifier factory
      */
     Supplier<K> getIdentifierFactory();
-
-    @Override
-    void close();
 }

@@ -7,15 +7,15 @@ package org.jboss.as.ejb3.component.stateful.cache;
 
 import java.util.function.Supplier;
 
+import org.jboss.as.clustering.service.DecoratedBlockingLifecycle;
 import org.jboss.ejb.client.Affinity;
-import org.wildfly.clustering.server.service.DecoratedService;
-import org.wildfly.clustering.server.service.Service;
+import org.wildfly.service.BlockingLifecycle;
 
 /**
  * A stateful session bean cache decorator.
  * @author Paul Ferraro
  */
-public class DecoratedStatefulSessionBeanCache<K, V extends StatefulSessionBeanInstance<K>> extends DecoratedService implements StatefulSessionBeanCache<K, V> {
+public class DecoratedStatefulSessionBeanCache<K, V extends StatefulSessionBeanInstance<K>> extends DecoratedBlockingLifecycle implements StatefulSessionBeanCache<K, V> {
 
     private final StatefulSessionBeanCache<K, V> cache;
 
@@ -23,8 +23,8 @@ public class DecoratedStatefulSessionBeanCache<K, V extends StatefulSessionBeanI
         this(cache, cache);
     }
 
-    protected DecoratedStatefulSessionBeanCache(StatefulSessionBeanCache<K, V> cache, Service service) {
-        super(service);
+    public DecoratedStatefulSessionBeanCache(StatefulSessionBeanCache<K, V> cache, BlockingLifecycle lifecycle) {
+        super(lifecycle);
         this.cache = cache;
     }
 
