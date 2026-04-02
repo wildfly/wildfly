@@ -7,7 +7,14 @@
     <byte-buffer-pool name="default" thread-local-cache-size="45" buffer-size="1000" direct="false" leak-detection-percent="50" max-pool-size="1000"/>
     <server name="default-server" default-host="default-host">
         <ajp-listener name="ajp" allowed-request-attributes-pattern="test" socket-binding="ajp"/>
-        <host name="default-host"/>
+        <host name="default-host">
+            <console-access-log>
+                <attributes>
+                    <bytes-sent/>
+                    <secure-protocol/>
+                </attributes>
+            </console-access-log>
+        </host>
     </server>
     <servlet-container name="default-container"/>
     <servlet-container name="rejected-container" allow-orphan-session="true"/>

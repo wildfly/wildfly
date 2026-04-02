@@ -6,6 +6,7 @@
 package org.wildfly.extension.undertow;
 
 import java.util.EnumSet;
+import java.util.Map;
 import java.util.Set;
 
 import org.jboss.as.controller.ModelVersion;
@@ -66,6 +67,15 @@ public class UndertowExtensionTransformerRegistration implements ExtensionTransf
                 ajpListenerAttributeTransformationDescriptionBuilder.setDiscard(DiscardAttributeChecker.UNDEFINED, AjpListenerResourceDefinition.ALLOWED_REQUEST_ATTRIBUTES_PATTERN)
                 .addRejectCheck(RejectAttributeChecker.DEFINED, AjpListenerResourceDefinition.ALLOWED_REQUEST_ATTRIBUTES_PATTERN)
                 .end();
+
+                RejectAttributeChecker.ObjectFieldsRejectAttributeChecker attributeChecker = new RejectAttributeChecker.ObjectFieldsRejectAttributeChecker(
+                    Map.of(ExchangeAttributeDefinitions.SECURE_PROTOCOL.getName(), RejectAttributeChecker.DEFINED)
+                );
+                server.addChildResource(HostDefinition.PATH_ELEMENT)
+                    .addChildResource(ConsoleAccessLogDefinition.PATH_ELEMENT)
+                    .getAttributeBuilder()
+                    .addRejectCheck(attributeChecker, ExchangeAttributeDefinitions.ATTRIBUTES)
+                ;
 
                 if (UndertowSubsystemModel.VERSION_13_0_0.requiresTransformation(version)) {
                     final ResourceTransformationDescriptionBuilder servletContainer = subsystem.addChildResource(ServletContainerDefinition.PATH_ELEMENT);

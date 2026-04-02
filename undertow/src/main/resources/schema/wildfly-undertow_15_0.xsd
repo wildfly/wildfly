@@ -665,6 +665,11 @@
                     <xs:attribute name="key" type="xs:string"/>
                 </xs:complexType>
             </xs:element>
+            <xs:element name="secure-protocol" minOccurs="0">
+                <xs:complexType>
+                    <xs:attribute name="key" type="xs:string"/>
+                </xs:complexType>
+            </xs:element>
             <xs:element name="ssl-cipher" minOccurs="0">
                 <xs:complexType>
                     <xs:attribute name="key" type="xs:string"/>

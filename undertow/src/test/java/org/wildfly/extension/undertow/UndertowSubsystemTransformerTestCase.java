@@ -142,10 +142,14 @@ public class UndertowSubsystemTransformerTestCase extends AbstractSubsystemTest 
         PathAddress subsystemAddress = PathAddress.pathAddress(UndertowRootDefinition.PATH_ELEMENT);
 
         if (UndertowSubsystemModel.VERSION_15_0_0.requiresTransformation(this.modelVersion)) {
-            PathAddress ajpListenerAddress = subsystemAddress.append(PathElement.pathElement(ServerDefinition.PATH_ELEMENT.getKey(), "default-server"))
-                    .append(PathElement.pathElement(AjpListenerResourceDefinition.PATH_ELEMENT.getKey(), "ajp"));
+            PathAddress serverAddress = subsystemAddress.append(PathElement.pathElement(ServerDefinition.PATH_ELEMENT.getKey(), "default-server"));
 
+            PathAddress ajpListenerAddress = serverAddress.append(PathElement.pathElement(AjpListenerResourceDefinition.PATH_ELEMENT.getKey(), "ajp"));
             config.addFailedAttribute(ajpListenerAddress, new FailedOperationTransformationConfig.NewAttributesConfig(AjpListenerResourceDefinition.ALLOWED_REQUEST_ATTRIBUTES_PATTERN));
+
+            PathAddress consoleAccessLogAddress = serverAddress.append(PathElement.pathElement(HostDefinition.PATH_ELEMENT.getKey(), "default-host"))
+                .append(PathElement.pathElement(ConsoleAccessLogDefinition.PATH_ELEMENT.getKey(), "console-access-log"));
+            config.addFailedAttribute(consoleAccessLogAddress, new SecureProtocolAttributeConfig(ExchangeAttributeDefinitions.ATTRIBUTES.getName()));
         }
         if (UndertowSubsystemModel.VERSION_13_0_0.requiresTransformation(this.modelVersion)) {
             PathAddress servletContainerAddress = subsystemAddress.append(PathElement.pathElement(ServletContainerDefinition.PATH_ELEMENT.getKey(), "rejected-container"));
@@ -158,5 +162,29 @@ public class UndertowSubsystemTransformerTestCase extends AbstractSubsystemTest 
 
         List<ModelNode> operations = builder.parseXmlResource("undertow-transform-reject.xml");
         ModelTestUtils.checkFailedTransformedBootOperations(services, this.modelVersion, operations, config);
+    }
+
+    private static class SecureProtocolAttributeConfig
+            extends FailedOperationTransformationConfig.AttributesPathAddressConfig<SecureProtocolAttributeConfig> {
+
+        SecureProtocolAttributeConfig(String attributeName) {
+            super(attributeName);
+        }
+
+        @Override
+        protected boolean isAttributeWritable(String attributeName) {
+            return true;
+        }
+
+        @Override
+        protected boolean checkValue(String attrName, ModelNode attribute, boolean isGeneratedWriteAttribute) {
+            return attribute.hasDefined(ExchangeAttributeDefinitions.SECURE_PROTOCOL.getName());
+        }
+
+        @Override
+        protected ModelNode correctValue(ModelNode toResolve, boolean isGeneratedWriteAttribute) {
+            toResolve.remove(ExchangeAttributeDefinitions.SECURE_PROTOCOL.getName());
+            return toResolve;
+        }
     }
 }
