@@ -12,6 +12,7 @@ import java.sql.SQLException;
 public class TestValidConnectionChecker implements ValidConnectionChecker {
 
     private static boolean invoked = false;
+    private static int timeout = 0;
 
     @Override
     public SQLException isValidConnection(Connection c) {
@@ -21,9 +22,19 @@ public class TestValidConnectionChecker implements ValidConnectionChecker {
 
     public static void reset() {
         invoked = false;
+        timeout = 0;
     }
 
     public static boolean wasInvoked() {
         return invoked;
+    }
+
+    public static int getTimeout() {
+        return timeout;
+    }
+
+    @Override
+    public void setTimeout(int timeout) {
+        this.timeout = timeout;
     }
 }
