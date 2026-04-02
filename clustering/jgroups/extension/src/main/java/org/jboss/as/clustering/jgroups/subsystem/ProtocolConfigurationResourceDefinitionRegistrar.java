@@ -17,6 +17,7 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.RequirementServiceBuilder;
 import org.jboss.as.controller.capability.RuntimeCapability;
+import org.jboss.as.controller.management.Capabilities;
 import org.jboss.as.network.SocketBinding;
 import org.jboss.dmr.ModelNode;
 import org.jboss.modules.Module;
@@ -139,7 +140,8 @@ public abstract class ProtocolConfigurationResourceDefinitionRegistrar<P extends
 
     @Override
     public ResourceServiceInstaller configure(OperationContext context, ModelNode model) throws OperationFailedException {
-        return CapabilityServiceInstaller.builder(this.capability, this.resolve(context, model)).blocking().build();
+        ServiceDependency<C> configuration = this.resolve(context, model);
+        return CapabilityServiceInstaller.BlockingBuilder.of(this.capability, configuration, ServiceDependency.on(Capabilities.MANAGEMENT_EXECUTOR)).requires(configuration).build();
     }
 
     static class ProtocolConfigurationDecorator<P extends Protocol> implements ProtocolConfiguration<P> {

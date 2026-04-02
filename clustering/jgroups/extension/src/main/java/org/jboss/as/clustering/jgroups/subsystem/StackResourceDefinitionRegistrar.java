@@ -9,7 +9,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import org.jboss.as.clustering.jgroups.JChannelFactory;
@@ -29,12 +28,12 @@ import org.jboss.as.server.ServerEnvironment;
 import org.jboss.dmr.ModelNode;
 import org.jgroups.protocols.TP;
 import org.jgroups.stack.Protocol;
+import org.wildfly.clustering.function.Supplier;
 import org.wildfly.clustering.jgroups.spi.ChannelFactory;
 import org.wildfly.clustering.jgroups.spi.ProtocolConfiguration;
 import org.wildfly.clustering.jgroups.spi.ChannelFactoryConfiguration;
 import org.wildfly.clustering.jgroups.spi.RelayConfiguration;
 import org.wildfly.clustering.jgroups.spi.TransportConfiguration;
-import org.wildfly.common.function.Functions;
 import org.wildfly.subsystem.resource.ChildResourceDefinitionRegistrar;
 import org.wildfly.subsystem.resource.ManagementResourceRegistrar;
 import org.wildfly.subsystem.resource.ManagementResourceRegistrationContext;
@@ -147,7 +146,7 @@ public class StackResourceDefinitionRegistrar implements ChildResourceDefinition
 
             @Override
             public List<ProtocolConfiguration<? extends Protocol>> getProtocols() {
-                return protocols.stream().map(Supplier::get).collect(Collectors.toUnmodifiableList());
+                return protocols.stream().map(java.util.function.Supplier::get).collect(Collectors.toUnmodifiableList());
             }
 
             @Override
@@ -165,10 +164,9 @@ public class StackResourceDefinitionRegistrar implements ChildResourceDefinition
                 return socketBindingManager.get();
             }
         };
-        return CapabilityServiceInstaller.builder(CAPABILITY, JChannelFactory::new, Functions.constantSupplier(configuration))
+        return CapabilityServiceInstaller.BlockingBuilder.of(CAPABILITY, Supplier.of(configuration).thenApply(JChannelFactory::new))
                 .requires(List.of(transport, relay, environment, socketBindingManager))
                 .requires(protocols)
-                .blocking()
                 .build();
     }
 }

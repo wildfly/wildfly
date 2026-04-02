@@ -18,6 +18,7 @@ import org.jboss.dmr.ModelNode;
 import org.wildfly.clustering.jgroups.spi.ChannelConfiguration;
 import org.wildfly.clustering.jgroups.spi.ChannelFactory;
 import org.wildfly.clustering.jgroups.spi.RemoteSiteConfiguration;
+import org.wildfly.service.Installer.StartWhen;
 import org.wildfly.subsystem.resource.ChildResourceDefinitionRegistrar;
 import org.wildfly.subsystem.resource.ManagementResourceRegistrar;
 import org.wildfly.subsystem.resource.ManagementResourceRegistrationContext;
@@ -87,5 +88,5 @@ public class RemoteSiteResourceDefinitionRegistrar implements ChildResourceDefin
                 };
             }
         });
-        return CapabilityServiceInstaller.builder(CAPABILITY, site).build();
+        return CapabilityServiceInstaller.BlockingBuilder.of(CAPABILITY, site).startWhen(StartWhen.AVAILABLE).build();
     }}
