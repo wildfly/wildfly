@@ -100,6 +100,8 @@ public abstract class JaxrsAttribute {
             new SensitivityClassification(JaxrsExtension.SUBSYSTEM_NAME, "tracing-management", false, false, true)
     );
 
+    @SuppressWarnings("DeprecatedIsStillUsed")
+    @Deprecated
     public static final SimpleAttributeDefinition JAXRS_2_0_REQUEST_MATCHING = new SimpleAttributeDefinitionBuilder(JaxrsConstants.JAXRS_2_0_REQUEST_MATCHING, ModelType.BOOLEAN)
             .setRequired(false)
             .setAllowExpression(true)
@@ -108,6 +110,7 @@ public abstract class JaxrsAttribute {
             .setAttributeGroup(RESTEASY_PARAMETER_GROUP)
             .setAttributeMarshaller(AttributeMarshallers.SIMPLE_ELEMENT)
             .setAttributeParser(AttributeParsers.SIMPLE_ELEMENT)
+            .setDeprecated(JaxrsExtension.JaxrsSubsystemModel.VERSION_6_0_0.getVersion(), true)
             .setRestartAllServices()
             .build();
 
