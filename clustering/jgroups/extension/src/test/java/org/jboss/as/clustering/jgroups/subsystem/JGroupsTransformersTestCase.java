@@ -145,9 +145,9 @@ public class JGroupsTransformersTestCase extends AbstractSubsystemTest {
         }
 
         if (JGroupsSubsystemModel.VERSION_11_0_0.requiresTransformation(this.subsystemVersion)) {
-            PathAddress addr = subsystemAddress.append(JGroupsResourceRegistration.STACK.pathElement("maximal")).append(SocketTransportResourceDefinitionRegistrar.Transport.TCP.getPathElement());
+            PathAddress addr = subsystemAddress.append(JGroupsResourceRegistration.STACK.pathElement("maximal")).append(SecurableSocketTransportResourceDefinitionRegistrar.Transport.TCP.getPathElement());
             config.addFailedAttribute(addr,
-                    new FailedOperationTransformationConfig.NewAttributesConfig(SocketTransportResourceDefinitionRegistrar.CLIENT_SSL_CONTEXT, SocketTransportResourceDefinitionRegistrar.SERVER_SSL_CONTEXT)
+                    new FailedOperationTransformationConfig.NewAttributesConfig(SecurableSocketTransportResourceDefinitionRegistrar.CLIENT_SSL_CONTEXT, SecurableSocketTransportResourceDefinitionRegistrar.SERVER_SSL_CONTEXT)
             );
         }
 

@@ -80,6 +80,7 @@ public class JGroupsSubsystemTestCase extends AbstractSubsystemSchemaTest<JGroup
                 .require(CommonServiceDescriptor.KEY_STORE, "my-key-store")
                 .require(CommonServiceDescriptor.CREDENTIAL_STORE, "my-credential-store")
                 .require(CommonServiceDescriptor.DATA_SOURCE, "ExampleDS")
+                .require(CommonServiceDescriptor.SSL_CONTEXT, List.of("my-client-context", "my-server-context"))
                 ;
     }
 
