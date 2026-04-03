@@ -47,7 +47,7 @@ import org.wildfly.subsystem.resource.SubsystemResourceDefinitionRegistrar;
 
 
 /**
- * WildFly extension that provides Jakarta MVC support based on Eclipse Krazo.
+ * WildFly extension that provides Jakarta Data support based on Hibernate Data Repositories.
  *
  * @author <a href="mailto:brian.stansberry@redhat.com">Brian Stansberry</a>
  */
@@ -58,7 +58,7 @@ public class JakartaDataExtension extends SubsystemExtension<JakartaDataExtensio
      * The name of our subsystem within the model.
      */
     static final String SUBSYSTEM_NAME = "jakarta-data";
-    private static final Stability FEATURE_STABILITY = Stability.PREVIEW;
+    private static final Stability FEATURE_STABILITY = Stability.COMMUNITY;
 
     static final PathElement SUBSYSTEM_PATH = PathElement.pathElement(SUBSYSTEM, SUBSYSTEM_NAME);
 
@@ -98,10 +98,11 @@ public class JakartaDataExtension extends SubsystemExtension<JakartaDataExtensio
      */
     public enum JakartaDataSubsystemSchema implements PersistentSubsystemSchema<JakartaDataSubsystemSchema> {
 
-        VERSION_1_0_PREVIEW(1, 0, FEATURE_STABILITY),
+        VERSION_1_0_PREVIEW(1, 0, Stability.PREVIEW),
+        VERSION_1_0_COMMUNITY(1, 0, Stability.COMMUNITY),
         ;
 
-        static final JakartaDataSubsystemSchema CURRENT = VERSION_1_0_PREVIEW;
+        static final JakartaDataSubsystemSchema CURRENT = VERSION_1_0_COMMUNITY;
 
         private final VersionedNamespace<IntVersion, JakartaDataSubsystemSchema> namespace;
 

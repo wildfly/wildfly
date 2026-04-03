@@ -13,6 +13,7 @@ import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.subsystem.test.AbstractSubsystemSchemaTest;
 import org.jboss.as.subsystem.test.AdditionalInitialization;
+import org.jboss.as.version.Stability;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
@@ -26,13 +27,24 @@ public class JakartaDataSubsystemTestCase extends AbstractSubsystemSchemaTest<Ja
         return EnumSet.allOf(JakartaDataExtension.JakartaDataSubsystemSchema.class);
     }
 
+    private final JakartaDataExtension.JakartaDataSubsystemSchema schema;
+
     public JakartaDataSubsystemTestCase(JakartaDataExtension.JakartaDataSubsystemSchema schema) {
         super(JakartaDataExtension.SUBSYSTEM_NAME, new JakartaDataExtension(), schema, JakartaDataExtension.JakartaDataSubsystemSchema.CURRENT);
+        this.schema = schema;
     }
 
     @Override
     protected org.jboss.as.subsystem.test.AdditionalInitialization createAdditionalInitialization() {
         return new AdditionalInit(getSubsystemSchema());
+    }
+
+    @Override
+    protected void compareXml(String configId, String original, String marshalled) throws Exception {
+        // n.b. for preview:1 schema subsystem test, we automatically promote stability to a community:1 schema since they are now effectively equivalent;
+        // thus for this particular schema we need to ignore comparison of the namespace
+        boolean ignoreNamespace = schema.getStability() == Stability.PREVIEW && schema.getVersion().major() == 1;
+        super.compareXml(configId, original, marshalled, ignoreNamespace);
     }
 
     private static class AdditionalInit extends AdditionalInitialization.ManagementAdditionalInitialization {
