@@ -66,12 +66,6 @@ public abstract class AbstractDatabasePersistenceWebFailoverTestCase extends Abs
                                 .add("/subsystem=infinispan/cache-container=web/invalidation-cache=database-persistence/store=jdbc:add(data-source=web-sessions, shared=true)")
                             .endBatch()
                             .build())
-                    .tearDownScript(createScriptBuilder()
-                            .startBatch()
-                                .add("/subsystem=infinispan/cache-container=web/invalidation-cache=database-persistence:remove")
-                                .add("/subsystem=datasources/data-source=web-sessions:remove")
-                            .endBatch()
-                            .build())
                     .build());
         }
     }

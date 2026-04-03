@@ -256,15 +256,6 @@ public abstract class AbstractRemoteEJBForwardingTestCase extends AbstractCluste
                             .add("/subsystem=remoting/remote-outbound-connection=remote-ejb-connection:add(outbound-socket-binding-ref=binding-remote-ejb-connection, authentication-context=remote-ejb-context)")
                             .endBatch()
                             .build())
-                    .tearDownScript(createScriptBuilder()
-                            .startBatch()
-                            .add("/subsystem=remoting/remote-outbound-connection=remote-ejb-connection:remove")
-                            .add("/subsystem=elytron/authentication-configuration=remote-ejb-configuration:remove")
-                            .add("/subsystem=elytron/authentication-context=remote-ejb-context:remove")
-                            .add("/socket-binding-group=standard-sockets/remote-destination-outbound-socket-binding=binding-remote-ejb-connection:remove")
-                            .add("/subsystem=jgroups/channel=ee:write-attribute(name=cluster, value=ejb)")
-                            .endBatch()
-                            .build())
                     .build());
         }
     }

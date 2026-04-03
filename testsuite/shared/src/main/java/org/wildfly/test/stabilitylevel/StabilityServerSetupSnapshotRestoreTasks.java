@@ -40,7 +40,7 @@ import org.junit.Assume;
  * it takes a snapshot of the server configuration in the {@code setup()} method, and then restores to that snapshot in
  * the {@code teardown()} method
  */
-public abstract class StabilityServerSetupSnapshotRestoreTasks implements ServerSetupTask {
+public class StabilityServerSetupSnapshotRestoreTasks implements ServerSetupTask {
     private static final String SERVER_ENVIRONMENT = "server-environment";
 
     private final Stability desiredStability;

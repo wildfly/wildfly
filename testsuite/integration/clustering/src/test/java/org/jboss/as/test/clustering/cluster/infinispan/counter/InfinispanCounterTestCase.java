@@ -138,11 +138,6 @@ public class InfinispanCounterTestCase extends AbstractClusteringTestCase {
                             .add("/subsystem=infinispan/cache-container=counter/replicated-cache=repl:add")
                             .endBatch()
                             .build())
-                    .tearDownScript(createScriptBuilder()
-                            .startBatch()
-                            .add("/subsystem=infinispan/cache-container=counter:remove")
-                            .endBatch()
-                            .build())
                     .build());
         }
     }

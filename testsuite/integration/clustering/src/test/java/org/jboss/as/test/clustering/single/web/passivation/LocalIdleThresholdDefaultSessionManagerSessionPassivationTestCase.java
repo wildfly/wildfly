@@ -9,9 +9,9 @@ import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.test.shared.ManagementServerSetupTask;
+import org.jboss.as.version.Stability;
 import org.jboss.shrinkwrap.api.Archive;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.wildfly.test.stabilitylevel.StabilityServerSetupSnapshotRestoreTasks;
 
 /**
  * Validates the correctness of session passivation events for a distributed session manager using a local,
@@ -20,15 +20,13 @@ import org.wildfly.test.stabilitylevel.StabilityServerSetupSnapshotRestoreTasks;
  * @author Radoslav Husar
  */
 @ExtendWith(ArquillianExtension.class)
-@ServerSetup({
-        StabilityServerSetupSnapshotRestoreTasks.Community.class,
-        LocalIdleThresholdDefaultSessionManagerSessionPassivationTestCase.ServerSetupTask.class,
-})
+@ServerSetup(LocalIdleThresholdDefaultSessionManagerSessionPassivationTestCase.ServerSetupTask.class)
 public class LocalIdleThresholdDefaultSessionManagerSessionPassivationTestCase extends LocalIdleThresholdSessionPassivationTestCase {
 
     static class ServerSetupTask extends ManagementServerSetupTask {
         ServerSetupTask() {
             super(createContainerConfigurationBuilder()
+                    .requireStability(Stability.COMMUNITY)
                     .setupScript(createScriptBuilder()
                             .startBatch()
                             .add("/subsystem=distributable-web/infinispan-session-management=default:write-attribute(name=idle-threshold, value=PT1S)")

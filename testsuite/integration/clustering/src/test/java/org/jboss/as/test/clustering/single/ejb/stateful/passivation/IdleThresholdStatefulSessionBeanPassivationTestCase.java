@@ -29,6 +29,7 @@ import org.jboss.as.test.clustering.single.ejb.stateful.passivation.bean.Passiva
 import org.jboss.as.test.clustering.single.ejb.stateful.passivation.bean.PassivatingIncrementorBean;
 import org.jboss.as.test.shared.ManagementServerSetupTask;
 import org.jboss.as.test.shared.TimeoutUtil;
+import org.jboss.as.version.Stability;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
@@ -36,7 +37,6 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.wildfly.test.stabilitylevel.StabilityServerSetupSnapshotRestoreTasks;
 
 /**
  * Tests idle time-based (idle-threshold) passivation for stateful session beans.
@@ -45,16 +45,14 @@ import org.wildfly.test.stabilitylevel.StabilityServerSetupSnapshotRestoreTasks;
  * @author Radoslav Husar
  */
 @ExtendWith(ArquillianExtension.class)
-@ServerSetup({
-        StabilityServerSetupSnapshotRestoreTasks.Community.class,
-        IdleThresholdStatefulSessionBeanPassivationTestCase.ServerSetupTask.class,
-})
+@ServerSetup(IdleThresholdStatefulSessionBeanPassivationTestCase.ServerSetupTask.class)
 public class IdleThresholdStatefulSessionBeanPassivationTestCase {
     private static final String SFSB_METRIC_PATTERN = "/deployment=%s/subsystem=ejb3/stateful-session-bean=%s:read-attribute(name=%s)";
 
     static class ServerSetupTask extends ManagementServerSetupTask {
         ServerSetupTask() {
             super(createContainerConfigurationBuilder()
+                    .requireStability(Stability.COMMUNITY)
                     .setupScript(createScriptBuilder()
                             .startBatch()
                             .add("/subsystem=ejb3:write-attribute(name=default-sfsb-cache, value=distributable)")

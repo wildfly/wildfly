@@ -53,12 +53,6 @@ public class HotRodPersistentTimerServiceTestCase extends AbstractTimerServiceTe
                             .add("/subsystem=distributable-ejb/infinispan-timer-management=hotrod:add(cache-container=ejb, cache=hotrod-persistent, marshaller=PROTOSTREAM)")
                         .endBatch()
                         .build())
-                    .tearDownScript(createScriptBuilder()
-                        .startBatch()
-                            .add("/subsystem=distributable-ejb/infinispan-timer-management=hotrod:remove")
-                            .add("/subsystem=infinispan/cache-container=ejb/invalidation-cache=hotrod-persistent:remove")
-                        .endBatch()
-                        .build())
                     .build());
         }
     }

@@ -22,7 +22,6 @@ import org.jboss.as.test.clustering.single.ejb.stateful.bean.Result;
 import org.jboss.as.test.clustering.single.ejb.stateful.bean.StatefulIncrementorBean;
 import org.jboss.as.test.clustering.single.ejb.stateful.bean.TransientStatefulIncrementorBean;
 import org.jboss.as.test.shared.ManagementServerSetupTask;
-import org.jboss.as.test.shared.SnapshotRestoreSetupTask;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -36,10 +35,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
  * @author Richard Achmatowicz
  */
 @ExtendWith(ArquillianExtension.class)
-@ServerSetup({
-        SnapshotRestoreSetupTask.class,
-        DistributableEjbSubsystemLegacyOperationTestCase.ServerSetupTask.class
-})
+@ServerSetup(DistributableEjbSubsystemLegacyOperationTestCase.ServerSetupTask.class)
 public class DistributableEjbSubsystemLegacyOperationTestCase {
 
     private static final String MODULE_NAME = DistributableEjbSubsystemLegacyOperationTestCase.class.getSimpleName();

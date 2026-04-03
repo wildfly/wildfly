@@ -24,12 +24,6 @@ public class InfinispanServerSetupTask extends ManagementServerSetupTask {
                         .add("/subsystem=infinispan/remote-cache-container=ejb/remote-cluster=infinispan-server-cluster:add(socket-bindings=[infinispan-server])")
                     .endBatch()
                     .build())
-                .tearDownScript(createScriptBuilder()
-                    .startBatch()
-                        .add("/subsystem=infinispan/remote-cache-container=ejb:remove")
-                        .add("/socket-binding-group=standard-sockets/remote-destination-outbound-socket-binding=infinispan-server:remove")
-                    .endBatch()
-                    .build())
                 .build());
     }
 }

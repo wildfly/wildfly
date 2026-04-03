@@ -177,14 +177,6 @@ public class RankedAffinityTestCase extends AbstractClusteringTestCase {
                             .add("/subsystem=distributable-web/infinispan-session-management=default/affinity=ranked:add()")
                             .endBatch()
                             .build())
-                    .tearDownScript(createScriptBuilder()
-                            .startBatch()
-                            .add("/subsystem=distributable-web/infinispan-session-management=default/affinity=primary-owner:add()")
-                            .add("/subsystem=modcluster/proxy=default:undefine-attribute(name=status-interval)")
-                            .add("/subsystem=modcluster/proxy=default:undefine-attribute(name=proxies)")
-                            .add("/socket-binding-group=standard-sockets/remote-destination-outbound-socket-binding=load-balancer-1:remove()")
-                            .endBatch()
-                            .build())
                     .build());
         }
     }
