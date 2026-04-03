@@ -101,7 +101,7 @@ public class TimerServiceFactoryServiceInstaller implements DeploymentServiceIns
                 });
             }
         };
-        ServiceInstaller.builder(Functions.constantSupplier(factory))
+        ServiceInstaller.BlockingBuilder.of(Functions.constantSupplier(factory))
                 .provides(this.name)
                 .requires(List.of(executor, persistence, timer))
                 .build()

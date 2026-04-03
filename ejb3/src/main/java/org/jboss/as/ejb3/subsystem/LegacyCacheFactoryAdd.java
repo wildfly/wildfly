@@ -35,7 +35,7 @@ public class LegacyCacheFactoryAdd extends AbstractAddStepHandler {
         final Set<String> aliases = unwrappedAliasValues != null ? new HashSet<>(unwrappedAliasValues) : Collections.<String>emptySet();
 
         ServiceDependency<StatefulSessionBeanCacheProvider> provider = (passivationStore != null) ? new DistributableStatefulSessionBeanCacheProviderResourceDefinition().apply(passivationStore) : new SimpleStatefulSessionBeanCacheProviderResourceDefinition().resolve(context, model);
-        CapabilityServiceInstaller.Builder<StatefulSessionBeanCacheProvider, StatefulSessionBeanCacheProvider> builder = CapabilityServiceInstaller.builder(StatefulSessionBeanCacheProviderResourceDefinition.CAPABILITY, provider);
+        CapabilityServiceInstaller.BlockingBuilder<StatefulSessionBeanCacheProvider, StatefulSessionBeanCacheProvider> builder = CapabilityServiceInstaller.BlockingBuilder.of(StatefulSessionBeanCacheProviderResourceDefinition.CAPABILITY, provider);
         for (String alias : aliases) {
             builder.provides(ServiceNameFactory.resolveServiceName(StatefulSessionBeanCacheProvider.SERVICE_DESCRIPTOR, alias));
         }

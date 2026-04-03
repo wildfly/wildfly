@@ -49,6 +49,6 @@ public abstract class StatefulSessionBeanCacheProviderResourceDefinition extends
 
     @Override
     public ResourceServiceInstaller configure(OperationContext context, ModelNode model) throws OperationFailedException {
-        return CapabilityServiceInstaller.builder(CAPABILITY, this.resolve(context, model)).build();
+        return CapabilityServiceInstaller.BlockingBuilder.of(CAPABILITY, this.resolve(context, model)).build();
     }
 }

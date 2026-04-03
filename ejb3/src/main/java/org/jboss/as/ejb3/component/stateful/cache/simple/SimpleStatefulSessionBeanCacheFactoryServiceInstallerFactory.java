@@ -63,7 +63,7 @@ public class SimpleStatefulSessionBeanCacheFactoryServiceInstallerFactory<K, V e
                 });
             }
         };
-        return ServiceInstaller.builder(factory)
+        return ServiceInstaller.BlockingBuilder.of(Supplier.of(factory))
                 .provides(description.getCacheFactoryServiceName())
                 .requires(environment)
                 .build();

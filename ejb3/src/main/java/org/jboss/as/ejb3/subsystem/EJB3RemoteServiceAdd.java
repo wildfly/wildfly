@@ -102,11 +102,9 @@ public class EJB3RemoteServiceAdd extends AbstractBoottimeAddStepHandler {
         for (ModelNode connectorNameNode : connectorNameNodes) {
             String connectorName = connectorNameNode.asString();
 
-            ServiceDependency<ProtocolSocketBinding> remotingConnectorInfo = ServiceDependency.on(CONNECTOR_CAPABILITY_NAME,
-                    ProtocolSocketBinding.class, connectorName);
-            ServiceInstaller.builder(EJB3RemoteServiceAdd::getClientMappings, remotingConnectorInfo)
+            ServiceInstaller.BlockingBuilder.of(ServiceDependency.on(CONNECTOR_CAPABILITY_NAME, ProtocolSocketBinding.class, connectorName).map(EJB3RemoteServiceAdd::getClientMappings))
                     .provides(ServiceNameFactory.resolveServiceName(CLIENT_MAPPINGS, connectorName))
-                    .requires(remotingConnectorInfo).build().install(context);
+                    .build().install(context);
 
             ServiceDependency<ClientMappingsRegistryProvider> provider = getClientMappingsRegistryProvider(context, model);
             ServiceInstaller installer = new ServiceInstaller() {
@@ -117,8 +115,9 @@ public class EJB3RemoteServiceAdd extends AbstractBoottimeAddStepHandler {
                         ServiceName registryParentName = ServiceNameFactory.parseServiceName(ClusteringServiceDescriptor.REGISTRY.getName());
                         for (ServiceName providedName : controller.provides()) {
                             if (registryParentName.isParentOf(providedName)) {
-                                ServiceInstaller.builder(ServiceDependency.on(providedName))
+                                ServiceInstaller.BlockingBuilder.of(ServiceDependency.on(providedName))
                                         .provides(ServiceNameFactory.resolveServiceName(EJB3RemoteResourceDefinition.CLIENT_MAPPINGS_REGISTRY, connectorName))
+                                        .startWhen(StartWhen.AVAILABLE)
                                         .build().install(target);
                             }
                         }
@@ -126,10 +125,8 @@ public class EJB3RemoteServiceAdd extends AbstractBoottimeAddStepHandler {
                     return null;
                 }
             };
-            ServiceInstaller.builder(installer, context.getCapabilityServiceSupport()).requires(provider).build()
-                    .install(context);
+            ServiceInstaller.Builder.of(installer, context.getCapabilityServiceSupport()).requires(provider).build().install(context);
         }
-
         final OptionMap channelCreationOptions = this.getChannelCreationOptions(context);
         // Install the Jakarta Enterprise Beans remoting connector service which will listen for client connections on the
         // remoting channel
