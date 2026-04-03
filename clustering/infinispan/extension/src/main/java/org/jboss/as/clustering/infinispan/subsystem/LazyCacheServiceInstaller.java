@@ -39,9 +39,10 @@ public class LazyCacheServiceInstaller implements ServiceInstaller {
                 return new LazyCache<>(manager, cacheName);
             }
         });
-        return ServiceInstaller.builder(cache)
+        return ServiceInstaller.BlockingBuilder.of(cache)
                 .provides(this.config.resolveServiceName(SERVICE_DESCRIPTOR))
                 .requires(this.config.getServiceDependency(InfinispanServiceDescriptor.CACHE))
+                .startWhen(StartWhen.AVAILABLE)
                 .build()
                 .install(target);
     }

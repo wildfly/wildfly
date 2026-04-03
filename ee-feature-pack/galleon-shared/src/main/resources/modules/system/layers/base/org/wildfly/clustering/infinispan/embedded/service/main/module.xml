@@ -24,6 +24,7 @@
         <module name="org.jboss.msc"/>
         <module name="org.wildfly.clustering.cache.infinispan.common"/>
         <module name="org.wildfly.clustering.cache.infinispan.embedded"/>
+        <module name="org.wildfly.clustering.function"/>
         <module name="org.wildfly.clustering.server.service"/>
         <module name="org.wildfly.service"/>
         <module name="org.wildfly.subsystem"/>

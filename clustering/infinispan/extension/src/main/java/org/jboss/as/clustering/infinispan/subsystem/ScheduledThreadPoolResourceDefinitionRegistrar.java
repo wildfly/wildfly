@@ -50,7 +50,7 @@ public class ScheduledThreadPoolResourceDefinitionRegistrar extends Configuratio
             }
 
             @Override
-            public CapabilityServiceInstaller.Builder<ThreadPoolConfiguration, ThreadPoolConfiguration> apply(CapabilityServiceInstaller.Builder<ThreadPoolConfiguration, ThreadPoolConfiguration> builder) {
+            public CapabilityServiceInstaller.BlockingBuilder<ThreadPoolConfiguration, ThreadPoolConfiguration> apply(CapabilityServiceInstaller.BlockingBuilder<ThreadPoolConfiguration, ThreadPoolConfiguration> builder) {
                 return builder.startWhen(StartWhen.AVAILABLE);
             }
         });

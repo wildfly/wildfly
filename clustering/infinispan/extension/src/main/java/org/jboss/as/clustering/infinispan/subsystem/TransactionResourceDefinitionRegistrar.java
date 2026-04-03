@@ -33,6 +33,7 @@ import org.jboss.tm.XAResourceRecovery;
 import org.jboss.tm.XAResourceRecoveryRegistry;
 import org.wildfly.clustering.infinispan.service.InfinispanServiceDescriptor;
 import org.wildfly.common.function.Functions;
+import org.wildfly.service.BlockingLifecycle;
 import org.wildfly.service.descriptor.BinaryServiceDescriptor;
 import org.wildfly.service.descriptor.NullaryServiceDescriptor;
 import org.wildfly.subsystem.resource.DurationAttributeDefinition;
@@ -179,10 +180,9 @@ public class TransactionResourceDefinitionRegistrar extends ConfigurationResourc
                 registry.get().removeXAResourceRecovery(recovery);
             }
         };
-        return ServiceInstaller.builder(factory)
-                .requires(List.of(registry))
-                .onStart(start)
-                .onStop(stop)
+        return ServiceInstaller.BlockingBuilder.of(factory)
+                .requires(registry)
+                .withLifecycle(BlockingLifecycle.compose(start, stop))
                 .build();
     }
 }
