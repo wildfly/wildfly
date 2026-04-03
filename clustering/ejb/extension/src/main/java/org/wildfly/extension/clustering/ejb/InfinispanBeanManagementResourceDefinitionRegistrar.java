@@ -9,6 +9,7 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.dmr.ModelNode;
 import org.wildfly.clustering.ejb.bean.BeanManagementProvider;
 import org.wildfly.clustering.ejb.infinispan.bean.InfinispanBeanManagementProvider;
+import org.wildfly.clustering.function.Supplier;
 import org.wildfly.clustering.infinispan.service.InfinispanCacheConfigurationAttributeGroup;
 import org.wildfly.clustering.server.service.CacheConfigurationAttributeGroup;
 import org.wildfly.subsystem.resource.ResourceDescriptor;
@@ -37,6 +38,6 @@ public class InfinispanBeanManagementResourceDefinitionRegistrar extends BeanMan
     public ResourceServiceInstaller configure(OperationContext context, ModelNode model) throws OperationFailedException {
         String name = context.getCurrentAddressValue();
         BeanManagementProvider provider = new InfinispanBeanManagementProvider<>(name, this.resolve(context, model), CACHE_ATTRIBUTE_GROUP.resolve(context, model));
-        return CapabilityServiceInstaller.builder(CAPABILITY, provider).build();
+        return CapabilityServiceInstaller.BlockingBuilder.of(CAPABILITY, Supplier.of(provider)).build();
     }
 }

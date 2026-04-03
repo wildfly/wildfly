@@ -233,6 +233,7 @@ public class SuspendResumeRemoteEJBTestCase extends AbstractClusteringTestCase {
                 }
             } finally {
                 thread.interrupt();
+                thread.join();
             }
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();

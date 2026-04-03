@@ -30,6 +30,7 @@ import org.jboss.modules.Module;
 import org.wildfly.clustering.ejb.infinispan.timer.InfinispanTimerManagementProvider;
 import org.wildfly.clustering.ejb.timer.TimerManagementConfiguration;
 import org.wildfly.clustering.ejb.timer.TimerManagementProvider;
+import org.wildfly.clustering.function.Supplier;
 import org.wildfly.clustering.infinispan.service.InfinispanCacheConfigurationAttributeGroup;
 import org.wildfly.clustering.marshalling.ByteBufferMarshaller;
 import org.wildfly.clustering.server.service.CacheConfigurationAttributeGroup;
@@ -106,6 +107,6 @@ public class InfinispanTimerManagementResourceDefinitionRegistrar implements Chi
                 return idleThreshold;
             }
         };
-        return CapabilityServiceInstaller.builder(CAPABILITY, new InfinispanTimerManagementProvider(config, CACHE_ATTRIBUTE_GROUP.resolve(context, model))).build();
+        return CapabilityServiceInstaller.BlockingBuilder.of(CAPABILITY, Supplier.of(new InfinispanTimerManagementProvider(config, CACHE_ATTRIBUTE_GROUP.resolve(context, model)))).build();
     }
 }

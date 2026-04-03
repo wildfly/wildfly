@@ -36,7 +36,6 @@ import org.wildfly.clustering.ejb.cache.bean.DefaultBeanGroupManagerConfiguratio
 import org.wildfly.clustering.ejb.infinispan.logging.InfinispanEjbLogger;
 import org.wildfly.clustering.infinispan.service.CacheConfigurationServiceInstaller;
 import org.wildfly.clustering.infinispan.service.CacheServiceInstaller;
-import org.wildfly.clustering.function.Consumer;
 import org.wildfly.clustering.function.Supplier;
 import org.wildfly.clustering.function.UnaryOperator;
 import org.wildfly.clustering.infinispan.service.InfinispanServiceDescriptor;
@@ -48,7 +47,7 @@ import org.wildfly.clustering.server.eviction.EvictionConfiguration;
 import org.wildfly.clustering.server.infinispan.dispatcher.CacheContainerCommandDispatcherFactory;
 import org.wildfly.clustering.server.service.BinaryServiceConfiguration;
 import org.wildfly.clustering.server.service.ClusteringServiceDescriptor;
-import org.wildfly.service.Installer.StartWhen;
+import org.wildfly.service.BlockingLifecycle;
 import org.wildfly.subsystem.service.ServiceDependency;
 import org.wildfly.subsystem.service.ServiceInstaller;
 
@@ -125,7 +124,7 @@ public class InfinispanBeanManagementProvider<K, V extends BeanInstance<K>> impl
             }
         };
         ServiceName groupManagerServiceName = this.getGroupManagerServiceName(deploymentConfiguration);
-        ServiceInstaller groupManagerInstaller = ServiceInstaller.builder(groupFactory)
+        ServiceInstaller groupManagerInstaller = ServiceInstaller.BlockingBuilder.of(groupFactory)
                 .provides(groupManagerServiceName)
                 .requires(cache)
                 .build();
@@ -136,11 +135,10 @@ public class InfinispanBeanManagementProvider<K, V extends BeanInstance<K>> impl
                 return new InfinispanBeanPassivationManager<>(cacheConfiguration, marshaller);
             }
         };
-        ServiceInstaller groupListenerInstaller = ServiceInstaller.builder(groupListener)
-                .onStop(Consumer.close())
+        ServiceInstaller groupListenerInstaller = ServiceInstaller.BlockingBuilder.of(groupListener)
                 .provides(this.getPassivationManagerServiceName(deploymentConfiguration))
+                .withLifecycle(BlockingLifecycle.autoClose())
                 .requires(ServiceDependency.on(groupManagerServiceName))
-                .startWhen(StartWhen.AVAILABLE)
                 .build();
 
         return List.of(cacheConfigurationInstaller, cacheInstaller, groupManagerInstaller, groupListenerInstaller);
@@ -185,7 +183,7 @@ public class InfinispanBeanManagementProvider<K, V extends BeanInstance<K>> impl
                 return beanGroupManager.get();
             }
         };
-        return ServiceInstaller.builder(Supplier.of(new InfinispanBeanManagerFactory<>(configuration)))
+        return ServiceInstaller.BlockingBuilder.of(Supplier.of(new InfinispanBeanManagerFactory<>(configuration)))
                 .provides(name)
                 .requires(List.of(cache, dispatcherFactory, beanGroupManager, listener))
                 .build();
