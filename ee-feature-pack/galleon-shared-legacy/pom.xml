@@ -19,26 +19,24 @@
         <version>40.0.0.Beta1-SNAPSHOT</version>
     </parent>
 
-    <artifactId>wildfly-ee-feature-pack-galleon-local</artifactId>
+    <artifactId>wildfly-ee-feature-pack-galleon-shared-legacy</artifactId>
 
-    <name>WildFly: EE Feature Pack Local Galleon Content</name>
-	<description>
-		Content for the wildfly-ee feature pack that can only be used in that feature pack 
-		and not in the wildfly-preview feature pack
-	</description>
+    <name>WildFly: EE Feature Pack Shared Galleon Content -- Legacy</name>
+    <description>Content for the wildfly-ee feature pack that can also be used in the wildfly-legacy-ee feature pack</description>
     <packaging>pom</packaging>
 
     <dependencies>
         <dependency>
-            <groupId>${ee.maven.groupId}</groupId>
-            <artifactId>wildfly-ee-feature-pack-product-conf</artifactId>
+            <groupId>org.glassfish</groupId>
+            <artifactId>jakarta.enterprise.concurrent</artifactId>
         </dependency>
-
         <dependency>
             <groupId>${ee.maven.groupId}</groupId>
-            <artifactId>wildfly-ee-feature-pack-product-conf</artifactId>
-            <classifier>version</classifier>
-            <type>txt</type>
+            <artifactId>wildfly-concurrency-impl-30</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>${ee.maven.groupId}</groupId>
+            <artifactId>wildfly-concurrency-spi</artifactId>
         </dependency>
     </dependencies>
 
@@ -81,6 +79,29 @@
                         </configuration>
                     </execution>
                 </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.wildfly.unstable.api.annotation</groupId>
+                <artifactId>unstable-api-annotation-classpath-indexer-plugin</artifactId>
+                <configuration>
+                    <outputFile>${project.build.directory}/index/wildfly-ee-galleon-pack-unstable-api-annotation-index.zip</outputFile>
+                    <filters>
+                        <filter>
+                            <annotation>org.hibernate.Incubating</annotation>
+                            <groupIds>
+                                <groupId>org.hibernate</groupId>
+                                <groupId>org.hibernate.*</groupId>
+                            </groupIds>
+                        </filter>
+                        <filter>
+                            <annotation>org.hibernate.validator.Incubating</annotation>
+                            <groupIds>
+                                <groupId>org.hibernate</groupId>
+                                <groupId>org.hibernate.*</groupId>
+                            </groupIds>
+                        </filter>
+                    </filters>
+                </configuration>
             </plugin>
         </plugins>
     </build>

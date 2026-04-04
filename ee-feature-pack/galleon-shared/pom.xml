@@ -22,7 +22,7 @@
     <artifactId>wildfly-ee-feature-pack-galleon-shared</artifactId>
 
     <name>WildFly: EE Feature Pack Shared Galleon Content</name>
-    <description>Content for the wildfly-ee feature pack that can also be used in the wildfly-preview feature pack</description>
+    <description>Content for the wildfly-ee feature pack that can also be used in the wildfly-legacy-ee and the wildfly-preview feature pack</description>
     <packaging>pom</packaging>
 
     <dependencies>

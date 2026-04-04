@@ -31,6 +31,8 @@
         <!-- Any module referenced by these paths MUST be explicitly declared as a <dependency> in this POM to ensure the reactor schedules it to complete BEFORE this module's build starts! -->
         <galleon.shared.resources.directory>${basedir}/../galleon-shared/src/main/resources</galleon.shared.resources.directory>
         <galleon.shared.generated.resources.directory>${basedir}/../galleon-shared/target/index</galleon.shared.generated.resources.directory>
+        <galleon.shared.legacy.resources.directory>${basedir}/../galleon-shared-legacy/src/main/resources</galleon.shared.legacy.resources.directory>
+        <galleon.shared.preview.resources.directory>${basedir}/../galleon-shared-preview/src/main/resources</galleon.shared.preview.resources.directory>
         <galleon.local.resources.directory>${basedir}/../galleon-local/src/main/resources</galleon.local.resources.directory>
         <galleon.client.resources.directory>${basedir}/../../client/shade/target/resources</galleon.client.resources.directory>
         <license.directory>${project.build.directory}/resources/content/docs/licenses</license.directory>
@@ -150,6 +152,38 @@
                             <resources>
                                 <resource>
                                     <directory>${galleon.shared.generated.resources.directory}</directory>
+                                </resource>
+                            </resources>
+                            <overwrite>true</overwrite>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>copy-galleon-shared-legacy-feature-pack-resources</id>
+                        <phase>process-resources</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${basedir}/target/resources</outputDirectory>
+                            <resources>
+                                <resource>
+                                    <directory>${galleon.shared.legacy.resources.directory}</directory>
+                                </resource>
+                            </resources>
+                            <overwrite>true</overwrite>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>copy-galleon-shared-preview-feature-pack-resources</id>
+                        <phase>process-resources</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${basedir}/target/resources</outputDirectory>
+                            <resources>
+                                <resource>
+                                    <directory>${galleon.shared.preview.resources.directory}</directory>
                                 </resource>
                             </resources>
                             <overwrite>true</overwrite>
@@ -307,6 +341,22 @@
         <dependency>
             <groupId>${ee.maven.groupId}</groupId>
             <artifactId>wildfly-ee-feature-pack-galleon-shared</artifactId>
+            <version>${ee.maven.version}</version>
+            <type>pom</type>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>${ee.maven.groupId}</groupId>
+            <artifactId>wildfly-ee-feature-pack-galleon-shared-legacy</artifactId>
+            <version>${ee.maven.version}</version>
+            <type>pom</type>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>${ee.maven.groupId}</groupId>
+            <artifactId>wildfly-ee-feature-pack-galleon-shared-preview</artifactId>
             <version>${ee.maven.version}</version>
             <type>pom</type>
             <scope>provided</scope>

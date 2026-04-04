@@ -13,19 +13,24 @@ endif::[]
 == Overview
 
 The `wildfly-ee-feature-pack-galleon-shared` module is used to control the source code and dependency management for items that
-are relevant to *both* the `wildfly-ee` and `wildfly-preview` feature
+are relevant to *all three* of the `wildfly-ee` `wildfly-legacy-ee` and `wildfly-preview` feature
 packs.
+
+Note that `wildfly-legacy-ee` is a conceptual name used in this document for a feature pack will have different actual names over time, depending on what EE version it provides. For example, it initially was called `wildfly-ee-10`.
 
 [WARNING]
 ====
-If something is only relevant to one of `wildfly-ee` *or* `wildfly-preview`, *DO NOT* include it here.
+If something is only relevant to one or two of `wildfly-ee`, `wildfly-legacy-ee` or `wildfly-preview`, *DO NOT* include it here.
 
 * If it's only for `wildfly-ee`, use the `wildfly-ee-feature-pack-galleon-local` maven module.
+* If it's only for `wildfly-legacy-ee`, use the `wildfly-legacy-feature-pack-galleon-local` maven module.
 * If it's only for `wildfly-preview`, use the `wildfly-preview-feature-pack-galleon-local` maven module.
+* If it's only for the *pair* `wildfly-ee` and `wildfly-legacy-ee`, use the `wildfly-ee-feature-pack-galleon-shared-legacy` maven module.
+* If it's only for the *pair* `wildfly-ee` and `wildfly-preview`, use the `wildfly-ee-feature-pack-galleon-shared-preview` maven module.
 * If it's relevant to standard WildFly but only if the `wildfly` feature pack is used, use either the `wildfly-feature-pack-galleon-shared` or `wildfly-feature-pack-galleon-local` maven module.
 ====
 
-This module is a dependency of both the `wildfly-ee-galleon-pack` and the `wildfly-preview-feature-pack` maven modules. Its content and dependency entries are used by the build of those modules when they create their respective feature packs.
+This module is a dependency of all three of the `wildfly-ee-galleon-pack`, `wildfly-legacy-ee-galleon-pack` and the `wildfly-preview-feature-pack` maven modules. Its content and dependency entries are used by the build of those modules when they create their respective feature packs.
 
 == Galleon Content
 
@@ -41,7 +46,7 @@ Galleon content refers to content other than maven artifacts that Galleon provis
 
 The `pom.xml` file for this module *must* include `dependency` entries for all artifacts mentioned in the `module.xml` files included in this maven module. It *must not* include `dependency` entries for other artifacts.
 
-The build of the `wildfly-ee-galleon-pack` and the `wildfly-preview-feature-pack` maven modules relies on the dependency information in this pom to tell it what artifacts the feature pack should include.  Missing information will break the build. Extraneous information may result in the feature pack provisioning the wrong version of artifacts.
+The build of the `wildfly-ee-galleon-pack`, `wildfly-legacy-ee-galleon-pack` and the `wildfly-preview-feature-pack` maven modules relies on the dependency information in this pom to tell it what artifacts the feature pack should include.  Missing information will break the build. Extraneous information may result in the feature pack provisioning the wrong version of artifacts.
 
 == Licenses
 
@@ -52,4 +57,4 @@ If the wildfly-license-plugin needs special instructions to identify the license
 The build of this feature pack produces a zip that basically packages the content. This is for two reasons:
 
 * Nexus balks at this module not producing an artifact, preventing deploying.
-* Ideally, the `wildfly-ee-galleon-pack` and the `wildfly-preview-feature-pack` maven modules would depend on and unzip these zip artifacts and consume their content that way. But, at least at the time this document was written, they don't do this and instead just copy in source from this maven module.
+* Ideally, the `wildfly-ee-galleon-pack`, `wildfly-legacy-ee-galleon-pack` and the `wildfly-preview-feature-pack` maven modules would depend on and unzip these zip artifacts and consume their content that way. But, at least at the time this document was written, they don't do this and instead just copy in source from this maven module.

@@ -31,6 +31,8 @@
         <module>galleon-feature-pack</module>
         <module>galleon-local</module>
         <module>galleon-shared</module>
+        <module>galleon-shared-legacy</module>
+        <module>galleon-shared-preview</module>
         <module>layer-metadata-tests</module>
         <module>product-conf</module>
     </modules>
