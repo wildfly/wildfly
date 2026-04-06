@@ -24,7 +24,7 @@
     <artifactId>wildfly-legacy-ee-bom</artifactId>
     <description>
         Bill of materials for maven modules that provide traditional capabilities like Jakarta EE
-        and that compile against legacy dependencies
+        and that compile against legacy dependencies.
     </description>
     <packaging>pom</packaging>
 
@@ -34,8 +34,15 @@
         <dependencies>
 
             <!--
-                Inherit the common deps.
+                Inherit the shared deps.
              -->
+            <dependency>
+                <groupId>${ee.maven.groupId}</groupId>
+                <artifactId>wildfly-standard-legacy-ee-bom</artifactId>
+                <version>${ee.maven.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
             <dependency>
                 <groupId>${ee.maven.groupId}</groupId>
                 <artifactId>wildfly-common-ee-dependency-management</artifactId>

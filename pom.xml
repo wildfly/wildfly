@@ -809,6 +809,20 @@
 
             <dependency>
                 <groupId>${ee.maven.groupId}</groupId>
+                <artifactId>wildfly-standard-legacy-ee-bom</artifactId>
+                <version>${ee.maven.version}</version>
+                <type>pom</type>
+            </dependency>
+
+            <dependency>
+                <groupId>${ee.maven.groupId}</groupId>
+                <artifactId>wildfly-standard-preview-ee-bom</artifactId>
+                <version>${ee.maven.version}</version>
+                <type>pom</type>
+            </dependency>
+
+            <dependency>
+                <groupId>${ee.maven.groupId}</groupId>
                 <artifactId>wildfly-standard-test-bom</artifactId>
                 <version>${ee.maven.version}</version>
                 <type>pom</type>
@@ -1507,6 +1521,8 @@
                 <module>boms/common-ee</module>
                 <module>boms/legacy-ee</module>
                 <module>boms/legacy-test</module>
+                <module>boms/standard-legacy-ee</module>
+                <module>boms/standard-preview-ee</module>
                 <module>boms/standard-ee</module>
                 <module>boms/standard-test</module>
                 <module>boms/user</module>
