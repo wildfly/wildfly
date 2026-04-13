@@ -11,7 +11,7 @@ import java.util.Set;
 import io.smallrye.openapi.api.SmallRyeOASConfig;
 
 import org.eclipse.microprofile.config.Config;
-import org.eclipse.microprofile.config.ConfigProvider;
+import org.eclipse.microprofile.config.spi.ConfigProviderResolver;
 import org.eclipse.microprofile.openapi.OASConfig;
 import org.wildfly.microprofile.openapi.OpenAPIModelConfiguration;
 
@@ -46,15 +46,15 @@ public class HostOpenAPIModelConfiguration implements OpenAPIModelConfiguration 
     private static final String COMPONENT_KEY_FORMAT = "component-key-format";
     private static final String DEFAULT_COMPONENT_KEY_FORMAT = "%1$s%2$s"; // Parameters: context path, component identifier
 
-    private final Config config;
+    private final ConfigProviderResolver resolver;
     private final String serverName;
     private final String hostName;
     private final Set<String> listeners;
 
-    public HostOpenAPIModelConfiguration(String serverName, String hostName, Set<String> listeners) {
+    public HostOpenAPIModelConfiguration(ConfigProviderResolver resolver, String serverName, String hostName, Set<String> listeners) {
         this.serverName = serverName;
         this.hostName = hostName;
-        this.config = ConfigProvider.getConfig(HostOpenAPIModelConfiguration.class.getClassLoader());
+        this.resolver = resolver;
         this.listeners = listeners;
     }
 
@@ -80,7 +80,7 @@ public class HostOpenAPIModelConfiguration implements OpenAPIModelConfiguration 
 
     @Override
     public Config getMicroProfileConfig() {
-        return this.config;
+        return this.resolver.getConfig(HostOpenAPIModelConfiguration.class.getClassLoader());
     }
 
     Set<String> getAutoDocumentedListeners() {
@@ -92,12 +92,13 @@ public class HostOpenAPIModelConfiguration implements OpenAPIModelConfiguration 
     }
 
     <T> Optional<T> getPropertyValue(String propertyName, Class<T> propertyType) {
-        Optional<T> result = this.config.getOptionalValue(String.format("%sserver.%s.host.%s.%s", OASConfig.EXTENSIONS_PREFIX, this.serverName, this.hostName, propertyName), propertyType);
+        Config config = this.getMicroProfileConfig();
+        Optional<T> result = config.getOptionalValue(String.format("%sserver.%s.host.%s.%s", OASConfig.EXTENSIONS_PREFIX, this.serverName, this.hostName, propertyName), propertyType);
         if (result.isEmpty()) {
-            result = this.config.getOptionalValue(String.format("%sserver.%s.%s", OASConfig.EXTENSIONS_PREFIX, this.serverName, propertyName), propertyType);
+            result = config.getOptionalValue(String.format("%sserver.%s.%s", OASConfig.EXTENSIONS_PREFIX, this.serverName, propertyName), propertyType);
         }
         if (result.isEmpty()) {
-            result = this.config.getOptionalValue(OASConfig.EXTENSIONS_PREFIX + propertyName, propertyType);
+            result = config.getOptionalValue(OASConfig.EXTENSIONS_PREFIX + propertyName, propertyType);
         }
         return result;
     }

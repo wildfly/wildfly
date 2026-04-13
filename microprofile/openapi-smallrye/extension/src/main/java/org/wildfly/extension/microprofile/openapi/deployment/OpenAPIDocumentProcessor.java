@@ -16,6 +16,7 @@ import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
+import org.eclipse.microprofile.config.spi.ConfigProviderResolver;
 import org.eclipse.microprofile.openapi.models.ExternalDocumentation;
 import org.eclipse.microprofile.openapi.models.OpenAPI;
 import org.eclipse.microprofile.openapi.models.info.Contact;
@@ -93,7 +94,7 @@ public class OpenAPIDocumentProcessor implements DeploymentUnitProcessor {
 
         if (DeploymentTypeMarker.isType(DeploymentType.WAR, unit)) {
             DeploymentOpenAPIModelConfiguration configuration = new DeploymentUnitOpenAPIModelConfiguration(unit);
-            OpenAPIModelConfiguration hostConfiguration = new HostOpenAPIModelConfiguration(configuration.getServerName(), configuration.getHostName(), Set.of());
+            OpenAPIModelConfiguration hostConfiguration = new HostOpenAPIModelConfiguration(ConfigProviderResolver.instance(), configuration.getServerName(), configuration.getHostName(), Set.of());
 
             if (configuration.isEnabled()) {
                 OpenApiConfig config = OpenApiConfig.fromConfig(configuration.getMicroProfileConfig());

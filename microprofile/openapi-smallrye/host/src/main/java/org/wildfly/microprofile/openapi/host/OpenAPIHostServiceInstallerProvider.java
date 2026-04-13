@@ -13,6 +13,7 @@ import java.util.function.Predicate;
 import io.smallrye.common.function.Functions;
 import io.smallrye.openapi.spi.OASFactoryResolverImpl;
 
+import org.eclipse.microprofile.config.spi.ConfigProviderResolver;
 import org.eclipse.microprofile.openapi.spi.OASFactoryResolver;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.RequirementServiceTarget;
@@ -23,8 +24,10 @@ import org.kohsuke.MetaInfServices;
 import org.wildfly.extension.undertow.Host;
 import org.wildfly.extension.undertow.HostServiceInstallerProvider;
 import org.wildfly.extension.undertow.UndertowListener;
+import org.wildfly.microprofile.openapi.OpenAPIEndpointConfiguration;
 import org.wildfly.microprofile.openapi.OpenAPIModelProvider;
 import org.wildfly.subsystem.service.ResourceServiceInstaller;
+import org.wildfly.subsystem.service.ServiceDependency;
 import org.wildfly.subsystem.service.ServiceInstaller;
 
 /**
@@ -62,17 +65,19 @@ public class OpenAPIHostServiceInstallerProvider implements HostServiceInstaller
                         }
                     }
                 }
+                // Do not read MP Config until it is available.
+                ServiceDependency<ConfigProviderResolver> resolver = ServiceDependency.on(OpenAPIEndpointConfiguration.CONFIG_PROVIDER_RESOLVER);
                 return ServiceInstaller.Builder.of(new ServiceInstaller() {
                     @Override
                     public ServiceController<?> install(RequirementServiceTarget target) {
-                        HostOpenAPIModelConfiguration configuration = new HostOpenAPIModelConfiguration(serverName, hostName, listeners);
+                        HostOpenAPIModelConfiguration configuration = new HostOpenAPIModelConfiguration(resolver.get(), serverName, hostName, listeners);
                         if (configuration.isEnabled()) {
                             new HostOpenAPIProviderServiceInstaller(configuration).install(target);
                             new OpenAPIHttpHandlerServiceInstaller(configuration).install(target);
                         }
                         return null;
                     }
-                }, context.getCapabilityServiceSupport()).build().install(context);
+                }, context.getCapabilityServiceSupport()).requires(resolver).build().install(context);
             }
         };
     }

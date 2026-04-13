@@ -6,13 +6,17 @@
 package org.wildfly.microprofile.openapi;
 
 import org.eclipse.microprofile.config.Config;
+import org.eclipse.microprofile.config.spi.ConfigProviderResolver;
 import org.eclipse.microprofile.openapi.OASConfig;
+import org.wildfly.service.descriptor.NullaryServiceDescriptor;
 
 /**
  * Encapsulates the configuration of an OpenAPI endpoint.
  * @author Paul Ferraro
  */
 public interface OpenAPIEndpointConfiguration {
+    NullaryServiceDescriptor<ConfigProviderResolver> CONFIG_PROVIDER_RESOLVER = NullaryServiceDescriptor.of("org.wildfly.microprofile.config", ConfigProviderResolver.class);
+
     String PATH = "path";
     String ENABLED = "enabled";
     String DEFAULT_PATH = "/openapi";
