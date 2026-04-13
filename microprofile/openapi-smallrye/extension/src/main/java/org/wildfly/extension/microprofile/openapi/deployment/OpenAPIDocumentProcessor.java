@@ -10,6 +10,7 @@ import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.TreeMap;
 import java.util.function.BiFunction;
 import java.util.function.Function;
@@ -92,7 +93,7 @@ public class OpenAPIDocumentProcessor implements DeploymentUnitProcessor {
 
         if (DeploymentTypeMarker.isType(DeploymentType.WAR, unit)) {
             DeploymentOpenAPIModelConfiguration configuration = new DeploymentUnitOpenAPIModelConfiguration(unit);
-            OpenAPIModelConfiguration hostConfiguration = new HostOpenAPIModelConfiguration(configuration.getServerName(), configuration.getHostName());
+            OpenAPIModelConfiguration hostConfiguration = new HostOpenAPIModelConfiguration(configuration.getServerName(), configuration.getHostName(), Set.of());
 
             if (configuration.isEnabled()) {
                 OpenApiConfig config = OpenApiConfig.fromConfig(configuration.getMicroProfileConfig());

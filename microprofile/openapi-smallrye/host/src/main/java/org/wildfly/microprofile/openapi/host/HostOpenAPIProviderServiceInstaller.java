@@ -10,11 +10,11 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
-import java.util.TreeSet;
-import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
 
 import io.smallrye.openapi.spi.OASFactoryResolverImpl;
@@ -23,16 +23,15 @@ import org.eclipse.microprofile.openapi.OASFactory;
 import org.eclipse.microprofile.openapi.models.OpenAPI;
 import org.eclipse.microprofile.openapi.models.servers.Server;
 import org.eclipse.microprofile.openapi.spi.OASFactoryResolver;
-import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.RequirementServiceTarget;
 import org.jboss.as.controller.ServiceNameFactory;
 import org.jboss.as.network.ClientMapping;
 import org.jboss.as.network.SocketBinding;
-import org.wildfly.common.function.Functions;
+import org.jboss.msc.service.ServiceController;
 import org.wildfly.extension.undertow.Host;
 import org.wildfly.extension.undertow.UndertowListener;
 import org.wildfly.microprofile.openapi.OpenAPIModelProvider;
 import org.wildfly.microprofile.openapi.OpenAPIModelRegistry;
-import org.wildfly.subsystem.service.ResourceServiceInstaller;
 import org.wildfly.subsystem.service.ServiceDependency;
 import org.wildfly.subsystem.service.ServiceInstaller;
 
@@ -40,7 +39,11 @@ import org.wildfly.subsystem.service.ServiceInstaller;
  * Installs a service that provides an OpenAPI model for a host.
  * @author Paul Ferraro
  */
-public class HostOpenAPIProviderServiceInstaller implements ResourceServiceInstaller {
+public class HostOpenAPIProviderServiceInstaller implements ServiceInstaller {
+    private static final String HTTP = "http";
+    private static final String HTTPS = "https";
+    private static final Set<String> SCHEMES = Set.of(HTTP, HTTPS);
+
     static {
         // Set the static OASFactoryResolver eagerly avoiding the need perform TCCL service loading later
         OASFactoryResolver.setInstance(new OASFactoryResolverImpl());
@@ -53,15 +56,18 @@ public class HostOpenAPIProviderServiceInstaller implements ResourceServiceInsta
     }
 
     @Override
-    public Consumer<OperationContext> install(OperationContext context) {
-        if (!this.configuration.isEnabled()) return Functions.discardingConsumer();
-
+    public ServiceController<?> install(RequirementServiceTarget target) {
         String serverName = this.configuration.getServerName();
         String hostName = this.configuration.getHostName();
-        boolean autoGenerateServers = this.configuration.isServerAutoGenerationEnabled();
+        Set<String> listenerNames = this.configuration.getAutoDocumentedListeners();
         String componentKeyFormat = this.configuration.getComponentKeyFormat();
         UnaryOperator<String> resolver = name -> this.configuration.getPropertyValue(name, String.class).orElse(null);
 
+        // Establish listener dependencies in lieu of calling Server.getListeners() as these are concurrently started and are not guaranteed to be registered yet
+        List<ServiceDependency<UndertowListener>> requiredListeners = new ArrayList<>(listenerNames.size());
+        for (String listenerName : listenerNames) {
+            requiredListeners.add(ServiceDependency.on(UndertowListener.SERVICE_DESCRIPTOR, serverName, listenerName));
+        }
         ServiceDependency<CompositeOpenAPIModelProvider> provider = ServiceDependency.on(Host.SERVICE_DESCRIPTOR, serverName, hostName).map(new Function<>() {
             @Override
             public CompositeOpenAPIModelProvider apply(Host host) {
@@ -82,36 +88,45 @@ public class HostOpenAPIProviderServiceInstaller implements ResourceServiceInsta
                         .openapi(resolver.apply(HostOpenAPIModelConfiguration.VERSION))
                         ;
 
-                if (autoGenerateServers) {
-                    int aliases = host.getAllAliases().size();
-                    Collection<UndertowListener> listeners = host.getServer().getListeners();
-                    int size = 0;
-                    for (UndertowListener listener : listeners) {
-                        size += aliases + listener.getSocketBinding().getClientMappings().size();
-                    }
-                    List<Server> servers = new ArrayList<>(size);
+                if (!requiredListeners.isEmpty()) {
+                    Collection<UndertowListener> listeners = requiredListeners.stream().map(Supplier::get).toList();
+                    List<Server> servers = new LinkedList<>();
                     for (UndertowListener listener : listeners) {
                         SocketBinding binding = listener.getSocketBinding();
-                        Set<String> virtualHosts = new TreeSet<>(host.getAllAliases());
-                        // The name of the host is not a real virtual host (e.g. default-host)
-                        virtualHosts.remove(host.getName());
-
-                        InetAddress address = binding.getAddress();
-                        // Omit wildcard addresses
-                        if (!address.isAnyLocalAddress()) {
-                            virtualHosts.add(address.getCanonicalHostName());
-                        }
-
-                        for (String virtualHost : virtualHosts) {
-                            Server server = createServer(listener.getProtocol(), virtualHost, binding.getAbsolutePort());
-                            if (server != null) {
-                                servers.add(server);
+                        List<ClientMapping> clientMappings = binding.getClientMappings();
+                        // Prefer client mappings, if defined, as this implies that the listener port is mapped or proxied
+                        if (!clientMappings.isEmpty()) {
+                            for (ClientMapping clientMapping : clientMappings) {
+                                // N.B. This could be an AJP listener
+                                Server server = createServer(listener.isSecure() ? HTTPS : HTTP, clientMapping.getDestinationAddress(), clientMapping.getDestinationPort());
+                                if (server != null) {
+                                    servers.add(server);
+                                }
                             }
-                        }
-                        for (ClientMapping mapping : binding.getClientMappings()) {
-                            Server server = createServer(listener.getProtocol(), mapping.getDestinationAddress(), mapping.getDestinationPort());
-                            if (server != null) {
-                                servers.add(server);
+                        } else if (SCHEMES.contains(listener.getProtocol())) { // Skip listeners w/out client mappings for which we can not generate a usable URL
+                            // If listener has no client mappings, generate URLS using virtual hosts and (potentially offset) port of the listener socket binding
+                            Set<String> aliases = host.getAllAliases();
+                            List<String> socketBindingHosts = new ArrayList<>(aliases.size());
+                            for (String alias : aliases) {
+                                // Host.getAllAliases() includes the name of the host resource, even though this is not a virtual host, e.g. default-host
+                                if (!alias.equals(hostName)) {
+                                    socketBindingHosts.add(alias);
+                                }
+                            }
+                            // If no virtual hosts, use host of socket binding itself
+                            if (socketBindingHosts.isEmpty()) {
+                                InetAddress address = binding.getAddress();
+                                // Omit wildcard addresses
+                                if (!address.isAnyLocalAddress()) {
+                                    socketBindingHosts.add(address.getCanonicalHostName());
+                                }
+                            }
+
+                            for (String socketBindingHost : socketBindingHosts) {
+                                Server server = createServer(listener.getProtocol(), socketBindingHost, binding.getAbsolutePort());
+                                if (server != null) {
+                                    servers.add(server);
+                                }
                             }
                         }
                     }
@@ -138,7 +153,8 @@ public class HostOpenAPIProviderServiceInstaller implements ResourceServiceInsta
         return ServiceInstaller.BlockingBuilder.of(provider)
                 .provides(ServiceNameFactory.resolveServiceName(OpenAPIModelProvider.DEFAULT_SERVICE_DESCRIPTOR, serverName, hostName))
                 .provides(ServiceNameFactory.resolveServiceName(OpenAPIModelRegistry.SERVICE_DESCRIPTOR, serverName, hostName))
+                .requires(requiredListeners)
                 .build()
-                .install(context);
+                .install(target);
     }
 }

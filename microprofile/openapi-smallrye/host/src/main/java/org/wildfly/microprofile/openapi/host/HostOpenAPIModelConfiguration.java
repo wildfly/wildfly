@@ -6,6 +6,7 @@
 package org.wildfly.microprofile.openapi.host;
 
 import java.util.Optional;
+import java.util.Set;
 
 import io.smallrye.openapi.api.SmallRyeOASConfig;
 
@@ -48,11 +49,13 @@ public class HostOpenAPIModelConfiguration implements OpenAPIModelConfiguration 
     private final Config config;
     private final String serverName;
     private final String hostName;
+    private final Set<String> listeners;
 
-    public HostOpenAPIModelConfiguration(String serverName, String hostName) {
+    public HostOpenAPIModelConfiguration(String serverName, String hostName, Set<String> listeners) {
         this.serverName = serverName;
         this.hostName = hostName;
         this.config = ConfigProvider.getConfig(HostOpenAPIModelConfiguration.class.getClassLoader());
+        this.listeners = listeners;
     }
 
     @Override
@@ -80,8 +83,8 @@ public class HostOpenAPIModelConfiguration implements OpenAPIModelConfiguration 
         return this.config;
     }
 
-    boolean isServerAutoGenerationEnabled() {
-        return this.getPropertyValue(AUTO_GENERATE_SERVERS, Boolean.class).orElse(Boolean.FALSE);
+    Set<String> getAutoDocumentedListeners() {
+        return this.getPropertyValue(AUTO_GENERATE_SERVERS, Boolean.class).orElse(Boolean.FALSE) ? this.listeners : Set.of();
     }
 
     String getComponentKeyFormat() {
