@@ -13,9 +13,9 @@ public final class Capabilities {
     Capabilities in this subsystem
      */
     public static final String CAPABILITY_UNDERTOW = "org.wildfly.undertow";
-    public static final String CAPABILITY_LISTENER = "org.wildfly.undertow.listener";
+    @Deprecated(forRemoval = true) public static final String CAPABILITY_LISTENER = "org.wildfly.undertow.listener";
     @Deprecated(forRemoval = true) public static final String CAPABILITY_SERVER = Server.SERVICE_DESCRIPTOR.getName();
-    public static final String CAPABILITY_SERVER_LISTENER = "org.wildfly.undertow.server.listener";
+    @Deprecated(forRemoval = true) public static final String CAPABILITY_SERVER_LISTENER = UndertowListener.SERVICE_DESCRIPTOR.getName();
     @Deprecated(forRemoval = true) public static final String CAPABILITY_HOST = Host.SERVICE_DESCRIPTOR.getName();
     public static final String CAPABILITY_HOST_SSO = "org.wildfly.undertow.host.sso";
     public static final String CAPABILITY_LOCATION = "org.wildfly.undertow.host.location";
