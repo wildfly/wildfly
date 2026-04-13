@@ -593,7 +593,7 @@
         <!--
             Maintain separation between these two frequently updated artifacts to avoid merge conflicts.
         -->
-        <version.org.wildfly.core>32.0.0.Beta6</version.org.wildfly.core>
+        <version.org.wildfly.core>32.0.0.Beta7</version.org.wildfly.core>
         <!--
             Maintain separation between these two frequently updated artifacts to avoid merge conflicts.
         -->
