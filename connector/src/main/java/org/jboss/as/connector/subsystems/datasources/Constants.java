@@ -14,6 +14,7 @@ import org.jboss.as.connector.metadata.api.common.Credential;
 import org.jboss.as.connector.metadata.api.common.Security;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ModelVersion;
+import org.jboss.as.controller.ModuleIdentifierUtil;
 import org.jboss.as.controller.ObjectListAttributeDefinition;
 import org.jboss.as.controller.ObjectTypeAttributeDefinition;
 import org.jboss.as.controller.PrimitiveListAttributeDefinition;
@@ -520,6 +521,7 @@ public class Constants {
             .setXmlName(org.jboss.jca.common.api.metadata.common.Extension.Attribute.MODULE.getLocalName())
             .setAllowExpression(true)
             .setRestartAllServices()
+            .setCorrector(ModuleIdentifierUtil.MODULE_NAME_CORRECTOR)
             .build();
 
     static PropertiesAttributeDefinition EXCEPTION_SORTER_PROPERTIES = new PropertiesAttributeDefinition.Builder(EXCEPTIONSORTER_PROPERTIES_NAME, true)
@@ -540,6 +542,7 @@ public class Constants {
             .setXmlName(org.jboss.jca.common.api.metadata.common.Extension.Attribute.MODULE.getLocalName())
             .setAllowExpression(true)
             .setRestartAllServices()
+            .setCorrector(ModuleIdentifierUtil.MODULE_NAME_CORRECTOR)
             .build();
 
     static PropertiesAttributeDefinition STALE_CONNECTION_CHECKER_PROPERTIES = new PropertiesAttributeDefinition.Builder(STALECONNECTIONCHECKER_PROPERTIES_NAME, true)
@@ -560,6 +563,7 @@ public class Constants {
             .setXmlName(org.jboss.jca.common.api.metadata.common.Extension.Attribute.MODULE.getLocalName())
             .setAllowExpression(true)
             .setRestartAllServices()
+            .setCorrector(ModuleIdentifierUtil.MODULE_NAME_CORRECTOR)
             .build();
 
     static PropertiesAttributeDefinition VALID_CONNECTION_CHECKER_PROPERTIES = new PropertiesAttributeDefinition.Builder(VALIDCONNECTIONCHECKER_PROPERTIES_NAME, true)
@@ -844,6 +848,7 @@ public class Constants {
     static final SimpleAttributeDefinition DRIVER_MODULE_NAME = new SimpleAttributeDefinitionBuilder(DRIVER_MODULE_NAME_NAME, ModelType.STRING)
             .setAllowExpression(true)
             .setXmlName(Driver.Attribute.MODULE.getLocalName())
+            .setCorrector(ModuleIdentifierUtil.MODULE_NAME_CORRECTOR)
             .build();
 
     static final SimpleAttributeDefinition DRIVER_MAJOR_VERSION = new SimpleAttributeDefinitionBuilder(DRIVER_MAJOR_VERSION_NAME, ModelType.INT)

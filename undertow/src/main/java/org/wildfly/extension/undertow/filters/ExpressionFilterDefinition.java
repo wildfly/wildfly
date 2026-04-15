@@ -43,6 +43,7 @@ public class ExpressionFilterDefinition extends SimpleFilterDefinition {
             .setRequired(false)
             .setAllowExpression(true)
             .setRestartAllServices()
+            .setCorrector(ModuleIdentifierUtil.MODULE_NAME_CORRECTOR)
             .build();
 
     public static final Collection<AttributeDefinition> ATTRIBUTES = List.of(EXPRESSION, MODULE);
@@ -63,7 +64,7 @@ public class ExpressionFilterDefinition extends SimpleFilterDefinition {
         if (moduleName != null) {
             try {
                 ModuleLoader moduleLoader = Module.getBootModuleLoader();
-                Module filterModule = moduleLoader.loadModule(ModuleIdentifierUtil.parseCanonicalModuleIdentifier(moduleName));
+                Module filterModule = moduleLoader.loadModule(moduleName);
                 loader = filterModule.getClassLoader();
             } catch (ModuleLoadException e) {
                 throw UndertowLogger.ROOT_LOGGER.couldNotLoadHandlerFromModule(expression, moduleName, e);

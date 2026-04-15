@@ -7,6 +7,7 @@ package org.wildfly.extension.picketlink.idm.model;
 
 import static org.wildfly.extension.picketlink.logging.PicketLinkLogger.ROOT_LOGGER;
 
+import org.jboss.as.controller.ModuleIdentifierUtil;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.SimpleAttributeDefinition;
@@ -36,6 +37,7 @@ public class SupportedTypeResourceDefinition extends AbstractIDMResourceDefiniti
     public static final SimpleAttributeDefinition MODULE = new SimpleAttributeDefinitionBuilder(ModelElement.COMMON_MODULE.getName(), ModelType.STRING, true)
         .setAllowExpression(true)
         .setRequires(ModelElement.COMMON_CLASS_NAME.getName())
+        .setCorrector(ModuleIdentifierUtil.MODULE_NAME_CORRECTOR)
         .build();
     public static final SupportedTypeResourceDefinition INSTANCE = new SupportedTypeResourceDefinition(CLASS_NAME, CODE, MODULE);
 
