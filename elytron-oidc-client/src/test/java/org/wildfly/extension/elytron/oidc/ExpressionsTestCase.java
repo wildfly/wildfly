@@ -29,7 +29,7 @@ public class ExpressionsTestCase extends AbstractSubsystemSchemaTest<ElytronOidc
     private KernelServices services = null;
 
     public ExpressionsTestCase() {
-        super(ElytronOidcExtension.SUBSYSTEM_NAME, new ElytronOidcExtension(), ElytronOidcSubsystemSchema.VERSION_2_0_PREVIEW, ElytronOidcSubsystemSchema.CURRENT.get(Stability.PREVIEW));
+        super(ElytronOidcExtension.SUBSYSTEM_NAME, new ElytronOidcExtension(), ElytronOidcSubsystemSchema.VERSION_3_0_PREVIEW, ElytronOidcSubsystemSchema.CURRENT.get(Stability.PREVIEW));
     }
 
     @Test

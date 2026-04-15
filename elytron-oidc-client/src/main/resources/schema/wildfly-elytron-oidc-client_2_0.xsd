@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <!--
-  ~ Copyright The WildFly Authors
-  ~ SPDX-License-Identifier: Apache-2.0
-  -->
+   Copyright The WildFly Authors
+   SPDX-License-Identifier: Apache-2.0
+-->
 
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
             targetNamespace="urn:wildfly:elytron-oidc-client:2.0"
@@ -1190,6 +1190,16 @@
                     <xs:documentation>
                         <![CDATA[
                         The token signature algorithm used by the OpenID provider.
+                        ]]>
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="scope" type="xs:string" minOccurs="0" maxOccurs="1">
+                <xs:annotation>
+                    <xs:documentation>
+                        <![CDATA[
+                        A space separated list of scope values that should be used in the OIDC authentication request.
+                        Scopes can be used to request that specific sets of information be made available as Claim Values.
                         ]]>
                     </xs:documentation>
                 </xs:annotation>

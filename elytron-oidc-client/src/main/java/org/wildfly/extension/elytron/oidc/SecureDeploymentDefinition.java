@@ -100,7 +100,6 @@ class SecureDeploymentDefinition extends SimpleResourceDefinition {
             new SimpleAttributeDefinitionBuilder(ElytronOidcDescriptionConstants.SCOPE, ModelType.STRING, true)
                     .setAllowExpression(true)
                     .setValidator(new StringLengthValidator(1, Integer.MAX_VALUE, true, true))
-                    .setStability(Stability.PREVIEW)
                     .build();
 
     protected static final SimpleAttributeDefinition USE_RESOURCE_ROLE_MAPPINGS =

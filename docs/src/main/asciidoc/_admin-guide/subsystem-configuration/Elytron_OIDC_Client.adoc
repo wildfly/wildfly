@@ -147,12 +147,6 @@ will continue normally.
 
 === Scope Configuration
 
-NOTE: Since this attribute is a preview level feature, the WildFly server's stability level must be set to `preview`
-or lower to enable it. The stability level must not be changed to `community` or `default` after configuring the
-`scope` attribute. For more information about the stability levels of the WildFly server, please refer to the
-link:Admin_Guide{outfilesuffix}[Admin Guide], particularly the
-link:Admin_Guide{outfilesuffix}#Feature_stability_levels[Feature stability levels] section.
-
 OpenID Connect allows the client to use scope values to request access to specific privileges for access tokens. An access token's scopes determine what resources will be available when using the access token to access an OAuth2 protected endpoint. The OpenID Connect https://openid.net/specs/openid-connect-core-1_0.html#ScopeClaims[specification] defines a few scope values including:
 
 * `profile` : requests access to the End-User's default profile Claims, such as name, family_name, given_name, middle_name, nickname, preferred_username, profile, picture, website, gender, birthday etc. 
@@ -174,13 +168,6 @@ It is also possible to configure the scope values that would be used via the sco
 NOTE: If both the deployment and subsystem configuration is present, then the subsystem configuration will override the deployment values.
 
 == Sending a Request Object as a JWT
-
-NOTE: Sending the request object as a JWT is a preview level feature, meaning the WildFly server's stability level must
-be set to `preview` or lower to enable the ability to add `request` or `request_uri` to authentication requests. The
-stability level must not be changed to community or higher after configuring the attributes related to this feature.
-For more information about the stability levels of the WildFly server, please refer to the
-link:Admin_Guide{outfilesuffix}[Admin Guide], particularly the
-link:Admin_Guide{outfilesuffix}#Feature_stability_levels[Feature stability levels] section.
 
 When securing an application using OpenID Connect, the `request` or `request_uri` parameters enable Authentication
 Requests to be signed and optionally encrypted and sent as a Json Web Token (JWT). The `elytron-oidc-client` subsystem
