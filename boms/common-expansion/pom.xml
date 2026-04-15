@@ -37,17 +37,9 @@
             'legacy', 'standard', and 'preview' builds.
             -->
 
-            <!-- BOMs -->
+            <!-- BOM imports go at the end, after individual artifact declarations. -->
 
-            <dependency>
-                <groupId>com.fasterxml.jackson</groupId>
-                <artifactId>jackson-bom</artifactId>
-                <version>${version.com.fasterxml.jackson}</version>
-                <type>pom</type>
-                <scope>import</scope>
-            </dependency>
-
-            <!-- Keep sorted -->
+            <!-- Keep these sorted -->
 
             <dependency>
                 <groupId>${full.maven.groupId}</groupId>
@@ -1453,6 +1445,18 @@
                     </exclusion>
                 </exclusions>
             </dependency>
+
+            <!-- BOM imports. These go last so individual artifacts can be overridden above, with earlier
+                 declarations taking precedence. -->
+
+            <dependency>
+                <groupId>com.fasterxml.jackson</groupId>
+                <artifactId>jackson-bom</artifactId>
+                <version>${version.com.fasterxml.jackson}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+
         </dependencies>
     </dependencyManagement>
 
