@@ -173,14 +173,15 @@
                     <manifestId>${project.groupId}:${project.artifactId}</manifestId>
                     <manifestDescription>Manifest for WildFly feature pack.</manifestDescription>
                     <manifestLogicalVersion>WildFly ${project.version}</manifestLogicalVersion>
-                    <manifestRequirements>
-                        <manifestRequirement>
-                            <id>${project.groupId}:wildfly-ee</id>
-                            <groupId>${project.groupId}</groupId>
-                            <artifactId>wildfly-ee</artifactId>
-                            <version>${project.version}</version>
-                        </manifestRequirement>
-                    </manifestRequirements>
+                    <!-- Do not require the org.wildfly.channels:wildfly-ee channel -->
+                    <!-- <manifestRequirements>                                     -->
+                    <!--     <manifestRequirement>                                  -->
+                    <!--         <id>${project.groupId}:wildfly-ee</id>             -->
+                    <!--         <groupId>${project.groupId}</groupId>              -->
+                    <!--         <artifactId>wildfly-ee</artifactId>                -->
+                    <!--         <version>${project.version}</version>              -->
+                    <!--     </manifestRequirement>                                 -->
+                    <!-- </manifestRequirements>                                    -->
                 </configuration>
             </plugin>
         </plugins>

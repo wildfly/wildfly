@@ -241,6 +241,9 @@
                             <release-name>${full.dist.product.release.name}</release-name>
                             <fork-embedded>${galleon.fork.embedded}</fork-embedded>
                             <generate-channel-manifest>true</generate-channel-manifest>
+                            <!-- Do not bring any dependent feature pack (such as org.wildfly:wildfly-ee-galleon-pack) -->
+                            <!-- as a manifest requirement -->
+                            <add-feature-packs-as-required-manifests>false</add-feature-packs-as-required-manifests>
                             <deploy-channel-manifest>false</deploy-channel-manifest>
                             <generate-complete-model>true</generate-complete-model>
                             <copyright>${copyright}</copyright>

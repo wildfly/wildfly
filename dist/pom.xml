@@ -65,8 +65,22 @@
         <!-- Depends on the org.wildfly.channels:wildfly artifact to ensure
              that this channel is built first before the distribution is created -->
         <dependency>
-            <groupId>org.wildfly.channels</groupId>
+            <groupId>${channels.maven.groupId}</groupId>
             <artifactId>wildfly</artifactId>
+            <version>${full.maven.version}</version>
+            <classifier>manifest</classifier>
+            <type>yaml</type>
+            <scope>provided</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>${channels.maven.groupId}</groupId>
+            <artifactId>wildfly-ee</artifactId>
             <version>${full.maven.version}</version>
             <classifier>manifest</classifier>
             <type>yaml</type>
@@ -135,6 +149,16 @@
                                     <manifest>
                                         <groupId>${channels.maven.groupId}</groupId>
                                         <artifactId>wildfly</artifactId>
+                                        <version>${full.maven.version}</version>
+                                    </manifest>
+                                </channel>
+                                <!-- WFLY-21762 - Add the org.wildfly.channels:wildfly-ee channel -->
+                                <!-- since the org.wildfly.channels:wildfly no longer requires it -->
+                                <channel>
+                                    <name>wildfly-ee</name>
+                                    <manifest>
+                                        <groupId>${channels.maven.groupId}</groupId>
+                                        <artifactId>wildfly-ee</artifactId>
                                         <version>${full.maven.version}</version>
                                     </manifest>
                                 </channel>
