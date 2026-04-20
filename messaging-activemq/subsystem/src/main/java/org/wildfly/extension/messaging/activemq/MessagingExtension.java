@@ -275,6 +275,7 @@ public class MessagingExtension implements Extension {
 
     static final String RESOURCE_NAME = MessagingExtension.class.getPackage().getName() + ".LocalDescriptions";
 
+    protected static final ModelVersion VERSION_18_0_0 = ModelVersion.create(18, 0, 0);
     protected static final ModelVersion VERSION_17_0_0 = ModelVersion.create(17, 0, 0);
     protected static final ModelVersion VERSION_16_0_0 = ModelVersion.create(16, 0, 0);
     protected static final ModelVersion VERSION_15_0_0 = ModelVersion.create(15, 0, 0);
@@ -293,9 +294,9 @@ public class MessagingExtension implements Extension {
     protected static final ModelVersion VERSION_3_0_0 = ModelVersion.create(3, 0, 0);
     protected static final ModelVersion VERSION_2_0_0 = ModelVersion.create(2, 0, 0);
     protected static final ModelVersion VERSION_1_0_0 = ModelVersion.create(1, 0, 0);
-    private static final ModelVersion CURRENT_MODEL_VERSION = VERSION_17_0_0;
+    private static final ModelVersion CURRENT_MODEL_VERSION = VERSION_18_0_0;
 
-    private static final MessagingSubsystemParser_17_0 CURRENT_PARSER = new MessagingSubsystemParser_17_0();
+    private static final MessagingSubsystemParser_18_0 CURRENT_PARSER = new MessagingSubsystemParser_18_0();
 
     // ARTEMIS-2273 introduced audit logging at a info level which is rather verbose. We need to use static loggers
     // to ensure the log levels are set to WARN and there is a strong reference to the loggers. This hack will likely
@@ -417,6 +418,7 @@ public class MessagingExtension implements Extension {
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, MessagingSubsystemParser_14_0.NAMESPACE, MessagingSubsystemParser_14_0::new);
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, MessagingSubsystemParser_15_0.NAMESPACE, MessagingSubsystemParser_15_0::new);
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, MessagingSubsystemParser_16_0.NAMESPACE, MessagingSubsystemParser_16_0::new);
-        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, MessagingSubsystemParser_17_0.NAMESPACE, CURRENT_PARSER);
+        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, MessagingSubsystemParser_17_0.NAMESPACE, MessagingSubsystemParser_17_0::new);
+        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, MessagingSubsystemParser_18_0.NAMESPACE, CURRENT_PARSER);
     }
 }
