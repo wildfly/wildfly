@@ -4,6 +4,8 @@
  */
 package org.wildfly.extension.messaging.activemq;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
 import static org.jboss.as.controller.transform.description.RejectAttributeChecker.DEFINED;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.HTTP_ACCEPTOR;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.HTTP_CONNECTOR;
@@ -33,13 +35,18 @@ import static org.wildfly.extension.messaging.activemq.MessagingExtension.SHARED
 
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ModelVersion;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.transform.ExtensionTransformerRegistration;
 import org.jboss.as.controller.transform.SubsystemTransformerRegistration;
+import org.jboss.as.controller.transform.TransformationContext;
+import org.jboss.as.controller.transform.description.AttributeConverter;
 import org.jboss.as.controller.transform.description.ChainedTransformationDescriptionBuilder;
 import org.jboss.as.controller.transform.description.DiscardAttributeChecker;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.as.controller.transform.description.TransformationDescriptionBuilder;
+import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.ModelType;
 import org.kohsuke.MetaInfServices;
 import org.wildfly.extension.messaging.activemq.ha.ScaleDownAttributes;
 import org.wildfly.extension.messaging.activemq.jms.ConnectionFactoryAttributes;
@@ -60,13 +67,21 @@ public class MessagingTransformerRegistration implements ExtensionTransformerReg
     @Override
     public void registerTransformers(SubsystemTransformerRegistration registration) {
         ChainedTransformationDescriptionBuilder builder = TransformationDescriptionBuilder.Factory.createChainedSubystemInstance(registration.getCurrentSubsystemVersion());
+        registerTransformers_WF_40(builder.createBuilder(MessagingExtension.VERSION_18_0_0, MessagingExtension.VERSION_17_0_0));
         registerTransformers_WF_36(builder.createBuilder(MessagingExtension.VERSION_17_0_0, MessagingExtension.VERSION_16_0_0));
         registerTransformers_WF_29(builder.createBuilder(MessagingExtension.VERSION_16_0_0, MessagingExtension.VERSION_15_0_0));
         registerTransformers_WF_28(builder.createBuilder(MessagingExtension.VERSION_15_0_0, MessagingExtension.VERSION_14_0_0));
         registerTransformers_WF_27(builder.createBuilder(MessagingExtension.VERSION_14_0_0, MessagingExtension.VERSION_13_1_0));
         registerTransformers_WF_26_1(builder.createBuilder(MessagingExtension.VERSION_13_1_0, MessagingExtension.VERSION_13_0_0));
         builder.buildAndRegister(registration, new ModelVersion[]{MessagingExtension.VERSION_13_0_0, MessagingExtension.VERSION_13_1_0,
-            MessagingExtension.VERSION_14_0_0, MessagingExtension.VERSION_15_0_0, MessagingExtension.VERSION_16_0_0, MessagingExtension.VERSION_17_0_0});
+            MessagingExtension.VERSION_14_0_0, MessagingExtension.VERSION_15_0_0, MessagingExtension.VERSION_16_0_0, MessagingExtension.VERSION_17_0_0, MessagingExtension.VERSION_18_0_0,});
+    }
+
+    private static void registerTransformers_WF_40(ResourceTransformationDescriptionBuilder subsystem) {
+        ResourceTransformationDescriptionBuilder addressSettings = subsystem.addChildResource(SERVER_PATH)
+                .addChildResource(ADDRESS_SETTING_PATH);
+        computeDerivedValue(addressSettings, AddressSettingDefinition.PAGE_SIZE_BYTES, AddressSettingDefinition.MAX_READ_PAGE_BYTES, 2L);
+        computeDerivedValue(addressSettings, AddressSettingDefinition.REDELIVERY_DELAY, AddressSettingDefinition.MAX_REDELIVERY_DELAY, 10L);
     }
 
     private static void registerTransformers_WF_36(ResourceTransformationDescriptionBuilder subsystem) {
@@ -78,7 +93,23 @@ public class MessagingTransformerRegistration implements ExtensionTransformerReg
     private static void registerTransformers_WF_29(ResourceTransformationDescriptionBuilder subsystem) {
         ResourceTransformationDescriptionBuilder addressSettings = subsystem.addChildResource(SERVER_PATH)
                 .addChildResource(ADDRESS_SETTING_PATH);
-        rejectDefinedAttributeWithDefaultValue(addressSettings, AddressSettingDefinition.MAX_READ_PAGE_BYTES);
+
+        addressSettings.getAttributeBuilder().setDiscard(new DiscardAttributeChecker.DefaultDiscardAttributeChecker() {
+
+                @Override
+                public boolean isOperationParameterDiscardable(PathAddress address, String attributeName, ModelNode attributeValue, ModelNode operation, TransformationContext context) {
+                    long baseValue = getBaseOrDefaultValue(operation, AddressSettingDefinition.PAGE_SIZE_BYTES);
+
+                    // Discard if value matches the derived default (2 * page-size-bytes) or the previous hardcoded default (2 * 10 * 1024 * 1024)
+                    return attributeValue.asLong() == baseValue * 2L || attributeValue.asLong() == 20971520L;
+                }
+
+                @Override
+                protected boolean isValueDiscardable(PathAddress address, String attributeName, ModelNode attributeValue, TransformationContext context) {
+                    return true;
+                }
+            }, AddressSettingDefinition.MAX_READ_PAGE_BYTES)
+                .addRejectCheck(DEFINED, AddressSettingDefinition.MAX_READ_PAGE_BYTES);
     }
 
     private static void registerTransformers_WF_28(ResourceTransformationDescriptionBuilder subsystem) {
@@ -158,6 +189,39 @@ public class MessagingTransformerRegistration implements ExtensionTransformerReg
     private static void renameAttribute(ResourceTransformationDescriptionBuilder resourceRegistry, AttributeDefinition attribute, AttributeDefinition newAttribute) {
         resourceRegistry.getAttributeBuilder()
                 .setDiscard(DiscardAttributeChecker.UNDEFINED, newAttribute)
-                .addRename(newAttribute, attribute.getName());
+                .addRename(newAttribute, attribute);
+    }
+
+    private static void computeDerivedValue(ResourceTransformationDescriptionBuilder resourceRegistry, AttributeDefinition baseAttribute, AttributeDefinition maxAttribute, long multiplier) {
+        resourceRegistry.getAttributeBuilder()
+                .setValueConverter(new AttributeConverter() {
+
+                    private void convert(ModelNode attributeValue, TransformationContext context) {
+                        if (!attributeValue.isDefined()) {
+                            ModelNode model = context.readResource(PathAddress.EMPTY_ADDRESS).getModel();
+                            long baseValue = getBaseOrDefaultValue(model, baseAttribute);
+                            long computedValue = multiplier * baseValue;
+                            attributeValue.set(computedValue);
+                        }
+                    }
+
+                    @Override
+                    public void convertOperationParameter(PathAddress pa, String s, ModelNode attributeValue, ModelNode operation, TransformationContext tc) {
+                        if (operation.get(OP).asString().equals(WRITE_ATTRIBUTE_OPERATION)) {
+                            convert(attributeValue, tc);
+                        }
+                    }
+
+                    @Override
+                    public void convertResourceAttribute(PathAddress pa, String s, ModelNode attributeValue, TransformationContext tc) {
+                        convert(attributeValue, tc);
+                    }
+                }, maxAttribute);
+    }
+
+    private static long getBaseOrDefaultValue(ModelNode operation, AttributeDefinition baseAttribute) {
+        return operation.hasDefined(baseAttribute.getName()) && !operation.get(baseAttribute.getName()).getType().equals(ModelType.EXPRESSION) ?
+                operation.get(baseAttribute.getName()).asLong() :
+                baseAttribute.getDefaultValue().asLong();
     }
 }

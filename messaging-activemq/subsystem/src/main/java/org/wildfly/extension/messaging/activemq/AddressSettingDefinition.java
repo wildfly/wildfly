@@ -108,14 +108,12 @@ public class AddressSettingDefinition extends PersistentResourceDefinition {
             .build();
 
     public static final SimpleAttributeDefinition MAX_READ_PAGE_BYTES = create("max-read-page-bytes", ModelType.INT)
-            .setDefaultValue(new ModelNode(2 * 10 * 1024 * 1024))
             .setMeasurementUnit(BYTES)
             .setRequired(false)
             .setAllowExpression(true)
             .build();
 
     public static final SimpleAttributeDefinition MAX_REDELIVERY_DELAY = create("max-redelivery-delay", ModelType.LONG)
-            .setDefaultValue(ModelNode.ZERO_LONG)
             .setMeasurementUnit(MILLISECONDS)
             .setRequired(false)
             .setAllowExpression(true)
