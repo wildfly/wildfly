@@ -433,5 +433,14 @@
         <cve>CVE-2026-39883</cve>
     </suppress>
 
+    <!--  CVE-2026-33186 is for gRPC-Go implementation   -->
+    <suppress>
+        <notes><![CDATA[
+   file name: grcp-api-*.jar
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/io\.grpc/grpc-api@.*$</packageUrl>
+        <cve>CVE-2026-33186</cve>
+    </suppress>
+
     <!-- ___End of Wildfly-dist suppressions___ -->
 </suppressions>
