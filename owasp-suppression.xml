@@ -424,5 +424,14 @@
         <cve>CVE-2025-23368</cve>
     </suppress>
 
+    <!--  CVE-2026-39883 is for OpenTelemetry-Go implementation   -->
+    <suppress>
+        <notes><![CDATA[
+   file name: opentelemetry-*.jar
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/io\.opentelemetry/.*@.*$</packageUrl>
+        <cve>CVE-2026-39883</cve>
+    </suppress>
+
     <!-- ___End of Wildfly-dist suppressions___ -->
 </suppressions>
