@@ -5,7 +5,6 @@
 package org.jboss.as.ejb3.remote;
 
 import java.util.concurrent.Executor;
-import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -23,6 +22,8 @@ import org.wildfly.transaction.client.provider.remoting.RemotingTransactionServi
 import org.xnio.OptionMap;
 
 /**
+ * A connector to allow remote EJB clients to connect via EJB/Remoting.
+ *
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */
 public class EJBRemoteConnectorService implements Service {
@@ -32,7 +33,6 @@ public class EJBRemoteConnectorService implements Service {
 
     public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("ejb3", "connector");
 
-    private final Consumer<EJBRemoteConnectorService> serviceConsumer;
     private final Supplier<Endpoint> endpointSupplier;
     private final Supplier<Executor> executorSupplier;
     private final Supplier<AssociationService> associationServiceSupplier;
@@ -41,11 +41,12 @@ public class EJBRemoteConnectorService implements Service {
     private final OptionMap channelCreationOptions;
     private final Function<String, Boolean> classResolverFilter;
 
-    public EJBRemoteConnectorService(
-            final Consumer<EJBRemoteConnectorService> serviceConsumer, final Supplier<Endpoint> endpointSupplier, final Supplier<Executor> executorSupplier,
-            final Supplier<AssociationService> associationServiceSupplier, final Supplier<RemotingTransactionService> remotingTransactionServiceSupplier,
-            final OptionMap channelCreationOptions, final Function<String, Boolean> classResolverFilter) {
-        this.serviceConsumer = serviceConsumer;
+    public EJBRemoteConnectorService(final Supplier<Endpoint> endpointSupplier,
+                                     final Supplier<Executor> executorSupplier,
+                                     final Supplier<AssociationService> associationServiceSupplier,
+                                     final Supplier<RemotingTransactionService> remotingTransactionServiceSupplier,
+                                     final OptionMap channelCreationOptions,
+                                     final Function<String, Boolean> classResolverFilter) {
         this.endpointSupplier = endpointSupplier;
         this.executorSupplier = executorSupplier;
         this.associationServiceSupplier = associationServiceSupplier;
@@ -76,12 +77,10 @@ public class EJBRemoteConnectorService implements Service {
         } catch (ServiceRegistrationException e) {
             throw new StartException(e);
         }
-        serviceConsumer.accept(this);
     }
 
     @Override
     public void stop(StopContext context) {
-        serviceConsumer.accept(null);
         final AssociationService associationService = associationServiceSupplier.get();
         associationService.sendTopologyUpdateIfLastNodeToLeave();
         associationService.setExecutor(null);
