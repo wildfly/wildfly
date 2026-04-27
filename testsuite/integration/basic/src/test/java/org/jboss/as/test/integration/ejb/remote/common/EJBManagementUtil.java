@@ -31,6 +31,7 @@ import static org.jboss.as.test.integration.management.util.ModelUtil.createOpNo
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Properties;
@@ -61,6 +62,14 @@ public class EJBManagementUtil {
     public static final String STATEFUL = "stateful-session-bean";
 
     private static final String CONNECTOR_REF = "connector-ref";
+    private static final String CONNECTORS = "connectors";
+    private static final String CLUSTER = "cluster";
+    private static final String THREAD_POOL_NAME = "thread-pool-name";
+    private static final String EXECUTE_IN_WORKER = "execute-in-worker";
+    private static final String CHANNEL_CREATION_OPTIONS = "channel-creation-options";
+    private static final String VALUE = "value";
+    private static final String TYPE = "type";
+
     private static final String DEFAULT_ENTITY_BEAN_INSTANCE_POOL = "default-entity-bean-instance-pool";
     private static final String DEFAULT_ENTITY_BEAN_OPTIMISTIC_LOCKING = "default-entity-bean-optimistic-locking";
     private static final String INSTANCE_ACQUISITION_TIMEOUT = "timeout";
@@ -505,6 +514,89 @@ public class EJBManagementUtil {
             throw new RuntimeException(ioe);
         }
     }
+
+
+    /**
+     * Adds the remote resource to the EJB3 subsystem.
+     *
+     * The remote resource add operation has the following configurable parameters:
+     * @param managementClient the management client to use to execute the operation
+     * @param connectors a list of Remoting connectors that the remote resource will monitor for connections
+     * @param threadPoolName the name of a thread pool to be used for asynchronous execution
+     * @param executeInWorker if true, execute the invocation in the NioWorker thread instance used to process
+     * @param cluster the name of the cluster this node belongs to
+     */
+    public static void createRemoteResource(final ManagementClient managementClient,
+                                         final List<String> connectors, String threadPoolName,
+                                         boolean executeInWorker, String cluster,
+                                         Map<String, Map.Entry<String, String>> channelCreationOptions) {
+        final ModelControllerClient modelControllerClient = managementClient.getControllerClient();
+        try {
+            // Build the operation /subsystem=ejb3/service=remote:add()
+            final ModelNode addRemoteResource = new ModelNode();
+            addRemoteResource.get(ModelDescriptionConstants.OP).set(ModelDescriptionConstants.ADD);
+            final PathAddress remoteResourceAddress = PathAddress.pathAddress(PathElement.pathElement(SUBSYSTEM, SUBSYSTEM_NAME),
+                    PathElement.pathElement(SERVICE, REMOTE));
+            addRemoteResource.get(OP_ADDR).set(remoteResourceAddress.toModelNode());
+            // set the parameters for the operation
+            addRemoteResource.get(CONNECTORS).setEmptyList();
+            for (String connector : connectors) {
+                addRemoteResource.get(CONNECTORS).add(connector);
+            }
+            addRemoteResource.get(THREAD_POOL_NAME).set(threadPoolName);
+            addRemoteResource.get(EXECUTE_IN_WORKER).set(true);
+            addRemoteResource.get(CLUSTER).set(cluster);
+            // execute the add operation
+            execute(modelControllerClient, addRemoteResource);
+
+            // now build the operation /subsystem=ejb3/service=remote/channel-creation-options=*:add()
+            for (Map.Entry<String, Map.Entry<String, String>> entry : channelCreationOptions.entrySet()) {
+                final String optionName = entry.getKey();
+                final Map.Entry<String, String> optionParameters = entry.getValue();
+
+                // build the add operation for this key
+                final ModelNode addChannelCreationOption = new ModelNode();
+                addChannelCreationOption.get(ModelDescriptionConstants.OP).set(ModelDescriptionConstants.ADD);
+                final PathAddress channelCreationAddress = PathAddress.pathAddress(PathElement.pathElement(SUBSYSTEM, SUBSYSTEM_NAME),
+                        PathElement.pathElement(SERVICE, REMOTE),
+                        PathElement.pathElement(CHANNEL_CREATION_OPTIONS, optionName));
+                addChannelCreationOption.get(OP_ADDR).set(channelCreationAddress.toModelNode());
+                // set the parameters for the operation
+                addChannelCreationOption.get(VALUE).set(optionParameters.getKey());
+                addChannelCreationOption.get(TYPE).set(optionParameters.getValue());
+
+                // execute the add operation
+                execute(modelControllerClient, addChannelCreationOption);
+             }
+
+        } catch (IOException ioe) {
+            throw new RuntimeException(ioe);
+        }
+    }
+
+    /**
+     * Removes the remote resource from the EJB3 subsystem.
+     */
+    public static void removeRemoteResource(final ManagementClient managementClient) {
+        final ModelControllerClient modelControllerClient = managementClient.getControllerClient();
+
+        try {
+            // Build the operation /subsystem=ejb3/service=remote:remove()
+            final ModelNode removeRemoteResource = new ModelNode();
+            removeRemoteResource.get(OP).set(REMOVE);
+            final PathAddress remoteResourceAddress = PathAddress.pathAddress(PathElement.pathElement(SUBSYSTEM, SUBSYSTEM_NAME),
+                    PathElement.pathElement(SERVICE, REMOTE));
+            removeRemoteResource.get(OP_ADDR).set(remoteResourceAddress.toModelNode());
+            removeRemoteResource.get(ModelDescriptionConstants.OPERATION_HEADERS, ModelDescriptionConstants.ALLOW_RESOURCE_SERVICE_RESTART).set(true);
+
+            // execute the remove operation
+            execute(modelControllerClient, removeRemoteResource);
+
+        } catch (IOException ioe) {
+            throw new RuntimeException(ioe);
+        }
+    }
+
 
     private static ModelControllerClient getModelControllerClient(final String managementServerHostName, final int managementPort, final CallbackHandler handler) {
         try {
