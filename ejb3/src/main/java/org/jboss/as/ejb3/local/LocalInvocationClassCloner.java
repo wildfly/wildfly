@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package org.jboss.as.ejb3.remote;
+package org.jboss.as.ejb3.local;
 
 import java.io.IOException;
 import java.lang.reflect.Proxy;

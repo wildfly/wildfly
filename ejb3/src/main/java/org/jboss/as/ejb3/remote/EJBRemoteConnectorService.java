@@ -32,7 +32,7 @@ public class EJBRemoteConnectorService implements Service {
 
     public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("ejb3", "connector");
 
-    private final Consumer<EJBRemoteConnectorService> serviceConsumer;
+    private final Consumer<EJBRemoteConnectorService> connectorServiceConsumer;
     private final Supplier<Endpoint> endpointSupplier;
     private final Supplier<Executor> executorSupplier;
     private final Supplier<AssociationService> associationServiceSupplier;
@@ -42,10 +42,10 @@ public class EJBRemoteConnectorService implements Service {
     private final Function<String, Boolean> classResolverFilter;
 
     public EJBRemoteConnectorService(
-            final Consumer<EJBRemoteConnectorService> serviceConsumer, final Supplier<Endpoint> endpointSupplier, final Supplier<Executor> executorSupplier,
+            final Consumer<EJBRemoteConnectorService> connectorServiceConsumer, final Supplier<Endpoint> endpointSupplier, final Supplier<Executor> executorSupplier,
             final Supplier<AssociationService> associationServiceSupplier, final Supplier<RemotingTransactionService> remotingTransactionServiceSupplier,
             final OptionMap channelCreationOptions, final Function<String, Boolean> classResolverFilter) {
-        this.serviceConsumer = serviceConsumer;
+        this.connectorServiceConsumer = connectorServiceConsumer;
         this.endpointSupplier = endpointSupplier;
         this.executorSupplier = executorSupplier;
         this.associationServiceSupplier = associationServiceSupplier;
@@ -76,12 +76,12 @@ public class EJBRemoteConnectorService implements Service {
         } catch (ServiceRegistrationException e) {
             throw new StartException(e);
         }
-        serviceConsumer.accept(this);
+        connectorServiceConsumer.accept(this);
     }
 
     @Override
     public void stop(StopContext context) {
-        serviceConsumer.accept(null);
+        connectorServiceConsumer.accept(null);
         final AssociationService associationService = associationServiceSupplier.get();
         associationService.sendTopologyUpdateIfLastNodeToLeave();
         associationService.setExecutor(null);
