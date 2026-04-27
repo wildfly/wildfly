@@ -56,7 +56,7 @@ public class OpenAPIHostServiceInstallerProvider implements HostServiceInstaller
                 }
                 // Collect listeners of the server associated with this host, in case we require them
                 Set<String> listeners = new TreeSet<>();
-                Resource serverResource = context.readResourceFromRoot(context.getCurrentAddress().getParent());
+                Resource serverResource = context.readResourceFromRoot(context.getCurrentAddress().getParent(), false);
                 for (String childType : serverResource.getChildTypes()) {
                     for (String childName : serverResource.getChildrenNames(childType)) {
                         // Determine if this child resource is a listener
