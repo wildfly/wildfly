@@ -300,7 +300,7 @@ public class ViewDescription {
         return markupClassName;
     }
 
-    public boolean requiresSuperclassInProxy() {
+    public boolean requiresBeanClassMapping() {
         return true;
     }
 }

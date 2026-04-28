@@ -6,7 +6,6 @@
 package org.jboss.as.ee.component;
 
 import java.io.Serializable;
-import java.lang.reflect.Constructor;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.jboss.as.ee.logging.EeLogger;
@@ -75,18 +74,29 @@ class DefaultComponentViewConfigurator extends AbstractComponentConfigurator imp
             //we define it in the modules class loader to prevent permgen leaks
             if (viewClass.isInterface()) {
                 final Class<?> componentClass = configuration.getComponentClass();
-                Constructor<?> defaultConstructor = null;
-                try {
-                    defaultConstructor = componentClass.getConstructor();
-                } catch (Exception e) {
-                    //ignore
-                }
-                proxyConfiguration.setSuperClass(!view.requiresSuperclassInProxy() || defaultConstructor == null ? Object.class : componentClass);
+
+                // WFLY-11566, WFLY-21757, WFLY-19120: Always use Object.class as superclass
+                proxyConfiguration.setSuperClass(Object.class);
                 proxyConfiguration.addAdditionalInterface(viewClass);
-                viewConfiguration = view.createViewConfiguration(viewClass, configuration, new ProxyFactory(proxyConfiguration));
+
+                ProxyFactory<?> proxyFactory = new ProxyFactory<>(proxyConfiguration);
+                viewConfiguration = view.createViewConfiguration(viewClass, configuration, proxyFactory);
+
+                // If this view requires bean class for validation (e.g., generics with @NotEmpty List<String>),
+                // store the component class so it can be registered in the proxy-to-bean mapping.
+                // Registration happens later in ViewService.start() when the proxy class is generated.
+                if (view.requiresBeanClassMapping()) {
+                    viewConfiguration.putPrivateData(Class.class, componentClass);
+                }
             } else {
+                final Class<?> componentClass = configuration.getComponentClass();
                 proxyConfiguration.setSuperClass(viewClass);
                 viewConfiguration = view.createViewConfiguration(viewClass, configuration, new ProxyFactory(proxyConfiguration));
+
+                // Store component class for no-interface views too
+                if (view.requiresBeanClassMapping()) {
+                    viewConfiguration.putPrivateData(Class.class, componentClass);
+                }
             }
             for (final ViewConfigurator configurator : view.getConfigurators()) {
                 configurator.configure(context, configuration, view, viewConfiguration);
