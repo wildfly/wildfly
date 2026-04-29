@@ -976,7 +976,7 @@
                                     <packaging-scripts>
                                         <cli-session>
                                             <javaOpts>
-                                                <opt>-Dmaven.repo.local=${maven.repo.local}</opt>
+                                                <opt>-Dmaven.repo.local=${settings.localRepository}</opt>
                                             </javaOpts>
                                             <scripts>
                                                 <script>modify-elytron-config-bootable.cli</script>
