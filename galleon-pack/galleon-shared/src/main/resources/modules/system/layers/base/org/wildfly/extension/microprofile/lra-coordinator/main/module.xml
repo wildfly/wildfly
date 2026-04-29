@@ -36,5 +36,12 @@
     <module name="org.jboss.modules"/>
     <module name="org.jboss.staxmapper"/>
     <module name="org.wildfly.security.manager"/>
+    <module name="org.wildfly.subsystem"/>
+
+    <!-- Optional OpenAPI integration -->
+    <module name="org.wildfly.microprofile.openapi-smallrye.spi" optional="true"/>
+    <module name="org.eclipse.microprofile.openapi.api" optional="true"/>
+    <module name="io.smallrye.openapi" optional="true"/>
+    <module name="io.smallrye.jandex" optional="true"/>
   </dependencies>
 </module>

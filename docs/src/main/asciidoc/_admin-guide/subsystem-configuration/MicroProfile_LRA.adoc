@@ -107,13 +107,15 @@ $ docker run -p 8080:8080 quay.io/jbosstm/lra-coordinator
 
 == Management model
 
-The `/subsystem=microprofile-lra-coordinator` resource defines two attributes:
-
-* `host` - Represents the name of the Undertow subsystem 'host' resource that the LRA Coordinator is deployed to.
+The `/subsystem=microprofile-lra-coordinator` resource defines the following attributes:
 
 * `server` - Represents the name of the Undertow subsystem 'server' resource that the LRA Coordinator is deployed to.
 
-The `/subsystem=microprofile-lra-participant` resource defines one attribute:
+* `host` - Represents the name of the Undertow subsystem 'host' resource that the LRA Coordinator is deployed to.
+
+When the MicroProfile OpenAPI subsystem (`microprofile-openapi-smallrye`) is present and the `server` and `host` attributes are explicitly configured, the LRA Coordinator automatically registers its REST endpoint model with the OpenAPI subsystem. The coordinator's endpoints then appear in the OpenAPI document served at `/openapi`. No additional configuration is required.
+
+The `/subsystem=microprofile-lra-participant` resource defines the following attributes:
 
 * `lra-coordinator-url` - The configuration of the LRA Coordinator URL required in order for this participant to connect to the coordinator.
 
