@@ -433,4 +433,8 @@ public interface UndertowLogger extends BasicLogger {
             "The server now always enforces the RFC 9112 requirement that HTTP/1.1 request messages include a Host header.")
     String http11HostHeaderRequired(String attribute, String resource);
 
+    @LogMessage(level = WARN)
+    @Message(id = 113, value = "Unable to apply Jakarta Authorization Policy - unexpected SecurityContext type: %s")
+    void unexpectedSecurityContextType(String securityContextClassName);
+
 }

@@ -3759,12 +3759,12 @@
                 </plugins>
             </build>
         </profile>
-        <!-- Dependencies only to be used when testing WildFly Preview -->
+        <!-- Dependencies only to be used when not testing installations using the legacy EE FP -->
         <profile>
-            <id>preview-server-tests-deps</id>
+            <id>standard-ee-tests-deps</id>
             <activation>
                 <property>
-                    <name>preview-server-tests</name>
+                    <name>!legacy-ee-tests</name>
                 </property>
             </activation>
             <dependencies>
@@ -3780,12 +3780,12 @@
                 </dependency>
             </dependencies>
         </profile>
-        <!-- Dependencies only to be used when NOT testing WildFly Preview -->
+        <!-- Dependencies only to be used when testing installations using the legacy EE FP -->
         <profile>
-            <id>standard-server-tests-deps</id>
+            <id>legacy-ee-tests-deps</id>
             <activation>
                 <property>
-                    <name>!preview-server-tests</name>
+                    <name>legacy-ee-tests</name>
                 </property>
             </activation>
             <dependencies>

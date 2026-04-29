@@ -29,26 +29,6 @@
     <packaging>pom</packaging>
 
     <dependencies>
-        <dependency>
-            <groupId>io.undertow</groupId>
-            <artifactId>undertow-core</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>io.undertow.ee</groupId>
-            <artifactId>undertow-servlet</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>io.undertow.ee</groupId>
-            <artifactId>undertow-websockets</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>${ee.maven.groupId}</groupId>
-            <artifactId>jipijapa-hibernate7</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>jakarta.enterprise</groupId>
-            <artifactId>jakarta.enterprise.cdi-el-api</artifactId>
-        </dependency>
 
         <dependency>
             <groupId>org.apache.avro</groupId>
@@ -56,61 +36,8 @@
         </dependency>
 
         <dependency>
-            <groupId>org.glassfish.concurro</groupId>
-            <artifactId>concurro</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.glassfish.soteria</groupId>
-            <artifactId>soteria</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.glassfish.soteria</groupId>
-            <artifactId>soteria.spi.bean.decorator.weld</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.hibernate.models</groupId>
-            <artifactId>hibernate-models</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.hibernate.models</groupId>
-            <artifactId>hibernate-models-jandex</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.hibernate.orm</groupId>
-            <artifactId>hibernate-scan-jandex</artifactId>
-        </dependency>
-
-        <dependency>
             <groupId>org.hibernate.search</groupId>
             <artifactId>hibernate-search-mapper-orm-outbox-polling</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.hibernate.search</groupId>
-            <artifactId>hibernate-search-backend-elasticsearch-client-rest4</artifactId>
-        </dependency>
-        <!-- For newer versions of the Hibernate Search Lucene backend we also need the highlighters -->
-        <dependency>
-            <groupId>org.apache.lucene</groupId>
-            <artifactId>lucene-highlighter</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.jboss.spec.jakarta.el</groupId>
-            <artifactId>jakarta.el-api</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.wildfly.clustering</groupId>
-            <artifactId>wildfly-clustering-session-container-servlet-6.1</artifactId>
-            <exclusions>
-                <exclusion>
-                    <groupId>*</groupId>
-                    <artifactId>*</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
 
         <dependency>
@@ -125,16 +52,6 @@
 
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-concurrency-impl-31</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>${ee.maven.groupId}</groupId>
-            <artifactId>wildfly-concurrency-spi</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>${project.groupId}</groupId>
             <artifactId>wildfly-preview-feature-pack-product-conf</artifactId>
         </dependency>
 
@@ -143,12 +60,6 @@
             <artifactId>wildfly-preview-feature-pack-product-conf</artifactId>
             <classifier>version</classifier>
             <type>txt</type>
-        </dependency>
-
-        <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>persistence-cdi-extension</artifactId>
-            <version>${project.version}</version>
         </dependency>
 
     </dependencies>

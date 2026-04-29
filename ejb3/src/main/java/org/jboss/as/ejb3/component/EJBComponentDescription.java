@@ -72,6 +72,7 @@ import org.jboss.as.ejb3.security.RoleAddingInterceptor;
 import org.jboss.as.ejb3.security.RunAsPrincipalInterceptor;
 import org.jboss.as.ejb3.security.SecurityDomainInterceptorFactory;
 import org.jboss.as.ejb3.security.SecurityRolesAddingInterceptor;
+import org.wildfly.security.jakarta.authz.RunAsIdentityHelper;
 import org.jboss.as.ejb3.subsystem.EJB3RemoteResourceDefinition;
 import org.jboss.as.ejb3.suspend.EJBSuspendHandlerService;
 import org.jboss.as.ejb3.timerservice.spi.AutoTimer;
@@ -1127,6 +1128,9 @@ public abstract class EJBComponentDescription extends ComponentDescription {
         final HashMap<Integer, InterceptorFactory> interceptorFactories = new HashMap<>(2);
         final Set<String> roles = new HashSet<>();
 
+        // Obtain helper instance for RunAs identity management
+        final RunAsIdentityHelper runAsHelper = RunAsIdentityHelper.getInstance();
+
         // First interceptor: security domain association
         interceptorFactories.put(InterceptorOrder.View.SECURITY_CONTEXT, SecurityDomainInterceptorFactory.INSTANCE);
 
@@ -1145,7 +1149,7 @@ public abstract class EJBComponentDescription extends ComponentDescription {
         // Next interceptor: run-as-principal
         // Switch users if there's a run-as principal
         if (runAsPrincipal != null) {
-            interceptorFactories.put(InterceptorOrder.View.RUN_AS_PRINCIPAL, new ImmediateInterceptorFactory(new RunAsPrincipalInterceptor(runAsPrincipal)));
+            interceptorFactories.put(InterceptorOrder.View.RUN_AS_PRINCIPAL, new ImmediateInterceptorFactory(new RunAsPrincipalInterceptor(runAsPrincipal, runAsRole, runAsHelper)));
 
             // Next interceptor: extra principal roles
             if (securityRoles != null) {
@@ -1158,7 +1162,7 @@ public abstract class EJBComponentDescription extends ComponentDescription {
 
         // Next interceptor: prevent identity propagation
         } else if (! propagateSecurity) {
-            interceptorFactories.put(InterceptorOrder.View.RUN_AS_PRINCIPAL, new ImmediateInterceptorFactory(new RunAsPrincipalInterceptor(RunAsPrincipalInterceptor.ANONYMOUS_PRINCIPAL)));
+            interceptorFactories.put(InterceptorOrder.View.RUN_AS_PRINCIPAL, new ImmediateInterceptorFactory(new RunAsPrincipalInterceptor(RunAsPrincipalInterceptor.ANONYMOUS_PRINCIPAL, null, runAsHelper)));
         }
 
         // Next interceptor: run-as-role

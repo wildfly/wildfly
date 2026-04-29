@@ -37,8 +37,10 @@
         <!-- Servlet works properly without it (in nominal) making it optional in case
             it needs to be excluded -->
         <package name="org.jboss.common-beans" optional="true"/>
+
         <package name="docs.licenses" optional="true"/>
         <package name="docs.licenses.merge" optional="true"/>
+
         <!-- Unstable API Annotation Index -->
         <package name="unstable-api-annotation-index.wildfly-ee-feature-pack" optional="true" valid-for-stability="preview"/>
         <package name="org.wildfly.unstable.annotation.api.indexer" optional="true" valid-for-stability="preview" />

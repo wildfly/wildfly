@@ -44,7 +44,11 @@
 
     <modules>
         <module>hibernate6</module>
+        <module>hibernate7</module>
         <module>hibernatesearch</module>
+        <module>persistence-cdi-extension</module>
+        <module>persistence31</module>
+        <module>persistence32</module>
         <module>subsystem</module>
         <module>spi</module>
         <module>eclipselink</module>
@@ -59,8 +63,6 @@
                 </property>
             </activation>
             <modules>
-                <module>hibernate7</module>
-                <module>persistence-cdi-extension</module>
             </modules>
         </profile>
     </profiles>

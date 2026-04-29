@@ -126,10 +126,30 @@
                                     <transitive>false</transitive>
                                 </dependency>
                                 <dependency>
+                                    <groupId>jakarta.data</groupId>
+                                    <artifactId>jakarta.data-api</artifactId>
+                                </dependency>
+                                <dependency>
                                     <groupId>org.jboss.spec.jakarta.el</groupId>
-                                    <artifactId>jboss-el-api_5.0_spec</artifactId>
+                                    <artifactId>jakarta.el-api</artifactId>
+                                </dependency>
+                                <dependency>
+                                    <groupId>jakarta.enterprise</groupId>
+                                    <artifactId>jakarta.enterprise.cdi-el-api</artifactId>
+                                </dependency>
+                                <!-- replaces org.hibernate.orm:hibernate-jpamodelgen -->
+                                <dependency>
+                                    <groupId>org.hibernate.orm</groupId>
+                                    <artifactId>hibernate-processor</artifactId>
                                 </dependency>
                             </includeDependencies>
+                            <versionRefDependencies combine.children="append">
+                                <dependency>
+                                    <groupId>org.hibernate.orm</groupId>
+                                    <artifactId>hibernate-processor</artifactId>
+                                    <version>org.hibernate.orm:hibernate-core:jar</version>
+                                </dependency>
+                            </versionRefDependencies>
                         </configuration>
                     </execution>
                 </executions>

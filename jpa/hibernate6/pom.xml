@@ -25,8 +25,8 @@
     <name>WildFly: Jipijapa Hibernate 6 (JPA 3.1) integration</name>
 
     <properties>
-        <!-- Use the standard WildFly dependency set -->
-        <dependency.management.pom.artifactId>wildfly-standard-ee-bom</dependency.management.pom.artifactId>
+        <!-- Use the legacy WildFly dependency set -->
+        <dependency.management.pom.artifactId>wildfly-legacy-ee-bom</dependency.management.pom.artifactId>
     </properties>
 
     <dependencyManagement>

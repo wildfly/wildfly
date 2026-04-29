@@ -111,7 +111,18 @@
                                     <groupId>org.jboss.spec.jakarta.el</groupId>
                                     <artifactId>jboss-el-api_5.0_spec</artifactId>
                                 </dependency>
+                                <dependency>
+                                    <groupId>org.hibernate.orm</groupId>
+                                    <artifactId>hibernate-jpamodelgen</artifactId>
+                                </dependency>
                             </includeDependencies>
+                            <versionRefDependencies combine.children="append">
+                                <dependency>
+                                    <groupId>org.hibernate.orm</groupId>
+                                    <artifactId>hibernate-jpamodelgen</artifactId>
+                                    <version>org.hibernate.orm:hibernate-core:jar</version>
+                                </dependency>
+                            </versionRefDependencies>
                         </configuration>
                     </execution>
                 </executions>

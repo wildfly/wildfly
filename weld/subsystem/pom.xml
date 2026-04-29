@@ -38,6 +38,11 @@
          <groupId>jakarta.enterprise</groupId>
          <artifactId>jakarta.enterprise.cdi-api</artifactId>
       </dependency>
+       <dependency>
+           <groupId>jakarta.enterprise</groupId>
+           <artifactId>jakarta.enterprise.cdi-el-api</artifactId>
+           <scope>provided</scope>
+       </dependency>
 
       <dependency>
          <groupId>jakarta.transaction</groupId>
@@ -61,7 +66,7 @@
 
       <dependency>
          <groupId>org.jboss.spec.jakarta.el</groupId>
-         <artifactId>jboss-el-api_5.0_spec</artifactId>
+         <artifactId>jakarta.el-api</artifactId>
       </dependency>
 
       <!-- Needed for @Resource(lookup=) -->

@@ -304,26 +304,30 @@
             <scope>provided</scope>
         </dependency>
 
-        <!-- module and copy artifact dependencies -->
+        <!--   module and copy artifact dependencies
 
-        <dependency>
-            <groupId>org.wildfly.core</groupId>
-            <artifactId>wildfly-core-feature-pack-common</artifactId>
-            <type>pom</type>
-            <scope>provided</scope>
-        </dependency>
+               IMPORTANT: Place the pom imports in order of precedence,
+               "winner" first. This is the opposite of the order of galleon resource
+               copying, which is "winner" last (so the winner's file copies over
+               any file from a lower precedence source. For these poms, maven
+               uses the first value seen for any artifact, so we need it to see
+               the value of the highest precedence pom first. This is particularly
+               crucial with wildfly-core deps where full WF may need to override core.
+               For other poms coming from this source tree the ordering is more a case
+               of adding a safeguard for cases where the same artifact is declared
+               in multiple poms. That's incorrect handling but can happen.
 
-        <!-- WFLY-19671. DO NOT include 'galleon content only' dependencies
-        <dependency>
-            <groupId>org.wildfly.core</groupId>
-            <artifactId>wildfly-core-feature-pack-galleon-common</artifactId>
-            <type>pom</type>
-            <scope>provided</scope>
-        </dependency>-->
+               The desired precedence:
+
+               1) galleon-local
+               2) galleon-shared-legacy
+               3) galleon-shared
+               5) core
+         -->
 
         <dependency>
             <groupId>${ee.maven.groupId}</groupId>
-            <artifactId>wildfly-ee-feature-pack-galleon-shared</artifactId>
+            <artifactId>wildfly-legacy-ee-feature-pack-galleon-local</artifactId>
             <version>${ee.maven.version}</version>
             <type>pom</type>
             <scope>provided</scope>
@@ -339,11 +343,26 @@
 
         <dependency>
             <groupId>${ee.maven.groupId}</groupId>
-            <artifactId>wildfly-legacy-ee-feature-pack-galleon-local</artifactId>
+            <artifactId>wildfly-ee-feature-pack-galleon-shared</artifactId>
             <version>${ee.maven.version}</version>
             <type>pom</type>
             <scope>provided</scope>
         </dependency>
+
+        <dependency>
+            <groupId>org.wildfly.core</groupId>
+            <artifactId>wildfly-core-feature-pack-common</artifactId>
+            <type>pom</type>
+            <scope>provided</scope>
+        </dependency>
+
+        <!-- WFLY-19671. DO NOT include 'galleon content only' dependencies
+        <dependency>
+            <groupId>org.wildfly.core</groupId>
+            <artifactId>wildfly-core-feature-pack-galleon-common</artifactId>
+            <type>pom</type>
+            <scope>provided</scope>
+        </dependency>-->
 
         <!-- n.b. Add at 'test' scope to ensure wildfly-client-all is built first but is NOT included in the artifact-list.txt or manifest. -->
         <dependency>

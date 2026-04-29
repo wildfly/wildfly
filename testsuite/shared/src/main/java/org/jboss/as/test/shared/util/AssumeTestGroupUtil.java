@@ -216,10 +216,10 @@ public class AssumeTestGroupUtil {
 
     /**
      * Assume for test failures when running against a full distribution.
-     * Full distributions are available from build/dist modules. It skips tests in case
-     * {@code '-Dtestsuite.default.build.project.prefix'} Maven argument is used with
-     * a non empty value, e.g. testsuite.default.build.project.prefix=ee- which means we
-     * are using ee-build/ee-dist modules as the source where to find the server under test.
+     * Full distributions are available from build/dist modules. It skips tests if the
+     * {@code '-Dserver.provisioning.profile'} Maven argument is used with
+     * a value containing {@code ee-only-server}, e.g. {@code legacy-ee-only-server-tests },
+     * which means we are using ee-build/ee-dist modules as the source where to find the server under test.
      *
      * @throws AssumptionViolatedException if property {@code testsuite.default.build.project.prefix} is set to a non-empty value
      */
@@ -237,6 +237,18 @@ public class AssumeTestGroupUtil {
      */
     public static boolean isFullDistribution() {
         return !System.getProperty("server.provisioning.profile", "").contains("ee-only-server");
+    }
+
+    /**
+     * Assume for test failures when running against a non-legacy-ee distribution.
+     * It skips tests if the {@code '-Dserver.provisioning.profile'} Maven argument is not used with
+     * a value starting with {@code legacy-ee}, which means we are not using legacy/* modules as
+     * the source where to find the server under test.
+     *
+     * @throws AssumptionViolatedException if property {@code testsuite.default.build.project.prefix} is set to a non-empty value
+     */
+    public static void assumeLegacyEEDistribution() {
+        assumeCondition("Tests requiring a non-legacy EE distribution are disabled", AssumeTestGroupUtil::isLegacyEEDistribution);
     }
 
     /**

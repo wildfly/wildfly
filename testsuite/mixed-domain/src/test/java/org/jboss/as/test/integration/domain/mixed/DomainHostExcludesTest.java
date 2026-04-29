@@ -45,6 +45,7 @@ import org.jboss.as.test.integration.domain.management.util.DomainTestUtils;
 import org.jboss.as.test.integration.domain.management.util.WildFlyManagedConfiguration;
 import org.jboss.as.test.integration.management.util.MgmtOperationException;
 import org.jboss.as.test.shared.TimeoutUtil;
+import org.jboss.as.test.shared.util.AssumeTestGroupUtil;
 import org.jboss.dmr.ModelNode;
 import org.junit.AfterClass;
 import org.junit.Assert;
@@ -233,6 +234,9 @@ public abstract class DomainHostExcludesTest {
 
     @Test
     public void test003PostBootUpdates() throws IOException, MgmtOperationException {
+
+        // FIXME remove when WFCORE-7572 is fixed
+        AssumeTestGroupUtil.assumeLegacyEEDistribution();
 
         ModelControllerClient primaryClient = testSupport.getDomainPrimaryLifecycleUtil().getDomainClient();
         ModelControllerClient secondaryClient = testSupport.getDomainSecondaryLifecycleUtil().getDomainClient();

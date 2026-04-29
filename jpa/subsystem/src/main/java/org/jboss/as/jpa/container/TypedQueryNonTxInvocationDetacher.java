@@ -12,6 +12,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import jakarta.persistence.CacheRetrieveMode;
+import jakarta.persistence.CacheStoreMode;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.FlushModeType;
 import jakarta.persistence.LockModeType;
@@ -50,6 +52,17 @@ public class TypedQueryNonTxInvocationDetacher<X> implements TypedQuery<X> {
     @Override
     public X getSingleResult() {
         X result = (X)underlyingQuery.getSingleResult();
+        /**
+         * The purpose of this wrapper class is so that we can detach the returned entities from this method.
+         * Call EntityManager.clear will accomplish that.
+         */
+        underlyingEntityManager.clear();
+        return result;
+    }
+
+    @Override
+    public X getSingleResultOrNull() {
+        X result = (X)underlyingQuery.getSingleResultOrNull();
         /**
          * The purpose of this wrapper class is so that we can detach the returned entities from this method.
          * Call EntityManager.clear will accomplish that.
@@ -209,6 +222,39 @@ public class TypedQueryNonTxInvocationDetacher<X> implements TypedQuery<X> {
     public TypedQuery<X> setLockMode(LockModeType lockMode) {
         underlyingQuery.setLockMode(lockMode);
         return this;
+    }
+
+    @Override
+    public TypedQuery<X> setCacheRetrieveMode(CacheRetrieveMode cacheRetrieveMode) {
+        underlyingQuery.setCacheRetrieveMode(cacheRetrieveMode);
+        return this;
+    }
+
+    @Override
+    public TypedQuery<X> setCacheStoreMode(CacheStoreMode cacheStoreMode) {
+        underlyingQuery.setCacheStoreMode(cacheStoreMode);
+        return this;
+    }
+
+    @Override
+    public CacheRetrieveMode getCacheRetrieveMode() {
+        return underlyingQuery.getCacheRetrieveMode();
+    }
+
+    @Override
+    public CacheStoreMode getCacheStoreMode() {
+        return underlyingQuery.getCacheStoreMode();
+    }
+
+    @Override
+    public TypedQuery<X> setTimeout(Integer timeout) {
+        underlyingQuery.setTimeout(timeout);
+        return this;
+    }
+
+    @Override
+    public Integer getTimeout() {
+        return underlyingQuery.getTimeout();
     }
 
     @Override

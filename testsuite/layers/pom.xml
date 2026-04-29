@@ -138,6 +138,26 @@
             </properties>
         </profile>
 
+        <!-- Tests using the legacy ee feature pack -->
+        <profile>
+            <id>legacy-ee-full-server-tests</id>
+            <activation>
+                <property><name>legacy-ee-full-server-tests</name></property>
+            </activation>
+            <properties>
+                <ee.feature.pack.artifactId>${legacy.ee.feature.pack.artifactId}</ee.feature.pack.artifactId>
+            </properties>
+        </profile>
+        <profile>
+            <id>legacy-ee-only-server-tests</id>
+            <activation>
+                <property><name>legacy-ee-only-server-tests</name></property>
+            </activation>
+            <properties>
+                <ee.feature.pack.artifactId>${legacy.ee.feature.pack.artifactId}</ee.feature.pack.artifactId>
+            </properties>
+        </profile>
+
         <profile>
             <id>skip-tests-and-provisioning-profile</id>
             <activation>

@@ -926,12 +926,6 @@
             </dependency>
 
             <dependency>
-                <groupId>com.fasterxml</groupId>
-                <artifactId>classmate</artifactId>
-                <version>${version.com.fasterxml.classmate}</version>
-            </dependency>
-
-            <dependency>
                 <groupId>com.fasterxml.jackson</groupId>
                 <artifactId>jackson-bom</artifactId>
                 <version>${version.com.fasterxml.jackson}</version>
@@ -1276,18 +1270,6 @@
             </dependency>
 
             <dependency>
-                <groupId>io.undertow.jastow</groupId>
-                <artifactId>jastow</artifactId>
-                <version>${version.io.undertow.jastow}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-
-            <dependency>
                 <groupId>jakarta.activation</groupId>
                 <artifactId>jakarta.activation-api</artifactId>
                 <version>${version.jakarta.activation.jakarta.activation-api}</version>
@@ -1374,17 +1356,6 @@
                 <groupId>jakarta.resource</groupId>
                 <artifactId>jakarta.resource-api</artifactId>
                 <version>${version.jakarta.resource.jakarta-resource-api}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>jakarta.servlet.jsp</groupId>
-                <artifactId>jakarta.servlet.jsp-api</artifactId>
-                <version>${version.jakarta.servlet.jsp.jakarta-servlet-jsp-api}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>
@@ -3317,6 +3288,31 @@
                 <groupId>org.wildfly.launcher</groupId>
                 <artifactId>wildfly-launcher</artifactId>
                 <version>${version.org.wildfly.launcher}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <!-- Elytron Web overrides to use development version with setAuthenticationRequired(boolean) -->
+            <dependency>
+                <groupId>org.wildfly.security.elytron-web</groupId>
+                <artifactId>undertow-server</artifactId>
+                <version>${version.org.wildfly.security.elytron-web}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.wildfly.security.elytron-web</groupId>
+                <artifactId>undertow-server-servlet</artifactId>
+                <version>${version.org.wildfly.security.elytron-web}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>

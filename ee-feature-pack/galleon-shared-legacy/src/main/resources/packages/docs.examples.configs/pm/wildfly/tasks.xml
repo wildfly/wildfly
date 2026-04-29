@@ -22,6 +22,7 @@
             </layers>
     
             <feature-group name="adjust-standalone-config"/>
+
             <feature-group name="ejb3-mdb"/>
             <feature spec="subsystem.resource-adapters">
                 <feature spec="subsystem.resource-adapters.resource-adapter">
@@ -59,6 +60,7 @@
             </layers>
     
             <feature-group name="adjust-standalone-config"/>
+
             <feature spec="subsystem.transactions">
                 <param name="jts" value="true"/>
             </feature>
@@ -75,6 +77,7 @@
             </layers>
 
             <feature-group name="adjust-standalone-full-config"/>
+
             <feature spec="subsystem.rts">
                 <param name="host-feature" value="default-host"/>
                 <param name="socket-binding" value="http"/>
@@ -88,6 +91,7 @@
             </layers>
 
             <feature-group name="adjust-standalone-full-config"/>
+
             <feature spec="subsystem.xts">
                 <param name="host-feature" value="default-host"/>
                 <param name="url" value="http://${jboss.bind.address:127.0.0.1}:8080/ws-c11/ActivationService"/>
@@ -949,6 +953,7 @@
             </layers>
 
             <feature-group name="adjust-standalone-full-config"/>
+
             <exclude feature-id="subsystem.messaging-activemq.server.http-acceptor:server=default,subsystem=messaging-activemq,http-acceptor=http-acceptor-throughput"/>
             <exclude feature-id="subsystem.messaging-activemq.server.http-connector:http-connector=http-connector-throughput,server=default,subsystem=messaging-activemq"/>
             <feature spec="subsystem.messaging-activemq">

@@ -39,7 +39,7 @@
         <server-provisioning-phase>generate-resources</server-provisioning-phase>
 
         <!-- Annotation processor version used by the maven-compile plugin.
-             Overridden in a profile for EE 11 testing -->
+             Overridden in profiles for legacy EE testing -->
         <version.org.hibernate.jpamodelgen>${version.org.hibernate}</version.org.hibernate.jpamodelgen>
     </properties>
 
@@ -1180,20 +1180,6 @@
         </profile>
 
         <profile>
-            <id>jakarta.data.preview.profile</id>
-            <activation>
-                <property>
-                    <name>preview-server-tests</name>
-                </property>
-            </activation>
-            <properties>
-                <!-- Use the version of the hibernate-jpamodelgen annotation processor
-                     that aligns with the ORM version in WildFly Preview. -->
-                <version.org.hibernate.jpamodelgen>${version.org.hibernate.preview}</version.org.hibernate.jpamodelgen>
-            </properties>
-        </profile>
-
-        <profile>
             <id>latest-ee-full-server-tests</id>
             <activation>
                 <property><name>latest-ee-full-server-tests</name></property>
@@ -1259,6 +1245,11 @@
             <activation>
                 <property><name>legacy-ee-full-server-tests</name></property>
             </activation>
+            <properties>
+                <!-- Use the version of the hibernate-jpamodelgen annotation processor
+                     that aligns with the ORM version in the legacy EE FP. -->
+                <version.org.hibernate.jpamodelgen>${version.org.hibernate.legacy}</version.org.hibernate.jpamodelgen>
+            </properties>
             <build>
                 <plugins>
                     <plugin>
@@ -1311,6 +1302,18 @@
                     </plugin>
                 </plugins>
             </build>
+        </profile>
+
+        <profile>
+            <id>legacy-ee-only-server-tests</id>
+            <activation>
+                <property><name>legacy-ee-only-server-tests</name></property>
+            </activation>
+            <properties>
+                <!-- Use the version of the hibernate-jpamodelgen annotation processor
+                     that aligns with the ORM version in the legacy EE FP. -->
+                <version.org.hibernate.jpamodelgen>${version.org.hibernate.legacy}</version.org.hibernate.jpamodelgen>
+            </properties>
         </profile>
     </profiles>
 

@@ -217,7 +217,7 @@
         <trace>none</trace>
 
         <!-- Dynamic part of the name of ee-version-specific test source dir that may be added to the build -->
-        <additional.ee.test.source>ee10</additional.ee.test.source>
+        <additional.ee.test.source>ee11</additional.ee.test.source>
 
         <!-- properties to enable plugin executions -->
         <ts.bootable-jar-packaging.phase>none</ts.bootable-jar-packaging.phase>
@@ -748,6 +748,10 @@
                 <!-- For cases where we know for sure we don't want the 'wildfly' FP or channel, we can use these -->
                 <testsuite.ee.only.channel.artifactId>${legacy.ee.channel.artifactId}</testsuite.ee.only.channel.artifactId>
                 <testsuite.ee.only.feature.pack.artifactId>${legacy.ee.feature.pack.artifactId}</testsuite.ee.only.feature.pack.artifactId>
+                <!-- Use the WFP dependencies -->
+                <dependency.management.import.artifact>wildfly-legacy-ee-bom</dependency.management.import.artifact>
+                <!-- If there are EE-version-specific test sources, uses the ee10 ones -->
+                <additional.ee.test.source>ee10</additional.ee.test.source>
             </properties>
             <build>
                 <pluginManagement>
@@ -798,6 +802,10 @@
                 <!-- For cases where we know for sure we don't want the 'wildfly' FP or channel, we can use these -->
                 <testsuite.ee.only.channel.artifactId>${legacy.ee.channel.artifactId}</testsuite.ee.only.channel.artifactId>
                 <testsuite.ee.only.feature.pack.artifactId>${legacy.ee.feature.pack.artifactId}</testsuite.ee.only.feature.pack.artifactId>
+                <!-- Use the WFP dependencies -->
+                <dependency.management.import.artifact>wildfly-legacy-ee-bom</dependency.management.import.artifact>
+                <!-- If there are EE-version-specific test sources, uses the ee10 ones -->
+                <additional.ee.test.source>ee10</additional.ee.test.source>
             </properties>
         </profile>
 

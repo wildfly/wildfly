@@ -29,6 +29,11 @@
         <jbossas.ts.integ.dir>${basedir}/..</jbossas.ts.integ.dir>
         <jbossas.ts.dir>${jbossas.ts.integ.dir}/..</jbossas.ts.dir>
         <jbossas.project.dir>${jbossas.ts.dir}/..</jbossas.project.dir>
+
+        <!-- By default, disable surefire -->
+        <surefire.default-test.phase>none</surefire.default-test.phase>
+        <!-- For profiles testing legacy ee, enable surefire unless a profile for SE 24+ disables it -->
+        <surefire.se.supports.sm.test.phase>test</surefire.se.supports.sm.test.phase>
     </properties>
 
     <dependencies>
@@ -131,14 +136,35 @@
                 </plugins>
             </build>
         </profile>
-        <!-- SecurityManager can't work on SE 24+ so turn of test execution -->
+
+        <!-- For profiles testing the legacy EE feature pack, enable surefire if the SE version allow using the SM -->
+        <profile>
+            <id>legacy-ee-full-server-tests</id>
+            <activation>
+                <property><name>legacy-ee-full-server-tests</name></property>
+            </activation>
+            <properties>
+                <surefire.default-test.phase>${surefire.se.supports.sm.test.phase}</surefire.default-test.phase>
+            </properties>
+        </profile>
+        <profile>
+            <id>legacy-ee-only-server-tests</id>
+            <activation>
+                <property><name>legacy-ee-only-server-tests</name></property>
+            </activation>
+            <properties>
+                <surefire.default-test.phase>${surefire.se.supports.sm.test.phase}</surefire.default-test.phase>
+            </properties>
+        </profile>
+
+        <!-- SecurityManager can't work on SE 24+ so turn off test execution -->
         <profile>
             <id>secman.integration.unsupported.profile</id>
             <activation>
                 <jdk>[24,)</jdk>
             </activation>
             <properties>
-                <surefire.default-test.phase>none</surefire.default-test.phase>
+                <surefire.se.supports.sm.test.phase>test</surefire.se.supports.sm.test.phase>
             </properties>
         </profile>
     </profiles>

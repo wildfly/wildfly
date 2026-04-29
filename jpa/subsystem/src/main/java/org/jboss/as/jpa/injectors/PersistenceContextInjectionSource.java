@@ -140,7 +140,7 @@ public class PersistenceContextInjectionSource extends InjectionSource {
             TransactionSynchronizationRegistry tsr = (TransactionSynchronizationRegistry) serviceRegistry.getRequiredService(JPAServiceNames.TRANSACTION_SYNCHRONIZATION_REGISTRY_SERVICE).getValue();
             TransactionManager transactionManager = ContextTransactionManager.getInstance();
             if (type.equals(PersistenceContextType.TRANSACTION)) {
-                entityManager = new TransactionScopedEntityManager(unitName, properties, emf, synchronizationType, tsr, transactionManager);
+                entityManager = TransactionScopedEntityManager.create(unitName, properties, emf, synchronizationType, tsr, transactionManager);
                 if (ROOT_LOGGER.isDebugEnabled())
                     ROOT_LOGGER.debugf("created new TransactionScopedEntityManager for unit name=%s", unitName);
             } else {
@@ -161,10 +161,10 @@ public class PersistenceContextInjectionSource extends InjectionSource {
 
                 if (entityManager1 == null) {
                     if (SynchronizationType.UNSYNCHRONIZED.equals(synchronizationType)) {
-                        entityManager1 = new ExtendedEntityManager(unitName, emf.createEntityManager(synchronizationType, properties), synchronizationType, tsr, transactionManager);
+                        entityManager1 = ExtendedEntityManager.create(unitName, emf.createEntityManager(synchronizationType, properties), synchronizationType, tsr, transactionManager);
                     }
                     else {
-                        entityManager1 = new ExtendedEntityManager(unitName, emf.createEntityManager(properties), synchronizationType, tsr, transactionManager);
+                        entityManager1 = ExtendedEntityManager.create(unitName, emf.createEntityManager(properties), synchronizationType, tsr, transactionManager);
                     }
                     createdNewExtendedPersistence = true;
                     if (ROOT_LOGGER.isDebugEnabled())

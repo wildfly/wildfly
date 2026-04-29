@@ -130,6 +130,30 @@
             </properties>
         </profile>
 
+        <!-- We don't support test profiles that assume configuration of two feature
+             packs - wildfly on top of  an explicit wildfly-ee variant. It's too complex
+              to set up.-->
+        <profile>
+            <id>latest-ee-full-server-tests</id>
+            <activation>
+                <property><name>latest-ee-full-server-tests</name></property>
+            </activation>
+            <properties>
+                <provisioning.phase>none</provisioning.phase>
+                <surefire.default-test.phase>none</surefire.default-test.phase>
+            </properties>
+        </profile>
+        <profile>
+            <id>legacy-ee-full-server-tests</id>
+            <activation>
+                <property><name>legacy-ee-full-server-tests</name></property>
+            </activation>
+            <properties>
+                <provisioning.phase>none</provisioning.phase>
+                <surefire.default-test.phase>none</surefire.default-test.phase>
+            </properties>
+        </profile>
+
         <profile>
             <id>skip-tests-and-provisioning-profile</id>
             <activation>

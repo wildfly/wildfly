@@ -11,6 +11,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import jakarta.persistence.CacheRetrieveMode;
+import jakarta.persistence.CacheStoreMode;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.FlushModeType;
 import jakarta.persistence.LockModeType;
@@ -54,6 +56,11 @@ public class StoredProcedureQueryNonTxInvocationDetacher implements StoredProced
         } finally {
             underlyingEntityManager.clear();
         }
+    }
+
+    @Override
+    public Object getSingleResultOrNull() {
+        return underlyingStoredProcedureQuery.getSingleResultOrNull();
     }
 
     @Override
@@ -197,6 +204,39 @@ public class StoredProcedureQueryNonTxInvocationDetacher implements StoredProced
     public StoredProcedureQuery setFlushMode(FlushModeType flushMode) {
         underlyingStoredProcedureQuery.setFlushMode(flushMode);
         return this;
+    }
+
+    @Override
+    public StoredProcedureQuery setCacheRetrieveMode(CacheRetrieveMode cacheRetrieveMode) {
+        underlyingStoredProcedureQuery.setCacheRetrieveMode(cacheRetrieveMode);
+        return this;
+    }
+
+    @Override
+    public StoredProcedureQuery setCacheStoreMode(CacheStoreMode cacheStoreMode) {
+        underlyingStoredProcedureQuery.setCacheStoreMode(cacheStoreMode);
+        return this;
+    }
+
+    @Override
+    public CacheRetrieveMode getCacheRetrieveMode() {
+        return underlyingStoredProcedureQuery.getCacheRetrieveMode();
+    }
+
+    @Override
+    public CacheStoreMode getCacheStoreMode() {
+        return underlyingStoredProcedureQuery.getCacheStoreMode();
+    }
+
+    @Override
+    public StoredProcedureQuery setTimeout(Integer timeout) {
+        underlyingStoredProcedureQuery.setTimeout(timeout);
+        return this;
+    }
+
+    @Override
+    public Integer getTimeout() {
+        return underlyingStoredProcedureQuery.getTimeout();
     }
 
     @Override

@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+<module xmlns="urn:jboss:module:1.9" name="org.wildfly.security.jakarta.authorization">
+    <properties>
+        <!--
+             Although this module is private see the module 'org.wildfly.security.elytron' for the re-exported public API.
+         -->
+        <property name="jboss.api" value="private"/>
+    </properties>
+
+    <resources>
+        <artifact name="${org.wildfly.security.jakarta:jakarta-authorization}"/>
+    </resources>
+
+    <dependencies>
+        <module name="jdk.security.auth"/>
+        <module name="org.jboss.logging"/>
+        <module name="org.jboss.logmanager"/>
+        <!-- The WebPCFResolver needs metadata, it is optional in core     -->
+        <!-- but does not need to be optional here.                        -->
+        <module name="org.jboss.metadata.common" />
+        <module name="org.jboss.metadata.web" />
+
+        <module name="jakarta.security.jacc.api" optional="true"/>
+        <module name="org.wildfly.common"/>
+        <module name="org.wildfly.security.elytron-base"/>
+        <module name="org.wildfly.security.elytron-web.undertow-server-servlet" optional="true" services="import"/>
+    </dependencies>
+</module>

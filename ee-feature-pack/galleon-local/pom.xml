@@ -28,6 +28,19 @@
 	</description>
     <packaging>pom</packaging>
 
+    <dependencyManagement>
+        <dependencies>
+            <!-- Add the shared-with-legacy bom to the common-ee bom we inherit from our parent -->
+            <dependency>
+                <groupId>${ee.maven.groupId}</groupId>
+                <artifactId>wildfly-standard-ee-bom</artifactId>
+                <version>${ee.maven.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
     <dependencies>
         <dependency>
             <groupId>${ee.maven.groupId}</groupId>

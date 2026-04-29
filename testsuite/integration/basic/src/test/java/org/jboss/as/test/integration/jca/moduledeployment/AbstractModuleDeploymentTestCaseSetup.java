@@ -22,6 +22,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
@@ -54,6 +55,10 @@ import org.jboss.shrinkwrap.api.spec.ResourceAdapterArchive;
  */
 public abstract class AbstractModuleDeploymentTestCaseSetup extends AbstractMgmtServerSetupTask {
     private static final Logger log = Logger.getLogger(AbstractModuleDeploymentTestCaseSetup.class);
+
+    private static final String VALID_TARGET_DIR = File.separator + "target" + File.separator;
+    private static final String ILLEGAL_BUILD_DIR = "build" + VALID_TARGET_DIR;
+    private static final String ILLEGAL_DIST_DIR = "dist" + VALID_TARGET_DIR;
 
     private static final Pattern MODULE_SLOT_PATTERN = Pattern.compile("slot=\"main\"");
 
@@ -146,20 +151,59 @@ public abstract class AbstractModuleDeploymentTestCaseSetup extends AbstractMgmt
                 throw new IllegalStateException(
                         "Neither -Dmodule.path nor -Djboss.home were set");
             }
+            if (jbossHome.contains(ILLEGAL_BUILD_DIR) || jbossHome.contains(ILLEGAL_DIST_DIR)) {
+                throw new IllegalStateException(String.format("jboss.home %s is not a writable module directory", modulePath));
+            }
             modulePath = jbossHome + File.separatorChar + "modules";
         } else {
-            modulePath = modulePath.split(File.pathSeparator)[0];
+
+            String best = null;
+            for (String path : modulePath.split(File.pathSeparator)) {
+                if (!path.contains(ILLEGAL_BUILD_DIR) && !path.contains(ILLEGAL_DIST_DIR)) {
+                    best = path;
+                    break;
+                }
+            }
+            if (best == null) {
+                throw new IllegalStateException(String.format("No writable module directory found in %s", modulePath));
+            }
+            modulePath = best;
         }
         File moduleDir = new File(modulePath);
         if (!moduleDir.exists()) {
-            throw new IllegalStateException(
-                    "Determined module path does not exist");
+            if (isUnderCurrentProjectBuildDir(moduleDir)) {
+                // Try and create it.
+                if (!moduleDir.mkdirs() && !moduleDir.exists()) {
+                    throw new IllegalStateException("Cannot create module directory " + moduleDir.getAbsolutePath());
+                }
+            } else {
+                throw new IllegalStateException(
+                        "Determined module path does not exist");
+            }
         }
         if (!moduleDir.isDirectory()) {
             throw new IllegalStateException(
                     "Determined module path is not a dir");
         }
         return moduleDir;
+    }
+
+    private static boolean isUnderCurrentProjectBuildDir(File moduleRoot) {
+        String buildDir = System.getProperty("project.build.directory");
+        if (buildDir == null && System.getProperty("basedir") != null) {
+            buildDir = Paths.get(System.getProperty("basedir"), "target").toString();
+        }
+        if (buildDir != null) {
+            File target = new File(buildDir);
+            File parent = moduleRoot.getParentFile();
+            while (parent != null) {
+                if (target.equals(parent)) {
+                    return true;
+                }
+                parent = parent.getParentFile();
+            }
+        }
+        return false;
     }
 
     @Override

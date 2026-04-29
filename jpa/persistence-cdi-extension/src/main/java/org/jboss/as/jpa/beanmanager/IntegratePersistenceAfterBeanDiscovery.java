@@ -197,7 +197,7 @@ public class IntegratePersistenceAfterBeanDiscovery implements PersistenceCdiExt
         }
         beanConfigurator.beanClass(EntityManager.class);
         beanConfigurator.produceWith(c -> {
-                    return new TransactionScopedEntityManager(
+                    return TransactionScopedEntityManager.create(
                             persistenceUnitMetadata.getScopedPersistenceUnitName(),
                             new HashMap<>(),
                             integrationWithCDIBag.getEntityManagerFactory(),

@@ -64,6 +64,8 @@ import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.wildfly.elytron.web.undertow.server.servlet.AuthenticationManager;
 import org.wildfly.extension.undertow.security.jacc.JACCAuthorizationManager;
+import org.wildfly.extension.undertow.security.jacc.PolicyUncheckedOverrideWrapper;
+import org.wildfly.security.authz.jacc.UncheckedPolicyUtil;
 import org.wildfly.security.auth.server.HttpAuthenticationFactory;
 import org.wildfly.security.auth.server.MechanismConfiguration;
 import org.wildfly.security.auth.server.MechanismConfigurationSelector;
@@ -444,6 +446,14 @@ public class ApplicationSecurityDomainDefinition extends SimpleResourceDefinitio
 
             AuthenticationManager authenticationManager = builder.build();
             authenticationManager.configure(deploymentInfo);
+
+            // Jakarta Authorization 3.0: Allow Policy to override authentication requirements
+            if (enableJacc) {
+                UncheckedPolicyUtil policyUtil = UncheckedPolicyUtil.getInstance();
+                if (policyUtil != null) {
+                    deploymentInfo.addSecurityWrapper(new PolicyUncheckedOverrideWrapper(policyUtil));
+                }
+            }
 
             RegistrationImpl registration = new RegistrationImpl(deploymentInfo);
             synchronized(registrations) {

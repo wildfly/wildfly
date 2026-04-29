@@ -33,7 +33,29 @@
     <dependencyManagement>
         <dependencies>
 
-            <!-- Inherit the shared deps -->
+            <!-- Bom-specific dependencies.
+
+                 DO NOT add entries here for items shared between standard WildFly and WildFly Preview.
+
+                 Keep sorted!
+             -->
+
+            <dependency>
+                <groupId>${ee.maven.groupId}</groupId>
+                <artifactId>wildfly-ee-feature-pack-product-conf</artifactId>
+                <version>${ee.maven.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>${ee.maven.groupId}</groupId>
+                <artifactId>wildfly-ee-feature-pack-product-conf</artifactId>
+                <classifier>version</classifier>
+                <type>txt</type>
+                <version>${ee.maven.version}</version>
+            </dependency>
+
+            <!--
+                Inherit the shared deps. Place these last so any overrides above take precedence.
+             -->
             <dependency>
                 <groupId>${ee.maven.groupId}</groupId>
                 <artifactId>wildfly-standard-preview-ee-bom</artifactId>
@@ -54,26 +76,6 @@
                 <version>${ee.maven.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
-            </dependency>
-
-            <!-- Bom-specific dependencies.
-
-                 DO NOT add entries here for items shared between standard WildFly and WildFly Preview.
-
-                 Keep sorted!
-             -->
-
-            <dependency>
-                <groupId>${ee.maven.groupId}</groupId>
-                <artifactId>wildfly-ee-feature-pack-product-conf</artifactId>
-                <version>${ee.maven.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>${ee.maven.groupId}</groupId>
-                <artifactId>wildfly-ee-feature-pack-product-conf</artifactId>
-                <classifier>version</classifier>
-                <type>txt</type>
-                <version>${ee.maven.version}</version>
             </dependency>
 
         </dependencies>

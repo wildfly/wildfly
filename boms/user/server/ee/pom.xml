@@ -257,11 +257,6 @@
                                 <groupId>org.hibernate.validator</groupId>
                                 <artifactId>hibernate-validator-annotation-processor</artifactId>
                             </dependency>
-                            <!-- replaces org.hibernate:hibernate-jpamodelgen -->
-                            <dependency>
-                                <groupId>org.hibernate.orm</groupId>
-                                <artifactId>hibernate-jpamodelgen</artifactId>
-                            </dependency>
                             <!-- include ispn -->
                             <dependency>
                                 <groupId>org.infinispan</groupId>
@@ -677,7 +672,7 @@
                             </dependency>
                             <dependency>
                                 <groupId>org.hibernate.orm</groupId>
-                                <artifactId>hibernate-jpamodelgen</artifactId>
+                                <artifactId>hibernate-processor</artifactId>
                                 <version>org.hibernate.orm:hibernate-core:jar</version>
                             </dependency>
                         </versionRefDependencies>
