@@ -75,7 +75,7 @@
         <auth-server-url>http://localhost:8080/auth</auth-server-url>
         <ssl-required>EXTERNAL</ssl-required>
         <credential name="secret-jwt" secret="fd8f54e1-6994-413a-acf8-90bc67f05412"/>
-        <redirect-rewrite-rule name="^/wsmain/api/(.*)$" replacement="/api/$1/"/>
+        <redirect-rewrite-rule name="^/wsmain/api/(.*)$"  replacement="/api/$1/"/>
     </secure-deployment>
     <secure-deployment name="wildfly-management">
         <bearer-only>true</bearer-only>

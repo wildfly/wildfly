@@ -52,6 +52,13 @@ class ProviderAttributeDefinitions {
                     .setAlternatives(ElytronOidcDescriptionConstants.AUTH_SERVER_URL)
                     .build();
 
+    protected static final SimpleAttributeDefinition PROVIDER_JWT_CLAIMS_TYP =
+            new SimpleAttributeDefinitionBuilder(ElytronOidcDescriptionConstants.PROVIDER_JWT_CLAIMS_TYP, ModelType.STRING, true)
+                    .setAllowExpression(true)
+                    .setValidator(new StringLengthValidator(1, Integer.MAX_VALUE, false, true))
+                    .setStability(Stability.PREVIEW)
+                    .build();
+
     protected static final SimpleAttributeDefinition SSL_REQUIRED =
             new SimpleAttributeDefinitionBuilder(ElytronOidcDescriptionConstants.SSL_REQUIRED, ModelType.STRING, true)
                     .setAllowExpression(true)
@@ -303,6 +310,8 @@ class ProviderAttributeDefinitions {
             CONNECTION_TTL_MILLIS, CONNECTION_TIMEOUT_MILLIS, TOKEN_SIGNATURE_ALGORITHM, AUTHENTICATION_REQUEST_FORMAT,
             REQUEST_OBJECT_SIGNING_ALGORITHM, REQUEST_OBJECT_ENCRYPTION_ENC_VALUE, REQUEST_OBJECT_ENCRYPTION_ALG_VALUE,
             REQUEST_OBJECT_SIGNING_KEYSTORE_FILE, REQUEST_OBJECT_SIGNING_KEYSTORE_PASSWORD,
-            REQUEST_OBJECT_SIGNING_KEY_ALIAS, REQUEST_OBJECT_SIGNING_KEY_PASSWORD, REQUEST_OBJECT_SIGNING_KEYSTORE_TYPE};
+            REQUEST_OBJECT_SIGNING_KEY_ALIAS, REQUEST_OBJECT_SIGNING_KEY_PASSWORD, REQUEST_OBJECT_SIGNING_KEYSTORE_TYPE,
+            PROVIDER_JWT_CLAIMS_TYP
+        };
 
 }
