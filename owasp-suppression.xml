@@ -429,7 +429,7 @@
         <notes><![CDATA[
    file name: opentelemetry-*.jar
    ]]></notes>
-        <packageUrl regex="true">^pkg:maven/io\.opentelemetry/.*@.*$</packageUrl>
+        <packageUrl regex="true">^pkg:maven/io\.opentelemetry.*/.*@.*$</packageUrl>
         <cve>CVE-2026-39883</cve>
     </suppress>
 
