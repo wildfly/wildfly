@@ -47,9 +47,16 @@ class MicroProfileLRACoordinatorAdd extends AbstractBoottimeAddStepHandler {
             .addCapability(MicroProfileLRACoordinatorSubsystemDefinition.LRA_COORDINATOR_CAPABILITY);
 
         builder.requiresCapability(Capabilities.CAPABILITY_UNDERTOW, UndertowService.class);
-        String serverModelValue = MicroProfileLRACoordinatorSubsystemDefinition.SERVER.resolveModelAttribute(context, model).asString();
-        String hostModelValue = MicroProfileLRACoordinatorSubsystemDefinition.HOST.resolveModelAttribute(context, model).asString();
-        Supplier<Host> hostSupplier = builder.requiresCapability(Capabilities.CAPABILITY_HOST, Host.class, serverModelValue, hostModelValue);
+
+        ModelNode serverNode = MicroProfileLRACoordinatorSubsystemDefinition.SERVER.resolveModelAttribute(context, model);
+        ModelNode hostNode = MicroProfileLRACoordinatorSubsystemDefinition.HOST.resolveModelAttribute(context, model);
+
+        Supplier<Host> hostSupplier;
+        if (serverNode.isDefined() && hostNode.isDefined()) {
+            hostSupplier = builder.requiresCapability(Capabilities.CAPABILITY_HOST, Host.class, serverNode.asString(), hostNode.asString());
+        } else {
+            hostSupplier = builder.requires(UndertowService.DEFAULT_HOST);
+        }
 
         final LRACoordinatorService lraCoordinatorService = new LRACoordinatorService(hostSupplier);
 

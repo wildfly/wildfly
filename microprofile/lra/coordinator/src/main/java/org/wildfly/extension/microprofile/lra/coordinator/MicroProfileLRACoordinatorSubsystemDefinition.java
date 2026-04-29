@@ -17,9 +17,10 @@ import org.jboss.as.controller.descriptions.ParentResourceDescriptionResolver;
 import org.jboss.as.controller.descriptions.SubsystemResourceDescriptionResolver;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
-import org.wildfly.extension.undertow.Constants;
+import org.wildfly.extension.undertow.Host;
+import org.wildfly.extension.undertow.Server;
+import org.wildfly.subsystem.resource.capability.CapabilityReferenceRecorder;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 import static org.wildfly.extension.microprofile.lra.coordinator.MicroProfileLRACoordinatorExtension.SUBSYSTEM_NAME;
@@ -45,18 +46,16 @@ public class MicroProfileLRACoordinatorSubsystemDefinition extends SimpleResourc
 
     static final SimpleAttributeDefinition SERVER =
         new SimpleAttributeDefinitionBuilder(CommonAttributes.SERVER, ModelType.STRING, true)
-            .setAllowExpression(true)
             .setXmlName(CommonAttributes.SERVER)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-            .setDefaultValue(new ModelNode(Constants.DEFAULT_SERVER))
+            .setCapabilityReference(CapabilityReferenceRecorder.builder(LRA_COORDINATOR_CAPABILITY, Server.SERVICE_DESCRIPTOR).build())
             .build();
 
     static final SimpleAttributeDefinition HOST =
         new SimpleAttributeDefinitionBuilder(CommonAttributes.HOST, ModelType.STRING, true)
-            .setAllowExpression(true)
             .setXmlName(CommonAttributes.HOST)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-            .setDefaultValue(new ModelNode(Constants.DEFAULT_HOST))
+            .setCapabilityReference(CapabilityReferenceRecorder.builder(LRA_COORDINATOR_CAPABILITY, Host.SERVICE_DESCRIPTOR).withParentAttribute(SERVER).build())
             .build();
 
     static final AttributeDefinition[] ATTRIBUTES = {SERVER, HOST};
