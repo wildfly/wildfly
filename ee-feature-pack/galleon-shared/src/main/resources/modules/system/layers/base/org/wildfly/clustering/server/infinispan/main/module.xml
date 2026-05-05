@@ -23,7 +23,7 @@
         <module name="org.infinispan.protostream"/>
         <module name="org.jboss.marshalling"/>
         <module name="org.jgroups"/>
-        <module name="org.wildfly.clustering.cache.infinispan.common"/>
+        <module name="org.wildfly.clustering.cache.infinispan.common" services="import"/>
         <module name="org.wildfly.clustering.cache.infinispan.embedded" services="import"/>
         <module name="org.wildfly.clustering.cache.spi" services="import"/>
         <module name="org.wildfly.clustering.context"/>

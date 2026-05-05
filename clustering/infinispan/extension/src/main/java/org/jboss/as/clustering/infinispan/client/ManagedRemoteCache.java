@@ -9,7 +9,6 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.UnaryOperator;
 
 import org.infinispan.client.hotrod.RemoteCache;
-import org.infinispan.client.hotrod.RemoteCacheManager;
 import org.infinispan.client.hotrod.impl.InternalRemoteCache;
 import org.wildfly.clustering.cache.infinispan.remote.RemoteCacheDecorator;
 import org.wildfly.clustering.infinispan.client.RemoteCacheContainer;
@@ -25,17 +24,13 @@ public class ManagedRemoteCache<K, V> extends RemoteCacheDecorator<K, V> impleme
 
     private final Registrar<String> registrar;
     private final AtomicReference<Registration> registration;
-    private final RemoteCacheContainer container;
-    private final RemoteCacheManager manager;
 
-    public ManagedRemoteCache(RemoteCacheContainer container, RemoteCacheManager manager, RemoteCache<K, V> cache, Registrar<String> registrar) {
-        this(container, manager, (InternalRemoteCache<K, V>) cache, registrar, new AtomicReference<>());
+    public ManagedRemoteCache(RemoteCacheContainer container, RemoteCache<K, V> cache, Registrar<String> registrar) {
+        this(container, (InternalRemoteCache<K, V>) cache, registrar, new AtomicReference<>());
     }
 
-    private ManagedRemoteCache(RemoteCacheContainer container, RemoteCacheManager manager, InternalRemoteCache<K, V> cache, Registrar<String> registrar, AtomicReference<Registration> registration) {
-        super(cache, decorated -> new ManagedRemoteCache<>(container, manager, decorated, registrar, registration));
-        this.container = container;
-        this.manager = manager;
+    private ManagedRemoteCache(RemoteCacheContainer container, InternalRemoteCache<K, V> cache, Registrar<String> registrar, AtomicReference<Registration> registration) {
+        super(container, cache, decorated -> new ManagedRemoteCache<>(container, decorated, registrar, registration));
         this.registrar = registrar;
         this.registration = registration;
     }
@@ -59,16 +54,5 @@ public class ManagedRemoteCache<K, V> extends RemoteCacheDecorator<K, V> impleme
                 super.stop();
             }
         }
-    }
-
-    @Override
-    public RemoteCacheContainer getRemoteCacheContainer() {
-        return this.container;
-    }
-
-    @Deprecated
-    @Override
-    public RemoteCacheManager getRemoteCacheManager() {
-        return this.manager;
     }
 }

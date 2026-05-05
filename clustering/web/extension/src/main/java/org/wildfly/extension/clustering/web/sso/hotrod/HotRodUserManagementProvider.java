@@ -16,6 +16,7 @@ import org.infinispan.client.hotrod.RemoteCache;
 import org.infinispan.client.hotrod.configuration.NearCacheMode;
 import org.infinispan.client.hotrod.configuration.RemoteCacheConfigurationBuilder;
 import org.infinispan.client.hotrod.configuration.TransactionMode;
+import org.infinispan.client.hotrod.transaction.lookup.RemoteTransactionManagerLookup;
 import org.infinispan.commons.dataconversion.MediaType;
 import org.infinispan.commons.marshall.Marshaller;
 import org.jboss.as.controller.ServiceNameFactory;
@@ -52,6 +53,9 @@ public class HotRodUserManagementProvider implements DistributableUserManagement
                 "media-type" : "application/octet-stream"
             }
         },
+        "locking" : {
+            "isolation" : "REPEATABLE_READ"
+        },
         "mode" : "SYNC",
         "transaction" : {
             "mode" : "NON_XA",
@@ -76,7 +80,7 @@ public class HotRodUserManagementProvider implements DistributableUserManagement
             @Override
             public void accept(RemoteCacheConfigurationBuilder builder) {
                 // Near caching not compatible with max-idle expiration.
-                builder.forceReturnValues(false).marshaller(marshaller).nearCacheMode(NearCacheMode.DISABLED).transactionMode(TransactionMode.NONE);
+                builder.forceReturnValues(false).marshaller(marshaller).nearCacheMode(NearCacheMode.DISABLED).transactionMode(TransactionMode.NON_XA).transactionManagerLookup(RemoteTransactionManagerLookup.getInstance());
                 if (templateName != null) {
                     builder.templateName(templateName);
                 } else {

@@ -21,7 +21,7 @@
         <module name="org.infinispan.commons"/>
         <module name="org.infinispan.core"/>
         <module name="org.infinispan.protostream"/>
-        <module name="org.wildfly.clustering.cache.infinispan.common"/>
+        <module name="org.wildfly.clustering.cache.infinispan.common" services="import"/>
         <module name="org.wildfly.clustering.cache.infinispan.embedded" services="import"/>
         <module name="org.wildfly.clustering.cache.spi" services="import"/>
         <module name="org.wildfly.clustering.context"/>
