@@ -122,7 +122,7 @@ class MailServerDefinition extends PersistentResourceDefinition {
     MailServerDefinition(final PathElement path, AttributeDefinition[] attributes) {
         super(new SimpleResourceDefinition.Parameters(path,
                 MailExtension.getResourceDescriptionResolver(MailSubsystemModel.MAIL_SESSION, MailSubsystemModel.SERVER_TYPE))
-                .setAddHandler(new MailServerAdd(attributes))
+                .setAddHandler(new MailServerAdd())
                 .setAddRestartLevel(Flag.RESTART_RESOURCE_SERVICES)
                 .setRemoveHandler(new MailServerRemove())
                 .setRemoveRestartLevel(Flag.RESTART_RESOURCE_SERVICES)
