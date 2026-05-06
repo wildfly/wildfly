@@ -133,7 +133,7 @@
                             <packaging-scripts>
                                 <cli-session>
                                     <javaOpts>
-                                        <opt>-Dmaven.repo.local=${maven.repo.local}</opt>
+                                        <opt>-Dmaven.repo.local=${settings.localRepository}</opt>
                                     </javaOpts>
                                     <scripts>
                                         <script>${basedir}/src/test/resources/configure-weld-subsystem.cli</script>
