@@ -74,14 +74,12 @@
         <layers.delete.installations>true</layers.delete.installations>
         <jbossas.project.dir>${jbossas.ts.dir}/../..</jbossas.project.dir>
 
-        <!-- GAVs to use for feature packs. Profiles can reset to trigger provisioning
+        <!-- GAV to use for feature packs. Profiles can reset to trigger provisioning
              using alternative feature packs.
              By default, we test the wildfly-ee feature pack as all the layers we test
              in this module are from that feature pack.
         -->
-        <ee.feature.pack.groupId>${ee.maven.groupId}</ee.feature.pack.groupId>
         <ee.feature.pack.artifactId>${latest.ee.feature.pack.artifactId}</ee.feature.pack.artifactId>
-        <ee.feature.pack.version>${ee.maven.version}</ee.feature.pack.version>
 
         <!-- Where to look for artifacts when provisioning and running. -->
         <maven.repo.local>${settings.localRepository}</maven.repo.local>
@@ -205,9 +203,9 @@
                                     <install-dir>${layers.install.dir}/cloud-server</install-dir>
                                     <feature-packs>
                                         <feature-pack>
-                                            <groupId>${ee.feature.pack.groupId}</groupId>
+                                            <groupId>${ee.maven.groupId}</groupId>
                                             <artifactId>${ee.feature.pack.artifactId}</artifactId>
-                                            <version>${ee.feature.pack.version}</version>
+                                            <version>${ee.maven.version}</version>
                                             <inherit-configs>false</inherit-configs>
                                             <inherit-packages>false</inherit-packages>
                                         </feature-pack>
@@ -233,9 +231,9 @@
                                     <install-dir>${layers.install.dir}/cloud-server-clustered</install-dir>
                                     <feature-packs>
                                         <feature-pack>
-                                            <groupId>${ee.feature.pack.groupId}</groupId>
+                                            <groupId>${ee.maven.groupId}</groupId>
                                             <artifactId>${ee.feature.pack.artifactId}</artifactId>
-                                            <version>${ee.feature.pack.version}</version>
+                                            <version>${ee.maven.version}</version>
                                             <inherit-configs>false</inherit-configs>
                                             <inherit-packages>false</inherit-packages>
                                         </feature-pack>
@@ -262,9 +260,9 @@
                                     <install-dir>${layers.install.dir}/cloud-server-decorated</install-dir>
                                     <feature-packs>
                                         <feature-pack>
-                                            <groupId>${ee.feature.pack.groupId}</groupId>
+                                            <groupId>${ee.maven.groupId}</groupId>
                                             <artifactId>${ee.feature.pack.artifactId}</artifactId>
-                                            <version>${ee.feature.pack.version}</version>
+                                            <version>${ee.maven.version}</version>
                                             <inherit-configs>false</inherit-configs>
                                             <inherit-packages>false</inherit-packages>
                                         </feature-pack>
@@ -292,9 +290,9 @@
                                     <install-dir>${layers.install.dir}/cloud-server-h2</install-dir>
                                     <feature-packs>
                                         <feature-pack>
-                                            <groupId>${ee.feature.pack.groupId}</groupId>
+                                            <groupId>${ee.maven.groupId}</groupId>
                                             <artifactId>${ee.feature.pack.artifactId}</artifactId>
-                                            <version>${ee.feature.pack.version}</version>
+                                            <version>${ee.maven.version}</version>
                                             <inherit-configs>false</inherit-configs>
                                             <inherit-packages>false</inherit-packages>
                                         </feature-pack>
@@ -321,9 +319,9 @@
                                     <install-dir>${layers.install.dir}/cloud-server-h2</install-dir>
                                     <feature-packs>
                                         <feature-pack>
-                                            <groupId>${ee.feature.pack.groupId}</groupId>
+                                            <groupId>${ee.maven.groupId}</groupId>
                                             <artifactId>${ee.feature.pack.artifactId}</artifactId>
-                                            <version>${ee.feature.pack.version}</version>
+                                            <version>${ee.maven.version}</version>
                                             <inherit-configs>false</inherit-configs>
                                             <inherit-packages>false</inherit-packages>
                                         </feature-pack>
@@ -354,9 +352,9 @@
                                     <install-dir>${layers.install.dir}/datasources-web-server</install-dir>
                                     <feature-packs>
                                         <feature-pack>
-                                            <groupId>${ee.feature.pack.groupId}</groupId>
+                                            <groupId>${ee.maven.groupId}</groupId>
                                             <artifactId>${ee.feature.pack.artifactId}</artifactId>
-                                            <version>${ee.feature.pack.version}</version>
+                                            <version>${ee.maven.version}</version>
                                             <inherit-configs>false</inherit-configs>
                                             <inherit-packages>false</inherit-packages>
                                         </feature-pack>
@@ -382,9 +380,9 @@
                                     <install-dir>${layers.install.dir}/datasources-web-server-clustered</install-dir>
                                     <feature-packs>
                                         <feature-pack>
-                                            <groupId>${ee.feature.pack.groupId}</groupId>
+                                            <groupId>${ee.maven.groupId}</groupId>
                                             <artifactId>${ee.feature.pack.artifactId}</artifactId>
-                                            <version>${ee.feature.pack.version}</version>
+                                            <version>${ee.maven.version}</version>
                                             <inherit-configs>false</inherit-configs>
                                             <inherit-packages>false</inherit-packages>
                                         </feature-pack>
@@ -411,9 +409,9 @@
                                     <install-dir>${layers.install.dir}/datasources-web-server-decorated</install-dir>
                                     <feature-packs>
                                         <feature-pack>
-                                            <groupId>${ee.feature.pack.groupId}</groupId>
+                                            <groupId>${ee.maven.groupId}</groupId>
                                             <artifactId>${ee.feature.pack.artifactId}</artifactId>
-                                            <version>${ee.feature.pack.version}</version>
+                                            <version>${ee.maven.version}</version>
                                             <inherit-configs>false</inherit-configs>
                                             <inherit-packages>false</inherit-packages>
                                         </feature-pack>
@@ -442,9 +440,9 @@
                                     <install-dir>${layers.install.dir}/datasources-web-server-h2</install-dir>
                                     <feature-packs>
                                         <feature-pack>
-                                            <groupId>${ee.feature.pack.groupId}</groupId>
+                                            <groupId>${ee.maven.groupId}</groupId>
                                             <artifactId>${ee.feature.pack.artifactId}</artifactId>
-                                            <version>${ee.feature.pack.version}</version>
+                                            <version>${ee.maven.version}</version>
                                             <inherit-configs>false</inherit-configs>
                                             <inherit-packages>false</inherit-packages>
                                         </feature-pack>
@@ -471,9 +469,9 @@
                                     <install-dir>${layers.install.dir}/datasources-web-server-h2</install-dir>
                                     <feature-packs>
                                         <feature-pack>
-                                            <groupId>${ee.feature.pack.groupId}</groupId>
+                                            <groupId>${ee.maven.groupId}</groupId>
                                             <artifactId>${ee.feature.pack.artifactId}</artifactId>
-                                            <version>${ee.feature.pack.version}</version>
+                                            <version>${ee.maven.version}</version>
                                             <inherit-configs>false</inherit-configs>
                                             <inherit-packages>false</inherit-packages>
                                         </feature-pack>
@@ -501,9 +499,9 @@
                                     <install-dir>${layers.install.dir}/datasources-web-server-observability</install-dir>
                                     <feature-packs>
                                         <feature-pack>
-                                            <groupId>${ee.feature.pack.groupId}</groupId>
+                                            <groupId>${ee.maven.groupId}</groupId>
                                             <artifactId>${ee.feature.pack.artifactId}</artifactId>
-                                            <version>${ee.feature.pack.version}</version>
+                                            <version>${ee.maven.version}</version>
                                             <inherit-configs>false</inherit-configs>
                                             <inherit-packages>false</inherit-packages>
                                         </feature-pack>
@@ -530,9 +528,9 @@
                                     <install-dir>${layers.install.dir}/embedded-activemq</install-dir>
                                     <feature-packs>
                                         <feature-pack>
-                                            <groupId>${ee.feature.pack.groupId}</groupId>
+                                            <groupId>${ee.maven.groupId}</groupId>
                                             <artifactId>${ee.feature.pack.artifactId}</artifactId>
-                                            <version>${ee.feature.pack.version}</version>
+                                            <version>${ee.maven.version}</version>
                                             <inherit-configs>false</inherit-configs>
                                             <inherit-packages>false</inherit-packages>
                                         </feature-pack>
@@ -558,9 +556,9 @@
                                     <install-dir>${layers.install.dir}/iiop-openjdk-server</install-dir>
                                     <feature-packs>
                                         <feature-pack>
-                                            <groupId>${ee.feature.pack.groupId}</groupId>
+                                            <groupId>${ee.maven.groupId}</groupId>
                                             <artifactId>${ee.feature.pack.artifactId}</artifactId>
-                                            <version>${ee.feature.pack.version}</version>
+                                            <version>${ee.maven.version}</version>
                                             <inherit-configs>false</inherit-configs>
                                             <inherit-packages>false</inherit-packages>
                                         </feature-pack>
@@ -586,9 +584,9 @@
                                     <install-dir>${layers.install.dir}/jaxrs-server</install-dir>
                                     <feature-packs>
                                         <feature-pack>
-                                            <groupId>${ee.feature.pack.groupId}</groupId>
+                                            <groupId>${ee.maven.groupId}</groupId>
                                             <artifactId>${ee.feature.pack.artifactId}</artifactId>
-                                            <version>${ee.feature.pack.version}</version>
+                                            <version>${ee.maven.version}</version>
                                             <inherit-configs>false</inherit-configs>
                                             <inherit-packages>false</inherit-packages>
                                         </feature-pack>
@@ -614,9 +612,9 @@
                                     <install-dir>${layers.install.dir}/jaxrs-server-clustered</install-dir>
                                     <feature-packs>
                                         <feature-pack>
-                                            <groupId>${ee.feature.pack.groupId}</groupId>
+                                            <groupId>${ee.maven.groupId}</groupId>
                                             <artifactId>${ee.feature.pack.artifactId}</artifactId>
-                                            <version>${ee.feature.pack.version}</version>
+                                            <version>${ee.maven.version}</version>
                                             <inherit-configs>false</inherit-configs>
                                             <inherit-packages>false</inherit-packages>
                                         </feature-pack>
@@ -643,9 +641,9 @@
                                     <install-dir>${layers.install.dir}/jaxrs-server-decorated</install-dir>
                                     <feature-packs>
                                         <feature-pack>
-                                            <groupId>${ee.feature.pack.groupId}</groupId>
+                                            <groupId>${ee.maven.groupId}</groupId>
                                             <artifactId>${ee.feature.pack.artifactId}</artifactId>
-                                            <version>${ee.feature.pack.version}</version>
+                                            <version>${ee.maven.version}</version>
                                             <inherit-configs>false</inherit-configs>
                                             <inherit-packages>false</inherit-packages>
                                         </feature-pack>
@@ -674,9 +672,9 @@
                                     <install-dir>${layers.install.dir}/jaxrs-server-h2</install-dir>
                                     <feature-packs>
                                         <feature-pack>
-                                            <groupId>${ee.feature.pack.groupId}</groupId>
+                                            <groupId>${ee.maven.groupId}</groupId>
                                             <artifactId>${ee.feature.pack.artifactId}</artifactId>
-                                            <version>${ee.feature.pack.version}</version>
+                                            <version>${ee.maven.version}</version>
                                             <inherit-configs>false</inherit-configs>
                                             <inherit-packages>false</inherit-packages>
                                         </feature-pack>
@@ -703,9 +701,9 @@
                                     <install-dir>${layers.install.dir}/jaxrs-server-observability</install-dir>
                                     <feature-packs>
                                         <feature-pack>
-                                            <groupId>${ee.feature.pack.groupId}</groupId>
+                                            <groupId>${ee.maven.groupId}</groupId>
                                             <artifactId>${ee.feature.pack.artifactId}</artifactId>
-                                            <version>${ee.feature.pack.version}</version>
+                                            <version>${ee.maven.version}</version>
                                             <inherit-configs>false</inherit-configs>
                                             <inherit-packages>false</inherit-packages>
                                         </feature-pack>
@@ -732,9 +730,9 @@
                                     <install-dir>${layers.install.dir}/jpa-distributed</install-dir>
                                     <feature-packs>
                                         <feature-pack>
-                                            <groupId>${ee.feature.pack.groupId}</groupId>
+                                            <groupId>${ee.maven.groupId}</groupId>
                                             <artifactId>${ee.feature.pack.artifactId}</artifactId>
-                                            <version>${ee.feature.pack.version}</version>
+                                            <version>${ee.maven.version}</version>
                                             <inherit-configs>false</inherit-configs>
                                             <inherit-packages>false</inherit-packages>
                                         </feature-pack>
@@ -760,9 +758,9 @@
                                     <install-dir>${layers.install.dir}/web-clustering</install-dir>
                                     <feature-packs>
                                         <feature-pack>
-                                            <groupId>${ee.feature.pack.groupId}</groupId>
+                                            <groupId>${ee.maven.groupId}</groupId>
                                             <artifactId>${ee.feature.pack.artifactId}</artifactId>
-                                            <version>${ee.feature.pack.version}</version>
+                                            <version>${ee.maven.version}</version>
                                             <inherit-configs>false</inherit-configs>
                                             <inherit-packages>false</inherit-packages>
                                         </feature-pack>
@@ -788,9 +786,9 @@
                                     <install-dir>${layers.install.dir}/web-passivation</install-dir>
                                     <feature-packs>
                                         <feature-pack>
-                                            <groupId>${ee.feature.pack.groupId}</groupId>
+                                            <groupId>${ee.maven.groupId}</groupId>
                                             <artifactId>${ee.feature.pack.artifactId}</artifactId>
-                                            <version>${ee.feature.pack.version}</version>
+                                            <version>${ee.maven.version}</version>
                                             <inherit-configs>false</inherit-configs>
                                             <inherit-packages>false</inherit-packages>
                                         </feature-pack>
@@ -845,7 +843,7 @@
                                     <install-dir>${layers.install.dir}/undertow-https</install-dir>
                                     <feature-packs>
                                         <feature-pack>
-                                            <groupId>${ee.feature.pack.groupId}</groupId>
+                                            <groupId>${ee.maven.groupId}</groupId>
                                             <artifactId>${ee.feature.pack.artifactId}</artifactId>
                                             <version>${ee.maven.version}</version>
                                             <inherit-configs>false</inherit-configs>
@@ -873,7 +871,7 @@
                                     <install-dir>${layers.install.dir}/undertow-load-balancer</install-dir>
                                     <feature-packs>
                                         <feature-pack>
-                                            <groupId>${ee.feature.pack.groupId}</groupId>
+                                            <groupId>${ee.maven.groupId}</groupId>
                                             <artifactId>${ee.feature.pack.artifactId}</artifactId>
                                             <version>${ee.maven.version}</version>
                                             <inherit-configs>false</inherit-configs>
@@ -901,7 +899,7 @@
                                     <install-dir>${layers.install.dir}/naming</install-dir>
                                     <feature-packs>
                                         <feature-pack>
-                                            <groupId>${ee.feature.pack.groupId}</groupId>
+                                            <groupId>${ee.maven.groupId}</groupId>
                                             <artifactId>${ee.feature.pack.artifactId}</artifactId>
                                             <version>${ee.maven.version}</version>
                                             <inherit-configs>false</inherit-configs>
@@ -929,7 +927,7 @@
                                     <install-dir>${layers.install.dir}/web-server</install-dir>
                                     <feature-packs>
                                         <feature-pack>
-                                            <groupId>${ee.feature.pack.groupId}</groupId>
+                                            <groupId>${ee.maven.groupId}</groupId>
                                             <artifactId>${ee.feature.pack.artifactId}</artifactId>
                                             <version>${ee.maven.version}</version>
                                             <inherit-configs>false</inherit-configs>
@@ -958,9 +956,9 @@
                                     <install-dir>${layers.install.dir}/batch-jberet</install-dir>
                                     <feature-packs>
                                         <feature-pack>
-                                            <groupId>${ee.feature.pack.groupId}</groupId>
+                                            <groupId>${ee.maven.groupId}</groupId>
                                             <artifactId>${ee.feature.pack.artifactId}</artifactId>
-                                            <version>${ee.feature.pack.version}</version>
+                                            <version>${ee.maven.version}</version>
                                             <inherit-configs>false</inherit-configs>
                                             <inherit-packages>false</inherit-packages>
                                         </feature-pack>
@@ -986,9 +984,9 @@
                                     <install-dir>${layers.install.dir}/bean-validation</install-dir>
                                     <feature-packs>
                                         <feature-pack>
-                                            <groupId>${ee.feature.pack.groupId}</groupId>
+                                            <groupId>${ee.maven.groupId}</groupId>
                                             <artifactId>${ee.feature.pack.artifactId}</artifactId>
-                                            <version>${ee.feature.pack.version}</version>
+                                            <version>${ee.maven.version}</version>
                                             <inherit-configs>false</inherit-configs>
                                             <inherit-packages>false</inherit-packages>
                                         </feature-pack>
@@ -1014,9 +1012,9 @@
                                     <install-dir>${layers.install.dir}/cdi</install-dir>
                                     <feature-packs>
                                         <feature-pack>
-                                            <groupId>${ee.feature.pack.groupId}</groupId>
+                                            <groupId>${ee.maven.groupId}</groupId>
                                             <artifactId>${ee.feature.pack.artifactId}</artifactId>
-                                            <version>${ee.feature.pack.version}</version>
+                                            <version>${ee.maven.version}</version>
                                             <inherit-configs>false</inherit-configs>
                                             <inherit-packages>false</inherit-packages>
                                         </feature-pack>
@@ -1042,9 +1040,9 @@
                                     <install-dir>${layers.install.dir}/cloud-profile</install-dir>
                                     <feature-packs>
                                         <feature-pack>
-                                            <groupId>${ee.feature.pack.groupId}</groupId>
+                                            <groupId>${ee.maven.groupId}</groupId>
                                             <artifactId>${ee.feature.pack.artifactId}</artifactId>
-                                            <version>${ee.feature.pack.version}</version>
+                                            <version>${ee.maven.version}</version>
                                             <inherit-configs>false</inherit-configs>
                                             <inherit-packages>false</inherit-packages>
                                         </feature-pack>
@@ -1070,9 +1068,9 @@
                                     <install-dir>${layers.install.dir}/datasources</install-dir>
                                     <feature-packs>
                                         <feature-pack>
-                                            <groupId>${ee.feature.pack.groupId}</groupId>
+                                            <groupId>${ee.maven.groupId}</groupId>
                                             <artifactId>${ee.feature.pack.artifactId}</artifactId>
-                                            <version>${ee.feature.pack.version}</version>
+                                            <version>${ee.maven.version}</version>
                                             <inherit-configs>false</inherit-configs>
                                             <inherit-packages>false</inherit-packages>
                                         </feature-pack>
@@ -1098,9 +1096,9 @@
                                     <install-dir>${layers.install.dir}/ee</install-dir>
                                     <feature-packs>
                                         <feature-pack>
-                                            <groupId>${ee.feature.pack.groupId}</groupId>
+                                            <groupId>${ee.maven.groupId}</groupId>
                                             <artifactId>${ee.feature.pack.artifactId}</artifactId>
-                                            <version>${ee.feature.pack.version}</version>
+                                            <version>${ee.maven.version}</version>
                                             <inherit-configs>false</inherit-configs>
                                             <inherit-packages>false</inherit-packages>
                                         </feature-pack>
@@ -1126,9 +1124,9 @@
                                     <install-dir>${layers.install.dir}/ee-concurrency</install-dir>
                                     <feature-packs>
                                         <feature-pack>
-                                            <groupId>${ee.feature.pack.groupId}</groupId>
+                                            <groupId>${ee.maven.groupId}</groupId>
                                             <artifactId>${ee.feature.pack.artifactId}</artifactId>
-                                            <version>${ee.feature.pack.version}</version>
+                                            <version>${ee.maven.version}</version>
                                             <inherit-configs>false</inherit-configs>
                                             <inherit-packages>false</inherit-packages>
                                         </feature-pack>
@@ -1155,9 +1153,9 @@
                                     <install-dir>${layers.install.dir}/ee-integration</install-dir>
                                     <feature-packs>
                                         <feature-pack>
-                                            <groupId>${ee.feature.pack.groupId}</groupId>
+                                            <groupId>${ee.maven.groupId}</groupId>
                                             <artifactId>${ee.feature.pack.artifactId}</artifactId>
-                                            <version>${ee.feature.pack.version}</version>
+                                            <version>${ee.maven.version}</version>
                                             <inherit-configs>false</inherit-configs>
                                             <inherit-packages>false</inherit-packages>
                                         </feature-pack>
@@ -1183,9 +1181,9 @@
                                     <install-dir>${layers.install.dir}/ee-security</install-dir>
                                     <feature-packs>
                                         <feature-pack>
-                                            <groupId>${ee.feature.pack.groupId}</groupId>
+                                            <groupId>${ee.maven.groupId}</groupId>
                                             <artifactId>${ee.feature.pack.artifactId}</artifactId>
-                                            <version>${ee.feature.pack.version}</version>
+                                            <version>${ee.maven.version}</version>
                                             <inherit-configs>false</inherit-configs>
                                             <inherit-packages>false</inherit-packages>
                                         </feature-pack>
@@ -1211,9 +1209,9 @@
                                     <install-dir>${layers.install.dir}/ejb</install-dir>
                                     <feature-packs>
                                         <feature-pack>
-                                            <groupId>${ee.feature.pack.groupId}</groupId>
+                                            <groupId>${ee.maven.groupId}</groupId>
                                             <artifactId>${ee.feature.pack.artifactId}</artifactId>
-                                            <version>${ee.feature.pack.version}</version>
+                                            <version>${ee.maven.version}</version>
                                             <inherit-configs>false</inherit-configs>
                                             <inherit-packages>false</inherit-packages>
                                         </feature-pack>
@@ -1239,9 +1237,9 @@
                                     <install-dir>${layers.install.dir}/ejb-lite</install-dir>
                                     <feature-packs>
                                         <feature-pack>
-                                            <groupId>${ee.feature.pack.groupId}</groupId>
+                                            <groupId>${ee.maven.groupId}</groupId>
                                             <artifactId>${ee.feature.pack.artifactId}</artifactId>
-                                            <version>${ee.feature.pack.version}</version>
+                                            <version>${ee.maven.version}</version>
                                             <inherit-configs>false</inherit-configs>
                                             <inherit-packages>false</inherit-packages>
                                         </feature-pack>
@@ -1267,9 +1265,9 @@
                                     <install-dir>${layers.install.dir}/ejb-lite-dist-cache</install-dir>
                                     <feature-packs>
                                         <feature-pack>
-                                            <groupId>${ee.feature.pack.groupId}</groupId>
+                                            <groupId>${ee.maven.groupId}</groupId>
                                             <artifactId>${ee.feature.pack.artifactId}</artifactId>
-                                            <version>${ee.feature.pack.version}</version>
+                                            <version>${ee.maven.version}</version>
                                             <inherit-configs>false</inherit-configs>
                                             <inherit-packages>false</inherit-packages>
                                         </feature-pack>
@@ -1299,9 +1297,9 @@
                                     <install-dir>${layers.install.dir}/ejb-dist-cache</install-dir>
                                     <feature-packs>
                                         <feature-pack>
-                                            <groupId>${ee.feature.pack.groupId}</groupId>
+                                            <groupId>${ee.maven.groupId}</groupId>
                                             <artifactId>${ee.feature.pack.artifactId}</artifactId>
-                                            <version>${ee.feature.pack.version}</version>
+                                            <version>${ee.maven.version}</version>
                                             <inherit-configs>false</inherit-configs>
                                             <inherit-packages>false</inherit-packages>
                                         </feature-pack>
@@ -1327,9 +1325,9 @@
                                     <install-dir>${layers.install.dir}/ejb-http-invoker</install-dir>
                                     <feature-packs>
                                         <feature-pack>
-                                            <groupId>${ee.feature.pack.groupId}</groupId>
+                                            <groupId>${ee.maven.groupId}</groupId>
                                             <artifactId>${ee.feature.pack.artifactId}</artifactId>
-                                            <version>${ee.feature.pack.version}</version>
+                                            <version>${ee.maven.version}</version>
                                             <inherit-configs>false</inherit-configs>
                                             <inherit-packages>false</inherit-packages>
                                         </feature-pack>
@@ -1355,9 +1353,9 @@
                                     <install-dir>${layers.install.dir}/ejb-local-cache</install-dir>
                                     <feature-packs>
                                         <feature-pack>
-                                            <groupId>${ee.feature.pack.groupId}</groupId>
+                                            <groupId>${ee.maven.groupId}</groupId>
                                             <artifactId>${ee.feature.pack.artifactId}</artifactId>
-                                            <version>${ee.feature.pack.version}</version>
+                                            <version>${ee.maven.version}</version>
                                             <inherit-configs>false</inherit-configs>
                                             <inherit-packages>false</inherit-packages>
                                         </feature-pack>
@@ -1383,9 +1381,9 @@
                                     <install-dir>${layers.install.dir}/hibernate-search</install-dir>
                                     <feature-packs>
                                         <feature-pack>
-                                            <groupId>${ee.feature.pack.groupId}</groupId>
+                                            <groupId>${ee.maven.groupId}</groupId>
                                             <artifactId>${ee.feature.pack.artifactId}</artifactId>
-                                            <version>${ee.feature.pack.version}</version>
+                                            <version>${ee.maven.version}</version>
                                             <inherit-configs>false</inherit-configs>
                                             <inherit-packages>false</inherit-packages>
                                         </feature-pack>
@@ -1411,9 +1409,9 @@
                                     <install-dir>${layers.install.dir}/hibernate-search-jpa-distributed</install-dir>
                                     <feature-packs>
                                         <feature-pack>
-                                            <groupId>${ee.feature.pack.groupId}</groupId>
+                                            <groupId>${ee.maven.groupId}</groupId>
                                             <artifactId>${ee.feature.pack.artifactId}</artifactId>
-                                            <version>${ee.feature.pack.version}</version>
+                                            <version>${ee.maven.version}</version>
                                             <inherit-configs>false</inherit-configs>
                                             <inherit-packages>false</inherit-packages>
                                         </feature-pack>
@@ -1443,9 +1441,9 @@
                                     <install-dir>${layers.install.dir}/h2-datasource</install-dir>
                                     <feature-packs>
                                         <feature-pack>
-                                            <groupId>${ee.feature.pack.groupId}</groupId>
+                                            <groupId>${ee.maven.groupId}</groupId>
                                             <artifactId>${ee.feature.pack.artifactId}</artifactId>
-                                            <version>${ee.feature.pack.version}</version>
+                                            <version>${ee.maven.version}</version>
                                             <inherit-configs>false</inherit-configs>
                                             <inherit-packages>false</inherit-packages>
                                         </feature-pack>
@@ -1472,9 +1470,9 @@
                                     <install-dir>${layers.install.dir}/h2-default-datasource</install-dir>
                                     <feature-packs>
                                         <feature-pack>
-                                            <groupId>${ee.feature.pack.groupId}</groupId>
+                                            <groupId>${ee.maven.groupId}</groupId>
                                             <artifactId>${ee.feature.pack.artifactId}</artifactId>
-                                            <version>${ee.feature.pack.version}</version>
+                                            <version>${ee.maven.version}</version>
                                             <inherit-configs>false</inherit-configs>
                                             <inherit-packages>false</inherit-packages>
                                         </feature-pack>
@@ -1502,9 +1500,9 @@
                                     <install-dir>${layers.install.dir}/h2-driver</install-dir>
                                     <feature-packs>
                                         <feature-pack>
-                                            <groupId>${ee.feature.pack.groupId}</groupId>
+                                            <groupId>${ee.maven.groupId}</groupId>
                                             <artifactId>${ee.feature.pack.artifactId}</artifactId>
-                                            <version>${ee.feature.pack.version}</version>
+                                            <version>${ee.maven.version}</version>
                                             <inherit-configs>false</inherit-configs>
                                             <inherit-packages>false</inherit-packages>
                                         </feature-pack>
@@ -1532,9 +1530,9 @@
                                     <install-dir>${layers.install.dir}/jaxrs</install-dir>
                                     <feature-packs>
                                         <feature-pack>
-                                            <groupId>${ee.feature.pack.groupId}</groupId>
+                                            <groupId>${ee.maven.groupId}</groupId>
                                             <artifactId>${ee.feature.pack.artifactId}</artifactId>
-                                            <version>${ee.feature.pack.version}</version>
+                                            <version>${ee.maven.version}</version>
                                             <inherit-configs>false</inherit-configs>
                                             <inherit-packages>false</inherit-packages>
                                         </feature-pack>
@@ -1560,9 +1558,9 @@
                                     <install-dir>${layers.install.dir}/jdr</install-dir>
                                     <feature-packs>
                                         <feature-pack>
-                                            <groupId>${ee.feature.pack.groupId}</groupId>
+                                            <groupId>${ee.maven.groupId}</groupId>
                                             <artifactId>${ee.feature.pack.artifactId}</artifactId>
-                                            <version>${ee.feature.pack.version}</version>
+                                            <version>${ee.maven.version}</version>
                                             <inherit-configs>false</inherit-configs>
                                             <inherit-packages>false</inherit-packages>
                                         </feature-pack>
@@ -1588,9 +1586,9 @@
                                     <install-dir>${layers.install.dir}/jms-activemq</install-dir>
                                     <feature-packs>
                                         <feature-pack>
-                                            <groupId>${ee.feature.pack.groupId}</groupId>
+                                            <groupId>${ee.maven.groupId}</groupId>
                                             <artifactId>${ee.feature.pack.artifactId}</artifactId>
-                                            <version>${ee.feature.pack.version}</version>
+                                            <version>${ee.maven.version}</version>
                                             <inherit-configs>false</inherit-configs>
                                             <inherit-packages>false</inherit-packages>
                                         </feature-pack>
@@ -1616,9 +1614,9 @@
                                     <install-dir>${layers.install.dir}/jsonp</install-dir>
                                     <feature-packs>
                                         <feature-pack>
-                                            <groupId>${ee.feature.pack.groupId}</groupId>
+                                            <groupId>${ee.maven.groupId}</groupId>
                                             <artifactId>${ee.feature.pack.artifactId}</artifactId>
-                                            <version>${ee.feature.pack.version}</version>
+                                            <version>${ee.maven.version}</version>
                                             <inherit-configs>false</inherit-configs>
                                             <inherit-packages>false</inherit-packages>
                                         </feature-pack>
@@ -1644,9 +1642,9 @@
                                     <install-dir>${layers.install.dir}/jsonb</install-dir>
                                     <feature-packs>
                                         <feature-pack>
-                                            <groupId>${ee.feature.pack.groupId}</groupId>
+                                            <groupId>${ee.maven.groupId}</groupId>
                                             <artifactId>${ee.feature.pack.artifactId}</artifactId>
-                                            <version>${ee.feature.pack.version}</version>
+                                            <version>${ee.maven.version}</version>
                                             <inherit-configs>false</inherit-configs>
                                             <inherit-packages>false</inherit-packages>
                                         </feature-pack>
@@ -1672,9 +1670,9 @@
                                     <install-dir>${layers.install.dir}/remote-activemq</install-dir>
                                     <feature-packs>
                                         <feature-pack>
-                                            <groupId>${ee.feature.pack.groupId}</groupId>
+                                            <groupId>${ee.maven.groupId}</groupId>
                                             <artifactId>${ee.feature.pack.artifactId}</artifactId>
-                                            <version>${ee.feature.pack.version}</version>
+                                            <version>${ee.maven.version}</version>
                                             <inherit-configs>false</inherit-configs>
                                             <inherit-packages>false</inherit-packages>
                                         </feature-pack>
@@ -1700,9 +1698,9 @@
                                     <install-dir>${layers.install.dir}/jpa</install-dir>
                                     <feature-packs>
                                         <feature-pack>
-                                            <groupId>${ee.feature.pack.groupId}</groupId>
+                                            <groupId>${ee.maven.groupId}</groupId>
                                             <artifactId>${ee.feature.pack.artifactId}</artifactId>
-                                            <version>${ee.feature.pack.version}</version>
+                                            <version>${ee.maven.version}</version>
                                             <inherit-configs>false</inherit-configs>
                                             <inherit-packages>false</inherit-packages>
                                         </feature-pack>
@@ -1728,9 +1726,9 @@
                                     <install-dir>${layers.install.dir}/jsf</install-dir>
                                     <feature-packs>
                                         <feature-pack>
-                                            <groupId>${ee.feature.pack.groupId}</groupId>
+                                            <groupId>${ee.maven.groupId}</groupId>
                                             <artifactId>${ee.feature.pack.artifactId}</artifactId>
-                                            <version>${ee.feature.pack.version}</version>
+                                            <version>${ee.maven.version}</version>
                                             <inherit-configs>false</inherit-configs>
                                             <inherit-packages>false</inherit-packages>
                                         </feature-pack>
@@ -1758,9 +1756,9 @@
                                     <install-dir>${layers.install.dir}/mail</install-dir>
                                     <feature-packs>
                                         <feature-pack>
-                                            <groupId>${ee.feature.pack.groupId}</groupId>
+                                            <groupId>${ee.maven.groupId}</groupId>
                                             <artifactId>${ee.feature.pack.artifactId}</artifactId>
-                                            <version>${ee.feature.pack.version}</version>
+                                            <version>${ee.maven.version}</version>
                                             <inherit-configs>false</inherit-configs>
                                             <inherit-packages>false</inherit-packages>
                                         </feature-pack>
@@ -1787,9 +1785,9 @@
                                     <install-dir>${layers.install.dir}/messaging-activemq</install-dir>
                                     <feature-packs>
                                         <feature-pack>
-                                            <groupId>${ee.feature.pack.groupId}</groupId>
+                                            <groupId>${ee.maven.groupId}</groupId>
                                             <artifactId>${ee.feature.pack.artifactId}</artifactId>
-                                            <version>${ee.feature.pack.version}</version>
+                                            <version>${ee.maven.version}</version>
                                             <inherit-configs>false</inherit-configs>
                                             <inherit-packages>false</inherit-packages>
                                         </feature-pack>
@@ -1816,9 +1814,9 @@
                                     <install-dir>${layers.install.dir}/mod_cluster</install-dir>
                                     <feature-packs>
                                         <feature-pack>
-                                            <groupId>${ee.feature.pack.groupId}</groupId>
+                                            <groupId>${ee.maven.groupId}</groupId>
                                             <artifactId>${ee.feature.pack.artifactId}</artifactId>
-                                            <version>${ee.feature.pack.version}</version>
+                                            <version>${ee.maven.version}</version>
                                             <inherit-configs>false</inherit-configs>
                                             <inherit-packages>false</inherit-packages>
                                         </feature-pack>
@@ -1845,9 +1843,9 @@
                                     <install-dir>${layers.install.dir}/observability</install-dir>
                                     <feature-packs>
                                         <feature-pack>
-                                            <groupId>${ee.feature.pack.groupId}</groupId>
+                                            <groupId>${ee.maven.groupId}</groupId>
                                             <artifactId>${ee.feature.pack.artifactId}</artifactId>
-                                            <version>${ee.feature.pack.version}</version>
+                                            <version>${ee.maven.version}</version>
                                             <inherit-configs>false</inherit-configs>
                                             <inherit-packages>false</inherit-packages>
                                         </feature-pack>
@@ -1873,9 +1871,9 @@
                                     <install-dir>${layers.install.dir}/pojo</install-dir>
                                     <feature-packs>
                                         <feature-pack>
-                                            <groupId>${ee.feature.pack.groupId}</groupId>
+                                            <groupId>${ee.maven.groupId}</groupId>
                                             <artifactId>${ee.feature.pack.artifactId}</artifactId>
-                                            <version>${ee.feature.pack.version}</version>
+                                            <version>${ee.maven.version}</version>
                                             <inherit-configs>false</inherit-configs>
                                             <inherit-packages>false</inherit-packages>
                                         </feature-pack>
@@ -1901,9 +1899,9 @@
                                     <install-dir>${layers.install.dir}/resource-adapters</install-dir>
                                     <feature-packs>
                                         <feature-pack>
-                                            <groupId>${ee.feature.pack.groupId}</groupId>
+                                            <groupId>${ee.maven.groupId}</groupId>
                                             <artifactId>${ee.feature.pack.artifactId}</artifactId>
-                                            <version>${ee.feature.pack.version}</version>
+                                            <version>${ee.maven.version}</version>
                                             <inherit-configs>false</inherit-configs>
                                             <inherit-packages>false</inherit-packages>
                                         </feature-pack>
@@ -1930,9 +1928,9 @@
                                     <install-dir>${layers.install.dir}/sar</install-dir>
                                     <feature-packs>
                                         <feature-pack>
-                                            <groupId>${ee.feature.pack.groupId}</groupId>
+                                            <groupId>${ee.maven.groupId}</groupId>
                                             <artifactId>${ee.feature.pack.artifactId}</artifactId>
-                                            <version>${ee.feature.pack.version}</version>
+                                            <version>${ee.maven.version}</version>
                                             <inherit-configs>false</inherit-configs>
                                             <inherit-packages>false</inherit-packages>
                                         </feature-pack>
@@ -1958,9 +1956,9 @@
                                     <install-dir>${layers.install.dir}/singleton-local</install-dir>
                                     <feature-packs>
                                         <feature-pack>
-                                            <groupId>${ee.feature.pack.groupId}</groupId>
+                                            <groupId>${ee.maven.groupId}</groupId>
                                             <artifactId>${ee.feature.pack.artifactId}</artifactId>
-                                            <version>${ee.feature.pack.version}</version>
+                                            <version>${ee.maven.version}</version>
                                             <inherit-configs>false</inherit-configs>
                                             <inherit-packages>false</inherit-packages>
                                         </feature-pack>
@@ -1986,9 +1984,9 @@
                                     <install-dir>${layers.install.dir}/singleton-ha</install-dir>
                                     <feature-packs>
                                         <feature-pack>
-                                            <groupId>${ee.feature.pack.groupId}</groupId>
+                                            <groupId>${ee.maven.groupId}</groupId>
                                             <artifactId>${ee.feature.pack.artifactId}</artifactId>
-                                            <version>${ee.feature.pack.version}</version>
+                                            <version>${ee.maven.version}</version>
                                             <inherit-configs>false</inherit-configs>
                                             <inherit-packages>false</inherit-packages>
                                         </feature-pack>
@@ -2014,9 +2012,9 @@
                                     <install-dir>${layers.install.dir}/transactions</install-dir>
                                     <feature-packs>
                                         <feature-pack>
-                                            <groupId>${ee.feature.pack.groupId}</groupId>
+                                            <groupId>${ee.maven.groupId}</groupId>
                                             <artifactId>${ee.feature.pack.artifactId}</artifactId>
-                                            <version>${ee.feature.pack.version}</version>
+                                            <version>${ee.maven.version}</version>
                                             <inherit-configs>false</inherit-configs>
                                             <inherit-packages>false</inherit-packages>
                                         </feature-pack>
@@ -2042,9 +2040,9 @@
                                     <install-dir>${layers.install.dir}/undertow</install-dir>
                                     <feature-packs>
                                         <feature-pack>
-                                            <groupId>${ee.feature.pack.groupId}</groupId>
+                                            <groupId>${ee.maven.groupId}</groupId>
                                             <artifactId>${ee.feature.pack.artifactId}</artifactId>
-                                            <version>${ee.feature.pack.version}</version>
+                                            <version>${ee.maven.version}</version>
                                             <inherit-configs>false</inherit-configs>
                                             <inherit-packages>false</inherit-packages>
                                         </feature-pack>
@@ -2070,9 +2068,9 @@
                                     <install-dir>${layers.install.dir}/web-console</install-dir>
                                     <feature-packs>
                                         <feature-pack>
-                                            <groupId>${ee.feature.pack.groupId}</groupId>
+                                            <groupId>${ee.maven.groupId}</groupId>
                                             <artifactId>${ee.feature.pack.artifactId}</artifactId>
-                                            <version>${ee.feature.pack.version}</version>
+                                            <version>${ee.maven.version}</version>
                                             <inherit-configs>false</inherit-configs>
                                             <inherit-packages>false</inherit-packages>
                                         </feature-pack>
@@ -2098,9 +2096,9 @@
                                     <install-dir>${layers.install.dir}/webservices</install-dir>
                                     <feature-packs>
                                         <feature-pack>
-                                            <groupId>${ee.feature.pack.groupId}</groupId>
+                                            <groupId>${ee.maven.groupId}</groupId>
                                             <artifactId>${ee.feature.pack.artifactId}</artifactId>
-                                            <version>${ee.feature.pack.version}</version>
+                                            <version>${ee.maven.version}</version>
                                             <inherit-configs>false</inherit-configs>
                                             <inherit-packages>false</inherit-packages>
                                         </feature-pack>
@@ -2130,9 +2128,9 @@
                                     <install-dir>${layers.install.dir}/test-all-layers</install-dir>
                                     <feature-packs>
                                         <feature-pack>
-                                            <groupId>${ee.feature.pack.groupId}</groupId>
+                                            <groupId>${ee.maven.groupId}</groupId>
                                             <artifactId>${ee.feature.pack.artifactId}</artifactId>
-                                            <version>${ee.feature.pack.version}</version>
+                                            <version>${ee.maven.version}</version>
                                             <inherit-configs>false</inherit-configs>
                                             <inherit-packages>false</inherit-packages>
                                         </feature-pack>
@@ -2221,9 +2219,9 @@
                                     <install-dir>${layers.install.dir}/test-all-layers-jpa-distributed</install-dir>
                                     <feature-packs>
                                         <feature-pack>
-                                            <groupId>${ee.feature.pack.groupId}</groupId>
+                                            <groupId>${ee.maven.groupId}</groupId>
                                             <artifactId>${ee.feature.pack.artifactId}</artifactId>
-                                            <version>${ee.feature.pack.version}</version>
+                                            <version>${ee.maven.version}</version>
                                             <inherit-configs>false</inherit-configs>
                                             <inherit-packages>false</inherit-packages>
                                         </feature-pack>
@@ -2315,9 +2313,9 @@
                                     <install-dir>${layers.install.dir}/remoting</install-dir>
                                     <feature-packs>
                                         <feature-pack>
-                                            <groupId>${ee.feature.pack.groupId}</groupId>
+                                            <groupId>${ee.maven.groupId}</groupId>
                                             <artifactId>${ee.feature.pack.artifactId}</artifactId>
-                                            <version>${ee.feature.pack.version}</version>
+                                            <version>${ee.maven.version}</version>
                                             <inherit-configs>false</inherit-configs>
                                             <inherit-packages>false</inherit-packages>
                                         </feature-pack>
@@ -2344,9 +2342,9 @@
                                     <install-dir>${layers.install.dir}/test-all-layers</install-dir>
                                     <feature-packs>
                                         <feature-pack>
-                                            <groupId>${ee.feature.pack.groupId}</groupId>
+                                            <groupId>${ee.maven.groupId}</groupId>
                                             <artifactId>wildfly-preview-feature-pack</artifactId>
-                                            <version>${ee.feature.pack.version}</version>
+                                            <version>${ee.maven.version}</version>
                                             <inherit-configs>false</inherit-configs>
                                             <inherit-packages>false</inherit-packages>
                                         </feature-pack>
@@ -2436,9 +2434,9 @@
                                     <install-dir>${layers.install.dir}/test-all-layers-jpa-distributed</install-dir>
                                     <feature-packs>
                                         <feature-pack>
-                                            <groupId>${ee.feature.pack.groupId}</groupId>
+                                            <groupId>${ee.maven.groupId}</groupId>
                                             <artifactId>wildfly-preview-feature-pack</artifactId>
-                                            <version>${ee.feature.pack.version}</version>
+                                            <version>${ee.maven.version}</version>
                                             <inherit-configs>false</inherit-configs>
                                             <inherit-packages>false</inherit-packages>
                                         </feature-pack>
