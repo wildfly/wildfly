@@ -13,8 +13,6 @@
 
     <dependencies>
         <module name="java.xml"/>
-        <!-- TODO https://redhat.atlassian.net/browse/WFLY-21789 -->
-        <module name="org.glassfish.expressly"/>
         <module name="jakarta.jms.api"/>
         <module name="jakarta.resource.api"/>
         <module name="jakarta.validation.api"/>
