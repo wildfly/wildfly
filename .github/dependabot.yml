@@ -41,6 +41,7 @@ updates:
           - 'org.apache.velocity*'
           - 'org.apache.ws.xmlschema*'
           - 'org.apache.wss4j*'
+          - 'org.glassfish.jaxb*'
           - 'org.jasypt*'
           - 'org.jboss.ws*'
           - 'org.opensaml*'
