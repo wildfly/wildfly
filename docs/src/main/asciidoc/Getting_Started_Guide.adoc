@@ -26,94 +26,119 @@ ifdef::basebackend-html[toc::[]]
 [[getting-started-with-wildfly]]
 == Getting Started with WildFly {wildflyVersion}
 
-WildFly {wildflyVersion} is the latest release in a series of JBoss open-source
-application server offerings. WildFly {wildflyVersion} is an exceptionally fast,
-lightweight and powerful implementation of the Jakarta
-Enterprise Edition 10 specifications. WildFly's modular architecture built on the
-JBoss Modules and JBoss Modular Service Container projects enables services on-demand when your
-application requires them. The table below lists the Jakarta technologies available in WildFly {wildflyVersion}
-server configuration profiles.
+This document provides a quick overview on how to download and get
+started using WildFly {wildflyVersion}.
+For in-depth
+content on administrative features, refer to the link:Admin_Guide{outfilesuffix}[Admin Guide].
+The link:Application_Development_Guide{outfilesuffix}[Application Development Guide] shows you how to build WildFly
+applications from scratch.
+
+WildFly {wildflyVersion} is the latest release in a decades-long series of open-source
+application server offerings. WildFly is an exceptionally fast,
+lightweight and powerful implementation of Jakarta
+and MicroProfile specifications, providing advanced security, clustering, management and observability capabilities. WildFly's modular architecture, built on the
+JBoss Modules and JBoss Modular Service Container projects, enables services on-demand when your
+application requires them.
+
+WildFly currently offers two stable variants: standard WildFly, offering the EE 11 specifications from Jakarta, and a new variant providing EE 10 that is offered temporarily to give users time to transition to EE 11 while still getting new features and bug fixes. We also offer a tech preview variant, WildFly Preview, used to showcase things in the works for future releases of standard WildFly. For more on these options, please see the xref:WildFly_and_WildFly_Preview{outfilesuffix}[WildFly and WildFly Preview guide].
+
+== Standards Support
+
+The table below lists the versions of the Jakarta technologies available in WildFly and WildFly EE 10, along with whether the technology is present in our primary xref:#wildfly-configurations[out-of-the-box server configuration profiles].
 
 [cols=",,,,",options="header"]
 |=======================================================================
-|Jakarta EE Platform Technology |Jakarta EE Full Platform |Jakarta EE Web
-Profile |WildFly {wildflyVersion} Full Configuration |WildFly {wildflyVersion} Default Configuration
+|Jakarta Specification |Version in Standard WildFly |Version in WildFly EE 10 |WildFly {wildflyVersion} Full Configuration |WildFly {wildflyVersion} Default Configuration
 
-|Jakarta Activation 2.1 |X |-- |X |X
+|Jakarta Activation |2.1 |2.1 |X |X
 
-|Jakarta Annotations 2.1 |X |X |X |X
+|Jakarta Annotations |3.0 |2.1 |X |X
 
-|Jakarta Authentication 3.0 |X |X |X |X
+|Jakarta Authentication  |3.1 |3.0 |X |X
 
-|Jakarta Authorization 2.1 |X |-- |X |--
+|Jakarta Authorization  |3.0 |2.1 |X |--
 
-|Jakarta Batch 2.1 |X |-- |X |--
+|Jakarta Batch |2.1 |2.1 |X |--
 
-|Jakarta Bean Validation 3.0 |X |X |X |X
+|Jakarta Concurrency  |3.1 |3.0 |X |X
 
-|Jakarta Concurrency 3.0 |X |X |X |X
+|Jakarta Connectors  |2.1 |2.1 |X |X
 
-|Jakarta Connectors 2.1 |X |-- |X |X
+|Jakarta Contexts and Dependency Injection  |4.1|4.0 |X |X
 
-|Jakarta Contexts and Dependency Injection 4.0 |X |X |X |X
+|Jakarta Data^xref:#spec_note_1[1]^
+| 1.0 |1.0 |X | X
 
-|Jakarta Data 1.0
-(xref:Admin_Guide.adoc#Feature_stability_levels[`preview` stability] )| -- |-- |-- | --
+|Jakarta Debugging Support for Other Languages  |2.0 |2.0 |X |X
 
-|Jakarta Debugging Support for Other Languages 2.0 |X |X |X |X
+|Jakarta Dependency Injection  |2.0 |2.0 |X |X
 
-|Jakarta Dependency Injection 2.0 |X |X |X |X
+|Jakarta Enterprise Beans  |4.0 |4.0 |X |X(Lite)
 
-|Jakarta Enterprise Beans 4.0 |X |X(Lite) |X |X(Lite)
+|Jakarta Expression Language  |6.0 |5.0 |X |X
 
-|Jakarta Enterprise Web Services 2.0 |Optional |-- |X |X
+|Jakarta Faces  |4.1 |4.0 |X |X
 
-|Jakarta Expression Language 5.0 |X |X |X |X
+|Jakarta Interceptors  |2.2 |2.1 |X |X
 
-|Jakarta Interceptors 2.1 |X |X |X |X
+|Jakarta JSON Binding  |3.0 |3.0 |X |X
 
-|Jakarta JSON Binding 3.0 |X |X |X |X
+|Jakarta JSON Processing  |2.1 |2.1 |X |X
 
-|Jakarta JSON Processing 2.1 |X |X |X |X
+|Jakarta Mail  |2.1 |2.1 |X |X
 
-|Jakarta Mail 2.1 |X |-- |X |X
+|Jakarta Messaging  |3.1 |3.1 |X |--
 
-|Jakarta Messaging 3.1 |X |-- |X |--
+|Jakarta MVC^xref:#spec_note_2[2]^ |2.1|2.1|--|--
 
-| Jakarta MVC 2.1
-(xref:Admin_Guide.adoc#Feature_stability_levels[`preview` stability])|--|--|--|--
+|Jakarta Pages  |3.1 |3.1 |X |X
 
-|Jakarta Pages 3.1 |X |X |X |X
+|Jakarta Persistence  |3.2 |3.1 |X |X
 
-|Jakarta Persistence 3.1 |X |X |X |X
+|Jakarta RESTful Web Services  |4.0 |3.1 |X |X
 
-|Jakarta RESTful Web Services 3.1 |X |X |X |X
+|Jakarta Security  |4.0 |3.0 |X |X
 
-|Jakarta Security 3.0 |X |X |X |X
+|Jakarta Servlet  |6.1 |6.0 |X |X
 
-|Jakarta Faces 4.0 |X |X |X |X
+|Jakarta SOAP with Attachments^xref:#spec_note_3[3]^ |3.0 |3.0 |X |X
 
-|Jakarta Servlet 6.0 |X |X |X |X
+|Jakarta Standard Tag Library  |3.0 |3.0 |X |X
 
-|Jakarta SOAP with Attachments 3.0 |Optional |-- |X |X
+|Jakarta Transactions  |2.0 |2.0 |X |X
 
-|Jakarta Standard Tag Library 3.0 |X |X |X |X
+|Jakarta Validation  |3.0 |3.0 |X |X
 
-|Jakarta Transactions 2.0 |X |X |X |X
+|Jakarta WebSocket  |2.2 |2.1 |X |X
 
-|Jakarta WebSocket 2.1 |X |X |X |X
+|Jakarta XML Binding^xref:#spec_note_3[3]^  |4.0 |4.0 |X |X
 
-|Jakarta XML Binding 4.0 |Optional |X |X |X
-
-|Jakarta XML Web Services 4.0 |Optional |-- |X |X
+|Jakarta XML Web Services^xref:#spec_note_3[3]^  |4.0 |4.0 |X |X
 |=======================================================================
 
-[WARNING]
+Notes:
+
+. [[spec_note_1]]Jakarta Data is provided at `community` xref:Admin_Guide.adoc#Feature_stability_levels[stability]. While it is not part of EE 10, the WildFly EE 10 variant does support it, although it does not provide it in any out-of-the-box configuration.
+. [[spec_note_2]]Jakarta MVC is provided at `preview` xref:Admin_Guide.adoc#Feature_stability_levels[stability].
+. [[spec_note_3]]This specification is optional in EE 10 and was removed from EE 11. However, WildFly still supports it.
+
+[NOTE]
 ====
-WildFly Preview {wildflyVersion} is currently aiming at providing an early look at Jakarta EE 11, and therefore provides different versions of a number of the Jakarta specifications listed above. See xref:WildFly_and_WildFly_Preview.adoc#wildfly-preview-ee11[EE 11 Support in WildFly Preview] for details.
+WildFly Preview often (but not always) provides implementations of different versions of the specifications listed above than standard WildFly does. See xref:WildFly_and_WildFly_Preview.adoc#wildfly-preview-ee[EE Support in WildFly Preview] for current details.
 ====
 
-WildFly {wildflyVersion} also provides support for a number of MicroProfile technologies:
+
+[WARNING]
+
+WildFly's default configuration provides EE Web Profile support and thus
+doesn't include Jakarta Messaging (provided by ActiveMQ Artemis). As noted in the
+link:#wildfly-configurations[WildFly Configurations] section, other configuration
+profiles do provide all features required by the EE Full Platform. If you
+want to use messaging, make sure you
+link:#starting-wildfly-with-an-alternate-configuration[start the server using an alternate configuration]
+that provides the EE Full Platform.
+
+WildFly {wildflyVersion} also provides support for MicroProfile technologies. The same versions of these are provided in both the standard WildFly and WildFly EE 10 variants.
 
 [cols=",,",options="header"]
 |=======================================================================
@@ -128,37 +153,19 @@ WildFly {wildflyVersion} also provides support for a number of MicroProfile tech
 |MicroProfile Rest Client 4.0|X |X
 |MicroProfile Streams Operators 3.0 |-- |--
 |MicroProfile Telemetry 2.1|--|X
-
 |=======================================================================
-
-Missing ActiveMQ Artemis and Jakarta Messaging?
-
-[WARNING]
-
-WildFly's default configuration provides Jakarta EE Web Profile support and thus
-doesn't include Jakarta Messaging (provided by ActiveMQ Artemis). As noted in the 
-link:#wildfly-configurations[WildFly Configurations] section, other configuration
-profiles do provide all features required by the Jakarta EE Full Platform. If you 
-want to use messaging, make sure you 
-link:#starting-wildfly-with-an-alternate-configuration[start the server using an alternate configuration]
-that provides the Jakarta EE Full Platform.
-
-This document provides a quick overview on how to download and get
-started using WildFly {wildflyVersion} for your application development. For in-depth
-content on administrative features, refer to the WildFly {wildflyVersion} link:Admin_Guide{outfilesuffix}[Admin Guide].
 
 [[requirements]]
 == Requirements
 
-* Java SE 11 or later. We recommend that you use the latest available update
-of the current long-term support Java release.
+* Java SE {min.java.version} or later. We recommend that you use the latest available update
+of the current long-term support Java release, Java SE {recommended.java.version}. For the WildFly EE 10 variant, Java SE {recommended.java.version.legacy} is recommended.
 
 
 [[installation-options]]
 == Installation Options
 
-There are a number of ways you can install WildFly, including unzipping our traditional download zip, provisioning a
-custom installation using Galleon, or building a bootable jar. There are also link:WildFly_and_WildFly_Preview{outfilesuffix}[two variants of the server]: the standard "WildFly" variant and the tech-preview "WildFly Preview" variant used to showcase things in the works for future release of standard WildFly.
+There are a number of ways you can install WildFly, including unzipping our traditional download zip, provisioning a custom installation using the `wildfly-maven-plugin` or the Galleon CLI, or building a bootable jar. There are also the link:WildFly_and_WildFly_Preview{outfilesuffix}[standard and EE 10 variants of WildFly and the tech-preview WildFly Preview variant].
 
 The link:Installation_Guide{outfilesuffix}[Installation Guide]
 helps you identify the kind of WildFly installation that best fits your application's deployment needs. In this guide
@@ -167,15 +174,19 @@ we'll focus on the common approach of installing the download zip of standard Wi
 [[download]]
 === Download
 
-WildFly {wildflyVersion} distributions can be obtained from:
-
-https://www.wildfly.org/downloads/[wildfly.org/downloads]
+WildFly {wildflyVersion} distributions can be obtained from https://www.wildfly.org/downloads/[wildfly.org/downloads].
 
 Standard WildFly {wildflyVersion} provides a single distribution available in zip or tar file
 formats.
 
 * *wildfly-{wildflyVersion}.0.0.Final.zip*
 * *wildfly-{wildflyVersion}.0.0.Final.tar.gz*
+
+WildFly EE 10 {wildflyVersion} also provides a single distribution available in zip or tar file
+formats.
+
+* *wildfly-ee-10-{wildflyVersion}.0.0.Final.zip*
+* *wildfly-ee-10-{wildflyVersion}.0.0.Final.tar.gz*
 
 WildFly Preview {wildflyVersion} also provides a single distribution available in zip or tar file
 formats.
@@ -302,7 +313,7 @@ modifications for the standalone server.
 of the server
 
 |deployments |End user deployment content can be placed in this
-directory for automatic detection and deployment of that content into
+directory for automatic detection and deployment into
 the server's runtime.NOTE: The server's management API is recommended
 for installing deployment content. File system based deployment scanning
 capabilities remain for developer convenience.
@@ -342,18 +353,13 @@ Controller and any servers running off of this installation. All
 configuration information for the servers managed wtihin the domain is
 located here and is the single place for configuration information.
 
-|content |an internal working area for the Host Controller that controls
-this installation. This is where it internally stores deployment
-content. This directory is not meant to be manipulated by end users.Note
-that "domain" mode does not support deploying content based on scanning
-a file system.
+|data |Persistent information written by the Host Controller to survive a restart of the Host Controller.
 
 |lib/ext |Location for installed library jars referenced by applications
 using the Extension-List mechanism
 
 |log |Location where the Host Controller process writes its logs. The
-Process Controller, a small lightweight process that actually spawns the
-other Host Controller process and any Application Server processes also
+Process Controller, a small lightweight process that actually spawns the Host Controller process and any Application Server processes also
 writes a log here.
 
 |servers |Writable area used by each Application Server instance that
@@ -372,34 +378,31 @@ process.
 |=======================================================================
 
 [[wildfly-configurations]]
-=== WildFly {wildflyVersion} Configurations
+=== WildFly Configurations
 
 [[standalone-server-configurations]]
 ==== Standalone Server Configurations
 
-* standalone.xml (_default_)
-** Jakarta web profile certified configuration with
+* `standalone.xml` (_default_)
+** EE Web Profile configuration with
 the required technologies plus those noted in the table above.
 
-* standalone-ha.xml
-** Jakarta web profile certified configuration with
-high availability
+* `standalone-ha.xml`
+** EE Web Profile configuration with high availability
 
-* standalone-full.xml
-** Jakarta Full Platform certified configuration
-including all the required technologies
+* `standalone-full.xml`
+** EE Platform configuration including all the required technologies
 
-* standalone-full-ha.xml
-** Jakarta Full Platform certified configuration with
-high availability
+* `standalone-full-ha.xml`
+** EE Platform configuration with high availability
 
-* standalone-microprofile.xml
+* `standalone-microprofile.xml`
 ** A configuration oriented toward microservices, providing our
 MicroProfile platform implementations combined with Jakarta RESTful Web Services and
-technologies Jakarta RESTful Web Services applications commonly use to integrate with
+technologies that Jakarta RESTful Web Services applications commonly use to integrate with
 external services.
 
-* standalone-microprofile-ha.xml
+* `standalone-microprofile-ha.xml`
 ** A configuration oriented toward microservices, similar to
 _standalone-microprofile.xml_ but with support for high availability
 web sessions and distributed Hibernate second level caching.
@@ -407,12 +410,12 @@ web sessions and distributed Hibernate second level caching.
 [[domain-server-configurations]]
 ==== Domain Server Configurations
 
-* domain.xml
-** Jakarta full and web profiles available with or
+* `domain.xml`
+** EE full and web profiles available with or
 without high availability
 
 Important to note is that the *_domain_* and *_standalone_* modes
-determine how the servers are managed not what capabilities they
+determine how the servers are managed, not what capabilities they
 provide.
 
 [[starting-wildfly-10]]
@@ -488,7 +491,7 @@ to what's shown below.
 11:46:14,300 INFO  [org.jboss.as] (Controller Boot Thread) WFLYSRV0025: WildFly 10.0.0.Final (WildFly Core 2.0.10.Final) started in 1909ms - Started 267 of 553 services (371 services are lazy, passive or on-demand)
 ----
 
-As with previous WildFly releases, you can point your browser to
+You can point your browser to
 *_http://localhost:8080_* (if using the default configured http port)
 which brings you to the Welcome Screen:
 
@@ -502,7 +505,7 @@ report an issue to inform us (attached patches will be reviewed). This
 landing page is recommended for convenient access to information about
 WildFly {wildflyVersion} but can easily be replaced with your own if desired.
 
-[[managing-your-wildfly-10]]
+[[managing-your-wildfly]]
 == Managing your WildFly {wildflyVersion}
 
 WildFly {wildflyVersion} offers two administrative mechanisms for managing your
@@ -571,8 +574,7 @@ to the properties files used for authentication and a confirmation
 message will be displayed.
 
 The modified time of the properties files are inspected at the time of
-authentication and the files reloaded if they have changed. For this
-reason you do not need to re-start the server after adding a new user.
+authentication and the files are reloaded if they have changed. Therefore, you do not need to re-start the server after adding a new user.
 
 Finally, you will be asked whether the account you've added is going to be to used
 to identify one WildFly process to another, typically in a WildFly managed domain:
@@ -608,7 +610,7 @@ NOTE: port 9990 is the default port configured.
 ----
 
 If you modify the _management-http_ socket binding in your running
-configuration: adjust the above command accordingly. If such
+configuration adjust the above command accordingly. If such
 modifications are made, then the link from the Welcome Screen will also
 be inaccessible.
 
@@ -634,12 +636,15 @@ $JBOSS_HOME/bin/jboss-cli.sh --connect
 Connected to standalone controller at localhost:9990
 ----
 
-Notice if no host or port information provided, it will default to
+[NOTE]
+====
+If no host or port information provided, it will default to
 localhost:9990.
+====
 
 When running locally to the WildFly process the CLI will silently
-authenticate against the server by exchanging tokens on the file system,
-the purpose of this exchange is to verify that the client does have
+authenticate against the server by exchanging tokens on the file system.
+The purpose of this exchange is to verify that the client does have
 access to the local file system. If the CLI is connecting to a remote
 WildFly installation then you will be prompted to enter the username and
 password of a user already added to the realm.
