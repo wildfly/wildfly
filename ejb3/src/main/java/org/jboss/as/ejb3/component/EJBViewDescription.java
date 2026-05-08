@@ -139,7 +139,7 @@ public class EJBViewDescription extends ViewDescription {
     }
 
     @Override
-    public boolean requiresSuperclassInProxy() {
+    public boolean requiresBeanClassMapping() {
         return !(isEjb2xView() || methodIntf == MethodInterfaceType.LocalHome || methodIntf == MethodInterfaceType.Home);
     }
 }
