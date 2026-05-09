@@ -25,6 +25,8 @@ updates:
       - dependency-name: 'org.apache.lucene:*'
       - dependency-name: 'com.carrotsearch:hppc'
       - dependency-name: 'org.apache.avro:avro'
+      # These versions are constrained by the MicroProfile Telemetry spec
+      - dependency-name: 'io.opentelemetry:*'
     rebase-strategy: "disabled"
     open-pull-requests-limit: 10
     registries:
