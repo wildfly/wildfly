@@ -4,13 +4,23 @@
  */
 package org.wildfly.extension.micrometer.prometheus;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.UnaryOperator;
+import java.util.stream.Stream;
 
 import io.micrometer.core.instrument.composite.CompositeMeterRegistry;
+import io.prometheus.metrics.expositionformats.OpenMetricsTextFormatWriter;
+import io.prometheus.metrics.expositionformats.PrometheusProtobufWriter;
+import io.prometheus.metrics.expositionformats.PrometheusTextFormatWriter;
+import io.undertow.server.HttpServerExchange;
+import io.undertow.util.HeaderValues;
 import io.undertow.util.Headers;
+import io.undertow.util.StatusCodes;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -68,8 +78,10 @@ public class PrometheusRegistryDefinitionRegistrar implements ChildResourceDefin
             .build();
     public static final Collection<AttributeDefinition> ATTRIBUTES = List.of(CONTEXT, SECURITY_ENABLED);
 
-    // https://prometheus.io/docs/instrumenting/exposition_formats/#prometheus-text-format
-    private static final String PROMETHEUS_CONTENT_TYPE = "text/plain; version=0.0.4; charset=utf-8";
+    // Formats supported in io.prometheus.metrics.expositionformats.ExpositionFormats
+    private static final MediaType PROMETHEUS_TEXT_MEDIA_TYPE = MediaType.parse(PrometheusTextFormatWriter.CONTENT_TYPE);
+    private static final MediaType OPENMETRICS_TEXT_MEDIA_TYPE = MediaType.parse(OpenMetricsTextFormatWriter.CONTENT_TYPE);
+    private static final MediaType PROMETHEUS_PROTOBUF_MEDIA_TYPE = MediaType.parse(PrometheusProtobufWriter.CONTENT_TYPE);
 
     @Override
     public ManagementResourceRegistration register(ManagementResourceRegistration parent, ManagementResourceRegistrationContext context) {
@@ -96,16 +108,62 @@ public class PrometheusRegistryDefinitionRegistrar implements ChildResourceDefin
 
         ServiceDependency<CompositeMeterRegistry> compositeRegistry = ServiceDependency.on(MicrometerSubsystemRegistrar.COMPOSITE_METER_REGISTRY);
         ServiceDependency<ExtensibleHttpManagement> management = ServiceDependency.on(HTTP_EXTENSIBILITY_CAPABILITY, ExtensibleHttpManagement.class);
-        Consumer<WildFlyPrometheusRegistry> addHandler = registry -> management.get().addManagementHandler(serviceContext, securityEnabled, exchange -> {
-            exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, PROMETHEUS_CONTENT_TYPE);
-            exchange.getResponseSender().send(registry.scrape(PROMETHEUS_CONTENT_TYPE));
-        });
+        Consumer<WildFlyPrometheusRegistry> addHandler = registry -> management.get().addManagementHandler(serviceContext, securityEnabled, exchange -> handleRequest(exchange, registry));
         Consumer<WildFlyPrometheusRegistry> removeHandler = registry -> management.get().removeContext(serviceContext);
         return ServiceInstaller.BlockingBuilder.of(WildFlyPrometheusRegistry::new)
                 .requires(List.of(management, compositeRegistry))
                 .withLifecycle(BlockingLifecycle.combine(List.of(BlockingLifecycle.compose(addHandler, removeHandler), registry -> new MeterRegistryLifecycle(registry, compositeRegistry.get()))))
                 .startWhen(StartWhen.AVAILABLE)
                 .build();
+    }
+
+    private void handleRequest(HttpServerExchange exchange, WildFlyPrometheusRegistry prometheusRegistry) {
+        HeaderValues headerValues = exchange.getRequestHeaders().get(Headers.ACCEPT);
+        List<MediaType> mediaTypes = headerValues != null ? getSortedMediaTypes(String.join(", ", headerValues)) : List.of();
+        boolean sent = false;
+        for (MediaType mediaType : mediaTypes) {
+            Optional<MediaType> metricsMediaType = getMetricsMediaType(mediaType);
+            if (metricsMediaType.isPresent()) {
+                sendMetrics(metricsMediaType.get(), prometheusRegistry, exchange);
+                sent = true;
+                break;
+            }
+        }
+        if (!sent) {
+            if (headerValues == null || headerValues.isEmpty()) {
+                sendMetrics(PROMETHEUS_TEXT_MEDIA_TYPE, prometheusRegistry, exchange);
+            } else {
+                exchange.setStatusCode(StatusCodes.NOT_ACCEPTABLE);
+                exchange.getResponseSender().send("Not Acceptable");
+            }
+        }
+    }
+
+    private static Optional<MediaType> getMetricsMediaType(MediaType mediaType) {
+        return Stream.of(PROMETHEUS_TEXT_MEDIA_TYPE, OPENMETRICS_TEXT_MEDIA_TYPE, PROMETHEUS_PROTOBUF_MEDIA_TYPE)
+                .filter(mmt -> mmt.matches(mediaType.type(), mediaType.subtype())
+                        // ignoring q (only relevant for priority), version and charset (micrometer-registry-prometheus is doing the same)
+                        && mediaType.hasParameters(mmt.parameters(), Set.of("q", "version", "charset")))
+                .findFirst();
+    }
+
+    private void sendMetrics(MediaType mediaType, WildFlyPrometheusRegistry prometheusRegistry, HttpServerExchange exchange) {
+        String metrics = prometheusRegistry.scrape(mediaType.asHeaderString());
+        exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, mediaType.asHeaderString());
+        exchange.getResponseSender().send(metrics);
+    }
+
+    private List<MediaType> getSortedMediaTypes(String acceptHeaderValues) {
+        if (acceptHeaderValues == null || acceptHeaderValues.isEmpty()) {
+            return List.of(PROMETHEUS_TEXT_MEDIA_TYPE);
+        } else {
+            return parseMediaType(acceptHeaderValues);
+        }
+    }
+
+    private static List<MediaType> parseMediaType(String acceptHeaderValues) {
+        return Arrays.stream(acceptHeaderValues.split(",")).map(String::trim).filter(s -> !s.isEmpty()).map(MediaType::parse).sorted()
+                .toList();
     }
 
     private static class AddHandler implements UnaryOperator<OperationStepHandler> {

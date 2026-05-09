@@ -122,14 +122,34 @@ public abstract class LayersTestBase {
 
     /**
      * Included in the return value of {@link #getExpectedUnusedInAllLayers()}
-     * only when testing provisioning directly from the wildfly-ee feature pack.
+     * only when testing provisioning using the 'latest' variant
+     * of the wildfly-ee feature pack.
+     */
+    public static final String[] NO_LAYER_STD_EE_LATEST = {
+            // 'community' stability extension so not yet included in "all-layers" installation
+            "org.wildfly.extension.jakarta.data",
+            "jakarta.data.api"
+    };
+
+    /**
+     * Included in the return value of {@link #getExpectedUnusedInAllLayers()}
+     * only when testing provisioning using the 'legacy' variant
+     * of the wildfly-ee feature pack.
+     */
+    public static final String[] NO_LAYER_STD_EE_LEGACY = {
+            // 'community' stability extension so not yet included in "all-layers" installation
+            // also not included in the default configs. (But it is referenced via org.hibernate)
+            "jakarta.data.api"
+    };
+
+    /**
+     * Included in the return value of {@link #getExpectedUnusedInAllLayers()}
+     * only when testing provisioning directly from any variant of the wildfly-ee feature pack.
      */
     public static final String[] NO_LAYER_WILDFLY_EE = {
             // In 'wildfly-ee' this is only a dep of org.apache.activemq.artemis.protocol.amqp,
             // which is not part of test-all-layers. It is used in a layer in 'wildfly' and 'wildfly-preview'
             "org.apache.qpid.proton",
-            // 'preview' stability module so not yet included in "all-layers" installation
-            "jakarta.data.api"
     };
 
     /**
@@ -155,10 +175,6 @@ public abstract class LayersTestBase {
             "jakarta.mvc.api",
             "org.eclipse.krazo.core",
             "org.eclipse.krazo.resteasy",
-            // 'preview' stability extension so not yet included in
-            // the "all-layers" installation
-            "org.wildfly.extension.jakarta.data",
-            "jakarta.data.api",
     };
 
     /**
@@ -235,7 +251,28 @@ public abstract class LayersTestBase {
 
     /**
      * Included in the return value of {@link #getExpectedUnreferenced()}
-     * only when testing provisioning directly from the wildfly-ee feature pack.
+     * only when testing provisioning using the 'latest' variant
+     * of the wildfly-ee feature pack.
+     */
+    public static final String[] NOT_REFERENCED_STD_EE_LATEST = {
+            // Only referenced by the unreferenced org.infinispan.query
+            // In the legacy variant this is referenced by other Hibernate modules
+            "org.hibernate.commons-annotations"
+    };
+
+
+    /**
+     * Included in the return value of {@link #getExpectedUnreferenced()}
+     * only when testing provisioning using the 'legacy' variant
+     * of the wildfly-ee feature pack.
+     */
+    public static final String[] NOT_REFERENCED_STD_EE_LEGACY = {
+    };
+
+
+    /**
+     * Included in the return value of {@link #getExpectedUnreferenced()}
+     * only when testing provisioning directly from any variant of the wildfly-ee feature pack.
      */
     public static final String[] NOT_REFERENCED_WILDFLY_EE = {
     };
@@ -304,8 +341,6 @@ public abstract class LayersTestBase {
             "jakarta.mvc.api",
             "org.eclipse.krazo.core",
             "org.eclipse.krazo.resteasy",
-            // 'preview' stability extension so not yet included in the standard configs
-            "org.wildfly.extension.jakarta.data",
     };
 
     /**
@@ -380,7 +415,28 @@ public abstract class LayersTestBase {
     /**
      * Included in the return value of both {@link #getExpectedUnusedInAllLayers()}
      * and {@link #getExpectedUnreferenced()}, but only when testing provisioning
-     * directly from the wildfly-ee feature pack.
+     * directly from the 'latest' variant of the wildfly-ee feature pack.
+     */
+    public static final String[] NO_LAYER_OR_REFERENCE_COMMON_EE_LATEST = {
+            // No security-manager extension in EE 11+ default configs
+            "org.wildfly.extension.security.manager"
+    };
+
+    /**
+     * Included in the return value of both {@link #getExpectedUnusedInAllLayers()}
+     * and {@link #getExpectedUnreferenced()}, but only when testing provisioning
+     * directly from the 'legacy' variant of the wildfly-ee feature pack.
+     */
+    public static final String[] NO_LAYER_OR_REFERENCE_COMMON_EE_LEGACY = {
+            // 'community' stability extension so not yet included in "all-layers" installation
+            // also not included in the default configs
+            "org.wildfly.extension.jakarta.data",
+    };
+
+    /**
+     * Included in the return value of both {@link #getExpectedUnusedInAllLayers()}
+     * and {@link #getExpectedUnreferenced()}, but only when testing provisioning
+     * directly from any variant of the wildfly-ee feature pack.
      */
     public static final String[] NO_LAYER_OR_REFERENCE_WILDFLY_EE = {
             // In wildfly-ee only referenced by the
@@ -389,9 +445,6 @@ public abstract class LayersTestBase {
             // Downstream uses this in installations provisioned with wildfly-ee but upstream does not.
             // To make life easier downstream we include it in wildfly-ee.
             "com.fasterxml.jackson.dataformat.jackson-dataformat-yaml",
-            // 'preview' stability extension so not yet included in
-            // the "all-layers" installation or the standard configs
-            "org.wildfly.extension.jakarta.data"
     };
 
     /**

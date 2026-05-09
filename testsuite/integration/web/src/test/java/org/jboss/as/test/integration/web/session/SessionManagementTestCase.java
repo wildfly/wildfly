@@ -4,12 +4,15 @@
  */
 package org.jboss.as.test.integration.web.session;
 
+import static org.assertj.core.api.Assertions.*;
+
 import java.io.IOException;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 import org.apache.http.Header;
@@ -50,6 +53,30 @@ public class SessionManagementTestCase {
     private static final String GET_SESSION_LAST_ACCESSED_TIME_MILLIS = "get-session-last-accessed-time-millis";
     private static final String GET_SESSION_CREATION_TIME = "get-session-creation-time";
     private static final String GET_SESSION_CREATION_TIME_MILLIS = "get-session-creation-time-millis";
+
+    // Work around missing Property.equals()/hashCode() !!!
+    private static final Comparator<ModelNode> MODEL_NODE_COMPARATOR = new Comparator<>() {
+        @Override
+        public int compare(ModelNode node1, ModelNode node2) {
+            if (node1 == node2) {
+                return 0;
+            }
+            if (node1 == null) {
+                return -1;
+            }
+            if (node2 == null) {
+                return 1;
+            }
+            return node1.asString().compareTo(node2.asString());
+        }
+    };
+    private static final Comparator<Property> PROPERTY_COMPARATOR = new Comparator<>() {
+        @Override
+        public int compare(Property property1, Property property2) {
+            int result = property1.getName().compareTo(property2.getName());
+            return (result != 0) ? MODEL_NODE_COMPARATOR.compare(property1.getValue(), property2.getValue()) : 0;
+        }
+    };
 
     @ArquillianResource
     public ManagementClient managementClient;
@@ -108,15 +135,11 @@ public class SessionManagementTestCase {
 
             opRes = executeOperation(operation, LIST_SESSION_ATTRIBUTE_NAMES);
             List<ModelNode> resultList = opRes.get(ModelDescriptionConstants.RESULT).asList();
-            Assert.assertEquals(1, resultList.size());
-            Assert.assertEquals(opRes.toString(), "val", resultList.get(0).asString());
+            assertThat(resultList).contains(new ModelNode("val"));
 
             opRes = executeOperation(operation, LIST_SESSION_ATTRIBUTES);
             List<Property> properties = opRes.get(ModelDescriptionConstants.RESULT).asPropertyList();
-            Assert.assertEquals(opRes.toString(), 1, properties.size());
-            Property property = properties.get(0);
-            Assert.assertEquals(opRes.toString(), "val", property.getName());
-            Assert.assertEquals(opRes.toString(), "0", property.getValue().asString());
+            assertThat(properties).usingElementComparator(PROPERTY_COMPARATOR).contains(new Property("val", new ModelNode("0")));
 
             //we want to make sure that the values will be different
             //so we wait 10ms

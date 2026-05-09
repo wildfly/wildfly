@@ -11,6 +11,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import jakarta.persistence.CacheRetrieveMode;
+import jakarta.persistence.CacheStoreMode;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.FlushModeType;
 import jakarta.persistence.LockModeType;
@@ -57,13 +59,23 @@ public class StoredProcedureQueryNonTxInvocationDetacher implements StoredProced
     }
 
     @Override
+    public Object getSingleResultOrNull() {
+        try {
+            return underlyingStoredProcedureQuery.getSingleResultOrNull();
+        } finally {
+            underlyingEntityManager.clear();
+        }
+    }
+
+    @Override
     public int executeUpdate() {
         return underlyingStoredProcedureQuery.executeUpdate();
     }
 
     @Override
     public Query setMaxResults(int maxResult) {
-        return underlyingStoredProcedureQuery.setMaxResults(maxResult);
+        underlyingStoredProcedureQuery.setMaxResults(maxResult);
+        return this;
     }
 
     @Override
@@ -73,7 +85,8 @@ public class StoredProcedureQueryNonTxInvocationDetacher implements StoredProced
 
     @Override
     public Query setFirstResult(int startPosition) {
-        return underlyingStoredProcedureQuery.setFirstResult(startPosition);
+        underlyingStoredProcedureQuery.setFirstResult(startPosition);
+        return this;
     }
 
     @Override
@@ -83,7 +96,8 @@ public class StoredProcedureQueryNonTxInvocationDetacher implements StoredProced
 
     @Override
     public StoredProcedureQuery setHint(String hintName, Object value) {
-        return underlyingStoredProcedureQuery.setHint(hintName, value);
+        underlyingStoredProcedureQuery.setHint(hintName, value);
+        return this;
     }
 
     @Override
@@ -93,47 +107,56 @@ public class StoredProcedureQueryNonTxInvocationDetacher implements StoredProced
 
     @Override
     public <T> StoredProcedureQuery setParameter(Parameter<T> param, T value) {
-        return underlyingStoredProcedureQuery.setParameter(param, value);
+        underlyingStoredProcedureQuery.setParameter(param, value);
+        return this;
     }
 
     @Override
     public StoredProcedureQuery setParameter(Parameter<Calendar> param, Calendar value, TemporalType temporalType) {
-        return underlyingStoredProcedureQuery.setParameter(param, value, temporalType);
+        underlyingStoredProcedureQuery.setParameter(param, value, temporalType);
+        return this;
     }
 
     @Override
     public StoredProcedureQuery setParameter(Parameter<Date> param, Date value, TemporalType temporalType) {
-        return underlyingStoredProcedureQuery.setParameter(param, value, temporalType);
+        underlyingStoredProcedureQuery.setParameter(param, value, temporalType);
+        return this;
     }
 
     @Override
     public StoredProcedureQuery setParameter(String name, Object value) {
-        return underlyingStoredProcedureQuery.setParameter(name, value);
+        underlyingStoredProcedureQuery.setParameter(name, value);
+        return this;
     }
 
     @Override
     public StoredProcedureQuery setParameter(String name, Calendar value, TemporalType temporalType) {
-        return underlyingStoredProcedureQuery.setParameter(name, value, temporalType);
+        underlyingStoredProcedureQuery.setParameter(name, value, temporalType);
+        return this;
     }
 
     @Override
     public StoredProcedureQuery setParameter(String name, Date value, TemporalType temporalType) {
-        return underlyingStoredProcedureQuery.setParameter(name, value, temporalType);
+        underlyingStoredProcedureQuery.setParameter(name, value, temporalType);
+        return this;
     }
 
     @Override
     public StoredProcedureQuery setParameter(int position, Object value) {
-        return underlyingStoredProcedureQuery.setParameter(position, value);
+        underlyingStoredProcedureQuery.setParameter(position, value);
+        return this;
     }
 
     @Override
     public StoredProcedureQuery setParameter(int position, Calendar value, TemporalType temporalType) {
-        return underlyingStoredProcedureQuery.setParameter(position, value, temporalType);
+        underlyingStoredProcedureQuery.setParameter(position, value, temporalType);
+        return this;
     }
 
     @Override
     public StoredProcedureQuery setParameter(int position, Date value, TemporalType temporalType) {
-        return underlyingStoredProcedureQuery.setParameter(position, value, temporalType);
+        underlyingStoredProcedureQuery.setParameter(position, value, temporalType);
+        return this;
     }
 
     @Override
@@ -183,7 +206,41 @@ public class StoredProcedureQueryNonTxInvocationDetacher implements StoredProced
 
     @Override
     public StoredProcedureQuery setFlushMode(FlushModeType flushMode) {
-        return underlyingStoredProcedureQuery.setFlushMode(flushMode);
+        underlyingStoredProcedureQuery.setFlushMode(flushMode);
+        return this;
+    }
+
+    @Override
+    public StoredProcedureQuery setCacheRetrieveMode(CacheRetrieveMode cacheRetrieveMode) {
+        underlyingStoredProcedureQuery.setCacheRetrieveMode(cacheRetrieveMode);
+        return this;
+    }
+
+    @Override
+    public StoredProcedureQuery setCacheStoreMode(CacheStoreMode cacheStoreMode) {
+        underlyingStoredProcedureQuery.setCacheStoreMode(cacheStoreMode);
+        return this;
+    }
+
+    @Override
+    public CacheRetrieveMode getCacheRetrieveMode() {
+        return underlyingStoredProcedureQuery.getCacheRetrieveMode();
+    }
+
+    @Override
+    public CacheStoreMode getCacheStoreMode() {
+        return underlyingStoredProcedureQuery.getCacheStoreMode();
+    }
+
+    @Override
+    public StoredProcedureQuery setTimeout(Integer timeout) {
+        underlyingStoredProcedureQuery.setTimeout(timeout);
+        return this;
+    }
+
+    @Override
+    public Integer getTimeout() {
+        return underlyingStoredProcedureQuery.getTimeout();
     }
 
     @Override
@@ -193,7 +250,8 @@ public class StoredProcedureQueryNonTxInvocationDetacher implements StoredProced
 
     @Override
     public Query setLockMode(LockModeType lockMode) {
-        return underlyingStoredProcedureQuery.setLockMode(lockMode);
+        underlyingStoredProcedureQuery.setLockMode(lockMode);
+        return this;
     }
 
     @Override
@@ -208,12 +266,14 @@ public class StoredProcedureQueryNonTxInvocationDetacher implements StoredProced
 
     @Override
     public StoredProcedureQuery registerStoredProcedureParameter(int position, Class type, ParameterMode mode) {
-        return underlyingStoredProcedureQuery.registerStoredProcedureParameter(position, type, mode);
+        underlyingStoredProcedureQuery.registerStoredProcedureParameter(position, type, mode);
+        return this;
     }
 
     @Override
     public StoredProcedureQuery registerStoredProcedureParameter(String parameterName, Class type, ParameterMode mode) {
-        return underlyingStoredProcedureQuery.registerStoredProcedureParameter(parameterName, type, mode);
+        underlyingStoredProcedureQuery.registerStoredProcedureParameter(parameterName, type, mode);
+        return this;
     }
 
     @Override

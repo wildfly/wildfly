@@ -5,6 +5,7 @@
 package org.jboss.as.test.integration.domain.mixed;
 
 import static org.hamcrest.CoreMatchers.containsString;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ARCHIVE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.BYTES;
@@ -23,7 +24,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SER
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STEPS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.UNDEPLOY;
 import static org.junit.Assert.assertFalse;
-import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -33,7 +33,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringWriter;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.nio.file.Files;
@@ -43,6 +42,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+
 import org.hamcrest.CoreMatchers;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
@@ -69,7 +69,7 @@ import org.junit.Test;
  */
 public class MixedDeploymentOverlayTestCase {
 
-    private static final int TIMEOUT = TimeoutUtil.adjust(20000);
+    private static final int TIMEOUT = TimeoutUtil.adjust(60_000);
     private static final String DEPLOYMENT_NAME = "deployment.war";
     private static final String MAIN_RUNTIME_NAME =  "main-deployment.war";
     private static final String OTHER_RUNTIME_NAME =  "other-deployment.war";
@@ -311,7 +311,7 @@ public class MixedDeploymentOverlayTestCase {
         }
     }
 
-    private Operation addDeployment(InputStream attachment) throws MalformedURLException {
+    private Operation addDeployment(InputStream attachment) {
         ModelNode operation = Operations.createAddOperation(PathAddress.pathAddress(DEPLOYMENT_PATH).toModelNode());
         ModelNode content = new ModelNode();
         content.get(INPUT_STREAM_INDEX).set(0);
@@ -319,14 +319,14 @@ public class MixedDeploymentOverlayTestCase {
         return Operation.Factory.create(operation, Collections.singletonList(attachment));
     }
 
-    private ModelNode deployOnServerGroup(PathElement group, String runtimeName) throws MalformedURLException {
+    private ModelNode deployOnServerGroup(PathElement group, String runtimeName) {
         ModelNode operation = Operations.createOperation(ADD, PathAddress.pathAddress(group, DEPLOYMENT_PATH).toModelNode());
         operation.get(RUNTIME_NAME).set(runtimeName);
         operation.get(ENABLED).set(true);
         return operation;
     }
 
-    private ModelNode undeployAndRemoveOp() throws MalformedURLException {
+    private ModelNode undeployAndRemoveOp() {
         // Pending, before cleaning up, check if the resource exist, otherwise this operation will generate some noise in the logs
         // that can be confusing since you will never know if it is a test error or a normal operation where the resources are not present
         ModelNode op = new ModelNode();

@@ -15,7 +15,7 @@ import org.jboss.as.test.clustering.cluster.sso.AbstractSingleSignOnTestCase;
 import org.jboss.as.test.clustering.cluster.sso.ElytronSSOServerSetupTask;
 import org.jboss.as.test.clustering.cluster.sso.IdentityServerSetupTask;
 import org.jboss.as.test.integration.web.sso.SSOTestBase;
-import org.jboss.as.test.shared.CLIServerSetupTask;
+import org.jboss.as.test.shared.ManagementServerSetupTask;
 import org.jboss.shrinkwrap.api.Archive;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.extension.RegisterExtension;
@@ -46,12 +46,14 @@ public class RemoteElytronSingleSignOnTestCase extends AbstractSingleSignOnTestC
         return SSOTestBase.createSsoEar();
     }
 
-    public static class ServerSetupTask extends CLIServerSetupTask {
+    public static class ServerSetupTask extends ManagementServerSetupTask {
         public ServerSetupTask() {
-            this.builder.node(NODE_1_2.toArray(new String[0]))
-                    .setup("/subsystem=distributable-web/hotrod-single-sign-on-management=other:add(remote-cache-container=sso, cache-configuration=default)")
-                    .teardown("/subsystem=distributable-web/hotrod-single-sign-on-management=other:remove")
-            ;
+            super(NODE_1_2, createContainerConfigurationBuilder().setupScript(createScriptBuilder()
+                    .startBatch()
+                        .add("/subsystem=distributable-web/hotrod-single-sign-on-management=other:add(remote-cache-container=sso, cache-configuration=default)")
+                        .add("/subsystem=distributable-web:write-attribute(name=default-single-sign-on-management, value=other)")
+                    .endBatch()
+                    .build()).build());
         }
     }
 }

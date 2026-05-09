@@ -15,7 +15,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>40.0.0.Beta1-SNAPSHOT</version>
+        <version>40.0.0.Final-SNAPSHOT</version>
     </parent>
 
     <packaging>pom</packaging>
@@ -38,7 +38,7 @@
     </dependencyManagement>
 
     <dependencies>
-        <!-- depende on tools BOM builder to ensure such BOM is built before this builder runs -->
+        <!-- depends on tools BOM builder to ensure such BOM is built before this builder runs -->
         <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>wildfly-tools-builder</artifactId>

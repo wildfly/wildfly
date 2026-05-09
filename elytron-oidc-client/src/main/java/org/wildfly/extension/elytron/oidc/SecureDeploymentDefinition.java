@@ -11,6 +11,7 @@ import static org.jboss.as.server.security.VirtualDomainUtil.VIRTUAL;
 import static org.jboss.as.web.common.VirtualHttpServerMechanismFactoryMarkerUtility.virtualMechanismFactoryName;
 import static org.wildfly.extension.elytron.oidc.ProviderAttributeDefinitions.AUTHENTICATION_REQUEST_FORMAT;
 import static org.wildfly.extension.elytron.oidc.ProviderAttributeDefinitions.DISABLE_TRUST_MANAGER;
+import static org.wildfly.extension.elytron.oidc.ProviderAttributeDefinitions.PROVIDER_JWT_CLAIMS_TYP;
 import static org.wildfly.extension.elytron.oidc.ProviderAttributeDefinitions.REQUEST_OBJECT_ENCRYPTION_ALG_VALUE;
 import static org.wildfly.extension.elytron.oidc.ProviderAttributeDefinitions.REQUEST_OBJECT_ENCRYPTION_ENC_VALUE;
 import static org.wildfly.extension.elytron.oidc.ProviderAttributeDefinitions.REQUEST_OBJECT_SIGNING_ALGORITHM;
@@ -69,7 +70,13 @@ import org.wildfly.security.http.oidc.OidcSecurityRealm;
 class SecureDeploymentDefinition extends SimpleResourceDefinition {
 
     static final ResourceRegistration PATH = ResourceRegistration.of(PathElement.pathElement(ElytronOidcDescriptionConstants.SECURE_DEPLOYMENT), Stability.DEFAULT);
+
+    /*
+     * These are attributes at a stability level other than Default, the OidcActivationProcessor also cross references them
+     * in the deployment's own configuration to ensure they are not activated there.
+     */
     protected static List<SimpleAttributeDefinition> NON_DEFAULT_ATTRIBUTES = new ArrayList<>();
+
     protected static final SimpleAttributeDefinition REALM =
             new SimpleAttributeDefinitionBuilder(ElytronOidcDescriptionConstants.REALM, ModelType.STRING, true)
                     .setAllowExpression(true)
@@ -157,6 +164,40 @@ class SecureDeploymentDefinition extends SimpleResourceDefinition {
                     .setValidator(new StringLengthValidator(1, Integer.MAX_VALUE, true, true))
                     .build();
 
+    protected static final SimpleAttributeDefinition LOGOUT_PATH =
+            new SimpleAttributeDefinitionBuilder(ElytronOidcDescriptionConstants.LOGOUT_PATH, ModelType.STRING, true)
+                    .setValidator(new StringLengthValidator(0, Integer.MAX_VALUE, true, false))
+                    .setStability(Stability.PREVIEW)
+                    .setAllowExpression(true)
+                    .build();
+    protected static final SimpleAttributeDefinition LOGOUT_CALLBACK_PATH =
+            new SimpleAttributeDefinitionBuilder(ElytronOidcDescriptionConstants.LOGOUT_CALLBACK_PATH, ModelType.STRING, true)
+                    .setValidator(new StringLengthValidator(0, Integer.MAX_VALUE, true, false))
+                    .setStability(Stability.PREVIEW)
+                    .setAllowExpression(true)
+                    .build();
+    protected static final SimpleAttributeDefinition POST_LOGOUT_REDIRECT_URI =
+            new SimpleAttributeDefinitionBuilder(ElytronOidcDescriptionConstants.POST_LOGOUT_REDIRECT_URI, ModelType.STRING, true)
+                    .setValidator(new StringLengthValidator(0, Integer.MAX_VALUE, true, false))
+                    .setStability(Stability.PREVIEW)
+                    .setAllowExpression(true)
+                    .build();
+
+    protected static final SimpleAttributeDefinition BACK_CHANNEL_LOGOUT_SESSION_INVALIDATION_LIMIT =
+            new SimpleAttributeDefinitionBuilder(ElytronOidcDescriptionConstants.BACK_CHANNEL_LOGOUT_SESSION_INVALIDATION_LIMIT, ModelType.INT, true)
+                    .setAllowExpression(true)
+                    .setValidator(new IntRangeValidator(-1, true))
+                    .setDefaultValue(new ModelNode(16))
+                    .setStability(Stability.PREVIEW)
+                    .build();
+
+    protected static final SimpleAttributeDefinition LOGOUT_SESSION_REQUIRED =
+            new SimpleAttributeDefinitionBuilder(ElytronOidcDescriptionConstants.LOGOUT_SESSION_REQUIRED, ModelType.BOOLEAN, true)
+                    .setAllowExpression(true)
+                    .setDefaultValue(ModelNode.TRUE)
+                    .setStability(Stability.PREVIEW)
+                    .build();
+
     static final List<SimpleAttributeDefinition> ALL_ATTRIBUTES = new ArrayList();
     static {
         ALL_ATTRIBUTES.add(REALM);
@@ -175,7 +216,14 @@ class SecureDeploymentDefinition extends SimpleResourceDefinition {
         ALL_ATTRIBUTES.add(CredentialDefinition.CREDENTIAL);
         ALL_ATTRIBUTES.add(SCOPE);
         ALL_ATTRIBUTES.add(RedirectRewriteRuleDefinition.REDIRECT_REWRITE_RULE);
-        for (SimpleAttributeDefinition attribute : ProviderAttributeDefinitions.ATTRIBUTES) {
+        ALL_ATTRIBUTES.add(LOGOUT_PATH);
+        ALL_ATTRIBUTES.add(LOGOUT_CALLBACK_PATH);
+        ALL_ATTRIBUTES.add(POST_LOGOUT_REDIRECT_URI);
+        ALL_ATTRIBUTES.add(LOGOUT_SESSION_REQUIRED);
+        ALL_ATTRIBUTES.add(BACK_CHANNEL_LOGOUT_SESSION_INVALIDATION_LIMIT);
+
+        SimpleAttributeDefinition[] providerAttributes = ProviderAttributeDefinitions.ATTRIBUTES;
+        for (SimpleAttributeDefinition attribute : providerAttributes) {
             ALL_ATTRIBUTES.add(attribute);
         }
     }
@@ -199,6 +247,12 @@ class SecureDeploymentDefinition extends SimpleResourceDefinition {
         NON_DEFAULT_ATTRIBUTES.add(REQUEST_OBJECT_SIGNING_KEYSTORE_PASSWORD);
         NON_DEFAULT_ATTRIBUTES.add(REQUEST_OBJECT_SIGNING_KEYSTORE_TYPE);
         NON_DEFAULT_ATTRIBUTES.add(REQUEST_OBJECT_SIGNING_ALGORITHM);
+        NON_DEFAULT_ATTRIBUTES.add(LOGOUT_PATH);
+        NON_DEFAULT_ATTRIBUTES.add(LOGOUT_CALLBACK_PATH);
+        NON_DEFAULT_ATTRIBUTES.add(POST_LOGOUT_REDIRECT_URI);
+        NON_DEFAULT_ATTRIBUTES.add(LOGOUT_SESSION_REQUIRED);
+        NON_DEFAULT_ATTRIBUTES.add(BACK_CHANNEL_LOGOUT_SESSION_INVALIDATION_LIMIT);
+        NON_DEFAULT_ATTRIBUTES.add(PROVIDER_JWT_CLAIMS_TYP);
     }
 
     @Override

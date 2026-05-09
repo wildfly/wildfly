@@ -12,6 +12,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import jakarta.persistence.CacheRetrieveMode;
+import jakarta.persistence.CacheStoreMode;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.FlushModeType;
 import jakarta.persistence.LockModeType;
@@ -50,6 +52,16 @@ public class QueryNonTxInvocationDetacher implements Query {
     @Override
     public Object getSingleResult() {
         Object result = underlyingQuery.getSingleResult();
+        /**
+         * The purpose of this wrapper class is so that we can detach the returned entities from this method.
+         * Call EntityManager.clear will accomplish that.
+         */
+        underlyingEntityManager.clear();
+        return result;
+    }
+
+    public Object getSingleResultOrNull() {
+        Object result = underlyingQuery.getSingleResultOrNull();
         /**
          * The purpose of this wrapper class is so that we can detach the returned entities from this method.
          * Call EntityManager.clear will accomplish that.
@@ -215,6 +227,33 @@ public class QueryNonTxInvocationDetacher implements Query {
     @Override
     public LockModeType getLockMode() {
         return underlyingQuery.getLockMode();
+    }
+
+    public Query setCacheRetrieveMode(CacheRetrieveMode cacheRetrieveMode) {
+        underlyingQuery.setCacheRetrieveMode(cacheRetrieveMode);
+        return this;
+    }
+
+    public CacheRetrieveMode getCacheRetrieveMode() {
+        return underlyingQuery.getCacheRetrieveMode();
+    }
+
+    public Query setCacheStoreMode(CacheStoreMode cacheStoreMode) {
+        underlyingQuery.setCacheStoreMode(cacheStoreMode);
+        return this;
+    }
+
+    public CacheStoreMode getCacheStoreMode() {
+        return underlyingQuery.getCacheStoreMode();
+    }
+
+    public Query setTimeout(Integer timeout) {
+        underlyingQuery.setTimeout(timeout);
+        return this;
+    }
+
+    public Integer getTimeout() {
+        return underlyingQuery.getTimeout();
     }
 
     @Override

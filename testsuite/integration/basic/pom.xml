@@ -16,7 +16,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>40.0.0.Beta1-SNAPSHOT</version>
+        <version>40.0.0.Final-SNAPSHOT</version>
     </parent>
 
     <!-- ********************************************************************************** -->
@@ -1206,12 +1206,7 @@
                 <groupId>org.wildfly.glow</groupId>
                 <artifactId>wildfly-glow-arquillian-plugin</artifactId>
                 <configuration>
-                    <feature-packs>
-                        <feature-pack>
-                            <groupId>${testsuite.ee.galleon.pack.groupId}</groupId>
-                            <artifactId>${testsuite.ee.galleon.pack.artifactId}</artifactId>
-                            <version>${testsuite.ee.galleon.pack.version}</version>
-                        </feature-pack>
+                    <feature-packs combine.children="append">
                         <feature-pack>
                             <groupId>${project.groupId}</groupId>
                             <artifactId>${testsuite.test.feature.pack.artifactId}</artifactId>
@@ -3764,12 +3759,12 @@
                 </plugins>
             </build>
         </profile>
-        <!-- Dependencies only to be used when testing WildFly Preview -->
+        <!-- Dependencies only to be used when not testing installations using the legacy EE FP -->
         <profile>
-            <id>preview-server-tests-deps</id>
+            <id>standard-ee-tests-deps</id>
             <activation>
                 <property>
-                    <name>preview-server-tests</name>
+                    <name>!legacy-ee-tests</name>
                 </property>
             </activation>
             <dependencies>
@@ -3785,12 +3780,12 @@
                 </dependency>
             </dependencies>
         </profile>
-        <!-- Dependencies only to be used when NOT testing WildFly Preview -->
+        <!-- Dependencies only to be used when testing installations using the legacy EE FP -->
         <profile>
-            <id>standard-server-tests-deps</id>
+            <id>legacy-ee-tests-deps</id>
             <activation>
                 <property>
-                    <name>!preview-server-tests</name>
+                    <name>legacy-ee-tests</name>
                 </property>
             </activation>
             <dependencies>

@@ -21,8 +21,11 @@
         <module name="com.github.ben-manes.caffeine"/>
         <module name="org.infinispan.client.hotrod"/>
         <module name="org.infinispan.commons"/>
-        <module name="org.wildfly.clustering.cache.infinispan.common"/>
+        <module name="org.infinispan.protostream"/>
+        <module name="org.wildfly.clustering.cache.infinispan.common" services="import"/>
         <module name="org.wildfly.clustering.cache.spi"/>
+        <module name="org.wildfly.clustering.context"/>
         <module name="org.wildfly.clustering.function"/>
+        <module name="org.wildfly.clustering.marshalling.protostream"/>
     </dependencies>
 </module>

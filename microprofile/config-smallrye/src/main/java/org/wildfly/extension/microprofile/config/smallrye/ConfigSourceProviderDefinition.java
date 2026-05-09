@@ -6,7 +6,6 @@
 package org.wildfly.extension.microprofile.config.smallrye;
 
 import static org.jboss.as.controller.ModuleIdentifierUtil.parseCanonicalModuleIdentifier;
-
 import static org.jboss.as.controller.SimpleAttributeDefinitionBuilder.create;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MODULE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
@@ -16,7 +15,7 @@ import java.util.Arrays;
 import java.util.Collection;
 
 import org.eclipse.microprofile.config.spi.ConfigSourceProvider;
-import org.jboss.as.controller.AbstractAddStepHandler;
+import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.AttributeMarshaller;
 import org.jboss.as.controller.ObjectTypeAttributeDefinition;
@@ -25,6 +24,7 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PersistentResourceDefinition;
 import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.SimpleResourceDefinition;
+import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.modules.Module;
@@ -52,7 +52,9 @@ class ConfigSourceProviderDefinition extends PersistentResourceDefinition {
         super(new SimpleResourceDefinition.Parameters(MicroProfileConfigExtension.CONFIG_SOURCE_PROVIDER_PATH,
                 MicroProfileConfigExtension.getResourceDescriptionResolver(MicroProfileConfigExtension.CONFIG_SOURCE_PROVIDER_PATH.getKey()))
                 .setAddHandler(new ConfigSourceProviderDefinitionAddHandler(providers))
-                .setRemoveHandler(ReloadRequiredRemoveStepHandler.INSTANCE));
+                .setAddRestartLevel(OperationEntry.Flag.RESTART_ALL_SERVICES)
+                .setRemoveHandler(ReloadRequiredRemoveStepHandler.INSTANCE)
+                .setRemoveRestartLevel(OperationEntry.Flag.RESTART_ALL_SERVICES));
     }
 
     @Override
@@ -72,7 +74,7 @@ class ConfigSourceProviderDefinition extends PersistentResourceDefinition {
         }
     }
 
-    private static class ConfigSourceProviderDefinitionAddHandler extends AbstractAddStepHandler {
+    private static class ConfigSourceProviderDefinitionAddHandler extends AbstractBoottimeAddStepHandler {
         private final Registry<ConfigSourceProvider> providers;
 
         private ConfigSourceProviderDefinitionAddHandler(Registry<ConfigSourceProvider> providers) {
@@ -81,7 +83,7 @@ class ConfigSourceProviderDefinition extends PersistentResourceDefinition {
         }
 
         @Override
-        protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
+        public void performBoottime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
             super.performRuntime(context, operation, model);
             ModelNode classModel = CLASS.resolveModelAttribute(context, model);
             if (classModel.isDefined()) {

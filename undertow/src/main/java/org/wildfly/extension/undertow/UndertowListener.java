@@ -6,6 +6,7 @@
 package org.wildfly.extension.undertow;
 
 import org.jboss.as.network.SocketBinding;
+import org.wildfly.service.descriptor.BinaryServiceDescriptor;
 
 /**
  * Represents the externally accessible interface provided by Undertow's listeners
@@ -13,6 +14,8 @@ import org.jboss.as.network.SocketBinding;
  * @author Stuart Douglas
  */
 public interface UndertowListener {
+    // TODO Relocate this interface to an SPI module
+    BinaryServiceDescriptor<UndertowListener> SERVICE_DESCRIPTOR = BinaryServiceDescriptor.of("org.wildfly.undertow.server.listener", UndertowListener.class);
 
     /**
      * Returns the listeners socket binding.

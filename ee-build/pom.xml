@@ -17,7 +17,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>40.0.0.Beta1-SNAPSHOT</version>
+        <version>40.0.0.Final-SNAPSHOT</version>
     </parent>
 
     <artifactId>wildfly-ee-build</artifactId>
@@ -27,14 +27,14 @@
 
     <dependencies>
         <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-ee-galleon-pack</artifactId>
+            <groupId>${ee.maven.groupId}</groupId>
+            <artifactId>${latest.ee.feature.pack.artifactId}</artifactId>
             <type>pom</type>
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-ee-galleon-pack</artifactId>
+            <groupId>${ee.maven.groupId}</groupId>
+            <artifactId>${latest.ee.feature.pack.artifactId}</artifactId>
             <type>zip</type>
             <exclusions>
                 <exclusion>
@@ -58,7 +58,7 @@
     </dependencies>
 
     <build>
-        <finalName>${server.output.dir.prefix}-${server.output.dir.version}</finalName>
+        <finalName>${server.output.dir.prefix}-${latest.ee.output.qualifier}${server.output.dir.version}</finalName>
         <plugins>
             <plugin>
                 <groupId>org.wildfly.plugins</groupId>
@@ -79,9 +79,9 @@
                             <overwrite-provisioned-server>true</overwrite-provisioned-server>
                             <feature-packs>
                                 <feature-pack>
-                                    <groupId>${project.groupId}</groupId>
-                                    <artifactId>wildfly-ee-galleon-pack</artifactId>
-                                    <version>${project.version}</version>
+                                    <groupId>${ee.maven.groupId}</groupId>
+                                    <artifactId>${latest.ee.feature.pack.artifactId}</artifactId>
+                                    <version>${ee.maven.version}</version>
                                     <included-packages>
                                         <name>docs.examples.configs</name>
                                     </included-packages>

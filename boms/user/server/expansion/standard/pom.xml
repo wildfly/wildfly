@@ -15,7 +15,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>40.0.0.Beta1-SNAPSHOT</version>
+        <version>40.0.0.Final-SNAPSHOT</version>
     </parent>
 
     <packaging>pom</packaging>
@@ -34,6 +34,25 @@
                 <version>${full.maven.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
+            </dependency>
+            <!-- include client BOMs -->
+            <dependency>
+                <groupId>org.wildfly</groupId>
+                <artifactId>wildfly-ejb-client-bom</artifactId>
+                <version>${project.version}</version>
+                <type>pom</type>
+            </dependency>
+            <dependency>
+                <groupId>org.wildfly</groupId>
+                <artifactId>wildfly-jaxws-client-bom</artifactId>
+                <version>${project.version}</version>
+                <type>pom</type>
+            </dependency>
+            <dependency>
+                <groupId>org.wildfly</groupId>
+                <artifactId>wildfly-jms-client-bom</artifactId>
+                <version>${project.version}</version>
+                <type>pom</type>
             </dependency>
         </dependencies>
     </dependencyManagement>
@@ -87,7 +106,25 @@
                                 </channel>
                             </channels>
                             <includeDependencies combine.children="append">
-                                <!-- include here any <dependency /> exclusive to this BOM -->
+                                <!-- include client BOMs -->
+                                <dependency>
+                                    <groupId>org.wildfly</groupId>
+                                    <artifactId>wildfly-ejb-client-bom</artifactId>
+                                    <type>pom</type>
+                                    <transitive>false</transitive>
+                                </dependency>
+                                <dependency>
+                                    <groupId>org.wildfly</groupId>
+                                    <artifactId>wildfly-jaxws-client-bom</artifactId>
+                                    <type>pom</type>
+                                    <transitive>false</transitive>
+                                </dependency>
+                                <dependency>
+                                    <groupId>org.wildfly</groupId>
+                                    <artifactId>wildfly-jms-client-bom</artifactId>
+                                    <type>pom</type>
+                                    <transitive>false</transitive>
+                                </dependency>
                             </includeDependencies>
                         </configuration>
                     </execution>

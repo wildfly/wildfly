@@ -17,7 +17,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>40.0.0.Beta1-SNAPSHOT</version>
+        <version>40.0.0.Final-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
@@ -52,6 +52,9 @@
 
         <!-- Allow profile-driven control over whether we reuse forks when running tests -->
         <surefire.reuse.forks>true</surefire.reuse.forks>
+
+        <!-- Allow profile-driven control over whether we provision an unslimmed server -->
+        <server.provisioning.phase>generate-test-resources</server.provisioning.phase>
     </properties>
 
     <dependencies>
@@ -416,6 +419,62 @@
                 <directory>src/test/java</directory>
             </testResource>
         </testResources>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.wildfly.plugins</groupId>
+                    <artifactId>wildfly-maven-plugin</artifactId>
+                    <configuration>
+                        <overwrite-provisioned-server>true</overwrite-provisioned-server>
+                        <record-provisioning-state>false</record-provisioning-state>
+                        <log-provisioning-time>${galleon.log.time}</log-provisioning-time>
+                        <offline-provisioning>${galleon.offline}</offline-provisioning>
+                        <galleon-options>
+                            <jboss-maven-dist/>
+                            <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
+                            <optional-packages>passive+</optional-packages>
+                        </galleon-options>
+                    </configuration>
+                    <executions>
+                        <execution>
+                            <id>server-provisioning</id>
+                            <goals>
+                                <goal>provision</goal>
+                            </goals>
+                            <phase>${server.provisioning.phase}</phase>
+                            <configuration>
+                                <provisioning-dir>${project.build.directory}/${wildfly.instance.name}</provisioning-dir>
+                                <feature-packs>
+                                    <feature-pack>
+                                        <groupId>${testsuite.ee.feature.pack.groupId}</groupId>
+                                        <artifactId>${testsuite.ee.feature.pack.artifactId}</artifactId>
+                                        <version>${testsuite.ee.feature.pack.version}</version>
+                                        <excluded-packages>
+                                            <name>product.conf</name>
+                                        </excluded-packages>
+                                        <inherit-configs>false</inherit-configs>
+                                        <!-- We must provision all packages, the test executes a CLI script
+                                             that adds the embedded broker that requires some modules -->
+                                        <inherit-packages>true</inherit-packages>
+                                        <included-configs>
+                                            <config>
+                                                <model>standalone</model>
+                                                <name>standalone.xml</name>
+                                            </config>
+                                            <config>
+                                                <model>standalone</model>
+                                                <name>standalone-full.xml</name>
+                                            </config>
+                                        </included-configs>
+                                    </feature-pack>
+                                </feature-packs>
+                            </configuration>
+                        </execution>
+                    </executions>
+                </plugin>
+
+            </plugins>
+        </pluginManagement>
         <plugins>
             <!-- Use keytool plugin to create JCEKS keystore for Elytron Credential Store related testing -->
             <plugin>
@@ -461,7 +520,6 @@
             <plugin>
                 <groupId>org.wildfly.plugins</groupId>
                 <artifactId>wildfly-maven-plugin</artifactId>
-                <version>${version.org.wildfly.plugin}</version>
                 <executions>
                     <execution>
                         <phase>process-test-classes</phase>
@@ -579,6 +637,18 @@
             </build>
         </profile>
         <profile>
+            <id>jboss.dist.profile</id>
+            <activation>
+                <property>
+                    <name>jboss.dist</name>
+                </property>
+            </activation>
+            <properties>
+                <!-- Turn off wildfly-maven-plugin's 'server-provisioning-phase -->
+                <server.provisioning.phase>none</server.provisioning.phase>
+            </properties>
+        </profile>
+        <profile>
             <id>server-provisioning-profile</id>
             <activation>
                 <property>
@@ -590,54 +660,6 @@
                     <plugin>
                         <groupId>org.wildfly.plugins</groupId>
                         <artifactId>wildfly-maven-plugin</artifactId>
-                        <version>${version.org.wildfly.plugin}</version>
-                        <configuration>
-                            <overwrite-provisioned-server>true</overwrite-provisioned-server>
-                            <record-provisioning-state>false</record-provisioning-state>
-                            <log-provisioning-time>${galleon.log.time}</log-provisioning-time>
-                            <offline-provisioning>${galleon.offline}</offline-provisioning>
-                            <galleon-options>
-                                <jboss-maven-dist/>
-                                <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
-                                <optional-packages>passive+</optional-packages>
-                            </galleon-options>
-                        </configuration>
-                        <executions>
-                            <execution>
-                                <id>server-provisioning</id>
-                                <goals>
-                                    <goal>provision</goal>
-                                </goals>
-                                <phase>generate-test-resources</phase>
-                                <configuration>
-                                    <provisioning-dir>${project.build.directory}/${wildfly.instance.name}</provisioning-dir>
-                                    <feature-packs>
-                                        <feature-pack>
-                                            <groupId>${testsuite.ee.galleon.pack.groupId}</groupId>
-                                            <artifactId>${testsuite.ee.galleon.pack.artifactId}</artifactId>
-                                            <version>${testsuite.ee.galleon.pack.version}</version>
-                                            <excluded-packages>
-                                                <name>product.conf</name>
-                                            </excluded-packages>
-                                            <inherit-configs>false</inherit-configs>
-                                            <!-- We must provision all packages, the test executes a CLI script
-                                                 that adds the embedded broker that requires some modules -->
-                                            <inherit-packages>true</inherit-packages>
-                                            <included-configs>
-                                                <config>
-                                                    <model>standalone</model>
-                                                    <name>standalone.xml</name>
-                                                </config>
-                                                <config>
-                                                    <model>standalone</model>
-                                                    <name>standalone-full.xml</name>
-                                                </config>
-                                            </included-configs>
-                                        </feature-pack>
-                                    </feature-packs>
-                                </configuration>
-                            </execution>
-                        </executions>
                     </plugin>
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
@@ -684,7 +706,6 @@
                     <plugin>
                         <groupId>org.wildfly.plugins</groupId>
                         <artifactId>wildfly-maven-plugin</artifactId>
-                        <version>${version.org.wildfly.plugin}</version>
                         <executions>
                             <execution>
                                 <phase>none</phase>
@@ -745,13 +766,6 @@
                         <groupId>org.wildfly.glow</groupId>
                         <artifactId>wildfly-glow-arquillian-plugin</artifactId>
                         <configuration>
-                            <feature-packs>
-                                <feature-pack>
-                                    <groupId>${testsuite.ee.galleon.pack.groupId}</groupId>
-                                    <artifactId>${testsuite.ee.galleon.pack.artifactId}</artifactId>
-                                    <version>${testsuite.ee.galleon.pack.version}</version>
-                                </feature-pack>
-                            </feature-packs>
                             <config-name>standalone-full.xml</config-name>
                         </configuration>
                         <executions>
@@ -777,7 +791,6 @@
                     <plugin>
                         <groupId>org.wildfly.plugins</groupId>
                         <artifactId>wildfly-maven-plugin</artifactId>
-                        <version>${version.org.wildfly.plugin}</version>
                         <configuration>
                             <!-- Do not configure messaging as some layers do not include messaging -->
                             <scripts combine.children="override">
@@ -909,15 +922,6 @@
                     <plugin>
                         <groupId>org.wildfly.glow</groupId>
                         <artifactId>wildfly-glow-arquillian-plugin</artifactId>
-                        <configuration>
-                            <feature-packs>
-                                <feature-pack>
-                                    <groupId>${testsuite.ee.galleon.pack.groupId}</groupId>
-                                    <artifactId>${testsuite.ee.galleon.pack.artifactId}</artifactId>
-                                    <version>${testsuite.ee.galleon.pack.version}</version>
-                                </feature-pack>
-                            </feature-packs>
-                        </configuration>
                         <executions>
                             <execution>
                                 <id>scan</id>
@@ -972,7 +976,7 @@
                                     <packaging-scripts>
                                         <cli-session>
                                             <javaOpts>
-                                                <opt>-Dmaven.repo.local=${maven.repo.local}</opt>
+                                                <opt>-Dmaven.repo.local=${settings.localRepository}</opt>
                                             </javaOpts>
                                             <scripts>
                                                 <script>modify-elytron-config-bootable.cli</script>
@@ -1062,7 +1066,6 @@
                     <plugin>
                         <groupId>org.wildfly.plugins</groupId>
                         <artifactId>wildfly-maven-plugin</artifactId>
-                        <version>${version.org.wildfly.plugin}</version>
                         <configuration>
                             <scripts combine.children="override">
                                 <script>enable-embedded-messaging.cli</script>
@@ -1104,14 +1107,123 @@
             <id>preview.layers.test.profile</id>
             <activation>
                 <property>
-                    <name>testsuite.ee.galleon.pack.artifactId</name>
-                    <value>wildfly-preview-feature-pack</value>
+                    <name>preview-server-tests</name>
                 </property>
             </activation>
             <properties>
                 <!-- Use preview stability when running the embedded server for pre-surefire-execution setup work -->
                 <embedded.server.stability>preview</embedded.server.stability>
             </properties>
+        </profile>
+
+        <profile>
+            <id>latest-ee-full-server-tests</id>
+            <activation>
+                <property><name>latest-ee-full-server-tests</name></property>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.wildfly.plugins</groupId>
+                        <artifactId>wildfly-maven-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>server-provisioning</id>
+                                <configuration>
+                                    <feature-packs>
+                                        <feature-pack>
+                                            <groupId>${testsuite.ee.feature.pack.groupId}</groupId>
+                                            <artifactId>${testsuite.ee.feature.pack.artifactId}</artifactId>
+                                            <version>${testsuite.ee.feature.pack.version}</version>
+                                            <excluded-packages>
+                                                <name>product.conf</name>
+                                            </excluded-packages>
+                                        </feature-pack>
+                                        <!-- All this just so we can declare the full FP -->
+                                        <feature-pack>
+                                            <groupId>${testsuite.full.feature.pack.groupId}</groupId>
+                                            <artifactId>${testsuite.full.feature.pack.artifactId}</artifactId>
+                                            <version>${testsuite.full.feature.pack.version}</version>
+                                            <excluded-packages>
+                                                <name>product.conf</name>
+                                            </excluded-packages>
+                                            <inherit-configs>false</inherit-configs>
+                                            <!-- We must provision all packages, the test executes a CLI script
+                                                 that adds the embedded broker that requires some modules -->
+                                            <inherit-packages>true</inherit-packages>
+                                            <included-configs>
+                                                <config>
+                                                    <model>standalone</model>
+                                                    <name>standalone.xml</name>
+                                                </config>
+                                                <config>
+                                                    <model>standalone</model>
+                                                    <name>standalone-full.xml</name>
+                                                </config>
+                                            </included-configs>
+                                        </feature-pack>
+                                    </feature-packs>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
+        <profile>
+            <id>legacy-ee-full-server-tests</id>
+            <activation>
+                <property><name>legacy-ee-full-server-tests</name></property>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.wildfly.plugins</groupId>
+                        <artifactId>wildfly-maven-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>server-provisioning</id>
+                                <configuration>
+                                    <feature-packs>
+                                        <feature-pack>
+                                            <groupId>${testsuite.ee.feature.pack.groupId}</groupId>
+                                            <artifactId>${testsuite.ee.feature.pack.artifactId}</artifactId>
+                                            <version>${testsuite.ee.feature.pack.version}</version>
+                                            <excluded-packages>
+                                                <name>product.conf</name>
+                                            </excluded-packages>
+                                        </feature-pack>
+                                        <!-- All this just so we can declare the full FP -->
+                                        <feature-pack>
+                                            <groupId>${testsuite.full.feature.pack.groupId}</groupId>
+                                            <artifactId>${testsuite.full.feature.pack.artifactId}</artifactId>
+                                            <version>${testsuite.full.feature.pack.version}</version>
+                                            <excluded-packages>
+                                                <name>product.conf</name>
+                                            </excluded-packages>
+                                            <inherit-configs>false</inherit-configs>
+                                            <!-- We must provision all packages, the test executes a CLI script
+                                                 that adds the embedded broker that requires some modules -->
+                                            <inherit-packages>true</inherit-packages>
+                                            <included-configs>
+                                                <config>
+                                                    <model>standalone</model>
+                                                    <name>standalone.xml</name>
+                                                </config>
+                                                <config>
+                                                    <model>standalone</model>
+                                                    <name>standalone-full.xml</name>
+                                                </config>
+                                            </included-configs>
+                                        </feature-pack>
+                                    </feature-packs>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
         </profile>
     </profiles>
 

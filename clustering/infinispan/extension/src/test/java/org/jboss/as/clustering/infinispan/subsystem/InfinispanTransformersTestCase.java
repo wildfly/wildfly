@@ -264,6 +264,11 @@ public class InfinispanTransformersTestCase extends AbstractSubsystemTest {
         PathAddress remoteContainerAddress = subsystemAddress.append(RemoteCacheContainerResourceDefinitionRegistrar.REGISTRATION.getPathElement());
         List<String> rejectedRemoteContainerAttributes = new LinkedList<>();
 
+        if (InfinispanSubsystemModel.VERSION_22_0_0.requiresTransformation(this.subsystemVersion)) {
+            config.addFailedAttribute(containerAddress.append(CacheResourceRegistration.REPLICATED.pathElement("repl")), new FailedOperationTransformationConfig.NewAttributesConfig(SegmentedCacheResourceDefinitionRegistrar.SEGMENTS));
+            config.addFailedAttribute(containerAddress.append(CacheResourceRegistration.INVALIDATION.pathElement("invalid")), new FailedOperationTransformationConfig.NewAttributesConfig(SegmentedCacheResourceDefinitionRegistrar.SEGMENTS));
+        }
+
         if (InfinispanSubsystemModel.VERSION_16_0_0.requiresTransformation(this.subsystemVersion)) {
             config.addFailedAttribute(containerAddress.append(CacheResourceRegistration.REPLICATED.pathElement("repl"), ComponentResourceRegistration.PARTITION_HANDLING.getPathElement()), new FailedOperationTransformationConfig.NewAttributesConfig(PartitionHandlingResourceDefinitionRegistrar.MERGE_POLICY));
             config.addFailedAttribute(containerAddress.append(CacheResourceRegistration.DISTRIBUTED.pathElement("dist"), ComponentResourceRegistration.PARTITION_HANDLING.getPathElement()), new FailedOperationTransformationConfig.NewAttributesConfig(PartitionHandlingResourceDefinitionRegistrar.WHEN_SPLIT));

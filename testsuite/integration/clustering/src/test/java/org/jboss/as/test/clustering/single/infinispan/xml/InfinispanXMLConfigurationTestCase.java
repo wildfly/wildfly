@@ -66,7 +66,8 @@ public class InfinispanXMLConfigurationTestCase {
                         new ReflectPermission("suppressAccessChecks"),
                         new RuntimePermission("accessDeclaredMembers"),
                         new RuntimePermission("getClassLoader"),
-                        new RuntimePermission("setContextClassLoader")
+                        new RuntimePermission("setContextClassLoader"),
+                        new RuntimePermission("accessClassInPackage.sun.misc")
                 ), "permissions.xml");
     }
 

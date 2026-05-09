@@ -49,6 +49,11 @@ public class ProductConfUnitTestCase extends ContainerResourceMgmtTestBase {
             releaseVersion = System.getProperty("jboss.full.dist.product.release.version");
             stability = System.getProperty("jboss.full.dist.product.stability.level");
             minStability = System.getProperty("jboss.full.dist.product.min.stability.level");
+        } else if (AssumeTestGroupUtil.isLegacyEEDistribution()) {
+            releaseName = System.getProperty("jboss.legacy.ee.dist.product.release.name");
+            releaseVersion = System.getProperty("jboss.legacy.ee.dist.product.release.version");
+            stability = System.getProperty("jboss.legacy.ee.dist.product.stability.level");
+            minStability = System.getProperty("jboss.legacy.ee.dist.product.min.stability.level");
         }
     }
 

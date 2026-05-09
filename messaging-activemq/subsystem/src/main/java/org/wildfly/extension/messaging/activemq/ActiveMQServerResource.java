@@ -2,7 +2,6 @@
  * Copyright The WildFly Authors
  * SPDX-License-Identifier: Apache-2.0
  */
-
 package org.wildfly.extension.messaging.activemq;
 
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.CORE_ADDRESS;
@@ -13,8 +12,6 @@ import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
-import org.apache.activemq.artemis.api.core.management.AddressControl;
-import org.apache.activemq.artemis.api.core.management.QueueControl;
 import org.apache.activemq.artemis.api.core.management.ResourceNames;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
@@ -67,51 +64,67 @@ public class ActiveMQServerResource implements Resource {
 
     @Override
     public boolean hasChild(PathElement element) {
-        if (CORE_ADDRESS.equals(element.getKey())) {
-            return hasAddressControl(element);
-        } else if (RUNTIME_QUEUE.equals(element.getKey())) {
-            return hasQueueControl(element.getValue());
-        } else {
+        if (null == element.getKey()) {
             return delegate.hasChild(element);
+        }
+        switch (element.getKey()) {
+            case CORE_ADDRESS:
+                return hasAddressControl(element);
+            case RUNTIME_QUEUE:
+                return hasQueueControl(element.getValue());
+            default:
+                return delegate.hasChild(element);
         }
     }
 
     @Override
     public Resource getChild(PathElement element) {
-        if (CORE_ADDRESS.equals(element.getKey())) {
-            return hasAddressControl(element) ? new CoreAddressResource(element.getValue(), getActiveMQBroker()) : null;
-        } else if (RUNTIME_QUEUE.equals(element.getKey())) {
-            return hasQueueControl(element.getValue()) ? PlaceholderResource.INSTANCE : null;
-        } else {
+        if (null == element.getKey()) {
             return delegate.getChild(element);
+        }
+        switch (element.getKey()) {
+            case CORE_ADDRESS:
+                return hasAddressControl(element) ? new CoreAddressResource(element.getValue(), getActiveMQBroker()) : null;
+            case RUNTIME_QUEUE:
+                return hasQueueControl(element.getValue()) ? PlaceholderResource.INSTANCE : null;
+            default:
+                return delegate.getChild(element);
         }
     }
 
     @Override
     public Resource requireChild(PathElement element) {
-        if (CORE_ADDRESS.equals(element.getKey())) {
-            if (hasAddressControl(element)) {
-                return new CoreAddressResource(element.getValue(), getActiveMQBroker());
-            }
-            throw new NoSuchResourceException(element);
-        } else if (RUNTIME_QUEUE.equals(element.getKey())) {
-            if (hasQueueControl(element.getValue())) {
-                return PlaceholderResource.INSTANCE;
-            }
-            throw new NoSuchResourceException(element);
-        } else {
+        if (null == element.getKey()) {
             return delegate.requireChild(element);
+        }
+        switch (element.getKey()) {
+            case CORE_ADDRESS:
+                if (hasAddressControl(element)) {
+                    return new CoreAddressResource(element.getValue(), getActiveMQBroker());
+                }
+                throw new NoSuchResourceException(element);
+            case RUNTIME_QUEUE:
+                if (hasQueueControl(element.getValue())) {
+                    return PlaceholderResource.INSTANCE;
+                }
+                throw new NoSuchResourceException(element);
+            default:
+                return delegate.requireChild(element);
         }
     }
 
     @Override
     public boolean hasChildren(String childType) {
-        if (CORE_ADDRESS.equals(childType)) {
-            return !getChildrenNames(CORE_ADDRESS).isEmpty();
-        } else if (RUNTIME_QUEUE.equals(childType)) {
-            return !getChildrenNames(RUNTIME_QUEUE).isEmpty();
-        } else {
+        if (null == childType) {
             return delegate.hasChildren(childType);
+        }
+        switch (childType) {
+            case CORE_ADDRESS:
+                return !getChildrenNames(CORE_ADDRESS).isEmpty();
+            case RUNTIME_QUEUE:
+                return !getChildrenNames(RUNTIME_QUEUE).isEmpty();
+            default:
+                return delegate.hasChildren(childType);
         }
     }
 
@@ -134,7 +147,7 @@ public class ActiveMQServerResource implements Resource {
 
     @Override
     public Set<String> getChildTypes() {
-        Set<String> result = new HashSet<String>(delegate.getChildTypes());
+        Set<String> result = new HashSet<>(delegate.getChildTypes());
         result.add(CORE_ADDRESS);
         result.add(RUNTIME_QUEUE);
         return result;
@@ -147,39 +160,49 @@ public class ActiveMQServerResource implements Resource {
 
     @Override
     public Set<String> getChildrenNames(String childType) {
-        if (CORE_ADDRESS.equals(childType)) {
-            return getCoreAddressNames();
-        } else if (RUNTIME_QUEUE.equals(childType)) {
-            return getCoreQueueNames();
-        } else {
+        if (null == childType) {
             return delegate.getChildrenNames(childType);
+        }
+        switch (childType) {
+            case CORE_ADDRESS:
+                return getCoreAddressNames();
+            case RUNTIME_QUEUE:
+                return getCoreQueueNames();
+            default:
+                return delegate.getChildrenNames(childType);
         }
     }
 
     @Override
     public Set<ResourceEntry> getChildren(String childType) {
-        if (CORE_ADDRESS.equals(childType)) {
-            Set<ResourceEntry> result = new HashSet<ResourceEntry>();
-            for (String name : getCoreAddressNames()) {
-                result.add(new CoreAddressResource.CoreAddressResourceEntry(name, getActiveMQBroker()));
-            }
-            return result;
-        } else if (RUNTIME_QUEUE.equals(childType)) {
-            Set<ResourceEntry> result = new LinkedHashSet<ResourceEntry>();
-            for (String name : getCoreQueueNames()) {
-                result.add(new PlaceholderResource.PlaceholderResourceEntry(RUNTIME_QUEUE, name));
-            }
-            return result;
-        } else {
+        if (null == childType) {
             return delegate.getChildren(childType);
+        }
+        switch (childType) {
+            case CORE_ADDRESS: {
+                Set<ResourceEntry> result = new HashSet<>();
+                for (String name : getCoreAddressNames()) {
+                    result.add(new CoreAddressResource.CoreAddressResourceEntry(name, getActiveMQBroker()));
+                }
+                return result;
+            }
+            case RUNTIME_QUEUE: {
+                Set<ResourceEntry> result = new LinkedHashSet<ResourceEntry>();
+                for (String name : getCoreQueueNames()) {
+                    result.add(new PlaceholderResource.PlaceholderResourceEntry(RUNTIME_QUEUE, name));
+                }
+                return result;
+            }
+            default:
+                return delegate.getChildren(childType);
         }
     }
 
     @Override
     public void registerChild(PathElement address, Resource resource) {
         String type = address.getKey();
-        if (CORE_ADDRESS.equals(type) ||
-                RUNTIME_QUEUE.equals(type)) {
+        if (CORE_ADDRESS.equals(type)
+                || RUNTIME_QUEUE.equals(type)) {
             throw MessagingLogger.ROOT_LOGGER.canNotRegisterResourceOfType(type);
         } else {
             delegate.registerChild(address, resource);
@@ -194,8 +217,8 @@ public class ActiveMQServerResource implements Resource {
     @Override
     public Resource removeChild(PathElement address) {
         String type = address.getKey();
-        if (CORE_ADDRESS.equals(type) ||
-                RUNTIME_QUEUE.equals(type)) {
+        if (CORE_ADDRESS.equals(type)
+                || RUNTIME_QUEUE.equals(type)) {
             throw MessagingLogger.ROOT_LOGGER.canNotRemoveResourceOfType(type);
         } else {
             return delegate.removeChild(address);
@@ -233,28 +256,16 @@ public class ActiveMQServerResource implements Resource {
         final ActiveMQBroker broker = getActiveMQBroker();
         if (broker == null) {
             return Collections.emptySet();
-        } else {
-            Set<String> result = new HashSet<String>();
-            for (Object obj : broker.getResources(AddressControl.class)) {
-                AddressControl ac = AddressControl.class.cast(obj);
-                result.add(ac.getAddress());
-            }
-            return result;
         }
+        return new HashSet<>(broker.getCoreAddressNames());
     }
 
     private Set<String> getCoreQueueNames() {
         final ActiveMQBroker broker = getActiveMQBroker();
         if (broker == null) {
             return Collections.emptySet();
-        } else {
-            Set<String> result = new HashSet<String>();
-            for (Object obj : broker.getResources(QueueControl.class)) {
-                QueueControl qc = QueueControl.class.cast(obj);
-                result.add(qc.getName());
-            }
-            return result;
         }
+        return new HashSet<>(broker.getQueueControlNames());
     }
 
     private ActiveMQBroker getActiveMQBroker() {

@@ -22,6 +22,7 @@ import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.as.arquillian.api.ContainerResource;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.container.ManagementClient;
+import org.jboss.as.test.shared.util.AssumeTestGroupUtil;
 import org.jboss.as.test.smoke.jakarta.data.lib.Author;
 import org.jboss.as.test.smoke.jakarta.data.library.LibraryBoard;
 import org.jboss.as.test.smoke.jakarta.data.publisher.Publisher;
@@ -82,16 +83,20 @@ public class JakartaDataEarTestCase {
 
         @Override
         public void setup(ManagementClient client, String containerId) throws Exception {
-            if (noneOf("ts.layers", "ts.bootable", "ts.bootable.preview", "ts.preview")) {
+            if (configNeedsSubsystem()) {
                 super.setup(client, containerId);
             }
         }
 
         @Override
         public void tearDown(ManagementClient client, String containerId) throws Exception {
-            if (noneOf("ts.layers", "ts.bootable", "ts.bootable.preview")) {
+            if (configNeedsSubsystem()) {
                 super.tearDown(client, containerId);
             }
+        }
+
+        private static boolean configNeedsSubsystem() {
+            return AssumeTestGroupUtil.isLegacyEEDistribution() && noneOf("ts.layers", "ts.bootable");
         }
 
         private static boolean noneOf(final String... keys) {

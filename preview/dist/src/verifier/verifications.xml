@@ -24,118 +24,118 @@
 -->
   <files>
     <file>
-      <location>target/${server.output.dir.prefix}-preview-${server.output.dir.version}/bin/product.conf</location>
+      <location>target/${preview.server.output.dir}/bin/product.conf</location>
       <exists>true</exists>
     </file>
     <file>
-      <location>target/${server.output.dir.prefix}-preview-${server.output.dir.version}/bin/product.conf</location>
+      <location>target/${preview.server.output.dir}/bin/product.conf</location>
       <contains>slot=${preview.dist.product.slot}</contains>
     </file>
     <file>
-      <location>target/${server.output.dir.prefix}-preview-${server.output.dir.version}/modules/system/layers/base/org/jboss/as/product/${preview.dist.product.slot}/wildfly-preview-feature-pack-product-conf-${project.version}.jar</location>
+      <location>target/${preview.server.output.dir}/modules/system/layers/base/org/jboss/as/product/${preview.dist.product.slot}/wildfly-preview-feature-pack-product-conf-${project.version}.jar</location>
       <exists>true</exists>
     </file>
     <file>
-      <location>target/${server.output.dir.prefix}-preview-${server.output.dir.version}/jboss-modules.jar</location>
+      <location>target/${preview.server.output.dir}/jboss-modules.jar</location>
       <exists>true</exists>
     </file>
     <file>
-      <location>target/${server.output.dir.prefix}-preview-${server.output.dir.version}/standalone/configuration/standalone.xml</location>
+      <location>target/${preview.server.output.dir}/standalone/configuration/standalone.xml</location>
       <exists>true</exists>
     </file>
     <file>
-      <location>target/${server.output.dir.prefix}-preview-${server.output.dir.version}/modules/system/layers/base/io/smallrye/fault-tolerance/main</location>
+      <location>target/${preview.server.output.dir}/modules/system/layers/base/io/smallrye/fault-tolerance/main</location>
       <exists>true</exists>
     </file>
     <file>
-      <location>target/${server.output.dir.prefix}-preview-${server.output.dir.version}/modules/system/layers/base/org/eclipse/microprofile/fault-tolerance/api/main</location>
+      <location>target/${preview.server.output.dir}/modules/system/layers/base/org/eclipse/microprofile/fault-tolerance/api/main</location>
       <exists>true</exists>
     </file>
     <file>
-      <location>target/${server.output.dir.prefix}-preview-${server.output.dir.version}/modules/system/layers/base/org/wildfly/extension/microprofile/fault-tolerance-smallrye/main</location>
+      <location>target/${preview.server.output.dir}/modules/system/layers/base/org/wildfly/extension/microprofile/fault-tolerance-smallrye/main</location>
       <exists>true</exists>
     </file>
     <file>
-      <location>target/${server.output.dir.prefix}-preview-${server.output.dir.version}/modules/system/layers/base/org/wildfly/microprofile/fault-tolerance-smallrye</location>
+      <location>target/${preview.server.output.dir}/modules/system/layers/base/org/wildfly/microprofile/fault-tolerance-smallrye</location>
       <exists>true</exists>
     </file>
     <file>
-      <location>target/${server.output.dir.prefix}-preview-${server.output.dir.version}/modules/system/layers/base/com/fasterxml/jackson/dataformat/jackson-dataformat-yaml/main</location>
+      <location>target/${preview.server.output.dir}/modules/system/layers/base/com/fasterxml/jackson/dataformat/jackson-dataformat-yaml/main</location>
       <exists>true</exists>
     </file>
     <file>
-      <location>target/${server.output.dir.prefix}-preview-${server.output.dir.version}/modules/system/layers/base/io/smallrye/openapi/main</location>
+      <location>target/${preview.server.output.dir}/modules/system/layers/base/io/smallrye/openapi/main</location>
       <exists>true</exists>
     </file>
     <file>
-      <location>target/${server.output.dir.prefix}-preview-${server.output.dir.version}/modules/system/layers/base/org/eclipse/microprofile/openapi/api/main</location>
+      <location>target/${preview.server.output.dir}/modules/system/layers/base/org/eclipse/microprofile/openapi/api/main</location>
       <exists>true</exists>
     </file>
     <file>
-      <location>target/${server.output.dir.prefix}-preview-${server.output.dir.version}/modules/system/layers/base/org/wildfly/extension/microprofile/openapi-smallrye/main</location>
+      <location>target/${preview.server.output.dir}/modules/system/layers/base/org/wildfly/extension/microprofile/openapi-smallrye/main</location>
       <exists>true</exists>
     </file>
     <file>
-      <location>target/${server.output.dir.prefix}-preview-${server.output.dir.version}/modules/system/layers/base/io/smallrye/jwt/main</location>
+      <location>target/${preview.server.output.dir}/modules/system/layers/base/io/smallrye/jwt/main</location>
       <exists>true</exists>
     </file>
     <file>
-      <location>target/${server.output.dir.prefix}-preview-${server.output.dir.version}/modules/system/layers/base/org/bitbucket/jose4j/main</location>
+      <location>target/${preview.server.output.dir}/modules/system/layers/base/org/bitbucket/jose4j/main</location>
       <exists>true</exists>
     </file>
     <file>
-      <location>target/${server.output.dir.prefix}-preview-${server.output.dir.version}/modules/system/layers/base/org/eclipse/microprofile/jwt/auth/api/main</location>
+      <location>target/${preview.server.output.dir}/modules/system/layers/base/org/eclipse/microprofile/jwt/auth/api/main</location>
       <exists>true</exists>
     </file>
     <file>
-      <location>target/${server.output.dir.prefix}-preview-${server.output.dir.version}/modules/system/layers/base/org/wildfly/extension/microprofile/jwt-smallrye/main</location>
+      <location>target/${preview.server.output.dir}/modules/system/layers/base/org/wildfly/extension/microprofile/jwt-smallrye/main</location>
       <exists>true</exists>
     </file>
     <file>
-      <location>target/${server.output.dir.prefix}-preview-${server.output.dir.version}/modules/system/layers/base/org/wildfly/security/elytron-jwt/main</location>
+      <location>target/${preview.server.output.dir}/modules/system/layers/base/org/wildfly/security/elytron-jwt/main</location>
       <exists>true</exists>
     </file>
     <file>
-      <location>target/${server.output.dir.prefix}-preview-${server.output.dir.version}/docs/schema/wildfly-txn_5_0.xsd</location>
+      <location>target/${preview.server.output.dir}/docs/schema/wildfly-txn_5_0.xsd</location>
       <exists>true</exists>
     </file>
     <file>
-      <location>target/${server.output.dir.prefix}-preview-${server.output.dir.version}/docs/schema/wildfly-undertow_10_0.xsd</location>
+      <location>target/${preview.server.output.dir}/docs/schema/wildfly-undertow_10_0.xsd</location>
       <exists>true</exists>
     </file>
     <file>
-      <location>target/${server.output.dir.prefix}-preview-${server.output.dir.version}/docs/schema/wildfly-io_3_0.xsd</location>
+      <location>target/${preview.server.output.dir}/docs/schema/wildfly-io_3_0.xsd</location>
       <exists>true</exists>
     </file>
     <file>
-      <location>target/${server.output.dir.prefix}-preview-${server.output.dir.version}/.galleon</location>
+      <location>target/${preview.server.output.dir}/.galleon</location>
       <exists>true</exists>
     </file>
     <file>
-      <location>target/${server.output.dir.prefix}-preview-${server.output.dir.version}/.galleon/history</location>
+      <location>target/${preview.server.output.dir}/.galleon/history</location>
       <exists>false</exists>
     </file>
     <!-- start of (#12) -->
     <file>
-      <location>target/${server.output.dir.prefix}-preview-${server.output.dir.version}/.installation/installer-channels.yaml</location>
+      <location>target/${preview.server.output.dir}/.installation/installer-channels.yaml</location>
       <exists>true</exists>
     </file>
     <file>
-      <location>target/${server.output.dir.prefix}-preview-${server.output.dir.version}/.installation/manifest.yaml</location>
+      <location>target/${preview.server.output.dir}/.installation/manifest.yaml</location>
       <exists>true</exists>
     </file>
     <file>
-      <location>target/${server.output.dir.prefix}-preview-${server.output.dir.version}/.installation/manifest_version.yaml</location>
+      <location>target/${preview.server.output.dir}/.installation/manifest_version.yaml</location>
       <exists>true</exists>
     </file>
     <file>
-      <location>target/${server.output.dir.prefix}-preview-${server.output.dir.version}/.installation/provisioning_record.xml</location>
+      <location>target/${preview.server.output.dir}/.installation/provisioning_record.xml</location>
       <exists>true</exists>
     </file>
     <!-- end of (#12) -->
     <!-- start of (#13) -->
     <file>
-      <location>target/${server.output.dir.prefix}-preview-${server.output.dir.version}/version.txt</location>
+      <location>target/${preview.server.output.dir}/version.txt</location>
       <exists>true</exists>
     </file>
     <!-- end of (#13) -->

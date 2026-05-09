@@ -16,7 +16,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>40.0.0.Beta1-SNAPSHOT</version>
+        <version>40.0.0.Final-SNAPSHOT</version>
     </parent>
 
     <!-- ********************************************************************************** -->
@@ -341,8 +341,8 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>org.wildfly.channels</groupId>
-            <artifactId>wildfly-ee</artifactId>
+            <groupId>${channels.maven.groupId}</groupId>
+            <artifactId>${testsuite.ee.only.channel.artifactId}</artifactId>
             <version>${ee.maven.version}</version>
             <type>yaml</type>
             <classifier>manifest</classifier>
@@ -431,7 +431,7 @@
                                 <channel>
                                     <manifest>
                                         <groupId>${channels.maven.groupId}</groupId>
-                                        <artifactId>wildfly-ee</artifactId>
+                                        <artifactId>${testsuite.ee.only.channel.artifactId}</artifactId>
                                         <version>${ee.maven.version}</version>
                                     </manifest>
                                 </channel>
@@ -444,7 +444,7 @@
                             <feature-packs>
                                 <feature-pack>
                                     <groupId>${ee.maven.groupId}</groupId>
-                                    <artifactId>wildfly-ee-galleon-pack</artifactId>
+                                    <artifactId>${testsuite.ee.only.feature.pack.artifactId}</artifactId>
                                     <version>${ee.maven.version}</version>
                                 </feature-pack>
                             </feature-packs>
@@ -501,7 +501,7 @@
                             <feature-packs>
                                 <feature-pack>
                                     <groupId>${ee.maven.groupId}</groupId>
-                                    <artifactId>wildfly-ee-galleon-pack</artifactId>
+                                    <artifactId>${testsuite.ee.only.feature.pack.artifactId}</artifactId>
                                     <version>${ee.maven.version}</version>
                                     <included-packages>
                                         <name>docs.examples.configs</name>
@@ -594,8 +594,10 @@
                         <node3>${node3}</node3>
                         <mcast>${mcast}</mcast>
                         <multichannel.jboss.home>${multichannel.jboss.home}</multichannel.jboss.home>
+                        <multichannel.ee.feature.pack.artifactId>${testsuite.ee.only.feature.pack.artifactId}</multichannel.ee.feature.pack.artifactId>
                         <oidc.jboss.home>${oidc.jboss.home}</oidc.jboss.home>
-                        <ee.dist.output.dir>ee-dist/target/${server.output.dir.prefix}-${server.output.dir.version}</ee.dist.output.dir>
+                        <!-- Tell ProvisioningConsistenceTestCase the location of the pre-built server -->
+                        <ee.dist.output.dir>${testsuite.default.build.project.root}/ee-dist/target/${server.output.dir.prefix}-${server.output.dir.qualifier}${server.output.dir.version}</ee.dist.output.dir>
                         <build.output.dir>${wildfly.build.output.dir}</build.output.dir>
                     </systemPropertyVariables>
                 </configuration>
@@ -690,20 +692,6 @@
             <activation>
                 <property>
                     <name>external.wildfly.channels</name>
-                </property>
-            </activation>
-            <properties>
-                <!-- Disable channel-provisioning executions to avoid interference between external settings and the test -->
-                <channel.provisioning.phase>none</channel.provisioning.phase>
-                <!-- Stop arquillian blowing up on a non-existent dir for an arquillian.xml config -->
-                <multichannel.jboss.home>${project.build.directory}/wildfly</multichannel.jboss.home>
-            </properties>
-        </profile>
-        <profile>
-            <id>internal.wildfly.channels</id>
-            <activation>
-                <property>
-                    <name>internal.wildfly.channels</name>
                 </property>
             </activation>
             <properties>

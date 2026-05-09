@@ -45,6 +45,7 @@ import org.jboss.as.test.integration.domain.management.util.DomainTestUtils;
 import org.jboss.as.test.integration.domain.management.util.WildFlyManagedConfiguration;
 import org.jboss.as.test.integration.management.util.MgmtOperationException;
 import org.jboss.as.test.shared.TimeoutUtil;
+import org.jboss.as.test.shared.util.AssumeTestGroupUtil;
 import org.jboss.dmr.ModelNode;
 import org.junit.AfterClass;
 import org.junit.Assert;
@@ -208,7 +209,7 @@ public abstract class DomainHostExcludesTest {
     }
 
     @Test
-    public void test002ServerBoot() throws IOException, MgmtOperationException, InterruptedException, OperationFailedException {
+    public void test002ServerBoot() throws IOException, MgmtOperationException, OperationFailedException {
 
         ModelControllerClient primaryClient = testSupport.getDomainPrimaryLifecycleUtil().getDomainClient();
 
@@ -224,29 +225,18 @@ public abstract class DomainHostExcludesTest {
 
     }
 
-    private void awaitServerLaunch(ModelControllerClient client, PathAddress serverAddr) throws InterruptedException {
-        long timeout = TimeoutUtil.adjust(20000);
-        long expired = System.currentTimeMillis() + timeout;
-        ModelNode op = Util.getReadAttributeOperation(serverAddr, "server-state");
-        do {
-            try {
-                ModelNode state = DomainTestUtils.executeForResult(op, client);
-                if ("running".equalsIgnoreCase(state.asString())) {
-                    MixedDomainTestSupport.assertNoBootErrors(client, serverAddr);
-                    return;
-                }
-            } catch (IOException | MgmtOperationException e) {
-                // ignore and try again
-            }
-
-            TimeUnit.MILLISECONDS.sleep(250L);
-        } while (System.currentTimeMillis() < expired);
-
-        Assert.fail("Server did not start in " + timeout + " ms");
+    private void awaitServerLaunch(ModelControllerClient client, PathAddress serverAddr) throws IOException, MgmtOperationException {
+        PathAddress configAddr = PathAddress.pathAddress(serverAddr.getElement(0),
+                PathElement.pathElement(SERVER_CONFIG, serverAddr.getLastElement().getValue()));
+        DomainTestUtils.waitUntilState(client, configAddr, "STARTED");
+        MixedDomainTestSupport.assertNoBootErrors(client, serverAddr);
     }
 
     @Test
     public void test003PostBootUpdates() throws IOException, MgmtOperationException {
+
+        // FIXME remove when WFCORE-7572 is fixed
+        AssumeTestGroupUtil.assumeLegacyEEDistribution();
 
         ModelControllerClient primaryClient = testSupport.getDomainPrimaryLifecycleUtil().getDomainClient();
         ModelControllerClient secondaryClient = testSupport.getDomainSecondaryLifecycleUtil().getDomainClient();

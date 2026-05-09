@@ -15,7 +15,10 @@
         <prop name="--internal-remove-config" value=""/>
     </props>
     <packages>
-        <package name="banner" optional="true"/>
+        <!-- In case the feature-pack containing this model.xml is constrained at build time
+             to a level that doesn't imply 'experimental', the banner package will be not packaged inside the feature-pack.
+             'valid-for-stability' attribute allows to keep this dependency that will be ignored at provisioning time. -->
+        <package name="banner" optional="true" valid-for-stability="experimental"/>
         <package name="product.conf" optional="true"/>
         <package name="org.jboss.as.product" optional="true"/>
         <package name="misc.standalone"/>
@@ -35,12 +38,16 @@
             it needs to be excluded -->
         <package name="org.jboss.common-beans" optional="true"/>
 
-        <package name="org.wildfly.deployment.transformation"/>
         <package name="docs.licenses" optional="true"/>
         <package name="docs.licenses.merge" optional="true"/>
 
         <!-- Unstable API Annotation Index -->
+        <package name="unstable-api-annotation-index.wildfly-ee-feature-pack" optional="true" valid-for-stability="preview"/>
+        <package name="unstable-api-annotation-index.wildfly-galleon-pack" optional="true" valid-for-stability="preview"/>
         <package name="org.wildfly.unstable.annotation.api.indexer" optional="true" valid-for-stability="preview" />
         <package name="org.wildfly._internal.unstable-api-annotation-index" optional="true" valid-for-stability="preview" />
+
+        <!-- Not provided in standard WildFly -->
+        <package name="org.wildfly.deployment.transformation"/>
     </packages>
 </config>

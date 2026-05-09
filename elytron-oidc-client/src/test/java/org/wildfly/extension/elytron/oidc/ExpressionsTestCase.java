@@ -42,11 +42,6 @@ public class ExpressionsTestCase extends AbstractSubsystemSchemaTest<ElytronOidc
         }
     }
 
-    @Override
-    protected void compareXml(String configId, String original, String marshalled) {
-        //
-    }
-
     protected static class DefaultInitializer extends AdditionalInitialization {
 
         private final Stability stability;

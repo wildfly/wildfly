@@ -137,11 +137,6 @@ public class OidcTestCase extends AbstractSubsystemSchemaTest<ElytronOidcSubsyst
         assertEquals(expectedJson, configService.getJSON("wildfly-with-request-uri"));
     }
 
-    @Override
-    protected void compareXml(String configId, String original, String marshalled) {
-        //
-    }
-
     protected static class DefaultInitializer extends AdditionalInitialization {
 
         private final Stability stability;

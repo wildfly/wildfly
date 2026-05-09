@@ -15,7 +15,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
@@ -28,7 +27,6 @@ import org.jboss.as.test.integration.domain.management.util.DomainTestUtils;
 import org.jboss.as.test.integration.domain.management.util.WildFlyManagedConfiguration;
 import org.jboss.as.test.integration.management.util.MgmtOperationException;
 import org.jboss.as.test.shared.util.AssumeTestGroupUtil;
-import org.jboss.as.test.shared.TimeoutUtil;
 import org.jboss.as.version.Stability;
 import org.jboss.dmr.ModelNode;
 import org.junit.Assert;
@@ -41,7 +39,6 @@ import org.junit.Assume;
 public class MixedDomainTestSupport extends DomainTestSupport {
 
     public static final String STANDARD_DOMAIN_CONFIG = "copied-primary-config/domain.xml";
-    private static final String JBOSS_DOMAIN_SERVER_ARGS = "jboss.domain.server.args";
     private static final int TEST_VM_VERSION;
 
     static {
@@ -147,33 +144,11 @@ public class MixedDomainTestSupport extends DomainTestSupport {
             PathAddress pa = PathAddress.pathAddress(hostElement, PathElement.pathElement("server-config", "server-one"));
             DomainTestUtils.executeForResult(Util.getUndefineAttributeOperation(pa, "auto-start"), client);
             DomainTestUtils.executeForResult(Util.createEmptyOperation("start", pa), client);
+            DomainTestUtils.waitUntilState(client, pa, "STARTED");
+            assertNoBootErrors(client, PathAddress.pathAddress(hostElement, PathElement.pathElement("server", "server-one")));
         } catch (IOException | MgmtOperationException e) {
             throw new RuntimeException(e);
         }
-
-        long timeout = TimeoutUtil.adjust(20000);
-        long expired = System.currentTimeMillis() + timeout;
-        ModelNode op = Util.getReadAttributeOperation(PathAddress.pathAddress(hostElement, PathElement.pathElement("server", "server-one")), "server-state");
-        do {
-            try {
-                ModelNode state = DomainTestUtils.executeForResult(op, client);
-                if ("running".equalsIgnoreCase(state.asString())) {
-                    assertNoBootErrors(client, PathAddress.pathAddress(hostElement, PathElement.pathElement("server", "server-one")));
-                    return;
-                }
-            } catch (IOException | MgmtOperationException e) {
-                // ignore and try again
-            }
-
-            try {
-                TimeUnit.MILLISECONDS.sleep(250L);
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-                Assert.fail();
-            }
-        } while (System.currentTimeMillis() < expired);
-
-        Assert.fail("Secondary server-one did not start within " + timeout + " ms");
     }
 
     private void configureSecondaryJavaHome() {
@@ -221,6 +196,7 @@ public class MixedDomainTestSupport extends DomainTestSupport {
             primaryUtil.executeAwaitConnectionClosed(Util.createEmptyOperation("reload", PathAddress.pathAddress(HOST, "primary")));
             primaryUtil.connect();
             primaryUtil.awaitHostController(System.currentTimeMillis());
+            primaryUtil.awaitServers(System.currentTimeMillis());
             assertNoBootErrors(primaryUtil.getDomainClient(), PathAddress.pathAddress(HOST, "primary"));
 
             //Start the secondary hosts

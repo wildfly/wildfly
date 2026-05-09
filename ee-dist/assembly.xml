@@ -17,7 +17,7 @@
             <directory>target</directory>
             <outputDirectory/>
             <includes>
-                <include>${server.output.dir.prefix}-${server.output.dir.version}/**</include>
+                <include>${server.output.dir.prefix}-${latest.ee.output.qualifier}${server.output.dir.version}/**</include>
             </includes>
         </fileSet>
     </fileSets>

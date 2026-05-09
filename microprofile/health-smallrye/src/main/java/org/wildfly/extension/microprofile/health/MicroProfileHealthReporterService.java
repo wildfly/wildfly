@@ -5,23 +5,16 @@
 
 package org.wildfly.extension.microprofile.health;
 
-import static org.wildfly.extension.microprofile.health.MicroProfileHealthSubsystemDefinition.HEALTH_SERVER_PROBE_CAPABILITY;
-import static org.wildfly.extension.microprofile.health.MicroProfileHealthSubsystemDefinition.MICROPROFILE_HEALTH_REPORTER_CAPABILITY;
-
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 import io.smallrye.health.ResponseProvider;
-import io.smallrye.health.SmallRyeHealthReporter;
 import org.eclipse.microprofile.config.ConfigProvider;
 import org.eclipse.microprofile.health.HealthCheck;
 import org.eclipse.microprofile.health.HealthCheckResponse;
 import org.eclipse.microprofile.health.HealthCheckResponseBuilder;
-import org.jboss.as.controller.CapabilityServiceBuilder;
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.dmr.Property;
-import org.jboss.msc.service.Service;
-import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.Service;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StopContext;
 import org.wildfly.extension.health.ServerProbe;
@@ -31,28 +24,17 @@ import org.wildfly.extension.health.ServerProbesService;
  * @author <a href="http://jmesnil.net/">Jeff Mesnil</a> (c) 2018 Red Hat inc.
  * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
-public class MicroProfileHealthReporterService implements Service<MicroProfileHealthReporter> {
+public class MicroProfileHealthReporterService implements Service {
 
-    private static MicroProfileHealthReporter healthReporter;
-    private Supplier<ServerProbesService> serverProbesService;
-    private String emptyLivenessChecksStatus;
-    private String emptyReadinessChecksStatus;
-    private String emptyStartupChecksStatus;
+    private final Consumer<MicroProfileHealthReporter> reporter;
+    private final Supplier<ServerProbesService> serverProbesService;
+    private final String emptyLivenessChecksStatus;
+    private final String emptyReadinessChecksStatus;
+    private final String emptyStartupChecksStatus;
 
-    static void install(OperationContext context, String emptyLivenessChecksStatus, String emptyReadinessChecksStatus, String emptyStartupChecksStatus) {
-
-        CapabilityServiceBuilder<?> serviceBuilder = context.getCapabilityServiceTarget()
-                .addCapability(RuntimeCapability.Builder.of(MICROPROFILE_HEALTH_REPORTER_CAPABILITY, SmallRyeHealthReporter.class).build());
-
-        Supplier<ServerProbesService> serverProbesService = serviceBuilder.requires(ServiceName.parse(HEALTH_SERVER_PROBE_CAPABILITY));
-
-        serviceBuilder.setInstance(new MicroProfileHealthReporterService(serverProbesService, emptyLivenessChecksStatus,
-            emptyReadinessChecksStatus, emptyStartupChecksStatus))
-                .install();
-    }
-
-    private MicroProfileHealthReporterService(Supplier<ServerProbesService> serverProbesService, String emptyLivenessChecksStatus,
-                                              String emptyReadinessChecksStatus, String emptyStartupChecksStatus) {
+    MicroProfileHealthReporterService(Consumer<MicroProfileHealthReporter> reporter, Supplier<ServerProbesService> serverProbesService, String emptyLivenessChecksStatus,
+            String emptyReadinessChecksStatus, String emptyStartupChecksStatus) {
+        this.reporter = reporter;
         this.serverProbesService = serverProbesService;
         this.emptyLivenessChecksStatus = emptyLivenessChecksStatus;
         this.emptyReadinessChecksStatus = emptyReadinessChecksStatus;
@@ -68,7 +50,7 @@ public class MicroProfileHealthReporterService implements Service<MicroProfileHe
         final String defaultReadinessEmptyResponse = ConfigProvider.getConfig().getOptionalValue("mp.health.default.readiness.empty.response", String.class).orElse("DOWN");
         // MicroProfile Health supports the mp.health.default.startup.empty.response to let users specify default empty startup responses
         final String defaultStartupEmptyResponse = ConfigProvider.getConfig().getOptionalValue("mp.health.default.startup.empty.response", String.class).orElse("DOWN");
-        healthReporter = new MicroProfileHealthReporter(emptyLivenessChecksStatus, emptyReadinessChecksStatus,
+        MicroProfileHealthReporter healthReporter = new MicroProfileHealthReporter(emptyLivenessChecksStatus, emptyReadinessChecksStatus,
             emptyStartupChecksStatus, defaultServerProceduresDisabled,
             defaultReadinessEmptyResponse, defaultStartupEmptyResponse);
 
@@ -80,17 +62,12 @@ public class MicroProfileHealthReporterService implements Service<MicroProfileHe
         }
 
         HealthCheckResponse.setResponseProvider(new ResponseProvider());
+        this.reporter.accept(healthReporter);
     }
 
     @Override
     public void stop(StopContext context) {
-        healthReporter = null;
         HealthCheckResponse.setResponseProvider(null);
-    }
-
-    @Override
-    public MicroProfileHealthReporter getValue() {
-        return healthReporter;
     }
 
     static HealthCheck wrap(ServerProbe delegate) {

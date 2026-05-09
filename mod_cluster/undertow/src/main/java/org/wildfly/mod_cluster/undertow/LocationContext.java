@@ -18,8 +18,8 @@ import org.jboss.modcluster.container.listeners.ServletRequestListener;
  */
 public class LocationContext implements Context {
 
-    private String contextPath;
-    private UndertowHost host;
+    private final String contextPath;
+    private final UndertowHost host;
 
     public LocationContext(String contextPath, UndertowHost host) {
         this.contextPath = contextPath;

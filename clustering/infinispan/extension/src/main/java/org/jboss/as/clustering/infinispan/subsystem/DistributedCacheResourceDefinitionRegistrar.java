@@ -33,7 +33,7 @@ import org.wildfly.subsystem.service.capture.FunctionExecutorRegistry;
  * Registers a resource definition for a distributed cache.
  * @author Paul Ferraro
  */
-public class DistributedCacheResourceDefinitionRegistrar extends SegmentedCacheResourceDefinitionRegistrar {
+public class DistributedCacheResourceDefinitionRegistrar extends SharedStateCacheResourceDefinitionRegistrar {
 
     static final DurationAttributeDefinition L1_LIFESPAN = DurationAttributeDefinition.builder("l1-lifespan", ChronoUnit.MILLIS).setDefaultValue(Duration.ZERO).build();
 

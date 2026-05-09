@@ -17,6 +17,7 @@
     <dependencies>
         <module name="jakarta.ws.rs.api"/>
 
+        <module name="io.smallrye.common.function"/>
         <module name="io.smallrye.openapi"/>
 
         <module name="io.undertow.core"/>
@@ -31,7 +32,6 @@
         <module name="org.jboss.resteasy.resteasy-client"/>
         <module name="org.jboss.resteasy.resteasy-core"/>
 
-        <module name="org.wildfly.common"/>
         <module name="org.wildfly.extension.undertow"/>
         <module name="org.wildfly.microprofile.openapi-smallrye.spi"/>
         <module name="org.wildfly.service"/>

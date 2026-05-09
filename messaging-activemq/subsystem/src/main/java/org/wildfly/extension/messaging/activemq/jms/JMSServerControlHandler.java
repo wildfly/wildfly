@@ -326,9 +326,8 @@ public class JMSServerControlHandler extends AbstractRuntimeOnlyHandler {
         }
         Map<String, QueueControl> allDests = new HashMap<>();
 
-        Object[] queueControls = server.getResources(QueueControl.class);
-        for (Object queue : queueControls) {
-            QueueControl queueControl = (QueueControl) queue;
+        List<QueueControl> queueControls = server.getQueueControls();
+        for (QueueControl queueControl : queueControls) {
             allDests.put(queueControl.getAddress(), queueControl);
         }
 

@@ -61,7 +61,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>40.0.0.Beta1-SNAPSHOT</version>
+        <version>40.0.0.Final-SNAPSHOT</version>
     </parent>
 
     <artifactId>wildfly-testsuite</artifactId>
@@ -84,10 +84,50 @@
         <!-- Skips profile generation; to be used with running single test with -Dtest=... -->
         <skip.antrun>false</skip.antrun>
 
+        <!-- BEGINNING OF PROPERTIES RELATED TO CONFIGURING THE SERVER INSTALLATION TO TEST.
+             Note that many of these properties are overridden in profiles below. -->
+
+        <!-- Properties related to the directory from which testsuite modules that don't create their own dists
+                     should obtain the dist to test -->
+        <!-- First, the path, relative to the source root, where the parent of the maven child project
+             whose output should be used is found. An empty value means the source root. -->
+        <testsuite.default.build.project.root></testsuite.default.build.project.root>
+        <!-- Second, prefix to add to the standard maven child project whose output should be used.
+             An empty value means no prefix.
+             Custom test jobs can override this using -D, e.g. -Dtestsuite.default.build.project.prefix=ee- -->
+        <testsuite.default.build.project.prefix></testsuite.default.build.project.prefix>
+        <!-- 'Qualifier' segment to include in the name of the directory containing the pre-built server -->
+        <server.output.dir.qualifier>${latest.ee.output.qualifier}</server.output.dir.qualifier>
+        <wildfly.build.output.dir>${testsuite.default.build.project.root}/${testsuite.default.build.project.prefix}build/target/${server.output.dir.prefix}-${server.output.dir.qualifier}${server.output.dir.version}</wildfly.build.output.dir>
         <!-- Used to provide an absolute location for the distribution under test. -->
         <!-- This value is overridden in modules with the correct relative pathname. -->
         <jboss.dist>${project.basedir}/../${wildfly.build.output.dir}</jboss.dist>
         <jboss.home>${jboss.dist}</jboss.home>
+
+        <!-- Galleon feature pack to use in testsuite provisioning executions that provides content
+             that *could* be obtained solely from the wildfly-ee-galleon-pack.
+             Note: It's valid to use an FP here that provides the EE content via its dependencies.
+        -->
+        <testsuite.ee.feature.pack.groupId>${full.maven.groupId}</testsuite.ee.feature.pack.groupId>
+        <testsuite.ee.feature.pack.artifactId>wildfly-galleon-pack</testsuite.ee.feature.pack.artifactId>
+        <testsuite.ee.feature.pack.version>${full.maven.version}</testsuite.ee.feature.pack.version>
+        <!-- Galleon feature pack to use in testsuite provisioning executions that provide content
+             that *cannot* be obtained solely from the wildfly-ee-galleon-pack or its dependencies.
+             Test jobs can override this using -D to test using a different feature pack.
+        -->
+        <testsuite.full.feature.pack.groupId>${full.maven.groupId}</testsuite.full.feature.pack.groupId>
+        <testsuite.full.feature.pack.artifactId>wildfly-galleon-pack</testsuite.full.feature.pack.artifactId>
+        <testsuite.full.feature.pack.version>${full.maven.version}</testsuite.full.feature.pack.version>
+        <!-- Galleon feature pack to use in testsuite provisioning executions that install test-specific content.
+             Profiles can set this to wildfly-test-feature-pack-preview when testing wildfly-preview.
+        -->
+        <testsuite.test.feature.pack.artifactId>wildfly-test-feature-pack</testsuite.test.feature.pack.artifactId>
+
+        <!-- For cases where we know for sure we don't want the 'wildfly' FP or channel, we can use these -->
+        <testsuite.ee.only.channel.artifactId>${latest.ee.channel.artifactId}</testsuite.ee.only.channel.artifactId>
+        <testsuite.ee.only.feature.pack.artifactId>${latest.ee.feature.pack.artifactId}</testsuite.ee.only.feature.pack.artifactId>
+
+        <!-- END OF PROPERTIES RELATED TO CONFIGURING THE SERVER INSTALLATION TO TEST. -->
 
         <!-- Used to provide an absolute location for the XSLT scripts. -->
         <!-- This value is overridden in modules with the correct relative pathname. -->
@@ -99,6 +139,10 @@
              Default is the EE dependency set. -->
         <dependency.management.import.artifact>wildfly-standard-ee-bom</dependency.management.import.artifact>
         <dependency.management.import.test.artifact>wildfly-standard-test-bom</dependency.management.import.test.artifact>
+
+        <!-- Name of the profile that defines what feature packs were used to provision the test server.
+             Profiles set this; the value here is the profile with settings that match the global default values. -->
+        <server.provisioning.profile>latest-ee-full-server-tests</server.provisioning.profile>
 
         <!-- IP address defaults. -->
         <node0>127.0.0.1</node0>
@@ -173,7 +217,7 @@
         <trace>none</trace>
 
         <!-- Dynamic part of the name of ee-version-specific test source dir that may be added to the build -->
-        <additional.ee.test.source>ee10</additional.ee.test.source>
+        <additional.ee.test.source>ee11</additional.ee.test.source>
 
         <!-- properties to enable plugin executions -->
         <ts.bootable-jar-packaging.phase>none</ts.bootable-jar-packaging.phase>
@@ -320,6 +364,29 @@
                     </dependencies>
                 </plugin>
 
+                <plugin>
+                    <groupId>org.wildfly.glow</groupId>
+                    <artifactId>wildfly-glow-arquillian-plugin</artifactId>
+                    <configuration>
+                        <!-- We define the standard set of feature packs to use here.
+                             Profiles that need another feature pack beyond what's
+                             indicated by the maven properties here (e.g. 'wildfly')
+                             should override this part of the plugin config. -->
+                        <feature-packs>
+                            <feature-pack>
+                                <groupId>${testsuite.ee.feature.pack.groupId}</groupId>
+                                <artifactId>${testsuite.ee.feature.pack.artifactId}</artifactId>
+                                <version>${testsuite.ee.feature.pack.version}</version>
+                            </feature-pack>
+                        </feature-packs>
+                        <!-- The single FP defined above may be overridden to use multiple
+                             FPs in some contexts. If so, we want Glow to always include
+                             all of those FPs in its generated provisioning.xml, even if
+                             its scanning doesn't detect the need for them all. -->
+                        <enforce-input-feature-packs>true</enforce-input-feature-packs>
+                    </configuration>
+                </plugin>
+
                 <!--
                    Sets general surefire system properties.
                    These can be overridden by inheriting plugin configurations.
@@ -338,6 +405,7 @@
                             <jboss.domain.server.args>${jboss.domain.server.args}</jboss.domain.server.args>
                             <module.path>${jboss.dist}/modules${path.separator}${basedir}/target/modules</module.path>
                             <org.wildfly.test.kill-servers-before-test>${org.wildfly.test.kill-servers-before-test}</org.wildfly.test.kill-servers-before-test>
+                            <server.provisioning.profile>${server.provisioning.profile}</server.provisioning.profile>
                         </systemPropertyVariables>
                         <argLine>${surefire.system.args}</argLine>
                         <trimStackTrace>false</trimStackTrace>
@@ -550,10 +618,198 @@
 
 
         <!--
-            Plugin execution configuration profiles. DO NOT ACTIVATE MODULES VIA THESE PROFILES
+            Plugin execution configuration profiles.
         -->
 
-        <!-- Settings applicable to all execution modes for testing WFP (ts.preview, -Dts.bootable.preview, -Dts.layers, -Dts.galleon) -->
+        <!--
+             There are five profiles that set things up for testing different combinations of feature packs.
+
+             1) Test the latest ee feature pack + the wildfly feature pack
+             2) Test the latest ee feature pack alone. Using this also requires setting -P-expansion-server-tests
+                in order to disable the testsuite modules that require the wildfly feature pack.
+             3) Test the legacy ee feature pack + the wildfly feature pack
+             4) Test the legacy ee feature pack alone. Using this also requires setting -P-expansion-server-tests
+                in order to disable the testsuite modules that require the wildfly feature pack.
+             5) Test the wildfly-preview feature pack.
+
+             None of these are active by default. The 'test the wildfly-preview feature pack' one is activated
+             via -Dpreview-server-tests. The others must be enabled via -P.
+
+             One of the first four will result in installations being tested that are equivalent to what
+             would happen by default. What would happen by default can vary in WildFly vs EAP branches, so
+             we provide profiles for all combinations to make it possible to run test jobs that don't assume a default.
+
+             These profiles may declare maven properties with the same values as are seen in the global defaults.
+             This is done both to be explicit about how the given profile works, and to insulate the profiles
+             from changes in defaults.
+        -->
+
+        <!-- Configures testsuite to use the latest non-default feature pack to provision EE content
+             and to also use wildfly feature pack content. -->
+        <profile>
+            <id>latest-ee-full-server-tests</id>
+            <activation>
+                <property><name>latest-ee-full-server-tests</name></property>
+            </activation>
+            <properties>
+                <!-- Tell tests what profile was used for provisioning -->
+                <server.provisioning.profile>latest-ee-full-server-tests</server.provisioning.profile>
+                <!-- Use the latest version of the wildfly-ee FP -->
+                <testsuite.ee.feature.pack.groupId>${ee.maven.groupId}</testsuite.ee.feature.pack.groupId>
+                <testsuite.ee.feature.pack.artifactId>${latest.ee.feature.pack.artifactId}</testsuite.ee.feature.pack.artifactId>
+                <testsuite.ee.feature.pack.version>${ee.maven.version}</testsuite.ee.feature.pack.version>
+                <!-- For pre-built servers, use full builds pulled from the root of the source tree -->
+                <testsuite.default.build.project.root></testsuite.default.build.project.root>
+                <testsuite.default.build.project.prefix></testsuite.default.build.project.prefix>
+                <server.output.dir.qualifier>${latest.ee.output.qualifier}</server.output.dir.qualifier>
+                <!-- For cases where we know for sure we don't want the 'wildfly' FP or channel, we can use these -->
+                <testsuite.ee.only.channel.artifactId>${latest.ee.channel.artifactId}</testsuite.ee.only.channel.artifactId>
+                <testsuite.ee.only.feature.pack.artifactId>${latest.ee.feature.pack.artifactId}</testsuite.ee.only.feature.pack.artifactId>
+            </properties>
+            <build>
+                <pluginManagement>
+                    <plugins>
+                        <plugin>
+                            <groupId>org.wildfly.glow</groupId>
+                            <artifactId>wildfly-glow-arquillian-plugin</artifactId>
+                            <configuration>
+                                <!-- Explicitly configure use of both feature packs; don't rely
+                                     on the wildfly FP's static dependency -->
+                                <feature-packs>
+                                    <feature-pack>
+                                        <groupId>${testsuite.ee.feature.pack.groupId}</groupId>
+                                        <artifactId>${testsuite.ee.feature.pack.artifactId}</artifactId>
+                                        <version>${testsuite.ee.feature.pack.version}</version>
+                                    </feature-pack>
+                                    <feature-pack>
+                                        <groupId>${testsuite.full.feature.pack.groupId}</groupId>
+                                        <artifactId>${testsuite.full.feature.pack.artifactId}</artifactId>
+                                        <version>${testsuite.full.feature.pack.version}</version>
+                                    </feature-pack>
+                                </feature-packs>
+                            </configuration>
+                        </plugin>
+                        <plugin>
+                            <groupId>org.apache.maven.plugins</groupId>
+                            <artifactId>maven-surefire-plugin</artifactId>
+                            <configuration>
+                                <!-- Parameters to test cases. -->
+                                <systemPropertyVariables combine.children="append">
+                                </systemPropertyVariables>
+                            </configuration>
+                        </plugin>
+                    </plugins>
+                </pluginManagement>
+            </build>
+        </profile>
+
+        <!-- Configures testsuite to use the latest non-default feature pack to provision EE content.
+             Test installations do not include functionality provided by the wildfly feature pack,
+             so -P-expansion-server-tests must be used. -->
+        <profile>
+            <id>latest-ee-only-server-tests</id>
+            <activation>
+                <property><name>latest-ee-only-server-tests</name></property>
+            </activation>
+            <properties>
+                <!-- Tell tests what profile was used for provisioning -->
+                <server.provisioning.profile>latest-ee-only-server-tests</server.provisioning.profile>
+                <!-- Use the latest version of the wildfly-ee FP -->
+                <testsuite.ee.feature.pack.groupId>${ee.maven.groupId}</testsuite.ee.feature.pack.groupId>
+                <testsuite.ee.feature.pack.artifactId>${latest.ee.feature.pack.artifactId}</testsuite.ee.feature.pack.artifactId>
+                <testsuite.ee.feature.pack.version>${ee.maven.version}</testsuite.ee.feature.pack.version>
+                <!-- For pre-built servers, use 'ee-'' builds pulled from the root of the source tree -->
+                <testsuite.default.build.project.root></testsuite.default.build.project.root>
+                <testsuite.default.build.project.prefix>ee-</testsuite.default.build.project.prefix>
+                <server.output.dir.qualifier>${latest.ee.output.qualifier}</server.output.dir.qualifier>
+                <!-- For cases where we know for sure we don't want the 'wildfly' FP or channel, we can use these -->
+                <testsuite.ee.only.channel.artifactId>${latest.ee.channel.artifactId}</testsuite.ee.only.channel.artifactId>
+                <testsuite.ee.only.feature.pack.artifactId>${latest.ee.feature.pack.artifactId}</testsuite.ee.only.feature.pack.artifactId>
+            </properties>
+        </profile>
+
+        <!-- Configures testsuite to use the legacy non-default feature pack to provision EE content.
+             and to also use wildfly feature pack content. -->
+        <profile>
+            <id>legacy-ee-full-server-tests</id>
+            <activation>
+                <property><name>legacy-ee-full-server-tests</name></property>
+            </activation>
+            <properties>
+                <!-- Tell tests what profile was used for provisioning -->
+                <server.provisioning.profile>legacy-ee-full-server-tests</server.provisioning.profile>
+                <testsuite.ee.feature.pack.groupId>${ee.maven.groupId}</testsuite.ee.feature.pack.groupId>
+                <testsuite.ee.feature.pack.artifactId>${legacy.ee.feature.pack.artifactId}</testsuite.ee.feature.pack.artifactId>
+                <testsuite.ee.feature.pack.version>${ee.maven.version}</testsuite.ee.feature.pack.version>
+                <!-- For pre-built servers, use full builds pulled from the legacy/ee-feature-pack source tree -->
+                <testsuite.default.build.project.root>legacy/ee-feature-pack</testsuite.default.build.project.root>
+                <testsuite.default.build.project.prefix></testsuite.default.build.project.prefix>
+                <server.output.dir.qualifier>${legacy.ee.output.qualifier}</server.output.dir.qualifier>
+                <!-- For cases where we know for sure we don't want the 'wildfly' FP or channel, we can use these -->
+                <testsuite.ee.only.channel.artifactId>${legacy.ee.channel.artifactId}</testsuite.ee.only.channel.artifactId>
+                <testsuite.ee.only.feature.pack.artifactId>${legacy.ee.feature.pack.artifactId}</testsuite.ee.only.feature.pack.artifactId>
+                <!-- Use the WFP dependencies -->
+                <dependency.management.import.artifact>wildfly-legacy-ee-bom</dependency.management.import.artifact>
+                <!-- If there are EE-version-specific test sources, uses the ee10 ones -->
+                <additional.ee.test.source>ee10</additional.ee.test.source>
+            </properties>
+            <build>
+                <pluginManagement>
+                    <plugins>
+                        <plugin>
+                            <groupId>org.wildfly.glow</groupId>
+                            <artifactId>wildfly-glow-arquillian-plugin</artifactId>
+                            <configuration>
+                                <!-- Explicitly configure use of both feature packs; don't rely
+                                     on the wildfly FP's static dependency -->
+                                <feature-packs>
+                                    <feature-pack>
+                                        <groupId>${testsuite.ee.feature.pack.groupId}</groupId>
+                                        <artifactId>${testsuite.ee.feature.pack.artifactId}</artifactId>
+                                        <version>${testsuite.ee.feature.pack.version}</version>
+                                    </feature-pack>
+                                    <feature-pack>
+                                        <groupId>${testsuite.full.feature.pack.groupId}</groupId>
+                                        <artifactId>${testsuite.full.feature.pack.artifactId}</artifactId>
+                                        <version>${testsuite.full.feature.pack.version}</version>
+                                    </feature-pack>
+                                </feature-packs>
+                            </configuration>
+                        </plugin>
+                    </plugins>
+                </pluginManagement>
+            </build>
+        </profile>
+
+        <!-- Configures testsuite to use the legacy non-default feature pack to provision EE content.
+             Test installations do not include functionality provided by the wildfly feature pack,
+             so -P-expansion-server-tests must be used. -->
+        <profile>
+            <id>legacy-ee-only-server-tests</id>
+            <activation>
+                <property><name>legacy-ee-only-server-tests</name></property>
+            </activation>
+            <properties>
+                <!-- Tell tests what profile was used for provisioning -->
+                <server.provisioning.profile>legacy-ee-only-server-tests</server.provisioning.profile>
+                <testsuite.ee.feature.pack.groupId>${ee.maven.groupId}</testsuite.ee.feature.pack.groupId>
+                <testsuite.ee.feature.pack.artifactId>${legacy.ee.feature.pack.artifactId}</testsuite.ee.feature.pack.artifactId>
+                <testsuite.ee.feature.pack.version>${ee.maven.version}</testsuite.ee.feature.pack.version>
+                <!-- For pre-built servers, use 'ee-' builds pulled from the legacy/ee-feature-pack source tree -->
+                <testsuite.default.build.project.root>legacy/ee-feature-pack</testsuite.default.build.project.root>
+                <testsuite.default.build.project.prefix>ee-</testsuite.default.build.project.prefix>
+                <server.output.dir.qualifier>${legacy.ee.output.qualifier}</server.output.dir.qualifier>
+                <!-- For cases where we know for sure we don't want the 'wildfly' FP or channel, we can use these -->
+                <testsuite.ee.only.channel.artifactId>${legacy.ee.channel.artifactId}</testsuite.ee.only.channel.artifactId>
+                <testsuite.ee.only.feature.pack.artifactId>${legacy.ee.feature.pack.artifactId}</testsuite.ee.only.feature.pack.artifactId>
+                <!-- Use the WFP dependencies -->
+                <dependency.management.import.artifact>wildfly-legacy-ee-bom</dependency.management.import.artifact>
+                <!-- If there are EE-version-specific test sources, uses the ee10 ones -->
+                <additional.ee.test.source>ee10</additional.ee.test.source>
+            </properties>
+        </profile>
+
+        <!-- Configures testsuite to use the wildfly-preview feature pack to provision EE content -->
         <profile>
             <id>preview-server-tests-config</id>
             <activation>
@@ -562,6 +818,16 @@
                 </property>
             </activation>
             <properties>
+                <!-- Tell tests what profile was used for provisioning -->
+                <server.provisioning.profile>preview-server-tests</server.provisioning.profile>
+                <!-- The pre-built legacy installations are not found under the top-level source root -->
+                <testsuite.default.build.project.root>preview</testsuite.default.build.project.root>
+                <!-- The pre-built server directory includes 'preview-' in its name -->
+                <server.output.dir.qualifier>${preview.output.qualifier}</server.output.dir.qualifier>
+                <!-- Use the WFP feature pack -->
+                <testsuite.ee.feature.pack.artifactId>wildfly-preview-feature-pack</testsuite.ee.feature.pack.artifactId>
+                <testsuite.full.feature.pack.artifactId>wildfly-preview-feature-pack</testsuite.full.feature.pack.artifactId>
+                <testsuite.test.feature.pack.artifactId>wildfly-test-feature-pack-preview</testsuite.test.feature.pack.artifactId>
                 <!-- Use the WFP dependencies -->
                 <dependency.management.import.artifact>wildfly-preview-ee-bom</dependency.management.import.artifact>
                 <dependency.management.import.test.artifact>wildfly-preview-test-bom</dependency.management.import.test.artifact>

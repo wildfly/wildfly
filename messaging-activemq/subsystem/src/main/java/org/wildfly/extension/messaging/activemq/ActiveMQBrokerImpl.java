@@ -2,13 +2,16 @@
  * Copyright The WildFly Authors
  * SPDX-License-Identifier: Apache-2.0
  */
-
 package org.wildfly.extension.messaging.activemq;
 
+import java.util.Collections;
+import java.util.List;
+import org.apache.activemq.artemis.api.core.QueueConfiguration;
 import org.apache.activemq.artemis.api.core.RoutingType;
 import org.apache.activemq.artemis.api.core.SimpleString;
 import org.apache.activemq.artemis.api.core.TransportConfiguration;
 import org.apache.activemq.artemis.api.core.management.ActiveMQServerControl;
+import org.apache.activemq.artemis.api.core.management.QueueControl;
 import org.apache.activemq.artemis.core.security.SecurityAuth;
 import org.apache.activemq.artemis.core.server.ActiveMQServer;
 import org.apache.activemq.artemis.core.settings.impl.AddressSettings;
@@ -16,10 +19,10 @@ import org.apache.activemq.artemis.core.settings.impl.AddressSettings;
 /**
  * Implementation of the wrapper over {@link org.apache.activemq.artemis.core.server.ActiveMQServer} and
  * {@link org.apache.activemq.artemis.core.server.management.ManagementService}.
+ *
  * @author Emmanuel Hugonnet (c) 2023 Red Hat, Inc.
  */
 public class ActiveMQBrokerImpl implements ActiveMQBroker {
-    private static final Object[] EMPTY_ARRAY = new Object[0];
 
     private final ActiveMQServer delegate;
 
@@ -44,7 +47,8 @@ public class ActiveMQBrokerImpl implements ActiveMQBroker {
 
     @Override
     public void createQueue(SimpleString address, RoutingType routingType, SimpleString queueName, SimpleString filter, boolean durable, boolean temporary) throws Exception {
-        delegate.createQueue(address, routingType, queueName, filter, durable, temporary);
+        QueueConfiguration config = QueueConfiguration.of(queueName).setAddress(address).setRoutingType(routingType).setFilterString(filter).setDurable(durable).setTemporary(temporary);
+        delegate.createQueue(config);
     }
 
     @Override
@@ -71,11 +75,27 @@ public class ActiveMQBrokerImpl implements ActiveMQBroker {
     }
 
     @Override
-    public Object[] getResources(Class<?> resourceType) {
+    public List<String> getCoreAddressNames() {
         if (delegate.getManagementService() != null) {
-            return delegate.getManagementService().getResources(resourceType);
+            return delegate.getManagementService().getAddressControlNames();
         }
-        return EMPTY_ARRAY;
+        return Collections.emptyList();
+    }
+
+    @Override
+    public List<QueueControl> getQueueControls() {
+        if (delegate.getManagementService() != null) {
+            return delegate.getManagementService().getQueueControls();
+        }
+        return Collections.emptyList();
+    }
+
+    @Override
+    public List<String> getQueueControlNames() {
+        if (delegate.getManagementService() != null) {
+            return delegate.getManagementService().getQueueControlNames();
+        }
+        return Collections.emptyList();
     }
 
     @Override
@@ -89,6 +109,5 @@ public class ActiveMQBrokerImpl implements ActiveMQBroker {
         settings.merge(delegate.getAddressSettingsRepository().getDefault());
         return ManagementUtil.convertAddressSettingInfosAsJSON(settings.toJSON());
     }
-
 
 }

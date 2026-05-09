@@ -59,6 +59,11 @@ public interface UndertowSessionManager extends io.undertow.server.session.Sessi
     }
 
     @Override
+    default boolean isDistributed() {
+        return this.getSessionManager().isDistributed();
+    }
+
+    @Override
     default Set<String> getTransientSessions() {
         return Set.of();
     }

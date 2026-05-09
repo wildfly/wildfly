@@ -10,6 +10,7 @@ import static org.jboss.as.weld.Capabilities.WELD_CAPABILITY_NAME;
 import java.util.Collection;
 import java.util.Collections;
 
+import org.eclipse.microprofile.config.spi.ConfigProviderResolver;
 import org.eclipse.microprofile.config.spi.ConfigSource;
 import org.eclipse.microprofile.config.spi.ConfigSourceProvider;
 import org.jboss.as.controller.AttributeDefinition;
@@ -26,7 +27,7 @@ class MicroProfileSubsystemDefinition extends PersistentResourceDefinition {
     static final String CONFIG_CAPABILITY_NAME = "org.wildfly.microprofile.config";
 
     static final RuntimeCapability<Void> CONFIG_CAPABILITY =
-            RuntimeCapability.Builder.of(CONFIG_CAPABILITY_NAME)
+            RuntimeCapability.Builder.of(CONFIG_CAPABILITY_NAME, ConfigProviderResolver.class)
                     .addRequirements(WELD_CAPABILITY_NAME)
                     .build();
 

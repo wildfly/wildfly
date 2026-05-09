@@ -82,4 +82,9 @@ public class DecoratedSessionManager extends DecoratedBlockingLifecycle implemen
     public SessionManager<Map<String, Object>> getSessionManager() {
         return this.manager.getSessionManager();
     }
+
+    @Override
+    public boolean isDistributed() {
+        return this.manager.isDistributed();
+    }
 }

@@ -15,7 +15,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>40.0.0.Beta1-SNAPSHOT</version>
+        <version>40.0.0.Final-SNAPSHOT</version>
     </parent>
 
     <packaging>pom</packaging>
@@ -35,6 +35,25 @@
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
+            <!-- include client BOMs -->
+            <dependency>
+                <groupId>org.wildfly</groupId>
+                <artifactId>wildfly-ejb-client-bom</artifactId>
+                <version>${project.version}</version>
+                <type>pom</type>
+            </dependency>
+            <dependency>
+                <groupId>org.wildfly</groupId>
+                <artifactId>wildfly-jaxws-client-bom</artifactId>
+                <version>${project.version}</version>
+                <type>pom</type>
+            </dependency>
+            <dependency>
+                <groupId>org.wildfly</groupId>
+                <artifactId>wildfly-jms-client-bom</artifactId>
+                <version>${project.version}</version>
+                <type>pom</type>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 
@@ -42,13 +61,13 @@
     <dependencies>
         <dependency>
             <groupId>org.wildfly</groupId>
-            <artifactId>wildfly-ee-galleon-pack</artifactId>
+            <artifactId>${latest.ee.feature.pack.artifactId}</artifactId>
             <version>${ee.maven.version}</version>
             <type>pom</type>
         </dependency>
         <dependency>
-            <groupId>org.wildfly.channels</groupId>
-            <artifactId>wildfly-ee</artifactId>
+            <groupId>${channels.maven.groupId}</groupId>
+            <artifactId>wildfly-${latest.ee.artifactid.segment}</artifactId>
             <version>${ee.maven.version}</version>
             <type>pom</type>
         </dependency>
@@ -87,12 +106,50 @@
                                 </channel>
                             </channels>
                             <includeDependencies combine.children="append">
-                                <!-- include here any <dependency /> exclusive to this BOM -->
+                                <!-- include client BOMs -->
+                                <dependency>
+                                    <groupId>org.wildfly</groupId>
+                                    <artifactId>wildfly-ejb-client-bom</artifactId>
+                                    <type>pom</type>
+                                    <transitive>false</transitive>
+                                </dependency>
+                                <dependency>
+                                    <groupId>org.wildfly</groupId>
+                                    <artifactId>wildfly-jaxws-client-bom</artifactId>
+                                    <type>pom</type>
+                                    <transitive>false</transitive>
+                                </dependency>
+                                <dependency>
+                                    <groupId>org.wildfly</groupId>
+                                    <artifactId>wildfly-jms-client-bom</artifactId>
+                                    <type>pom</type>
+                                    <transitive>false</transitive>
+                                </dependency>
+                                <dependency>
+                                    <groupId>jakarta.data</groupId>
+                                    <artifactId>jakarta.data-api</artifactId>
+                                </dependency>
                                 <dependency>
                                     <groupId>org.jboss.spec.jakarta.el</groupId>
-                                    <artifactId>jboss-el-api_5.0_spec</artifactId>
+                                    <artifactId>jakarta.el-api</artifactId>
+                                </dependency>
+                                <dependency>
+                                    <groupId>jakarta.enterprise</groupId>
+                                    <artifactId>jakarta.enterprise.cdi-el-api</artifactId>
+                                </dependency>
+                                <!-- replaces org.hibernate.orm:hibernate-jpamodelgen -->
+                                <dependency>
+                                    <groupId>org.hibernate.orm</groupId>
+                                    <artifactId>hibernate-processor</artifactId>
                                 </dependency>
                             </includeDependencies>
+                            <versionRefDependencies combine.children="append">
+                                <dependency>
+                                    <groupId>org.hibernate.orm</groupId>
+                                    <artifactId>hibernate-processor</artifactId>
+                                    <version>org.hibernate.orm:hibernate-core:jar</version>
+                                </dependency>
+                            </versionRefDependencies>
                         </configuration>
                     </execution>
                 </executions>

@@ -20,10 +20,15 @@ import io.smallrye.health.SmallRyeHealth;
 import org.eclipse.microprofile.health.HealthCheck;
 import org.eclipse.microprofile.health.HealthCheckResponse;
 import org.eclipse.microprofile.health.HealthCheckResponseBuilder;
+import org.jboss.as.server.deployment.AttachmentKey;
 import org.wildfly.extension.microprofile.health._private.MicroProfileHealthLogger;
+import org.wildfly.service.descriptor.NullaryServiceDescriptor;
 
 
 public class MicroProfileHealthReporter {
+    // TODO: Extract a sensible interface
+    public static final NullaryServiceDescriptor<MicroProfileHealthReporter> SERVICE_DESCRIPTOR = NullaryServiceDescriptor.of("org.wildfly.extension.microprofile.health.reporter", MicroProfileHealthReporter.class);
+    public static final AttachmentKey<MicroProfileHealthReporter> ATTACHMENT_KEY = AttachmentKey.create(MicroProfileHealthReporter.class);
 
     public static final String DOWN = "DOWN";
     public static final String UP = "UP";

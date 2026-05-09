@@ -16,7 +16,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>40.0.0.Beta1-SNAPSHOT</version>
+        <version>40.0.0.Final-SNAPSHOT</version>
     </parent>
 
     <artifactId>wildfly-ts-galleon-update</artifactId>
@@ -148,12 +148,20 @@
         </profile>
 
         <profile>
-            <id>ee-galleon-pack.profile</id>
+            <id>latest-ee-only-server-tests</id>
             <activation>
-                <property>
-                    <name>testsuite.ee.galleon.pack.artifactId</name>
-                    <value>wildfly-ee-galleon-pack</value>
-                </property>
+                <property><name>latest-ee-only-server-tests</name></property>
+            </activation>
+            <properties>
+                <!-- Skip the WF feature pack test -->
+                <wildfly.update.phase>none</wildfly.update.phase>
+            </properties>
+        </profile>
+
+        <profile>
+            <id>legacy-ee-only-server-tests</id>
+            <activation>
+                <property><name>legacy-ee-only-server-tests</name></property>
             </activation>
             <properties>
                 <!-- Skip the WF feature pack test -->

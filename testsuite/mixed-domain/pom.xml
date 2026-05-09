@@ -16,7 +16,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>40.0.0.Beta1-SNAPSHOT</version>
+        <version>40.0.0.Final-SNAPSHOT</version>
     </parent>
 
     <artifactId>wildfly-testsuite-integration-mixed-domain</artifactId>
@@ -266,18 +266,9 @@
                                 <overwrite-provisioned-server>true</overwrite-provisioned-server>
                                 <feature-packs>
                                     <feature-pack>
-                                        <transitive>true</transitive>
-                                        <groupId>${ee.maven.groupId}</groupId>
-                                        <artifactId>wildfly-ee-galleon-pack</artifactId>
-                                        <version>${ee.maven.version}</version>
-                                        <included-packages>
-                                            <name>docs.examples.configs</name>
-                                        </included-packages>
-                                    </feature-pack>
-                                    <feature-pack>
-                                        <groupId>${full.maven.groupId}</groupId>
-                                        <artifactId>wildfly-galleon-pack</artifactId>
-                                        <version>${full.maven.version}</version>
+                                        <groupId>${testsuite.ee.feature.pack.groupId}</groupId>
+                                        <artifactId>${testsuite.ee.feature.pack.artifactId}</artifactId>
+                                        <version>${testsuite.ee.feature.pack.version}</version>
                                         <included-packages>
                                             <name>docs.examples.configs</name>
                                         </included-packages>
@@ -314,10 +305,6 @@
                 <executions>
                     <execution>
                         <id>server-provisioning</id>
-                        <goals>
-                            <goal>provision</goal>
-                        </goals>
-                        <phase>${provision.phase}</phase>
                     </execution>
                 </executions>
             </plugin>
@@ -326,59 +313,39 @@
 
     <profiles>
         <profile>
-            <id>use-alt-feature-pack</id>
+            <id>latest-ee-full-server-tests</id>
             <activation>
-                <property>
-                    <name>testsuite.ee.galleon.pack.artifactId</name>
-                    <value>wildfly-ee-galleon-pack</value>
-                </property>
+                <property><name>latest-ee-full-server-tests</name></property>
             </activation>
             <build>
                 <plugins>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-surefire-plugin</artifactId>
-                    </plugin>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-resources-plugin</artifactId>
-                    </plugin>
                     <plugin>
                         <groupId>org.wildfly.plugins</groupId>
                         <artifactId>wildfly-maven-plugin</artifactId>
                         <executions>
                             <execution>
                                 <id>server-provisioning</id>
-                                <goals>
-                                    <goal>provision</goal>
-                                </goals>
-                                <phase>${provision.phase}</phase>
-                                <configuration combine.self="override">
-                                    <skip>${ts.skipTests}</skip>
-                                    <provisioning-dir>${project.build.directory}/wildfly</provisioning-dir>
-                                    <record-provisioning-state>true</record-provisioning-state>
-                                    <log-provisioning-time>${galleon.log.time}</log-provisioning-time>
-                                    <offline-provisioning>${galleon.offline}</offline-provisioning>
-                                    <overwrite-provisioned-server>true</overwrite-provisioned-server>
+                                <configuration>
+                                    <!-- Override the globally defined FP to explicitly require the full FP -->
                                     <feature-packs>
                                         <feature-pack>
-                                            <groupId>${ee.maven.groupId}</groupId>
-                                            <artifactId>wildfly-ee-galleon-pack</artifactId>
-                                            <version>${ee.maven.version}</version>
+                                            <transitive>true</transitive>
+                                            <groupId>${testsuite.ee.feature.pack.groupId}</groupId>
+                                            <artifactId>${testsuite.ee.feature.pack.artifactId}</artifactId>
+                                            <version>${testsuite.ee.feature.pack.version}</version>
+                                            <included-packages>
+                                                <name>docs.examples.configs</name>
+                                            </included-packages>
+                                        </feature-pack>
+                                        <feature-pack>
+                                            <groupId>${testsuite.full.feature.pack.groupId}</groupId>
+                                            <artifactId>${testsuite.full.feature.pack.artifactId}</artifactId>
+                                            <version>${testsuite.full.feature.pack.version}</version>
                                             <included-packages>
                                                 <name>docs.examples.configs</name>
                                             </included-packages>
                                         </feature-pack>
                                     </feature-packs>
-                                    <galleon-options>
-                                        <!--
-                                            Server used as the DC for the Mixed Domain tests. It is built under default
-                                            stability level and can be reloaded to a lower stability level
-                                        -->
-                                        <config-stability-level>default</config-stability-level>
-                                        <package-stability-level>experimental</package-stability-level>
-                                        <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
-                                    </galleon-options>
                                 </configuration>
                             </execution>
                         </executions>
@@ -386,6 +353,48 @@
                 </plugins>
             </build>
         </profile>
+        <profile>
+            <id>legacy-ee-full-server-tests</id>
+            <activation>
+                <property><name>legacy-ee-full-server-tests</name></property>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.wildfly.plugins</groupId>
+                        <artifactId>wildfly-maven-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>server-provisioning</id>
+                                <configuration>
+                                    <!-- Override the globally defined FP to explicitly require the full FP -->
+                                    <feature-packs>
+                                        <feature-pack>
+                                            <transitive>true</transitive>
+                                            <groupId>${testsuite.ee.feature.pack.groupId}</groupId>
+                                            <artifactId>${testsuite.ee.feature.pack.artifactId}</artifactId>
+                                            <version>${testsuite.ee.feature.pack.version}</version>
+                                            <included-packages>
+                                                <name>docs.examples.configs</name>
+                                            </included-packages>
+                                        </feature-pack>
+                                        <feature-pack>
+                                            <groupId>${testsuite.full.feature.pack.groupId}</groupId>
+                                            <artifactId>${testsuite.full.feature.pack.artifactId}</artifactId>
+                                            <version>${testsuite.full.feature.pack.version}</version>
+                                            <included-packages>
+                                                <name>docs.examples.configs</name>
+                                            </included-packages>
+                                        </feature-pack>
+                                    </feature-packs>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
         <profile>
             <id>mixed-domain-server-provision</id>
             <activation>

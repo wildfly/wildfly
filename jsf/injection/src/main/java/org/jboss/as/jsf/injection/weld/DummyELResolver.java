@@ -18,7 +18,6 @@ public class DummyELResolver extends ELResolver {
         return null;
     }
 
-    @Override
     public Iterator<FeatureDescriptor> getFeatureDescriptors(ELContext context, Object base) {
         return null;
     }

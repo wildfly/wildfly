@@ -30,11 +30,6 @@ public class ElytronOidcClientSubsystemTestCase extends AbstractSubsystemSchemaT
         super(ElytronOidcExtension.SUBSYSTEM_NAME, new ElytronOidcExtension(), schema, ElytronOidcSubsystemSchema.CURRENT.get(schema.getStability()));
     }
 
-    @Override
-    protected void compareXml(String configId, String original, String marshalled) {
-        //
-    }
-
     protected Properties getResolvedProperties() {
         return System.getProperties();
     }

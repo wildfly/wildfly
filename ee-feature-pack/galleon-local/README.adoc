@@ -13,14 +13,18 @@ endif::[]
 == Overview
 
 The `wildfly-ee-feature-pack-galleon-local` module is used to control the source code and dependency management for items that
-are relevant to the `wildfly-ee` feature pack *but not* to the `wildfly-preview` feature pack.
+are relevant to the `wildfly-ee` feature pack *but not* to the `wildfly-legacy-ee` feature pack or the `wildfly-preview` feature pack.
+
+Note that `wildfly-legacy-ee` is a conceptual name used in this document for a feature pack that will have different actual names over time, depending on what EE version it provides. For example, it initially was called `wildfly-ee-10`.
 
 [WARNING]
 ====
 If something is relevant to some other feature pack besides `wildfly-ee`, *DO NOT* include it here.
 
-* If it's relevant to *both* the `wildfly-ee` and the `wildfly-preview` feature packs, use the `wildfly-ee-feature-pack-galleon-shared` maven module.
+* If it's relevant to *all three* of the `wildfly-ee`, `wildfly-legacy-ee` and the `wildfly-preview` feature packs, use the `wildfly-ee-feature-pack-galleon-shared` maven module.
 * If it's only for `wildfly-preview`, use the `wildfly-preview-feature-pack-galleon-local` maven module.
+* If it's only for the *pair* `wildfly-ee` and `wildfly-legacy-ee`, use the `wildfly-ee-feature-pack-galleon-shared-legacy` maven module.
+* If it's only for the *pair* `wildfly-ee` and `wildfly-preview`, use the `wildfly-ee-feature-pack-galleon-shared-preview` maven module.
 * If it's relevant to standard WildFly but only if the `wildfly` feature pack is used, use either the `wildfly-feature-pack-galleon-shared` or `wildfly-feature-pack-galleon-local` maven module.
 ====
 

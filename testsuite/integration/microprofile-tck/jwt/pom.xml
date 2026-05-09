@@ -15,7 +15,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>40.0.0.Beta1-SNAPSHOT</version>
+        <version>40.0.0.Final-SNAPSHOT</version>
     </parent>
 
     <artifactId>wildfly-ts-integ-mp-jwt</artifactId>
@@ -26,7 +26,7 @@
         <jbossas.ts.dir>${jbossas.ts.integ.dir}/..</jbossas.ts.dir>
         <jbossas.project.dir>${jbossas.ts.dir}/..</jbossas.project.dir>
         <ts.microprofile-tck-tests-dependency>org.eclipse.microprofile.jwt:microprofile-jwt-auth-tck</ts.microprofile-tck-tests-dependency>
-        <ts.microprofile-tck-glow.expected-discovery>[cdi, ee-integration, ee-security, ejb-lite, jaxrs, jsonp, microprofile-config, microprofile-jwt]==>ee-core-profile-server,ejb-lite,jaxrs,microprofile-jwt</ts.microprofile-tck-glow.expected-discovery>
+        <ts.microprofile-tck-glow.expected-discovery>[cdi, ee-integration, ee-security, ejb-lite, jaxrs, jsonp, microprofile-config, microprofile-jwt, servlet]==>ee-core-profile-server,ejb-lite,jaxrs,microprofile-jwt</ts.microprofile-tck-glow.expected-discovery>
     </properties>
 
     <dependencies>
@@ -173,10 +173,6 @@
     <build>
         <finalName>microprofile-jwt-${project.version}</finalName>
         <plugins>
-            <plugin>
-                <groupId>org.wildfly.glow</groupId>
-                <artifactId>wildfly-glow-arquillian-plugin</artifactId>
-            </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>

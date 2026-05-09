@@ -5,17 +5,15 @@
 
 package org.wildfly.extension.microprofile.health;
 
-import static org.wildfly.extension.microprofile.health.MicroProfileHealthSubsystemDefinition.HTTP_CONTEXT_SERVICE;
-
 import java.util.function.Supplier;
 
 import io.smallrye.health.SmallRyeHealth;
 import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
 import io.undertow.util.Headers;
+import org.jboss.as.controller.CapabilityServiceBuilder;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.msc.Service;
-import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StopContext;
 import org.wildfly.extension.health.HealthContextService;
@@ -26,16 +24,15 @@ import org.wildfly.extension.health.HealthContextService;
 public class MicroProfileHealthContextService implements Service {
 
     private final Supplier<MicroProfileHealthReporter> healthReporter;
-    private Supplier<HealthContextService> healthContextService;
+    private final Supplier<HealthContextService> healthContextService;
 
     static void install(OperationContext context) {
-        ServiceBuilder<?> serviceBuilder = context.getCapabilityServiceTarget().addService(HTTP_CONTEXT_SERVICE);
+        CapabilityServiceBuilder<?> builder = context.getCapabilityServiceTarget().addService();
 
-        Supplier<HealthContextService> healthContextService = serviceBuilder.requires(context.getCapabilityServiceName(MicroProfileHealthSubsystemDefinition.HEALTH_HTTP_CONTEXT_CAPABILITY, HealthContextService.class));
-        Supplier<MicroProfileHealthReporter> healthReporter = serviceBuilder.requires(context.getCapabilityServiceName(MicroProfileHealthSubsystemDefinition.MICROPROFILE_HEALTH_REPORTER_CAPABILITY, MicroProfileHealthReporter.class));
+        Supplier<HealthContextService> healthContextService = builder.requires(context.getCapabilityServiceName(MicroProfileHealthSubsystemDefinition.HEALTH_HTTP_CONTEXT_CAPABILITY, HealthContextService.class));
+        Supplier<MicroProfileHealthReporter> healthReporter = builder.requires(MicroProfileHealthReporter.SERVICE_DESCRIPTOR);
 
-        serviceBuilder.setInstance(new MicroProfileHealthContextService(healthContextService, healthReporter))
-                .install();
+        builder.setInstance(new MicroProfileHealthContextService(healthContextService, healthReporter)).install();
     }
 
     private MicroProfileHealthContextService(Supplier<HealthContextService> healthContextService, Supplier<MicroProfileHealthReporter> healthReporter) {

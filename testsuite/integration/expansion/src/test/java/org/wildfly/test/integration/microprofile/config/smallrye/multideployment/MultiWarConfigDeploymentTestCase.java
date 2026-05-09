@@ -27,6 +27,7 @@ import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.api.ServerSetupTask;
 import org.jboss.as.arquillian.container.ManagementClient;
+import org.jboss.as.arquillian.setup.ReloadServerSetupTask;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.dmr.ModelNode;
@@ -40,7 +41,7 @@ import org.junit.runner.RunWith;
 
 @RunWith(Arquillian.class)
 @RunAsClient
-@ServerSetup(MultiWarConfigDeploymentTestCase.GlobalConfigSourceSetupTask.class)
+@ServerSetup({MultiWarConfigDeploymentTestCase.GlobalConfigSourceSetupTask.class, ReloadServerSetupTask.class})
 public class MultiWarConfigDeploymentTestCase {
 
     @ArquillianResource

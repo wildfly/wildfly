@@ -15,7 +15,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>40.0.0.Beta1-SNAPSHOT</version>
+        <version>40.0.0.Final-SNAPSHOT</version>
     </parent>
 
     <artifactId>wildfly-ts-integ-clustering</artifactId>
@@ -442,13 +442,6 @@
                 <groupId>org.wildfly.glow</groupId>
                 <artifactId>wildfly-glow-arquillian-plugin</artifactId>
                 <configuration>
-                    <feature-packs>
-                        <feature-pack>
-                            <groupId>${testsuite.ee.galleon.pack.groupId}</groupId>
-                            <artifactId>${testsuite.ee.galleon.pack.artifactId}</artifactId>
-                            <version>${testsuite.ee.galleon.pack.version}</version>
-                        </feature-pack>
-                    </feature-packs>
                     <profile>ha</profile>
                 </configuration>
                 <executions>
@@ -530,7 +523,7 @@
                             <packaging-scripts>
                                 <cli-session>
                                     <javaOpts>
-                                        <opt>-Dmaven.repo.local=${maven.repo.local}</opt>
+                                        <opt>-Dmaven.repo.local=${settings.localRepository}</opt>
                                     </javaOpts>
                                     <scripts>
                                         <script>clustering-ha-bootable-jar.cli</script>
@@ -564,7 +557,7 @@
                             <packaging-scripts>
                                 <cli-session>
                                     <javaOpts>
-                                        <opt>-Dmaven.repo.local=${maven.repo.local}</opt>
+                                        <opt>-Dmaven.repo.local=${settings.localRepository}</opt>
                                     </javaOpts>
                                     <scripts>
                                         <script>clustering-ha-bootable-jar.cli</script>
@@ -598,7 +591,7 @@
                             <packaging-scripts>
                                 <cli-session>
                                     <javaOpts>
-                                        <opt>-Dmaven.repo.local=${maven.repo.local}</opt>
+                                        <opt>-Dmaven.repo.local=${settings.localRepository}</opt>
                                     </javaOpts>
                                     <scripts>
                                         <script>clustering-load-balancer-bootable-jar.cli</script>
@@ -1453,13 +1446,6 @@
                         <groupId>org.wildfly.glow</groupId>
                         <artifactId>wildfly-glow-arquillian-plugin</artifactId>
                         <configuration>
-                            <feature-packs>
-                                <feature-pack>
-                                    <groupId>${testsuite.ee.galleon.pack.groupId}</groupId>
-                                    <artifactId>${testsuite.ee.galleon.pack.artifactId}</artifactId>
-                                    <version>${testsuite.ee.galleon.pack.version}</version>
-                                </feature-pack>
-                            </feature-packs>
                             <profile>ha</profile>
                         </configuration>
                         <executions>

@@ -6,7 +6,10 @@
 
 <!-- WARNING. This layer is for internal use only and is not expected to be provisioned directly.
  It aggregates a set of Galleon layers that are shared between default standalone configurations. -->
-<layer-spec xmlns="urn:jboss:galleon:layer-spec:1.0" name="internal-standalone-profile">
+<layer-spec xmlns="urn:jboss:galleon:layer-spec:2.0" name="internal-standalone-profile">
+    <props>
+        <prop name="org.wildfly.rule.kind" value="hidden"/>
+    </props>
     <dependencies>
         <layer name="jaxrs-server"/>
         <layer name="ee-security" optional="true"/>
@@ -29,11 +32,14 @@
         <layer name="sar" optional="true"/>
         <layer name="batch-jberet" optional="true"/>
 
+        <!-- Note: in standard WildFly we don't include these and instead have the 'metrics' layer -->
         <layer name="microprofile-config" optional="true"/>
         <layer name="microprofile-jwt" optional="true"/>
         <layer name="micrometer" optional="true"/>
+
         <layer name="hibernate-search" optional="true"/>
         <layer name="web-console" optional="true"/>
+        <!-- Note: in the legacy EE FP we don't include jakarta-data -->
         <layer name="jakarta-data" optional="true"/>
     </dependencies>
 </layer-spec>

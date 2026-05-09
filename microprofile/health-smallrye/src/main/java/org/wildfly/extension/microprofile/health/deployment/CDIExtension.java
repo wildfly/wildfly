@@ -36,8 +36,7 @@ import org.wildfly.extension.microprofile.health.MicroProfileHealthReporter;
  */
 public class CDIExtension implements Extension {
 
-    private final String MP_HEALTH_DISABLE_DEFAULT_PROCEDURES = "mp.health.disable-default-procedures";
-
+    private static final String MP_HEALTH_DISABLE_DEFAULT_PROCEDURES = "mp.health.disable-default-procedures";
 
     private final MicroProfileHealthReporter reporter;
     private final Module module;

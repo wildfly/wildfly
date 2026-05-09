@@ -234,8 +234,8 @@ public class EJB3SubsystemRootResourceDefinition extends SimpleResourceDefinitio
             .setMaxSize(Integer.MAX_VALUE)
             .build();
 
-    public static final NullaryServiceDescriptor<Void> CLUSTERED_SINGLETON_BARRIER = NullaryServiceDescriptor.of("org.wildfly.ejb3.clustered.singleton.barrier", Void.class);
-    public static final NullaryServiceDescriptor<Void> CLUSTERED_SINGLETON = NullaryServiceDescriptor.of("org.wildfly.ejb3.clustered.singleton", Void.class);
+    public static final NullaryServiceDescriptor<Boolean> CLUSTERED_SINGLETON_BARRIER = NullaryServiceDescriptor.of("org.wildfly.ejb3.clustered.singleton.barrier", Boolean.class);
+    public static final NullaryServiceDescriptor<Boolean> CLUSTERED_SINGLETON = NullaryServiceDescriptor.of("org.wildfly.ejb3.clustered.singleton", Boolean.class);
     static final RuntimeCapability<Void> CLUSTERED_SINGLETON_CAPABILITY =  RuntimeCapability.Builder.of(CLUSTERED_SINGLETON).build();
 
     public static final RuntimeCapability<Void> EJB_CAPABILITY =  RuntimeCapability.Builder.of(EJB_CAPABILITY_NAME, Void.class)

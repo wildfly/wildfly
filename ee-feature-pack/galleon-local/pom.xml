@@ -16,7 +16,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>40.0.0.Beta1-SNAPSHOT</version>
+        <version>40.0.0.Final-SNAPSHOT</version>
     </parent>
 
     <artifactId>wildfly-ee-feature-pack-galleon-local</artifactId>
@@ -28,22 +28,30 @@
 	</description>
     <packaging>pom</packaging>
 
+    <dependencyManagement>
+        <dependencies>
+            <!-- Add the shared-with-legacy bom to the common-ee bom we inherit from our parent -->
+            <dependency>
+                <groupId>${ee.maven.groupId}</groupId>
+                <artifactId>wildfly-standard-ee-bom</artifactId>
+                <version>${ee.maven.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
     <dependencies>
         <dependency>
             <groupId>${ee.maven.groupId}</groupId>
             <artifactId>wildfly-ee-feature-pack-product-conf</artifactId>
         </dependency>
-        <dependency>
-            <groupId>org.glassfish</groupId>
-            <artifactId>jakarta.enterprise.concurrent</artifactId>
-        </dependency>
+
         <dependency>
             <groupId>${ee.maven.groupId}</groupId>
-            <artifactId>wildfly-concurrency-impl-30</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>${ee.maven.groupId}</groupId>
-            <artifactId>wildfly-concurrency-spi</artifactId>
+            <artifactId>wildfly-ee-feature-pack-product-conf</artifactId>
+            <classifier>version</classifier>
+            <type>txt</type>
         </dependency>
     </dependencies>
 

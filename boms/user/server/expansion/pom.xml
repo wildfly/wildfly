@@ -15,7 +15,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>40.0.0.Beta1-SNAPSHOT</version>
+        <version>40.0.0.Final-SNAPSHOT</version>
     </parent>
 
     <artifactId>wildfly-server-expansion</artifactId>
@@ -149,7 +149,7 @@
 
     <profiles>
         <profile>
-            <id>skip.preview</id>
+            <id>preview-ee-build</id>
             <activation>
                 <property>
                     <name>!no.preview.build</name>
@@ -157,6 +157,18 @@
             </activation>
             <modules>
                 <module>preview</module>
+            </modules>
+        </profile>
+
+        <profile>
+            <id>legacy-ee-build</id>
+            <activation>
+                <property>
+                    <name>!no.legacy.ee.build</name>
+                </property>
+            </activation>
+            <modules>
+                <module>legacy</module>
             </modules>
         </profile>
     </profiles>

@@ -232,7 +232,7 @@ public class SuspendResumeRemoteEJBTestCase extends AbstractClusteringTestCase {
                     Thread.sleep(SUSPEND_RESUME_DURATION_MSECS);
                 }
             } finally {
-                thread.interrupt();
+                continuousInvoker.terminate();
                 thread.join();
             }
         } catch (InterruptedException e) {
@@ -251,6 +251,8 @@ public class SuspendResumeRemoteEJBTestCase extends AbstractClusteringTestCase {
      */
     private class ContinuousInvoker implements Runnable {
         private final Heartbeat bean;
+        private volatile Thread runner;
+        private volatile boolean terminated;
 
         public ContinuousInvoker(Heartbeat bean) {
             this.bean = bean;
@@ -258,12 +260,20 @@ public class SuspendResumeRemoteEJBTestCase extends AbstractClusteringTestCase {
 
         @Override
         public void run() {
+            runner = Thread.currentThread();
             try {
-                while (!Thread.currentThread().isInterrupted()) {
+                while (!terminated && !Thread.currentThread().isInterrupted()) {
                     performInvocation(this.bean);
                 }
             } catch (Throwable e) {
                 LOGGER.info("ContinuousInvoker: caught exception while performing invocation: e = " + e.getMessage());
+            }
+        }
+
+        private void terminate() {
+            terminated = true;
+            if (runner != null) {
+                runner.interrupt();
             }
         }
     }

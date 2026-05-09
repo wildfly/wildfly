@@ -5,6 +5,8 @@
 
 package org.wildfly.mod_cluster.undertow;
 
+import java.util.Set;
+
 import jakarta.servlet.ServletException;
 import jakarta.servlet.ServletRequestEvent;
 import jakarta.servlet.ServletRequestListener;
@@ -15,9 +17,6 @@ import io.undertow.servlet.api.Deployment;
 import io.undertow.servlet.api.ListenerInfo;
 import io.undertow.servlet.core.ManagedListener;
 import io.undertow.servlet.util.ImmediateInstanceFactory;
-
-import java.util.Set;
-
 import org.jboss.modcluster.container.Context;
 import org.jboss.modcluster.container.Host;
 

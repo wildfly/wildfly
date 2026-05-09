@@ -12,7 +12,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>40.0.0.Beta1-SNAPSHOT</version>
+        <version>40.0.0.Final-SNAPSHOT</version>
     </parent>
     <artifactId>wildfly-ts-integ-mp-rest-client</artifactId>
     <name>WildFly Test Suite: Integration - MicroProfile - REST Client TCK</name>
@@ -20,12 +20,64 @@
         <jbossas.ts.integ.dir>${basedir}/../..</jbossas.ts.integ.dir>
         <jbossas.ts.dir>${jbossas.ts.integ.dir}/..</jbossas.ts.dir>
         <jbossas.project.dir>${jbossas.ts.dir}/..</jbossas.project.dir>
-        <!-- properties to enable plugins shared by various bootable profiles -->
-        <bootable-jar-generate-properties-file.phase>none</bootable-jar-generate-properties-file.phase>
+
+        <!--
+             Properties to control when various plugin executions occur that are related to preparing an
+             installation to test.
+
+             Profiles can override some of these to enable/disable executions. A value of 'none' disables an execution.
+             Other properties are not expected to be overridden, and only exist as properties instead of static values
+             so their value is visible here, next to this comment and the overridable properties.
+
+             Note that the following overridable properties inherited from our parent also influence when/if
+             relevant executions occur. They default to 'none' and are enabled in profiles.
+
+             ts.microprofile-tck-provisioning.phase
+             ts.bootable-jar-packaging.phase
+
+             The following describes the expected sequence of executions related to getting a proper
+             installation to test.
+
+             generate-sources
+             - wiremock-maven-plugin@run
+
+             compile
+             - maven-compiler-plugin@default-testCompile (we run this early to create the target/test-classes dir glow expects.
+                                                          See https://github.com/wildfly/wildfly-glow/issues/155)
+
+             process-test-sources
+             - (ts.layers, ts.bootable, ts.bootable.preview, ts.preview)  wildfly-glow-arquillian-plugin@scan-deployments
+
+             generate-test-resources
+             - produce basic installation
+               - (ts.layers and ts.preview) microprofile-tck-provisioning wildfly-maven-plugin@provision
+               - OR (ts.bootable and ts.bootable.preview) see process-test-classes
+               - OR (other) mp-server-provisioning wildfly-maven-plugin@provision
+
+             process-test-resources
+             - install-as-module-wiremock maven-dependency-plugin@copy-dependencies
+             - install-wiremock maven-dependency-plugin@copy
+             - wiremock-resource-path maven-antrun-plugin@run (exports some properties)
+             - echo-wiremock-resource-path maven-antrun-plugin@run (echos those properties)
+
+             test-compile
+             - ts.bootable and ts.bootable.preview) write-properties-file-maven-plugin@write-properties-file
+
+             process-test-classes
+             - (NOT ts.bootable and ts.bootable.preview)add-wiremock-module wildfly-maven-plugin@execute-commands (module add ....)
+             - (ts.bootable and ts.bootable.preview) bootable-jar-packaging wildfly-maven-plugin@package
+
+        -->
+        <ts.wiremock-maven-plugin.phase>generate-sources</ts.wiremock-maven-plugin.phase> <!-- NOT overridable -->
+        <ts.maven-compiler-plugin.test.phase>compile</ts.maven-compiler-plugin.test.phase>  <!-- NOT overridable -->
+        <ts.copy-wildfly.phase>none</ts.copy-wildfly.phase> <!-- overridable -->
+        <ts.mp-server-provisioning-phase>generate-test-resources</ts.mp-server-provisioning-phase>  <!-- overridable -->
+        <ts.bootable-jar-generate-properties-file.phase>none</ts.bootable-jar-generate-properties-file.phase> <!-- overridable -->
+        <ts.install-as-module-wiremock.phase>process-test-resources</ts.install-as-module-wiremock.phase> <!-- NOT overridable -->
+        <ts.add-wiremock-module.phase>process-test-classes</ts.add-wiremock-module.phase> <!-- overridable -->
+
         <ts.microprofile-tck-tests-dependency>org.eclipse.microprofile.rest.client:microprofile-rest-client-tck</ts.microprofile-tck-tests-dependency>
-        <ts.install-as-module-wiremock.phase>generate-test-resources</ts.install-as-module-wiremock.phase>
-        <ts.add-wiremock-module.phase>process-test-resources</ts.add-wiremock-module.phase>
-        <ts.wiremock-maven-plugin.phase>generate-test-sources</ts.wiremock-maven-plugin.phase>
+
         <!-- Setup properties -->
         <wiremock.lib.path>${project.build.directory}/wiremock</wiremock.lib.path>
         <wiremock.module.included.groupIds>org.wiremock,org.apache.httpcomponents.client5,org.apache.httpcomponents.core5,junit,org.eclipse.jetty</wiremock.module.included.groupIds>
@@ -261,15 +313,38 @@
     </dependencies>
     <build>
         <finalName>microprofile-rest-client-${project.version}</finalName>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.wildfly.glow</groupId>
+                    <artifactId>wildfly-glow-arquillian-plugin</artifactId>
+                    <configuration>
+                        <feature-packs>
+                            <!-- We repeat this from the parent in order to add 'included-packages' -->
+                            <!-- NOTE: various profiles override this, but all need to do the included-packages bit -->
+                            <feature-pack>
+                                <groupId>${testsuite.full.feature.pack.groupId}</groupId>
+                                <artifactId>${testsuite.full.feature.pack.artifactId}</artifactId>
+                                <version>${testsuite.full.feature.pack.version}</version>
+                                <included-packages>
+                                    <package>org.apache.commons.lang3</package>
+                                </included-packages>
+                            </feature-pack>
+                        </feature-packs>
+                    </configuration>
+                </plugin>
+
+            </plugins>
+        </pluginManagement>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-resources-plugin</artifactId>
-                <version>${version.resources.plugin}</version>
-                <executions combine.self="override">
+                <artifactId>maven-compiler-plugin</artifactId>
+                <executions>
                     <execution>
-                        <id>ts.copy-wildfly</id>
-                        <phase>none</phase>
+                        <id>default-testCompile</id>
+                        <!-- run this early before any glow scan -->
+                        <phase>${ts.maven-compiler-plugin.test.phase}</phase>
                     </execution>
                 </executions>
             </plugin>
@@ -405,7 +480,7 @@
                 <executions>
                     <execution>
                         <id>generate-properties-file</id>
-                        <phase>${bootable-jar-generate-properties-file.phase}</phase>
+                        <phase>${ts.bootable-jar-generate-properties-file.phase}</phase>
                         <goals>
                             <goal>write-properties-file</goal>
                         </goals>
@@ -466,7 +541,7 @@
                         <goals>
                             <goal>provision</goal>
                         </goals>
-                        <phase>generate-resources</phase>
+                        <phase>${ts.mp-server-provisioning-phase}</phase>
                         <configuration>
                             <provisioning-dir>${project.build.directory}/wildfly</provisioning-dir>
                             <record-provisioning-state>false</record-provisioning-state>
@@ -477,25 +552,9 @@
                             </galleon-options>
                             <feature-packs>
                                 <feature-pack>
-                                    <groupId>${testsuite.full.galleon.pack.groupId}</groupId>
-                                    <artifactId>${testsuite.full.galleon.pack.artifactId}</artifactId>
-                                    <version>${testsuite.full.galleon.pack.version}</version>
-                                    <inherit-configs>false</inherit-configs>
-                                    <inherit-packages>false</inherit-packages>
-                                    <included-configs>
-                                        <config>
-                                            <model>standalone</model>
-                                            <name>standalone.xml</name>
-                                        </config>
-                                        <config>
-                                            <model>standalone</model>
-                                            <name>standalone-full.xml</name>
-                                        </config>
-                                        <config>
-                                            <model>standalone</model>
-                                            <name>standalone-microprofile.xml</name>
-                                        </config>
-                                    </included-configs>
+                                    <groupId>${testsuite.full.feature.pack.groupId}</groupId>
+                                    <artifactId>${testsuite.full.feature.pack.artifactId}</artifactId>
+                                    <version>${testsuite.full.feature.pack.version}</version>
                                 </feature-pack>
                             </feature-packs>
                         </configuration>
@@ -507,7 +566,7 @@
                             <packaging-scripts>
                                 <cli-session>
                                     <javaOpts>
-                                        <opt>-Dmaven.repo.local=${maven.repo.local}</opt>
+                                        <opt>-Dmaven.repo.local=${settings.localRepository}</opt>
                                     </javaOpts>
                                     <scripts>
                                         <script>wiremock-bootable.cli</script>
@@ -515,39 +574,9 @@
                                     <propertiesFiles>${project.build.outputDirectory}/wiremock-bootable-cli.properties</propertiesFiles>
                                 </cli-session>
                             </packaging-scripts>
-                            <feature-packs>
-                                <feature-pack>
-                                    <groupId>${testsuite.full.galleon.pack.groupId}</groupId>
-                                    <artifactId>${testsuite.full.galleon.pack.artifactId}</artifactId>
-                                    <version>${testsuite.full.galleon.pack.version}</version>
-                                    <!-- The wiremock module we add as part of the test fixture needs Apache Commons Lang
-                                    but the layers we want don't result in it being provisioned, so explicitly tell Galleon to
-                                    provision it. -->
-                                    <included-packages>
-                                        <package>org.apache.commons.lang3</package>
-                                    </included-packages>
-                                </feature-pack>
-                            </feature-packs>
                         </configuration>
                     </execution>
                 </executions>
-            </plugin>
-            <plugin>
-                <groupId>org.wildfly.glow</groupId>
-                <artifactId>wildfly-glow-arquillian-plugin</artifactId>
-                <configuration>
-                    <feature-packs>
-                        <!-- We repeat this from the parent in order to add 'included-packages' -->
-                        <feature-pack>
-                            <groupId>${testsuite.full.galleon.pack.groupId}</groupId>
-                            <artifactId>${testsuite.full.galleon.pack.artifactId}</artifactId>
-                            <version>${testsuite.full.galleon.pack.version}</version>
-                            <included-packages>
-                                <package>org.apache.commons.lang3</package>
-                            </included-packages>
-                        </feature-pack>
-                    </feature-packs>
-                </configuration>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -575,6 +604,140 @@
     </build>
     <profiles>
 
+        <profile>
+            <id>latest-ee-full-server-tests</id>
+            <activation>
+                <property><name>latest-ee-full-server-tests</name></property>
+            </activation>
+            <build>
+                <pluginManagement>
+                    <plugins>
+                        <!-- Override the glow-arquillian feature pack setting in this profile
+                             to specify inclusion of the org.apache.commons.lang3 module. -->
+                        <plugin>
+                            <groupId>org.wildfly.glow</groupId>
+                            <artifactId>wildfly-glow-arquillian-plugin</artifactId>
+                            <configuration>
+                                <feature-packs>
+                                    <feature-pack>
+                                        <groupId>${testsuite.ee.feature.pack.groupId}</groupId>
+                                        <artifactId>${testsuite.ee.feature.pack.artifactId}</artifactId>
+                                        <version>${testsuite.ee.feature.pack.version}</version>
+                                        <!-- All this just for this bit -->
+                                        <included-packages>
+                                            <package>org.apache.commons.lang3</package>
+                                        </included-packages>
+                                    </feature-pack>
+                                    <feature-pack>
+                                        <groupId>${testsuite.full.feature.pack.groupId}</groupId>
+                                        <artifactId>${testsuite.full.feature.pack.artifactId}</artifactId>
+                                        <version>${testsuite.full.feature.pack.version}</version>
+                                    </feature-pack>
+                                </feature-packs>
+                            </configuration>
+                        </plugin>
+                    </plugins>
+                </pluginManagement>
+                <plugins>
+                    <plugin>
+                        <groupId>org.wildfly.plugins</groupId>
+                        <artifactId>wildfly-maven-plugin</artifactId>
+                        <version>${version.org.wildfly.plugin}</version>
+                        <executions>
+                            <execution>
+                                <!-- Specify both feature packs for the non-glow-driven provisioning. -->
+                                <id>mp-server-provisioning</id>
+                                <configuration>
+                                    <feature-packs>
+                                        <feature-pack>
+                                            <groupId>${testsuite.ee.feature.pack.groupId}</groupId>
+                                            <artifactId>${testsuite.ee.feature.pack.artifactId}</artifactId>
+                                            <version>${testsuite.ee.feature.pack.version}</version>
+                                            <included-packages>
+                                                <package>org.apache.commons.lang3</package>
+                                            </included-packages>
+                                        </feature-pack>
+                                        <feature-pack>
+                                            <groupId>${testsuite.full.feature.pack.groupId}</groupId>
+                                            <artifactId>${testsuite.full.feature.pack.artifactId}</artifactId>
+                                            <version>${testsuite.full.feature.pack.version}</version>
+                                        </feature-pack>
+                                    </feature-packs>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
+        <profile>
+            <id>legacy-ee-full-server-tests</id>
+            <activation>
+                <property><name>legacy-ee-full-server-tests</name></property>
+            </activation>
+            <build>
+                <pluginManagement>
+                    <plugins>
+                        <!-- Override the glow-arquillian feature pack setting in this profile
+                             to specify inclusion of the org.apache.commons.lang3 module. -->
+                        <plugin>
+                            <groupId>org.wildfly.glow</groupId>
+                            <artifactId>wildfly-glow-arquillian-plugin</artifactId>
+                            <configuration>
+                                <feature-packs>
+                                    <feature-pack>
+                                        <groupId>${testsuite.ee.feature.pack.groupId}</groupId>
+                                        <artifactId>${testsuite.ee.feature.pack.artifactId}</artifactId>
+                                        <version>${testsuite.ee.feature.pack.version}</version>
+                                        <!-- All this just for this bit -->
+                                        <included-packages>
+                                            <package>org.apache.commons.lang3</package>
+                                        </included-packages>
+                                    </feature-pack>
+                                    <feature-pack>
+                                        <groupId>${testsuite.full.feature.pack.groupId}</groupId>
+                                        <artifactId>${testsuite.full.feature.pack.artifactId}</artifactId>
+                                        <version>${testsuite.full.feature.pack.version}</version>
+                                    </feature-pack>
+                                </feature-packs>
+                            </configuration>
+                        </plugin>
+                    </plugins>
+                </pluginManagement>
+                <plugins>
+                    <plugin>
+                        <groupId>org.wildfly.plugins</groupId>
+                        <artifactId>wildfly-maven-plugin</artifactId>
+                        <version>${version.org.wildfly.plugin}</version>
+                        <executions>
+                            <!-- Specify both feature packs for the non-glow-driven provisioning. -->
+                            <execution>
+                                <id>mp-server-provisioning</id>
+                                <configuration>
+                                    <feature-packs>
+                                        <feature-pack>
+                                            <groupId>${testsuite.ee.feature.pack.groupId}</groupId>
+                                            <artifactId>${testsuite.ee.feature.pack.artifactId}</artifactId>
+                                            <version>${testsuite.ee.feature.pack.version}</version>
+                                            <included-packages>
+                                                <package>org.apache.commons.lang3</package>
+                                            </included-packages>
+                                        </feature-pack>
+                                        <feature-pack>
+                                            <groupId>${testsuite.full.feature.pack.groupId}</groupId>
+                                            <artifactId>${testsuite.full.feature.pack.artifactId}</artifactId>
+                                            <version>${testsuite.full.feature.pack.version}</version>
+                                        </feature-pack>
+                                    </feature-packs>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
         <!-- Test against slimmed servers provisioned by Galleon -->
         <profile>
             <id>layers.profile</id>
@@ -585,27 +748,11 @@
             </activation>
             <properties>
                 <!-- Enable galleon provisioning -->
-                <ts.microprofile-tck-glow.phase>test-compile</ts.microprofile-tck-glow.phase>
-                <ts.microprofile-tck-provisioning.phase>test-compile</ts.microprofile-tck-provisioning.phase>
-                <ts.add-wiremock-module.phase>process-test-classes</ts.add-wiremock-module.phase>
+                <ts.microprofile-tck-glow.phase>process-test-sources</ts.microprofile-tck-glow.phase>
+                <ts.microprofile-tck-provisioning.phase>generate-test-resources</ts.microprofile-tck-provisioning.phase>
+                <ts.mp-server-provisioning-phase>none</ts.mp-server-provisioning-phase>
                 <ts.install-as-module-wiremock.phase>process-test-resources</ts.install-as-module-wiremock.phase>
             </properties>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.wildfly.plugins</groupId>
-                        <artifactId>wildfly-maven-plugin</artifactId>
-                        <version>${version.org.wildfly.plugin}</version>
-                        <executions>
-                            <execution>
-                                <!-- Disable the default provisioning -->
-                                <id>mp-server-provisioning</id>
-                                <phase>none</phase>
-                            </execution>
-                        </executions>
-                    </plugin>
-                </plugins>
-            </build>
         </profile>
 
         <profile>
@@ -617,30 +764,14 @@
             </activation>
             <properties>
                 <!-- Enable bootable jar packaging -->
-                <ts.bootable-jar-packaging.phase>process-test-resources</ts.bootable-jar-packaging.phase>
-                <bootable-jar-generate-properties-file.phase>process-test-resources</bootable-jar-generate-properties-file.phase>
+                <ts.microprofile-tck-glow.phase>process-test-sources</ts.microprofile-tck-glow.phase>
+                <ts.bootable-jar-generate-properties-file.phase>test-compile</ts.bootable-jar-generate-properties-file.phase>
+                <ts.bootable-jar-packaging.phase>process-test-classes</ts.bootable-jar-packaging.phase>
+                <ts.mp-server-provisioning-phase>none</ts.mp-server-provisioning-phase>
+                <ts.add-wiremock-module.phase>none</ts.add-wiremock-module.phase>
+
+                <ts.microprofile-tck-glow.config.name>standalone.xml</ts.microprofile-tck-glow.config.name>
             </properties>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.wildfly.plugins</groupId>
-                        <artifactId>wildfly-maven-plugin</artifactId>
-                        <version>${version.org.wildfly.plugin}</version>
-                        <executions>
-                            <execution>
-                                <!-- Disable the default provisioning -->
-                                <id>mp-server-provisioning</id>
-                                <phase>none</phase>
-                            </execution>
-                            <execution>
-                                <!-- Disable the default module addition -->
-                                <id>add-wiremock-module</id>
-                                <phase>none</phase>
-                            </execution>
-                        </executions>
-                    </plugin>
-                </plugins>
-            </build>
         </profile>
         
         <profile>
@@ -651,31 +782,14 @@
                 </property>
             </activation>
             <properties>
-                <!-- Enable bootable jar packaging -->
-                <ts.bootable-jar-packaging.phase>process-test-resources</ts.bootable-jar-packaging.phase>
-                <bootable-jar-generate-properties-file.phase>process-test-resources</bootable-jar-generate-properties-file.phase>
+                <ts.microprofile-tck-glow.phase>process-test-sources</ts.microprofile-tck-glow.phase>
+                <ts.bootable-jar-generate-properties-file.phase>test-compile</ts.bootable-jar-generate-properties-file.phase>
+                <ts.bootable-jar-packaging.phase>process-test-classes</ts.bootable-jar-packaging.phase>
+                <ts.mp-server-provisioning-phase>none</ts.mp-server-provisioning-phase>
+                <ts.add-wiremock-module.phase>none</ts.add-wiremock-module.phase>
+
+                <ts.microprofile-tck-glow.config.name>standalone.xml</ts.microprofile-tck-glow.config.name>
             </properties>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.wildfly.plugins</groupId>
-                        <artifactId>wildfly-maven-plugin</artifactId>
-                        <version>${version.org.wildfly.plugin}</version>
-                        <executions>
-                            <execution>
-                                <!-- Disable the default provisioning -->
-                                <id>mp-server-provisioning</id>
-                                <phase>none</phase>
-                            </execution>
-                            <execution>
-                                <!-- Disable the default module addition -->
-                                <id>add-wiremock-module</id>
-                                <phase>none</phase>
-                            </execution>
-                        </executions>
-                    </plugin>
-                </plugins>
-            </build>
         </profile>
 
         <!-- Test against the preview feature pack -->
@@ -688,27 +802,11 @@
             </activation>
             <properties>
                 <!-- Enable galleon provisioning -->
-                <ts.microprofile-tck-provisioning.phase>test-compile</ts.microprofile-tck-provisioning.phase>
-                <ts.microprofile-tck-glow.phase>test-compile</ts.microprofile-tck-glow.phase>
-                <ts.add-wiremock-module.phase>process-test-classes</ts.add-wiremock-module.phase>
+                <ts.microprofile-tck-glow.phase>process-test-sources</ts.microprofile-tck-glow.phase>
+                <ts.microprofile-tck-provisioning.phase>generate-test-resources</ts.microprofile-tck-provisioning.phase>
+                <ts.mp-server-provisioning-phase>none</ts.mp-server-provisioning-phase>
                 <ts.install-as-module-wiremock.phase>process-test-resources</ts.install-as-module-wiremock.phase>
             </properties>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.wildfly.plugins</groupId>
-                        <artifactId>wildfly-maven-plugin</artifactId>
-                        <version>${version.org.wildfly.plugin}</version>
-                        <executions>
-                            <execution>
-                                <!-- Disable the default provisioning -->
-                                <id>mp-server-provisioning</id>
-                                <phase>none</phase>
-                            </execution>
-                        </executions>
-                    </plugin>
-                </plugins>
-            </build>
         </profile>
 
         <!-- Skip TCK testing on Windows due to issues with beans.xml deployment overlay -->

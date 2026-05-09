@@ -17,13 +17,44 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>40.0.0.Beta1-SNAPSHOT</version>
+        <version>40.0.0.Final-SNAPSHOT</version>
         <relativePath>../galleon-pack/pom.xml</relativePath>
     </parent>
 
     <artifactId>wildfly-dist</artifactId>
-    <name>WildFly: Distribution</name>
     <packaging>jar</packaging>
+
+    <name>WildFly: Distribution</name>
+    <description>WildFly: Distribution</description>
+    <url>https://wildfly.org</url>
+
+    <organization>
+        <name>WildFly</name>
+        <url>https://wildfly.org</url>
+    </organization>
+
+    <licenses>
+        <license>
+            <name>Apache License 2.0</name>
+            <url>http://repository.jboss.org/licenses/apache-2.0.txt</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
+
+    <scm>
+        <connection>scm:git:${jboss.as.scm.connection}</connection>
+        <developerConnection>scm:git:${jboss.as.scm.connection}</developerConnection>
+        <url>${jboss.as.scm.url}</url>
+    </scm>
+
+    <developers>
+        <developer>
+            <id>wildfly.org</id>
+            <name>WildFly Community</name>
+            <organization>wildfly.org</organization>
+            <organizationUrl>https://wildfly.org</organizationUrl>
+        </developer>
+    </developers>
 
     <dependencyManagement>
         <dependencies>
@@ -70,6 +101,22 @@
             <version>${full.maven.version}</version>
             <classifier>manifest</classifier>
             <type>yaml</type>
+            <scope>provided</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <!-- Depend on the ee-only dist to ensure that testsuite setups that depend on this
+             to ensure its contents are available for testing can also rely on the ee-only
+             installation being available. -->
+        <dependency>
+            <groupId>${ee.maven.groupId}</groupId>
+            <artifactId>${latest.ee.dist.artifactId}</artifactId>
+            <version>${ee.maven.version}</version>
+            <type>pom</type>
             <scope>provided</scope>
             <exclusions>
                 <exclusion>
@@ -143,7 +190,7 @@
                                 <feature-pack>
                                     <transitive>true</transitive>
                                     <groupId>${ee.maven.groupId}</groupId>
-                                    <artifactId>wildfly-ee-galleon-pack</artifactId>
+                                    <artifactId>${latest.ee.feature.pack.artifactId}</artifactId>
                                     <version>${ee.maven.version}</version>
                                     <included-packages>
                                         <name>docs.examples.configs</name>

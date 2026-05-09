@@ -11,7 +11,6 @@ import java.net.URLConnection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
 
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
@@ -22,8 +21,8 @@ import org.jboss.as.test.integration.domain.management.util.DomainTestSupport;
 import org.jboss.as.test.integration.domain.management.util.DomainTestUtils;
 import org.jboss.as.test.integration.management.util.MgmtOperationException;
 import org.jboss.as.test.shared.TestSuiteEnvironment;
-import org.jboss.as.test.shared.TimeoutUtil;
 import org.jboss.dmr.ModelNode;
+import org.jboss.logging.Logger;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -34,7 +33,7 @@ import org.junit.Test;
  * @author Brian Stansberry
  */
 public abstract class LegacyConfigTest {
-
+    private static final Logger LOGGER = Logger.getLogger(LegacyConfigTest.class);
     private static final PathElement SECONDARY = PathElement.pathElement("host", "secondary");
     private static final PathAddress TEST_SERVER_CONFIG = PathAddress.pathAddress(SECONDARY,
             PathElement.pathElement("server-config", "legacy-server"));
@@ -61,7 +60,7 @@ public abstract class LegacyConfigTest {
     }
 
     @Test
-    public void testServerLaunching() throws IOException, MgmtOperationException, InterruptedException {
+    public void testServerLaunching() throws IOException, MgmtOperationException {
 
         DomainClient client = support.getDomainPrimaryLifecycleUtil().getDomainClient();
         for (Map.Entry<String, String> entry : getProfilesToTest().entrySet()) {
@@ -69,7 +68,7 @@ public abstract class LegacyConfigTest {
             String sbg = entry.getValue();
             try {
                 installTestServer(client, profile, sbg);
-                awaitServerLaunch(client, profile);
+                awaitServerLaunch(client);
                 validateServerProfile(client, profile);
                 verifyHttp(profile);
             } finally {
@@ -91,24 +90,9 @@ public abstract class LegacyConfigTest {
         DomainTestUtils.executeForResult(Util.createEmptyOperation("start", TEST_SERVER_CONFIG), client);
     }
 
-    private void awaitServerLaunch(ModelControllerClient client, String profile) throws InterruptedException {
-        long timeout = System.currentTimeMillis() + TimeoutUtil.adjust(20000);
-        ModelNode op = Util.getReadAttributeOperation(TEST_SERVER, "server-state");
-        do {
-            try {
-                ModelNode state = DomainTestUtils.executeForResult(op, client);
-                if ("running".equalsIgnoreCase(state.asString())) {
-                    MixedDomainTestSupport.assertNoBootErrors(client, TEST_SERVER);
-                    return;
-                }
-            } catch (IOException | MgmtOperationException e) {
-                // ignore and try again
-            }
-
-            TimeUnit.MILLISECONDS.sleep(250L);
-        } while (System.currentTimeMillis() < timeout);
-
-        Assert.fail("Server did not start using " + profile);
+    private void awaitServerLaunch(ModelControllerClient client) throws IOException, MgmtOperationException {
+        DomainTestUtils.waitUntilState(client, TEST_SERVER_CONFIG, "STARTED");
+        MixedDomainTestSupport.assertNoBootErrors(client, TEST_SERVER);
     }
 
     private void validateServerProfile(ModelControllerClient client, String profile) throws IOException, MgmtOperationException {
@@ -132,17 +116,17 @@ public abstract class LegacyConfigTest {
             op.get("blocking").set(true);
             DomainTestUtils.executeForResult(op, client);
         } catch (MgmtOperationException | IOException e) {
-            e.printStackTrace();
+            LOGGER.error("Failed to stop legacy server on secondary host", e);
         } finally {
             try {
                 DomainTestUtils.executeForResult(Util.createRemoveOperation(TEST_SERVER_CONFIG), client);
             } catch (MgmtOperationException | IOException e) {
-                e.printStackTrace();
+                LOGGER.error("Failed to remove legacy-server resource on secondary host", e);
             } finally {
                 try {
                     DomainTestUtils.executeForResult(Util.createRemoveOperation(TEST_SERVER_GROUP), client);
                 } catch (MgmtOperationException | IOException e) {
-                    e.printStackTrace();
+                    LOGGER.error("Failed to remove legacy-group resource on secondary host", e);
                 }
             }
         }

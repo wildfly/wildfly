@@ -16,7 +16,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>40.0.0.Beta1-SNAPSHOT</version>
+        <version>40.0.0.Final-SNAPSHOT</version>
     </parent>
 
     <!-- ********************************************************************************** -->
@@ -198,7 +198,7 @@
                                 <feature-pack>
                                     <transitive>true</transitive>
                                     <groupId>${ee.maven.groupId}</groupId>
-                                    <artifactId>wildfly-ee-galleon-pack</artifactId>
+                                    <artifactId>${testsuite.ee.only.feature.pack.artifactId}</artifactId>
                                     <version>${ee.maven.version}</version>
                                     <included-packages>
                                         <name>docs.examples.configs</name>
@@ -246,7 +246,8 @@
                         <node2>${node2}</node2>
                         <node3>${node3}</node3>
                         <mcast>${mcast}</mcast>
-                        <dist.output.dir>dist/target/${server.output.dir.prefix}-${server.output.dir.version}</dist.output.dir>
+                        <!-- Tell ProvisioningConsistenceTestCase the location of the pre-built server -->
+                        <dist.output.dir>${testsuite.default.build.project.root}/dist/target/${server.output.dir.prefix}-${server.output.dir.qualifier}${server.output.dir.version}</dist.output.dir>
                         <build.output.dir>${wildfly.build.output.dir}</build.output.dir>
                     </systemPropertyVariables>
                 </configuration>
@@ -339,24 +340,21 @@
             </properties>
         </profile>
         <profile>
-            <id>internal.wildfly.channels</id>
+            <id>latest-ee-only-server-tests</id>
             <activation>
-                <property>
-                    <name>internal.wildfly.channels</name>
-                </property>
+                <property><name>latest-ee-only-server-tests</name></property>
             </activation>
             <properties>
-                <!-- Disable channel-provisioning executions to avoid interference between external settings and the test -->
+                <!-- Don't run expansion tests if we're configured to test wildfly-ee -->
+                <surefire.default-test.phase>none</surefire.default-test.phase>
+                <!-- No point provisioning as we won't test -->
                 <channel.provisioning.phase>none</channel.provisioning.phase>
             </properties>
         </profile>
         <profile>
-            <id>ignore-ee-feature-pack</id>
+            <id>legacy-ee-only-server-tests</id>
             <activation>
-                <property>
-                    <name>testsuite.ee.galleon.pack.artifactId</name>
-                    <value>wildfly-ee-galleon-pack</value>
-                </property>
+                <property><name>legacy-ee-only-server-tests</name></property>
             </activation>
             <properties>
                 <!-- Don't run expansion tests if we're configured to test wildfly-ee -->

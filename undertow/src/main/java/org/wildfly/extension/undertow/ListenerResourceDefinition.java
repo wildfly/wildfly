@@ -54,7 +54,7 @@ import org.jboss.dmr.ModelType;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.wildfly.extension.io.OptionAttributeDefinition;
-import org.wildfly.subsystem.resource.capability.CapabilityReferenceRecorder;
+import org.wildfly.subsystem.resource.capability.CapabilityReference;
 import org.xnio.Options;
 
 /**
@@ -68,7 +68,7 @@ abstract class ListenerResourceDefinition extends PersistentResourceDefinition {
             .setAllowMultipleRegistrations(true)
             .build();
 
-    static final RuntimeCapability<Void> SERVER_LISTENER_CAPABILITY = RuntimeCapability.Builder.of(Capabilities.CAPABILITY_SERVER_LISTENER, true, UndertowListener.class)
+    static final RuntimeCapability<Void> SERVER_LISTENER_CAPABILITY = RuntimeCapability.Builder.of(UndertowListener.SERVICE_DESCRIPTOR)
             .setDynamicNameMapper(BinaryCapabilityNameResolver.PARENT_CHILD)
             .setAllowMultipleRegistrations(true)
             .build();
@@ -83,7 +83,7 @@ abstract class ListenerResourceDefinition extends PersistentResourceDefinition {
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .setValidator(new StringLengthValidator(1))
             .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.SOCKET_BINDING_REF)
-            .setCapabilityReference(CapabilityReferenceRecorder.builder(LISTENER_CAPABILITY, SocketBinding.SERVICE_DESCRIPTOR).build())
+            .setCapabilityReference(CapabilityReference.builder(LISTENER_CAPABILITY, SocketBinding.SERVICE_DESCRIPTOR).build())
             .build();
 
     static final SimpleAttributeDefinition WORKER = new SimpleAttributeDefinitionBuilder(Constants.WORKER, ModelType.STRING)
@@ -115,7 +115,7 @@ abstract class ListenerResourceDefinition extends PersistentResourceDefinition {
             .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
             .setAllowExpression(false)
             .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.SOCKET_BINDING_REF)
-            .setCapabilityReference(CapabilityReferenceRecorder.builder(LISTENER_CAPABILITY, SocketBinding.SERVICE_DESCRIPTOR).build())
+            .setCapabilityReference(CapabilityReference.builder(LISTENER_CAPABILITY, SocketBinding.SERVICE_DESCRIPTOR).build())
             .build();
 
     static final SimpleAttributeDefinition RESOLVE_PEER_ADDRESS = new SimpleAttributeDefinitionBuilder(Constants.RESOLVE_PEER_ADDRESS, ModelType.BOOLEAN)

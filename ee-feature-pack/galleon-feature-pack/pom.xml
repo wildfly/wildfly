@@ -17,7 +17,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>40.0.0.Beta1-SNAPSHOT</version>
+        <version>40.0.0.Final-SNAPSHOT</version>
     </parent>
 
     <artifactId>wildfly-ee-galleon-pack</artifactId>
@@ -31,6 +31,8 @@
         <!-- Any module referenced by these paths MUST be explicitly declared as a <dependency> in this POM to ensure the reactor schedules it to complete BEFORE this module's build starts! -->
         <galleon.shared.resources.directory>${basedir}/../galleon-shared/src/main/resources</galleon.shared.resources.directory>
         <galleon.shared.generated.resources.directory>${basedir}/../galleon-shared/target/index</galleon.shared.generated.resources.directory>
+        <galleon.shared.legacy.resources.directory>${basedir}/../galleon-shared-legacy/src/main/resources</galleon.shared.legacy.resources.directory>
+        <galleon.shared.preview.resources.directory>${basedir}/../galleon-shared-preview/src/main/resources</galleon.shared.preview.resources.directory>
         <galleon.local.resources.directory>${basedir}/../galleon-local/src/main/resources</galleon.local.resources.directory>
         <galleon.client.resources.directory>${basedir}/../../client/shade/target/resources</galleon.client.resources.directory>
         <license.directory>${project.build.directory}/resources/content/docs/licenses</license.directory>
@@ -156,6 +158,38 @@
                         </configuration>
                     </execution>
                     <execution>
+                        <id>copy-galleon-shared-legacy-feature-pack-resources</id>
+                        <phase>process-resources</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${basedir}/target/resources</outputDirectory>
+                            <resources>
+                                <resource>
+                                    <directory>${galleon.shared.legacy.resources.directory}</directory>
+                                </resource>
+                            </resources>
+                            <overwrite>true</overwrite>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>copy-galleon-shared-preview-feature-pack-resources</id>
+                        <phase>process-resources</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${basedir}/target/resources</outputDirectory>
+                            <resources>
+                                <resource>
+                                    <directory>${galleon.shared.preview.resources.directory}</directory>
+                                </resource>
+                            </resources>
+                            <overwrite>true</overwrite>
+                        </configuration>
+                    </execution>
+                    <execution>
                         <id>copy-galleon-local-feature-pack-resources</id>
                         <phase>process-resources</phase>
                         <goals>
@@ -215,7 +249,7 @@
                             </licensesConfigFiles>
                             <licensesOutputFile>${license.directory}/wildfly-ee-feature-pack-licenses.xml</licensesOutputFile>
                             <excludedGroups>org.wildfly.galleon-plugins</excludedGroups>
-                            <excludedArtifacts>wildfly-standard-ee-bom|wildfly-ee-feature-pack-galleon-shared|wildfly-ee-feature-pack-galleon-local|wildfly-common-ee-dependency-management|wildfly-jar-boot|wildfly-core-feature-pack-common|wildfly-elytron\z</excludedArtifacts>
+                            <excludedArtifacts>wildfly-standard-ee-bom|wildfly-standard-legacy-ee-bom|wildfly-standard-preview-ee-bom|wildfly-ee-feature-pack-galleon-shared|wildfly-ee-feature-pack-galleon-local|wildfly-common-ee-dependency-management|wildfly-jar-boot|wildfly-core-feature-pack-common|wildfly-elytron\z</excludedArtifacts>
                         </configuration>
                     </execution>
                 </executions>
@@ -246,6 +280,18 @@
             </plugin>
         </plugins>
     </build>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>${ee.maven.groupId}</groupId>
+                <artifactId>wildfly-standard-ee-bom</artifactId>
+                <version>${ee.maven.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
 
     <dependencies>
 
@@ -287,7 +333,59 @@
             <scope>provided</scope>
         </dependency>
 
-        <!-- module and copy artifact dependencies -->
+        <!--   module and copy artifact dependencies
+
+               IMPORTANT: Place the pom imports in order of precedence,
+               "winner" first. This is the opposite of the order of galleon resource
+               copying, which is "winner" last (so the winner's file copies over
+               any file from a lower precedence source. For these poms, maven
+               uses the first value seen for any artifact, so we need it to see
+               the value of the highest precedence pom first. This is particularly
+               crucial with wildfly-core deps where full WF may need to override core.
+               For other poms coming from this source tree the ordering is more a case
+               of adding a safeguard for cases where the same artifact is declared
+               in multiple poms. That's incorrect handling but can happen.
+
+               The desired precedence:
+
+               1) galleon-local
+               2) galleon-shared-legacy
+               3) galleon-shared-preview (lower than legacy because legacy is "standard WildFly")
+               4) galleon-shared
+               5) core
+         -->
+
+        <dependency>
+            <groupId>${ee.maven.groupId}</groupId>
+            <artifactId>wildfly-ee-feature-pack-galleon-local</artifactId>
+            <version>${ee.maven.version}</version>
+            <type>pom</type>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>${ee.maven.groupId}</groupId>
+            <artifactId>wildfly-ee-feature-pack-galleon-shared-legacy</artifactId>
+            <version>${ee.maven.version}</version>
+            <type>pom</type>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>${ee.maven.groupId}</groupId>
+            <artifactId>wildfly-ee-feature-pack-galleon-shared-preview</artifactId>
+            <version>${ee.maven.version}</version>
+            <type>pom</type>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>${ee.maven.groupId}</groupId>
+            <artifactId>wildfly-ee-feature-pack-galleon-shared</artifactId>
+            <version>${ee.maven.version}</version>
+            <type>pom</type>
+            <scope>provided</scope>
+        </dependency>
 
         <dependency>
             <groupId>org.wildfly.core</groupId>
@@ -303,22 +401,6 @@
             <type>pom</type>
             <scope>provided</scope>
         </dependency>-->
-
-        <dependency>
-            <groupId>${ee.maven.groupId}</groupId>
-            <artifactId>wildfly-ee-feature-pack-galleon-shared</artifactId>
-            <version>${ee.maven.version}</version>
-            <type>pom</type>
-            <scope>provided</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>${ee.maven.groupId}</groupId>
-            <artifactId>wildfly-ee-feature-pack-galleon-local</artifactId>
-            <version>${ee.maven.version}</version>
-            <type>pom</type>
-            <scope>provided</scope>
-        </dependency>
 
         <!-- n.b. Add at 'test' scope to ensure wildfly-client-all is built first but is NOT included in the artifact-list.txt or manifest. -->
         <dependency>

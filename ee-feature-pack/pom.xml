@@ -17,7 +17,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>40.0.0.Beta1-SNAPSHOT</version>
+        <version>40.0.0.Final-SNAPSHOT</version>
     </parent>
 
     <artifactId>wildfly-ee-feature-pack-parent</artifactId>
@@ -31,27 +31,16 @@
         <module>galleon-feature-pack</module>
         <module>galleon-local</module>
         <module>galleon-shared</module>
+        <module>galleon-shared-legacy</module>
+        <module>galleon-shared-preview</module>
         <module>layer-metadata-tests</module>
         <module>product-conf</module>
     </modules>
 
     <dependencyManagement>
-        <dependencies>
-            <dependency>
-                <groupId>${ee.maven.groupId}</groupId>
-                <artifactId>wildfly-standard-ee-bom</artifactId>
-                <version>${ee.maven.version}</version>
-                <type>pom</type>
-                <scope>import</scope>
-            </dependency>
-            <dependency>
-                <groupId>${ee.maven.groupId}</groupId>
-                <artifactId>wildfly-standard-test-bom</artifactId>
-                <version>${ee.maven.version}</version>
-                <type>pom</type>
-                <scope>import</scope>
-            </dependency>
-        </dependencies>
+        <!-- Do not import various boms/ source tree boms here as child modules
+             need to be able to limit their dependency management
+             without interference from their parent  -->
     </dependencyManagement>
 
     <dependencies>

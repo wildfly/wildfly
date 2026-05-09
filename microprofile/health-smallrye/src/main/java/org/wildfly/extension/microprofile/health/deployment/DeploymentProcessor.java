@@ -11,39 +11,31 @@ import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
-import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.weld.WeldCapability;
 import org.jboss.modules.Module;
 import org.wildfly.extension.microprofile.health.MicroProfileHealthReporter;
-import org.wildfly.extension.microprofile.health.MicroProfileHealthSubsystemDefinition;
-import org.wildfly.extension.microprofile.health._private.MicroProfileHealthLogger;
 
 /**
+ * DUP that registers the MicroProfile Health CDI extension.
  */
 public class DeploymentProcessor implements DeploymentUnitProcessor {
 
     @Override
-    public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
-        DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
-        Module module = deploymentUnit.getAttachment(Attachments.MODULE);
-
-        final CapabilityServiceSupport support = deploymentUnit.getAttachment(Attachments.CAPABILITY_SERVICE_SUPPORT);
-
-        final WeldCapability weldCapability;
+    public void deploy(DeploymentPhaseContext phaseContext) {
+        DeploymentUnit unit = phaseContext.getDeploymentUnit();
+        CapabilityServiceSupport support = unit.getAttachment(Attachments.CAPABILITY_SERVICE_SUPPORT);
         try {
-            weldCapability = support.getCapabilityRuntimeAPI(WELD_CAPABILITY_NAME, WeldCapability.class);
+            WeldCapability weldCapability = support.getCapabilityRuntimeAPI(WELD_CAPABILITY_NAME, WeldCapability.class);
+
+            if (weldCapability.isPartOfWeldDeployment(unit)) {
+                Module module = unit.getAttachment(Attachments.MODULE);
+                MicroProfileHealthReporter reporter = unit.getAttachment(MicroProfileHealthReporter.ATTACHMENT_KEY);
+
+                weldCapability.registerExtensionInstance(new CDIExtension(reporter, module), unit);
+            }
         } catch (CapabilityServiceSupport.NoSuchCapabilityException e) {
-            //We should not be here since the subsystem depends on weld capability. Just in case ...
-            throw MicroProfileHealthLogger.LOGGER.deploymentRequiresCapability(
-                    deploymentUnit.getName(),
-                    WELD_CAPABILITY_NAME);
+            throw new IllegalStateException(e);
         }
-        if (weldCapability.isPartOfWeldDeployment(deploymentUnit)) {
-            final MicroProfileHealthReporter healthReporter = (MicroProfileHealthReporter) phaseContext.getServiceRegistry().getService(MicroProfileHealthSubsystemDefinition.HEALTH_REPORTER_SERVICE).getValue();
-
-            weldCapability.registerExtensionInstance(new CDIExtension(healthReporter, module), deploymentUnit);
-        }
-
     }
 }

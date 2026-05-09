@@ -16,7 +16,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>40.0.0.Beta1-SNAPSHOT</version>
+        <version>40.0.0.Final-SNAPSHOT</version>
     </parent>
 
     <artifactId>wildfly-bean-validation</artifactId>
@@ -57,10 +57,10 @@
         </dependency>
 
         <dependency>
-            <!-- Needed for Hibernate Validator since it asserts the existence of javax.el during bootstrap in the
+            <!-- Needed for Hibernate Validator since it asserts the existence of jakarta.el during bootstrap in the
                   default configuration-->
             <groupId>org.jboss.spec.jakarta.el</groupId>
-            <artifactId>jboss-el-api_5.0_spec</artifactId>
+            <artifactId>jakarta.el-api</artifactId>
             <scope>runtime</scope>
         </dependency>
 

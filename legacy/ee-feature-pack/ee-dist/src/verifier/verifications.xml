@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+<verifications xmlns="http://maven.apache.org/verifications/1.0.0"
+               xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+               xsi:schemaLocation="http://maven.apache.org/verifications/1.0.0 http://maven.apache.org/xsd/verifications-1.0.0.xsd">
+<!--
+    1) bin/product.conf exists
+    2) bin/product.conf has a slot property with a value equal to the value of the
+       'ee.dist.product.slot' property
+    3) jboss-modules.jar must exist
+    4) standalone/configuration/standalone.xml must exist
+    5) modules/system/layers/base/org/jboss/as/product/${ee.dist.product.slot}/wildfly-legacy-ee-feature-pack-product-conf-${ee.maven.version}.jar exists
+    6) Various modules provided by the feature pack that provides the complete MicroProfile feature set are not present
+    7) Schemas coming from a module distributed directly by the ee-galleon-pack are copied to docs/schema
+    8) Schemas coming from a module formerly distributed by the transitive servlet-galleon-pack are copied to docs/schema
+    9) Schemas coming from a module formerly distributed by the transitive core-galleon-pack are copied to docs/schema
+   10) the .galleon dir exists
+   11) no .galleon/history dir exists
+   12) the .installation dir exists and contains channel metadata
+   13) version.txt exists
+
+-->
+  <files>
+    <file>
+      <location>target/${legacy.server.output.dir}/bin/product.conf</location>
+      <exists>true</exists>
+    </file>
+    <file>
+      <location>target/${legacy.server.output.dir}/bin/product.conf</location>
+      <contains>slot=${ee.dist.product.slot}</contains>
+    </file>
+    <file>
+      <location>target/${legacy.server.output.dir}/modules/system/layers/base/org/jboss/as/product/${ee.dist.product.slot}/wildfly-legacy-ee-feature-pack-product-conf-${ee.maven.version}.jar</location>
+      <exists>true</exists>
+    </file>
+    <file>
+      <location>target/${legacy.server.output.dir}/jboss-modules.jar</location>
+      <exists>true</exists>
+    </file>
+    <file>
+      <location>target/${legacy.server.output.dir}/standalone/configuration/standalone.xml</location>
+      <exists>true</exists>
+    </file>
+    <file>
+      <location>target/${legacy.server.output.dir}/modules/system/layers/base/io/smallrye/fault-tolerance/main</location>
+      <exists>false</exists>
+    </file>
+    <file>
+      <location>target/${legacy.server.output.dir}/modules/system/layers/base/org/eclipse/microprofile/fault-tolerance/api/main</location>
+      <exists>false</exists>
+    </file>
+    <file>
+      <location>target/${legacy.server.output.dir}/modules/system/layers/base/org/wildfly/extension/microprofile/fault-tolerance-smallrye/main</location>
+      <exists>false</exists>
+    </file>
+    <file>
+      <location>target/${legacy.server.output.dir}/modules/system/layers/base/org/wildfly/microprofile/fault-tolerance-smallrye</location>
+      <exists>false</exists>
+    </file>
+    <file>
+      <location>target/${legacy.server.output.dir}/modules/system/layers/base/io/smallrye/openapi/main</location>
+      <exists>false</exists>
+    </file>
+    <file>
+      <location>target/${legacy.server.output.dir}/modules/system/layers/base/org/eclipse/microprofile/openapi/api/main</location>
+      <exists>false</exists>
+    </file>
+    <file>
+      <location>target/${legacy.server.output.dir}/modules/system/layers/base/org/wildfly/extension/microprofile/openapi-smallrye/main</location>
+      <exists>false</exists>
+    </file>
+    <file>
+      <location>target/${legacy.server.output.dir}/modules/system/layers/base/io/smallrye/jwt/main</location>
+      <exists>false</exists>
+    </file>
+    <file>
+      <location>target/${legacy.server.output.dir}/modules/system/layers/base/org/eclipse/microprofile/jwt/auth/api/main</location>
+      <exists>false</exists>
+    </file>
+    <file>
+      <location>target/${legacy.server.output.dir}/modules/system/layers/base/org/wildfly/extension/microprofile/jwt-smallrye/main</location>
+      <exists>false</exists>
+    </file>
+    <file>
+      <location>target/${legacy.server.output.dir}/modules/system/layers/base/org/wildfly/security/elytron-jwt/main</location>
+      <exists>false</exists>
+    </file>
+    <file>
+      <location>target/${legacy.server.output.dir}/modules/system/layers/base/org/wildfly/_internal/unstable-api-annotation-index/main/content/wildfly-ee-galleon-pack-unstable-api-annotation-index.zip</location>
+      <exists>true</exists>
+    </file>
+    <file>
+      <location>target/${legacy.server.output.dir}/wildfly-ee-galleon-pack-unstable-api-annotation-index.zip</location>
+      <exists>false</exists>
+    </file>
+    <file>
+      <location>target/${legacy.server.output.dir}/docs/schema/wildfly-txn_5_0.xsd</location>
+      <exists>true</exists>
+    </file>
+    <file>
+      <location>target/${legacy.server.output.dir}/docs/schema/wildfly-undertow_10_0.xsd</location>
+      <exists>true</exists>
+    </file>
+    <file>
+      <location>target/${legacy.server.output.dir}/docs/schema/wildfly-io_3_0.xsd</location>
+      <exists>true</exists>
+    </file>
+    <file>
+      <location>target/${legacy.server.output.dir}/.galleon</location>
+      <exists>true</exists>
+    </file>
+    <file>
+      <location>target/${legacy.server.output.dir}/.galleon/history</location>
+      <exists>false</exists>
+    </file>
+    <!-- start of (#12) -->
+    <file>
+      <location>target/${legacy.server.output.dir}/.installation/installer-channels.yaml</location>
+      <exists>true</exists>
+    </file>
+    <file>
+      <location>target/${legacy.server.output.dir}/.installation/manifest.yaml</location>
+      <exists>true</exists>
+    </file>
+    <file>
+      <location>target/${legacy.server.output.dir}/.installation/manifest_version.yaml</location>
+      <exists>true</exists>
+    </file>
+    <file>
+      <location>target/${legacy.server.output.dir}/.installation/provisioning_record.xml</location>
+      <exists>true</exists>
+    </file>
+    <!-- end of (#12) -->
+    <!-- start of (#13) -->
+    <file>
+      <location>target/${legacy.server.output.dir}/version.txt</location>
+      <exists>true</exists>
+    </file>
+    <!-- end of (#13) -->
+  </files>
+</verifications>

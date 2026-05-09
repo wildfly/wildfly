@@ -35,7 +35,9 @@ import org.jboss.dmr.ModelNode;
  * Supports supplying attributes and capabilities via enumerations.
  * Also supports defining extra parameters that are not actually attributes of the target resource.
  * @author Paul Ferraro
+ * @deprecated Superseded by (@link org.wildfly.subsystem.resource.ResourceDescriptor}.
  */
+@Deprecated(forRemoval = true)
 public class ResourceDescriptor implements AddStepHandlerDescriptor {
 
     private static final Comparator<PathElement> PATH_COMPARATOR = new Comparator<>() {
@@ -47,8 +49,6 @@ public class ResourceDescriptor implements AddStepHandlerDescriptor {
     };
     private static final Comparator<AttributeDefinition> ATTRIBUTE_COMPARATOR = Comparator.comparing(AttributeDefinition::getName);
     private static final Comparator<RuntimeCapability<?>> CAPABILITY_COMPARATOR = Comparator.comparing(RuntimeCapability::getName);
-    @SuppressWarnings("deprecation")
-    private static final Comparator<CapabilityReferenceRecorder> CAPABILITY_REFERENCE_COMPARATOR = Comparator.comparing(CapabilityReferenceRecorder::getBaseDependentName);
 
     private final ResourceDescriptionResolver resolver;
     private Map<RuntimeCapability<?>, Predicate<ModelNode>> capabilities = Map.of();
@@ -357,20 +357,6 @@ public class ResourceDescriptor implements AddStepHandlerDescriptor {
                 this.runtimeResourceRegistrations.addAll(existing);
             }
             this.runtimeResourceRegistrations.add(registration);
-        }
-        return this;
-    }
-
-    public ResourceDescriptor addResourceCapabilityReference(CapabilityReferenceRecorder reference) {
-        if (this.resourceCapabilityReferences.isEmpty()) {
-            this.resourceCapabilityReferences = Set.of(reference);
-        } else {
-            if (this.resourceCapabilityReferences.size() == 1) {
-                Set<CapabilityReferenceRecorder> existing = this.resourceCapabilityReferences;
-                this.resourceCapabilityReferences = new TreeSet<>(CAPABILITY_REFERENCE_COMPARATOR);
-                this.resourceCapabilityReferences.addAll(existing);
-            }
-            this.resourceCapabilityReferences.add(reference);
         }
         return this;
     }

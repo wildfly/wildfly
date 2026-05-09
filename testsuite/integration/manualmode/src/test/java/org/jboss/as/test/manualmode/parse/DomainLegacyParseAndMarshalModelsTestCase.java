@@ -23,7 +23,7 @@ public class DomainLegacyParseAndMarshalModelsTestCase extends AbstractParseAndM
 
     @Parameterized.Parameters
     public static List<Path> data() {
-        return resolveLegacyConfigFiles("domain");
+        return resolveLegacyConfigFiles(DomainLegacyParseAndMarshalModelsTestCase::isBaseServerConfig,"domain");
     }
 
     @Parameterized.Parameter
@@ -34,5 +34,11 @@ public class DomainLegacyParseAndMarshalModelsTestCase extends AbstractParseAndM
         LOGGER.infof("Testing config file %s", configFile);
         Assume.assumeFalse(altDistTest);
         domainXmlTest(configFile.toFile());
+    }
+
+    private static boolean isBaseServerConfig(Path configFilePath) {
+        String fileName = configFilePath.getFileName().toString();
+        return fileName.endsWith(".xml")
+                && (fileName.startsWith("eap-") || fileName.endsWith("-ee.xml"));
     }
 }

@@ -93,7 +93,7 @@ public abstract class JaccService<T> implements Service<PolicyConfiguration> {
         }
     }
 
-    private PolicyConfigurationFactory getPolicyConfigurationFactory() throws ModuleLoadException, ClassNotFoundException, PolicyContextException {
+    protected PolicyConfigurationFactory getPolicyConfigurationFactory() throws ModuleLoadException, ClassNotFoundException, PolicyContextException, GeneralSecurityException {
         String module = WildFlySecurityManager.getPropertyPrivileged(JACC_MODULE, null);
         final ClassLoader originalClassLoader;
         final ClassLoader jaccClassLoader;

@@ -17,7 +17,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>40.0.0.Beta1-SNAPSHOT</version>
+        <version>40.0.0.Final-SNAPSHOT</version>
         <relativePath>../../pom.xml</relativePath>
     </parent>
 
@@ -33,89 +33,12 @@
     <dependencyManagement>
         <dependencies>
 
-            <!-- Inherit the common deps -->
-            <dependency>
-                <groupId>${ee.maven.groupId}</groupId>
-                <artifactId>wildfly-common-ee-dependency-management</artifactId>
-                <version>${ee.maven.version}</version>
-                <type>pom</type>
-                <scope>import</scope>
-            </dependency>
-
             <!-- Bom-specific dependencies.
 
                  DO NOT add entries here for items shared between standard WildFly and WildFly Preview.
 
                  Keep sorted!
              -->
-
-            <dependency>
-                <groupId>jakarta.authentication</groupId>
-                <artifactId>jakarta.authentication-api</artifactId>
-                <version>${version.jakarta.authentication.jakarta-authentication-api}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>jakarta.authorization</groupId>
-                <artifactId>jakarta.authorization-api</artifactId>
-                <version>${version.jakarta.authorization.jakarta-authorization-api}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>jakarta.interceptor</groupId>
-                <artifactId>jakarta.interceptor-api</artifactId>
-                <version>${version.jakarta.interceptor.jakarta-interceptor-api}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-
-            <dependency>
-                <groupId>org.glassfish.soteria</groupId>
-                <artifactId>jakarta.security.enterprise</artifactId>
-                <version>${version.org.glassfish.soteria}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>org.jboss.spec.jakarta.el</groupId>
-                <artifactId>jboss-el-api_5.0_spec</artifactId>
-                <version>${version.org.jboss.spec.jakarta.el.jboss-el-api_5.0_spec}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>org.glassfish</groupId>
-                <artifactId>jakarta.enterprise.concurrent</artifactId>
-                <version>${version.org.glassfish.jakarta.enterprise.concurrent}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-			</dependency>
 
             <dependency>
                 <groupId>${ee.maven.groupId}</groupId>
@@ -130,64 +53,29 @@
                 <version>${ee.maven.version}</version>
             </dependency>
 
+            <!--
+                Inherit the shared deps. Place these last so any overrides above take precedence.
+             -->
             <dependency>
-                <groupId>org.wildfly.security.jakarta</groupId>
-                <artifactId>jakarta-authentication</artifactId>
-                <version>${version.org.wildfly.security.jakarta.elytron-ee}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
+                <groupId>${ee.maven.groupId}</groupId>
+                <artifactId>wildfly-standard-preview-ee-bom</artifactId>
+                <version>${ee.maven.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
             </dependency>
-
             <dependency>
-                <groupId>org.wildfly.security.jakarta</groupId>
-                <artifactId>jakarta-authorization</artifactId>
-                <version>${version.org.wildfly.security.jakarta.elytron-ee}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
+                <groupId>${ee.maven.groupId}</groupId>
+                <artifactId>wildfly-standard-legacy-ee-bom</artifactId>
+                <version>${ee.maven.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
             </dependency>
-
             <dependency>
-                <groupId>org.wildfly.security.jakarta</groupId>
-                <artifactId>jakarta-security</artifactId>
-                <version>${version.org.wildfly.security.jakarta.elytron-ee}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-
-            <dependency>
-                <groupId>org.wildfly.security.jakarta</groupId>
-                <artifactId>jakarta-client-resteasy</artifactId>
-                <version>${version.org.wildfly.security.jakarta.elytron-ee}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-
-            <dependency>
-                <groupId>org.wildfly.security.jakarta</groupId>
-                <artifactId>jakarta-client-webservices</artifactId>
-                <version>${version.org.wildfly.security.jakarta.elytron-ee}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
+                <groupId>${ee.maven.groupId}</groupId>
+                <artifactId>wildfly-common-ee-dependency-management</artifactId>
+                <version>${ee.maven.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
             </dependency>
 
         </dependencies>

@@ -2,7 +2,7 @@
   ~ Copyright The WildFly Authors
   ~ SPDX-License-Identifier: Apache-2.0
   -->
-<subsystem xmlns="urn:jboss:domain:infinispan:15.0">
+<subsystem xmlns="urn:jboss:domain:infinispan:16.0">
     <!-- Don't specify statistics-enabled="false" here so that we test undefined values too -->
     <cache-container name="minimal" default-cache="local">
         <local-cache name="local"/>
@@ -18,7 +18,7 @@
                 <write-behind modification-queue-size="2048"/>
             </file-store>
         </local-cache>
-        <invalidation-cache name="invalid" statistics-enabled="false">
+        <invalidation-cache name="invalid" statistics-enabled="false" segments="256">
             <locking acquire-timeout="30000" concurrency-level="2000" isolation="READ_UNCOMMITTED" striping="true"/>
             <transaction mode="NON_XA" stop-timeout="60000" locking="OPTIMISTIC"/>
             <heap-memory size="20000"/>
@@ -28,7 +28,7 @@
                 <property name="valueSizeEstimate">100</property>
             </remote-store>
         </invalidation-cache>
-        <replicated-cache name="repl" statistics-enabled="false">
+        <replicated-cache name="repl" statistics-enabled="false" segments="256">
             <locking acquire-timeout="30000" concurrency-level="2000" isolation="SERIALIZABLE" striping="true"/>
             <transaction mode="NON_DURABLE_XA" stop-timeout="60000" locking="OPTIMISTIC"/>
             <off-heap-memory size="20000"/>

@@ -322,6 +322,11 @@ public class ControlPointDeploymentInfoConfigurator implements UnaryOperator<Dep
         public SessionManagerStatistics getStatistics() {
             return this.manager.getStatistics();
         }
+
+        @Override
+        public boolean isDistributed() {
+            return this.manager.isDistributed();
+        }
     }
 
     /**

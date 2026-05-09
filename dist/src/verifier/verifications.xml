@@ -24,86 +24,86 @@
 -->
   <files>
     <file>
-      <location>target/${server.output.dir.prefix}-${server.output.dir.version}/bin/product.conf</location>
+      <location>target/${latest.server.output.dir}/bin/product.conf</location>
       <exists>true</exists>
     </file>
     <file>
-      <location>target/${server.output.dir.prefix}-${server.output.dir.version}/bin/product.conf</location>
+      <location>target/${latest.server.output.dir}/bin/product.conf</location>
       <contains>slot=${full.dist.product.slot}</contains>
     </file>
     <file>
-      <location>target/${server.output.dir.prefix}-${server.output.dir.version}/modules/system/layers/base/org/jboss/as/product/${full.dist.product.slot}/wildfly-feature-pack-product-conf-${full.maven.version}.jar</location>
+      <location>target/${latest.server.output.dir}/modules/system/layers/base/org/jboss/as/product/${full.dist.product.slot}/wildfly-feature-pack-product-conf-${full.maven.version}.jar</location>
       <exists>true</exists>
     </file>
     <file>
-      <location>target/${server.output.dir.prefix}-${server.output.dir.version}/modules/system/layers/base/org/wildfly/_internal/unstable-api-annotation-index/main/content/wildfly-ee-galleon-pack-unstable-api-annotation-index.zip</location>
+      <location>target/${latest.server.output.dir}/modules/system/layers/base/org/wildfly/_internal/unstable-api-annotation-index/main/content/wildfly-ee-galleon-pack-unstable-api-annotation-index.zip</location>
       <exists>true</exists>
     </file>
     <file>
-      <location>target/${server.output.dir.prefix}-${server.output.dir.version}/wildfly-ee-galleon-pack-unstable-api-annotation-index.zip</location>
+      <location>target/${latest.server.output.dir}/wildfly-ee-galleon-pack-unstable-api-annotation-index.zip</location>
       <exists>false</exists>
     </file>
     <file>
-      <location>target/${server.output.dir.prefix}-${server.output.dir.version}/modules/system/layers/base/org/wildfly/_internal/unstable-api-annotation-index/main/content/wildfly-galleon-pack-unstable-api-annotation-index.zip</location>
+      <location>target/${latest.server.output.dir}/modules/system/layers/base/org/wildfly/_internal/unstable-api-annotation-index/main/content/wildfly-galleon-pack-unstable-api-annotation-index.zip</location>
       <exists>true</exists>
     </file>
     <file>
-      <location>target/${server.output.dir.prefix}-${server.output.dir.version}/wildfly-galleon-pack-unstable-api-annotation-index.zip</location>
+      <location>target/${latest.server.output.dir}/wildfly-galleon-pack-unstable-api-annotation-index.zip</location>
       <exists>false</exists>
     </file>
     <file>
-      <location>target/${server.output.dir.prefix}-${server.output.dir.version}/jboss-modules.jar</location>
+      <location>target/${latest.server.output.dir}/jboss-modules.jar</location>
       <exists>true</exists>
     </file>
     <file>
-      <location>target/${server.output.dir.prefix}-${server.output.dir.version}/standalone/configuration/standalone.xml</location>
+      <location>target/${latest.server.output.dir}/standalone/configuration/standalone.xml</location>
       <exists>true</exists>
     </file>
     <file>
-      <location>target/${server.output.dir.prefix}-${server.output.dir.version}/docs/schema/wildfly-microprofile-openapi-smallrye_1_0.xsd</location>
+      <location>target/${latest.server.output.dir}/docs/schema/wildfly-microprofile-openapi-smallrye_1_0.xsd</location>
       <exists>true</exists>
     </file>
     <file>
-      <location>target/${server.output.dir.prefix}-${server.output.dir.version}/docs/schema/wildfly-messaging-activemq_9_0.xsd</location>
+      <location>target/${latest.server.output.dir}/docs/schema/wildfly-messaging-activemq_9_0.xsd</location>
       <exists>true</exists>
     </file>
     <file>
-      <location>target/${server.output.dir.prefix}-${server.output.dir.version}/docs/schema/jboss-as-naming_2_0.xsd</location>
+      <location>target/${latest.server.output.dir}/docs/schema/jboss-as-naming_2_0.xsd</location>
       <exists>true</exists>
     </file>
     <file>
-      <location>target/${server.output.dir.prefix}-${server.output.dir.version}/docs/schema/jboss-as-deployment-scanner_2_0.xsd</location>
+      <location>target/${latest.server.output.dir}/docs/schema/jboss-as-deployment-scanner_2_0.xsd</location>
       <exists>true</exists>
     </file>
     <file>
-      <location>target/${server.output.dir.prefix}-${server.output.dir.version}/.galleon</location>
+      <location>target/${latest.server.output.dir}/.galleon</location>
       <exists>true</exists>
     </file>
     <file>
-      <location>target/${server.output.dir.prefix}-${server.output.dir.version}/.galleon/history</location>
+      <location>target/${latest.server.output.dir}/.galleon/history</location>
       <exists>false</exists>
     </file>
     <!-- start of (#12) -->
     <file>
-      <location>target/${server.output.dir.prefix}-${server.output.dir.version}/.installation/installer-channels.yaml</location>
+      <location>target/${latest.server.output.dir}/.installation/installer-channels.yaml</location>
       <exists>true</exists>
     </file>
     <file>
-      <location>target/${server.output.dir.prefix}-${server.output.dir.version}/.installation/manifest.yaml</location>
+      <location>target/${latest.server.output.dir}/.installation/manifest.yaml</location>
       <exists>true</exists>
     </file>
     <file>
-      <location>target/${server.output.dir.prefix}-${server.output.dir.version}/.installation/manifest_version.yaml</location>
+      <location>target/${latest.server.output.dir}/.installation/manifest_version.yaml</location>
       <exists>true</exists>
     </file>
     <file>
-      <location>target/${server.output.dir.prefix}-${server.output.dir.version}/.installation/provisioning_record.xml</location>
+      <location>target/${latest.server.output.dir}/.installation/provisioning_record.xml</location>
       <exists>true</exists>
     </file>
     <!-- end of (#12) -->
 	<!-- start of (#13) -->
     <file>
-      <location>target/${server.output.dir.prefix}-${server.output.dir.version}/version.txt</location>
+      <location>target/${latest.server.output.dir}/version.txt</location>
       <exists>true</exists>
     </file>
     <!-- end of (#13) -->

@@ -5,17 +5,19 @@
 
 package org.wildfly.extension.messaging.activemq;
 
+import java.util.List;
 import org.apache.activemq.artemis.api.core.RoutingType;
 import org.apache.activemq.artemis.api.core.SimpleString;
 import org.apache.activemq.artemis.api.core.TransportConfiguration;
 import org.apache.activemq.artemis.api.core.management.ActiveMQServerControl;
+import org.apache.activemq.artemis.api.core.management.QueueControl;
 import org.apache.activemq.artemis.core.security.SecurityAuth;
 
 /**
  * Wrapper interface to expose methods from {@link org.apache.activemq.artemis.core.server.ActiveMQServer}
  * and {@link org.apache.activemq.artemis.core.server.management.ManagementService} that are needed by a
- * {@code /subsystem=messaging-activemq/server=*} resource or its children."
-
+ * {@code /subsystem=messaging-activemq/server=*} resource or its children.
+ *
  * @author Emmanuel Hugonnet (c) 2023 Red Hat, Inc.
  */
 public interface ActiveMQBroker {
@@ -32,63 +34,76 @@ public interface ActiveMQBroker {
     SimpleString getNodeID();
 
     /**
-     * Add a connection configuration to the current {@link org.apache.activemq.artemis.core.server.ActiveMQServer}.
-     * @param string: the name of the connector.
-     * @param tc: the trnasport configurartion.
+     * Add a connector configuration to the current {@link org.apache.activemq.artemis.core.server.ActiveMQServer}.
+     * @param string the name of the connector.
+     * @param tc the transport configuration.
      */
     void addConnectorConfiguration(String string, TransportConfiguration tc);
 
     /**
-     * Creates a Queue on the underlying {@link org.apache.activemq.artemis.core.server.ActiveMQServer}.
-     * @param address: the queue address.
-     * @param routingType: the queue routing type (anycast or mulicast).
-     * @param queueName: the name of the queue.
-     * @param filter: the filter.
-     * @param durable
-     * @param temporary
-     * @throws Exception
+     * Creates a queue on the underlying {@link org.apache.activemq.artemis.core.server.ActiveMQServer}.
+     * @param address the queue address.
+     * @param routingType the queue routing type (anycast or multicast).
+     * @param queueName the name of the queue.
+     * @param filter the optional message filter; may be {@code null}.
+     * @param durable whether the queue should survive server restarts.
+     * @param temporary whether the queue is temporary and should be deleted when its creating connection closes.
+     * @throws Exception if the queue cannot be created.
      */
-    void  createQueue(SimpleString address, RoutingType routingType, SimpleString queueName, SimpleString filter,
+    void createQueue(SimpleString address, RoutingType routingType, SimpleString queueName, SimpleString filter,
                      boolean durable, boolean temporary) throws Exception;
 
     /**
      * Destroys a queue from the underlying {@link org.apache.activemq.artemis.core.server.ActiveMQServer}.
-     * @param queueName
-     * @param session
-     * @param checkConsumerCount
-     * @throws Exception
+     * @param queueName the name of the queue to destroy.
+     * @param session the security context used to authorize the operation; may be {@code null}.
+     * @param checkConsumerCount whether to reject the operation if the queue still has active consumers.
+     * @throws Exception if the queue cannot be destroyed.
      */
     void destroyQueue(SimpleString queueName, SecurityAuth session, boolean checkConsumerCount) throws Exception;
 
     /**
-     * Returns the current state of the server: true - if the server is started and active - false otherwise.
-     * @return the current state of the server: true - if the server is started and active - false otherwise.
+     * Returns {@code true} if the server is started and active, {@code false} otherwise.
+     * @return {@code true} if the server is started and active, {@code false} otherwise.
      */
     boolean isActive();
 
     /**
-     * Returns true if the resource exists - false otherwise.
-     * @param resourceName: the name of the reosurce.
-     * @return true if the resource exists - false otherwise.
-     * @see org.apache.activemq.artemis.core.server.management.ManagementService#getResource(java.lang.String).
+     * Returns {@code true} if a management resource with the given name exists, {@code false} otherwise.
+     * @param resourceName the name of the resource.
+     * @return {@code true} if the resource exists, {@code false} otherwise.
+     * @see org.apache.activemq.artemis.core.server.management.ManagementService#getResource(String)
      */
     boolean hasResource(String resourceName);
 
     /**
-     * Returns the untyped resource with the specified name- null if none exists.
-     * @param resourceName: the name of the resource.
-     * @return the untyped resource with the specified name- null if none exists.
-     * @see org.apache.activemq.artemis.core.server.management.ManagementService#getResource(java.lang.String).
+     * Returns the management resource registered under the given name, or {@code null} if none exists.
+     * @param resourceName the name of the resource.
+     * @return the management resource, or {@code null} if none exists.
+     * @see org.apache.activemq.artemis.core.server.management.ManagementService#getResource(String)
      */
     Object getResource(String resourceName);
 
     /**
-     * Returns an untyped array of the resources of this type - an empty arry if none exists.
-     * @param resourceType: the type of resources.
-     * @return an untyped array of the resources of this type - an empty arry if none exists.
-     * @see org.apache.activemq.artemis.core.server.management.ManagementService#getResources(java.lang.Class).
+     * Returns the names of all core addresses known to the underlying
+     * {@link org.apache.activemq.artemis.core.server.ActiveMQServer}.
+     * @return the list of core address names; never {@code null}.
      */
-    Object[] getResources(Class<?> resourceType);
+    List<String> getCoreAddressNames();
+
+    /**
+     * Returns the {@link QueueControl} instances for all queues on the underlying
+     * {@link org.apache.activemq.artemis.core.server.ActiveMQServer}.
+     * @return the list of queue controls; never {@code null}.
+     */
+    List<QueueControl> getQueueControls();
+
+    /**
+     * Returns the names of all queues on the underlying
+     * {@link org.apache.activemq.artemis.core.server.ActiveMQServer}.
+     * @return the set of queue names; never {@code null}.
+     */
+    List<String> getQueueControlNames();
 
     /**
      * Returns the {@link org.apache.activemq.artemis.api.core.management.ActiveMQServerControl} to manage the

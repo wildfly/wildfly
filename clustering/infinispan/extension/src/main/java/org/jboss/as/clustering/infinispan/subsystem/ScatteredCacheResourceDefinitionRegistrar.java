@@ -23,7 +23,7 @@ import org.wildfly.subsystem.service.capture.FunctionExecutorRegistry;
  * Registers a resource definition for a scattered cache.
  * @author Paul Ferraro
  */
-public class ScatteredCacheResourceDefinitionRegistrar extends SegmentedCacheResourceDefinitionRegistrar {
+public class ScatteredCacheResourceDefinitionRegistrar extends SharedStateCacheResourceDefinitionRegistrar {
 
     static final DurationAttributeDefinition BIAS_LIFESPAN = DurationAttributeDefinition.builder("bias-lifespan", ChronoUnit.MILLIS)
             .setDefaultValue(Duration.ofMinutes(5))

@@ -29,7 +29,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>40.0.0.Beta1-SNAPSHOT</version>
+        <version>40.0.0.Final-SNAPSHOT</version>
         <relativePath>../../pom.xml</relativePath>
     </parent>
 
@@ -41,6 +41,16 @@
         is built</description>
 
     <properties>
+        <!--
+             The GAV information of the module that produces that test build
+             (so testsuites can depend on it / ensure it's built)
+             We use properties so profiles can override these default values.
+        -->
+        <testsuite.default.full.build.groupId>${full.maven.groupId}</testsuite.default.full.build.groupId>
+        <testsuite.default.full.build.artifactId>wildfly-build</testsuite.default.full.build.artifactId>
+        <testsuite.default.full.dist.artifactId>wildfly-dist</testsuite.default.full.dist.artifactId>
+        <testsuite.default.full.build.version>${full.maven.version}</testsuite.default.full.build.version>
+
         <!-- Don't try to deploy the module -->
         <maven.deploy.skip>true</maven.deploy.skip>
         <skipNexusStagingDeployMojo>true</skipNexusStagingDeployMojo>
@@ -48,7 +58,7 @@
     </properties>
 
     <dependencies>
-        <!-- Sure the test boms are built -->
+        <!-- Ensure the test boms are built -->
         <dependency>
             <groupId>${ee.maven.groupId}</groupId>
             <artifactId>wildfly-standard-test-bom</artifactId>
@@ -70,18 +80,102 @@
             <activation><property><name>!testsuite.only</name></property></activation>
             <dependencies>
                 <dependency>
-                    <groupId>${full.maven.groupId}</groupId>
-                    <artifactId>wildfly-build</artifactId>
-                    <version>${full.maven.version}</version>
+                    <groupId>${testsuite.default.full.build.groupId}</groupId>
+                    <artifactId>${testsuite.default.full.build.artifactId}</artifactId>
+                    <version>${testsuite.default.full.build.version}</version>
                     <type>pom</type>
                 </dependency>
                 <dependency>
-                    <groupId>${full.maven.groupId}</groupId>
-                    <artifactId>wildfly-dist</artifactId>
-                    <version>${full.maven.version}</version>
+                    <groupId>${testsuite.default.full.build.groupId}</groupId>
+                    <artifactId>${testsuite.default.full.dist.artifactId}</artifactId>
+                    <version>${testsuite.default.full.build.version}</version>
                     <type>pom</type>
                 </dependency>
             </dependencies>
+        </profile>
+
+        <!--
+             See testsuite/pom.xml for much the same comment as what follows.
+             We need to do the same thing here because this module does not depend on testsuite/pom.xml
+             so its settings are not relevant to what this module does.
+
+             There are four profiles that ensure the appropriate pre-built servers are available before testing
+             the output of different combinations of feature packs.
+
+             1) Test the latest ee feature pack + the wildfly feature pack
+             2) Test the latest ee feature pack alone. Using this also requires setting -P-expansion-server-tests
+                in order to disable the testsuite modules that require the wildfly feature pack.
+             3) Test the legacy ee feature pack + the wildfly feature pack
+             4) Test the legacy ee feature pack alone. Using this also requires setting -P-expansion-server-tests
+                in order to disable the testsuite modules that require the wildfly feature pack.
+
+             (Note: there is no profile here for wildfly-preview feature pack because this module will never be
+              executed when testing WildFly Preview.)
+
+             None of these are active by default. The 'test the wildfly-preview feature pack' one is activated
+             via -Dpreview-server-tests. The others must be enabled via -P.
+
+             One of the first four will result in installations being tested that are equivalent to what
+             would happen by default. What would happen by default can vary in WildFly vs EAP branches, so
+             we provide profiles for all combinations to make it possible to run test jobs that don't assume a default.
+
+             These profiles may declare maven properties with the same values as are seen in the global defaults.
+             This is done both to be explicit about how the given profile works, and to insulate the profiles
+             from changes in defaults.
+        -->
+
+        <!-- Configures testsuite to use the latest non-default feature pack to provision EE content
+             and to also use wildfly feature pack content. -->
+        <profile>
+            <id>latest-ee-full-server-tests</id>
+            <activation>
+                <property><name>latest-ee-full-server-tests</name></property>
+            </activation>
+            <properties>
+                <testsuite.default.full.build.artifactId>${latest.full.build.artifactId}</testsuite.default.full.build.artifactId>
+                <testsuite.default.full.dist.artifactId>${latest.full.dist.artifactId}</testsuite.default.full.dist.artifactId>
+            </properties>
+        </profile>
+
+        <!-- Configures testsuite to use the latest non-default Galleon pack to provision EE content.
+             Test installations do not include functionality provided by the wildfly feature pack,
+             so -P-expansion-server-tests must be used. -->
+        <profile>
+            <id>latest-ee-only-server-tests</id>
+            <activation>
+                <property><name>latest-ee-only-server-tests</name></property>
+            </activation>
+            <properties>
+                <testsuite.default.full.build.artifactId>wildfly-${latest.ee.artifactid.segment}-build</testsuite.default.full.build.artifactId>
+                <testsuite.default.full.dist.artifactId>wildfly-${latest.ee.artifactid.segment}-dist</testsuite.default.full.dist.artifactId>
+            </properties>
+        </profile>
+
+        <!-- Configures testsuite to use the legacy non-default feature pack to provision EE content.
+             and to also use wildfly feature pack content. -->
+        <profile>
+            <id>legacy-ee-full-server-tests</id>
+            <activation>
+                <property><name>legacy-ee-full-server-tests</name></property>
+            </activation>
+            <properties>
+                <testsuite.default.full.build.artifactId>${latest.full.build.artifactId}</testsuite.default.full.build.artifactId>
+                <testsuite.default.full.dist.artifactId>${latest.full.dist.artifactId}</testsuite.default.full.dist.artifactId>
+            </properties>
+        </profile>
+
+        <!-- Configures testsuite to use the legacy non-default feature pack to provision EE content.
+             Test installations do not include functionality provided by the wildfly feature pack,
+             so -P-expansion-server-tests must be used. -->
+        <profile>
+            <id>legacy-ee-only-server-tests</id>
+            <activation>
+                <property><name>legacy-ee-only-server-tests</name></property>
+            </activation>
+            <properties>
+                <testsuite.default.full.build.artifactId>wildfly-${legacy.ee.artifactid.segment}-build</testsuite.default.full.build.artifactId>
+                <testsuite.default.full.dist.artifactId>wildfly-${legacy.ee.artifactid.segment}-dist</testsuite.default.full.dist.artifactId>
+            </properties>
         </profile>
 
     </profiles>

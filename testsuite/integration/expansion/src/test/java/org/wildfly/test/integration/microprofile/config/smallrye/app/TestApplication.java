@@ -20,6 +20,7 @@ import jakarta.ws.rs.core.Response;
 
 import org.eclipse.microprofile.config.Config;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
+import org.eclipse.microprofile.config.spi.ConfigProviderResolver;
 import org.wildfly.test.integration.microprofile.config.smallrye.SubsystemConfigSourceTask;
 
 /**
@@ -38,6 +39,7 @@ public class TestApplication extends Application {
     public static final String ARRAY_SET_LIST_OVERRIDE_APP_PATH = "/arraySetListOverriddenTest";
     public static final String ARRAY_SET_LIST_NO_DEF_APP_PATH = "/arraySetListNoDefTest";
     public static final String PRIORITY_APP_PATH = "/priorityTest";
+    public static final String CAPABILITY_TEST_PATH = "/capabilityTest";
 
     @Path(APP_PATH)
     public static class ResourceSimple {
@@ -409,6 +411,87 @@ public class TestApplication extends Application {
             text.append("myPetsOverridden as String set = " + mySetPetsOverridden + "\n");
 
             return Response.ok(text).build();
+        }
+    }
+
+    @Path(CAPABILITY_TEST_PATH)
+    public static class CapabilityTestResource {
+
+        @Inject
+        Config injectedConfig;
+
+        @Inject
+        @ConfigProperty(name = SubsystemConfigSourceTask.MY_PROP_FROM_SUBSYSTEM_PROP_NAME)
+        String subsystemProp;
+
+        @GET
+        @Produces("text/plain")
+        public Response testCapability() {
+            StringBuilder text = new StringBuilder();
+
+            try {
+                // Get the resolver and config from the capability service (via ServiceActivator)
+                ConfigProviderResolver capabilityResolver =
+                        ConfigCapabilityValidator.getCapabilityResolver();
+                Config capabilityConfig = ConfigCapabilityValidator.getCapabilityConfig();
+
+                // Verify the capability service was started
+                if (capabilityResolver == null) {
+                    return Response.serverError()
+                            .entity("FAILED: Capability service not started - resolver is null")
+                            .build();
+                }
+
+                if (capabilityConfig == null) {
+                    return Response.serverError()
+                            .entity("FAILED: Capability service not started - config is null")
+                            .build();
+                }
+
+                // Verify the capability resolver is the same as the static instance
+                ConfigProviderResolver staticResolver =
+                        ConfigProviderResolver.instance();
+
+                if (capabilityResolver != staticResolver) {
+                    return Response.serverError()
+                            .entity("FAILED: Capability resolver != static resolver")
+                            .build();
+                }
+
+                // Verify the configs can access subsystem config sources
+                String capabilitySubsystemProp = capabilityConfig.getValue(
+                        SubsystemConfigSourceTask.MY_PROP_FROM_SUBSYSTEM_PROP_NAME, String.class);
+
+                if (!SubsystemConfigSourceTask.MY_PROP_FROM_SUBSYSTEM_PROP_VALUE.equals(capabilitySubsystemProp)) {
+                    return Response.serverError()
+                            .entity("FAILED: Capability config cannot see subsystem property. " +
+                                    "Expected: " + SubsystemConfigSourceTask.MY_PROP_FROM_SUBSYSTEM_PROP_VALUE +
+                                    ", Got: " + capabilitySubsystemProp)
+                            .build();
+                }
+
+                // Verify injected config also works (sanity check)
+                if (!SubsystemConfigSourceTask.MY_PROP_FROM_SUBSYSTEM_PROP_VALUE.equals(subsystemProp)) {
+                    return Response.serverError()
+                            .entity("FAILED: Injected property has wrong value. " +
+                                    "Expected: " + SubsystemConfigSourceTask.MY_PROP_FROM_SUBSYSTEM_PROP_VALUE +
+                                    ", Got: " + subsystemProp)
+                            .build();
+                }
+
+                // All checks passed
+                text.append("SUCCESS: Capability service validation passed\n");
+                text.append("- Capability resolver == static resolver: true\n");
+                text.append("- Capability config sees subsystem sources: true\n");
+                text.append("- Subsystem property value: ").append(capabilitySubsystemProp).append("\n");
+
+                return Response.ok(text.toString()).build();
+
+            } catch (Exception e) {
+                return Response.serverError()
+                        .entity("FAILED: Exception during validation: " + e.getMessage())
+                        .build();
+            }
         }
     }
 

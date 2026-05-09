@@ -28,7 +28,7 @@ import org.wildfly.subsystem.service.capture.FunctionExecutorRegistry;
  * Registers a resource definition for a shared state cache configuration.
  * @author Paul Ferraro
  */
-public class SharedStateCacheResourceDefinitionRegistrar extends ClusteredCacheResourceDefinitionRegistrar {
+public class SharedStateCacheResourceDefinitionRegistrar extends SegmentedCacheResourceDefinitionRegistrar {
 
     private final FunctionExecutorRegistry<Cache<?, ?>> executors;
 

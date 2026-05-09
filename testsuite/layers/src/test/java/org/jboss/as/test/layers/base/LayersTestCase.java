@@ -52,10 +52,24 @@ public class LayersTestCase extends LayersTestBase {
     }
 
     protected Set<String> getExpectedUnreferenced() {
-        return concatArrays(NO_LAYER_OR_REFERENCE_COMMON, NOT_REFERENCED_COMMON, NO_LAYER_OR_REFERENCE_WILDFLY_EE, NOT_REFERENCED_WILDFLY_EE);
+        String[] commonEEUnRef = AssumeTestGroupUtil.isLegacyEEDistribution() ?
+                NOT_REFERENCED_STD_EE_LEGACY :
+                NOT_REFERENCED_STD_EE_LATEST;
+        String[] commonEEBoth = AssumeTestGroupUtil.isLegacyEEDistribution() ?
+                NO_LAYER_OR_REFERENCE_COMMON_EE_LEGACY :
+                NO_LAYER_OR_REFERENCE_COMMON_EE_LATEST;
+        return concatArrays(NO_LAYER_OR_REFERENCE_COMMON, NOT_REFERENCED_COMMON, NO_LAYER_OR_REFERENCE_WILDFLY_EE,
+                NOT_REFERENCED_WILDFLY_EE, commonEEUnRef, commonEEBoth);
     }
 
     protected  Set<String> getExpectedUnusedInAllLayers() {
-        return concatArrays(NO_LAYER_OR_REFERENCE_COMMON, NO_LAYER_COMMON, NO_LAYER_OR_REFERENCE_WILDFLY_EE, NO_LAYER_WILDFLY_EE);
+        String[] commonEENoLayer = AssumeTestGroupUtil.isLegacyEEDistribution() ?
+                NO_LAYER_STD_EE_LEGACY :
+                NO_LAYER_STD_EE_LATEST;
+        String[] commonEEBoth = AssumeTestGroupUtil.isLegacyEEDistribution() ?
+                NO_LAYER_OR_REFERENCE_COMMON_EE_LEGACY :
+                NO_LAYER_OR_REFERENCE_COMMON_EE_LATEST;
+        return concatArrays(NO_LAYER_OR_REFERENCE_COMMON, NO_LAYER_COMMON, NO_LAYER_OR_REFERENCE_WILDFLY_EE,
+                NO_LAYER_WILDFLY_EE, commonEENoLayer, commonEEBoth);
     }
 }

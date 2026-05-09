@@ -71,7 +71,7 @@ public class WeldJpaInjectionServices implements JpaInjectionServices {
             return new LazyFactory<EntityManager>(serviceController, scopedPuName, new Callable<EntityManager>() {
                 @Override
                 public EntityManager call() throws Exception {
-                    return new TransactionScopedEntityManager(
+                    return TransactionScopedEntityManager.create(
                             scopedPuName,
                             getProperties(context),
                             persistenceUnitService.getEntityManagerFactory(),
@@ -150,8 +150,8 @@ public class WeldJpaInjectionServices implements JpaInjectionServices {
 
         @Override
         public ResourceReference<EntityManager> createResource() {
-            final TransactionScopedEntityManager result = new TransactionScopedEntityManager(scopedPuName, getProperties(context), entityManagerFactory, context.synchronization(), transactionSynchronizationRegistry, transactionManager);
-            return new SimpleResourceReference<EntityManager>(result);
+            final TransactionScopedEntityManager result = TransactionScopedEntityManager.create(scopedPuName, getProperties(context), entityManagerFactory, context.synchronization(), transactionSynchronizationRegistry, transactionManager);
+            return new SimpleResourceReference<>(result);
         }
 
     }

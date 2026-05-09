@@ -8,7 +8,7 @@ package org.jboss.as.clustering.infinispan.subsystem;
  * Registers a resource definition for an invalidation cache.
  * @author Paul Ferraro
  */
-public class InvalidationCacheResourceDefinitionRegistrar extends ClusteredCacheResourceDefinitionRegistrar {
+public class InvalidationCacheResourceDefinitionRegistrar extends SegmentedCacheResourceDefinitionRegistrar {
 
     InvalidationCacheResourceDefinitionRegistrar() {
         super(CacheResourceRegistration.INVALIDATION);

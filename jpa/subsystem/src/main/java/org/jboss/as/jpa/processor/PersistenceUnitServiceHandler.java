@@ -736,7 +736,7 @@ public class PersistenceUnitServiceHandler {
                     public void inject(final PersistenceUnitServiceImpl value) throws
                             InjectionException {
                         binderService.getManagedObjectInjector().inject(new ValueManagedReferenceFactory(
-                                        new TransactionScopedEntityManager(
+                                        TransactionScopedEntityManager.create(
                                                 pu.getScopedPersistenceUnitName(),
                                                 new HashMap(),      // WFLY-19973: pass empty HashMap that can be modified by application code.
                                                 value.getEntityManagerFactory(),

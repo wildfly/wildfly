@@ -152,11 +152,6 @@ public class ElytronOidcClientSubsystemTransformerTestCase extends AbstractSubsy
     }
 
     @Override
-    protected void compareXml(String configId, String original, String marshalled) {
-        //
-    }
-
-    @Override
     protected String getSubsystemXml() throws IOException {
         return readResource("elytron-oidc-client-transform.xml");
     }

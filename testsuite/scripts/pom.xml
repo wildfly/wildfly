@@ -14,7 +14,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>40.0.0.Beta1-SNAPSHOT</version>
+        <version>40.0.0.Final-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -91,9 +91,9 @@
                             </galleon-options>
                             <feature-packs>
                                 <feature-pack>
-                                    <groupId>${testsuite.ee.galleon.pack.groupId}</groupId>
-                                    <artifactId>${testsuite.ee.galleon.pack.artifactId}</artifactId>
-                                    <version>${testsuite.ee.galleon.pack.version}</version>
+                                    <groupId>${testsuite.ee.feature.pack.groupId}</groupId>
+                                    <artifactId>${testsuite.ee.feature.pack.artifactId}</artifactId>
+                                    <version>${testsuite.ee.feature.pack.version}</version>
                                     <excluded-packages>
                                         <name>product.conf</name>
                                         <name>docs</name>

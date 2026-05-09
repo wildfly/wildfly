@@ -41,10 +41,9 @@ import org.wildfly.core.testrunner.ServerControl;
  * Tests of behavior of servers provisioned using a channel.
  * <p>
  * Tests in this class use the 'wildfly-multi-channel' installation, which is provisioned using
- * three channels:
+ * two channels:
  * <ol>
  *     <li>A channel for WildFly itself</li>
- *     <li>A channel for Prospero</li>
  *     <li>A custom channel that is part of this testsuite, used to override artifact versions from the other channels</li>
  * </ol>
  */
@@ -61,10 +60,20 @@ public class ChannelProvisioningTestCase {
     public static void beforeClass() {
         AssumeTestGroupUtil.assumeNotWildFlyPreview();
         if (AssumeTestGroupUtil.isBootableJar()
-                || System.getProperty("external.wildfly.channels") != null
-                || System.getProperty("internal.wildfly.channels") != null) {
+                || isNonStandardEEFeaturePack()
+                || System.getProperty("external.wildfly.channels") != null) {
             throw new AssumptionViolatedException("Unsuitable environment");
         }
+    }
+
+    /** This test assumes a channel based override of the wildfly-ee-product-conf
+     *  artifact provided by the 'wildfly-ee-galleon-pack' feature pack. If that FP
+     *  wasn't used to provision, then this test can't work.
+     * @return {@code true} if the 'multichannel.ee.feature.pack.artifactId' property
+     *         indicates something other than 'wildfly-ee-galleon-pack'
+     */
+    private static boolean isNonStandardEEFeaturePack() {
+        return !"wildfly-ee-galleon-pack".equals(System.getProperty("multichannel.ee.feature.pack.artifactId"));
     }
 
     @ArquillianResource
