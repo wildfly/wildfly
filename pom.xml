@@ -597,7 +597,7 @@
         <version.org.wildfly.mvc.krazo>2.0.1.Final</version.org.wildfly.mvc.krazo>
         <version.org.wildfly.vertx>1.0.2.Final</version.org.wildfly.vertx>
         <version.org.wildfly.naming-client>2.0.1.Final</version.org.wildfly.naming-client>
-        <version.org.wildfly.security.elytron-web>4.2.0.CR1</version.org.wildfly.security.elytron-web>
+        <version.org.wildfly.security.elytron-web>4.2.0.Final</version.org.wildfly.security.elytron-web>
         <version.org.wildfly.security.elytron-mp>2.0.0.Final</version.org.wildfly.security.elytron-mp>
         <version.org.wildfly.security.elytron-tests-common>2.4.2.Final</version.org.wildfly.security.elytron-tests-common>
         <version.org.wildfly.security.jakarta.elytron-ee>4.0.0.Beta7</version.org.wildfly.security.jakarta.elytron-ee>
