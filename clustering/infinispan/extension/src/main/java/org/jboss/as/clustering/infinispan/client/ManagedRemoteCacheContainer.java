@@ -69,7 +69,7 @@ public class ManagedRemoteCacheContainer extends RemoteCacheContainerDecorator i
             synchronized (configurations) {
                 // If remote cache configuration is undefined, auto-create
                 if (!configurations.containsKey(cacheName)) {
-                    Marshaller marshaller = UserMarshallerFactory.forMediaType(this.container.getMarshaller().mediaType()).createUserMarshaller(this.loader, List.of(loader));
+                    Marshaller marshaller = UserMarshallerFactory.forMediaType(this.container.getConfiguration().marshaller().mediaType()).createUserMarshaller(this.loader, List.of(loader));
                     // If this is a protostream marshaller, additionally auto-register deployment-specific schemas with server
                     if (marshaller.mediaType().equals(MediaType.APPLICATION_PROTOSTREAM)) {
                         RemoteSchemasAdmin admin = this.container.administration().schemas();
@@ -93,7 +93,7 @@ public class ManagedRemoteCacheContainer extends RemoteCacheContainerDecorator i
         }
 
         RemoteCache<K, V> cache = this.container.getCache(cacheName);
-        return (cache != null) ? new ManagedRemoteCache<>(this, this.container, cache, this.registrar) {
+        return (cache != null) ? new ManagedRemoteCache<>(this, cache, this.registrar) {
             @Override
             public void stop() {
                 super.stop();

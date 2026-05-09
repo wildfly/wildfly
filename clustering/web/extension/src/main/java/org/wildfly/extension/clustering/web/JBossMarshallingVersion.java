@@ -32,6 +32,7 @@ public enum JBossMarshallingVersion implements Function<Module, MarshallingConfi
         }
     },
     VERSION_3() {
+        @SuppressWarnings("deprecation")
         @Override
         public MarshallingConfiguration apply(Module module) {
             MarshallingConfigurationBuilder builder = MarshallingConfigurationBuilder.newInstance(ModularClassResolver.getInstance(module.getModuleLoader())).load(module.getClassLoader());
