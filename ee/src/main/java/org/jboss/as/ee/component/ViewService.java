@@ -12,6 +12,7 @@ import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.jboss.as.ee.logging.EeLogger;
 import org.jboss.as.ee.utils.DescriptorUtils;
@@ -37,6 +38,42 @@ import static org.jboss.as.ee.logging.EeLogger.ROOT_LOGGER;
  */
 public final class ViewService implements Service<ComponentView> {
 
+    /**
+     * Proxy-to-bean class mapping for validation purposes.
+     * This solves metaspace inflation (WFLY-21757) and constructor invocation (WFLY-19120) issues
+     * by allowing proxies to extend Object.class while still providing
+     * access to the bean class for validation purposes.
+     *
+     * @see <a href="https://issues.redhat.com/browse/WFLY-11566">WFLY-11566</a>
+     * @see <a href="https://issues.redhat.com/browse/WFLY-21757">WFLY-21757</a>
+     * @see <a href="https://issues.redhat.com/browse/WFLY-19120">WFLY-19120</a>
+     */
+    private static final Map<Class<?>, Class<?>> PROXY_TO_BEAN_CLASS = new ConcurrentHashMap<>();
+
+    /**
+     * Register a proxy class to component implementation class mapping.
+     *
+     * @param proxyClass the generated proxy class
+     * @param beanClass  the component implementation class
+     */
+    public static void registerProxyBeanMapping(Class<?> proxyClass, Class<?> beanClass) {
+        if (proxyClass != null && beanClass != null) {
+            PROXY_TO_BEAN_CLASS.put(proxyClass, beanClass);
+            EeLogger.ROOT_LOGGER.tracef("Registered proxy mapping: %s -> %s",
+                proxyClass.getName(), beanClass.getName());
+        }
+    }
+
+    /**
+     * Look up the component implementation class for a given proxy class.
+     *
+     * @param proxyClass the proxy class to look up
+     * @return the component implementation class, or null if not found
+     */
+    public static Class<?> getBeanClassForProxy(Class<?> proxyClass) {
+        return PROXY_TO_BEAN_CLASS.get(proxyClass);
+    }
+
     private final InjectedValue<Component> componentInjector = new InjectedValue<Component>();
     private final Map<Method, InterceptorFactory> viewInterceptorFactories;
     private final Map<Method, InterceptorFactory> clientInterceptorFactories;
@@ -48,6 +85,7 @@ public final class ViewService implements Service<ComponentView> {
     private final ViewInstanceFactory viewInstanceFactory;
     private final Map<Class<?>, Object> privateData;
     private volatile ComponentView view;
+    private Class<?> registeredProxyClass;
 
     private volatile Interceptor clientPostConstructInterceptor;
     private volatile Interceptor clientPreDestroyInterceptor;
@@ -107,10 +145,22 @@ public final class ViewService implements Service<ComponentView> {
             clientInterceptors.put(entry.getKey(), entry.getValue().create(factoryContext));
         }
 
+        // WFLY-11566, WFLY-21757, WFLY-19120: Register proxy to bean class mapping
+        Class<?> componentClass = (Class<?>) privateData.get(Class.class);
+        if (componentClass != null) {
+            Class<?> proxyClass = view.getProxyClass();
+            registerProxyBeanMapping(proxyClass, componentClass);
+            registeredProxyClass = proxyClass;
+        }
 
     }
 
     public void stop(final StopContext context) {
+        // WFLY-11566, WFLY-21757, WFLY-19120: Unregister proxy mapping
+        if (registeredProxyClass != null) {
+            PROXY_TO_BEAN_CLASS.remove(registeredProxyClass);
+            EeLogger.ROOT_LOGGER.tracef("Unregistered proxy mapping for: %s", registeredProxyClass.getName());
+        }
         view = null;
     }
 
