@@ -35,6 +35,7 @@ updates:
     groups:
       webservices:
         patterns:
+          - 'com.sun.xml.bind.external*'
           - 'com.sun.xml.fastinfoset*'
           - 'net.shibboleth.utilities*'
           - 'org.apache.cxf*'
