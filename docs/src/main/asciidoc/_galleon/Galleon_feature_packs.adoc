@@ -11,22 +11,21 @@ The main WildFly project provides the following feature-packs for use with xref:
 
 [cols="~,~,~",options="header"]
 |=======================================================================
-|Maven GroupId:ArifactId |Short name|Use
+|Maven GroupId:ArtifactId |Short name|Use
 
 |*org.wildfly:wildfly-galleon-pack*|*wildfly*|The feature-pack most WildFly users use. Provisions a standard WildFly installation. Internally depends on the `wildfly-ee` feature-pack, but also provides integration of technologies like MicroProfile, Micrometer and Open Telemetry that are evolving rapidly, possibly in incompatible ways.
 |*org.wildfly:wildfly-ee-galleon-pack*|*wildfly-ee*|Provisions the most long-term stable functionality of standard WildFly. Does not include MicroProfile or other rapidly evolving technologies that may frequently introduce incompatible changes.
-|*org.wildfly:wildfly-ee-10-feature-pack*|*wildfly-ee10*|This feature pack provides a Jakarta EE10 variant of WildFly for users that want to stay on that version while WildFly moves to a more recent version of the Jakarta EE specifications. This feature pack is released for a limited period of time and users should eventually
-upgrade their applications to "move back" to `wildfly-ee`.|
+|*org.wildfly:wildfly-ee-10-feature-pack*|*wildfly-ee10*|This alternative to the `wildfly-ee-galleon-pack` provides a Jakarta EE10 variant of WildFly for users that want to stay on that version while WildFly moves to a more recent version of the Jakarta EE specifications. This feature pack is released for a limited period of time and users should eventually
 |*org.wildfly.cloud:wildfly-cloud-galleon-pack*|-|Provisions a set of additional features allowing you to better configure a standard WildFly server to work on the cloud. It brings to the server some configuration aspects that are generally expected in a cloud context. See the feature-pack https://github.com/wildfly-extras/wildfly-cloud-galleon-pack/blob/main/doc/index.md[documentation] for more details.
 |*org.wildfly:wildfly-datasources-galleon-pack*|-|Easy integration of popular JDBC drivers and associated datasources into a standard WildFly installation. See the feature-pack project https://github.com/wildfly-extras/wildfly-datasources-galleon-pack/blob/main/README.md[README] for more details.
-|*org.wildfly:wildfly-myfaces-feature-pack*|-|Provides MyFaces 4.x support for standard WildFly. See the feature-pack project https://github.com/wildfly-extras/wildfly-myfaces-feature-pack/blob/master/README.md[README] for more details.
+|*org.wildfly:wildfly-myfaces-feature-pack*|-|Provides MyFaces support for standard WildFly. See the feature-pack project https://github.com/wildfly-extras/wildfly-myfaces-feature-pack/blob/master/README.md[README] for more details.|
 |=======================================================================
 
-The main WildFly project also provide a feature-pack for xref:WildFly_and_WildFly_Preview.adoc[WildFly Preview]:
+The main WildFly project also provides a feature-pack for xref:WildFly_and_WildFly_Preview.adoc[WildFly Preview]:
 
 [cols="~,~,~",options="header"]
 |=======================================================================
-|Maven GroupId:ArifactId |Short name|Use
+|Maven GroupId:ArtifactId |Short name|Use
 
 |*org.wildfly:wildfly-preview-feature-pack*|*wildfly-preview*|Provides a technology preview of things that may be coming in standard WildFly. Likely to have significant incompatible changes with every release.
 |=======================================================================

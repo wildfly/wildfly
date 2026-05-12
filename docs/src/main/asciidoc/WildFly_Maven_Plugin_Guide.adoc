@@ -81,7 +81,7 @@ Galleon is configured thanks to the Maven plugin ```<configuration>``` element.
 The first required piece of information that Galleon needs is a reference to at least one WildFly Galleon feature-pack.
 A WildFly Galleon feature-pack is a Maven artifact that contains everything needed to dynamically provision a server.
 
-This feature-pack, as well as the feature-packs on which it depends, are deployed in public maven repositories.
+This feature-pack, as well as any feature-packs on which it depends, are deployed in public Maven repositories.
 
 At plugin execution time the WildFly feature-packs are retrieved and their content is assembled to provision a server.
 
@@ -414,7 +414,7 @@ can be found in the https://docs.wildfly.org/quickstart[WildFly Quickstarts].
 You can check https://github.com/wildfly-extras/wildfly-cloud-galleon-pack/blob/main/README.md[this documentation] 
 for more details on the WildFly cloud feature-pack .
 
-== WildFly Galleon feature-packs & layers
+== WildFly Galleon feature-packs and layers
 
 include::_galleon/Galleon_feature_packs.adoc[]
 include::_galleon/Galleon_layers.adoc[]
