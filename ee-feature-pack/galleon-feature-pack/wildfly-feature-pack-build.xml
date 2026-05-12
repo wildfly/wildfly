@@ -7,7 +7,7 @@
 
     <family name="wildfly">
       <criteria name="jakarta-ee-10+"/>
-      <criteria name="jakarta-ee-10"/>
+      <criteria name="jakarta-ee-11"/>
       <criteria name="jakarta-ee-deployment"/>
     </family>
     <default-packages>

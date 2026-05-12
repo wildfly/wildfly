@@ -76,10 +76,11 @@
 
         <!-- GAV to use for feature-packs. Profiles can reset to trigger provisioning
              using alternative feature-packs.
-             By default, we test the wildfly-ee feature-pack as all the layers we test
-             in this module are from that feature-pack.
+             Except for testing of WildFly Preview, we want to use a feature-pack that *does not*
+             provide expansion modules, because the test assertions are based on what's provisioned
+             from a feature-pack that does not provide those.
         -->
-        <ee.feature.pack.artifactId>${latest.ee.feature.pack.artifactId}</ee.feature.pack.artifactId>
+        <ee.feature.pack.artifactId>${testsuite.ee.only.feature.pack.artifactId}</ee.feature.pack.artifactId>
 
         <!-- Where to look for artifacts when provisioning and running. -->
         <maven.repo.local>${settings.localRepository}</maven.repo.local>
