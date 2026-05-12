@@ -10,7 +10,7 @@ import org.jboss.as.test.shared.util.AssumeTestGroupUtil;
 
 /**
  * Implementation of {@link LayersTestBase} meant for testing installations
- * provisioned using the {@code wildfly} feature pack or the {@code wildfly-preview} feature pack.
+ * provisioned using the {@code wildfly} feature-pack or the {@code wildfly-preview} feature-pack.
  * <p/>
  * See the {@link LayersTestBase} javadoc for an explanation of what these tests do.
  * <p/>
@@ -20,8 +20,8 @@ import org.jboss.as.test.shared.util.AssumeTestGroupUtil;
  * This subclass provides implementations of methods that provide sets of JBoss Modules module names
  * that are used in {@link LayersTestBase#testUnreferencedModules()}
  * and {@link LayersTestBase#testLayersModuleUse()}. These implementations provide lists that are
- * appropriate for testing installations provisioned using the {@code wildfly} feature pack or
- * the {@code wildfly-preview} feature pack.
+ * appropriate for testing installations provisioned using the {@code wildfly} feature-pack or
+ * the {@code wildfly-preview} feature-pack.
  */
 public class LayersTestCase extends LayersTestBase {
 

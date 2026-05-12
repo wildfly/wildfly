@@ -22,10 +22,10 @@ If something is only relevant to one of `wildfly` *or* `wildfly-preview`, *DO NO
 
 * If it's only for `wildfly`, use the `wildfly-feature-pack-galleon-local` maven module.
 * If it's only for `wildfly-preview`, use the `wildfly-preview-feature-pack-galleon-local` maven module.
-* If it's relevant to standard WildFly but needs to be provisioned when *only* the `wildfly-ee` feature pack is used, use either the `wildfly-ee-feature-pack-galleon-shared` or `wildfly-ee-feature-pack-galleon-local` maven module.
+* If it's relevant to standard WildFly but needs to be provisioned when *only* the `wildfly-ee` feature-pack is used, use either the `wildfly-ee-feature-pack-galleon-shared` or `wildfly-ee-feature-pack-galleon-local` maven module.
 ====
 
-This module is a dependency of both the `wildfly-galleon-pack` and the `wildfly-preview-feature-pack` maven modules. Its content and dependency entries are used by the build of those modules when they create their respective feature packs.
+This module is a dependency of both the `wildfly-galleon-pack` and the `wildfly-preview-feature-pack` maven modules. Its content and dependency entries are used by the build of those modules when they create their respective feature-packs.
 
 == Galleon Content
 
@@ -41,7 +41,7 @@ Galleon content refers to content other than maven artifacts that Galleon provis
 
 The `pom.xml` file for this module *must* include `dependency` entries for all artifacts mentioned in the `module.xml` files included in this maven module. It *must not* include `dependency` entries for other artifacts.
 
-The build of the `wildfly-galleon-pack` and the `wildfly-preview-feature-pack` maven modules relies on the dependency information in this pom to tell it what artifacts the feature pack should include.  Missing information will break the build. Extraneous information may result in the feature pack provisioning the wrong version of artifacts.
+The build of the `wildfly-galleon-pack` and the `wildfly-preview-feature-pack` maven modules relies on the dependency information in this pom to tell it what artifacts the feature-pack should include.  Missing information will break the build. Extraneous information may result in the feature-pack provisioning the wrong version of artifacts.
 
 == Licenses
 
@@ -49,7 +49,7 @@ If the wildfly-license-plugin needs special instructions to identify the license
 
 == Build Output
 
-The build of this feature pack produces a zip that basically packages the content. This is for two reasons:
+The build of this feature-pack produces a zip that basically packages the content. This is for two reasons:
 
 * Nexus balks at this module not producing an artifact, preventing deploying.
 * Ideally, the `wildfly-galleon-pack` and the `wildfly-preview-feature-pack` maven modules would depend on and unzip these zip artifacts and consume their content that way. But, at least at the time this document was written, they don't do this and instead just copy in source from this maven module.

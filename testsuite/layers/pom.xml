@@ -74,10 +74,10 @@
         <layers.delete.installations>true</layers.delete.installations>
         <jbossas.project.dir>${jbossas.ts.dir}/../..</jbossas.project.dir>
 
-        <!-- GAV to use for feature packs. Profiles can reset to trigger provisioning
-             using alternative feature packs.
-             By default, we test the wildfly-ee feature pack as all the layers we test
-             in this module are from that feature pack.
+        <!-- GAV to use for feature-packs. Profiles can reset to trigger provisioning
+             using alternative feature-packs.
+             By default, we test the wildfly-ee feature-pack as all the layers we test
+             in this module are from that feature-pack.
         -->
         <ee.feature.pack.artifactId>${latest.ee.feature.pack.artifactId}</ee.feature.pack.artifactId>
 
@@ -113,7 +113,7 @@
             </properties>
         </profile>
 
-        <!-- Test against WildFly Preview feature packs -->
+        <!-- Test against WildFly Preview feature-packs -->
         <profile>
             <id>preview.profile</id>
             <activation>
@@ -127,14 +127,14 @@
                 <provisioning.phase>compile</provisioning.phase>
                 <provisioning.phase.preview.only>compile</provisioning.phase.preview.only>
                 <surefire.default-test.phase>test</surefire.default-test.phase>
-                <!-- Reset the feature pack GAV prop to use wildfly-preview -->
+                <!-- Reset the feature-pack GAV prop to use wildfly-preview -->
                 <ee.feature.pack.artifactId>wildfly-preview-feature-pack</ee.feature.pack.artifactId>
                 <!-- Use the transformed artifact repo -->
                 <maven.repo.local>${settings.localRepository}</maven.repo.local>
             </properties>
         </profile>
 
-        <!-- Tests using the legacy ee feature pack -->
+        <!-- Tests using the legacy ee feature-pack -->
         <profile>
             <id>legacy-ee-full-server-tests</id>
             <activation>
@@ -805,11 +805,11 @@
                                 </configuration>
                             </execution>
                             <!-- Former wildfly-servlet layers. We now by default provision
-                                 from the wildfly-ee feature pack -->
+                                 from the wildfly-ee feature-pack -->
                             <execution>
-                                <!-- Build the test-standalone-reference from the wildfly-ee feature pack.
+                                <!-- Build the test-standalone-reference from the wildfly-ee feature-pack.
                                      This is not a layer test. It's a test of the standard standalone.xml
-                                      produced by a feature pack. -->
+                                      produced by a feature-pack. -->
                                 <id>test-standalone-reference-provisioning</id>
                                 <goals>
                                     <goal>provision</goal>

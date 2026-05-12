@@ -245,7 +245,7 @@
             </properties>
         </profile>
 
-        <!-- Test against the ee 9 feature pack -->
+        <!-- Test against the ee 9 feature-pack -->
         <profile>
             <id>preview.test.profile</id>
             <activation>

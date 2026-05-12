@@ -261,7 +261,7 @@
              still being easily disabled in profiles where it is not wanted. -->
         <surefire.default-test.phase>test</surefire.default-test.phase>
 
-        <!-- Simple copyright text. Used in feature pack generation for the generated catalog content -->
+        <!-- Simple copyright text. Used in feature-pack generation for the generated catalog content -->
         <wildfly.copyright.simple>The WildFly authors</wildfly.copyright.simple>
         <!-- Complex copyright footer for generated html documentation -->
         <wildfly.copyright.html><![CDATA[

@@ -22,10 +22,10 @@
     </parent>
 
     <artifactId>wildfly-legacy-ee-feature-pack-parent</artifactId>
-    <description>WildFly ${project.version} Legacy Feature Pack parent</description>
+    <description>WildFly ${project.version} Legacy Feature-pack parent</description>
     <packaging>pom</packaging>
 
-    <name>WildFly: Legacy Feature Pack Parent</name>
+    <name>WildFly: Legacy Feature-Pack Parent</name>
 
     <modules>
         <module>build</module>

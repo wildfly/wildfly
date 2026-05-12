@@ -137,7 +137,7 @@
             </build>
         </profile>
 
-        <!-- For profiles testing the legacy EE feature pack, enable surefire if the SE version allow using the SM -->
+        <!-- For profiles testing the legacy EE feature-pack, enable surefire if the SE version allow using the SM -->
         <profile>
             <id>legacy-ee-full-server-tests</id>
             <activation>

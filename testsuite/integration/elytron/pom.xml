@@ -1102,7 +1102,7 @@
             </build>
         </profile>
 
-        <!-- Test against the wildfly-preview feature pack using layers-->
+        <!-- Test against the wildfly-preview feature-pack using layers-->
         <profile>
             <id>preview.layers.test.profile</id>
             <activation>
