@@ -133,13 +133,6 @@
         <!-- This value is overridden in modules with the correct relative pathname. -->
         <xslt.scripts.dir>${jbossas.ts.integ.dir}/src/test/xslt</xslt.scripts.dir>
 
-        <!-- The artifactId of the pom to use as an import scope dependency (a bom) for testsuite modules.
-             Child modules or profiles can override this to use a different dependency set,
-             for example to test WildFly Preview or to test microprofile.
-             Default is the EE dependency set. -->
-        <dependency.management.import.artifact>wildfly-standard-ee-bom</dependency.management.import.artifact>
-        <dependency.management.import.test.artifact>wildfly-standard-test-bom</dependency.management.import.test.artifact>
-
         <!-- Name of the profile that defines what feature-packs were used to provision the test server.
              Profiles set this; the value here is the profile with settings that match the global default values. -->
         <server.provisioning.profile>latest-ee-full-server-tests</server.provisioning.profile>

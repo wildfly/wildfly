@@ -25,8 +25,8 @@
     <description>Provides implementations of Jakarta Persistence 3.1 interfaces</description>
 
     <properties>
-        <!-- Use the legacy WildFly dependency set -->
-        <dependency.management.pom.artifactId>wildfly-legacy-ee-bom</dependency.management.pom.artifactId>
+        <!-- This module must use the legacy ee dependency set -->
+        <dependency.management.import.artifact>wildfly-legacy-ee-bom</dependency.management.import.artifact>
     </properties>
 
     <dependencies>
