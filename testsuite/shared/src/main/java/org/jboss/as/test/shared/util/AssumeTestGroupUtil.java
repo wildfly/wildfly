@@ -230,7 +230,7 @@ public class AssumeTestGroupUtil {
     /**
      * Checks whether tests are running against a full distribution.
      * Full distributions are available from build/dist modules or custom installations that
-     * use feature packs that provide expansion functionality. The.
+     * use feature-packs that provide expansion functionality. The.
      *
      * @return {@code true} if system property {@code server.provisioning.profile} does not include
      *         the string {@code ee-only-server}
@@ -252,7 +252,7 @@ public class AssumeTestGroupUtil {
     }
 
     /**
-     * Checks whether tests are running against a distribution that uses the legacy version of the EE feature pack.
+     * Checks whether tests are running against a distribution that uses the legacy version of the EE feature-pack.
      *
      * @return {@code true} if system property {@code server.provisioning.profile} starts with
      *         the string {@code legacy-ee}

@@ -67,7 +67,7 @@ public class ChannelProvisioningTestCase {
     }
 
     /** This test assumes a channel based override of the wildfly-ee-product-conf
-     *  artifact provided by the 'wildfly-ee-galleon-pack' feature pack. If that FP
+     *  artifact provided by the 'wildfly-ee-galleon-pack' feature-pack. If that FP
      *  wasn't used to provision, then this test can't work.
      * @return {@code true} if the 'multichannel.ee.feature.pack.artifactId' property
      *         indicates something other than 'wildfly-ee-galleon-pack'

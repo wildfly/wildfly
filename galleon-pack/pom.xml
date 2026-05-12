@@ -24,7 +24,7 @@
     <description>WildFly ${project.version} Galleon pack</description>
     <packaging>pom</packaging>
 
-    <name>WildFly: Feature Pack Parent</name>
+    <name>WildFly: Feature-Pack Parent</name>
 
     <modules>
         <module>channel</module>

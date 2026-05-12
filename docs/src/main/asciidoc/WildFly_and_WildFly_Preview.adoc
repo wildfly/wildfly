@@ -54,9 +54,9 @@ as a Technical Preview release.
 The zip or tar.gz file for WildFly Preview is available at link:https://wildfly.org/downloads[https://wildfly.org/downloads]
 right next to the main WildFly release files for the same version.
 
-For wildfly-maven-plugin users and Galleon CLI users, we provide a Galleon feature pack for WildFly Preview. The
-Galleon feature pack location for the feature pack is ``wildfly-preview@maven(org.jboss.universe:community-universe)`` and the Maven coordinate is ``org.wildlfly:wildfly-preview-feature-pack``.
-This feature pack is the WildFly Preview analogue to main WildFly's ``wildfly@maven(org.jboss.universe:community-universe)`` (Maven coordinate ``org.wildfly:wildfly-galleon-pack``).
+For wildfly-maven-plugin users and Galleon CLI users, we provide a Galleon feature-pack for WildFly Preview. The
+Galleon feature-pack location for the feature-pack is ``wildfly-preview@maven(org.jboss.universe:community-universe)`` and the Maven coordinate is ``org.wildlfly:wildfly-preview-feature-pack``.
+This feature-pack is the WildFly Preview analogue to main WildFly's ``wildfly@maven(org.jboss.universe:community-universe)`` (Maven coordinate ``org.wildfly:wildfly-galleon-pack``).
 
 == WildFly Preview and Jakarta EE
 
@@ -237,7 +237,7 @@ tooling that the Jakarta ecosystem provides to do transformation at build time. 
 applications just can't be changed, so the server-side solution WildFly Preview provides can handle those cases.
 
 This deployment transformation feature will be removed from WildFly Preview in a future release. However, it is likely
-that the WildFly developers will offer a separate Galleon feature pack that can be used to add this behavior into both
+that the WildFly developers will offer a separate Galleon feature-pack that can be used to add this behavior into both
 standard WildFly and WildFly Preview.
 
 == BOMs
@@ -255,9 +255,9 @@ We provide the following BOMs for developing applications to deploy in the serve
 |Expansion With Tools| `org.wildfly.bom` |`wildfly-expansion-with-tools`|`wildfly-expansion-preview-with-tools`
 |=======================================================================
 
-The 'EE' BOMs cover technologies that in standard WildFly are provisioned when the `wildfly-ee` Galleon feature pack is used. (All standard WildFly installations use this feature pack).
+The 'EE' BOMs cover technologies that in standard WildFly are provisioned when the `wildfly-ee` Galleon feature-pack is used. (All standard WildFly installations use this feature-pack).
 
-The 'Expansion' BOMs cover additional technologies that in standard WildFly are only provisioned when the `wildfly` Galleon feature pack is used. (Most standard WildFly installations would use this feature pack, including the zips/tars that are available link:https://wildfly.org/downloads[for download].) This includes things like MicroProfile, Micrometer and Open Telemetry.
+The 'Expansion' BOMs cover additional technologies that in standard WildFly are only provisioned when the `wildfly` Galleon feature-pack is used. (Most standard WildFly installations would use this feature-pack, including the zips/tars that are available link:https://wildfly.org/downloads[for download].) This includes things like MicroProfile, Micrometer and Open Telemetry.
 
 The 'With Tools' variants incorporate additional dependencies for tools that may be helpful when developing or testing applications.
 

@@ -21,8 +21,8 @@
 
     <artifactId>wildfly-ee-feature-pack-galleon-shared-legacy</artifactId>
 
-    <name>WildFly: EE Feature Pack Shared Galleon Content -- Legacy</name>
-    <description>Content for the wildfly-ee feature pack that can also be used in the wildfly-legacy-ee feature pack</description>
+    <name>WildFly: EE Feature-Pack Shared Galleon Content -- Legacy</name>
+    <description>Content for the wildfly-ee feature-pack that can also be used in the wildfly-legacy-ee feature-pack</description>
     <packaging>pom</packaging>
 
     <dependencyManagement>

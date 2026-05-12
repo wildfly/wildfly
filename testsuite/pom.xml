@@ -11,8 +11,8 @@
     integration      - holds all integration tests for standalone Wildfly servers.
     domain           - holds all domain management tests for Wildfly.
     galleon          - tests of manipulation of WildFly installations via the Galleon command line tool
-    layers           - validation of Galleon layers that can be provisioned using the wildfly-ee feature pack
-    layers-expansion - validation of Galleon layers that can be provisioned using the wildfly or wildfly-preview feature packs
+    layers           - validation of Galleon layers that can be provisioned using the wildfly-ee feature-pack
+    layers-expansion - validation of Galleon layers that can be provisioned using the wildfly or wildfly-preview feature-packs
     mixed-domain     - test domain mode management of previous-release secondary host controllers by a current version DC
     preview          - tests that are only applicable to WildFly Preview
     scripts          - tests execution of scripts shipped with the server
@@ -43,8 +43,8 @@
                          trying to test them.
                          A separate build-demander handles base server, expansion server and preview server testing.
       shared             Shared utility code used by tests
-      test-feature-pack  Feature pack base server tests can use to provision a server adapted to various test requirements
-      t-f-p-preview      Feature pack preview server tests can use to provision a server adapted to various test requirements
+      test-feature-pack  Feature-pack base server tests can use to provision a server adapted to various test requirements
+      t-f-p-preview      Feature-pack preview server tests can use to provision a server adapted to various test requirements
       test-product-conf  Provides an artifact used in some manual mode tests.
 
 -->
@@ -104,21 +104,21 @@
         <jboss.dist>${project.basedir}/../${wildfly.build.output.dir}</jboss.dist>
         <jboss.home>${jboss.dist}</jboss.home>
 
-        <!-- Galleon feature pack to use in testsuite provisioning executions that provides content
+        <!-- Galleon feature-pack to use in testsuite provisioning executions that provides content
              that *could* be obtained solely from the wildfly-ee-galleon-pack.
              Note: It's valid to use an FP here that provides the EE content via its dependencies.
         -->
         <testsuite.ee.feature.pack.groupId>${full.maven.groupId}</testsuite.ee.feature.pack.groupId>
         <testsuite.ee.feature.pack.artifactId>wildfly-galleon-pack</testsuite.ee.feature.pack.artifactId>
         <testsuite.ee.feature.pack.version>${full.maven.version}</testsuite.ee.feature.pack.version>
-        <!-- Galleon feature pack to use in testsuite provisioning executions that provide content
+        <!-- Galleon feature-pack to use in testsuite provisioning executions that provide content
              that *cannot* be obtained solely from the wildfly-ee-galleon-pack or its dependencies.
-             Test jobs can override this using -D to test using a different feature pack.
+             Test jobs can override this using -D to test using a different feature-pack.
         -->
         <testsuite.full.feature.pack.groupId>${full.maven.groupId}</testsuite.full.feature.pack.groupId>
         <testsuite.full.feature.pack.artifactId>wildfly-galleon-pack</testsuite.full.feature.pack.artifactId>
         <testsuite.full.feature.pack.version>${full.maven.version}</testsuite.full.feature.pack.version>
-        <!-- Galleon feature pack to use in testsuite provisioning executions that install test-specific content.
+        <!-- Galleon feature-pack to use in testsuite provisioning executions that install test-specific content.
              Profiles can set this to wildfly-test-feature-pack-preview when testing wildfly-preview.
         -->
         <testsuite.test.feature.pack.artifactId>wildfly-test-feature-pack</testsuite.test.feature.pack.artifactId>
@@ -140,7 +140,7 @@
         <dependency.management.import.artifact>wildfly-standard-ee-bom</dependency.management.import.artifact>
         <dependency.management.import.test.artifact>wildfly-standard-test-bom</dependency.management.import.test.artifact>
 
-        <!-- Name of the profile that defines what feature packs were used to provision the test server.
+        <!-- Name of the profile that defines what feature-packs were used to provision the test server.
              Profiles set this; the value here is the profile with settings that match the global default values. -->
         <server.provisioning.profile>latest-ee-full-server-tests</server.provisioning.profile>
 
@@ -368,8 +368,8 @@
                     <groupId>org.wildfly.glow</groupId>
                     <artifactId>wildfly-glow-arquillian-plugin</artifactId>
                     <configuration>
-                        <!-- We define the standard set of feature packs to use here.
-                             Profiles that need another feature pack beyond what's
+                        <!-- We define the standard set of feature-packs to use here.
+                             Profiles that need another feature-pack beyond what's
                              indicated by the maven properties here (e.g. 'wildfly')
                              should override this part of the plugin config. -->
                         <feature-packs>
@@ -591,7 +591,7 @@
                 </dependency>
             </dependencies>
         </profile>
-        <!-- These execute in all feature pack contexts, so declare them here instead
+        <!-- These execute in all feature-pack contexts, so declare them here instead
              of repeating this in the aggregator modules -->
         <profile>
             <id>galleon.module.profile</id>
@@ -622,17 +622,17 @@
         -->
 
         <!--
-             There are five profiles that set things up for testing different combinations of feature packs.
+             There are five profiles that set things up for testing different combinations of feature-packs.
 
-             1) Test the latest ee feature pack + the wildfly feature pack
-             2) Test the latest ee feature pack alone. Using this also requires setting -P-expansion-server-tests
-                in order to disable the testsuite modules that require the wildfly feature pack.
-             3) Test the legacy ee feature pack + the wildfly feature pack
-             4) Test the legacy ee feature pack alone. Using this also requires setting -P-expansion-server-tests
-                in order to disable the testsuite modules that require the wildfly feature pack.
-             5) Test the wildfly-preview feature pack.
+             1) Test the latest ee feature-pack + the wildfly feature-pack
+             2) Test the latest ee feature-pack alone. Using this also requires setting -P-expansion-server-tests
+                in order to disable the testsuite modules that require the wildfly feature-pack.
+             3) Test the legacy ee feature-pack + the wildfly feature-pack
+             4) Test the legacy ee feature-pack alone. Using this also requires setting -P-expansion-server-tests
+                in order to disable the testsuite modules that require the wildfly feature-pack.
+             5) Test the wildfly-preview feature-pack.
 
-             None of these are active by default. The 'test the wildfly-preview feature pack' one is activated
+             None of these are active by default. The 'test the wildfly-preview feature-pack' one is activated
              via -Dpreview-server-tests. The others must be enabled via -P.
 
              One of the first four will result in installations being tested that are equivalent to what
@@ -644,8 +644,8 @@
              from changes in defaults.
         -->
 
-        <!-- Configures testsuite to use the latest non-default feature pack to provision EE content
-             and to also use wildfly feature pack content. -->
+        <!-- Configures testsuite to use the latest non-default feature-pack to provision EE content
+             and to also use wildfly feature-pack content. -->
         <profile>
             <id>latest-ee-full-server-tests</id>
             <activation>
@@ -673,7 +673,7 @@
                             <groupId>org.wildfly.glow</groupId>
                             <artifactId>wildfly-glow-arquillian-plugin</artifactId>
                             <configuration>
-                                <!-- Explicitly configure use of both feature packs; don't rely
+                                <!-- Explicitly configure use of both feature-packs; don't rely
                                      on the wildfly FP's static dependency -->
                                 <feature-packs>
                                     <feature-pack>
@@ -703,8 +703,8 @@
             </build>
         </profile>
 
-        <!-- Configures testsuite to use the latest non-default feature pack to provision EE content.
-             Test installations do not include functionality provided by the wildfly feature pack,
+        <!-- Configures testsuite to use the latest non-default feature-pack to provision EE content.
+             Test installations do not include functionality provided by the wildfly feature-pack,
              so -P-expansion-server-tests must be used. -->
         <profile>
             <id>latest-ee-only-server-tests</id>
@@ -728,8 +728,8 @@
             </properties>
         </profile>
 
-        <!-- Configures testsuite to use the legacy non-default feature pack to provision EE content.
-             and to also use wildfly feature pack content. -->
+        <!-- Configures testsuite to use the legacy non-default feature-pack to provision EE content.
+             and to also use wildfly feature-pack content. -->
         <profile>
             <id>legacy-ee-full-server-tests</id>
             <activation>
@@ -760,7 +760,7 @@
                             <groupId>org.wildfly.glow</groupId>
                             <artifactId>wildfly-glow-arquillian-plugin</artifactId>
                             <configuration>
-                                <!-- Explicitly configure use of both feature packs; don't rely
+                                <!-- Explicitly configure use of both feature-packs; don't rely
                                      on the wildfly FP's static dependency -->
                                 <feature-packs>
                                     <feature-pack>
@@ -781,8 +781,8 @@
             </build>
         </profile>
 
-        <!-- Configures testsuite to use the legacy non-default feature pack to provision EE content.
-             Test installations do not include functionality provided by the wildfly feature pack,
+        <!-- Configures testsuite to use the legacy non-default feature-pack to provision EE content.
+             Test installations do not include functionality provided by the wildfly feature-pack,
              so -P-expansion-server-tests must be used. -->
         <profile>
             <id>legacy-ee-only-server-tests</id>
@@ -809,7 +809,7 @@
             </properties>
         </profile>
 
-        <!-- Configures testsuite to use the wildfly-preview feature pack to provision EE content -->
+        <!-- Configures testsuite to use the wildfly-preview feature-pack to provision EE content -->
         <profile>
             <id>preview-server-tests-config</id>
             <activation>
@@ -824,7 +824,7 @@
                 <testsuite.default.build.project.root>preview</testsuite.default.build.project.root>
                 <!-- The pre-built server directory includes 'preview-' in its name -->
                 <server.output.dir.qualifier>${preview.output.qualifier}</server.output.dir.qualifier>
-                <!-- Use the WFP feature pack -->
+                <!-- Use the WFP feature-pack -->
                 <testsuite.ee.feature.pack.artifactId>wildfly-preview-feature-pack</testsuite.ee.feature.pack.artifactId>
                 <testsuite.full.feature.pack.artifactId>wildfly-preview-feature-pack</testsuite.full.feature.pack.artifactId>
                 <testsuite.test.feature.pack.artifactId>wildfly-test-feature-pack-preview</testsuite.test.feature.pack.artifactId>

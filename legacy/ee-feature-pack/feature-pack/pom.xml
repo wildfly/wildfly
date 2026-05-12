@@ -23,7 +23,7 @@
     <artifactId>wildfly-ee-10-feature-pack</artifactId>
 
     <name>WildFly: Legacy EE Full Galleon Pack</name>
-    <description>Galleon feature pack providing full platform Jakarta EE ${legacy.jakarta.version} functionality</description>
+    <description>Galleon feature-pack providing full platform Jakarta EE ${legacy.jakarta.version} functionality</description>
     <packaging>pom</packaging>
 
     <properties>
@@ -39,7 +39,7 @@
         <finalName>${server.output.dir.prefix}-feature-pack-${server.output.dir.version}</finalName>
         <plugins>
             <plugin>
-                <!-- Feature pack generation is vulnerable to leftover files in the target
+                <!-- Feature-pack generation is vulnerable to leftover files in the target
                      folder from previous builds, so always clean even if the clean lifecycle is not invoked -->
                 <artifactId>maven-clean-plugin</artifactId>
                 <executions>
@@ -92,7 +92,7 @@
                                     <type>zip</type>
                                 </artifactItem>
                             </artifactItems>
-                            <!-- The feature pack build seems to ignore such things anyway, but to be
+                            <!-- The feature-pack build seems to ignore such things anyway, but to be
                                  robust exclude artifact metadata content -->
                             <excludes>**/pom.xml,META-INF,META-INF/**</excludes>
                             <outputDirectory>${basedir}/target/unpacked-wildfly-core-galleon-resources</outputDirectory>
@@ -266,7 +266,7 @@
 
     <dependencies>
 
-        <!-- feature pack dependencies -->
+        <!-- feature-pack dependencies -->
 
         <dependency>
             <groupId>org.wildfly.galleon-plugins</groupId>

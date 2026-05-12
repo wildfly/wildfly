@@ -110,7 +110,7 @@
             </properties>
         </profile>
 
-        <!-- Test against wildfly-preview feature pack -->
+        <!-- Test against wildfly-preview feature-pack -->
         <profile>
             <id>preview.profile</id>
             <activation>

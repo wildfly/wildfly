@@ -25,8 +25,8 @@
     <description>
         Common dependency management that can be imported by other boms used for traditional
         capabilities like Jakarta EE. Not meant for direct use as a bom. Contains items
-        common to *all* feature packs that directly provide 'base' functionality,
-        e.g. the wildfly-ee feature pack.
+        common to *all* feature-packs that directly provide 'base' functionality,
+        e.g. the wildfly-ee feature-pack.
     </description>
     <packaging>pom</packaging>
 
