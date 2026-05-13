@@ -175,6 +175,18 @@ public interface TLSServerSetupTask {
         }
     }
 
+    class PerNodeSecureJGroupsTransport_TCP_NODE_1_2 extends PerNodeSecureJGroupsTransport {
+        public PerNodeSecureJGroupsTransport_TCP_NODE_1_2() {
+            super(List.of(NODE_1, NODE_2), TCP.class.getSimpleName());
+        }
+    }
+
+    class PerNodeSecureJGroupsTransport_TCP_NODE_1 extends PerNodeSecureJGroupsTransport {
+        public PerNodeSecureJGroupsTransport_TCP_NODE_1() {
+            super(List.of(NODE_1), TCP.class.getSimpleName());
+        }
+    }
+
     class PerNodeSecureJGroupsTransport_TCP_NODE_1_2_3 extends PerNodeSecureJGroupsTransport {
         public PerNodeSecureJGroupsTransport_TCP_NODE_1_2_3() {
             super(List.of(NODE_1, NODE_2, NODE_3), TCP.class.getSimpleName());
