@@ -5,14 +5,15 @@
 
 package org.jboss.as.jpa.container;
 
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.ServiceLoader;
 import java.util.Set;
 
-import jakarta.persistence.CacheRetrieveMode;
-import jakarta.persistence.CacheStoreMode;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.FlushModeType;
 import jakarta.persistence.LockModeType;
@@ -21,6 +22,7 @@ import jakarta.persistence.ParameterMode;
 import jakarta.persistence.Query;
 import jakarta.persistence.StoredProcedureQuery;
 import jakarta.persistence.TemporalType;
+import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
  * StoredProcedureQueryNonTxInvocationDetacher
@@ -30,12 +32,29 @@ import jakarta.persistence.TemporalType;
  *
  * @author Scott Marlow
  */
-public class StoredProcedureQueryNonTxInvocationDetacher implements StoredProcedureQuery {
+public abstract class StoredProcedureQueryNonTxInvocationDetacher implements StoredProcedureQuery {
+
+    private static final StoredProcedureQueryNonTxInvocationDetacher.Factory FACTORY; static {
+        StoredProcedureQueryNonTxInvocationDetacher.Factory f;
+        if (WildFlySecurityManager.isChecking()) {
+            f = AccessController.doPrivileged((PrivilegedAction<StoredProcedureQueryNonTxInvocationDetacher.Factory>) () -> ServiceLoader.load(StoredProcedureQueryNonTxInvocationDetacher.Factory.class).iterator().next());
+        } else {
+            f = ServiceLoader.load(StoredProcedureQueryNonTxInvocationDetacher.Factory.class).iterator().next();
+        }
+        FACTORY = f;
+    }
+
+    /**
+     * Creates a new {@code UnsynchronizedEntityManagerWrapper}.
+     */
+    public static StoredProcedureQuery create(final EntityManager underlyingEntityManager, StoredProcedureQuery underlyingQuery) {
+        return FACTORY.createStoredProcedureQueryNonTxInvocationDetacher(underlyingEntityManager, underlyingQuery);
+    }
 
     private final EntityManager underlyingEntityManager;
     private final StoredProcedureQuery underlyingStoredProcedureQuery;
 
-    public StoredProcedureQueryNonTxInvocationDetacher(EntityManager underlyingEntityManager, StoredProcedureQuery underlyingStoredProcedureQuery) {
+    protected StoredProcedureQueryNonTxInvocationDetacher(EntityManager underlyingEntityManager, StoredProcedureQuery underlyingStoredProcedureQuery) {
         this.underlyingEntityManager = underlyingEntityManager;
         this.underlyingStoredProcedureQuery = underlyingStoredProcedureQuery;
     }
@@ -53,15 +72,6 @@ public class StoredProcedureQueryNonTxInvocationDetacher implements StoredProced
     public Object getSingleResult() {
         try {
             return underlyingStoredProcedureQuery.getSingleResult();
-        } finally {
-            underlyingEntityManager.clear();
-        }
-    }
-
-    @Override
-    public Object getSingleResultOrNull() {
-        try {
-            return underlyingStoredProcedureQuery.getSingleResultOrNull();
         } finally {
             underlyingEntityManager.clear();
         }
@@ -211,39 +221,6 @@ public class StoredProcedureQueryNonTxInvocationDetacher implements StoredProced
     }
 
     @Override
-    public StoredProcedureQuery setCacheRetrieveMode(CacheRetrieveMode cacheRetrieveMode) {
-        underlyingStoredProcedureQuery.setCacheRetrieveMode(cacheRetrieveMode);
-        return this;
-    }
-
-    @Override
-    public StoredProcedureQuery setCacheStoreMode(CacheStoreMode cacheStoreMode) {
-        underlyingStoredProcedureQuery.setCacheStoreMode(cacheStoreMode);
-        return this;
-    }
-
-    @Override
-    public CacheRetrieveMode getCacheRetrieveMode() {
-        return underlyingStoredProcedureQuery.getCacheRetrieveMode();
-    }
-
-    @Override
-    public CacheStoreMode getCacheStoreMode() {
-        return underlyingStoredProcedureQuery.getCacheStoreMode();
-    }
-
-    @Override
-    public StoredProcedureQuery setTimeout(Integer timeout) {
-        underlyingStoredProcedureQuery.setTimeout(timeout);
-        return this;
-    }
-
-    @Override
-    public Integer getTimeout() {
-        return underlyingStoredProcedureQuery.getTimeout();
-    }
-
-    @Override
     public FlushModeType getFlushMode() {
         return underlyingStoredProcedureQuery.getFlushMode();
     }
@@ -299,5 +276,9 @@ public class StoredProcedureQueryNonTxInvocationDetacher implements StoredProced
     @Override
     public int getUpdateCount() {
         return underlyingStoredProcedureQuery.getUpdateCount();
+    }
+
+    public interface Factory {
+        StoredProcedureQueryNonTxInvocationDetacher createStoredProcedureQueryNonTxInvocationDetacher(EntityManager underlyingEntityManager, StoredProcedureQuery underlyingQuery);
     }
 }

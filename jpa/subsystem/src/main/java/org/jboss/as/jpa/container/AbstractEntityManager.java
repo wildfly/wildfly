@@ -842,7 +842,7 @@ public abstract class AbstractEntityManager implements EntityManager {
     // used by TransactionScopedEntityManager to detach entities loaded by a query in a non-Jakarta Transactions invocation.
     protected Query detachQueryNonTxInvocation(EntityManager underlyingEntityManager, Query underLyingQuery) {
         if (!this.isExtendedPersistenceContext() && !this.isInTx() && !skipQueryDetach()) {
-            return new QueryNonTxInvocationDetacher(underlyingEntityManager, underLyingQuery);
+            return QueryNonTxInvocationDetacher.create(underlyingEntityManager, underLyingQuery);
         }
         return underLyingQuery;
     }
@@ -851,14 +851,14 @@ public abstract class AbstractEntityManager implements EntityManager {
     // used by TransactionScopedEntityManager to detach entities loaded by a query in a non-Jakarta Transactions invocation.
     protected <T> TypedQuery<T> detachTypedQueryNonTxInvocation(EntityManager underlyingEntityManager, TypedQuery<T> underLyingQuery) {
         if (!this.isExtendedPersistenceContext() && !this.isInTx() && !skipQueryDetach()) {
-            return new TypedQueryNonTxInvocationDetacher<>(underlyingEntityManager, underLyingQuery);
+            return TypedQueryNonTxInvocationDetacher.create(underlyingEntityManager, underLyingQuery);
         }
         return underLyingQuery;
     }
 
     private StoredProcedureQuery detachStoredProcedureQueryNonTxInvocation(EntityManager underlyingEntityManager, StoredProcedureQuery underlyingStoredProcedureQuery) {
         if (!this.isExtendedPersistenceContext() && !this.isInTx() && !skipQueryDetach()) {
-            return new StoredProcedureQueryNonTxInvocationDetacher(underlyingEntityManager, underlyingStoredProcedureQuery);
+            return StoredProcedureQueryNonTxInvocationDetacher.create(underlyingEntityManager, underlyingStoredProcedureQuery);
         }
         return underlyingStoredProcedureQuery;
     }
