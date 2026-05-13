@@ -414,7 +414,49 @@ can be found in the https://docs.wildfly.org/quickstart[WildFly Quickstarts].
 You can check https://github.com/wildfly-extras/wildfly-cloud-galleon-pack/blob/main/README.md[this documentation] 
 for more details on the WildFly cloud feature-pack .
 
-== WildFly Galleon feature-packs and layers
+== Feature-packs and layers
 
 include::_galleon/Galleon_feature_packs.adoc[]
+
+The configuration to provision WildFly with EE 10 for a cloud deployment would look like this:
+
+[source,xml]
+----
+<plugin>
+  <groupId>org.wildfly.plugins</groupId>
+  <artifactId>wildfly-maven-plugin</artifactId>
+  <configuration>
+    <feature-packs>
+      <feature-pack>
+        <groupId>org.wildfly</groupId>
+        <artifactId>wildfly-ee-10-feature-pack</artifactId>
+        <version>${version.wildfly}</version>
+      </feature-pack>
+      <feature-pack>
+        <groupId>org.wildfly</groupId>
+        <artifactId>wildfly-galleon-pack</artifactId>
+        <version>${version.wildfly}</version>
+      </feature-pack>
+      <feature-pack>
+        <groupId>org.wildfly.cloud</groupId>
+        <artifactId>wildfly-cloud-galleon-pack</artifactId>
+        <version>${version.wildfly-cloud}</version>
+      </feature-pack>
+    </feature-packs>
+  </configuration>
+  <executions>
+    <execution>
+      <goals>
+        <goal>package</goal>
+      </goals>
+    </execution>
+  </executions>
+</plugin>
+----
+
+In that example, `wildfly-ee-10-feature-pack` is listed before `wildfly-galleon-pack` to ensure that the EE 10 support is
+properly provisioned.
+Likewise, `wildfly-cloud-galleon-pack` is listed last so that its dependencies have been already been provisioned by `wildfly-ee-10-feature-pack`.
+
+
 include::_galleon/Galleon_layers.adoc[]
