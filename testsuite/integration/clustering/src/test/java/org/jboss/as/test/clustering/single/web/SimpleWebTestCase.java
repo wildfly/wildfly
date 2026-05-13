@@ -9,12 +9,13 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import java.net.URI;
 import java.net.URL;
+import java.util.concurrent.atomic.AtomicReference;
 
 import jakarta.servlet.http.HttpServletResponse;
 
-import org.apache.http.HttpResponse;
+import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.utils.HttpClientUtils;
+import org.apache.http.client.methods.HttpPatch;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
@@ -68,23 +69,30 @@ public class SimpleWebTestCase {
         URI uri = SimpleServlet.createURI(baseURL);
 
         try (CloseableHttpClient client = TestHttpClientUtils.promiscuousCookieHttpClient()) {
-            HttpResponse response = client.execute(new HttpGet(uri));
-            try {
+            AtomicReference<String> sessionId = new AtomicReference<>();
+            try (CloseableHttpResponse response = client.execute(new HttpGet(uri))) {
                 assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
-                assertEquals(1, Integer.parseInt(response.getFirstHeader("value").getValue()));
-                assertFalse(Boolean.parseBoolean(response.getFirstHeader("serialized").getValue()));
-            } finally {
-                HttpClientUtils.closeQuietly(response);
+                assertEquals(1, Integer.parseInt(response.getFirstHeader(SimpleServlet.VALUE_HEADER).getValue()));
+                assertFalse(Boolean.parseBoolean(response.getFirstHeader(SimpleServlet.HEADER_SERIALIZED).getValue()));
+                sessionId.setPlain(response.getFirstHeader(SimpleServlet.SESSION_ID_HEADER).getValue());
             }
 
-            response = client.execute(new HttpGet(uri));
-            try {
+            try (CloseableHttpResponse response = client.execute(new HttpGet(uri))) {
                 assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
-                assertEquals(2, Integer.parseInt(response.getFirstHeader("value").getValue()));
+                assertEquals(2, Integer.parseInt(response.getFirstHeader(SimpleServlet.VALUE_HEADER).getValue()));
                 // This won't be true unless we have somewhere to which to replicate or session persistence is configured (current default)
-                assertFalse(Boolean.parseBoolean(response.getFirstHeader("serialized").getValue()));
-            } finally {
-                HttpClientUtils.closeQuietly(response);
+                assertFalse(Boolean.parseBoolean(response.getFirstHeader(SimpleServlet.HEADER_SERIALIZED).getValue()));
+                assertEquals(sessionId.getPlain(), response.getFirstHeader(SimpleServlet.SESSION_ID_HEADER).getValue());
+            }
+
+            // Invalidate and recreate session
+            try (CloseableHttpResponse response = client.execute(new HttpPatch(uri))) {
+                assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
+                assertEquals(1, Integer.parseInt(response.getFirstHeader(SimpleServlet.VALUE_HEADER).getValue()));
+                // This won't be true unless we have somewhere to which to replicate or session persistence is configured (current default)
+                assertFalse(Boolean.parseBoolean(response.getFirstHeader(SimpleServlet.HEADER_SERIALIZED).getValue()));
+                // Verify that session ID of recreated session is not the same as the previous one
+                assertNotEquals(sessionId.getPlain(), response.getFirstHeader(SimpleServlet.SESSION_ID_HEADER).getValue());
             }
         }
 

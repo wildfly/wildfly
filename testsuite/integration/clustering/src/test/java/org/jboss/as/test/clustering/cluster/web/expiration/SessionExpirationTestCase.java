@@ -332,7 +332,9 @@ public abstract class SessionExpirationTestCase extends AbstractClusteringTestCa
             try (CloseableHttpResponse response = client.execute(new HttpGet(SessionOperationServlet.createSetURI(baseURL2, "a", "6")))) {
                 assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
                 assertTrue(response.containsHeader(SessionOperationServlet.SESSION_ID));
+                String previousSessionId = sessionId;
                 sessionId = response.getFirstHeader(SessionOperationServlet.SESSION_ID).getValue();
+                assertNotEquals(previousSessionId, sessionId);
                 assertTrue(response.containsHeader(SessionOperationServlet.CREATED_SESSIONS));
                 assertFalse(response.containsHeader(SessionOperationServlet.DESTROYED_SESSIONS));
                 assertTrue(response.containsHeader(SessionOperationServlet.ADDED_ATTRIBUTES));

@@ -137,7 +137,7 @@ public class DistributableSessionManagerTestCase {
     }
 
     @Test
-    public void createSessionNoSessionId() {
+    public void createSession() {
         HttpServerExchange exchange = new HttpServerExchange(null);
         SessionConfig config = mock(SessionConfig.class);
         Session<Map<String, Object>> session = mock(Session.class);
@@ -149,6 +149,7 @@ public class DistributableSessionManagerTestCase {
         when(session.getId()).thenReturn(sessionId);
         when(session.isValid()).thenReturn(true);
         when(session.getMetaData()).thenReturn(metaData);
+        when(config.findSessionId(exchange)).thenReturn("unexpected");
 
         io.undertow.server.session.Session sessionAdapter = this.adapter.createSession(exchange, config);
 
@@ -163,56 +164,6 @@ public class DistributableSessionManagerTestCase {
 
         String result = sessionAdapter.getId();
         assertSame(expected, result);
-    }
-
-    @Test
-    public void createSessionSpecifiedSessionId() {
-        HttpServerExchange exchange = new HttpServerExchange(null);
-        SessionConfig config = mock(SessionConfig.class);
-        Session<Map<String, Object>> session = mock(Session.class);
-        SessionMetaData metaData = mock(SessionMetaData.class);
-        String sessionId = "session";
-
-        when(config.findSessionId(exchange)).thenReturn(sessionId);
-        when(this.manager.createSession(sessionId)).thenReturn(session);
-        when(session.isValid()).thenReturn(true);
-        when(session.getId()).thenReturn(sessionId);
-        when(session.getMetaData()).thenReturn(metaData);
-
-        io.undertow.server.session.Session sessionAdapter = this.adapter.createSession(exchange, config);
-
-        assertNotNull(sessionAdapter);
-
-        verify(this.listener).sessionCreated(sessionAdapter, exchange);
-        verify(this.statistics).record(metaData);
-        verifyNoInteractions(this.identifierFactory);
-
-        String expected = "expected";
-        when(session.getId()).thenReturn(expected);
-
-        String result = sessionAdapter.getId();
-        assertSame(expected, result);
-    }
-
-    @Test
-    public void createSessionAlreadyExists() {
-        HttpServerExchange exchange = new HttpServerExchange(null);
-        SessionConfig config = mock(SessionConfig.class);
-        String sessionId = "session";
-
-        when(config.findSessionId(exchange)).thenReturn(sessionId);
-        when(this.manager.createSession(sessionId)).thenReturn(null);
-
-        IllegalStateException exception = null;
-        try {
-            this.adapter.createSession(exchange, config);
-        } catch (IllegalStateException e) {
-            exception = e;
-        }
-
-        assertNotNull(exception);
-
-        verifyNoInteractions(this.identifierFactory);
     }
 
     @Test
