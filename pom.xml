@@ -129,7 +129,7 @@
         <galleon.minor.channel>${product.docs.server.version}.0</galleon.minor.channel>
 
         <!-- The artifactId of the BOMs to use as an import scope dependency.
-             The use of property makes it easy to create a branch that uses a different value,
+             The use of a property makes it easy to create a branch that uses a different value,
              i.e. swapping between wildfly-standard-ee-bom and wildfly-legacy-ee-bom.
              Non-expansion production code modules must use this property for dependency management
              if such swapping is valid for their build.
@@ -138,7 +138,8 @@
         <dependency.management.import.artifact>wildfly-standard-ee-bom</dependency.management.import.artifact>
         <!-- Same thing for test-only dependencies -->
         <dependency.management.import.test.artifact>wildfly-standard-test-bom</dependency.management.import.test.artifact>
-
+        <!-- The EL API artifact has a different artifactId between EE 10 and 11. Make it easy to switch which we use. -->
+        <jakarta.el.api.artifactId>jakarta.el-api</jakarta.el.api.artifactId>
 
         <!-- Repository Deployment Settings -->
         <nexus.repository.staging>wildfly-staging</nexus.repository.staging>

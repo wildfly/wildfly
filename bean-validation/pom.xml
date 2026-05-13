@@ -60,7 +60,7 @@
             <!-- Needed for Hibernate Validator since it asserts the existence of jakarta.el during bootstrap in the
                   default configuration-->
             <groupId>org.jboss.spec.jakarta.el</groupId>
-            <artifactId>jakarta.el-api</artifactId>
+            <artifactId>${jakarta.el.api.artifactId}</artifactId>
             <scope>runtime</scope>
         </dependency>
 

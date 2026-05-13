@@ -31,7 +31,7 @@
         <!-- Specification dependencies -->
         <dependency>
             <groupId>org.jboss.spec.jakarta.el</groupId>
-            <artifactId>jakarta.el-api</artifactId>
+            <artifactId>${jakarta.el.api.artifactId}</artifactId>
             <scope>provided</scope>
         </dependency>
         <dependency>

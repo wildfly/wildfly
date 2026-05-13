@@ -658,6 +658,8 @@
                 <!-- For cases where we know for sure we don't want the 'wildfly' FP or channel, we can use these -->
                 <testsuite.ee.only.channel.artifactId>${latest.ee.channel.artifactId}</testsuite.ee.only.channel.artifactId>
                 <testsuite.ee.only.feature.pack.artifactId>${latest.ee.feature.pack.artifactId}</testsuite.ee.only.feature.pack.artifactId>
+                <!-- Use the EE 11+ EL API artifact -->
+                <jakarta.el.api.artifactId>jakarta.el-api</jakarta.el.api.artifactId>
             </properties>
             <build>
                 <pluginManagement>
@@ -718,6 +720,8 @@
                 <!-- For cases where we know for sure we don't want the 'wildfly' FP or channel, we can use these -->
                 <testsuite.ee.only.channel.artifactId>${latest.ee.channel.artifactId}</testsuite.ee.only.channel.artifactId>
                 <testsuite.ee.only.feature.pack.artifactId>${latest.ee.feature.pack.artifactId}</testsuite.ee.only.feature.pack.artifactId>
+                <!-- Use the EE 11+ EL API artifact -->
+                <jakarta.el.api.artifactId>jakarta.el-api</jakarta.el.api.artifactId>
             </properties>
         </profile>
 
@@ -745,6 +749,8 @@
                 <dependency.management.import.artifact>wildfly-legacy-ee-bom</dependency.management.import.artifact>
                 <!-- If there are EE-version-specific test sources, uses the ee10 ones -->
                 <additional.ee.test.source>ee10</additional.ee.test.source>
+                <!-- Use the EE 10 EL API artifact -->
+                <jakarta.el.api.artifactId>jboss-el-api_5.0_spec</jakarta.el.api.artifactId>
             </properties>
             <build>
                 <pluginManagement>
@@ -799,6 +805,8 @@
                 <dependency.management.import.artifact>wildfly-legacy-ee-bom</dependency.management.import.artifact>
                 <!-- If there are EE-version-specific test sources, uses the ee10 ones -->
                 <additional.ee.test.source>ee10</additional.ee.test.source>
+                <!-- Use the EE 10 EL API artifact -->
+                <jakarta.el.api.artifactId>jboss-el-api_5.0_spec</jakarta.el.api.artifactId>
             </properties>
         </profile>
 
@@ -828,6 +836,8 @@
                 <testsuite.test.feature.pack.artifactId>wildfly-test-feature-pack-preview</testsuite.test.feature.pack.artifactId>
                 <!-- If there are EE-version-specific test sources, uses the ee11 ones -->
                 <additional.ee.test.source>ee11</additional.ee.test.source>
+                <!-- Use the EE 11+ EL API artifact -->
+                <jakarta.el.api.artifactId>jakarta.el-api</jakarta.el.api.artifactId>
             </properties>
         </profile>
 
