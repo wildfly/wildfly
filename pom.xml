@@ -1555,6 +1555,7 @@
                     <artifactId>maven-compiler-plugin</artifactId>
                     <configuration>
                         <compilerArgs combine.children="append">
+                              <!-- Note: this requires Java SE 17+11 or later. Update your environment if this causes a problem. -->
                             <arg>-proc:full</arg>
                         </compilerArgs>
                     </configuration>
