@@ -152,6 +152,18 @@ Then the property prefixes mandated by the MicroProfile Reactive Messaging speci
 
 Note that although these prefixes are understood by the subsystem, the full set depends on the connector you want to configure. Different connectors understand different properties.
 
+[[microprofile-reactive-messaging-env-var-format]]
+==== Environment Variable Format
+
+Since connectors are configured using MicroProfile Config, the configuration properties can also be set as environment variables. This is the typical approach for Kubernetes and OpenShift deployments where configuration is passed via Helm charts or pod environment settings.
+
+The mapping from MicroProfile Config property names to environment variable names follows the MicroProfile Config specification: the property name is uppercased and each non-alphanumeric character (dots, hyphens) is replaced with an underscore (`_`). For example:
+
+* `mp.messaging.connector.smallrye-kafka.bootstrap.servers` becomes `MP_MESSAGING_CONNECTOR_SMALLRYE_KAFKA_BOOTSTRAP_SERVERS`
+* `mp.messaging.outgoing.to-kafka.wildfly.elytron.ssl.context` becomes `MP_MESSAGING_OUTGOING_TO_KAFKA_WILDFLY_ELYTRON_SSL_CONTEXT`
+* `kafka.bootstrap.servers` becomes `KAFKA_BOOTSTRAP_SERVERS`
+
+The configuration examples in the following sections show both the `microprofile-config.properties` format and the equivalent environment variable format.
 
 ==== Kafka Connector
 
@@ -167,6 +179,19 @@ mp.messaging.outgoing.to.value.serializer=org.apache.kafka.common.serialization.
 mp.messaging.incoming.from.connector=smallrye-kafka
 mp.messaging.incoming.from.topic=my-topic
 mp.messaging.incoming.from.value.deserializer=org.apache.kafka.common.serialization.IntegerDeserializer
+```
+
+The same configuration using environment variables:
+```
+KAFKA_BOOTSTRAP_SERVERS=kafka:9092
+
+MP_MESSAGING_OUTGOING_TO_CONNECTOR=smallrye-kafka
+MP_MESSAGING_OUTGOING_TO_TOPIC=my-topic
+MP_MESSAGING_OUTGOING_TO_VALUE_SERIALIZER=org.apache.kafka.common.serialization.IntegerSerializer
+
+MP_MESSAGING_INCOMING_FROM_CONNECTOR=smallrye-kafka
+MP_MESSAGING_INCOMING_FROM_TOPIC=my-topic
+MP_MESSAGING_INCOMING_FROM_VALUE_DESERIALIZER=org.apache.kafka.common.serialization.IntegerDeserializer
 ```
 
 Next we will briefly discuss each of these entries. Remember the `to` channel is on the `send()` method, and the `from` channel is on the `receive()` method.
@@ -206,6 +231,18 @@ mp.messaging.connector.smallrye-kafka.wildfly.elytron.ssl.context=test
 
 # Channel configuration would follow here, but is left out for brevity
 ----
+
+The same configuration using environment variables:
+[source]
+----
+MP_MESSAGING_CONNECTOR_SMALLRYE_KAFKA_BOOTSTRAP_SERVERS=localhost:9092
+MP_MESSAGING_CONNECTOR_SMALLRYE_KAFKA_SASL_MECHANISM=PLAIN
+MP_MESSAGING_CONNECTOR_SMALLRYE_KAFKA_SECURITY_PROTOCOL=SASL_SSL
+MP_MESSAGING_CONNECTOR_SMALLRYE_KAFKA_SASL_JAAS_CONFIG=org.apache.kafka.common.security.plain.PlainLoginModule required username="user" password="password";
+MP_MESSAGING_CONNECTOR_SMALLRYE_KAFKA_WILDFLY_ELYTRON_SSL_CONTEXT=test
+----
+NOTE: The `microprofile-config.properties` examples above use MicroProfile Config property substitution (`${USER}`, `${PASSWORD}`) to avoid hardcoding credentials. When using environment variables, supply the actual credential values directly, or use your deployment platform's secret injection mechanism (e.g. Kubernetes Secrets).
+
 Each of these lines has the following meaning:
 
 * `mp.messaging.connector.smallrye-kafka.bootstrap.servers=localhost:9092` - specifies the Kafka servers to connect to. This is the same as in the previous examples
@@ -213,6 +250,48 @@ Each of these lines has the following meaning:
 * `mp.messaging.connector.smallrye-kafka.security.protocol` - specifies the protocol mechanism to use. See `security.protocol` in the Kafka documentation for other choices. In this case we are using `SASL_SSL` which means that communication is over SSL, and that SASL is used to authenticate
 * `mp.messaging.connector.smallrye-kafka.sasl.jaas.config=...` - specifies how we will authenticate with Kafka. In order to not hardcode the credentials in our `microprofile-config.properties file` we are using the property substitution feature of MicroProfile Config. In this case, if you have defined the `USER` and `PASSWORD` environment variables they will be passed in as part of the configuration
 * `mp.messaging.connector.smallrye-kafka.wildfly.elytron.ssl.context=test` - this is not needed if Kafka is secured with a CA signed certificate. If you are using self-signed certificates, you will need to specify a truststore in the Elytron subsystem, and create an `SSLContext` referencing that. The value of this property is used to look up the `SSLContext` in the Elytron subsystem under `/subsystem=elytron/client-ssl-context=*` in the WildFly management model. In this case the property value is `test`, so we look up the `SSLContext` defined by `/subsystem=elytron/client-ssl-context=test` and use that configure the truststore to use for the connection to Kafka.
+
+[[microprofile-reactive-messaging-secure-kafka-channel-level]]
+The above example uses the connector-level prefix `mp.messaging.connector.smallrye-kafka` which applies settings to all Kafka channels. The same configuration can be defined on individual channels instead, using the `mp.messaging.outgoing.[channel-name]` and `mp.messaging.incoming.[channel-name]` prefixes. For example, using channels named `to-kafka` and `from-kafka`:
+
+[source]
+----
+mp.messaging.outgoing.to-kafka.bootstrap.servers=localhost:9092
+mp.messaging.outgoing.to-kafka.sasl.mechanism=PLAIN
+mp.messaging.outgoing.to-kafka.security.protocol=SASL_SSL
+mp.messaging.outgoing.to-kafka.sasl.jaas.config=org.apache.kafka.common.security.plain.PlainLoginModule required \
+  username="${USER}" \
+  password="${PASSWORD}";
+mp.messaging.outgoing.to-kafka.wildfly.elytron.ssl.context=test
+
+mp.messaging.incoming.from-kafka.bootstrap.servers=localhost:9092
+mp.messaging.incoming.from-kafka.sasl.mechanism=PLAIN
+mp.messaging.incoming.from-kafka.security.protocol=SASL_SSL
+mp.messaging.incoming.from-kafka.sasl.jaas.config=org.apache.kafka.common.security.plain.PlainLoginModule required \
+  username="${USER}" \
+  password="${PASSWORD}";
+mp.messaging.incoming.from-kafka.wildfly.elytron.ssl.context=test
+
+# Channel-specific connector and topic configuration would follow here
+----
+
+The same configuration using environment variables:
+[source]
+----
+MP_MESSAGING_OUTGOING_TO_KAFKA_BOOTSTRAP_SERVERS=localhost:9092
+MP_MESSAGING_OUTGOING_TO_KAFKA_SASL_MECHANISM=PLAIN
+MP_MESSAGING_OUTGOING_TO_KAFKA_SECURITY_PROTOCOL=SASL_SSL
+MP_MESSAGING_OUTGOING_TO_KAFKA_SASL_JAAS_CONFIG=org.apache.kafka.common.security.plain.PlainLoginModule required username="user" password="password";
+MP_MESSAGING_OUTGOING_TO_KAFKA_WILDFLY_ELYTRON_SSL_CONTEXT=test
+
+MP_MESSAGING_INCOMING_FROM_KAFKA_BOOTSTRAP_SERVERS=localhost:9092
+MP_MESSAGING_INCOMING_FROM_KAFKA_SASL_MECHANISM=PLAIN
+MP_MESSAGING_INCOMING_FROM_KAFKA_SECURITY_PROTOCOL=SASL_SSL
+MP_MESSAGING_INCOMING_FROM_KAFKA_SASL_JAAS_CONFIG=org.apache.kafka.common.security.plain.PlainLoginModule required username="user" password="password";
+MP_MESSAGING_INCOMING_FROM_KAFKA_WILDFLY_ELYTRON_SSL_CONTEXT=test
+----
+
+This approach allows you to use different security settings for different channels, for example connecting to different Kafka clusters.
 
 ===== Kafka User API
 In order to be able to get more information about messages received from Kafka, and to be able to influence how Kafka handles messages, there is a user API for Kafka. This API lives in the https://github.com/smallrye/smallrye-reactive-messaging/tree/{smallrye-reactive-messaging-tag}/smallrye-reactive-messaging-kafka-api/src/main/java/io/smallrye/reactive/messaging/kafka/api[`io/smallrye/reactive/messaging/kafka/api`] package.
@@ -280,6 +359,22 @@ mp.messaging.incoming.from-kafka.topic=some-topic
 mp.messaging.incoming.from-kafka.value.deserializer=org.apache.kafka.common.serialization.IntegerDeserializer
 mp.messaging.incoming.from-kafka.key.deserializer=org.apache.kafka.common.serialization.StringDeserializer
 ```
+
+The same configuration using environment variables:
+```
+KAFKA_BOOTSTRAP_SERVERS=kafka:9092
+
+MP_MESSAGING_OUTGOING_TO_KAFKA_CONNECTOR=smallrye-kafka
+MP_MESSAGING_OUTGOING_TO_KAFKA_TOPIC=some-topic
+MP_MESSAGING_OUTGOING_TO_KAFKA_VALUE_SERIALIZER=org.apache.kafka.common.serialization.IntegerSerializer
+MP_MESSAGING_OUTGOING_TO_KAFKA_KEY_SERIALIZER=org.apache.kafka.common.serialization.StringSerializer
+
+MP_MESSAGING_INCOMING_FROM_KAFKA_CONNECTOR=smallrye-kafka
+MP_MESSAGING_INCOMING_FROM_KAFKA_TOPIC=some-topic
+MP_MESSAGING_INCOMING_FROM_KAFKA_VALUE_DESERIALIZER=org.apache.kafka.common.serialization.IntegerDeserializer
+MP_MESSAGING_INCOMING_FROM_KAFKA_KEY_DESERIALIZER=org.apache.kafka.common.serialization.StringDeserializer
+```
+
 This configuration looks a lot like the previous configuration that we saw, but note that we need to specify the `key.serializer` for the outgoing channel, and the `key.deserializer` for the incoming channel. As before, they are implementations of `org.apache.kafka.common.serialization.Serializer` and `org.apache.kafka.common.serialization.Deserializer` respectively. Kafka provides implementations for basic types, and you may write your own and include them in the deployment.
 
 ===== A note on `org.apache.kafka` classes
@@ -312,6 +407,20 @@ mp.messaging.incoming.from.connector=smallrye-amqp
 mp.messaging.incoming.from.address=my-topic
 ```
 
+The same configuration using environment variables:
+```
+AMQP_HOST=localhost
+AMQP_PORT=5672
+AMQP_USERNAME=artemis
+AMQP_PASSWORD=artemis
+
+MP_MESSAGING_OUTGOING_TO_CONNECTOR=smallrye-amqp
+MP_MESSAGING_OUTGOING_TO_ADDRESS=my-topic
+
+MP_MESSAGING_INCOMING_FROM_CONNECTOR=smallrye-amqp
+MP_MESSAGING_INCOMING_FROM_ADDRESS=my-topic
+```
+
 Next we will briefly discuss each of these entries. Remember the `to` channel is on the `send()` method, and the `from` channel is on the `receive()` method.
 
 The entries `amqp-host=localhost` and `amqp-port=5672` point the connector to an AMQP broker running on `localhost:5672`. As before we could also have done these for an individual channel by for example specifying  `mp.messaging.outgoing.to.host=localhost` instead. If the host is not specified, it defaults to `localhost`.
@@ -332,7 +441,7 @@ The prefixes discussed above are stripped off before passing the property to the
 
 ===== Connecting to a secure AMQP broker
 
-If connecting to a Kafka instance secured with SSL and SASL, the following example 'microprofile-config.properties' will help you get started. There are a few new properties. We are showing them on the connector level but they could equally well be defined on the channel level (i.e. with the `mp.messaging.outgoing.to-amqp.` and `mp.messaging.incoming.from-amqp.` prefixes from the previous examples rather than the connector-wide `mp.messaging.connector.smallrye-kafka` prefix).
+If connecting to an AMQP broker secured with SSL, the following example 'microprofile-config.properties' will help you get started. There are a few new properties. We are showing them on the connector level but they could equally well be defined on the channel level (i.e. with the `mp.messaging.outgoing.to.` and `mp.messaging.incoming.from.` prefixes from the previous examples rather than the connector-wide `mp.messaging.connector.smallrye-amqp` prefix).
 
 [source]
 ----
@@ -348,18 +457,39 @@ mp.messaging.connector.smallrye-amqp.wildfly.elytron.ssl.context=test
 
 # Channel configuration would follow here, but is left out for brevity
 ----
-//
-//mp.messaging.outgoing.to.connector=smallrye-amqp
-//mp.messaging.outgoing.to.address=my-topic
-//
-//mp.messaging.incoming.from.connector=smallrye-amqp
-//mp.messaging.incoming.from.address=my-queue
+
+The same configuration using environment variables:
+[source]
+----
+AMQP_HOST=localhost
+AMQP_PORT=5672
+AMQP_USERNAME=artemis
+AMQP_PASSWORD=artemis
+AMQP_USE_SSL=true
+MP_MESSAGING_CONNECTOR_SMALLRYE_AMQP_WILDFLY_ELYTRON_SSL_CONTEXT=test
+----
+
 Each of the new lines has the following meaning:
 
 * `amqp-use-ssl=true` - specifies that we want to use a secure connection when connecting to the broker.
 * `mp.messaging.connector.smallrye-amqp.wildfly.elytron.ssl.context=test` - this is not needed if AMQ broker is secured with a CA signed certificate. If you are using self-signed certificates, you will need to specify a truststore in the Elytron subsystem, and create an `SSLContext` referencing that. The value of this property is used to look up the `SSLContext` in the Elytron subsystem under `/subsystem=elytron/client-ssl-context=*` in the WildFly management model. In this case the property value is `test`, so we look up the `SSLContext` defined by `/subsystem=elytron/client-ssl-context=test` and use that configure the truststore to use for the connection to AMQ broker.
 
-Instead of configuring these properties on the connector level, we could also have defined them on the individual channels. E.g.: `mp.messaging.incoming.from.wildfly.elytron.ssl.context=test` would choose the `test` SSLContext for the `from` incoming channel.
+The above example uses the connector-level prefix `mp.messaging.connector.smallrye-amqp` which applies settings to all AMQP channels. The same configuration can be defined on individual channels instead. For example:
+
+[source]
+----
+mp.messaging.outgoing.to.wildfly.elytron.ssl.context=test
+mp.messaging.incoming.from.wildfly.elytron.ssl.context=test
+----
+
+Or using environment variables:
+[source]
+----
+MP_MESSAGING_OUTGOING_TO_WILDFLY_ELYTRON_SSL_CONTEXT=test
+MP_MESSAGING_INCOMING_FROM_WILDFLY_ELYTRON_SSL_CONTEXT=test
+----
+
+This approach allows you to use different security settings for different channels, for example connecting to different AMQP brokers.
 
 == Tracing messages with MicroProfile Telemetry
 
