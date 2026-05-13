@@ -27,6 +27,11 @@ echo "Using ${MAVEN_LOCAL_REPO} as Maven local cache"
 
 "${BASE_DIR}"/target/galleon/galleon-${GALLEON_VERSION}/bin/galleon.sh maven set-local-repository "${MAVEN_LOCAL_REPO}"
 
+if [ -n "${GALLEON_MAVEN_SETTINGS_PATH}" ]; then
+  echo "Using ${GALLEON_MAVEN_SETTINGS_PATH} as settings file"
+  "${BASE_DIR}"/target/galleon/galleon-${GALLEON_VERSION}/bin/galleon.sh maven set-settings-file "${GALLEON_MAVEN_SETTINGS_PATH}"
+fi
+
 # Full install update
 echo "Testing update of ${WILDFLY_PRODUCER} from ${WF_BASE_VERSION} to ${WILDFLY_PRODUCER} latest SNAPSHOT"
 wildflyDir="${BASE_DIR}"/target/${WILDFLY_PRODUCER}

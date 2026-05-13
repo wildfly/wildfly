@@ -30,6 +30,8 @@
         <wildfly-ee.update.phase>compile</wildfly-ee.update.phase>
         <wildfly.update.phase>compile</wildfly.update.phase>
         <wildfly-preview.update.phase>none</wildfly-preview.update.phase>
+        <!-- The pathto the settings has to be provided as a property, otherwise no settings file used -->
+        <wildfly.galleon.test.settings.path></wildfly.galleon.test.settings.path>
     </properties>
 
     <profiles>
@@ -86,6 +88,7 @@
                                             <env key="WILDFLY_PRODUCER" value="wildfly-ee"/>
                                             <env key="WILDFLY_CHANNEL" value="${galleon.minor.channel}"/>
                                             <env key="GALLEON_LAYERS" value="jaxrs-server"/>
+                                            <env key="GALLEON_MAVEN_SETTINGS_PATH" value="${wildfly.galleon.test.settings.path}"/>
                                         </exec>
                                     </target>
                                 </configuration>
@@ -106,6 +109,7 @@
                                             <env key="WILDFLY_PRODUCER" value="wildfly"/>
                                             <env key="WILDFLY_CHANNEL" value="${galleon.minor.channel}"/>
                                             <env key="GALLEON_LAYERS" value="cloud-server"/>
+                                            <env key="GALLEON_MAVEN_SETTINGS_PATH" value="${wildfly.galleon.test.settings.path}"/>
                                         </exec>
                                     </target>
                                 </configuration>
@@ -126,6 +130,7 @@
                                             <env key="WILDFLY_PRODUCER" value="wildfly-preview"/>
                                             <env key="WILDFLY_CHANNEL" value="${galleon.minor.channel}"/>
                                             <env key="GALLEON_LAYERS" value="cloud-server,microprofile-platform,-microprofile-fault-tolerance"/>
+                                            <env key="GALLEON_MAVEN_SETTINGS_PATH" value="${wildfly.galleon.test.settings.path}"/>
                                         </exec>
                                     </target>
                                 </configuration>
