@@ -57,7 +57,7 @@ public class SimpleServlet extends HttpServlet {
     }
 
     @Override
-    protected void doHead(HttpServletRequest request, HttpServletResponse response) throws IOException {
+    protected void doHead(HttpServletRequest request, HttpServletResponse response) {
         HttpSession session = request.getSession(false);
         if (session != null) {
             response.addHeader(SESSION_ID_HEADER, session.getId());
@@ -65,14 +65,16 @@ public class SimpleServlet extends HttpServlet {
     }
 
     @Override
-    protected void doPut(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+    protected void doPut(HttpServletRequest request, HttpServletResponse response) {
         HttpSession session = request.getSession(true);
+        session.invalidate();
+        session = request.getSession(true);
         response.addHeader(SESSION_ID_HEADER, session.getId());
         session.removeAttribute(ATTRIBUTE);
     }
 
     @Override
-    protected void doDelete(HttpServletRequest request, HttpServletResponse response) throws IOException {
+    protected void doDelete(HttpServletRequest request, HttpServletResponse response) {
         HttpSession session = request.getSession(false);
         if (session != null) {
             session.invalidate();
@@ -80,7 +82,13 @@ public class SimpleServlet extends HttpServlet {
     }
 
     @Override
-    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
+    protected void doPatch(HttpServletRequest request, HttpServletResponse response) {
+        this.doDelete(request, response);
+        this.doGet(request, response);
+    }
+
+    @Override
+    protected void doGet(HttpServletRequest request, HttpServletResponse response) {
         Function<HttpSession, Mutable> accessor = session -> {
             Mutable mutable = (Mutable) session.getAttribute(ATTRIBUTE);
             if (mutable == null) {
@@ -93,7 +101,7 @@ public class SimpleServlet extends HttpServlet {
     }
 
     @Override
-    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+    protected void doPost(HttpServletRequest request, HttpServletResponse response) {
         Function<HttpSession, Mutable> accessor = session -> {
             Mutable mutable = (Mutable) session.getAttribute(ATTRIBUTE);
             if (mutable == null) {
@@ -104,7 +112,7 @@ public class SimpleServlet extends HttpServlet {
         this.increment(request, response, accessor);
     }
 
-    private void increment(HttpServletRequest request, HttpServletResponse response, Function<HttpSession, Mutable> accessor) throws IOException {
+    private void increment(HttpServletRequest request, HttpServletResponse response, Function<HttpSession, Mutable> accessor) {
         HttpSession session = request.getSession(true);
         response.addHeader(SESSION_ID_HEADER, session.getId());
         Mutable mutable = accessor.apply(session);
@@ -134,7 +142,5 @@ public class SimpleServlet extends HttpServlet {
                 Thread.currentThread().interrupt();
             }
         }
-
-        response.getWriter().write("Success");
     }
 }
