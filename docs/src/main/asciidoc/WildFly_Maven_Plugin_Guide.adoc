@@ -79,13 +79,16 @@ The WildFly Maven Plugin depends on https://docs.wildfly.org/galleon/[Galleon] t
 Galleon is configured thanks to the Maven plugin ```<configuration>``` element.
 
 The first required piece of information that Galleon needs is a reference to at least one WildFly Galleon feature-pack.
-A WildFly Galleon feature-pack is a maven artifact that contains everything needed to dynamically provision a server.
-This feature-pack, as well as the feature-packs on which it depends,
-are deployed in public maven repositories. 
+A WildFly Galleon feature-pack is a Maven artifact that contains everything needed to dynamically provision a server.
+
+This feature-pack, as well as any feature-packs on which it depends, are deployed in public Maven repositories.
 
 At plugin execution time the WildFly feature-packs are retrieved and their content is assembled to provision a server.
 
-Once you have identified a WildFly Galleon feature-pack, you need to select a set of 
+First, you need to identify the set of feature-packs you want to use to provision your server among the available
+link:#WildFly_Galleon_feature-packs[WildFly Galleon feature-packs].
+
+Once you have identified a WildFly Galleon feature-pack, you then need to select a set of
 link:#wildfly_layers[WildFly Layers] that are used to compose the server.
 
 The set of Galleon layers to include is driven by the needs of the application you are developing.
@@ -410,5 +413,50 @@ can be found in the https://docs.wildfly.org/quickstart[WildFly Quickstarts].
 
 You can check https://github.com/wildfly-extras/wildfly-cloud-galleon-pack/blob/main/README.md[this documentation] 
 for more details on the WildFly cloud feature-pack .
+
+== Feature-packs and layers
+
+include::_galleon/Galleon_feature_packs.adoc[]
+
+The configuration to provision WildFly with EE 10 for a cloud deployment would look like this:
+
+[source,xml]
+----
+<plugin>
+  <groupId>org.wildfly.plugins</groupId>
+  <artifactId>wildfly-maven-plugin</artifactId>
+  <configuration>
+    <feature-packs>
+      <feature-pack>
+        <groupId>org.wildfly</groupId>
+        <artifactId>wildfly-ee-10-feature-pack</artifactId>
+        <version>${version.wildfly}</version>
+      </feature-pack>
+      <feature-pack>
+        <groupId>org.wildfly</groupId>
+        <artifactId>wildfly-galleon-pack</artifactId>
+        <version>${version.wildfly}</version>
+      </feature-pack>
+      <feature-pack>
+        <groupId>org.wildfly.cloud</groupId>
+        <artifactId>wildfly-cloud-galleon-pack</artifactId>
+        <version>${version.wildfly-cloud}</version>
+      </feature-pack>
+    </feature-packs>
+  </configuration>
+  <executions>
+    <execution>
+      <goals>
+        <goal>package</goal>
+      </goals>
+    </execution>
+  </executions>
+</plugin>
+----
+
+In that example, `wildfly-ee-10-feature-pack` is listed before `wildfly-galleon-pack` to ensure that the EE 10 support is
+properly provisioned.
+Likewise, `wildfly-cloud-galleon-pack` is listed last so that its dependencies have been already been provisioned by `wildfly-ee-10-feature-pack`.
+
 
 include::_galleon/Galleon_layers.adoc[]

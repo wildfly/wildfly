@@ -1,0 +1,52 @@
+[[WildFly_Galleon_feature-packs]]
+=== WildFly Galleon Feature-packs
+
+The WildFly project provides a number of Galleon https://docs.wildfly.org/galleon/#_feature_packs[feature-pack] maven artifacts. A feature-pack is a zipped file that contains everything needed to dynamically provision a server.
+These feature-packs are deployed in public Maven repositories.
+
+When Galleon is used to install WildFly, the desired WildFly feature-packs are retrieved and
+their content is assembled to create an installation.
+
+The main WildFly project provides the following feature-packs for use with xref:WildFly_and_WildFly_Preview.adoc[standard WildFly]:
+
+[cols="~,~,~,~",options="header"]
+|=======================================================================
+|Maven groupId:artifactId |Short name|Use|Requires
+
+|*org.wildfly:wildfly-galleon-pack*|*wildfly*|The feature-pack most WildFly users use. Provisions a standard WildFly installation. Internally depends on the `wildfly-ee` feature-pack, but also provides integration of technologies like MicroProfile, Micrometer and Open Telemetry that are evolving rapidly, possibly in incompatible ways.| *wildfly-ee* (by default) or *wildfly-ee-10* (for EE 10 support)
+
+|*org.wildfly:wildfly-ee-galleon-pack*|*wildfly-ee*|Provisions the most long-term stable functionality of standard WildFly. Does not include MicroProfile or other rapidly evolving technologies that may frequently introduce incompatible changes.| none
+
+|*org.wildfly:wildfly-ee-10-feature-pack*|*wildfly-ee-10*|This alternative to *wildfly-ee* provides a Jakarta EE 10 variant of WildFly for users that want to stay on that version while WildFly moves to a more recent version of the Jakarta EE specifications. This feature-pack is released for a limited period of time and users should eventually migrate to EE 11| none
+
+|*org.wildfly.cloud:wildfly-cloud-galleon-pack*|-|Provisions a set of additional features allowing you to better configure a standard WildFly server to work on the cloud. It brings to the server some configuration aspects that are generally expected in a cloud context. See the feature-pack https://github.com/wildfly-extras/wildfly-cloud-galleon-pack/blob/main/doc/index.md[documentation] for more details.| *wildfly-ee*, *wildfly-ee-10* or *wildfly-preview*
+
+|*org.wildfly:wildfly-datasources-galleon-pack*|-|Easy integration of popular JDBC drivers and associated datasources into a standard WildFly installation. See the feature-pack project https://github.com/wildfly-extras/wildfly-datasources-galleon-pack/blob/main/README.md[README] for more details.|*wildfly-ee*, *wildfly-ee-10* or *wildfly-preview*
+
+|*org.wildfly:wildfly-myfaces-feature-pack*|-|Provides MyFaces support for WildFly. See the feature-pack project https://github.com/wildfly-extras/wildfly-myfaces-feature-pack/blob/master/README.md[README] for more details.|*wildfly-ee* or *wildfly-preview* (for Jakarta Faces 4.1) or *wildfly-ee-10* (for Faces 4.0)|
+|=======================================================================
+
+The main WildFly project also provides a feature-pack for xref:WildFly_and_WildFly_Preview.adoc[WildFly Preview]:
+
+[cols="~,~,~",options="header"]
+|=======================================================================
+|Maven groupId:artifactId |Short name|Use
+
+|*org.wildfly:wildfly-preview-feature-pack*|*wildfly-preview*|Provides a technology preview of things that may be coming in standard WildFly. Likely to have significant incompatible changes with every release.
+|=======================================================================
+
+There are also a number of feature-packs of varying levels of stability available from the https://github.com/orgs/wildfly-extras/repositories[*wildfly-extras* GitHub organization].
+
+In most cases, people working with WildFly are using the `wildfly` feature-pack, so that is the one used in most of the examples in this document.
+
+==== Order of Feature-packs.
+
+When feature-packs are used to provision WildFly, *their order is significant if they have requirements*.
+A specific feature-pack must be listed before a feature-pack that would use another default feature-pack.
+
+For example, the *wildfly-ee-10* feature-pack provides a Jakarta EE 10 variant of *wildfly-ee*.
+To provision WildFly with that EE 10 variant, this `org.wildfly:wildfly-ee-10-feature-pack` feature-pack must be listed *before* the
+`org.wildfly:wildfly-galleon-pack` feature-pack (that would require *wildfly-ee* otherwise) in the provisioning tool.
+
+// In the WildFLy Maven Plugin Guide, the inclusion of this section is followed by an example (wildfly-ee-10 + wildfly + wildfly-cloud-galleon-pack).
+// Please bear this in mind before adding any content below this comment.
