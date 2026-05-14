@@ -70,7 +70,7 @@
             </xs:element>
             <xs:element name="state-transfer-thread-pool" type="tns:thread-pool" minOccurs="0" maxOccurs="1">
                 <xs:annotation>
-                    <xs:documentation>Defines a thread pool used for for state transfer.</xs:documentation>
+                    <xs:documentation>Defines a thread pool used for state transfer.</xs:documentation>
                 </xs:annotation>
             </xs:element>
             <xs:element name="transport-thread-pool" type="tns:thread-pool" minOccurs="0" maxOccurs="1">
