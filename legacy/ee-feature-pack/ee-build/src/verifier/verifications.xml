@@ -14,7 +14,7 @@
     4) standalone/configuration/standalone.xml must exist
     5) modules/system/layers/base/org/jboss/as/product/${ee.dist.product.slot}/module.xml exists
     6) the module.xml above contains to 'org.wildfly:wildfly-legacy-ee-feature-pack-product-conf'
-    7) Various modules provided by the feature pack that provides the complete MicroProfile feature set are not present
+    7) Various modules provided by the feature-pack that provides the complete MicroProfile feature set are not present
     8) the .galleon dir exists
     9) no .galleon/history dir exists
 -->

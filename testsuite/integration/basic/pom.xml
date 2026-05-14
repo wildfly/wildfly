@@ -797,6 +797,11 @@
             <artifactId>ironjacamar-deployers-common</artifactId>
         </dependency>
         <dependency>
+            <groupId>org.jboss.spec.jakarta.el</groupId>
+            <artifactId>${jakarta.el.api.artifactId}</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
             <groupId>org.jboss.spec.jakarta.xml.soap</groupId>
             <artifactId>jboss-saaj-api_3.0_spec</artifactId>
         </dependency>
@@ -3761,8 +3766,12 @@
         </profile>
         <!-- Dependencies only to be used when not testing installations using the legacy EE FP -->
         <profile>
-            <id>standard-ee-tests-deps</id>
+            <id>latest.ee.specific.dependencies</id>
             <activation>
+                <!-- Note: an analogous profile with the same id in some production code modules
+                     uses activeByDefault because its use is not meant to be externally controlled.
+                     But for testsuite use cases the intent is to allow this profile to be disabled
+                     when what it does is inappropriate for the test job. -->
                 <property>
                     <name>!legacy-ee-tests</name>
                 </property>
@@ -3771,27 +3780,6 @@
                 <dependency>
                     <groupId>jakarta.enterprise</groupId>
                     <artifactId>jakarta.enterprise.cdi-el-api</artifactId>
-                    <scope>test</scope>
-                </dependency>
-                <dependency>
-                    <groupId>org.jboss.spec.jakarta.el</groupId>
-                    <artifactId>jakarta.el-api</artifactId>
-                    <scope>test</scope>
-                </dependency>
-            </dependencies>
-        </profile>
-        <!-- Dependencies only to be used when testing installations using the legacy EE FP -->
-        <profile>
-            <id>legacy-ee-tests-deps</id>
-            <activation>
-                <property>
-                    <name>legacy-ee-tests</name>
-                </property>
-            </activation>
-            <dependencies>
-                <dependency>
-                    <groupId>org.jboss.spec.jakarta.el</groupId>
-                    <artifactId>jboss-el-api_5.0_spec</artifactId>
                     <scope>test</scope>
                 </dependency>
             </dependencies>

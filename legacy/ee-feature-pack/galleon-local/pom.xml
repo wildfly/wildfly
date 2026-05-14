@@ -21,9 +21,9 @@
 
     <artifactId>wildfly-legacy-ee-feature-pack-galleon-local</artifactId>
 
-    <name>WildFly: Legacy EE Feature Pack Local Galleon Content</name>
+    <name>WildFly: Legacy EE Feature-Pack Local Galleon Content</name>
 	<description>
-		Content for the wildfly-legacy-ee feature pack that can only be used in that feature pack.
+		Content for the wildfly-legacy-ee feature-pack that can only be used in that feature-pack.
 	</description>
     <packaging>pom</packaging>
 

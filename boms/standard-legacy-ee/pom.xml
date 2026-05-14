@@ -25,8 +25,8 @@
     <description>
         Shared dependency management that can be imported by other boms used for traditional
         capabilities like Jakarta EE. Not meant for direct use as a bom. Contains items
-        common to the standard EE feature pack and the legacy variant, but *not* shared by
-        the wildfly-preview feature pack.
+        common to the standard EE feature-pack and the legacy variant, but *not* shared by
+        the wildfly-preview feature-pack.
     </description>
     <packaging>pom</packaging>
 

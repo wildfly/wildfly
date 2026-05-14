@@ -24,11 +24,16 @@
 
     <name>WildFly: Jipijapa Hibernate 7 (JPA 3.2) integration</name>
 
+    <properties>
+        <!-- This module must use the latest ee dependency set -->
+        <dependency.management.import.artifact>wildfly-standard-ee-bom</dependency.management.import.artifact>
+    </properties>
+
     <dependencyManagement>
         <dependencies>
             <dependency>
                 <groupId>${project.groupId}</groupId>
-                <artifactId>wildfly-standard-test-bom</artifactId>
+                <artifactId>${dependency.management.import.test.artifact}</artifactId>
                 <version>${project.version}</version>
                 <type>pom</type>
                 <scope>import</scope>

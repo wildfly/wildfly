@@ -52,7 +52,7 @@ import org.wildfly.test.stabilitylevel.StabilityServerSetupSnapshotRestoreTasks;
 
 /**
  * The full test for testing the reporting of usage of unstable API annotation annotated constructs lives
- * in WildFly Core. This test is just to verify that the annotation index from the feature packs is present in the server.
+ * in WildFly Core. This test is just to verify that the annotation index from the feature-packs is present in the server.
  *
  * Also, there is some verification that in various types of archives, the classes are only scanned once.
  */

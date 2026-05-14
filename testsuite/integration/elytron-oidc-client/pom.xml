@@ -347,7 +347,7 @@
             </build>
         </profile>
 
-        <!-- Test against the wildfly-preview feature pack -->
+        <!-- Test against the wildfly-preview feature-pack -->
         <profile>
             <id>preview.test.profile</id>
             <activation>

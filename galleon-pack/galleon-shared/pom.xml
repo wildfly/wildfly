@@ -22,8 +22,8 @@
 
     <artifactId>wildfly-feature-pack-galleon-shared</artifactId>
 
-    <name>WildFly: Feature Pack Shared Galleon Content</name>
-    <description>Content for the wildfly feature pack that can also be used in the wildfly-preview feature pack</description>
+    <name>WildFly: Feature-Pack Shared Galleon Content</name>
+    <description>Content for the wildfly feature-pack that can also be used in the wildfly-preview feature-pack</description>
     <packaging>pom</packaging>
     <dependencies>
 

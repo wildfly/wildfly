@@ -27,14 +27,14 @@
         <dependencies>
             <dependency>
                 <groupId>${project.groupId}</groupId>
-                <artifactId>wildfly-standard-ee-bom</artifactId>
+                <artifactId>${dependency.management.import.artifact}</artifactId>
                 <version>${ee.maven.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
             <dependency>
                 <groupId>${project.groupId}</groupId>
-                <artifactId>wildfly-standard-test-bom</artifactId>
+                <artifactId>${dependency.management.import.test.artifact}</artifactId>
                 <version>${project.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
@@ -60,7 +60,7 @@
             <!-- Needed for Hibernate Validator since it asserts the existence of jakarta.el during bootstrap in the
                   default configuration-->
             <groupId>org.jboss.spec.jakarta.el</groupId>
-            <artifactId>jakarta.el-api</artifactId>
+            <artifactId>${jakarta.el.api.artifactId}</artifactId>
             <scope>runtime</scope>
         </dependency>
 

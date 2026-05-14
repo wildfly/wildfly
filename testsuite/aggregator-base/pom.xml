@@ -7,7 +7,7 @@
 
 <!--
     This module provides various profiles that enable the execution of other modules that test functionality provided
-    via the base server (i.e. provisioned via wildfly-ee-galleon-pack feature pack artifact).
+    via the base server (i.e. provisioned via wildfly-ee-galleon-pack feature-pack artifact).
 
     It should not be used as the parent of those modules.
 -->
@@ -32,7 +32,7 @@
 
     <name>WildFly Test Suite: Base Server Aggregator</name>
     <description>Controls execution of testsuite modules relevant to testing functionality
-                 available via the wildfly-ee-galleon-pack feature pack</description>
+                 available via the wildfly-ee-galleon-pack feature-pack</description>
 
     <properties>
         <!-- Don't try to deploy the module -->

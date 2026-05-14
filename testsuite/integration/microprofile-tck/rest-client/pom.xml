@@ -612,7 +612,7 @@
             <build>
                 <pluginManagement>
                     <plugins>
-                        <!-- Override the glow-arquillian feature pack setting in this profile
+                        <!-- Override the glow-arquillian feature-pack setting in this profile
                              to specify inclusion of the org.apache.commons.lang3 module. -->
                         <plugin>
                             <groupId>org.wildfly.glow</groupId>
@@ -645,7 +645,7 @@
                         <version>${version.org.wildfly.plugin}</version>
                         <executions>
                             <execution>
-                                <!-- Specify both feature packs for the non-glow-driven provisioning. -->
+                                <!-- Specify both feature-packs for the non-glow-driven provisioning. -->
                                 <id>mp-server-provisioning</id>
                                 <configuration>
                                     <feature-packs>
@@ -679,7 +679,7 @@
             <build>
                 <pluginManagement>
                     <plugins>
-                        <!-- Override the glow-arquillian feature pack setting in this profile
+                        <!-- Override the glow-arquillian feature-pack setting in this profile
                              to specify inclusion of the org.apache.commons.lang3 module. -->
                         <plugin>
                             <groupId>org.wildfly.glow</groupId>
@@ -711,7 +711,7 @@
                         <artifactId>wildfly-maven-plugin</artifactId>
                         <version>${version.org.wildfly.plugin}</version>
                         <executions>
-                            <!-- Specify both feature packs for the non-glow-driven provisioning. -->
+                            <!-- Specify both feature-packs for the non-glow-driven provisioning. -->
                             <execution>
                                 <id>mp-server-provisioning</id>
                                 <configuration>
@@ -792,7 +792,7 @@
             </properties>
         </profile>
 
-        <!-- Test against the preview feature pack -->
+        <!-- Test against the preview feature-pack -->
         <profile>
             <id>preview.test.profile</id>
             <activation>

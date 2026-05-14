@@ -39,7 +39,7 @@
         <finalName>${server.output.dir.prefix}-galleon-pack-${server.output.dir.version}</finalName>
         <plugins>
             <plugin>
-                <!-- Feature pack generation is vulnerable to leftover files in the target
+                <!-- Feature-pack generation is vulnerable to leftover files in the target
                      folder from previous builds, so always clean even if the clean lifecycle is not invoked -->
                 <artifactId>maven-clean-plugin</artifactId>
                 <executions>
@@ -70,16 +70,16 @@
                                     <type>zip</type>
                                 </artifactItem>
                             </artifactItems>
-                            <!-- The feature pack build seems to ignore such things anyway, but to be
+                            <!-- The feature-pack build seems to ignore such things anyway, but to be
                                  robust exclude artifact metadata content -->
                             <excludes>**/pom.xml,META-INF,META-INF/**</excludes>
                             <outputDirectory>${galleon.unpacked.resources.directory}</outputDirectory>
                         </configuration>
                     </execution>
                     <execution>
-                        <!-- WildFly is composed of 2 feature packs so we copy the artifact list from
+                        <!-- WildFly is composed of 2 feature-packs so we copy the artifact list from
                              the ee-galleon-pack (in addition to this artifact list)
-                             to generate all the log and error code when the feature pack doc is created
+                             to generate all the log and error code when the feature-pack doc is created
                         -->
                         <id>copy-ee-artifact-list</id>
                         <phase>process-resources</phase>
@@ -252,7 +252,7 @@
 
     <dependencies>
 
-        <!-- feature pack dependencies -->
+        <!-- feature-pack dependencies -->
 
         <dependency>
             <groupId>${ee.maven.groupId}</groupId>

@@ -16,8 +16,8 @@ The testsuite has the following maven modules that provide test classes:
 | domain | Domain management integration tests (require special framework)                                                                                    | 
 | galleon | Specialized tests of managing WildFly using the Galleon CLI                                                                                        |
 | integration | General integration tests                                                                                                                          |
-| layers | Validation of galleon layers provided by the `wildfly-ee` feature pack.                                                                            |
-| layers-expansion | Validation of galleon layers provided by the `wildfly` and `wildfly-preview` feature packs.                                                        |
+| layers | Validation of galleon layers provided by the `wildfly-ee` feature-pack.                                                                            |
+| layers-expansion | Validation of galleon layers provided by the `wildfly` and `wildfly-preview` feature-packs.                                                        |
 | mixed-domain | Domain mode tests where the primary host controller is running the version under test while the secondary host controller runs a previous version. | 
 | preview | Integration tests that are specific to WildFly Preview                                                                                             |
 | scripts | Test various shell scripts provided by WildFly                                                                                                     |                                                                                                                                                   
@@ -32,8 +32,8 @@ The testsuite also includes modules that help support testsuite execution but th
 | build-demander-expansion  | Ensures the server build required by the `expansion-server-tests` profile has been built, if the maven build wasn't started with the `-Djboss.home` property used to run the testsuite against an external build. |
 | build-demander-preview    | Ensures the server build required by the `preview-server-tests` profile has been built, if the maven build wasn't started with the `-Djboss.home` property used to run the testsuite against an external build.   |
 | shared                    | Shared utility classes that test classes can use.                                                                                                                                                                 |
-| test-feature-pack         | Feature pack, based on `wildfly-ee`, that test modules can provision.                                                                                                                                             |
-| test-feature-pack-preview | Feature pack, based on `wildfly-preview`, that test modules can provision.                                                                                                                                        |
+| test-feature-pack         | Feature-pack, based on `wildfly-ee`, that test modules can provision.                                                                                                                                             |
+| test-feature-pack-preview | Feature-pack, based on `wildfly-preview`, that test modules can provision.                                                                                                                                        |
 | test-product-conf         | Produces an artifact used by an integration/manualmode test.                                                                                                                                                      |
 
 2.0 Defined directories and files
@@ -63,14 +63,14 @@ There are three main groupings of tests, each of which is enabled via a profile
 
 | Profile                    | Purpose                                                            | Notes                                                                                                                   |
 |----------------------------|--------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------|
-| **base-server-tests**      | Tests functionality provided by the `wildfly-ee` feature pack      | Enabled by default. Disabled if `-Dpreview-server-tests` is used. Otherwise, to disable use `-P-base-server-tests`      |
-| **expansion-server-tests** | Tests functionality provided by the `wildfly` feature pack         | Enabled by default. Disabled if `-Dpreview-server-tests` is used. Otherwise, to disable use `-P-expansion-server-tests` |
-| **preview-server-tests**   | Tests functionality provided by the `wildfly-preview` feature pack | Disabled by default. Use `-Dpreview-server-tests` to activate.                                                          |
+| **base-server-tests**      | Tests functionality provided by the `wildfly-ee` feature-pack      | Enabled by default. Disabled if `-Dpreview-server-tests` is used. Otherwise, to disable use `-P-base-server-tests`      |
+| **expansion-server-tests** | Tests functionality provided by the `wildfly` feature-pack         | Enabled by default. Disabled if `-Dpreview-server-tests` is used. Otherwise, to disable use `-P-expansion-server-tests` |
+| **preview-server-tests**   | Tests functionality provided by the `wildfly-preview` feature-pack | Disabled by default. Use `-Dpreview-server-tests` to activate.                                                          |
 
 3.2 The base server tests
 ----------
 
-The base server tests cover functionality provided by the `wildfly-ee` feature pack.
+The base server tests cover functionality provided by the `wildfly-ee` feature-pack.
 
 When the `base-server-tests` profile executes, by default the `testsuite/integation/web` and `testsuite/integration/smoke` modules execute against an unslimmed, traditional (i.e. non-bootable-jar) installation.
 
@@ -87,21 +87,21 @@ There are a number of other profiles that can be activated to control how tests 
 
 See also 3.5 below for how to activate execution of specific modules.
 
-While these tests are only about functionality provided by the `wildfly-ee` feature pack, that doesn't mean the server installations under test are provisioned only using that feature pack. It is possible to control what server build is used for those test executions that test the builds produced by the overall build, and it is possible to control what feature pack is used for test installations that are created by the feature pack. This is done via system properties passed on the command line:
+While these tests are only about functionality provided by the `wildfly-ee` feature-pack, that doesn't mean the server installations under test are provisioned only using that feature-pack. It is possible to control what server build is used for those test executions that test the builds produced by the overall build, and it is possible to control what feature-pack is used for test installations that are created by the feature-pack. This is done via system properties passed on the command line:
 
 |Property| Value                          | Effect                                                                                                                                                                                                                                                                                          |
 |----|--------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 |`-Djboss.home`| Path to a WildFly installation | If this property is set, the given path will be used as the location of the server installation to test, instead of using one created in the build. (**Note:** *This setting doesn't affect the servers that are directly provisioned by the testsuite itself using the wildfly-maven-plugin.*) |
 |`testsuite.default.build.project.prefix`| <empty>                        | Use the output of the `build` module as the source of installations not provisioned by the testsuite itself. This is the default behavior when testing  WildFly.                                                                                                                                |
 |`testsuite.default.build.project.prefix`| `ee-`                          | Use the output of the `ee-build` module as the source of installations not provisioned by the testsuite itself.  This is the default behavior when testing Red Hat JBoss EAP.                                                                                                                   |  
-|`testsuite.ee.feature.pack.artifactId`| `wildfly-galleon-pack`         | When the testsuite provisions installations, it should use the `wildfly` feature pack.  This is the default behavior when testing  WildFly.                                                                                                                                                     |
-|`testsuite.ee.feature.pack.artifactId`| `wildfly-ee-galleon-pack`      | When the testsuite provisions installations, it should use the `wildfly` feature pack. This is the default behavior when testing Red Hat JBoss EAP.                                                                                                                                             |
-|`testsuite.ee.feature.pack.artifactId`| `wildfly-preview-feature-pack` | When the testsuite provisions installations, it should use the `wildfly` feature pack. This should only be used in combination with `-Dts.layers`.                                                                                                                                              |
+|`testsuite.ee.feature.pack.artifactId`| `wildfly-galleon-pack`         | When the testsuite provisions installations, it should use the `wildfly` feature-pack.  This is the default behavior when testing  WildFly.                                                                                                                                                     |
+|`testsuite.ee.feature.pack.artifactId`| `wildfly-ee-galleon-pack`      | When the testsuite provisions installations, it should use the `wildfly` feature-pack. This is the default behavior when testing Red Hat JBoss EAP.                                                                                                                                             |
+|`testsuite.ee.feature.pack.artifactId`| `wildfly-preview-feature-pack` | When the testsuite provisions installations, it should use the `wildfly` feature-pack. This should only be used in combination with `-Dts.layers`.                                                                                                                                              |
 
 3.3 The expansion server tests
 -----------
 
-The expansion server tests cover functionality provided by the `wildfly` feature pack.
+The expansion server tests cover functionality provided by the `wildfly` feature-pack.
 
 When the `expansion-server-tests` profile executes, by default no module containing tests executes. Executing test modules requires enabling one or more other profiles.
 
@@ -113,12 +113,12 @@ There are a number of other profiles that can be activated to control how tests 
 | `-Dts.bootable` | Runs all of the modules that are able to test bootable jars, configured to use the wildfly-maven-plugin to produce bootable jars.                                                                                  |
 | `-Dts.layers`   | Runs all of the modules that are able to test slimmed servers, configured to use the wildfly-maven-plugin to produce various slimmed servers and test those, instead of testing unslimmed installations.           |
 |`-Dts.microprofile`| Runs the `testsuite/integration/microprofile` and `testsuite/integration/microprofile-tck` modules                                                                                                                 |
-|`-Dts.standalone.microprofile`| Runs a number of modules, including some that only test base server functionality, but using servers provisioned from the `wildfly` feature pack and running the `standalone-microprofile[-ha].xml` configuration. |
+|`-Dts.standalone.microprofile`| Runs a number of modules, including some that only test base server functionality, but using servers provisioned from the `wildfly` feature-pack and running the `standalone-microprofile[-ha].xml` configuration. |
 
 3.4 The preview server tests
 -----------
 
-The base server tests cover functionality provided by the `wildfly-preview` feature pack.
+The base server tests cover functionality provided by the `wildfly-preview` feature-pack.
 
 When the `preview-server-tests` profile executes, by default the `testsuite/integation/web` and `testsuite/integration/smoke` modules execute against an unslimmed, traditional (i.e. non-bootable-jar) installation.
 
@@ -189,7 +189,7 @@ A module or profile that does not want a server installation to be provisioned t
 --------------------------------
 
 Here the wildfly-maven-plugin `provision` goal is used to provision a server using
-Galleon. The feature packs and layers to use are controlled by the configuration of each plugin execution.
+Galleon. The feature-packs and layers to use are controlled by the configuration of each plugin execution.
 
 
 5.3 Customizing the management configuration of a provisioned server

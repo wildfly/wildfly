@@ -21,10 +21,10 @@
     </parent>
 
     <artifactId>wildfly-ee-feature-pack-parent</artifactId>
-    <description>Parent for various legacy and Galleon feature pack modules</description>
+    <description>Parent for various legacy and Galleon feature-pack modules</description>
     <packaging>pom</packaging>
 
-    <name>WildFly: EE Feature Pack Parent</name>
+    <name>WildFly: EE Feature-Pack Parent</name>
 
     <modules>
         <module>channel</module>

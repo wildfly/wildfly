@@ -23,10 +23,10 @@
 
     <artifactId>wildfly-test-feature-pack-preview</artifactId>
 
-    <name>WildFly Preview: Test Feature Pack</name>
+    <name>WildFly Preview: Test Feature-Pack</name>
     <packaging>pom</packaging>
     <description>
-        Provides a Galleon feature pack for use in provisioning installations for testsuite use.
+        Provides a Galleon feature-pack for use in provisioning installations for testsuite use.
     </description>
 
 
@@ -37,7 +37,7 @@
 
     <dependencies>
 
-        <!-- feature pack dependencies -->
+        <!-- feature-pack dependencies -->
 
         <dependency>
             <groupId>${project.groupId}</groupId>

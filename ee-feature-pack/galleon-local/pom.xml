@@ -21,10 +21,10 @@
 
     <artifactId>wildfly-ee-feature-pack-galleon-local</artifactId>
 
-    <name>WildFly: EE Feature Pack Local Galleon Content</name>
+    <name>WildFly: EE Feature-Pack Local Galleon Content</name>
 	<description>
-		Content for the wildfly-ee feature pack that can only be used in that feature pack 
-		and not in the wildfly-preview feature pack
+		Content for the wildfly-ee feature-pack that can only be used in that feature-pack 
+		and not in the wildfly-preview feature-pack
 	</description>
     <packaging>pom</packaging>
 

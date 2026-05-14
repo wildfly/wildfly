@@ -12,14 +12,14 @@ the Jakarta Faces implementations that have been installed. The default Jakarta 
 WildFly should use is defined by the `default-jsf-impl-slot` subsystem attribute.
 
 [[installing-a-new-jsf-implementation-via-feature-pack]]
-== Installing a new Jakarta Faces implementation via a feature pack
+== Installing a new Jakarta Faces implementation via a feature-pack
 
 WildFly supports provisioning a server using the Galleon tool, which allows an administrator to provision a server with
-only the desired features, which are delivered as feature packs. For more information, see link:Galleon_Guide{outfilesuffix}[Provisioning WildFly with Galleon].
-For an example of such a feature pack, see the https://github.com/wildfly-extras/wildfly-myfaces-feature-pack[WildFly MyFaces Feature Pack]
+only the desired features, which are delivered as feature-packs. For more information, see link:Galleon_Guide{outfilesuffix}[Provisioning WildFly with Galleon].
+For an example of such a feature-pack, see the https://github.com/wildfly-extras/wildfly-myfaces-feature-pack[WildFly MyFaces Feature-pack]
 project in the WildFly Extras GitHub organization.
 
-As a quick start, to provision a server using this feature pack, one might use a commandline like the following:
+As a quick start, to provision a server using this feature-pack, one might use a commandline like the following:
 
 [source,bash]
 -----
