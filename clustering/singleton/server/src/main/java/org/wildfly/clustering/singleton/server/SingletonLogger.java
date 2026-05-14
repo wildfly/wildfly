@@ -4,7 +4,6 @@
  */
 package org.wildfly.clustering.singleton.server;
 
-import static org.jboss.logging.Logger.Level.ERROR;
 import static org.jboss.logging.Logger.Level.INFO;
 import static org.jboss.logging.Logger.Level.WARN;
 
@@ -13,11 +12,9 @@ import java.util.Collection;
 
 import org.jboss.logging.BasicLogger;
 import org.jboss.logging.Logger;
-import org.jboss.logging.annotations.Cause;
 import org.jboss.logging.annotations.LogMessage;
 import org.jboss.logging.annotations.Message;
 import org.jboss.logging.annotations.MessageLogger;
-import org.jboss.msc.service.StartException;
 import org.wildfly.clustering.server.GroupMember;
 
 /**
@@ -47,9 +44,9 @@ public interface SingletonLogger extends BasicLogger {
     @Message(id = 4, value = "No response received from primary provider of the %s service, retrying...")
     IllegalStateException noResponseFromPrimary(String service);
 
-    @LogMessage(level = ERROR)
-    @Message(id = 5, value = "Failed to start %s service")
-    void serviceStartFailed(@Cause StartException e, String service);
+//    @LogMessage(level = ERROR)
+//    @Message(id = 5, value = "Failed to start %s service")
+//    void serviceStartFailed(@Cause StartException e, String service);
 
     @LogMessage(level = WARN)
     @Message(id = 6, value = "Failed to reach quorum of %2$d for %1$s service. No primary singleton provider will be elected.")
