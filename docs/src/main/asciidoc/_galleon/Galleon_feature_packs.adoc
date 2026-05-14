@@ -23,7 +23,7 @@ The main WildFly project provides the following feature-packs for use with xref:
 
 |*org.wildfly:wildfly-datasources-galleon-pack*|-|Easy integration of popular JDBC drivers and associated datasources into a standard WildFly installation. See the feature-pack project https://github.com/wildfly-extras/wildfly-datasources-galleon-pack/blob/main/README.md[README] for more details.|*wildfly-ee*, *wildfly-ee-10* or *wildfly-preview*
 
-|*org.wildfly:wildfly-myfaces-feature-pack*|-|Provides MyFaces support for WildFly. See the feature-pack project https://github.com/wildfly-extras/wildfly-myfaces-feature-pack/blob/master/README.md[README] for more details.|*wildfly* or *wildfly-preview*|
+|*org.wildfly:wildfly-myfaces-feature-pack*|-|Provides MyFaces support for WildFly. See the feature-pack project https://github.com/wildfly-extras/wildfly-myfaces-feature-pack/blob/master/README.md[README] for more details.|*wildfly-ee* or *wildfly-preview* (for Jakarta Faces 4.1) or *wildfly-ee-10* (for Faces 4.0)|
 |=======================================================================
 
 The main WildFly project also provides a feature-pack for xref:WildFly_and_WildFly_Preview.adoc[WildFly Preview]:
