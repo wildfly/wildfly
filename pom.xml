@@ -128,6 +128,19 @@
         <!-- The Galleon channel for the minor version with which this branch is associated.  -->
         <galleon.minor.channel>${product.docs.server.version}.0</galleon.minor.channel>
 
+        <!-- The artifactId of the BOMs to use as an import scope dependency.
+             The use of a property makes it easy to create a branch that uses a different value,
+             i.e. swapping between wildfly-standard-ee-bom and wildfly-legacy-ee-bom.
+             Non-expansion production code modules must use this property for dependency management
+             if such swapping is valid for their build.
+             Testsuite modules or profiles can override this to use a different dependency set,
+             for example to test WildFly Preview or to test microprofile. -->
+        <dependency.management.import.artifact>wildfly-standard-ee-bom</dependency.management.import.artifact>
+        <!-- Same thing for test-only dependencies -->
+        <dependency.management.import.test.artifact>wildfly-standard-test-bom</dependency.management.import.test.artifact>
+        <!-- The EL API artifact has a different artifactId between EE 10 and 11. Make it easy to switch which we use. -->
+        <jakarta.el.api.artifactId>jakarta.el-api</jakarta.el.api.artifactId>
+
         <!-- Repository Deployment Settings -->
         <nexus.repository.staging>wildfly-staging</nexus.repository.staging>
         <nexus.staging.tag>wildfly-${project.version}</nexus.staging.tag>
@@ -287,8 +300,6 @@
             In cases where multiple artifacts use the same groupId but have different
             versions, add the artifactId or other qualifier to the property name.
 
-            In cases where multiple artifacts use the same groupId but have different
-            versions, add the artifactId or other qualifier to the property name.
             For example: <version.org.jboss.hal.release-stream>
 
             Version properties MUST be sorted alphabetically. Except...

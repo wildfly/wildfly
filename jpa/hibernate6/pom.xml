@@ -25,15 +25,15 @@
     <name>WildFly: Jipijapa Hibernate 6 (JPA 3.1) integration</name>
 
     <properties>
-        <!-- Use the legacy WildFly dependency set -->
-        <dependency.management.pom.artifactId>wildfly-legacy-ee-bom</dependency.management.pom.artifactId>
+        <!-- This module must use the legacy ee dependency set -->
+        <dependency.management.import.artifact>wildfly-legacy-ee-bom</dependency.management.import.artifact>
     </properties>
 
     <dependencyManagement>
         <dependencies>
             <dependency>
                 <groupId>${project.groupId}</groupId>
-                <artifactId>wildfly-standard-test-bom</artifactId>
+                <artifactId>${dependency.management.import.test.artifact}</artifactId>
                 <version>${project.version}</version>
                 <type>pom</type>
                 <scope>import</scope>

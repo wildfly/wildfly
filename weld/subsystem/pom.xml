@@ -25,7 +25,7 @@
       <dependencies>
          <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-standard-test-bom</artifactId>
+            <artifactId>${dependency.management.import.test.artifact}</artifactId>
             <version>${project.version}</version>
             <type>pom</type>
             <scope>import</scope>
@@ -38,11 +38,6 @@
          <groupId>jakarta.enterprise</groupId>
          <artifactId>jakarta.enterprise.cdi-api</artifactId>
       </dependency>
-       <dependency>
-           <groupId>jakarta.enterprise</groupId>
-           <artifactId>jakarta.enterprise.cdi-el-api</artifactId>
-           <scope>provided</scope>
-       </dependency>
 
       <dependency>
          <groupId>jakarta.transaction</groupId>
@@ -66,7 +61,7 @@
 
       <dependency>
          <groupId>org.jboss.spec.jakarta.el</groupId>
-         <artifactId>jakarta.el-api</artifactId>
+         <artifactId>${jakarta.el.api.artifactId}</artifactId>
       </dependency>
 
       <!-- Needed for @Resource(lookup=) -->

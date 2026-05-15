@@ -39,12 +39,31 @@
         <dependencies>
             <dependency>
                 <groupId>${project.groupId}</groupId>
-                <artifactId>wildfly-standard-ee-bom</artifactId>
+                <artifactId>${dependency.management.import.artifact}</artifactId>
                 <version>${ee.maven.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
         </dependencies>
     </dependencyManagement>
+
+    <profiles>
+        <profile>
+            <id>latest.ee.specific.dependencies</id>
+            <activation>
+                <property>
+                    <!-- This profile exists to make it is easy to stop doing what WildFly does downstream.
+                         It's not meant to be turned off/on by external callers. -->
+                    <name>!WRONGLY.disable.latest.ee.specific.dependencies</name>
+                </property>
+            </activation>
+            <dependencies>
+                <dependency>
+                    <groupId>jakarta.enterprise</groupId>
+                    <artifactId>jakarta.enterprise.cdi-el-api</artifactId>
+                </dependency>
+            </dependencies>
+        </profile>
+    </profiles>
 
 </project>

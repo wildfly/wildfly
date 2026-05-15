@@ -24,6 +24,11 @@
     <name>WildFly: JPA Subsystem -- Persistence 3.2</name>
     <description>Provides implementations of Jakarta Persistence 3.2 interfaces</description>
 
+    <properties>
+        <!-- This module must use the latest ee dependency set -->
+        <dependency.management.import.artifact>wildfly-standard-ee-bom</dependency.management.import.artifact>
+    </properties>
+
     <dependencies>
         <dependency>
             <groupId>org.kohsuke.metainf-services</groupId>
