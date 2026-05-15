@@ -1550,6 +1550,16 @@
                         <ignorePropertiesPrefixedWith>legacy.</ignorePropertiesPrefixedWith>
                     </configuration>
                 </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-compiler-plugin</artifactId>
+                    <configuration>
+                        <compilerArgs combine.children="append">
+                            <!-- Note: this requires Java SE 17.0.11 or later. Update your environment if this causes a problem. -->
+                            <arg>-proc:full</arg>
+                        </compilerArgs>
+                    </configuration>
+                </plugin>
             </plugins>
         </pluginManagement>
 
@@ -1721,26 +1731,6 @@
             </modules>
         </profile>
 
-        <profile>
-            <id>jdk23</id>
-            <activation>
-                <jdk>[23,)</jdk>
-            </activation>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-compiler-plugin</artifactId>
-                        <configuration>
-                            <compilerArgs combine.children="append">
-                                <!-- SE 23+ requires explicit config to turn on annotation processing -->
-                                <arg>-proc:full</arg>
-                            </compilerArgs>
-                        </configuration>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
         <profile>
             <id>docs</id>
             <activation>
