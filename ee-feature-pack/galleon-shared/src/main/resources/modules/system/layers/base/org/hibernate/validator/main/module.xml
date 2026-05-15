@@ -19,7 +19,9 @@
     <module name="jakarta.persistence.api"/>
     <module name="jakarta.validation.api"/>
     <module name="jakarta.xml.bind.api"/>
-    <module name="org.glassfish.expressly"/>
+    <!-- Export so the Jakarta EL FactoryFinder can find the EL impl
+         when this module's CL is the TCCL -->
+    <module name="org.glassfish.expressly" export="true"/>
     <module name="org.jboss.logging"/>
     <module name="org.jboss.weld.core"/>
     <module name="org.jboss.weld.spi"/>
