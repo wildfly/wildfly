@@ -186,6 +186,8 @@
         <maven.compiler.release>17</maven.compiler.release>
         <maven.compiler.target>${maven.compiler.release}</maven.compiler.target>
         <maven.compiler.source>${maven.compiler.release}</maven.compiler.source>
+        <recommended.java.version>25</recommended.java.version>
+        <recommended.java.version.legacy>21</recommended.java.version.legacy>
 
         <!-- TarArchiver behavior -->
         <assembly.tarLongFileMode>posix</assembly.tarLongFileMode>
