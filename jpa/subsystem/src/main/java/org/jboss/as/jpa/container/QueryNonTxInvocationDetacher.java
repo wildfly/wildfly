@@ -6,20 +6,22 @@
 package org.jboss.as.jpa.container;
 
 
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.ServiceLoader;
 import java.util.Set;
 
-import jakarta.persistence.CacheRetrieveMode;
-import jakarta.persistence.CacheStoreMode;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.FlushModeType;
 import jakarta.persistence.LockModeType;
 import jakarta.persistence.Parameter;
 import jakarta.persistence.Query;
 import jakarta.persistence.TemporalType;
+import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
  * for JPA 2.0 section 3.8.6
@@ -28,12 +30,29 @@ import jakarta.persistence.TemporalType;
  *
  * @author Scott Marlow
  */
-public class QueryNonTxInvocationDetacher implements Query {
+public abstract class QueryNonTxInvocationDetacher implements Query {
+
+    private static final QueryNonTxInvocationDetacher.Factory FACTORY; static {
+        QueryNonTxInvocationDetacher.Factory f;
+        if (WildFlySecurityManager.isChecking()) {
+            f = AccessController.doPrivileged((PrivilegedAction<QueryNonTxInvocationDetacher.Factory>) () -> ServiceLoader.load(QueryNonTxInvocationDetacher.Factory.class).iterator().next());
+        } else {
+            f = ServiceLoader.load(QueryNonTxInvocationDetacher.Factory.class).iterator().next();
+        }
+        FACTORY = f;
+    }
+
+    /**
+     * Creates a new {@code UnsynchronizedEntityManagerWrapper}.
+     */
+    public static Query create(final EntityManager underlyingEntityManager, Query underlyingQuery) {
+        return FACTORY.createQueryNonTxInvocationDetacher(underlyingEntityManager, underlyingQuery);
+    }
 
     private final Query underlyingQuery;
     private final EntityManager underlyingEntityManager;
 
-    QueryNonTxInvocationDetacher(EntityManager underlyingEntityManager, Query underlyingQuery) {
+    protected QueryNonTxInvocationDetacher(EntityManager underlyingEntityManager, Query underlyingQuery) {
         this.underlyingQuery = underlyingQuery;
         this.underlyingEntityManager = underlyingEntityManager;
     }
@@ -41,7 +60,7 @@ public class QueryNonTxInvocationDetacher implements Query {
     @Override
     public List getResultList() {
         List result = underlyingQuery.getResultList();
-        /**
+        /*
          * The purpose of this wrapper class is so that we can detach the returned entities from this method.
          * Call EntityManager.clear will accomplish that.
          */
@@ -52,17 +71,7 @@ public class QueryNonTxInvocationDetacher implements Query {
     @Override
     public Object getSingleResult() {
         Object result = underlyingQuery.getSingleResult();
-        /**
-         * The purpose of this wrapper class is so that we can detach the returned entities from this method.
-         * Call EntityManager.clear will accomplish that.
-         */
-        underlyingEntityManager.clear();
-        return result;
-    }
-
-    public Object getSingleResultOrNull() {
-        Object result = underlyingQuery.getSingleResultOrNull();
-        /**
+        /*
          * The purpose of this wrapper class is so that we can detach the returned entities from this method.
          * Call EntityManager.clear will accomplish that.
          */
@@ -229,35 +238,12 @@ public class QueryNonTxInvocationDetacher implements Query {
         return underlyingQuery.getLockMode();
     }
 
-    public Query setCacheRetrieveMode(CacheRetrieveMode cacheRetrieveMode) {
-        underlyingQuery.setCacheRetrieveMode(cacheRetrieveMode);
-        return this;
-    }
-
-    public CacheRetrieveMode getCacheRetrieveMode() {
-        return underlyingQuery.getCacheRetrieveMode();
-    }
-
-    public Query setCacheStoreMode(CacheStoreMode cacheStoreMode) {
-        underlyingQuery.setCacheStoreMode(cacheStoreMode);
-        return this;
-    }
-
-    public CacheStoreMode getCacheStoreMode() {
-        return underlyingQuery.getCacheStoreMode();
-    }
-
-    public Query setTimeout(Integer timeout) {
-        underlyingQuery.setTimeout(timeout);
-        return this;
-    }
-
-    public Integer getTimeout() {
-        return underlyingQuery.getTimeout();
-    }
-
     @Override
     public <T> T unwrap(Class<T> cls) {
         return underlyingQuery.unwrap(cls);
+    }
+
+    public interface Factory {
+        QueryNonTxInvocationDetacher createQueryNonTxInvocationDetacher(EntityManager underlyingEntityManager, Query underlyingQuery);
     }
 }

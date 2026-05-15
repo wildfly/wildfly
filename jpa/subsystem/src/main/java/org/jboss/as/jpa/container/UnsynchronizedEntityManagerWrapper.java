@@ -5,33 +5,28 @@
 
 package org.jboss.as.jpa.container;
 
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.util.List;
 import java.util.Map;
+import java.util.ServiceLoader;
 
-import jakarta.persistence.CacheRetrieveMode;
-import jakarta.persistence.CacheStoreMode;
-import jakarta.persistence.ConnectionConsumer;
-import jakarta.persistence.ConnectionFunction;
 import jakarta.persistence.EntityGraph;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
 import jakarta.persistence.EntityTransaction;
-import jakarta.persistence.FindOption;
 import jakarta.persistence.FlushModeType;
 import jakarta.persistence.LockModeType;
-import jakarta.persistence.LockOption;
 import jakarta.persistence.Query;
-import jakarta.persistence.RefreshOption;
 import jakarta.persistence.StoredProcedureQuery;
 import jakarta.persistence.SynchronizationType;
 import jakarta.persistence.TypedQuery;
-import jakarta.persistence.TypedQueryReference;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaDelete;
 import jakarta.persistence.criteria.CriteriaQuery;
-import jakarta.persistence.criteria.CriteriaSelect;
 import jakarta.persistence.criteria.CriteriaUpdate;
 import jakarta.persistence.metamodel.Metamodel;
+import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
  * UnsynchronizedEntityManagerWrapper helps track transaction scoped persistence contexts that are SynchronizationType.UNSYNCHRONIZED,
@@ -43,11 +38,29 @@ import jakarta.persistence.metamodel.Metamodel;
  *
  * @author Scott Marlow
  */
-public class UnsynchronizedEntityManagerWrapper implements EntityManager, SynchronizationTypeAccess {
+public abstract class UnsynchronizedEntityManagerWrapper implements EntityManager, SynchronizationTypeAccess {
+
+
+    private static final UnsynchronizedEntityManagerWrapper.Factory FACTORY; static {
+        UnsynchronizedEntityManagerWrapper.Factory f;
+        if (WildFlySecurityManager.isChecking()) {
+            f = AccessController.doPrivileged((PrivilegedAction<UnsynchronizedEntityManagerWrapper.Factory>) () -> ServiceLoader.load(UnsynchronizedEntityManagerWrapper.Factory.class).iterator().next());
+        } else {
+            f = ServiceLoader.load(UnsynchronizedEntityManagerWrapper.Factory.class).iterator().next();
+        }
+        FACTORY = f;
+    }
+
+    /**
+     * Creates a new {@code UnsynchronizedEntityManagerWrapper}.
+     */
+    public static UnsynchronizedEntityManagerWrapper create(final EntityManager underlyingEntityManager) {
+        return FACTORY.createUnsynchronizedEntityManagerWrapper(underlyingEntityManager);
+    }
 
     private final EntityManager entityManager;
 
-    public UnsynchronizedEntityManagerWrapper(EntityManager entityManager) {
+    protected UnsynchronizedEntityManagerWrapper(EntityManager entityManager) {
         this.entityManager = entityManager;
     }
 
@@ -94,10 +107,6 @@ public class UnsynchronizedEntityManagerWrapper implements EntityManager, Synchr
         return entityManager.createNamedQuery(name, resultClass);
     }
 
-    public <T> TypedQuery<T> createQuery(TypedQueryReference<T> reference) {
-        return entityManager.createQuery(reference);
-    }
-
     @Override
     public StoredProcedureQuery createNamedStoredProcedureQuery(String name) {
         return entityManager.createNamedStoredProcedureQuery(name);
@@ -121,10 +130,6 @@ public class UnsynchronizedEntityManagerWrapper implements EntityManager, Synchr
     @Override
     public <T> TypedQuery<T> createQuery(CriteriaQuery<T> criteriaQuery) {
         return entityManager.createQuery(criteriaQuery);
-    }
-
-    public <T> TypedQuery<T> createQuery(CriteriaSelect<T> selectQuery) {
-        return entityManager.createQuery(selectQuery);
     }
 
     @Override
@@ -182,14 +187,6 @@ public class UnsynchronizedEntityManagerWrapper implements EntityManager, Synchr
         return entityManager.find(entityClass, primaryKey, lockMode, properties);
     }
 
-    public <T> T find(Class<T> entityClass, Object primaryKey, FindOption... options) {
-        return entityManager.find(entityClass, primaryKey, options);
-    }
-
-    public <T> T find(EntityGraph<T> entityGraph, Object primaryKey, FindOption... options) {
-        return entityManager.find(entityGraph, primaryKey, options);
-    }
-
     @Override
     public <T> T find(Class<T> entityClass, Object primaryKey, Map<String, Object> properties) {
         return entityManager.find(entityClass, primaryKey, properties);
@@ -220,14 +217,6 @@ public class UnsynchronizedEntityManagerWrapper implements EntityManager, Synchr
         return entityManager.getEntityGraphs(entityClass);
     }
 
-    public <C, T> T callWithConnection(ConnectionFunction<C, T> function) {
-        return entityManager.callWithConnection(function);
-    }
-
-    public <C> void runWithConnection(ConnectionConsumer<C> action) {
-        entityManager.runWithConnection(action);
-    }
-
     @Override
     public EntityManagerFactory getEntityManagerFactory() {
         return entityManager.getEntityManagerFactory();
@@ -243,22 +232,6 @@ public class UnsynchronizedEntityManagerWrapper implements EntityManager, Synchr
         return entityManager.getLockMode(entity);
     }
 
-    public CacheRetrieveMode getCacheRetrieveMode() {
-        return entityManager.getCacheRetrieveMode();
-    }
-
-    public CacheStoreMode getCacheStoreMode() {
-        return entityManager.getCacheStoreMode();
-    }
-
-    public void setCacheRetrieveMode(CacheRetrieveMode cacheRetrieveMode) {
-        entityManager.setCacheRetrieveMode(cacheRetrieveMode);
-    }
-
-    public void setCacheStoreMode(CacheStoreMode cacheStoreMode) {
-        entityManager.setCacheStoreMode(cacheStoreMode);
-    }
-
     @Override
     public Metamodel getMetamodel() {
         return entityManager.getMetamodel();
@@ -272,10 +245,6 @@ public class UnsynchronizedEntityManagerWrapper implements EntityManager, Synchr
     @Override
     public <T> T getReference(Class<T> entityClass, Object primaryKey) {
         return entityManager.getReference(entityClass, primaryKey);
-    }
-
-    public <T> T getReference(T entity) {
-        return entityManager.getReference(entity);
     }
 
     @Override
@@ -308,10 +277,6 @@ public class UnsynchronizedEntityManagerWrapper implements EntityManager, Synchr
         entityManager.lock(entity, lockMode, properties);
     }
 
-    public void lock(Object entity, LockModeType lockMode, LockOption... options) {
-        entityManager.lock(entity, lockMode, options);
-    }
-
     @Override
     public <T> T merge(T entity) {
         return entityManager.merge(entity);
@@ -337,10 +302,6 @@ public class UnsynchronizedEntityManagerWrapper implements EntityManager, Synchr
         entityManager.refresh(entity, lockMode, properties);
     }
 
-    public void refresh(Object entity, RefreshOption... options) {
-        entityManager.refresh(entity, options);
-    }
-
     @Override
     public void refresh(Object entity, Map<String, Object> properties) {
         entityManager.refresh(entity, properties);
@@ -364,5 +325,9 @@ public class UnsynchronizedEntityManagerWrapper implements EntityManager, Synchr
     @Override
     public <T> T unwrap(Class<T> cls) {
         return entityManager.unwrap(cls);
+    }
+
+    public interface Factory {
+        UnsynchronizedEntityManagerWrapper createUnsynchronizedEntityManagerWrapper(final EntityManager underlyingEntityManager);
     }
 }

@@ -200,7 +200,7 @@ public abstract class TransactionScopedEntityManager extends AbstractEntityManag
     }
 
     private EntityManager unsynchronizedEntityManagerWrapper(EntityManager entityManager) {
-        return new UnsynchronizedEntityManagerWrapper(entityManager);
+        return UnsynchronizedEntityManagerWrapper.create(entityManager);
     }
 
     /**
