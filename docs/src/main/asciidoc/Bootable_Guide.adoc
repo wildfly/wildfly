@@ -26,10 +26,9 @@ ifdef::basebackend-html[toc::[]]
 [[wildfly_bootable_JAR_development]]
 = WildFly bootable JAR application development
 
-[WARNING]
-The usage of the link:https://github.com/wildfly-extras/wildfly-jar-maven-plugin[WildFly Bootable JAR Maven plugin] has been deprecated. 
-This link:https://docs.wildfly.org/33/Bootable_Guide.html[documentation] covers its usage.
-This chapter covers the creation of a bootable JAR using the link:https://docs.wildfly.org/wildfly-maven-plugin[WildFly Maven Plugin].
+[IMPORTANT]
+This chapter covers the creation of a bootable JAR using the general purpose link:https://docs.wildfly.org/wildfly-maven-plugin[WildFly Maven Plugin]. _A different plugin used solely for creating bootable jars, the link:https://github.com/wildfly-extras/wildfly-jar-maven-plugin[WildFly Bootable JAR Maven plugin], is deprecated._ Users of it should switch to the WildFly Maven Plugin covered here. If you are looking for documentation of the old plugin, please see the link:https://docs.wildfly.org/33/Bootable_Guide.html[WildFly 33 documentation].
+
 
 This document details the steps to follow in order to develop a WildFly application
 packaged as a bootable JAR. A WildFly bootable JAR should target a bare-metal or virtualized platform. For the cloud platform, 

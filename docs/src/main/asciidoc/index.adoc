@@ -53,7 +53,7 @@ a WildFly zip installation, a WildFly server provisioned with Galleon or a WildF
 into a bootable JAR.
 
 * The link:Galleon_Guide{outfilesuffix}[Galleon Provisioning Guide] shows you how to 
-provision a customized WildFly server using Galleon.
+provision a customized WildFly server using the Galleon CLI tool.
 
 * The link:Getting_Started_on_OpenShift{outfilesuffix}[Getting Started with WildFly on OpenShift Guide] shows you how to use WildFly on OpenShift.
 
