@@ -53,7 +53,12 @@ public class SimpleServlet extends HttpServlet {
     protected void service(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         String query = request.getQueryString();
         this.getServletContext().log(String.format("[%s] %s%s", request.getMethod(), request.getRequestURI(), (query != null) ? '?' + query : ""));
-        super.service(request, response);
+        // Servlet 6.0 workaround
+        if (request.getMethod().equals("PATCH")) {
+            this.doPatch(request, response);
+        } else {
+            super.service(request, response);
+        }
     }
 
     @Override
@@ -81,7 +86,8 @@ public class SimpleServlet extends HttpServlet {
         }
     }
 
-    @Override
+    // Servlet 6.0 workaround
+    // @Override
     protected void doPatch(HttpServletRequest request, HttpServletResponse response) {
         this.doDelete(request, response);
         this.doGet(request, response);
