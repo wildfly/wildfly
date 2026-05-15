@@ -7,7 +7,7 @@ These feature-packs are deployed in public Maven repositories.
 When Galleon is used to install WildFly, the desired WildFly feature-packs are retrieved and
 their content is assembled to create an installation.
 
-The main WildFly project provides the following feature-packs for use with xref:WildFly_and_WildFly_Preview.adoc[standard WildFly]:
+The main WildFly project provides the following feature-packs for use with xref:Different_Flavors_of_WildFly{outfilesuffix}[standard WildFly]:
 
 [cols="~,~,~,~",options="header"]
 |=======================================================================
@@ -26,7 +26,7 @@ The main WildFly project provides the following feature-packs for use with xref:
 |*org.wildfly:wildfly-myfaces-feature-pack*|-|Provides MyFaces support for WildFly. See the feature-pack project https://github.com/wildfly-extras/wildfly-myfaces-feature-pack/blob/master/README.md[README] for more details.|*wildfly-ee* or *wildfly-preview* (for Jakarta Faces 4.1) or *wildfly-ee-10* (for Faces 4.0)|
 |=======================================================================
 
-The main WildFly project also provides a feature-pack for xref:WildFly_and_WildFly_Preview.adoc[WildFly Preview]:
+The main WildFly project also provides a feature-pack for xref:Different_Flavors_of_WildFly{outfilesuffix}[WildFly Preview]:
 
 [cols="~,~,~",options="header"]
 |=======================================================================

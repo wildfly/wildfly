@@ -41,8 +41,8 @@ of configuration options available via the WildFly management model.
 [[installation-guides]]
 == Installation Guides
 
-* The link:WildFly_and_WildFly_Preview{outfilesuffix}[WildFly and WildFly Preview] document introduces the different
-appserver variants produced by the WildFly project: the standard WildFly variant and the early-look tech preview
+* The link:Different_Flavors_of_WildFly{outfilesuffix}[Different Flavors of WildFly] document introduces the different
+appserver variants produced by the WildFly project: the standard WildFly variant, the WildFly EE 10 variant and the early-look tech preview
 WildFly Preview variant.
 * The link:Installation_Guide{outfilesuffix}[Installation Guide] helps you identify
 the kind of WildFly installation that best fits your application's deployment needs:

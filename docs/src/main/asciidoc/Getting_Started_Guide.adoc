@@ -40,8 +40,9 @@ and MicroProfile specifications, providing advanced security, clustering, manage
 JBoss Modules and JBoss Modular Service Container projects, enables services on-demand when your
 application requires them.
 
-WildFly currently offers two stable variants: standard WildFly, offering the EE 11 specifications from Jakarta, and a new variant providing EE 10 that is offered temporarily to give users time to transition to EE 11 while still getting new features and bug fixes. We also offer a tech preview variant, WildFly Preview, used to showcase things in the works for future releases of standard WildFly. For more on these options, please see the xref:WildFly_and_WildFly_Preview{outfilesuffix}[WildFly and WildFly Preview guide].
+WildFly currently offers two stable variants: standard WildFly, offering the EE 11 specifications from Jakarta, and a new variant providing EE 10 that is offered temporarily to give users time to transition to EE 11 while still getting new features and bug fixes. We also offer a tech preview variant, WildFly Preview, used to showcase things in the works for future releases of standard WildFly. For more on these options, please see the xref:Different_Flavors_of_WildFly{outfilesuffix}[Different Flavors of WildFly] guide.
 
+[[standards_support]]
 == Standards Support
 
 The table below lists the versions of the Jakarta technologies available in WildFly and WildFly EE 10, along with whether the technology is present in our primary xref:#wildfly-configurations[out-of-the-box server configuration profiles].
@@ -124,7 +125,7 @@ Notes:
 
 [NOTE]
 ====
-WildFly Preview often (but not always) provides implementations of different versions of the specifications listed above than standard WildFly does. See xref:WildFly_and_WildFly_Preview.adoc#wildfly-preview-ee[EE Support in WildFly Preview] for current details.
+WildFly Preview often (but not always) provides implementations of different versions of the specifications listed above than standard WildFly does. See xref:Different_Flavors_of_WildFly.adoc#wildfly-preview-ee[EE Support in WildFly Preview] for current details.
 ====
 
 
@@ -165,7 +166,7 @@ of the current long-term support Java release, Java SE {recommended.java.version
 [[installation-options]]
 == Installation Options
 
-There are a number of ways you can install WildFly, including unzipping our traditional download zip, provisioning a custom installation using the `wildfly-maven-plugin` or the Galleon CLI, or building a bootable jar. There are also the link:WildFly_and_WildFly_Preview{outfilesuffix}[standard and EE 10 variants of WildFly and the tech-preview WildFly Preview variant].
+There are a number of ways you can install WildFly, including unzipping our traditional download zip, provisioning a custom installation using the `wildfly-maven-plugin` or the Galleon CLI, or building a bootable jar. There are also the link:Different_Flavors_of_WildFly{outfilesuffix}[standard and EE 10 variants of WildFly and the tech-preview WildFly Preview variant].
 
 The link:Installation_Guide{outfilesuffix}[Installation Guide]
 helps you identify the kind of WildFly installation that best fits your application's deployment needs. In this guide

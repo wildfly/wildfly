@@ -61,6 +61,7 @@ A Jakarta Data implementation like WildFly can support one or more Jakarta Data 
 
 WildFly's Jakarta Data implementation supports the link:https://docs.hibernate.org/orm/6.6/repositories/html_single/[Hibernate Data Repositories, window=_blank] provider, which uses Hibernate ORM to interact with a variety of different relational databases. Hibernate Data Repositories supports the `jakarta.persistence.Entity` annotation as the mechanism for application authors to define entities.
 
+[[using-hibernate-data-repositories]]
 == Using Hibernate Data Repositories in Your Application
 
 There are two key things to understand in order to use WildFly's Hibernate Data Repositories provider:

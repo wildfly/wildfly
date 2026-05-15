@@ -29,7 +29,7 @@ Some details on the stability levels:
 * *default* -- Features at this level have gone through additional vetting to ensure they are suitable for the long-term compatibility expectations of the xref:Galleon_Guide.adoc#WildFly_Galleon_feature-packs[Galleon feature-pack] that provides them.
 
 [NOTE]
-The vast majority of functionality provided in both xref:WildFly_and_WildFly_Preview.adoc[standard WildFly and WildFly Preview] is at the `default` stability level. Over time the amount of functionality at other levels, particularly `community`, is expected to increase.
+The vast majority of functionality provided in both xref:Different_Flavors_of_WildFly{outfilesuffix}[standard WildFly, WildFly EE 10 and WildFly Preview] is at the `default` stability level. Over time the amount of functionality at other levels, particularly `community`, is expected to increase.
 
 [NOTE]
 A feature being ‘available by default’ in a WildFly installation might not mean ‘enabled by default’, i.e. turned on in a standard out-of-the-box configuration. It could just mean a user could turn it on if they so choose using normal configuration tools like the <<Command_Line_Interface,CLI>>.
