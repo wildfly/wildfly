@@ -16,7 +16,7 @@
 
     <fileSets>
         <fileSet>
-            <directory>..</directory>
+            <directory>../../..</directory>
             <outputDirectory>${server.output.dir.prefix}-${legacy.ee.output.qualifier}${server.output.dir.version}-src</outputDirectory>
             <includes>
                 <include>**/*.xml</include>
