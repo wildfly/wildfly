@@ -615,7 +615,7 @@ modifications are made, then the link from the Welcome Screen will also
 be inaccessible.
 
 ////
-    TODO https://issues.redhat.com/browse/WFCORE-5532
+    TODO https://redhat.atlassian.net/browse/WFCORE-5532
 If you have not yet added at least one management user an error page
 will be displayed asking you to add a new user, after a user has been
 added you can click on the 'Try Again' link at the bottom of the error

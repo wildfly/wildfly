@@ -2661,7 +2661,7 @@ performance (throughput and response time) will occur compared to TLSv1.2. Upgra
 should improve performance. For this reason, the use of TLSv1.3 is currently disabled by default. TLSv1.3 can
 be enabled by configuring the new `cipher-suite-names` attribute in the SSL Context resource definition in the
 Elytron subsystem as described in the previous two sections. It is recommended to test for performance
-degradation prior to enabling TLSv1.3 in a production environment. See https://issues.redhat.com/browse/WFWIP-160[WFWIP-160]
+degradation prior to enabling TLSv1.3 in a production environment. See https://redhat.atlassian.net/browse/WFWIP-160[WFWIP-160]
 for more details.
 
 *Note:* When using TLSv1.3, it is important to keep in mind that session IDs have become essentially obsolete.

@@ -37,9 +37,11 @@ For background, see the Linux Foundation’s guidance:
 ---
 
 WildFly uses Jira to manage issues.
-All issues can be found [here](https://issues.redhat.com/projects/WFLY/issues/).
+All issues can be found [here](https://redhat.atlassian.net/browse/WFLY).
 
-To create a new issue, comment on an existing issue, or assign an issue to yourself, you'll need to first [create a Jira account](https://issues.redhat.com/).
+To create a new issue, comment on an existing issue, or assign an issue to yourself, you'll need to first [create a Jira account](https://redhat.atlassian.net/).
+
+**Important:** After creating your account, you must log in to Red Hat Jira at [https://redhat.atlassian.net/jira/for-you](https://redhat.atlassian.net/jira/for-you) to properly authenticate before you can create issues in the WFLY and WFCORE projects. Simply being logged into your Atlassian account is not sufficient.
 
 # Good First Issues
 
@@ -47,7 +49,7 @@ To create a new issue, comment on an existing issue, or assign an issue to yours
 
 Check out our issues with the `good-first-issue` label.
 These are a triaged set of issues that are great for getting started on our project.
-These can be found [here](https://issues.redhat.com/issues/?filter=12403174).
+These can be found [here](https://redhat.atlassian.net/issues?jql=labels%20%3D%20%22good-first-issue%22%20AND%20project%20IN%20(WFLY%2C%20WFCORE)%20AND%20resolution%20%3D%20Unresolved).
 
 Once you have selected an issue you'd like to work on, make sure it's not already assigned to someone else.
 To assign an issue to yourself, simply click on "Start Progress".

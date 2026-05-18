@@ -52,8 +52,8 @@ safely run, are:
 The `test` phase is not recommended to be used for scripted jobs as we
 are planning to switch to the `failsafe` plugin bound to the
 `integration-test` and `verify` phases. See
-https://issues.redhat.com/browse/WFLY-625[WFLY-625] and
-https://issues.redhat.com/browse/WFLY-228[WFLY-228].
+https://redhat.atlassian.net/browse/WFLY-625[WFLY-625] and
+https://redhat.atlassian.net/browse/WFLY-228[WFLY-228].
 
 [[testsuite-structure]]
 === Testsuite structure
@@ -351,7 +351,7 @@ started. In that case, you need to attach the debugger multiple times.
 
 ==== Debugging clustering tests
 
-With the implementation of https://issues.redhat.com/browse/WFLY-276[WFLY-276] for the clustering test suite module,
+With the implementation of https://redhat.atlassian.net/browse/WFLY-276[WFLY-276] for the clustering test suite module,
 these tests can be run with the debugger as well.
 Here are some tips on how to effectively debug:
 
@@ -439,7 +439,7 @@ the pattern is `**/*TestCase.xml`, without need to specify `-DallTests`.
 [[creating-coverage-reports]]
 === Creating coverage reports
 
-*Jira:* https://issues.redhat.com/browse/WFLY-585
+*Jira:* https://redhat.atlassian.net/browse/WFLY-585
 
 Coverage reports are created by
 http://www.eclemma.org/jacoco/trunk/index.html[JaCoCo].
@@ -507,4 +507,4 @@ Or:
 mvn clean install ... -Dmaven.repo.local=localrepo
 ----
 
-See also https://issues.redhat.com/browse/WFLY-628.
+See also https://redhat.atlassian.net/browse/WFLY-628.
