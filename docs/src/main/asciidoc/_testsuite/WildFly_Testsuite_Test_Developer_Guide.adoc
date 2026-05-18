@@ -151,7 +151,7 @@ Time ratios will soon be provided by
 == Negative tests
 
 WARNING: Testing of invalid deployments is supposed to be leveraging the `@ShouldThrowException` annotation.
-Unfortunately, this feature cannot be used at the moment due to outstanding issue, see https://issues.redhat.com/browse/WFLY-673[WFLY-673].
+Unfortunately, this feature cannot be used at the moment due to outstanding issue, see https://redhat.atlassian.net/browse/WFLY-673[WFLY-673].
 However, the exception might be obtained using the manual deployer:
 
 [source,java,options="nowrap"]

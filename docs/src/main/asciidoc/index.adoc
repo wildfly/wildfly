@@ -119,6 +119,6 @@ features which have been removed from WildFly.
 
 * link:Glossary.html[Glossary]
 * https://wildfly.org[project page]
-* https://issues.redhat.com/browse/WFLY[issue tracker]
+* https://redhat.atlassian.net/browse/WFLY[issue tracker]
 * https://groups.google.com/g/wildfly[user forum]
 * https://github.com/wildfly/wildfly/[Source code at GitHub]

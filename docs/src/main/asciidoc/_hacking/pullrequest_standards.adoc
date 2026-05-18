@@ -15,7 +15,7 @@ The PR title should include a JIRA number directly from the project in question,
 *Sample PR*
 [WFLY-815] This is the sample title
 
-Fixes: https://issues.redhat.com/browse/WFLY-815
+Fixes: https://redhat.atlassian.net/browse/WFLY-815
 
 === Commit message
 The commit message for each commit should also reference a JIRA number.

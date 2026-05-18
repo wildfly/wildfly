@@ -31,7 +31,7 @@ This can be achieved by configuring HAProxy Ingress Controller described below.
 
 === Changing Cache Mode in Deployment Image
 
-// TODO - update the wording when we make 'dist' the actual cloud default - https://issues.redhat.com/browse/CLOUD-4211
+// TODO - update the wording when we make 'dist' the actual cloud default - https://redhat.atlassian.net/browse/CLOUD-4211
 Presently, the default configuration currently uses replicated caches.
 This effectively fixes the heap capability of the cluster such that it cannot be increased by scaling up.
 Thus, existing applications need to update the default cache mode to optimize scalability.
@@ -86,7 +86,7 @@ The following sections will configure an https://haproxy-ingress.github.io/[HAPr
 
 === Configuring Affinity in Deployment Image
 
-// TODO - update this section as we make this the default - https://issues.redhat.com/browse/CLOUD-4174
+// TODO - update this section as we make this the default - https://redhat.atlassian.net/browse/CLOUD-4174
 
 First, we will need to reconfigure the application server to store the affinity information in a separate cookie.
 By default, WildFly encodes session affinity information in the `JSESSIONID` cookie value, which is already used to uniquely identify a session.
