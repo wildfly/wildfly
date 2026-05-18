@@ -401,6 +401,11 @@ public class ControlPointDeploymentInfoConfigurator implements UnaryOperator<Dep
         @Override
         public void invalidate(HttpServerExchange exchange) {
             this.session.invalidate(exchange);
+            // UNDERTOW-2764 workaround
+            ServletRequestContext context = (exchange != null) ? exchange.getAttachment(ServletRequestContext.ATTACHMENT_KEY) : null;
+            if (context != null) {
+                context.setSession(null);
+            }
         }
 
         @Override

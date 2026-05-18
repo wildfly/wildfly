@@ -150,9 +150,6 @@ public class SessionOperationServlet extends HttpServlet {
 
         String targetSessionId = req.getParameter(TARGET_SESSION_ID);
         if (targetSessionId == null) {
-            targetSessionId = req.getRequestedSessionId();
-        }
-        if (targetSessionId == null) {
             targetSessionId = session.getId();
         }
 

@@ -18,6 +18,8 @@ import io.undertow.server.session.SessionListeners;
 import io.undertow.util.AttachmentKey;
 
 import org.jboss.logging.Logger;
+import org.wildfly.clustering.function.BiConsumer;
+import org.wildfly.clustering.function.BiFunction;
 import org.wildfly.clustering.function.Consumer;
 import org.wildfly.clustering.function.Function;
 import org.wildfly.clustering.function.Predicate;
@@ -54,8 +56,8 @@ public class DistributableSessionManager implements UndertowSessionManager {
     private final RecordableSessionManagerStatistics statistics;
     private final StampedLock lifecycleLock = new StampedLock();
     private final AtomicLong lifecycleStamp = new AtomicLong(0L);
-    private final Function<String, Session<Map<String, Object>>> createSession;
-    private final Function<String, Session<Map<String, Object>>> findSession;
+    private final BiFunction<SessionConfig, HttpServerExchange, Session<Map<String, Object>>> createSession;
+    private final BiFunction<SessionConfig, HttpServerExchange, Session<Map<String, Object>>> findSession;
 
     // Matches io.undertow.server.session.InMemorySessionManager
     private volatile int defaultSessionTimeout = 30 * 60;
@@ -66,10 +68,16 @@ public class DistributableSessionManager implements UndertowSessionManager {
         this.listeners = config.getSessionListeners();
         this.statistics = config.getStatistics();
 
-        UnaryOperator<String> validateIdentifier = UnaryOperator.when(VALID_IDENTIFIER, UnaryOperator.identity(), UnaryOperator.of(Consumer.of(), this.manager.getIdentifierFactory()));
-        this.createSession = validateIdentifier.thenApply(Function.of(this.manager::createSession, REQUIRE_SESSION));
+        Function<String, Session<Map<String, Object>>> createSession = this.manager::createSession;
+        // Ignore SessionConfig and return identifier from factory
+        BiFunction<SessionConfig, HttpServerExchange, String> createSessionId = BiConsumer.<SessionConfig, HttpServerExchange>of().thenReturn(this.manager.getIdentifierFactory());
+        this.createSession = createSession.thenApply(REQUIRE_SESSION).composeBinary(createSessionId);
 
-        this.findSession = Function.when(VALID_IDENTIFIER, Function.of(this.manager::findSession, VALIDATE_SESSION), Function.of(null));
+        Function<String, Session<Map<String, Object>>> findSession = this.manager::findSession;
+        // Use identifier from SessionConfig
+        BiFunction<SessionConfig, HttpServerExchange, String> requestSessionId = SessionConfig::findSessionId;
+        // If session identifier from SessionConfig is invalid just return null
+        this.findSession = Function.when(VALID_IDENTIFIER, findSession.thenApply(VALIDATE_SESSION), Function.of(null)).composeBinary(requestSessionId);
     }
 
     @Override
@@ -160,13 +168,13 @@ public class DistributableSessionManager implements UndertowSessionManager {
         return this.getSession(exchange, config, this.findSession);
     }
 
-    private io.undertow.server.session.Session getSession(HttpServerExchange exchange, SessionConfig config, Function<String, Session<Map<String, Object>>> sessionFactory) {
+    private io.undertow.server.session.Session getSession(HttpServerExchange exchange, SessionConfig config, BiFunction<SessionConfig, HttpServerExchange, Session<Map<String, Object>>> sessionFactory) {
         if (config == null) {
             throw UndertowMessages.MESSAGES.couldNotFindSessionCookieConfig();
         }
         Consumer<HttpServerExchange> closeTask = this.getSessionCloseTask();
         try {
-            Session<Map<String, Object>> session = sessionFactory.apply(config.findSessionId(exchange));
+            Session<Map<String, Object>> session = sessionFactory.apply(config, exchange);
             try {
                 if ((session == null) || !session.isValid()) {
                     try {
