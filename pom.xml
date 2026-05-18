@@ -433,7 +433,7 @@
         <version.commons-codec>1.17.2</version.commons-codec>
         <version.commons-collections>3.2.2</version.commons-collections>
         <version.commons-io>2.16.1</version.commons-io>
-        <version.de.dentrassi.crypto>2.4.0</version.de.dentrassi.crypto>
+        <version.de.dentrassi.crypto>3.0.0</version.de.dentrassi.crypto>
         <version.gnu.getopt>1.0.13</version.gnu.getopt>
         <version.io.agroal>2.0</version.io.agroal>
         <version.io.github.resilience4j>2.3.0</version.io.github.resilience4j>
