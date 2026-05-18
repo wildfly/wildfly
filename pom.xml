@@ -611,7 +611,7 @@
         <version.org.wildfly.security.elytron-web>4.2.1.Final</version.org.wildfly.security.elytron-web>
         <version.org.wildfly.security.elytron-mp>2.0.0.Final</version.org.wildfly.security.elytron-mp>
         <version.org.wildfly.security.elytron-tests-common>2.4.2.Final</version.org.wildfly.security.elytron-tests-common>
-        <version.org.wildfly.security.jakarta.elytron-ee>4.0.0.Beta7</version.org.wildfly.security.jakarta.elytron-ee>
+        <version.org.wildfly.security.jakarta.elytron-ee>4.0.0.Final</version.org.wildfly.security.jakarta.elytron-ee>
         <version.org.wildfly.transaction.client>3.0.5.Final</version.org.wildfly.transaction.client>
         <version.org.wildfly.wildfly-application-development-guide>1.0.0.Final</version.org.wildfly.wildfly-application-development-guide>
         <preview.version.org.wildfly.wildfly-ee-9-deployment-transformer>2.0.0.Final</preview.version.org.wildfly.wildfly-ee-9-deployment-transformer>
