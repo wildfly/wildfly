@@ -1256,6 +1256,19 @@
                 <version>${version.io.smallrye.smallrye-mutiny}</version>
             </dependency>
 
+            <!-- TODO (jrp) temporary override until the new version of Undertow is integrated into core and that version of core is integrated here -->
+            <dependency>
+                <groupId>io.undertow</groupId>
+                <artifactId>undertow-core</artifactId>
+                <version>${version.io.undertow}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
             <dependency>
                 <groupId>jakarta.activation</groupId>
                 <artifactId>jakarta.activation-api</artifactId>
