@@ -15,7 +15,7 @@ The `mvc-krazo` subsystem provides support for the use of Jakarta MVC in deploym
 
 [WARNING]
 
-The `mvc-krazo` subsystem is currently provided at xref:Admin_Guide.adoc#Feature_stability_levels[`preview` stability]. This means use of the subsystem requires running xref:WildFly_and_WildFly_Preview.adoc[WildFly Preview] or using the `--stability=preview` parameter when starting standard WildFly.
+The `mvc-krazo` subsystem is currently provided at xref:Admin_Guide.adoc#Feature_stability_levels[`preview` stability]. This means use of the subsystem requires running xref:Different_Flavors_of_WildFly{outfilesuffix}[WildFly Preview] or using the `--stability=preview` parameter when starting standard WildFly.
 
 [[mvc-krazo-subsystem-provision]]
 == Provisioning the subsystem

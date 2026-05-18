@@ -1,0 +1,298 @@
+[[Different_Flavors_of_WildFly]]
+= Different Flavors of WildFly
+WildFly authors;
+:revnumber: {version}
+:revdate: {localdate}
+:toc: macro
+:toclevels: 3
+:toc-title: Different Flavors of WildFly
+:doctype: book
+:icons: font
+:source-highlighter: coderay
+
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
+
+// ifndef::ebook-format[:leveloffset: 1]
+
+ifdef::basebackend-html[toc::[]]
+:numbered:
+
+Beginning with the WildFly 22 release, the WildFly project began producing two variants of
+its landmark application server -- the standard "WildFly" variant and the newer "WildFly Preview". With WildFly 40, we've (temporarily) introduced a third variant -- "WildFly EE 10".
+
+In this document, we'll introduce these different flavors of WildFly.
+
+== Standard WildFly
+
+The standard "WildFly" variant is the classic server that users have been familiar with for many
+years now. It's a very mature server, with a lot of care taken to ensure new features are fully
+realized and to limit the number of incompatible changes between releases.
+
+=== Getting Standard WildFly
+
+The zip or tar.gz file for standard WildFly is available at https://wildfly.org/downloads[https://wildfly.org/downloads].
+
+For xref:WildFly_Maven_Plugin_Guide{outfilesuffix}[`wildfly-maven-plugin`] users and xref:Galleon_Guide{outfilesuffix}[Galleon CLI] users, we provide a Galleon feature-pack for standard WildFly. The
+Galleon feature-pack location for the feature-pack is ``wildfly@maven(org.jboss.universe:community-universe)`` and the Maven coordinate is ``org.wildlfly:wildfly-galleon-pack``.
+
+The `wildfly` feature-pack depends on and adds "expansion" functionality beyond that provided by a separate standard WildFly `wildfly-ee` feature-pack. The
+Galleon feature-pack location for that feature-pack is ``wildfly-ee@maven(org.jboss.universe:community-universe)``, with Maven coordinate ``org.wildlfly:wildfly-galleon-pack``. Standard WildFly users who do not need the `wildfly` feature-pack's "expansion" functionality (e.g. MicroProfile) can directly use `wildfly-ee` instead.
+
+=== BOMs
+
+WildFly provides BOMs that users can use when developing applications. We provide different BOMs for different use cases.
+
+[[standard-wildfly-server-boms]]
+We provide the following BOMs for developing applications to deploy in the server:
+
+[cols=",,",options="header"]
+|=======================================================================
+|BOM| Maven GroupId |Standard WildFly ArtifactId
+|EE| `org.wildfly.bom` |`wildfly-ee`
+|EE With Tools| `org.wildfly.bom` |`wildfly-ee-with-tools`
+|Expansion| `org.wildfly.bom` |`wildfly-expansion`
+|Expansion With Tools| `org.wildfly.bom` |`wildfly-expansion-with-tools`
+|=======================================================================
+
+The 'EE' BOMs cover technologies that in standard WildFly are provisioned when the `wildfly-ee` feature-pack is used. (All standard WildFly installations use this feature-pack).
+
+The 'Expansion' BOMs cover additional technologies that in standard WildFly are only provisioned when the `wildfly` feature-pack is used. (Most standard WildFly installations would use this feature-pack, including the zips/tars that are available link:https://wildfly.org/downloads[for download].) This includes things like MicroProfile, Micrometer and OpenTelemetry.
+
+The 'With Tools' variants incorporate additional dependencies for tools that may be helpful when developing or testing applications.
+
+[[standard-wildfly-client-boms]]
+For standard WildFly we also provide BOMs for developing applications that act as various kinds of external clients to a WildFly server.
+
+[cols=",,",options="header"]
+|=======================================================================
+|BOM| Maven GroupId |Standard WildFly ArtifactId
+|Jakarta Enterprise Beans Client| `org.wildfly` |`wildfly-ejb-client-bom`
+|Jakarta Messaging Client| `org.wildfly` |`wildfly-jms-client-bom`
+|Jakarta XML Web Services Client| `org.wildfly` |`wildfly-jaxws-client-bom`
+|=======================================================================
+
+[[security-manager-removed]]
+=== Security Manager Support Removed
+
+Standard WildFly 40 and later *do not support running with the Java SecurityManager enabled*. If you attempt to start a standard WildFly {wildflyVersion} process with the SecurityManager enabled, the process will fail to start, even if you are using a Java SE version that still supports the SecurityManager.
+
+Standard WildFly {wildflyVersion} supports the EE 11 versions of the Jakarta specifications, and the specifications that were updated for EE 11 removed any requirement to support the SecurityManager. The specification API artifacts that WildFly integrates removed the logic that allowed them to work properly with a SecurityManager enabled, and a number of libraries we integrate that implement those APIs removed their SecurityManager logic as well. As a result, standard WildFly can no longer function properly with a SecurityManager enabled, so we ensured that it will fail to start if it is.
+
+[[standard-wildfly-security-manager-subsystem]]
+==== The `security-manager` subsystem
+
+The `security-manager` subsystem allows administrators to define in the WildFly configuration Java SecurityManager permissions that are then granted to deployments. This subsystem serves no purpose in a standard WildFly server, since the SecurityManager cannot be enabled. Accordingly, *standard WildFly's out-of-the-box configuration files no longer include the `security-manager` subsystem*.
+
+The subsystem can still be included in a standard WildFly server configuration, where it will do no harm, other than wasting a small amount of resources.
+
+[NOTE]
+====
+While including the `security-manager` subsystem in the configuration of a standard WildFly {wildflyVersion} server makes no sense, it's completely valid for a standard WildFly {wildflyVersion} domain mode Domain Controller to have the `security-manager` subsystem in its `domain.xml` file, if the profiles that include the subsystem are used in server groups where all the servers are running WildFly 39 or earlier.
+====
+
+
+== WildFly EE 10
+The "WildFly EE 10" variant has the same maturity, stability and core functionality as standard WildFly, but its subsystems provide the EE 10 versions of the Jakarta specifications. Standard WildFly has moved on to EE 11 for any specs that did new releases for EE 11. Please see the xref:Getting_Started_Guide{outfilesuffix}#standards_support[Getting Started Guide] for full details on the specification versions provided in standard WildFly and WildFly EE 10.
+
+[IMPORTANT]
+====
+The WildFly project is providing the WildFly EE 10 variant on a temporary basis only, to give our users a longer period to transition their applications to EE 11. We expect to produce this variant for WildFly 40 and 41 only.
+====
+
+=== Getting WildFly EE 10
+
+The zip or tar.gz file for WildFly EE 10 is available at link:https://wildfly.org/downloads[https://wildfly.org/downloads]
+right next to the standard WildFly release files for the same version.
+
+For xref:WildFly_Maven_Plugin_Guide{outfilesuffix}[`wildfly-maven-plugin`] users and xref:Galleon_Guide{outfilesuffix}[Galleon CLI] users, we provide a Galleon feature-pack for WildFly EE 10. The
+Galleon feature-pack location for the feature-pack is ``wildfly-ee-10@maven(org.jboss.universe:community-universe)`` and the Maven coordinate is ``org.wildlfly:wildfly-ee-10-feature-pack``.
+This feature-pack is the WildFly EE 10 analogue to main WildFly's ``wildfly-ee@maven(org.jboss.universe:community-universe)``, with Maven coordinate ``org.wildfly:wildfly-ee-galleon-pack``.
+
+[IMPORTANT]
+====
+The `wildfly-ee-10` feature-pack is not a direct replacement for the `wildfly` feature-pack that most WildFly users use. Rather, it can replace the `wildfly-ee` feature-pack that the `wildfly` feature-pack depends on. If the `wildfly-ee-10` feature-pack is used by itself, functionality provided directly by `wildfly`, like MicroProfile, OpenTelemetry and Micrometer, will not be available.
+
+To get the full set of functionality available in standard WildFly your provisioning configuration *must explicitly declare both the `wildfly-ee-10` and `wildfly` feature-packs*. For details on how to do this, please see the xref:WildFly_Maven_Plugin_Guide{outfilesuffix}[WildFly Maven Plugin Guide] and the xref:Galleon_Guide{outfilesuffix}[Galleon Provisioning Guide].
+====
+
+=== BOMs
+
+WildFly EE 10 provides BOMs that users can use when developing applications.
+
+We provide the following BOMs for developing applications to deploy in a WildFly EE 10 server. (These BOMs have different Maven artifactIds than the xref:#standard-wildfly-server-boms[standard WildFly BOMS].)
+
+[cols=",,",options="header"]
+|=======================================================================
+|BOM| Maven GroupId |WildFly EE 10 ArtifactId
+|EE| `org.wildfly.bom` |`wildfly-ee-10`
+|EE With Tools| `org.wildfly.bom` |`wildfly-ee-10-with-tools`
+|Expansion| `org.wildfly.bom` |`wildfly-expansion-ee-10`
+|Expansion With Tools| `org.wildfly.bom` |`wildfly-expansion-ee-10-with-tools`
+|=======================================================================
+
+The 'EE' BOMs cover technologies that in are provisioned when the `wildfly-ee-10` feature-pack is used.
+
+The 'Expansion' BOMs cover additional technologies that are only provisioned when the `wildfly` feature-pack is used. This includes things like MicroProfile, Micrometer and OpenTelemetry. (Most WildFly EE 10 installations would use this feature-pack, including the zips/tars that are available link:https://wildfly.org/downloads[for download].)
+
+The 'With Tools' variants incorporate additional dependencies for tools that may be helpful when developing or testing applications.
+
+Standard WildFly provides xref:#standard-wildfly-client-boms[BOMs for developing applications that act as various kinds of external clients to a standard WildFly server]. These same BOMs can be used for developing applications that act as a client to a WildFly EE 10 server.
+
+[NOTE]
+====
+The same client BOMs can be used with both standard WildFly and WildFly EE 10 because the Jakarta specifications and implementations relevant to those BOMs do not differ between EE 10 and EE 11.
+====
+
+=== Other Differences in WildFly EE 10
+
+Besides providing a different version of the EE APIs, WildFly EE 10 has a couple of other significant differences from standard WildFly:
+
+==== Jakarta Data
+
+link:https://jakarta.ee/specifications/data/1.0/[Jakarta Data 1.0] is a new specification that was first included in EE in the EE 11 release. But, the Jakarta Data 1.0 API works fine with the other EE APIs in WildFly EE 10, and the Hibernate project produces a version of the Hibernate Data Repositories tool (the `org.hibernate.orm:hibernate-jpamodelgen` annotation processor) that xref:Developer_Guide{outfilesuffix}#using-hibernate-data-repositories[generates Jakarta Data repository implementations] that work with the Hibernate ORM 6.6 version used in WildFly EE 10. So, you can use Jakarta Data with WildFly EE 10.
+
+Although Jakarta Data can work in WildFly EE 10, _the out-of-the-box configuration files in the WildFly EE 10 download zip do not include the `jakarta-data` subsystem and associated extension_, while they are present in the standard WildFly out-of-the-box configurations.
+
+However, this is just a matter what is included in the out-of-the-box configuration files:
+
+* The extension module and its dependencies are available in an un-slimmed WildFly EE 10 installation, so you can xref:Admin_Guide{outfilesuffix}#jakarta-data-subsystem-enable[add the extension and subsystem to your config] with the WildFly CLI tool.
+* The `wildfly-ee-10` feature-pack also includes the `jakarta-data` layer, so if you are provisioning a slimmed WildFly installation with Galleon layers, you can use the layer to include Jakarta Data in your configuration.
+
+[IMPORTANT]
+====
+If you are using Jakarta Data with WildFly EE 10, be sure to use a version 6.6 release of the `org.hibernate.orm:hibernate-jpamodelgen` annotation processor, ideally one with the same micro-version as the Hibernate ORM libraries in the server's `modules/system/layers/base/org/hibernate/main/` directory.
+====
+
+==== Security Manager
+
+A WildFly EE 10 {wildflyVersion} process can still run with the Java SecurityManager enabled, xref:#security-manager-removed[unlike a standard WildFly {wildflyVersion} process].
+
+Accordingly, the out-of-the-box configuration files in an unslimmed WildFly EE 10 installation still include the `security-manager` subsystem.
+
+== WildFly Preview
+
+WildFly Preview is a tech preview variant of the server. The goal of WildFly Preview is to give
+the WildFly community a look at changes that are likely to appear in future releases of the standard
+WildFly server. The aim is to get feedback on in-progress work, so it is more likely that features
+will not be fully realized, and a greater number of incompatible changes may appear from release
+to release. The amount of testing WildFly Preview undergoes will generally not be as high as the
+standard WildFly variant.
+
+The expectation is on any given release date, both standard WildFly and WildFly Preview will be released.
+
+[WARNING]
+====
+
+A WildFly Preview release will have the same version number and suffix (Beta, Final, etc.) as the
+main WildFly release, but regardless of the suffix, a WildFly Preview release should be treated
+as a Technical Preview release.
+====
+
+=== Getting WildFly Preview
+
+The zip or tar.gz file for WildFly Preview is available at link:https://wildfly.org/downloads[https://wildfly.org/downloads]
+right next to the standard WildFly release files for the same version.
+
+For xref:WildFly_Maven_Plugin_Guide{outfilesuffix}[`wildfly-maven-plugin`] users and xref:Galleon_Guide{outfilesuffix}[Galleon CLI] users, we provide a Galleon feature-pack for WildFly Preview. The
+Galleon feature-pack location for the feature-pack is ``wildfly-preview@maven(org.jboss.universe:community-universe)`` and the Maven coordinate is ``org.wildlfly:wildfly-preview-feature-pack``.
+This feature-pack is the WildFly Preview analogue to standard WildFly's ``wildfly@maven(org.jboss.universe:community-universe)`` (Maven coordinate ``org.wildfly:wildfly-galleon-pack``).
+
+=== BOMs
+
+We provide the following BOMs for developing applications to deploy in a WildFly Preview server. (These BOMs have different Maven artifactIds than the xref:#standard-wildfly-server-boms[standard WildFly BOMS].)
+
+[cols=",,",options="header"]
+|=======================================================================
+|BOM| Maven GroupId |WildFly Preview ArtifactId
+|EE| `org.wildfly.bom` |`wildfly-ee-preview`
+|EE With Tools| `org.wildfly.bom` |`wildfly-ee-preview-with-tools`
+|Expansion| `org.wildfly.bom` |`wildfly-expansion-preview`
+|Expansion With Tools| `org.wildfly.bom` |`wildfly-expansion-preview-with-tools`
+|=======================================================================
+
+The 'EE' BOMs cover technologies that in standard WildFly are provisioned when the `wildfly-ee` feature-pack is used. (All standard WildFly installations use this feature-pack).
+
+The 'Expansion' BOMs cover additional technologies that in standard WildFly are only provisioned when the `wildfly` feature-pack is used. (Most standard WildFly installations would use this feature-pack, including the zips/tars that are available link:https://wildfly.org/downloads[for download].) This includes things like MicroProfile, Micrometer and Open Telemetry.
+
+The 'With Tools' variants incorporate additional dependencies for tools that may be helpful when developing or testing applications.
+
+For standard WildFly we also provide BOMs for developing applications that act as various kinds of external clients to a WildFly server. There are no WildFly Preview variants of these.
+
+[[wildfly-preview-ee]]
+=== WildFly Preview and Jakarta Specifications
+
+Often, but not always, a key difference between standard WildFly and WildFly Preview is support for different versions of Jakarta specifications. The WildFly project uses WildFly Preview to showcase full or partial support for new versions of Jakarta specifications, including EE releases that are not yet released for general availability.
+
+[NOTE]
+====
+Formally certifying WildFly Preview as a compatible implementation of EE is not a priority
+for the WildFly project and may not happen at the time of a release, or ever.
+====
+
+==== EE Support in WildFly Preview {wildflyVersion}
+
+WildFly Preview 40 provides support for xref:Getting_Started_Guide{outfilesuffix}#standards_support[the same specification versions as standard WildFly 40].
+
+This is a somewhat unusual situation, one that occurs in a release like WildFly 40 where standard WildFly has just updated to support the EE version that WildFly Preview had been previewing. We expect that WildFly Preview 41 will again diverge from standard WildFly as it begins previewing support for the in-progress EE 12 specifications.
+
+=== WildFly Preview Support for EE 8 Deployments
+
+The APIs that WildFly Preview exposes to deployments are the EE 11 APIs, so all the classes and interfaces are in the
+jakarta.* packages. But you _may_ be able to run an existing EE 8 application on WildFly Preview.
+
+What we've done is we've added to the server's handling of _managed_ deployments a bytecode and text file transformation
+process to convert EE 8 content into EE 9.  It bytecode transforms deployment jars to alter
+references to EE 8 packages in the class file constant tables to change from javax.* to jakarta.*. The transformation
+goes beyond simple package renames; a number of other known differences between EE 8 and EE 9 are handled. We owe a
+great deal of thanks to the community behind the link:https://projects.eclipse.org/projects/technology.transformer[Eclipse Transformer]
+project for their work on the underlying transformation tool.
+
+As noted above, this handling is only applied to _managed_ deployments. A managed deployment is one where a management
+client (the CLI, HAL console or the deployment scanner) presents deployment content to the server and the server makes
+a copy of it in its internal deployment content repository. The content that gets installed into the runtime is that internal copy.
+Unmanaged deployments that use EE 8 APIs will not work. We transform managed deployments when we copy the deployment
+content into the internal content repo. For unmanaged deployments we use the original content file(s) the user provides,
+and WildFly Preview won't modify those files as we don't regard them as being 'owned' by the server.
+
+Note that the deployment transformation feature will not update the deployment to adapt to any API differences between
+Jakarta EE 9 and EE 10 or later. It only covers the javax to jakarta name changes that came with EE 9.
+
+In the long run it's better for users if they either convert their application source to EE 11 APIs, or use build-time
+tooling that the Jakarta ecosystem provides to do transformation at build time.  But some
+applications just can't be changed, so the server-side solution WildFly Preview provides can handle those cases.
+
+This deployment transformation feature will be removed from WildFly Preview in a future release. However, it is likely
+that the WildFly developers will offer a separate Galleon feature-pack that can be used to add this behavior into both
+standard WildFly and WildFly Preview.
+
+
+
+=== Other Differences in WildFly Preview
+
+WildFly Preview is intended to help get community exposure for other changes we plan to
+make in the server. Here are the key differences between standard WildFly and WildFly Preview:
+
+* A WildFly Preview process will allow `preview` and higher xref:Admin_Guide{outfilesuffix}#Feature_stability_levels[feature stability level] features to be enabled without requiring the use of the `--stability=preview` command line flag. Standard WildFly by default only allows `community` stability and higher features.
+* WildFly Preview is not an EE 11 compatible implementation. It also is not a MicroProfile platform compatible
+implementation. Most EE 11 and MicroProfile applications are expected to run well on WildFly Preview, but it is not
+certified compatible.
+* The standard configuration files do not configure an embedded messaging broker. Instead, they configure the
+link:Admin_Guide{outfilesuffix}#Messaging[`messaging-activemq` subsystem] to provide connections to a remote ActiveMQ Artemis broker. (It's a task for the user to
+run such a broker or to update the config to integrate with a different broker.) We want WildFly out-of-the-box to be
+more of a cloud native appserver and having an embedded messaging broker in the default configuration is not cloud native.
+A WildFly container in the cloud running an embedded broker is not scalable, as multiple broker instances need separate
+configuration to act as a primary or backup. An embedded messaging broker also has more advanced persistent storage
+requirements than a server primarily dedicated to handling HTTP requests would have. Note however that running an
+embedded broker is still supported. We've added to the $WILDFLY_HOME/docs/examples/configs folder an example
+``standalone-activemq-embedded.xml`` configuration showing its use.
+* WildFly Preview provides the link:Admin_Guide{outfilesuffix}#Micrometer_Metrics[`micrometer` subsystem] in its out-of-the-box `standalone.xml`, `standalone-ha.xml`, `standalone-full.xml` and `standalone-full-ha.xml` configuration files, while standard WildFly instead provides the basic link:Admin_Guide{outfilesuffix}#MicroProfile_Metrics_SmallRye[`metrics` subsystem].
+* WildFly Preview includes a new xref:Admin_Guide.adoc#Feature_stability_levels[`preview` stability] `org.wildfly.extension.vertx` extension and its `vertx` subsystem, along with a new `vertx` Galleon layer so you can provision it in a slimmed server. This subsystem can be used to configure the Vert.x instance used by our OpenTelemetry integration.
+* The Hibernate ORM integration used by the link:Developer_Guide{outfilesuffix}#JPA_Reference_Guide[JPA subsystem's] Hibernate Search feature supports using outbox polling as a coordination strategy for automatic indexing.
+
+
