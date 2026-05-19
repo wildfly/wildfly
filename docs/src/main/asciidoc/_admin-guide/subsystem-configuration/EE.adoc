@@ -10,28 +10,31 @@ ifdef::env-github[]
 :warning-caption: :warning:
 endif::[]
 
-The `ee` subsystem provides common functionality in the Jakarta EE platform,
-such as the EE Concurrency Utilities (JSR 236) and `@Resource`
-injection. The subsystem is also responsible for managing the lifecycle
-of Jakarta EE application's deployments, that is, `.ear` files and configuration of global directories to share common libraries across all deployed applications.
+The `ee` subsystem:
+
+* provides common functionality in the EE platform,
+such `@Resource` injection.
+* manages the lifecycle of EE application deployments, that is, `.ear` files.
+* provides WildFly's Jakarta Concurrency support.
+* allows for the configuration of global modules and directories in order to share common libraries across all deployed applications.
 
 The `ee` subsystem configuration may be used to:
 
-* customise the deployment of Jakarta EE applications
-* create EE Concurrency Utilities instances
+* customise the deployment of EE applications.
+* create Jakarta Concurrency instances.
 * define the spec-mandated default JNDI bindings for services that must be made available via JNDI to applications.
 
 This document covers EE subsystem version
-`5.0`, whose XML namespace within WildFly XML configurations is
-`urn:jboss:domain:ee:5.0`. The path for the subsystem's XML schema,
-within WildFly's distribution, is `docs/schema/jboss-as-ee_5_0.xsd`.
+`6.0`, whose XML namespace within WildFly XML configurations is
+`urn:jboss:domain:ee:6.0`. The path for the subsystem's XML schema,
+within WildFly's distribution, is `docs/schema/jboss-as-ee_6_0.xsd`.
 
 Subsystem XML configuration example with all elements and attributes
 specified:
 
 [source,xml,options="nowrap"]
 ----
-<subsystem xmlns="urn:jboss:domain:ee:5.0">
+<subsystem xmlns="urn:jboss:domain:ee:6.0">
     <global-modules>
         <module name="org.jboss.logging"
                 slot="main"/>
@@ -67,6 +70,7 @@ specified:
                     jndi-name="java:jboss/ee/concurrency/executor/default"
                     context-service="default"
                     thread-factory="default"
+                    hung-task-termination-period="60000"
                     hung-task-threshold="60000"
                     core-threads="5"
                     max-threads="25"
@@ -80,6 +84,7 @@ specified:
                     jndi-name="java:jboss/ee/concurrency/scheduler/default"
                     context-service="default"
                     thread-factory="default"
+                    hung-task-termination-period="60000"
                     hung-task-threshold="60000"
                     core-threads="5"
                     keepalive-time="5000"

@@ -45,8 +45,8 @@ contains a large number of default configurations allowing you to select the ser
 
 A WildFly distribution based installation is well suited when:
 
-* You want to rely on a traditional Jakarta EE application deployment.
-* You want a Jakarta EE or MicroProfile platform compliant server that offers all Jakarta EE or MicroProfile features.
+* You want to rely on a traditional EE application deployment style, using a server provisioned without any deployments with the server then instructed to install deployments.
+* You want a server that offers all Jakarta and MicroProfile specifications.
 * You are not (yet) concerned by server installation size and memory footprint.
 * You are not yet sure of the kind of operating mode and application you are targeting.
 * Your server instances will contain one or more application deployments.
@@ -62,15 +62,15 @@ applications and deploy them to WildFly.
 = Installing WildFly with Galleon
 
 Galleon provisioning tooling allows you to construct a customized WildFly installation according to your application needs. 
-Some applications don't need a fully featured server supporting all operating modes and containing all Jakarta EE capabilities. 
+Some applications don't need a fully featured server supporting all operating modes and containing all Jakarta and MicroProfile capabilities.
 Galleon tooling allows you to select the server capabilities you want to see installed. 
 
 A WildFly server provisioned with Galleon is well suited when:
 
-* You want to rely on a traditional Jakarta EE application deployment.
+* You want to rely on a traditional EE application deployment style, using a server provisioned without any deployments with the server then instructed to install deployments.
 * You want to easily update an installation to the latest WildFly version.
-* Your application requires only a subset of the Jakarta EE or MicroProfile platform APIs
-(although Galleon can provision a server that supports the full set of Jakarta EE and MicroProfile platform APIs).
+* Your application requires only a subset of the Jakarta or MicroProfile APIs
+(although Galleon can provision a server that supports the full set of Jakarta and MicroProfile platform APIs).
 * You are concerned by server installation size and memory footprint.
 * You are only using standalone operating mode (with support for High Availability or not).
 * Your server instances will contain one or more application deployments.
@@ -91,8 +91,8 @@ to provision a customized WildFly installation containing your application.
 Using the WildFly Maven Plugin is well suited when:
 
 * You are building your application using Maven.
-* Your application requires only a subset of the Jakarta EE or MicroProfile platform APIs
-(although the WildFly Maven Plugin can provision a server that supports the full set of Jakarta EE and MicroProfile platform APIs).
+* Your application requires only a subset of the Jakarta or MicroProfile APIs
+(although the WildFly Maven Plugin can provision a server that supports the full set of Jakarta and MicroProfile platform APIs).
 * You are concerned by server installation size and memory footprint.
 * You are only using standalone operating mode (with support for High Availability or not).
 * Your server instances will contain one or more application deployments.

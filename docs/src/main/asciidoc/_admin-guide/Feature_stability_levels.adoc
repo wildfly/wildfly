@@ -46,4 +46,4 @@ The xref:Galleon_Guide.adoc#WildFly_Galleon_feature-packs[Galleon feature-packs]
 What we mean by the `community` and `default` levels is relative to the generally expected long-term maintainability and compatibility level of the feature-pack that provides it. In other words, just because a feature provided by the `wildfly` feature-pack has been vetted as suitable for the `default` level does not mean it comes with higher expectations than the feature-pack as a whole.
 
 [NOTE]
-WildFly Preview is also used to showcase functionality whose scope is not tied to a particular reasonably scoped ‘feature’. Using it in the past for Jakarta EE 9 was an example. Not having an embedded messaging broker in the standard configs is not a ‘feature’.
+WildFly Preview is also used to showcase functionality whose scope is not tied to a particular reasonably scoped ‘feature’. Using it in the past for EE 9 was an example. Not having an embedded messaging broker in the standard configs is not a ‘feature’.

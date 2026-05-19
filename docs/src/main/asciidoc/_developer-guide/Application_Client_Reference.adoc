@@ -9,7 +9,7 @@ ifdef::env-github[]
 :warning-caption: :warning:
 endif::[]
 
-As a Jakarta EE compliant server, WildFly {wildflyVersion} contains an application
+As a server implementing the EE Platform specification, WildFly {wildflyVersion} contains an application
 client. An application client is essentially a cut down server instance,
 that allows you to use EE features such as injection in a client side
 program.

@@ -57,7 +57,7 @@
                     <configuration>
                         <!-- bom builder plugin config common to all Server EE BOMs -->
                         <includeDependencies combine.children="append">
-                            <!-- Jakarta EE original and forked APIs -->
+                            <!-- EE original and forked APIs -->
                             <!-- replaces com.sun.activation:jakarta.activation -->
                             <dependency>
                                 <groupId>jakarta.activation</groupId>

@@ -90,7 +90,7 @@ link:#gal.request-controller[request-controller] (optional) +
 link:#gal.security-manager[security-manager] (optional) +
 
 |[[gal.ee-core-profile-server]]ee-core-profile-server
-| A Jakarta EE Core Profile server.
+| An EE Core Profile server.
 |
 link:#gal.core-server[core-server] +
 link:#gal.cdi[cdi] +
@@ -172,7 +172,7 @@ link:#gal.base-server[base-server] +
 link:#gal.base-server[base-server] +
 
 |[[gal.ee]]ee
-|Support for common functionality in the Jakarta EE platform and for Jakarta Concurrency.
+|Support for common functionality in the EE platform and for Jakarta Concurrency.
 |
 link:#gal.ee-concurrency[ee-concurrency] (optional) +
 link:#gal.ee-integration[ee-integration] +
@@ -183,7 +183,7 @@ link:#gal.ee-integration[ee-integration] +
 link:#gal.naming[naming] +
 
 |[[gal.ee-integration]]ee-integration
-|Support for common functionality in the Jakarta EE platform.
+|Support for common functionality in the EE platform.
 |
 link:#gal.jsonb[jsonb] (optional) +
 link:#gal.naming[naming] +

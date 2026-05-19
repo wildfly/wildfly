@@ -1,5 +1,5 @@
 [[Elytron_and_Java_EE_Security]]
-= Elytron and Jakarta EE Security
+= Elytron and EE Security
 
 ifdef::env-github[]
 :tip-caption: :bulb:

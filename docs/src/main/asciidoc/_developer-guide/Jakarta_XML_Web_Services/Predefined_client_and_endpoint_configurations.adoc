@@ -84,7 +84,7 @@ model.
 [[endpoint-configuration-deployment-descriptor]]
 === Endpoint Configuration Deployment Descriptor
 
-Jakarta EE archives that can contain Jakarta XML Web Services client and endpoint
+EE archives that can contain Jakarta XML Web Services client and endpoint
 implementations can also contain predefined client and endpoint
 configuration declarations. All endpoint/client configuration
 definitions for a given archive must be provided in a single deployment

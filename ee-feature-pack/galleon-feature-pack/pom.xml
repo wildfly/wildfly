@@ -23,7 +23,7 @@
     <artifactId>wildfly-ee-galleon-pack</artifactId>
 
     <name>WildFly: EE Full Galleon Pack</name>
-    <description>Galleon feature-pack providing full platform Jakarta EE functionality</description>
+    <description>Galleon feature-pack providing full platform Jakarta functionality</description>
     <packaging>pom</packaging>
 
     <properties>
