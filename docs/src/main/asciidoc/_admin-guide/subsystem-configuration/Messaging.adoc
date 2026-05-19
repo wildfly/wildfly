@@ -148,7 +148,7 @@ _not_ have any `entry` bound in the " `java:jboss/exported`" namespace
 because a `pooled-connection-factory` is not suitable for remote
 clients.
 
-Since Jakarta Messaging 2.0, a default Jakarta Messaging connection factory is accessible to Jakarta EE
+Since Jakarta Messaging 2.0, a default Jakarta Messaging connection factory is accessible to EE
 applications under the JNDI name `java:comp/DefaultJMSConnectionFactory.`
 The WildFly messaging subsystem defines a `pooled-connection-factory` that
 is used to provide this default connection factory. Any parameter change

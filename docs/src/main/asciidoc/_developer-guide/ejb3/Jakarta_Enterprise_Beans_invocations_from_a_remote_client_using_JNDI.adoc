@@ -331,7 +331,7 @@ name are as follows:
 *app-name* : This is the name of the .ear (without the .ear suffix) that
 you have deployed on the server and contains your EJBs.
 
-* Jakarta EE allows you to override the application name, to a name of
+* The EE platform allows you to override the application name, to a name of
 your choice by setting it in the application.xml. If the deployment uses
 uses such an override then the app-name used in the JNDI name should
 match that name.
@@ -344,7 +344,7 @@ that you have deployed on the server and the contains your EJBs. If the
 EJBs are deployed in a .war then the module name is the .war name
 (without the .war suffix).
 
-* Jakarta EE allows you to override the module name, by setting it in the
+* The EE platform allows you to override the module name, by setting it in the
 ejb-jar.xml/web.xml of your deployment. If the deployment uses such an
 override then the module-name used in the JNDI name should match that
 name.

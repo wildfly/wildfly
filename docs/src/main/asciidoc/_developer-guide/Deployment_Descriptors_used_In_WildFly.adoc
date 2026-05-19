@@ -37,7 +37,7 @@ spec deployment descriptor |ejb-jar.xml schema
 JBoss Jakarta Enterprise Beans deployment descriptor, this can be used to override settings
 from ejb-jar.xml, and to set WildFly specific settings |
 
-|application.xml |META-INF of an EAR |Jakarta EE Platform Specification |
+|application.xml |META-INF of an EAR |EE Platform Specification |
 |application.xml schema
 
 |jboss-app.xml |META-INF of an EAR |  |JBoss application deployment
@@ -68,7 +68,7 @@ descriptor, used to deploy message destinations with a deployment |
 |*-ds.xml |META-INF or WEB-INF |  |Datasource deployment descriptor, use
 to bundle datasources with a deployment |DataSource Configuration
 
-|application-client.xml |META-INF of an application client jar |Jakarta EE
+|application-client.xml |META-INF of an application client jar |EE
 Platform Specification |The spec deployment descriptor for application
 client deployments |application-client.xml schema
 

@@ -12,8 +12,8 @@ endif::[]
 [abstract]
 
 EE Concurrency Utilities (JSR 236) is a technology introduced with Java
-EE 7, which adapts well known Java SE concurrency utilities to the Java
-EE application environment specifics. The Jakarta EE application server is
+EE 7, which adapts well known Java SE concurrency utilities to the
+EE application environment specifics. The EE application server is
 responsible for the creation (and shutdown) of every instance of the EE
 Concurrency Utilities, and provide these to the applications, ready to
 use.
@@ -33,7 +33,7 @@ Configuration. To learn how to configure EE Concurrency Utilities please
 refer to link:Admin_Guide{outfilesuffix}#EE_Concurrency_Utilities_Configuration[EE Concurrency
 Utilities Configuration]. Additionally, the EE subsystem configuration
 also includes the configuration of which instance should be considered
-the default instance mandated by the Jakarta EE specification, and such
+the default instance mandated by the EE Platform specification, and such
 configuration is covered by
 link:Admin_Guide{outfilesuffix}#EE_Default_Bindings_Configuration[Default EE Bindings Configuration].
 
@@ -85,7 +85,7 @@ ContextService contextService = InitialContext.doLookup("java:comp/DefaultContex
 
 [NOTE]
 
-As mandated by the Jakarta EE specification, the default Context Service
+As mandated by the EE Platform specification, the default Context Service
 instance's JNDI name is `java:comp/DefaultContextService`.
 
 [[managed-thread-factory]]
@@ -94,11 +94,10 @@ instance's JNDI name is `java:comp/DefaultContextService`.
 The Managed Thread Factory (
 `jakarta.enterprise.concurrent.ManagedThreadFactory`) allows Java EE
 applications to create Java threads. It is an extension of Java SE's
-Thread Factory ( `java.util.concurrent.ThreadFactory`) adapted to the
-Jakarta EE platform specifics.
+Thread Factory ( `java.util.concurrent.ThreadFactory`) adapted to the EE platform specifics.
 
 Managed Thread Factory instances are managed by the application server,
-thus Jakarta EE applications are forbidden to invoke any lifecycle related
+thus EE applications are forbidden to invoke any lifecycle related
 method.
 
 In case the Managed Thread Factory is configured to use a Context
@@ -149,7 +148,7 @@ ManagedThreadFactory managedThreadFactory = InitialContext.doLookup("java:comp/D
 
 [NOTE]
 
-As mandated by the Jakarta EE specification, the default Managed Thread
+As mandated by the EE Platform specification, the default Managed Thread
 Factory instance's JNDI name is `java:comp/DefaultManagedThreadFactory`.
 
 [[managed-executor-service]]
@@ -159,11 +158,11 @@ The Managed Executor Service (
 `jakarta.enterprise.concurrent.ManagedExecutorService`) allows Java EE
 applications to submit tasks for asynchronous execution. It is an
 extension of Java SE's Executor Service (
-`java.util.concurrent.ExecutorService`) adapted to the Jakarta EE platform
+`java.util.concurrent.ExecutorService`) adapted to the EE platform
 requirements.
 
 Managed Executor Service instances are managed by the application
-server, thus Jakarta EE applications are forbidden to invoke any lifecycle
+server, thus EE applications are forbidden to invoke any lifecycle
 related method.
 
 In case the Managed Executor Service is configured to use a Context
@@ -209,7 +208,7 @@ ManagedExecutorService managedExecutorService = InitialContext.doLookup("java:co
 
 [NOTE]
 
-As mandated by the Jakarta EE specification, the default Managed Executor
+As mandated by the EE Platform specification, the default Managed Executor
 Service instance's JNDI name is
 `java:comp/DefaultManagedExecutorService`.
 
@@ -218,13 +217,13 @@ Service instance's JNDI name is
 
 The Managed Scheduled Executor Service (
 `jakarta.enterprise.concurrent.ManagedScheduledExecutorService`) allows
-Jakarta EE applications to schedule tasks for asynchronous execution. It is
+EE applications to schedule tasks for asynchronous execution. It is
 an extension of Java SE's Executor Service (
 `java.util.concurrent.ScheduledExecutorService`) adapted to the Java EE
 platform requirements.
 
 Managed Scheduled Executor Service instances are managed by the
-application server, thus Jakarta EE applications are forbidden to invoke
+application server, thus EE applications are forbidden to invoke
 any lifecycle related method.
 
 In case the Managed Scheduled Executor Service is configured to use a
@@ -270,6 +269,6 @@ ManagedScheduledExecutorService managedScheduledExecutorService = InitialContext
 
 [NOTE]
 
-As mandated by the Jakarta EE specification, the default Managed Scheduled
+As mandated by the EE Platform specification, the default Managed Scheduled
 Executor Service instance's JNDI name is
 `java:comp/DefaultManagedScheduledExecutorService`.

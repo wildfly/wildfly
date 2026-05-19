@@ -9,8 +9,8 @@ for additional information.
 
 Key Features
 ------------
-* Jakarta EE support
-* MicroProfile support
+* Jakarta specification support
+* MicroProfile specification support
 * Fast Startup
 * Small Footprint
 * Modular Design
@@ -25,7 +25,7 @@ https://wildfly.org/releases/
 
 Getting Started
 ---------------
-WildFly requires JDK 11 or later. For information regarding installation
+WildFly requires JDK 17 or later. For information regarding installation
 of the JDK, see http://www.oracle.com/technetwork/java/index.html
 
 WildFly has two modes of operation: Standalone and Domain. For more

@@ -52,7 +52,7 @@ When a test involves multiple subsystems, place it under the package for the spe
 
 == Document Non-Obvious Specification Requirements
 
-When testing behavior mandated by specifications but not immediately obvious, include comments explaining the requirement (e.g., "Verifies Jakarta EE X.Y.Z - Description of requirement").
+When testing behavior mandated by specifications but not immediately obvious, include comments explaining the requirement (e.g., "Verifies Jakarta Persistence X.Y.Z - Description of requirement").
 
 == Collocate Test Resources with Test Code
 

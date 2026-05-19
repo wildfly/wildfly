@@ -36,7 +36,7 @@ e.g. To set "bar" as the default cache of the "foo" container:
 /subsystem=infinispan/cache-container=foo:write-attribute(name=default-cache, value=bar)
 ----
 
-A cache container can be injected directly into Jakarta EE applications using the `@Resource` annotation, e.g.
+A cache container can be injected directly into EE applications using the `@Resource` annotation, e.g.
 
 [source,java,options="nowrap"]
 ----
@@ -565,9 +565,9 @@ e.g. To configure a non-blocking state transfer:
 For a complete list of state-transfer attributes, refer to the link:feature-pack/doc/reference/index.html[WildFly management model documentation^].
 
 
-==== Injecting a cache into Jakarta EE applications
+==== Injecting a cache into EE applications
 
-A cache can be injected directly into Jakarta EE applications using the `@Resource` annotation, e.g.
+A cache can be injected directly into EE applications using the `@Resource` annotation, e.g.
 
 [source,java,options="nowrap"]
 ----
@@ -615,7 +615,7 @@ run-batch
 ----
 
 Upon reload, this will register necessary services for the client.
-A HotRod client can be injected directly into Jakarta EE applications using the `@Resource` annotation.
+A HotRod client can be injected directly into EE applications using the `@Resource` annotation.
 
 [source,java,options="nowrap"]
 ----
