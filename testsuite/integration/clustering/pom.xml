@@ -495,9 +495,10 @@
                                 <error>ambiguous resource injection. Enable verbose output to see the locations.</error>
                                 <error>jakarta.naming.Context or InitialContext lookup. Enable verbose output to see the locations.</error>
                             </expected-errors>
-                            <expected-discovery>[ha][cdi, ee-integration, ejb, ejb-lite, infinispan, naming, servlet, web-passivation]==>ee-core-profile-server,ejb,ejb-dist-cache,infinispan,web-clustering,-ejb-local-cache</expected-discovery>
+                            <expected-discovery>[ha][cdi, ee-integration, ejb, ejb-lite, infinispan, mod_cluster, naming, servlet, web-passivation, web-server]==>ee-core-profile-server,ejb,ejb-dist-cache,infinispan,mod_cluster,web-clustering,-ejb-local-cache</expected-discovery>
                             <add-ons>
                                 <add-on>infinispan</add-on>
+                                <add-on>mod_cluster</add-on>
                             </add-ons>
                             <surefireExecutionForIncludedClasses>ts.surefire.clustering.microprofile</surefireExecutionForIncludedClasses>
                         </configuration>
@@ -1302,8 +1303,6 @@
                                     <excludes>
                                         <!-- Skip byteman tests -->
                                         <exclude>${test-group}/**/byteman/*TestCase.java</exclude>
-                                        <!-- Skip modcluster tests -->
-                                        <exclude>org/jboss/as/test/clustering/cluster/modcluster/*TestCase.java</exclude>
                                         <!-- Uses TopologyChangeListener EJB -->
                                         <exclude>org/jboss/as/test/clustering/cluster/affinity/RankedAffinityTestCase.java</exclude>
                                         <exclude>org/jboss/as/test/clustering/cluster/cdi/**</exclude>
@@ -1503,11 +1502,12 @@
                                         <error>ambiguous resource injection. Enable verbose output to see the locations.</error>
                                         <error>jakarta.naming.Context or InitialContext lookup. Enable verbose output to see the locations.</error>
                                     </expected-errors>
-                                    <expected-discovery>[ha][cdi, ee-integration, ejb, ejb-lite, infinispan, naming, servlet, web-passivation]==>ee-core-profile-server,ejb,ejb-dist-cache,infinispan,web-clustering,-ejb-local-cache</expected-discovery>
+                                    <expected-discovery>[ha][cdi, ee-integration, ejb, ejb-lite, infinispan, mod_cluster, naming, servlet, web-passivation, web-server]==>ee-core-profile-server,ejb,ejb-dist-cache,infinispan,mod_cluster,web-clustering,-ejb-local-cache</expected-discovery>
                                     <aggregate>wildfly-server</aggregate>
                                     <config-name>standalone-full-ha.xml</config-name>
                                     <add-ons>
                                         <add-on>infinispan</add-on>
+                                        <add-on>mod_cluster</add-on>
                                     </add-ons>
                                     <surefireExecutionForIncludedClasses>ts.surefire.clustering.microprofile</surefireExecutionForIncludedClasses>
                                 </configuration>
@@ -1555,11 +1555,12 @@
                                         <error>ambiguous resource injection. Enable verbose output to see the locations.</error>
                                         <error>jakarta.naming.Context or InitialContext lookup. Enable verbose output to see the locations.</error>
                                     </expected-errors>
-                                    <expected-discovery>[ha][cdi, ee-integration, ejb, ejb-lite, infinispan, naming, servlet, web-passivation]==>ee-core-profile-server,ejb,ejb-dist-cache,infinispan,web-clustering,-ejb-local-cache</expected-discovery>
+                                    <expected-discovery>[ha][cdi, ee-integration, ejb, ejb-lite, infinispan, mod_cluster, naming, servlet, web-passivation, web-server]==>ee-core-profile-server,ejb,ejb-dist-cache,infinispan,mod_cluster,web-clustering,-ejb-local-cache</expected-discovery>
                                     <aggregate>wildfly-server</aggregate>
                                     <config-name>standalone-ha.xml</config-name>
                                     <add-ons>
                                         <add-on>infinispan</add-on>
+                                        <add-on>mod_cluster</add-on>
                                     </add-ons>
                                     <surefireExecutionForIncludedClasses>ts.surefire.clustering.microprofile</surefireExecutionForIncludedClasses>
                                 </configuration>
