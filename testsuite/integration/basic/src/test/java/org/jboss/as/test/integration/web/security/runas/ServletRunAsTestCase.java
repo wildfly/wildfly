@@ -196,18 +196,26 @@ public class ServletRunAsTestCase {
     }
 
     /**
-     * Restart server for invoking HttpServlet.destroy() method during stopping server. It also hit Servlet for initialization
-     * of Servlet before server is restarted.
+     * Re-deploy the application so that {@link @ArquillianResource} URL can be resolved in the next step.
+     *
+     * @throws Exception
+     */
+    @Test
+    @InSequence(10)
+    public void redeployForStopServer() throws Exception {
+        deployer.deploy(DEPLOYMENT);
+    }
+
+    /**
+     * Hit Servlet for initialization before server is reloaded which invokes HttpServlet.destroy() method.
      *
      * @param url
      * @throws Exception
      */
     @Test
-    @InSequence(10)
+    @InSequence(11)
     @OperateOnDeployment(DEPLOYMENT)
     public void runDestroyMethodInStopServer(@ArquillianResource URL url) throws Exception {
-        deployer.deploy(DEPLOYMENT);
-
         URL servletUrl = new URL(url.toExternalForm() + RunAsAdminServlet.SERVLET_PATH.substring(1) + "?"
                 + Utils.encodeQueryParam(CallProtectedEjbServlet.FILE_PARAM, CORRECT_ROLE_AND_STOP_SERVER.getAbsolutePath()));
         Utils.makeCall(servletUrl.toURI(), HTTP_OK);
@@ -225,7 +233,7 @@ public class ServletRunAsTestCase {
      * @throws Exception
      */
     @Test
-    @InSequence(11)
+    @InSequence(12)
     public void checkDestroyMethodInStopServerWithCorrectRole() throws Exception {
         assertTrue("EJB invocation failed in destroy() method of Servlet which uses RunAs with correct role during stopping "
                         + "server.",
@@ -239,7 +247,7 @@ public class ServletRunAsTestCase {
      * @throws Exception
      */
     @Test
-    @InSequence(12)
+    @InSequence(13)
     public void checkDestroyMethodInStopServerWithIncorrectRole() throws Exception {
         assertTrue("EJB invocation did not failed in destroy() method of Servlet which uses RunAs with incorrect role "
                         + "during stopping server.",
