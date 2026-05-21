@@ -42,7 +42,7 @@ For xref:WildFly_Maven_Plugin_Guide{outfilesuffix}[`wildfly-maven-plugin`] users
 Galleon feature-pack location for the feature-pack is ``wildfly@maven(org.jboss.universe:community-universe)`` and the Maven coordinate is ``org.wildlfly:wildfly-galleon-pack``.
 
 The `wildfly` feature-pack depends on and adds "expansion" functionality beyond that provided by a separate standard WildFly `wildfly-ee` feature-pack. The
-Galleon feature-pack location for that feature-pack is ``wildfly-ee@maven(org.jboss.universe:community-universe)``, with Maven coordinate ``org.wildlfly:wildfly-galleon-pack``. Standard WildFly users who do not need the `wildfly` feature-pack's "expansion" functionality (e.g. MicroProfile) can directly use `wildfly-ee` instead.
+Galleon feature-pack location for that feature-pack is ``wildfly-ee@maven(org.jboss.universe:community-universe)``, with Maven coordinate ``org.wildlfly:wildfly-ee-galleon-pack``. Standard WildFly users who do not need the `wildfly` feature-pack's "expansion" functionality (e.g. MicroProfile) can directly use `wildfly-ee` instead.
 
 === BOMs
 
@@ -294,5 +294,3 @@ embedded broker is still supported. We've added to the $WILDFLY_HOME/docs/exampl
 * WildFly Preview provides the link:Admin_Guide{outfilesuffix}#Micrometer_Metrics[`micrometer` subsystem] in its out-of-the-box `standalone.xml`, `standalone-ha.xml`, `standalone-full.xml` and `standalone-full-ha.xml` configuration files, while standard WildFly instead provides the basic link:Admin_Guide{outfilesuffix}#MicroProfile_Metrics_SmallRye[`metrics` subsystem].
 * WildFly Preview includes a new xref:Admin_Guide.adoc#Feature_stability_levels[`preview` stability] `org.wildfly.extension.vertx` extension and its `vertx` subsystem, along with a new `vertx` Galleon layer so you can provision it in a slimmed server. This subsystem can be used to configure the Vert.x instance used by our OpenTelemetry integration.
 * The Hibernate ORM integration used by the link:Developer_Guide{outfilesuffix}#JPA_Reference_Guide[JPA subsystem's] Hibernate Search feature supports using outbox polling as a coordination strategy for automatic indexing.
-
-
