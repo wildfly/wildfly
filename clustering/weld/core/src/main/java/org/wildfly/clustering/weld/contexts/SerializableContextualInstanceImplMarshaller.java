@@ -7,7 +7,6 @@ package org.wildfly.clustering.weld.contexts;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
-import java.security.PrivilegedAction;
 
 import jakarta.enterprise.context.spi.Contextual;
 import jakarta.enterprise.context.spi.CreationalContext;
@@ -22,7 +21,6 @@ import org.jboss.weld.contexts.SerializableContextualInstanceImpl;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamMarshaller;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamReader;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamWriter;
-import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
  * @author Paul Ferraro
@@ -74,20 +72,13 @@ public class SerializableContextualInstanceImplMarshaller<C extends Contextual<I
         if (proxyClass != null) {
             Class<?> targetClass = proxyClass;
             ProxyInstantiator instantiator = Container.instance(contextual.getContextId()).services().get(ProxyInstantiator.class);
-            PrivilegedAction<I> action = new PrivilegedAction<>() {
-                @Override
-                public I run() {
-                    try {
-                        return (I) instantiator.newInstance(targetClass);
-                    } catch (InstantiationException | IllegalAccessException | NoSuchMethodException |
-                             InvocationTargetException e) {
-                        throw new IllegalStateException(e);
-                    }
+            try {
+                instance = (I) instantiator.newInstance(targetClass);
+                if (handler != null) {
+                    ((ProxyObject) instance).weld_setHandler(handler);
                 }
-            };
-            instance = WildFlySecurityManager.doUnchecked(action);
-            if (handler != null) {
-                ((ProxyObject) instance).weld_setHandler(handler);
+            } catch (InstantiationException | IllegalAccessException | NoSuchMethodException | InvocationTargetException e) {
+                throw new IllegalStateException(e);
             }
         }
         return new SerializableContextualInstanceImpl<>(contextual, instance, creationalContext);

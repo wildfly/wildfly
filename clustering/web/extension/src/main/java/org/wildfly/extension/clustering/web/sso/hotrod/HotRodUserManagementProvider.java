@@ -27,9 +27,10 @@ import org.wildfly.clustering.cache.infinispan.remote.transaction.RemoteTransact
 import org.wildfly.clustering.infinispan.client.service.HotRodServiceDescriptor;
 import org.wildfly.clustering.infinispan.client.service.RemoteCacheConfigurationServiceInstallerFactory;
 import org.wildfly.clustering.infinispan.client.service.RemoteCacheServiceInstallerFactory;
+import org.wildfly.clustering.marshalling.protostream.ImmutableSerializationContext;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamByteBufferMarshaller;
-import org.wildfly.clustering.marshalling.protostream.SerializationContextBuilder;
-import org.wildfly.clustering.marshalling.protostream.modules.ModuleClassLoaderMarshaller;
+import org.wildfly.clustering.marshalling.protostream.ProtoStreamConfiguration;
+import org.wildfly.clustering.marshalling.protostream.modules.ModuleClassResolver;
 import org.wildfly.clustering.server.service.BinaryServiceConfiguration;
 import org.wildfly.clustering.session.infinispan.remote.user.HotRodUserManagerFactory;
 import org.wildfly.clustering.session.user.UserManagerFactory;
@@ -74,7 +75,9 @@ public class HotRodUserManagementProvider implements DistributableUserManagement
     public Iterable<ServiceInstaller> getServiceInstallers(String name) {
         String templateName = this.configuration.getChildName();
         Module module = Module.forClass(HotRodUserManagerFactory.class);
-        Marshaller marshaller = new UserMarshaller(MediaTypes.WILDFLY_PROTOSTREAM, new ProtoStreamByteBufferMarshaller(SerializationContextBuilder.newInstance(new ModuleClassLoaderMarshaller(module)).load(module.getClassLoader()).build()));
+        ProtoStreamConfiguration config = ProtoStreamConfiguration.Builder.with(new ModuleClassResolver(module)).build();
+        ImmutableSerializationContext context = ImmutableSerializationContext.Builder.with(config).build();
+        Marshaller marshaller = new UserMarshaller(MediaTypes.WILDFLY_PROTOSTREAM, new ProtoStreamByteBufferMarshaller(context));
 
         Consumer<RemoteCacheConfigurationBuilder> configurator = new Consumer<>() {
             @Override

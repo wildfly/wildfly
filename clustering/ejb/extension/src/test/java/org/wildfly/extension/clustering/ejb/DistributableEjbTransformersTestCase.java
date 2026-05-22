@@ -9,6 +9,7 @@ import java.util.EnumSet;
 import java.util.List;
 
 import org.jboss.as.clustering.subsystem.AdditionalInitialization;
+import org.jboss.as.clustering.subsystem.WildFlyClusteringVersion;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
@@ -69,6 +70,7 @@ public class DistributableEjbTransformersTestCase extends AbstractSubsystemTest 
                     this.controllerVersion.createGAV("wildfly-clustering-ejb-spi"),
                     this.controllerVersion.createGAV("wildfly-clustering-infinispan-embedded-service"),
                     this.controllerVersion.createGAV("wildfly-clustering-marshalling-spi"),
+                    this.controllerVersion.createGAV("wildfly-clustering-marshalling-protostream"),
                     this.controllerVersion.createGAV("wildfly-clustering-service"),
             };
             case EAP_8_1_0 -> new String[] {
@@ -76,8 +78,10 @@ public class DistributableEjbTransformersTestCase extends AbstractSubsystemTest 
                     this.controllerVersion.createGAV("wildfly-clustering-common"),
                     this.controllerVersion.createGAV("wildfly-clustering-ejb-spi"),
                     this.controllerVersion.createGAV("wildfly-clustering-infinispan-embedded-service"),
+                    this.controllerVersion.createGAV("wildfly-clustering-marshalling-protostream"),
                     this.controllerVersion.createGAV("wildfly-clustering-server-service"),
                     this.controllerVersion.createCoreGAV("wildfly-subsystem"),
+                    WildFlyClusteringVersion.forVersion(this.controllerVersion).toGAV("wildfly-clustering-marshalling-protostream"),
             };
             default -> throw new IllegalArgumentException();
         };

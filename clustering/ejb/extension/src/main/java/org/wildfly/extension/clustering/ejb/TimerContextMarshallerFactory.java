@@ -11,9 +11,10 @@ import org.jboss.marshalling.ModularClassResolver;
 import org.jboss.modules.Module;
 import org.wildfly.clustering.marshalling.jboss.JBossByteBufferMarshaller;
 import org.wildfly.clustering.marshalling.jboss.MarshallingConfigurationBuilder;
+import org.wildfly.clustering.marshalling.protostream.ImmutableSerializationContext;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamByteBufferMarshaller;
-import org.wildfly.clustering.marshalling.protostream.SerializationContextBuilder;
-import org.wildfly.clustering.marshalling.protostream.modules.ModuleClassLoaderMarshaller;
+import org.wildfly.clustering.marshalling.protostream.ProtoStreamConfiguration;
+import org.wildfly.clustering.marshalling.protostream.modules.ModuleClassResolver;
 import org.wildfly.clustering.marshalling.ByteBufferMarshaller;
 
 /**
@@ -31,7 +32,9 @@ public enum TimerContextMarshallerFactory implements Function<Module, ByteBuffer
     PROTOSTREAM() {
         @Override
         public ByteBufferMarshaller apply(Module module) {
-            return new ProtoStreamByteBufferMarshaller(SerializationContextBuilder.newInstance(new ModuleClassLoaderMarshaller(module.getModuleLoader())).load(module.getClassLoader()).build());
+            ProtoStreamConfiguration configuration = ProtoStreamConfiguration.Builder.with(new ModuleClassResolver(module)).build();
+            ImmutableSerializationContext context = ImmutableSerializationContext.Builder.with(configuration).build();
+            return new ProtoStreamByteBufferMarshaller(context);
         }
     },
     ;
