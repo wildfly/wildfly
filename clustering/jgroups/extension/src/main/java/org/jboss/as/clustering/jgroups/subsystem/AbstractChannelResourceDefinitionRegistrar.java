@@ -144,7 +144,7 @@ public abstract class AbstractChannelResourceDefinitionRegistrar<C extends Chann
                                 addOperationTransformer.apply(handler).execute(context, operation);
 
                                 // Register runtime resources
-                                if (context.isDefaultRequiresRuntime()) {
+                                if (context.isDefaultRequiresRuntime() && AbstractChannelResourceDefinitionRegistrar.this.hasRuntimeResources()) {
                                     Resource resource = context.readResource(PathAddress.EMPTY_ADDRESS);
 
                                     context.addStep(new OperationStepHandler() {
@@ -311,6 +311,10 @@ public abstract class AbstractChannelResourceDefinitionRegistrar<C extends Chann
         installers.add(new BinderServiceInstaller(JGroupsBindingFactory.CHANNEL_FACTORY.apply(name), context.getCapabilityServiceName(ForkChannelFactory.SERVICE_DESCRIPTOR, name)));
 
         return ResourceServiceInstaller.combine(installers);
+    }
+
+    public boolean hasRuntimeResources() {
+        return true;
     }
 
     /*

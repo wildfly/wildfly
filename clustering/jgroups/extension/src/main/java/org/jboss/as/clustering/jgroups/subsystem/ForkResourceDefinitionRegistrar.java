@@ -146,6 +146,11 @@ public class ForkResourceDefinitionRegistrar extends AbstractChannelResourceDefi
     }
 
     @Override
+    public boolean hasRuntimeResources() {
+        return false;
+    }
+
+    @Override
     public ResourceDescriptor.Builder apply(ResourceDescriptor.Builder builder) {
         return super.apply(builder).addResourceCapabilityReference(CHANNEL_FACTORY_REFERENCE);
     }
