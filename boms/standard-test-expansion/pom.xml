@@ -258,7 +258,7 @@
             <dependency>
                 <groupId>org.jboss.weld.se</groupId>
                 <artifactId>weld-se-core</artifactId>
-                <version>${version.org.jboss.weld.weld}</version>
+                <version>${version.org.jboss.weld.se.weld-se-core}</version>
                 <scope>test</scope>
             </dependency>
 

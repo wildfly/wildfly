@@ -268,7 +268,7 @@
             <dependency>
                 <groupId>org.jboss.resteasy</groupId>
                 <artifactId>resteasy-client-utils</artifactId>
-                <version>${version.org.jboss.resteasy}</version>
+                <version>${version.org.jboss.resteasy.client-utils}</version>
                 <scope>test</scope>
             </dependency>
             <dependency>
