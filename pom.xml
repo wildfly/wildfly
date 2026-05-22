@@ -11,6 +11,7 @@
         <artifactId>jboss-parent</artifactId>
         <version>51</version>
         <!-- The empty relativePath makes Maven lookup it in the repository. Missing tag default is ../pom.xml. -->
+		<!-- meaningless change to test ci -->
         <relativePath/>
     </parent>
 
