@@ -473,7 +473,7 @@
         <version.jakarta.servlet.jsp.jstl.jakarta-servlet-jsp-jstl-api>3.0.2</version.jakarta.servlet.jsp.jstl.jakarta-servlet-jsp-jstl-api>
         <version.jakarta.transaction.jakarta-transaction-api>2.0.1</version.jakarta.transaction.jakarta-transaction-api>
         <version.jakarta.xml.bind.jakarta-xml-bind-api>4.0.5</version.jakarta.xml.bind.jakarta-xml-bind-api>
-        <version.jboss.jaxbintros>2.0.1</version.jboss.jaxbintros>
+        <version.jboss.jaxbintros>2.1.0.Final</version.jboss.jaxbintros>
         <version.joda-time>2.12.7</version.joda-time>
         <version.net.jcip>1.0</version.net.jcip>
         <version.net.shibboleth.utilities.java-support>8.4.2</version.net.shibboleth.utilities.java-support>
@@ -552,12 +552,12 @@
         <version.org.jboss.universe.community>1.2.2.Final</version.org.jboss.universe.community>
         <version.org.jboss.universe.producer.wildfly>1.4.1.Final</version.org.jboss.universe.producer.wildfly>
         <version.org.jboss.weld.se.weld-se-core>6.0.4.Final</version.org.jboss.weld.se.weld-se-core>
-        <version.org.jboss.ws.api>3.0.0.Final</version.org.jboss.ws.api>
-        <version.org.jboss.ws.common>5.1.0.Final</version.org.jboss.ws.common>
-        <version.org.jboss.ws.common.tools>2.1.0.Final</version.org.jboss.ws.common.tools>
-        <version.org.jboss.ws.cxf>7.3.8.Final</version.org.jboss.ws.cxf>
-        <version.org.jboss.ws.jaxws-undertow-httpspi>2.0.0.Final</version.org.jboss.ws.jaxws-undertow-httpspi>
-        <version.org.jboss.ws.spi>5.0.0.Final</version.org.jboss.ws.spi>
+        <version.org.jboss.ws.api>3.1.0.Final</version.org.jboss.ws.api>
+        <version.org.jboss.ws.common>5.2.0.Final</version.org.jboss.ws.common>
+        <version.org.jboss.ws.common.tools>2.2.0.Final</version.org.jboss.ws.common.tools>
+        <version.org.jboss.ws.cxf>7.4.0.Final</version.org.jboss.ws.cxf>
+        <version.org.jboss.ws.jaxws-undertow-httpspi>3.0.1.Final</version.org.jboss.ws.jaxws-undertow-httpspi>
+        <version.org.jboss.ws.spi>5.1.0.Final</version.org.jboss.ws.spi>
         <version.org.jboss.xnio.netty.netty-xnio-transport>0.1.10.Final</version.org.jboss.xnio.netty.netty-xnio-transport>
         <version.org.jctools.jctools-core>4.0.6</version.org.jctools.jctools-core>
         <version.org.jgroups>5.5.5.Final</version.org.jgroups>
