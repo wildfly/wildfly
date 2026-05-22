@@ -10,10 +10,10 @@ import org.jboss.msc.service.ServiceNotFoundException;
 import org.jboss.msc.service.StartException;
 import org.kohsuke.MetaInfServices;
 import org.wildfly.clustering.marshalling.protostream.AbstractSerializationContextInitializer;
-import org.wildfly.clustering.marshalling.protostream.ExceptionMarshaller;
 import org.wildfly.clustering.marshalling.protostream.Scalar;
 import org.wildfly.clustering.marshalling.protostream.SerializationContext;
 import org.wildfly.clustering.marshalling.protostream.SerializationContextInitializer;
+import org.wildfly.clustering.marshalling.protostream.lang.ExceptionMarshaller;
 import org.wildfly.common.function.Functions;
 
 /**

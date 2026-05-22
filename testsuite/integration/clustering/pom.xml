@@ -36,10 +36,10 @@
         <surefire.jpda.args.node4/>
 
         <!-- Common infinispan server configuration -->
-        <version.org.infinispan.server>${version.org.infinispan}</version.org.infinispan.server>
+        <version.org.infinispan.server>16.0.14</version.org.infinispan.server>
         <version.org.infinispan.server.driver>${version.org.infinispan}</version.org.infinispan.server.driver>
         <infinispan.server.home.override/>
-        <infinispan.server.profile.override/>
+        <infinispan.server.profile.override>infinispan-16.0.xml</infinispan.server.profile.override>
 
         <surefire.forked.process.timeout>5400</surefire.forked.process.timeout>
         <test-group>org/jboss/as/test/clustering/cluster</test-group>
@@ -309,8 +309,7 @@
         </dependency>
         <dependency>
             <groupId>org.infinispan</groupId>
-            <artifactId>infinispan-server-testdriver-junit5</artifactId>
-            <version>${version.org.infinispan.server.driver}</version>
+            <artifactId>infinispan-server-testdriver-core</artifactId>
             <scope>test</scope>
             <exclusions>
                 <!-- Avoids issue on deploy - "Caused by: org.jboss.as.cli.CommandRegistry$RegisterHandlerException: The following command names could not be registered since they conflict with the already registered ones: cd" -->

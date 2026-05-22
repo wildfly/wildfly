@@ -28,7 +28,12 @@ public interface LegacyServiceProviderRegistry<T, A extends Comparable<A>, M ext
 
     @Override
     default org.wildfly.clustering.provider.ServiceProviderRegistration<T> register(T service) {
-        return this.register(service, null);
+        return this.register(service, new org.wildfly.clustering.provider.ServiceProviderRegistration.Listener() {
+            @Override
+            public void providersChanged(Set<Node> nodes) {
+                // Do nothing
+            }
+        });
     }
 
     @Override

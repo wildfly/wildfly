@@ -7,6 +7,7 @@ package org.wildfly.clustering.weld.injection;
 
 import org.jboss.weld.injection.EmptyInjectionPoint;
 import org.jboss.weld.injection.InjectionPointFactory;
+import org.jboss.weld.injection.MethodInjectionPoint.MethodInjectionPointType;
 import org.kohsuke.MetaInfServices;
 import org.wildfly.clustering.marshalling.protostream.AbstractSerializationContextInitializer;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamMarshaller;
@@ -30,5 +31,6 @@ public class InjectionSerializationContextInitializer extends AbstractSerializat
         context.registerMarshaller(new FieldInjectionPointMarshaller<>());
         context.registerMarshaller(new MethodInjectionPointMarshaller<>());
         context.registerMarshaller(new ParameterInjectionPointMarshaller<>());
+        context.registerMarshaller(ProtoStreamMarshaller.of(MethodInjectionPointType.class));
     }
 }
