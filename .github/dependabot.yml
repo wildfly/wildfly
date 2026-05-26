@@ -19,6 +19,9 @@ updates:
         update-types: ['version-update:semver-major', 'version-update:semver-minor']
       # WildFly Clustering updates are usually non-trivial
       - dependency-name: 'org.wildfly.clustering:*'
+      # Dependabot doesn't understand how to upgrade Hibernate ORM correctly, 
+      # and when we do we want to check other components where we align with what ORM uses.
+      - dependency-name: 'org.hibernate.orm:*'
       # Dependencies exclusive to Hibernate Search:
       # we'll only upgrade those when we upgrade to a newer version of Hibernate Search.
       - dependency-name: 'org.elasticsearch.client:*'
