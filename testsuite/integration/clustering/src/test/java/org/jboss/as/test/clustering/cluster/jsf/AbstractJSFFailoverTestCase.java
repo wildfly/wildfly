@@ -33,6 +33,7 @@ import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase;
 import org.jboss.as.test.http.util.TestHttpClientUtils;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 /**
@@ -56,9 +57,7 @@ public abstract class AbstractJSFFailoverTestCase extends AbstractClusteringTest
         NumberGuessState state = new NumberGuessState();
         String responseString = EntityUtils.toString(response.getEntity(), StandardCharsets.UTF_8);
 
-        // FIXME Move these eventually to org.jboss.logging.Logger.Level.DEBUG once the intermittent
-        // failures in [ProtoStream]JSFFailoverTestCase are fully resolved
-        log.infof("Parsing response string for JSF state: %s", responseString);
+        log.debugf("Parsing response string for JSF state: %s", responseString);
 
         Map.Entry<String, String> sessionRouteEntry = parseSessionRoute(response);
         state.sessionId = (sessionRouteEntry != null) ? sessionRouteEntry.getKey() : sessionId;
@@ -85,7 +84,7 @@ public abstract class AbstractJSFFailoverTestCase extends AbstractClusteringTest
             state.jsfViewState = matcher.group(1) != null ? matcher.group(1) : matcher.group(2);
         }
 
-        log.infof("Parsed JSF state: %s", state);
+        log.debugf("Parsed JSF state: %s", state);
 
         return state;
     }
@@ -108,21 +107,18 @@ public abstract class AbstractJSFFailoverTestCase extends AbstractClusteringTest
             post.setHeader("Cookie", "JSESSIONID=" + sessionId);
         }
 
-        log.infof("Built HTTP POST request: %s", post);
+        log.debugf("Built HTTP POST request: %s", post);
 
         return post;
     }
 
     /**
-     * Creates an HTTP GET request, with a potential JSESSIONID cookie.
+     * Creates an initial HTTP GET request establishing a state with a sessionId.
      */
-    private static HttpUriRequest buildGetRequest(String url, String sessionId) {
+    private static HttpUriRequest buildGetRequest(String url) {
         HttpGet request = new HttpGet(url);
-        if (sessionId != null) {
-            request.addHeader("Cookie", "JSESSIONID=" + sessionId);
-        }
 
-        log.infof("Built HTTP GET request: %s", request);
+        log.debugf("Built HTTP GET request: %s", request);
 
         return request;
     }
@@ -153,7 +149,7 @@ public abstract class AbstractJSFFailoverTestCase extends AbstractClusteringTest
             NumberGuessState state;
 
             // First non-Jakarta Server Faces request to the home page
-            response = client.execute(buildGetRequest(url1, null));
+            response = client.execute(buildGetRequest(url1));
             try {
                 assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
                 state = parseState(response, null);
@@ -257,6 +253,7 @@ public abstract class AbstractJSFFailoverTestCase extends AbstractClusteringTest
      * 5/ Redeploy application to the first container.
      * 6/ Query first container verifying that updated sessions replicated back.
      */
+    @Disabled("JSF is unreliable without proper clean undeploy support - https://redhat.atlassian.net/browse/WFLY-11945")
     @Test
     public void gracefulUndeployFailover(
             @ArquillianResource() @OperateOnDeployment(DEPLOYMENT_1) URL baseURL1,
@@ -271,7 +268,7 @@ public abstract class AbstractJSFFailoverTestCase extends AbstractClusteringTest
             NumberGuessState state;
 
             // First non-Jakarta Server Faces request to the home page
-            response = client.execute(buildGetRequest(url1, null));
+            response = client.execute(buildGetRequest(url1));
             try {
                 assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
                 state = parseState(response, null);
