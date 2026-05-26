@@ -547,7 +547,7 @@
              in boms/legacy-ee is inadequate. So we'll declare the value here and reference it in boms/legacy-ee. -->
         <version.org.hibernate.legacy>6.6.49.Final</version.org.hibernate.legacy>
         <version.org.hibernate.models>1.1.1</version.org.hibernate.models>
-        <version.org.hibernate.search>8.3.0.Final</version.org.hibernate.search>
+        <version.org.hibernate.search>8.3.2.Final</version.org.hibernate.search>
         <version.org.hibernate.validator>9.1.0.Final</version.org.hibernate.validator>
         <version.org.hornetq>2.4.11.Final</version.org.hornetq>
         <version.org.infinispan>16.0.11</version.org.infinispan>
