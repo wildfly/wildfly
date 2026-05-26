@@ -64,7 +64,7 @@ final class HttpInvokerHostService implements Service {
         }
 
         SessionCookieConfig sessionConfig = new SessionCookieConfig();
-        sessionConfig.setPath(this.path);
+        sessionConfig.setPath(normalizePath(this.path));
         Server server = this.host.get().getServer();
         ServletContainerService container = server.getServletContainer();
         CookieConfig affinityCookeConfig = container.getAffinityCookieConfig();
@@ -146,4 +146,17 @@ final class HttpInvokerHostService implements Service {
     public String getPath() {
         return path;
     }
+
+    /**
+     * Normalizes the path to ensure it starts with a leading slash.
+     * This is required for proper cookie path matching in the HTTP client.
+     *
+     * @param path the path to normalize
+     * @return the normalized path with a leading slash, or {@code null} if the input path was null
+     */
+    static String normalizePath(String path) {
+        if (path == null) return null;
+        return path.startsWith("/") ? path : "/" + path;
+    }
 }
+
