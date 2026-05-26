@@ -49,5 +49,6 @@
 
         <!-- Not provided in standard WildFly -->
         <package name="org.wildfly.deployment.transformation"/>
+        <package name=".installation" />
     </packages>
 </config>

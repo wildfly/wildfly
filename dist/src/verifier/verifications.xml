@@ -21,6 +21,7 @@
    11) no .galleon/history dir exists
    12) the .installation dir exists and contains channel metadata
    13) version.txt exists
+   14) Verify that installation manager helper files are provisioned at .installation directory
 -->
   <files>
     <file>
@@ -101,11 +102,29 @@
       <exists>true</exists>
     </file>
     <!-- end of (#12) -->
-	<!-- start of (#13) -->
+    <!-- start of (#13) -->
     <file>
       <location>target/${latest.server.output.dir}/version.txt</location>
       <exists>true</exists>
     </file>
     <!-- end of (#13) -->
+    <!-- start of (#14) -->
+    <file>
+      <location>target/${latest.server.output.dir}/.installation/_installation-manager_helper.sh</location>
+      <exists>true</exists>
+    </file>
+    <file>
+      <location>target/${latest.server.output.dir}/.installation/_installation-manager_helper.bat</location>
+      <exists>true</exists>
+    </file>
+    <file>
+      <location>target/${latest.server.output.dir}/.installation/_installation-manager_helper.ps1</location>
+      <exists>true</exists>
+    </file>
+    <file>
+      <location>target/${latest.server.output.dir}/.installation/_installation-manager_helper.properties</location>
+      <exists>true</exists>
+    </file>
+    <!-- end of (#14) -->
   </files>
 </verifications>
