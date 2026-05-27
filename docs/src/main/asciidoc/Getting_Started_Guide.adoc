@@ -159,8 +159,8 @@ WildFly {wildflyVersion} also provides support for MicroProfile technologies. Th
 [[requirements]]
 == Requirements
 
-* Java SE {min.java.version} or later. We recommend that you use the latest available update
-of the current long-term support Java release, Java SE {recommended.java.version}. For the WildFly EE 10 variant, Java SE {recommended.java.version.legacy} is recommended.
+* Java SE {min-java-version} or later. We recommend that you use the latest available update
+of the current long-term support Java release, Java SE {recommended-java-version}. For the WildFly EE 10 variant, Java SE {recommended-java-version-legacy} is recommended.
 
 
 [[installation-options]]
