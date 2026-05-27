@@ -18,7 +18,9 @@ import org.infinispan.client.hotrod.configuration.Configuration;
 import org.infinispan.client.hotrod.configuration.RemoteCacheConfiguration;
 import org.infinispan.commons.dataconversion.MediaType;
 import org.infinispan.commons.marshall.Marshaller;
+import org.infinispan.commons.marshall.ProtoStreamMarshaller;
 import org.infinispan.protostream.GeneratedSchema;
+import org.infinispan.protostream.SerializationContext;
 import org.infinispan.protostream.SerializationContextInitializer;
 import org.jboss.as.clustering.infinispan.logging.InfinispanLogger;
 import org.jboss.as.clustering.infinispan.marshalling.UserMarshallerFactory;
@@ -73,6 +75,9 @@ public class ManagedRemoteCacheContainer extends RemoteCacheContainerDecorator i
                     // If this is a protostream marshaller, additionally auto-register deployment-specific schemas with server
                     if (marshaller.mediaType().equals(MediaType.APPLICATION_PROTOSTREAM)) {
                         RemoteSchemasAdmin admin = this.container.administration().schemas();
+                        // Also register schemas in the container-level serialization context for query support
+                        ProtoStreamMarshaller containerMarshaller = (ProtoStreamMarshaller) this.container.getMarshallerRegistry().getMarshaller(ProtoStreamMarshaller.class);
+                        SerializationContext containerContext = (containerMarshaller != null) ? containerMarshaller.getSerializationContext() : null;
                         for (SerializationContextInitializer initializer : ServiceLoader.load(SerializationContextInitializer.class, loader)) {
                             if (initializer instanceof GeneratedSchema schema) {
                                 if (WildFlySecurityManager.getClassLoaderPrivileged(schema.getClass()) == loader) {
@@ -81,6 +86,10 @@ public class ManagedRemoteCacheContainer extends RemoteCacheContainerDecorator i
                                         InfinispanLogger.ROOT_LOGGER.warn(result.getError());
                                     } else {
                                         stopTasks.add(() -> admin.remove(schema.getName()));
+                                    }
+                                    if (containerContext != null) {
+                                        schema.registerSchema(containerContext);
+                                        schema.registerMarshallers(containerContext);
                                     }
                                 }
                             }
