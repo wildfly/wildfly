@@ -36,11 +36,16 @@
     </properties>
 
     <!--
-    Compile-time dependencies upon anything  in the AS7 runtime
+    Compile-time dependencies upon anything in the server runtime
     are allowed in this section
     -->
 
     <dependencies>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <scope>test</scope>
+        </dependency>
         <dependency>
             <groupId>org.wildfly.core</groupId>
             <artifactId>wildfly-core-testsuite-shared</artifactId>
