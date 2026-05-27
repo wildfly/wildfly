@@ -168,14 +168,14 @@ public enum ElytronOidcSubsystemSchema implements PersistentSubsystemSchema<Elyt
             Stream.of(new SimpleAttributeDefinition[] {PROVIDER_JWT_CLAIMS_TYP}).forEach(attribute -> providerDefinitionBuilder.addAttribute(attribute, SIMPLE_ATTRIBUTE_PARSER, SIMPLE_ATTRIBUTE_MARSHALLER));
         }
 
-        if (this.since(VERSION_3_0_PREVIEW) && this.enables(AUTHENTICATION_REQUEST_FORMAT)) {
+        if ((this.since(VERSION_3_0_PREVIEW) || this.since(VERSION_2_0_COMMUNITY)) && this.enables(AUTHENTICATION_REQUEST_FORMAT)) {
             Stream.of(requestObjectAttributes).forEach(attribute -> secureDeploymentDefinitionBuilder.addAttribute(attribute, SIMPLE_ATTRIBUTE_PARSER, SIMPLE_ATTRIBUTE_MARSHALLER));
             Stream.of(requestObjectAttributes).forEach(attribute -> secureServerDefinitionBuilder.addAttribute(attribute, SIMPLE_ATTRIBUTE_PARSER, SIMPLE_ATTRIBUTE_MARSHALLER));
             Stream.of(requestObjectAttributes).forEach(attribute -> realmDefinitionBuilder.addAttribute(attribute, SIMPLE_ATTRIBUTE_PARSER, SIMPLE_ATTRIBUTE_MARSHALLER));
             Stream.of(requestObjectAttributes).forEach(attribute -> providerDefinitionBuilder.addAttribute(attribute, SIMPLE_ATTRIBUTE_PARSER, SIMPLE_ATTRIBUTE_MARSHALLER));
         }
 
-        if (this.since(VERSION_2_0_PREVIEW) && this.enables(SCOPE)) {
+        if ((this.since(VERSION_2_0_PREVIEW) || this.since(VERSION_2_0_COMMUNITY)) && this.enables(SCOPE)) {
             secureDeploymentDefinitionBuilder.addAttribute(SCOPE, SIMPLE_ATTRIBUTE_PARSER, SIMPLE_ATTRIBUTE_MARSHALLER);
             secureServerDefinitionBuilder.addAttribute(SCOPE, SIMPLE_ATTRIBUTE_PARSER, SIMPLE_ATTRIBUTE_MARSHALLER);
         }
@@ -229,3 +229,4 @@ public enum ElytronOidcSubsystemSchema implements PersistentSubsystemSchema<Elyt
         }
     }
 }
+

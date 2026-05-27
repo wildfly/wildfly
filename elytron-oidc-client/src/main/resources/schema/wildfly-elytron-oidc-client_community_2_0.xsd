@@ -1,16 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
 <!--
   ~ Copyright The WildFly Authors
   ~ SPDX-License-Identifier: Apache-2.0
   -->
 
+
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
-            targetNamespace="urn:wildfly:elytron-oidc-client:community:2.0"
-            xmlns="urn:wildfly:elytron-oidc-client:community:2.0"
-            elementFormDefault="qualified"
-            attributeFormDefault="unqualified"
-            version="1.0">
+           targetNamespace="urn:wildfly:elytron-oidc-client:community:2.0"
+           xmlns="urn:wildfly:elytron-oidc-client:community:2.0"
+           elementFormDefault="qualified"
+           attributeFormDefault="unqualified"
+           version="1.0">
 
     <!-- The subsystem root element -->
     <xs:element name="subsystem" type="subsystem-type"/>
@@ -60,6 +60,15 @@
 
     <xs:complexType name="realm-type">
         <xs:all>
+            <xs:element name="authentication-request-format" type="xs:string" minOccurs="0" maxOccurs="1">
+                <xs:annotation>
+                    <xs:documentation>
+                        <![CDATA[
+                        The format to use for specifying query parameters in authentication request.
+                        ]]>
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
             <xs:element name="cors-allowed-headers" type="xs:string" minOccurs="0" maxOccurs="1">
                 <xs:annotation>
                     <xs:documentation>
@@ -89,6 +98,53 @@
                     </xs:documentation>
                 </xs:annotation>
             </xs:element>
+            <xs:element name="request-object-signing-keystore-file" type="xs:string" minOccurs="0" maxOccurs="1">
+                <xs:annotation>
+                    <xs:documentation>
+                        <![CDATA[
+                        The path to the client keystore to use when signing the request object.
+                        This is required if signing algorithm for request object is indicated.
+                        ]]>
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="request-object-signing-keystore-password" type="xs:string" minOccurs="0" maxOccurs="1">
+                <xs:annotation>
+                    <xs:documentation>
+                        <![CDATA[
+                        The password for the keystore used to sign the request object.
+                        This is required if 'request-object-signing-keystore-file` has been specified.
+                        ]]>
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="request-object-signing-keystore-type" type="xs:string" minOccurs="0" maxOccurs="1">
+                <xs:annotation>
+                    <xs:documentation>
+                        <![CDATA[
+                        The client keystore type used to specify the client key pair used to sign request objects.
+                        ]]>
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="request-object-signing-key-password" type="xs:string" minOccurs="0" maxOccurs="1">
+                <xs:annotation>
+                    <xs:documentation>
+                        <![CDATA[
+                        The password for the client key. This is required if 'request-object-signing-keystore-file` has been specified.
+                        ]]>
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="request-object-signing-key-alias" type="xs:string" minOccurs="0" maxOccurs="1">
+                <xs:annotation>
+                    <xs:documentation>
+                        <![CDATA[
+                        The client key alias when a key pair is used to sign or encrypt request objects.
+                        ]]>
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
             <xs:element name="truststore" type="xs:string" minOccurs="0" maxOccurs="1">
                 <xs:annotation>
                     <xs:documentation>
@@ -104,6 +160,38 @@
                     <xs:documentation>
                         <![CDATA[
                         The password for the truststore.
+                        ]]>
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="request-object-encryption-enc-value" type="xs:string" minOccurs="0" maxOccurs="1">
+                <xs:annotation>
+                    <xs:documentation>
+                        <![CDATA[
+                        The content encryption algorithm used to encrypt the request object. The default value of this parameter
+                        is null, which indicates that the request object will not be encrypted. The `request-object-encryption-alg-value`
+                        attribute must be set along with this attribute to encrypt the request object.
+                        ]]>
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="request-object-encryption-alg-value" type="xs:string" minOccurs="0" maxOccurs="1">
+                <xs:annotation>
+                    <xs:documentation>
+                        <![CDATA[
+                        The encryption algorithm used to encrypt the request object. The default value of this parameter
+                        is null, which indicates that the request object will not be encrypted. The `request-object-encryption-enc-value`
+                        attribute must be set along with this attribute to encrypt the request object.
+                        ]]>
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="request-object-signing-algorithm" type="xs:string" minOccurs="0" maxOccurs="1">
+                <xs:annotation>
+                    <xs:documentation>
+                        <![CDATA[
+                        The algorithm used to sign the request object. The default value of this attribute is
+                        "none", indicating that the request object will be sent as a plain text.
                         ]]>
                     </xs:documentation>
                 </xs:annotation>
@@ -391,6 +479,15 @@
 
     <xs:complexType name="provider-type">
         <xs:all>
+            <xs:element name="authentication-request-format" type="xs:string" minOccurs="0" maxOccurs="1">
+                <xs:annotation>
+                    <xs:documentation>
+                        <![CDATA[
+                        The format to use for specifying query parameters in authentication request.
+                        ]]>
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
             <xs:element name="cors-allowed-headers" type="xs:string" minOccurs="0" maxOccurs="1">
                 <xs:annotation>
                     <xs:documentation>
@@ -420,6 +517,53 @@
                     </xs:documentation>
                 </xs:annotation>
             </xs:element>
+            <xs:element name="request-object-signing-keystore-file" type="xs:string" minOccurs="0" maxOccurs="1">
+                <xs:annotation>
+                    <xs:documentation>
+                        <![CDATA[
+                        The path to the client keystore to use when signing the request object.
+                        This is required if signing algorithm for request object is indicated.
+                        ]]>
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="request-object-signing-keystore-password" type="xs:string" minOccurs="0" maxOccurs="1">
+                <xs:annotation>
+                    <xs:documentation>
+                        <![CDATA[
+                        The password for the keystore used to sign the request object.
+                        This is required if 'request-object-signing-keystore-file` has been specified.
+                        ]]>
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="request-object-signing-keystore-type" type="xs:string" minOccurs="0" maxOccurs="1">
+                <xs:annotation>
+                    <xs:documentation>
+                        <![CDATA[
+                        The client keystore type used to specify the client key pair used to sign request objects.
+                        ]]>
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="request-object-signing-key-password" type="xs:string" minOccurs="0" maxOccurs="1">
+                <xs:annotation>
+                    <xs:documentation>
+                        <![CDATA[
+                        The password for the client key. This is required if 'request-object-signing-keystore-file` has been specified.
+                        ]]>
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="request-object-signing-key-alias" type="xs:string" minOccurs="0" maxOccurs="1">
+                <xs:annotation>
+                    <xs:documentation>
+                        <![CDATA[
+                        The client key alias when a key pair is used to sign or encrypt request objects.
+                        ]]>
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
             <xs:element name="truststore" type="xs:string" minOccurs="0" maxOccurs="1">
                 <xs:annotation>
                     <xs:documentation>
@@ -435,6 +579,38 @@
                     <xs:documentation>
                         <![CDATA[
                         The password for the truststore.
+                        ]]>
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="request-object-encryption-enc-value" type="xs:string" minOccurs="0" maxOccurs="1">
+                <xs:annotation>
+                    <xs:documentation>
+                        <![CDATA[
+                        The content encryption algorithm used to encrypt the request object. The default value of this parameter
+                        is null, which indicates that the request object will not be encrypted. The `request-object-encryption-alg-value`
+                        attribute must be set along with this attribute to encrypt the request object.
+                        ]]>
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="request-object-encryption-alg-value" type="xs:string" minOccurs="0" maxOccurs="1">
+                <xs:annotation>
+                    <xs:documentation>
+                        <![CDATA[
+                        The encryption algorithm used to encrypt the request object. The default value of this parameter
+                        is null, which indicates that the request object will not be encrypted. The `request-object-encryption-enc-value`
+                        attribute must be set along with this attribute to encrypt the request object.
+                        ]]>
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="request-object-signing-algorithm" type="xs:string" minOccurs="0" maxOccurs="1">
+                <xs:annotation>
+                    <xs:documentation>
+                        <![CDATA[
+                        The algorithm used to sign the request object. The default value of this attribute is
+                        "none", indicating that the request object will be sent as a plain text.
                         ]]>
                     </xs:documentation>
                 </xs:annotation>
@@ -722,6 +898,15 @@
 
     <xs:complexType name="secure-deployment-type">
         <xs:all>
+            <xs:element name="authentication-request-format" type="xs:string" minOccurs="0" maxOccurs="1">
+                <xs:annotation>
+                    <xs:documentation>
+                        <![CDATA[
+                        The format to use for specifying query parameters in authentication request.
+                        ]]>
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
             <xs:element name="client-keystore-password" type="xs:string" minOccurs="0" maxOccurs="1">
                 <xs:annotation>
                     <xs:documentation>
@@ -736,6 +921,53 @@
                     <xs:documentation>
                         <![CDATA[
                         The path to the client keystore to use when communicating with the OpenID provider over HTTPS. This is optional.
+                        ]]>
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="request-object-signing-keystore-file" type="xs:string" minOccurs="0" maxOccurs="1">
+                <xs:annotation>
+                    <xs:documentation>
+                        <![CDATA[
+                        The path to the client keystore to use when signing the request object.
+                        This is required if signing algorithm for request object is indicated.
+                        ]]>
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="request-object-signing-keystore-password" type="xs:string" minOccurs="0" maxOccurs="1">
+                <xs:annotation>
+                    <xs:documentation>
+                        <![CDATA[
+                        The password for the keystore used to sign the request object.
+                        This is required if 'request-object-signing-keystore-file` has been specified.
+                        ]]>
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="request-object-signing-keystore-type" type="xs:string" minOccurs="0" maxOccurs="1">
+                <xs:annotation>
+                    <xs:documentation>
+                        <![CDATA[
+                        The client keystore type used to specify the client key pair used to sign request objects.
+                        ]]>
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="request-object-signing-key-password" type="xs:string" minOccurs="0" maxOccurs="1">
+                <xs:annotation>
+                    <xs:documentation>
+                        <![CDATA[
+                        The password for the client key. This is required if 'request-object-signing-keystore-file` has been specified.
+                        ]]>
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="request-object-signing-key-alias" type="xs:string" minOccurs="0" maxOccurs="1">
+                <xs:annotation>
+                    <xs:documentation>
+                        <![CDATA[
+                        The client key alias when a key pair is used to sign or encrypt request objects.
                         ]]>
                     </xs:documentation>
                 </xs:annotation>
@@ -877,6 +1109,38 @@
                         <![CDATA[
                         The unique, legacy identifier for a client application registered in the OpenID provider.
                         It is recommended to use the 'client-id'.
+                        ]]>
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="request-object-encryption-enc-value" type="xs:string" minOccurs="0" maxOccurs="1">
+                <xs:annotation>
+                    <xs:documentation>
+                        <![CDATA[
+                        The content encryption algorithm used to encrypt the request object. The default value of this parameter
+                        is null, which indicates that the request object will not be encrypted. The `request-object-encryption-alg-value`
+                        attribute must be set along with this attribute to encrypt the request object.
+                        ]]>
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="request-object-encryption-alg-value" type="xs:string" minOccurs="0" maxOccurs="1">
+                <xs:annotation>
+                    <xs:documentation>
+                        <![CDATA[
+                        The encryption algorithm used to encrypt the request object. The default value of this parameter
+                        is null, which indicates that the request object will not be encrypted. The `request-object-encryption-enc-value`
+                        attribute must be set along with this attribute to encrypt the request object.
+                        ]]>
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="request-object-signing-algorithm" type="xs:string" minOccurs="0" maxOccurs="1">
+                <xs:annotation>
+                    <xs:documentation>
+                        <![CDATA[
+                        The algorithm used to sign the request object. The default value of this attribute is
+                        "none", indicating that the request object will be sent as a plain text.
                         ]]>
                     </xs:documentation>
                 </xs:annotation>
@@ -1190,6 +1454,16 @@
                     <xs:documentation>
                         <![CDATA[
                         The token signature algorithm used by the OpenID provider.
+                        ]]>
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="scope" type="xs:string" minOccurs="0" maxOccurs="1">
+                <xs:annotation>
+                    <xs:documentation>
+                        <![CDATA[
+                        A space separated list of scope values that should be used in the OIDC authentication request.
+                        Scopes can be used to request that specific sets of information be made available as Claim Values.
                         ]]>
                     </xs:documentation>
                 </xs:annotation>
