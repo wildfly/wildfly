@@ -60,9 +60,9 @@
                         <appservername>${full.dist.product.release.name}</appservername>
                         <oracle-javadoc>https://docs.oracle.com/en/java/javase/17/docs/api</oracle-javadoc>
                         <resteasyversion>${version.org.jboss.resteasy}</resteasyversion>
-                        <min.java.version>${maven.compiler.release}</min.java.version>
-                        <recommended.java.version>${recommended.java.version}</recommended.java.version>
-                        <recommended.java.version.legacy>${recommended.java.version.legacy}</recommended.java.version.legacy>
+                        <min-java-version>${maven.compiler.release}</min-java-version>
+                        <recommended-java-version>${recommended.java.version}</recommended-java-version>
+                        <recommended-java-version-legacy>${recommended.java.version.legacy}</recommended-java-version-legacy>
                         <wildflyversion>${product.docs.server.version}</wildflyversion>
                         <copyright-blurb>${wildfly.copyright.html}</copyright-blurb>
                         <!-- Default asciidoc setting attributes -->
