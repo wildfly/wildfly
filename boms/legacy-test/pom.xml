@@ -50,13 +50,13 @@
                 <groupId>io.netty</groupId>
                 <artifactId>netty-all</artifactId>
                 <!-- use the Netty version required by HornetQ 2.4.7.Final -->
-                <version>${legacy.version.io.netty}</version>
+                <version>${test.legacy.version.io.netty}</version>
             </dependency>
 
             <dependency>
                 <groupId>jakarta.enterprise</groupId>
                 <artifactId>jakarta.enterprise.cdi-api</artifactId>
-                <version>${legacy.version.jakarta.enterprise}</version>
+                <version>${test.legacy.version.jakarta.enterprise}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>
@@ -68,7 +68,7 @@
             <dependency>
                 <groupId>jakarta.inject</groupId>
                 <artifactId>jakarta.inject-api</artifactId>
-                <version>${legacy.version.jakarta.inject.jakarta.inject-api}</version>
+                <version>${test.legacy.version.jakarta.inject.jakarta.inject-api}</version>
             </dependency>
 
             <dependency>
@@ -110,7 +110,7 @@
             <dependency>
                 <groupId>org.jboss.spec.javax.jms</groupId>
                 <artifactId>jboss-jms-api_2.0_spec</artifactId>
-                <version>${legacy.version.org.jboss.spec.javax.jms.jboss-jms-api_2.0_spec}</version>
+                <version>${test.legacy.version.org.jboss.spec.javax.jms.jboss-jms-api_2.0_spec}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>
@@ -122,7 +122,7 @@
             <dependency>
                 <groupId>org.wildfly</groupId>
                 <artifactId>wildfly-naming-client</artifactId>
-                <version>${legacy.version.org.wildfly.naming-client}</version>
+                <version>${test.legacy.version.org.wildfly.naming-client}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>org.jboss.remoting3</groupId>
