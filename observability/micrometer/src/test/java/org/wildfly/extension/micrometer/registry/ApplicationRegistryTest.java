@@ -7,12 +7,19 @@ package org.wildfly.extension.micrometer.registry;
 
 import static org.wildfly.extension.micrometer.registry.ApplicationRegistry.TAG_WF_DEPLOYMENT;
 
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import java.util.function.Supplier;
+import java.util.stream.Stream;
+
+import org.jboss.resteasy.spi.InternalServerErrorException;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.DistributionSummary;
@@ -37,10 +44,6 @@ import io.micrometer.core.instrument.search.MeterNotFoundException;
 import io.micrometer.core.instrument.search.RequiredSearch;
 import io.micrometer.prometheusmetrics.PrometheusConfig;
 import io.micrometer.prometheusmetrics.PrometheusMeterRegistry;
-import org.jboss.resteasy.spi.InternalServerErrorException;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
 
 public class ApplicationRegistryTest {
 
@@ -329,6 +332,27 @@ public class ApplicationRegistryTest {
         Assert.assertNotNull("Timer should be in parent registry",
                 systemRegistry.find(meterName).tag(TAG_WF_DEPLOYMENT, DEPLOYMENT1).timer());
         assertMetricBelongsToDeployment(timer.getId(), DEPLOYMENT1);
+    }
+
+    @Test
+    public void testTimerWithServiceLevelObjectives() {
+        String meterName = "builder_timer_test";
+        Timer timer = Timer.builder(meterName).description("Test timer via builder and ServiceLevelObjectives")
+                .serviceLevelObjectives(
+                        Stream.of(10, 20, 40, 60, 100, 200).map(Duration::ofMillis).toList().toArray(Duration[]::new))
+                .register(appRegistry1);
+        var snapshot = timer.takeSnapshot();
+        Assert.assertEquals(6, snapshot.histogramCounts().length);
+    }
+
+    @Test
+    public void testTimerWithPercentileHistogram() {
+        String meterName = "builder_timer_test";
+        Timer timer = Timer.builder(meterName).description("Test timer via builder and PercentileHistogram")
+                .publishPercentileHistogram().minimumExpectedValue(Duration.ofMillis(1))
+                .maximumExpectedValue(Duration.ofSeconds(10)).register(appRegistry1);
+        var snapshot = timer.takeSnapshot();
+        Assert.assertTrue(snapshot.histogramCounts().length > 0);
     }
 
     @Test

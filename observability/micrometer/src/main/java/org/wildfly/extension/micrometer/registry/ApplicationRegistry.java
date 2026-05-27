@@ -5,6 +5,9 @@
 
 package org.wildfly.extension.micrometer.registry;
 
+import java.time.Duration;
+import java.time.temporal.ChronoUnit;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
@@ -198,6 +201,24 @@ public class ApplicationRegistry extends SimpleMeterRegistry {
         return Timer.builder(id.getName())
                 .tags(addMissingTag(id))
                 .description(id.getDescription())
+                .pauseDetector(pauseDetector)
+                .serviceLevelObjectives(distributionStatisticConfig.getServiceLevelObjectiveBoundaries() != null
+                        ? Arrays.stream(distributionStatisticConfig.getServiceLevelObjectiveBoundaries()).boxed()
+                                .map(x -> Duration.of(x.longValue(), ChronoUnit.NANOS)).toArray(Duration[]::new)
+                        : null)
+                .publishPercentiles(distributionStatisticConfig.getPercentiles()) // TODO: needs library, how to test?
+                .percentilePrecision(distributionStatisticConfig.getPercentilePrecision())
+                .distributionStatisticExpiry(distributionStatisticConfig.getExpiry())
+                .distributionStatisticBufferLength(distributionStatisticConfig.getBufferLength())
+                .publishPercentileHistogram(distributionStatisticConfig.isPercentileHistogram())
+                .maximumExpectedValue(distributionStatisticConfig.getMaximumExpectedValueAsDouble() != null
+                        ? Duration.of(distributionStatisticConfig.getMaximumExpectedValueAsDouble().longValue(),
+                                ChronoUnit.NANOS)
+                        : null)
+                .minimumExpectedValue(distributionStatisticConfig.getMinimumExpectedValueAsDouble() != null
+                        ? Duration.of(distributionStatisticConfig.getMinimumExpectedValueAsDouble().longValue(),
+                                ChronoUnit.NANOS)
+                        : null)
                 .register(parentRegistry);
     }
 
