@@ -242,7 +242,6 @@
         <dependency>
             <groupId>org.jboss.arquillian.junit</groupId>
             <artifactId>arquillian-junit-core</artifactId>
-            <version>1.6.0.Final</version>
             <scope>test</scope>
         </dependency>
 
