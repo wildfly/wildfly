@@ -352,10 +352,10 @@
         <version.org.wiremock>3.10.0</version.org.wiremock>
         <version.dom4j>2.1.5</version.dom4j>
         <version.httpunit>1.7.3</version.httpunit>
-        <legacy.version.io.netty>4.0.19.Final</legacy.version.io.netty>
+        <test.legacy.version.io.netty>4.0.19.Final</test.legacy.version.io.netty>
         <version.io.rest-assured>5.5.7</version.io.rest-assured>
-        <legacy.version.jakarta.enterprise>2.0.2</legacy.version.jakarta.enterprise>
-        <legacy.version.jakarta.inject.jakarta.inject-api>1.0.5</legacy.version.jakarta.inject.jakarta.inject-api>
+        <test.legacy.version.jakarta.enterprise>2.0.2</test.legacy.version.jakarta.enterprise>
+        <test.legacy.version.jakarta.inject.jakarta.inject-api>1.0.5</test.legacy.version.jakarta.inject.jakarta.inject-api>
         <version.jakarta.mvc>2.1.0</version.jakarta.mvc>
         <version.jaxen>1.1.6</version.jaxen>
         <version.jsoup>1.15.4</version.jsoup>
@@ -383,7 +383,7 @@
              versions of the Shrinkwrap Resolvers. -->
         <version.org.jboss.shrinkwrap.resolvers>2.2.7</version.org.jboss.shrinkwrap.resolvers>
         <version.org.jboss.shrinkwrap.shrinkwrap>1.2.6</version.org.jboss.shrinkwrap.shrinkwrap>
-        <legacy.version.org.jboss.spec.javax.jms.jboss-jms-api_2.0_spec>2.0.0.Final</legacy.version.org.jboss.spec.javax.jms.jboss-jms-api_2.0_spec>
+        <test.legacy.version.org.jboss.spec.javax.jms.jboss-jms-api_2.0_spec>2.0.0.Final</test.legacy.version.org.jboss.spec.javax.jms.jboss-jms-api_2.0_spec>
         <version.org.jboss.spec.javax.servlet.jboss-servlet-api_4.0_spec>2.0.0.Final</version.org.jboss.spec.javax.servlet.jboss-servlet-api_4.0_spec>
         <version.org.junit>5.14.4</version.org.junit>
         <version.org.keycloak>25.0.6</version.org.keycloak>
@@ -397,7 +397,7 @@
         <version.org.testng.mp.rest.client>7.10.2</version.org.testng.mp.rest.client>
         <version.org.wildfly.arquillian>5.1.0.Final</version.org.wildfly.arquillian>
         <version.org.wildfly.extras.creaper>2.0.3</version.org.wildfly.extras.creaper>
-        <legacy.version.org.wildfly.naming-client>1.0.17.Final</legacy.version.org.wildfly.naming-client>
+        <test.legacy.version.org.wildfly.naming-client>1.0.17.Final</test.legacy.version.org.wildfly.naming-client>
 
         <!--
             *Non-plugin* PRODUCTION CODE dependency versions. Please keep alphabetical.
@@ -1534,7 +1534,7 @@
                         <doNotDowngrade>true</doNotDowngrade>
                         <ignoreStreams>org.apache.maven:*,org.apache.maven.resolver:*,org.codehaus.plexus:*</ignoreStreams>
                         <injectRepositories>false</injectRepositories>
-                        <ignorePropertiesPrefixedWith>legacy.</ignorePropertiesPrefixedWith>
+                        <ignorePropertiesPrefixedWith>test.legacy.</ignorePropertiesPrefixedWith>
                     </configuration>
                 </plugin>
             </plugins>
