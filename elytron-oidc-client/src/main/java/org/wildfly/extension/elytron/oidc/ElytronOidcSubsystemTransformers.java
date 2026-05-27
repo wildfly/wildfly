@@ -10,6 +10,7 @@ import static org.wildfly.extension.elytron.oidc.ElytronOidcClientSubsystemModel
 import static org.wildfly.extension.elytron.oidc.ElytronOidcClientSubsystemModel.VERSION_3_0_0;
 import static org.wildfly.extension.elytron.oidc.ElytronOidcClientSubsystemModel.VERSION_4_0_0;
 import static org.wildfly.extension.elytron.oidc.ElytronOidcClientSubsystemModel.VERSION_5_0_0;
+import static org.wildfly.extension.elytron.oidc.ElytronOidcClientSubsystemModel.VERSION_6_0_0;
 import static org.wildfly.extension.elytron.oidc.ElytronOidcDescriptionConstants.AUTHENTICATION_REQUEST_FORMAT;
 import static org.wildfly.extension.elytron.oidc.ElytronOidcDescriptionConstants.BACK_CHANNEL_LOGOUT_SESSION_INVALIDATION_LIMIT;
 import static org.wildfly.extension.elytron.oidc.ElytronOidcDescriptionConstants.POST_LOGOUT_REDIRECT_URI;
@@ -53,6 +54,8 @@ public class ElytronOidcSubsystemTransformers implements ExtensionTransformerReg
 
         ChainedTransformationDescriptionBuilder chainedBuilder = TransformationDescriptionBuilder.Factory.createChainedSubystemInstance(registration.getCurrentSubsystemVersion());
 
+        // 6.0.0 (WildFly 41) to 5.0.0 (WildFly 40)
+        from6(chainedBuilder);
         // 5.0.0 (WildFly 40) to 4.0.0 (WildFly 33)
         from5(chainedBuilder);
         // 4.0.0 (WildFly 33) to 3.0.0 (WildFly 32)
@@ -63,8 +66,9 @@ public class ElytronOidcSubsystemTransformers implements ExtensionTransformerReg
         from2(chainedBuilder);
 
         chainedBuilder.buildAndRegister(registration, new ModelVersion[] {
-                VERSION_4_0_0.getVersion(), VERSION_3_0_0.getVersion(),
-                VERSION_2_0_0.getVersion(), VERSION_1_0_0.getVersion() });
+                VERSION_5_0_0.getVersion(), VERSION_4_0_0.getVersion(),
+                VERSION_3_0_0.getVersion(), VERSION_2_0_0.getVersion(),
+                VERSION_1_0_0.getVersion() });
     }
 
     private static void from2(ChainedTransformationDescriptionBuilder chainedBuilder) {
@@ -177,6 +181,13 @@ public class ElytronOidcSubsystemTransformers implements ExtensionTransformerReg
                 .addRejectCheck(RejectAttributeChecker.DEFINED, REQUEST_OBJECT_SIGNING_KEYSTORE_TYPE)
                 .setDiscard(DiscardAttributeChecker.ALWAYS, REQUEST_OBJECT_SIGNING_KEYSTORE_TYPE)
                 .end();
+    }
+
+    private static void from6(ChainedTransformationDescriptionBuilder chainedBuilder) {
+        ResourceTransformationDescriptionBuilder builder = chainedBuilder.createBuilder(VERSION_6_0_0.getVersion(), VERSION_5_0_0.getVersion());
+
+        // Transformer rules will be added here when model changes are made
+        // For a pure version bump with no model changes, this can be empty
     }
 
     private static void from5(ChainedTransformationDescriptionBuilder chainedBuilder) {
