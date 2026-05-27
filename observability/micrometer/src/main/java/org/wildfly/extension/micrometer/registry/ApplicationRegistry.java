@@ -15,6 +15,8 @@ import java.util.function.ToDoubleFunction;
 import java.util.function.ToLongFunction;
 import java.util.stream.StreamSupport;
 
+import org.wildfly.extension.micrometer.MicrometerExtensionLogger;
+
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.DistributionSummary;
 import io.micrometer.core.instrument.FunctionCounter;
@@ -33,7 +35,6 @@ import io.micrometer.core.instrument.distribution.pause.PauseDetector;
 import io.micrometer.core.instrument.search.RequiredSearch;
 import io.micrometer.core.instrument.search.Search;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
-import org.wildfly.extension.micrometer.MicrometerExtensionLogger;
 
 public class ApplicationRegistry extends SimpleMeterRegistry {
     static final String TAG_WF_DEPLOYMENT = "WF_DEPLOYMENT";
@@ -231,6 +232,14 @@ public class ApplicationRegistry extends SimpleMeterRegistry {
                 .scale(scale)
                 .description(id.getDescription())
                 .baseUnit(id.getBaseUnit())
+                .publishPercentileHistogram(distributionStatisticConfig.isPercentileHistogram())
+                .serviceLevelObjectives(distributionStatisticConfig.getServiceLevelObjectiveBoundaries())
+                .minimumExpectedValue(distributionStatisticConfig.getMinimumExpectedValueAsDouble())
+                .maximumExpectedValue(distributionStatisticConfig.getMaximumExpectedValueAsDouble())
+                .distributionStatisticExpiry(distributionStatisticConfig.getExpiry())
+                .distributionStatisticBufferLength(distributionStatisticConfig.getBufferLength())
+                .publishPercentiles(distributionStatisticConfig.getPercentiles()) // TODO: needs library, how to test?
+                .percentilePrecision(distributionStatisticConfig.getPercentilePrecision())
                 .register(parentRegistry);
     }
 
@@ -266,6 +275,23 @@ public class ApplicationRegistry extends SimpleMeterRegistry {
         return LongTaskTimer.builder(id.getName())
                 .tags(addMissingTag(id))
                 .description(id.getDescription())
+                .serviceLevelObjectives(distributionStatisticConfig.getServiceLevelObjectiveBoundaries() != null
+                        ? Arrays.stream(distributionStatisticConfig.getServiceLevelObjectiveBoundaries()).boxed()
+                                .map(x -> Duration.of(x.longValue(), ChronoUnit.NANOS)).toArray(Duration[]::new)
+                        : null)
+                .publishPercentiles(distributionStatisticConfig.getPercentiles()) // TODO: needs library, how to test?
+                .percentilePrecision(distributionStatisticConfig.getPercentilePrecision())
+                .distributionStatisticExpiry(distributionStatisticConfig.getExpiry())
+                .distributionStatisticBufferLength(distributionStatisticConfig.getBufferLength())
+                .publishPercentileHistogram(distributionStatisticConfig.isPercentileHistogram())
+                .maximumExpectedValue(distributionStatisticConfig.getMaximumExpectedValueAsDouble() != null
+                        ? Duration.of(distributionStatisticConfig.getMaximumExpectedValueAsDouble().longValue(),
+                                ChronoUnit.NANOS)
+                        : null)
+                .minimumExpectedValue(distributionStatisticConfig.getMinimumExpectedValueAsDouble() != null
+                        ? Duration.of(distributionStatisticConfig.getMinimumExpectedValueAsDouble().longValue(),
+                                ChronoUnit.NANOS)
+                        : null)
                 .register(parentRegistry);
     }
 
