@@ -78,12 +78,32 @@
         <auth-server-url>http://localhost:8180/auth</auth-server-url>
     </realm>
     <provider name="google">
+        <realm-public-key>MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQC4siLKUew0WYxdtq6/rwk4Uj/4amGFFnE/yzIxQVU0PUqz3QBRVkUWpDj0K6ZnS5nzJV/y6DHLEy7hjZTdRDphyF1sq09aDOYnVpzu8o2sIlMM8q5RnUyEfIyUZqwo8pSZDJ90fS0s+IDUJNCSIrAKO3w1lqZDHL6E/YFHXyzkvQIDAQAB</realm-public-key>
         <provider-url>https://accounts.google.com</provider-url>
+        <truststore>truststore.jks</truststore>
+        <truststore-password>secret</truststore-password>
         <ssl-required>EXTERNAL</ssl-required>
+        <confidential-port>443</confidential-port>
+        <allow-any-hostname>false</allow-any-hostname>
+        <disable-trust-manager>false</disable-trust-manager>
+        <connection-pool-size>20</connection-pool-size>
+        <enable-cors>false</enable-cors>
+        <client-keystore>keys.jks</client-keystore>
+        <client-keystore-password>secret</client-keystore-password>
+        <client-key-password>secret</client-key-password>
+        <cors-max-age>600</cors-max-age>
+        <cors-allowed-headers>X-Custom</cors-allowed-headers>
+        <cors-allowed-methods>PUT,POST,DELETE,GET</cors-allowed-methods>
         <cors-exposed-headers>X-Provider-Exposed</cors-exposed-headers>
+        <expose-token>false</expose-token>
+        <always-refresh-token>false</always-refresh-token>
+        <register-node-at-startup>false</register-node-at-startup>
+        <register-node-period>60</register-node-period>
+        <token-store>session</token-store>
         <principal-attribute>sub</principal-attribute>
         <autodetect-bearer-only>false</autodetect-bearer-only>
         <ignore-oauth-query-parameter>true</ignore-oauth-query-parameter>
+        <proxy-url>http://localhost:9000</proxy-url>
         <verify-token-audience>false</verify-token-audience>
         <socket-timeout-millis>8000</socket-timeout-millis>
         <connection-ttl-millis>25000</connection-ttl-millis>
@@ -129,6 +149,7 @@
     <secure-deployment name="web-console">
         <enable-basic-auth>false</enable-basic-auth>
         <min-time-between-jwks-requests>20</min-time-between-jwks-requests>
+        <public-client>false</public-client>
         <public-key-cache-ttl>3600</public-key-cache-ttl>
         <realm>main</realm>
         <resource>web-console</resource>
@@ -137,9 +158,28 @@
         <use-resource-role-mappings>true</use-resource-role-mappings>
         <realm-public-key>MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQC4siLKUew0WYxdtq6/rwk4Uj/4amGFFnE/yzIxQVU0PUqz3QBRVkUWpDj0K6ZnS5nzJV/y6DHLEy7hjZTdRDphyF1sq09aDOYnVpzu8o2sIlMM8q5RnUyEfIyUZqwo8pSZDJ90fS0s+IDUJNCSIrAKO3w1lqZDHL6E/YFHXyzkvQIDAQAB</realm-public-key>
         <auth-server-url>http://localhost:8080/auth</auth-server-url>
+        <truststore>truststore.jks</truststore>
+        <truststore-password>secret</truststore-password>
         <ssl-required>EXTERNAL</ssl-required>
         <confidential-port>443</confidential-port>
+        <allow-any-hostname>false</allow-any-hostname>
+        <disable-trust-manager>false</disable-trust-manager>
+        <connection-pool-size>20</connection-pool-size>
+        <enable-cors>true</enable-cors>
+        <client-keystore>keys.jks</client-keystore>
+        <client-keystore-password>secret</client-keystore-password>
+        <client-key-password>secret</client-key-password>
+        <cors-max-age>600</cors-max-age>
+        <cors-allowed-headers>X-Custom</cors-allowed-headers>
+        <cors-allowed-methods>PUT,POST,DELETE,GET</cors-allowed-methods>
         <cors-exposed-headers>X-Deployment-Exposed</cors-exposed-headers>
+        <expose-token>false</expose-token>
+        <always-refresh-token>false</always-refresh-token>
+        <register-node-at-startup>true</register-node-at-startup>
+        <register-node-period>60</register-node-period>
+        <token-store>session</token-store>
+        <principal-attribute>sub</principal-attribute>
+        <autodetect-bearer-only>false</autodetect-bearer-only>
         <ignore-oauth-query-parameter>false</ignore-oauth-query-parameter>
         <proxy-url>http://localhost:9000</proxy-url>
         <verify-token-audience>true</verify-token-audience>
@@ -234,6 +274,13 @@
         <ssl-required>${exp.ssl-required:EXTERNAL}</ssl-required>
         <credential name="secret" secret="${exp.credential-password:password}"/>
     </secure-deployment>
+    <secure-deployment name="myAppWithProvider.war">
+        <client-id>customer-portal</client-id>
+        <provider>google</provider>
+        <ssl-required>EXTERNAL</ssl-required>
+        <principal-attribute>firstName</principal-attribute>
+        <credential name="secret" secret="password" />
+    </secure-deployment>
     <secure-deployment name="myAppWithProvider-expressions.war">
         <client-id>${exp.client-id:customer-portal}</client-id>
         <provider>${exp.provider:google}</provider>
@@ -276,13 +323,39 @@
         <token-signature-algorithm>${exp.token-signature-algorithm:HS256}</token-signature-algorithm>
     </secure-deployment>
     <secure-server name="wildfly-console">
+        <bearer-only>false</bearer-only>
         <client-id>wildfly-console</client-id>
         <enable-basic-auth>true</enable-basic-auth>
+        <public-client>false</public-client>
         <realm>jboss-infra</realm>
         <ssl-required>EXTERNAL</ssl-required>
         <cors-exposed-headers>X-Server-Exposed</cors-exposed-headers>
         <principal-attribute>preferred_username</principal-attribute>
+        <autodetect-bearer-only>false</autodetect-bearer-only>
         <ignore-oauth-query-parameter>true</ignore-oauth-query-parameter>
         <proxy-url>http://localhost:9000</proxy-url>
+        <verify-token-audience>false</verify-token-audience>
+        <socket-timeout-millis>10000</socket-timeout-millis>
+        <connection-ttl-millis>40000</connection-ttl-millis>
+        <connection-timeout-millis>50000</connection-timeout-millis>
+        <token-signature-algorithm>HS256</token-signature-algorithm>
+    </secure-server>
+    <secure-server name="wildfly-console-expressions">
+        <bearer-only>${exp.bearer-only:false}</bearer-only>
+        <client-id>${exp.client-id:wildfly-console}</client-id>
+        <enable-basic-auth>${exp.enable-basic-auth:true}</enable-basic-auth>
+        <public-client>${exp.public-client:false}</public-client>
+        <realm>${exp.realm:jboss-infra}</realm>
+        <ssl-required>${exp.ssl-required:EXTERNAL}</ssl-required>
+        <cors-exposed-headers>${exp.cors-exposed-headers:X-Server-Exposed}</cors-exposed-headers>
+        <principal-attribute>${exp.principal-attribute:preferred_username}</principal-attribute>
+        <autodetect-bearer-only>${exp.autodetect-bearer-only:false}</autodetect-bearer-only>
+        <ignore-oauth-query-parameter>${exp.ignore-oauth-query-parameter:true}</ignore-oauth-query-parameter>
+        <proxy-url>${exp.proxy-url:http://localhost:9000}</proxy-url>
+        <verify-token-audience>${exp.verify-token-audience:false}</verify-token-audience>
+        <socket-timeout-millis>${exp.socket-timeout-millis:10000}</socket-timeout-millis>
+        <connection-ttl-millis>${exp.connection-ttl-millis:40000}</connection-ttl-millis>
+        <connection-timeout-millis>${exp.connection-timeout-millis:50000}</connection-timeout-millis>
+        <token-signature-algorithm>${exp.token-signature-algorithm:HS256}</token-signature-algorithm>
     </secure-server>
 </subsystem>
