@@ -25,5 +25,5 @@ public class Constants {
     public static final String SIGN_IN_TO_YOUR_ACCOUNT = "Sign in to your account";
     public static final String YOU_ARE_LOGGED_OUT = "You are logged out";
     public static final String YOU_ARE_LOGGING_OUT = "You are logging out";
-    public static final String NO_CALLBACK = "no-callback";
+    public static final String NO_CALLBACK = "http://www.no-callback.example/logout/callback";
 }

@@ -125,7 +125,7 @@ public class EnvSetupUtils {
                 Utils.applyUpdate(operation, client);
 
                 operation = createOpNode("system-property=" + Constants.LOGOUT_CALLBACK_PATH_VALUE_PROP, ModelDescriptionConstants.ADD);
-                operation.get("value").set(JsonConfigLogoutTest.BACK_CHANNEL_LOGOUT_URL);
+                operation.get("value").set(logoutCallbackPathPropertyValue(APP_LOGOUT));
                 Utils.applyUpdate(operation, client);
 
                 operation = createOpNode("system-property=" + Constants.POST_LOGOUT_PATH_VALUE_PROP, ModelDescriptionConstants.ADD);
@@ -286,6 +286,16 @@ public class EnvSetupUtils {
             }
 
             ServerReload.executeReloadAndWaitForCompletion(managementClient);
+        }
+
+        private static String logoutCallbackPathPropertyValue(Map<String, LogoutChannelPaths> appLogout) {
+            for (LogoutChannelPaths paths : appLogout.values()) {
+                if ((paths.backChannelPath != null && !NO_CALLBACK.equals(paths.backChannelPath))
+                        || (paths.frontChannelPath != null && !NO_CALLBACK.equals(paths.frontChannelPath))) {
+                    return JsonConfigLogoutTest.BACK_CHANNEL_LOGOUT_URL;
+                }
+            }
+            return NO_CALLBACK;
         }
     }
 
