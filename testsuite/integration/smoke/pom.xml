@@ -40,7 +40,7 @@
 
         <!-- Annotation processor version used by the maven-compile plugin.
              Overridden in profiles for legacy EE testing -->
-        <version.org.hibernate.jpamodelgen>${version.org.hibernate}</version.org.hibernate.jpamodelgen>
+        <version.org.hibernate.jpamodelgen>${standard.version.org.hibernate}</version.org.hibernate.jpamodelgen>
     </properties>
 
     <dependencies>
@@ -1248,7 +1248,7 @@
             <properties>
                 <!-- Use the version of the hibernate-jpamodelgen annotation processor
                      that aligns with the ORM version in the legacy EE FP. -->
-                <version.org.hibernate.jpamodelgen>${version.org.hibernate.legacy}</version.org.hibernate.jpamodelgen>
+                <version.org.hibernate.jpamodelgen>${legacy.version.org.hibernate}</version.org.hibernate.jpamodelgen>
             </properties>
             <build>
                 <plugins>
@@ -1312,7 +1312,7 @@
             <properties>
                 <!-- Use the version of the hibernate-jpamodelgen annotation processor
                      that aligns with the ORM version in the legacy EE FP. -->
-                <version.org.hibernate.jpamodelgen>${version.org.hibernate.legacy}</version.org.hibernate.jpamodelgen>
+                <version.org.hibernate.jpamodelgen>${legacy.version.org.hibernate}</version.org.hibernate.jpamodelgen>
             </properties>
         </profile>
     </profiles>
