@@ -94,6 +94,16 @@
                             <log-provisioning-time>${galleon.log.time}</log-provisioning-time>
                             <offline-provisioning>${galleon.offline}</offline-provisioning>
                             <overwrite-provisioned-server>true</overwrite-provisioned-server>
+                            <channels>
+                                <channel>
+                                    <name>wildfly</name>
+                                    <manifest>
+                                        <groupId>${channels.maven.groupId}</groupId>
+                                        <artifactId>wildfly</artifactId>
+                                        <version>${full.maven.version}</version>
+                                    </manifest>
+                                </channel>
+                            </channels>
                             <feature-packs>
                                 <feature-pack>
                                     <transitive>true</transitive>
@@ -174,4 +184,15 @@
             </plugin>
         </plugins>
     </build>
+
+    <profiles>
+        <profile>
+            <!-- For the build zip, ignore any external channel setting -->
+            <id>external.channel.profile</id>
+            <activation><property><name>external.wildfly.channels</name></property></activation>
+            <properties>
+                <wildfly.channels>${channels.maven.groupId}:wildfly:${full.maven.version}</wildfly.channels>
+            </properties>
+        </profile>
+    </profiles>
 </project>

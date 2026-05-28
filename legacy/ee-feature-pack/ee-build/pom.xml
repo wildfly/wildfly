@@ -78,11 +78,21 @@
                             <log-provisioning-time>${galleon.log.time}</log-provisioning-time>
                             <offline-provisioning>${galleon.offline}</offline-provisioning>
                             <overwrite-provisioned-server>true</overwrite-provisioned-server>
+                            <channels>
+                                <channel>
+                                    <name>wildfly-${legacy.ee.artifactid.segment}</name>
+                                    <manifest>
+                                        <groupId>${channels.maven.groupId}</groupId>
+                                        <artifactId>wildfly-${legacy.ee.artifactid.segment}</artifactId>
+                                        <version>${ee.maven.version}</version>
+                                    </manifest>
+                                </channel>
+                            </channels>
                             <feature-packs>
                                 <feature-pack>
-                                    <groupId>${project.groupId}</groupId>
+                                    <groupId>${ee.maven.groupId}</groupId>
                                     <artifactId>${legacy.ee.feature.pack.artifactId}</artifactId>
-                                    <version>${project.version}</version>
+                                    <version>${ee.maven.version}</version>
                                     <included-packages>
                                         <name>docs.examples.configs</name>
                                     </included-packages>
@@ -149,4 +159,15 @@
             </plugin>
         </plugins>
     </build>
+
+    <profiles>
+        <profile>
+            <!-- For the build zip, ignore any external channel setting -->
+            <id>external.channel.profile</id>
+            <activation><property><name>external.wildfly.channels</name></property></activation>
+            <properties>
+                <wildfly.channels>${channels.maven.groupId}:wildfly-${legacy.ee.artifactid.segment}:${ee.maven.version}</wildfly.channels>
+            </properties>
+        </profile>
+    </profiles>
 </project>
