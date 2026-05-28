@@ -16,11 +16,6 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
-import org.jboss.resteasy.spi.InternalServerErrorException;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.DistributionSummary;
 import io.micrometer.core.instrument.FunctionCounter;
@@ -44,6 +39,10 @@ import io.micrometer.core.instrument.search.MeterNotFoundException;
 import io.micrometer.core.instrument.search.RequiredSearch;
 import io.micrometer.prometheusmetrics.PrometheusConfig;
 import io.micrometer.prometheusmetrics.PrometheusMeterRegistry;
+import org.jboss.resteasy.spi.InternalServerErrorException;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
 public class ApplicationRegistryTest {
 
