@@ -21,13 +21,21 @@
         <cors-max-age>600</cors-max-age>
         <cors-allowed-headers>X-Custom</cors-allowed-headers>
         <cors-allowed-methods>PUT,POST,DELETE,GET</cors-allowed-methods>
+        <cors-exposed-headers>X-Custom-Exposed</cors-exposed-headers>
         <expose-token>false</expose-token>
         <always-refresh-token>false</always-refresh-token>
         <register-node-at-startup>true</register-node-at-startup>
         <register-node-period>60</register-node-period>
         <token-store>session</token-store>
         <principal-attribute>sub</principal-attribute>
+        <autodetect-bearer-only>true</autodetect-bearer-only>
+        <ignore-oauth-query-parameter>false</ignore-oauth-query-parameter>
         <proxy-url>http://localhost:9000</proxy-url>
+        <verify-token-audience>true</verify-token-audience>
+        <socket-timeout-millis>5000</socket-timeout-millis>
+        <connection-ttl-millis>30000</connection-ttl-millis>
+        <connection-timeout-millis>6000</connection-timeout-millis>
+        <token-signature-algorithm>RS256</token-signature-algorithm>
     </realm>
     <realm name="jboss-infra">
         <realm-public-key>MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAqKoq+a9MgXepmsPJDmo45qswuChW9pWjanX68oIBuI4hGvhQxFHryCow230A+sr7tFdMQMt8f1l/ysmV/fYAuW29WaoY4kI4Ou1yYPuwywKSsxT6PooTs83hKyZ1h4LZMj5DkLGDDDyVRHob2WmPaYg9RGVRw3iGGsD/p+Yb+L/gnBYQnZZ7lYqmN7h36p5CkzzlgXQA1Ha8sQxL+rJNH8+sZm0vBrKsoII3Of7TqHGsm1RwFV3XCuGJ7S61AbjJMXL5DQgJl9Z5scvxGAyoRLKC294UgMnQdzyBTMPw2GybxkRKmiK2KjQKmcopmrJp/Bt6fBR6ZkGSs9qUlxGHgwIDAQAB</realm-public-key>
@@ -37,6 +45,14 @@
         <provider-url>https://accounts.google.com</provider-url>
         <ssl-required>EXTERNAL</ssl-required>
         <principal-attribute>sub</principal-attribute>
+        <cors-exposed-headers>X-Provider-Exposed</cors-exposed-headers>
+        <autodetect-bearer-only>false</autodetect-bearer-only>
+        <ignore-oauth-query-parameter>true</ignore-oauth-query-parameter>
+        <verify-token-audience>false</verify-token-audience>
+        <socket-timeout-millis>8000</socket-timeout-millis>
+        <connection-ttl-millis>25000</connection-ttl-millis>
+        <connection-timeout-millis>7000</connection-timeout-millis>
+        <token-signature-algorithm>ES256</token-signature-algorithm>
     </provider>
     <secure-deployment name="web-console">
         <realm>main</realm>
@@ -54,6 +70,9 @@
         <confidential-port>443</confidential-port>
         <proxy-url>http://localhost:9000</proxy-url>
         <verify-token-audience>true</verify-token-audience>
+        <cors-exposed-headers>X-Deployment-Exposed</cors-exposed-headers>
+        <enable-basic-auth>false</enable-basic-auth>
+        <ignore-oauth-query-parameter>false</ignore-oauth-query-parameter>
         <credential name="secret" secret="0aa31d98-e0aa-404c-b6e0-e771dba1e798" />
         <redirect-rewrite-rule name="^/wsmain/api/(.*)$" replacement="api/$1" />
     </secure-deployment>
@@ -69,7 +88,7 @@
         <ssl-required>EXTERNAL</ssl-required>
         <credential name="jwt" client-key-password="keyPassword" client-keystore-file="/tmp/keystore.jks"
                     client-keystore-password="keystorePassword" client-key-alias="keyAlias" token-timeout="10"
-                    client-keystore-type="jks" />
+                    client-keystore-type="jks" algorithm="RS256" />
         <redirect-rewrite-rule name="^/wsmain/api/(.*)$" replacement="/api/$1/" />
     </secure-deployment>
     <secure-deployment name="some-endpoint">
@@ -82,7 +101,7 @@
         </realm-public-key>
         <auth-server-url>http://localhost:8080/auth</auth-server-url>
         <ssl-required>EXTERNAL</ssl-required>
-        <credential name="secret-jwt" secret="fd8f54e1-6994-413a-acf8-90bc67f05412" />
+        <credential name="secret-jwt" secret="fd8f54e1-6994-413a-acf8-90bc67f05412" algorithm="HS256" />
         <redirect-rewrite-rule name="^/wsmain/api/(.*)$" replacement="/api/$1/" />
     </secure-deployment>
     <secure-deployment name="wildfly-management">
