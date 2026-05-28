@@ -183,13 +183,6 @@ public class ElytronOidcSubsystemTransformers implements ExtensionTransformerReg
                 .end();
     }
 
-    private static void from6(ChainedTransformationDescriptionBuilder chainedBuilder) {
-        ResourceTransformationDescriptionBuilder builder = chainedBuilder.createBuilder(VERSION_6_0_0.getVersion(), VERSION_5_0_0.getVersion());
-
-        // Transformer rules will be added here when model changes are made
-        // For a pure version bump with no model changes, this can be empty
-    }
-
     private static void from5(ChainedTransformationDescriptionBuilder chainedBuilder) {
         ResourceTransformationDescriptionBuilder builder = chainedBuilder.createBuilder(VERSION_5_0_0.getVersion(), VERSION_4_0_0.getVersion());
 
@@ -235,5 +228,12 @@ public class ElytronOidcSubsystemTransformers implements ExtensionTransformerReg
                 .addRejectCheck(RejectAttributeChecker.DEFINED, PROVIDER_JWT_CLAIMS_TYP)
                 .setDiscard(DiscardAttributeChecker.ALWAYS, PROVIDER_JWT_CLAIMS_TYP)
                 .end();
+    }
+
+    private static void from6(ChainedTransformationDescriptionBuilder chainedBuilder) {
+        ResourceTransformationDescriptionBuilder builder = chainedBuilder.createBuilder(VERSION_6_0_0.getVersion(), VERSION_5_0_0.getVersion());
+
+        // Transformer rules will be added here when model changes are made
+        // For a pure version bump with no model changes, this can be empty
     }
 }
