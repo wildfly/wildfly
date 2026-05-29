@@ -107,7 +107,7 @@ public class OidcTestCase extends AbstractSubsystemSchemaTest<ElytronOidcSubsyst
 
     @Test
     public void testSecureDeploymentWithScopes() throws Exception {
-        assumeTrue("Scope attribute is PREVIEW-only", this.getSubsystemSchema().getStability() == Stability.PREVIEW);
+        assumeTrue("Scope attribute requires COMMUNITY or higher", this.getSubsystemSchema().getStability().ordinal() >= Stability.COMMUNITY.ordinal());
         String expectedJson =
                 "{\"provider-url\" : \"http://localhost:8080/realms/WildFly\", \"client-id\" : \"wildfly-console\", \"public-client\" : true, \"scope\" : \"profile email phone\", \"ssl-required\" : \"EXTERNAL\"}";
         assertEquals(expectedJson, configService.getJSON("wildfly-with-scope"));
@@ -122,7 +122,7 @@ public class OidcTestCase extends AbstractSubsystemSchemaTest<ElytronOidcSubsyst
 
     @Test
     public void testSecureServerWithScopes() throws Exception {
-        assumeTrue("Scope attribute is PREVIEW-only", this.getSubsystemSchema().getStability() == Stability.PREVIEW);
+        assumeTrue("Scope attribute requires COMMUNITY or higher", this.getSubsystemSchema().getStability().ordinal() >= Stability.COMMUNITY.ordinal());
         String expectedJson =
                 "{\"client-id\" : \"wildfly-console\", \"public-client\" : true, \"scope\" : \"profile email phone\", \"provider-url\" : \"http://localhost:8080/realms/WildFly\", \"ssl-required\" : \"EXTERNAL\"}";
         assertEquals(expectedJson, configService.getJSON("wildfly-server-with-scope"));
@@ -130,7 +130,7 @@ public class OidcTestCase extends AbstractSubsystemSchemaTest<ElytronOidcSubsyst
 
     @Test
     public void testSecureServerWithRequest() throws Exception {
-        assumeTrue("Authentication request format is PREVIEW-only", this.getSubsystemSchema().getStability() == Stability.PREVIEW);
+        assumeTrue("Authentication request format requires COMMUNITY or higher", this.getSubsystemSchema().getStability().ordinal() >= Stability.COMMUNITY.ordinal());
         String expectedJson =
                 "{\"client-id\" : \"wildfly-console\", \"public-client\" : false, \"provider-url\" : \"http://localhost:8080/realms/WildFly\", \"ssl-required\" : \"EXTERNAL\", \"authentication-request-format\" : \"request\", \"request-object-signing-algorithm\" : \"RS-256\", \"request-object-encryption-enc-value\" : \"A128CBC-HS256\", \"request-object-encryption-alg-value\" : \"RSA-OAEP\", \"request-object-signing-keystore-file\" : \"jwt.keystore\", \"request-object-signing-keystore-password\" : \"password\", \"request-object-signing-key-alias\" : \"alias\", \"request-object-signing-key-password\" : \"password\", \"request-object-signing-keystore-type\" : \"JKS\", \"credentials\" : {\"secret\" : \"password\"}}";
         assertEquals(expectedJson, configService.getJSON("wildfly-server-with-request"));
@@ -138,7 +138,7 @@ public class OidcTestCase extends AbstractSubsystemSchemaTest<ElytronOidcSubsyst
 
     @Test
     public void testSecureServerWithRequestUri() throws Exception {
-        assumeTrue("Authentication request format is PREVIEW-only", this.getSubsystemSchema().getStability() == Stability.PREVIEW);
+        assumeTrue("Authentication request format requires COMMUNITY or higher", this.getSubsystemSchema().getStability().ordinal() >= Stability.COMMUNITY.ordinal());
         String expectedJson =
                 "{\"client-id\" : \"wildfly-console\", \"public-client\" : false, \"provider-url\" : \"http://localhost:8080/realms/WildFly\", \"ssl-required\" : \"EXTERNAL\", \"authentication-request-format\" : \"request_uri\", \"request-object-signing-algorithm\" : \"RS-256\", \"request-object-encryption-enc-value\" : \"A128CBC-HS256\", \"request-object-encryption-alg-value\" : \"RSA-OAEP\", \"request-object-signing-keystore-file\" : \"jwt.keystore\", \"request-object-signing-keystore-password\" : \"password\", \"request-object-signing-key-alias\" : \"alias\", \"request-object-signing-key-password\" : \"password\", \"request-object-signing-keystore-type\" : \"JKS\", \"credentials\" : {\"secret\" : \"password\"}}";
         assertEquals(expectedJson, configService.getJSON("wildfly-server-with-request-uri"));
@@ -146,7 +146,7 @@ public class OidcTestCase extends AbstractSubsystemSchemaTest<ElytronOidcSubsyst
 
     @Test
     public void testSecureDeploymentWithRequest() throws Exception {
-        assumeTrue("Authentication request format is PREVIEW-only", this.getSubsystemSchema().getStability() == Stability.PREVIEW);
+        assumeTrue("Authentication request format requires COMMUNITY or higher", this.getSubsystemSchema().getStability().ordinal() >= Stability.COMMUNITY.ordinal());
         String expectedJson =
                 "{\"client-id\" : \"wildfly-console\", \"public-client\" : false, \"provider-url\" : \"http://localhost:8080/realms/WildFly\", \"ssl-required\" : \"EXTERNAL\", \"authentication-request-format\" : \"request\", \"request-object-signing-algorithm\" : \"RS-256\", \"request-object-encryption-enc-value\" : \"A128CBC-HS256\", \"request-object-encryption-alg-value\" : \"RSA-OAEP\", \"request-object-signing-keystore-file\" : \"jwt.keystore\", \"request-object-signing-keystore-password\" : \"password\", \"request-object-signing-key-alias\" : \"alias\", \"request-object-signing-key-password\" : \"password\", \"request-object-signing-keystore-type\" : \"JKS\", \"credentials\" : {\"secret\" : \"password\"}}";
         assertEquals(expectedJson, configService.getJSON("wildfly-with-request"));
@@ -154,7 +154,7 @@ public class OidcTestCase extends AbstractSubsystemSchemaTest<ElytronOidcSubsyst
 
     @Test
     public void testSecureDeploymentWithRequestUri() throws Exception {
-        assumeTrue("Authentication request format is PREVIEW-only", this.getSubsystemSchema().getStability() == Stability.PREVIEW);
+        assumeTrue("Authentication request format requires COMMUNITY or higher", this.getSubsystemSchema().getStability().ordinal() >= Stability.COMMUNITY.ordinal());
         String expectedJson =
                 "{\"client-id\" : \"wildfly-console\", \"public-client\" : false, \"provider-url\" : \"http://localhost:8080/realms/WildFly\", \"ssl-required\" : \"EXTERNAL\", \"authentication-request-format\" : \"request_uri\", \"request-object-signing-algorithm\" : \"RS-256\", \"request-object-encryption-enc-value\" : \"A128CBC-HS256\", \"request-object-encryption-alg-value\" : \"RSA-OAEP\", \"request-object-signing-keystore-file\" : \"jwt.keystore\", \"request-object-signing-keystore-password\" : \"password\", \"request-object-signing-key-alias\" : \"alias\", \"request-object-signing-key-password\" : \"password\", \"request-object-signing-keystore-type\" : \"JKS\", \"credentials\" : {\"secret\" : \"password\"}}";
         assertEquals(expectedJson, configService.getJSON("wildfly-with-request-uri"));
