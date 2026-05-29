@@ -18,6 +18,7 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.PersistentResourceDefinition;
 import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
+import org.jboss.as.controller.ResourceRegistration;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
@@ -35,8 +36,8 @@ import org.jboss.msc.service.StopContext;
  * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
 public class ByteBufferPoolDefinition extends PersistentResourceDefinition {
-
-    static final PathElement PATH_ELEMENT = PathElement.pathElement(Constants.BYTE_BUFFER_POOL);
+    static final ResourceRegistration REGISTRATION = ResourceRegistration.of(PathElement.pathElement(Constants.BYTE_BUFFER_POOL));
+    static final PathElement PATH_ELEMENT = REGISTRATION.getPathElement();
     static final RuntimeCapability<Void> UNDERTOW_BUFFER_POOL_RUNTIME_CAPABILITY =
             RuntimeCapability.Builder.of(Capabilities.CAPABILITY_BYTE_BUFFER_POOL, true, ByteBufferPool.class).build();
 
@@ -103,7 +104,7 @@ public class ByteBufferPoolDefinition extends PersistentResourceDefinition {
 
 
     ByteBufferPoolDefinition() {
-        super(new SimpleResourceDefinition.Parameters(PATH_ELEMENT, UndertowExtension.getResolver(PATH_ELEMENT.getKey()))
+        super(new SimpleResourceDefinition.Parameters(REGISTRATION, UndertowRootDefinition.RESOLVER.createChildResolver(REGISTRATION.getPathElement()))
                 .setAddHandler(new BufferPoolAdd())
                 .setRemoveHandler(ReloadRequiredRemoveStepHandler.INSTANCE)
                 .addCapabilities(UNDERTOW_BUFFER_POOL_RUNTIME_CAPABILITY)

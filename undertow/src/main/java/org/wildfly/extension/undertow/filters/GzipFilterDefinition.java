@@ -14,16 +14,18 @@ import io.undertow.server.handlers.encoding.GzipEncodingProvider;
 
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.ResourceRegistration;
 import org.jboss.dmr.ModelNode;
 
 /**
  * @author Tomaz Cerar (c) 2014 Red Hat Inc.
  */
 public class GzipFilterDefinition extends SimpleFilterDefinition {
-    public static final PathElement PATH_ELEMENT = PathElement.pathElement("gzip");
+    public static final ResourceRegistration REGISTRATION = ResourceRegistration.of(PathElement.pathElement("gzip"));
+    public static final PathElement PATH_ELEMENT = REGISTRATION.getPathElement();
 
     GzipFilterDefinition() {
-        super(PATH_ELEMENT, GzipFilterDefinition::createHandlerWrapper);
+        super(REGISTRATION, GzipFilterDefinition::createHandlerWrapper);
     }
 
     static PredicateHandlerWrapper createHandlerWrapper(OperationContext context, ModelNode model) {

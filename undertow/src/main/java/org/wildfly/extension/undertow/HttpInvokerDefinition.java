@@ -21,6 +21,7 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.PersistentResourceDefinition;
+import org.jboss.as.controller.ResourceRegistration;
 import org.jboss.as.controller.ServiceRemoveStepHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
@@ -38,7 +39,8 @@ import org.wildfly.security.auth.server.HttpAuthenticationFactory;
  * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
 public class HttpInvokerDefinition extends PersistentResourceDefinition {
-    static final PathElement PATH_ELEMENT = PathElement.pathElement(Constants.SETTING, Constants.HTTP_INVOKER);
+    static final ResourceRegistration REGISTRATION = ResourceRegistration.of(PathElement.pathElement(Constants.SETTING, Constants.HTTP_INVOKER));
+    static final PathElement PATH_ELEMENT = REGISTRATION.getPathElement();
     static final RuntimeCapability<Void> HTTP_INVOKER_HOST_CAPABILITY =
                 RuntimeCapability.Builder.of(CAPABILITY_HTTP_INVOKER_HOST, true, Void.class)
                         .setDynamicNameMapper(BinaryCapabilityNameResolver.GRANDPARENT_PARENT)
@@ -76,7 +78,7 @@ public class HttpInvokerDefinition extends PersistentResourceDefinition {
     );
 
     HttpInvokerDefinition() {
-        super(new SimpleResourceDefinition.Parameters(PATH_ELEMENT, UndertowExtension.getResolver(PATH_ELEMENT.getValue()))
+        super(new SimpleResourceDefinition.Parameters(REGISTRATION, UndertowRootDefinition.RESOLVER.createChildResolver(REGISTRATION.getPathElement().getValue()))
                 .setAddHandler(HttpInvokerAdd.INSTANCE)
                 .setRemoveHandler(new ServiceRemoveStepHandler(HttpInvokerAdd.INSTANCE))
                 .setCapabilities(HTTP_INVOKER_HOST_CAPABILITY)

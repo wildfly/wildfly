@@ -19,6 +19,7 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.PersistentResourceDefinition;
+import org.jboss.as.controller.ResourceRegistration;
 import org.jboss.as.controller.RestartParentResourceAddHandler;
 import org.jboss.as.controller.RestartParentResourceRemoveHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
@@ -38,7 +39,8 @@ import org.jboss.msc.service.ServiceName;
  * @author Stuart Douglas
  */
 class WebsocketsDefinition extends PersistentResourceDefinition {
-    static final PathElement PATH_ELEMENT = PathElement.pathElement(Constants.SETTING, Constants.WEBSOCKETS);
+    static final ResourceRegistration REGISTRATION = ResourceRegistration.of(PathElement.pathElement(Constants.SETTING, Constants.WEBSOCKETS));
+    static final PathElement PATH_ELEMENT = REGISTRATION.getPathElement();
     private static final RuntimeCapability<Void> WEBSOCKET_CAPABILITY = RuntimeCapability.Builder.of(Capabilities.CAPABILITY_WEBSOCKET, true, UndertowListener.class)
             .setDynamicNameMapper(UnaryCapabilityNameResolver.PARENT)
             .build();
@@ -89,7 +91,7 @@ class WebsocketsDefinition extends PersistentResourceDefinition {
 
 
     WebsocketsDefinition() {
-        super(new SimpleResourceDefinition.Parameters(PATH_ELEMENT, UndertowExtension.getResolver(PATH_ELEMENT.getKeyValuePair()))
+        super(new SimpleResourceDefinition.Parameters(REGISTRATION, UndertowRootDefinition.RESOLVER.createChildResolver(REGISTRATION.getPathElement()))
                 .setAddHandler(new WebsocketsAdd())
                 .setRemoveHandler(new WebsocketsRemove())
                 .addCapabilities(WEBSOCKET_CAPABILITY)

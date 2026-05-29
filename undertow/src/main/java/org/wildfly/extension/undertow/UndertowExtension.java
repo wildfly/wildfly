@@ -12,7 +12,6 @@ import org.jboss.as.controller.ExtensionContext;
 import org.jboss.as.controller.Feature;
 import org.jboss.as.controller.PersistentResourceXMLDescriptionWriter;
 import org.jboss.as.controller.SubsystemRegistration;
-import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
 import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
@@ -23,16 +22,7 @@ import org.jboss.as.controller.registry.ManagementResourceRegistration;
  */
 public class UndertowExtension implements Extension {
 
-    public static final String SUBSYSTEM_NAME = "undertow";
-    private static final String RESOURCE_NAME = UndertowExtension.class.getPackage().getName() + ".LocalDescriptions";
-
-    public static StandardResourceDescriptionResolver getResolver(final String... keyPrefix) {
-        StringBuilder prefix = new StringBuilder(SUBSYSTEM_NAME);
-        for (String kp : keyPrefix) {
-            prefix.append('.').append(kp);
-        }
-        return new StandardResourceDescriptionResolver(prefix.toString(), RESOURCE_NAME, UndertowExtension.class.getClassLoader(), true, false);
-    }
+    public static final String SUBSYSTEM_NAME = UndertowRootDefinition.REGISTRATION.getName();
 
     @Override
     public void initializeParsers(ExtensionParsingContext context) {

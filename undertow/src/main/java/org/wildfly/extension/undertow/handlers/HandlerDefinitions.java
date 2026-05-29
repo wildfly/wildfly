@@ -14,18 +14,22 @@ import org.jboss.as.controller.ModelOnlyAddStepHandler;
 import org.jboss.as.controller.ModelOnlyRemoveStepHandler;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.PersistentResourceDefinition;
+import org.jboss.as.controller.ResourceRegistration;
 import org.jboss.as.controller.SimpleResourceDefinition;
+import org.jboss.as.controller.descriptions.ParentResourceDescriptionResolver;
 import org.wildfly.extension.undertow.Constants;
-import org.wildfly.extension.undertow.UndertowExtension;
+import org.wildfly.extension.undertow.UndertowRootDefinition;
 
 /**
  * @author Tomaz Cerar (c) 2013 Red Hat Inc.
  */
 public class HandlerDefinitions extends PersistentResourceDefinition {
-    public static final PathElement PATH_ELEMENT = PathElement.pathElement(Constants.CONFIGURATION, Constants.HANDLER);
+    public static final ResourceRegistration REGISTRATION = ResourceRegistration.of(PathElement.pathElement(Constants.CONFIGURATION, Constants.HANDLER));
+    static final ParentResourceDescriptionResolver RESOLVER = UndertowRootDefinition.RESOLVER.createChildResolver(REGISTRATION.getPathElement().getValue());
+    public static final PathElement PATH_ELEMENT = REGISTRATION.getPathElement();
 
     public HandlerDefinitions() {
-        super(new SimpleResourceDefinition.Parameters(PATH_ELEMENT, UndertowExtension.getResolver(PATH_ELEMENT.getValue()))
+        super(new SimpleResourceDefinition.Parameters(REGISTRATION, RESOLVER)
                 .setAddHandler(ModelOnlyAddStepHandler.INSTANCE)
                 .setRemoveHandler(ModelOnlyRemoveStepHandler.INSTANCE)
         );

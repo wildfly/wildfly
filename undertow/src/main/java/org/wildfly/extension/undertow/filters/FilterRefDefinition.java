@@ -23,6 +23,7 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.PersistentResourceDefinition;
+import org.jboss.as.controller.ResourceRegistration;
 import org.jboss.as.controller.ServiceRemoveStepHandler;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
@@ -37,8 +38,8 @@ import org.wildfly.extension.undertow.Constants;
 import org.wildfly.extension.undertow.FilterLocation;
 import org.wildfly.extension.undertow.Host;
 import org.wildfly.extension.undertow.PredicateValidator;
-import org.wildfly.extension.undertow.UndertowExtension;
 import org.wildfly.extension.undertow.UndertowFilter;
+import org.wildfly.extension.undertow.UndertowRootDefinition;
 import org.wildfly.extension.undertow.UndertowService;
 
 /**
@@ -46,7 +47,8 @@ import org.wildfly.extension.undertow.UndertowService;
  * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
 public class FilterRefDefinition extends PersistentResourceDefinition {
-    public static final PathElement PATH_ELEMENT = PathElement.pathElement(Constants.FILTER_REF);
+    public static final ResourceRegistration REGISTRATION = ResourceRegistration.of(PathElement.pathElement(Constants.FILTER_REF));
+    public static final PathElement PATH_ELEMENT = REGISTRATION.getPathElement();
     public static final AttributeDefinition PREDICATE = new SimpleAttributeDefinitionBuilder("predicate", ModelType.STRING)
             .setRequired(false)
             .setAllowExpression(true)
@@ -78,7 +80,7 @@ public class FilterRefDefinition extends PersistentResourceDefinition {
         FilterCapabilities capability = forHost
                 ? FilterCapabilities.FILTER_HOST_REF_CAPABILITY
                 : FilterCapabilities.FILTER_LOCATION_REF_CAPABILITY;
-        return new SimpleResourceDefinition.Parameters(PATH_ELEMENT, UndertowExtension.getResolver(PATH_ELEMENT.getKey()))
+        return new SimpleResourceDefinition.Parameters(REGISTRATION, UndertowRootDefinition.RESOLVER.createChildResolver(REGISTRATION.getPathElement()))
                 .setAddHandler(new FilterRefAdd(forHost))
                 .setRemoveHandler(new ServiceRemoveStepHandler(new FilterRefAdd(forHost)) {
                     @Override
