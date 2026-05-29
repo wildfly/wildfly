@@ -80,7 +80,7 @@ public class UndertowSubsystemTransformerTestCase extends AbstractSubsystemTest 
     private final ModelVersion modelVersion;
 
     public UndertowSubsystemTransformerTestCase(ModelTestControllerVersion controllerVersion, UndertowSubsystemModel subsystemModel) {
-        super(UndertowExtension.SUBSYSTEM_NAME, new UndertowExtension());
+        super(UndertowRootDefinition.REGISTRATION.getName(), new UndertowExtension());
         this.controllerVersion = controllerVersion;
         this.modelVersion = subsystemModel.getVersion();
     }

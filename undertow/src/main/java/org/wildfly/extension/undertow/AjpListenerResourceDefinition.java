@@ -15,8 +15,8 @@ import io.undertow.UndertowOptions;
 import io.undertow.protocols.ajp.AjpClientRequestClientStreamSinkChannel;
 
 import org.jboss.as.controller.AttributeDefinition;
-import org.jboss.as.controller.DeprecationData;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.ResourceRegistration;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
@@ -31,7 +31,8 @@ import org.wildfly.extension.io.OptionAttributeDefinition;
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a> (c) 2012 Red Hat Inc.
  */
 public class AjpListenerResourceDefinition extends ListenerResourceDefinition {
-    static final PathElement PATH_ELEMENT = PathElement.pathElement(Constants.AJP_LISTENER);
+    static final ResourceRegistration REGISTRATION = ResourceRegistration.of(PathElement.pathElement(Constants.AJP_LISTENER));
+    static final PathElement PATH_ELEMENT = REGISTRATION.getPathElement();
 
     protected static final SimpleAttributeDefinition SCHEME = new SimpleAttributeDefinitionBuilder(Constants.SCHEME, ModelType.STRING)
             .setRequired(false)
@@ -57,11 +58,7 @@ public class AjpListenerResourceDefinition extends ListenerResourceDefinition {
     static final List<AttributeDefinition> ATTRIBUTES = List.of(SCHEME, REDIRECT_SOCKET, MAX_AJP_PACKET_SIZE, ALLOWED_REQUEST_ATTRIBUTES_PATTERN);
 
     AjpListenerResourceDefinition() {
-        super(new SimpleResourceDefinition.Parameters(PATH_ELEMENT, UndertowExtension.getResolver(Constants.LISTENER))
-                        .setDeprecationData(new DeprecationData(UndertowSubsystemModel.VERSION_15_0_0.getVersion())),
-                new AjpListenerAdd(),
-                Map.of()
-        );
+        super(new SimpleResourceDefinition.Parameters(REGISTRATION, UndertowRootDefinition.RESOLVER).setDeprecatedSince(UndertowSubsystemModel.VERSION_15_0_0.getVersion()), new AjpListenerAdd(), Map.of());
     }
 
     @Override
