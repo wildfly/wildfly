@@ -98,7 +98,7 @@
         <testsuite.default.build.project.prefix></testsuite.default.build.project.prefix>
         <!-- 'Qualifier' segment to include in the name of the directory containing the pre-built server -->
         <server.output.dir.qualifier>${latest.ee.output.qualifier}</server.output.dir.qualifier>
-        <wildfly.build.output.dir>${testsuite.default.build.project.root}/${testsuite.default.build.project.prefix}build/target/${server.output.dir.prefix}-${server.output.dir.qualifier}${server.output.dir.version}</wildfly.build.output.dir>
+        <wildfly.build.output.dir>${testsuite.default.build.project.root}${testsuite.default.build.project.prefix}build/target/${server.output.dir.prefix}-${server.output.dir.qualifier}${server.output.dir.version}</wildfly.build.output.dir>
         <!-- Used to provide an absolute location for the distribution under test. -->
         <!-- This value is overridden in modules with the correct relative pathname. -->
         <jboss.dist>${project.basedir}/../${wildfly.build.output.dir}</jboss.dist>
@@ -739,7 +739,7 @@
                 <testsuite.ee.feature.pack.artifactId>${legacy.ee.feature.pack.artifactId}</testsuite.ee.feature.pack.artifactId>
                 <testsuite.ee.feature.pack.version>${ee.maven.version}</testsuite.ee.feature.pack.version>
                 <!-- For pre-built servers, use full builds pulled from the legacy/ee-feature-pack source tree -->
-                <testsuite.default.build.project.root>legacy/ee-feature-pack</testsuite.default.build.project.root>
+                <testsuite.default.build.project.root>legacy/ee-feature-pack/</testsuite.default.build.project.root>
                 <testsuite.default.build.project.prefix></testsuite.default.build.project.prefix>
                 <server.output.dir.qualifier>${legacy.ee.output.qualifier}</server.output.dir.qualifier>
                 <!-- For cases where we know for sure we don't want the 'wildfly' FP or channel, we can use these -->
@@ -795,7 +795,7 @@
                 <testsuite.ee.feature.pack.artifactId>${legacy.ee.feature.pack.artifactId}</testsuite.ee.feature.pack.artifactId>
                 <testsuite.ee.feature.pack.version>${ee.maven.version}</testsuite.ee.feature.pack.version>
                 <!-- For pre-built servers, use 'ee-' builds pulled from the legacy/ee-feature-pack source tree -->
-                <testsuite.default.build.project.root>legacy/ee-feature-pack</testsuite.default.build.project.root>
+                <testsuite.default.build.project.root>legacy/ee-feature-pack/</testsuite.default.build.project.root>
                 <testsuite.default.build.project.prefix>ee-</testsuite.default.build.project.prefix>
                 <server.output.dir.qualifier>${legacy.ee.output.qualifier}</server.output.dir.qualifier>
                 <!-- For cases where we know for sure we don't want the 'wildfly' FP or channel, we can use these -->
@@ -822,7 +822,7 @@
                 <!-- Tell tests what profile was used for provisioning -->
                 <server.provisioning.profile>preview-server-tests</server.provisioning.profile>
                 <!-- The pre-built legacy installations are not found under the top-level source root -->
-                <testsuite.default.build.project.root>preview</testsuite.default.build.project.root>
+                <testsuite.default.build.project.root>preview/</testsuite.default.build.project.root>
                 <!-- The pre-built server directory includes 'preview-' in its name -->
                 <server.output.dir.qualifier>${preview.output.qualifier}</server.output.dir.qualifier>
                 <!-- Use the WFP feature-pack -->

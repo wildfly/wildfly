@@ -30,7 +30,7 @@
         <jbossas.project.dir>${jbossas.ts.dir}/..</jbossas.project.dir>
         <jbossas.server.locale>-Duser.language=en -Duser.country=US</jbossas.server.locale>
         <!-- This testsuite uses the fat server 'dist' instead of the thin server 'build' -->
-        <wildfly.build.output.dir>${testsuite.default.build.project.root}/${testsuite.default.build.project.prefix}dist/target/${server.output.dir.prefix}-${server.output.dir.qualifier}${server.output.dir.version}</wildfly.build.output.dir>
+        <wildfly.build.output.dir>${testsuite.default.build.project.root}${testsuite.default.build.project.prefix}dist/target/${server.output.dir.prefix}-${server.output.dir.qualifier}${server.output.dir.version}</wildfly.build.output.dir>
     </properties>
 
     <dependencies>
