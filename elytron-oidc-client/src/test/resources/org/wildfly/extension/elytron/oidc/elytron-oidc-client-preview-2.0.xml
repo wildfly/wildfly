@@ -371,4 +371,5 @@
         <token-signature-algorithm>${exp.token-signature-algorithm:HS256}</token-signature-algorithm>
         <scope>${exp.scope:profile email}</scope>
     </secure-server>
+
 </subsystem>
