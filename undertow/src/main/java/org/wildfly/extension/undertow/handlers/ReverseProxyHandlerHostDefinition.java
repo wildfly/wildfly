@@ -30,6 +30,7 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.PersistentResourceDefinition;
+import org.jboss.as.controller.ResourceRegistration;
 import org.jboss.as.controller.ServiceRemoveStepHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
@@ -50,7 +51,6 @@ import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.wildfly.extension.undertow.Capabilities;
 import org.wildfly.extension.undertow.Constants;
-import org.wildfly.extension.undertow.UndertowExtension;
 import org.wildfly.extension.undertow.UndertowSubsystemModel;
 import org.wildfly.subsystem.resource.capability.CapabilityReference;
 import org.xnio.OptionMap;
@@ -64,7 +64,8 @@ import org.xnio.ssl.XnioSsl;
  * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
 public class ReverseProxyHandlerHostDefinition extends PersistentResourceDefinition {
-    public static final PathElement PATH_ELEMENT = PathElement.pathElement(Constants.HOST);
+    public static final ResourceRegistration REGISTRATION = ResourceRegistration.of(PathElement.pathElement(Constants.HOST));
+    public static final PathElement PATH_ELEMENT = REGISTRATION.getPathElement();
     private static final RuntimeCapability<Void> REVERSE_PROXY_HOST_RUNTIME_CAPABILITY =
                 RuntimeCapability.Builder.of(CAPABILITY_REVERSE_PROXY_HANDLER_HOST, true, ReverseProxyHostService.class)
                         .setDynamicNameMapper(BinaryCapabilityNameResolver.PARENT_CHILD)
@@ -125,7 +126,7 @@ public class ReverseProxyHandlerHostDefinition extends PersistentResourceDefinit
     public static final Collection<AttributeDefinition> ATTRIBUTES = List.of(OUTBOUND_SOCKET_BINDING, SCHEME, INSTANCE_ID, PATH, SSL_CONTEXT, SECURITY_REALM, ENABLE_HTTP2);
 
     ReverseProxyHandlerHostDefinition() {
-        super(new SimpleResourceDefinition.Parameters(PATH_ELEMENT, UndertowExtension.getResolver(Constants.HANDLER, Constants.REVERSE_PROXY, PATH_ELEMENT.getKey()))
+        super(new SimpleResourceDefinition.Parameters(REGISTRATION, ReverseProxyHandlerDefinition.RESOLVER.createChildResolver(REGISTRATION.getPathElement()))
                 .setCapabilities(REVERSE_PROXY_HOST_RUNTIME_CAPABILITY)
         );
     }

@@ -10,6 +10,7 @@ import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.PersistentResourceDefinition;
 import org.jboss.as.controller.ReloadRequiredAddStepHandler;
 import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
+import org.jboss.as.controller.ResourceRegistration;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
@@ -24,8 +25,8 @@ import java.util.List;
  * @author Stuart Douglas
  */
 class MimeMappingDefinition extends PersistentResourceDefinition {
-
-    static final PathElement PATH_ELEMENT = PathElement.pathElement(Constants.MIME_MAPPING);
+    static final ResourceRegistration REGISTRATION = ResourceRegistration.of(PathElement.pathElement(Constants.MIME_MAPPING));
+    static final PathElement PATH_ELEMENT = REGISTRATION.getPathElement();
     protected static final SimpleAttributeDefinition VALUE =
             new SimpleAttributeDefinitionBuilder(Constants.VALUE, ModelType.STRING, false)
                     .setRestartAllServices()
@@ -36,7 +37,7 @@ class MimeMappingDefinition extends PersistentResourceDefinition {
     static final Collection<AttributeDefinition> ATTRIBUTES = List.of(VALUE);
 
     MimeMappingDefinition() {
-        super(new SimpleResourceDefinition.Parameters(PATH_ELEMENT, UndertowExtension.getResolver(PATH_ELEMENT.getKey()))
+        super(new SimpleResourceDefinition.Parameters(REGISTRATION, UndertowRootDefinition.RESOLVER.createChildResolver(REGISTRATION.getPathElement()))
                 .setAddHandler(ReloadRequiredAddStepHandler.INSTANCE)
                 .setRemoveHandler(ReloadRequiredRemoveStepHandler.INSTANCE)
         );

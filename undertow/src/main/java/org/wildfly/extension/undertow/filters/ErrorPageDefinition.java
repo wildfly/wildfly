@@ -17,6 +17,7 @@ import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.ResourceRegistration;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -26,7 +27,8 @@ import org.wildfly.extension.undertow.Constants;
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a> (c) 2013 Red Hat Inc.
  */
 public class ErrorPageDefinition extends SimpleFilterDefinition {
-    public static final PathElement PATH_ELEMENT = PathElement.pathElement(Constants.ERROR_PAGE);
+    public static final ResourceRegistration REGISTRATION = ResourceRegistration.of(PathElement.pathElement(Constants.ERROR_PAGE));
+    public static final PathElement PATH_ELEMENT = REGISTRATION.getPathElement();
 
     public static final AttributeDefinition CODE = new SimpleAttributeDefinitionBuilder("code", ModelType.INT)
             .setAllowExpression(true)
@@ -41,7 +43,7 @@ public class ErrorPageDefinition extends SimpleFilterDefinition {
     public static final Collection<AttributeDefinition> ATTRIBUTES = List.of(CODE, PATH);
 
     ErrorPageDefinition() {
-        super(PATH_ELEMENT, ErrorPageDefinition::createHandlerWrapper);
+        super(REGISTRATION, ErrorPageDefinition::createHandlerWrapper);
     }
 
     @Override

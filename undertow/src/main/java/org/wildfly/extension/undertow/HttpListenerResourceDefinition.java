@@ -7,6 +7,7 @@ package org.wildfly.extension.undertow;
 
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.ResourceRegistration;
 import org.jboss.as.controller.SimpleResourceDefinition;
 
 import java.util.ArrayList;
@@ -19,12 +20,13 @@ import java.util.List;
  * @author Richard Achmatowicz (c) 2020 Red Hat Inc.
  */
 public class HttpListenerResourceDefinition extends AbstractHttpListenerResourceDefinition {
-    static final PathElement PATH_ELEMENT = PathElement.pathElement(Constants.HTTP_LISTENER);
+    static final ResourceRegistration REGISTRATION = ResourceRegistration.of(PathElement.pathElement(Constants.HTTP_LISTENER));
+    static final PathElement PATH_ELEMENT = REGISTRATION.getPathElement();
 
     static final List<AttributeDefinition> ATTRIBUTES = List.of(REDIRECT_SOCKET);
 
     HttpListenerResourceDefinition() {
-        super(new SimpleResourceDefinition.Parameters(PATH_ELEMENT, UndertowExtension.getResolver(Constants.LISTENER))
+        super(new SimpleResourceDefinition.Parameters(REGISTRATION, UndertowRootDefinition.RESOLVER)
                 .setCapabilities(HTTP_UPGRADE_REGISTRY_CAPABILITY), new HttpListenerAdd());
     }
 

@@ -22,7 +22,7 @@ import org.jboss.dmr.ModelNode;
 public class ResetConnectorStatisticsHandler implements OperationStepHandler {
     public static final String OPERATION_NAME = "reset-statistics";
 
-    public static final OperationDefinition DEFINITION = new SimpleOperationDefinitionBuilder(OPERATION_NAME, UndertowExtension.getResolver("listener"))
+    public static final OperationDefinition DEFINITION = new SimpleOperationDefinitionBuilder(OPERATION_NAME, ListenerResourceDefinition.RESOLVER)
             .setRuntimeOnly()
             .build();
 
