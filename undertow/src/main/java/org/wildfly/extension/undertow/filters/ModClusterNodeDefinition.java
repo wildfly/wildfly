@@ -32,16 +32,16 @@ import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.PrimitiveListAttributeDefinition;
+import org.jboss.as.controller.ResourceRegistration;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.client.helpers.MeasurementUnit;
-import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
+import org.jboss.as.controller.descriptions.ParentResourceDescriptionResolver;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.wildfly.extension.undertow.Constants;
-import org.wildfly.extension.undertow.UndertowExtension;
 import org.wildfly.service.capture.FunctionExecutor;
 import org.wildfly.subsystem.service.ServiceDependency;
 import org.wildfly.subsystem.service.capture.FunctionExecutorRegistry;
@@ -53,8 +53,8 @@ import org.wildfly.subsystem.service.capture.FunctionExecutorRegistry;
  */
 public class ModClusterNodeDefinition extends SimpleResourceDefinition {
 
-    static final PathElement PATH_ELEMENT = PathElement.pathElement(Constants.NODE);
-    static final ResourceDescriptionResolver RESOLVER = UndertowExtension.getResolver(Constants.FILTER, ModClusterDefinition.PATH_ELEMENT.getKey(), ModClusterBalancerDefinition.PATH_ELEMENT.getKey(), PATH_ELEMENT.getKey());
+    static final ResourceRegistration REGISTRATION = ResourceRegistration.of(PathElement.pathElement(Constants.NODE));
+    static final ParentResourceDescriptionResolver RESOLVER = ModClusterBalancerDefinition.RESOLVER.createChildResolver(REGISTRATION.getPathElement());
     static final BiFunction<String, ModelType, PrimitiveListAttributeDefinition.Builder> PRIMITIVE_LIST_BUILDER_FACTORY = PrimitiveListAttributeDefinition.Builder::new;
 
     enum NodeMetric implements Metric<ModClusterStatus.Node> {
@@ -232,7 +232,7 @@ public class ModClusterNodeDefinition extends SimpleResourceDefinition {
     private final FunctionExecutorRegistry<ModCluster> registry;
 
     ModClusterNodeDefinition(FunctionExecutorRegistry<ModCluster> registry) {
-        super(new Parameters(PATH_ELEMENT, RESOLVER).setRuntime());
+        super(new Parameters(REGISTRATION, RESOLVER).setRuntime());
         this.registry = registry;
     }
 

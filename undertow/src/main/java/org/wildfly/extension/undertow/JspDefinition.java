@@ -12,6 +12,7 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.PersistentResourceDefinition;
+import org.jboss.as.controller.ResourceRegistration;
 import org.jboss.as.controller.RestartParentResourceAddHandler;
 import org.jboss.as.controller.RestartParentResourceRemoveHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
@@ -32,7 +33,8 @@ import java.util.List;
  * @created 23.2.12 18:47
  */
 class JspDefinition extends PersistentResourceDefinition {
-    static final PathElement PATH_ELEMENT = PathElement.pathElement(Constants.SETTING, Constants.JSP);
+    static final ResourceRegistration REGISTRATION = ResourceRegistration.of(PathElement.pathElement(Constants.SETTING, Constants.JSP));
+    static final PathElement PATH_ELEMENT = REGISTRATION.getPathElement();
     protected static final SimpleAttributeDefinition DEVELOPMENT =
             new SimpleAttributeDefinitionBuilder(Constants.DEVELOPMENT, ModelType.BOOLEAN, true)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
@@ -185,7 +187,7 @@ class JspDefinition extends PersistentResourceDefinition {
             OPTIMIZE_SCRIPTLETS);
 
     JspDefinition() {
-        super(new SimpleResourceDefinition.Parameters(PATH_ELEMENT, UndertowExtension.getResolver(PATH_ELEMENT.getKeyValuePair()))
+        super(new SimpleResourceDefinition.Parameters(REGISTRATION, UndertowRootDefinition.RESOLVER.createChildResolver(REGISTRATION.getPathElement()))
                 .setAddHandler(new JSPAdd())
                 .setRemoveHandler(new JSPRemove())
         );

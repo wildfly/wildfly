@@ -19,6 +19,7 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.PropertiesAttributeDefinition;
+import org.jboss.as.controller.ResourceRegistration;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -32,8 +33,8 @@ import org.wildfly.extension.undertow.logging.UndertowLogger;
  * @author Tomaz Cerar (c) 2014 Red Hat Inc.
  */
 public class CustomFilterDefinition extends SimpleFilterDefinition {
-
-    public static final PathElement PATH_ELEMENT = PathElement.pathElement("custom-filter");
+    public static final ResourceRegistration REGISTRATION = ResourceRegistration.of(PathElement.pathElement("custom-filter"));
+    public static final PathElement PATH_ELEMENT = REGISTRATION.getPathElement();
 
     public static final AttributeDefinition CLASS_NAME = new SimpleAttributeDefinitionBuilder("class-name", ModelType.STRING)
             .setRequired(true)
@@ -57,7 +58,7 @@ public class CustomFilterDefinition extends SimpleFilterDefinition {
     public static final Collection<AttributeDefinition> ATTRIBUTES = List.of(CLASS_NAME, MODULE, PARAMETERS);
 
     CustomFilterDefinition() {
-        super(PATH_ELEMENT, CustomFilterDefinition::createHandlerWrapper);
+        super(REGISTRATION, CustomFilterDefinition::createHandlerWrapper);
     }
 
     @Override

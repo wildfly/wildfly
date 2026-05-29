@@ -15,8 +15,10 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.PersistentResourceDefinition;
+import org.jboss.as.controller.ResourceRegistration;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.client.helpers.MeasurementUnit;
+import org.jboss.as.controller.descriptions.ParentResourceDescriptionResolver;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -29,7 +31,9 @@ import java.util.List;
  * @author Stuart Douglas
  */
 public class ReverseProxyHandlerDefinition extends HandlerDefinition {
-    public static final PathElement PATH_ELEMENT =PathElement.pathElement(Constants.REVERSE_PROXY);
+    public static final ResourceRegistration REGISTRATION = ResourceRegistration.of(PathElement.pathElement(Constants.REVERSE_PROXY));
+    static final ParentResourceDescriptionResolver RESOLVER = HandlerDefinitions.RESOLVER.createChildResolver(REGISTRATION.getPathElement());
+    public static final PathElement PATH_ELEMENT = REGISTRATION.getPathElement();
 
     public static final AttributeDefinition PROBLEM_SERVER_RETRY = new SimpleAttributeDefinitionBuilder(Constants.PROBLEM_SERVER_RETRY, ModelType.INT)
             .setRequired(false)
@@ -107,7 +111,7 @@ public class ReverseProxyHandlerDefinition extends HandlerDefinition {
     public static final Collection<AttributeDefinition> ATTRIBUTES = List.of(CONNECTIONS_PER_THREAD, SESSION_COOKIE_NAMES, PROBLEM_SERVER_RETRY, REQUEST_QUEUE_SIZE, MAX_REQUEST_TIME, CACHED_CONNECTIONS_PER_THREAD, CONNECTION_IDLE_TIMEOUT, MAX_RETRIES,REUSE_X_FORWARDED_HEADER, REWRITE_HOST_HEADER);
 
     ReverseProxyHandlerDefinition() {
-        super(PATH_ELEMENT, ReverseProxyHandlerDefinition::createHandler);
+        super(REGISTRATION, ReverseProxyHandlerDefinition::createHandler);
     }
 
     @Override

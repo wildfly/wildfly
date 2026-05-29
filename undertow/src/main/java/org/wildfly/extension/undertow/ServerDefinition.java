@@ -12,6 +12,7 @@ import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
+import org.jboss.as.controller.ResourceRegistration;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
@@ -25,7 +26,8 @@ import org.jboss.dmr.ModelType;
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a> (c) 2013 Red Hat Inc.
  */
 class ServerDefinition extends SimpleResourceDefinition {
-    static final PathElement PATH_ELEMENT = PathElement.pathElement(Constants.SERVER);
+    static final ResourceRegistration REGISTRATION = ResourceRegistration.of(PathElement.pathElement(Constants.SERVER));
+    static final PathElement PATH_ELEMENT = REGISTRATION.getPathElement();
     static final RuntimeCapability<Void> SERVER_CAPABILITY = RuntimeCapability.Builder.of(Server.SERVICE_DESCRIPTOR)
             .addRequirements(Capabilities.CAPABILITY_UNDERTOW)
             .build();
@@ -45,7 +47,7 @@ class ServerDefinition extends SimpleResourceDefinition {
     static final Collection<AttributeDefinition> ATTRIBUTES = List.of(DEFAULT_HOST, SERVLET_CONTAINER);
 
     ServerDefinition() {
-        super(new SimpleResourceDefinition.Parameters(PATH_ELEMENT, UndertowExtension.getResolver(PATH_ELEMENT.getKey()))
+        super(new SimpleResourceDefinition.Parameters(REGISTRATION, UndertowRootDefinition.RESOLVER.createChildResolver(REGISTRATION.getPathElement()))
                 .setAddHandler(new ServerAdd())
                 .setRemoveHandler(ReloadRequiredRemoveStepHandler.INSTANCE)
                 .addCapabilities(SERVER_CAPABILITY, CommonWebServer.CAPABILITY)
