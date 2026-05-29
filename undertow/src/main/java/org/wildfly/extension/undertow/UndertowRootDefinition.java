@@ -5,7 +5,6 @@
 
 package org.wildfly.extension.undertow;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 import static org.wildfly.extension.undertow.Capabilities.CAPABILITY_HTTP_INVOKER;
 
 import java.util.Collection;
@@ -24,8 +23,11 @@ import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
+import org.jboss.as.controller.SubsystemResourceRegistration;
 import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraintDefinition;
 import org.jboss.as.controller.capability.RuntimeCapability;
+import org.jboss.as.controller.descriptions.ParentResourceDescriptionResolver;
+import org.jboss.as.controller.descriptions.SubsystemResourceDescriptionResolver;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -42,9 +44,11 @@ import org.wildfly.subsystem.service.capture.ServiceValueExecutorRegistry;
 /**
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a> (c) 2012 Red Hat Inc.
  */
-class UndertowRootDefinition extends SimpleResourceDefinition {
+public class UndertowRootDefinition extends SimpleResourceDefinition {
 
-    static final PathElement PATH_ELEMENT = PathElement.pathElement(SUBSYSTEM, UndertowExtension.SUBSYSTEM_NAME);
+    static final SubsystemResourceRegistration REGISTRATION = SubsystemResourceRegistration.of("undertow");
+    static final PathElement PATH_ELEMENT = REGISTRATION.getPathElement();
+    public static final ParentResourceDescriptionResolver RESOLVER = new SubsystemResourceDescriptionResolver(REGISTRATION.getName(), UndertowRootDefinition.class);
     static final RuntimeCapability<Void> UNDERTOW_CAPABILITY = RuntimeCapability.Builder.of(Capabilities.CAPABILITY_UNDERTOW, false, UndertowService.class)
                         .build();
 
@@ -110,7 +114,7 @@ class UndertowRootDefinition extends SimpleResourceDefinition {
     }
 
     private UndertowRootDefinition(Set<String> knownApplicationSecurityDomains, ServiceValueExecutorRegistry<UndertowService> registry) {
-        super(new SimpleResourceDefinition.Parameters(PATH_ELEMENT, UndertowExtension.getResolver())
+        super(new SimpleResourceDefinition.Parameters(REGISTRATION, RESOLVER)
                 .setAddHandler(new UndertowSubsystemAdd(knownApplicationSecurityDomains::contains, registry))
                 .setRemoveHandler(ReloadRequiredRemoveStepHandler.INSTANCE)
                 .addCapabilities(UNDERTOW_CAPABILITY, HTTP_INVOKER_RUNTIME_CAPABILITY)

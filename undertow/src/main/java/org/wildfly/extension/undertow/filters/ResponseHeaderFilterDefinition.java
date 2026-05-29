@@ -16,6 +16,7 @@ import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.ResourceRegistration;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -24,7 +25,8 @@ import org.jboss.dmr.ModelType;
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a> (c) 2013 Red Hat Inc.
  */
 public class ResponseHeaderFilterDefinition extends SimpleFilterDefinition {
-    public static final PathElement PATH_ELEMENT = PathElement.pathElement("response-header");
+    public static final ResourceRegistration REGISTRATION = ResourceRegistration.of(PathElement.pathElement("response-header"));
+    public static final PathElement PATH_ELEMENT = REGISTRATION.getPathElement();
 
     public static final AttributeDefinition NAME = new SimpleAttributeDefinitionBuilder("header-name", ModelType.STRING)
             .setRequired(true)
@@ -40,7 +42,7 @@ public class ResponseHeaderFilterDefinition extends SimpleFilterDefinition {
     public static final Collection<AttributeDefinition> ATTRIBUTES = List.of(NAME, VALUE);
 
     ResponseHeaderFilterDefinition() {
-        super(PATH_ELEMENT, ResponseHeaderFilterDefinition::createHandlerWrapper);
+        super(REGISTRATION, ResponseHeaderFilterDefinition::createHandlerWrapper);
     }
 
     @Override

@@ -19,6 +19,7 @@ import org.jboss.as.controller.ModuleIdentifierUtil;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.ResourceRegistration;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 
 import org.jboss.dmr.ModelNode;
@@ -32,7 +33,8 @@ import org.wildfly.extension.undertow.logging.UndertowLogger;
  * @author Tomaz Cerar (c) 2014 Red Hat Inc.
  */
 public class ExpressionFilterDefinition extends SimpleFilterDefinition {
-    public static final PathElement PATH_ELEMENT = PathElement.pathElement("expression-filter");
+    public static final ResourceRegistration REGISTRATION = ResourceRegistration.of(PathElement.pathElement("expression-filter"));
+    public static final PathElement PATH_ELEMENT = REGISTRATION.getPathElement();
 
     public static final AttributeDefinition EXPRESSION = new SimpleAttributeDefinitionBuilder("expression", ModelType.STRING)
             .setRequired(true)
@@ -48,7 +50,7 @@ public class ExpressionFilterDefinition extends SimpleFilterDefinition {
     public static final Collection<AttributeDefinition> ATTRIBUTES = List.of(EXPRESSION, MODULE);
 
     ExpressionFilterDefinition() {
-        super(PATH_ELEMENT, ExpressionFilterDefinition::createHandlerWrapper);
+        super(REGISTRATION, ExpressionFilterDefinition::createHandlerWrapper);
     }
 
     @Override
