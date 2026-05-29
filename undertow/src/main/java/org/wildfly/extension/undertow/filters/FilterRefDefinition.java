@@ -45,7 +45,6 @@ import org.wildfly.extension.undertow.UndertowService;
  */
 public class FilterRefDefinition extends PersistentResourceDefinition {
     public static final ResourceRegistration REGISTRATION = ResourceRegistration.of(PathElement.pathElement(Constants.FILTER_REF));
-    public static final PathElement PATH_ELEMENT = REGISTRATION.getPathElement();
     public static final AttributeDefinition PREDICATE = new SimpleAttributeDefinitionBuilder("predicate", ModelType.STRING)
             .setRequired(false)
             .setAllowExpression(true)

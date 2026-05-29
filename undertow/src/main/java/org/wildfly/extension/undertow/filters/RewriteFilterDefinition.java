@@ -29,7 +29,6 @@ import org.wildfly.extension.undertow.Constants;
  */
 public class RewriteFilterDefinition extends SimpleFilterDefinition {
     public static final ResourceRegistration REGISTRATION = ResourceRegistration.of(PathElement.pathElement(Constants.REWRITE));
-    public static final PathElement PATH_ELEMENT = REGISTRATION.getPathElement();
 
     public static final AttributeDefinition TARGET = new SimpleAttributeDefinitionBuilder("target", ModelType.STRING)
             .setRequired(true)

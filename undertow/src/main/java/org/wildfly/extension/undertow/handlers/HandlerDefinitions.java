@@ -26,7 +26,6 @@ import org.wildfly.extension.undertow.UndertowRootDefinition;
 public class HandlerDefinitions extends PersistentResourceDefinition {
     public static final ResourceRegistration REGISTRATION = ResourceRegistration.of(PathElement.pathElement(Constants.CONFIGURATION, Constants.HANDLER));
     static final ParentResourceDescriptionResolver RESOLVER = UndertowRootDefinition.RESOLVER.createChildResolver(REGISTRATION.getPathElement().getValue());
-    public static final PathElement PATH_ELEMENT = REGISTRATION.getPathElement();
 
     public HandlerDefinitions() {
         super(new SimpleResourceDefinition.Parameters(REGISTRATION, RESOLVER)
