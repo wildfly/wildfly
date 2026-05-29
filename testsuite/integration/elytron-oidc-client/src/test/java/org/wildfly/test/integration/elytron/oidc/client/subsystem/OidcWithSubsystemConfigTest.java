@@ -62,7 +62,7 @@ import io.restassured.RestAssured;
  */
 @RunWith(Arquillian.class)
 @RunAsClient
-@ServerSetup({ OidcWithSubsystemConfigTest.PreviewStabilitySetupTask.class,
+@ServerSetup({ OidcWithSubsystemConfigTest.CommunityStabilitySetupTask.class,
         OidcWithSubsystemConfigTest.KeycloakAndSubsystemSetup.class,
         OidcBaseTest.WildFlyServerSetupTask.class})
 public class OidcWithSubsystemConfigTest extends OidcBaseTest {
@@ -730,7 +730,7 @@ public class OidcWithSubsystemConfigTest extends OidcBaseTest {
         }
     }
 
-    public static class PreviewStabilitySetupTask extends StabilityServerSetupSnapshotRestoreTasks.Preview {
+    public static class CommunityStabilitySetupTask extends StabilityServerSetupSnapshotRestoreTasks.Community {
         @Override
         protected void doSetup(ManagementClient managementClient) throws Exception {
             // Write a system property so the model gets stored with a lower stability level.
