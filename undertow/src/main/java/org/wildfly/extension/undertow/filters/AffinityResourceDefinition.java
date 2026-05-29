@@ -25,7 +25,7 @@ public abstract class AffinityResourceDefinition extends ChildResourceDefinition
     protected static PathElement pathElement(String value) {
         return PathElement.pathElement(Constants.AFFINITY, value);
     }
-    static final PathElement WILDCARD_PATH = pathElement(PathElement.WILDCARD_VALUE);
+    public static final PathElement WILDCARD_PATH = pathElement(PathElement.WILDCARD_VALUE);
 
     private final UnaryOperator<ResourceDescriptor> configurator;
 
