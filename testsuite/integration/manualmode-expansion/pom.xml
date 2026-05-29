@@ -247,7 +247,7 @@
                         <node3>${node3}</node3>
                         <mcast>${mcast}</mcast>
                         <!-- Tell ProvisioningConsistenceTestCase the location of the pre-built server -->
-                        <dist.output.dir>${testsuite.default.build.project.root}/dist/target/${server.output.dir.prefix}-${server.output.dir.qualifier}${server.output.dir.version}</dist.output.dir>
+                        <dist.output.dir>${testsuite.default.build.project.root}dist/target/${server.output.dir.prefix}-${server.output.dir.qualifier}${server.output.dir.version}</dist.output.dir>
                         <build.output.dir>${wildfly.build.output.dir}</build.output.dir>
                     </systemPropertyVariables>
                 </configuration>
