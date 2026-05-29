@@ -349,7 +349,9 @@ public abstract class AbstractChannelResourceDefinitionRegistrar<C extends Chann
                     String protocolName = protocolResource.getName();
                     Class<? extends Protocol> protocolClass = findProtocolClass(context, protocolName, protocolResource.getModel());
                     this.register(registration, protocolName, protocolClass);
-                    resource.registerChild(StackResourceDefinitionRegistrar.Component.PROTOCOL.pathElement(protocolName), PlaceholderResource.INSTANCE);
+                    if (resource != stackResource) {
+                        resource.registerChild(StackResourceDefinitionRegistrar.Component.PROTOCOL.pathElement(protocolName), PlaceholderResource.INSTANCE);
+                    }
                 }
             }
         }
