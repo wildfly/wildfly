@@ -23,6 +23,7 @@ import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
+import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.SubsystemResourceRegistration;
 import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraintDefinition;
 import org.jboss.as.controller.capability.RuntimeCapability;
@@ -36,6 +37,8 @@ import org.wildfly.common.function.ExceptionFunction;
 import org.wildfly.extension.undertow.filters.FilterDefinitions;
 import org.wildfly.extension.undertow.handlers.HandlerDefinitions;
 import org.wildfly.service.capture.FunctionExecutor;
+import org.wildfly.subsystem.resource.ManagementResourceRegistrationContext;
+import org.wildfly.subsystem.resource.SubsystemResourceDefinitionRegistrar;
 import org.wildfly.subsystem.resource.capability.CapabilityReference;
 import org.wildfly.subsystem.service.ServiceDependency;
 import org.wildfly.subsystem.service.capture.FunctionExecutorRegistry;
@@ -44,7 +47,7 @@ import org.wildfly.subsystem.service.capture.ServiceValueExecutorRegistry;
 /**
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a> (c) 2012 Red Hat Inc.
  */
-public class UndertowRootDefinition extends SimpleResourceDefinition {
+public class UndertowRootDefinition extends SimpleResourceDefinition implements SubsystemResourceDefinitionRegistrar {
 
     static final SubsystemResourceRegistration REGISTRATION = SubsystemResourceRegistration.of("undertow");
     static final PathElement PATH_ELEMENT = REGISTRATION.getPathElement();
@@ -121,6 +124,17 @@ public class UndertowRootDefinition extends SimpleResourceDefinition {
         );
         this.knownApplicationSecurityDomains = knownApplicationSecurityDomains;
         this.registry = registry;
+    }
+
+    @Override
+    public ManagementResourceRegistration register(SubsystemRegistration subsystem, ManagementResourceRegistrationContext context) {
+        ManagementResourceRegistration registration = subsystem.registerSubsystemModel(this);
+
+        ManagementResourceRegistration deployments = subsystem.registerDeploymentModel(new DeploymentDefinition());
+        deployments.registerSubModel(new DeploymentServletDefinition());
+        deployments.registerSubModel(new DeploymentWebSocketDefinition());
+
+        return registration;
     }
 
     @Override
