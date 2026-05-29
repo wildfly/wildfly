@@ -6,7 +6,11 @@
 package org.wildfly.extension.elytron.oidc;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assume.assumeTrue;
 import static org.wildfly.extension.elytron.oidc.ElytronOidcSubsystemDefinition.ELYTRON_CAPABILITY_NAME;
+
+import java.io.IOException;
+import java.util.Collection;
 
 import org.jboss.as.controller.RunningMode;
 import org.jboss.as.controller.capability.registry.RuntimeCapabilityRegistry;
@@ -20,26 +24,39 @@ import org.jboss.as.version.Stability;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameters;
 
 /**
  * Subsystem parsing test case.
  *
  * <a href="mailto:fjuma@redhat.com">Farah Juma</a>
  */
+@RunWith(Parameterized.class)
 public class OidcTestCase extends AbstractSubsystemSchemaTest<ElytronOidcSubsystemSchema> {
 
+    @Parameters(name = "{0}")
+    public static Collection<ElytronOidcSubsystemSchema> parameters() {
+        return ElytronOidcSubsystemSchema.CURRENT.values();
+    }
     private OidcConfigService configService;
     private KernelServices services = null;
 
-    public OidcTestCase() {
-        super(ElytronOidcExtension.SUBSYSTEM_NAME, new ElytronOidcExtension(), ElytronOidcSubsystemSchema.VERSION_2_0_PREVIEW, ElytronOidcSubsystemSchema.CURRENT.get(Stability.PREVIEW));
+    public OidcTestCase(ElytronOidcSubsystemSchema schema) {
+        super(ElytronOidcExtension.SUBSYSTEM_NAME, new ElytronOidcExtension(), schema, ElytronOidcSubsystemSchema.CURRENT.get(schema.getStability()));
+    }
+
+    @Override
+    protected String getSubsystemXml() throws IOException {
+        return readResource(String.format("oidc-%s.xml", this.getSubsystemSchema().getStability().toString().toLowerCase()));
     }
 
     @Before
     public void prepare() throws Throwable {
         if (services != null) return;
-        String subsystemXml = "oidc.xml";
-        services = super.createKernelServicesBuilder(new DefaultInitializer(this.getSubsystemSchema().getStability())).setSubsystemXmlResource(subsystemXml).build();
+        String subsystemXml = getSubsystemXml();
+        services = super.createKernelServicesBuilder(new DefaultInitializer(this.getSubsystemSchema().getStability())).setSubsystemXml(subsystemXml).build();
         if (! services.isSuccessfulBoot()) {
             Assert.fail(services.getBootError().toString());
         }
@@ -90,6 +107,7 @@ public class OidcTestCase extends AbstractSubsystemSchemaTest<ElytronOidcSubsyst
 
     @Test
     public void testSecureDeploymentWithScopes() throws Exception {
+        assumeTrue("Scope attribute is PREVIEW-only", this.getSubsystemSchema().getStability() == Stability.PREVIEW);
         String expectedJson =
                 "{\"provider-url\" : \"http://localhost:8080/realms/WildFly\", \"client-id\" : \"wildfly-console\", \"public-client\" : true, \"scope\" : \"profile email phone\", \"ssl-required\" : \"EXTERNAL\"}";
         assertEquals(expectedJson, configService.getJSON("wildfly-with-scope"));
@@ -104,6 +122,7 @@ public class OidcTestCase extends AbstractSubsystemSchemaTest<ElytronOidcSubsyst
 
     @Test
     public void testSecureServerWithScopes() throws Exception {
+        assumeTrue("Scope attribute is PREVIEW-only", this.getSubsystemSchema().getStability() == Stability.PREVIEW);
         String expectedJson =
                 "{\"client-id\" : \"wildfly-console\", \"public-client\" : true, \"scope\" : \"profile email phone\", \"provider-url\" : \"http://localhost:8080/realms/WildFly\", \"ssl-required\" : \"EXTERNAL\"}";
         assertEquals(expectedJson, configService.getJSON("wildfly-server-with-scope"));
@@ -111,6 +130,7 @@ public class OidcTestCase extends AbstractSubsystemSchemaTest<ElytronOidcSubsyst
 
     @Test
     public void testSecureServerWithRequest() throws Exception {
+        assumeTrue("Authentication request format is PREVIEW-only", this.getSubsystemSchema().getStability() == Stability.PREVIEW);
         String expectedJson =
                 "{\"client-id\" : \"wildfly-console\", \"public-client\" : false, \"provider-url\" : \"http://localhost:8080/realms/WildFly\", \"ssl-required\" : \"EXTERNAL\", \"authentication-request-format\" : \"request\", \"request-object-signing-algorithm\" : \"RS-256\", \"request-object-encryption-enc-value\" : \"A128CBC-HS256\", \"request-object-encryption-alg-value\" : \"RSA-OAEP\", \"request-object-signing-keystore-file\" : \"jwt.keystore\", \"request-object-signing-keystore-password\" : \"password\", \"request-object-signing-key-alias\" : \"alias\", \"request-object-signing-key-password\" : \"password\", \"request-object-signing-keystore-type\" : \"JKS\", \"credentials\" : {\"secret\" : \"password\"}}";
         assertEquals(expectedJson, configService.getJSON("wildfly-server-with-request"));
@@ -118,6 +138,7 @@ public class OidcTestCase extends AbstractSubsystemSchemaTest<ElytronOidcSubsyst
 
     @Test
     public void testSecureServerWithRequestUri() throws Exception {
+        assumeTrue("Authentication request format is PREVIEW-only", this.getSubsystemSchema().getStability() == Stability.PREVIEW);
         String expectedJson =
                 "{\"client-id\" : \"wildfly-console\", \"public-client\" : false, \"provider-url\" : \"http://localhost:8080/realms/WildFly\", \"ssl-required\" : \"EXTERNAL\", \"authentication-request-format\" : \"request_uri\", \"request-object-signing-algorithm\" : \"RS-256\", \"request-object-encryption-enc-value\" : \"A128CBC-HS256\", \"request-object-encryption-alg-value\" : \"RSA-OAEP\", \"request-object-signing-keystore-file\" : \"jwt.keystore\", \"request-object-signing-keystore-password\" : \"password\", \"request-object-signing-key-alias\" : \"alias\", \"request-object-signing-key-password\" : \"password\", \"request-object-signing-keystore-type\" : \"JKS\", \"credentials\" : {\"secret\" : \"password\"}}";
         assertEquals(expectedJson, configService.getJSON("wildfly-server-with-request-uri"));
@@ -125,6 +146,7 @@ public class OidcTestCase extends AbstractSubsystemSchemaTest<ElytronOidcSubsyst
 
     @Test
     public void testSecureDeploymentWithRequest() throws Exception {
+        assumeTrue("Authentication request format is PREVIEW-only", this.getSubsystemSchema().getStability() == Stability.PREVIEW);
         String expectedJson =
                 "{\"client-id\" : \"wildfly-console\", \"public-client\" : false, \"provider-url\" : \"http://localhost:8080/realms/WildFly\", \"ssl-required\" : \"EXTERNAL\", \"authentication-request-format\" : \"request\", \"request-object-signing-algorithm\" : \"RS-256\", \"request-object-encryption-enc-value\" : \"A128CBC-HS256\", \"request-object-encryption-alg-value\" : \"RSA-OAEP\", \"request-object-signing-keystore-file\" : \"jwt.keystore\", \"request-object-signing-keystore-password\" : \"password\", \"request-object-signing-key-alias\" : \"alias\", \"request-object-signing-key-password\" : \"password\", \"request-object-signing-keystore-type\" : \"JKS\", \"credentials\" : {\"secret\" : \"password\"}}";
         assertEquals(expectedJson, configService.getJSON("wildfly-with-request"));
@@ -132,6 +154,7 @@ public class OidcTestCase extends AbstractSubsystemSchemaTest<ElytronOidcSubsyst
 
     @Test
     public void testSecureDeploymentWithRequestUri() throws Exception {
+        assumeTrue("Authentication request format is PREVIEW-only", this.getSubsystemSchema().getStability() == Stability.PREVIEW);
         String expectedJson =
                 "{\"client-id\" : \"wildfly-console\", \"public-client\" : false, \"provider-url\" : \"http://localhost:8080/realms/WildFly\", \"ssl-required\" : \"EXTERNAL\", \"authentication-request-format\" : \"request_uri\", \"request-object-signing-algorithm\" : \"RS-256\", \"request-object-encryption-enc-value\" : \"A128CBC-HS256\", \"request-object-encryption-alg-value\" : \"RSA-OAEP\", \"request-object-signing-keystore-file\" : \"jwt.keystore\", \"request-object-signing-keystore-password\" : \"password\", \"request-object-signing-key-alias\" : \"alias\", \"request-object-signing-key-password\" : \"password\", \"request-object-signing-keystore-type\" : \"JKS\", \"credentials\" : {\"secret\" : \"password\"}}";
         assertEquals(expectedJson, configService.getJSON("wildfly-with-request-uri"));

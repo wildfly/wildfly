@@ -3,12 +3,6 @@
   ~ SPDX-License-Identifier: Apache-2.0
   -->
 
-<!--
-  This example configuration should always use the latest "DEFAULT" schema, in addition to containing representation
-  of all options which are handled by transformers this file should also contain the examples we expect transformers
-  to reject.
-  -->
-
 <subsystem xmlns="urn:wildfly:elytron-oidc-client:2.0">
     <realm name="main">
         <realm-public-key>MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQC4siLKUew0WYxdtq6/rwk4Uj/4amGFFnE/yzIxQVU0PUqz3QBRVkUWpDj0K6ZnS5nzJV/y6DHLEy7hjZTdRDphyF1sq09aDOYnVpzu8o2sIlMM8q5RnUyEfIyUZqwo8pSZDJ90fS0s+IDUJNCSIrAKO3w1lqZDHL6E/YFHXyzkvQIDAQAB</realm-public-key>
@@ -27,21 +21,13 @@
         <cors-max-age>600</cors-max-age>
         <cors-allowed-headers>X-Custom</cors-allowed-headers>
         <cors-allowed-methods>PUT,POST,DELETE,GET</cors-allowed-methods>
-        <cors-exposed-headers>X-Custom-Exposed</cors-exposed-headers>
         <expose-token>false</expose-token>
         <always-refresh-token>false</always-refresh-token>
         <register-node-at-startup>true</register-node-at-startup>
         <register-node-period>60</register-node-period>
         <token-store>session</token-store>
         <principal-attribute>sub</principal-attribute>
-        <autodetect-bearer-only>true</autodetect-bearer-only>
-        <ignore-oauth-query-parameter>false</ignore-oauth-query-parameter>
         <proxy-url>http://localhost:9000</proxy-url>
-        <verify-token-audience>true</verify-token-audience>
-        <socket-timeout-millis>5000</socket-timeout-millis>
-        <connection-ttl-millis>30000</connection-ttl-millis>
-        <connection-timeout-millis>6000</connection-timeout-millis>
-        <token-signature-algorithm>RS256</token-signature-algorithm>
     </realm>
     <realm name="jboss-infra">
         <realm-public-key>MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAqKoq+a9MgXepmsPJDmo45qswuChW9pWjanX68oIBuI4hGvhQxFHryCow230A+sr7tFdMQMt8f1l/ysmV/fYAuW29WaoY4kI4Ou1yYPuwywKSsxT6PooTs83hKyZ1h4LZMj5DkLGDDDyVRHob2WmPaYg9RGVRw3iGGsD/p+Yb+L/gnBYQnZZ7lYqmN7h36p5CkzzlgXQA1Ha8sQxL+rJNH8+sZm0vBrKsoII3Of7TqHGsm1RwFV3XCuGJ7S61AbjJMXL5DQgJl9Z5scvxGAyoRLKC294UgMnQdzyBTMPw2GybxkRKmiK2KjQKmcopmrJp/Bt6fBR6ZkGSs9qUlxGHgwIDAQAB</realm-public-key>
@@ -50,22 +36,16 @@
     <provider name="google">
         <provider-url>https://accounts.google.com</provider-url>
         <ssl-required>EXTERNAL</ssl-required>
-        <cors-exposed-headers>X-Provider-Exposed</cors-exposed-headers>
         <principal-attribute>sub</principal-attribute>
-        <autodetect-bearer-only>false</autodetect-bearer-only>
-        <ignore-oauth-query-parameter>true</ignore-oauth-query-parameter>
-        <verify-token-audience>false</verify-token-audience>
-        <socket-timeout-millis>8000</socket-timeout-millis>
-        <connection-ttl-millis>25000</connection-ttl-millis>
-        <connection-timeout-millis>7000</connection-timeout-millis>
-        <token-signature-algorithm>ES256</token-signature-algorithm>
     </provider>
-    <secure-deployment name="web-console.war">
-        <enable-basic-auth>false</enable-basic-auth>
+    <provider name="keycloak">
+        <provider-url>http://localhost:8080/realms/WildFly</provider-url>
+    </provider>
+    <secure-deployment name="myAppWithSecret.war">
         <min-time-between-jwks-requests>20</min-time-between-jwks-requests>
         <public-key-cache-ttl>3600</public-key-cache-ttl>
         <realm>main</realm>
-        <resource>web-console</resource>
+        <resource>myAppId</resource>
         <token-minimum-time-to-live>10</token-minimum-time-to-live>
         <turn-off-change-session-id-on-login>false</turn-off-change-session-id-on-login>
         <use-resource-role-mappings>true</use-resource-role-mappings>
@@ -73,14 +53,12 @@
         <auth-server-url>http://localhost:8080/auth</auth-server-url>
         <ssl-required>EXTERNAL</ssl-required>
         <confidential-port>443</confidential-port>
-        <cors-exposed-headers>X-Deployment-Exposed</cors-exposed-headers>
-        <ignore-oauth-query-parameter>false</ignore-oauth-query-parameter>
         <proxy-url>http://localhost:9000</proxy-url>
         <verify-token-audience>true</verify-token-audience>
-        <credential name="secret" secret="0aa31d98-e0aa-404c-b6e0-e771dba1e798" />
-        <redirect-rewrite-rule name="^/wsmain/api/(.*)$" replacement="api/$1" />
+        <credential name="secret" secret="0aa31d98-e0aa-404c-b6e0-e771dba1e798"/>
+        <redirect-rewrite-rule name="^/wsmain/api/(.*)$" replacement="/api/$1/"/>
     </secure-deployment>
-    <secure-deployment name="http-endpoint.war">
+    <secure-deployment name="myAppWithJwt.war">
         <adapter-state-cookie-path>/</adapter-state-cookie-path>
         <realm>main</realm>
         <resource>http-endpoint</resource>
@@ -88,10 +66,10 @@
         <realm-public-key>MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQC4siLKUew0WYxdtq6/rwk4Uj/4amGFFnE/yzIxQVU0PUqz3QBRVkUWpDj0K6ZnS5nzJV/y6DHLEy7hjZTdRDphyF1sq09aDOYnVpzu8o2sIlMM8q5RnUyEfIyUZqwo8pSZDJ90fS0s+IDUJNCSIrAKO3w1lqZDHL6E/YFHXyzkvQIDAQAB</realm-public-key>
         <auth-server-url>http://localhost:8080/auth</auth-server-url>
         <ssl-required>EXTERNAL</ssl-required>
-        <credential client-key-alias="keyAlias" client-key-password="keyPassword" client-keystore-file="/tmp/keystore.jks" client-keystore-password="keystorePassword" client-keystore-type="jks" name="jwt" token-timeout="10" algorithm="RS256"/>
+        <credential client-key-alias="keyAlias" client-key-password="keyPassword" client-keystore-file="/tmp/keystore.jks" client-keystore-password="keystorePassword" client-keystore-type="jks" name="jwt" token-timeout="10"/>
         <redirect-rewrite-rule name="^/wsmain/api/(.*)$" replacement="/api/$1/"/>
     </secure-deployment>
-    <secure-deployment name="some-endpoint.war">
+    <secure-deployment name="myAppWithSecretJwt.war">
         <adapter-state-cookie-path>/</adapter-state-cookie-path>
         <realm>main</realm>
         <resource>some-endpoint</resource>
@@ -99,37 +77,60 @@
         <realm-public-key>MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQC4siLKUew0WYxdtq6/rwk4Uj/4amGFFnE/yzIxQVU0PUqz3QBRVkUWpDj0K6ZnS5nzJV/y6DHLEy7hjZTdRDphyF1sq09aDOYnVpzu8o2sIlMM8q5RnUyEfIyUZqwo8pSZDJ90fS0s+IDUJNCSIrAKO3w1lqZDHL6E/YFHXyzkvQIDAQAB</realm-public-key>
         <auth-server-url>http://localhost:8080/auth</auth-server-url>
         <ssl-required>EXTERNAL</ssl-required>
-        <credential name="secret-jwt" secret="fd8f54e1-6994-413a-acf8-90bc67f05412" algorithm="HS256"/>
-        <redirect-rewrite-rule name="^/wsmain/api/(.*)$"  replacement="/api/$1/"/>
+        <credential algorithm="HS512" name="secret-jwt" secret="fd8f54e1-6994-413a-acf8-90bc67f05412"/>
+        <redirect-rewrite-rule name="^/wsmain/api/(.*)$" replacement="/api/$1/"/>
     </secure-deployment>
-    <secure-deployment name="wildfly-management.war">
+    <secure-deployment name="myAppWithRealmInline.war">
+        <realm>demo</realm>
+        <resource>customer-portal</resource>
+        <auth-server-url>http://localhost:8081/auth</auth-server-url>
+        <ssl-required>EXTERNAL</ssl-required>
+        <credential name="secret" secret="password"/>
+    </secure-deployment>
+    <secure-deployment name="myAppWithProvider.war">
+        <client-id>customer-portal</client-id>
+        <provider>google</provider>
+        <ssl-required>EXTERNAL</ssl-required>
+        <principal-attribute>firstName</principal-attribute>
+        <credential name="secret" secret="password"/>
+    </secure-deployment>
+    <secure-deployment name="myBearerOnlyApp.war">
+        <bearer-only>true</bearer-only>
+        <realm>jboss-infra</realm>
+        <resource>myBearerOnlyApp</resource>
+        <ssl-required>EXTERNAL</ssl-required>
+        <principal-attribute>preferred_username</principal-attribute>
+        <socket-timeout-millis>10000</socket-timeout-millis>
+        <connection-ttl-millis>40000</connection-ttl-millis>
+        <connection-timeout-millis>50000</connection-timeout-millis>
+    </secure-deployment>
+    <secure-deployment name="wildfly-management">
         <bearer-only>true</bearer-only>
         <realm>jboss-infra</realm>
         <resource>wildfly-management</resource>
         <ssl-required>EXTERNAL</ssl-required>
         <principal-attribute>preferred_username</principal-attribute>
-        <socket-timeout-millis>10000</socket-timeout-millis>
-        <connection-ttl-millis>40000</connection-ttl-millis>
-        <connection-timeout-millis>50000</connection-timeout-millis>
     </secure-deployment>
-    <secure-deployment name="wildfly-test.war">
+    <secure-deployment name="wildfly-management-provider-url">
+        <bearer-only>true</bearer-only>
         <client-id>wildfly-management</client-id>
-        <provider-url>http://localhost:8080/auth/realms/WildFly</provider-url>
+        <provider>keycloak</provider>
         <ssl-required>EXTERNAL</ssl-required>
         <principal-attribute>preferred_username</principal-attribute>
-        <socket-timeout-millis>10000</socket-timeout-millis>
-        <connection-ttl-millis>40000</connection-ttl-millis>
-        <connection-timeout-millis>50000</connection-timeout-millis>
-        <token-signature-algorithm>HS256</token-signature-algorithm>
     </secure-deployment>
     <secure-server name="wildfly-console">
-        <client-id>wildfly-console</client-id>
-        <enable-basic-auth>true</enable-basic-auth>
+        <adapter-state-cookie-path>/</adapter-state-cookie-path>
+        <public-client>true</public-client>
         <realm>jboss-infra</realm>
+        <resource>wildfly-console</resource>
         <ssl-required>EXTERNAL</ssl-required>
-        <cors-exposed-headers>X-Server-Exposed</cors-exposed-headers>
-        <principal-attribute>preferred_username</principal-attribute>
-        <ignore-oauth-query-parameter>true</ignore-oauth-query-parameter>
+        <confidential-port>443</confidential-port>
         <proxy-url>http://localhost:9000</proxy-url>
+    </secure-server>
+    <secure-server name="another-wildfly-console">
+        <client-id>wildfly-console</client-id>
+        <provider>keycloak</provider>
+        <public-client>true</public-client>
+        <ssl-required>EXTERNAL</ssl-required>
     </secure-server>
 </subsystem>
