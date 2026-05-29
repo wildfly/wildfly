@@ -3,37 +3,132 @@
   ~ SPDX-License-Identifier: Apache-2.0
   -->
 
-<subsystem xmlns="urn:wildfly:elytron-oidc-client:community:2.0">
-    <secure-deployment name="wildfly-deployment-with-scope.war">
-        <client-id>wildfly-console</client-id>
-        <provider>keycloak</provider>
-        <public-client>true</public-client>
+<!--
+  This example configuration should always use the latest "DEFAULT" schema, it should contain representations
+  of all elements and attributes in the schema that are not rejected by transformers.
+  -->
+
+<subsystem xmlns="urn:wildfly:elytron-oidc-client:2.0">
+    <realm name="main">
+        <realm-public-key>MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQC4siLKUew0WYxdtq6/rwk4Uj/4amGFFnE/yzIxQVU0PUqz3QBRVkUWpDj0K6ZnS5nzJV/y6DHLEy7hjZTdRDphyF1sq09aDOYnVpzu8o2sIlMM8q5RnUyEfIyUZqwo8pSZDJ90fS0s+IDUJNCSIrAKO3w1lqZDHL6E/YFHXyzkvQIDAQAB</realm-public-key>
+        <auth-server-url>http://localhost:8080/auth</auth-server-url>
+        <truststore>truststore.jks</truststore>
+        <truststore-password>secret</truststore-password>
         <ssl-required>EXTERNAL</ssl-required>
-        <authentication-request-format>oauth2</authentication-request-format>
-        <request-object-signing-algorithm>RS-256</request-object-signing-algorithm>
-        <request-object-encryption-alg-value>RSA-OAEP</request-object-encryption-alg-value>
-        <request-object-encryption-enc-value>A128CBC-HS256</request-object-encryption-enc-value>
-        <request-object-signing-keystore-file>jwt.keystore</request-object-signing-keystore-file>
-        <request-object-signing-keystore-password>password</request-object-signing-keystore-password>
-        <request-object-signing-key-alias>alias</request-object-signing-key-alias>
-        <request-object-signing-key-password>password</request-object-signing-key-password>
-        <request-object-signing-keystore-type>JKS</request-object-signing-keystore-type>
-        <scope>profile email phone</scope>
+        <confidential-port>443</confidential-port>
+        <allow-any-hostname>false</allow-any-hostname>
+        <disable-trust-manager>true</disable-trust-manager>
+        <connection-pool-size>20</connection-pool-size>
+        <enable-cors>true</enable-cors>
+        <client-keystore>keys.jks</client-keystore>
+        <client-keystore-password>secret</client-keystore-password>
+        <client-key-password>secret</client-key-password>
+        <cors-max-age>600</cors-max-age>
+        <cors-allowed-headers>X-Custom</cors-allowed-headers>
+        <cors-allowed-methods>PUT,POST,DELETE,GET</cors-allowed-methods>
+        <cors-exposed-headers>X-Custom-Exposed</cors-exposed-headers>
+        <expose-token>false</expose-token>
+        <always-refresh-token>false</always-refresh-token>
+        <register-node-at-startup>true</register-node-at-startup>
+        <register-node-period>60</register-node-period>
+        <token-store>session</token-store>
+        <principal-attribute>sub</principal-attribute>
+        <autodetect-bearer-only>true</autodetect-bearer-only>
+        <ignore-oauth-query-parameter>false</ignore-oauth-query-parameter>
+        <proxy-url>http://localhost:9000</proxy-url>
+        <verify-token-audience>true</verify-token-audience>
+        <socket-timeout-millis>5000</socket-timeout-millis>
+        <connection-ttl-millis>30000</connection-ttl-millis>
+        <connection-timeout-millis>6000</connection-timeout-millis>
+        <token-signature-algorithm>RS256</token-signature-algorithm>
+    </realm>
+    <realm name="jboss-infra">
+        <realm-public-key>MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAqKoq+a9MgXepmsPJDmo45qswuChW9pWjanX68oIBuI4hGvhQxFHryCow230A+sr7tFdMQMt8f1l/ysmV/fYAuW29WaoY4kI4Ou1yYPuwywKSsxT6PooTs83hKyZ1h4LZMj5DkLGDDDyVRHob2WmPaYg9RGVRw3iGGsD/p+Yb+L/gnBYQnZZ7lYqmN7h36p5CkzzlgXQA1Ha8sQxL+rJNH8+sZm0vBrKsoII3Of7TqHGsm1RwFV3XCuGJ7S61AbjJMXL5DQgJl9Z5scvxGAyoRLKC294UgMnQdzyBTMPw2GybxkRKmiK2KjQKmcopmrJp/Bt6fBR6ZkGSs9qUlxGHgwIDAQAB</realm-public-key>
+        <auth-server-url>http://localhost:8180/auth</auth-server-url>
+    </realm>
+    <provider name="google">
+        <provider-url>https://accounts.google.com</provider-url>
+        <ssl-required>EXTERNAL</ssl-required>
+        <cors-exposed-headers>X-Provider-Exposed</cors-exposed-headers>
+        <principal-attribute>sub</principal-attribute>
+        <autodetect-bearer-only>false</autodetect-bearer-only>
+        <ignore-oauth-query-parameter>true</ignore-oauth-query-parameter>
+        <verify-token-audience>false</verify-token-audience>
+        <socket-timeout-millis>8000</socket-timeout-millis>
+        <connection-ttl-millis>25000</connection-ttl-millis>
+        <connection-timeout-millis>7000</connection-timeout-millis>
+        <token-signature-algorithm>ES256</token-signature-algorithm>
+    </provider>
+    <secure-deployment name="web-console.war">
+        <enable-basic-auth>false</enable-basic-auth>
+        <min-time-between-jwks-requests>20</min-time-between-jwks-requests>
+        <public-key-cache-ttl>3600</public-key-cache-ttl>
+        <realm>main</realm>
+        <resource>web-console</resource>
+        <token-minimum-time-to-live>10</token-minimum-time-to-live>
+        <turn-off-change-session-id-on-login>false</turn-off-change-session-id-on-login>
+        <use-resource-role-mappings>true</use-resource-role-mappings>
+        <realm-public-key>MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQC4siLKUew0WYxdtq6/rwk4Uj/4amGFFnE/yzIxQVU0PUqz3QBRVkUWpDj0K6ZnS5nzJV/y6DHLEy7hjZTdRDphyF1sq09aDOYnVpzu8o2sIlMM8q5RnUyEfIyUZqwo8pSZDJ90fS0s+IDUJNCSIrAKO3w1lqZDHL6E/YFHXyzkvQIDAQAB</realm-public-key>
+        <auth-server-url>http://localhost:8080/auth</auth-server-url>
+        <ssl-required>EXTERNAL</ssl-required>
+        <confidential-port>443</confidential-port>
+        <cors-exposed-headers>X-Deployment-Exposed</cors-exposed-headers>
+        <ignore-oauth-query-parameter>false</ignore-oauth-query-parameter>
+        <proxy-url>http://localhost:9000</proxy-url>
+        <verify-token-audience>true</verify-token-audience>
+        <credential name="secret" secret="0aa31d98-e0aa-404c-b6e0-e771dba1e798" />
+        <redirect-rewrite-rule name="^/wsmain/api/(.*)$" replacement="api/$1" />
     </secure-deployment>
-    <secure-server name="wildfly-with-scope.war">
-        <client-id>wildfly-console</client-id>
-        <provider>keycloak</provider>
-        <public-client>true</public-client>
+    <secure-deployment name="http-endpoint.war">
+        <adapter-state-cookie-path>/</adapter-state-cookie-path>
+        <realm>main</realm>
+        <resource>http-endpoint</resource>
+        <use-resource-role-mappings>true</use-resource-role-mappings>
+        <realm-public-key>MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQC4siLKUew0WYxdtq6/rwk4Uj/4amGFFnE/yzIxQVU0PUqz3QBRVkUWpDj0K6ZnS5nzJV/y6DHLEy7hjZTdRDphyF1sq09aDOYnVpzu8o2sIlMM8q5RnUyEfIyUZqwo8pSZDJ90fS0s+IDUJNCSIrAKO3w1lqZDHL6E/YFHXyzkvQIDAQAB</realm-public-key>
+        <auth-server-url>http://localhost:8080/auth</auth-server-url>
         <ssl-required>EXTERNAL</ssl-required>
-        <authentication-request-format>oauth2</authentication-request-format>
-        <request-object-signing-algorithm>RS-256</request-object-signing-algorithm>
-        <request-object-encryption-alg-value>RSA-OAEP</request-object-encryption-alg-value>
-        <request-object-encryption-enc-value>A128CBC-HS256</request-object-encryption-enc-value>
-        <request-object-signing-keystore-file>jwt.keystore</request-object-signing-keystore-file>
-        <request-object-signing-keystore-password>password</request-object-signing-keystore-password>
-        <request-object-signing-key-alias>alias</request-object-signing-key-alias>
-        <request-object-signing-key-password>password</request-object-signing-key-password>
-        <request-object-signing-keystore-type>JKS</request-object-signing-keystore-type>
-        <scope>profile email phone</scope>
+        <credential client-key-alias="keyAlias" client-key-password="keyPassword" client-keystore-file="/tmp/keystore.jks" client-keystore-password="keystorePassword" client-keystore-type="jks" name="jwt" token-timeout="10" algorithm="RS256"/>
+        <redirect-rewrite-rule name="^/wsmain/api/(.*)$" replacement="/api/$1/"/>
+    </secure-deployment>
+    <secure-deployment name="some-endpoint.war">
+        <adapter-state-cookie-path>/</adapter-state-cookie-path>
+        <realm>main</realm>
+        <resource>some-endpoint</resource>
+        <use-resource-role-mappings>true</use-resource-role-mappings>
+        <realm-public-key>MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQC4siLKUew0WYxdtq6/rwk4Uj/4amGFFnE/yzIxQVU0PUqz3QBRVkUWpDj0K6ZnS5nzJV/y6DHLEy7hjZTdRDphyF1sq09aDOYnVpzu8o2sIlMM8q5RnUyEfIyUZqwo8pSZDJ90fS0s+IDUJNCSIrAKO3w1lqZDHL6E/YFHXyzkvQIDAQAB</realm-public-key>
+        <auth-server-url>http://localhost:8080/auth</auth-server-url>
+        <ssl-required>EXTERNAL</ssl-required>
+        <credential name="secret-jwt" secret="fd8f54e1-6994-413a-acf8-90bc67f05412" algorithm="HS256"/>
+        <redirect-rewrite-rule name="^/wsmain/api/(.*)$"  replacement="/api/$1/"/>
+    </secure-deployment>
+    <secure-deployment name="wildfly-management.war">
+        <bearer-only>true</bearer-only>
+        <realm>jboss-infra</realm>
+        <resource>wildfly-management</resource>
+        <ssl-required>EXTERNAL</ssl-required>
+        <principal-attribute>preferred_username</principal-attribute>
+        <socket-timeout-millis>10000</socket-timeout-millis>
+        <connection-ttl-millis>40000</connection-ttl-millis>
+        <connection-timeout-millis>50000</connection-timeout-millis>
+    </secure-deployment>
+    <secure-deployment name="wildfly-test.war">
+        <client-id>wildfly-management</client-id>
+        <provider-url>http://localhost:8080/auth/realms/WildFly</provider-url>
+        <ssl-required>EXTERNAL</ssl-required>
+        <principal-attribute>preferred_username</principal-attribute>
+        <socket-timeout-millis>10000</socket-timeout-millis>
+        <connection-ttl-millis>40000</connection-ttl-millis>
+        <connection-timeout-millis>50000</connection-timeout-millis>
+        <token-signature-algorithm>HS256</token-signature-algorithm>
+    </secure-deployment>
+    <secure-server name="wildfly-console">
+        <client-id>wildfly-console</client-id>
+        <enable-basic-auth>true</enable-basic-auth>
+        <realm>jboss-infra</realm>
+        <ssl-required>EXTERNAL</ssl-required>
+        <cors-exposed-headers>X-Server-Exposed</cors-exposed-headers>
+        <principal-attribute>preferred_username</principal-attribute>
+        <ignore-oauth-query-parameter>true</ignore-oauth-query-parameter>
+        <proxy-url>http://localhost:9000</proxy-url>
     </secure-server>
 </subsystem>
