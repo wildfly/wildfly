@@ -34,7 +34,6 @@ import org.wildfly.extension.undertow.logging.UndertowLogger;
  */
 public class CustomFilterDefinition extends SimpleFilterDefinition {
     public static final ResourceRegistration REGISTRATION = ResourceRegistration.of(PathElement.pathElement("custom-filter"));
-    public static final PathElement PATH_ELEMENT = REGISTRATION.getPathElement();
 
     public static final AttributeDefinition CLASS_NAME = new SimpleAttributeDefinitionBuilder("class-name", ModelType.STRING)
             .setRequired(true)

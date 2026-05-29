@@ -22,7 +22,6 @@ import org.jboss.dmr.ModelNode;
  */
 public class GzipFilterDefinition extends SimpleFilterDefinition {
     public static final ResourceRegistration REGISTRATION = ResourceRegistration.of(PathElement.pathElement("gzip"));
-    public static final PathElement PATH_ELEMENT = REGISTRATION.getPathElement();
 
     GzipFilterDefinition() {
         super(REGISTRATION, GzipFilterDefinition::createHandlerWrapper);

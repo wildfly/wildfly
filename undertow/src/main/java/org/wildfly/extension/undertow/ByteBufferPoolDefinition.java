@@ -37,7 +37,6 @@ import org.jboss.msc.service.StopContext;
  */
 public class ByteBufferPoolDefinition extends PersistentResourceDefinition {
     static final ResourceRegistration REGISTRATION = ResourceRegistration.of(PathElement.pathElement(Constants.BYTE_BUFFER_POOL));
-    static final PathElement PATH_ELEMENT = REGISTRATION.getPathElement();
     static final RuntimeCapability<Void> UNDERTOW_BUFFER_POOL_RUNTIME_CAPABILITY =
             RuntimeCapability.Builder.of(Capabilities.CAPABILITY_BYTE_BUFFER_POOL, true, ByteBufferPool.class).build();
 

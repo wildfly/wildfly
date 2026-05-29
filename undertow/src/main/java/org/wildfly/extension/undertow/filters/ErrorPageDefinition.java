@@ -28,7 +28,6 @@ import org.wildfly.extension.undertow.Constants;
  */
 public class ErrorPageDefinition extends SimpleFilterDefinition {
     public static final ResourceRegistration REGISTRATION = ResourceRegistration.of(PathElement.pathElement(Constants.ERROR_PAGE));
-    public static final PathElement PATH_ELEMENT = REGISTRATION.getPathElement();
 
     public static final AttributeDefinition CODE = new SimpleAttributeDefinitionBuilder("code", ModelType.INT)
             .setAllowExpression(true)

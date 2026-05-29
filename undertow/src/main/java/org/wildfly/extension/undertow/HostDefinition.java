@@ -39,7 +39,6 @@ import org.wildfly.subsystem.resource.operation.ResourceOperationRuntimeHandler;
 class HostDefinition extends SimpleResourceDefinition {
     static final ResourceRegistration REGISTRATION = ResourceRegistration.of(PathElement.pathElement(Constants.HOST));
     static final ParentResourceDescriptionResolver RESOLVER = UndertowRootDefinition.RESOLVER.createChildResolver(REGISTRATION.getPathElement());
-    static final PathElement PATH_ELEMENT = REGISTRATION.getPathElement();
     public static final String DEFAULT_WEB_MODULE_DEFAULT = "ROOT.war";
 
     static final RuntimeCapability<Void> HOST_CAPABILITY = RuntimeCapability.Builder.of(Host.SERVICE_DESCRIPTOR).build();

@@ -23,7 +23,6 @@ import org.jboss.dmr.ModelNode;
  */
 class AffinityCookieDefinition extends AbstractCookieDefinition {
     static final ResourceRegistration REGISTRATION = ResourceRegistration.of(PathElement.pathElement(Constants.SETTING, Constants.AFFINITY_COOKIE));
-    static final PathElement PATH_ELEMENT = REGISTRATION.getPathElement();
 
     static final Collection<AttributeDefinition> ATTRIBUTES = EnumSet.complementOf(EnumSet.of(Attribute.OPTIONAL_NAME, Attribute.COMMENT))
             .stream().map(Attribute::getDefinition).collect(Collectors.toUnmodifiableSet());

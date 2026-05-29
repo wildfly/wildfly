@@ -27,7 +27,6 @@ import org.jboss.dmr.ModelType;
  */
 public class RequestLimitHandlerDefinition extends SimpleFilterDefinition {
     public static final ResourceRegistration REGISTRATION = ResourceRegistration.of(PathElement.pathElement("request-limit"));
-    public static final PathElement PATH_ELEMENT = REGISTRATION.getPathElement();
 
     public static final AttributeDefinition MAX_CONCURRENT_REQUESTS = new SimpleAttributeDefinitionBuilder("max-concurrent-requests", ModelType.INT)
             .setValidator(new IntRangeValidator(1, false, true))

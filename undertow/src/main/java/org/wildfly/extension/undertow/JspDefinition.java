@@ -34,7 +34,7 @@ import java.util.List;
  */
 class JspDefinition extends PersistentResourceDefinition {
     static final ResourceRegistration REGISTRATION = ResourceRegistration.of(PathElement.pathElement(Constants.SETTING, Constants.JSP));
-    static final PathElement PATH_ELEMENT = REGISTRATION.getPathElement();
+
     protected static final SimpleAttributeDefinition DEVELOPMENT =
             new SimpleAttributeDefinitionBuilder(Constants.DEVELOPMENT, ModelType.BOOLEAN, true)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
@@ -230,7 +230,7 @@ class JspDefinition extends PersistentResourceDefinition {
 
     private static class JSPAdd extends RestartParentResourceAddHandler {
         protected JSPAdd() {
-            super(ServletContainerDefinition.PATH_ELEMENT.getKey());
+            super(ServletContainerDefinition.REGISTRATION.getPathElement().getKey());
         }
 
         @Override
@@ -254,7 +254,7 @@ class JspDefinition extends PersistentResourceDefinition {
     private static class JSPRemove extends RestartParentResourceRemoveHandler {
 
         protected JSPRemove() {
-            super(ServletContainerDefinition.PATH_ELEMENT.getKey());
+            super(ServletContainerDefinition.REGISTRATION.getPathElement().getKey());
         }
 
         @Override

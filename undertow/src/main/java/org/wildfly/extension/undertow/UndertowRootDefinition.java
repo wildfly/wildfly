@@ -17,7 +17,6 @@ import org.jboss.as.controller.AbstractWriteAttributeHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
@@ -50,7 +49,6 @@ import org.wildfly.subsystem.service.capture.ServiceValueExecutorRegistry;
 public class UndertowRootDefinition extends SimpleResourceDefinition implements SubsystemResourceDefinitionRegistrar {
 
     static final SubsystemResourceRegistration REGISTRATION = SubsystemResourceRegistration.of("undertow");
-    static final PathElement PATH_ELEMENT = REGISTRATION.getPathElement();
     public static final ParentResourceDescriptionResolver RESOLVER = new SubsystemResourceDescriptionResolver(REGISTRATION.getName(), UndertowRootDefinition.class);
     static final RuntimeCapability<Void> UNDERTOW_CAPABILITY = RuntimeCapability.Builder.of(Capabilities.CAPABILITY_UNDERTOW, false, UndertowService.class)
                         .build();

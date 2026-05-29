@@ -30,7 +30,6 @@ import org.jboss.dmr.ModelType;
  */
 class ServletContainerDefinition extends PersistentResourceDefinition {
     static final ResourceRegistration REGISTRATION = ResourceRegistration.of(PathElement.pathElement(Constants.SERVLET_CONTAINER));
-    static final PathElement PATH_ELEMENT = REGISTRATION.getPathElement();
     static final RuntimeCapability<Void> SERVLET_CONTAINER_CAPABILITY = RuntimeCapability.Builder.of(Capabilities.CAPABILITY_SERVLET_CONTAINER, true, ServletContainerService.class)
                 .addRequirements(Capabilities.CAPABILITY_UNDERTOW)
                 .build();

@@ -28,7 +28,6 @@ import org.wildfly.extension.undertow.UndertowRootDefinition;
 public class FilterDefinitions extends PersistentResourceDefinition {
     public static final ResourceRegistration REGISTRATION = ResourceRegistration.of(PathElement.pathElement(Constants.CONFIGURATION, Constants.FILTER));
     static final ParentResourceDescriptionResolver RESOLVER = UndertowRootDefinition.RESOLVER.createChildResolver(REGISTRATION.getPathElement().getValue());
-    public static final PathElement PATH_ELEMENT = REGISTRATION.getPathElement();
 
     public FilterDefinitions() {
         super(new Parameters(REGISTRATION, RESOLVER)
@@ -58,13 +57,12 @@ public class FilterDefinitions extends PersistentResourceDefinition {
     public void registerChildren(ManagementResourceRegistration resourceRegistration) {
         super.registerChildren(resourceRegistration);
 
-        PathElement targetPe = RequestLimitHandlerDefinition.PATH_ELEMENT;
-        AliasEntry aliasEntry = new AliasEntry(resourceRegistration.getSubModel(PathAddress.pathAddress(targetPe))) {
+        AliasEntry aliasEntry = new AliasEntry(resourceRegistration.getSubModel(PathAddress.pathAddress(RequestLimitHandlerDefinition.REGISTRATION.getPathElement()))) {
             @Override
             public PathAddress convertToTargetAddress(PathAddress aliasAddress, AliasContext aliasContext) {
                 PathElement pe = aliasAddress.getLastElement();
 
-                return aliasAddress.getParent().append(PathElement.pathElement(targetPe.getKey(), pe.getValue()));
+                return aliasAddress.getParent().append(PathElement.pathElement(RequestLimitHandlerDefinition.REGISTRATION.getPathElement().getKey(), pe.getValue()));
             }
         };
         resourceRegistration.registerAlias(PathElement.pathElement("connection-limit"), aliasEntry);

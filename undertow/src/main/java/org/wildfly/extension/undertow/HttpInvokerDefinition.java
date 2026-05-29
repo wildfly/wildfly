@@ -40,7 +40,6 @@ import org.wildfly.security.auth.server.HttpAuthenticationFactory;
  */
 public class HttpInvokerDefinition extends PersistentResourceDefinition {
     static final ResourceRegistration REGISTRATION = ResourceRegistration.of(PathElement.pathElement(Constants.SETTING, Constants.HTTP_INVOKER));
-    static final PathElement PATH_ELEMENT = REGISTRATION.getPathElement();
     static final RuntimeCapability<Void> HTTP_INVOKER_HOST_CAPABILITY =
                 RuntimeCapability.Builder.of(CAPABILITY_HTTP_INVOKER_HOST, true, Void.class)
                         .setDynamicNameMapper(BinaryCapabilityNameResolver.GRANDPARENT_PARENT)

@@ -125,8 +125,8 @@ public class UndertowSubsystemTransformerTestCase extends AbstractSubsystemTest 
         KernelServices services = this.build(builder);
 
         ModelFixer fixer = model -> {
-            model.get(HandlerDefinitions.PATH_ELEMENT.getKeyValuePair()).setEmptyObject();
-            model.get(FilterDefinitions.PATH_ELEMENT.getKeyValuePair()).setEmptyObject();
+            model.get(HandlerDefinitions.REGISTRATION.getPathElement().getKeyValuePair()).setEmptyObject();
+            model.get(FilterDefinitions.REGISTRATION.getPathElement().getKeyValuePair()).setEmptyObject();
             return model;
         };
 
@@ -139,21 +139,21 @@ public class UndertowSubsystemTransformerTestCase extends AbstractSubsystemTest 
         KernelServices services = this.build(builder);
 
         FailedOperationTransformationConfig config = new FailedOperationTransformationConfig();
-        PathAddress subsystemAddress = PathAddress.pathAddress(UndertowRootDefinition.PATH_ELEMENT);
+        PathAddress subsystemAddress = PathAddress.pathAddress(UndertowRootDefinition.REGISTRATION.getPathElement());
 
         if (UndertowSubsystemModel.VERSION_15_0_0.requiresTransformation(this.modelVersion)) {
-            PathAddress serverAddress = subsystemAddress.append(PathElement.pathElement(ServerDefinition.PATH_ELEMENT.getKey(), "default-server"));
+            PathAddress serverAddress = subsystemAddress.append(PathElement.pathElement(ServerDefinition.REGISTRATION.getPathElement().getKey(), "default-server"));
 
-            PathAddress ajpListenerAddress = serverAddress.append(PathElement.pathElement(AjpListenerResourceDefinition.PATH_ELEMENT.getKey(), "ajp"));
+            PathAddress ajpListenerAddress = serverAddress.append(PathElement.pathElement(AjpListenerResourceDefinition.REGISTRATION.getPathElement().getKey(), "ajp"));
             config.addFailedAttribute(ajpListenerAddress, new FailedOperationTransformationConfig.NewAttributesConfig(AjpListenerResourceDefinition.ALLOWED_REQUEST_ATTRIBUTES_PATTERN));
 
-            PathAddress consoleAccessLogAddress = serverAddress.append(PathElement.pathElement(HostDefinition.PATH_ELEMENT.getKey(), "default-host"))
-                .append(PathElement.pathElement(ConsoleAccessLogDefinition.PATH_ELEMENT.getKey(), "console-access-log"));
+            PathAddress consoleAccessLogAddress = serverAddress.append(PathElement.pathElement(HostDefinition.REGISTRATION.getPathElement().getKey(), "default-host"))
+                .append(PathElement.pathElement(ConsoleAccessLogDefinition.REGISTRATION.getPathElement().getKey(), "console-access-log"));
             config.addFailedAttribute(consoleAccessLogAddress, new SecureProtocolAttributeConfig(ExchangeAttributeDefinitions.ATTRIBUTES.getName()));
         }
         if (UndertowSubsystemModel.VERSION_13_0_0.requiresTransformation(this.modelVersion)) {
-            PathAddress servletContainerAddress = subsystemAddress.append(PathElement.pathElement(ServletContainerDefinition.PATH_ELEMENT.getKey(), "rejected-container"));
-            PathAddress affinityCookiePath = subsystemAddress.append(PathElement.pathElement(ServletContainerDefinition.PATH_ELEMENT.getKey(), "affinity-cookie-container")).append(AffinityCookieDefinition.PATH_ELEMENT);
+            PathAddress servletContainerAddress = subsystemAddress.append(PathElement.pathElement(ServletContainerDefinition.REGISTRATION.getPathElement().getKey(), "rejected-container"));
+            PathAddress affinityCookiePath = subsystemAddress.append(PathElement.pathElement(ServletContainerDefinition.REGISTRATION.getPathElement().getKey(), "affinity-cookie-container")).append(AffinityCookieDefinition.REGISTRATION.getPathElement());
 
             config.addFailedAttribute(servletContainerAddress, new FailedOperationTransformationConfig.NewAttributesConfig(ServletContainerDefinition.ORPHAN_SESSION_ALLOWED));
 

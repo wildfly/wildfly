@@ -23,7 +23,6 @@ import java.util.List;
  */
 class WelcomeFileDefinition extends PersistentResourceDefinition {
     static final ResourceRegistration REGISTRATION = ResourceRegistration.of(PathElement.pathElement(Constants.WELCOME_FILE));
-    static final PathElement PATH_ELEMENT = REGISTRATION.getPathElement();
 
     WelcomeFileDefinition() {
         super(new SimpleResourceDefinition.Parameters(REGISTRATION, UndertowRootDefinition.RESOLVER.createChildResolver(REGISTRATION.getPathElement()))

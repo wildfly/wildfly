@@ -26,7 +26,6 @@ import org.wildfly.extension.undertow.filters.FilterRefDefinition;
  */
 class LocationDefinition extends PersistentResourceDefinition {
     static final ResourceRegistration REGISTRATION = ResourceRegistration.of(PathElement.pathElement(Constants.LOCATION));
-    static final PathElement PATH_ELEMENT = REGISTRATION.getPathElement();
     static final RuntimeCapability<Void> LOCATION_CAPABILITY = RuntimeCapability.Builder.of(Capabilities.CAPABILITY_LOCATION, true, LocationService.class)
             .addRequirements(Capabilities.CAPABILITY_UNDERTOW)
             .setDynamicNameMapper(TernaryCapabilityNameResolver.GRANDPARENT_PARENT_CHILD)

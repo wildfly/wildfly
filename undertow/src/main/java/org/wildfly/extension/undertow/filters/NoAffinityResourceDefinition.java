@@ -7,7 +7,6 @@ package org.wildfly.extension.undertow.filters;
 
 import java.util.function.UnaryOperator;
 
-import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ResourceRegistration;
 import org.wildfly.extension.undertow.Constants;
 
@@ -18,7 +17,6 @@ import org.wildfly.extension.undertow.Constants;
  */
 public class NoAffinityResourceDefinition extends AffinityResourceDefinition {
     public static final ResourceRegistration REGISTRATION = ResourceRegistration.of(pathElement(Constants.NONE));
-    public static final PathElement PATH = REGISTRATION.getPathElement();
 
     public NoAffinityResourceDefinition() {
         super(REGISTRATION, UnaryOperator.identity());

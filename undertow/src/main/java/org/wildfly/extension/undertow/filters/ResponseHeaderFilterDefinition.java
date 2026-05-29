@@ -26,7 +26,6 @@ import org.jboss.dmr.ModelType;
  */
 public class ResponseHeaderFilterDefinition extends SimpleFilterDefinition {
     public static final ResourceRegistration REGISTRATION = ResourceRegistration.of(PathElement.pathElement("response-header"));
-    public static final PathElement PATH_ELEMENT = REGISTRATION.getPathElement();
 
     public static final AttributeDefinition NAME = new SimpleAttributeDefinitionBuilder("header-name", ModelType.STRING)
             .setRequired(true)
