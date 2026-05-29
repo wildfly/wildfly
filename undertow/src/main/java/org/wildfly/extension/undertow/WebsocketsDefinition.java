@@ -40,7 +40,6 @@ import org.jboss.msc.service.ServiceName;
  */
 class WebsocketsDefinition extends PersistentResourceDefinition {
     static final ResourceRegistration REGISTRATION = ResourceRegistration.of(PathElement.pathElement(Constants.SETTING, Constants.WEBSOCKETS));
-    static final PathElement PATH_ELEMENT = REGISTRATION.getPathElement();
     private static final RuntimeCapability<Void> WEBSOCKET_CAPABILITY = RuntimeCapability.Builder.of(Capabilities.CAPABILITY_WEBSOCKET, true, UndertowListener.class)
             .setDynamicNameMapper(UnaryCapabilityNameResolver.PARENT)
             .build();
@@ -118,7 +117,7 @@ class WebsocketsDefinition extends PersistentResourceDefinition {
 
     private static class WebsocketsAdd extends RestartParentResourceAddHandler {
         protected WebsocketsAdd() {
-            super(ServletContainerDefinition.PATH_ELEMENT.getKey());
+            super(ServletContainerDefinition.REGISTRATION.getPathElement().getKey());
         }
 
         @Override
@@ -142,7 +141,7 @@ class WebsocketsDefinition extends PersistentResourceDefinition {
     private static class WebsocketsRemove extends RestartParentResourceRemoveHandler {
 
         protected WebsocketsRemove() {
-            super(ServletContainerDefinition.PATH_ELEMENT.getKey());
+            super(ServletContainerDefinition.REGISTRATION.getPathElement().getKey());
         }
 
         @Override

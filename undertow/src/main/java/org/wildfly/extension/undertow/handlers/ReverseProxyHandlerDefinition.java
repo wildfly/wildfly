@@ -33,7 +33,6 @@ import java.util.List;
 public class ReverseProxyHandlerDefinition extends HandlerDefinition {
     public static final ResourceRegistration REGISTRATION = ResourceRegistration.of(PathElement.pathElement(Constants.REVERSE_PROXY));
     static final ParentResourceDescriptionResolver RESOLVER = HandlerDefinitions.RESOLVER.createChildResolver(REGISTRATION.getPathElement());
-    public static final PathElement PATH_ELEMENT = REGISTRATION.getPathElement();
 
     public static final AttributeDefinition PROBLEM_SERVER_RETRY = new SimpleAttributeDefinitionBuilder(Constants.PROBLEM_SERVER_RETRY, ModelType.INT)
             .setRequired(false)

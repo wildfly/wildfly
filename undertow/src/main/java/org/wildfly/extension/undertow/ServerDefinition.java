@@ -27,7 +27,6 @@ import org.jboss.dmr.ModelType;
  */
 class ServerDefinition extends SimpleResourceDefinition {
     static final ResourceRegistration REGISTRATION = ResourceRegistration.of(PathElement.pathElement(Constants.SERVER));
-    static final PathElement PATH_ELEMENT = REGISTRATION.getPathElement();
     static final RuntimeCapability<Void> SERVER_CAPABILITY = RuntimeCapability.Builder.of(Server.SERVICE_DESCRIPTOR)
             .addRequirements(Capabilities.CAPABILITY_UNDERTOW)
             .build();

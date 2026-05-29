@@ -34,7 +34,6 @@ import org.wildfly.subsystem.service.ResourceServiceConfigurator;
  */
 abstract class SingleSignOnDefinition implements ChildResourceDefinitionRegistrar, ResourceModelResolver<SingleSignOnConfiguration>, ResourceServiceConfigurator {
     static final ResourceRegistration REGISTRATION = ResourceRegistration.of(PathElement.pathElement(Constants.SETTING, Constants.SINGLE_SIGN_ON));
-    static final PathElement PATH_ELEMENT = REGISTRATION.getPathElement();
 
     enum Attribute implements AttributeDefinitionProvider {
         DOMAIN(Constants.DOMAIN, ModelType.STRING, null),

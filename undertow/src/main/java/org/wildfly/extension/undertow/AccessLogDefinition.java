@@ -30,7 +30,6 @@ import org.jboss.dmr.ValueExpression;
  */
 class AccessLogDefinition extends PersistentResourceDefinition {
     static final ResourceRegistration REGISTRATION = ResourceRegistration.of(PathElement.pathElement(Constants.SETTING, Constants.ACCESS_LOG));
-    static final PathElement PATH_ELEMENT = REGISTRATION.getPathElement();
     static final RuntimeCapability<Void> ACCESS_LOG_CAPABILITY = RuntimeCapability.Builder.of(Capabilities.CAPABILITY_ACCESS_LOG, true, AccessLogService.class)
               .setDynamicNameMapper(BinaryCapabilityNameResolver.GRANDPARENT_PARENT)
               .build();
