@@ -32,7 +32,6 @@ import org.wildfly.extension.io.OptionAttributeDefinition;
  */
 public class AjpListenerResourceDefinition extends ListenerResourceDefinition {
     static final ResourceRegistration REGISTRATION = ResourceRegistration.of(PathElement.pathElement(Constants.AJP_LISTENER));
-    static final PathElement PATH_ELEMENT = REGISTRATION.getPathElement();
 
     protected static final SimpleAttributeDefinition SCHEME = new SimpleAttributeDefinitionBuilder(Constants.SCHEME, ModelType.STRING)
             .setRequired(false)

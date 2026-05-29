@@ -97,7 +97,7 @@ abstract class AbstractCookieDefinition extends PersistentResourceDefinition {
         private final Collection<AttributeDefinition> attributes;
 
         protected SessionCookieAdd(Collection<AttributeDefinition> attributes) {
-            super(ServletContainerDefinition.PATH_ELEMENT.getKey());
+            super(ServletContainerDefinition.REGISTRATION.getPathElement().getKey());
 
             this.attributes = attributes;
         }
@@ -123,7 +123,7 @@ abstract class AbstractCookieDefinition extends PersistentResourceDefinition {
     private static class SessionCookieRemove extends RestartParentResourceRemoveHandler {
 
         protected SessionCookieRemove() {
-            super(ServletContainerDefinition.PATH_ELEMENT.getKey());
+            super(ServletContainerDefinition.REGISTRATION.getPathElement().getKey());
         }
 
         @Override

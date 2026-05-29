@@ -40,7 +40,6 @@ import org.xnio.SslClientAuthMode;
  */
 public class HttpsListenerResourceDefinition extends AbstractHttpListenerResourceDefinition {
     static final ResourceRegistration REGISTRATION = ResourceRegistration.of(PathElement.pathElement(Constants.HTTPS_LISTENER));
-    static final PathElement PATH_ELEMENT = REGISTRATION.getPathElement();
 
     protected static final SimpleAttributeDefinition SSL_CONTEXT = new SimpleAttributeDefinitionBuilder(Constants.SSL_CONTEXT, ModelType.STRING, false)
             .setAlternatives(Constants.SECURITY_REALM, Constants.VERIFY_CLIENT, Constants.ENABLED_CIPHER_SUITES, Constants.ENABLED_PROTOCOLS, Constants.SSL_SESSION_CACHE_SIZE, Constants.SSL_SESSION_TIMEOUT)

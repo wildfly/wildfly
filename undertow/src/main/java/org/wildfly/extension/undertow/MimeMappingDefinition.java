@@ -26,7 +26,6 @@ import java.util.List;
  */
 class MimeMappingDefinition extends PersistentResourceDefinition {
     static final ResourceRegistration REGISTRATION = ResourceRegistration.of(PathElement.pathElement(Constants.MIME_MAPPING));
-    static final PathElement PATH_ELEMENT = REGISTRATION.getPathElement();
     protected static final SimpleAttributeDefinition VALUE =
             new SimpleAttributeDefinitionBuilder(Constants.VALUE, ModelType.STRING, false)
                     .setRestartAllServices()

@@ -37,7 +37,6 @@ import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ResourceRegistration;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
@@ -75,7 +74,6 @@ import org.wildfly.subsystem.service.capture.ServiceValueRegistry;
 public class ModClusterDefinition extends AbstractFilterDefinition {
     public static final ResourceRegistration REGISTRATION = ResourceRegistration.of(pathElement(Constants.MOD_CLUSTER));
     static final ParentResourceDescriptionResolver RESOLVER = FilterDefinitions.RESOLVER.createChildResolver(REGISTRATION.getPathElement());
-    public static final PathElement PATH_ELEMENT = REGISTRATION.getPathElement();
 
     enum Capability implements org.jboss.as.clustering.controller.Capability {
         MOD_CLUSTER_FILTER_CAPABILITY(CAPABILITY_MOD_CLUSTER_FILTER, HandlerWrapper.class),
