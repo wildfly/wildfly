@@ -21,7 +21,6 @@ import java.util.List;
  */
 public class HttpListenerResourceDefinition extends AbstractHttpListenerResourceDefinition {
     static final ResourceRegistration REGISTRATION = ResourceRegistration.of(PathElement.pathElement(Constants.HTTP_LISTENER));
-    static final PathElement PATH_ELEMENT = REGISTRATION.getPathElement();
 
     static final List<AttributeDefinition> ATTRIBUTES = List.of(REDIRECT_SOCKET);
 

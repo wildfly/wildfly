@@ -102,7 +102,6 @@ import io.undertow.servlet.api.LoginConfig;
  */
 public class ApplicationSecurityDomainDefinition extends SimpleResourceDefinition {
     static final ResourceRegistration REGISTRATION = ResourceRegistration.of(PathElement.pathElement(Constants.APPLICATION_SECURITY_DOMAIN));
-    static final PathElement PATH_ELEMENT = REGISTRATION.getPathElement();
     private static final Predicate<String> SERVLET_MECHANISM;
 
     static {

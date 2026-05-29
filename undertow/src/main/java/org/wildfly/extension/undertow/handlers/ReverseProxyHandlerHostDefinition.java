@@ -65,7 +65,6 @@ import org.xnio.ssl.XnioSsl;
  */
 public class ReverseProxyHandlerHostDefinition extends PersistentResourceDefinition {
     public static final ResourceRegistration REGISTRATION = ResourceRegistration.of(PathElement.pathElement(Constants.HOST));
-    public static final PathElement PATH_ELEMENT = REGISTRATION.getPathElement();
     private static final RuntimeCapability<Void> REVERSE_PROXY_HOST_RUNTIME_CAPABILITY =
                 RuntimeCapability.Builder.of(CAPABILITY_REVERSE_PROXY_HANDLER_HOST, true, ReverseProxyHostService.class)
                         .setDynamicNameMapper(BinaryCapabilityNameResolver.PARENT_CHILD)

@@ -40,7 +40,6 @@ import java.util.function.Supplier;
  */
 class PersistentSessionsDefinition extends PersistentResourceDefinition {
     static final ResourceRegistration REGISTRATION = ResourceRegistration.of(PathElement.pathElement(Constants.SETTING, Constants.PERSISTENT_SESSIONS));
-    static final PathElement PATH_ELEMENT = REGISTRATION.getPathElement();
 
     protected static final SimpleAttributeDefinition PATH =
             new SimpleAttributeDefinitionBuilder(Constants.PATH, ModelType.STRING, true)
@@ -75,7 +74,7 @@ class PersistentSessionsDefinition extends PersistentResourceDefinition {
 
     private static class PersistentSessionsAdd extends RestartParentResourceAddHandler {
         protected PersistentSessionsAdd() {
-            super(ServletContainerDefinition.PATH_ELEMENT.getKey());
+            super(ServletContainerDefinition.REGISTRATION.getPathElement().getKey());
         }
 
         public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {
@@ -140,7 +139,7 @@ class PersistentSessionsDefinition extends PersistentResourceDefinition {
     private static class PersistentSessionsRemove extends RestartParentResourceRemoveHandler {
 
         protected PersistentSessionsRemove() {
-            super(ServletContainerDefinition.PATH_ELEMENT.getKey());
+            super(ServletContainerDefinition.REGISTRATION.getPathElement().getKey());
         }
 
         @Override

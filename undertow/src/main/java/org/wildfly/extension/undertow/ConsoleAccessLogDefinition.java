@@ -42,7 +42,6 @@ import org.xnio.XnioWorker;
  */
 class ConsoleAccessLogDefinition extends PersistentResourceDefinition {
     static final ResourceRegistration REGISTRATION = ResourceRegistration.of(PathElement.pathElement(Constants.SETTING, Constants.CONSOLE_ACCESS_LOG));
-    static final PathElement PATH_ELEMENT = REGISTRATION.getPathElement();
     private static final RuntimeCapability<Void> CONSOLE_ACCESS_LOG_CAPABILITY = RuntimeCapability.Builder.of(Capabilities.CAPABILITY_CONSOLE_ACCESS_LOG, true, Void.class)
             .setDynamicNameMapper(BinaryCapabilityNameResolver.GRANDPARENT_PARENT)
             .build();

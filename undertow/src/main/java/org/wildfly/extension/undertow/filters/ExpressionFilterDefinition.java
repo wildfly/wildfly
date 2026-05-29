@@ -34,7 +34,6 @@ import org.wildfly.extension.undertow.logging.UndertowLogger;
  */
 public class ExpressionFilterDefinition extends SimpleFilterDefinition {
     public static final ResourceRegistration REGISTRATION = ResourceRegistration.of(PathElement.pathElement("expression-filter"));
-    public static final PathElement PATH_ELEMENT = REGISTRATION.getPathElement();
 
     public static final AttributeDefinition EXPRESSION = new SimpleAttributeDefinitionBuilder("expression", ModelType.STRING)
             .setRequired(true)

@@ -34,7 +34,6 @@ import java.util.List;
  */
 class CrawlerSessionManagementDefinition extends PersistentResourceDefinition {
     static final ResourceRegistration REGISTRATION = ResourceRegistration.of(PathElement.pathElement(Constants.SETTING, Constants.CRAWLER_SESSION_MANAGEMENT));
-    static final PathElement PATH_ELEMENT = REGISTRATION.getPathElement();
 
     protected static final SimpleAttributeDefinition USER_AGENTS =
             new SimpleAttributeDefinitionBuilder(Constants.USER_AGENTS, ModelType.STRING, true)
@@ -81,7 +80,7 @@ class CrawlerSessionManagementDefinition extends PersistentResourceDefinition {
 
     private static class CrawlerSessionManagementAdd extends RestartParentResourceAddHandler {
         protected CrawlerSessionManagementAdd() {
-            super(ServletContainerDefinition.PATH_ELEMENT.getKey());
+            super(ServletContainerDefinition.REGISTRATION.getPathElement().getKey());
         }
 
         @Override
@@ -105,7 +104,7 @@ class CrawlerSessionManagementDefinition extends PersistentResourceDefinition {
     private static class CrawlerSessionManagementRemove extends RestartParentResourceRemoveHandler {
 
         protected CrawlerSessionManagementRemove() {
-            super(ServletContainerDefinition.PATH_ELEMENT.getKey());
+            super(ServletContainerDefinition.REGISTRATION.getPathElement().getKey());
         }
 
         @Override
