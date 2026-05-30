@@ -5,6 +5,8 @@
 
 package org.wildfly.test.distribution.validation;
 
+import static org.jboss.as.test.shared.FileUtils.computeHash;
+import static org.jboss.as.test.shared.FileUtils.unzipFile;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
@@ -23,10 +25,8 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicReference;
-import org.apache.commons.io.FileUtils;
-import static org.jboss.as.test.shared.FileUtils.computeHash;
-import static org.jboss.as.test.shared.FileUtils.unzipFile;
 
+import org.apache.commons.io.FileUtils;
 import org.jboss.logging.Logger;
 import org.junit.Assume;
 import org.junit.BeforeClass;
@@ -47,6 +47,7 @@ public abstract class ProvisioningConsistencyBaseTest {
 
     private static final String INSTALLATION = ".installation";
     private static final String PROVISIONING = ".wildfly-maven-plugin-provisioning.xml";
+    private static final String INSTALLATION_MANAGER_HELPERS = "_installation-manager_helper.";
     private static final Path JBOSS_HOME = resolveJBossHome();
     private final Path CHANNEL_INSTALLATION;
     private final Path INSTALLATION_METADATA;
@@ -113,8 +114,13 @@ public abstract class ProvisioningConsistencyBaseTest {
                     }
                     File dist = getDistFile(dir, true, true, errors);
                     files = dist.listFiles();
-                    if (files != null && files.length > 0) {
-                        errors.add(String.format("%s has unexpected files: %s", dist, Arrays.asList(files)));
+                    if (files != null) {
+                        files = Arrays.stream(files)
+                                .filter(f -> !f.getName().startsWith(INSTALLATION_MANAGER_HELPERS))
+                                .toArray(File[]::new);
+                        if (files.length > 0) {
+                            errors.add(String.format("%s has unexpected files: %s", dist, Arrays.asList(files)));
+                        }
                     }
                     return FileVisitResult.SKIP_SUBTREE;
                 } else {
