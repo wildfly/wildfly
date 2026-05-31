@@ -5,6 +5,9 @@
 
 package org.wildfly.extension.elytron.oidc;
 
+import static org.wildfly.extension.elytron.oidc.ElytronOidcClientSubsystemModel.VERSION_2_0_0;
+import static org.wildfly.extension.elytron.oidc.ElytronOidcClientSubsystemModel.VERSION_4_0_0;
+
 import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
@@ -33,32 +36,34 @@ public class ElytronOidcClientSubsystemTransformerTestCase extends AbstractSubsy
     private static final ModelVersion CURRENT_MODEL_VERSION = ElytronOidcClientSubsystemModel.CURRENT.getVersion();
 
     @Parameterized.Parameters
-    public static Collection<ModelTestControllerVersion> parameters() {
+    public static Collection<Object[]> parameters() {
         return List.of(
-            ModelTestControllerVersion.EAP_8_0_0, ModelTestControllerVersion.EAP_8_1_0
+            new Object[] { ModelTestControllerVersion.EAP_8_0_0, VERSION_2_0_0.getVersion() },
+            new Object[] { ModelTestControllerVersion.EAP_8_1_0, VERSION_4_0_0.getVersion() }
         );
     }
-    private final ModelTestControllerVersion controllerVersion;
 
-    public ElytronOidcClientSubsystemTransformerTestCase(ModelTestControllerVersion controllerVersion) {
+    private final ModelTestControllerVersion controllerVersion;
+    private final ModelVersion targetModelVersion;
+
+    public ElytronOidcClientSubsystemTransformerTestCase(ModelTestControllerVersion controllerVersion, ModelVersion targetModelVersion) {
         super(ElytronOidcExtension.SUBSYSTEM_NAME, new ElytronOidcExtension(), CURRENT_SCHEMA, CURRENT_SCHEMA);
         this.controllerVersion = controllerVersion;
+        this.targetModelVersion = targetModelVersion;
     }
 
     @Test
     public void testTransformations() throws Exception {
-        KernelServices services = this.buildKernelServices(controllerVersion, CURRENT_MODEL_VERSION);
+        KernelServices services = this.buildKernelServices(controllerVersion, targetModelVersion);
 
-        checkSubsystemModelTransformation(services, CURRENT_MODEL_VERSION, null, false);
-        ModelNode transformed = services.readTransformedModel(CURRENT_MODEL_VERSION);
+        checkSubsystemModelTransformation(services, targetModelVersion, null, false);
+        ModelNode transformed = services.readTransformedModel(targetModelVersion);
         Assert.assertTrue(transformed.isDefined());
     }
 
     @Test
     public void testRejection() throws Exception {
-        testRejectingTransformers(controllerVersion, "elytron-oidc-client-reject.xml", forControllerVersion(controllerVersion)
-                // No attributes should fail as no default stability level changes since EAP 8.0.0
-        );
+        testRejectingTransformers(controllerVersion, "elytron-oidc-client-reject.xml", forControllerVersion(controllerVersion));
     }
 
     private static FailedOperationTransformationConfig forControllerVersion(ModelTestControllerVersion controllerVersion) {
@@ -74,7 +79,7 @@ public class ElytronOidcClientSubsystemTransformerTestCase extends AbstractSubsy
                 RuntimeCapability.buildDynamicCapabilityName("org.wildfly.security", "elytron")));
 
         builder.createLegacyKernelServicesBuilder(AdditionalInitialization.withCapabilities(
-                RuntimeCapability.buildDynamicCapabilityName("org.wildfly.security", "elytron")), controllerVersion, CURRENT_MODEL_VERSION)
+                RuntimeCapability.buildDynamicCapabilityName("org.wildfly.security", "elytron")), controllerVersion, targetModelVersion)
                 .addMavenResourceURL(controllerVersion.createGAV("wildfly-elytron-oidc-client-subsystem"))
                 .skipReverseControllerCheck()
                 .addParentFirstClassPattern("org.jboss.as.controller.logging.ControllerLogger*")
@@ -87,10 +92,10 @@ public class ElytronOidcClientSubsystemTransformerTestCase extends AbstractSubsy
 
         KernelServices services = builder.build();
         Assert.assertTrue(ModelTestControllerVersion.MASTER + " boot failed", services.isSuccessfulBoot());
-        Assert.assertTrue(controllerVersion.getMavenGavVersion() + " boot failed", services.getLegacyServices(CURRENT_MODEL_VERSION).isSuccessfulBoot());
+        Assert.assertTrue(controllerVersion.getMavenGavVersion() + " boot failed", services.getLegacyServices(targetModelVersion).isSuccessfulBoot());
 
         List<ModelNode> ops = builder.parseXmlResource(subsystemXmlFile);
-        ModelTestUtils.checkFailedTransformedBootOperations(services, CURRENT_MODEL_VERSION, ops, config);
+        ModelTestUtils.checkFailedTransformedBootOperations(services, targetModelVersion, ops, config);
     }
 
     private KernelServices buildKernelServices(ModelTestControllerVersion controllerVersion, ModelVersion version) throws Exception {
