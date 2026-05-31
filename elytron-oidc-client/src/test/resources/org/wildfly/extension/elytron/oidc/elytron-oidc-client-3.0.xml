@@ -36,6 +36,7 @@
         <connection-ttl-millis>30000</connection-ttl-millis>
         <connection-timeout-millis>6000</connection-timeout-millis>
         <token-signature-algorithm>RS256</token-signature-algorithm>
+        <provider-jwt-claims-typ>JWT</provider-jwt-claims-typ>
     </realm>
     <realm name="main-expressions">
         <realm-public-key>${exp.realm-public-key:MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQC4siLKUew0WYxdtq6/rwk4Uj/4amGFFnE/yzIxQVU0PUqz3QBRVkUWpDj0K6ZnS5nzJV/y6DHLEy7hjZTdRDphyF1sq09aDOYnVpzu8o2sIlMM8q5RnUyEfIyUZqwo8pSZDJ90fS0s+IDUJNCSIrAKO3w1lqZDHL6E/YFHXyzkvQIDAQAB}</realm-public-key>
@@ -61,6 +62,7 @@
         <token-store>${exp.token-store:session}</token-store>
         <principal-attribute>${exp.principal-attribute:sub}</principal-attribute>
         <proxy-url>${exp.proxy-url:http://localhost:9000}</proxy-url>
+        <provider-jwt-claims-typ>${exp.provider-jwt-claims-typ:JWT}</provider-jwt-claims-typ>
     </realm>
     <realm name="realm2-expressions">
         <auth-server-url>${exp.auth-server-url:http://localhost:8080/auth}</auth-server-url>
@@ -72,10 +74,12 @@
         <connection-ttl-millis>${exp.connection-ttl-millis:1000}</connection-ttl-millis>
         <connection-timeout-millis>${exp.connection-timeout-millis:1000}</connection-timeout-millis>
         <token-signature-algorithm>${exp.token-signature-algorithm:HS256}</token-signature-algorithm>
+        <provider-jwt-claims-typ>${exp.provider-jwt-claims-typ:JWT}</provider-jwt-claims-typ>
     </realm>
     <realm name="jboss-infra">
         <realm-public-key>MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAqKoq+a9MgXepmsPJDmo45qswuChW9pWjanX68oIBuI4hGvhQxFHryCow230A+sr7tFdMQMt8f1l/ysmV/fYAuW29WaoY4kI4Ou1yYPuwywKSsxT6PooTs83hKyZ1h4LZMj5DkLGDDDyVRHob2WmPaYg9RGVRw3iGGsD/p+Yb+L/gnBYQnZZ7lYqmN7h36p5CkzzlgXQA1Ha8sQxL+rJNH8+sZm0vBrKsoII3Of7TqHGsm1RwFV3XCuGJ7S61AbjJMXL5DQgJl9Z5scvxGAyoRLKC294UgMnQdzyBTMPw2GybxkRKmiK2KjQKmcopmrJp/Bt6fBR6ZkGSs9qUlxGHgwIDAQAB</realm-public-key>
         <auth-server-url>http://localhost:8180/auth</auth-server-url>
+        <provider-jwt-claims-typ>JWT</provider-jwt-claims-typ>
     </realm>
     <provider name="google">
         <realm-public-key>MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQC4siLKUew0WYxdtq6/rwk4Uj/4amGFFnE/yzIxQVU0PUqz3QBRVkUWpDj0K6ZnS5nzJV/y6DHLEy7hjZTdRDphyF1sq09aDOYnVpzu8o2sIlMM8q5RnUyEfIyUZqwo8pSZDJ90fS0s+IDUJNCSIrAKO3w1lqZDHL6E/YFHXyzkvQIDAQAB</realm-public-key>
@@ -109,11 +113,13 @@
         <connection-ttl-millis>25000</connection-ttl-millis>
         <connection-timeout-millis>7000</connection-timeout-millis>
         <token-signature-algorithm>ES256</token-signature-algorithm>
+        <provider-jwt-claims-typ>JWT</provider-jwt-claims-typ>
     </provider>
     <provider name="google-expressions">
         <provider-url>${exp.provider-url:https://accounts.google.com}</provider-url>
         <ssl-required>${exp.ssl-required:EXTERNAL}</ssl-required>
         <principal-attribute>${exp.principal-attribute:sub}</principal-attribute>
+        <provider-jwt-claims-typ>${exp.provider-jwt-claims-typ:JWT}</provider-jwt-claims-typ>
     </provider>
     <provider name="redhat-sso-expressions">
         <realm-public-key>${exp.realm-public-key:MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQC4siLKUew0WYxdtq6/rwk4Uj/4amGFFnE/yzIxQVU0PUqz3QBRVkUWpDj0K6ZnS5nzJV/y6DHLEy7hjZTdRDphyF1sq09aDOYnVpzu8o2sIlMM8q5RnUyEfIyUZqwo8pSZDJ90fS0s+IDUJNCSIrAKO3w1lqZDHL6E/YFHXyzkvQIDAQAB}</realm-public-key>
@@ -145,6 +151,7 @@
         <connection-ttl-millis>${exp.connection-ttl-millis:1000}</connection-ttl-millis>
         <connection-timeout-millis>${exp.connection-timeout-millis:1000}</connection-timeout-millis>
         <token-signature-algorithm>${exp.token-signature-algorithm:HS256}</token-signature-algorithm>
+        <provider-jwt-claims-typ>${exp.provider-jwt-claims-typ:JWT}</provider-jwt-claims-typ>
     </provider>
     <secure-deployment name="web-console">
         <enable-basic-auth>false</enable-basic-auth>
@@ -183,6 +190,12 @@
         <ignore-oauth-query-parameter>false</ignore-oauth-query-parameter>
         <proxy-url>http://localhost:9000</proxy-url>
         <verify-token-audience>true</verify-token-audience>
+        <logout-path>/logout</logout-path>
+        <logout-callback-path>/logout-callback</logout-callback-path>
+        <post-logout-redirect-uri>http://localhost:8080/</post-logout-redirect-uri>
+        <logout-session-required>false</logout-session-required>
+        <back-channel-logout-session-invalidation-limit>10</back-channel-logout-session-invalidation-limit>
+        <provider-jwt-claims-typ>JWT</provider-jwt-claims-typ>
         <credential name="secret" secret="0aa31d98-e0aa-404c-b6e0-e771dba1e798" />
         <redirect-rewrite-rule name="^/wsmain/api/(.*)$" replacement="api/$1" />
     </secure-deployment>
@@ -194,6 +207,12 @@
         <realm-public-key>MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQC4siLKUew0WYxdtq6/rwk4Uj/4amGFFnE/yzIxQVU0PUqz3QBRVkUWpDj0K6ZnS5nzJV/y6DHLEy7hjZTdRDphyF1sq09aDOYnVpzu8o2sIlMM8q5RnUyEfIyUZqwo8pSZDJ90fS0s+IDUJNCSIrAKO3w1lqZDHL6E/YFHXyzkvQIDAQAB</realm-public-key>
         <auth-server-url>http://localhost:8080/auth</auth-server-url>
         <ssl-required>EXTERNAL</ssl-required>
+        <logout-path>/logout</logout-path>
+        <logout-callback-path>/logout-callback</logout-callback-path>
+        <post-logout-redirect-uri>http://localhost:8080/</post-logout-redirect-uri>
+        <logout-session-required>false</logout-session-required>
+        <back-channel-logout-session-invalidation-limit>10</back-channel-logout-session-invalidation-limit>
+        <provider-jwt-claims-typ>JWT</provider-jwt-claims-typ>
         <credential client-key-alias="keyAlias" client-key-password="keyPassword" client-keystore-file="/tmp/keystore.jks" client-keystore-password="keystorePassword" client-keystore-type="jks" name="jwt" token-timeout="10" algorithm="RS256"/>
         <redirect-rewrite-rule name="^/wsmain/api/(.*)$" replacement="/api/$1/"/>
     </secure-deployment>
@@ -205,8 +224,14 @@
         <realm-public-key>MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQC4siLKUew0WYxdtq6/rwk4Uj/4amGFFnE/yzIxQVU0PUqz3QBRVkUWpDj0K6ZnS5nzJV/y6DHLEy7hjZTdRDphyF1sq09aDOYnVpzu8o2sIlMM8q5RnUyEfIyUZqwo8pSZDJ90fS0s+IDUJNCSIrAKO3w1lqZDHL6E/YFHXyzkvQIDAQAB</realm-public-key>
         <auth-server-url>http://localhost:8080/auth</auth-server-url>
         <ssl-required>EXTERNAL</ssl-required>
+        <logout-path>/logout</logout-path>
+        <logout-callback-path>/logout-callback</logout-callback-path>
+        <post-logout-redirect-uri>http://localhost:8080/</post-logout-redirect-uri>
+        <logout-session-required>false</logout-session-required>
+        <back-channel-logout-session-invalidation-limit>10</back-channel-logout-session-invalidation-limit>
+        <provider-jwt-claims-typ>JWT</provider-jwt-claims-typ>
         <credential name="secret-jwt" secret="fd8f54e1-6994-413a-acf8-90bc67f05412" algorithm="HS256"/>
-        <redirect-rewrite-rule name="^/wsmain/api/(.*)$"  replacement="/api/$1/"/>
+        <redirect-rewrite-rule name="^/wsmain/api/(.*)$" replacement="/api/$1/"/>
     </secure-deployment>
     <secure-deployment name="wildfly-management">
         <bearer-only>true</bearer-only>
@@ -217,6 +242,12 @@
         <socket-timeout-millis>10000</socket-timeout-millis>
         <connection-ttl-millis>40000</connection-ttl-millis>
         <connection-timeout-millis>50000</connection-timeout-millis>
+        <logout-path>/logout</logout-path>
+        <logout-callback-path>/logout-callback</logout-callback-path>
+        <post-logout-redirect-uri>http://localhost:8080/</post-logout-redirect-uri>
+        <logout-session-required>false</logout-session-required>
+        <back-channel-logout-session-invalidation-limit>10</back-channel-logout-session-invalidation-limit>
+        <provider-jwt-claims-typ>JWT</provider-jwt-claims-typ>
     </secure-deployment>
     <secure-deployment name="wildfly-test">
         <client-id>wildfly-management</client-id>
@@ -227,6 +258,12 @@
         <connection-ttl-millis>40000</connection-ttl-millis>
         <connection-timeout-millis>50000</connection-timeout-millis>
         <token-signature-algorithm>HS256</token-signature-algorithm>
+        <logout-path>/logout</logout-path>
+        <logout-callback-path>/logout-callback</logout-callback-path>
+        <post-logout-redirect-uri>http://localhost:8080/</post-logout-redirect-uri>
+        <logout-session-required>false</logout-session-required>
+        <back-channel-logout-session-invalidation-limit>10</back-channel-logout-session-invalidation-limit>
+        <provider-jwt-claims-typ>JWT</provider-jwt-claims-typ>
     </secure-deployment>
     <secure-deployment name="myAppWithSecret-expressions.war">
         <min-time-between-jwks-requests>${exp.min-time-between-jwks-requests:20}</min-time-between-jwks-requests>
@@ -242,6 +279,12 @@
         <confidential-port>${exp.confidential-port:443}</confidential-port>
         <proxy-url>${exp.proxy-url:http://localhost:9000}</proxy-url>
         <verify-token-audience>${exp.verify-token-audience:true}</verify-token-audience>
+        <logout-path>${exp.logout-path:/logout}</logout-path>
+        <logout-callback-path>${exp.logout-callback-path:/logout-callback}</logout-callback-path>
+        <post-logout-redirect-uri>${exp.post-logout-redirect-uri:http://localhost:8080/}</post-logout-redirect-uri>
+        <logout-session-required>${exp.logout-session-required:false}</logout-session-required>
+        <back-channel-logout-session-invalidation-limit>${exp.back-channel-logout-session-invalidation-limit:10}</back-channel-logout-session-invalidation-limit>
+        <provider-jwt-claims-typ>${exp.provider-jwt-claims-typ:JWT}</provider-jwt-claims-typ>
         <credential name="secret" secret="${exp.credential-secret:0aa31d98-e0aa-404c-b6e0-e771dba1e798}"/>
         <redirect-rewrite-rule name="^/wsmain/api/(.*)$" replacement="${exp.rewrite-replacement:/api/$1/}"/>
     </secure-deployment>
@@ -253,6 +296,12 @@
         <realm-public-key>${exp.realm-public-key:MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQC4siLKUew0WYxdtq6/rwk4Uj/4amGFFnE/yzIxQVU0PUqz3QBRVkUWpDj0K6ZnS5nzJV/y6DHLEy7hjZTdRDphyF1sq09aDOYnVpzu8o2sIlMM8q5RnUyEfIyUZqwo8pSZDJ90fS0s+IDUJNCSIrAKO3w1lqZDHL6E/YFHXyzkvQIDAQAB}</realm-public-key>
         <auth-server-url>${exp.auth-server-url:http://localhost:8080/auth}</auth-server-url>
         <ssl-required>${exp.ssl-required:EXTERNAL}</ssl-required>
+        <logout-path>${exp.logout-path:/logout}</logout-path>
+        <logout-callback-path>${exp.logout-callback-path:/logout-callback}</logout-callback-path>
+        <post-logout-redirect-uri>${exp.post-logout-redirect-uri:http://localhost:8080/}</post-logout-redirect-uri>
+        <logout-session-required>${exp.logout-session-required:false}</logout-session-required>
+        <back-channel-logout-session-invalidation-limit>${exp.back-channel-logout-session-invalidation-limit:10}</back-channel-logout-session-invalidation-limit>
+        <provider-jwt-claims-typ>${exp.provider-jwt-claims-typ:JWT}</provider-jwt-claims-typ>
         <credential client-key-alias="${exp.jwt-key-alias:keyAlias}" client-key-password="${exp.jwt-key-password:keyPassword}" client-keystore-file="${exp.jwt-keystore-file:/tmp/keystore.jks}" client-keystore-password="${exp.jwt-keystore-password:keystorePassword}" client-keystore-type="${exp.jwt-keystore-type:jks}" name="jwt" token-timeout="${exp.token-timeout:10}"/>
         <redirect-rewrite-rule name="^/wsmain/api/(.*)$" replacement="${exp.rewrite-replacement:/api/$1/}"/>
     </secure-deployment>
@@ -264,6 +313,12 @@
         <realm-public-key>${exp.realm-public-key:MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQC4siLKUew0WYxdtq6/rwk4Uj/4amGFFnE/yzIxQVU0PUqz3QBRVkUWpDj0K6ZnS5nzJV/y6DHLEy7hjZTdRDphyF1sq09aDOYnVpzu8o2sIlMM8q5RnUyEfIyUZqwo8pSZDJ90fS0s+IDUJNCSIrAKO3w1lqZDHL6E/YFHXyzkvQIDAQAB}</realm-public-key>
         <auth-server-url>${exp.auth-server-url:http://localhost:8080/auth}</auth-server-url>
         <ssl-required>${exp.ssl-required:EXTERNAL}</ssl-required>
+        <logout-path>${exp.logout-path:/logout}</logout-path>
+        <logout-callback-path>${exp.logout-callback-path:/logout-callback}</logout-callback-path>
+        <post-logout-redirect-uri>${exp.post-logout-redirect-uri:http://localhost:8080/}</post-logout-redirect-uri>
+        <logout-session-required>${exp.logout-session-required:false}</logout-session-required>
+        <back-channel-logout-session-invalidation-limit>${exp.back-channel-logout-session-invalidation-limit:10}</back-channel-logout-session-invalidation-limit>
+        <provider-jwt-claims-typ>${exp.provider-jwt-claims-typ:JWT}</provider-jwt-claims-typ>
         <credential algorithm="${exp.credential-algorithm:HS512}" name="secret-jwt" secret="${exp.credential-secret:fd8f54e1-6994-413a-acf8-90bc67f05412}"/>
         <redirect-rewrite-rule name="^/wsmain/api/(.*)$" replacement="${exp.rewrite-replacement:/api/$1/}"/>
     </secure-deployment>
@@ -272,6 +327,12 @@
         <resource>${exp.resource:customer-portal}</resource>
         <auth-server-url>${exp.auth-server-url:http://localhost:8081/auth}</auth-server-url>
         <ssl-required>${exp.ssl-required:EXTERNAL}</ssl-required>
+        <logout-path>${exp.logout-path:/logout}</logout-path>
+        <logout-callback-path>${exp.logout-callback-path:/logout-callback}</logout-callback-path>
+        <post-logout-redirect-uri>${exp.post-logout-redirect-uri:http://localhost:8080/}</post-logout-redirect-uri>
+        <logout-session-required>${exp.logout-session-required:false}</logout-session-required>
+        <back-channel-logout-session-invalidation-limit>${exp.back-channel-logout-session-invalidation-limit:10}</back-channel-logout-session-invalidation-limit>
+        <provider-jwt-claims-typ>${exp.provider-jwt-claims-typ:JWT}</provider-jwt-claims-typ>
         <credential name="secret" secret="${exp.credential-password:password}"/>
     </secure-deployment>
     <secure-deployment name="myAppWithProvider.war">
@@ -286,6 +347,12 @@
         <provider>${exp.provider:google}</provider>
         <ssl-required>${exp.ssl-required:EXTERNAL}</ssl-required>
         <principal-attribute>${exp.principal-attribute:firstName}</principal-attribute>
+        <logout-path>${exp.logout-path:/logout}</logout-path>
+        <logout-callback-path>${exp.logout-callback-path:/logout-callback}</logout-callback-path>
+        <post-logout-redirect-uri>${exp.post-logout-redirect-uri:http://localhost:8080/}</post-logout-redirect-uri>
+        <logout-session-required>${exp.logout-session-required:false}</logout-session-required>
+        <back-channel-logout-session-invalidation-limit>${exp.back-channel-logout-session-invalidation-limit:10}</back-channel-logout-session-invalidation-limit>
+        <provider-jwt-claims-typ>${exp.provider-jwt-claims-typ:JWT}</provider-jwt-claims-typ>
         <credential name="secret" secret="${exp.credential-password:password}"/>
     </secure-deployment>
     <secure-deployment name="wildfly-management-expressions.war">
@@ -321,6 +388,12 @@
         <connection-ttl-millis>${exp.connection-ttl-millis:40000}</connection-ttl-millis>
         <connection-timeout-millis>${exp.connection-timeout-millis:50000}</connection-timeout-millis>
         <token-signature-algorithm>${exp.token-signature-algorithm:HS256}</token-signature-algorithm>
+        <logout-path>${exp.logout-path:/logout}</logout-path>
+        <logout-callback-path>${exp.logout-callback-path:/logout-callback}</logout-callback-path>
+        <post-logout-redirect-uri>${exp.post-logout-redirect-uri:http://localhost:8080/}</post-logout-redirect-uri>
+        <logout-session-required>${exp.logout-session-required:false}</logout-session-required>
+        <back-channel-logout-session-invalidation-limit>${exp.back-channel-logout-session-invalidation-limit:10}</back-channel-logout-session-invalidation-limit>
+        <provider-jwt-claims-typ>${exp.provider-jwt-claims-typ:JWT}</provider-jwt-claims-typ>
     </secure-deployment>
     <secure-server name="wildfly-console">
         <bearer-only>false</bearer-only>
@@ -339,6 +412,12 @@
         <connection-ttl-millis>40000</connection-ttl-millis>
         <connection-timeout-millis>50000</connection-timeout-millis>
         <token-signature-algorithm>HS256</token-signature-algorithm>
+        <logout-path>/logout</logout-path>
+        <logout-callback-path>/logout-callback</logout-callback-path>
+        <post-logout-redirect-uri>http://localhost:8080/</post-logout-redirect-uri>
+        <logout-session-required>false</logout-session-required>
+        <back-channel-logout-session-invalidation-limit>10</back-channel-logout-session-invalidation-limit>
+        <provider-jwt-claims-typ>JWT</provider-jwt-claims-typ>
     </secure-server>
     <secure-server name="wildfly-console-expressions">
         <bearer-only>${exp.bearer-only:false}</bearer-only>
@@ -357,5 +436,11 @@
         <connection-ttl-millis>${exp.connection-ttl-millis:40000}</connection-ttl-millis>
         <connection-timeout-millis>${exp.connection-timeout-millis:50000}</connection-timeout-millis>
         <token-signature-algorithm>${exp.token-signature-algorithm:HS256}</token-signature-algorithm>
+        <logout-path>${exp.logout-path:/logout}</logout-path>
+        <logout-callback-path>${exp.logout-callback-path:/logout-callback}</logout-callback-path>
+        <post-logout-redirect-uri>${exp.post-logout-redirect-uri:http://localhost:8080/}</post-logout-redirect-uri>
+        <logout-session-required>${exp.logout-session-required:false}</logout-session-required>
+        <back-channel-logout-session-invalidation-limit>${exp.back-channel-logout-session-invalidation-limit:10}</back-channel-logout-session-invalidation-limit>
+        <provider-jwt-claims-typ>${exp.provider-jwt-claims-typ:JWT}</provider-jwt-claims-typ>
     </secure-server>
 </subsystem>

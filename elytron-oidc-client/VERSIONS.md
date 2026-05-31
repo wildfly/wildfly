@@ -23,5 +23,5 @@ This document tracks the relationship between WildFly releases, management model
   - `COMMUNITY`: Community stability level used for the WildFly-only fork introduced in WildFly 41
 - Prior to WildFly 32, schema versions were implemented as separate parser classes (`ElytronOidcSubsystemParser_1_0`, `ElytronOidcSubsystemParser_2_0`)
 - Starting with WildFly 32, schema versions are defined as an enum in `ElytronOidcSubsystemSchema`
-- Schema versions do not always increase monotonically across stability levels; WildFly 41 introduces a `2.0 (COMMUNITY)` fork and `3.0 (DEFAULT)` while `4.0 (PREVIEW)` remains current for preview
+- Schema versions do not always increase monotonically across stability levels; WildFly 41 introduces a `2.0 (COMMUNITY)` fork and `3.0 (DEFAULT)` with logout support while `4.0 (PREVIEW)` remains current for preview
 - Model version bumps can occur independently of introducing a numerically higher schema version

@@ -159,7 +159,7 @@ public enum ElytronOidcSubsystemSchema implements PersistentSubsystemSchema<Elyt
         Stream.of(providerDefaultAttributes).forEach(attribute -> secureDeploymentDefinitionBuilder.addAttribute(attribute, SIMPLE_ATTRIBUTE_PARSER, SIMPLE_ATTRIBUTE_MARSHALLER));
         Stream.of(providerDefaultAttributes).forEach(attribute -> secureServerDefinitionBuilder.addAttribute(attribute, SIMPLE_ATTRIBUTE_PARSER, SIMPLE_ATTRIBUTE_MARSHALLER));
 
-        if (this.since(VERSION_4_0_PREVIEW) && this.enables(LOGOUT_PATH)) {
+        if ((this.since(VERSION_4_0_PREVIEW) || this.since(VERSION_3_0)) && this.enables(LOGOUT_PATH)) {
             SimpleAttributeDefinition[] oidcLogoutChannelAttributes = {LOGOUT_PATH, LOGOUT_CALLBACK_PATH,
                 POST_LOGOUT_REDIRECT_URI, LOGOUT_SESSION_REQUIRED, BACK_CHANNEL_LOGOUT_SESSION_INVALIDATION_LIMIT, PROVIDER_JWT_CLAIMS_TYP};
 
