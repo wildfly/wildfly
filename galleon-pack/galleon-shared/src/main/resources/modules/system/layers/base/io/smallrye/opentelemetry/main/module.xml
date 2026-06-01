@@ -12,6 +12,7 @@
         <artifact name="${io.smallrye.opentelemetry:smallrye-opentelemetry-exporters}"/>
         <artifact name="${io.smallrye.opentelemetry:smallrye-opentelemetry-propagation}"/>
         <artifact name="${io.smallrye.opentelemetry:smallrye-opentelemetry-rest}"/>
+        <artifact name="${io.smallrye.opentelemetry:smallrye-opentelemetry-senders}"/>
     </resources>
 
     <dependencies>

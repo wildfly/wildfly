@@ -450,6 +450,17 @@
             </dependency>
             <dependency>
                 <groupId>io.opentelemetry</groupId>
+                <artifactId>opentelemetry-common</artifactId>
+                <version>${version.io.opentelemetry.opentelemetry}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>io.opentelemetry</groupId>
                 <artifactId>opentelemetry-context</artifactId>
                 <version>${version.io.opentelemetry.opentelemetry}</version>
                 <exclusions>
@@ -616,6 +627,17 @@
             <dependency>
                 <groupId>io.opentelemetry.instrumentation</groupId>
                 <artifactId>opentelemetry-runtime-telemetry-java8</artifactId>
+                <version>${version.io.opentelemetry.instrumentation}-alpha</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>io.opentelemetry.instrumentation</groupId>
+                <artifactId>opentelemetry-runtime-telemetry</artifactId>
                 <version>${version.io.opentelemetry.instrumentation}-alpha</version>
                 <exclusions>
                     <exclusion>
@@ -877,6 +899,17 @@
             <dependency>
                 <groupId>io.smallrye.opentelemetry</groupId>
                 <artifactId>smallrye-opentelemetry-rest</artifactId>
+                <version>${version.io.smallrye.smallrye-opentelemetry}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>io.smallrye.opentelemetry</groupId>
+                <artifactId>smallrye-opentelemetry-senders</artifactId>
                 <version>${version.io.smallrye.smallrye-opentelemetry}</version>
                 <exclusions>
                     <exclusion>
