@@ -26,7 +26,7 @@ import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.wildfly.clustering.server.service.ClusteringServiceDescriptor;
-import org.wildfly.subsystem.resource.capability.CapabilityReferenceRecorder;
+import org.wildfly.subsystem.resource.capability.CapabilityReference;
 
 
 /**
@@ -76,7 +76,7 @@ public class JGroupsDiscoveryGroupDefinition extends PersistentResourceDefinitio
             .build();
 
     public static final SimpleAttributeDefinition JGROUPS_CHANNEL = create(CommonAttributes.JGROUPS_CHANNEL)
-            .setCapabilityReference(CapabilityReferenceRecorder.builder(CAPABILITY, ClusteringServiceDescriptor.COMMAND_DISPATCHER_FACTORY).build())
+            .setCapabilityReference(CapabilityReference.builder(CAPABILITY, ClusteringServiceDescriptor.COMMAND_DISPATCHER_FACTORY).build())
             .build();
 
     public static final AttributeDefinition[] ATTRIBUTES = {

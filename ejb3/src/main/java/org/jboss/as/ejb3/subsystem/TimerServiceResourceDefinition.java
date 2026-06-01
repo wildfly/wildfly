@@ -22,7 +22,7 @@ import org.jboss.as.ejb3.timerservice.persistence.TimerPersistence;
 import org.jboss.dmr.ModelType;
 import org.wildfly.clustering.ejb.timer.TimerManagementProvider;
 import org.wildfly.service.descriptor.NullaryServiceDescriptor;
-import org.wildfly.subsystem.resource.capability.CapabilityReferenceRecorder;
+import org.wildfly.subsystem.resource.capability.CapabilityReference;
 
 /**
  * {@link org.jboss.as.controller.ResourceDefinition} for the timer-service resource.
@@ -39,7 +39,7 @@ public class TimerServiceResourceDefinition extends SimpleResourceDefinition {
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .setRequired(true)
                     .setAlternatives(EJB3SubsystemModel.DEFAULT_TRANSIENT_TIMER_MANAGEMENT)
-                    .setCapabilityReference(CapabilityReferenceRecorder.builder(TIMER_SERVICE_CAPABILITY, EJB3SubsystemRootResourceDefinition.EXECUTOR_SERVICE_DESCRIPTOR).build())
+                    .setCapabilityReference(CapabilityReference.builder(TIMER_SERVICE_CAPABILITY, EJB3SubsystemRootResourceDefinition.EXECUTOR_SERVICE_DESCRIPTOR).build())
                     .build();
 
     static final SimpleAttributeDefinition DEFAULT_DATA_STORE =
@@ -48,7 +48,7 @@ public class TimerServiceResourceDefinition extends SimpleResourceDefinition {
                     .setRequired(true)
                     .setAlternatives(EJB3SubsystemModel.DEFAULT_PERSISTENT_TIMER_MANAGEMENT)
                     .setRequires(EJB3SubsystemModel.THREAD_POOL_NAME)
-                    .setCapabilityReference(CapabilityReferenceRecorder.builder(TIMER_SERVICE_CAPABILITY, TimerPersistence.SERVICE_DESCRIPTOR).build())
+                    .setCapabilityReference(CapabilityReference.builder(TIMER_SERVICE_CAPABILITY, TimerPersistence.SERVICE_DESCRIPTOR).build())
                     .build();
 
     static final SimpleAttributeDefinition DEFAULT_PERSISTENT_TIMER_MANAGEMENT =
@@ -56,7 +56,7 @@ public class TimerServiceResourceDefinition extends SimpleResourceDefinition {
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .setRequired(true)
                     .setAlternatives(EJB3SubsystemModel.DEFAULT_DATA_STORE)
-                    .setCapabilityReference(CapabilityReferenceRecorder.builder(TIMER_SERVICE_CAPABILITY, TimerManagementProvider.SERVICE_DESCRIPTOR).build())
+                    .setCapabilityReference(CapabilityReference.builder(TIMER_SERVICE_CAPABILITY, TimerManagementProvider.SERVICE_DESCRIPTOR).build())
                     .build();
 
     static final SimpleAttributeDefinition DEFAULT_TRANSIENT_TIMER_MANAGEMENT =
@@ -64,7 +64,7 @@ public class TimerServiceResourceDefinition extends SimpleResourceDefinition {
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .setRequired(true)
                     .setAlternatives(EJB3SubsystemModel.THREAD_POOL_NAME)
-                    .setCapabilityReference(CapabilityReferenceRecorder.builder(TIMER_SERVICE_CAPABILITY, TimerManagementProvider.SERVICE_DESCRIPTOR).build())
+                    .setCapabilityReference(CapabilityReference.builder(TIMER_SERVICE_CAPABILITY, TimerManagementProvider.SERVICE_DESCRIPTOR).build())
                     .build();
 
     static final AttributeDefinition[] ATTRIBUTES = new AttributeDefinition[] { THREAD_POOL_NAME, DEFAULT_DATA_STORE, DEFAULT_PERSISTENT_TIMER_MANAGEMENT, DEFAULT_TRANSIENT_TIMER_MANAGEMENT };
