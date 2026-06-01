@@ -34,6 +34,7 @@ import org.jboss.as.ejb3.deployment.DeploymentRepository;
 import org.jboss.as.ejb3.deployment.DeploymentRepositoryService;
 import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.remote.AssociationService;
+import org.jboss.as.ejb3.remote.DeploymentsAssociationService;
 import org.jboss.as.ejb3.remote.EJBRemoteConnectorService;
 import org.jboss.as.ejb3.remote.http.EJB3RemoteHTTPService;
 import org.jboss.as.network.ClientMapping;
@@ -106,10 +107,16 @@ public class EJB3RemoteServiceAdd extends AbstractBoottimeAddStepHandler {
     }
 
     /**
-     * Installs all services required for processing incoming remote EJB invocations.
+     * Installs all services required for processing incoming remote EJB invocations, both for the Remoting
+     * and HTTP protocols.
+     * EJB client invocations using the http protocol can be one of two types:
+     * - an invocation which will use HTTP upgrade to convert the initial HTTP connection to use the Remoting protocol
+     * and use the standard EJB client library to process the invocation
+     * - an invocation which will use the Undertow HTTP invoker mechanism to process the invocation using the Wildfly
+     * HTTP client library, a "pure" HTTP model of processing
      *
-     * @param context
-     * @param model
+     * @param context the OperationContext
+     * @param model the "remote" resource model used to configure the services
      * @throws OperationFailedException
      */
     void installRuntimeServices(final OperationContext context, final ModelNode model) throws OperationFailedException {
@@ -124,26 +131,38 @@ public class EJB3RemoteServiceAdd extends AbstractBoottimeAddStepHandler {
         // use capabilities to install services
         final CapabilityServiceTarget serviceTarget = context.getCapabilityServiceTarget();
 
-        // Install the AssociationService used for processing incoming remote invocations
+        // Install the (Delegating)AssociationService to provide a deployment-aware AssociationService
         final CapabilityServiceBuilder<?> associationServiceBuilder = serviceTarget.addService();
         final Consumer<AssociationService> associationServiceConsumer = associationServiceBuilder.provides(AssociationService.SERVICE_NAME);
-        final Supplier<DeploymentRepository> deploymentRepositorySupplier = associationServiceBuilder.requires(DeploymentRepositoryService.SERVICE_NAME);
+
+        final AssociationService associationService = new AssociationService(associationServiceConsumer);
+        associationServiceBuilder.setInstance(associationService);
+        associationServiceBuilder.setInitialMode(ServiceController.Mode.LAZY);
+        associationServiceBuilder.install();
+
+        // Install the DeploymentsAssociationService used for processing incoming remote invocations when deployments are available
+        final CapabilityServiceBuilder<?> deploymentsAssociationServiceBuilder = serviceTarget.addService();
+        final Consumer<DeploymentsAssociationService> deploymentsAssociationServiceConsumer = deploymentsAssociationServiceBuilder.provides(DeploymentsAssociationService.SERVICE_NAME);
+        final Supplier<AssociationService> associationServiceSupplier1 = deploymentsAssociationServiceBuilder.requires(AssociationService.SERVICE_NAME);
+        final Supplier<DeploymentRepository> deploymentRepositorySupplier = deploymentsAssociationServiceBuilder.requires(DeploymentRepositoryService.SERVICE_NAME);
 
         // now, for each connector, configure the relevant AssociationService dependencies
         final List<Map.Entry<Supplier<ProtocolSocketBinding>, Supplier<Registry>>> protocolRegistryPairs = new ArrayList<>();
         for (ModelNode connector : connectorNameNodes) {
             String connectorName = connector.asString();
 
-            final Supplier<ProtocolSocketBinding> protocol = associationServiceBuilder.requires(context.getCapabilityServiceName(CONNECTOR_CAPABILITY_NAME, connectorName, ProtocolSocketBinding.class));
-            final Supplier<Registry> registry = associationServiceBuilder.requires(ServiceNameFactory.resolveServiceName(EJB3RemoteResourceDefinition.CLIENT_MAPPINGS_REGISTRY, connectorName));
+            final Supplier<ProtocolSocketBinding> protocol = deploymentsAssociationServiceBuilder.requires(context.getCapabilityServiceName(CONNECTOR_CAPABILITY_NAME, connectorName, ProtocolSocketBinding.class));
+            final Supplier<Registry> registry = deploymentsAssociationServiceBuilder.requires(ServiceNameFactory.resolveServiceName(EJB3RemoteResourceDefinition.CLIENT_MAPPINGS_REGISTRY, connectorName));
             protocolRegistryPairs.add(new AbstractMap.SimpleImmutableEntry<>(protocol, registry));
         }
-        final AssociationService associationService = new AssociationService(associationServiceConsumer, deploymentRepositorySupplier, protocolRegistryPairs);
-        associationServiceBuilder.setInstance(associationService);
-        associationServiceBuilder.setInitialMode(ServiceController.Mode.LAZY);
-        associationServiceBuilder.install();
 
-        // finally, for each connector specified, set up a client-mappings cache
+        final DeploymentsAssociationService deploymentsAssociationService = new DeploymentsAssociationService(deploymentsAssociationServiceConsumer,
+                associationServiceSupplier1, deploymentRepositorySupplier, protocolRegistryPairs);
+        deploymentsAssociationServiceBuilder.setInstance(deploymentsAssociationService);
+        deploymentsAssociationServiceBuilder.setInitialMode(ServiceController.Mode.ON_DEMAND);
+        deploymentsAssociationServiceBuilder.install();
+
+        // finally, for each Remting connector specified, set up a client-mappings cache
         for (ModelNode connectorNameNode : connectorNameNodes) {
             String connectorName = connectorNameNode.asString();
 
@@ -176,6 +195,7 @@ public class EJB3RemoteServiceAdd extends AbstractBoottimeAddStepHandler {
         // Install the Jakarta Enterprise Beans connector service which will listen for client connections
         // on the Remoting connector (i.e. the client is using the Remoting transport to send EJB invocations)
         final OptionMap channelCreationOptions = this.getChannelCreationOptions(context);
+
         // TODO: Externalize (expose via management API if needed) the version and the marshalling strategy
         final CapabilityServiceBuilder<?> remoteConnectorServiceBuilder = context.getCapabilityServiceTarget()
                 .addCapability(EJB3RemoteResourceDefinition.EJB_REMOTE_CAPABILITY);
@@ -184,12 +204,12 @@ public class EJB3RemoteServiceAdd extends AbstractBoottimeAddStepHandler {
         final Supplier<Endpoint> endpointSupplier = remoteConnectorServiceBuilder
                 .requiresCapability(EJB3RemoteResourceDefinition.REMOTING_ENDPOINT_CAPABILITY_NAME, Endpoint.class);
         final Supplier<Executor> executorSupplier = !executeInWorker ? remoteConnectorServiceBuilder.requires(EJB3SubsystemRootResourceDefinition.EXECUTOR_SERVICE_DESCRIPTOR, threadPoolName) : Functions.constantSupplier(null);
-        final Supplier<AssociationService> associationServiceSupplier = remoteConnectorServiceBuilder.requires(AssociationService.SERVICE_NAME);
+        final Supplier<AssociationService> associationServiceSupplier2 = remoteConnectorServiceBuilder.requires(AssociationService.SERVICE_NAME);
         final Supplier<RemotingTransactionService> remotingTransactionServiceSupplier = remoteConnectorServiceBuilder.requiresCapability(
                 EJB3RemoteResourceDefinition.REMOTE_TRANSACTION_SERVICE_CAPABILITY_NAME, RemotingTransactionService.class);
 
         final EJBRemoteConnectorService ejbRemoteConnectorService = new EJBRemoteConnectorService(connectorServiceConsumer, endpointSupplier,
-                executorSupplier, associationServiceSupplier, remotingTransactionServiceSupplier,
+                executorSupplier, associationServiceSupplier2, remotingTransactionServiceSupplier,
                 channelCreationOptions, FilterSpecClassResolverFilter.getFilterForOperationContext(context));
         remoteConnectorServiceBuilder.setInstance(ejbRemoteConnectorService);
         remoteConnectorServiceBuilder.addAliases(EJBRemoteConnectorService.SERVICE_NAME);
@@ -203,9 +223,10 @@ public class EJB3RemoteServiceAdd extends AbstractBoottimeAddStepHandler {
             final Consumer<EJB3RemoteHTTPService> remoteHTTPServiceConsumer = remoteHTTPServiceBuilder.provides(EJB3RemoteHTTPService.SERVICE_NAME);
             final Supplier<PathHandler> pathHandlerSupplier = remoteHTTPServiceBuilder.requires(context.getCapabilityServiceName(UNDERTOW_HTTP_INVOKER_CAPABILITY_NAME, PathHandler.class));
             final Supplier<LocalTransactionContext> localTransactionContextSupplier = remoteHTTPServiceBuilder.requires(TxnServices.JBOSS_TXN_LOCAL_TRANSACTION_CONTEXT);
-            final Supplier<AssociationService> assocServiceSupplier = remoteHTTPServiceBuilder.requires(AssociationService.SERVICE_NAME);
+            final Supplier<AssociationService> associationServiceSupplier3 = remoteHTTPServiceBuilder.requires(AssociationService.SERVICE_NAME);
 
-            final EJB3RemoteHTTPService service = new EJB3RemoteHTTPService(remoteHTTPServiceConsumer, pathHandlerSupplier, assocServiceSupplier, localTransactionContextSupplier, FilterSpecClassResolverFilter.getFilterForOperationContext(context));
+            final EJB3RemoteHTTPService service = new EJB3RemoteHTTPService(remoteHTTPServiceConsumer, pathHandlerSupplier, associationServiceSupplier3,
+                    localTransactionContextSupplier, FilterSpecClassResolverFilter.getFilterForOperationContext(context));
             remoteHTTPServiceBuilder.setInstance(service);
             remoteHTTPServiceBuilder.setInitialMode(ServiceController.Mode.PASSIVE);
             remoteHTTPServiceBuilder.install();
