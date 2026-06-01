@@ -9,6 +9,7 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 import io.undertow.server.handlers.PathHandler;
 import org.jboss.as.ejb3.remote.AssociationService;
+import org.jboss.ejb.server.Association;
 import org.jboss.msc.Service;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
@@ -18,9 +19,10 @@ import org.wildfly.httpclient.ejb.HttpRemoteEjbService;
 import org.wildfly.transaction.client.LocalTransactionContext;
 
 /**
- * A connector to allow remote EJB clients to connect via EJB/HTTP.
+ * A connector service to allow remote EJB clients to connect via EJB/HTTP.
  *
  * @author Stuart Douglas
+ * @author <a href="mailto:rachmato@ibm.com">Richard Achmatowicz</a>
  */
 public class EJB3RemoteHTTPService implements Service {
 
@@ -43,8 +45,9 @@ public class EJB3RemoteHTTPService implements Service {
 
     @Override
     public void start(StartContext context) throws StartException {
-        HttpRemoteEjbService service = new HttpRemoteEjbService(associationServiceSupplier.get().getAssociation(),
-                null, transactionContextSupplier.get(), classResolverFilter);
+        Association association = associationServiceSupplier.get().getDelegator();
+        LocalTransactionContext localTransactionContext = transactionContextSupplier.get();
+        HttpRemoteEjbService service = new HttpRemoteEjbService(association, null, localTransactionContext, classResolverFilter);
         pathHandlerSupplier.get().addPrefixPath("/ejb", service.createHttpHandler());
     }
 

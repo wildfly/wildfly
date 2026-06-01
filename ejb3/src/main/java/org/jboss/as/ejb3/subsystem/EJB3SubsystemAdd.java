@@ -261,19 +261,19 @@ class EJB3SubsystemAdd extends AbstractBoottimeAddStepHandler {
         final ServiceName suspendControllerServiceName = context.getCapabilityServiceName("org.wildfly.server.suspend-controller", SuspendController.class);
         final CapabilityServiceTarget serviceTarget = context.getCapabilityServiceTarget();
 
-        //setup IIOP related stuff
+        // set up IIOP related stuff
         // (This goes here rather than in EJB3IIOPAdd as it affects the server when it is acting as an iiop client)
-        // setup our dynamic stub factory
+        // set up our dynamic stub factory
         DelegatingStubFactoryFactory.setOverriddenDynamicFactory(new DynamicStubFactoryFactory());
 
-        //setup the substitution service, that translates between ejb proxies and IIOP stubs
+        // set up the substitution service, that translates between ejb proxies and IIOP stubs
         final RemoteObjectSubstitutionService substitutionService = new RemoteObjectSubstitutionService();
         serviceTarget.addService(RemoteObjectSubstitutionService.SERVICE_NAME, substitutionService)
                 .addDependency(DeploymentRepositoryService.SERVICE_NAME, DeploymentRepository.class, substitutionService.getDeploymentRepositoryInjectedValue())
+                .setInitialMode(ServiceController.Mode.PASSIVE)
                 .install();
 
-        // register EJB context selector
-
+        // register IIOP service used to substitute IIOP references for Jakarta EE invocation-generated results
         RemoteObjectSubstitutionManager.setRemoteObjectSubstitution(substitutionService);
 
         final boolean appclient = context.getProcessType() == ProcessType.APPLICATION_CLIENT;
@@ -448,7 +448,9 @@ class EJB3SubsystemAdd extends AbstractBoottimeAddStepHandler {
         ExceptionLoggingWriteHandler.INSTANCE.updateOrCreateDefaultExceptionLoggingEnabledService(context, model);
 
         // install the DeploymentRepositoryService
-        serviceTarget.addService(DeploymentRepositoryService.SERVICE_NAME, new DeploymentRepositoryService()).install();
+        serviceTarget.addService(DeploymentRepositoryService.SERVICE_NAME, new DeploymentRepositoryService())
+                .setInitialMode(ServiceController.Mode.ON_DEMAND)
+                .install();
 
         // add support for outgoing invocations on remote EJBs
         addOutgoingRemoteInvocationServices(context, model, resource, appclient);
@@ -469,6 +471,7 @@ class EJB3SubsystemAdd extends AbstractBoottimeAddStepHandler {
                 .addDependency(suspendControllerServiceName, SuspendController.class, ejbSuspendHandlerService.getSuspendControllerInjectedValue())
                 .addDependency(TxnServices.JBOSS_TXN_LOCAL_TRANSACTION_CONTEXT, LocalTransactionContext.class, ejbSuspendHandlerService.getLocalTransactionContextInjectedValue())
                 .addDependency(DeploymentRepositoryService.SERVICE_NAME, DeploymentRepository.class, ejbSuspendHandlerService.getDeploymentRepositoryInjectedValue())
+                .setInitialMode(ServiceController.Mode.ON_DEMAND)
                 .install();
 
         if (!appclient) {
@@ -529,7 +532,7 @@ class EJB3SubsystemAdd extends AbstractBoottimeAddStepHandler {
             ServiceName serviceName = context.getCapabilityServiceName(REMOTING_ENDPOINT_CAPABILITY, Endpoint.class);
             configuratorBuilder.addDependency(serviceName, Endpoint.class, clientConfiguratorService.getEndpointInjector());
         }
-        configuratorBuilder.setInitialMode(ServiceController.Mode.ACTIVE).install();
+        configuratorBuilder.setInitialMode(ServiceController.Mode.ON_DEMAND).install();
 
         //TODO: This should be managed
         final EJBClientContextService clientContextService = new EJBClientContextService(true);
@@ -563,7 +566,8 @@ class EJB3SubsystemAdd extends AbstractBoottimeAddStepHandler {
         }
 
         // install the default EJB client context service
-        clientContextServiceBuilder.install();
+        clientContextServiceBuilder.setInitialMode(ServiceController.Mode.ON_DEMAND)
+                .install();
     }
 
     private static void addClusteringServices(final OperationContext context, final boolean appclient) {
