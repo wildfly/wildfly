@@ -20,6 +20,7 @@ import org.jboss.as.ejb3.timerservice.persistence.filestore.FileTimerPersistence
 import org.jboss.as.server.Services;
 import org.jboss.dmr.ModelNode;
 import org.jboss.modules.ModuleLoader;
+import org.jboss.msc.service.ServiceController;
 
 /**
  * Adds the timer service file based data store
@@ -48,6 +49,7 @@ public class FileDataStoreAdd extends AbstractAddStepHandler {
         final Supplier<PathManager> pathManagerSupplier = builder.requires(PathManager.SERVICE_DESCRIPTOR);
         final FileTimerPersistence fileTimerPersistence = new FileTimerPersistence(consumer, txnRegistrySupplier, moduleLoaderSupplier, pathManagerSupplier, true, path, relativeTo);
         builder.setInstance(fileTimerPersistence);
+        builder.setInitialMode(ServiceController.Mode.ON_DEMAND);
         builder.install();
     }
 }

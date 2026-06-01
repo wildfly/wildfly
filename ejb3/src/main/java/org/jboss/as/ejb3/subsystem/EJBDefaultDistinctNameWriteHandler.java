@@ -11,21 +11,21 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.dmr.ModelNode;
-import org.jboss.msc.service.ServiceController;
-import org.jboss.msc.service.ServiceRegistry;
+
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * @author Stuart Douglas
  */
 class EJBDefaultDistinctNameWriteHandler extends AbstractWriteAttributeHandler<Void> {
 
-    public static final EJBDefaultDistinctNameWriteHandler INSTANCE = new EJBDefaultDistinctNameWriteHandler(EJB3SubsystemRootResourceDefinition.DEFAULT_DISTINCT_NAME);
-
     private final AttributeDefinition attributeDefinition;
+    private final AtomicReference<String> defaultDistinctName;
 
-    private EJBDefaultDistinctNameWriteHandler(final AttributeDefinition attributeDefinition) {
+    public EJBDefaultDistinctNameWriteHandler(final AttributeDefinition attributeDefinition, AtomicReference<String> defaultDistinctName) {
         super(attributeDefinition);
         this.attributeDefinition = attributeDefinition;
+        this.defaultDistinctName = defaultDistinctName;
     }
 
     @Override
@@ -46,17 +46,7 @@ class EJBDefaultDistinctNameWriteHandler extends AbstractWriteAttributeHandler<V
     }
 
     void updateDefaultDistinctName(final OperationContext context, final ModelNode model) throws OperationFailedException {
-
-        final ModelNode defaultDistinctName = this.attributeDefinition.resolveModelAttribute(context, model);
-        final ServiceRegistry registry = context.getServiceRegistry(true);
-
-        final ServiceController<?> existingDefaultLocalEJBReceiverServiceController = registry.getService(DefaultDistinctNameService.SERVICE_NAME);
-        DefaultDistinctNameService service = (DefaultDistinctNameService) existingDefaultLocalEJBReceiverServiceController.getValue();
-        if (!defaultDistinctName.isDefined()) {
-            service.setDefaultDistinctName(null);
-        } else {
-            service.setDefaultDistinctName(defaultDistinctName.asString());
-        }
+        final String defaultDistinctName = this.attributeDefinition.resolveModelAttribute(context, model).asStringOrNull();
+        this.defaultDistinctName.set(defaultDistinctName);
     }
-
 }
