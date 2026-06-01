@@ -31,7 +31,7 @@
         <surefire.forked.process.timeout>3600</surefire.forked.process.timeout>
         <!-- For expansion tests we always use the 'build' module for pre-built installations, not 'ee-build'
              So exclude ${testsuite.default.build.project.prefix} from the path -->
-        <wildfly.build.output.dir>${testsuite.default.build.project.root}/build/target/${server.output.dir.prefix}-${server.output.dir.qualifier}${server.output.dir.version}</wildfly.build.output.dir>
+        <wildfly.build.output.dir>${testsuite.default.build.project.root}build/target/${server.output.dir.prefix}-${server.output.dir.qualifier}${server.output.dir.version}</wildfly.build.output.dir>
 
         <ts.glow.phase>none</ts.glow.phase>
         <ts.glow.config-name>standalone-microprofile.xml</ts.glow.config-name>

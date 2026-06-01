@@ -29,7 +29,7 @@
         <jbossas.project.dir>${jbossas.ts.dir}/..</jbossas.project.dir>
         <!-- For expansion tests we always use the 'build' module for pre-built installations, not 'ee-build'
              So exclude ${testsuite.default.build.project.prefix} from the path -->
-        <wildfly.build.output.dir>${testsuite.default.build.project.root}/build/target/${server.output.dir.prefix}-${server.output.dir.qualifier}${server.output.dir.version}</wildfly.build.output.dir>
+        <wildfly.build.output.dir>${testsuite.default.build.project.root}build/target/${server.output.dir.prefix}-${server.output.dir.qualifier}${server.output.dir.version}</wildfly.build.output.dir>
         <maven.repo.local>${settings.localRepository}</maven.repo.local>
         <microprofile.jvm.args>-server -Xms64m -Xmx512m ${modular.jdk.args} -Dmaven.repo.local=${maven.repo.local}</microprofile.jvm.args>
         <!-- Properties that set the phase used for different plugin executions.
