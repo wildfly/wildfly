@@ -230,14 +230,6 @@ on the command line, such as:
 
 > mvn clean test -Dintegration.module -Dclustering.integration.tests -Dnode0=192.168.0.1 -Dnode1=192.168.0.2
 
-## 7 Changing the database
-
-The prototype also contains a profile which shows how the default database for WildFly can be changed.
-
-> mvn clean test -Dds=mysql51 <module targets> <test targets>
-
-will run the tests using MySQL 5.1 instead of the default H2 database.
-
 ## Changing the container images used in integration tests
 
 In integration tests, we use the following images:
