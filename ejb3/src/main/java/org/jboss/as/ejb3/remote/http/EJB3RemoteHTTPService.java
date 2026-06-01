@@ -10,6 +10,7 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 import io.undertow.server.handlers.PathHandler;
 import org.jboss.as.ejb3.remote.AssociationService;
+import org.jboss.ejb.server.Association;
 import org.jboss.msc.Service;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
@@ -19,6 +20,8 @@ import org.wildfly.httpclient.ejb.HttpRemoteEjbService;
 import org.wildfly.transaction.client.LocalTransactionContext;
 
 /**
+ * Service that allows remote EJB clients to connect using the HTTP protocol.
+ *
  * @author Stuart Douglas
  */
 public class EJB3RemoteHTTPService implements Service {
@@ -45,8 +48,9 @@ public class EJB3RemoteHTTPService implements Service {
 
     @Override
     public void start(StartContext context) throws StartException {
-        HttpRemoteEjbService service = new HttpRemoteEjbService(associationServiceSupplier.get().getAssociation(),
-                null, transactionContextSupplier.get(), classResolverFilter);
+        Association association = associationServiceSupplier.get().getDelegator();
+        LocalTransactionContext localTransactionContext = transactionContextSupplier.get();
+        HttpRemoteEjbService service = new HttpRemoteEjbService(association, null, localTransactionContext, classResolverFilter);
         pathHandlerSupplier.get().addPrefixPath("/ejb", service.createHttpHandler());
         remoteHTTPServiceConsumer.accept(this);
     }
