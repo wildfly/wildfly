@@ -64,6 +64,7 @@ import org.jboss.as.ejb3.deployment.EjbJarDescription;
 import org.jboss.as.ejb3.deployment.ModuleDeployment;
 import org.jboss.as.ejb3.interceptor.server.ServerInterceptorCache;
 import org.jboss.as.ejb3.logging.EjbLogger;
+import org.jboss.as.ejb3.remote.DeploymentsAssociationService;
 import org.jboss.as.ejb3.security.EJBMethodSecurityAttribute;
 import org.jboss.as.ejb3.security.EJBSecurityViewConfigurator;
 import org.jboss.as.ejb3.security.IdentityOutflowInterceptorFactory;
@@ -72,8 +73,8 @@ import org.jboss.as.ejb3.security.RoleAddingInterceptor;
 import org.jboss.as.ejb3.security.RunAsPrincipalInterceptor;
 import org.jboss.as.ejb3.security.SecurityDomainInterceptorFactory;
 import org.jboss.as.ejb3.security.SecurityRolesAddingInterceptor;
-import org.wildfly.security.jakarta.authz.RunAsIdentityHelper;
 import org.jboss.as.ejb3.subsystem.EJB3RemoteResourceDefinition;
+import org.wildfly.security.jakarta.authz.RunAsIdentityHelper;
 import org.jboss.as.ejb3.suspend.EJBSuspendHandlerService;
 import org.jboss.as.ejb3.timerservice.spi.AutoTimer;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
@@ -278,7 +279,6 @@ public abstract class EJBComponentDescription extends ComponentDescription {
      * @param componentName             the component name
      * @param componentClassName        the component instance class name
      * @param ejbJarDescription         the module
-     * @param deploymentUnitServiceName
      * @param descriptorData            the optional descriptor metadata
      */
     public EJBComponentDescription(final String componentName, final String componentClassName, final EjbJarDescription ejbJarDescription, final DeploymentUnit deploymentUnit, final EnterpriseBeanMetaData descriptorData) {
@@ -382,6 +382,9 @@ public abstract class EJBComponentDescription extends ComponentDescription {
 
         // setup ejb suspend handler dependency
         addEJBSuspendHandlerDependency();
+
+        // setup dependency on the DeploymentsAssociationService when the ejb3 "remote" resource is installed
+        addDeploymentsAssociationServiceDependency();
     }
 
     private static InterceptorFactory weaved(final Collection<InterceptorFactory> interceptorFactories) {
@@ -609,6 +612,35 @@ public abstract class EJBComponentDescription extends ComponentDescription {
             }
         });
     }
+
+    /**
+     * Sets up a {@link ComponentConfigurator} which then sets up the dependency on the DeploymentsAssociationService service for the {@link EJBComponentCreateService}
+     *
+     * The DeploymentAssociationService needs to be started when
+     * (1) the ejb3 "remote" resource is present and
+     * (2) a deployment containing EJBs is deployed
+     * This service forms part of the "delegating" AssociationService mechanism which permits ejb3 services to be started on demand.
+     *
+     */
+    protected void addDeploymentsAssociationServiceDependency() {
+        getConfigurators().add(new ComponentConfigurator() {
+            @Override
+            public void configure(final DeploymentPhaseContext context, final ComponentDescription description, final ComponentConfiguration componentConfiguration) throws DeploymentUnitProcessingException {
+                componentConfiguration.getCreateDependencies().add(new DependencyConfigurator<EJBComponentCreateService>() {
+                    @Override public void configureDependency(final ServiceBuilder<?> serviceBuilder, final EJBComponentCreateService ejbComponentCreateService)
+                            throws DeploymentUnitProcessingException {
+                        CapabilityServiceSupport support = context.getDeploymentUnit().getAttachment(org.jboss.as.server.deployment.Attachments.CAPABILITY_SERVICE_SUPPORT);
+                        // install dependency conditional on "remote" resource being present
+                        boolean remoteConnectors = support.hasCapability(EJB3RemoteResourceDefinition.EJB_REMOTE_CAPABILITY_NAME);
+                        if (remoteConnectors) {
+                            serviceBuilder.requires(DeploymentsAssociationService.SERVICE_NAME);
+                        }
+                    }
+                });
+            }
+        });
+    }
+
 
     protected void setupSecurityInterceptors(final ViewDescription view) {
         // setup security interceptor for the component

@@ -23,6 +23,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicBoolean;
+
 import jakarta.ejb.EJBException;
 
 import org.jboss.as.ee.component.Component;
@@ -73,8 +74,9 @@ import org.wildfly.security.manager.WildFlySecurityManager;
 /**
  * @author <a href="mailto:tadamski@redhat.com">Tomasz Adamski</a>
  * @author <a href="mailto:jbaesner@redhat.com">Joerg Baesner</a>
+ * @author <a href="mailto:rachmato@ibm.com">Richard Achmatowicz</a>
  */
-final class AssociationImpl implements Association, AutoCloseable {
+final class DeploymentsAssociationImpl implements Association, AutoCloseable {
 
     private static final String RETURNED_CONTEXT_DATA_KEY = "jboss.returned.keys";
     private static final ListenerHandle NOOP_LISTENER_HANDLE = new ListenerHandle() {
@@ -85,14 +87,21 @@ final class AssociationImpl implements Association, AutoCloseable {
     };
     private final DeploymentRepository deploymentRepository;
     private final Map<Integer, ClusterTopologyRegistrar> clusterTopologyRegistrars;
-    private volatile Executor executor;
+    private final Executor executor;
 
-    AssociationImpl(final DeploymentRepository deploymentRepository, final List<Map.Entry<ProtocolSocketBinding, Registry<GroupMember, String, List<ClientMapping>>>> clientMappingRegistries) {
+    DeploymentsAssociationImpl(final DeploymentRepository deploymentRepository, final Executor executor, final List<Map.Entry<ProtocolSocketBinding, Registry<GroupMember, String, List<ClientMapping>>>> clientMappingRegistries) {
+        if (EjbLogger.DEPLOYMENT_LOGGER.isTraceEnabled())
+            EjbLogger.DEPLOYMENT_LOGGER.trace("Calling DeploymentsAssociationImpl.<init>");
+
         this.deploymentRepository = deploymentRepository;
+        this.executor = executor;
         this.clusterTopologyRegistrars = clientMappingRegistries.isEmpty() ? Collections.emptyMap() : new HashMap<>(clientMappingRegistries.size());
         for (Map.Entry<ProtocolSocketBinding, Registry<GroupMember, String, List<ClientMapping>>> entry : clientMappingRegistries) {
             this.clusterTopologyRegistrars.put(entry.getKey().getSocketBinding().getSocketAddress().getPort(), new ClusterTopologyRegistrar(entry.getValue()));
         }
+
+        if (EjbLogger.DEPLOYMENT_LOGGER.isTraceEnabled())
+            EjbLogger.DEPLOYMENT_LOGGER.trace("Called DeploymentsAssociationImpl.<init>");
     }
 
     @Override
@@ -104,6 +113,8 @@ final class AssociationImpl implements Association, AutoCloseable {
 
     @Override
     public CancelHandle receiveInvocationRequest(@NotNull final InvocationRequest invocationRequest) {
+        if (EjbLogger.DEPLOYMENT_LOGGER.isTraceEnabled())
+            EjbLogger.DEPLOYMENT_LOGGER.trace("DeploymentsAssociationImpl: Calling receiveInvocationRequest");
 
         final EJBIdentifier ejbIdentifier = invocationRequest.getEJBIdentifier();
 
@@ -310,6 +321,8 @@ final class AssociationImpl implements Association, AutoCloseable {
     @Override
     @NotNull
     public CancelHandle receiveSessionOpenRequest(@NotNull final SessionOpenRequest sessionOpenRequest) {
+        if (EjbLogger.DEPLOYMENT_LOGGER.isTraceEnabled())
+            EjbLogger.DEPLOYMENT_LOGGER.trace("DeploymentsAssociationImpl: Calling receiveSessionOpenRequest");
 
         final EJBIdentifier ejbIdentifier = sessionOpenRequest.getEJBIdentifier();
         final String appName = ejbIdentifier.getAppName();
@@ -378,6 +391,9 @@ final class AssociationImpl implements Association, AutoCloseable {
 
     @Override
     public ListenerHandle registerClusterTopologyListener(@NotNull final ClusterTopologyListener listener) {
+        if (EjbLogger.DEPLOYMENT_LOGGER.isTraceEnabled())
+            EjbLogger.DEPLOYMENT_LOGGER.trace("DeploymentsAssociationImpl: Calling registerClusterTopologyListener");
+
         SocketAddress localAddress = listener.getConnection().getLocalAddress();
         ClusterTopologyRegistrar registrar = this.findClusterTopologyRegistrar(localAddress);
         // if the registrar is null, this means that the connector has not been registered on the <remote connectors=/> attribute
@@ -392,6 +408,9 @@ final class AssociationImpl implements Association, AutoCloseable {
 
     @Override
     public ListenerHandle registerModuleAvailabilityListener(@NotNull final ModuleAvailabilityListener moduleAvailabilityListener) {
+        if (EjbLogger.DEPLOYMENT_LOGGER.isTraceEnabled())
+            EjbLogger.DEPLOYMENT_LOGGER.trace("DeploymentsAssociationImpl: Calling registerModuleAvailabilityListener");
+
         final DeploymentRepositoryListener listener = new DeploymentRepositoryListener() {
             @Override
             public void listenerAdded(final DeploymentRepository repository) {
@@ -685,17 +704,10 @@ final class AssociationImpl implements Association, AutoCloseable {
         return (localAddress instanceof InetSocketAddress) ? this.clusterTopologyRegistrars.get(((InetSocketAddress) localAddress).getPort()) : null;
     }
 
-    Executor getExecutor() {
-        return executor;
-    }
-
-    void setExecutor(Executor executor) {
-        this.executor = executor;
-    }
-
     /**
      * Checks if this node is the last node in the cluster and sends a topology update to all connected clients if this is so
-     * This should only be called when the node is known to be shutting down (and not just suspending)
+     * This should only be called when the node is transitioning from DeploymentsAssociationImpl to NoDeploymentsAssociationImpl
+     * (i.e. effectively leaving the cluster)
      */
     void sendTopologyUpdateIfLastNodeToLeave() {
         for (ClusterTopologyRegistrar registrar : this.clusterTopologyRegistrars.values()) {
