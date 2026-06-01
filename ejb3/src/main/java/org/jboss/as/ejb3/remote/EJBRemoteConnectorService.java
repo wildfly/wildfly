@@ -4,11 +4,11 @@
  */
 package org.jboss.as.ejb3.remote;
 
-import java.util.concurrent.Executor;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
 import org.jboss.ejb.protocol.remote.RemoteEJBService;
+import org.jboss.logging.Logger;
 import org.jboss.msc.Service;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
@@ -22,34 +22,34 @@ import org.wildfly.transaction.client.provider.remoting.RemotingTransactionServi
 import org.xnio.OptionMap;
 
 /**
- * A connector to allow remote EJB clients to connect via EJB/Remoting.
+ * A connector service to allow remote EJB clients to connect via EJB/Remoting.
  *
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
+ * @author <a href="mailto:rachmato@ibm.com">Richard Achmatowicz</a>
  */
 public class EJBRemoteConnectorService implements Service {
+
+    private static Logger logger = Logger.getLogger("org.jboss.as.ejb3.remote.EJBRemoteConnectorService");
 
     // TODO: Should this be exposed via the management APIs?
     private static final String EJB_CHANNEL_NAME = "jboss.ejb";
 
     public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("ejb3", "connector");
 
+    private final DelegatingAssociationImpl delegator;
     private final Supplier<Endpoint> endpointSupplier;
-    private final Supplier<Executor> executorSupplier;
-    private final Supplier<AssociationService> associationServiceSupplier;
     private final Supplier<RemotingTransactionService> remotingTransactionServiceSupplier;
     private volatile Registration registration;
     private final OptionMap channelCreationOptions;
     private final Function<String, Boolean> classResolverFilter;
 
-    public EJBRemoteConnectorService(final Supplier<Endpoint> endpointSupplier,
-                                     final Supplier<Executor> executorSupplier,
-                                     final Supplier<AssociationService> associationServiceSupplier,
+    public EJBRemoteConnectorService(final DelegatingAssociationImpl delegator,
+                                     final Supplier<Endpoint> endpointSupplier,
                                      final Supplier<RemotingTransactionService> remotingTransactionServiceSupplier,
                                      final OptionMap channelCreationOptions,
                                      final Function<String, Boolean> classResolverFilter) {
+        this.delegator = delegator;
         this.endpointSupplier = endpointSupplier;
-        this.executorSupplier = executorSupplier;
-        this.associationServiceSupplier = associationServiceSupplier;
         this.remotingTransactionServiceSupplier = remotingTransactionServiceSupplier;
         this.channelCreationOptions = channelCreationOptions;
         this.classResolverFilter = classResolverFilter;
@@ -57,17 +57,16 @@ public class EJBRemoteConnectorService implements Service {
 
     @Override
     public void start(StartContext context) throws StartException {
-        final AssociationService associationService = associationServiceSupplier.get();
+        logger.trace("Starting");
+
         final Endpoint endpoint = endpointSupplier.get();
-        Executor executor = executorSupplier.get();
-        if (executor != null) {
-            associationService.setExecutor(executor);
-        }
         RemoteEJBService remoteEJBService = RemoteEJBService.create(
-            associationService.getAssociation(),
+                delegator,
             remotingTransactionServiceSupplier.get(),
             classResolverFilter
         );
+
+        logger.trace("Calling serverUp");
         remoteEJBService.serverUp();
 
         // Register an EJB channel open listener
@@ -81,10 +80,9 @@ public class EJBRemoteConnectorService implements Service {
 
     @Override
     public void stop(StopContext context) {
-        final AssociationService associationService = associationServiceSupplier.get();
-        associationService.sendTopologyUpdateIfLastNodeToLeave();
-        associationService.setExecutor(null);
+        delegator.sendTopologyUpdateIfLastNodeToLeave();
         registration.close();
+        logger.trace("Stopped");
     }
 
 }
