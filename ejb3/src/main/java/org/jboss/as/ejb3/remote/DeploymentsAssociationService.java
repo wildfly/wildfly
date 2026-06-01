@@ -11,13 +11,12 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Executor;
-import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 import org.jboss.as.ejb3.deployment.DeploymentRepository;
 import org.jboss.as.network.ClientMapping;
 import org.jboss.as.network.ProtocolSocketBinding;
-import org.jboss.ejb.server.Association;
+import org.jboss.logging.Logger;
 import org.jboss.msc.Service;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
@@ -27,56 +26,62 @@ import org.wildfly.clustering.server.GroupMember;
 import org.wildfly.clustering.server.registry.Registry;
 
 /**
- * The Jakarta Enterprise Beans server association service.
+ * A service providing an instance of Association to be used when deployments are available.
  *
- * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
+ * @author Richard Achmatowicz
  */
-public final class AssociationService implements Service {
+public final class DeploymentsAssociationService implements Service {
 
-    public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("ejb", "association");
+    public static final Logger logger = Logger.getLogger("org.jboss.as.ejb3.remote.DeploymentsAssociationService");
 
-    private final Consumer<AssociationService> associationServiceConsumer;
+    public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("ejb", "association","deployments");
+
+    private final DelegatingAssociationImpl delegator;
     private final Supplier<DeploymentRepository> deploymentRepositorySupplier;
+    private final Supplier<Executor> executorSupplier;
     private final List<Map.Entry<Supplier<ProtocolSocketBinding>, Supplier<Registry<GroupMember, String, List<ClientMapping>>>>> registriesSupplier;
 
-    private volatile AssociationImpl value;
+    private volatile DeploymentsAssociationImpl value;
 
-    public AssociationService(final Consumer<AssociationService> associationServiceConsumer,
-                              final Supplier<DeploymentRepository> deploymentRepositorySupplier,
+    public DeploymentsAssociationService(final DelegatingAssociationImpl delegator,
+                                         final Supplier<DeploymentRepository> deploymentRepositorySupplier,
+                                         final Supplier<Executor> executorSupplier,
                               final List<Map.Entry<Supplier<ProtocolSocketBinding>, Supplier<Registry<GroupMember, String, List<ClientMapping>>>>> registriesSupplier) {
-        this.associationServiceConsumer = associationServiceConsumer;
+        this.delegator = delegator;
         this.deploymentRepositorySupplier = deploymentRepositorySupplier;
+        this.executorSupplier = executorSupplier;
         this.registriesSupplier = registriesSupplier;
     }
 
     @Override
     public void start(final StartContext context) throws StartException {
+        logger.trace("Starting service");
         // todo suspendController
         List<Map.Entry<ProtocolSocketBinding, Registry<GroupMember, String, List<ClientMapping>>>> clientMappingsRegistries = this.registriesSupplier.isEmpty() ? Collections.emptyList() : new ArrayList<>(this.registriesSupplier.size());
         for (Map.Entry<Supplier<ProtocolSocketBinding>, Supplier<Registry<GroupMember, String, List<ClientMapping>>>> entry : this.registriesSupplier) {
             clientMappingsRegistries.add(new SimpleImmutableEntry<>(entry.getKey().get(), entry.getValue().get()));
         }
-        value = new AssociationImpl(deploymentRepositorySupplier.get(), clientMappingsRegistries);
-        this.associationServiceConsumer.accept(this);
+        value = new DeploymentsAssociationImpl(deploymentRepositorySupplier.get(), executorSupplier.get(),  clientMappingsRegistries);
+
+        // swap the current association implementation for this one
+        delegator.accept(value);
+
+        logger.trace("Started service");
     }
 
     @Override
     public void stop(final StopContext context) {
-        this.associationServiceConsumer.accept(null);
+        logger.trace("Stopping service");
+
+        // if we are moving from AssociationImpl to NoDeploymentsAssociationImpl, we may be the last node to leave
+        delegator.sendTopologyUpdateIfLastNodeToLeave();
+
+        // swap this association implementation for the other
+        delegator.accept(NoDeploymentsAssociationImpl.INSTANCE);
+
         value.close();
         value = null;
-    }
-
-    public Association getAssociation() {
-        return value;
-    }
-
-    void setExecutor(Executor executor) {
-        this.value.setExecutor(executor);
-    }
-
-    void sendTopologyUpdateIfLastNodeToLeave() {
-        this.value.sendTopologyUpdateIfLastNodeToLeave();
+        logger.trace("Stopped service");
     }
 }
 
