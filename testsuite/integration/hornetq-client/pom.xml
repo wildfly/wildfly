@@ -19,31 +19,23 @@
         <version>41.0.0.Beta1-SNAPSHOT</version>
     </parent>
 
-    <!-- *********************************************************************************** -->
-    <!-- ******************************** Legacy Integration ******************************* -->
-    <!-- *********************************************************************************** -->
-    <artifactId>wildfly-ts-integ-legacy</artifactId>
+    <artifactId>wildfly-ts-integ-hornetq-client</artifactId>
 
-    <name>WildFly Test Suite: Integration - Legacy</name>
+    <name>WildFly Test Suite: Integration - HornetQ Client</name>
+    <description>Tests the ability of very old HornetQ messaging clients to work with the messaging broker</description>
 
     <properties>
         <jbossas.ts.integ.dir>${basedir}/..</jbossas.ts.integ.dir>
         <jbossas.ts.dir>${jbossas.ts.integ.dir}/..</jbossas.ts.dir>
         <jbossas.project.dir>${jbossas.ts.dir}/..</jbossas.project.dir>
+
+        <test.legacy.version.io.netty>4.0.19.Final</test.legacy.version.io.netty>
+        <test.legacy.version.jakarta.enterprise>2.0.2</test.legacy.version.jakarta.enterprise>
+        <test.legacy.version.jakarta.inject.jakarta.inject-api>1.0.5</test.legacy.version.jakarta.inject.jakarta.inject-api>
+        <test.legacy.version.org.jboss.spec.javax.jms.jboss-jms-api_2.0_spec>2.0.0.Final</test.legacy.version.org.jboss.spec.javax.jms.jboss-jms-api_2.0_spec>
+        <test.legacy.version.org.wildfly.naming-client>1.0.17.Final</test.legacy.version.org.wildfly.naming-client>
+
     </properties>
-
-    <dependencyManagement>
-        <dependencies>
-            <dependency>
-                <groupId>${project.groupId}</groupId>
-                <artifactId>wildfly-legacy-test-bom</artifactId>
-                <version>${ee.maven.version}</version>
-                <type>pom</type>
-                <scope>import</scope>
-            </dependency>
-        </dependencies>
-
-    </dependencyManagement>
 
     <dependencies>
         <dependency>
@@ -57,6 +49,9 @@
         <dependency>
             <groupId>org.hornetq</groupId>
             <artifactId>hornetq-jms-client</artifactId>
+            <!-- same version as the other components that
+                 we provide in the server -->
+            <version>${version.org.hornetq}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -67,17 +62,52 @@
         <dependency>
             <groupId>org.jboss.spec.javax.jms</groupId>
             <artifactId>jboss-jms-api_2.0_spec</artifactId>
+            <version>${test.legacy.version.org.jboss.spec.javax.jms.jboss-jms-api_2.0_spec}</version>
             <scope>test</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>io.netty</groupId>
             <artifactId>netty-all</artifactId>
+            <!-- use the Netty version required by HornetQ 2.4.7.Final -->
+            <version>${test.legacy.version.io.netty}</version>
             <scope>test</scope>
         </dependency>
-        <!-- TODO confirm thi is needed -->
         <dependency>
             <groupId>org.wildfly</groupId>
             <artifactId>wildfly-naming-client</artifactId>
+            <version>${test.legacy.version.org.wildfly.naming-client}</version>
+            <scope>test</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.jboss.remoting3</groupId>
+                    <artifactId>jboss-remoting</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>jakarta.enterprise</groupId>
+            <artifactId>jakarta.enterprise.cdi-api</artifactId>
+            <version>${test.legacy.version.jakarta.enterprise}</version>
+            <scope>test</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>jakarta.inject</groupId>
+            <artifactId>jakarta.inject-api</artifactId>
+            <version>${test.legacy.version.jakarta.inject.jakarta.inject-api}</version>
             <scope>test</scope>
         </dependency>
     </dependencies>
