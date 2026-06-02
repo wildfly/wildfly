@@ -19,7 +19,15 @@ updates:
         update-types: ['version-update:semver-major', 'version-update:semver-minor']
       # WildFly Clustering updates are usually non-trivial
       - dependency-name: 'org.wildfly.clustering:*'
-      # Dependabot doesn't understand how to upgrade Hibernate ORM correctly, 
+      # WildFly Core releases are promptly followed by manual PRs
+      - dependency-name: 'org.wildfly.core:*'
+      # Elytron releases are promptly followed by manual PRs
+      - dependency-name: 'org.wildfly.security*'
+      # Glow and Galleon releases are promptly followed by manual PRs
+      - dependency-name: 'org.wildfly.glow:*'
+      - dependency-name: 'org.wildfly.galleon-plugins:*'
+      - dependency-name: 'org.jboss.galleon:*'
+      # Dependabot doesn't understand how to upgrade Hibernate ORM correctly,
       # and when we do we want to check other components where we align with what ORM uses.
       - dependency-name: 'org.hibernate.orm:*'
       # Dependencies exclusive to Hibernate Search:
@@ -30,28 +38,26 @@ updates:
       - dependency-name: 'org.apache.avro:avro'
       # These versions are constrained by the MicroProfile Telemetry spec
       - dependency-name: 'io.opentelemetry:*'
+      # Webservices updates are handled manually based on the weekly report
+      - dependency-name: 'com.sun.xml.bind.external*'
+      - dependency-name: 'com.sun.xml.fastinfoset*'
+      - dependency-name: 'net.shibboleth.utilities*'
+      - dependency-name: 'org.apache.cxf*'
+      - dependency-name: 'org.apache.neethi*'
+      - dependency-name: 'org.apache.santuario*'
+      - dependency-name: 'org.apache.velocity*'
+      - dependency-name: 'org.apache.ws.xmlschema*'
+      - dependency-name: 'org.apache.wss4j*'
+      - dependency-name: 'org.glassfish.jaxb*'
+      - dependency-name: 'org.jasypt*'
+      - dependency-name: 'org.jboss.ws*'
+      - dependency-name: 'org.opensaml*'
+      - dependency-name: 'wsdl4j*'
     rebase-strategy: "disabled"
     open-pull-requests-limit: 10
     registries:
       - maven-central
       - jboss-public-repository-group
-    groups:
-      webservices:
-        patterns:
-          - 'com.sun.xml.bind.external*'
-          - 'com.sun.xml.fastinfoset*'
-          - 'net.shibboleth.utilities*'
-          - 'org.apache.cxf*'
-          - 'org.apache.neethi*'
-          - 'org.apache.santuario*'
-          - 'org.apache.velocity*'
-          - 'org.apache.ws.xmlschema*'
-          - 'org.apache.wss4j*'
-          - 'org.glassfish.jaxb*'
-          - 'org.jasypt*'
-          - 'org.jboss.ws*'
-          - 'org.opensaml*'
-          - 'wsdl4j*'
   - package-ecosystem: "github-actions"
     # Workflow files stored in the
     # default location of `.github/workflows`
