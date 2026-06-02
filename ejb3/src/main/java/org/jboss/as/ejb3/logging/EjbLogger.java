@@ -3086,8 +3086,8 @@ public interface EjbLogger extends BasicLogger {
     void remappingCacheAttributes(String address, ModelNode defClustered, ModelNode passivationDisabled);
 
     @LogMessage(level = ERROR)
-    @Message(id = 487, value = "Unexpected invocation state %s")
-    void unexpectedInvocationState(int state);
+    @Message(id = 487, value = "Unexpected invocation state %s for stateful bean %s/%s/%s")
+    void unexpectedInvocationState(int state, String applicationName, String moduleName, String componentName);
 
 //    @Message(id = 488, value = "Unauthenticated (anonymous) access to this Jakarta Enterprise Beans method is not authorized")
 //    SecurityException ejbAuthenticationRequired();
