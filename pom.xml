@@ -1650,7 +1650,10 @@
             <id>expansion-build</id>
             <activation>
                 <property>
-                    <!-- Allow users to disable building expansion stuff if they just want base artifacts -->
+                    <!--
+                    Allow users to disable building expansion stuff if they just want base artifacts.
+                    This option requires -Dno.preview.build
+                    -->
                     <name>!no.expansion.build</name>
                 </property>
             </activation>
@@ -1663,6 +1666,7 @@
                 <module>build</module>
                 <module>dist</module>
                 <module>galleon-pack</module>
+                <module>legacy/channel</module>
                 <module>legacy/opentracing-extension</module>
                 <module>microprofile</module>
                 <module>observability</module>
@@ -1703,7 +1707,6 @@
                 <module>boms/legacy-test</module>
                 <module>concurrency/impl-30</module>
                 <module>legacy/ee-feature-pack</module>
-                <module>legacy/channel</module>
             </modules>
         </profile>
 
