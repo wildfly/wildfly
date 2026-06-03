@@ -26,7 +26,6 @@ import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.jboss.shrinkwrap.descriptor.api.Descriptors;
 import org.jboss.shrinkwrap.descriptor.api.spec.se.manifest.ManifestDescriptor;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
@@ -36,7 +35,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
  * @author Radoslav Husar
  * @since 27
  */
-@Disabled("https://redhat.atlassian.net/browse/WFLY-21920")
 @ExtendWith(ArquillianExtension.class)
 @ServerSetup(ServerSetupTask.class)
 public class ContainerRemoteQueryTestCase {
@@ -71,6 +69,13 @@ public class ContainerRemoteQueryTestCase {
             assertEquals(1, list.size());
             assertEquals(Book.class, list.get(0).getClass());
             assertEquals("A2", list.get(0).author);
+
+            // Verify subsequent getCache() call still supports query
+            RemoteCache<String, Book> cache2 = this.container.getCache("query");
+            Query<Book> query2 = cache2.query("FROM Book WHERE author='B2'");
+            list = query2.execute().list();
+            assertEquals(1, list.size());
+            assertEquals("B2", list.get(0).author);
         } finally {
             cache.clear();
             cache.stop();

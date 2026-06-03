@@ -16,6 +16,7 @@ import org.infinispan.client.hotrod.RemoteSchemasAdmin;
 import org.infinispan.client.hotrod.RemoteSchemasAdmin.SchemaOpResult;
 import org.infinispan.client.hotrod.configuration.Configuration;
 import org.infinispan.client.hotrod.configuration.RemoteCacheConfiguration;
+import org.infinispan.client.hotrod.impl.MarshallerRegistry;
 import org.infinispan.commons.dataconversion.MediaType;
 import org.infinispan.commons.marshall.Marshaller;
 import org.infinispan.protostream.GeneratedSchema;
@@ -62,14 +63,19 @@ public class ManagedRemoteCacheContainer extends RemoteCacheContainerDecorator i
         List<Runnable> stopTasks = new LinkedList<>();
         ClassLoader loader = WildFlySecurityManager.getCurrentContextClassLoaderPrivileged();
         Module module = Module.forClassLoader(loader, false);
+        MarshallerRegistry deploymentSpecificMarshallerRegistry = null;
         // If thread context is that of a deployment ...
         if ((module != null) && module.getName().startsWith(ServiceModuleLoader.MODULE_PREFIX)) {
             Configuration configuration = this.container.getConfiguration();
+            Marshaller marshaller = UserMarshallerFactory.forMediaType(configuration.marshaller().mediaType()).createUserMarshaller(this.loader, List.of(loader));
+            if (marshaller.mediaType().equals(MediaType.APPLICATION_PROTOSTREAM)) {
+                deploymentSpecificMarshallerRegistry = new MarshallerRegistry();
+                deploymentSpecificMarshallerRegistry.registerMarshaller(marshaller);
+            }
             Map<String, RemoteCacheConfiguration> configurations = configuration.remoteCaches();
             synchronized (configurations) {
                 // If remote cache configuration is undefined, auto-create
                 if (!configurations.containsKey(cacheName)) {
-                    Marshaller marshaller = UserMarshallerFactory.forMediaType(this.container.getConfiguration().marshaller().mediaType()).createUserMarshaller(this.loader, List.of(loader));
                     // If this is a protostream marshaller, additionally auto-register deployment-specific schemas with server
                     if (marshaller.mediaType().equals(MediaType.APPLICATION_PROTOSTREAM)) {
                         RemoteSchemasAdmin admin = this.container.administration().schemas();
@@ -93,7 +99,8 @@ public class ManagedRemoteCacheContainer extends RemoteCacheContainerDecorator i
         }
 
         RemoteCache<K, V> cache = this.container.getCache(cacheName);
-        return (cache != null) ? new ManagedRemoteCache<>(this, cache, this.registrar) {
+        RemoteCacheContainer cacheContainer = (deploymentSpecificMarshallerRegistry != null) ? new MarshallerRegistryRemoteCacheContainerDecorator(this, deploymentSpecificMarshallerRegistry) : this;
+        return (cache != null) ? new ManagedRemoteCache<>(cacheContainer, cache, this.registrar) {
             @Override
             public void stop() {
                 super.stop();
