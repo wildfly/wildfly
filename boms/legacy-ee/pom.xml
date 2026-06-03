@@ -50,11 +50,10 @@
         <version.jakarta.validation.jakarta-validation-api>3.0.2</version.jakarta.validation.jakarta-validation-api>
         <version.jakarta.websocket.jakarta-websocket-api>2.1.1</version.jakarta.websocket.jakarta-websocket-api>
         <version.jakarta.ws.rs.jakarta-ws-rs-api>3.1.0</version.jakarta.ws.rs.jakarta-ws-rs-api>
-        <!-- Required for Hibernate Search -->
-        <version.org.apache.lucene>9.11.1</version.org.apache.lucene>
-        <version.org.elasticsearch.client.rest-client>8.15.4</version.org.elasticsearch.client.rest-client>
-        <version.org.bytebuddy>1.17.8</version.org.bytebuddy>
         <version.org.antlr>4.13.0</version.org.antlr>
+        <version.org.apache.lucene>9.11.1</version.org.apache.lucene>
+        <version.org.bytebuddy>1.17.8</version.org.bytebuddy>
+        <version.org.elasticsearch.client.rest-client>8.15.4</version.org.elasticsearch.client.rest-client>
         <version.org.glassfish.expressly>5.0.0</version.org.glassfish.expressly>
         <version.org.glassfish.jakarta.enterprise.concurrent>3.0.2</version.org.glassfish.jakarta.enterprise.concurrent>
         <version.org.glassfish.jakarta.faces>4.0.15</version.org.glassfish.jakarta.faces>
