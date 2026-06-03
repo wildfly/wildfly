@@ -408,7 +408,7 @@
         <version.antlr>4.13.0</version.antlr>
         <version.at.yawk.lz4.lz4-java>1.10.4</version.at.yawk.lz4.lz4-java>
         <version.com.carrotsearch.hppc>0.10.0</version.com.carrotsearch.hppc>
-        <version.com.fasterxml.jackson>2.21.3</version.com.fasterxml.jackson>
+        <version.com.fasterxml.jackson>2.21.4</version.com.fasterxml.jackson>
         <version.com.github.ben-manes.caffeine>3.2.4</version.com.github.ben-manes.caffeine>
         <version.com.github.fge.btf>1.2</version.com.github.fge.btf>
         <version.com.github.fge.jackson-coreutils>1.8</version.com.github.fge.jackson-coreutils>
