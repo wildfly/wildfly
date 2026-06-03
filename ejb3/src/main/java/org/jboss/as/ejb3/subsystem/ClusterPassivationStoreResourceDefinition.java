@@ -15,7 +15,7 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.wildfly.clustering.ejb.bean.LegacyBeanManagementConfiguration;
 import org.wildfly.clustering.infinispan.service.InfinispanServiceDescriptor;
-import org.wildfly.subsystem.resource.capability.CapabilityReferenceRecorder;
+import org.wildfly.subsystem.resource.capability.CapabilityReference;
 
 /**
  * @author Paul Ferraro
@@ -43,7 +43,7 @@ public class ClusterPassivationStoreResourceDefinition extends LegacyPassivation
             .setAllowExpression(false)
             .setFlags(AttributeAccess.Flag.RESTART_NONE)
             // a CapabilityReference to a UnaryRequirement
-            .setCapabilityReference(CapabilityReferenceRecorder.builder(CLUSTER_PASSIVATION_STORE_CAPABILITY, InfinispanServiceDescriptor.DEFAULT_CACHE_CONFIGURATION).build())
+            .setCapabilityReference(CapabilityReference.builder(CLUSTER_PASSIVATION_STORE_CAPABILITY, InfinispanServiceDescriptor.DEFAULT_CACHE_CONFIGURATION).build())
             .build()
     ;
     @Deprecated
@@ -53,7 +53,7 @@ public class ClusterPassivationStoreResourceDefinition extends LegacyPassivation
             .setAllowExpression(false)
             .setFlags(AttributeAccess.Flag.RESTART_NONE)
             // a CapabilityReference to a BinaryRequirement (including a parent attribute)
-            .setCapabilityReference(CapabilityReferenceRecorder.builder(CLUSTER_PASSIVATION_STORE_CAPABILITY, InfinispanServiceDescriptor.CACHE_CONFIGURATION).withParentAttribute(CACHE_CONTAINER).build())
+            .setCapabilityReference(CapabilityReference.builder(CLUSTER_PASSIVATION_STORE_CAPABILITY, InfinispanServiceDescriptor.CACHE_CONFIGURATION).withParentAttribute(CACHE_CONTAINER).build())
             .build()
     ;
     @Deprecated

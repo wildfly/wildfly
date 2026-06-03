@@ -52,7 +52,7 @@ import org.wildfly.extension.undertow.Capabilities;
 import org.wildfly.extension.undertow.Constants;
 import org.wildfly.extension.undertow.UndertowExtension;
 import org.wildfly.extension.undertow.UndertowSubsystemModel;
-import org.wildfly.subsystem.resource.capability.CapabilityReferenceRecorder;
+import org.wildfly.subsystem.resource.capability.CapabilityReference;
 import org.xnio.OptionMap;
 import org.xnio.Options;
 import org.xnio.Xnio;
@@ -76,7 +76,7 @@ public class ReverseProxyHandlerHostDefinition extends PersistentResourceDefinit
             .setAllowExpression(true)
             .setRestartAllServices()
             .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.SOCKET_BINDING_REF)
-            .setCapabilityReference(CapabilityReferenceRecorder.builder(REVERSE_PROXY_HOST_RUNTIME_CAPABILITY, OutboundSocketBinding.SERVICE_DESCRIPTOR).build())
+            .setCapabilityReference(CapabilityReference.builder(REVERSE_PROXY_HOST_RUNTIME_CAPABILITY, OutboundSocketBinding.SERVICE_DESCRIPTOR).build())
             .build();
 
     public static final AttributeDefinition SCHEME = new SimpleAttributeDefinitionBuilder("scheme", ModelType.STRING)

@@ -31,7 +31,8 @@ import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelNode;
 import org.wildfly.clustering.server.service.ClusteringServiceDescriptor;
-import org.wildfly.subsystem.resource.capability.CapabilityReferenceRecorder;
+import org.wildfly.subsystem.resource.capability.CapabilityReference;
+
 /**
  * Broadcast group definition using Jgroups.
  *
@@ -76,7 +77,7 @@ public class JGroupsBroadcastGroupDefinition extends PersistentResourceDefinitio
             .build();
 
     public static final SimpleAttributeDefinition JGROUPS_CHANNEL = create(CommonAttributes.JGROUPS_CHANNEL)
-            .setCapabilityReference(CapabilityReferenceRecorder.builder(CAPABILITY, ClusteringServiceDescriptor.COMMAND_DISPATCHER_FACTORY).build())
+            .setCapabilityReference(CapabilityReference.builder(CAPABILITY, ClusteringServiceDescriptor.COMMAND_DISPATCHER_FACTORY).build())
             .build();
 
     public static final AttributeDefinition[] ATTRIBUTES = {JGROUPS_CHANNEL_FACTORY, JGROUPS_CHANNEL, JGROUPS_CLUSTER,

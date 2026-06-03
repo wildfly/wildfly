@@ -24,7 +24,7 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.wildfly.clustering.ejb.bean.LegacyBeanManagementConfiguration;
 import org.wildfly.clustering.infinispan.service.InfinispanServiceDescriptor;
-import org.wildfly.subsystem.resource.capability.CapabilityReferenceRecorder;
+import org.wildfly.subsystem.resource.capability.CapabilityReference;
 
 /**
  * Defines a CacheFactoryBuilder instance which, during deployment, is used to configure, build and install a CacheFactory for the SFSB being deployed.
@@ -56,7 +56,7 @@ public class PassivationStoreResourceDefinition extends SimpleResourceDefinition
             .setAllowExpression(false)
             .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
             // a CapabilityReference to a UnaryRequirement
-            .setCapabilityReference(CapabilityReferenceRecorder.builder(PASSIVATION_STORE_CAPABILITY, InfinispanServiceDescriptor.DEFAULT_CACHE_CONFIGURATION).build())
+            .setCapabilityReference(CapabilityReference.builder(PASSIVATION_STORE_CAPABILITY, InfinispanServiceDescriptor.DEFAULT_CACHE_CONFIGURATION).build())
             .build();
 
     static final SimpleAttributeDefinition BEAN_CACHE = new SimpleAttributeDefinitionBuilder(EJB3SubsystemModel.BEAN_CACHE, ModelType.STRING, true)
@@ -65,7 +65,7 @@ public class PassivationStoreResourceDefinition extends SimpleResourceDefinition
             .setAllowExpression(false)
             .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
             // a CapabilityReference to a BinaryRequirement (including a parent attribute)
-            .setCapabilityReference(CapabilityReferenceRecorder.builder(PASSIVATION_STORE_CAPABILITY, InfinispanServiceDescriptor.CACHE_CONFIGURATION).withParentAttribute(CACHE_CONTAINER).build())
+            .setCapabilityReference(CapabilityReference.builder(PASSIVATION_STORE_CAPABILITY, InfinispanServiceDescriptor.CACHE_CONFIGURATION).withParentAttribute(CACHE_CONTAINER).build())
             .build();
 
     static final AttributeDefinition[] ATTRIBUTES = { MAX_SIZE, CACHE_CONTAINER, BEAN_CACHE };
