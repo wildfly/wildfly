@@ -52,13 +52,14 @@
         <version.jakarta.validation.jakarta-validation-api>3.1.1</version.jakarta.validation.jakarta-validation-api>
         <version.jakarta.websocket.jakarta-websocket-api>2.2.0</version.jakarta.websocket.jakarta-websocket-api>
         <version.jakarta.ws.rs.jakarta-ws-rs-api>4.0.0</version.jakarta.ws.rs.jakarta-ws-rs-api>
+        <version.org.antlr>4.13.2</version.org.antlr>
         <version.org.apache.lucene>9.12.3</version.org.apache.lucene>
         <version.org.bytebuddy>1.18.8</version.org.bytebuddy>
         <version.org.elasticsearch.client.rest-client>9.3.1</version.org.elasticsearch.client.rest-client>
         <version.org.glassfish.expressly>6.0.0</version.org.glassfish.expressly>
         <version.org.glassfish.jakarta.faces>4.1.7</version.org.glassfish.jakarta.faces>
         <version.org.glassfish.soteria>4.0.2</version.org.glassfish.soteria>
-        <version.org.hibernate.search>8.3.0.Final</version.org.hibernate.search>
+        <version.org.hibernate.search>8.4.0.Final</version.org.hibernate.search>
         <version.org.hibernate.validator>9.1.0.Final</version.org.hibernate.validator>
         <!-- The ORM version is controlled in the root pom because we need to use its value in contexts not controlled by this bom -->
         <version.org.hibernate>${standard.version.org.hibernate}</version.org.hibernate>
@@ -338,6 +339,29 @@
                 <groupId>net.bytebuddy</groupId>
                 <artifactId>byte-buddy</artifactId>
                 <version>${version.org.bytebuddy}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.antlr</groupId>
+                <artifactId>antlr4</artifactId>
+                <version>${version.org.antlr}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>org.antlr</groupId>
+                <artifactId>antlr4-runtime</artifactId>
+                <version>${version.org.antlr}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>
