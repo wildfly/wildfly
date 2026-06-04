@@ -458,7 +458,7 @@
         <version.io.smallrye.smallrye-reactive-messaging>4.32.1</version.io.smallrye.smallrye-reactive-messaging>
         <!-- TODO (jrp) temporary override until the new version of Undertow is integrated into core and that version of core is integrated here -->
         <version.io.undertow>2.4.1.Final</version.io.undertow>
-        <version.io.vertx.vertx>4.5.27</version.io.vertx.vertx>
+        <version.io.vertx.vertx>4.5.28</version.io.vertx.vertx>
         <version.io.vertx.vertx-kafka-client>4.4.9</version.io.vertx.vertx-kafka-client>
         <version.jakarta.activation.jakarta.activation-api>2.1.4</version.jakarta.activation.jakarta.activation-api>
         <version.jakarta.batch.jakarta.batch-api>2.1.1</version.jakarta.batch.jakarta.batch-api>
