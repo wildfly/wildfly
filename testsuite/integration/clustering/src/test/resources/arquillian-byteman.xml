@@ -21,7 +21,6 @@
             <property name="managementAddress">${node0}</property>
             <property name="managementPort">${as.managementPort:9990}</property>
             <property name="waitForPorts">8787 ${as.managementPort:9990}</property>
-            <property name="waitForPortsTimeoutInSeconds">8</property>
         </configuration>
     </container>
 
@@ -37,7 +36,6 @@
                 <property name="managementPort">${as.managementPort:9990}</property>
                 <!-- AS7-4070 Arquillian should wait until a port is free after AS JVM process ends to prevent "port in use" -->
                 <property name="waitForPorts">8787 ${as.managementPort:9990}</property>
-                <property name="waitForPortsTimeoutInSeconds">8</property>
             </configuration>
         </container>
         <container qualifier="node-2" mode="custom">
@@ -49,7 +47,6 @@
                 <property name="managementAddress">${node1}</property>
                 <property name="managementPort">10090</property>
                 <property name="waitForPorts">8788 10090</property>
-                <property name="waitForPortsTimeoutInSeconds">8</property>
             </configuration>
         </container>
         <container qualifier="node-3" mode="custom">
@@ -61,7 +58,6 @@
                 <property name="managementAddress">${node2}</property>
                 <property name="managementPort">10190</property>
                 <property name="waitForPorts">8789 10190</property>
-                <property name="waitForPortsTimeoutInSeconds">8</property>
             </configuration>
         </container>
         <container qualifier="node-4" mode="custom">
@@ -73,7 +69,6 @@
                 <property name="managementAddress">${node3}</property>
                 <property name="managementPort">10290</property>
                 <property name="waitForPorts">8790 10290</property>
-                <property name="waitForPortsTimeoutInSeconds">8</property>
             </configuration>
         </container>
 
@@ -86,7 +81,6 @@
                 <property name="managementAddress">${node0}</property>
                 <property name="managementPort">${as.managementPort:9990}</property>
                 <property name="waitForPorts">8787 ${as.managementPort:9990}</property>
-                <property name="waitForPortsTimeoutInSeconds">8</property>
             </configuration>
         </container>
     </group>
