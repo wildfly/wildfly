@@ -361,12 +361,13 @@ public enum InfinispanSubsystemSchema implements SubsystemResourceXMLSchema<Infi
     private ResourceRegistrationXMLElement backupSitesElement() {
         ResourceXMLElement takeOfflineElement = this.factory.element(this.factory.resolve("take-offline"))
                 .addAttributes(List.of(BackupSiteResourceDefinitionRegistrar.AFTER_FAILURES, BackupSiteResourceDefinitionRegistrar.MIN_WAIT))
+                .withCardinality(XMLCardinality.Single.OPTIONAL)
                 .build();
         NamedResourceRegistrationXMLElement siteElement = this.factory.namedElement(BackupSiteResourceDefinitionRegistrar.REGISTRATION)
                 .withCardinality(XMLCardinality.Unbounded.OPTIONAL)
                 .addAttributes(List.of(BackupSiteResourceDefinitionRegistrar.FAILURE_POLICY, BackupSiteResourceDefinitionRegistrar.STRATEGY, BackupSiteResourceDefinitionRegistrar.TIMEOUT, BackupSiteResourceDefinitionRegistrar.ENABLED))
                 .withResourceAttributeLocalName("site")
-                .withContent(this.factory.all().withCardinality(XMLCardinality.Single.OPTIONAL).addElement(takeOfflineElement).build())
+                .withContent(this.factory.all().addElement(takeOfflineElement).build())
                 .build();
 
         return this.factory.singletonElement(ComponentResourceRegistration.BACKUP_SITES)
@@ -377,7 +378,7 @@ public enum InfinispanSubsystemSchema implements SubsystemResourceXMLSchema<Infi
     }
 
     private ResourceXMLSequence.Builder cacheElementContentBuilder() {
-        ResourceXMLSequence.Builder builder = this.factory.sequence().withCardinality(XMLCardinality.Single.OPTIONAL)
+        ResourceXMLSequence.Builder builder = this.factory.sequence()
                 .addElement(this.lockingElement())
                 .addElement(this.transactionElement())
                 .addChoice(this.memoryChoice())
@@ -588,7 +589,7 @@ public enum InfinispanSubsystemSchema implements SubsystemResourceXMLSchema<Infi
         if (this.since(VERSION_9_0)) {
             builder.addAttributes(EnumSet.of(TableResourceDefinitionRegistrar.Attribute.CREATE_ON_START, TableResourceDefinitionRegistrar.Attribute.DROP_ON_STOP).stream().map(AttributeDefinitionProvider::get).toList());
         }
-        ResourceXMLAll.Builder contentBuilder = this.factory.all().withCardinality(XMLCardinality.Single.OPTIONAL);
+        ResourceXMLAll.Builder contentBuilder = this.factory.all();
         for (TableResourceDefinitionRegistrar.ColumnAttribute column : EnumSet.allOf(TableResourceDefinitionRegistrar.ColumnAttribute.class)) {
             if ((column != TableResourceDefinitionRegistrar.ColumnAttribute.SEGMENT) || this.since(VERSION_10_0)) {
                 contentBuilder.addElement(column.get());
@@ -618,7 +619,7 @@ public enum InfinispanSubsystemSchema implements SubsystemResourceXMLSchema<Infi
     }
 
     private ResourceXMLSequence.Builder storeContentBuilder() {
-        return this.factory.sequence().withCardinality(XMLCardinality.Single.OPTIONAL)
+        return this.factory.sequence()
                 .addChoice(storeWriteChoice())
                 .addElement(StoreResourceDefinitionRegistrar.PROPERTIES)
                 ;
@@ -627,6 +628,7 @@ public enum InfinispanSubsystemSchema implements SubsystemResourceXMLSchema<Infi
     private ResourceXMLChoice storeWriteChoice() {
         SingletonResourceRegistrationXMLElement.Builder builder = this.factory.singletonElement(StoreWriteResourceRegistration.BEHIND)
                 .addAttribute(StoreWriteBehindResourceDefinitionRegistrar.MODIFICATION_QUEUE_SIZE)
+                .withCardinality(XMLCardinality.Single.OPTIONAL)
                 .withOperationKey(StoreWriteResourceRegistration.WILDCARD.getPathElement())
                 .withElementLocalName(ResourceXMLElementLocalName.KEY_VALUE)
                 ;
