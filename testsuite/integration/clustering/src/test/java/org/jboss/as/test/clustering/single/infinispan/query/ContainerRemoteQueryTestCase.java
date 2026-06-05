@@ -26,6 +26,7 @@ import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.jboss.shrinkwrap.descriptor.api.Descriptors;
 import org.jboss.shrinkwrap.descriptor.api.spec.se.manifest.ManifestDescriptor;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
@@ -35,6 +36,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
  * @author Radoslav Husar
  * @since 27
  */
+@Disabled("https://redhat.atlassian.net/browse/WFLY-21920")
 @ExtendWith(ArquillianExtension.class)
 @ServerSetup(ServerSetupTask.class)
 public class ContainerRemoteQueryTestCase {
