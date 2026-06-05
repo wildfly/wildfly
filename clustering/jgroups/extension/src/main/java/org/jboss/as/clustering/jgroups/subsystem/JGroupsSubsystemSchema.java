@@ -155,7 +155,7 @@ public enum JGroupsSubsystemSchema implements SubsystemResourceXMLSchema<JGroups
             builder.addAttribute(new SimpleAttributeDefinitionBuilder(ChannelResourceDefinitionRegistrar.STACK).setRequired(false).build());
         }
 
-        return builder.withContent(this.factory.sequence().withCardinality(XMLCardinality.Single.OPTIONAL).addElement(this.forkElement()).build()).build();
+        return builder.withContent(this.factory.sequence().addElement(this.forkElement()).build()).build();
     }
 
     private ResourceRegistrationXMLElement forkElement() {
@@ -346,7 +346,7 @@ public enum JGroupsSubsystemSchema implements SubsystemResourceXMLSchema<JGroups
     }
 
     private ResourceXMLSequence.Builder protocolContentBuilder() {
-        return this.factory.sequence().addElement(ProtocolChildResourceDefinitionRegistrar.PROPERTIES).withCardinality(XMLCardinality.Single.OPTIONAL);
+        return this.factory.sequence().addElement(ProtocolChildResourceDefinitionRegistrar.PROPERTIES);
     }
 
     private ResourceRegistrationXMLElement relayElement() {

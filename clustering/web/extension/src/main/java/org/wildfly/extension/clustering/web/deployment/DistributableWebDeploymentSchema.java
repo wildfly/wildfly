@@ -100,7 +100,7 @@ public enum DistributableWebDeploymentSchema implements XMLElementSchema<Distrib
     private XMLElement<MutableDistributableWebDeploymentConfiguration, Void> sessionManagementElement() {
         return this.factory.element(this.resolve("session-management"))
                 .addAttribute(this.factory.attribute(this.resolve("name")).withConsumer(MutableDistributableWebDeploymentConfiguration::setSessionManagementName).build())
-                .withContent(this.factory.sequence().withCardinality(XMLCardinality.Single.OPTIONAL).addElement(this.immutableClassElement(this.factory)).build())
+                .withContent(this.factory.sequence().addElement(this.immutableClassElement(this.factory)).build())
                 .build();
     }
 
