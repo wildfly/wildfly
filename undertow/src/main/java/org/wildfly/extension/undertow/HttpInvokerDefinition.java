@@ -70,7 +70,6 @@ public class HttpInvokerDefinition extends PersistentResourceDefinition {
             .build();
 
     static final Collection<AttributeDefinition> ATTRIBUTES = Arrays.asList(
-            // IMPORTANT -- keep these in xsd order as this order controls marshalling
             PATH,
             HTTP_AUTHENTICATION_FACTORY,
             SECURITY_REALM

@@ -164,7 +164,6 @@ class JspDefinition extends PersistentResourceDefinition {
                     .build();
 
     static final Collection<AttributeDefinition> ATTRIBUTES = List.of(
-            // IMPORTANT -- keep these in xsd order as this order controls marshalling
             DISABLED,
             DEVELOPMENT,
             KEEP_GENERATED,
