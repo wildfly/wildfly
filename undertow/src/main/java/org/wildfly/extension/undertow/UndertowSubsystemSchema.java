@@ -13,6 +13,7 @@ import org.jboss.as.controller.ResourceRegistration;
 import org.jboss.as.controller.SubsystemSchema;
 import org.jboss.as.controller.persistence.xml.NamedResourceRegistrationXMLElement;
 import org.jboss.as.controller.persistence.xml.ResourceRegistrationXMLElement;
+import org.jboss.as.controller.persistence.xml.ResourceXMLAll;
 import org.jboss.as.controller.persistence.xml.ResourceXMLElementLocalName;
 import org.jboss.as.controller.persistence.xml.ResourceXMLParticleFactory;
 import org.jboss.as.controller.persistence.xml.ResourceXMLSequence;
@@ -420,7 +421,7 @@ public enum UndertowSubsystemSchema implements SubsystemResourceXMLSchema<Undert
             builder.addAttribute(ServletContainerDefinition.ORPHAN_SESSION_ALLOWED);
         }
 
-        ResourceXMLSequence.Builder contentBuilder = this.factory.sequence();
+        ResourceXMLAll.Builder contentBuilder = this.factory.all();
         contentBuilder.addElement(this.getJSPElement());
         if (this.since(VERSION_14_0)) {
             contentBuilder.addElement(this.getAffinityCookieElement());
@@ -520,13 +521,13 @@ public enum UndertowSubsystemSchema implements SubsystemResourceXMLSchema<Undert
     private ResourceRegistrationXMLElement getMimeMappingElement() {
         return this.factory.namedElement(MimeMappingDefinition.REGISTRATION)
                 .addAttribute(MimeMappingDefinition.VALUE)
-                .withCardinality(XMLCardinality.Unbounded.OPTIONAL)
+                .withCardinality(XMLCardinality.Unbounded.REQUIRED)
                 .build();
     }
 
     private ResourceRegistrationXMLElement getWelcomeFileElement() {
         return this.factory.namedElement(WelcomeFileDefinition.REGISTRATION)
-                .withCardinality(XMLCardinality.Unbounded.OPTIONAL)
+                .withCardinality(XMLCardinality.Unbounded.REQUIRED)
                 .build();
     }
 
