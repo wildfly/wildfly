@@ -165,9 +165,12 @@ public enum UndertowSubsystemSchema implements SubsystemResourceXMLSchema<Undert
                         ServerDefinition.SERVLET_CONTAINER))
                 .withCardinality(XMLCardinality.Unbounded.REQUIRED)
                 .withContent(this.factory.sequence()
-                        .addElement(this.getAjpListenerElement())
-                        .addElement(this.getHttpListenerElement())
-                        .addElement(this.getHttpsListenerElement())
+                        .addChoice(this.factory.choice()
+                                .addElement(this.getAjpListenerElement())
+                                .addElement(this.getHttpListenerElement())
+                                .addElement(this.getHttpsListenerElement())
+                                .withCardinality(XMLCardinality.Unbounded.OPTIONAL)
+                                .build())
                         .addElement(this.getHostElement())
                         .build())
                 .build();
@@ -282,7 +285,7 @@ public enum UndertowSubsystemSchema implements SubsystemResourceXMLSchema<Undert
                 ListenerResourceDefinition.READ_TIMEOUT,
                 ListenerResourceDefinition.WRITE_TIMEOUT,
                 ListenerResourceDefinition.MAX_CONNECTIONS));
-        return builder.withCardinality(XMLCardinality.Unbounded.OPTIONAL);
+        return builder;
     }
 
     private ResourceRegistrationXMLElement getHostElement() {
@@ -542,9 +545,10 @@ public enum UndertowSubsystemSchema implements SubsystemResourceXMLSchema<Undert
     }
 
     private ResourceRegistrationXMLElement getHandlersElement() {
-        ResourceXMLSequence.Builder contentBuilder = this.factory.sequence()
+        ResourceXMLChoice.Builder contentBuilder = this.factory.choice()
                 .addElement(this.getFileHandlerElement())
                 .addElement(this.getReverseProxyElement())
+                .withCardinality(XMLCardinality.Unbounded.REQUIRED)
                 ;
         return this.factory.singletonElement(HandlerDefinitions.REGISTRATION)
                 .implyIfAbsent()
@@ -563,7 +567,6 @@ public enum UndertowSubsystemSchema implements SubsystemResourceXMLSchema<Undert
                         FileHandlerDefinition.FOLLOW_SYMLINK,
                         FileHandlerDefinition.CASE_SENSITIVE,
                         FileHandlerDefinition.SAFE_SYMLINK_PATHS))
-                .withCardinality(XMLCardinality.Unbounded.OPTIONAL)
                 .build();
     }
 
@@ -576,8 +579,7 @@ public enum UndertowSubsystemSchema implements SubsystemResourceXMLSchema<Undert
                         ReverseProxyHandlerDefinition.REQUEST_QUEUE_SIZE,
                         ReverseProxyHandlerDefinition.MAX_REQUEST_TIME,
                         ReverseProxyHandlerDefinition.CACHED_CONNECTIONS_PER_THREAD,
-                        ReverseProxyHandlerDefinition.CONNECTION_IDLE_TIMEOUT))
-                .withCardinality(XMLCardinality.Unbounded.OPTIONAL);
+                        ReverseProxyHandlerDefinition.CONNECTION_IDLE_TIMEOUT));
 
         if (this.since(VERSION_4_0)) {
             builder.addAttribute(ReverseProxyHandlerDefinition.MAX_RETRIES);
