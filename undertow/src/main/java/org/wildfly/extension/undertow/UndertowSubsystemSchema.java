@@ -68,10 +68,11 @@ public enum UndertowSubsystemSchema implements SubsystemResourceXMLSchema<Undert
     VERSION_14_0(14),   // WildFly 28-39
     VERSION_14_0_PREVIEW(14, 0, Stability.PREVIEW),   // WildFly 33-35
     VERSION_14_0_COMMUNITY(14, 0, Stability.COMMUNITY),   // WildFly 36-40
-    VERSION_15_0(15)    // WildFly 40-present
+    VERSION_15_0(15),    // WildFly 40
+    VERSION_16_0(16),    // WildFly 41-present
     ;
 
-    static final Set<UndertowSubsystemSchema> CURRENT = EnumSet.of(VERSION_15_0);
+    static final Set<UndertowSubsystemSchema> CURRENT = EnumSet.of(VERSION_16_0);
 
     private final VersionedNamespace<IntVersion, UndertowSubsystemSchema> namespace;
     private final ResourceXMLParticleFactory factory = ResourceXMLParticleFactory.newInstance(this);
