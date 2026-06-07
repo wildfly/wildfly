@@ -80,13 +80,13 @@ public class TLSManagedSocketFactory extends ManagedSocketFactory {
 
     @Override
     public ServerSocketChannel createServerSocketChannel(String name) throws IOException {
-        JGroupsLogger.ROOT_LOGGER.channelTlsNotAvailable(name);
+        JGroupsLogger.ROOT_LOGGER.secureSocketChannelNotAvailable(name);
         return super.createServerSocketChannel(name);
     }
 
     @Override
     public SocketChannel createSocketChannel(String name) throws IOException {
-        JGroupsLogger.ROOT_LOGGER.channelTlsNotAvailable(name);
+        JGroupsLogger.ROOT_LOGGER.secureSocketChannelNotAvailable(name);
         return super.createSocketChannel(name);
     }
 

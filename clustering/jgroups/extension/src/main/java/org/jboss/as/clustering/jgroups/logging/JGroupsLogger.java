@@ -179,6 +179,6 @@ public interface JGroupsLogger extends BasicLogger {
      * @param serviceName name of the service that requested the channel to be created
      */
     @LogMessage(level = WARN)
-    @Message(id = 37, value = "Transport of the stack is configured to create TLS sockets and service '%s' requires non-blocking channel for which TLS support is not available. Use TCP transport-based failure detection or socket-based FD_SOCK protocol for also securing the failure detection communication.")
-    void channelTlsNotAvailable(String serviceName);
+    @Message(id = 37, value = "Service '%s' requires a non-blocking socket for which TLS support is not available.  To secure cluster communication for this service, use a blocking socket variant of the associated protocol.")
+    void secureSocketChannelNotAvailable(String serviceName);
 }
