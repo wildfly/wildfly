@@ -130,7 +130,10 @@ public enum UndertowSubsystemSchema implements SubsystemResourceXMLSchema<Undert
         if (this.since(VERSION_4_0)) {
             contentBuilder.addElement(this.factory.element(this.factory.resolve(Constants.APPLICATION_SECURITY_DOMAINS))
                     .withCardinality(XMLCardinality.Single.OPTIONAL)
-                    .withContent(this.factory.sequence().addElement(this.getApplicationSecurityDomainElement()).build())
+                    .withContent(this.factory.choice()
+                            .addElement(this.getApplicationSecurityDomainElement())
+                            .withCardinality(XMLCardinality.Unbounded.REQUIRED)
+                            .build())
                     .build());
         }
         return builder.withContent(contentBuilder.build()).build();
@@ -308,7 +311,7 @@ public enum UndertowSubsystemSchema implements SubsystemResourceXMLSchema<Undert
         if (this.since(VERSION_9_0)) {
             contentBuilder.addElement(this.getConsoleAccessLogElement());
         }
-        contentBuilder.addElement(this.getFilterRefElement());
+        contentBuilder.addElement(this.getFilterRefElementBuilder().withCardinality(XMLCardinality.Unbounded.OPTIONAL).build());
         contentBuilder.addElement(this.getSingleSignOnElement());
         if (this.since(VERSION_4_0)) {
             contentBuilder.addElement(this.getHttpInvokerElement());
@@ -320,8 +323,9 @@ public enum UndertowSubsystemSchema implements SubsystemResourceXMLSchema<Undert
         return this.factory.namedElement(LocationDefinition.REGISTRATION)
                 .addAttribute(LocationDefinition.HANDLER)
                 .withCardinality(XMLCardinality.Unbounded.OPTIONAL)
-                .withContent(this.factory.sequence()
-                        .addElement(this.getFilterRefElement())
+                .withContent(this.factory.choice()
+                        .addElement(this.getFilterRefElementBuilder().build())
+                        .withCardinality(XMLCardinality.Unbounded.OPTIONAL)
                         .build())
                 .build();
     }
@@ -360,13 +364,11 @@ public enum UndertowSubsystemSchema implements SubsystemResourceXMLSchema<Undert
                 .build();
     }
 
-    private ResourceRegistrationXMLElement getFilterRefElement() {
+    private NamedResourceRegistrationXMLElement.Builder getFilterRefElementBuilder() {
         return this.factory.namedElement(FilterRefDefinition.REGISTRATION)
                 .addAttributes(List.of(
                         FilterRefDefinition.PREDICATE,
-                        FilterRefDefinition.PRIORITY))
-                .withCardinality(XMLCardinality.Unbounded.OPTIONAL)
-                .build();
+                        FilterRefDefinition.PRIORITY));
     }
 
     private ResourceRegistrationXMLElement getSingleSignOnElement() {
@@ -435,14 +437,16 @@ public enum UndertowSubsystemSchema implements SubsystemResourceXMLSchema<Undert
         contentBuilder.addElement(this.getWebSocketsElement());
         contentBuilder.addElement(this.factory.element(this.resolve("mime-mappings"))
                 .withCardinality(XMLCardinality.Single.OPTIONAL)
-                .withContent(this.factory.sequence()
+                .withContent(this.factory.choice()
                         .addElement(this.getMimeMappingElement())
+                        .withCardinality(XMLCardinality.Unbounded.REQUIRED)
                         .build())
                 .build());
         contentBuilder.addElement(this.factory.element(this.resolve("welcome-files"))
                 .withCardinality(XMLCardinality.Single.OPTIONAL)
-                .withContent(this.factory.sequence()
+                .withContent(this.factory.choice()
                         .addElement(this.getWelcomeFileElement())
+                        .withCardinality(XMLCardinality.Unbounded.REQUIRED)
                         .build())
                 .build());
         contentBuilder.addElement(this.getCrawlerSessionManagementElement());
@@ -525,13 +529,11 @@ public enum UndertowSubsystemSchema implements SubsystemResourceXMLSchema<Undert
     private ResourceRegistrationXMLElement getMimeMappingElement() {
         return this.factory.namedElement(MimeMappingDefinition.REGISTRATION)
                 .addAttribute(MimeMappingDefinition.VALUE)
-                .withCardinality(XMLCardinality.Unbounded.REQUIRED)
                 .build();
     }
 
     private ResourceRegistrationXMLElement getWelcomeFileElement() {
         return this.factory.namedElement(WelcomeFileDefinition.REGISTRATION)
-                .withCardinality(XMLCardinality.Unbounded.REQUIRED)
                 .build();
     }
 
@@ -587,16 +589,15 @@ public enum UndertowSubsystemSchema implements SubsystemResourceXMLSchema<Undert
         if (this.since(VERSION_14_0_COMMUNITY) || this.since(VERSION_15_0)) {
             builder.addAttributes(List.of(ReverseProxyHandlerDefinition.REUSE_X_FORWARDED_HEADER, ReverseProxyHandlerDefinition.REWRITE_HOST_HEADER));
         }
-        ResourceXMLSequence content = this.factory.sequence()
+        ResourceXMLChoice.Builder contentBuilder = this.factory.choice()
                 .addElement(this.getReverseProxyHostElement())
-                .build();
-        return builder.withContent(content).build();
+                .withCardinality(XMLCardinality.Unbounded.OPTIONAL);
+        return builder.withContent(contentBuilder.build()).build();
     }
 
     private ResourceRegistrationXMLElement getReverseProxyHostElement() {
         NamedResourceRegistrationXMLElement.Builder builder = this.factory.namedElement(ReverseProxyHandlerHostDefinition.REGISTRATION)
-                .addAttributes(List.of(ReverseProxyHandlerHostDefinition.OUTBOUND_SOCKET_BINDING, ReverseProxyHandlerHostDefinition.SCHEME, ReverseProxyHandlerHostDefinition.INSTANCE_ID, ReverseProxyHandlerHostDefinition.PATH, ReverseProxyHandlerHostDefinition.SECURITY_REALM))
-                .withCardinality(XMLCardinality.Unbounded.OPTIONAL);
+                .addAttributes(List.of(ReverseProxyHandlerHostDefinition.OUTBOUND_SOCKET_BINDING, ReverseProxyHandlerHostDefinition.SCHEME, ReverseProxyHandlerHostDefinition.INSTANCE_ID, ReverseProxyHandlerHostDefinition.PATH, ReverseProxyHandlerHostDefinition.SECURITY_REALM));
 
         if (this.since(VERSION_4_0)) {
             builder.addAttributes(List.of(ReverseProxyHandlerHostDefinition.SSL_CONTEXT, ReverseProxyHandlerHostDefinition.ENABLE_HTTP2));
@@ -709,8 +710,9 @@ public enum UndertowSubsystemSchema implements SubsystemResourceXMLSchema<Undert
                 .addAttributes(List.of(
                         CustomFilterDefinition.CLASS_NAME,
                         CustomFilterDefinition.MODULE))
-                .withContent(this.factory.sequence()
+                .withContent(this.factory.choice()
                         .addElement(CustomFilterDefinition.PARAMETERS)
+                        .withCardinality(XMLCardinality.Unbounded.OPTIONAL)
                         .build())
                 .build();
     }
@@ -736,9 +738,7 @@ public enum UndertowSubsystemSchema implements SubsystemResourceXMLSchema<Undert
                 .addAttributes(List.of(
                         ApplicationSecurityDomainDefinition.HTTP_AUTHENTICATION_FACTORY,
                         ApplicationSecurityDomainDefinition.OVERRIDE_DEPLOYMENT_CONFIG,
-                        ApplicationSecurityDomainDefinition.ENABLE_JACC))
-                .withCardinality(XMLCardinality.Unbounded.OPTIONAL)
-                ;
+                        ApplicationSecurityDomainDefinition.ENABLE_JACC));
 
         if (this.since(VERSION_7_0)) {
             builder.addAttribute(ApplicationSecurityDomainDefinition.SECURITY_DOMAIN);
