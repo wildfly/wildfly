@@ -412,18 +412,17 @@
         </xs:sequence>
     </xs:complexType>
 
-
     <xs:complexType name="filterType">
-        <xs:sequence>
-            <xs:element name="request-limit" type="request-limitType" minOccurs="0" maxOccurs="unbounded"/>
-            <xs:element name="response-header" type="response-headerType" minOccurs="0" maxOccurs="unbounded"/>
-            <xs:element name="gzip" type="gzipType" minOccurs="0" maxOccurs="unbounded"/>
-            <xs:element name="error-page" type="errorPageType" minOccurs="0" maxOccurs="unbounded"/>
-            <xs:element name="mod-cluster" type="modClusterType" minOccurs="0" maxOccurs="unbounded"/>
-            <xs:element name="filter" type="customFilterType" minOccurs="0" maxOccurs="unbounded"/>
-            <xs:element name="expression-filter" type="expressionFilterType" minOccurs="0" maxOccurs="unbounded"/>
-            <xs:element name="rewrite" type="rewriteFilterType" minOccurs="0" maxOccurs="unbounded"/>
-        </xs:sequence>
+        <xs:choice maxOccurs="unbounded">
+            <xs:element name="request-limit" type="request-limitType"/>
+            <xs:element name="response-header" type="response-headerType"/>
+            <xs:element name="gzip" type="gzipType"/>
+            <xs:element name="error-page" type="errorPageType"/>
+            <xs:element name="mod-cluster" type="modClusterType"/>
+            <xs:element name="filter" type="customFilterType"/>
+            <xs:element name="expression-filter" type="expressionFilterType"/>
+            <xs:element name="rewrite" type="rewriteFilterType"/>
+        </xs:choice>
     </xs:complexType>
 
     <xs:complexType name="locationType">
