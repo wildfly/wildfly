@@ -5,45 +5,32 @@
 
 package org.jboss.as.ee.concurrent;
 
+import static org.jboss.as.ee.concurrent.SecurityIdentityUtils.doIdentityWrap;
 import org.glassfish.concurro.AbstractManagedExecutorService;
-import org.glassfish.concurro.AbstractManagedThread;
 import org.glassfish.concurro.ContextServiceImpl;
-import org.glassfish.concurro.ManagedThreadFactoryImpl;
+import org.glassfish.concurro.virtualthreads.VirtualThreadsManagedThreadFactory;
 import org.jboss.as.controller.ProcessStateNotifier;
 import org.jboss.as.ee.logging.EeLogger;
 import org.wildfly.extension.requestcontroller.ControlPoint;
 
 import java.util.Collection;
-import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
-
-import static org.jboss.as.ee.concurrent.SecurityIdentityUtils.doIdentityWrap;
 
 /**
- * WildFly's extension of {@link org.glassfish.concurro.ManagedExecutorServiceImpl}.
+ * WildFly's extension of {@link org.glassfish.concurro.virtualthreads.VirtualThreadsManagedExecutorService}.
  * @author Eduardo Martins
  */
-public class ConcurroManagedExecutorServiceImpl extends org.glassfish.concurro.ManagedExecutorServiceImpl implements WildFlyManagedExecutorService {
+public class ConcurroVirtualThreadsManagedExecutorServiceImpl extends org.glassfish.concurro.virtualthreads.VirtualThreadsManagedExecutorService implements WildFlyManagedExecutorService {
 
     private final ControlPoint controlPoint;
     private final ProcessStateNotifier processStateNotifier;
-    private final ManagedExecutorRuntimeStats runtimeStats;
+    private final ManagedExecutorRuntimeStats runtimeStats = new RuntimeStats();
 
-    public ConcurroManagedExecutorServiceImpl(String name, WildFlyManagedThreadFactory managedThreadFactory, long hungTaskThreshold, boolean longRunningTasks, int corePoolSize, int maxPoolSize, long keepAliveTime, TimeUnit keepAliveTimeUnit, long threadLifeTime, WildFlyContextService contextService, WildFlyManagedExecutorService.RejectPolicy rejectPolicy, BlockingQueue<Runnable> queue, ControlPoint controlPoint, ProcessStateNotifier processStateNotifier) {
-        super(name, (ManagedThreadFactoryImpl) managedThreadFactory, hungTaskThreshold, longRunningTasks, corePoolSize, maxPoolSize, keepAliveTime, keepAliveTimeUnit, threadLifeTime, (ContextServiceImpl) contextService, convertRejectPolicy(rejectPolicy), queue);
+    public ConcurroVirtualThreadsManagedExecutorServiceImpl(String name, WildFlyManagedThreadFactory managedThreadFactory, long hungTaskThreshold, boolean longRunningTasks, int maxPoolSize, int queueCapacity, WildFlyContextService contextService, WildFlyManagedExecutorService.RejectPolicy rejectPolicy, ControlPoint controlPoint, ProcessStateNotifier processStateNotifier) {
+        super(name, (VirtualThreadsManagedThreadFactory) managedThreadFactory, hungTaskThreshold, longRunningTasks, maxPoolSize, queueCapacity, (ContextServiceImpl) contextService, convertRejectPolicy(rejectPolicy));
         this.controlPoint = controlPoint;
         this.processStateNotifier = processStateNotifier;
-        this.runtimeStats = new ConcurroManagedExecutorRuntimeStatsImpl(this);
-    }
-
-    public ConcurroManagedExecutorServiceImpl(String name, WildFlyManagedThreadFactory managedThreadFactory, long hungTaskThreshold, boolean longRunningTasks, int corePoolSize, int maxPoolSize, long keepAliveTime, TimeUnit keepAliveTimeUnit, long threadLifeTime, int queueCapacity, WildFlyContextService contextService, WildFlyManagedExecutorService.RejectPolicy rejectPolicy, ControlPoint controlPoint, ProcessStateNotifier processStateNotifier) {
-        super(name, (ManagedThreadFactoryImpl) managedThreadFactory, hungTaskThreshold, longRunningTasks, corePoolSize, maxPoolSize, keepAliveTime, keepAliveTimeUnit, threadLifeTime, queueCapacity, (ContextServiceImpl) contextService, convertRejectPolicy(rejectPolicy));
-        this.controlPoint = controlPoint;
-        this.processStateNotifier = processStateNotifier;
-        this.runtimeStats = new ConcurroManagedExecutorRuntimeStatsImpl(this);
     }
 
     public static AbstractManagedExecutorService.RejectPolicy convertRejectPolicy(WildFlyManagedExecutorService.RejectPolicy rejectPolicy) {
@@ -99,11 +86,6 @@ public class ConcurroManagedExecutorServiceImpl extends org.glassfish.concurro.M
         }
     }
 
-    @Override
-    protected ThreadPoolExecutor getThreadPoolExecutor() {
-        return (ThreadPoolExecutor) super.getThreadPoolExecutor();
-    }
-
     /**
      *
      * @return the executor's runtime stats
@@ -119,19 +101,53 @@ public class ConcurroManagedExecutorServiceImpl extends org.glassfish.concurro.M
         final Collection<Thread> hungThreads = getHungThreads();
         if (hungThreads != null) {
             for (Thread t : hungThreads) {
-                final String taskIdentityName = ((AbstractManagedThread)t).getTaskIdentityName();
+
+                final String taskIdentityName = t.toString();
                 try {
-                    if (t instanceof ConcurroManagedThreadFactoryImpl.ManagedThread) {
-                        if (((ConcurroManagedThreadFactoryImpl.ManagedThread)t).cancelTask()) {
-                            EeLogger.ROOT_LOGGER.hungTaskCancelled(executorName, taskIdentityName);
-                        } else {
-                            EeLogger.ROOT_LOGGER.hungTaskNotCancelled(executorName, taskIdentityName);
-                        }
-                    }
+                    t.interrupt();
+                    EeLogger.ROOT_LOGGER.hungTaskCancelled(executorName, taskIdentityName);
                 } catch (Throwable throwable) {
                     EeLogger.ROOT_LOGGER.huntTaskTerminationFailure(throwable, executorName, taskIdentityName);
                 }
             }
+        }
+    }
+
+    public class RuntimeStats implements ManagedExecutorRuntimeStats {
+
+        @Override
+        public int getActiveThreadsCount() {
+            return getThreadsCount();
+        }
+
+        @Override
+        public long getCompletedTaskCount() {
+            return ConcurroVirtualThreadsManagedExecutorServiceImpl.super.getCompletedTaskCount();
+        }
+
+        @Override
+        public int getHungThreadsCount() {
+            return ConcurroVirtualThreadsManagedExecutorServiceImpl.super.getHungThreads().size();
+        }
+
+        @Override
+        public int getMaxThreadsCount() {
+            return 0;
+        }
+
+        @Override
+        public int getQueueSize() {
+            return Integer.MAX_VALUE;
+        }
+
+        @Override
+        public long getTaskCount() {
+            return ConcurroVirtualThreadsManagedExecutorServiceImpl.super.getTaskCount();
+        }
+
+        @Override
+        public int getThreadsCount() {
+            return ConcurroVirtualThreadsManagedExecutorServiceImpl.super.getThreads().size();
         }
     }
 }
