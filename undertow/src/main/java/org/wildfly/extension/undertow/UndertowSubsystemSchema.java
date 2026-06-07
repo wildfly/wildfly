@@ -353,7 +353,7 @@ public enum UndertowSubsystemSchema implements SubsystemResourceXMLSchema<Undert
                         AccessLogDefinition.PREDICATE,
                         ConsoleAccessLogDefinition.METADATA))
                 .withCardinality(XMLCardinality.Single.OPTIONAL)
-                .withContent(this.factory.sequence()
+                .withContent(this.factory.all()
                         .addElement(ExchangeAttributeDefinitions.ATTRIBUTES)
                         .addElement(ConsoleAccessLogDefinition.METADATA)
                         .build())
