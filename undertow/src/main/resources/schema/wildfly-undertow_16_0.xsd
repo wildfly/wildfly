@@ -48,9 +48,11 @@
     </xs:complexType>
     <xs:complexType name="serverType">
         <xs:sequence>
-            <xs:element name="ajp-listener" type="ajp-listener-type" minOccurs="0" maxOccurs="unbounded"/>
-            <xs:element name="http-listener" type="http-listener-type" minOccurs="0" maxOccurs="unbounded"/>
-            <xs:element name="https-listener" type="https-listener-type" minOccurs="0" maxOccurs="unbounded"/>
+            <xs:choice minOccurs="0" maxOccurs="unbounded">
+                <xs:element name="ajp-listener" type="ajp-listener-type"/>
+                <xs:element name="http-listener" type="http-listener-type"/>
+                <xs:element name="https-listener" type="https-listener-type"/>
+            </xs:choice>
             <xs:element name="host" type="hostType" maxOccurs="unbounded"/>
         </xs:sequence>
         <xs:attribute name="name" use="required" type="xs:string"/>
@@ -406,10 +408,10 @@
     </xs:complexType>
 
     <xs:complexType name="handlerType">
-        <xs:sequence>
-            <xs:element name="file" type="file-handlerType" minOccurs="0" maxOccurs="unbounded"/>
-            <xs:element name="reverse-proxy" type="reverse-proxy-handlerType" minOccurs="0" maxOccurs="unbounded"/>
-        </xs:sequence>
+        <xs:choice maxOccurs="unbounded">
+            <xs:element name="file" type="file-handlerType"/>
+            <xs:element name="reverse-proxy" type="reverse-proxy-handlerType"/>
+        </xs:choice>
     </xs:complexType>
 
     <xs:complexType name="filterType">
