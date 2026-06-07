@@ -1233,4 +1233,9 @@ public interface EeLogger extends BasicLogger {
 
     @Message(id = 143, value = "Lifecycle operation not supported")
     IllegalStateException lifecycleOperationNotSupported();
+
+    @LogMessage(level = ERROR)
+    @Message(id = 144, value = "Failed to create virtual threads %s, falling back to platform threads alternative...")
+    void failedToCreateVirtualThreadsResource(Class<?> c, @Cause Throwable cause);
+
 }
