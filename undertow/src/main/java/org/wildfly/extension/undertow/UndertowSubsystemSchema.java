@@ -14,6 +14,7 @@ import org.jboss.as.controller.SubsystemSchema;
 import org.jboss.as.controller.persistence.xml.NamedResourceRegistrationXMLElement;
 import org.jboss.as.controller.persistence.xml.ResourceRegistrationXMLElement;
 import org.jboss.as.controller.persistence.xml.ResourceXMLAll;
+import org.jboss.as.controller.persistence.xml.ResourceXMLChoice;
 import org.jboss.as.controller.persistence.xml.ResourceXMLElementLocalName;
 import org.jboss.as.controller.persistence.xml.ResourceXMLParticleFactory;
 import org.jboss.as.controller.persistence.xml.ResourceXMLSequence;
@@ -602,7 +603,7 @@ public enum UndertowSubsystemSchema implements SubsystemResourceXMLSchema<Undert
     }
 
     private ResourceRegistrationXMLElement getFiltersElement() {
-        ResourceXMLSequence.Builder contentBuilder = this.factory.sequence()
+        ResourceXMLChoice.Builder contentBuilder = this.factory.choice()
                 .addElement(this.getRequestLimitElement())
                 .addElement(this.getResponseHeaderElement())
                 .addElement(this.getGzipElement())
@@ -611,6 +612,7 @@ public enum UndertowSubsystemSchema implements SubsystemResourceXMLSchema<Undert
                 .addElement(this.getCustomFilterElement())
                 .addElement(this.getExpressionFilterElement())
                 .addElement(this.getRewriteElement())
+                .withCardinality(XMLCardinality.Unbounded.REQUIRED)
                 ;
 
         return this.factory.singletonElement(FilterDefinitions.REGISTRATION)
@@ -625,7 +627,6 @@ public enum UndertowSubsystemSchema implements SubsystemResourceXMLSchema<Undert
                 .addAttributes(List.of(
                         RequestLimitHandlerDefinition.MAX_CONCURRENT_REQUESTS,
                         RequestLimitHandlerDefinition.QUEUE_SIZE))
-                .withCardinality(XMLCardinality.Unbounded.OPTIONAL)
                 .build();
     }
 
@@ -634,13 +635,11 @@ public enum UndertowSubsystemSchema implements SubsystemResourceXMLSchema<Undert
                 .addAttributes(List.of(
                         ResponseHeaderFilterDefinition.NAME,
                         ResponseHeaderFilterDefinition.VALUE))
-                .withCardinality(XMLCardinality.Unbounded.OPTIONAL)
                 .build();
     }
 
     private ResourceRegistrationXMLElement getGzipElement() {
         return this.factory.namedElement(GzipFilterDefinition.REGISTRATION)
-                .withCardinality(XMLCardinality.Unbounded.OPTIONAL)
                 .build();
     }
 
@@ -649,7 +648,6 @@ public enum UndertowSubsystemSchema implements SubsystemResourceXMLSchema<Undert
                 .addAttributes(List.of(
                         ErrorPageDefinition.CODE,
                         ErrorPageDefinition.PATH))
-                .withCardinality(XMLCardinality.Unbounded.OPTIONAL)
                 .build();
     }
 
@@ -680,8 +678,8 @@ public enum UndertowSubsystemSchema implements SubsystemResourceXMLSchema<Undert
                         ModClusterDefinition.HTTP2_MAX_CONCURRENT_STREAMS,
                         ModClusterDefinition.HTTP2_INITIAL_WINDOW_SIZE,
                         ModClusterDefinition.HTTP2_HEADER_TABLE_SIZE,
-                        ModClusterDefinition.HTTP2_ENABLE_PUSH))
-                .withCardinality(XMLCardinality.Unbounded.OPTIONAL);
+                        ModClusterDefinition.HTTP2_ENABLE_PUSH));
+
         if (this.since(VERSION_4_0)) {
             builder.addAttributes(List.of(ModClusterDefinition.FAILOVER_STRATEGY, ModClusterDefinition.SSL_CONTEXT, ModClusterDefinition.MAX_RETRIES));
         }
@@ -709,7 +707,6 @@ public enum UndertowSubsystemSchema implements SubsystemResourceXMLSchema<Undert
                 .addAttributes(List.of(
                         CustomFilterDefinition.CLASS_NAME,
                         CustomFilterDefinition.MODULE))
-                .withCardinality(XMLCardinality.Unbounded.OPTIONAL)
                 .withContent(this.factory.sequence()
                         .addElement(CustomFilterDefinition.PARAMETERS)
                         .build())
@@ -721,7 +718,6 @@ public enum UndertowSubsystemSchema implements SubsystemResourceXMLSchema<Undert
                 .addAttributes(List.of(
                         ExpressionFilterDefinition.EXPRESSION,
                         ExpressionFilterDefinition.MODULE))
-                .withCardinality(XMLCardinality.Unbounded.OPTIONAL)
                 .build();
     }
 
@@ -730,7 +726,6 @@ public enum UndertowSubsystemSchema implements SubsystemResourceXMLSchema<Undert
                 .addAttributes(List.of(
                         RewriteFilterDefinition.TARGET,
                         RewriteFilterDefinition.REDIRECT))
-                .withCardinality(XMLCardinality.Unbounded.OPTIONAL)
                 .build();
     }
 
