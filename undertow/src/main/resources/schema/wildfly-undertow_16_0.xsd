@@ -447,10 +447,10 @@
         <xs:attribute name="predicate" type="xs:string"/>
     </xs:complexType>
     <xs:complexType name="consoleAccessLogType">
-        <xs:sequence minOccurs="0">
+        <xs:all>
             <xs:element name="attributes" type="attributesType" minOccurs="0"/>
             <xs:element name="metadata" type="propertiesType" minOccurs="0"/>
-        </xs:sequence>
+        </xs:all>
         <xs:attribute name="include-host-name" type="xs:boolean" default="true"/>
         <xs:attribute name="worker" type="xs:string" default="default"/>
         <xs:attribute name="predicate" type="xs:string"/>
@@ -461,7 +461,7 @@
                 A collection of free-form meta-data properties.
             </xs:documentation>
         </xs:annotation>
-        <xs:choice minOccurs="0" maxOccurs="unbounded">
+        <xs:choice maxOccurs="unbounded">
             <xs:element name="property">
                 <xs:complexType>
                     <xs:attribute name="name" type="xs:string" use="required"/>
