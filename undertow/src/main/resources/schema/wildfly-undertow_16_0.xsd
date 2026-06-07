@@ -279,9 +279,9 @@
     </xs:complexType>
 
     <xs:complexType name="mime-mappingsType">
-        <xs:sequence>
-            <xs:element name="mime-mapping" type="mime-mappingType" minOccurs="0" maxOccurs="unbounded"/>
-        </xs:sequence>
+        <xs:choice minOccurs="0" maxOccurs="unbounded">
+            <xs:element name="mime-mapping" type="mime-mappingType"/>
+        </xs:choice>
     </xs:complexType>
 
     <xs:complexType name="mime-mappingType">
@@ -290,9 +290,9 @@
     </xs:complexType>
 
     <xs:complexType name="welcome-filesType">
-        <xs:sequence>
-            <xs:element name="welcome-file" type="welcome-fileType" minOccurs="0" maxOccurs="unbounded"/>
-        </xs:sequence>
+        <xs:choice minOccurs="0" maxOccurs="unbounded">
+            <xs:element name="welcome-file" type="welcome-fileType"/>
+        </xs:choice>
     </xs:complexType>
 
     <xs:complexType name="welcome-fileType">
@@ -428,9 +428,9 @@
     </xs:complexType>
 
     <xs:complexType name="locationType">
-        <xs:sequence>
-            <xs:element name="filter-ref" type="filter-refType" minOccurs="0" maxOccurs="unbounded"/>
-        </xs:sequence>
+        <xs:choice minOccurs="0" maxOccurs="unbounded">
+            <xs:element name="filter-ref" type="filter-refType"/>
+        </xs:choice>
         <xs:attribute name="name" use="required" type="xs:string"/>
         <xs:attribute name="handler" use="required" type="xs:string"/>
     </xs:complexType>
@@ -516,37 +516,37 @@
             </xs:element>
             <xs:element name="path-parameter" minOccurs="0">
                 <xs:complexType>
-                    <xs:sequence>
-                        <xs:element name="name" maxOccurs="unbounded">
+                    <xs:choice maxOccurs="unbounded">
+                        <xs:element name="name">
                             <xs:complexType>
                                 <xs:attribute name="value" use="required"/>
                             </xs:complexType>
                         </xs:element>
-                    </xs:sequence>
+                    </xs:choice>
                     <xs:attribute name="key-prefix"/>
                 </xs:complexType>
             </xs:element>
             <xs:element name="predicate" minOccurs="0">
                 <xs:complexType>
-                    <xs:sequence>
-                        <xs:element name="name" maxOccurs="unbounded">
+                    <xs:choice maxOccurs="unbounded">
+                        <xs:element name="name">
                             <xs:complexType>
                                 <xs:attribute name="value" use="required"/>
                             </xs:complexType>
                         </xs:element>
-                    </xs:sequence>
+                    </xs:choice>
                     <xs:attribute name="key-prefix"/>
                 </xs:complexType>
             </xs:element>
             <xs:element name="query-parameter" minOccurs="0">
                 <xs:complexType>
-                    <xs:sequence>
-                        <xs:element name="name" maxOccurs="unbounded">
+                    <xs:choice minOccurs="0" maxOccurs="unbounded">
+                        <xs:element name="name">
                             <xs:complexType>
                                 <xs:attribute name="value" use="required"/>
                             </xs:complexType>
                         </xs:element>
-                    </xs:sequence>
+                    </xs:choice>
                     <xs:attribute name="key-prefix"/>
                 </xs:complexType>
             </xs:element>
@@ -579,13 +579,13 @@
             </xs:element>
             <xs:element name="request-header" minOccurs="0">
                 <xs:complexType>
-                    <xs:sequence>
-                        <xs:element name="name" maxOccurs="unbounded">
+                    <xs:choice maxOccurs="unbounded">
+                        <xs:element name="name">
                             <xs:complexType>
                                 <xs:attribute name="value" use="required"/>
                             </xs:complexType>
                         </xs:element>
-                    </xs:sequence>
+                    </xs:choice>
                     <xs:attribute name="key-prefix"/>
                 </xs:complexType>
             </xs:element>
@@ -631,13 +631,13 @@
             </xs:element>
             <xs:element name="response-header" minOccurs="0">
                 <xs:complexType>
-                    <xs:sequence>
-                        <xs:element name="name" maxOccurs="unbounded">
+                    <xs:choice maxOccurs="unbounded">
+                        <xs:element name="name">
                             <xs:complexType>
                                 <xs:attribute name="value" use="required"/>
                             </xs:complexType>
                         </xs:element>
-                    </xs:sequence>
+                    </xs:choice>
                     <xs:attribute name="key-prefix"/>
                 </xs:complexType>
             </xs:element>
@@ -715,12 +715,10 @@
         <xs:attribute name="value" use="required" type="xs:string"/>
     </xs:complexType>
 
-
-
     <xs:complexType name="customFilterType">
-        <xs:sequence>
-            <xs:element name="param" type="paramType" minOccurs="0" maxOccurs="unbounded"/>
-        </xs:sequence>
+        <xs:choice minOccurs="0" maxOccurs="unbounded">
+            <xs:element name="param" type="paramType"/>
+        </xs:choice>
         <xs:attribute name="name" use="required" type="xs:string"/>
         <xs:attribute name="class-name" use="required" type="xs:string"/>
         <xs:attribute name="module" use="required" type="xs:string"/>
@@ -751,9 +749,9 @@
     </xs:simpleType>
 
     <xs:complexType name="reverse-proxy-handlerType">
-        <xs:sequence>
-            <xs:element name="host" type="reverse-proxy-hostType" minOccurs="0" maxOccurs="unbounded"/>
-        </xs:sequence>
+        <xs:choice minOccurs="0" maxOccurs="unbounded">
+            <xs:element name="host" type="reverse-proxy-hostType"/>
+        </xs:choice>
         <xs:attribute name="name" use="required" type="xs:string"/>
         <xs:attribute name="connections-per-thread" type="xs:integer" default="40"/>
         <xs:attribute name="session-cookie-names" type="xs:string" default="JSESSIONID"/>
@@ -1006,9 +1004,9 @@
                 backed authentication policy.
             </xs:documentation>
         </xs:annotation>
-        <xs:sequence>
-            <xs:element name="application-security-domain" type="applicationSecurityDomainType" maxOccurs="unbounded"/>
-        </xs:sequence>
+        <xs:choice maxOccurs="unbounded">
+            <xs:element name="application-security-domain" type="applicationSecurityDomainType"/>
+        </xs:choice>
     </xs:complexType>
 
     <xs:complexType name="applicationSecurityDomainType">
