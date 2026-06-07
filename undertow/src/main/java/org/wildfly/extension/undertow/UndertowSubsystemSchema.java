@@ -747,10 +747,10 @@ public enum UndertowSubsystemSchema implements SubsystemResourceXMLSchema<Undert
             builder.addAttributes(List.of(ApplicationSecurityDomainDefinition.ENABLE_JASPI, ApplicationSecurityDomainDefinition.INTEGRATED_JASPI));
         }
 
-        ResourceXMLSequence content = this.factory.sequence()
+        ResourceXMLAll.Builder contentBuilder = this.factory.all()
                 .addElement(this.getApplicationSecurityDomainSingleSignOnElement())
-                .build();
-        return builder.withContent(content).build();
+                ;
+        return builder.withContent(contentBuilder.build()).build();
     }
 
     private ResourceRegistrationXMLElement getApplicationSecurityDomainSingleSignOnElement() {
@@ -765,7 +765,7 @@ public enum UndertowSubsystemSchema implements SubsystemResourceXMLSchema<Undert
                         SingleSignOnDefinition.Attribute.HTTP_ONLY.get(),
                         SingleSignOnDefinition.Attribute.COOKIE_NAME.get()))
                 .withCardinality(XMLCardinality.Single.OPTIONAL)
-                .withContent(this.factory.sequence()
+                .withContent(this.factory.all()
                         .addElement(ApplicationSecurityDomainSingleSignOnDefinition.Attribute.CREDENTIAL.get())
                         .build())
                 .build();
