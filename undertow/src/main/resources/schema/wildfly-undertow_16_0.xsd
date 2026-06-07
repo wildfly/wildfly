@@ -476,7 +476,7 @@
                 The available attributes to be included in the structured access log output.
             </xs:documentation>
         </xs:annotation>
-        <xs:sequence>
+        <xs:all>
             <xs:element name="authentication-type" minOccurs="0">
                 <xs:complexType>
                     <xs:attribute name="key" type="xs:string"/>
@@ -701,7 +701,7 @@
                     <xs:attribute name="key" type="xs:string"/>
                 </xs:complexType>
             </xs:element>
-        </xs:sequence>
+        </xs:all>
     </xs:complexType>
 
     <xs:complexType name="errorPageType">
@@ -1012,9 +1012,9 @@
     </xs:complexType>
 
     <xs:complexType name="applicationSecurityDomainType">
-        <xs:sequence>
+        <xs:all>
             <xs:element name="single-sign-on" type="applicationSecurityDomainSingleSignOnType" minOccurs="0"/>
-        </xs:sequence>
+        </xs:all>
         <xs:attribute name="name" type="xs:string" use="required">
             <xs:annotation>
                 <xs:documentation>
@@ -1083,9 +1083,9 @@
     <xs:complexType name="applicationSecurityDomainSingleSignOnType">
         <xs:complexContent>
             <xs:extension base="singleSignOnType">
-                <xs:sequence>
+                <xs:all>
                     <xs:element name="credential-reference" type="credential-reference:credentialReferenceType" minOccurs="0"/>
-                </xs:sequence>
+                </xs:all>
                 <xs:attribute name="key-store" type="xs:string" use="required">
                     <xs:annotation>
                         <xs:documentation>References key store containing the key used to sign and verify logout requests.</xs:documentation>
