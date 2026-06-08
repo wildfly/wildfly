@@ -27,19 +27,6 @@
 
     <name>WildFly: Legacy Feature-Pack Parent</name>
 
-    <modules>
-        <module>build</module>
-        <module>channel</module>
-        <module>dist</module>
-        <module>ee-build</module>
-        <module>ee-dist</module>
-        <module>feature-pack</module>
-        <module>galleon-local</module>
-        <!-- Add this if we define any layers in this FP -->
-        <!--<module>layer-metadata-tests</module>-->
-        <module>product-conf</module>
-    </modules>
-
     <dependencyManagement>
         <dependencies>
 
@@ -76,5 +63,43 @@
             <type>pom</type>
         </dependency>
     </dependencies>
+
+    <profiles>
+        <profile>
+            <id>base.build</id>
+            <activation>
+                <property>
+                    <name>!no.base.build</name>
+                </property>
+            </activation>
+            <modules>
+                <module>channel</module>
+                <module>ee-build</module>
+                <module>ee-dist</module>
+                <module>feature-pack</module>
+                <module>galleon-local</module>
+                <!-- Add this if we define any layers in this FP -->
+                <!--<module>layer-metadata-tests</module>-->
+                <module>product-conf</module>
+            </modules>
+        </profile>
+
+        <profile>
+            <id>expansion-build</id>
+            <activation>
+                <property>
+                    <!--
+                    Allow users to disable building expansion stuff if they just want base artifacts.
+                    This option requires -Dno.preview.build
+                    -->
+                    <name>!no.expansion.build</name>
+                </property>
+            </activation>
+            <modules>
+                <module>build</module>
+                <module>dist</module>
+            </modules>
+        </profile>
+    </profiles>
 
 </project>
