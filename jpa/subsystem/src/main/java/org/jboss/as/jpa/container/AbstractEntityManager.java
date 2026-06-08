@@ -196,7 +196,7 @@ public abstract class AbstractEntityManager implements EntityManager {
             start = System.currentTimeMillis();
         try {
             final EntityManager underlyingEntityManager = getEntityManager();
-            T result = getEntityManager().find(entityClass, primaryKey);
+            T result = underlyingEntityManager.find(entityClass, primaryKey);
             detachNonTxInvocation(underlyingEntityManager);
             return result;
         } finally {
@@ -489,7 +489,7 @@ public abstract class AbstractEntityManager implements EntityManager {
             start = System.currentTimeMillis();
         try {
             final EntityManager underlyingEntityManager = getEntityManager();
-            T result = getEntityManager().getReference(entityClass, primaryKey);
+            T result = underlyingEntityManager.getReference(entityClass, primaryKey);
             detachNonTxInvocation(underlyingEntityManager);
             return result;
         } finally {
