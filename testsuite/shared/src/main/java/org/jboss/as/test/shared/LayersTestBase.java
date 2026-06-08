@@ -161,8 +161,6 @@ public abstract class LayersTestBase {
             // Legacy subsystems for which we will not provide layers
             "org.wildfly.extension.microprofile.metrics-smallrye",
             "org.wildfly.extension.microprofile.opentracing-smallrye",
-            // TODO WFLY-16586 microprofile-reactive-streams-operators layer should provision this
-            "org.wildfly.reactive.dep.jts",
     };
 
     /**
