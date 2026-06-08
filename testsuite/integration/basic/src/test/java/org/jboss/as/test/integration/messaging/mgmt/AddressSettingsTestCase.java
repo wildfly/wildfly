@@ -108,7 +108,17 @@ public class AddressSettingsTestCase extends ContainerResourceMgmtTestBase {
         ModelNode result = executeOperation(resolve);
 
         for (String attributeName : attributeNames) {
-            assertEquals("unexpected value for " + attributeName, defaultAddressSetting.get(attributeName), result.get(attributeName));
+            switch (attributeName) {
+                case "max-read-page-bytes":
+                    assertEquals("unexpected value for " + attributeName, 2*result.get("page-size-bytes").asInt(), result.get(attributeName).asInt());
+                    break;
+                case "max-redelivery-delay":
+                    assertEquals("unexpected value for " + attributeName, 10*result.get("redelivery-delay").asLong(), result.get(attributeName).asLong());
+                    break;
+                default:
+                    assertEquals("unexpected value for " + attributeName, defaultAddressSetting.get(attributeName), result.get(attributeName));
+            }
+
         }
     }
 
@@ -129,6 +139,7 @@ public class AddressSettingsTestCase extends ContainerResourceMgmtTestBase {
         add.get(ModelDescriptionConstants.OP).set(ADD);
         add.get(ModelDescriptionConstants.OP_ADDR).set(intermediateAddress);
         add.get("page-size-bytes").set(1024*1024);
+        add.get("redelivery-delay").set(8000L);
         executeOperation(add);
 
         // there is no address-setting for the given address but
@@ -141,10 +152,21 @@ public class AddressSettingsTestCase extends ContainerResourceMgmtTestBase {
         ModelNode result = executeOperation(resolve);
 
         for (String attributeName : attributeNames) {
-            if("page-size-bytes".equals(attributeName)) {
-                assertEquals("unexpected value for " + attributeName, 1024*1024, result.get(attributeName).asInt());
-            } else {
-                assertEquals("unexpected value for " + attributeName, defaultAddressSetting.get(attributeName), result.get(attributeName));
+            switch (attributeName) {
+                case "page-size-bytes":
+                    assertEquals("unexpected value for " + attributeName, 1024*1024, result.get(attributeName).asInt());
+                    break;
+                case "max-read-page-bytes":
+                    assertEquals("unexpected value for " + attributeName, 2*1024*1024, result.get(attributeName).asInt());
+                    break;
+                case "redelivery-delay":
+                    assertEquals("unexpected value for " + attributeName, 8000L, result.get(attributeName).asLong());
+                    break;
+                case "max-redelivery-delay":
+                    assertEquals("unexpected value for " + attributeName, 10*8000L, result.get(attributeName).asLong());
+                    break;
+                default:
+                    assertEquals("unexpected value for " + attributeName, defaultAddressSetting.get(attributeName), result.get(attributeName));
             }
         }
     }
