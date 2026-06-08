@@ -18,5 +18,6 @@
 
     <packages>
         <package name="org.wildfly.extension.microprofile.reactive-streams-operators-smallrye"/>
+        <package name="org.wildfly.reactive.dep.jts" optional="true"/>
     </packages>
 </layer-spec>
