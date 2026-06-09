@@ -15,8 +15,6 @@ import java.util.function.ToDoubleFunction;
 import java.util.function.ToLongFunction;
 import java.util.stream.StreamSupport;
 
-import org.wildfly.extension.micrometer.MicrometerExtensionLogger;
-
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.DistributionSummary;
 import io.micrometer.core.instrument.FunctionCounter;
@@ -35,6 +33,7 @@ import io.micrometer.core.instrument.distribution.pause.PauseDetector;
 import io.micrometer.core.instrument.search.RequiredSearch;
 import io.micrometer.core.instrument.search.Search;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
+import org.wildfly.extension.micrometer.MicrometerExtensionLogger;
 
 public class ApplicationRegistry extends SimpleMeterRegistry {
     static final String TAG_WF_DEPLOYMENT = "WF_DEPLOYMENT";
