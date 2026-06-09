@@ -125,6 +125,8 @@
         <!-- TODO WFLY-21408 Apply workaround for dependabot pom.xml parsing issue "ERROR: Invalid expression: /project/groupId}.channel" -->
         <!-- <channels.maven.groupId>${project.groupId}.channels</channels.maven.groupId> -->
         <channels.maven.groupId>org.wildfly.channels</channels.maven.groupId>
+        <!-- JBoss Modules layer used for modules that provide expansion functionality -->
+        <expansion.module.layer>base</expansion.module.layer>
         <!-- The Galleon channel for the minor version with which this branch is associated.  -->
         <galleon.minor.channel>${product.docs.server.version}.0</galleon.minor.channel>
 
