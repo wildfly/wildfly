@@ -34,8 +34,6 @@ import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import com.github.dockerjava.zerodep.shaded.org.apache.hc.client5.http.ClientProtocolException;
-
 import static org.awaitility.Awaitility.await;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.collection.ArrayMatching.arrayContainingInAnyOrder;
@@ -104,7 +102,7 @@ public class DistributedTimerAccessTestCase extends AbstractClusteringTestCase {
 
     }
 
-    private List<String> getTimers(CloseableHttpClient httpClient, URI uri) throws ClientProtocolException, IOException {
+    private List<String> getTimers(CloseableHttpClient httpClient, URI uri) throws IOException {
         HttpGet get = new HttpGet(uri);
         try (CloseableHttpResponse response = httpClient.execute(get)) {
             if (HttpServletResponse.SC_OK == response.getStatusLine().getStatusCode()) {
@@ -116,7 +114,7 @@ public class DistributedTimerAccessTestCase extends AbstractClusteringTestCase {
     }
 
     private boolean createTimer(CloseableHttpClient httpClient, URI uri, String info)
-            throws ClientProtocolException, IOException {
+            throws IOException {
         HttpPost post = new HttpPost(uri);
         HttpEntity entity = new StringEntity(info, ContentType.APPLICATION_JSON);
         post.setEntity(entity);
