@@ -7,12 +7,14 @@ package org.wildfly.extension.micrometer.registry;
 
 import static org.wildfly.extension.micrometer.registry.ApplicationRegistry.TAG_WF_DEPLOYMENT;
 
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import java.util.function.Supplier;
+import java.util.stream.Stream;
 
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.DistributionSummary;
@@ -332,6 +334,33 @@ public class ApplicationRegistryTest {
     }
 
     @Test
+    public void testTimerWithServiceLevelObjectives() {
+        String meterName = "builder_timer_test";
+        Timer timer = Timer.builder(meterName).description("Test timer via builder and ServiceLevelObjectives")
+                .serviceLevelObjectives(
+                        Stream.of(10, 20, 40, 60, 100, 200).map(Duration::ofMillis).toList().toArray(Duration[]::new))
+                .register(appRegistry1);
+        var snapshot = timer.takeSnapshot();
+        var counts = snapshot.histogramCounts();
+        Assert.assertEquals(6, counts.length);
+        Assert.assertEquals(Duration.ofMillis(10).toNanos(), counts[0].bucket(), 0.1);
+        Assert.assertEquals(Duration.ofMillis(200).toNanos(), counts[counts.length-1].bucket(), 0.1);
+    }
+
+    @Test
+    public void testTimerWithPercentileHistogram() {
+        String meterName = "builder_timer_test";
+        Timer timer = Timer.builder(meterName).description("Test timer via builder and PercentileHistogram")
+                .publishPercentileHistogram().minimumExpectedValue(Duration.ofMillis(1))
+                .maximumExpectedValue(Duration.ofSeconds(10)).register(appRegistry1);
+        var snapshot = timer.takeSnapshot();
+        var counts = snapshot.histogramCounts();
+        Assert.assertTrue(counts.length > 0);
+        Assert.assertEquals(Duration.ofMillis(1).toNanos(), counts[0].bucket(), 0.1);
+        Assert.assertEquals(Duration.ofSeconds(10).toNanos(), counts[counts.length - 1].bucket(), 0.1);
+    }
+
+    @Test
     public void testBuilderPatternIsolation() {
         String meterName = "builder_isolation_test";
 
@@ -365,6 +394,31 @@ public class ApplicationRegistryTest {
         Assert.assertNotNull("DistributionSummary should be in parent registry",
                 systemRegistry.find(meterName).tag(TAG_WF_DEPLOYMENT, DEPLOYMENT1).summary());
         assertMetricBelongsToDeployment(summary.getId(), DEPLOYMENT1);
+    }
+
+    @Test
+    public void testDistributionSummaryWithServiceLevelObjectives() {
+        String meterName = "builder_summary_test";
+        DistributionSummary summary = DistributionSummary.builder(meterName).description("Test summary via builder")
+                .serviceLevelObjectives(100, 200, 300, 500, 1000).register(appRegistry1);
+        var snapshot = summary.takeSnapshot();
+        var counts = snapshot.histogramCounts();
+        Assert.assertEquals(5, counts.length);
+        Assert.assertEquals(100.0, counts[0].bucket(), 0.1);
+        Assert.assertEquals(1000.0, counts[counts.length - 1].bucket(), 0.1);
+    }
+
+    @Test
+    public void testDistributionSummaryWithPercentileHistogram() {
+        String meterName = "builder_summary_test";
+        DistributionSummary summary = DistributionSummary.builder(meterName).description("Test summary via builder")
+                .publishPercentileHistogram().minimumExpectedValue(1.0).maximumExpectedValue(100.0).register(appRegistry1);
+
+        var snapshot = summary.takeSnapshot();
+        var counts = snapshot.histogramCounts();
+        Assert.assertTrue(counts.length > 0);
+        Assert.assertEquals(1.0, (counts[0]).bucket(), 0.1);
+        Assert.assertEquals(100.0, (counts[counts.length - 1]).bucket(), 0.1);
     }
 
     @Test
@@ -407,6 +461,33 @@ public class ApplicationRegistryTest {
         Assert.assertNotNull("LongTaskTimer should be in parent registry",
                 systemRegistry.find(meterName).tag(TAG_WF_DEPLOYMENT, DEPLOYMENT1).longTaskTimer());
         assertMetricBelongsToDeployment(longTaskTimer.getId(), DEPLOYMENT1);
+    }
+
+    @Test
+    public void testLongTaskTimerWithServiceLevelObjectives() {
+        String meterName = "builder_long_task_timer_test";
+        LongTaskTimer longTaskTimer = LongTaskTimer.builder(meterName).description("Test long task timer via builder")
+                .serviceLevelObjectives(
+                        Stream.of(2, 20, 40, 60, 100, 200).map(Duration::ofMillis).toList().toArray(Duration[]::new))
+                .register(appRegistry1);
+        var snapshot = longTaskTimer.takeSnapshot();
+        var counts = snapshot.histogramCounts();
+        Assert.assertEquals(6, counts.length);
+        Assert.assertEquals(Duration.ofMillis(2).toNanos(), counts[0].bucket(), 0.1);
+        Assert.assertEquals(Duration.ofMillis(200).toNanos(), counts[counts.length - 1].bucket(), 0.1);
+    }
+
+    @Test
+    public void testLongTaskTimerWithPercentileHistogram() {
+        String meterName = "builder_long_task_timer_test";
+        LongTaskTimer longTaskTimer = LongTaskTimer.builder(meterName).description("Test long task timer via builder")
+                .publishPercentileHistogram().minimumExpectedValue(Duration.ofMillis(1))
+                .maximumExpectedValue(Duration.ofSeconds(60)).register(appRegistry1);
+        var snapshot = longTaskTimer.takeSnapshot();
+        var counts = snapshot.histogramCounts();
+        Assert.assertTrue(counts.length > 0);
+        Assert.assertEquals(Duration.ofMillis(1).toNanos(), counts[0].bucket(), 0.1);
+        Assert.assertEquals(Duration.ofSeconds(60).toNanos(), counts[counts.length - 1].bucket(), 0.1);
     }
 
     @Test
