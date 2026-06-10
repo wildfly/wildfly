@@ -1235,13 +1235,11 @@
                 <xs:annotation>
                     <xs:documentation>
                         <![CDATA[
-                        This is an optional property.
-                        This option designates the path component of a URL.  Elytron
-                        uses it to identify a URL that is used to start an OIDC logout request.
-                        The default values is "/logout". It is expected that the text start with a
-                        forward slash (e.g. "/").  A path with multiple directories may
-                        be specified (e.g. "/call/back/home"). This path must be the last
-                        text in the base URL.
+                        This is an optional property with no default value.
+                        It designates a relative path (starting with "/") for the application
+                        endpoint that starts RP-initiated logout. Configure it only when users
+                        initiate logout from the application; it is not used by front-channel or
+                        back-channel logout. The incoming request path must match exactly.
                     ]]>
                     </xs:documentation>
                 </xs:annotation>
@@ -1250,17 +1248,13 @@
                 <xs:annotation>
                     <xs:documentation>
                         <![CDATA[
-                        This is an optional property. It designates the path component of a URL
-                        which is called after logout has completed.  The declared URL path is
-                        appended to the client's application context URL.  The default path is
-                        "/logout/callback".  The option can not be declared as an empty string or "/" only
-                        It is expected that the text start with a forward slash (e.g. "/").
-                        It can be a sequence of path segments (e.g. "/call/back/home")
+                        This is an optional property with no default value. It designates where
+                        the OpenID Provider invokes front-channel or back-channel logout. It is
+                        required in practice for front-channel or back-channel logout.
 
-                        The value of this property can also be an absolute URL.  When the callback
-                        URL is outside the client application's context an absolute URL is required.
-
-                        For both scenarios the absolute URL must be registered with the OpenId Provider.
+                        The value may be a relative path or an absolute http or https URI.
+                        Only the path component is compared against the incoming request, using
+                        exact path equality. The value must be registered with the OpenId Provider.
                     ]]>
                     </xs:documentation>
                 </xs:annotation>
@@ -1270,10 +1264,10 @@
                 <xs:annotation>
                     <xs:documentation>
                         <![CDATA[
-                        This is an optional property.
-                         This attribute must be an absolute URI.  It must be registered with
-                         the OpenId Provider.  This URI will be called after logout is executed.
-                         It is used in a RP-Initiated logout only.
+                        This is an optional property with no default value.
+                        It must be an absolute URI sent to the provider end_session_endpoint
+                        as post_logout_redirect_uri during RP-initiated logout. It must be
+                        registered with the OpenId Provider.
                     ]]>
                     </xs:documentation>
                 </xs:annotation>
@@ -1287,18 +1281,16 @@
                         This is an optional property.
                         A boolean value. The default value is true
 
-                        For Front-Channel Logout the boolean value specifies whether the
-                        request requires the iss (issuer) and sid (session ID) query
-                        parameters be included to identify the session with the OpenId
-                        Provider.
+                        For Front-Channel Logout, when true, the provider sid query
+                        parameter is validated against the ID token sid claim and the iss
+                        (issuer) parameter is enforced. When false, session validation is
+                        skipped and the local session is invalidated on callback.
 
                         For Back-Channel Logout the boolean value specifies whether the
                         request requires the sid (session ID) Claim be included in the
                         Logout Token to identify the session with the OpenId Provider.
                         This value must be `true` for back-channel logout to be executed.
-                        If the value is `false` the `sid` will be marked for invalidation
-                        using a bounded map so that subsequent requests from the user will
-                        force the session to be invalidated.
+                        If the value is `false` the request is rejected with HTTP 400.
                     ]]>
                     </xs:documentation>
                 </xs:annotation>
