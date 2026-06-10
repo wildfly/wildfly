@@ -193,9 +193,6 @@
                                     <version>${ee.maven.version}</version>
                                     <included-packages>
                                         <name>docs.examples.configs</name>
-                                        <name>org.wildfly.extension.hashicorp-vault</name>
-                                        <name>org.wildfly.security.elytron-hashicorp-vault</name>
-                                        <name>io.github.jopenlibs.vault-java-driver</name>
                                     </included-packages>
                                 </feature-pack>
                                 <feature-pack>

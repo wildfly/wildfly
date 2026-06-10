@@ -23,7 +23,7 @@
         <jbossas.ts.dir>${jbossas.ts.integ.dir}/..</jbossas.ts.dir>
         <jbossas.project.dir>${jbossas.ts.dir}/..</jbossas.project.dir>
         <jboss.dist>${project.build.directory}/wildfly-layers</jboss.dist>
-        <server.jboss.args>${jboss.args} --stability=community</server.jboss.args>
+        <server.jboss.args>${jboss.args}</server.jboss.args>
         <hashicorp.vault.provisioning.phase>process-test-classes</hashicorp.vault.provisioning.phase>
         <version.hashicorp-vault.test.junit>6.0.0</version.hashicorp-vault.test.junit>
     </properties>
@@ -137,8 +137,6 @@
                     <galleon-options>
                         <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
                         <optional-packages>passive+</optional-packages>
-                        <config-stability-level>community</config-stability-level>
-                        <package-stability-level>community</package-stability-level>
                     </galleon-options>
                 </configuration>
                 <executions>
