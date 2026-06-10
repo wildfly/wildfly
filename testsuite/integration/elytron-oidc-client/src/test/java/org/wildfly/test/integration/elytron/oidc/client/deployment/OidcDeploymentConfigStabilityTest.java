@@ -19,7 +19,7 @@ import org.wildfly.test.stabilitylevel.StabilityServerSetupSnapshotRestoreTasks;
  * Tests for the OpenID Connect authentication mechanism for some specific {@code Stability}.
  * @author <a href="mailto:pesilva@redhat.com">Pedro Hos</a>
  */
-@ServerSetup({OidcDeploymentConfigStabilityTest.StabilitySetupTask.class, OidcDeploymentConfigBaseTest.KeycloakAndSystemPropertySetup.class, OidcBaseTest.WildFlyServerSetupTask.class})
+@ServerSetup({OidcDeploymentConfigStabilityTest.CommunityStabilitySetupTask.class, OidcDeploymentConfigBaseTest.KeycloakAndSystemPropertySetup.class, OidcBaseTest.WildFlyServerSetupTask.class})
 @RunWith(Arquillian.class)
 @RunAsClient
 public class OidcDeploymentConfigStabilityTest extends OidcDeploymentConfigBaseTest {
@@ -201,7 +201,7 @@ public class OidcDeploymentConfigStabilityTest extends OidcDeploymentConfigBaseT
         }
     }
 
-    public static class StabilitySetupTask extends StabilityServerSetupSnapshotRestoreTasks.Preview {
+    public static class CommunityStabilitySetupTask extends StabilityServerSetupSnapshotRestoreTasks.Community {
         @Override
         protected void doSetup(ManagementClient managementClient) throws Exception {
             // Write a system property so the model gets stored with a lower stability level.
