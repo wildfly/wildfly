@@ -518,7 +518,7 @@
         <version.org.hibernate.commons.annotations>7.0.3.Final</version.org.hibernate.commons.annotations>
         <!-- We need to use this value in configuring maven plugins, so simply overriding version.org.hibernate
              in boms/legacy-ee is inadequate. So we'll declare the value here and reference it in boms/legacy-ee. -->
-        <legacy.version.org.hibernate>6.6.49.Final</legacy.version.org.hibernate>
+        <legacy.version.org.hibernate>6.6.53.Final</legacy.version.org.hibernate>
         <!-- We need to use this value in configuring maven plugins, so simply overriding version.org.hibernate
              in boms/standard-preview-ee is inadequate. So we'll declare the value here and reference it in boms/standard-preview-ee. -->
         <standard.version.org.hibernate>7.4.1.Final</standard.version.org.hibernate>
