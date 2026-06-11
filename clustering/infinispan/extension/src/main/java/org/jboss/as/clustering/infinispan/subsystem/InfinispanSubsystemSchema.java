@@ -77,9 +77,10 @@ public enum InfinispanSubsystemSchema implements SubsystemResourceXMLSchema<Infi
     VERSION_13_0(13, 0), // WildFly 24-26
     VERSION_14_0(14, 0), // WildFly 27-35
     VERSION_15_0(15, 0), // WildFly 36-39
-    VERSION_16_0(16, 0), // WildFly 40-present
+    VERSION_16_0(16, 0), // WildFly 40
+    VERSION_17_0(17, 0), // WildFly 41-present
     ;
-    static final InfinispanSubsystemSchema CURRENT = VERSION_16_0;
+    static final InfinispanSubsystemSchema CURRENT = VERSION_17_0;
 
     private final ResourceXMLParticleFactory factory = ResourceXMLParticleFactory.newInstance(this);
     private final VersionedNamespace<IntVersion, InfinispanSubsystemSchema> namespace;
@@ -604,6 +605,9 @@ public enum InfinispanSubsystemSchema implements SubsystemResourceXMLSchema<Infi
                 .withElementLocalName(ResourceXMLElementLocalName.VALUE_KEY)
                 .addAttributes(List.of(StoreResourceDefinitionRegistrar.DeprecatedAttribute.FETCH_STATE.get(), StoreResourceDefinitionRegistrar.Attribute.PASSIVATION.get(), StoreResourceDefinitionRegistrar.Attribute.PRELOAD.get(), StoreResourceDefinitionRegistrar.Attribute.PURGE.get(), StoreResourceDefinitionRegistrar.Attribute.SHARED.get()))
                 ;
+        if (!this.since(VERSION_17_0)) {
+            builder.withDefaultValues(Map.of(StoreResourceDefinitionRegistrar.Attribute.SEGMENTED.get(), ModelNode.TRUE));
+        }
         if (this.since(VERSION_5_0)) {
             builder.addAttribute(StoreResourceDefinitionRegistrar.Attribute.MAX_BATCH_SIZE.get());
         }

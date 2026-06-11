@@ -48,7 +48,7 @@ public class StoreResourceDefinitionRegistrar<C extends StoreConfiguration, B ex
         PRELOAD("preload", ModelType.BOOLEAN, ModelNode.FALSE),
         PURGE("purge", ModelType.BOOLEAN, ModelNode.FALSE),
         SHARED("shared", ModelType.BOOLEAN, ModelNode.FALSE),
-        SEGMENTED("segmented", ModelType.BOOLEAN, ModelNode.TRUE),
+        SEGMENTED("segmented", ModelType.BOOLEAN, ModelNode.FALSE),
         ;
         private final AttributeDefinition definition;
 
