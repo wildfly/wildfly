@@ -27,7 +27,15 @@ import org.jboss.modules.ModuleLoader;
 public enum InfinispanMarshallerFactory implements BiFunction<ModuleLoader, List<Module>, Marshaller> {
 
     LEGACY() {
-        private final Set<String> protoStreamModules = Set.of("org.wildfly.clustering.server", "org.wildfly.clustering.ejb.infinispan", "org.wildfly.clustering.web.infinispan");
+        private final Set<String> protoStreamModules = Set.of(
+                "org.wildfly.clustering.ejb.infinispan",
+                "org.wildfly.clustering.session.infinispan.embedded",
+                "org.wildfly.clustering.session.infinispan.remote",
+                "org.wildfly.clustering.singleton.server",
+                // Legacy module aliases
+                "org.wildfly.clustering.server",
+                "org.wildfly.clustering.web.infinispan",
+                "org.wildfly.clustering.web.hotrod");
         private final Predicate<String> protoStreamPredicate = this.protoStreamModules::contains;
 
         @Override
