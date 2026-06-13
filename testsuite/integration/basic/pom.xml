@@ -595,6 +595,11 @@
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
+            <artifactId>wildfly-iiop-openjdk</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
             <artifactId>wildfly-pojo</artifactId>
             <scope>test</scope>
         </dependency>
@@ -1770,6 +1775,7 @@
                 </executions>
             </plugin>
 
+            <!-- Configure IIOP authentication for standalone-full.xml -->
         </plugins>
     </build>
 
@@ -1885,6 +1891,8 @@
                                         <com.sun.CORBA.ORBUseDynamicStub>true</com.sun.CORBA.ORBUseDynamicStub>
                                         <!-- EJB client library hack, see WFLY-4973-->
                                         <org.jboss.ejb.client.wildfly-testsuite-hack>true</org.jboss.ejb.client.wildfly-testsuite-hack>
+                                        <!-- IIOP NameService authentication requires SecurityDomain - override server.jvm.args to include it -->
+                                        <server.jvm.args>${surefire.system.args} ${jvm.args.ip.server} ${jvm.args.other} ${jvm.args.timeouts} -Dnode0=${node0} -Dnode1=${node1} -Djboss.iiop.naming.security-domain=ApplicationDomain ${jvm.args.dirs} ${extra.server.jvm.args}</server.jvm.args>
                                     </systemPropertyVariables>
 
                                     <additionalClasspathElements>

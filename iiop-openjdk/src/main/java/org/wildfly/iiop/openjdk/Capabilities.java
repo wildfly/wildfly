@@ -23,4 +23,5 @@ final class Capabilities {
 
     public static final String SSL_CONTEXT_CAPABILITY = "org.wildfly.security.ssl-context";
     public static final String AUTH_CONTEXT_CAPABILITY = "org.wildfly.security.authentication-context";
+    public static final String ELYTRON_SECURITY_DOMAIN_CAPABILITY = "org.wildfly.security.security-domain";
 }

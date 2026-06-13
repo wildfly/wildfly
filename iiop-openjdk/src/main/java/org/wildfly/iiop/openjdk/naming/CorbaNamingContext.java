@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.Serializable;
 import java.nio.charset.StandardCharsets;
+import java.security.Principal;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Map;
@@ -32,7 +33,11 @@ import org.omg.CosNaming.NamingContextPackage.NotEmpty;
 import org.omg.CosNaming.NamingContextPackage.NotFound;
 import org.omg.CosNaming.NamingContextPackage.NotFoundReason;
 import org.omg.PortableServer.POA;
+import org.jboss.iiop.csiv2.SASCurrent;
 import org.wildfly.iiop.openjdk.logging.IIOPLogger;
+import org.wildfly.security.auth.server.SecurityDomain;
+import org.wildfly.security.auth.server.ServerAuthenticationContext;
+import org.wildfly.security.evidence.PasswordGuessEvidence;
 
 /**
  * <p>
@@ -51,6 +56,16 @@ public class CorbaNamingContext extends NamingContextExtPOA implements Serializa
      */
     private static ORB orb;
     private static POA rootPoa;
+
+    /**
+     * Reference to SASCurrent for authentication checks.
+     */
+    private static SASCurrent sasCurrent;
+
+    /**
+     * Reference to SecurityDomain for authentication.
+     */
+    private static SecurityDomain securityDomain;
 
     /**
      * the naming service POA - i.e. the POA that activates all naming contexts.
@@ -101,7 +116,17 @@ public class CorbaNamingContext extends NamingContextExtPOA implements Serializa
         CorbaNamingContext.orb = orb;
         CorbaNamingContext.rootPoa = rootPoa;
 
+        // Try to get SASCurrent for authentication
+        try {
+            CorbaNamingContext.sasCurrent = (SASCurrent) orb.resolve_initial_references("SASCurrent");
+        } catch (Exception e) {
+            IIOPLogger.ROOT_LOGGER.debugf("SASCurrent not available, authentication will be disabled: %s", e.getMessage());
+            CorbaNamingContext.sasCurrent = null;
+        }
+    }
 
+    public static void setSecurityDomain(SecurityDomain domain) {
+        CorbaNamingContext.securityDomain = domain;
     }
 
     /**
@@ -121,9 +146,76 @@ public class CorbaNamingContext extends NamingContextExtPOA implements Serializa
         this.noPing = noPing;
     }
 
+    private void authenticate() {
+        if (sasCurrent == null) {
+            throw IIOPLogger.ROOT_LOGGER.sasCurrentNotAvailable();
+        }
+
+        if (securityDomain == null) {
+            throw IIOPLogger.ROOT_LOGGER.securityDomainNotAvailable();
+        }
+
+        // Get credentials from SASCurrent
+        // For remote calls via CSIv2: set by SASTargetInterceptor.receive_request()
+        // For in-JVM calls: set by CNCtx via SASTargetInterceptor.setLocalCredentials()
+        final byte[] incomingUsername = sasCurrent.get_incoming_username();
+        if (incomingUsername == null || incomingUsername.length == 0) {
+            throw IIOPLogger.ROOT_LOGGER.noUsernameProvided();
+        }
+
+        final byte[] incomingPassword = sasCurrent.get_incoming_password();
+        String name = new String(incomingUsername, StandardCharsets.UTF_8);
+
+        int domainIndex = name.indexOf('@');
+        if (domainIndex > 0) {
+            name = name.substring(0, domainIndex);
+        }
+
+        final String username = name;
+        char[] password = new String(incomingPassword, StandardCharsets.UTF_8).toCharArray();
+
+        try {
+            final ServerAuthenticationContext authContext = securityDomain.createNewAuthenticationContext();
+            final PasswordGuessEvidence evidence = new PasswordGuessEvidence(password != null ? password : null);
+            try {
+                authContext.setAuthenticationPrincipal((Principal) () -> username);
+                if (authContext.verifyEvidence(evidence)) {
+                    if (authContext.authorize()) {
+                        authContext.succeed();
+                    } else {
+                        authContext.fail();
+                        throw IIOPLogger.ROOT_LOGGER.authorizationFailed(username);
+                    }
+                } else {
+                    authContext.fail();
+                    throw IIOPLogger.ROOT_LOGGER.authenticationFailed(username);
+                }
+            } finally {
+                if (!authContext.isDone()) {
+                    authContext.fail();
+                }
+                evidence.destroy();
+            }
+        } catch (org.omg.CORBA.NO_PERMISSION e) {
+            throw e;
+        } catch (Exception e) {
+            throw IIOPLogger.ROOT_LOGGER.authenticationException(e);
+        } finally {
+            if (password != null) {
+                java.util.Arrays.fill(password, (char) 0);
+            }
+        }
+    }
+
     //======================================= NamingContextOperation Methods ==================================//
 
     public void bind(NameComponent[] nc, org.omg.CORBA.Object obj) throws NotFound, CannotProceed, InvalidName,
+            AlreadyBound {
+        authenticate();
+        doBind(nc, obj);
+    }
+
+    private void doBind(NameComponent[] nc, org.omg.CORBA.Object obj) throws NotFound, CannotProceed, InvalidName,
             AlreadyBound {
         if (this.destroyed)
             throw new CannotProceed();
@@ -143,7 +235,7 @@ public class CorbaNamingContext extends NamingContextExtPOA implements Serializa
                 // if the name is still in use, try to ping the object
                 org.omg.CORBA.Object ref = (org.omg.CORBA.Object) this.names.get(n);
                 if (isDead(ref)) {
-                    rebind(n.components(), obj);
+                    doRebind(n.components(), obj);
                     return;
                 }
                 throw new AlreadyBound();
@@ -151,7 +243,7 @@ public class CorbaNamingContext extends NamingContextExtPOA implements Serializa
                 // if the name is still in use, try to ping the object
                 org.omg.CORBA.Object ref = (org.omg.CORBA.Object) this.contexts.get(n);
                 if (isDead(ref))
-                    unbind(n.components());
+                    doUnbind(n.components());
                 throw new AlreadyBound();
             }
 
@@ -161,19 +253,25 @@ public class CorbaNamingContext extends NamingContextExtPOA implements Serializa
             IIOPLogger.ROOT_LOGGER.debugf("Bound name: %s", n);
         } else {
             NameComponent[] ncx = new NameComponent[]{nb};
-            org.omg.CORBA.Object context = this.resolve(ctx.components());
+            org.omg.CORBA.Object context = this.doResolve(ctx.components());
 
             // try first to call the context implementation object directly.
             String contextOID = this.getObjectOID(context);
             CorbaNamingContext jbossContext = (contextOID == null ? null : contextImpls.get(contextOID));
             if (jbossContext != null)
-                jbossContext.bind(ncx, obj);
+                jbossContext.doBind(ncx, obj);
             else
                 NamingContextExtHelper.narrow(context).bind(ncx, obj);
         }
     }
 
     public void bind_context(NameComponent[] nc, NamingContext obj) throws NotFound, CannotProceed, InvalidName,
+            AlreadyBound {
+        authenticate();
+        doBindContext(nc, obj);
+    }
+
+    private void doBindContext(NameComponent[] nc, NamingContext obj) throws NotFound, CannotProceed, InvalidName,
             AlreadyBound {
         if (this.destroyed)
             throw new CannotProceed();
@@ -187,14 +285,14 @@ public class CorbaNamingContext extends NamingContextExtPOA implements Serializa
                 // if the name is still in use, try to ping the object
                 org.omg.CORBA.Object ref = (org.omg.CORBA.Object) this.names.get(n);
                 if (isDead(ref))
-                    unbind(n.components());
+                    doUnbind(n.components());
                 else
                     throw new AlreadyBound();
             } else if (this.contexts.containsKey(n)) {
                 // if the name is still in use, try to ping the object
                 org.omg.CORBA.Object ref = (org.omg.CORBA.Object) this.contexts.get(n);
                 if (isDead(ref)) {
-                    rebind_context(n.components(), obj);
+                    doRebindContext(n.components(), obj);
                     return;
                 }
                 throw new AlreadyBound();
@@ -206,34 +304,44 @@ public class CorbaNamingContext extends NamingContextExtPOA implements Serializa
             IIOPLogger.ROOT_LOGGER.debugf("Bound context: %s", n);
         } else {
             NameComponent[] ncx = new NameComponent[]{nb};
-            org.omg.CORBA.Object context = this.resolve(ctx.components());
+            org.omg.CORBA.Object context = this.doResolve(ctx.components());
 
             // try first to call the context implementation object directly.
             String contextOID = this.getObjectOID(context);
             CorbaNamingContext jbossContext = (contextOID == null ? null : contextImpls.get(contextOID));
             if (jbossContext != null)
-                jbossContext.bind_context(ncx, obj);
+                jbossContext.doBindContext(ncx, obj);
             else
                 NamingContextExtHelper.narrow(context).bind_context(ncx, obj);
         }
     }
 
     public NamingContext bind_new_context(NameComponent[] nc) throws NotFound, CannotProceed, InvalidName, AlreadyBound {
+        authenticate();
+        return doBindNewContext(nc);
+    }
+
+    public NamingContext doBindNewContext(NameComponent[] nc) throws NotFound, CannotProceed, InvalidName, AlreadyBound {
         if (this.destroyed)
             throw new CannotProceed();
 
         if (nc == null || nc.length == 0)
             throw new InvalidName();
 
-        NamingContext context = new_context();
+        NamingContext context = doNewContext();
         if (context == null)
             throw new CannotProceed();
 
-        bind_context(nc, context);
+        doBindContext(nc, context);
         return context;
     }
 
     public void destroy() throws NotEmpty {
+        authenticate();
+        doDestroy();
+    }
+
+    private void doDestroy() throws NotEmpty {
         if (this.destroyed)
             return;
 
@@ -247,6 +355,10 @@ public class CorbaNamingContext extends NamingContextExtPOA implements Serializa
     }
 
     public void list(int how_many, BindingListHolder bl, BindingIteratorHolder bi) {
+        doList(how_many, bl, bi);
+    }
+
+    private void doList(int how_many, BindingListHolder bl, BindingIteratorHolder bi) {
         if (this.destroyed)
             return;
 
@@ -303,6 +415,11 @@ public class CorbaNamingContext extends NamingContextExtPOA implements Serializa
     }
 
     public NamingContext new_context() {
+        authenticate();
+        return doNewContext();
+    }
+
+    public NamingContext doNewContext() {
         try {
             // create and initialize a new context.
             CorbaNamingContext newContextImpl = new CorbaNamingContext();
@@ -321,6 +438,11 @@ public class CorbaNamingContext extends NamingContextExtPOA implements Serializa
     }
 
     public void rebind(NameComponent[] nc, org.omg.CORBA.Object obj) throws NotFound, CannotProceed, InvalidName {
+        authenticate();
+        doRebind(nc, obj);
+    }
+
+    public void doRebind(NameComponent[] nc, org.omg.CORBA.Object obj) throws NotFound, CannotProceed, InvalidName {
         if (this.destroyed)
             throw new CannotProceed();
 
@@ -350,19 +472,24 @@ public class CorbaNamingContext extends NamingContextExtPOA implements Serializa
         } else {
             // rebind in the correct context
             NameComponent[] ncx = new NameComponent[]{nb};
-            org.omg.CORBA.Object context = this.resolve(ctx.components());
+            org.omg.CORBA.Object context = this.doResolve(ctx.components());
 
             // try first to call the context implementation object directly.
             String contextOID = this.getObjectOID(context);
             CorbaNamingContext jbossContext = (contextOID == null ? null : contextImpls.get(contextOID));
             if (jbossContext != null)
-                jbossContext.rebind(ncx, obj);
+                jbossContext.doRebind(ncx, obj);
             else
                 NamingContextExtHelper.narrow(context).rebind(ncx, obj);
         }
     }
 
     public void rebind_context(NameComponent[] nc, NamingContext obj) throws NotFound, CannotProceed, InvalidName {
+        authenticate();
+        doRebindContext(nc, obj);
+    }
+
+    private void doRebindContext(NameComponent[] nc, NamingContext obj) throws NotFound, CannotProceed, InvalidName {
         if (this.destroyed)
             throw new CannotProceed();
 
@@ -396,19 +523,23 @@ public class CorbaNamingContext extends NamingContextExtPOA implements Serializa
         } else {
             // rebind in the correct context
             NameComponent[] ncx = new NameComponent[]{nb};
-            org.omg.CORBA.Object context = this.resolve(ctx.components());
+            org.omg.CORBA.Object context = this.doResolve(ctx.components());
 
             // try first to call the context implementation object directly.
             String contextOID = this.getObjectOID(context);
             CorbaNamingContext jbossContext = (contextOID == null ? null : contextImpls.get(contextOID));
             if (jbossContext != null)
-                jbossContext.rebind_context(ncx, obj);
+                jbossContext.doRebindContext(ncx, obj);
             else
                 NamingContextExtHelper.narrow(context).rebind_context(ncx, obj);
         }
     }
 
     public org.omg.CORBA.Object resolve(NameComponent[] nc) throws NotFound, CannotProceed, InvalidName {
+        return doResolve(nc);
+    }
+
+    public org.omg.CORBA.Object doResolve(NameComponent[] nc) throws NotFound, CannotProceed, InvalidName {
         if (this.destroyed)
             throw new CannotProceed();
 
@@ -428,7 +559,7 @@ public class CorbaNamingContext extends NamingContextExtPOA implements Serializa
             String contextOID = this.getObjectOID(next_context);
             CorbaNamingContext jbossContext = (contextOID == null ? null : contextImpls.get(contextOID));
             if (jbossContext != null)
-                return jbossContext.resolve(nc_prime);
+                return jbossContext.doResolve(nc_prime);
             else
                 return NamingContextExtHelper.narrow(next_context).resolve(nc_prime);
         } else {
@@ -448,6 +579,11 @@ public class CorbaNamingContext extends NamingContextExtPOA implements Serializa
     }
 
     public void unbind(NameComponent[] nc) throws NotFound, CannotProceed, InvalidName {
+        authenticate();
+        doUnbind(nc);
+    }
+
+    public void doUnbind(NameComponent[] nc) throws NotFound, CannotProceed, InvalidName {
         if (this.destroyed)
             throw new CannotProceed();
 
@@ -478,13 +614,13 @@ public class CorbaNamingContext extends NamingContextExtPOA implements Serializa
             }
         } else {
             NameComponent[] ncx = new NameComponent[]{nb};
-            org.omg.CORBA.Object context = this.resolve(ctx.components());
+            org.omg.CORBA.Object context = this.doResolve(ctx.components());
 
             // try first to call the context implementation object directly.
             String contextOID = this.getObjectOID(context);
             CorbaNamingContext jbossContext = (contextOID == null ? null : contextImpls.get(contextOID));
             if (jbossContext != null)
-                jbossContext.unbind(ncx);
+                jbossContext.doUnbind(ncx);
             else
                 NamingContextExtHelper.narrow(context).unbind(ncx);
         }
@@ -493,10 +629,14 @@ public class CorbaNamingContext extends NamingContextExtPOA implements Serializa
     //======================================= NamingContextExtOperations Methods ==================================//
 
     public org.omg.CORBA.Object resolve_str(String n) throws NotFound, CannotProceed, InvalidName {
-        return resolve(to_name(n));
+        return doResolve(to_name(n));
     }
 
     public NameComponent[] to_name(String sn) throws InvalidName {
+        return doToName(sn);
+    }
+
+    public NameComponent[] doToName(String sn) throws InvalidName {
         return Name.toName(sn);
     }
 
