@@ -31,7 +31,7 @@
     <name>WildFly Preview: Dependency Management (Expansion Dependencies)</name>
 
     <properties>
-        <version.io.smallrye.smallrye-fault-tolerance>7.0.0-RC1</version.io.smallrye.smallrye-fault-tolerance>
+        <version.io.smallrye.smallrye-fault-tolerance>6.11.2</version.io.smallrye.smallrye-fault-tolerance>
     </properties>
 
     <dependencyManagement>
