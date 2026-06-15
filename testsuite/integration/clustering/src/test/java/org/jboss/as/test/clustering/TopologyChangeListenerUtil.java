@@ -41,7 +41,7 @@ public final class TopologyChangeListenerUtil {
     public static void establishTopology(HttpClient client, URL baseURL, String container, String cache, Set<String> topology, Duration timeout) throws URISyntaxException, IOException {
         URI uri = TopologyChangeListenerServlet.createURI(baseURL, container, cache, topology, timeout);
         try (CloseableHttpResponse response = (CloseableHttpResponse) client.execute(new HttpGet(uri))) {
-            assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode(), String.format("Failed to establish topology %s for container=%s andcache=%s within %s", topology, container, cache, timeout));
+            assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode(), String.format("Failed to establish topology %s for container=%s and cache=%s within %s", topology, container, cache, timeout));
         }
     }
 
