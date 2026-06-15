@@ -601,7 +601,7 @@
         <!--
             Maintain separation between these two frequently updated artifacts to avoid merge conflicts.
         -->
-        <version.org.wildfly.core>32.0.0.Final</version.org.wildfly.core>
+        <version.org.wildfly.core>32.0.2.Final</version.org.wildfly.core>
         <!--
             Maintain separation between these two frequently updated artifacts to avoid merge conflicts.
         -->
