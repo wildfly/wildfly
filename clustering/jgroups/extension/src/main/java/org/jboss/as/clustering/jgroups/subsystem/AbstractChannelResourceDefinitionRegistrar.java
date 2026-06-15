@@ -253,7 +253,7 @@ public abstract class AbstractChannelResourceDefinitionRegistrar<C extends Chann
                             }
                         });
                     }
-                    return channel.stats(configuration.isStatisticsEnabled());
+                    return channel;
                 } catch (Exception e) {
                     throw new IllegalStateException(e);
                 }

@@ -20,11 +20,6 @@ public interface ForkChannelConfiguration extends ChannelConfiguration {
     ForkChannelFactory getChannelFactory();
 
     @Override
-    default boolean isStatisticsEnabled() {
-        return this.getChannelFactory().getConfiguration().getChannelConfiguration().isStatisticsEnabled();
-    }
-
-    @Override
     default Module getModule() {
         return this.getChannelFactory().getConfiguration().getChannelConfiguration().getModule();
     }

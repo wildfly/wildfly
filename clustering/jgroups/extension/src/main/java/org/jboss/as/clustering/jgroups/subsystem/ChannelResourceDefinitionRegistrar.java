@@ -60,7 +60,7 @@ public class ChannelResourceDefinitionRegistrar extends AbstractChannelResourceD
             .setRequired(false)
             .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
             .build();
-    static final StatisticsEnabledAttributeDefinition STATISTICS_ENABLED = new StatisticsEnabledAttributeDefinition.Builder().build();
+    static final StatisticsEnabledAttributeDefinition STATISTICS_ENABLED = new StatisticsEnabledAttributeDefinition.Builder().setDeprecated(JGroupsSubsystemModel.VERSION_12_0_0.getVersion()).build();
 
     private final ServiceValueExecutorRegistry<JChannel> channelRegistry;
 
@@ -113,16 +113,10 @@ public class ChannelResourceDefinitionRegistrar extends AbstractChannelResourceD
                     public ServiceDependency<ChannelConfiguration> resolve(OperationContext context, ModelNode model) throws OperationFailedException {
                         String name = context.getCurrentAddressValue();
                         String clusterName = CLUSTER.resolveModelAttribute(context, model).asString(name);
-                        boolean statisticsEnabled = STATISTICS_ENABLED.resolve(context, model);
                         return STACK.resolve(context, model).combine(MODULE.resolve(context, model), new BiFunction<>() {
                             @Override
                             public ChannelConfiguration apply(ChannelFactory factory, Module module) {
                                 return new ChannelConfiguration() {
-                                    @Override
-                                    public boolean isStatisticsEnabled() {
-                                        return statisticsEnabled;
-                                    }
-
                                     @Override
                                     public ChannelFactory getChannelFactory() {
                                         return factory;
