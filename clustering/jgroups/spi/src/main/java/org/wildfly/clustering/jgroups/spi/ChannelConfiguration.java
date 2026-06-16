@@ -17,12 +17,6 @@ public interface ChannelConfiguration {
     UnaryServiceDescriptor<ChannelConfiguration> SERVICE_DESCRIPTOR = UnaryServiceDescriptor.of("org.wildfly.clustering.jgroups.channel-configuration", DEFAULT_SERVICE_DESCRIPTOR);
 
     /**
-     * Indicates whether statistics should be enabled.
-     * @return true, if statistics will be enabled for this channel, false otherwise.
-     */
-    boolean isStatisticsEnabled();
-
-    /**
      * The factory for creating this channel.
      * @return a channel factory
      */
