@@ -45,47 +45,47 @@
       <exists>true</exists>
     </file>
     <file>
-      <location>target/${legacy.server.output.dir}/modules/system/layers/base/io/smallrye/fault-tolerance/main</location>
+      <location>target/${legacy.server.output.dir}/modules/system/layers/${expansion.module.layer}/io/smallrye/fault-tolerance/main</location>
       <exists>false</exists>
     </file>
     <file>
-      <location>target/${legacy.server.output.dir}/modules/system/layers/base/org/eclipse/microprofile/fault-tolerance/api/main</location>
+      <location>target/${legacy.server.output.dir}/modules/system/layers/${expansion.module.layer}/org/eclipse/microprofile/fault-tolerance/api/main</location>
       <exists>false</exists>
     </file>
     <file>
-      <location>target/${legacy.server.output.dir}/modules/system/layers/base/org/wildfly/extension/microprofile/fault-tolerance-smallrye/main</location>
+      <location>target/${legacy.server.output.dir}/modules/system/layers/${expansion.module.layer}/org/wildfly/extension/microprofile/fault-tolerance-smallrye/main</location>
       <exists>false</exists>
     </file>
     <file>
-      <location>target/${legacy.server.output.dir}/modules/system/layers/base/org/wildfly/microprofile/fault-tolerance-smallrye</location>
+      <location>target/${legacy.server.output.dir}/modules/system/layers/${expansion.module.layer}/org/wildfly/microprofile/fault-tolerance-smallrye</location>
       <exists>false</exists>
     </file>
     <file>
-      <location>target/${legacy.server.output.dir}/modules/system/layers/base/io/smallrye/openapi/main</location>
+      <location>target/${legacy.server.output.dir}/modules/system/layers/${expansion.module.layer}/io/smallrye/openapi/main</location>
       <exists>false</exists>
     </file>
     <file>
-      <location>target/${legacy.server.output.dir}/modules/system/layers/base/org/eclipse/microprofile/openapi/api/main</location>
+      <location>target/${legacy.server.output.dir}/modules/system/layers/${expansion.module.layer}/org/eclipse/microprofile/openapi/api/main</location>
       <exists>false</exists>
     </file>
     <file>
-      <location>target/${legacy.server.output.dir}/modules/system/layers/base/org/wildfly/extension/microprofile/openapi-smallrye/main</location>
+      <location>target/${legacy.server.output.dir}/modules/system/layers/${expansion.module.layer}/org/wildfly/extension/microprofile/openapi-smallrye/main</location>
       <exists>false</exists>
     </file>
     <file>
-      <location>target/${legacy.server.output.dir}/modules/system/layers/base/io/smallrye/jwt/main</location>
+      <location>target/${legacy.server.output.dir}/modules/system/layers/${expansion.module.layer}/io/smallrye/jwt/main</location>
       <exists>false</exists>
     </file>
     <file>
-      <location>target/${legacy.server.output.dir}/modules/system/layers/base/org/eclipse/microprofile/jwt/auth/api/main</location>
+      <location>target/${legacy.server.output.dir}/modules/system/layers/${expansion.module.layer}/org/eclipse/microprofile/jwt/auth/api/main</location>
       <exists>false</exists>
     </file>
     <file>
-      <location>target/${legacy.server.output.dir}/modules/system/layers/base/org/wildfly/extension/microprofile/jwt-smallrye/main</location>
+      <location>target/${legacy.server.output.dir}/modules/system/layers/${expansion.module.layer}/org/wildfly/extension/microprofile/jwt-smallrye/main</location>
       <exists>false</exists>
     </file>
     <file>
-      <location>target/${legacy.server.output.dir}/modules/system/layers/base/org/wildfly/security/elytron-jwt/main</location>
+      <location>target/${legacy.server.output.dir}/modules/system/layers/${expansion.module.layer}/org/wildfly/security/elytron-jwt/main</location>
       <exists>false</exists>
     </file>
     <file>
