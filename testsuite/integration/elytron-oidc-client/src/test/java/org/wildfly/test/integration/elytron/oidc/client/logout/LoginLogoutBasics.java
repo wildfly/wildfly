@@ -112,7 +112,7 @@ public class LoginLogoutBasics extends EnvSetupUtils {
     }
 
     public void browserLogoutOfKeycloak(WebClient webClient, String appName) throws Exception {
-        URL requestUrl = new URL(generateURL(appName, SecuredFrontChannelServlet.SERVLET_PATH).toString()+Constants.LOGOUT_PATH_VALUE);
+        URL requestUrl = generateURL(appName, Constants.LOGOUT_PATH_VALUE);
         browserLogoutOfKeycloak(webClient, requestUrl);
     }
 
@@ -199,7 +199,7 @@ public class LoginLogoutBasics extends EnvSetupUtils {
     }
 
     public void logoutOfKeycloak(String appName, String expectedText) throws Exception {
-        URI requestUri = new URL(generateURL(appName, SimpleSecuredServlet.SERVLET_PATH).toString()+Constants.LOGOUT_PATH_VALUE).toURI();
+        URI requestUri = generateURL(appName, Constants.LOGOUT_PATH_VALUE).toURI();
         logoutOfKeycloak(requestUri, HttpURLConnection.HTTP_OK, expectedText, true);
     }
 
