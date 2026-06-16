@@ -92,7 +92,7 @@
                 <module>../integration/microprofile-tck</module>
                 <module>../integration/vdx</module>
                 <module>../integration/rbac</module>
-                <module>../integration/legacy</module>
+                <module>../integration/hornetq-client</module>
                 <module>../preview</module>
                 <!-- TODO WFLY-20375 Probably just use ts.layers for these next two
                      and remove them from here. -->
