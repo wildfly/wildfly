@@ -136,6 +136,8 @@ public class IIOPSubsystemAdd extends AbstractBoottimeAddStepHandler {
 
         // set the ORBUseDynamicStub system property.
         WildFlySecurityManager.setPropertyPrivileged("org.jboss.com.sun.CORBA.ORBUseDynamicStub", "true");
+        // set useCodebaseOnly to true for security - prevents remote codebase loading
+        WildFlySecurityManager.setPropertyPrivileged("com.sun.CORBA.ORBUseCodebaseOnly", "true");
         // we set the same stub factory to both the static and dynamic stub factory. As there is no way to dynamically change
         // the userDynamicStubs's property at runtime it is possible for the ORB class's <clinit> method to be
         // called before this property is set.
