@@ -48,6 +48,7 @@ public abstract class LocalIdleThresholdSessionPassivationTestCase {
     // This needs to be longer than idle-threshold (3s) to allow time for passivation to occur
     private static final Duration PASSIVATION_POLLING_DURATION = Duration.ofSeconds(TimeoutUtil.adjust(15));
     private static final Duration POLL_INTERVAL = Duration.ofMillis(100);
+    private static final Duration POST_PASSIVATION_WAIT = Duration.ofSeconds(TimeoutUtil.adjust(1));
 
     static WebArchive getBaseDeployment(String moduleName) {
         WebArchive war = ShrinkWrap.create(WebArchive.class, moduleName + ".war");
@@ -95,6 +96,12 @@ public abstract class LocalIdleThresholdSessionPassivationTestCase {
             assertFalse(events.get(sessionId).isEmpty(), "Session should have been passivated after idle timeout");
             assertEquals(PassivationEventTrackerUtil.EventType.PASSIVATION, events.get(sessionId).peek(), "First event should be PASSIVATION");
 
+            // SessionOperationServlet.SessionAttributeValue#sessionWillPassivate fires at the start of the eviction process.
+            // Thus, the cache entry may not yet have been removed at this point in the test, so a subsequent access may not trigger activation.
+            // Nor can we poll for activation, as accessing the session would defeat the passivation.
+            // Alas, the only option is to wait (which inherently makes the test susceptible to intermittent failures on very slow systems).
+            Thread.sleep(POST_PASSIVATION_WAIT.toMillis());
+
             // Step 4: Access the session again - should trigger activation
             try (CloseableHttpResponse response = client.execute(new HttpGet(SessionOperationServlet.createURI(baseURL, "testAttr")))) {
                 assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
@@ -130,6 +137,8 @@ public abstract class LocalIdleThresholdSessionPassivationTestCase {
 
             assertFalse(events.get(sessionId).isEmpty(), "Session should have been passivated again after second idle timeout");
             assertEquals(PassivationEventTrackerUtil.EventType.PASSIVATION, events.get(sessionId).peek(), "First event of second cycle should be PASSIVATION");
+
+            Thread.sleep(POST_PASSIVATION_WAIT.toMillis());
 
             // Step 7: Access the session again - should trigger second activation
             try (CloseableHttpResponse response = client.execute(new HttpGet(SessionOperationServlet.createURI(baseURL, "testAttr")))) {
