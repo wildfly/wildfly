@@ -211,9 +211,10 @@ public class InfinispanTransformersTestCase extends AbstractSubsystemTest {
                             }
                         }
                     }
-                    if (this.subsystemVersion.getMajor() > 14 && InfinispanSubsystemModel.VERSION_20_0_0.requiresTransformation(this.subsystemVersion)) {
+                    if (!InfinispanSubsystemModel.VERSION_16_0_0.requiresTransformation(this.subsystemVersion)) {
                         if (cacheModel.hasDefined(ComponentResourceRegistration.PARTITION_HANDLING.getPathElement().getKeyValuePair())) {
                             ModelNode partitionHandlingModel = cacheModel.get(ComponentResourceRegistration.PARTITION_HANDLING.getPathElement().getKeyValuePair());
+                            // This is now a runtime-only attribute
                             partitionHandlingModel.get("enabled").set(new ModelNode());
                         }
                     }
