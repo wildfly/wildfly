@@ -8,6 +8,8 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.nio.channels.ServerSocketChannel;
+import java.nio.channels.SocketChannel;
 import java.nio.channels.spi.SelectorProvider;
 import java.util.Map;
 
@@ -15,6 +17,7 @@ import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLServerSocketFactory;
 import javax.net.ssl.SSLSocketFactory;
 
+import org.jboss.as.clustering.jgroups.logging.JGroupsLogger;
 import org.jboss.as.network.SocketBinding;
 import org.jboss.as.network.SocketBindingManager;
 import org.jgroups.util.Util;
@@ -23,6 +26,7 @@ import org.wildfly.clustering.jgroups.spi.TLSConfiguration;
 /**
  * Specialization of {@link ManagedSocketFactory} that creates a TLS-secured sockets instead of standard sockets using
  * client and server {@link SSLContext}s managed by the application server; e.g. Elytron subsystem.
+ * When a NIO Server/SocketChannel is created a {@link ManagedSocketFactory#createSocketChannel(String)} warning message is logged.
  *
  * @author Radoslav Husar
  */
@@ -72,6 +76,18 @@ public class TLSManagedSocketFactory extends ManagedSocketFactory {
     public void close(ServerSocket socket) throws IOException {
         Util.close(this.closeables.remove(socket));
         super.close(socket);
+    }
+
+    @Override
+    public ServerSocketChannel createServerSocketChannel(String name) throws IOException {
+        JGroupsLogger.ROOT_LOGGER.secureSocketChannelNotAvailable(name);
+        return super.createServerSocketChannel(name);
+    }
+
+    @Override
+    public SocketChannel createSocketChannel(String name) throws IOException {
+        JGroupsLogger.ROOT_LOGGER.secureSocketChannelNotAvailable(name);
+        return super.createSocketChannel(name);
     }
 
 }

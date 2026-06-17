@@ -51,10 +51,11 @@ public enum JGroupsSubsystemSchema implements SubsystemResourceXMLSchema<JGroups
     VERSION_6_0(6, 0), // WildFly 12-16, EAP 7.2
     VERSION_7_0(7, 0), // WildFly 17-19, EAP 7.3
     VERSION_8_0(8, 0), // WildFly 20-26, EAP 7.4
-    VERSION_9_0(9, 0), // WildFly 27-present, EAP 8.0-8.1
-    VERSION_9_0_COMMUNITY(9, 0, Stability.COMMUNITY), // WildFly 39-present
+    VERSION_9_0(9, 0), // WildFly 27-40, EAP 8.0-8.1
+    VERSION_9_0_COMMUNITY(9, 0, Stability.COMMUNITY), // WildFly 39-40
+    VERSION_10_0(10, 0), // WildFly 41-present
     ;
-    static final Set<JGroupsSubsystemSchema> CURRENT = Set.of(VERSION_9_0_COMMUNITY, VERSION_9_0);
+    static final Set<JGroupsSubsystemSchema> CURRENT = Set.of(VERSION_10_0);
 
     private final ResourceXMLParticleFactory factory = ResourceXMLParticleFactory.newInstance(this);
     private final VersionedNamespace<IntVersion, JGroupsSubsystemSchema> namespace;
@@ -184,19 +185,24 @@ public enum JGroupsSubsystemSchema implements SubsystemResourceXMLSchema<JGroups
     }
 
     private ResourceXMLChoice transportChoice() {
-        NamedResourceRegistrationXMLElement transportElement = this.transportBuilder(StackResourceDefinitionRegistrar.Component.TRANSPORT).build();
+        NamedResourceRegistrationXMLElement transportElement = this.transportBuilder(StackResourceDefinitionRegistrar.Component.TRANSPORT, List.of()).build();
         NamedResourceRegistrationXMLChoice.Builder builder = this.factory.namedElementChoice(transportElement);
 
         if (JGroupsSubsystemSchema.this.since(VERSION_7_0)) {
-            for (SocketTransportResourceDefinitionRegistrar.Transport transport : EnumSet.allOf(SocketTransportResourceDefinitionRegistrar.Transport.class)) {
-                builder.addElement(this.transportBuilder(transport).withElementLocalName(ResourceXMLElementLocalName.KEY).addAttribute(SocketTransportResourceDefinitionRegistrar.CLIENT_SOCKET_BINDING).build());
-            }
+            List<ResourceXMLElement> sslElements = (this.since(JGroupsSubsystemSchema.VERSION_10_0) || this.since(JGroupsSubsystemSchema.VERSION_9_0_COMMUNITY))
+                    ? List.of(this.factory.element(this.factory.resolve("ssl-context"))
+                            .withCardinality(XMLCardinality.Single.OPTIONAL)
+                            .addAttributes(List.of(SecurableSocketTransportResourceDefinitionRegistrar.CLIENT_SSL_CONTEXT, SecurableSocketTransportResourceDefinitionRegistrar.SERVER_SSL_CONTEXT))
+                            .build())
+                    : List.of();
+            builder.addElement(this.transportBuilder(SecurableSocketTransportResourceDefinitionRegistrar.Transport.TCP, sslElements).withElementLocalName(ResourceXMLElementLocalName.KEY).addAttribute(SocketTransportResourceDefinitionRegistrar.CLIENT_SOCKET_BINDING).build());
+            builder.addElement(this.transportBuilder(SocketTransportResourceDefinitionRegistrar.Transport.TCP_NIO2, List.of()).withElementLocalName(ResourceXMLElementLocalName.KEY).addAttribute(SocketTransportResourceDefinitionRegistrar.CLIENT_SOCKET_BINDING).build());
         }
 
         return builder.build();
     }
 
-    private NamedResourceRegistrationXMLElement.Builder transportBuilder(ResourceRegistration registration) {
+    private NamedResourceRegistrationXMLElement.Builder transportBuilder(ResourceRegistration registration, List<ResourceXMLElement> childElements) {
         NamedResourceRegistrationXMLElement.Builder builder = this.protocolChildElementBuilder(registration)
                 .withOperationKey(StackResourceDefinitionRegistrar.Component.TRANSPORT.getPathElement())
                 ;
@@ -241,12 +247,8 @@ public enum JGroupsSubsystemSchema implements SubsystemResourceXMLSchema<JGroups
             });
         }
 
-        if (this.since(JGroupsSubsystemSchema.VERSION_9_0_COMMUNITY)) {
-            ResourceXMLElement ssl = this.factory.element(this.factory.resolve("ssl-context"))
-                    .withCardinality(XMLCardinality.Single.OPTIONAL)
-                    .addAttributes(List.of(SocketTransportResourceDefinitionRegistrar.CLIENT_SSL_CONTEXT, SocketTransportResourceDefinitionRegistrar.SERVER_SSL_CONTEXT))
-                    .build();
-            contentBuilder.addElement(ssl);
+        for (ResourceXMLElement childElement : childElements) {
+            contentBuilder.addElement(childElement);
         }
 
         return builder.withContent(contentBuilder.build());

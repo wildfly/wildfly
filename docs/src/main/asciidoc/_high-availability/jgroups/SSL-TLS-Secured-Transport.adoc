@@ -1,4 +1,4 @@
-= SSL/TLS support to JGroups TCP-based transports
+= SSL/TLS support for JGroups TCP transport
 
 ifdef::env-github[]
 :tip-caption: :bulb:
@@ -8,14 +8,16 @@ ifdef::env-github[]
 :warning-caption: :warning:
 endif::[]
 
-Since WildFly 39, the TCP-based JGroups transports can be SSL/TLS-secured.
+// Editor note: even though the correct term for technical documentation is solely "TLS", this document also uses "SSL/TLS" as middle-ground term.
+
+Since WildFly 39, the JGroups `TCP` transport can be SSL/TLS-secured.
 This mechanism effectively replaces native JGroups functionality which would combine `ASYM_ENCRYPT` with `AUTH` protocols.
 
 Cluster communication via TLS promotes:
 
 * Confidentiality: prevents eavesdropping on data exchanged between nodes.
 Payloads remains unreadable if intercepted.
-* Integrity: protects against tampering or injection by ensuring messages can’t be modified in transit.
+* Integrity: protects against tampering or injection by ensuring messages can't be modified in transit.
 * Authentication: verifies that communication happens only between trusted cluster members,
 ensures both client and server identity.
 * Compliance: meets data protection requirements in regulated environments where encryption is mandatory, even for internal systems.
@@ -23,18 +25,18 @@ ensures both client and server identity.
 The Elytron subsystem provides capabilities to configure and provision client and server `SSLContext`.
 Refer to link:WildFly_Elytron_Security{outfilesuffix}[Elytron subsystem documentation] for configuration.
 
-[source]
+[source,title="Elytron Example CLI"]
 ----
 /subsystem=elytron/client-ssl-context=jgroupsCSC:add(...)
 /subsystem=elytron/server-ssl-context=jgroupsSSC:add(...)
 ----
 
 Once the `client-ssl-context` and `server-ssl-context` are configured in Elytron subsystem,
-the TCP stacks in JGroups can be configured to secure the transport.
+the TCP stack in JGroups can be configured to secure the transport.
 
 See the following CLI script snippet for securing the transport:
 
-[source]
+[source,title="JGroups Example CLI"]
 ----
 batch
 /subsystem=jgroups/stack=tcp/transport=TCP:write-attribute(name=client-ssl-context, value=jgroupsCSC)
@@ -44,3 +46,29 @@ run-batch
 
 NOTE: While the runtime overhead of encrypting entire cluster communication on modern hardware will be moderate,
 it will incur a performance penalty.
+
+NOTE: The `TCP_NIO2` transport does not support SSL/TLS and cannot be configured as such.
+
+== Securing Failure Detection Communication
+
+// n.b. There is no active JEP to add native encrypted NIO channels to the JDK
+// and with introduction of virtual threads there might never be one
+// https://bugs.openjdk.org/browse/JDK-8198958 SSL support for SocketChannel and AsynchronousSocketChannel
+// is the only tracker in this space
+
+The `FD_SOCK2` protocol in the default configuration uses non-blocking NIO channels internally for its failure detection mechanism.
+However, support for securing NIO channels is not available.
+When TLS is configured on the `TCP` transport, `FD_SOCK2` failure detection connections will remain *unencrypted*,
+and a warning (`WFLYCLJG0037`) is logged at runtime.
+
+[source]
+----
+2026-05-29 12:14:31,186 WARN  [org.jboss.as.clustering.jgroups] (ServerService Thread Pool -- 39) WFLYCLJG0037: Transport of the stack is configured to create TLS sockets and service 'jgroups.nio.server.fd_sock' requires non-blocking channel for which TLS support is not available. Use TCP transport-based failure detection or socket-based FD_SOCK protocol for also securing the failure detection communication.
+----
+
+To fully encrypt failure detection communication, consider the following alternatives: remove `FD_SOCK2` and:
+
+* Rely on TCP's built-in failure detection via suspect events,
+which is automatically enabled (in WildFly) when no socket-based failure detection protocol is present in the stack.
+See http://jgroups.org/manual5/index.html#_failure_detection_in_tcp_and_tcp_nio2[JGroups documentation on failure detection in TCP].
+* Use the original `FD_SOCK` protocol, which uses blocking sockets that are created through the TLS socket factory and are therefore encrypted the same way as the transport protocol.
