@@ -54,7 +54,7 @@
         timeout_check_interval="5s"
     />
     <FD_SOCK port_range="0"/>
-    <FD_SOCK2 offset="1"/>
+    <FD_SOCK2 offset="1" port_range="0"/>
     <VERIFY_SUSPECT timeout="1s"/>
     <VERIFY_SUSPECT2 timeout="1s"/>
     <pbcast.NAKACK2
