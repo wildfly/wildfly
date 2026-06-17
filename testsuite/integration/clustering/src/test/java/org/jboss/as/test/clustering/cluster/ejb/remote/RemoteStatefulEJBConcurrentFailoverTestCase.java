@@ -27,7 +27,6 @@ import org.jboss.as.test.clustering.cluster.ejb.remote.bean.SlowStatefulIncremen
 import org.jboss.as.test.clustering.ejb.EJBDirectory;
 import org.jboss.as.test.clustering.ejb.RemoteEJBDirectory;
 import org.jboss.as.test.shared.PermissionUtils;
-import org.jboss.as.test.shared.TimeoutUtil;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
@@ -41,8 +40,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 @ExtendWith(ArquillianExtension.class)
 public class RemoteStatefulEJBConcurrentFailoverTestCase extends AbstractClusteringTestCase {
     private static final String MODULE_NAME = RemoteStatefulEJBConcurrentFailoverTestCase.class.getSimpleName();
-
-    private static final long CLIENT_TOPOLOGY_UPDATE_WAIT = TimeoutUtil.adjust(5000);
 
     @Deployment(name = DEPLOYMENT_1, managed = false, testable = false)
     @TargetsContainer(NODE_1)
@@ -76,7 +73,7 @@ public class RemoteStatefulEJBConcurrentFailoverTestCase extends AbstractCluster
             AtomicInteger count = new AtomicInteger();
 
             // Allow sufficient time for client to receive full topology
-            Thread.sleep(CLIENT_TOPOLOGY_UPDATE_WAIT);
+            Thread.sleep(EJB_CLIENT_TOPOLOGY_UPDATE_WAIT.toMillis());
 
             String target = bean.increment().getNode();
             count.incrementAndGet();
