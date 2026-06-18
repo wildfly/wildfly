@@ -415,8 +415,7 @@ the command line.
 [[deployment-of--jms.xml-files]]
 == Deployment of -jms.xml files
 
-Starting with WildFly {wildflyVersion}, you have the ability to deploy a -jms.xml file
-defining Jakarta Messaging destinations, e.g.:
+You can deploy a -jms.xml file defining Jakarta Messaging destinations, e.g.:
 
 [source,xml,options="nowrap"]
 ----
