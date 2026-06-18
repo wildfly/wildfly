@@ -36,6 +36,7 @@ import org.wildfly.test.integration.elytron.oidc.client.logout.LoginLogoutBasics
 import org.wildfly.test.integration.elytron.oidc.client.KeycloakConfiguration;
 import org.wildfly.test.integration.elytron.oidc.client.KeycloakContainer;
 import org.jboss.as.test.integration.security.common.Utils;
+import org.jboss.as.test.integration.security.common.servlets.SimpleSecuredServlet;
 
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assume.assumeTrue;
@@ -265,10 +266,10 @@ public class EnvSetupUtils {
                 operation.get(Oidc.LOGOUT_PATH).set(Constants.LOGOUT_PATH_VALUE);
                 LogoutChannelPaths appLogout = APP_LOGOUT.get(app);
                 if (appLogout.backChannelPath != null) {
-                    operation.get(Oidc.LOGOUT_CALLBACK_PATH).set(appLogout.backChannelPath);
+                    operation.get(Oidc.LOGOUT_CALLBACK_PATH).set(SimpleSecuredServlet.SERVLET_PATH + Constants.LOGOUT_CALLBACK_PATH_VALUE);
                 }
                 if (appLogout.frontChannelPath != null) {
-                    operation.get(Oidc.LOGOUT_CALLBACK_PATH).set(appLogout.frontChannelPath);
+                    operation.get(Oidc.LOGOUT_CALLBACK_PATH).set(SecuredFrontChannelServlet.SERVLET_PATH + Constants.LOGOUT_CALLBACK_PATH_VALUE);
                 }
                 if (appLogout.postLogoutRedirectPaths != null) {
                     operation.get(Oidc.POST_LOGOUT_REDIRECT_URI).set(appLogout.postLogoutRedirectPaths.get(0));
