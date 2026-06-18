@@ -31,6 +31,10 @@
         <jbossas.ts.dir>${jbossas.ts.integ.dir}/..</jbossas.ts.dir>
         <jbossas.project.dir>${jbossas.ts.dir}/..</jbossas.project.dir>
         <surefire.forked.process.timeout>3600</surefire.forked.process.timeout>
+        <version.org.hibernate>${standard.version.org.hibernate}</version.org.hibernate>
+        <version.org.hibernate.maven.plugin>${standard.version.org.hibernate}</version.org.hibernate.maven.plugin>
+        <version.org.hibernate.maven.plugin.groupId>org.hibernate.orm</version.org.hibernate.maven.plugin.groupId>
+        <version.org.hibernate.maven.plugin.artifactId>hibernate-maven-plugin</version.org.hibernate.maven.plugin.artifactId>
         <!-- properties to enable bootable phases -->
         <bootable-jar-maven-jar-plugin.create.modules.phase>none</bootable-jar-maven-jar-plugin.create.modules.phase>
         <bootable-jar-copy-module-files.phase>none</bootable-jar-copy-module-files.phase>
@@ -858,6 +862,44 @@
 
     <build>
         <plugins>
+            <plugin>
+                <groupId>${version.org.hibernate.maven.plugin.groupId}</groupId>
+                <artifactId>${version.org.hibernate.maven.plugin.artifactId}</artifactId>
+                <version>${version.org.hibernate.maven.plugin}</version>
+                <configuration>
+                    <classesDirectory>${project.build.testOutputDirectory}</classesDirectory>
+                    <dir>${project.build.testOutputDirectory}</dir>
+                    <base>${project.build.testOutputDirectory}</base>
+                    <classNames>org.jboss.as.test.integration.jpa.hibernate.buildtimeenhancementtest.entityClasses.Employee</classNames>
+                    <fileSets>
+                        <fileset>
+                            <directory>${project.build.testOutputDirectory}</directory>
+                            <includes>
+                                <include>
+                                    org/jboss/as/test/integration/jpa/hibernate/buildtimeenhancementtest/entityClasses/Employee.class
+                                </include>
+                            </includes>
+                        </fileset>
+                    </fileSets>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>enhance</id>
+                        <goals>
+                            <goal>enhance</goal>
+                        </goals>
+                        <phase>process-test-classes</phase>
+                    </execution>
+                </executions>
+                <dependencies>
+                    <dependency>
+                        <groupId>org.hibernate</groupId>
+                        <artifactId>hibernate-core</artifactId>
+                        <version>${version.org.hibernate}</version>
+                    </dependency>
+                </dependencies>
+            </plugin>
+
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-resources-plugin</artifactId>
@@ -3779,6 +3821,36 @@
                     <scope>test</scope>
                 </dependency>
             </dependencies>
+        </profile>
+
+        <profile>
+            <id>legacy-ee-full-server-tests</id>
+            <activation>
+                <property><name>legacy-ee-full-server-tests</name></property>
+            </activation>
+            <properties>
+                <version.org.hibernate>${legacy.version.org.hibernate}</version.org.hibernate>
+                <!-- Use the version of the hibernate.maven.plugin
+                     that aligns with the ORM version in the legacy EE FP. -->
+                <version.org.hibernate.maven.plugin>${legacy.version.org.hibernate}</version.org.hibernate.maven.plugin>
+                <version.org.hibernate.maven.plugin.groupId>org.hibernate.orm.tooling</version.org.hibernate.maven.plugin.groupId>
+                <version.org.hibernate.maven.plugin.artifactId>hibernate-enhance-maven-plugin</version.org.hibernate.maven.plugin.artifactId>
+            </properties>
+        </profile>
+
+        <profile>
+            <id>legacy-ee-only-server-tests</id>
+            <activation>
+                <property><name>legacy-ee-only-server-tests</name></property>
+            </activation>
+            <properties>
+                <version.org.hibernate>${legacy.version.org.hibernate}</version.org.hibernate>
+                <!-- Use the version of the hibernate.maven.plugin
+                     that aligns with the ORM version in the legacy EE FP. -->
+                <version.org.hibernate.maven.plugin>${legacy.version.org.hibernate}</version.org.hibernate.maven.plugin>
+                <version.org.hibernate.maven.plugin.groupId>org.hibernate.orm.tooling</version.org.hibernate.maven.plugin.groupId>
+                <version.org.hibernate.maven.plugin.artifactId>hibernate-enhance-maven-plugin</version.org.hibernate.maven.plugin.artifactId>
+            </properties>
         </profile>
 
     </profiles>
