@@ -31,6 +31,7 @@ import com.arjuna.ats.internal.arjuna.utils.UuidProcessId;
 import com.arjuna.ats.jbossatx.jta.RecoveryManagerService;
 import com.arjuna.ats.jta.common.JTAEnvironmentBean;
 import com.arjuna.ats.jts.common.jtsPropertyManager;
+import com.arjuna.orbportability.common.OrbPortabilityEnvironmentBean;
 import io.undertow.server.handlers.PathHandler;
 import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
@@ -71,6 +72,7 @@ import org.jboss.as.txn.service.JBossContextXATerminatorService;
 import org.jboss.as.txn.service.CoreEnvironmentService;
 import org.jboss.as.txn.service.JTAEnvironmentBeanService;
 import org.jboss.as.txn.service.LocalTransactionContextService;
+import org.jboss.as.txn.service.OrbPortabilityEnvironmentService;
 import org.jboss.as.txn.service.RemotingTransactionServiceService;
 import org.jboss.as.txn.service.TransactionManagerService;
 import org.jboss.as.txn.service.TransactionRemoteHTTPService;
@@ -520,6 +522,13 @@ class TransactionSubsystemAdd extends AbstractBoottimeAddStepHandler {
         if (jts) {
             orbSupplier = sb.requires(ServiceName.JBOSS.append("iiop-openjdk", "orb-service"));
             sb.requires(CorbaNamingService.SERVICE_NAME);
+            sb.requires(TxnServices.JBOSS_TXN_ORB_PORTABILITY_ENVIRONMENT);
+
+            // install OrbPortabilityEnvironmentBean service
+            final ServiceBuilder<?> orbPortSB = context.getCapabilityServiceTarget().addService();
+            final Consumer<OrbPortabilityEnvironmentBean> orbPortConsumer = orbPortSB.provides(TxnServices.JBOSS_TXN_ORB_PORTABILITY_ENVIRONMENT);
+            final Supplier<ServerEnvironment> serverEnvSupplier = orbPortSB.requires(ServerEnvironmentService.SERVICE_NAME);
+            orbPortSB.setInstance(new OrbPortabilityEnvironmentService(orbPortConsumer, serverEnvSupplier)).install();
         }
         final ArjunaTransactionManagerService transactionManagerService = new ArjunaTransactionManagerService(txnManagerServiceConsumer, xaTerminatorSupplier, orbSupplier, userTransactionRegistrySupplier, jtaEnvironmentBeanSupplier, coordinatorEnableStatistics, coordinatorDefaultTimeout, transactionStatusManagerEnable, jts);
         sb.setInstance(transactionManagerService);
