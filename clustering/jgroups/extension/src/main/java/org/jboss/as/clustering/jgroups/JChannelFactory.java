@@ -13,6 +13,7 @@ import java.util.Map;
 import java.util.Optional;
 
 import org.jboss.as.network.SocketBinding;
+import org.jboss.as.network.SocketBindingManager;
 import org.jgroups.EmptyMessage;
 import org.jgroups.JChannel;
 import org.jgroups.Message;
@@ -99,11 +100,12 @@ public class JChannelFactory implements ChannelFactory {
 
         // Override the SocketFactory of the transport
         TP transport = (TP) protocols.get(0);
+        SocketBindingManager manager = this.configuration.getTransport().getSocketBinding().getSocketBindings();
         Optional<TLSConfiguration> tls = this.configuration.getTransport().getTLSConfiguration();
 
         transport.setSocketFactory(tls.isPresent() ?
-                new TLSManagedSocketFactory(SelectorProvider.provider(), this.configuration.getSocketBindingManager(), bindings, tls.get()) :
-                new ManagedSocketFactory(SelectorProvider.provider(), this.configuration.getSocketBindingManager(), bindings)
+                new TLSManagedSocketFactory(SelectorProvider.provider(), manager, bindings, tls.get()) :
+                new ManagedSocketFactory(SelectorProvider.provider(), manager, bindings)
         );
 
         JChannel channel = createChannel(protocols);

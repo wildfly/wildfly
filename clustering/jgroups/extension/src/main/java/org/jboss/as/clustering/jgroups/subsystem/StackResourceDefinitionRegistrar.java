@@ -23,7 +23,6 @@ import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
-import org.jboss.as.network.SocketBindingManager;
 import org.jboss.as.server.ServerEnvironment;
 import org.jboss.dmr.ModelNode;
 import org.jgroups.protocols.TP;
@@ -131,7 +130,6 @@ public class StackResourceDefinitionRegistrar implements ChildResourceDefinition
         }
 
         ServiceDependency<ServerEnvironment> environment = ServiceDependency.on(ServerEnvironment.SERVICE_DESCRIPTOR);
-        ServiceDependency<SocketBindingManager> socketBindingManager = ServiceDependency.on(SocketBindingManager.SERVICE_DESCRIPTOR);
 
         ChannelFactoryConfiguration configuration = new ChannelFactoryConfiguration() {
             @Override
@@ -158,14 +156,9 @@ public class StackResourceDefinitionRegistrar implements ChildResourceDefinition
             public Optional<RelayConfiguration> getRelay() {
                 return Optional.ofNullable(relay.get());
             }
-
-            @Override
-            public SocketBindingManager getSocketBindingManager() {
-                return socketBindingManager.get();
-            }
         };
         return CapabilityServiceInstaller.BlockingBuilder.of(CAPABILITY, Supplier.of(configuration).thenApply(JChannelFactory::new))
-                .requires(List.of(transport, relay, environment, socketBindingManager))
+                .requires(List.of(transport, relay, environment))
                 .requires(protocols)
                 .build();
     }
