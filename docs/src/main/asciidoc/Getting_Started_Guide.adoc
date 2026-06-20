@@ -683,7 +683,7 @@ configurations:
 2.  as a deployment
 
 In the provided configurations, H2 is configured as a module. The module
-is located in the $JBOSS_HOME/modules/com/h2database/h2 directory. The
+is located in the `$JBOSS_HOME/modules/system/layers/base/com/h2database/h2/main` directory. The
 H2 datasource configuration is shown below.
 
 [source,xml,options="nowrap"]
