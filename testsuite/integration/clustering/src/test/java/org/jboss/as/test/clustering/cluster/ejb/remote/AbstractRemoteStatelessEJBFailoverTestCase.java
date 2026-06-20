@@ -39,7 +39,6 @@ import org.wildfly.common.function.ExceptionSupplier;
 public abstract class AbstractRemoteStatelessEJBFailoverTestCase extends AbstractClusteringTestCase {
 
     private static final int COUNT = 20;
-    private static final long CLIENT_TOPOLOGY_UPDATE_WAIT = TimeoutUtil.adjust(5000);
     private static final long INVOCATION_WAIT = TimeoutUtil.adjust(10);
 
     static Archive<?> createDeployment(String moduleName) {
@@ -67,7 +66,7 @@ public abstract class AbstractRemoteStatelessEJBFailoverTestCase extends Abstrac
                 Incrementor bean = directory.lookupStateless(this.beanClass, Incrementor.class);
 
                 // Allow sufficient time for client to receive full topology
-                Thread.sleep(CLIENT_TOPOLOGY_UPDATE_WAIT);
+                Thread.sleep(EJB_CLIENT_TOPOLOGY_UPDATE_WAIT.toMillis());
 
                 List<String> results = new ArrayList<>(COUNT);
                 for (int i = 0; i < COUNT; ++i) {
@@ -95,7 +94,7 @@ public abstract class AbstractRemoteStatelessEJBFailoverTestCase extends Abstrac
                 deploy(DEPLOYMENT_1);
 
                 // Allow sufficient time for client to receive new topology
-                Thread.sleep(CLIENT_TOPOLOGY_UPDATE_WAIT);
+                Thread.sleep(EJB_CLIENT_TOPOLOGY_UPDATE_WAIT.toMillis());
 
                 for (int i = 0; i < COUNT; ++i) {
                     Result<Integer> result = bean.increment();
@@ -122,7 +121,7 @@ public abstract class AbstractRemoteStatelessEJBFailoverTestCase extends Abstrac
                 start(NODE_2);
 
                 // Allow sufficient time for client to receive new topology
-                Thread.sleep(CLIENT_TOPOLOGY_UPDATE_WAIT);
+                Thread.sleep(EJB_CLIENT_TOPOLOGY_UPDATE_WAIT.toMillis());
 
                 for (int i = 0; i < COUNT; ++i) {
                     Result<Integer> result = bean.increment();
