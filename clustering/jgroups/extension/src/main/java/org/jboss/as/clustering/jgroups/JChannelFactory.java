@@ -99,10 +99,10 @@ public class JChannelFactory implements ChannelFactory {
 
         // Override the SocketFactory of the transport
         TP transport = (TP) protocols.get(0);
-        Optional<TLSConfiguration> sslConfiguration = this.configuration.getTransport().getSSLConfiguration();
+        Optional<TLSConfiguration> tls = this.configuration.getTransport().getTLSConfiguration();
 
-        transport.setSocketFactory(sslConfiguration.isPresent() ?
-                new TLSManagedSocketFactory(SelectorProvider.provider(), this.configuration.getSocketBindingManager(), bindings, sslConfiguration.get()) :
+        transport.setSocketFactory(tls.isPresent() ?
+                new TLSManagedSocketFactory(SelectorProvider.provider(), this.configuration.getSocketBindingManager(), bindings, tls.get()) :
                 new ManagedSocketFactory(SelectorProvider.provider(), this.configuration.getSocketBindingManager(), bindings)
         );
 

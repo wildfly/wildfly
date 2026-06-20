@@ -88,7 +88,7 @@ public class SecurableSocketTransportResourceDefinitionRegistrar<T extends Basic
             public TransportConfiguration<T> get() {
                 return new TransportConfigurationDecorator<>(configuration.get()) {
                     @Override
-                    public Optional<TLSConfiguration> getSSLConfiguration() {
+                    public Optional<TLSConfiguration> getTLSConfiguration() {
                         if (serverSSLContext.isPresent() && clientSSLContext.isPresent()) {
                             return Optional.of(new TLSConfiguration() {
                                 @Override
