@@ -4,13 +4,14 @@
  */
 package org.jboss.as.clustering.jgroups;
 
-import java.nio.channels.spi.SelectorProvider;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+
+import javax.net.ssl.SSLContext;
 
 import org.jboss.as.network.SocketBinding;
 import org.jboss.as.network.SocketBindingManager;
@@ -103,10 +104,27 @@ public class JChannelFactory implements ChannelFactory {
         SocketBindingManager manager = this.configuration.getTransport().getSocketBinding().getSocketBindings();
         Optional<TLSConfiguration> tls = this.configuration.getTransport().getTLSConfiguration();
 
-        transport.setSocketFactory(tls.isPresent() ?
-                new TLSManagedSocketFactory(SelectorProvider.provider(), manager, bindings, tls.get()) :
-                new ManagedSocketFactory(SelectorProvider.provider(), manager, bindings)
-        );
+        transport.setSocketFactory(new ManagedSocketFactory(new ManagedSocketFactory.Configuration() {
+            @Override
+            public Map<String, SocketBinding> getSocketBindings() {
+                return Collections.unmodifiableMap(bindings);
+            }
+
+            @Override
+            public SocketBindingManager getSocketBindingManager() {
+                return manager;
+            }
+
+            @Override
+            public SSLContext getClientSSLContext() {
+                return tls.map(TLSConfiguration::getClientSSLContext).orElse(null);
+            }
+
+            @Override
+            public SSLContext getServerSSLContext() {
+                return tls.map(TLSConfiguration::getServerSSLContext).orElse(null);
+            }
+        }));
 
         JChannel channel = createChannel(protocols);
 

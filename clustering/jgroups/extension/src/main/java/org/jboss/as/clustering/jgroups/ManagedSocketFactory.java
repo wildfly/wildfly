@@ -12,19 +12,20 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketAddress;
 import java.net.SocketException;
-import java.nio.channels.NetworkChannel;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
 import java.nio.channels.spi.SelectorProvider;
 import java.util.Collections;
 import java.util.IdentityHashMap;
 import java.util.Map;
-import java.util.function.BiFunction;
 
+import javax.net.ssl.SSLContext;
+
+import org.jboss.as.clustering.jgroups.logging.JGroupsLogger;
 import org.jboss.as.network.SocketBinding;
 import org.jboss.as.network.SocketBindingManager;
-import org.jgroups.util.Util;
-import org.wildfly.common.function.ExceptionFunction;
+import org.wildfly.clustering.function.Consumer;
+import org.wildfly.clustering.jgroups.spi.TLSConfiguration;
 
 /**
  * Manages registration of all JGroups sockets with a {@link SocketBindingManager}.
@@ -32,31 +33,55 @@ import org.wildfly.common.function.ExceptionFunction;
  */
 public class ManagedSocketFactory implements SocketFactory {
 
-    private final SelectorProvider provider;
-    protected final SocketBindingManager manager;
-    // Maps a JGroups service name its associated SocketBinding
-    protected final Map<String, SocketBinding> bindings;
-    // Store references to managed socket-binding registrations
-    protected final Map<Object, Closeable> closeables = Collections.synchronizedMap(new IdentityHashMap<>());
+    interface Configuration extends TLSConfiguration {
+        SocketBindingManager getSocketBindingManager();
+        Map<String, SocketBinding> getSocketBindings();
 
-    public ManagedSocketFactory(SelectorProvider provider, SocketBindingManager manager, Map<String, SocketBinding> socketBindings) {
-        this.provider = provider;
-        this.manager = manager;
-        this.bindings = socketBindings;
+        default SelectorProvider getSelectorProvider() {
+            return SelectorProvider.provider();
+        }
+    }
+
+    private final SelectorProvider provider;
+    private final SocketBindingManager manager;
+    // Maps a JGroups service name its associated SocketBinding
+    private final Map<String, SocketBinding> bindings;
+    // Manually created socket-binding registrations per socket/channel
+    private final Map<Closeable, Closeable> registrations = Collections.synchronizedMap(new IdentityHashMap<>());
+    private final SSLContext clientSSLContext;
+    private final SSLContext serverSSLContext;
+    private final Consumer<? super Closeable> closeTask;
+
+    public ManagedSocketFactory(Configuration configuration) {
+        this.provider = configuration.getSelectorProvider();
+        this.manager = configuration.getSocketBindingManager();
+        this.bindings = configuration.getSocketBindings();
+        this.clientSSLContext = configuration.getClientSSLContext();
+        this.serverSSLContext = configuration.getServerSSLContext();
+        // Close any SocketBindingManager registration before closing the socket/channel
+        this.closeTask = Consumer.close().<Closeable>compose(this.registrations::remove).andThen(Consumer.close());
     }
 
     @Override
     public Socket createSocket(String name) throws IOException {
         SocketBinding binding = this.bindings.get(name);
-        org.jboss.as.network.ManagedSocketFactory factory = this.manager.getSocketFactory();
-        return (binding != null) ? factory.createSocket(binding.getName()) : factory.createSocket();
+        Socket socket = (this.clientSSLContext != null) ? this.clientSSLContext.getSocketFactory().createSocket() : (binding != null) ? this.manager.getSocketFactory().createSocket(binding.getName()) : this.manager.getSocketFactory().createSocket();
+        if (this.clientSSLContext != null) {
+            // If Socket was not created by SocketBindingManager, register manually
+            this.registrations.put(socket, (binding != null) ? this.manager.getNamedRegistry().registerSocket(binding.getName(), socket) : this.manager.getUnnamedRegistry().registerSocket(socket));
+        }
+        return socket;
     }
 
     @Override
     public ServerSocket createServerSocket(String name) throws IOException {
         SocketBinding binding = this.bindings.get(name);
-        org.jboss.as.network.ManagedServerSocketFactory factory = this.manager.getServerSocketFactory();
-        return (binding != null) ? factory.createServerSocket(binding.getName()) : factory.createServerSocket();
+        ServerSocket socket = (this.serverSSLContext != null) ? this.serverSSLContext.getServerSocketFactory().createServerSocket() : (binding != null) ? this.manager.getServerSocketFactory().createServerSocket(binding.getName()) : this.manager.getServerSocketFactory().createServerSocket();
+        if (this.serverSSLContext != null) {
+            // If ServerSocket was not created by SocketBindingManager, register manually
+            this.registrations.put(socket, (binding != null) ? this.manager.getNamedRegistry().registerSocket(binding.getName(), socket) : this.manager.getUnnamedRegistry().registerSocket(socket));
+        }
+        return socket;
     }
 
     @Override
@@ -81,37 +106,43 @@ public class ManagedSocketFactory implements SocketFactory {
 
     @Override
     public SocketChannel createSocketChannel(String name) throws IOException {
-        return this.createNetworkChannel(name, SelectorProvider::openSocketChannel, SocketBindingManager.NamedManagedBindingRegistry::registerChannel, SocketBindingManager.UnnamedBindingRegistry::registerChannel);
+        if ((this.clientSSLContext != null) && (name != null)) {
+            JGroupsLogger.ROOT_LOGGER.secureSocketChannelNotAvailable(name);
+        }
+        SocketBinding binding = this.bindings.get(name);
+        SocketChannel channel = this.provider.openSocketChannel();
+        this.registrations.put(channel, (binding != null) ? this.manager.getNamedRegistry().registerChannel(binding.getName(), channel) : this.manager.getUnnamedRegistry().registerChannel(channel));
+        return channel;
     }
 
     @Override
     public ServerSocketChannel createServerSocketChannel(String name) throws IOException {
-        return this.createNetworkChannel(name, SelectorProvider::openServerSocketChannel, SocketBindingManager.NamedManagedBindingRegistry::registerChannel, SocketBindingManager.UnnamedBindingRegistry::registerChannel);
+        if ((this.serverSSLContext != null) && (name != null)) {
+            JGroupsLogger.ROOT_LOGGER.secureSocketChannelNotAvailable(name);
+        }
+        SocketBinding binding = this.bindings.get(name);
+        ServerSocketChannel channel = this.provider.openServerSocketChannel();
+        this.registrations.put(channel, (binding != null) ? this.manager.getNamedRegistry().registerChannel(binding.getName(), channel) : this.manager.getUnnamedRegistry().registerChannel(channel));
+        return channel;
+    }
+
+    @Override
+    public void close(Socket socket) throws IOException {
+        this.closeTask.accept(socket);
+    }
+
+    @Override
+    public void close(ServerSocket socket) throws IOException {
+        this.closeTask.accept(socket);
     }
 
     @Override
     public void close(SocketChannel channel) {
-        this.closeNetworkChannel(channel);
+        this.closeTask.accept(channel);
     }
 
     @Override
     public void close(ServerSocketChannel channel) {
-        this.closeNetworkChannel(channel);
-    }
-
-    private <C extends NetworkChannel> C createNetworkChannel(String name, ExceptionFunction<SelectorProvider, C, IOException> factory, TriFunction<SocketBindingManager.NamedManagedBindingRegistry, String, C, Closeable> namedRegistration, BiFunction<SocketBindingManager.UnnamedBindingRegistry, C, Closeable> unnamedRegistration) throws IOException {
-        SocketBinding binding = this.bindings.get(name);
-        C channel = factory.apply(this.provider);
-        this.closeables.put(channel, (binding != null) ? namedRegistration.apply(this.manager.getNamedRegistry(), binding.getName(), channel) : unnamedRegistration.apply(this.manager.getUnnamedRegistry(), channel));
-        return channel;
-    }
-
-    private void closeNetworkChannel(NetworkChannel channel) {
-        Util.close(this.closeables.remove(channel));
-        Util.close(channel);
-    }
-
-    private interface TriFunction<T, U, V, R> {
-        R apply(T t, U u, V v);
+        this.closeTask.accept(channel);
     }
 }
