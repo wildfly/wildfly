@@ -60,7 +60,7 @@
         <version.org.glassfish.jakarta.faces>4.1.7</version.org.glassfish.jakarta.faces>
         <version.org.glassfish.soteria>4.0.2</version.org.glassfish.soteria>
         <version.org.hibernate.search>8.4.0.Final</version.org.hibernate.search>
-        <version.org.hibernate.validator>9.1.0.Final</version.org.hibernate.validator>
+        <version.org.hibernate.validator>8.0.4.Final</version.org.hibernate.validator>
         <!-- The ORM version is controlled in the root pom because we need to use its value in contexts not controlled by this bom -->
         <version.org.hibernate>${standard.version.org.hibernate}</version.org.hibernate>
         <version.org.jboss.resteasy>7.0.2.Final</version.org.jboss.resteasy>
