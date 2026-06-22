@@ -4,7 +4,10 @@
  */
 package org.jboss.as.test.shared.observability.containers;
 
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
+import java.util.Map;
 
 import jakarta.ws.rs.client.Client;
 import jakarta.ws.rs.client.ClientBuilder;
@@ -36,8 +39,32 @@ class JaegerContainer extends BaseContainer<JaegerContainer> {
     }
 
     public List<JaegerTrace> getTraces(String serviceName) throws InterruptedException {
+        return getTraces(serviceName, null);
+    }
+
+    public List<JaegerTrace> getTraces(String serviceName, Map<String, String> tags) throws InterruptedException {
+        StringBuilder url = new StringBuilder(getJaegerEndpoint() + "/api/traces?service=" + serviceName);
+
+        if (tags != null && !tags.isEmpty()) {
+            // Jaeger expects tags parameter as JSON: tags={"key":"value","key2":"value2"}
+            StringBuilder jsonTags = new StringBuilder("{");
+            boolean first = true;
+            for (Map.Entry<String, String> entry : tags.entrySet()) {
+                if (!first) {
+                    jsonTags.append(",");
+                }
+                jsonTags.append("\"").append(entry.getKey()).append("\":\"").append(entry.getValue()).append("\"");
+                first = false;
+            }
+            jsonTags.append("}");
+
+            // URL encode the JSON string
+            String encodedTags = URLEncoder.encode(jsonTags.toString(), StandardCharsets.UTF_8);
+            url.append("&tags=").append(encodedTags);
+        }
+
         try (Client client = ClientBuilder.newClient()) {
-            return client.target(getJaegerEndpoint() + "/api/traces?service=" + serviceName).request()
+            return client.target(url.toString()).request()
                     .get()
                     .readEntity(JaegerResponse.class)
                     .getData();
