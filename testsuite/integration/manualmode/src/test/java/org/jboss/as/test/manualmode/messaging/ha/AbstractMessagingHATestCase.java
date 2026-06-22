@@ -25,6 +25,7 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.Properties;
 import java.util.UUID;
@@ -220,7 +221,10 @@ public abstract class AbstractMessagingHATestCase {
         }
     }
 
-    private void restoreSnapshot(String snapshot) throws IOException {
+    protected void restoreSnapshot(String snapshot) throws IOException {
+        if (snapshot == null) {
+            return;
+        }
         Path snapshotFile = new File(snapshot).toPath();
         Path standaloneConfiguration = snapshotFile.getParent().getParent().getParent().resolve("standalone-full-ha.xml");
         Files.move(snapshotFile, standaloneConfiguration, StandardCopyOption.REPLACE_EXISTING);
@@ -247,40 +251,35 @@ public abstract class AbstractMessagingHATestCase {
         clearArtemisFiles();
         // start server1 and reload it in admin-only
         container.start(SERVER1);
-        ModelControllerClient client1 = createClient1();
-        snapshotForServer1 = takeSnapshot(client1);
-        executeReloadAndWaitForCompletionOfServer1(client1, true);
-        client1 = createClient1();
+        try (ModelControllerClient client1 = createClient1()) {
+            snapshotForServer1 = takeSnapshot(client1);
+            executeReloadAndWaitForCompletionOfServer1(client1, true);
+        }
 
         // start server2 and reload it in admin-only
         container.start(SERVER2);
-        ModelControllerClient client2 = createClient2();
-        snapshotForServer2 = takeSnapshot(client2);
-        executeReloadAndWaitForCompletionOfServer2(client2, true);
-        client2 = createClient2();
-
-        // setup both servers
-        try {
-            setUpServer1(client1);
-            setUpServer2(client2);
-        } catch (Exception e) {
-            tearDown();
-            throw e;
+        try (ModelControllerClient client2 = createClient2()) {
+            snapshotForServer2 = takeSnapshot(client2);
+            executeReloadAndWaitForCompletionOfServer2(client2, true);
         }
 
-        // reload server1 in normal mode
-        executeReloadAndWaitForCompletionOfServer1(client1, false);
-        client1 = createClient1();
-
-        // reload server2  in normal mode
-        executeReloadAndWaitForCompletionOfServer2(client2, false);
-        client2 = createClient2();
+        // setup both servers then reload into normal mode
+        try (ModelControllerClient client1 = createClient1();
+             ModelControllerClient client2 = createClient2()) {
+            try {
+                setUpServer1(client1);
+                setUpServer2(client2);
+            } catch (Exception e) {
+                tearDown();
+                throw e;
+            }
+            executeReloadAndWaitForCompletionOfServer1(client1, false);
+            executeReloadAndWaitForCompletionOfServer2(client2, false);
+        }
 
         // both servers are started and configured
         assertTrue(container.isStarted(SERVER1));
-        client1.close();
         assertTrue(container.isStarted(SERVER2));
-        client2.close();
     }
 
     protected abstract void setUpServer1(ModelControllerClient client) throws Exception;
@@ -289,14 +288,30 @@ public abstract class AbstractMessagingHATestCase {
 
     @After
     public void tearDown() throws Exception {
-        if (container.isStarted(SERVER1)) {
-            container.stop(SERVER1);
+        try {
+            if (container.isStarted(SERVER1)) {
+                container.stop(SERVER1);
+            }
+        } catch (Exception e) {
+            log.warnf(e, "Failed to stop %s", SERVER1);
         }
-        restoreSnapshot(snapshotForServer1);
-        if (container.isStarted(SERVER2)) {
-            container.stop(SERVER2);
+        try {
+            restoreSnapshot(snapshotForServer1);
+        } catch (Exception e) {
+            log.warnf(e, "Failed to restore snapshot for %s", SERVER1);
         }
-        restoreSnapshot(snapshotForServer2);
+        try {
+            if (container.isStarted(SERVER2)) {
+                container.stop(SERVER2);
+            }
+        } catch (Exception e) {
+            log.warnf(e, "Failed to stop %s", SERVER2);
+        }
+        try {
+            restoreSnapshot(snapshotForServer2);
+        } catch (Exception e) {
+            log.warnf(e, "Failed to restore snapshot for %s", SERVER2);
+        }
         clearArtemisFiles();
     }
 
@@ -315,20 +330,15 @@ public abstract class AbstractMessagingHATestCase {
     }
 
     protected static void clearArtemisFiles() {
-        File server1 = new File(SERVER1).toPath().resolve("standalone").resolve("data").resolve("activemq").toFile();
-        deleteRecursive(server1);
-        File server2 = new File(SERVER2).toPath().resolve("standalone").resolve("data").resolve("activemq").toFile();
-        deleteRecursive(server2);
+        Path basedir = Paths.get(System.getProperty("basedir", "."));
+        deleteRecursive(basedir.resolve("target").resolve(SERVER1).resolve("standalone").resolve("data").resolve("activemq").toFile());
+        deleteRecursive(basedir.resolve("target").resolve(SERVER2).resolve("standalone").resolve("data").resolve("activemq").toFile());
     }
 
     protected static void deleteRecursive(File file) {
         File[] files = file.listFiles();
-        if(files != null) {
-            File[] var2 = files;
-            int var3 = files.length;
-
-            for(int var4 = 0; var4 < var3; ++var4) {
-                File f = var2[var4];
+        if (files != null) {
+            for (File f : files) {
                 deleteRecursive(f);
             }
         }
