@@ -337,6 +337,7 @@
         <version.org.wildfly.glow>2.1.0.Final</version.org.wildfly.glow>
         <version.org.wildfly.licenses.plugin>2.4.4.Final</version.org.wildfly.licenses.plugin>
         <version.org.wildfly.plugin>6.0.0.Final</version.org.wildfly.plugin>
+        <version.org.wildfly.plugin.wildfly-detach-plugin>1.0.0.Final</version.org.wildfly.plugin.wildfly-detach-plugin>
         <version.org.wildfly.unstable.annotation.api>1.0.2.Final</version.org.wildfly.unstable.annotation.api>
         <version.org.wildfly.wildfly-channel-plugin>1.0.33</version.org.wildfly.wildfly-channel-plugin>
         <version.org.wildfly.wildfly-maven-gpg-plugin>3.2.8.SP1</version.org.wildfly.wildfly-maven-gpg-plugin>
@@ -1547,6 +1548,11 @@
                             <arg>-proc:full</arg>
                         </compilerArgs>
                     </configuration>
+                </plugin>
+                <plugin>
+                    <groupId>org.wildfly.plugins</groupId>
+                    <artifactId>wildfly-detach-plugin</artifactId>
+                    <version>${version.org.wildfly.plugin.wildfly-detach-plugin}</version>
                 </plugin>
             </plugins>
         </pluginManagement>
