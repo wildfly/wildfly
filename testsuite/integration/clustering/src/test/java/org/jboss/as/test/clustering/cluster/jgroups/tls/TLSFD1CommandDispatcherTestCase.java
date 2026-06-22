@@ -10,7 +10,6 @@ import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.test.clustering.cluster.dispatcher.CommandDispatcherTestCase;
 import org.jboss.as.test.clustering.cluster.dispatcher.bean.ClusterTopologyRetrieverBean;
-import org.jboss.dmr.ModelNode;
 import org.junit.Assert;
 import org.junit.jupiter.api.Test;
 
@@ -35,15 +34,7 @@ class TLSFD1CommandDispatcherTestCase extends CommandDispatcherTestCase {
     @Override
     @Test
     public void test() throws Exception {
-        // /subsystem=logging/log-file=server.log:read-log-file
-        ModelNode operation = new ModelNode();
-        operation.get("address").add("subsystem", "logging").add("log-file", "server.log");
-        operation.get("operation").set("read-log-file");
-        operation.get("lines").set(150);
-        operation.get("tail").set(true);
-        ModelNode response = client.getControllerClient().execute(operation);
-        Assert.assertTrue("Unable to read logs", "success".equals(response.get("outcome").asString()));
-        Assert.assertFalse("WFLYCLJG0037 found", response.get("result").asList().stream().anyMatch(lineNode -> lineNode.asString().contains("WFLYCLJG0037")));
+        Assert.assertFalse("WFLYCLJG0037 found", JGroupsLogsUtil.findWFLYCLJG0037(client));
 
         // original test
         this.test(ClusterTopologyRetrieverBean.class);
