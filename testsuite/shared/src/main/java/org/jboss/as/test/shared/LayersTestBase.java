@@ -366,7 +366,10 @@ public abstract class LayersTestBase {
             "org.wildfly.extension.security.manager",
             // Not needed for WildFly as this module is effectively replaced by org.hibernate.models.hibernate-models
             "org.hibernate.commons-annotations",
-            "org.wildfly.extension.vertx"
+            "org.wildfly.extension.vertx",
+            "io.github.jopenlibs.vault-java-driver",
+            "org.wildfly.extension.hashicorp-vault",
+            "org.wildfly.security.elytron-hashicorp-vault"
     };
 
     /**
