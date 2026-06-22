@@ -13,6 +13,7 @@ import java.util.Collections;
 import java.util.Date;
 
 import jakarta.ejb.ScheduleExpression;
+import jakarta.ejb.Timer;
 import jakarta.ejb.TimerConfig;
 
 import org.jboss.as.ejb3.timerservice.spi.ManagedTimer;
@@ -122,6 +123,11 @@ public class CompositeTimerService implements ManagedTimerService {
     @Override
     public Collection<jakarta.ejb.Timer> getAllTimers() {
         return this.registry.getAllTimers();
+    }
+
+    @Override
+    public Collection<Timer> getTimersByExternalId(String externalId){
+        return this.registry.getTimersByExternalId(externalId);
     }
 
     @Override
