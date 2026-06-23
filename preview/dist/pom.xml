@@ -340,6 +340,36 @@
                             </execution>
                         </executions>
                     </plugin>
+                    <!-- GPG signing is configured elsewhere. Just redeclare the execution here to help
+                         ensure the wildfly-detach-plugin runs after and can detach the asc files -->
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-gpg-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>gpg-sign</id>
+                                <phase>verify</phase> <!-- the normal phase for the 'sign' mojo -->
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.wildfly.plugins</groupId>
+                        <artifactId>wildfly-detach-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <!-- We built tars for local use, but we don't
+                                     want to install or deploy them. -->
+                                <id>detach-tars</id>
+                                <goals>
+                                    <goal>detach-artifacts</goal>
+                                </goals>
+                                <phase>verify</phase>
+                                <configuration>
+                                    <regex>\S{1,}tar\.gz\S*</regex>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
                 </plugins>
             </build>
         </profile>
