@@ -528,6 +528,15 @@ The following example configuration specifies that the default filtering should 
 NOTE: The certificate-revocation-list element can be substituted by a certificate-revocation-lists element which in turn allows the
 configuration of multiple certificate revocation lists as follows.
 
+ <ocsp-stapling />:: This element enables the client to make use of the OCSP response stapled to the certificate
+ returned by the server. This is partially done using system properties and an X509RevocationTrustManager. The security
+ property `ocsp.enable`, along with the system properties `jdk.tls.client.enableStatusRequestExtension` and
+ `com.sun.net.ssl.checkRevocation` are set to true to enable the WildFly client to use OCSP stapling. The OCSP responder's
+ certificate should be specified using a truststore, along with the alias for the certificate in the keystore.
+
+NOTE: The system and security properties need to be undefined or set to false if the client no longer supports wishes
+to use OCSP stapling.
+
 [source,xml,options="nowrap"]
 ----
 <configuration>
