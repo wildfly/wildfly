@@ -330,7 +330,7 @@
         <version.org.jacoco>0.8.15</version.org.jacoco>
         <version.org.jboss.galleon>7.0.8.Final</version.org.jboss.galleon>
         <version.org.owasp.dependency-check>12.2.2</version.org.owasp.dependency-check>
-        <version.org.wildfly.bom-builder-plugin>2.0.10.Final</version.org.wildfly.bom-builder-plugin>
+        <version.org.wildfly.bom-builder-plugin>2.0.11.Final</version.org.wildfly.bom-builder-plugin>
         <version.org.wildfly.checkstyle-config>1.0.8.Final</version.org.wildfly.checkstyle-config>
         <version.org.wildfly.common>1.6.0.Final</version.org.wildfly.common>
         <version.org.wildfly.galleon-plugins>8.1.6.Final</version.org.wildfly.galleon-plugins>
@@ -572,7 +572,7 @@
         <!--
             Maintain separation between these two frequently updated artifacts to avoid merge conflicts.
         -->
-        <version.org.wildfly.core>33.0.0.Beta3</version.org.wildfly.core>
+        <version.org.wildfly.core>33.0.0.Beta4</version.org.wildfly.core>
         <!--
             Maintain separation between these two frequently updated artifacts to avoid merge conflicts.
         -->

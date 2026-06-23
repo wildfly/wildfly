@@ -97,13 +97,14 @@ public enum ElytronOidcSubsystemSchema implements PersistentSubsystemSchema<Elyt
 
     VERSION_1_0(1, Stability.DEFAULT),
     VERSION_2_0(2, Stability.DEFAULT),
+    VERSION_3_0(3, Stability.DEFAULT), // WildFly 41.0-onwards - forked from DEFAULT 2.0
     VERSION_2_0_COMMUNITY(2, 0, Stability.COMMUNITY), // WildFly 41.0-onwards - forked from DEFAULT 2.0
     VERSION_2_0_PREVIEW(2, 0, Stability.PREVIEW), // WildFly 32.0-present
     VERSION_3_0_PREVIEW(3, 0, Stability.PREVIEW), // WildFly 33.0-present
     VERSION_4_0_PREVIEW(4, 0, Stability.PREVIEW), // WildFly 40.0-present
     ;
 
-    static final Map<Stability, ElytronOidcSubsystemSchema> CURRENT = Feature.map(EnumSet.of(VERSION_4_0_PREVIEW, VERSION_2_0_COMMUNITY, VERSION_2_0));
+    static final Map<Stability, ElytronOidcSubsystemSchema> CURRENT = Feature.map(EnumSet.of(VERSION_4_0_PREVIEW, VERSION_2_0_COMMUNITY, VERSION_3_0));
     private static final AttributeParser SIMPLE_ATTRIBUTE_PARSER = new AttributeElementParser();
     private static final AttributeMarshaller SIMPLE_ATTRIBUTE_MARSHALLER = new AttributeElementMarshaller();
 
@@ -158,7 +159,7 @@ public enum ElytronOidcSubsystemSchema implements PersistentSubsystemSchema<Elyt
         Stream.of(providerDefaultAttributes).forEach(attribute -> secureDeploymentDefinitionBuilder.addAttribute(attribute, SIMPLE_ATTRIBUTE_PARSER, SIMPLE_ATTRIBUTE_MARSHALLER));
         Stream.of(providerDefaultAttributes).forEach(attribute -> secureServerDefinitionBuilder.addAttribute(attribute, SIMPLE_ATTRIBUTE_PARSER, SIMPLE_ATTRIBUTE_MARSHALLER));
 
-        if (this.since(VERSION_4_0_PREVIEW) && this.enables(LOGOUT_PATH)) {
+        if ((this.since(VERSION_4_0_PREVIEW) || this.since(VERSION_3_0)) && this.enables(LOGOUT_PATH)) {
             SimpleAttributeDefinition[] oidcLogoutChannelAttributes = {LOGOUT_PATH, LOGOUT_CALLBACK_PATH,
                 POST_LOGOUT_REDIRECT_URI, LOGOUT_SESSION_REQUIRED, BACK_CHANNEL_LOGOUT_SESSION_INVALIDATION_LIMIT, PROVIDER_JWT_CLAIMS_TYP};
 
