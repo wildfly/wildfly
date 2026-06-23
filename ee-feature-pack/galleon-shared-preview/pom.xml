@@ -89,19 +89,6 @@
         </dependency>
 
         <dependency>
-            <groupId>jakarta.enterprise</groupId>
-            <artifactId>jakarta.enterprise.cdi-api</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>jakarta.enterprise</groupId>
-            <artifactId>jakarta.enterprise.cdi-el-api</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>jakarta.enterprise</groupId>
-            <artifactId>jakarta.enterprise.lang-model</artifactId>
-        </dependency>
-
-        <dependency>
             <groupId>jakarta.enterprise.concurrent</groupId>
             <artifactId>jakarta.enterprise.concurrent-api</artifactId>
         </dependency>
@@ -452,39 +439,6 @@
         <dependency>
             <groupId>org.jboss.spec.jakarta.el</groupId>
             <artifactId>jakarta.el-api</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.jboss.weld</groupId>
-            <artifactId>weld-api</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.jboss.weld</groupId>
-            <artifactId>weld-core-impl</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.jboss.weld</groupId>
-            <artifactId>weld-lite-extension-translator</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.jboss.weld.module</groupId>
-            <artifactId>weld-ejb</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.jboss.weld.module</groupId>
-            <artifactId>weld-jsf</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.jboss.weld.module</groupId>
-            <artifactId>weld-jta</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.jboss.weld</groupId>
-            <artifactId>weld-spi</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.jboss.weld.module</groupId>
-            <artifactId>weld-web</artifactId>
         </dependency>
 
         <dependency>
