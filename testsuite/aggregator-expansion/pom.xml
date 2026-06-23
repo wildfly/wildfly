@@ -50,7 +50,6 @@
             <modules>
                 <module>../integration/expansion</module>
                 <module>../integration/microprofile-tck</module>
-                <module>../integration/hashicorp-vault</module>
                 <module>../integration/manualmode-expansion</module>
             </modules>
         </profile>
@@ -62,7 +61,6 @@
                 <module>../integration/manualmode-expansion</module>
                 <module>../integration/expansion</module>
                 <module>../integration/microprofile-tck</module>
-                <module>../integration/hashicorp-vault</module>
             </modules>
         </profile>
 
@@ -79,7 +77,6 @@
             <modules>
                 <module>../integration/expansion</module>
                 <module>../integration/microprofile-tck</module>
-                <module>../integration/hashicorp-vault</module>
                 <module>../layers-expansion</module>
             </modules>
         </profile>
@@ -91,7 +88,6 @@
             <modules>
                 <module>../integration/expansion</module>
                 <module>../integration/microprofile-tck</module>
-                <module>../integration/hashicorp-vault</module>
                 <module>../integration/manualmode-expansion</module>
             </modules>
         </profile>
@@ -128,15 +124,6 @@
             </modules>
         </profile>
 
-        <!-- -Dts.hashicorp-vault -->
-        <profile>
-            <id>ts.integ.group.hashicorp-vault</id>
-            <activation><property><name>ts.hashicorp-vault</name></property></activation>
-            <modules>
-                <module>../integration/hashicorp-vault</module>
-            </modules>
-        </profile>
-
         <!-- Test against bootable jar -->
         <profile>
             <id>expansion.bootablejar.profile</id>
@@ -148,7 +135,6 @@
             <modules>
                 <module>../integration/expansion</module>
                 <module>../integration/microprofile-tck</module>
-                <module>../integration/hashicorp-vault</module>
             </modules>
         </profile>
 
