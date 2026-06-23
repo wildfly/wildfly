@@ -70,6 +70,7 @@ public class DeploymentHelper {
                 new RuntimePermission("accessDeclaredMembers"),
                 // Required for the activation API service loader (jakarta.activation.FactoryFinder)
                 new RuntimePermission("getClassLoader"),
+                new RuntimePermission("org.apache.cxf.permission"),
                 // Permissions for port access
                 new PropertyPermission("management.address", "read"),
                 new PropertyPermission("node0", "read"),
