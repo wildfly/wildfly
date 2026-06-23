@@ -106,8 +106,12 @@ public class ManagedSocketFactory implements SocketFactory {
 
     @Override
     public SocketChannel createSocketChannel(String name) throws IOException {
-        if ((this.clientSSLContext != null) && (name != null)) {
-            JGroupsLogger.ROOT_LOGGER.secureSocketChannelNotAvailable(name);
+        if (this.clientSSLContext != null) {
+            if (name != null) {
+                JGroupsLogger.ROOT_LOGGER.secureSocketChannelNotAvailable(name);
+            } else {
+                JGroupsLogger.ROOT_LOGGER.secureSocketChannelNotAvailable();
+            }
         }
         SocketBinding binding = this.bindings.get(name);
         SocketChannel channel = this.provider.openSocketChannel();
@@ -117,8 +121,12 @@ public class ManagedSocketFactory implements SocketFactory {
 
     @Override
     public ServerSocketChannel createServerSocketChannel(String name) throws IOException {
-        if ((this.serverSSLContext != null) && (name != null)) {
-            JGroupsLogger.ROOT_LOGGER.secureSocketChannelNotAvailable(name);
+        if (this.serverSSLContext != null) {
+            if (name != null) {
+                JGroupsLogger.ROOT_LOGGER.secureSocketChannelNotAvailable(name);
+            } else {
+                JGroupsLogger.ROOT_LOGGER.secureSocketChannelNotAvailable();
+            }
         }
         SocketBinding binding = this.bindings.get(name);
         ServerSocketChannel channel = this.provider.openServerSocketChannel();

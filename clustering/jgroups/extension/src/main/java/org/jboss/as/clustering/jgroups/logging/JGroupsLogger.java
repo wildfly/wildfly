@@ -181,4 +181,13 @@ public interface JGroupsLogger extends BasicLogger {
     @LogMessage(level = WARN)
     @Message(id = 37, value = "Service '%s' requires a non-blocking socket for which TLS support is not available.  To secure cluster communication for this service, use a blocking socket variant of the associated protocol.")
     void secureSocketChannelNotAvailable(String serviceName);
+
+
+    /**
+     * Warning for when an unknown service requests a non-blocking NIO channel from TLS-secured ManagedSocketFactory.
+     * @see {@link #secureSocketChannelNotAvailable(String)}.
+     */
+    @LogMessage(level = WARN)
+    @Message(id = 38, value = "Unknown service requires a non-blocking socket for which TLS support is not available.  To secure cluster communication for this service, use a blocking socket variant of the associated protocol.")
+    void secureSocketChannelNotAvailable();
 }
