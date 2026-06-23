@@ -15,6 +15,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.RejectedExecutionException;
 
 import jakarta.enterprise.inject.spi.BeanManager;
+import jakarta.enterprise.inject.spi.el.ELAwareBeanManager;
 import jakarta.persistence.EntityManagerFactory;
 import jakarta.persistence.spi.PersistenceProvider;
 import javax.sql.DataSource;
@@ -158,7 +159,7 @@ public class PersistenceUnitServiceImpl implements Service<PersistenceUnitServic
                                             wrapperBeanManagerLifeCycle = phaseOnePersistenceUnitService.getBeanManagerLifeCycle();
                                             // update the bean manager proxy to the actual Jakarta Contexts and Dependency Injection bean manager
                                             proxyBeanManager = phaseOnePersistenceUnitService.getBeanManager();
-                                            proxyBeanManager.setDelegate(beanManagerInjector.getOptionalValue());
+                                            proxyBeanManager.setDelegate((ELAwareBeanManager) beanManagerInjector.getOptionalValue());  // TODO change the WeldCapability SPI to require ELAwareBeanManager
                                         }
                                         EntityManagerFactoryBuilder emfBuilder = phaseOnePersistenceUnitService.getEntityManagerFactoryBuilder();
 
@@ -184,7 +185,7 @@ public class PersistenceUnitServiceImpl implements Service<PersistenceUnitServic
 
                                         if (beanManagerInjector.getOptionalValue() != null) {
                                             proxyBeanManager = new ProxyBeanManager();
-                                            proxyBeanManager.setDelegate(beanManagerInjector.getOptionalValue());
+                                            proxyBeanManager.setDelegate((ELAwareBeanManager) beanManagerInjector.getOptionalValue()); // TODO change the WeldCapability SPI to require ELAwareBeanManager
                                             wrapperBeanManagerLifeCycle = persistenceProviderAdaptor.beanManagerLifeCycle(proxyBeanManager);
                                             if (wrapperBeanManagerLifeCycle != null) {
                                               // pass the wrapper object representing the bean manager life cycle object
