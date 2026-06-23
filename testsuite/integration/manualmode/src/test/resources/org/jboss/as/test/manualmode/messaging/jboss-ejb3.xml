@@ -1,0 +1,21 @@
+<?xml version="1.1" encoding="UTF-8"?>
+<jboss:ejb-jar xmlns:jboss="http://www.jboss.com/xml/ns/javaee"
+               xmlns="http://java.sun.com/xml/ns/javaee"
+               xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+               xmlns:c="urn:clustering:1.1"
+               xmlns:d="urn:delivery-active:1.1"
+               version="3.1"
+               impl-version="2.0">
+    <assembly-descriptor>
+        <!-- ejb-name must match the name= attribute on @MessageDriven in ClusteredSingletonQueueMDB (ClusteredSingletonMDBTestCase.MDB_NAME) -->
+        <c:clustering>
+            <ejb-name>ClusteredSingletonQueueMDB</ejb-name>
+            <c:clustered-singleton>true</c:clustered-singleton>
+        </c:clustering>
+        <!-- d:group must match ClusteredSingletonMDBTestCase.DELIVERY_GROUP -->
+        <d:delivery>
+            <ejb-name>ClusteredSingletonQueueMDB</ejb-name>
+            <d:group>my-mdb-delivery-group</d:group>
+        </d:delivery>
+    </assembly-descriptor>
+</jboss:ejb-jar>
