@@ -56,7 +56,7 @@ import org.junit.Test;
  * <p>
  * It also maintains the configuration of the current release, see ExtensionConf.CURRENT. When an extension is added or
  * removed on the current release, that extension must be tracked down on the ExtensionConf.CURRENT object. Once the
- * current release moves to the next mayor, if the ExtensionConf.CURRENT has extensions added or removed during the
+ * current release moves to the next major, if the ExtensionConf.CURRENT has extensions added or removed during the
  * current development cycle, the test will fail, forcing us to create new ExtensionConf objects for each previous
  * releases not defined in the test and point out ExtensionConf.CURRENT to the new current release without any
  * additional / removed extensions.
@@ -213,7 +213,7 @@ public class HostExcludesTestCase extends BuildConfigurationTestBase {
             // to the internal mpExtensions Set defined on this class.
             // Don't add here extensions supplied only by the wildfly-preview-feature-pack because we are not tracking different releases
             // of wildfly preview. In such a case, add them to previewExtensions set defined below.
-            return List.of();
+            return List.of("org.wildfly.extension.hashicorp-vault");
         }
 
         private static List<String> getCurrentRemovedExtensions() {
