@@ -409,11 +409,13 @@ your application's `web.xml` file, as shown in the example below:
 OpenID Connect Logout provides a single-sign-out feature that builds on the OpenID Connect authentication protocol.
 A user can initiate a logout and have all sessions terminated without having to actively log out from every client.
 
-A logout request whether through browser interaction or application-to-application
-communication initiates the process by contacting the OpenId Provider, who communicates with all relevant parties to terminate active sessions.
-There are different logout mechanisms for performing logout through the browser and through an application.  Front-Channel Logout is the browser based mechanism.
-Back-Channel Logout is the application-to-application based mechanism.
-Both Front-Channel and Back-Channel Logout are built on top of RP-Initiated Logout; it redirects the user's logout request to the OpenId Provider's logout endpoint, which then handles the logout process.
+Three separate logout mechanisms are supported:
+
+* RP-Initiated Logout starts when the user requests logout from the application. The application invalidates the local session and redirects the user to the OpenID Provider `end_session_endpoint`.
+* Front-Channel Logout is a browser-based mechanism in which the OpenID Provider notifies registered clients through the user's browser.
+* Back-Channel Logout is an application-to-application mechanism in which the OpenID Provider sends a logout token directly to registered client callback endpoints.
+
+Logout is enabled when at least one of `logout-path`, `logout-callback-path`, or `post-logout-redirect-uri` is configured.
 
 The configuration for this feature can be specified in the application's
 `oidc.json` file or in the `secure-deployment` resource of the `elytron-oidc-client` subsystem.
@@ -426,7 +428,7 @@ Here is an example of an `oidc.json` configuration file:
   "client-id" : "customer-portal",
   "provider-url" : "http://localhost:8180/auth/realms/demo",
   "ssl-required" : "external",
-  "logout-path" : "portal/logout",
+  "logout-path" : "/portal/logout",
   "logout-callback-path" :
    "http://localhost:8080/customer-portal/goodbye-page",
   "back-channel-logout-session-invalidation-limit" : 25,
@@ -436,11 +438,10 @@ Here is an example of an `oidc.json` configuration file:
 }
 ----
 
-* `logout-path`: The path component of a URL.  It is used to identify the URL that is used to start an OIDC logout request.
-* `logout-callback-path`: An absolute URI.  It will be called after logout has been executed.  It is used by Front-channel and Back-channel logout.  The URI must be registered with the OpenId Provider.
-* `post-logout-redirect-uri` : An absolute URI.  It will be called after logout has been executed.  It is used by RP-Initiated logout only.
- The URI must be registered with the OpenId Provider.
-* `logout-session-required` :  When set to `true` the `sid` and `iss` parameters will be enforced when processing front-channel logout requests and the `sid` will be enforced when processing back-channel requests.  If set to `false` these parameters will not be checked and any authenticated request will invalidate the local user session.
+* `logout-path`: Optional relative path (starting with `/`) for the application endpoint that starts RP-initiated logout. Configure only when users initiate logout from the application; not used by front-channel or back-channel logout. No default value. Must match the incoming request path exactly.
+* `logout-callback-path`: Relative path or absolute `http`/`https` URI where the OpenID Provider invokes front-channel or back-channel logout. Only the path component is matched against the incoming request, using exact path equality. No default value. Must be registered with the OpenID Provider. Optional attribute, but required in practice for front-channel or back-channel logout to work.
+* `post-logout-redirect-uri`: Optional absolute URI sent to the provider `end_session_endpoint` as `post_logout_redirect_uri` during RP-initiated logout. Must be registered with the OpenID Provider.
+* `logout-session-required`: When true (default), front-channel logout validates the provider sid against the ID token sid claim and enforces iss. When false, front-channel logout skips those checks and invalidates the local session on the callback request. For back-channel logout to be executed, the value must be `true`. When value is `false`, the `back-channel logout is rejected with HTTP 400.
 * `back-channel-logout-session-invalidation-limit`: The maximum size for a bounded map when marking sessions for invalidation during back-channel logout. Once this maximum size has been reached, the eldest entry will be removed.  The default size is 16.
 
 The following example shows how to add configuration to the _elytron-oidc-client_ subsystem.
@@ -451,7 +452,7 @@ The following example shows how to add configuration to the _elytron-oidc-client
     <secure-deployment name="customer-portal.war">
         <provider>keycloak</provider>
         <client-id>customer-portal</client-id>
-        <logout-path>portal/logout</logout-path>
+        <logout-path>/portal/logout</logout-path>
         <logout-callback-path>http://localhost:8080/customer-portal/goodbye-page</logout-callback-path>
         <back-channel-logout-session-invalidation-limit>25</back-channel-logout-session-invalidation-limit>
     </secure-deployment>
@@ -459,17 +460,7 @@ The following example shows how to add configuration to the _elytron-oidc-client
 ----
 
 
-NOTE: This is a preview level feature; the WildFly server's stability level must be set to `preview`
-or lower to enable it. The stability level must not be changed to `community` or `default` after configuring the
-`logout` attributes. For more information about the stability levels of the WildFly server, please refer to the
-link:Admin_Guide{outfilesuffix}[Admin Guide], particularly the
-link:Admin_Guide{outfilesuffix}#Feature_stability_levels[Feature stability levels] section.
-
 NOTE: If both the deployment and subsystem configuration are present, then the subsystem configuration will override the deployment values.
-----
-----
-
-
 
 include::Identity_Propagation.adoc[]
 
