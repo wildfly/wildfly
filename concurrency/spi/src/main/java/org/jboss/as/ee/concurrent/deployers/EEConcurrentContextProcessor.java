@@ -93,9 +93,9 @@ public class EEConcurrentContextProcessor implements DeploymentUnitProcessor {
     private void processModuleDescription(final EEModuleDescription moduleDescription, DeploymentUnit deploymentUnit, DeploymentPhaseContext phaseContext, ServiceName localTransactionProviderCapabilityServiceName) {
         final ConcurrentContext concurrentContext = new ConcurrentContext();
         // setup context
-        setupConcurrentContext(concurrentContext, moduleDescription.getApplicationName(), moduleDescription.getModuleName(), null, deploymentUnit.getAttachment(MODULE).getClassLoader(), moduleDescription.getNamespaceContextSelector(), deploymentUnit, phaseContext.getServiceTarget(), localTransactionProviderCapabilityServiceName);
+        final ServiceName serviceName = setupConcurrentContext(concurrentContext, moduleDescription.getApplicationName(), moduleDescription.getModuleName(), null, deploymentUnit.getAttachment(MODULE).getClassLoader(), moduleDescription.getNamespaceContextSelector(), deploymentUnit, phaseContext.getServiceTarget(), localTransactionProviderCapabilityServiceName);
         // attach setup action
-        final ConcurrentContextSetupAction setupAction = new ConcurrentContextSetupAction(concurrentContext);
+        final ConcurrentContextSetupAction setupAction = new ConcurrentContextSetupAction(concurrentContext, serviceName);
         deploymentUnit.putAttachment(ConcurrencyAttachments.CONCURRENT_CONTEXT_SETUP_ACTION, setupAction);
         deploymentUnit.addToAttachmentList(Attachments.WEB_SETUP_ACTIONS, setupAction);
     }
@@ -113,7 +113,8 @@ public class EEConcurrentContextProcessor implements DeploymentUnitProcessor {
                     }
                 }
                 // setup context
-                setupConcurrentContext(concurrentContext, description.getApplicationName(), description.getModuleName(), description.getComponentName(), configuration.getModuleClassLoader(), configuration.getNamespaceContextSelector(), context.getDeploymentUnit(), context.getServiceTarget(), localTransactionProviderCapabilityServiceName);
+                final ServiceName serviceName = setupConcurrentContext(concurrentContext, description.getApplicationName(), description.getModuleName(), description.getComponentName(), configuration.getModuleClassLoader(), configuration.getNamespaceContextSelector(), context.getDeploymentUnit(), context.getServiceTarget(), localTransactionProviderCapabilityServiceName);
+                componentDescription.addDependency(serviceName);
                 // add the interceptor which manages the concurrent context
                 final ConcurrentContextInterceptor interceptor = new ConcurrentContextInterceptor(concurrentContext);
                 final InterceptorFactory interceptorFactory = new ImmediateInterceptorFactory(interceptor);
@@ -141,7 +142,7 @@ public class EEConcurrentContextProcessor implements DeploymentUnitProcessor {
      * @param serviceTarget
      * @param localTransactionProviderCapabilityServiceName the service name of the local tx provider capability. If not present this param should be null
      */
-    private void setupConcurrentContext(ConcurrentContext concurrentContext, String applicationName, String moduleName, String componentName, ClassLoader moduleClassLoader, NamespaceContextSelector namespaceContextSelector, DeploymentUnit deploymentUnit, ServiceTarget serviceTarget, ServiceName localTransactionProviderCapabilityServiceName) {
+    private ServiceName setupConcurrentContext(ConcurrentContext concurrentContext, String applicationName, String moduleName, String componentName, ClassLoader moduleClassLoader, NamespaceContextSelector namespaceContextSelector, DeploymentUnit deploymentUnit, ServiceTarget serviceTarget, ServiceName localTransactionProviderCapabilityServiceName) {
         // add default factories
         concurrentContext.addFactory(new NamingContextHandleFactory(namespaceContextSelector, deploymentUnit.getServiceName()));
         concurrentContext.addFactory(new ClassLoaderContextHandleFactory(moduleClassLoader));
@@ -164,6 +165,7 @@ public class EEConcurrentContextProcessor implements DeploymentUnitProcessor {
             serviceBuilder.requires(localTransactionProviderCapabilityServiceName);
         }
         serviceBuilder.install();
+        return serviceName;
     }
 
     @Override

@@ -18,7 +18,6 @@ import org.jboss.msc.service.StopContext;
 public class ConcurrentContextService implements Service<ConcurrentContext> {
 
     private final ConcurrentContext concurrentContext;
-    private volatile boolean started;
 
     public ConcurrentContextService(ConcurrentContext concurrentContext) {
         this.concurrentContext = concurrentContext;
@@ -26,18 +25,17 @@ public class ConcurrentContextService implements Service<ConcurrentContext> {
 
     @Override
     public void start(StartContext context) throws StartException {
-        started = true;
         concurrentContext.setServiceName(context.getController().getName());
     }
 
     @Override
     public void stop(StopContext context) {
-        started = false;
+        concurrentContext.setServiceName(null);
     }
 
     @Override
     public ConcurrentContext getValue() throws IllegalStateException, IllegalArgumentException {
-        if(!started) {
+        if(concurrentContext.getServiceName() == null) {
             throw EeLogger.ROOT_LOGGER.serviceNotStarted();
         }
         return concurrentContext;
