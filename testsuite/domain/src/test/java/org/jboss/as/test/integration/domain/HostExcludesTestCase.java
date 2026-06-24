@@ -72,7 +72,7 @@ public class HostExcludesTestCase extends BuildConfigurationTestBase {
     private final boolean isFullDistribution = AssumeTestGroupUtil.isFullDistribution();
     private final boolean isPreviewGalleonPack = AssumeTestGroupUtil.isWildFlyPreview();
 
-    private static final String MAJOR = "37.";
+    private static final String MAJOR = "41.";
 
     /**
      * Maintains the list of expected extensions for each host-exclude name for previous releases.
@@ -206,7 +206,11 @@ public class HostExcludesTestCase extends BuildConfigurationTestBase {
         WILDFLY_34_0("WildFly34.0", WILDFLY_33_0, List.of(), List.of(), true),
         WILDFLY_35_0("WildFly35.0", WILDFLY_34_0, List.of("org.wildfly.extension.jakarta.data"), List.of(), true),
         WILDFLY_36_0("WildFly36.0", WILDFLY_35_0, List.of(), List.of(), true),
-        CURRENT(MAJOR, WILDFLY_36_0, getCurrentAddedExtensions(), getCurrentRemovedExtensions(), true);
+        WILDFLY_37_0("WildFly36.0", WILDFLY_36_0, List.of(), List.of(), true),
+        WILDFLY_38_0("WildFly36.0", WILDFLY_37_0, List.of(), List.of(), true),
+        WILDFLY_39_0("WildFly36.0", WILDFLY_38_0, List.of(), List.of(), true),
+        WILDFLY_40_0("WildFly36.0", WILDFLY_39_0, List.of(), List.of(), true),
+        CURRENT(MAJOR, WILDFLY_40_0, getCurrentAddedExtensions(), getCurrentRemovedExtensions(), true);
 
         private static List<String> getCurrentAddedExtensions() {
             // If an extension is added to this list, also check if it is supplied only by wildfly-galleon-pack. If so, add it also
