@@ -5,8 +5,7 @@
 package org.jboss.as.test.integration.security.common;
 
 import static jakarta.servlet.http.HttpServletResponse.SC_UNAUTHORIZED;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -311,7 +310,7 @@ public class Utils extends CoreUtils {
             // We should get the Login Page
             StatusLine statusLine = response.getStatusLine();
 
-            assertEquals(200, statusLine.getStatusCode());
+            assertThat(statusLine.getStatusCode()).isEqualTo(200);
 
             // We should now login with the user name and password
             HttpPost httpost = new HttpPost(URL + "/j_security_check");
@@ -329,7 +328,7 @@ public class Utils extends CoreUtils {
             statusLine = response.getStatusLine();
 
             // Post authentication - we have a 302
-            assertEquals(302, statusLine.getStatusCode());
+            assertThat(statusLine.getStatusCode()).isEqualTo(302);
             Header locationHeader = response.getFirstHeader("Location");
             String location = locationHeader.getValue();
 
@@ -341,7 +340,7 @@ public class Utils extends CoreUtils {
 
             // Either the authentication passed or failed based on the expected status code
             statusLine = response.getStatusLine();
-            assertEquals(expectedStatusCode, statusLine.getStatusCode());
+            assertThat(statusLine.getStatusCode()).isEqualTo(expectedStatusCode);
         }
     }
 
@@ -397,7 +396,7 @@ public class Utils extends CoreUtils {
         int statusCode = response.getStatusLine().getStatusCode();
         LOGGER.trace("Request to: " + url + " responds: " + statusCode);
 
-        assertEquals("Unexpected status code", expectedStatusCode, statusCode);
+        assertThat(statusCode).as("Unexpected status code").isEqualTo(expectedStatusCode);
 
         HttpEntity entity = response.getEntity();
         if (entity != null) {
@@ -457,7 +456,7 @@ public class Utils extends CoreUtils {
             HttpResponse response = httpClient.execute(httpGet);
             int statusCode = response.getStatusLine().getStatusCode();
             if (HttpServletResponse.SC_UNAUTHORIZED != statusCode || StringUtils.isEmpty(user)) {
-                assertEquals("Unexpected HTTP response status code.", expectedStatusCode, statusCode);
+                assertThat(statusCode).as("Unexpected HTTP response status code.").isEqualTo(expectedStatusCode);
                 return EntityUtils.toString(response.getEntity());
             }
             if (LOGGER.isDebugEnabled()) {
@@ -475,7 +474,7 @@ public class Utils extends CoreUtils {
             //enable auth
             response = httpClient.execute(httpGet, hc);
             statusCode = response.getStatusLine().getStatusCode();
-            assertEquals("Unexpected status code returned after the authentication.", expectedStatusCode, statusCode);
+            assertThat(statusCode).as("Unexpected status code returned after the authentication.").isEqualTo(expectedStatusCode);
 
             if (checkFollowupAuthState) {
                 // Let's disable authentication for this client as we already have all the context necessary to be
@@ -486,8 +485,7 @@ public class Utils extends CoreUtils {
                 httpGet.setConfig(reqConf);
                 response = httpClient.execute(httpGet, hc);
                 statusCode = response.getStatusLine().getStatusCode();
-                assertEquals("Unexpected status code returned after the authentication.", HttpURLConnection.HTTP_OK,
-                        statusCode);
+                assertThat(statusCode).as("Unexpected status code returned after the authentication.").isEqualTo(HttpURLConnection.HTTP_OK);
             }
 
             return EntityUtils.toString(response.getEntity());
@@ -515,10 +513,9 @@ public class Utils extends CoreUtils {
         try (CloseableHttpClient httpClient = HttpClientBuilder.create().setRedirectStrategy(REDIRECT_STRATEGY).build()) {
             final HttpGet httpGet = new HttpGet(url.toURI());
             HttpResponse response = httpClient.execute(httpGet);
-            assertEquals("Unexpected HTTP response status code.", SC_UNAUTHORIZED, response.getStatusLine().getStatusCode());
+            assertThat(response.getStatusLine().getStatusCode()).as("Unexpected HTTP response status code.").isEqualTo(SC_UNAUTHORIZED);
             Header[] authenticateHeaders = response.getHeaders("WWW-Authenticate");
-            assertTrue("Expected WWW-Authenticate header was not present in the HTTP response",
-                    authenticateHeaders != null && authenticateHeaders.length > 0);
+            assertThat(authenticateHeaders != null && authenticateHeaders.length > 0).as("Expected WWW-Authenticate header was not present in the HTTP response").isTrue();
             boolean bearerAuthnHeaderFound = false;
             for (Header header : authenticateHeaders) {
                 final String headerVal = header.getValue();
@@ -527,8 +524,7 @@ public class Utils extends CoreUtils {
                     break;
                 }
             }
-            assertTrue("WWW-Authenticate response header didn't request expected Bearer token authentication",
-                    bearerAuthnHeaderFound);
+            assertThat(bearerAuthnHeaderFound).as("WWW-Authenticate response header didn't request expected Bearer token authentication").isTrue();
             HttpEntity entity = response.getEntity();
             if (entity != null) {
                 EntityUtils.consume(entity);
@@ -540,8 +536,7 @@ public class Utils extends CoreUtils {
 
             httpGet.addHeader("Authorization", "Bearer " + token);
             response = httpClient.execute(httpGet);
-            assertEquals("Unexpected status code returned after the authentication.", expectedStatusCode,
-                    response.getStatusLine().getStatusCode());
+            assertThat(response.getStatusLine().getStatusCode()).as("Unexpected status code returned after the authentication.").isEqualTo(expectedStatusCode);
             return EntityUtils.toString(response.getEntity());
         }
     }
@@ -695,7 +690,7 @@ public class Utils extends CoreUtils {
             final HttpGet httpget = new HttpGet(uri);
             final HttpResponse response = httpClient.execute(httpget);
             int statusCode = response.getStatusLine().getStatusCode();
-            assertEquals("Unexpected status code in HTTP response.", expectedStatusCode, statusCode);
+            assertThat(statusCode).as("Unexpected status code in HTTP response.").isEqualTo(expectedStatusCode);
             return EntityUtils.toString(response.getEntity());
         }
     }

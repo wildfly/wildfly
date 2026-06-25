@@ -5,33 +5,8 @@
 
 package org.jboss.as.test.integration.management.base;
 
-import org.jboss.arquillian.container.test.api.ContainerController;
-import org.jboss.arquillian.test.api.ArquillianResource;
-import org.jboss.as.arquillian.container.ManagementClient;
-import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.test.integration.management.util.MgmtOperationException;
-import org.jboss.as.test.shared.ServerReload;
-import org.jboss.as.test.shared.TestSuiteEnvironment;
-import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.ModelType;
-import org.jboss.dmr.Property;
-import org.jboss.dmr.ValueExpression;
-import org.jboss.logging.Logger;
-import org.junit.Assert;
-
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.EnumSet;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Set;
-
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.fail;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ACCESS_TYPE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ALTERNATIVES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ATTRIBUTES;
@@ -51,6 +26,32 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VAL
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
 import static org.jboss.as.test.integration.domain.management.util.DomainTestUtils.createOperation;
 import static org.jboss.as.test.integration.domain.management.util.DomainTestUtils.executeForResult;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.EnumSet;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Set;
+
+import org.jboss.arquillian.container.test.api.ContainerController;
+import org.jboss.arquillian.test.api.ArquillianResource;
+import org.jboss.as.arquillian.container.ManagementClient;
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.test.integration.management.util.MgmtOperationException;
+import org.jboss.as.test.shared.ServerReload;
+import org.jboss.as.test.shared.TestSuiteEnvironment;
+import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.ModelType;
+import org.jboss.dmr.Property;
+import org.jboss.dmr.ValueExpression;
+import org.jboss.logging.Logger;
 
 /**
  * Smoke test of expression support.
@@ -659,7 +660,7 @@ public abstract class AbstractExpressionSupportTestCase {
         int start = text.indexOf("${");
         if (start > -1) {
             if (text.indexOf("}") > start) {
-                Assert.fail(address + " attribute " + attrName + " is storing an unconverted expression: " + text);
+                fail(address + " attribute " + attrName + " is storing an unconverted expression: " + text);
             }
         }
     }
@@ -716,17 +717,18 @@ public abstract class AbstractExpressionSupportTestCase {
     private void validateAttributeValue(PathAddress address, String attrName, ModelNode expectedValue, ModelNode modelValue) {
         switch (expectedValue.getType()) {
             case EXPRESSION: {
-                Assert.assertEquals(address + " attribute " + attrName + " value " + modelValue + " is an unconverted expression",
-                        expectedValue, modelValue);
+                assertThat(modelValue).as(address + " attribute " + attrName + " value " + modelValue + " is an unconverted expression")
+                        .isEqualTo(expectedValue);
                 break;
             }
             case INT:
             case LONG:
-                Assert.assertTrue(address + " attribute " + attrName + " is a valid type", modelValue.getType() == ModelType.INT || modelValue.getType() == ModelType.LONG);
-                Assert.assertEquals(address + " -- " + attrName, expectedValue.asLong(), modelValue.asLong());
+                assertThat(modelValue.getType() == ModelType.INT || modelValue.getType() == ModelType.LONG)
+                        .as(address + " attribute " + attrName + " is a valid type").isTrue();
+                assertThat(modelValue.asLong()).as(address + " -- " + attrName).isEqualTo(expectedValue.asLong());
                 break;
             default: {
-                Assert.assertEquals(address + " -- " + attrName, expectedValue, modelValue);
+                assertThat(modelValue).as(address + " -- " + attrName).isEqualTo(expectedValue);
             }
         }
     }

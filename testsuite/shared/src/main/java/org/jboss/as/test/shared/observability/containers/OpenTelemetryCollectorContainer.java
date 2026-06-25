@@ -4,7 +4,7 @@
  */
 package org.jboss.as.test.shared.observability.containers;
 
-import static org.junit.Assert.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.time.Duration;
 import java.time.Instant;
@@ -27,7 +27,6 @@ import org.jboss.as.test.shared.observability.signals.PrometheusMetric;
 import org.jboss.as.test.shared.observability.signals.jaeger.JaegerTrace;
 import org.jboss.as.test.shared.observability.signals.logs.CollectorLogRecordParser;
 import org.jboss.as.test.shared.observability.signals.logs.OpenTelemetryLogRecord;
-import org.junit.Assert;
 import org.testcontainers.utility.MountableFile;
 
 /**
@@ -255,10 +254,9 @@ public class OpenTelemetryCollectorContainer extends BaseContainer<OpenTelemetry
     @Deprecated
     public List<PrometheusMetric> fetchMetrics(String nameToMonitor) throws InterruptedException {
         return assertMetrics(prometheusMetrics -> {
-            assertTrue(
-                    String.format("Metric %s not seen in Prometheus within timeout.", nameToMonitor),
-                    prometheusMetrics.stream().anyMatch(x -> x.getKey().contains(nameToMonitor))
-            );
+            assertThat(prometheusMetrics.stream().anyMatch(x -> x.getKey().contains(nameToMonitor)))
+                    .as("Metric %s not seen in Prometheus within timeout.", nameToMonitor)
+                    .isTrue();
         });
     }
 

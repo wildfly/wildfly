@@ -89,8 +89,9 @@ public class PooledEJBLifecycleTestCase {
                 createPermissionsXmlAsset(new PropertyPermission("ts.timeout.factor", "read"),
                         new PropertyPermission("ts.preview", "read"),
                         new PropertyPermission("ts.bootable.preview", "read"),
-                        new PropertyPermission("preview-server-tests", "read")),
-                "jboss-permissions.xml");
+                        new PropertyPermission("preview-server-tests", "read"),
+                        new RuntimePermission("accessDeclaredMembers") // testing framework requirement
+                ), "jboss-permissions.xml");
         return archive;
     }
 

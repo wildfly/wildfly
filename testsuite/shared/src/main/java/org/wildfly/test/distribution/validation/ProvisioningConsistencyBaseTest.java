@@ -5,11 +5,10 @@
 
 package org.wildfly.test.distribution.validation;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.fail;
 import static org.jboss.as.test.shared.FileUtils.computeHash;
 import static org.jboss.as.test.shared.FileUtils.unzipFile;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 import java.io.File;
 import java.io.IOException;
@@ -27,8 +26,8 @@ import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.apache.commons.io.FileUtils;
+import org.assertj.core.api.Assumptions;
 import org.jboss.logging.Logger;
-import org.junit.Assume;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -81,7 +80,9 @@ public abstract class ProvisioningConsistencyBaseTest {
     private static void assumeJbossDistIsNotExternallySet() throws IOException {
         Path jbossDist = new File(System.getProperty("jboss.dist")).getCanonicalFile().toPath();
         Path defaultJbossDist = SOURCE_HOME.resolve(System.getProperty("build.output.dir"));
-        Assume.assumeTrue(jbossDist.equals(defaultJbossDist));
+        Assumptions.assumeThat(jbossDist.equals(defaultJbossDist))
+                .as("jboss.dist is externally set")
+                .isTrue();
     }
 
     /**
@@ -104,7 +105,7 @@ public abstract class ProvisioningConsistencyBaseTest {
                     Set<String> channelChildren = new TreeSet<>(Arrays.asList(Objects.requireNonNull(dir.toFile().list())));
                     channelChildren.remove(PROVISIONING);
                     Set<String> distChildren = new TreeSet<>(Arrays.asList(Objects.requireNonNull(distRoot.list())));
-                    assertEquals(dir.toString(), channelChildren, distChildren);
+                    assertThat(distChildren).as(dir.toString()).isEqualTo(channelChildren);
                     return FileVisitResult.CONTINUE;
                 } else if (dir.equals(INSTALLATION_METADATA)) {
                     installationMetadata.set(dir);
@@ -126,7 +127,7 @@ public abstract class ProvisioningConsistencyBaseTest {
                 } else {
                     File distDir = getDistFile(dir, true, true, errors);
                     if (distDir != null) {
-                        assertTrue(dir.toString(), Objects.deepEquals(dir.toFile().list(), distDir.list()));
+                        assertThat(Objects.deepEquals(dir.toFile().list(), distDir.list())).as(dir.toString()).isTrue();
                         return FileVisitResult.CONTINUE;
                     } else {
                         return FileVisitResult.SKIP_SUBTREE;
@@ -185,8 +186,8 @@ public abstract class ProvisioningConsistencyBaseTest {
         File test = path.toFile();
         File result = null;
         if (distRoot.equals(path)) {
-            assertTrue(path + " does not exist", test.exists());
-            assertTrue(path + " is not a directory", test.isDirectory());
+            assertThat(test.exists()).as(path + " does not exist").isTrue();
+            assertThat(test.isDirectory()).as(path + " is not a directory").isTrue();
             result = test;
         } else {
             if (exists) {
@@ -245,12 +246,12 @@ public abstract class ProvisioningConsistencyBaseTest {
                     File distRoot = getDistFile(currentRoot, dir, dist, true, true, errors);
                     Set<String> channelChildren = new TreeSet<>(Arrays.asList(Objects.requireNonNull(dir.toFile().list())));
                     Set<String> distChildren = new TreeSet<>(Arrays.asList(Objects.requireNonNull(distRoot.list())));
-                    assertEquals(dir.toString(), channelChildren, distChildren);
+                    assertThat(distChildren).as(dir.toString()).isEqualTo(channelChildren);
                     return FileVisitResult.CONTINUE;
                 } else {
                     File distDir = getDistFile(currentRoot, dir, dist, true, true, errors);
                     if (distDir != null) {
-                        assertTrue(dir.toString(), Objects.deepEquals(dir.toFile().list(), distDir.list()));
+                        assertThat(Objects.deepEquals(dir.toFile().list(), distDir.list())).as(dir.toString()).isTrue();
                         return FileVisitResult.CONTINUE;
                     } else {
                         return FileVisitResult.SKIP_SUBTREE;
