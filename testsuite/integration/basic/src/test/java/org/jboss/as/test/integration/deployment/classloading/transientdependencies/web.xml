@@ -5,10 +5,10 @@
   ~ SPDX-License-Identifier: Apache-2.0
   -->
 
-<web-app version="6.0"
+<web-app version="6.1"
          xmlns="https://jakarta.ee/xml/ns/jakartaee"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/web-app_6_0.xsd">
+         xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/web-app_6_1.xsd">
 
     <servlet>
         <servlet-name>Servlet</servlet-name>
