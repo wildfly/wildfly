@@ -56,7 +56,6 @@ class ProviderAttributeDefinitions {
             new SimpleAttributeDefinitionBuilder(ElytronOidcDescriptionConstants.PROVIDER_JWT_CLAIMS_TYP, ModelType.STRING, true)
                     .setAllowExpression(true)
                     .setValidator(new StringLengthValidator(1, Integer.MAX_VALUE, false, true))
-                    .setStability(Stability.PREVIEW)
                     .build();
 
     protected static final SimpleAttributeDefinition SSL_REQUIRED =
