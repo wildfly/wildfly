@@ -31,6 +31,12 @@
 
     <dependencies>
         <dependency>
+            <groupId>org.wildfly.arquillian</groupId>
+            <artifactId>wildfly-testing-tools</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
             <groupId>io.reactivex.rxjava2</groupId>
             <artifactId>rxjava</artifactId>
             <scope>test</scope>
