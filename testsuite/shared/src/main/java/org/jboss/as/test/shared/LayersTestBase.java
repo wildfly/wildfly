@@ -5,6 +5,8 @@
 
 package org.jboss.as.test.shared;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import java.io.File;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -16,7 +18,6 @@ import java.util.stream.Stream;
 
 import org.jboss.as.test.layers.LayersTest;
 import org.junit.AfterClass;
-import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -568,7 +569,7 @@ public abstract class LayersTestBase {
     @Test
     public void checkBannedModules() throws Exception {
         final HashMap<String, String> results = LayersTest.checkBannedModules(root, BANNED_MODULES_CONF);
-        Assert.assertTrue("The following banned modules were provisioned " + results, results.isEmpty());
+        assertThat(results).as("The following banned modules were provisioned").isEmpty();
     }
 
     /**

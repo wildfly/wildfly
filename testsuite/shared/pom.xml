@@ -48,6 +48,27 @@
     </dependencyManagement>
 
     <dependencies>
+        <!-- n.b. while this catch-all module is a dependency hell (e.g. JUnit 4 base classes and JUnit 5), fear not, this dependency is managed with * exclusion,
+         so anything used from a module that imports this still has to be explicit about its real dependencies.
+         All assertions in this module are `org.assertj` so they are reusable regardless of the actual testing framework. -->
+
+        <!-- Testing dependencies -->
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <version>${version.org.junit}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.assertj</groupId>
+            <artifactId>assertj-core</artifactId>
+            <scope>compile</scope>
+        </dependency>
 
         <dependency>
             <groupId>commons-codec</groupId>
@@ -124,11 +145,6 @@
         <dependency>
             <groupId>org.wildfly.arquillian</groupId>
             <artifactId>wildfly-arquillian-container-managed</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <scope>compile</scope>
         </dependency>
 
         <dependency>
@@ -286,21 +302,13 @@
             <scope>compile</scope>
         </dependency>
 
-        <!-- test -->
-        <dependency>
-            <groupId>org.junit.jupiter</groupId>
-            <artifactId>junit-jupiter</artifactId>
-            <version>${version.org.junit}</version>
-            <scope>test</scope>
-        </dependency>
-
     </dependencies>
 
     <build>
         <plugins>
             <plugin>
-                <!-- This enforcer.skip property was set to true in the properties. However this doesn't work if the
-                     property is passed on the command line. Therefore we need to explicitly skip it.
+                <!-- This enforcer.skip property was set to true in the properties. However, this doesn't work if the
+                     property is passed on the command line. Therefore, we need to explicitly skip it.
                 -->
                 <!-- Arquillian dependency versions -->
                 <artifactId>maven-enforcer-plugin</artifactId>
