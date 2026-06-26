@@ -23,7 +23,6 @@ import org.jboss.as.test.clustering.single.ejb.timer.passivation.bean.TimerTrack
 import org.jboss.as.test.clustering.single.ejb.timer.passivation.bean.TimerTrackerBean;
 import org.jboss.as.test.shared.ManagementServerSetupTask;
 import org.jboss.as.test.shared.TimeoutUtil;
-import org.jboss.as.version.Stability;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
@@ -45,7 +44,6 @@ public class IdleThresholdTimerPassivationTestCase {
     static class ServerSetupTask extends ManagementServerSetupTask {
         ServerSetupTask() {
             super(createContainerConfigurationBuilder()
-                    .requireStability(Stability.COMMUNITY)
                     .setupScript(createScriptBuilder()
                             .startBatch()
                             // These must be unset before using default timer management

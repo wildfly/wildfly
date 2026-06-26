@@ -150,7 +150,7 @@ public class DistributableWebDeploymentSchemaTestCase {
                 Assert.assertTrue(provider.getRouteLocatorProvider() instanceof NullRouteLocatorProvider);
             }
 
-            if (this.schema.since(DistributableWebDeploymentSchema.VERSION_5_0_COMMUNITY)) {
+            if (this.schema.since(DistributableWebDeploymentSchema.VERSION_6_0) || this.schema.since(DistributableWebDeploymentSchema.VERSION_5_0_COMMUNITY)) {
                 Assert.assertTrue(configuration.getIdleThreshold().isPresent());
                 Assert.assertEquals(Duration.ofMinutes(10), configuration.getIdleThreshold().get());
             }
