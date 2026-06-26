@@ -4,7 +4,6 @@
  */
 package org.jboss.as.clustering.jgroups;
 
-import java.nio.channels.spi.SelectorProvider;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -12,7 +11,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import javax.net.ssl.SSLContext;
+
 import org.jboss.as.network.SocketBinding;
+import org.jboss.as.network.SocketBindingManager;
 import org.jgroups.EmptyMessage;
 import org.jgroups.JChannel;
 import org.jgroups.Message;
@@ -99,12 +101,30 @@ public class JChannelFactory implements ChannelFactory {
 
         // Override the SocketFactory of the transport
         TP transport = (TP) protocols.get(0);
-        Optional<TLSConfiguration> sslConfiguration = this.configuration.getTransport().getSSLConfiguration();
+        SocketBindingManager manager = this.configuration.getTransport().getSocketBinding().getSocketBindings();
+        Optional<TLSConfiguration> tls = this.configuration.getTransport().getTLSConfiguration();
 
-        transport.setSocketFactory(sslConfiguration.isPresent() ?
-                new TLSManagedSocketFactory(SelectorProvider.provider(), this.configuration.getSocketBindingManager(), bindings, sslConfiguration.get()) :
-                new ManagedSocketFactory(SelectorProvider.provider(), this.configuration.getSocketBindingManager(), bindings)
-        );
+        transport.setSocketFactory(new ManagedSocketFactory(new ManagedSocketFactory.Configuration() {
+            @Override
+            public Map<String, SocketBinding> getSocketBindings() {
+                return Collections.unmodifiableMap(bindings);
+            }
+
+            @Override
+            public SocketBindingManager getSocketBindingManager() {
+                return manager;
+            }
+
+            @Override
+            public SSLContext getClientSSLContext() {
+                return tls.map(TLSConfiguration::getClientSSLContext).orElse(null);
+            }
+
+            @Override
+            public SSLContext getServerSSLContext() {
+                return tls.map(TLSConfiguration::getServerSSLContext).orElse(null);
+            }
+        }));
 
         JChannel channel = createChannel(protocols);
 
