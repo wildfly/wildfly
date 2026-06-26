@@ -19,5 +19,9 @@
         <module name="java.sql" export="true"/>
         <!-- Persistence integration with CDI needs the following CDI API -->
         <module name="jakarta.enterprise.api"/>
+        <!-- Weld needs these to define proxy classes in this module's classloader -->
+        <module name="org.jboss.weld.api" optional="true"/>
+        <module name="org.jboss.weld.core" optional="true"/>
+        <module name="org.jboss.weld.spi" optional="true"/>
     </dependencies>
 </module>
