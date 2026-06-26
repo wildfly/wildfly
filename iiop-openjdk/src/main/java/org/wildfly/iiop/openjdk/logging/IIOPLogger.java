@@ -452,4 +452,24 @@ public interface IIOPLogger extends BasicLogger {
     @Message(id = 135, value = "Authentication exception")
     NO_PERMISSION authenticationException(@Cause Exception cause);
 
+    @LogMessage(level = WARN)
+    @Message(id = 136, value = "Token length %d exceeds maximum allowed size %d")
+    void tokenLengthExceedsMaximum(int tokenLength, int maxSize);
+
+    @LogMessage(level = WARN)
+    @Message(id = 137, value = "Computed token length %d is invalid")
+    void invalidComputedTokenLength(int tokenLength);
+
+    @LogMessage(level = WARN)
+    @Message(id = 138, value = "Mechanism OID length %d exceeds maximum %d")
+    void mechanismOidLengthExceedsMaximum(int oidLength, int maxSize);
+
+    @LogMessage(level = WARN)
+    @Message(id = 139, value = "Mechanism OID length mismatch")
+    void mechanismOidLengthMismatch();
+
+    @LogMessage(level = WARN)
+    @Message(id = 140, value = "Name length %d exceeds maximum %d")
+    void nameLengthExceedsMaximum(int nameLength, int maxSize);
+
 }
