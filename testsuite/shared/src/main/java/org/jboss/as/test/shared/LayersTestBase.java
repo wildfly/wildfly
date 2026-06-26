@@ -255,7 +255,10 @@ public abstract class LayersTestBase {
     public static final String[] NOT_REFERENCED_STD_EE_LATEST = {
             // Only referenced by the unreferenced org.infinispan.query
             // In the legacy variant this is referenced by other Hibernate modules
-            "org.hibernate.commons-annotations"
+            "org.hibernate.commons-annotations",
+            "io.github.jopenlibs.vault-java-driver",
+            "org.wildfly.extension.hashicorp-vault",
+            "org.wildfly.security.elytron-hashicorp-vault"
     };
 
 
@@ -265,6 +268,9 @@ public abstract class LayersTestBase {
      * of the wildfly-ee feature-pack.
      */
     public static final String[] NOT_REFERENCED_STD_EE_LEGACY = {
+        "io.github.jopenlibs.vault-java-driver",
+        "org.wildfly.extension.hashicorp-vault",
+        "org.wildfly.security.elytron-hashicorp-vault"
     };
 
 
@@ -273,6 +279,9 @@ public abstract class LayersTestBase {
      * only when testing provisioning directly from any variant of the wildfly-ee feature-pack.
      */
     public static final String[] NOT_REFERENCED_WILDFLY_EE = {
+        "io.github.jopenlibs.vault-java-driver",
+        "org.wildfly.extension.hashicorp-vault",
+        "org.wildfly.security.elytron-hashicorp-vault"
     };
 
 
@@ -357,7 +366,10 @@ public abstract class LayersTestBase {
             "org.wildfly.extension.security.manager",
             // Not needed for WildFly as this module is effectively replaced by org.hibernate.models.hibernate-models
             "org.hibernate.commons-annotations",
-            "org.wildfly.extension.vertx"
+            "org.wildfly.extension.vertx",
+            "io.github.jopenlibs.vault-java-driver",
+            "org.wildfly.extension.hashicorp-vault",
+            "org.wildfly.security.elytron-hashicorp-vault"
     };
 
     /**

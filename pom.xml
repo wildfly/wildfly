@@ -583,6 +583,7 @@
         <version.org.wildfly.naming-client>2.0.1.Final</version.org.wildfly.naming-client>
         <version.org.wildfly.security.elytron-mp>2.0.0.Final</version.org.wildfly.security.elytron-mp>
         <version.org.wildfly.security.elytron-tests-common>2.4.2.Final</version.org.wildfly.security.elytron-tests-common>
+        <version.org.wildfly.security.vault>1.1.0.CR1</version.org.wildfly.security.vault>
         <version.org.wildfly.transaction.client>3.0.5.Final</version.org.wildfly.transaction.client>
         <version.org.wildfly.wildfly-application-development-guide>1.0.0.Final</version.org.wildfly.wildfly-application-development-guide>
         <preview.version.org.wildfly.wildfly-ee-9-deployment-transformer>2.0.0.Final</preview.version.org.wildfly.wildfly-ee-9-deployment-transformer>
@@ -720,6 +721,13 @@
                 <artifactId>${latest.ee.feature.pack.artifactId}</artifactId>
                 <version>${ee.maven.version}</version>
                 <type>zip</type>
+            </dependency>
+
+            <dependency>
+                <groupId>org.wildfly.security.vault</groupId>
+                <artifactId>wildfly-vault-galleon-shared</artifactId>
+                <version>${version.org.wildfly.security.vault}</version>
+                <type>pom</type>
             </dependency>
 
             <dependency>
