@@ -60,6 +60,9 @@
         <!-- Disable the default surefire test execution. -->
         <surefire.default-test.phase>none</surefire.default-test.phase>
 
+        <!-- Sigh. CDI 5 changed their maven GAs, so we have more fun with profiles. Grumble, grumble. -->
+        <cdi.el.api.artifactId>jakarta.enterprise.cdi-el-api</cdi.el.api.artifactId>
+
         <modular.jdk.testsuite.args>${modular.jdk.args} --add-opens=java.base/javax.crypto=ALL-UNNAMED --add-opens=java.base/sun.security.validator=ALL-UNNAMED --add-opens=java.base/sun.security.x509=ALL-UNNAMED --add-opens=java.base/sun.security.util=ALL-UNNAMED  --add-opens=java.xml/com.sun.org.apache.xalan.internal.xsltc.trax=ALL-UNNAMED</modular.jdk.testsuite.args>
     </properties>
 
@@ -125,8 +128,8 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>jakarta.enterprise</groupId>
-            <artifactId>jakarta.enterprise.cdi-api</artifactId>
+            <groupId>${cdi.api.groupId}</groupId>
+            <artifactId>${cdi.api.artifactId}</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -3552,10 +3555,6 @@
             </activation>
             <dependencies>
                 <dependency>
-                    <groupId>jakarta.enterprise</groupId>
-                    <artifactId>jakarta.enterprise.cdi-el-api</artifactId>
-                </dependency>
-                <dependency>
                     <groupId>org.wildfly.arquillian</groupId>
                     <artifactId>wildfly-arquillian-container-bootable</artifactId>
                 </dependency>
@@ -3693,6 +3692,7 @@
         </profile>
 
         <!-- Test against WildFly Preview -->
+
         <profile>
             <id>preview.test.profile</id>
             <activation>
@@ -3704,12 +3704,6 @@
                 <!-- The following is needed by PooledEJBLifecycleTestCase due to AssumeTestGroupUtil inside the test -->
                 <extra.server.jvm.args>-Dts.preview</extra.server.jvm.args>
             </properties>
-            <dependencies>
-                <dependency>
-                    <groupId>jakarta.enterprise</groupId>
-                    <artifactId>jakarta.enterprise.cdi-el-api</artifactId>
-                </dependency>
-            </dependencies>
             <build>
                 <plugins>
                     <plugin>
@@ -3804,6 +3798,18 @@
         </profile>
         <!-- Dependencies only to be used when not testing installations using the legacy EE FP -->
         <profile>
+            <id>ee-12-deps</id>
+            <activation>
+                <property>
+                    <name>preview-server-tests</name>
+                </property>
+            </activation>
+            <properties>
+                <cdi.el.api.artifactId>jakarta.cdi-el-api</cdi.el.api.artifactId>
+            </properties>
+        </profile>
+
+        <profile>
             <id>latest.ee.specific.dependencies</id>
             <activation>
                 <!-- Note: an analogous profile with the same id in some production code modules
@@ -3816,8 +3822,8 @@
             </activation>
             <dependencies>
                 <dependency>
-                    <groupId>jakarta.enterprise</groupId>
-                    <artifactId>jakarta.enterprise.cdi-el-api</artifactId>
+                    <groupId>${cdi.api.groupId}</groupId>
+                    <artifactId>${cdi.el.api.artifactId}</artifactId>
                     <scope>test</scope>
                 </dependency>
             </dependencies>

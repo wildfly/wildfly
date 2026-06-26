@@ -215,6 +215,10 @@
         <!-- properties to enable plugin executions -->
         <ts.bootable-jar-packaging.phase>none</ts.bootable-jar-packaging.phase>
 
+        <!-- Sigh. CDI 5 changed their maven GAs, so we have more fun with profiles. Grumble, grumble. -->
+        <cdi.api.groupId>jakarta.enterprise</cdi.api.groupId>
+        <cdi.api.artifactId>jakarta.enterprise.cdi-api</cdi.api.artifactId>
+
     </properties>
 
     <dependencyManagement>
@@ -240,11 +244,6 @@
         <dependency>
             <groupId>jakarta.inject</groupId>
             <artifactId>jakarta.inject-api</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>jakarta.enterprise</groupId>
-            <artifactId>jakarta.enterprise.cdi-api</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -833,6 +832,9 @@
                 <additional.ee.test.source>ee11</additional.ee.test.source>
                 <!-- Use the EE 11+ EL API artifact -->
                 <jakarta.el.api.artifactId>jakarta.el-api</jakarta.el.api.artifactId>
+                <!-- Use the EE 12 CDI artifacts -->
+                <cdi.api.groupId>jakarta.cdi</cdi.api.groupId>
+                <cdi.api.artifactId>jakarta.cdi-api</cdi.api.artifactId>
             </properties>
         </profile>
 
