@@ -11,6 +11,7 @@
         <artifact name="${io.opentelemetry.instrumentation:opentelemetry-instrumentation-api}"/>
         <artifact name="${io.opentelemetry.instrumentation:opentelemetry-instrumentation-api-incubator}"/>
         <artifact name="${io.opentelemetry.instrumentation:opentelemetry-runtime-telemetry-java8}"/>
+        <artifact name="${io.opentelemetry.instrumentation:opentelemetry-runtime-telemetry}"/>
     </resources>
 
     <dependencies>
