@@ -68,5 +68,8 @@
         <stack name="unsecured">
             <transport type="TCP" socket-binding="some-binding"/>
         </stack>
+        <stack name="nio2">
+            <transport type="TCP_NIO2" socket-binding="some-binding"/>
+        </stack>
     </stacks>
 </subsystem>
