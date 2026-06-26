@@ -6,7 +6,7 @@
 
 <feature-group-spec name="domain-ha-profile" xmlns="urn:jboss:galleon:feature-group:1.0">
 
-    <feature-group name="servlet-unsecured-domain-profile">
+    <feature-group name="servlet-domain-profile">
         <exclude spec="subsystem.jmx.remoting-connector.jmx"/>
     </feature-group>
 
