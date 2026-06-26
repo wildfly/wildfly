@@ -21,7 +21,7 @@ import org.junit.runner.RunWith;
 import org.wildfly.test.integration.elytron.util.WelcomeContent;
 
 /**
- * Tests to check OCSP feature using XiPKI OCSP responder.
+ * Tests to check OCSP feature using BouncyCastle OCSP responder.
  *
  * @author Jan Stourac <jstourac@redhat.com>
  */
