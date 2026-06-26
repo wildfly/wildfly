@@ -1289,6 +1289,7 @@
                                         <!-- Uses ClusterTopologyRetriever EJB -->
                                         <exclude>org/jboss/as/test/clustering/cluster/dispatcher/CommandDispatcherTestCase.java</exclude>
                                         <exclude>org/jboss/as/test/clustering/cluster/group/GroupListenerTestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/clustering/cluster/group/JGroupsChannelRuntimeOperationsTestCase.java</exclude>
                                         <!-- Uses ServiceProviderRetriever EJB -->
                                         <exclude>org/jboss/as/test/clustering/cluster/provider/ServiceProviderRegistrationTestCase.java</exclude>
                                         <!-- Uses RegistryRetriever EJB -->
