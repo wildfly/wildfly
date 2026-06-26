@@ -1,193 +1,78 @@
-/*
- * Copyright The WildFly Authors
- * SPDX-License-Identifier: Apache-2.0
- */
-
 package org.jboss.as.ejb3.remote;
 
-import java.util.AbstractMap;
-import java.util.AbstractMap.SimpleImmutableEntry;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.Executor;
+import java.util.function.Consumer;
 
-import org.jboss.as.ejb3.deployment.DeploymentRepository;
-import org.jboss.as.network.ClientMapping;
-import org.jboss.as.network.ProtocolSocketBinding;
-import org.jboss.as.server.ServerEnvironment;
-import org.jboss.ejb.client.Affinity;
-import org.jboss.ejb.client.EJBClientContext;
-import org.jboss.ejb.client.EJBModuleIdentifier;
 import org.jboss.ejb.server.Association;
-import org.jboss.ejb.server.ListenerHandle;
-import org.jboss.ejb.server.ModuleAvailabilityListener;
-import org.jboss.msc.inject.Injector;
-import org.jboss.msc.service.Service;
+import org.jboss.msc.Service;
+import org.jboss.logging.Logger;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
-import org.jboss.msc.value.InjectedValue;
-import org.jboss.msc.value.Value;
-import org.wildfly.clustering.server.Group;
-import org.wildfly.clustering.server.GroupMember;
-import org.wildfly.clustering.server.registry.Registry;
-import org.wildfly.discovery.AttributeValue;
-import org.wildfly.discovery.ServiceURL;
-import org.wildfly.discovery.impl.MutableDiscoveryProvider;
-import org.wildfly.discovery.spi.DiscoveryProvider;
-import org.wildfly.discovery.spi.DiscoveryRequest;
 
 /**
- * The Jakarta Enterprise Beans server association service.
+ * This service provides an instance of Association which can be swapped between one of two
+ * Association instances:
+ * - a NoDeploymentsAssociation instance which is to be used when there are no @Remote beans deployed
+ * - a DeploymentsAssociation instance which is to be used when @Remote beans are deployed
  *
- * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
+ * The need for such a service which can "swap out" different instances of Association is to
+ * prevent cache-based service from being started `at boot time, when no deployments are available.
  */
-public final class AssociationService implements Service<AssociationService> {
+public final class AssociationService implements Service {
 
+    public static Logger logger = Logger.getLogger("org.jboss.as.ejb3.remote.AssociationService");
+
+    // this should be "jboss.ejb.association"
     public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("ejb", "association");
 
-    private final InjectedValue<DeploymentRepository> deploymentRepositoryInjector = new InjectedValue<>();
-    @SuppressWarnings("rawtypes")
-    private final List<Map.Entry<Value<ProtocolSocketBinding>, Value<Registry>>> clientMappingsRegistries = new LinkedList<>();
-    private final InjectedValue<ServerEnvironment> serverEnvironmentServiceInjector = new InjectedValue<>();
+    private final Consumer<AssociationService> associationServiceConsumer;
+    private volatile DelegatingAssociationImpl value;
+    private volatile Executor executor;
 
-    private final Object serviceLock = new Object();
-    private final Set<EJBModuleIdentifier> ourModules = new HashSet<>();
-    private volatile ServiceURL cachedServiceURL;
-
-    private final MutableDiscoveryProvider mutableDiscoveryProvider = new MutableDiscoveryProvider();
-
-    private volatile AssociationImpl value;
-    private volatile ListenerHandle moduleAvailabilityListener;
+    public AssociationService(final Consumer<AssociationService> associationServiceConsumer) {
+        this.associationServiceConsumer = associationServiceConsumer;
+    }
 
     @Override
     public void start(final StartContext context) throws StartException {
-        // todo suspendController
-        //noinspection unchecked
-        List<Map.Entry<ProtocolSocketBinding, Registry<GroupMember, String, List<ClientMapping>>>> clientMappingsRegistries = this.clientMappingsRegistries.isEmpty() ? Collections.emptyList() : new ArrayList<>(this.clientMappingsRegistries.size());
-        for (Map.Entry<Value<ProtocolSocketBinding>, Value<Registry>> entry : this.clientMappingsRegistries) {
-            clientMappingsRegistries.add(new SimpleImmutableEntry<>(entry.getKey().getValue(), entry.getValue().getValue()));
-        }
-        value = new AssociationImpl(deploymentRepositoryInjector.getValue(), clientMappingsRegistries);
-
-        String ourNodeName = serverEnvironmentServiceInjector.getValue().getNodeName();
-
-        // track deployments at an association level for local dispatchers to utilize
-        moduleAvailabilityListener = value.registerModuleAvailabilityListener(new ModuleAvailabilityListener() {
-
-            public void moduleAvailable(final List<EJBModuleIdentifier> modules) {
-                synchronized (serviceLock) {
-                    ourModules.addAll(modules);
-                    cachedServiceURL = null;
-                }
-            }
-
-            public void moduleUnavailable(final List<EJBModuleIdentifier> modules) {
-                synchronized (serviceLock) {
-                    ourModules.removeAll(modules);
-                    cachedServiceURL = null;
-                }
-            }
-        });
-        // do this last
-        mutableDiscoveryProvider.setDiscoveryProvider((serviceType, filterSpec, result) -> {
-            ServiceURL serviceURL = this.cachedServiceURL;
-            if (serviceURL == null) {
-                synchronized (serviceLock) {
-                    serviceURL = this.cachedServiceURL;
-                    if (serviceURL == null) {
-                        ServiceURL.Builder b = new ServiceURL.Builder();
-                        b.setUri(Affinity.LOCAL.getUri()).setAbstractType("ejb").setAbstractTypeAuthority("jboss");
-                        b.addAttribute(EJBClientContext.FILTER_ATTR_NODE, AttributeValue.fromString(ourNodeName));
-                        for (Map.Entry<ProtocolSocketBinding, Registry<GroupMember, String, List<ClientMapping>>> entry : clientMappingsRegistries) {
-                            Group<GroupMember> group = entry.getValue().getGroup();
-                            if (!group.isSingleton()) {
-                                b.addAttribute(EJBClientContext.FILTER_ATTR_CLUSTER, AttributeValue.fromString(group.getName()));
-                            }
-                        }
-                        for (EJBModuleIdentifier moduleIdentifier : ourModules) {
-                            final String appName = moduleIdentifier.getAppName();
-                            final String moduleName = moduleIdentifier.getModuleName();
-                            final String distinctName = moduleIdentifier.getDistinctName();
-                            if (distinctName.isEmpty()) {
-                                if (appName.isEmpty()) {
-                                    b.addAttribute(EJBClientContext.FILTER_ATTR_EJB_MODULE, AttributeValue.fromString(moduleName));
-                                } else {
-                                    b.addAttribute(EJBClientContext.FILTER_ATTR_EJB_MODULE, AttributeValue.fromString(appName + '/' + moduleName));
-                                }
-                            } else {
-                                if (appName.isEmpty()) {
-                                    b.addAttribute(EJBClientContext.FILTER_ATTR_EJB_MODULE_DISTINCT, AttributeValue.fromString(moduleName + '/' + distinctName));
-                                } else {
-                                    b.addAttribute(EJBClientContext.FILTER_ATTR_EJB_MODULE_DISTINCT, AttributeValue.fromString(appName + '/' + moduleName + '/' + distinctName));
-                                }
-                            }
-                        }
-                        serviceURL = this.cachedServiceURL = b.create();
-                    }
-                }
-            }
-            if (serviceURL.satisfies(filterSpec)) {
-                result.addMatch(serviceURL);
-            }
-            result.complete();
-            return DiscoveryRequest.NULL;
-        });
+        logger.trace("Starting service");
+        value = new DelegatingAssociationImpl();
+        // set the delegate to the "no deployments" instance of Association
+        value.accept(NoDeploymentsAssociationImpl.INSTANCE);
+        this.associationServiceConsumer.accept(this);
+        logger.trace("Started service");
     }
 
     @Override
     public void stop(final StopContext context) {
-        value.close();
-        value = null;
-        moduleAvailabilityListener.close();
-        moduleAvailabilityListener = null;
-        mutableDiscoveryProvider.setDiscoveryProvider(DiscoveryProvider.EMPTY);
-        synchronized (serviceLock) {
-            cachedServiceURL = null;
-            ourModules.clear();
-        }
+        logger.trace("Stopping service");
+        this.associationServiceConsumer.accept(null);
+        // set the delegate to null
+        value.accept(null);
+        logger.trace("Stopping service");
     }
 
-    @Override
-    public AssociationService getValue() {
-        return this;
+    public Executor getExecutor() {
+        return executor;
     }
 
-    public InjectedValue<ServerEnvironment> getServerEnvironmentServiceInjector() {
-        return serverEnvironmentServiceInjector;
+    // invoked by EJBRemoteConnectorService on stop
+    public void setExecutor(Executor executor) {
+        this.executor = executor;
     }
 
-    public InjectedValue<DeploymentRepository> getDeploymentRepositoryInjector() {
-        return deploymentRepositoryInjector;
-    }
-
-    public Map.Entry<Injector<ProtocolSocketBinding>, Injector<Registry>> addConnectorInjectors(String connectorName) {
-        InjectedValue<ProtocolSocketBinding> info = new InjectedValue<>();
-        InjectedValue<Registry> registry = new InjectedValue<>();
-        this.clientMappingsRegistries.add(new AbstractMap.SimpleImmutableEntry<>(info, registry));
-        return new AbstractMap.SimpleImmutableEntry<>(info, registry);
-    }
-
-    public DiscoveryProvider getLocalDiscoveryProvider() {
-        return mutableDiscoveryProvider;
+    // invoked by EJBRemoteConnectorService on stop
+    public void sendTopologyUpdateIfLastNodeToLeave() {
+        this.value.sendTopologyUpdateIfLastNodeToLeave();
     }
 
     public Association getAssociation() {
+        return value.getDelegate();
+    }
+
+    public DelegatingAssociationImpl getDelegator() {
         return value;
     }
-
-    void setExecutor(Executor executor) {
-        this.value.setExecutor(executor);
-    }
-
-    void sendTopologyUpdateIfLastNodeToLeave() {
-        this.value.sendTopologyUpdateIfLastNodeToLeave();
-    }
 }
-
