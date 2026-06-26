@@ -7,6 +7,7 @@ package org.jboss.as.test.xts.util;
 import java.io.File;
 import java.io.FilePermission;
 import java.lang.reflect.ReflectPermission;
+import java.net.SocketPermission;
 import java.util.PropertyPermission;
 
 import org.jboss.as.test.shared.PermissionUtils;
@@ -74,7 +75,8 @@ public class DeploymentHelper {
                 // Permissions for port access
                 new PropertyPermission("management.address", "read"),
                 new PropertyPermission("node0", "read"),
-                new PropertyPermission("jboss.http.port", "read")
+                new PropertyPermission("jboss.http.port", "read"),
+                new SocketPermission("*:8080", "connect,resolve")
         );
     }
 

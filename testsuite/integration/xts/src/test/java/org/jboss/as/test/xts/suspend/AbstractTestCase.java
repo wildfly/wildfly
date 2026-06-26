@@ -63,7 +63,7 @@ public abstract class AbstractTestCase {
                 .addAsResource("context-handlers.xml", "context-handlers.xml")
                 .addAsManifestResource(new StringAsset("Dependencies: org.jboss.xts, org.jboss.jts"), "MANIFEST.MF")
                 .addAsManifestResource(createPermissionsXmlAsset(
-                        new SocketPermission("127.0.0.1:8180", "connect,resolve"),
+                        new SocketPermission("*:8180", "connect,resolve"),
                         new RuntimePermission("org.apache.cxf.permission", "resolveUri"),
                         // WSDLFactory#L243 from wsdl4j library needs the following
                         new FilePermission(System.getProperty("java.home") + File.separator + "lib" + File.separator + "wsdl.properties", "read")
