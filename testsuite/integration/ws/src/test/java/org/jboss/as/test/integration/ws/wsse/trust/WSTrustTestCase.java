@@ -4,6 +4,8 @@
  */
 package org.jboss.as.test.integration.ws.wsse.trust;
 
+import java.net.NetPermission;
+import java.net.SocketPermission;
 import java.util.PropertyPermission;
 import org.apache.commons.io.IOUtils;
 import org.apache.cxf.Bus;
@@ -82,7 +84,8 @@ public class WSTrustTestCase {
     public static Asset PERMISSIONS = createPermissionsXmlAsset(
             new PropertyPermission("node0", "read"),
             new PropertyPermission("java.net.preferIPv4Stack", "read"),
-            new PropertyPermission("java.net.preferIPv6Addresses", "read"));
+            new PropertyPermission("java.net.preferIPv6Addresses", "read"),
+            new RuntimePermission("org.apache.cxf.permission"));
 
     public static Asset EXTRA_PERMISSIONS = createPermissionsXmlAsset(
             new PropertyPermission("node0", "read"),
@@ -91,7 +94,10 @@ public class WSTrustTestCase {
             new RuntimePermission("accessDeclaredMembers"),
             new RuntimePermission("getClassLoader"),
             new PropertyPermission("user.dir", "read"),
-            new RuntimePermission("createClassLoader"));
+            new RuntimePermission("createClassLoader"),
+            new RuntimePermission("org.apache.cxf.permission"),
+            new NetPermission("getProxySelector"),
+            new SocketPermission(TestSuiteEnvironment.getServerAddress() + ":8080", "connect,resolve"));
 
     @Deployment(name = STS_DEP, testable = false)
     public static WebArchive createSTSDeployment() {

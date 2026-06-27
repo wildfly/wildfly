@@ -20,9 +20,12 @@ import org.junit.Test;
 import java.io.File;
 import java.io.FilePermission;
 import java.io.IOException;
+import java.net.NetPermission;
 import java.net.SocketPermission;
 import java.net.URL;
 import java.util.List;
+
+import org.jboss.as.test.shared.TestSuiteEnvironment;
 
 import static org.jboss.as.test.shared.PermissionUtils.createPermissionsXmlAsset;
 import static org.jboss.as.test.xts.suspend.Helpers.getExecutorService;
@@ -64,6 +67,8 @@ public abstract class AbstractTestCase {
                 .addAsManifestResource(new StringAsset("Dependencies: org.jboss.xts, org.jboss.jts"), "MANIFEST.MF")
                 .addAsManifestResource(createPermissionsXmlAsset(
                         new SocketPermission("127.0.0.1:8180", "connect,resolve"),
+                        new SocketPermission(TestSuiteEnvironment.getServerAddress() + ":8180", "connect,resolve"),
+                        new NetPermission("getProxySelector"),
                         new RuntimePermission("org.apache.cxf.permission", "resolveUri"),
                         // WSDLFactory#L243 from wsdl4j library needs the following
                         new FilePermission(System.getProperty("java.home") + File.separator + "lib" + File.separator + "wsdl.properties", "read")
