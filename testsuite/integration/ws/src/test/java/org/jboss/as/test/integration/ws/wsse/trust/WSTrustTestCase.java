@@ -4,6 +4,7 @@
  */
 package org.jboss.as.test.integration.ws.wsse.trust;
 
+import java.net.NetPermission;
 import java.net.SocketPermission;
 import java.util.PropertyPermission;
 import org.apache.commons.io.IOUtils;
@@ -95,6 +96,7 @@ public class WSTrustTestCase {
             new PropertyPermission("user.dir", "read"),
             new RuntimePermission("createClassLoader"),
             new RuntimePermission("org.apache.cxf.permission"),
+            new NetPermission("getProxySelector"),
             new SocketPermission(TestSuiteEnvironment.getServerAddress() + ":8080", "connect,resolve"));
 
     @Deployment(name = STS_DEP, testable = false)
