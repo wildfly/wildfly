@@ -414,7 +414,7 @@ outside of the client code.
 
 If it does not find one, it will try and use the default
 _wildfly-config.xml_ provided in the
-_$WILDFLY_HOME/bin/client/jboss-client.jar_.
+_$JBOSS_HOME/bin/client/jboss-client.jar_.
 
 *default wildfly-config.xml*
 

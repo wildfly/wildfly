@@ -50,13 +50,13 @@ WildFly 11 added load balancer profiles for both standalone and domain modes.
 [source,options="nowrap"]
 ----
 # configure correct path to WildFly installation
-WILDFLY_HOME=/path/to/wildfly
+JBOSS_HOME=/path/to/wildfly
 
 # configure correct IP of the node
 MY_IP=192.168.1.1
 
 # run the load balancer profile
-$WILDFLY_HOME/bin/standalone.sh -b $MY_IP -bprivate $MY_IP -c standalone-load-balancer.xml
+$JBOSS_HOME/bin/standalone.sh -b $MY_IP -bprivate $MY_IP -c standalone-load-balancer.xml
 ----
 
 It's highly recommended to use private/internal network for communication between load balancer and nodes.
@@ -71,14 +71,14 @@ If it's not the case, then configure the IP address of the load balancer statica
 [source,options="nowrap"]
 ----
 # configure correct path to WildFly installation
-WILDFLY_HOME=/path/to/wildfly
+JBOSS_HOME=/path/to/wildfly
 # configure correct IP of the node
 MY_IP=192.168.1.2
 
 # Configure static load balancer IP address.
 # This is necessary when UDP multicast doesn't work in your environment.
 LOAD_BALANCER_IP=192.168.1.1
-$WILDFLY_HOME/bin/jboss-cli.sh <<EOT
+$JBOSS_HOME/bin/jboss-cli.sh <<EOT
 
 embed-server -c=standalone-ha.xml
 /subsystem=modcluster/proxy=default:write-attribute(name=advertise, value=false)
@@ -87,7 +87,7 @@ embed-server -c=standalone-ha.xml
 EOT
 
 # start the woker node with HA profile
-$WILDFLY_HOME/bin/standalone.sh -c standalone-ha.xml -b $MY_IP -bprivate $MY_IP
+$JBOSS_HOME/bin/standalone.sh -c standalone-ha.xml -b $MY_IP -bprivate $MY_IP
 ----
 
 Again, to make it safe, users should configure private/internal IP address into `MY_IP` variable.

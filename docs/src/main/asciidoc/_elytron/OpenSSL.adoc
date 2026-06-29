@@ -94,7 +94,7 @@ We'll make use of this in the next step.
 === Overriding the Existing WildFly OpenSSL Module
 
 We're going to add a new module that will override the existing WildFly OpenSSL module that's found in the
-`$WILDFLY_HOME/modules/system/layers/base/org/wildfly/openssl` directory. Notice that the existing module
+`$JBOSS_HOME/modules/system/layers/base/org/wildfly/openssl` directory. Notice that the existing module
 contains a Java artifact in its `main` directory and native libraries for the default platforms in its
 `main/lib` directory.
 
@@ -102,21 +102,21 @@ First, create a new module that contains the WildFly OpenSSL Java artifact from 
 
 [source,shell]
 ----
-module add --name=org.wildfly.openssl --resources=$WILDFLY_HOME/modules/system/layers/base/org/wildfly/openssl/main/wildfly-openssl-java-VERSION.jar --dependencies=java.logging,jdk.unsupported
+module add --name=org.wildfly.openssl --resources=$JBOSS_HOME/modules/system/layers/base/org/wildfly/openssl/main/wildfly-openssl-java-VERSION.jar --dependencies=java.logging,jdk.unsupported
 ----
 
 Next, add the native library that we already built to this newly created module:
 
 [source,shell]
 ----
-mkdir $WILDFLY_HOME/modules/org/wildfly/openssl/main/lib
-cd $WILDFLY_HOME/modules/org/wildfly/openssl/main/lib
+mkdir $JBOSS_HOME/modules/org/wildfly/openssl/main/lib
+cd $JBOSS_HOME/modules/org/wildfly/openssl/main/lib
 jar xvf $WILDFLY_OPENSSL_NATIVES/linux-i386/target/wildfly-openssl-linux-i386-VERSION.jar linux-i386
 ----
 
-You should now see a `libwfssl.so` file in the `$WILDFLY_HOME/modules/org/wildfly/openssl/main/lib/linux-i386` directory.
+You should now see a `libwfssl.so` file in the `$JBOSS_HOME/modules/org/wildfly/openssl/main/lib/linux-i386` directory.
 
 That's it, WildFly will now make use of the newly added WildFly OpenSSL module instead of the existing one,
 allowing it to make use of the new native library when running on the Linux i386 platform. Additional
-native libraries can be added to the `$WILDFLY_HOME/modules/org/wildfly/openssl/main/lib` directory
+native libraries can be added to the `$JBOSS_HOME/modules/org/wildfly/openssl/main/lib` directory
 if desired.

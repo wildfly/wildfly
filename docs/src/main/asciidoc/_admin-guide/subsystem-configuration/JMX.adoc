@@ -58,9 +58,9 @@ paste your script when you have it working.
 !/bin/bash
 
 # specify your WildFly folder +
-export YOUR_JBOSS_HOME=~/WildFly
+export JBOSS_HOME=~/WildFly
 
-java -classpath $YOUR_JBOSS_HOME/bin/client/jboss-client.jar:./
+java -classpath $JBOSS_HOME/bin/client/jboss-client.jar:./
 JMXExample
 
 ----

@@ -96,7 +96,7 @@ this.
 
 As a first step we'll configure a user on the destination server who
 will be allowed to access the destination server. We create the user
-using the `add-user` script that's available in the JBOSS_HOME/bin
+using the `add-user` script that's available in the $JBOSS_HOME/bin
 folder. In this example, we'll be configuring a `Application User` named
 `ejb` and with a password `test` in the `ApplicationRealm`. Running the
 `add-user` script is an interactive process and you will see
@@ -177,7 +177,7 @@ The application ( _myapp.ear_ in our case) will be deployed to
 "Destination Server". The process of deploying the application is out of
 scope of this chapter. You can either use the Command Line Interface or
 the Admin console or any IDE or manually copy it to
-JBOSS_HOME/standalone/deployments folder (for standalone server). Just
+$JBOSS_HOME/standalone/deployments folder (for standalone server). Just
 ensure that the application has been deployed successfully.
 
 So far, we have built a EJB application and deployed it on the
@@ -408,7 +408,7 @@ connector on the "Destination Server".
 Let's deploy the client application on the "Client Server". The process
 of deploying the application is out of scope, of this chapter. You can
 use either the CLI or the admin console or a IDE or deploy manually to
-JBOSS_HOME/standalone/deployments folder. Just ensure that the
+$JBOSS_HOME/standalone/deployments folder. Just ensure that the
 application is deployed successfully.
 
 [[client-code-invoking-the-bean]]

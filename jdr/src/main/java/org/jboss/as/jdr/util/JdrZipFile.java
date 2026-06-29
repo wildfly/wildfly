@@ -101,7 +101,7 @@ public class JdrZipFile {
     /**
      * Adds the content of the {@link InputStream} to the zip in a location that mirrors where {@link VirtualFile file} is located.
      *
-     * For example if {@code file} is at {@code /tmp/foo/bar} and {@code $JBOSS_HOME} is {@code tmp} then the destination will be {@code JBOSSHOME/foo/bar}
+     * For example if {@code file} is at {@code /tmp/foo/bar} and {@code $JBOSS_HOME} is {@code tmp} then the destination will be {@code JBOSS_HOME/foo/bar}
      *
      * @param file {@link VirtualFile} where metadata is read from
      * @param is content to write to the zip file

@@ -452,14 +452,14 @@ and sets the identity of principals to $local
 realm that authenticates principals using application-users.properties
 and assigns roles using application-roles.properties. These files are
 located under jboss.server.config.dir, which by default, maps to
-EAP_HOME/standalone/configuration. They are also the same files used by
+$JBOSS_HOME/standalone/configuration. They are also the same files used by
 the legacy security default configuration.
 
 |ManagementRealm |The ManagementRealm security realm is a properties
 realm that authenticates principals using mgmt-users.properties and
 assigns roles using mgmt-groups.properties. These files are located
 under jboss.server.config.dir, which by default, maps to
-EAP_HOME/standalone/configuration. They are also the same files used by
+$JBOSS_HOME/standalone/configuration. They are also the same files used by
 the legacy security default configuration.
 
 |default-permission-mapper |The default-permission-mapper mapper is a

@@ -76,7 +76,7 @@ public class JdrReportManagmentTestCase {
     }
 
     /**
-     * Tests if jdr.* script files are present in the WFLY_HOME/bin directory.
+     * Tests if jdr.* script files are present in the $JBOSS_HOME/bin directory.
      * The default server copy, see ts.copy-wildfly, does not copy these resources, so we only
      * execute this test when we are testing galleon layers, hence ts.layers enabled.
      */

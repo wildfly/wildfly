@@ -672,7 +672,7 @@ for a complete description of the command.
 [[mp-cli-script]]
 == Evolving standard configurations with support for MicroProfile
 
-The CLI script _JBOSS_HOME/docs/examples/enable-microprofile.cli_ can be applied to a default standalone configuration
+The CLI script _$JBOSS_HOME/docs/examples/enable-microprofile.cli_ can be applied to a default standalone configuration
 to add support for MicroProfile.
 
 Impact on updated configuration:

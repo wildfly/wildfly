@@ -289,7 +289,7 @@ more of a cloud native appserver and having an embedded messaging broker in the 
 A WildFly container in the cloud running an embedded broker is not scalable, as multiple broker instances need separate
 configuration to act as a primary or backup. An embedded messaging broker also has more advanced persistent storage
 requirements than a server primarily dedicated to handling HTTP requests would have. Note however that running an
-embedded broker is still supported. We've added to the $WILDFLY_HOME/docs/examples/configs folder an example
+embedded broker is still supported. We've added to the $JBOSS_HOME/docs/examples/configs folder an example
 ``standalone-activemq-embedded.xml`` configuration showing its use.
 * WildFly Preview provides the link:Admin_Guide{outfilesuffix}#Micrometer_Metrics[`micrometer` subsystem] in its out-of-the-box `standalone.xml`, `standalone-ha.xml`, `standalone-full.xml` and `standalone-full-ha.xml` configuration files, while standard WildFly instead provides the basic link:Admin_Guide{outfilesuffix}#MicroProfile_Metrics_SmallRye[`metrics` subsystem].
 * WildFly Preview includes a new xref:Admin_Guide.adoc#Feature_stability_levels[`preview` stability] `org.wildfly.extension.vertx` extension and its `vertx` subsystem, along with a new `vertx` Galleon layer so you can provision it in a slimmed server. This subsystem can be used to configure the Vert.x instance used by our OpenTelemetry integration.
