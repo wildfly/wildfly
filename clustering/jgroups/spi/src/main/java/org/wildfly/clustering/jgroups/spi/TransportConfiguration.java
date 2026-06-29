@@ -45,8 +45,7 @@ public interface TransportConfiguration<T extends TP> extends ProtocolConfigurat
         Optional<String> getSite();
     }
 
-    default Optional<TLSConfiguration> getSSLConfiguration() {
+    default Optional<TLSConfiguration> getTLSConfiguration() {
         return Optional.empty();
     }
-
 }
