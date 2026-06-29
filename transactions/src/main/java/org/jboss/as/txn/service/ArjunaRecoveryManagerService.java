@@ -15,6 +15,7 @@ import java.util.function.Supplier;
 
 import com.arjuna.ats.arjuna.common.RecoveryEnvironmentBean;
 import com.arjuna.ats.arjuna.common.recoveryPropertyManager;
+import com.arjuna.ats.arjuna.coordinator.TxControl;
 import com.arjuna.ats.internal.arjuna.recovery.AtomicActionRecoveryModule;
 import com.arjuna.ats.internal.arjuna.recovery.ExpiredTransactionStatusManagerScanner;
 import com.arjuna.ats.internal.jta.recovery.arjunacore.CommitMarkableResourceRecordRecoveryModule;
@@ -167,6 +168,7 @@ public class ArjunaRecoveryManagerService implements Service {
                 throw TransactionLogger.ROOT_LOGGER.managerStartFailure(e, "Recovery");
             }
         }
+        TxControl.enable();
         recoverySuspendController = new RecoverySuspendController(recoveryManagerService, gracefulRecoveryShutdown, executorSupplier.get());
         processStateSupplier.get().addPropertyChangeListener(recoverySuspendController);
         activityRegistration.set(suspendableActivityRegistrarSupplier.get().register(recoverySuspendController, SuspendPriority.LAST));
@@ -177,6 +179,7 @@ public class ArjunaRecoveryManagerService implements Service {
         consumer.accept(null);
         activityRegistration.getAndSet(null).close();
         processStateSupplier.get().removePropertyChangeListener(recoverySuspendController);
+        TxControl.disable();
         try {
             recoveryManagerService.stop();
         } catch (Exception e) {
