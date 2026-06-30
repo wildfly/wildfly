@@ -83,7 +83,7 @@ wildfly:
     - id: messaging-activemq
       directories:
         - messaging-activemq
-        - testsuite/integration/legacy
+        - testsuite/integration/hornetq-client
       notify: [ ehsavoie ]
 
     - id: metrics
