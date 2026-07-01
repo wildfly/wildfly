@@ -17,7 +17,9 @@ import org.jboss.as.controller.descriptions.SubsystemResourceDescriptionResolver
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
-import org.wildfly.extension.undertow.Constants;
+import org.wildfly.extension.undertow.Host;
+import org.wildfly.extension.undertow.Server;
+import org.wildfly.subsystem.resource.capability.CapabilityReferenceRecorder;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -51,18 +53,16 @@ public class MicroProfileLRAParticipantSubsystemDefinition extends PersistentRes
 
     static final SimpleAttributeDefinition PROXY_SERVER =
         new SimpleAttributeDefinitionBuilder(CommonAttributes.PROXY_SERVER, ModelType.STRING, true)
-            .setAllowExpression(true)
             .setXmlName(CommonAttributes.PROXY_SERVER)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-            .setDefaultValue(new ModelNode(Constants.DEFAULT_SERVER))
+            .setCapabilityReference(CapabilityReferenceRecorder.builder(LRA_PARTICIPANT_CAPABILITY, Server.SERVICE_DESCRIPTOR).build())
             .build();
 
     static final SimpleAttributeDefinition PROXY_HOST =
         new SimpleAttributeDefinitionBuilder(CommonAttributes.PROXY_HOST, ModelType.STRING, true)
-            .setAllowExpression(true)
             .setXmlName(CommonAttributes.PROXY_HOST)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-            .setDefaultValue(new ModelNode(Constants.DEFAULT_HOST))
+            .setCapabilityReference(CapabilityReferenceRecorder.builder(LRA_PARTICIPANT_CAPABILITY, Host.SERVICE_DESCRIPTOR).withParentAttribute(PROXY_SERVER).build())
             .build();
 
     static final AttributeDefinition[] ATTRIBUTES = {LRA_COORDINATOR_URL, PROXY_SERVER, PROXY_HOST};
