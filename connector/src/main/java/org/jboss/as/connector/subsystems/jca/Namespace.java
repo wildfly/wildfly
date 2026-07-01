@@ -27,13 +27,15 @@ public enum Namespace {
 
     JCA_5_0("urn:jboss:domain:jca:5.0"),
 
-    JCA_6_0("urn:jboss:domain:jca:6.0");
+    JCA_6_0("urn:jboss:domain:jca:6.0"),
+
+    JCA_6_1("urn:jboss:domain:jca:6.1");
 
 
     /**
      * The current namespace version.
      */
-    public static final Namespace CURRENT = JCA_6_0;
+    public static final Namespace CURRENT = JCA_6_1;
 
     private final String name;
 
