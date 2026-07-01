@@ -5,9 +5,8 @@
 
 package org.wildfly.test.distribution.validation;
 
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.fail;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -237,13 +236,13 @@ public class AbstractValidationUnitTest {
     /**
      * The base directory, e.g. {@literal $user.home/../../build/target/jboss-*}.
      * <p/>
-     * Executes {@link org.junit.Assert#fail()} if the base directory is null.
+     * Fails if the base directory is null.
      *
      * @return the base directory.
      */
     protected static File getBaseDir() {
-        assertNotNull("'" + JBOSS_DIST_PROP_NAME + "' is not set.", JBOSS_DIST_DIR);
-        assertTrue("Directory set in '" + JBOSS_DIST_PROP_NAME + "' does not exist: " + JBOSS_DIST_DIR.getAbsolutePath(), JBOSS_DIST_DIR.exists());
+        assertThat(JBOSS_DIST_DIR).as("'" + JBOSS_DIST_PROP_NAME + "' is not set.").isNotNull();
+        assertThat(JBOSS_DIST_DIR.exists()).as("Directory set in '" + JBOSS_DIST_PROP_NAME + "' does not exist: " + JBOSS_DIST_DIR.getAbsolutePath()).isTrue();
         return JBOSS_DIST_DIR;
     }
 
@@ -297,7 +296,7 @@ public class AbstractValidationUnitTest {
                 }
             }
         }
-        assertNotNull(xsdName + " not found", url);
+        assertThat(url).as(xsdName + " not found").isNotNull();
         return url;
     }
 
@@ -408,7 +407,7 @@ public class AbstractValidationUnitTest {
     private static URL getXMLSchemaResource() {
         final ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
         final URL resource = classLoader.getResource("schema/XMLSchema.xsd");
-        assertNotNull("Can't locate resource schema/XMLSchema.xsd on " + classLoader, resource);
+        assertThat(resource).as("Can't locate resource schema/XMLSchema.xsd on " + classLoader).isNotNull();
         return resource;
     }
 

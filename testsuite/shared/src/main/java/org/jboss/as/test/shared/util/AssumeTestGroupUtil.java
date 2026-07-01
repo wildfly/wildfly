@@ -5,16 +5,16 @@
 
 package org.jboss.as.test.shared.util;
 
-import static org.junit.Assume.assumeTrue;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.function.Supplier;
+
+import org.assertj.core.api.Assumptions;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.AssumptionViolatedException;
 import org.testcontainers.DockerClientFactory;
 
 /**
@@ -23,7 +23,7 @@ import org.testcontainers.DockerClientFactory;
  * the failing test method, or if you want to skip whole test class, then put the method call into method annotated with
  * {@link org.junit.BeforeClass}.
  * <p>
- * Methods whose names begin with 'assume' throw {@link AssumptionViolatedException} if the described assumption is not
+ * Methods whose names begin with 'assume' throw {@link AssertionError} if the described assumption is not
  * met; otherwise they return normally.  Other methods and constants in this class are meant for related use cases.
  * </p>
  *
@@ -36,7 +36,7 @@ public class AssumeTestGroupUtil {
      * An empty deployment archive that can be returned from an @Deployment method if the normal deployment
      * returned from the method cannot be successfully deployed under certain conditions. Arquillian will deploy
      * managed deployments <strong>before executing any @BeforeClass method</strong>, so if a @BeforeClass
-     * method conditionally disables running the tests with an AssumptionViolatedException, the deployment will
+     * method conditionally disables running the tests with an AssertionError, the deployment will
      * still get deployed and may fail the test. So have it deploy this instead so your @BeforeClass gets called.
      * <p>
      * This is private so it can be lazy initialized when needed, in case this class is used for other reasons
@@ -119,7 +119,7 @@ public class AssumeTestGroupUtil {
      * done in a {@link org.junit.Before @Before} or {@link org.junit.BeforeClass @BeforeClass} method.
      * </p>
      *
-     * @throws AssumptionViolatedException if the security manager is enabled
+     * @throws AssertionError if the security manager is enabled
      */
     public static void assumeSecurityManagerDisabled() {
         assumeCondition("Tests failing if the security manager is enabled.", AssumeTestGroupUtil::isSecurityManagerDisabled);
@@ -163,7 +163,7 @@ public class AssumeTestGroupUtil {
      *
      * @param javaSpecificationVersion the JDK specification version
      *
-     * @throws AssumptionViolatedException if the security manager is enabled or the JDK version is greater than or equal to {@code javaSpecificationVersion}
+     * @throws AssertionError if the security manager is enabled or the JDK version is greater than or equal to {@code javaSpecificationVersion}
      */
     public static void assumeSecurityManagerDisabledOrAssumeJDKVersionBefore(int javaSpecificationVersion) {
         assumeCondition("Tests failing if the security manager is enabled and JDK in use is after " + javaSpecificationVersion + ".",
@@ -175,7 +175,7 @@ public class AssumeTestGroupUtil {
      *
      * @param javaSpecificationVersion the JDK specification version. Use 8 for JDK 8. Must be 8 or higher.
      *
-     * @throws AssumptionViolatedException if the JDK version is less than or equal to {@code javaSpecificationVersion}
+     * @throws AssertionError if the JDK version is less than or equal to {@code javaSpecificationVersion}
      */
     public static void assumeJDKVersionAfter(int javaSpecificationVersion) {
         assert javaSpecificationVersion >= 11; // we only support 11 or later
@@ -188,7 +188,7 @@ public class AssumeTestGroupUtil {
      *
      * @param javaSpecificationVersion the JDK specification version. Must be 9 or higher.
      *
-     * @throws AssumptionViolatedException if the JDK version is greater than or equal to {@code javaSpecificationVersion}
+     * @throws AssertionError if the JDK version is greater than or equal to {@code javaSpecificationVersion}
      */
     public static void assumeJDKVersionBefore(int javaSpecificationVersion) {
         assert javaSpecificationVersion > 11; // we only support 11 or later so no reason to call this for 11
@@ -221,7 +221,7 @@ public class AssumeTestGroupUtil {
      * a value containing {@code ee-only-server}, e.g. {@code legacy-ee-only-server-tests },
      * which means we are using ee-build/ee-dist modules as the source where to find the server under test.
      *
-     * @throws AssumptionViolatedException if property {@code testsuite.default.build.project.prefix} is set to a non-empty value
+     * @throws AssertionError if property {@code testsuite.default.build.project.prefix} is set to a non-empty value
      */
     public static void assumeFullDistribution() {
         assumeCondition("Tests requiring full distribution are disabled", AssumeTestGroupUtil::isFullDistribution);
@@ -245,7 +245,7 @@ public class AssumeTestGroupUtil {
      * a value starting with {@code legacy-ee}, which means we are not using legacy/* modules as
      * the source where to find the server under test.
      *
-     * @throws AssumptionViolatedException if property {@code testsuite.default.build.project.prefix} is set to a non-empty value
+     * @throws AssertionError if property {@code testsuite.default.build.project.prefix} is set to a non-empty value
      */
     public static void assumeLegacyEEDistribution() {
         assumeCondition("Tests requiring a non-legacy EE distribution are disabled", AssumeTestGroupUtil::isLegacyEEDistribution);
@@ -264,13 +264,13 @@ public class AssumeTestGroupUtil {
     /**
      * Assume for tests that require a docker installation.
      *
-     * @throws AssumptionViolatedException if a docker client cannot be initialized
+     * @throws AssertionError if a docker client cannot be initialized
      * @throws RuntimeException if a docker client is required but is unavailable or not properly configured
      */
     public static void assumeDockerAvailable() {
         try {
             assumeCondition("Docker is not available.", AssumeTestGroupUtil::isDockerAvailable);
-        } catch (AssumptionViolatedException ex) {
+        } catch (AssertionError ex) {
             if (System.getProperty("org.wildfly.test.require.docker") != null && System.getProperty("org.wildfly.test.require.docker").equals("true")){
                 throw new RuntimeException("Docker is required but it is not available or is not properly configured");
             } else {
@@ -282,7 +282,7 @@ public class AssumeTestGroupUtil {
     /**
      * Checks whether a docker installation is available.
      *
-     * @throws AssumptionViolatedException if a docker client cannot be initialized
+     * @throws AssertionError if a docker client cannot be initialized
      */
     public static boolean isDockerAvailable() {
         try {
@@ -297,7 +297,7 @@ public class AssumeTestGroupUtil {
     /**
      * Assume for tests that should not run against a WildFly Preview installation.
      *
-     * @throws AssumptionViolatedException if one of the system properties that indicates WildFly Preview is being tested is set
+     * @throws AssertionError if one of the system properties that indicates WildFly Preview is being tested is set
      */
     public static void assumeNotWildFlyPreview() {
         assumeCondition("Some tests are disabled on WildFly Preview",
@@ -331,7 +331,7 @@ public class AssumeTestGroupUtil {
         AccessController.doPrivileged(new PrivilegedAction<Void>() {
             @Override
             public Void run() {
-                assumeTrue(message, assumeTrueCondition.get());
+                Assumptions.assumeThat(assumeTrueCondition.get()).as(message).isTrue();
                 return null;
             }
         });

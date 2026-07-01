@@ -6,7 +6,7 @@ package org.jboss.as.test.clustering.cluster.jgroups.tls;
 
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.dmr.ModelNode;
-import org.junit.Assert;
+import org.junit.jupiter.api.Assertions;
 
 /**
  * Util class for JGroups log detection
@@ -24,7 +24,7 @@ public class JGroupsLogsUtil {
         operation.get("lines").set(150);
         operation.get("tail").set(true);
         ModelNode response = client.getControllerClient().execute(operation);
-        Assert.assertTrue("Unable to read logs", "success".equals(response.get("outcome").asString()));
+        Assertions.assertTrue("success".equals(response.get("outcome").asString()), "Unable to read logs");
         return response.get("result").asList().stream().anyMatch(lineNode -> lineNode.asString().contains("WFLYCLJG0037"));
     }
 }

@@ -237,26 +237,9 @@
     </dependencyManagement>
 
     <dependencies>
-        <dependency>
-            <groupId>jakarta.inject</groupId>
-            <artifactId>jakarta.inject-api</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>jakarta.enterprise</groupId>
-            <artifactId>jakarta.enterprise.cdi-api</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>jakarta.persistence</groupId>
-            <artifactId>jakarta.persistence-api</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>jakarta.transaction</groupId>
-            <artifactId>jakarta.transaction-api</artifactId>
-            <scope>test</scope>
-        </dependency>
+        <!-- DO NOT add dependencies here unless they are truly required by ALL child modules. -->
+        <!-- Declare dependencies in the specific module that requires them. See WFLY-22034. -->
+        <!-- The <dependencies> section is left empty intentionally so that anyone adding a dependency here will notice this message. -->
     </dependencies>
 
     <build>

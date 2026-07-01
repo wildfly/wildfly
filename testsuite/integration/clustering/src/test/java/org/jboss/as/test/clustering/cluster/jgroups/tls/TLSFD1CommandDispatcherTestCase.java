@@ -10,7 +10,7 @@ import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.test.clustering.cluster.dispatcher.CommandDispatcherTestCase;
 import org.jboss.as.test.clustering.cluster.dispatcher.bean.ClusterTopologyRetrieverBean;
-import org.junit.Assert;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 /**
@@ -34,7 +34,7 @@ class TLSFD1CommandDispatcherTestCase extends CommandDispatcherTestCase {
     @Override
     @Test
     public void test() throws Exception {
-        Assert.assertFalse("WFLYCLJG0037 found", JGroupsLogsUtil.findWFLYCLJG0037(client));
+        Assertions.assertFalse(JGroupsLogsUtil.findWFLYCLJG0037(client), "WFLYCLJG0037 found");
 
         // original test
         this.test(ClusterTopologyRetrieverBean.class);
