@@ -540,7 +540,7 @@
         <version.org.jboss.narayana.lra>1.2.0.Final</version.org.jboss.narayana.lra>
         <version.org.jboss.openjdk-orb>10.1.3.Final</version.org.jboss.openjdk-orb>
         <version.org.jboss.resteasy.client-utils>7.0.2.Final</version.org.jboss.resteasy.client-utils>
-        <version.org.jboss.resteasy.extensions>2.0.1.Final</version.org.jboss.resteasy.extensions>
+        <version.org.jboss.resteasy.extensions>2.0.2.Final</version.org.jboss.resteasy.extensions>
         <version.org.jboss.resteasy.microprofile>3.0.1.Final</version.org.jboss.resteasy.microprofile>
         <version.org.jboss.resteasy.spring>3.2.0.Final</version.org.jboss.resteasy.spring>
         <version.org.jboss.spec.jakarta.el.jakarta.el-api>6.0.2.Final</version.org.jboss.spec.jakarta.el.jakarta.el-api>
