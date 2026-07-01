@@ -4,7 +4,7 @@
  */
 
 
-package org.jboss.as.ejb3.remote;
+package org.jboss.as.ejb3.local;
 
 import org.jboss.as.ejb3.deployment.DeploymentRepository;
 import org.jboss.as.ejb3.logging.EjbLogger;
