@@ -91,6 +91,12 @@
             <artifactId>jakarta.authentication-api</artifactId>
             <scope>test</scope>
         </dependency>
+        
+        <dependency>
+            <groupId>${cdi.api.groupId}</groupId>
+            <artifactId>${cdi.api.artifactId}</artifactId>
+            <scope>test</scope>
+        </dependency>
 
         <dependency>
             <groupId>jakarta.enterprise.concurrent</groupId>
