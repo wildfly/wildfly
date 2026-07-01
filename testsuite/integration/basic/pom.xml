@@ -1485,7 +1485,7 @@
                             <add-layers-for-jndi>
                                 <layer>mail</layer>
                             </add-layers-for-jndi>
-                            <expected-discovery>[ee-integration, mail, naming, sar, transactions]==>ee-core-profile-server,mail,sar,transactions</expected-discovery>
+                            <expected-discovery>[ee-integration, mail, naming, resource-adapters, sar, transactions]==>ee-core-profile-server,mail,resource-adapters,sar</expected-discovery>
                             <surefire-execution-for-included-classes>legacy-sar-layers.surefire</surefire-execution-for-included-classes>
                         </configuration>
                     </execution>
