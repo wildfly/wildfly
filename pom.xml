@@ -556,6 +556,7 @@
         <version.org.jboss.ws.jaxws-undertow-httpspi>3.0.1.Final</version.org.jboss.ws.jaxws-undertow-httpspi>
         <version.org.jboss.ws.spi>5.1.0.Final</version.org.jboss.ws.spi>
         <version.org.jboss.xnio.netty.netty-xnio-transport>0.1.10.Final</version.org.jboss.xnio.netty.netty-xnio-transport>
+        <version.org.jboss.logging.jboss-logging-tools>3.0.4.Final</version.org.jboss.logging.jboss-logging-tools>
         <version.org.jctools.jctools-core>4.0.6</version.org.jctools.jctools-core>
         <version.org.jgroups>5.5.6.Final</version.org.jgroups>
         <version.org.jgroups.aws>4.0.1.Final</version.org.jgroups.aws>
@@ -1543,10 +1544,18 @@
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-compiler-plugin</artifactId>
                     <configuration>
-                        <compilerArgs combine.children="append">
-                            <!-- Note: this requires Java SE 17.0.11 or later. Update your environment if this causes a problem. -->
-                            <arg>-proc:full</arg>
-                        </compilerArgs>
+                        <annotationProcessorPaths combine.children="append">
+                            <path>
+                                <groupId>org.jboss.logging</groupId>
+                                <artifactId>jboss-logging-processor</artifactId>
+                                <version>${version.org.jboss.logging.jboss-logging-tools}</version>
+                            </path>
+                            <path>
+                                <groupId>org.kohsuke.metainf-services</groupId>
+                                <artifactId>metainf-services</artifactId>
+                                <version>${version.org.kohsuke.metainf-services}</version>
+                            </path>
+                        </annotationProcessorPaths>
                     </configuration>
                 </plugin>
                 <plugin>
