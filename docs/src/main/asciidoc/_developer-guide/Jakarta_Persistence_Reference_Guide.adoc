@@ -683,6 +683,9 @@ not already set in persistence unit definition):
 |=======================================================================
 |Property |Purpose
 
+|hibernate.statistics.query_max_size = 200 |only set if the
+application didn't specify a value for hibernate.statistics.query_max_size.
+
 |hibernate.id.new_generator_mappings| Can no longer be set to false by applications as per the Hibernate 6 change to only support hibernate.id.new_generator_mappings=true.
 
 |hibernate.transaction.jta.platform= instance of
@@ -704,15 +707,11 @@ name |Is set to the application name + persistence unit name
 across all application deployments on the AS instance).  
 This replaces the `hibernate.ejb.entitymanager_factory_name` property which is no longer supported.
 
-|hibernate.query.jpaql_strict_compliance=true |
-
 |hibernate.auto_quote_keyword=false |
 
 |hibernate.implicit_naming_strategy=org.hibernate.boot.model.naming.ImplicitNamingStrategyJpaCompliantImpl |
 
-|hibernate.model.generator_name_as_sequence_name=true |
-
-|hibernate.jpa.compliance=true | Sets all of the various hibernate.jpa.* properties to true (hibernate.jpa.compliance.transaction, hibernate.jpa.compliance.closed,hibernate.jpa.compliance.query, hibernate.jpa.compliance.list, hibernate.jpa.compliance.caching, hibernate.jpa.compliance.proxy
+|hibernate.jpa.compliance=true | Sets all of the various hibernate.jpa.* properties to true (including hibernate.jpa.compliance.transaction, hibernate.jpa.compliance.closed,hibernate.jpa.compliance.query, hibernate.jpa.compliance.list, hibernate.jpa.compliance.caching, hibernate.jpa.compliance.proxy, hibernate.jpa.compliance.global_id_generators, hibernate.jpa.compliance.load_by_id, 
 
 |hibernate.enable_lazy_load_no_trans=false |
 
