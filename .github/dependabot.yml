@@ -34,6 +34,7 @@ updates:
       # and when we do we want to check other components where we align with what ORM uses.
       - dependency-name: 'org.hibernate.orm:*'
       - dependency-name: 'org.hibernate:hibernate-core'
+      - dependency-name: 'org.hibernate.validator:*'
       # Dependencies exclusive to Hibernate Search:
       # we'll only upgrade those when we upgrade to a newer version of Hibernate Search.
       - dependency-name: 'org.elasticsearch.client:*'
