@@ -451,7 +451,7 @@
         <version.io.smallrye.smallrye-mutiny-vertx>3.19.2</version.io.smallrye.smallrye-mutiny-vertx>
         <version.io.smallrye.smallrye-mutiny-zero>1.1.1</version.io.smallrye.smallrye-mutiny-zero>
         <version.io.smallrye.smallrye-opentelemetry>2.11.2</version.io.smallrye.smallrye-opentelemetry>
-        <version.io.smallrye.smallrye-stork>2.7.10</version.io.smallrye.smallrye-stork>
+        <version.io.smallrye.smallrye-stork>2.7.11</version.io.smallrye.smallrye-stork>
         <version.io.smallrye.smallrye-reactive-messaging>4.35.0</version.io.smallrye.smallrye-reactive-messaging>
         <!-- TODO (jrp) temporary override until the new version of Undertow is integrated into core and that version of core is integrated here -->
         <version.io.undertow>2.4.1.Final</version.io.undertow>
