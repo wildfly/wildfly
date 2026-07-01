@@ -215,6 +215,8 @@ public class Constants {
 
     private static final String NO_RECOVERY_NAME = "no-recovery";
 
+    private static final String VALIDATION_TIMEOUT_SECONDS_NAME = "validation-timeout-seconds";
+
     static final SensitivityClassification DS_SECURITY =
             new SensitivityClassification(DataSourcesExtension.SUBSYSTEM_NAME, "data-source-security", false, true, true);
 
@@ -658,6 +660,13 @@ public class Constants {
             .setRestartAllServices()
             .build();
 
+    static SimpleAttributeDefinition VALIDATION_TIMEOUT_SECONDS = new SimpleAttributeDefinitionBuilder(VALIDATION_TIMEOUT_SECONDS_NAME, ModelType.INT)
+            .setDefaultValue(new ModelNode(0))
+            .setRequired(false)
+            .setAllowExpression(true)
+            .setRestartAllServices()
+            .build();
+
 
     static final SimpleAttributeDefinition[] DATASOURCE_ATTRIBUTE = new SimpleAttributeDefinition[]{CONNECTION_URL,
             DRIVER_CLASS, Constants.DATASOURCE_CLASS, JNDI_NAME,
@@ -693,7 +702,7 @@ public class Constants {
             org.jboss.as.connector.subsystems.common.pool.Constants.BACKGROUNDVALIDATIONMILLIS,
             org.jboss.as.connector.subsystems.common.pool.Constants.BACKGROUNDVALIDATION,
             org.jboss.as.connector.subsystems.common.pool.Constants.USE_FAST_FAIL,
-            VALIDATE_ON_MATCH, SPY,
+            VALIDATE_ON_MATCH, VALIDATION_TIMEOUT_SECONDS, SPY,
             USE_CCM, ENABLED, CONNECTABLE, STATISTICS_ENABLED, TRACKING, MCP, ENLISTMENT_TRACE};
 
     static final PropertiesAttributeDefinition[] DATASOURCE_PROPERTIES_ATTRIBUTES = new PropertiesAttributeDefinition[]{
