@@ -21,7 +21,6 @@
             <property name="managementAddress">${node0}</property>
             <property name="managementPort">${as.managementPort:9990}</property>
             <property name="waitForPorts">8787 ${as.managementPort:9990}</property>
-            <property name="waitForPortsTimeoutInSeconds">8</property>
         </configuration>
     </container>
 
@@ -35,9 +34,7 @@
                 <property name="jbossArguments">${jboss.args}</property>
                 <property name="managementAddress">${node0}</property>
                 <property name="managementPort">${as.managementPort:9990}</property>
-                <!-- AS7-4070 Arquillian should wait until a port is free after AS JVM process ends to prevent "port in use" -->
-                <property name="waitForPorts">8787 ${as.managementPort:9990}</property>
-                <property name="waitForPortsTimeoutInSeconds">8</property>
+                <property name="waitForPorts">7600 7601 8009 8080 8787 ${as.managementPort:9990}</property>
             </configuration>
         </container>
         <container qualifier="node-2" mode="custom">
@@ -48,8 +45,7 @@
                 <property name="jbossArguments">${jboss.args}</property>
                 <property name="managementAddress">${node1}</property>
                 <property name="managementPort">10090</property>
-                <property name="waitForPorts">8788 10090</property>
-                <property name="waitForPortsTimeoutInSeconds">8</property>
+                <property name="waitForPorts">7700 7701 8109 8180 8788 10090</property>
             </configuration>
         </container>
         <container qualifier="node-3" mode="custom">
@@ -60,8 +56,7 @@
                 <property name="jbossArguments">${jboss.args}</property>
                 <property name="managementAddress">${node2}</property>
                 <property name="managementPort">10190</property>
-                <property name="waitForPorts">8789 10190</property>
-                <property name="waitForPortsTimeoutInSeconds">8</property>
+                <property name="waitForPorts">7800 7801 8209 8280 8789 10190</property>
             </configuration>
         </container>
         <container qualifier="node-4" mode="custom">
@@ -72,8 +67,7 @@
                 <property name="jbossArguments">${jboss.args}</property>
                 <property name="managementAddress">${node3}</property>
                 <property name="managementPort">10290</property>
-                <property name="waitForPorts">8790 10290</property>
-                <property name="waitForPortsTimeoutInSeconds">8</property>
+                <property name="waitForPorts">7900 7901 8309 8380 8790 10290</property>
             </configuration>
         </container>
 
@@ -86,7 +80,6 @@
                 <property name="managementAddress">${node0}</property>
                 <property name="managementPort">${as.managementPort:9990}</property>
                 <property name="waitForPorts">8787 ${as.managementPort:9990}</property>
-                <property name="waitForPortsTimeoutInSeconds">8</property>
             </configuration>
         </container>
     </group>
