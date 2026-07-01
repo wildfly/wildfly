@@ -2260,6 +2260,15 @@ It is also possible to configure an account with different certificate authority
 /subsystem=elytron/certificate-authority=myCA:add(url="https://my.example.url/acme/directory", staging-url="https://my.example.staging.url/acme/directory")
 /subsystem=elytron/certificate-authority-account=myCAAccount:add(certificate-authority=myCA,alias=example,key-store=accountsKS,contact-urls=[mailto:admin@example.org])
 ----
+
+ACME External Account Binding support is available at preview stability. Some certificate authorities require External Account Binding when creating an account.
+When this is required, configure the `external-account-binding` with the key identifier supplied by the certificate authority and a credential reference for the base64url-encoded HMAC key.
+
+[source,options="nowrap"]
+----
+/subsystem=elytron/certificate-authority-account=myCAAccount:add(certificate-authority=myCA, alias=example, key-store=accountsKS, contact-urls=[mailto:admin@example.org], external-account-binding={key-identifier=example-kid, credential-reference={store=myCredentialStore, alias=eab-hmac-key}})
+----
+
 [[obtain-signed-certificate]]
 ===== Obtain a signed certificate from Let's Encrypt
 
