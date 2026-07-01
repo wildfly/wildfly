@@ -6,7 +6,6 @@
 package org.jboss.as.txn.suspend;
 
 import com.arjuna.ats.arjuna.coordinator.TransactionReaper;
-import com.arjuna.ats.arjuna.coordinator.TxControl;
 import com.arjuna.ats.jbossatx.jta.RecoveryManagerService;
 import org.jboss.as.controller.ControlledProcessState;
 import org.jboss.as.txn.config.RecoveryGracefulShutdown;
@@ -61,7 +60,6 @@ public class RecoverySuspendController implements SuspendableActivity, PropertyC
             final boolean isGracefulRecoveryShutdownNeeded = this.gracefulRecoveryShutdown == RecoveryGracefulShutdown.WAIT;
             return CompletableFuture
                 .runAsync(() -> {
-                    TxControl.disable();
                     TransactionLogger.ROOT_LOGGER.waitingForInFlightTransactions();
                     TransactionReaper.transactionReaper().waitForAllTxnsToTerminate();
                     TransactionLogger.ROOT_LOGGER.inFlightTransactionsTerminated();
@@ -91,12 +89,7 @@ public class RecoverySuspendController implements SuspendableActivity, PropertyC
         }
         if (doResume) {
             return CompletableFuture
-                .runAsync(this::resumeRecovery, executor)
-                .thenRunAsync(() -> {
-                    if (!TxControl.isEnabled()) {
-                        TxControl.enable();
-                    }
-                }, executor);
+                .runAsync(this::resumeRecovery, executor);
         }
 
         return COMPLETED;
