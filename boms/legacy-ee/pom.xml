@@ -34,7 +34,7 @@
         <version.com.fasterxml.classmate>1.5.1</version.com.fasterxml.classmate>
         <!-- n.b. H2 version here is driven by what Hibernate ORM version tests with as the H2 dialect! -->
         <version.com.h2database>2.2.224</version.com.h2database>
-        <version.io.undertow.ee>1.0.0.Final</version.io.undertow.ee>
+        <version.io.undertow.ee>1.0.1.Final</version.io.undertow.ee>
         <version.io.undertow.jastow>2.2.9.Final</version.io.undertow.jastow>
         <version.jakarta.annotation.jakarta-annotation-api>2.1.1</version.jakarta.annotation.jakarta-annotation-api>
         <version.jakarta.authentication.jakarta-authentication-api>3.0.0</version.jakarta.authentication.jakarta-authentication-api>
