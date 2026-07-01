@@ -25,6 +25,7 @@ import org.jboss.metadata.web.spec.TldMetaData;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleClassLoader;
 import org.jboss.modules.ModuleLoadException;
+import org.wildfly.common.xml.XMLInputFactoryUtil;
 
 /**
  * Cache the TLDs for JSF and add them to deployments as needed.
@@ -67,7 +68,7 @@ public class JSFSharedTldsProcessor implements DeploymentUnitProcessor {
 
     private TldMetaData parseTLD(InputStream is) throws Exception {
         try {
-            final XMLInputFactory inputFactory = XMLInputFactory.newInstance();
+            final XMLInputFactory inputFactory = XMLInputFactoryUtil.create();
             inputFactory.setXMLResolver(NoopXMLResolver.create());
             XMLStreamReader xmlReader = inputFactory.createXMLStreamReader(is);
             return TldMetaDataParser.parse(xmlReader    );
