@@ -9,10 +9,12 @@ $scripts = (Get-ChildItem $MyInvocation.MyCommand.Path).Directory.FullName;
 $SERVER_OPTS = Process-Script-Parameters -Params $ARGS
 
 # Read an optional running configuration file
-$APPCLIENT_CONF_FILE = $scripts + '.\appclient.conf.ps1'
+$APPCLIENT_CONF_FILE = "$scripts\appclient.conf.ps1"
 $APPCLIENT_CONF_FILE = Get-Env RUN_CONF $APPCLIENT_CONF_FILE
 . $APPCLIENT_CONF_FILE
 
+$JAVA_OPTS = Get-Java-Opts
+$MODULE_OPTS = String-To-Array -value $env:MODULE_OPTS
 if ($global:SECMGR) {
     $MODULE_OPTS +="-secmgr";
 }
