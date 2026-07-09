@@ -12,6 +12,7 @@ import java.util.Set;
 import jakarta.persistence.EntityManagerFactory;
 
 import org.hibernate.SessionFactory;
+import org.hibernate.stat.Statistics;
 import org.jipijapa.management.spi.EntityManagerFactoryAccess;
 import org.jipijapa.management.spi.Operation;
 import org.jipijapa.management.spi.PathAddress;
@@ -80,15 +81,24 @@ public class HibernateQueryCacheStatistics extends HibernateAbstractStatistics {
         return result;
     }
 
-    private org.hibernate.stat.Statistics getBaseStatistics(EntityManagerFactory entityManagerFactory) {
-        if (entityManagerFactory == null) {
-            return null;
+    @Override
+    public boolean hasDynamicChildName(EntityManagerFactoryAccess entityManagerFactoryLookup, PathAddress pathAddress,
+            String childName) {
+        Statistics stats = getBaseStatistics(entityManagerFactoryLookup, pathAddress);
+        if (stats == null) {
+            return false;
         }
-        SessionFactory sessionFactory = entityManagerFactory.unwrap(SessionFactory.class);
-        if (sessionFactory != null) {
-            return sessionFactory.getStatistics();
+        String[] queries = stats.getQueries();
+        if (queries == null) {
+            return false;
         }
-        return null;
+        // we cant call existsInDynamicChildren() because we need to match by display names
+        for (String name : queries) {
+            if (childName.equals(QueryName.queryName(name).getDisplayName())) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private org.hibernate.stat.QueryStatistics getStatistics(EntityManagerFactory entityManagerFactory, String displayQueryName) {
