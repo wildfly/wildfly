@@ -60,9 +60,9 @@ public class DynamicManagementStatisticsResource extends PlaceholderResource.Pla
         try {
             Statistics statistics = getStatistics();
             // if element key matches, check if element value also matches
-            if (statistics.getChildrenNames().contains(element.getKey())) {
+            if (statistics.hasChildrenName(element.getKey())) {
                 Statistics childStatistics = statistics.getChild(element.getKey());
-                return childStatistics != null && childStatistics.getDynamicChildrenNames(entityManagerFactoryLookup, PathWrapper.path(puName)).contains(element.getValue());
+                return childStatistics != null && childStatistics.hasDynamicChildName(entityManagerFactoryLookup, PathWrapper.path(puName), element.getValue());
             } else {
                 return super.hasChild(element);
             }
@@ -80,9 +80,9 @@ public class DynamicManagementStatisticsResource extends PlaceholderResource.Pla
     public Resource getChild(PathElement element) {
         try {
             Statistics statistics = getStatistics();
-            if (statistics.getChildrenNames().contains(element.getKey())) {
+            if (statistics.hasChildrenName(element.getKey())) {
                 Statistics childStatistics = statistics.getChild(element.getKey());
-                return childStatistics != null && childStatistics.getDynamicChildrenNames(entityManagerFactoryLookup, PathWrapper.path(puName)).contains(element.getValue())
+                return childStatistics != null && childStatistics.hasDynamicChildName(entityManagerFactoryLookup, PathWrapper.path(puName), element.getValue())
                         ? PlaceholderResource.INSTANCE : null;
             } else {
                 return super.getChild(element);
@@ -100,9 +100,9 @@ public class DynamicManagementStatisticsResource extends PlaceholderResource.Pla
     public Resource requireChild(PathElement element) {
         try {
             Statistics statistics = getStatistics();
-            if (statistics.getChildrenNames().contains(element.getKey())) {
+            if (statistics.hasChildrenName(element.getKey())) {
                 Statistics childStatistics = statistics.getChild(element.getKey());
-                if (childStatistics != null && childStatistics.getDynamicChildrenNames(entityManagerFactoryLookup, PathWrapper.path(puName)).contains(element.getValue())) {
+                if (childStatistics != null && childStatistics.hasDynamicChildName(entityManagerFactoryLookup, PathWrapper.path(puName), element.getValue())) {
                     return PlaceholderResource.INSTANCE;
                 }
                 throw new NoSuchResourceException(element);
@@ -122,7 +122,7 @@ public class DynamicManagementStatisticsResource extends PlaceholderResource.Pla
     public boolean hasChildren(String childType) {
         try {
             Statistics statistics = getStatistics();
-            if (statistics.getChildrenNames().contains(childType)) {
+            if (statistics.hasChildrenName(childType)) {
                 Statistics childStatistics = statistics.getChild(childType);
                 return childStatistics != null && !childStatistics.getNames().isEmpty();
             } else {
@@ -140,7 +140,7 @@ public class DynamicManagementStatisticsResource extends PlaceholderResource.Pla
     @Override
     public Resource navigate(PathAddress address) {
         Statistics statistics = getStatistics();
-        if (address.size() > 0 && statistics.getChildrenNames().contains(address.getElement(0).getKey())) {
+        if (address.size() > 0 && statistics.hasChildrenName(address.getElement(0).getKey())) {
             if (address.size() > 1) {
                 throw new NoSuchResourceException(address.getElement(1));
             }
@@ -170,7 +170,7 @@ public class DynamicManagementStatisticsResource extends PlaceholderResource.Pla
     public Set<String> getChildrenNames(String childType) {
         try {
             Statistics statistics = getStatistics();
-            if (statistics.getChildrenNames().contains(childType)) {
+            if (statistics.hasChildrenName(childType)) {
                 Statistics childStatistics = statistics.getChild(childType);
                 Set<String>result = new HashSet<String>();
                 for(String name:childStatistics.getDynamicChildrenNames(entityManagerFactoryLookup, PathWrapper.path(puName))) {
@@ -193,7 +193,7 @@ public class DynamicManagementStatisticsResource extends PlaceholderResource.Pla
     public Set<ResourceEntry> getChildren(String childType) {
         try {
             Statistics statistics = getStatistics();
-            if (statistics.getChildrenNames().contains(childType)) {
+            if (statistics.hasChildrenName(childType)) {
                 Set<ResourceEntry> result = new HashSet<ResourceEntry>();
                 Statistics childStatistics = statistics.getChild(childType);
                 for (String name : childStatistics.getDynamicChildrenNames(entityManagerFactoryLookup, PathWrapper.path(puName))) {
@@ -216,7 +216,7 @@ public class DynamicManagementStatisticsResource extends PlaceholderResource.Pla
     public void registerChild(PathElement address, Resource resource) {
         try {
             Statistics statistics = getStatistics();
-            if (statistics.getChildrenNames().contains(address.getKey())) {
+            if (statistics.hasChildrenName(address.getKey())) {
                 throw JpaLogger.ROOT_LOGGER.resourcesOfTypeCannotBeRegistered(address.getKey());
             } else {
                 super.registerChild(address, resource);
@@ -232,7 +232,7 @@ public class DynamicManagementStatisticsResource extends PlaceholderResource.Pla
     @Override
     public Resource removeChild(PathElement address) {
         Statistics statistics = getStatistics();
-        if (statistics.getChildrenNames().contains(address.getKey())) {
+        if (statistics.hasChildrenName(address.getKey())) {
             throw JpaLogger.ROOT_LOGGER.resourcesOfTypeCannotBeRemoved(address.getKey());
         } else {
             return super.removeChild(address);
