@@ -5,176 +5,175 @@
   -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-   <modelVersion>4.0.0</modelVersion>
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
 
-   <parent>
-      <groupId>org.wildfly</groupId>
-      <artifactId>wildfly-weld-parent</artifactId>
-      <!--
-        Maintain separation between the artifact id and the version to help prevent
-        merge conflicts between commits changing the GA and those changing the V.
-        -->
-      <version>42.0.0.Beta1-SNAPSHOT</version>
-   </parent>
+    <parent>
+        <groupId>org.wildfly</groupId>
+        <artifactId>wildfly-weld-parent</artifactId>
+        <!--
+          Maintain separation between the artifact id and the version to help prevent
+          merge conflicts between commits changing the GA and those changing the V.
+          -->
+        <version>42.0.0.Beta1-SNAPSHOT</version>
+    </parent>
 
-   <artifactId>wildfly-weld-common</artifactId>
-   <name>WildFly: Weld Common Tools</name>
+    <artifactId>wildfly-weld-common</artifactId>
+    <name>WildFly: Weld Common Tools</name>
 
-   <dependencies>
+    <dependencies>
 
-      <!-- Jakarta-namespace specific deps -->
+        <!-- Jakarta-namespace specific deps -->
 
-      <dependency>
-         <groupId>jakarta.annotation</groupId>
-         <artifactId>jakarta.annotation-api</artifactId>
-      </dependency>
+        <dependency>
+            <groupId>jakarta.annotation</groupId>
+            <artifactId>jakarta.annotation-api</artifactId>
+        </dependency>
 
-      <dependency>
-         <groupId>jakarta.enterprise</groupId>
-         <artifactId>jakarta.enterprise.cdi-api</artifactId>
-      </dependency>
+        <dependency>
+            <groupId>jakarta.enterprise</groupId>
+            <artifactId>jakarta.enterprise.cdi-api</artifactId>
+        </dependency>
 
-      <dependency>
-         <groupId>jakarta.interceptor</groupId>
-         <artifactId>jakarta.interceptor-api</artifactId>
-      </dependency>
+        <dependency>
+            <groupId>jakarta.interceptor</groupId>
+            <artifactId>jakarta.interceptor-api</artifactId>
+        </dependency>
 
-      <dependency>
-         <groupId>org.jboss.invocation</groupId>
-         <artifactId>jboss-invocation</artifactId>
-      </dependency>
+        <dependency>
+            <groupId>org.jboss.invocation</groupId>
+            <artifactId>jboss-invocation</artifactId>
+        </dependency>
 
-      <dependency>
-         <groupId>org.jboss.metadata</groupId>
-         <artifactId>jboss-metadata-common</artifactId>
-      </dependency>
+        <dependency>
+            <groupId>org.jboss.metadata</groupId>
+            <artifactId>jboss-metadata-common</artifactId>
+        </dependency>
 
-      <dependency>
-         <groupId>org.jboss.weld</groupId>
-         <artifactId>weld-api</artifactId>
-      </dependency>
+        <dependency>
+            <groupId>org.jboss.weld</groupId>
+            <artifactId>weld-api</artifactId>
+        </dependency>
 
-      <dependency>
-         <groupId>org.jboss.weld</groupId>
-         <artifactId>weld-core-impl</artifactId>
-      </dependency>
+        <dependency>
+            <groupId>org.jboss.weld</groupId>
+            <artifactId>weld-core-impl</artifactId>
+        </dependency>
 
-      <dependency>
-         <groupId>org.jboss.weld</groupId>
-         <artifactId>weld-spi</artifactId>
-      </dependency>
+        <dependency>
+            <groupId>org.jboss.weld</groupId>
+            <artifactId>weld-spi</artifactId>
+        </dependency>
 
-      <dependency>
-         <groupId>org.jboss.weld.module</groupId>
-         <artifactId>weld-ejb</artifactId>
-      </dependency>
+        <dependency>
+            <groupId>org.jboss.weld.module</groupId>
+            <artifactId>weld-ejb</artifactId>
+        </dependency>
 
-      <dependency>
-         <groupId>${project.groupId}</groupId>
-         <artifactId>wildfly-ee</artifactId>
-         <exclusions>
-            <exclusion>
-               <groupId>*</groupId>
-               <artifactId>*</artifactId>
-            </exclusion>
-         </exclusions>
-      </dependency>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>wildfly-ee</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
 
-      <dependency>
-         <groupId>${project.groupId}</groupId>
-         <artifactId>wildfly-weld-spi</artifactId>
-         <exclusions>
-            <exclusion>
-               <groupId>*</groupId>
-               <artifactId>*</artifactId>
-            </exclusion>
-         </exclusions>
-      </dependency>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>wildfly-weld-spi</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
 
-      <!-- Other deps consistent with the javax.* mail module -->
+        <!-- Other deps consistent with the javax.* mail module -->
 
-      <dependency>
-         <groupId>org.jboss.logging</groupId>
-         <artifactId>jboss-logging</artifactId>
-      </dependency>
+        <dependency>
+            <groupId>org.jboss.logging</groupId>
+            <artifactId>jboss-logging</artifactId>
+        </dependency>
 
-      <dependency>
-         <groupId>org.jboss.logging</groupId>
-         <artifactId>jboss-logging-annotations</artifactId>
-         <!-- This is a compile-time dependency of this project, but is not
-            needed at compile or runtime by other projects that depend on this project. -->
-         <scope>provided</scope>
-         <optional>true</optional>
-      </dependency>
+        <dependency>
+            <groupId>org.jboss.logging</groupId>
+            <artifactId>jboss-logging-annotations</artifactId>
+            <!-- This is a compile-time dependency of this project, but is not
+               needed at compile or runtime by other projects that depend on this project. -->
+            <scope>provided</scope>
+            <optional>true</optional>
+        </dependency>
 
-      <dependency>
-         <groupId>org.jboss.modules</groupId>
-         <artifactId>jboss-modules</artifactId>
-         <exclusions>
-            <exclusion>
-               <groupId>*</groupId>
-               <artifactId>*</artifactId>
-            </exclusion>
-         </exclusions>
-      </dependency>
+        <dependency>
+            <groupId>org.jboss.modules</groupId>
+            <artifactId>jboss-modules</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
 
-      <dependency>
-         <groupId>org.jboss.msc</groupId>
-         <artifactId>jboss-msc</artifactId>
-         <exclusions>
-            <exclusion>
-               <groupId>*</groupId>
-               <artifactId>*</artifactId>
-            </exclusion>
-         </exclusions>
-      </dependency>
+        <dependency>
+            <groupId>org.jboss.msc</groupId>
+            <artifactId>jboss-msc</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
 
-      <dependency>
-         <groupId>${project.groupId}</groupId>
-         <artifactId>wildfly-naming</artifactId>
-         <exclusions>
-            <exclusion>
-               <groupId>*</groupId>
-               <artifactId>*</artifactId>
-            </exclusion>
-         </exclusions>
-      </dependency>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>wildfly-naming</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
 
-      <dependency>
-         <groupId>org.wildfly.core</groupId>
-         <artifactId>wildfly-controller</artifactId>
-      </dependency>
+        <dependency>
+            <groupId>org.wildfly.core</groupId>
+            <artifactId>wildfly-controller</artifactId>
+        </dependency>
 
-      <dependency>
-         <groupId>org.wildfly.core</groupId>
-         <artifactId>wildfly-server</artifactId>
-      </dependency>
+        <dependency>
+            <groupId>org.wildfly.core</groupId>
+            <artifactId>wildfly-server</artifactId>
+        </dependency>
 
-      <dependency>
-         <groupId>org.wildfly.security</groupId>
-         <artifactId>wildfly-elytron-permission</artifactId>
-         <exclusions>
-            <exclusion>
-               <groupId>*</groupId>
-               <artifactId>*</artifactId>
-            </exclusion>
-         </exclusions>
-      </dependency>
+        <dependency>
+            <groupId>org.wildfly.security</groupId>
+            <artifactId>wildfly-elytron-permission</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
 
-      <dependency>
-         <groupId>org.wildfly.security</groupId>
-         <artifactId>wildfly-elytron-security-manager</artifactId>
-         <exclusions>
-            <exclusion>
-               <groupId>*</groupId>
-               <artifactId>*</artifactId>
-            </exclusion>
-         </exclusions>
-      </dependency>
+        <dependency>
+            <groupId>org.wildfly.security</groupId>
+            <artifactId>wildfly-elytron-security-manager</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
 
-   </dependencies>
-
+    </dependencies>
 
     <build>
         <plugins>
