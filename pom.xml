@@ -1536,16 +1536,6 @@
                     <version>${version.org.wildfly.plugin}</version>
                 </plugin>
                 <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-compiler-plugin</artifactId>
-                    <configuration>
-                        <compilerArgs combine.children="append">
-                            <!-- Note: this requires Java SE 17.0.11 or later. Update your environment if this causes a problem. -->
-                            <arg>-proc:full</arg>
-                        </compilerArgs>
-                    </configuration>
-                </plugin>
-                <plugin>
                     <groupId>org.wildfly.plugins</groupId>
                     <artifactId>wildfly-detach-plugin</artifactId>
                     <version>${version.org.wildfly.plugin.wildfly-detach-plugin}</version>
