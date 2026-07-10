@@ -32,7 +32,7 @@
         <container qualifier="iiop-server" default="false">
             <configuration>
                 <property name="jbossHome">${basedir}/target/jbossas-iiop-server</property>
-                <property name="javaVmArguments">${server.jvm2.args}  -Djboss.socket.binding.port-offset=100</property>
+                <property name="javaVmArguments">${server.jvm2.args}  -Djboss.socket.binding.port-offset=100 -Djboss.experimental.iiop.deserialization.filter.spec=!org.jboss.as.test.iiop.denylist.DangerousClass</property>
                 <property name="serverConfig">${jboss.server.config.file.name:standalone-full.xml}</property>
                 <property name="jbossArguments">${jboss.args}</property>
                 <property name="managementAddress">${node1}</property>
