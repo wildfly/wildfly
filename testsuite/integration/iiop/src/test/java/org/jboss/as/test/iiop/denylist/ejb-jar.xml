@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ejb-jar xmlns="http://java.sun.com/xml/ns/javaee"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/ejb-jar_3_1.xsd"
+         version="3.1">
+    <enterprise-beans>
+        <session>
+            <ejb-name>ClientEjb</ejb-name>
+            <session-type>Stateless</session-type>
+            <ejb-ref>
+                <ejb-ref-name>home</ejb-ref-name>
+                <injection-target>
+                    <injection-target-class>org.jboss.as.test.iiop.denylist.ClientEjb</injection-target-class>
+                    <injection-target-name>home</injection-target-name>
+                </injection-target>
+                <lookup-name>corbaname:iiop:${node1}:3628#IIOPDenyListBean</lookup-name>
+            </ejb-ref>
+        </session>
+    </enterprise-beans>
+    <assembly-descriptor>
+        <application-exception>
+            <exception-class>java.lang.RuntimeException</exception-class>
+            <rollback>false</rollback>
+        </application-exception>
+    </assembly-descriptor>
+</ejb-jar>
