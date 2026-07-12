@@ -1023,6 +1023,12 @@
             <url>${maven.repository.url}</url>
             <layout>default</layout>
         </repository>
+        <repository>
+            <id>jboss-staging</id>
+            <name>JBoss Staging Repository</name>
+            <url>https://repository.jboss.org/nexus/repository/jboss-io/</url>
+            <layout>default</layout>
+        </repository>
     </repositories>
 
     <pluginRepositories>
