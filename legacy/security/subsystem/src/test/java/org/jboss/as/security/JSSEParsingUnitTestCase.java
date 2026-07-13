@@ -58,7 +58,8 @@ public class JSSEParsingUnitTestCase {
     public void initializeParser() throws Exception {
         //Initialize the parser
         xmlMapper = XMLMapper.Factory.create();
-        extensionParsingRegistry = new ExtensionRegistry(ProcessType.EMBEDDED_SERVER, new RunningModeControl(RunningMode.NORMAL), null, null, null, null);
+        // legacy extensions require ADMIN-ONLY to initialize parsers on servers other than domain server
+        extensionParsingRegistry = new ExtensionRegistry(ProcessType.EMBEDDED_SERVER, new RunningModeControl(RunningMode.ADMIN_ONLY), null, null, null, null);
         testParser = new TestParser(mainSubsystemName, extensionParsingRegistry);
         xmlMapper.registerRootElement(new QName(TEST_NAMESPACE, "test"), testParser);
         mainExtension.initializeParsers(extensionParsingRegistry.getExtensionParsingContext("Test", xmlMapper));
