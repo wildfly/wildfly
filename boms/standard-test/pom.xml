@@ -300,14 +300,6 @@
                 </exclusions>
             </dependency>
 
-            <!-- used in the MicroProfile REST Client TCK -->
-            <dependency>
-                <groupId>org.jboss.spec.javax.servlet</groupId>
-                <artifactId>jboss-servlet-api_4.0_spec</artifactId>
-                <version>${version.org.jboss.spec.javax.servlet.jboss-servlet-api_4.0_spec}</version>
-                <scope>test</scope>
-            </dependency>
-
             <dependency>
                 <groupId>org.jsoup</groupId>
                 <artifactId>jsoup</artifactId>

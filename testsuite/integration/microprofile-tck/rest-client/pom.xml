@@ -422,13 +422,6 @@
                                     <groupId>org.wiremock</groupId>
                                     <artifactId>wiremock</artifactId>
                                 </artifactItem>
-                                <!-- This is required for the MicroProfile REST Client 3.0 TCK. This will always copy it,
-                                     but we'll only use it in the 3.0 TCK runner.
-                                 -->
-                                <artifactItem>
-                                    <groupId>org.jboss.spec.javax.servlet</groupId>
-                                    <artifactId>jboss-servlet-api_4.0_spec</artifactId>
-                                </artifactItem>
                             </artifactItems>
                             <stripVersion>true</stripVersion>
                             <outputDirectory>${wiremock.lib.path}</outputDirectory>
