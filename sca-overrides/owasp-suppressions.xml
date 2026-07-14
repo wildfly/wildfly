@@ -273,4 +273,13 @@
      <packageUrl regex="true">^pkg:maven/org\.elasticsearch\.client/elasticsearch-rest-client.*@.*$</packageUrl>
      <cve>CVE-2024-52979</cve>
   </suppress>
+   <suppress>
+      <notes><![CDATA[
+     file name: kafka-clients-4.2.1.jar
+
+     [WFLY-22072] This CVE is about the Kafka server, not the client library we depend on. It's also a documentation issue, not a code issue.
+     ]]></notes>
+      <packageUrl regex="true">^pkg:maven/org\.apache\.kafka/kafka-clients@.*$</packageUrl>
+      <cve>CVE-2026-41115</cve>
+   </suppress>
 </suppressions>
