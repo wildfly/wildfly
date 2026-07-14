@@ -57,7 +57,7 @@
         <version.org.bytebuddy>1.18.8</version.org.bytebuddy>
         <version.org.elasticsearch.client.rest-client>9.3.1</version.org.elasticsearch.client.rest-client>
         <version.org.glassfish.expressly>6.0.0</version.org.glassfish.expressly>
-        <version.org.glassfish.jakarta.faces>4.1.7</version.org.glassfish.jakarta.faces>
+        <version.org.glassfish.jakarta.faces>4.0.19</version.org.glassfish.jakarta.faces>
         <version.org.glassfish.soteria>4.0.2</version.org.glassfish.soteria>
         <version.org.hibernate.search>8.4.0.Final</version.org.hibernate.search>
         <version.org.hibernate.validator>9.1.1.Final</version.org.hibernate.validator>
