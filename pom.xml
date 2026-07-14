@@ -329,7 +329,6 @@
         <version.central.publishing.maven.plugin>0.9.0</version.central.publishing.maven.plugin>
         <version.org.jacoco>0.8.15</version.org.jacoco>
         <version.org.jboss.galleon>7.0.8.Final</version.org.jboss.galleon>
-        <version.org.owasp.dependency-check>12.2.2</version.org.owasp.dependency-check>
         <version.org.wildfly.bom-builder-plugin>2.0.11.Final</version.org.wildfly.bom-builder-plugin>
         <version.org.wildfly.checkstyle-config>1.0.8.Final</version.org.wildfly.checkstyle-config>
         <version.org.wildfly.common>1.6.0.Final</version.org.wildfly.common>
@@ -1733,36 +1732,6 @@
             <modules>
                 <module>docs</module>
             </modules>
-        </profile>
-
-        <profile>
-            <id>dependency-check</id>
-            <activation>
-                <property>
-                    <name>dependency-check</name>
-                </property>
-            </activation>
-            <build>
-                <plugins>
-                    <plugin>
-                      <groupId>org.owasp</groupId>
-                      <artifactId>dependency-check-maven</artifactId>
-                      <version>${version.org.owasp.dependency-check}</version>
-                      <configuration>
-                          <nvdApiServerId>nvd</nvdApiServerId>
-                          <ossIndexServerId>oss-index</ossIndexServerId>
-                          <suppressionFile>./sca-overrides/owasp-suppressions.xml</suppressionFile>
-                      </configuration>
-                      <executions>
-                          <execution>
-                              <goals>
-                                  <goal>aggregate</goal>
-                              </goals>
-                          </execution>
-                      </executions>
-                    </plugin>
-                </plugins>
-            </build>
         </profile>
 
         <profile>
