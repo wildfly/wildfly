@@ -282,4 +282,22 @@
       <packageUrl regex="true">^pkg:maven/org\.apache\.kafka/kafka-clients@.*$</packageUrl>
       <cve>CVE-2026-41115</cve>
    </suppress>
+   <suppress>
+      <notes><![CDATA[
+    file name: httpcore-4.4.16.jar
+
+    [WFLY-22073] This affects the HTTP/2 implementation in HTTPComponents 5. WildFly ships HTTPComponents 4, which does not have an HTTP/2 implementation.
+    ]]></notes>
+      <packageUrl regex="true">^pkg:maven/org\.apache\.httpcomponents/httpcore@.*$</packageUrl>
+      <cve>CVE-2026-54428</cve>
+   </suppress>
+   <suppress>
+      <notes><![CDATA[
+    file name: httpcore-nio-4.4.16.jar
+
+    [WFLY-22073] This affects the HTTP/2 implementation in HTTPComponents 5. WildFly ships HTTPComponents 4, which does not have an HTTP/2 implementation.
+    ]]></notes>
+      <packageUrl regex="true">^pkg:maven/org\.apache\.httpcomponents/httpcore-nio@.*$</packageUrl>
+      <cve>CVE-2026-54428</cve>
+   </suppress>
 </suppressions>
