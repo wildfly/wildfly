@@ -35,6 +35,7 @@ batch
 /subsystem=jgroups/stack=tcp-bridge/protocol=UNICAST3:add
 /subsystem=jgroups/stack=tcp-bridge/protocol=pbcast.STABLE:add
 /subsystem=jgroups/stack=tcp-bridge/protocol=pbcast.GMS:add
+/subsystem=jgroups/stack=tcp-bridge/protocol=UFC:add
 /subsystem=jgroups/stack=tcp-bridge/protocol=MFC:add
 /subsystem=jgroups/stack=tcp-bridge/protocol=FRAG4:add
 run-batch
