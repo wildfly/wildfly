@@ -33,6 +33,7 @@ import static org.wildfly.extension.messaging.activemq.CommonAttributes.NAME;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.OUTGOING_INTERCEPTORS;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.PAGING_DIRECTORY;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.SECURITY_SETTING;
+import static org.wildfly.extension.messaging.activemq.ManagementUtil.configureDiscoverySystemProperty;
 import static org.wildfly.extension.messaging.activemq.PathDefinition.PATHS;
 import static org.wildfly.extension.messaging.activemq.PathDefinition.RELATIVE_TO;
 import static org.wildfly.extension.messaging.activemq.ServerDefinition.ADDRESS_QUEUE_SCAN_PERIOD;
@@ -108,6 +109,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -388,6 +390,7 @@ class ServerAdd extends AbstractAddStepHandler {
             final Map<String, Supplier<SocketBinding>> groupBindings = new HashMap<>();
             final Map<ServiceName, Supplier<SocketBinding>> groupBindingServices = new HashMap<>();
 
+            final Set<String> socketBroadcastGroupNames = new LinkedHashSet<>();
             if (broadcastGroupConfigurations != null) {
                 for (final BroadcastGroupConfiguration config : broadcastGroupConfigurations) {
                     final String name = config.getName();
@@ -400,6 +403,7 @@ class ServerAdd extends AbstractAddStepHandler {
                         String clusterName = JGROUPS_CLUSTER.resolveModelAttribute(context, broadcastGroupModel).asString();
                         clusterNames.put(key, clusterName);
                     } else {
+                        socketBroadcastGroupNames.add(name);
                         final ServiceName groupBindingServiceName = GroupBindingService.getBroadcastBaseServiceName(activeMQServiceName).append(name);
                         if (!groupBindingServices.containsKey(groupBindingServiceName)) {
                             Supplier<SocketBinding> groupBinding = serviceBuilder.requires(groupBindingServiceName);
@@ -409,6 +413,7 @@ class ServerAdd extends AbstractAddStepHandler {
                     }
                 }
             }
+            final Set<String> socketDiscoveryGroupNames = new LinkedHashSet<>();
             if (discoveryGroupConfigurations != null) {
                 for (final DiscoveryGroupConfiguration config : discoveryGroupConfigurations.values()) {
                     final String name = config.getName();
@@ -421,6 +426,7 @@ class ServerAdd extends AbstractAddStepHandler {
                         String clusterName = JGROUPS_CLUSTER.resolveModelAttribute(context, discoveryGroupModel).asString();
                         clusterNames.put(key, clusterName);
                     } else {
+                        socketDiscoveryGroupNames.add(name);
                         final ServiceName groupBindingServiceName = GroupBindingService.getDiscoveryBaseServiceName(activeMQServiceName).append(name);
                         if (!groupBindingServices.containsKey(groupBindingServiceName)) {
                             Supplier<SocketBinding> groupBinding = serviceBuilder.requires(groupBindingServiceName);
@@ -430,6 +436,8 @@ class ServerAdd extends AbstractAddStepHandler {
                     }
                 }
             }
+
+            configureDiscoverySystemProperty();
 
             // Create the ActiveMQ Service
             final ActiveMQServerService serverService = new ActiveMQServerService(
@@ -446,7 +454,9 @@ class ServerAdd extends AbstractAddStepHandler {
                     elytronSecurityDomain,
                     mbeanServer,
                     dataSource,
-                    sslContexts
+                    sslContexts,
+                    socketDiscoveryGroupNames,
+                    socketBroadcastGroupNames
             );
 
             // inject credential-references for bridges

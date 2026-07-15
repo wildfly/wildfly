@@ -74,7 +74,6 @@ public class ExternalJMSTopicService implements Service<Topic> {
                     final ActiveMQRAConnectionFactory raCf = (ActiveMQRAConnectionFactory) cf;
                     final ServerLocator locator = raCf.getDefaultFactory().getServerLocator();
                     final ClientProtocolManagerFactory protocolManagerFactory = locator.getProtocolManagerFactory();
-                    sessionFactory = locator.createSessionFactory();
                     ClusterTopologyListener listener = new ClusterTopologyListener() {
                         @Override
                         public void nodeUP(TopologyMember member, boolean last) {
@@ -107,6 +106,7 @@ public class ExternalJMSTopicService implements Service<Topic> {
                         }
                     };
                     locator.addClusterTopologyListener(listener);
+                    sessionFactory = locator.createSessionFactory();
                     Collection<TopologyMemberImpl> members = locator.getTopology().getMembers();
                     if (members == null || members.isEmpty()) {
                         config.createTopic(cf, managementQueue, topicName);

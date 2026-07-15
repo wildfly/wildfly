@@ -11,13 +11,16 @@ import static org.jboss.as.weld.Capabilities.WELD_CAPABILITY_NAME;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.JGROUPS_BROADCAST_GROUP;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.JGROUPS_DISCOVERY_GROUP;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.JGROUPS_CLUSTER;
+import static org.wildfly.extension.messaging.activemq.ManagementUtil.configureDiscoverySystemProperty;
 import static org.wildfly.extension.messaging.activemq.MessagingSubsystemRootResourceDefinition.CONFIGURATION_CAPABILITY;
 import static org.wildfly.extension.messaging.activemq.MessagingSubsystemRootResourceDefinition.GLOBAL_CLIENT_SCHEDULED_THREAD_POOL_MAX_SIZE;
 import static org.wildfly.extension.messaging.activemq.MessagingSubsystemRootResourceDefinition.GLOBAL_CLIENT_THREAD_POOL_MAX_SIZE;
+import static org.wildfly.extension.messaging.activemq._private.MessagingLogger.MESSAGING_DISCOVERY_WARNING_DISABLED_PROPERTY_NAME;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -176,6 +179,7 @@ class MessagingSubsystemAdd extends AbstractBoottimeAddStepHandler {
                 final Map<String, ServiceName> commandDispatcherFactories = new HashMap<>();
                 final Map<String, ServiceName> groupBindings = new HashMap<>();
                 final Set<ServiceName> groupBindingServices = new HashSet<>();
+                final Set<String> socketBroadcastGroupNames = new LinkedHashSet<>();
                 for (final BroadcastGroupConfiguration config : broadcastGroupConfigurations) {
                     final String name = config.getName();
                     final String key = "broadcast" + name;
@@ -188,6 +192,7 @@ class MessagingSubsystemAdd extends AbstractBoottimeAddStepHandler {
                         String clusterName = JGROUPS_CLUSTER.resolveModelAttribute(context, broadcastGroupModel).asString();
                         clusterNames.put(key, clusterName);
                     } else {
+                        socketBroadcastGroupNames.add(name);
                         final ServiceName groupBindingServiceName = GroupBindingService.getBroadcastBaseServiceName(MessagingServices.getActiveMQServiceName()).append(name);
                         if (!groupBindingServices.contains(groupBindingServiceName)) {
                             groupBindingServices.add(groupBindingServiceName);
@@ -195,6 +200,7 @@ class MessagingSubsystemAdd extends AbstractBoottimeAddStepHandler {
                         groupBindings.put(key, groupBindingServiceName);
                     }
                 }
+                final Set<String> socketDiscoveryGroupNames = new LinkedHashSet<>();
                 for (final DiscoveryGroupConfiguration config : discoveryGroupConfigurations.values()) {
                     final String name = config.getName();
                     final String key = "discovery" + name;
@@ -207,11 +213,19 @@ class MessagingSubsystemAdd extends AbstractBoottimeAddStepHandler {
                         String clusterName = JGROUPS_CLUSTER.resolveModelAttribute(context, discoveryGroupModel).asString();
                         clusterNames.put(key, clusterName);
                     } else {
+                        socketDiscoveryGroupNames.add(name);
                         final ServiceName groupBindingServiceName = GroupBindingService.getDiscoveryBaseServiceName(MessagingServices.getActiveMQServiceName()).append(name);
                         if (!groupBindingServices.contains(groupBindingServiceName)) {
                             groupBindingServices.add(groupBindingServiceName);
                         }
                         groupBindings.put(key, groupBindingServiceName);
+                    }
+                }
+                configureDiscoverySystemProperty();
+
+                if (!socketDiscoveryGroupNames.isEmpty() || !socketBroadcastGroupNames.isEmpty()) {
+                    if (!Boolean.parseBoolean(org.wildfly.security.manager.WildFlySecurityManager.getPropertyPrivileged(MESSAGING_DISCOVERY_WARNING_DISABLED_PROPERTY_NAME, "false"))) {
+                        MessagingLogger.DISCOVERY_WARNING_LOGGER.udpMulticastWarning(socketDiscoveryGroupNames, socketBroadcastGroupNames);
                     }
                 }
                 serviceBuilder.setInstance(new ExternalBrokerConfigurationService(
