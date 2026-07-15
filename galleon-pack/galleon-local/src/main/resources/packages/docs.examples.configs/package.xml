@@ -4,4 +4,10 @@
   ~ SPDX-License-Identifier: Apache-2.0
   -->
 
-<package-spec xmlns="urn:jboss:galleon:package:2.0" name="docs.examples.configs"/>
+<package-spec xmlns="urn:jboss:galleon:package:2.0" name="docs.examples.configs">
+    <dependencies>
+        <origin name="org.wildfly:wildfly-ee-galleon-pack">
+            <package name="docs.examples.configs"/>
+        </origin>
+    </dependencies>
+</package-spec>
