@@ -20,7 +20,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
     -->
-    <version>41.0.0.Final</version>
+    <version>42.0.0.Beta1-SNAPSHOT</version>
 
     <packaging>pom</packaging>
 
@@ -121,7 +121,7 @@
         <preview.dist.product.release.version>${full.dist.product.release.version}</preview.dist.product.release.version>
         <preview.dist.product.stability.level>preview</preview.dist.product.stability.level>
         <preview.dist.product.min.stability.level>experimental</preview.dist.product.min.stability.level>
-        <product.docs.server.version>41</product.docs.server.version>
+        <product.docs.server.version>42</product.docs.server.version>
         <!-- TODO WFLY-21408 Apply workaround for dependabot pom.xml parsing issue "ERROR: Invalid expression: /project/groupId}.channel" -->
         <!-- <channels.maven.groupId>${project.groupId}.channels</channels.maven.groupId> -->
         <channels.maven.groupId>org.wildfly.channels</channels.maven.groupId>
