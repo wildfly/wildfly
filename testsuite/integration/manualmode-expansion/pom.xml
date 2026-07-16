@@ -199,9 +199,6 @@
                                     <groupId>${ee.maven.groupId}</groupId>
                                     <artifactId>${testsuite.ee.only.feature.pack.artifactId}</artifactId>
                                     <version>${ee.maven.version}</version>
-                                    <included-packages>
-                                        <name>docs.examples.configs</name>
-                                    </included-packages>
                                 </feature-pack>
                                 <feature-pack>
                                     <groupId>${full.maven.groupId}</groupId>
