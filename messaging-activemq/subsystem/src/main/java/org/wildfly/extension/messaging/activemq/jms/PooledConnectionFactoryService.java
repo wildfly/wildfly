@@ -452,7 +452,7 @@ public class PooledConnectionFactoryService implements Service<Void> {
             sb.requires(ActiveMQActivationService.getServiceName(getActiveMQServiceName(serverName)));
             sb.requires(NamingService.SERVICE_NAME);
             sb.requires(MessagingServices.getCapabilityServiceName(MessagingServices.LOCAL_TRANSACTION_PROVIDER_CAPABILITY));
-            WildFlyRecoveryRegistry.supplier = sb.requires(MessagingServices.getCapabilityServiceName(MessagingServices.TRANSACTION_XA_RESOURCE_RECOVERY_REGISTRY_CAPABILITY));
+            WildFlyRecoveryRegistry.setSupplier(sb.requires(MessagingServices.getCapabilityServiceName(MessagingServices.TRANSACTION_XA_RESOURCE_RECOVERY_REGISTRY_CAPABILITY)));
             sb.requires(ConnectorServices.BOOTSTRAP_CONTEXT_SERVICE.append("default"));
             sb.setInitialMode(ServiceController.Mode.PASSIVE).install();
             // Mock the deployment service to allow it to start

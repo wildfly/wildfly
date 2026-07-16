@@ -905,4 +905,8 @@ public interface MessagingLogger extends BasicLogger {
 
     @Message(id = 119, value = "'%s' wasn't found among existing JMS resources.")
     OperationFormatException jndiWasNotFound(String jndiName);
+
+    @LogMessage(level = WARN)
+    @Message(id = 120, value = "XA resource recovery registry supplier has already been set, skipping duplicate registration")
+    void recoveryRegistrySupplierAlreadySet();
 }
