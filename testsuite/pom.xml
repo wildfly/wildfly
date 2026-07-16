@@ -176,7 +176,8 @@
 
         <!-- Timeout ratios. 100 will leave the timeout as it was coded. -->
         <timeout.factor>100</timeout.factor>
-        <jvm.args.timeouts>-Dts.timeout.factor=${timeout.factor}</jvm.args.timeouts>
+        <!-- WFLY-22076 Bump bootable jar cleanup marker timeout from default 10s to avoid spurious failures on slow CI agents. -->
+        <jvm.args.timeouts>-Dts.timeout.factor=${timeout.factor} -Dorg.wildfly.core.bootable.jar.timeout=60</jvm.args.timeouts>
 
         <!-- Common surefire properties. -->
         <surefire.memory.args>-Xmx512m</surefire.memory.args>
