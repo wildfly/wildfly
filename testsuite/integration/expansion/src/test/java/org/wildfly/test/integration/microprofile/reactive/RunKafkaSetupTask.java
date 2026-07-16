@@ -32,6 +32,7 @@ public class RunKafkaSetupTask implements ServerSetupTask {
         }
         container = new KafkaContainer(ContainerConfig.KAFKA.getImageName() + ":" + kafkaVersion);
         container.setPortBindings(Arrays.asList("9092:9092", "9093:9093"));
+        container.withStartupAttempts(3);
 
         for (Map.Entry<String, String> entry : extraBrokerProperties().entrySet()) {
             container.addEnv(entry.getKey(), entry.getValue());
