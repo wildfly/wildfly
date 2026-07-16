@@ -631,6 +631,7 @@
                         <surefire.jpda.args.node4>${surefire.jpda.args.node4}</surefire.jpda.args.node4>
                         <infinispan.server.home>${infinispan.server.home.template}</infinispan.server.home>
                         <infinispan.server.profile>${infinispan.server.profile.override}</infinispan.server.profile>
+                        <infinispan.test.checkThreadLeaks>false</infinispan.test.checkThreadLeaks>
                     </systemPropertyVariables>
                 </configuration>
             </plugin>
