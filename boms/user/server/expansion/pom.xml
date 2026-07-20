@@ -164,7 +164,10 @@
             <id>legacy-ee-build</id>
             <activation>
                 <property>
-                    <name>!no.legacy.ee.build</name>
+                    <!-- This profile is not expected to be used.
+                         We want to keep the code structure for future use,
+                         but there is no current use. -->
+                    <name>disabled.legacy.ee.build</name>
                 </property>
             </activation>
             <modules>

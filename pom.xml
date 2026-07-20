@@ -1581,7 +1581,6 @@
                 <module>batch-jberet</module>
                 <module>bean-validation</module>
                 <module>boms/common-ee</module>
-                <module>boms/legacy-ee</module>
                 <module>boms/standard-legacy-ee</module>
                 <module>boms/standard-preview-ee</module>
                 <module>boms/standard-ee</module>
@@ -1646,14 +1645,12 @@
             </activation>
             <modules>
                 <module>boms/common-expansion</module>
-                <module>boms/legacy-expansion</module>
                 <module>boms/standard-expansion</module>
                 <module>boms/standard-test-expansion</module>
                 <module>boms/user</module>
                 <module>build</module>
                 <module>dist</module>
                 <module>galleon-pack</module>
-                <module>legacy/channel</module>
                 <module>legacy/opentracing-extension</module>
                 <module>microprofile</module>
                 <module>observability</module>
@@ -1686,13 +1683,32 @@
             <id>legacy-ee-build</id>
             <activation>
                 <property>
-                    <name>!no.legacy.ee.build</name>
+                    <!-- This profile is not expected to be used.
+                         We want to keep the code structure for future use,
+                         but there is no current use. -->
+                    <name>disabled.legacy.ee.build</name>
                 </property>
             </activation>
             <modules>
                 <module>boms/legacy-ee</module>
                 <module>concurrency/impl-30</module>
                 <module>legacy/ee-feature-pack</module>
+            </modules>
+        </profile>
+
+        <profile>
+            <id>legacy-expansion-build</id>
+            <activation>
+                <property>
+                    <!-- This profile is not expected to be used.
+                         We want to keep the code structure for future use,
+                         but there is no current use. -->
+                    <name>disabled.legacy.ee.build</name>
+                </property>
+            </activation>
+            <modules>
+                <module>boms/legacy-expansion</module>
+                <module>legacy/channel</module>
             </modules>
         </profile>
 
