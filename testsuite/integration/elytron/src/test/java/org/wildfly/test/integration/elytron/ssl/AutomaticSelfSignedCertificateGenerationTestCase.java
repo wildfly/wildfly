@@ -29,7 +29,9 @@ import org.codehaus.plexus.util.FileUtils;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
+import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.test.categories.CommonCriteria;
 import org.jboss.as.test.integration.management.util.CLIWrapper;
@@ -37,6 +39,7 @@ import org.jboss.as.test.integration.security.common.SSLTruststoreUtil;
 import org.jboss.as.test.integration.security.common.SecurityTestConstants;
 import org.jboss.as.test.integration.security.common.Utils;
 import org.jboss.as.test.integration.security.common.servlets.SimpleServlet;
+import org.jboss.as.test.shared.ServerReload;
 import org.jboss.as.test.shared.TestSuiteEnvironment;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
@@ -71,6 +74,9 @@ public class AutomaticSelfSignedCertificateGenerationTestCase {
     private static final String PASSWORD = SecurityTestConstants.KEYSTORE_PASSWORD;
     private static final String GENERATE_SELF_SIGNED_CERTIFICATE_HOST="customHostName";
     private static final String SERVER_ALIAS = "server";
+
+    @ArquillianResource
+    private ManagementClient managementClient;
 
     @Deployment(testable = false)
     public static WebArchive createDeployment() {
@@ -138,8 +144,8 @@ public class AutomaticSelfSignedCertificateGenerationTestCase {
         try (CLIWrapper cli = new CLIWrapper(true)) {
             cli.sendLine(String.format("/subsystem=elytron/key-manager=%s:undefine-attribute(name=generate-self-signed-certificate-host)",
                     NAME));
-            cli.sendLine(String.format("reload"));
         }
+        ServerReload.executeReloadAndWaitForCompletion(managementClient);
         try {
             final URL servletUrl = new URL("https", TestSuiteEnvironment.getServerAddress(), HTTPS_PORT,
                     "/" + NAME + "/" + SimpleServlet.SERVLET_PATH.substring(1));
@@ -157,8 +163,8 @@ public class AutomaticSelfSignedCertificateGenerationTestCase {
             try (CLIWrapper cli = new CLIWrapper(true)) {
                 cli.sendLine(String.format("/subsystem=elytron/key-manager=%s:write-attribute(name=generate-self-signed-certificate-host,value=%s)",
                         NAME, GENERATE_SELF_SIGNED_CERTIFICATE_HOST));
-                cli.sendLine(String.format("reload"));
             }
+            ServerReload.executeReloadAndWaitForCompletion(managementClient);
         }
     }
 
