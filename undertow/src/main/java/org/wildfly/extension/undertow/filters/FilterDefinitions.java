@@ -15,22 +15,24 @@ import org.jboss.as.controller.ModelOnlyRemoveStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.PersistentResourceDefinition;
+import org.jboss.as.controller.ResourceRegistration;
+import org.jboss.as.controller.descriptions.ParentResourceDescriptionResolver;
 import org.jboss.as.controller.registry.AliasEntry;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.wildfly.extension.undertow.Constants;
-import org.wildfly.extension.undertow.UndertowExtension;
+import org.wildfly.extension.undertow.UndertowRootDefinition;
 
 /**
  * @author Tomaz Cerar (c) 2013 Red Hat Inc.
  */
 public class FilterDefinitions extends PersistentResourceDefinition {
-    public static final PathElement PATH_ELEMENT = PathElement.pathElement(Constants.CONFIGURATION, Constants.FILTER);
+    public static final ResourceRegistration REGISTRATION = ResourceRegistration.of(PathElement.pathElement(Constants.CONFIGURATION, Constants.FILTER));
+    static final ParentResourceDescriptionResolver RESOLVER = UndertowRootDefinition.RESOLVER.createChildResolver(REGISTRATION.getPathElement().getValue());
 
     public FilterDefinitions() {
-        super(PATH_ELEMENT, UndertowExtension.getResolver(PATH_ELEMENT.getValue()),
-                ModelOnlyAddStepHandler.INSTANCE,
-                ModelOnlyRemoveStepHandler.INSTANCE
-        );
+        super(new Parameters(REGISTRATION, RESOLVER)
+                .setAddHandler(ModelOnlyAddStepHandler.INSTANCE)
+                .setRemoveHandler(ModelOnlyRemoveStepHandler.INSTANCE));
     }
 
     @Override
@@ -55,13 +57,12 @@ public class FilterDefinitions extends PersistentResourceDefinition {
     public void registerChildren(ManagementResourceRegistration resourceRegistration) {
         super.registerChildren(resourceRegistration);
 
-        PathElement targetPe = RequestLimitHandlerDefinition.PATH_ELEMENT;
-        AliasEntry aliasEntry = new AliasEntry(resourceRegistration.getSubModel(PathAddress.pathAddress(targetPe))) {
+        AliasEntry aliasEntry = new AliasEntry(resourceRegistration.getSubModel(PathAddress.pathAddress(RequestLimitHandlerDefinition.REGISTRATION.getPathElement()))) {
             @Override
             public PathAddress convertToTargetAddress(PathAddress aliasAddress, AliasContext aliasContext) {
                 PathElement pe = aliasAddress.getLastElement();
 
-                return aliasAddress.getParent().append(PathElement.pathElement(targetPe.getKey(), pe.getValue()));
+                return aliasAddress.getParent().append(PathElement.pathElement(RequestLimitHandlerDefinition.REGISTRATION.getPathElement().getKey(), pe.getValue()));
             }
         };
         resourceRegistration.registerAlias(PathElement.pathElement("connection-limit"), aliasEntry);

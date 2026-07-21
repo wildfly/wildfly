@@ -7,6 +7,7 @@
 <feature-group-spec name="undertow-elytron-security" xmlns="urn:jboss:galleon:feature-group:1.0">
     <!-- Map jboss-web.xml security-domain 'other' to the Elytron ApplicationDomain -->
     <feature spec="subsystem.undertow">
+        <param name="default-security-domain" value="other" />
         <feature spec="subsystem.undertow.application-security-domain">
             <param name="application-security-domain" value="other" />
             <param name="security-domain" value="ApplicationDomain"/>
