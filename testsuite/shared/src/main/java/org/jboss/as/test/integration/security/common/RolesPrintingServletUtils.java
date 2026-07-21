@@ -4,7 +4,7 @@
  */
 package org.jboss.as.test.integration.security.common;
 
-import static org.junit.Assert.fail;
+import static org.assertj.core.api.Assertions.fail;
 
 import java.net.MalformedURLException;
 import java.net.URL;

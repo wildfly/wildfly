@@ -4,14 +4,13 @@
  */
 package org.jboss.as.test.integration.web.sso;
 
-import static org.junit.Assert.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import org.apache.http.Header;
@@ -49,8 +48,8 @@ public final class SSOTestBase {
     public static final String PASSWORD_2 = "password2";
     public static final String ROLE = "Users";
 
-    /*
-     * Nothing extends this class or needs to instantiate it, instead publicstatic accessor methods are used.
+    /**
+     * Nothing extends this class or needs to instantiate it, instead public static accessor methods are used.
      */
     private SSOTestBase() {}
 
@@ -199,10 +198,10 @@ public final class SSOTestBase {
         HttpResponse response = httpConn.execute(logout);
         try {
             int statusCode = response.getStatusLine().getStatusCode();
-            assertTrue("Logout: Didn't see code 302 (HTTP_MOVED_TEMP), but saw instead " + statusCode, statusCode == HttpURLConnection.HTTP_MOVED_TEMP);
+            assertThat(statusCode).as("Logout: Didn't see code 302 (HTTP_MOVED_TEMP), but saw instead " + statusCode).isEqualTo(HttpURLConnection.HTTP_MOVED_TEMP);
 
             Header location = response.getFirstHeader("Location");
-            assertTrue("Get of " + warURL + "Logout not redirected to login page", location.getValue().contains("index.html"));
+            assertThat(location.getValue()).as("Get of " + warURL + "Logout not redirected to login page").contains("index.html");
         } finally {
             HttpClientUtils.closeQuietly(response);
         }
@@ -213,10 +212,10 @@ public final class SSOTestBase {
         HttpResponse response = httpConn.execute(getMethod);
         try {
             int statusCode = response.getStatusLine().getStatusCode();
-            assertTrue("Expected code == OK but got " + statusCode + " for request=" + url, statusCode == HttpURLConnection.HTTP_OK);
+            assertThat(statusCode).as("Expected code == OK but got " + statusCode + " for request=" + url).isEqualTo(HttpURLConnection.HTTP_OK);
 
             String body = EntityUtils.toString(response.getEntity());
-            assertTrue("Get of " + url + " redirected to login page", !body.contains("j_security_check"));
+            assertThat(body).as("Get of " + url + " redirected to login page").doesNotContain("j_security_check");
         } finally {
             HttpClientUtils.closeQuietly(response);
         }
@@ -236,8 +235,8 @@ public final class SSOTestBase {
         try {
             int statusCode = postResponse.getStatusLine().getStatusCode();
             Header[] errorHeaders = postResponse.getHeaders("X-NoJException");
-            assertTrue("Should see HTTP_MOVED_TEMP. Got " + statusCode, statusCode == HttpURLConnection.HTTP_MOVED_TEMP);
-            assertTrue("X-NoJException(" + Arrays.toString(errorHeaders) + ") is null", errorHeaders.length == 0);
+            assertThat(statusCode).as("Should see HTTP_MOVED_TEMP").isEqualTo(HttpURLConnection.HTTP_MOVED_TEMP);
+            assertThat(errorHeaders).as("X-NoJException").isEmpty();
             EntityUtils.consume(postResponse.getEntity());
 
             // Follow the redirect to the index.html page
@@ -247,11 +246,11 @@ public final class SSOTestBase {
 
             statusCode = redirectResponse.getStatusLine().getStatusCode();
             errorHeaders = redirectResponse.getHeaders("X-NoJException");
-            assertTrue("Wrong response code: " + statusCode, statusCode == HttpURLConnection.HTTP_OK);
-            assertTrue("X-NoJException(" + Arrays.toString(errorHeaders) + ") is null", errorHeaders.length == 0);
+            assertThat(statusCode).as("Wrong response code: " + statusCode).isEqualTo(HttpURLConnection.HTTP_OK);
+            assertThat(errorHeaders).as("X-NoJException").isEmpty();
 
             String body = EntityUtils.toString(redirectResponse.getEntity());
-            assertTrue("Get of " + indexURL + " redirected to login page", !body.contains("j_security_check"));
+            assertThat(body).as("Get of " + indexURL + " redirected to login page").doesNotContain("j_security_check");
         } finally {
             HttpClientUtils.closeQuietly(postResponse);
         }
@@ -262,10 +261,10 @@ public final class SSOTestBase {
         HttpResponse response = httpConn.execute(getMethod);
         try {
             int statusCode = response.getStatusLine().getStatusCode();
-            assertTrue("Expected code == OK but got " + statusCode + " for request=" + url, statusCode == HttpURLConnection.HTTP_OK);
+            assertThat(statusCode).as("Expected code == OK but got " + statusCode + " for request=" + url).isEqualTo(HttpURLConnection.HTTP_OK);
 
             String body = EntityUtils.toString(response.getEntity());
-            assertTrue("Redirected to login page for request=" + url + ", body[" + body + "]", body.indexOf("j_security_check") > 0);
+            assertThat(body).as("Redirected to login page for request=" + url).contains("j_security_check");
         } finally {
             HttpClientUtils.closeQuietly(response);
         }
@@ -284,7 +283,7 @@ public final class SSOTestBase {
             }
         }
 
-        assertTrue("Didn't see JSESSIONIDSSO: " + cookieStore.getCookies(), ssoID != null);
+        assertThat(ssoID).as("Didn't see JSESSIONIDSSO: " + cookieStore.getCookies()).isNotNull();
         return ssoID;
     }
 
