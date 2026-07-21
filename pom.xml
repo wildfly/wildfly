@@ -516,7 +516,7 @@
         <!-- We need to use this value in configuring maven plugins, so simply overriding version.org.hibernate
              in boms/standard-preview-ee is inadequate. So we'll declare the value here and reference it in boms/standard-preview-ee. -->
         <standard.version.org.hibernate>7.4.5.Final</standard.version.org.hibernate>
-        <version.org.hibernate.models>1.1.1</version.org.hibernate.models>
+        <version.org.hibernate.models>1.1.2</version.org.hibernate.models>
         <version.org.hornetq>2.4.11.Final</version.org.hornetq>
         <version.org.infinispan>16.0.13</version.org.infinispan>
         <version.org.jasypt>1.9.3</version.org.jasypt>
