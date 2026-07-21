@@ -11,6 +11,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 import org.jboss.as.ee.component.Attachments;
 import org.jboss.as.ee.component.ComponentDescription;
@@ -20,6 +21,7 @@ import org.jboss.as.ejb3.component.EJBComponentDescription;
 import org.jboss.as.ejb3.deployment.EjbDeploymentAttachmentKeys;
 import org.jboss.as.ejb3.interceptor.ContainerInterceptorsMetaData;
 import org.jboss.as.ejb3.logging.EjbLogger;
+import org.jboss.as.ejb3.subsystem.EjbNameRegexService;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
@@ -40,6 +42,12 @@ import org.jboss.modules.Module;
  * @author Jaikiran Pai
  */
 public class ContainerInterceptorBindingsDDProcessor implements DeploymentUnitProcessor {
+
+    private final EjbNameRegexService ejbNameRegexService;
+
+    public ContainerInterceptorBindingsDDProcessor(EjbNameRegexService ejbNameRegexService) {
+        this.ejbNameRegexService = ejbNameRegexService;
+    }
 
     @Override
     public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
@@ -83,14 +91,19 @@ public class ContainerInterceptorBindingsDDProcessor implements DeploymentUnitPr
                 }
                 // Make a note that this container interceptor binding is applicable for all Jakarta Enterprise Beans
                 bindingsForAllEJBs.add(containerInterceptorBinding);
-            } else {
-                // fetch existing container interceptor bindings for the Jakarta Enterprise Beans, if any.
-                List<InterceptorBindingMetaData> bindings = bindingsPerEJB.get(containerInterceptorBinding.getEjbName());
-                if (bindings == null) {
-                    bindings = new ArrayList<InterceptorBindingMetaData>();
-                    bindingsPerEJB.put(containerInterceptorBinding.getEjbName(), bindings);
+            } else if (ejbNameRegexService.isEjbNameRegexAllowed()) {
+                Pattern pattern = Pattern.compile(containerInterceptorBinding.getEjbName());
+                for (final ComponentDescription componentDescription : eeModuleDescription.getComponentDescriptions()) {
+                    if (componentDescription instanceof EJBComponentDescription) {
+                        String ejbName = ((EJBComponentDescription) componentDescription).getEJBName();
+                        if (pattern.matcher(ejbName).matches()) {
+                            List<InterceptorBindingMetaData> bindings = bindingsPerEJB.computeIfAbsent(ejbName, k -> new ArrayList<>());
+                            bindings.add(containerInterceptorBinding);
+                        }
+                    }
                 }
-                // Make a note that the container interceptor binding is applicable for this specific Jakarta Enterprise Beans
+            } else {
+                List<InterceptorBindingMetaData> bindings = bindingsPerEJB.computeIfAbsent(containerInterceptorBinding.getEjbName(), k -> new ArrayList<>());
                 bindings.add(containerInterceptorBinding);
             }
         }
