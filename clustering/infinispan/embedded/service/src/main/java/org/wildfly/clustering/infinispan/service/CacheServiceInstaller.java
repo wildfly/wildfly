@@ -243,7 +243,7 @@ public class CacheServiceInstaller implements ServiceInstaller {
 
         @Override
         public CompletionStage<Void> addListenerAsync(Object listener) {
-            return super.addListenerAsync(listener, new CacheEventFilter<>() {
+            return this.addListenerAsync(listener, new CacheEventFilter<>() {
                 @Override
                 public boolean accept(K key, V oldValue, Metadata oldMetadata, V newValue, Metadata newMetadata, EventType eventType) {
                     return true;
