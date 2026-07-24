@@ -26,6 +26,14 @@ public interface Statistics {
     Collection<String> getDynamicChildrenNames(EntityManagerFactoryAccess entityManagerFactoryAccess, PathAddress pathAddress);
 
     /**
+     * Check if the specified name appears in the list of dynamic children statistics.
+     * @see #getDynamicChildrenNames(EntityManagerFactoryAccess, PathAddress)
+     * @param childName name of the statistic to check
+     * @return true if found, false otherwise
+     */
+    boolean hasDynamicChildName(EntityManagerFactoryAccess entityManagerFactoryAccess, PathAddress pathAddress, String childName);
+
+    /**
      * Get the type
      *
      * @param name of the statistic
@@ -90,6 +98,14 @@ public interface Statistics {
      * @return set of names
      */
     Set<String> getChildrenNames();
+
+    /**
+     * Check if the specified name appears in the list of children statistics.
+     * @see #getChildrenNames()
+     * @param childName name of the statistic to check
+     * @return true if found, false otherwise
+     */
+    boolean hasChildrenName(String childName);
 
     /**
      * get the specified children statistics

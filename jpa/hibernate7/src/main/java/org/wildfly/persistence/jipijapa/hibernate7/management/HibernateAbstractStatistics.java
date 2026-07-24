@@ -14,6 +14,8 @@ import java.util.ResourceBundle;
 import java.util.Set;
 
 import jakarta.persistence.EntityManagerFactory;
+
+import org.hibernate.SessionFactory;
 import org.jipijapa.management.spi.EntityManagerFactoryAccess;
 import org.jipijapa.management.spi.Operation;
 import org.jipijapa.management.spi.PathAddress;
@@ -120,9 +122,44 @@ public abstract class HibernateAbstractStatistics implements Statistics {
         return null;
     }
 
+    protected org.hibernate.stat.Statistics getBaseStatistics(EntityManagerFactoryAccess entityManagerFactoryLookup, PathAddress pathAddress) {
+        if (entityManagerFactoryLookup == null || pathAddress == null) {
+            return null;
+        }
+        return getBaseStatistics(entityManagerFactoryLookup.entityManagerFactory(pathAddress.getValue(HibernateStatistics.PROVIDER_LABEL)));
+    }
+
+    protected org.hibernate.stat.Statistics getBaseStatistics(EntityManagerFactory entityManagerFactory) {
+        if (entityManagerFactory == null) {
+            return null;
+        }
+        SessionFactory sessionFactory = entityManagerFactory.unwrap(SessionFactory.class);
+        if (sessionFactory != null) {
+            return sessionFactory.getStatistics();
+        }
+        return null;
+    }
+
     @Override
     public Set<String> getChildrenNames() {
         return Collections.unmodifiableSet(childrenNames);
+    }
+
+    @Override
+    public boolean hasChildrenName(String name) {
+        return childrenNames.contains(name);
+    }
+
+    protected boolean existsInDynamicChildren(String childName, String[] dynamicChildrenNames) {
+        if (dynamicChildrenNames == null) {
+            return false;
+        }
+        for (String name : dynamicChildrenNames) {
+            if (name.equals(childName)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     @Override
