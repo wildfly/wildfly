@@ -64,7 +64,7 @@ final class HttpInvokerHostService implements Service {
         }
 
         SessionCookieConfig sessionConfig = new SessionCookieConfig();
-        sessionConfig.setPath(this.path);
+        sessionConfig.setPath(UndertowUtils.normalizePath(this.path));
         Server server = this.host.get().getServer();
         ServletContainerService container = server.getServletContainer();
         CookieConfig affinityCookeConfig = container.getAffinityCookieConfig();
@@ -147,3 +147,4 @@ final class HttpInvokerHostService implements Service {
         return path;
     }
 }
+
