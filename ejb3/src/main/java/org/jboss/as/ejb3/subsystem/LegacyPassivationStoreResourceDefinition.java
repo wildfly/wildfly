@@ -69,7 +69,7 @@ public abstract class LegacyPassivationStoreResourceDefinition extends SimpleRes
                 .setRemoveHandler(removeHandler)
                 .setAddRestartLevel(addRestartLevel)
                 .setRemoveRestartLevel(removeRestartLevel)
-                .setDeprecationData(new DeprecationData(DEPRECATED_VERSION)));
+                .setDeprecationData(new DeprecationData(DEPRECATED_VERSION, true)));
         this.attributes = attributes;
     }
 
@@ -79,7 +79,7 @@ public abstract class LegacyPassivationStoreResourceDefinition extends SimpleRes
                 .setRemoveHandler(removeHandler)
                 .setAddRestartLevel(addRestartLevel)
                 .setRemoveRestartLevel(removeRestartLevel)
-                .setDeprecationData(new DeprecationData(DEPRECATED_VERSION))
+                .setDeprecationData(new DeprecationData(DEPRECATED_VERSION, true))
                 .setCapabilities(capability));
         this.attributes = attributes;
     }
