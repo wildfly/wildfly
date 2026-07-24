@@ -2,7 +2,7 @@
  * Copyright The WildFly Authors
  * SPDX-License-Identifier: Apache-2.0
  */
-package org.jboss.as.ejb3.remote;
+package org.jboss.as.ejb3.local;
 
 
 import static org.jboss.as.ejb3.util.MethodInfoHelper.EMPTY_STRING_ARRAY;
