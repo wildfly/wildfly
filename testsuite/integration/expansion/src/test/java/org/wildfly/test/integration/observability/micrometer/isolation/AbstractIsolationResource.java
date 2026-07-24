@@ -94,7 +94,7 @@ public abstract class AbstractIsolationResource {
     @Path("find")
     public Response find() {
         try {
-            var meter = meterRegistry.find(otherTag + "_counter")
+            Counter meter = meterRegistry.find(otherTag + "_counter")
                     .tag("app", otherTag)
                     .counter();
             if (containsWrongDeploymentTag(meter.getId())) {
@@ -111,7 +111,7 @@ public abstract class AbstractIsolationResource {
     public Response getMeters() {
         List<Meter> meters = meterRegistry.getMeters();
         if (meters.stream().anyMatch(m -> {
-            var tag = m.getId().getTag(TAG_WF_DEPLOYMENT);
+            String tag = m.getId().getTag(TAG_WF_DEPLOYMENT);
             return tag != null && !tag.equals(deploymentName);
         })) {
             return Response.serverError().build();
