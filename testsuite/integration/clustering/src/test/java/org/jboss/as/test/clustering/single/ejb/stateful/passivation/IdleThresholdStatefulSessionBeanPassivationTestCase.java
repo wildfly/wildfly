@@ -29,7 +29,6 @@ import org.jboss.as.test.clustering.single.ejb.stateful.passivation.bean.Passiva
 import org.jboss.as.test.clustering.single.ejb.stateful.passivation.bean.PassivatingIncrementorBean;
 import org.jboss.as.test.shared.ManagementServerSetupTask;
 import org.jboss.as.test.shared.TimeoutUtil;
-import org.jboss.as.version.Stability;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
@@ -52,7 +51,6 @@ public class IdleThresholdStatefulSessionBeanPassivationTestCase {
     static class ServerSetupTask extends ManagementServerSetupTask {
         ServerSetupTask() {
             super(createContainerConfigurationBuilder()
-                    .requireStability(Stability.COMMUNITY)
                     .setupScript(createScriptBuilder()
                             .startBatch()
                             .add("/subsystem=ejb3:write-attribute(name=default-sfsb-cache, value=distributable)")
