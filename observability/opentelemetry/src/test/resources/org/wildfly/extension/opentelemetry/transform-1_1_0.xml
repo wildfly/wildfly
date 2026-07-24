@@ -1,0 +1,11 @@
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+
+<subsystem xmlns="urn:wildfly:opentelemetry:community:1.2">
+    <filters>
+        <filter name="accept-app" outcome="accept" field="meter-name" condition="starts-with" value="my_application"/>
+        <filter name="reject-jvm" field="meter-name" condition="starts-with" value="jvm"/>
+    </filters>
+</subsystem>

@@ -32,6 +32,7 @@ public final class OpenTelemetryConfigurationConstants {
     public static final String EXPORT_TIMEOUT = "export-timeout";
     public static final String SAMPLER_TYPE = "sampler-type";
     public static final String SAMPLER_RATIO = "ratio";
+    public static final String SYSTEM_METRICS = "system-metrics";
     public static final String TYPE = "type";
 
     // Groups
