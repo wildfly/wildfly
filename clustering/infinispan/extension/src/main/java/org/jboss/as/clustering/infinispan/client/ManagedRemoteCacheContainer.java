@@ -29,7 +29,6 @@ import org.wildfly.clustering.cache.infinispan.remote.RemoteCacheContainerDecora
 import org.wildfly.clustering.function.Runner;
 import org.wildfly.clustering.infinispan.client.RemoteCacheContainer;
 import org.wildfly.clustering.server.Registrar;
-import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
  * Container managed {@link RemoteCacheManager} decorator, whose lifecycle methods are no-ops.
@@ -60,7 +59,7 @@ public class ManagedRemoteCacheContainer extends RemoteCacheContainerDecorator i
     @Override
     public <K, V> RemoteCache<K, V> getCache(String cacheName) {
         List<Runnable> stopTasks = new LinkedList<>();
-        ClassLoader loader = WildFlySecurityManager.getCurrentContextClassLoaderPrivileged();
+        ClassLoader loader = Thread.currentThread().getContextClassLoader();
         Module module = Module.forClassLoader(loader, false);
         // If thread context is that of a deployment ...
         if ((module != null) && module.getName().startsWith(ServiceModuleLoader.MODULE_PREFIX)) {
@@ -75,7 +74,7 @@ public class ManagedRemoteCacheContainer extends RemoteCacheContainerDecorator i
                         RemoteSchemasAdmin admin = this.container.administration().schemas();
                         for (SerializationContextInitializer initializer : ServiceLoader.load(SerializationContextInitializer.class, loader)) {
                             if (initializer instanceof GeneratedSchema schema) {
-                                if (WildFlySecurityManager.getClassLoaderPrivileged(schema.getClass()) == loader) {
+                                if (schema.getClass().getClassLoader() == loader) {
                                     SchemaOpResult result = admin.create(schema);
                                     if (result.hasError()) {
                                         InfinispanLogger.ROOT_LOGGER.warn(result.getError());
