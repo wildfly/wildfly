@@ -15,7 +15,7 @@ import org.wildfly.extension.messaging.activemq._private.MessagingLogger;
  *         9/22/11
  */
 public class WildFlyRecoveryRegistry extends WildFlyActiveMQRegistry {
-    static volatile Supplier<XAResourceRecoveryRegistry> supplier;
+    private static volatile Supplier<XAResourceRecoveryRegistry> supplier;
 
     private XAResourceRecoveryRegistry registry;
 
@@ -28,6 +28,18 @@ public class WildFlyRecoveryRegistry extends WildFlyActiveMQRegistry {
 
     public XAResourceRecoveryRegistry getTMRegistry() {
        return registry;
+    }
+
+    public static void setSupplier(Supplier<XAResourceRecoveryRegistry> s) {
+        if (supplier != null) {
+            MessagingLogger.ROOT_LOGGER.recoveryRegistrySupplierAlreadySet();
+            return;
+        }
+        supplier = s;
+    }
+
+    public static void clearSupplier() {
+        supplier = null;
     }
 
     private static XAResourceRecoveryRegistry getXAResourceRecoveryRegistry() {

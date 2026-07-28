@@ -512,7 +512,7 @@ public class ExternalPooledConnectionFactoryService implements Service<ExternalP
                                     activator.getCcmInjector());
             sb.requires(NamingService.SERVICE_NAME);
             sb.requires(capabilityServiceSupport.getCapabilityServiceName(MessagingServices.LOCAL_TRANSACTION_PROVIDER_CAPABILITY));
-            WildFlyRecoveryRegistry.supplier = sb.requires(capabilityServiceSupport.getCapabilityServiceName(MessagingServices.TRANSACTION_XA_RESOURCE_RECOVERY_REGISTRY_CAPABILITY));
+            WildFlyRecoveryRegistry.setSupplier(sb.requires(capabilityServiceSupport.getCapabilityServiceName(MessagingServices.TRANSACTION_XA_RESOURCE_RECOVERY_REGISTRY_CAPABILITY)));
             sb.requires(ConnectorServices.BOOTSTRAP_CONTEXT_SERVICE.append("default"));
             sb.setInitialMode(ServiceController.Mode.PASSIVE).install();
 
