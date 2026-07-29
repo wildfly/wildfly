@@ -5,7 +5,7 @@
 #############################################################################
 
 $scripts = (Get-ChildItem $MyInvocation.MyCommand.Path).Directory.FullName;
-. $scripts'\common.ps1'
+. "$scripts\common.ps1"
 $SERVER_OPTS = Process-Script-Parameters -Params $ARGS
 
 # Read an optional running configuration file
