@@ -51,6 +51,10 @@ public class CdiBeanValidationFactoryProcessor implements DeploymentUnitProcesso
             return;
         }
 
+        if (!deploymentUnit.getAttachmentList(Attachments.SUB_DEPLOYMENTS).isEmpty()) {
+            return;
+        }
+
         if (!deploymentUnit.hasAttachment(BeanValidationAttachments.VALIDATOR_FACTORY)) {
             return;
         }
