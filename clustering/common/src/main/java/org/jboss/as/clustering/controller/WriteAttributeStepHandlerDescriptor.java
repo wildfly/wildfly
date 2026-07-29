@@ -13,6 +13,7 @@ import org.jboss.as.controller.AttributeDefinition;
 /**
  * @author Paul Ferraro
  */
+@Deprecated(forRemoval = true)
 public interface WriteAttributeStepHandlerDescriptor extends OperationStepHandlerDescriptor {
 
     /**

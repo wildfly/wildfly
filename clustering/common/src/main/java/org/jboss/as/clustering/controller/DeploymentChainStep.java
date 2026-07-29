@@ -14,6 +14,7 @@ import org.jboss.as.server.DeploymentProcessorTarget;
  * Deployment chain step that delegates to a {@link DeploymentProcessorTarget} consumer.
  * @author Paul Ferraro
  */
+@Deprecated(forRemoval = true)
 public class DeploymentChainStep extends AbstractDeploymentChainStep {
 
     private final Consumer<DeploymentProcessorTarget> deploymentChainContributor;

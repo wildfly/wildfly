@@ -9,6 +9,7 @@ package org.jboss.as.clustering.controller;
  * Implemented by objects with a definition.
  * @author Paul Ferraro
  */
+@Deprecated(forRemoval = true)
 public interface Definable<D> {
     /**
      * Returns the definition of this object.

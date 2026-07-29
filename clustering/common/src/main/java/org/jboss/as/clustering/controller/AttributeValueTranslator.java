@@ -13,6 +13,7 @@ import org.jboss.dmr.ModelNode;
  * Translates an attribute value.
  * @author Paul Ferraro
  */
+@Deprecated(forRemoval = true)
 @FunctionalInterface
 public interface AttributeValueTranslator {
     ModelNode translate(OperationContext context, ModelNode value) throws OperationFailedException;
