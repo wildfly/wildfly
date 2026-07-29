@@ -24,9 +24,6 @@ public class DeploymentMetricProcessor implements DeploymentUnitProcessor {
     private final List<String> exposedSubsystems;
     private final String prefix;
 
-    private Resource rootResource;
-    private ManagementResourceRegistration managementResourceRegistration;
-
     public DeploymentMetricProcessor(boolean exposeAnySubsystem, List<String> exposedSubsystems, String prefix) {
         this.exposeAnySubsystem = exposeAnySubsystem;
         this.exposedSubsystems = exposedSubsystems;
@@ -37,8 +34,8 @@ public class DeploymentMetricProcessor implements DeploymentUnitProcessor {
     public void deploy(DeploymentPhaseContext phaseContext) {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
 
-        rootResource = deploymentUnit.getAttachment(DeploymentModelUtils.DEPLOYMENT_RESOURCE);
-        managementResourceRegistration = deploymentUnit.getAttachment(DeploymentModelUtils.MUTABLE_REGISTRATION_ATTACHMENT);
+        Resource rootResource = deploymentUnit.getAttachment(DeploymentModelUtils.DEPLOYMENT_RESOURCE);
+        ManagementResourceRegistration managementResourceRegistration = deploymentUnit.getAttachment(DeploymentModelUtils.MUTABLE_REGISTRATION_ATTACHMENT);
 
         DeploymentMetricService.install(phaseContext.getRequirementServiceTarget(), deploymentUnit, rootResource, managementResourceRegistration,
                 exposeAnySubsystem, exposedSubsystems, prefix);
