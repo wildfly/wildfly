@@ -51,6 +51,13 @@ public class CdiBeanValidationFactoryProcessor implements DeploymentUnitProcesso
             return;
         }
 
+        // Don't add the CDI bean validation module to top-level EAR deployments.
+        // Let sub-deployments discover ValidationExtension with their own classloader
+        // as the TCCL, so that validation.xml within WARs/EJB-JARs is found.
+        if (!deploymentUnit.getAttachmentList(Attachments.SUB_DEPLOYMENTS).isEmpty()) {
+            return;
+        }
+
         if (!deploymentUnit.hasAttachment(BeanValidationAttachments.VALIDATOR_FACTORY)) {
             return;
         }
