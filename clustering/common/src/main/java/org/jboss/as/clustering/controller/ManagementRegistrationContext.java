@@ -14,6 +14,7 @@ import org.jboss.as.controller.services.path.PathManager;
  * Context used for conditional registration.
  * @author Paul Ferraro
  */
+@Deprecated(forRemoval = true)
 public interface ManagementRegistrationContext {
     /**
      * Gets whether it is valid for the extension to register resources, attributes or operations that do not

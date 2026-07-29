@@ -17,6 +17,7 @@ import org.jboss.dmr.ModelNode;
  * An {@link OperationStepHandler} decorator that fails when not running in admin-only mode.
  * @author Paul Ferraro
  */
+@Deprecated(forRemoval = true)
 public enum AdminOnlyOperationStepHandlerTransformer implements UnaryOperator<OperationStepHandler> {
     INSTANCE;
 

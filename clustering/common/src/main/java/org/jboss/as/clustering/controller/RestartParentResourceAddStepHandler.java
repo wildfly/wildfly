@@ -14,6 +14,7 @@ import org.jboss.dmr.ModelNode;
  * Add operation handler that leverages a {@link ResourceServiceBuilderFactory} to restart a parent resource..
  * @author Paul Ferraro
  */
+@Deprecated(forRemoval = true)
 public class RestartParentResourceAddStepHandler extends AddStepHandler {
 
     private final OperationStepHandler handler;

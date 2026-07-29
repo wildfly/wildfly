@@ -10,6 +10,7 @@ package org.jboss.as.clustering.controller;
  * This allows a management object to encapsulates specific registration details (e.g. resource aliases) from the parent resource.
  * @author Paul Ferraro
  */
+@Deprecated(forRemoval = true)
 public interface ManagementRegistrar<R> {
     /**
      * Registers this object with a resource.

@@ -17,6 +17,7 @@ import org.wildfly.common.function.ExceptionFunction;
  * @param <T> the type of value provided by the service on which the given runtime metric operates
  * @param <V> the type of the value of which the given runtime metric operates
  */
+@Deprecated(forRemoval = true)
 public class MetricFunction<T, V> implements ExceptionFunction<T, ModelNode, OperationFailedException> {
 
     private final Function<T, V> mapper;

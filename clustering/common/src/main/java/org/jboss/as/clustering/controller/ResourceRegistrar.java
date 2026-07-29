@@ -21,6 +21,7 @@ import org.jboss.as.controller.registry.ManagementResourceRegistration;
  * Registers add, remove, and write-attribute operation handlers and capabilities.
  * @author Paul Ferraro
  */
+@Deprecated(forRemoval = true)
 public class ResourceRegistrar implements ManagementRegistrar<ManagementResourceRegistration> {
 
     private final AddStepHandlerDescriptor descriptor;
