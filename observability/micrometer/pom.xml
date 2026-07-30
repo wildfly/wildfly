@@ -66,7 +66,7 @@
         </dependency>
         <dependency>
             <groupId>io.prometheus</groupId>
-            <artifactId>prometheus-metrics-exposition-formats</artifactId>
+            <artifactId>prometheus-metrics-exposition-textformats</artifactId>
         </dependency>
         <dependency>
             <groupId>io.opentelemetry.proto</groupId>
