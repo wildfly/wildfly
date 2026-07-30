@@ -34,7 +34,7 @@ public final class EJBClientConfiguratorService implements Consumer<EJBClientCon
     private volatile EJBTransportProvider remoteHttpTransportProvider;
 
     public void start(final StartContext context) throws StartException {
-        remoteTransportProvider = new RemoteTransportProvider();
+        remoteTransportProvider = new RemoteTransportProvider(endpointInjector.getOptionalValue());
         remoteHttpTransportProvider = new HttpClientProvider();
     }
 
