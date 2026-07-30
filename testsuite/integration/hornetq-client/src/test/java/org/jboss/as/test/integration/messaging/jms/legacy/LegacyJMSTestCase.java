@@ -14,7 +14,6 @@ import static org.junit.Assert.assertTrue;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
 import java.util.concurrent.CountDownLatch;
 
 import javax.jms.ConnectionFactory;
@@ -37,11 +36,9 @@ import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.test.integration.common.jms.JMSOperations;
 import org.jboss.as.test.integration.common.jms.JMSOperationsProvider;
-import org.jboss.as.test.shared.IntermittentFailure;
 import org.jboss.dmr.ModelNode;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -74,14 +71,6 @@ public class LegacyJMSTestCase {
 
     @ContainerResource
     private ManagementClient managementClient;
-
-    @BeforeClass
-    public static void ignoreOnWindows() {
-        if (System.getProperty("os.name", null).toLowerCase(Locale.ENGLISH).contains("windows")) {
-            // this isn't actually an intermittent failure, but might as well allow it to be enabled via the IntermittentFailure sys prop
-            IntermittentFailure.thisTestIsFailingIntermittently("WFLY-21350");
-        }
-    }
 
     @Before
     public void setUp() throws IOException {
