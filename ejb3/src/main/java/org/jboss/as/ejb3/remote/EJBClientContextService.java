@@ -18,6 +18,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
 
+import org.jboss.as.ejb3.profile.RemotingProfileService;
 import org.jboss.as.ejb3.security.IdentityEJBClientInterceptor;
 import org.jboss.as.ejb3.subsystem.EJBClientConfiguratorService;
 import org.jboss.ejb.client.ClusterNodeSelector;
