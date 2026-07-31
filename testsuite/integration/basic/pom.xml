@@ -354,7 +354,7 @@
         </dependency>
         <!-- A required implementation for the org.jboss.resteasy:resteasy-json-binding-provider -->
         <dependency>
-            <groupId>org.eclipse</groupId>
+            <groupId>org.eclipse.yasson</groupId>
             <artifactId>yasson</artifactId>
             <scope>test</scope>
         </dependency>

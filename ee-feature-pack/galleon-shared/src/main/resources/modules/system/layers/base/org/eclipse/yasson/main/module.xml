@@ -12,7 +12,7 @@
     </properties>
 
     <resources>
-        <artifact name="${org.eclipse:yasson}"/>
+        <artifact name="${org.eclipse.yasson:yasson}"/>
     </resources>
 
     <dependencies>

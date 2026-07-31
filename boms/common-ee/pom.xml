@@ -2246,7 +2246,7 @@
             </dependency>
 
             <dependency>
-                <groupId>org.eclipse</groupId>
+                <groupId>org.eclipse.yasson</groupId>
                 <artifactId>yasson</artifactId>
                 <version>${version.org.eclipse.yasson}</version>
                 <exclusions>
