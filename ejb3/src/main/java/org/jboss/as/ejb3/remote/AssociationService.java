@@ -54,7 +54,7 @@ public final class AssociationService implements Service {
         this.associationServiceConsumer.accept(null);
         // set the delegate to null
         value.accept(null);
-        logger.trace("Stopping service");
+        logger.trace("Stopped service");
     }
 
     public Executor getExecutor() {

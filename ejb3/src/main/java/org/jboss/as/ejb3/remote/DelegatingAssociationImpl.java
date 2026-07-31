@@ -28,8 +28,8 @@ import org.jboss.logging.Logger;
  */
 public class DelegatingAssociationImpl implements Association {
 
-    public static Logger logger = Logger.getLogger("org.jboss.as.ejb3.DelegatingAssociationImpl");
-    public Association delegate ;
+    private static final Logger logger = Logger.getLogger("org.jboss.as.ejb3.DelegatingAssociationImpl");
+    public volatile Association delegate ;
     private Map<ClusterTopologyListener, ListenerHandle> clusterTopologyListeners = new ConcurrentHashMap<>() ;
     private Map<ModuleAvailabilityListener, ListenerHandle> moduleAvailabilityListeners = new ConcurrentHashMap<>() ;
 

@@ -24,7 +24,7 @@ import java.util.List;
  * This instance handles the case where there are no deployments on the server containing @Remote EJBs.
  * In such a case, we want to do the following:
  * - for every invocation request, return a NoSuchEJBExceotion
- * - for every session open request, return a NSuchEJBException
+ * - for every session open request, return a NoSuchEJBException
  * - when registering a cluster topology listener, do something sensible
  * - when registering a module availability listener, do something sensible
  *
@@ -32,9 +32,9 @@ import java.util.List;
  */
 public class NoDeploymentsAssociationImpl implements Association {
 
-    public static Logger logger = Logger.getLogger("org.jboss.as.ejb3.remote.NoDeploymentsAssociationImpl");
+    private static final Logger logger = Logger.getLogger("org.jboss.as.ejb3.remote.NoDeploymentsAssociationImpl");
 
-    public static NoDeploymentsAssociationImpl INSTANCE = new NoDeploymentsAssociationImpl();
+    public static final NoDeploymentsAssociationImpl INSTANCE = new NoDeploymentsAssociationImpl();
 
     public NoDeploymentsAssociationImpl() {
     }

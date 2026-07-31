@@ -30,7 +30,7 @@ import org.xnio.OptionMap;
  */
 public class EJBRemoteConnectorService implements Service {
 
-    private static Logger logger = Logger.getLogger("org.jboss.as.ejb3.remote.EJBRemoteConenctorSefrvice");
+    private static Logger logger = Logger.getLogger("org.jboss.as.ejb3.remote.EJBRemoteConnectorService");
 
     // TODO: Should this be exposed via the management APIs?
     private static final String EJB_CHANNEL_NAME = "jboss.ejb";
@@ -61,7 +61,7 @@ public class EJBRemoteConnectorService implements Service {
 
     @Override
     public void start(StartContext context) throws StartException {
-        logger.trace("Starting EJB remote connector");
+        logger.trace("Starting");
 
         final AssociationService associationService = associationServiceSupplier.get();
         final Endpoint endpoint = endpointSupplier.get();
@@ -93,7 +93,7 @@ public class EJBRemoteConnectorService implements Service {
         associationService.sendTopologyUpdateIfLastNodeToLeave();
         associationService.setExecutor(null);
         registration.close();
-        logger.trace("Stopped EJB remote connector");
+        logger.trace("Stopped");
     }
 
 }
