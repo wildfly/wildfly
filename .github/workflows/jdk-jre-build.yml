@@ -9,6 +9,7 @@ on:
       - "docs/**"
       - ".github/workflows/build-manual.yml"
       - ".github/workflows/shared-wildfly-build.yml"
+      - ".github/wildfly-bot.yml"
       - '.gitattributes'
       - '.gitignore'
       - '.gitleaks.toml'
@@ -33,6 +34,7 @@ on:
       - "docs/**"
       - ".github/workflows/build-manual.yml"
       - ".github/workflows/shared-wildfly-build.yml"
+      - ".github/wildfly-bot.yml"
       - '.gitattributes'
       - '.gitignore'
       - '.gitleaks.toml'
