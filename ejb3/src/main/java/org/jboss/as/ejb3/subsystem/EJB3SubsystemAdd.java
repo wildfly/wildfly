@@ -170,13 +170,15 @@ class EJB3SubsystemAdd extends AbstractBoottimeAddStepHandler {
 
     private final AtomicReference<String> defaultSecurityDomainName;
     private final AtomicReference<String> defaultResourceAdapterName;
+    private final AtomicReference<String> defaultDistinctName;
     private final Iterable<ApplicationSecurityDomainConfig> knownApplicationSecurityDomains;
     private final Iterable<String> outflowSecurityDomains;
     private final AtomicBoolean denyAccessByDefault;
 
-    EJB3SubsystemAdd(AtomicReference<String> defaultSecurityDomainName, AtomicReference<String> defaultResourceAdapterName, Iterable<ApplicationSecurityDomainConfig> knownApplicationSecurityDomains, Iterable<String> outflowSecurityDomains, AtomicBoolean denyAccessByDefault) {
+    EJB3SubsystemAdd(AtomicReference<String> defaultSecurityDomainName, AtomicReference<String> defaultResourceAdapterName, AtomicReference<String> defaultDistinctName, Iterable<ApplicationSecurityDomainConfig> knownApplicationSecurityDomains, Iterable<String> outflowSecurityDomains, AtomicBoolean denyAccessByDefault) {
         this.defaultSecurityDomainName = defaultSecurityDomainName;
         this.defaultResourceAdapterName = defaultResourceAdapterName;
+        this.defaultDistinctName = defaultDistinctName;
         this.knownApplicationSecurityDomains = knownApplicationSecurityDomains;
         this.outflowSecurityDomains = outflowSecurityDomains;
         this.denyAccessByDefault = denyAccessByDefault;
@@ -279,9 +281,11 @@ class EJB3SubsystemAdd extends AbstractBoottimeAddStepHandler {
 
         final boolean appclient = context.getProcessType() == ProcessType.APPLICATION_CLIENT;
 
-        final ModelNode defaultDistinctName = EJB3SubsystemRootResourceDefinition.DEFAULT_DISTINCT_NAME.resolveModelAttribute(context, model);
-        final DefaultDistinctNameService defaultDistinctNameService = new DefaultDistinctNameService(defaultDistinctName.isDefined() ? defaultDistinctName.asString() : null);
-        serviceTarget.addService(DefaultDistinctNameService.SERVICE_NAME, defaultDistinctNameService).install();
+        // set the default distinct name in the deployment unit processor, configured at the subsystem level
+        final ModelNode defaultDistinctNameModelNode = EJB3SubsystemRootResourceDefinition.DEFAULT_DISTINCT_NAME.resolveModelAttribute(context, model);
+        final String defaultDistinctName = defaultDistinctNameModelNode.isDefined() ? defaultDistinctNameModelNode.asString() : null;
+        this.defaultDistinctName.set(defaultDistinctName);
+
         final ModelNode ejbNameRegex = EJB3SubsystemRootResourceDefinition.ALLOW_EJB_NAME_REGEX.resolveModelAttribute(context, model);
         final EjbNameRegexService ejbNameRegexService = new EjbNameRegexService(ejbNameRegex.isDefined() ? ejbNameRegex.asBoolean() : false);
         serviceTarget.addService(EjbNameRegexService.SERVICE_NAME, ejbNameRegexService).install();
@@ -310,7 +314,7 @@ class EJB3SubsystemAdd extends AbstractBoottimeAddStepHandler {
 
                 //DUP's that are used even for app client deployments
                 processorTarget.addDeploymentProcessor(EJB3Extension.SUBSYSTEM_NAME, Phase.STRUCTURE, Phase.STRUCTURE_REGISTER_JBOSS_ALL_EJB, new JBossAllXmlParserRegisteringProcessor<EjbJarMetaData>(EjbJarJBossAllParser.ROOT_ELEMENT, EjbJarJBossAllParser.ATTACHMENT_KEY, new EjbJarJBossAllParser()));
-                processorTarget.addDeploymentProcessor(EJB3Extension.SUBSYSTEM_NAME, Phase.PARSE, Phase.PARSE_EJB_DEFAULT_DISTINCT_NAME, new EjbDefaultDistinctNameProcessor(defaultDistinctNameService));
+                processorTarget.addDeploymentProcessor(EJB3Extension.SUBSYSTEM_NAME, Phase.PARSE, Phase.PARSE_EJB_DEFAULT_DISTINCT_NAME, new EjbDefaultDistinctNameProcessor(EJB3SubsystemAdd.this.defaultDistinctName));
                 processorTarget.addDeploymentProcessor(EJB3Extension.SUBSYSTEM_NAME, Phase.PARSE, Phase.PARSE_EJB_CONTEXT_BINDING, new EjbContextJndiBindingProcessor());
                 processorTarget.addDeploymentProcessor(EJB3Extension.SUBSYSTEM_NAME, Phase.PARSE, Phase.PARSE_EJB_DEPLOYMENT, new EjbJarParsingDeploymentUnitProcessor());
                 processorTarget.addDeploymentProcessor(EJB3Extension.SUBSYSTEM_NAME, Phase.PARSE, Phase.PARSE_CREATE_COMPONENT_DESCRIPTIONS, new AnnotatedEJBComponentDescriptionDeploymentUnitProcessor(appclient, defaultMdbPoolAvailable, defaultSlsbPoolAvailable, EJB3SubsystemAdd.this.defaultResourceAdapterName::get));

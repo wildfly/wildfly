@@ -269,17 +269,18 @@ public class EJB3SubsystemRootResourceDefinition extends SimpleResourceDefinitio
     private final PathManager pathManager;
     private final AtomicReference<String> defaultSecurityDomainName;
     private final AtomicReference<String> defaultResourceAdapterName;
+    private final AtomicReference<String> defaultDistinctName;
     private final Set<ApplicationSecurityDomainConfig> knownApplicationSecurityDomains;
     private final List<String> outflowSecurityDomains;
     private final AtomicBoolean denyAccessByDefault;
 
     EJB3SubsystemRootResourceDefinition(boolean registerRuntimeOnly, PathManager pathManager) {
-        this(registerRuntimeOnly, pathManager, new AtomicReference<>(), new AtomicReference<>(), new CopyOnWriteArraySet<>(), new CopyOnWriteArrayList<>(), new AtomicBoolean(false));
+        this(registerRuntimeOnly, pathManager, new AtomicReference<>(), new AtomicReference<>(), new AtomicReference<>(), new CopyOnWriteArraySet<>(), new CopyOnWriteArrayList<>(), new AtomicBoolean(false));
     }
 
-    private EJB3SubsystemRootResourceDefinition(boolean registerRuntimeOnly, PathManager pathManager, AtomicReference<String> defaultSecurityDomainName, AtomicReference<String> defaultResourceAdapterName, Set<ApplicationSecurityDomainConfig> knownApplicationSecurityDomains, List<String> outflowSecurityDomains, AtomicBoolean denyAccessByDefault) {
+    private EJB3SubsystemRootResourceDefinition(boolean registerRuntimeOnly, PathManager pathManager, AtomicReference<String> defaultSecurityDomainName, AtomicReference<String> defaultResourceAdapterName, AtomicReference<String> defaultDistinctName, Set<ApplicationSecurityDomainConfig> knownApplicationSecurityDomains, List<String> outflowSecurityDomains, AtomicBoolean denyAccessByDefault) {
         super(new Parameters(PathElement.pathElement(SUBSYSTEM, EJB3Extension.SUBSYSTEM_NAME), EJB3Extension.getResourceDescriptionResolver(EJB3Extension.SUBSYSTEM_NAME))
-                .setAddHandler(new EJB3SubsystemAdd(defaultSecurityDomainName, defaultResourceAdapterName, knownApplicationSecurityDomains, outflowSecurityDomains, denyAccessByDefault))
+                .setAddHandler(new EJB3SubsystemAdd(defaultSecurityDomainName, defaultResourceAdapterName, defaultDistinctName, knownApplicationSecurityDomains, outflowSecurityDomains, denyAccessByDefault))
                 .setRemoveHandler(EJB3SubsystemRemove.INSTANCE)
                 .setAddRestartLevel(OperationEntry.Flag.RESTART_ALL_SERVICES)
                 .setRemoveRestartLevel(OperationEntry.Flag.RESTART_ALL_SERVICES)
@@ -289,6 +290,7 @@ public class EJB3SubsystemRootResourceDefinition extends SimpleResourceDefinitio
         this.pathManager = pathManager;
         this.defaultSecurityDomainName = defaultSecurityDomainName;
         this.defaultResourceAdapterName = defaultResourceAdapterName;
+        this.defaultDistinctName = defaultDistinctName;
         this.knownApplicationSecurityDomains = knownApplicationSecurityDomains;
         this.outflowSecurityDomains = outflowSecurityDomains;
         this.denyAccessByDefault = denyAccessByDefault;
@@ -343,7 +345,7 @@ public class EJB3SubsystemRootResourceDefinition extends SimpleResourceDefinitio
         });
         resourceRegistration.registerReadWriteAttribute(STATISTICS_ENABLED, null, StatisticsEnabledWriteHandler.INSTANCE);
         resourceRegistration.registerReadWriteAttribute(PASS_BY_VALUE, null, EJBRemoteInvocationPassByValueWriteHandler.INSTANCE);
-        resourceRegistration.registerReadWriteAttribute(DEFAULT_DISTINCT_NAME, null, EJBDefaultDistinctNameWriteHandler.INSTANCE);
+        resourceRegistration.registerReadWriteAttribute(DEFAULT_DISTINCT_NAME, null, new EJBDefaultDistinctNameWriteHandler(DEFAULT_DISTINCT_NAME, this.defaultDistinctName));
         resourceRegistration.registerReadWriteAttribute(LOG_EJB_EXCEPTIONS, null, ExceptionLoggingWriteHandler.INSTANCE);
         resourceRegistration.registerReadWriteAttribute(ALLOW_EJB_NAME_REGEX, null, EJBNameRegexWriteHandler.INSTANCE);
 
