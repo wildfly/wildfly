@@ -245,7 +245,7 @@ wildfly:
       notify: [ mmusgrov ]
 
   emails:
-    - mstefank@redhat.com
+    - mskaceli@redhat.com
     - pberan@redhat.com
     - khermano@redhat.com
     - mjusko@redhat.com
@@ -255,5 +255,5 @@ wildfly:
     description:
       regexes:
         - pattern: "https://redhat.atlassian.net/browse/WFLY-\\d+"
-          message: "The description must contain a link to the JIRA issue \n(https://redhat.atlassian.net/browse/WFLY-XYZ)"
+          failMessage: "The description must contain a link to the JIRA issue \n(https://redhat.atlassian.net/browse/WFLY-XYZ)"
 
