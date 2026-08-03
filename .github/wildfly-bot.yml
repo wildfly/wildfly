@@ -245,7 +245,7 @@ wildfly:
       notify: [ mmusgrov ]
 
   emails:
-    - mstefank@redhat.com
+    - mskaceli@redhat.com
     - pberan@redhat.com
     - khermano@redhat.com
     - mjusko@redhat.com
