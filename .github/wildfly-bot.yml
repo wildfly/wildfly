@@ -252,6 +252,7 @@ wildfly:
     - brian.stansberry@redhat.com
   
   format:
+    skip: "(?i)no\\s+(?:jira|issue)\\s+(?:required|needed)"
     description:
       regexes:
         - pattern: "https://redhat.atlassian.net/browse/WFLY-\\d+"
