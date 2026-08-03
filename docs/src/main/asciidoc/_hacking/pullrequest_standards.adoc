@@ -20,6 +20,8 @@ Fixes: https://redhat.atlassian.net/browse/WFLY-815
 === Commit message
 The commit message for each commit should also reference a JIRA number.
 
+NOTE: Some WildFly projects, such as https://github.com/wildfly/wildfly-glow[WildFly Glow], track work in GitHub Issues instead of JIRA. For those projects, reference the GitHub issue number in the PR title (e.g. `[#123] Add awesome feature`) instead of a JIRA key, and link the issue in the PR description.
+
 == Make sure it builds and tests pass first
 It is highly annoying to reviewers when they find they've spent a great deal of time reviewing some code only to discover that it doesn't even compile. In particular, it's common for a patch to trip CheckStyle if it hadn't been previously compile-tested at the least.
 
