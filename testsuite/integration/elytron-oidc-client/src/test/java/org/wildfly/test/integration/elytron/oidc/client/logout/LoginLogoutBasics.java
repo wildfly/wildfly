@@ -5,8 +5,6 @@
 
 package org.wildfly.test.integration.elytron.oidc.client.logout;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYSTEM_PROPERTY;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -46,16 +44,10 @@ import org.htmlunit.html.HtmlForm;
 import org.htmlunit.html.HtmlInput;
 import org.htmlunit.html.HtmlPage;
 import org.htmlunit.html.HtmlSubmitInput;
-
-import org.jboss.as.arquillian.container.ManagementClient;
-import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.operations.common.Util;
-import org.jboss.as.test.integration.management.ManagementOperations;
 import org.jboss.as.test.integration.security.common.servlets.SimpleSecuredServlet;
 import org.jboss.as.test.integration.security.common.servlets.SimpleServlet;
 import org.jboss.as.test.shared.TestSuiteEnvironment;
 import org.jboss.as.version.Stability;
-import org.jboss.dmr.ModelNode;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -430,12 +422,6 @@ public class LoginLogoutBasics extends EnvSetupUtils {
             this.frontChannelPath = frontChannelPath;
             this.postLogoutRedirectPaths = postLogoutRedirectPaths;
         }
-    }
-
-    protected static <T extends LoginLogoutBasics> void addSystemProperty(ManagementClient client, Class<T> clazz) throws Exception {
-        ModelNode add = Util.createAddOperation(PathAddress.pathAddress(SYSTEM_PROPERTY, LoginLogoutBasics.class.getName()));
-        add.get(VALUE).set(clazz.getName());
-        ManagementOperations.executeOperation(client.getControllerClient(), add);
     }
 
     /* This method retained for future debugging.  It can be helpful to
