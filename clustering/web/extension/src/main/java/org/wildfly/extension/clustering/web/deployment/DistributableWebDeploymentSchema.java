@@ -52,6 +52,7 @@ public enum DistributableWebDeploymentSchema implements XMLElementSchema<Distrib
     VERSION_4_0(4, 0),
     VERSION_5_0(5, 0),
     VERSION_5_0_COMMUNITY(5, 0, Stability.COMMUNITY),
+    VERSION_6_0(6, 0),
     ;
     private final VersionedNamespace<IntVersion, DistributableWebDeploymentSchema> namespace;
     private final XMLComponentFactory<MutableDistributableWebDeploymentConfiguration, Void> factory = XMLComponentFactory.newInstance(this);
@@ -139,7 +140,7 @@ public enum DistributableWebDeploymentSchema implements XMLElementSchema<Distrib
         if (this.since(VERSION_3_0)) {
             builder.addAttribute(factory.attribute(this.resolve("marshaller")).withConsumer(MutableSessionManagementConfiguration::setMarshallerFactory).build());
         }
-        if (this.since(VERSION_5_0_COMMUNITY)) {
+        if (this.since(VERSION_6_0) || this.since(VERSION_5_0_COMMUNITY)) {
             builder.addAttribute(factory.attribute(this.resolve("idle-threshold")).withConsumer(MutableSessionManagementConfiguration::setIdleThreshold).build());
         }
         XMLSequence<C, Void> sequence = factory.sequence()
