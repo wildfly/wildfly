@@ -168,17 +168,22 @@ class EJB3SubsystemAdd extends AbstractBoottimeAddStepHandler {
 
     private static final String REMOTING_ENDPOINT_CAPABILITY = "org.wildfly.remoting.endpoint";
 
-    private final AtomicReference<String> defaultSecurityDomainName;
-    private final AtomicReference<String> defaultResourceAdapterName;
     private final AtomicReference<String> defaultDistinctName;
+    private final AtomicBoolean defaultAllowEjbRegex;
+    private final AtomicReference<String> defaultResourceAdapterName;
+    private final AtomicReference<String> defaultSecurityDomainName;
     private final Iterable<ApplicationSecurityDomainConfig> knownApplicationSecurityDomains;
     private final Iterable<String> outflowSecurityDomains;
     private final AtomicBoolean denyAccessByDefault;
 
-    EJB3SubsystemAdd(AtomicReference<String> defaultSecurityDomainName, AtomicReference<String> defaultResourceAdapterName, AtomicReference<String> defaultDistinctName, Iterable<ApplicationSecurityDomainConfig> knownApplicationSecurityDomains, Iterable<String> outflowSecurityDomains, AtomicBoolean denyAccessByDefault) {
-        this.defaultSecurityDomainName = defaultSecurityDomainName;
-        this.defaultResourceAdapterName = defaultResourceAdapterName;
+    EJB3SubsystemAdd(AtomicReference<String> defaultDistinctName, AtomicBoolean defaultAllowEjbRegex,
+                     AtomicReference<String> defaultResourceAdapterName, AtomicReference<String> defaultSecurityDomainName,
+                     Iterable<ApplicationSecurityDomainConfig> knownApplicationSecurityDomains,
+                     Iterable<String> outflowSecurityDomains, AtomicBoolean denyAccessByDefault) {
         this.defaultDistinctName = defaultDistinctName;
+        this.defaultAllowEjbRegex = defaultAllowEjbRegex;
+        this.defaultResourceAdapterName = defaultResourceAdapterName;
+        this.defaultSecurityDomainName = defaultSecurityDomainName;
         this.knownApplicationSecurityDomains = knownApplicationSecurityDomains;
         this.outflowSecurityDomains = outflowSecurityDomains;
         this.denyAccessByDefault = denyAccessByDefault;
@@ -286,9 +291,10 @@ class EJB3SubsystemAdd extends AbstractBoottimeAddStepHandler {
         final String defaultDistinctName = defaultDistinctNameModelNode.isDefined() ? defaultDistinctNameModelNode.asString() : null;
         this.defaultDistinctName.set(defaultDistinctName);
 
-        final ModelNode ejbNameRegex = EJB3SubsystemRootResourceDefinition.ALLOW_EJB_NAME_REGEX.resolveModelAttribute(context, model);
-        final EjbNameRegexService ejbNameRegexService = new EjbNameRegexService(ejbNameRegex.isDefined() ? ejbNameRegex.asBoolean() : false);
-        serviceTarget.addService(EjbNameRegexService.SERVICE_NAME, ejbNameRegexService).install();
+        // set the default for allowing regular expressions in EJB names in the deployment unit processor, configured at the subsystem level
+        final ModelNode defaultEjbNameRegexModelNode = EJB3SubsystemRootResourceDefinition.ALLOW_EJB_NAME_REGEX.resolveModelAttribute(context, model);
+        final boolean defaultEjbNameRegex = defaultEjbNameRegexModelNode.isDefined() ? defaultEjbNameRegexModelNode.asBoolean() : false;
+        this.defaultAllowEjbRegex.set(defaultEjbNameRegex);
 
         // set the default security domain name in the deployment unit processor, configured at the subsystem level
         final ModelNode defaultSecurityDomainModelNode = EJB3SubsystemRootResourceDefinition.DEFAULT_SECURITY_DOMAIN.resolveModelAttribute(context, model);
@@ -350,7 +356,7 @@ class EJB3SubsystemAdd extends AbstractBoottimeAddStepHandler {
 
                     processorTarget.addDeploymentProcessor(EJB3Extension.SUBSYSTEM_NAME, Phase.POST_MODULE, Phase.POST_MODULE_EJB_IMPLICIT_NO_INTERFACE_VIEW, new ImplicitLocalViewProcessor());
                     processorTarget.addDeploymentProcessor(EJB3Extension.SUBSYSTEM_NAME, Phase.POST_MODULE, Phase.POST_MODULE_EJB_APPLICATION_EXCEPTIONS, new ApplicationExceptionMergingProcessor());
-                    processorTarget.addDeploymentProcessor(EJB3Extension.SUBSYSTEM_NAME, Phase.POST_MODULE, Phase.POST_MODULE_EJB_DD_INTERCEPTORS, new DeploymentDescriptorInterceptorBindingsProcessor(ejbNameRegexService));
+                    processorTarget.addDeploymentProcessor(EJB3Extension.SUBSYSTEM_NAME, Phase.POST_MODULE, Phase.POST_MODULE_EJB_DD_INTERCEPTORS, new DeploymentDescriptorInterceptorBindingsProcessor(EJB3SubsystemAdd.this.defaultAllowEjbRegex));
                     processorTarget.addDeploymentProcessor(EJB3Extension.SUBSYSTEM_NAME, Phase.POST_MODULE, Phase.POST_MODULE_EJB_DD_METHOD_RESOLUTION, new DeploymentDescriptorMethodProcessor());
                     processorTarget.addDeploymentProcessor(EJB3Extension.SUBSYSTEM_NAME, Phase.POST_MODULE, Phase.POST_MODULE_EJB_TRANSACTION_MANAGEMENT, new TransactionManagementMergingProcessor());
                     processorTarget.addDeploymentProcessor(EJB3Extension.SUBSYSTEM_NAME, Phase.POST_MODULE, Phase.POST_MODULE_EJB_CONCURRENCY_MANAGEMENT_MERGE, new ConcurrencyManagementMergingProcessor());
