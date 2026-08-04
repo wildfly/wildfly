@@ -173,6 +173,7 @@ public class LoginLogoutBasics extends EnvSetupUtils {
         // allow for slow system response with limited retries
         do {
             Thread.sleep(500);
+            HttpClientUtils.closeQuietly(response);
             response = httpClient.execute(getMethod, context);
             if (response.getStatusLine().getStatusCode() == expectedStatusCode) {
                 try {
@@ -226,6 +227,7 @@ public class LoginLogoutBasics extends EnvSetupUtils {
         // allow for slow system response with limited retries
         do {
             Thread.sleep(500);
+            HttpClientUtils.closeQuietly(response);
             response = httpClient.execute(getMethod, context);
             retry++;
         } while((response.getStatusLine().getStatusCode() != expectedStatusCode)
