@@ -24,10 +24,13 @@ import io.undertow.server.session.SessionManagerStatistics;
 import io.undertow.server.session.SessionReference;
 import io.undertow.servlet.api.Deployment;
 import io.undertow.servlet.api.DeploymentInfo;
+import io.undertow.servlet.api.ListenerInfo;
 import io.undertow.servlet.api.SessionManagerFactory;
 import io.undertow.servlet.api.ThreadSetupHandler;
 import io.undertow.servlet.handlers.ServletRequestContext;
+import io.undertow.servlet.spec.HttpServletRequestImpl;
 import io.undertow.servlet.spec.HttpSessionImpl;
+import io.undertow.servlet.util.ImmediateInstanceFactory;
 import io.undertow.util.AttachmentKey;
 
 import org.jboss.logging.Logger;
@@ -55,6 +58,10 @@ public class ControlPointDeploymentInfoConfigurator implements UnaryOperator<Dep
 
     @Override
     public DeploymentInfo apply(DeploymentInfo deployment) {
+        if (LOGGER.isTraceEnabled()) {
+            // Log application boundaries
+            deployment.addListener(new ListenerInfo(RequestLoggingListener.class, new ImmediateInstanceFactory<>(RequestLoggingListener.INSTANCE)));
+        }
         // ControlPoint.beginRequest() triggered within initial handler chain
         // ControlPoint.requestComplete() will be triggered by the later of 2 events: ExchangeCompletionListener or ThreadSetupHandler.Action
         // This complexity is needed to workaround a quirk in Undertow, where io.undertow.servlet.spec.HttpServletResponseImpl#responseDone() triggers Session.requestDone() even if request processing is not complete, e.g. application events have yet to be emitted.
@@ -75,7 +82,7 @@ public class ControlPointDeploymentInfoConfigurator implements UnaryOperator<Dep
             }
             boolean accepted = result == RunResult.RUN;
             if (accepted) {
-                LOGGER.tracef("Request #%s BEGIN", exchange.getRequestId());
+                LOGGER.tracef("Request #%s BEGIN [%s] %s%s%s", exchange.getRequestId(), exchange.getRequestMethod(), exchange.getRequestURI(), exchange.getQueryString().isEmpty() ? "" : "?", exchange.getQueryString());
                 // Used to distinguish between mid-request and post-request exchange completion
                 // Used to workaround unwanted post-ExchangeCompletionListener invocation of Session.requestDone(...)
                 exchange.putAttachment(COMPLETE, Boolean.FALSE);
@@ -421,6 +428,26 @@ public class ControlPointDeploymentInfoConfigurator implements UnaryOperator<Dep
         @Override
         public SessionReference getReference() {
             return this.session.getReference();
+        }
+    }
+
+    private enum RequestLoggingListener implements jakarta.servlet.ServletRequestListener {
+        INSTANCE;
+
+        @Override
+        public void requestInitialized(jakarta.servlet.ServletRequestEvent event) {
+            if (event.getServletRequest() instanceof HttpServletRequestImpl request) {
+                HttpServerExchange exchange = request.getExchange();
+                LOGGER.tracef("Request #%s ServletRequestListener.requestInitialized(...)", exchange.getRequestId());
+            }
+        }
+
+        @Override
+        public void requestDestroyed(jakarta.servlet.ServletRequestEvent event) {
+            if (event.getServletRequest() instanceof HttpServletRequestImpl request) {
+                HttpServerExchange exchange = request.getExchange();
+                LOGGER.tracef("Request #%s ServletRequestListener.requestDestroyed(...)", exchange.getRequestId());
+            }
         }
     }
 }
