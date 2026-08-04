@@ -7,9 +7,12 @@ package org.wildfly.test.integration.elytron.realmmappers;
 import java.net.MalformedURLException;
 import java.net.URL;
 import org.jboss.arquillian.container.test.api.Deployment;
+import org.jboss.arquillian.test.api.ArquillianResource;
+import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.test.integration.management.util.CLIWrapper;
 import org.jboss.as.test.integration.security.common.SecurityTestConstants;
 import org.jboss.as.test.integration.security.common.Utils;
+import org.jboss.as.test.shared.ServerReload;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
@@ -21,6 +24,9 @@ import org.wildfly.test.security.servlets.SecuredPrincipalPrintingServlet;
  * @author olukas
  */
 public abstract class AbstractRealmMapperTest {
+
+    @ArquillianResource
+    protected ManagementClient managementClient;
 
     protected static final String DEPLOYMENT = "dep";
 
@@ -35,7 +41,8 @@ public abstract class AbstractRealmMapperTest {
         try (CLIWrapper cli = new CLIWrapper(true)) {
             cli.sendLine(String.format("/subsystem=elytron/security-domain=%s:write-attribute(name=realm-mapper,value=%s)",
                     RealmMapperServerSetupTask.SECURITY_DOMAIN_NAME, realmMapperName));
-            cli.sendLine(String.format("reload"));
+        } finally {
+            ServerReload.executeReloadAndWaitForCompletion(managementClient);
         }
     }
 
@@ -43,7 +50,8 @@ public abstract class AbstractRealmMapperTest {
         try (CLIWrapper cli = new CLIWrapper(true)) {
             cli.sendLine(String.format("/subsystem=elytron/security-domain=%s:undefine-attribute(name=realm-mapper)",
                     RealmMapperServerSetupTask.SECURITY_DOMAIN_NAME));
-            cli.sendLine(String.format("reload"));
+        } finally {
+            ServerReload.executeReloadAndWaitForCompletion(managementClient);
         }
     }
 

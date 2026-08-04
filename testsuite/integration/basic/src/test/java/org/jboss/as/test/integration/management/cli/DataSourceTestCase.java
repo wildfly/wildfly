@@ -16,8 +16,10 @@ import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
+import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.test.integration.common.JndiServlet;
 import org.jboss.as.test.integration.management.util.CLIOpResult;
+import org.jboss.as.test.shared.ServerReload;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
@@ -35,6 +37,9 @@ import org.junit.runner.RunWith;
 public class DataSourceTestCase extends AbstractCliTestBase {
 
     @ArquillianResource URL url;
+
+    @ArquillianResource
+    private ManagementClient managementClient;
 
     private static final String[][] DS_PROPS = new String[][] {
         {"idle-timeout-minutes", "5"}
@@ -137,10 +142,13 @@ public class DataSourceTestCase extends AbstractCliTestBase {
 
     private void testRemoveDataSource() throws Exception {
 
-        // remove data source
-        cli.sendLine("data-source remove --name=TestDS");
+        try {
+            // remove data source
+            cli.sendLine("data-source remove --name=TestDS");
 //        cli.sendLine("/subsystem=datasources/data-source=TestDS:remove()");
-        cli.sendLine("reload");
+        } finally {
+            ServerReload.executeReloadAndWaitForCompletion(managementClient);
+        }
 
         //check the data source is not listed
         cli.sendLine("cd /subsystem=datasources/data-source");
@@ -194,9 +202,12 @@ public class DataSourceTestCase extends AbstractCliTestBase {
 
     private void testRemoveXaDataSource() throws Exception {
 
-        // remove data source
-        cli.sendLine("xa-data-source remove --name=TestXADS");
-        cli.sendLine("reload");
+        try {
+            // remove data source
+            cli.sendLine("xa-data-source remove --name=TestXADS");
+        } finally {
+            ServerReload.executeReloadAndWaitForCompletion(managementClient);
+        }
 
         //check the data source is not listed
         cli.sendLine("cd /subsystem=datasources/xa-data-source");
