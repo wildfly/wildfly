@@ -292,13 +292,13 @@ public class Host implements Service<Host>, FilterLocation, SuspendableActivity 
     }
 
     void registerLocation(String path) {
-        String realPath = path.startsWith("/") ? path : "/" + path;
+        String realPath = UndertowUtils.normalizePath(path);
         locations.put(realPath, null);
         server.get().getUndertowService().fireEvent(listener -> listener.onDeploymentStart(realPath, Host.this));
     }
 
     void unregisterLocation(String path) {
-        String realPath = path.startsWith("/") ? path : "/" + path;
+        String realPath = UndertowUtils.normalizePath(path);
         locations.remove(realPath);
         server.get().getUndertowService().fireEvent(listener -> listener.onDeploymentStop(realPath, Host.this));
     }
