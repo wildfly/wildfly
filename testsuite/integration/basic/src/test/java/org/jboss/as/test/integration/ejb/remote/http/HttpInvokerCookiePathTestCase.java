@@ -55,6 +55,13 @@ public class HttpInvokerCookiePathTestCase {
             HttpGet request = new HttpGet(wildflyServicesUrl);
 
             try (CloseableHttpResponse response = httpClient.execute(request)) {
+                // The HTTP invoker endpoint requires authentication, so it returns 401 Unauthorized.
+                // The JSESSIONID cookie is only set on 401 responses to avoid sticky session issues.
+                Assert.assertEquals(
+                    "Expected 401 Unauthorized from the HTTP invoker endpoint",
+                    401, response.getStatusLine().getStatusCode()
+                );
+
                 // Inspect Set-Cookie headers
                 Header[] setCookieHeaders = response.getHeaders("Set-Cookie");
 
@@ -68,12 +75,12 @@ public class HttpInvokerCookiePathTestCase {
                     if (cookieValue.contains("JSESSIONID=")) {
                         foundJSessionId = true;
 
-                        // Extract path attribute
+                        // Extract path attribute — lower-case the segment for case-insensitive matching
                         String[] parts = cookieValue.split(";");
                         for (String part : parts) {
-                            String trimmed = part.trim();
-                            if (trimmed.toLowerCase().startsWith(PATH_PREFIX)) {
-                                actualPath = trimmed.substring(PATH_PREFIX.length());
+                            String lower = part.trim().toLowerCase();
+                            if (lower.startsWith(PATH_PREFIX)) {
+                                actualPath = lower.substring(PATH_PREFIX.length());
                                 break;
                             }
                         }
