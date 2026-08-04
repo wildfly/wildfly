@@ -26,6 +26,7 @@ import org.jboss.metadata.parser.util.NoopXMLResolver;
 import org.jboss.metadata.web.jboss.JBossWebMetaData;
 import org.jboss.metadata.web.jboss.ValveMetaData;
 import org.jboss.vfs.VirtualFile;
+import org.wildfly.common.xml.XMLInputFactoryUtil;
 import org.wildfly.extension.undertow.logging.UndertowLogger;
 
 
@@ -50,7 +51,7 @@ public class JBossWebParsingDeploymentProcessor implements DeploymentUnitProcess
             InputStream is = null;
             try {
                 is = jbossWebXml.openStream();
-                final XMLInputFactory inputFactory = XMLInputFactory.newInstance();
+                final XMLInputFactory inputFactory = XMLInputFactoryUtil.create();
                 inputFactory.setXMLResolver(NoopXMLResolver.create());
                 XMLStreamReader xmlReader = inputFactory.createXMLStreamReader(is);
 

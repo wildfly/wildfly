@@ -25,6 +25,7 @@ import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
+import org.jboss.metadata.parser.util.NoopXMLResolver;
 import org.jboss.staxmapper.XMLMapper;
 import org.jboss.vfs.VFSUtils;
 import org.jboss.vfs.VirtualFile;
@@ -66,6 +67,8 @@ public class MessagingXmlParsingDeploymentUnitProcessor implements DeploymentUni
                     final XMLInputFactory inputFactory = INPUT_FACTORY;
                     setIfSupported(inputFactory, XMLInputFactory.IS_VALIDATING, Boolean.FALSE);
                     setIfSupported(inputFactory, XMLInputFactory.SUPPORT_DTD, Boolean.FALSE);
+                    setIfSupported(inputFactory, XMLInputFactory.IS_SUPPORTING_EXTERNAL_ENTITIES, false);
+                    inputFactory.setXMLResolver(NoopXMLResolver.create());
                     final XMLStreamReader streamReader = inputFactory.createXMLStreamReader(xmlStream);
                     final ParseResult result = new ParseResult();
                     try {
