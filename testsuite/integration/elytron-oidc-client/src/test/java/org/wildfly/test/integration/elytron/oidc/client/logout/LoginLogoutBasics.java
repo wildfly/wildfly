@@ -36,6 +36,7 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.utils.HttpClientUtils;
 import org.apache.http.impl.client.BasicResponseHandler;
+import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.protocol.BasicHttpContext;
 import org.apache.http.protocol.HttpContext;
@@ -59,12 +60,14 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 
+import org.junit.After;
+
 /**
  * Tests for the OpenID Connect logout types.
  */
 public class LoginLogoutBasics extends EnvSetupUtils {
 
-    private HttpClient httpClient;
+    private CloseableHttpClient httpClient;
 
     private final String KEYCLOAK_USERNAME = "username";
     private final String KEYCLOAK_PASSWORD = "password";
@@ -87,8 +90,16 @@ public class LoginLogoutBasics extends EnvSetupUtils {
         return null;
     }
 
-    public void setHttpClient(HttpClient httpClient) {
+    public void setHttpClient(CloseableHttpClient httpClient) {
         this.httpClient = httpClient;
+    }
+
+    @After
+    public void closeHttpClient() throws Exception {
+        if (httpClient != null) {
+            httpClient.close();
+            httpClient = null;
+        }
     }
 
     public void browserLoginToApp(WebClient webClient, String appName) throws Exception {
