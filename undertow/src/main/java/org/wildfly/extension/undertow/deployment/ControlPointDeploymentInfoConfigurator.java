@@ -123,7 +123,8 @@ public class ControlPointDeploymentInfoConfigurator implements UnaryOperator<Dep
         } finally {
             // If exchange completes outside of handler chain, trigger ControlPoint.requestComplete() (if required)
             // Otherwise, defer completion signal until ThreadSetupHandler.Action tear-down.
-            if (!exchange.isDispatched() && (exchange.removeAttachment(ControlPointDeploymentInfoConfigurator.RUN_RESULT_KEY) == RunResult.RUN)) {
+            ServletRequestContext context = exchange.getAttachment(ServletRequestContext.ATTACHMENT_KEY);
+            if (((context == null) || !context.isRunningInsideHandler()) && (exchange.removeAttachment(ControlPointDeploymentInfoConfigurator.RUN_RESULT_KEY) == RunResult.RUN)) {
                 this.complete(exchange);
                 LOGGER.tracef("Request #%s END via ExchangeCompleteListener", exchange.getRequestId());
             }
