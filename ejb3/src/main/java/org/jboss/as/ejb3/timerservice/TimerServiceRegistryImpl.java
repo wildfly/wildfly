@@ -17,6 +17,7 @@ import jakarta.ejb.Timer;
 import jakarta.ejb.TimerService;
 
 import org.jboss.as.ejb3.timerservice.spi.TimerServiceRegistry;
+import org.jboss.ejb3.timerservice.ExtendedTimerService;
 
 /**
  * A registry to which individual {@link jakarta.ejb.TimerService timer services} can register to (and un-register from). The main purpose
@@ -32,18 +33,18 @@ import org.jboss.as.ejb3.timerservice.spi.TimerServiceRegistry;
  */
 public class TimerServiceRegistryImpl implements TimerServiceRegistry {
 
-    private static final Function<TimerService, Collection<Timer>> GET_TIMERS = TimerService::getTimers;
+    private static final Function<ExtendedTimerService, Collection<Timer>> GET_TIMERS = TimerService::getTimers;
     private static final Function<Collection<Timer>, Stream<Timer>> STREAM = Collection::stream;
 
-    private final Set<TimerService> services = Collections.synchronizedSet(Collections.newSetFromMap(new IdentityHashMap<>()));
+    private final Set<ExtendedTimerService> services = Collections.synchronizedSet(Collections.newSetFromMap(new IdentityHashMap<>()));
 
     @Override
-    public void registerTimerService(TimerService service) {
+    public void registerTimerService(ExtendedTimerService service) {
         this.services.add(service);
     }
 
     @Override
-    public void unregisterTimerService(TimerService service) {
+    public void unregisterTimerService(ExtendedTimerService service) {
         this.services.remove(service);
     }
 
@@ -51,6 +52,17 @@ public class TimerServiceRegistryImpl implements TimerServiceRegistry {
     public Collection<Timer> getAllTimers() {
         synchronized (this.services) {
             return Collections.unmodifiableCollection(this.services.stream().map(GET_TIMERS).flatMap(STREAM).collect(Collectors.toList()));
+        }
+    }
+
+    public Collection<Timer> getTimersByExternalId(String externalId) {
+        synchronized (this.services) {
+            return Collections.unmodifiableCollection(
+                    this.services.stream()
+                            .map(service -> service.getTimersByExternalId(externalId))
+                            .flatMap(STREAM)
+                            .collect(Collectors.toList())
+            );
         }
     }
 }
