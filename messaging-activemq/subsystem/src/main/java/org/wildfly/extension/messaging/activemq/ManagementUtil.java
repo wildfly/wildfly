@@ -128,6 +128,12 @@ public class ManagementUtil {
                     result.get(key).set(prop.getValue());
                 }
             }
+            if(!result.hasDefined("autoCreateJmsTopics") && result.hasDefined("autoCreateAddresses")) {
+                result.get("autoCreateJmsTopics").set(result.get("autoCreateAddresses").asBoolean());
+            }
+            if(!result.hasDefined("autoDeleteJmsTopics") && result.hasDefined("autoDeleteAddresses")) {
+                result.get("autoDeleteJmsTopics").set(result.get("autoDeleteAddresses").asBoolean());
+            }
         }
         return result.toJSONString(false);
     }
