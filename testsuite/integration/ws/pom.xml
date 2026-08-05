@@ -366,7 +366,7 @@
         <!-- OpenSAML -->
         <dependency>
             <groupId>org.opensaml</groupId>
-            <artifactId>opensaml-core</artifactId>
+            <artifactId>opensaml-core-api</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
