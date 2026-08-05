@@ -39,7 +39,8 @@ public class SingletonTransformersTestCase extends AbstractSubsystemTest {
         return EnumSet.of(
                 ModelTestControllerVersion.EAP_7_4_0,
                 ModelTestControllerVersion.EAP_8_0_0,
-                ModelTestControllerVersion.EAP_8_1_0
+                ModelTestControllerVersion.EAP_8_1_0,
+                ModelTestControllerVersion.WILDFLY_41_0_0
         );
     }
 
@@ -55,7 +56,7 @@ public class SingletonTransformersTestCase extends AbstractSubsystemTest {
 
     private SingletonSubsystemModel getModelVersion() {
         return switch (this.controllerVersion) {
-            case EAP_7_4_0, EAP_8_0_0, EAP_8_1_0 -> SingletonSubsystemModel.VERSION_3_0_0;
+            case EAP_7_4_0, EAP_8_0_0, EAP_8_1_0, WILDFLY_41_0_0 -> SingletonSubsystemModel.VERSION_3_0_0;
             default -> throw new IllegalArgumentException();
         };
     }
@@ -80,6 +81,14 @@ public class SingletonTransformersTestCase extends AbstractSubsystemTest {
             case EAP_8_1_0 -> new String[] {
                     this.controllerVersion.createGAV("wildfly-clustering-singleton-extension"),
                     this.controllerVersion.createGAV("wildfly-clustering-common"),
+                    this.controllerVersion.createGAV("wildfly-clustering-server-service"),
+                    this.controllerVersion.createGAV("wildfly-clustering-singleton-api"),
+                    this.controllerVersion.createCoreGAV("wildfly-subsystem"),
+            };
+            case WILDFLY_41_0_0 -> new String[] {
+                    this.controllerVersion.createGAV("wildfly-clustering-singleton-extension"),
+                    this.controllerVersion.createGAV("wildfly-clustering-common"),
+                    this.controllerVersion.createGAV("wildfly-clustering-infinispan-embedded-service"),
                     this.controllerVersion.createGAV("wildfly-clustering-server-service"),
                     this.controllerVersion.createGAV("wildfly-clustering-singleton-api"),
                     this.controllerVersion.createCoreGAV("wildfly-subsystem"),
