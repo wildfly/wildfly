@@ -737,8 +737,8 @@
         </dependency>
 
         <dependency>
-            <groupId>net.shibboleth.utilities</groupId>
-            <artifactId>java-support</artifactId>
+            <groupId>net.shibboleth</groupId>
+            <artifactId>shib-support</artifactId>
             <exclusions>
                 <exclusion>
                     <groupId>*</groupId>
@@ -2084,7 +2084,17 @@
 
         <dependency>
             <groupId>org.opensaml</groupId>
-            <artifactId>opensaml-core</artifactId>
+            <artifactId>opensaml-core-api</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>org.opensaml</groupId>
+            <artifactId>opensaml-core-impl</artifactId>
             <exclusions>
                 <exclusion>
                     <groupId>*</groupId>
