@@ -1,0 +1,23 @@
+RULE Simulate slow transaction end
+CLASS com.arjuna.ats.arjuna.coordinator.TwoPhaseCoordinator
+METHOD end
+AT ENTRY
+BIND flagFile : java.io.File = new java.io.File(System.getProperty("jboss.server.data.dir"), "txn-in-commit.flag")
+IF NOT flagged("txn-end-delay")
+DO
+  flag("txn-end-delay");
+  flagFile.createNewFile();
+  traceln("Byteman: delaying transaction end by 8s");
+  Thread.sleep(8000L);
+ENDRULE
+
+RULE Shorten recovery scan periods before suspend
+CLASS com.arjuna.ats.jbossatx.jta.RecoveryManagerService
+METHOD suspend
+AT ENTRY
+IF TRUE
+DO
+  traceln("Byteman: shortening recovery period to 3s and backoff period to 1s for faster suspend");
+  com.arjuna.ats.arjuna.common.recoveryPropertyManager.getRecoveryEnvironmentBean().setPeriodicRecoveryPeriod(3);
+  com.arjuna.ats.arjuna.common.recoveryPropertyManager.getRecoveryEnvironmentBean().setRecoveryBackoffPeriod(1);
+ENDRULE
