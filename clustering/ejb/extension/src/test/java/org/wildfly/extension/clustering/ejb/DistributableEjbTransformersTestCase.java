@@ -39,7 +39,8 @@ public class DistributableEjbTransformersTestCase extends AbstractSubsystemTest 
     public static Iterable<ModelTestControllerVersion> parameters() {
         return EnumSet.of(
                 ModelTestControllerVersion.EAP_8_0_0,
-                ModelTestControllerVersion.EAP_8_1_0
+                ModelTestControllerVersion.EAP_8_1_0,
+                ModelTestControllerVersion.WILDFLY_41_0_0
         );
     }
 
@@ -56,6 +57,7 @@ public class DistributableEjbTransformersTestCase extends AbstractSubsystemTest 
     private DistributableEjbSubsystemModel getModelVersion() {
         return switch (this.controllerVersion) {
             case EAP_8_0_0, EAP_8_1_0 -> DistributableEjbSubsystemModel.VERSION_1_0_0;
+            case WILDFLY_41_0_0 -> DistributableEjbSubsystemModel.VERSION_2_0_0;
             default -> throw new IllegalArgumentException();
         };
     }
@@ -82,6 +84,14 @@ public class DistributableEjbTransformersTestCase extends AbstractSubsystemTest 
                     this.controllerVersion.createGAV("wildfly-clustering-server-service"),
                     this.controllerVersion.createCoreGAV("wildfly-subsystem"),
                     WildFlyClusteringVersion.forVersion(this.controllerVersion).toGAV("wildfly-clustering-marshalling-protostream"),
+            };
+            case WILDFLY_41_0_0 -> new String[] {
+                    this.controllerVersion.createGAV("wildfly-clustering-ejb-extension"),
+                    this.controllerVersion.createGAV("wildfly-clustering-common"),
+                    this.controllerVersion.createGAV("wildfly-clustering-ejb-spi"),
+                    this.controllerVersion.createGAV("wildfly-clustering-infinispan-embedded-service"),
+                    this.controllerVersion.createGAV("wildfly-clustering-server-service"),
+                    this.controllerVersion.createCoreGAV("wildfly-subsystem"),
             };
             default -> throw new IllegalArgumentException();
         };
@@ -130,7 +140,7 @@ public class DistributableEjbTransformersTestCase extends AbstractSubsystemTest 
         FailedOperationTransformationConfig config = new FailedOperationTransformationConfig();
         PathAddress subsystemAddress = PathAddress.pathAddress(DistributableEjbSubsystemResourceDefinitionRegistrar.REGISTRATION.getPathElement());
 
-        if (DistributableEjbSubsystemModel.VERSION_2_0_0.requiresTransformation(version)) {
+        if (DistributableEjbSubsystemModel.VERSION_3_0_0.requiresTransformation(version)) {
             config.addFailedAttribute(subsystemAddress.append(PathElement.pathElement(BeanManagementResourceRegistration.INFINISPAN.getPathElement().getKey(), "default")), new FailedOperationTransformationConfig.NewAttributesConfig(BeanManagementResourceDefinitionRegistrar.IDLE_THRESHOLD));
             config.addFailedAttribute(subsystemAddress.append(PathElement.pathElement(InfinispanTimerManagementResourceDefinitionRegistrar.REGISTRATION.getPathElement().getKey(), "distributed")), new FailedOperationTransformationConfig.NewAttributesConfig(InfinispanTimerManagementResourceDefinitionRegistrar.IDLE_THRESHOLD));
         }
