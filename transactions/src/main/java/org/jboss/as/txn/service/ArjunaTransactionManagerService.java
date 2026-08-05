@@ -145,6 +145,7 @@ public final class ArjunaTransactionManagerService implements Service {
     @Override
     public void stop(final StopContext context) {
         txnManagerServiceConsumer.accept(null);
+        TxControl.disable();
         value.stop();
         value.destroy();
         objStoreBrowser.stop();
