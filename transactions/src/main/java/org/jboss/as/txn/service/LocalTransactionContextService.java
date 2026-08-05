@@ -19,6 +19,7 @@ import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.tm.ExtendedJBossXATerminator;
 import org.jboss.tm.XAResourceRecoveryRegistry;
+import org.wildfly.security.auth.client.AuthenticationContext;
 import org.wildfly.transaction.client.LocalTransactionContext;
 import org.wildfly.transaction.client.provider.jboss.JBossLocalTransactionProvider;
 
@@ -34,6 +35,7 @@ public final class LocalTransactionContextService implements Service<LocalTransa
     private final Supplier<com.arjuna.ats.jbossatx.jta.TransactionManagerService> transactionManagerSupplier;
     private final Supplier<XAResourceRecoveryRegistry> xaResourceRecoveryRegistrySupplier;
     private final Supplier<ServerEnvironment> serverEnvironmentSupplier;
+    private final Supplier<AuthenticationContext> recoveryAuthenticationContextSupplier;
     private final int staleTransactionTime;
     private volatile LocalTransactionContext context;
     private JBossLocalTransactionProvider provider;
@@ -43,13 +45,15 @@ public final class LocalTransactionContextService implements Service<LocalTransa
                                           final Supplier<com.arjuna.ats.jbossatx.jta.TransactionManagerService> transactionManagerSupplier,
                                           final Supplier<XAResourceRecoveryRegistry> xaResourceRecoveryRegistrySupplier,
                                           final Supplier<ServerEnvironment> serverEnvironmentSupplier,
-                                          final int staleTransactionTime) {
+                                          final int staleTransactionTime,
+                                          final Supplier<AuthenticationContext> recoveryAuthenticationContextSupplier) {
         this.contextConsumer = contextConsumer;
         this.extendedJBossXATerminatorSupplier = extendedJBossXATerminatorSupplier;
         this.transactionManagerSupplier = transactionManagerSupplier;
         this.xaResourceRecoveryRegistrySupplier = xaResourceRecoveryRegistrySupplier;
         this.serverEnvironmentSupplier = serverEnvironmentSupplier;
         this.staleTransactionTime = staleTransactionTime;
+        this.recoveryAuthenticationContextSupplier = recoveryAuthenticationContextSupplier;
     }
 
     public void start(final StartContext context) throws StartException {
@@ -59,6 +63,9 @@ public final class LocalTransactionContextService implements Service<LocalTransa
         builder.setXAResourceRecoveryRegistry(xaResourceRecoveryRegistrySupplier.get());
         builder.setXARecoveryLogDirRelativeToPath(serverEnvironmentSupplier.get().getServerDataDir().toPath());
         builder.setStaleTransactionTime(staleTransactionTime);
+        if (recoveryAuthenticationContextSupplier != null) {
+            builder.setRecoveryAuthenticationContext(recoveryAuthenticationContextSupplier.get());
+        }
         this.provider = builder.build();
         final LocalTransactionContext transactionContext = this.context = new LocalTransactionContext(this.provider);
         contextConsumer.accept(transactionContext);
