@@ -1,0 +1,11 @@
+RULE Simulate slow transaction drain
+CLASS com.arjuna.ats.arjuna.coordinator.TransactionReaper
+METHOD waitForAllTxnsToTerminate
+AT ENTRY
+BIND flagFile : java.io.File = new java.io.File(System.getProperty("jboss.server.data.dir"), "drain-was-called.flag")
+IF TRUE
+DO
+  flagFile.createNewFile();
+  traceln("Byteman: simulating slow transaction drain, sleeping 10s");
+  Thread.sleep(10000L);
+ENDRULE
