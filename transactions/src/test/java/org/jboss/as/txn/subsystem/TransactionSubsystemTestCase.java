@@ -156,7 +156,7 @@ public class TransactionSubsystemTestCase extends AbstractSubsystemBaseTest {
             new FailedOperationTransformationConfig().addFailedAttribute(
                 PathAddress.pathAddress(TransactionExtension.SUBSYSTEM_PATH),
                 new FailedOperationTransformationConfig.NewAttributesConfig(
-                    TransactionSubsystemRootResourceDefinition.TRANSACTIONS_RECOVERY_GRACEFUL_SHUTDOWN)));
+                    TransactionSubsystemRootResourceDefinition.GRACEFUL_SHUTDOWN_TIMEOUT)));
     }
 
     private void testTransformersFull(ModelTestControllerVersion controllerVersion, ModelVersion modelVersion) throws Exception {
