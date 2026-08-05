@@ -17,6 +17,12 @@
         <!-- Export the services for RESTful Web Services implementation -->
         <module name="org.jboss.resteasy.resteasy-client" services="export"/>
         <module name="org.jboss.resteasy.resteasy-core" services="export"/>
+        <module name="org.jboss.resteasy.resteasy-core" services="export"/>
+        <!-- Export is required to provide visibility to the CDI extensions and producers to other modules. Deployments
+             already have this visibility. However, we need provided modules which use Jakarta REST to also have
+             visibility at runtime to these CDI resources.
+         -->
+        <module name="org.jboss.resteasy.resteasy-cdi" services="import" optional="true" export="true"/>
         <module name="jakarta.xml.bind.api"/>
     </dependencies>
 </module>
