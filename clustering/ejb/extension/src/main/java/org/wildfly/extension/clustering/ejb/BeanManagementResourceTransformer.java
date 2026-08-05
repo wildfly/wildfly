@@ -27,7 +27,7 @@ public class BeanManagementResourceTransformer implements Consumer<ModelVersion>
     public void accept(ModelVersion version) {
         ResourceTransformationDescriptionBuilder builder = this.parent.addChildResource(BeanManagementResourceRegistration.INFINISPAN.getPathElement());
 
-        if (DistributableEjbSubsystemModel.VERSION_2_0_0.requiresTransformation(version)) {
+        if (DistributableEjbSubsystemModel.VERSION_3_0_0.requiresTransformation(version)) {
             builder.getAttributeBuilder()
                     .setDiscard(DiscardAttributeChecker.UNDEFINED, BeanManagementResourceDefinitionRegistrar.IDLE_THRESHOLD)
                     .addRejectCheck(RejectAttributeChecker.DEFINED, BeanManagementResourceDefinitionRegistrar.IDLE_THRESHOLD)
