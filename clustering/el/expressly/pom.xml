@@ -55,10 +55,6 @@
             <groupId>org.wildfly.clustering</groupId>
             <artifactId>wildfly-clustering-marshalling-protostream</artifactId>
         </dependency>
-        <dependency>
-            <groupId>org.wildfly.security</groupId>
-            <artifactId>wildfly-elytron-security-manager</artifactId>
-        </dependency>
 
         <!-- Internal test dependencies -->
         <dependency>

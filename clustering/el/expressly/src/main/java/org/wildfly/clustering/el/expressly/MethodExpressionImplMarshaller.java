@@ -6,18 +6,19 @@
 package org.wildfly.clustering.el.expressly;
 
 import java.io.IOException;
+import java.lang.invoke.MethodHandle;
+import java.lang.invoke.MethodHandles;
 import java.lang.reflect.Field;
-import java.security.PrivilegedAction;
 import java.util.LinkedList;
 import java.util.List;
 
 import org.glassfish.expressly.MethodExpressionImpl;
 import org.infinispan.protostream.descriptors.WireType;
+import org.wildfly.clustering.function.Function;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamMarshaller;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamReader;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamWriter;
 import org.wildfly.clustering.marshalling.protostream.SimpleObjectOutput;
-import org.wildfly.security.manager.WildFlySecurityManager;
 
 import jakarta.el.FunctionMapper;
 import jakarta.el.VariableMapper;
@@ -34,22 +35,20 @@ public class MethodExpressionImplMarshaller implements ProtoStreamMarshaller<Met
     private static final int VARIABLE_MAPPER_INDEX = 4;
     private static final int PARAMETER_TYPE_INDEX = 5;
 
-    private static final Field EXPECTED_TYPE_FIELD = getField(Class.class);
-    private static final Field PARAMETER_TYPES_FIELD = getField(Class[].class);
+    private static final Function<MethodExpressionImpl, Class<?>> EXPECTED_TYPE_HANDLE = Function.invoke(findHandle(Class.class));
+    private static final Function<MethodExpressionImpl, Class<?>[]> PARAMETER_TYPES_FIELD = Function.invoke(findHandle(Class[].class));
 
-    private static Field getField(Class<?> targetType) {
-        return WildFlySecurityManager.doUnchecked(new PrivilegedAction<Field>() {
-            @Override
-            public Field run() {
-                for (Field field : MethodExpressionImpl.class.getDeclaredFields()) {
-                    if (field.getType() == targetType) {
-                        field.setAccessible(true);
-                        return field;
-                    }
+    private static MethodHandle findHandle(Class<?> targetType) {
+        for (Field field : MethodExpressionImpl.class.getDeclaredFields()) {
+            if (field.getType() == targetType) {
+                try {
+                    return MethodHandles.privateLookupIn(MethodExpressionImpl.class, MethodHandles.lookup()).findGetter(field.getDeclaringClass(), field.getName(), field.getType());
+                } catch (IllegalAccessException | NoSuchFieldException e) {
+                    throw new IllegalStateException(e);
                 }
-                throw new IllegalStateException();
             }
-        });
+        }
+        throw new IllegalStateException(targetType.getCanonicalName());
     }
 
     @Override
@@ -99,11 +98,11 @@ public class MethodExpressionImplMarshaller implements ProtoStreamMarshaller<Met
         if (expression != null) {
             writer.writeString(EXPRESSION_INDEX, expression);
         }
-        Class<?> expectedType = getValue(value, EXPECTED_TYPE_FIELD, Class.class);
+        Class<?> expectedType = EXPECTED_TYPE_HANDLE.apply(value);
         if (expectedType != null) {
             writer.writeAny(EXPECTED_TYPE_INDEX, expectedType);
         }
-        Class<?>[] parameterTypes = getValue(value, PARAMETER_TYPES_FIELD, Class[].class);
+        Class<?>[] parameterTypes = PARAMETER_TYPES_FIELD.apply(value);
         for (Class<?> parameterType : parameterTypes) {
             writer.writeAny(PARAMETER_TYPE_INDEX, parameterType);
         }
@@ -115,18 +114,5 @@ public class MethodExpressionImplMarshaller implements ProtoStreamMarshaller<Met
         if (variableMapper != null) {
             writer.writeAny(VARIABLE_MAPPER_INDEX, variableMapper);
         }
-    }
-
-    private static <T> T getValue(MethodExpressionImpl value, Field field, Class<T> targetClass) {
-        return WildFlySecurityManager.doUnchecked(new PrivilegedAction<T>() {
-            @Override
-            public T run() {
-                try {
-                    return targetClass.cast(field.get(value));
-                } catch (IllegalAccessException e) {
-                    throw new IllegalStateException(e);
-                }
-            }
-        });
     }
 }

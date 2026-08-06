@@ -6,7 +6,7 @@
 package org.jboss.as.test.clustering.cluster.web.remote;
 
 import org.infinispan.configuration.cache.CacheMode;
-import org.infinispan.server.test.junit5.InfinispanServerExtension;
+import org.infinispan.server.test.jupiter.InfinispanServerExtension;
 import org.infinispan.transaction.TransactionMode;
 import org.jboss.as.test.clustering.ClusterTestUtil;
 import org.jboss.as.test.clustering.InfinispanServerUtil;

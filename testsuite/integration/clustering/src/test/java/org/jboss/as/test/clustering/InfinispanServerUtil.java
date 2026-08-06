@@ -13,8 +13,8 @@ import java.util.Objects;
 
 import org.infinispan.server.test.core.ServerRunMode;
 import org.infinispan.server.test.core.TestSystemPropertyNames;
-import org.infinispan.server.test.junit5.InfinispanServerExtension;
-import org.infinispan.server.test.junit5.InfinispanServerExtensionBuilder;
+import org.infinispan.server.test.jupiter.InfinispanServerExtension;
+import org.infinispan.server.test.jupiter.InfinispanServerExtensionBuilder;
 import org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase;
 import org.jboss.as.test.shared.GlowUtil;
 

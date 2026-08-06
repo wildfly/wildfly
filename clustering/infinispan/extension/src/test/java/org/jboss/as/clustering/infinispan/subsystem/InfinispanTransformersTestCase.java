@@ -13,6 +13,7 @@ import java.util.Map;
 import org.jboss.as.clustering.controller.CommonServiceDescriptor;
 import org.jboss.as.clustering.infinispan.subsystem.remote.RemoteCacheContainerResourceDefinitionRegistrar;
 import org.jboss.as.clustering.subsystem.AdditionalInitialization;
+import org.jboss.as.clustering.subsystem.WildFlyClusteringVersion;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
@@ -65,8 +66,8 @@ public class InfinispanTransformersTestCase extends AbstractSubsystemTest {
         return VERSIONS.keySet();
     }
 
-    private String[] getDependencies(ModelTestControllerVersion version) {
-        return switch (version) {
+    private String[] getDependencies() {
+        return switch (this.controllerVersion) {
             case EAP_7_4_0 -> new String[] {
                     this.createInfinispanGAV("infinispan-cachestore-jdbc"),
                     this.createInfinispanGAV("infinispan-client-hotrod"),
@@ -105,6 +106,7 @@ public class InfinispanTransformersTestCase extends AbstractSubsystemTest {
                     this.controllerVersion.createGAV("wildfly-clustering-infinispan-extension"),
                     this.controllerVersion.createGAV("wildfly-clustering-jgroups-extension"),
                     this.controllerVersion.createGAV("wildfly-clustering-jgroups-spi"),
+                    this.controllerVersion.createGAV("wildfly-clustering-marshalling-protostream"),
                     this.controllerVersion.createGAV("wildfly-clustering-server-service"),
                     this.controllerVersion.createGAV("wildfly-clustering-service"),
                     this.controllerVersion.createGAV("wildfly-clustering-singleton-api"),
@@ -129,6 +131,7 @@ public class InfinispanTransformersTestCase extends AbstractSubsystemTest {
                     this.controllerVersion.createGAV("wildfly-clustering-service"),
                     this.controllerVersion.createGAV("wildfly-clustering-singleton-api"),
                     this.controllerVersion.createGAV("wildfly-connector"),
+                    WildFlyClusteringVersion.forVersion(this.controllerVersion).toGAV("wildfly-clustering-marshalling-protostream"),
             };
             default -> throw new IllegalArgumentException(this.controllerVersion.toString());
         };
@@ -173,7 +176,7 @@ public class InfinispanTransformersTestCase extends AbstractSubsystemTest {
     private KernelServices build(KernelServicesBuilder builder) throws Exception {
         // initialize the legacy services and add required jars
         builder.createLegacyKernelServicesBuilder(createAdditionalInitialization(), this.controllerVersion, this.subsystemVersion)
-                .addMavenResourceURL(getDependencies(this.controllerVersion))
+                .addMavenResourceURL(this.getDependencies())
                 .addSingleChildFirstClass(DataSourcesSubsystemInitialization.class)
                 .addSingleChildFirstClass(AdditionalInitialization.class)
                 .addSingleChildFirstClass(ClassConfigurator.class)

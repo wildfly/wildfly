@@ -23,9 +23,10 @@ import org.jboss.msc.service.ServiceController;
 import org.kohsuke.MetaInfServices;
 import org.wildfly.clustering.function.Supplier;
 import org.wildfly.clustering.marshalling.ByteBufferMarshaller;
+import org.wildfly.clustering.marshalling.protostream.ImmutableSerializationContext;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamByteBufferMarshaller;
-import org.wildfly.clustering.marshalling.protostream.SerializationContextBuilder;
-import org.wildfly.clustering.marshalling.protostream.modules.ModuleClassLoaderMarshaller;
+import org.wildfly.clustering.marshalling.protostream.ProtoStreamConfiguration;
+import org.wildfly.clustering.marshalling.protostream.modules.ModuleClassResolver;
 import org.wildfly.clustering.session.user.UserManager;
 import org.wildfly.clustering.session.user.UserManagerConfiguration;
 import org.wildfly.clustering.session.user.UserManagerFactory;
@@ -36,7 +37,6 @@ import org.wildfly.clustering.web.service.user.LegacyDistributableUserManagement
 import org.wildfly.clustering.web.undertow.logging.UndertowClusteringLogger;
 import org.wildfly.security.auth.server.SecurityIdentity;
 import org.wildfly.security.cache.CachedIdentity;
-import org.wildfly.security.manager.WildFlySecurityManager;
 import org.wildfly.subsystem.service.ResourceServiceInstaller;
 import org.wildfly.subsystem.service.ServiceDependency;
 import org.wildfly.subsystem.service.ServiceInstaller;
@@ -79,8 +79,10 @@ public class DistributableSingleSignOnManagerServiceInstallerProvider implements
 
             @Override
             public ByteBufferMarshaller getMarshaller() {
-                ClassLoader classLoader = WildFlySecurityManager.getClassLoaderPrivileged(this.getClass());
-                return new ProtoStreamByteBufferMarshaller(SerializationContextBuilder.newInstance(new ModuleClassLoaderMarshaller(loader.get())).load(classLoader).build());
+                ClassLoader classLoader = this.getClass().getClassLoader();
+                ProtoStreamConfiguration configuration = ProtoStreamConfiguration.Builder.with(new ModuleClassResolver(loader.get())).build();
+                ImmutableSerializationContext context = ImmutableSerializationContext.Builder.with(configuration).load(classLoader).build();
+                return new ProtoStreamByteBufferMarshaller(context);
             }
 
             @Override

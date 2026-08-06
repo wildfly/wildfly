@@ -5,12 +5,10 @@
 package org.wildfly.extension.clustering.server.dispatcher;
 
 import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 
-import org.infinispan.protostream.ImmutableSerializationContext;
 import org.jboss.as.controller.ServiceNameFactory;
 import org.jboss.as.controller.management.Capabilities;
 import org.jboss.as.server.Services;
@@ -24,11 +22,10 @@ import org.wildfly.clustering.jgroups.spi.ForkChannelFactory;
 import org.wildfly.clustering.marshalling.ByteBufferMarshaller;
 import org.wildfly.clustering.marshalling.jboss.JBossByteBufferMarshaller;
 import org.wildfly.clustering.marshalling.jboss.MarshallingConfigurationBuilder;
-import org.wildfly.clustering.marshalling.protostream.DefaultSerializationContext;
+import org.wildfly.clustering.marshalling.protostream.ImmutableSerializationContext;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamByteBufferMarshaller;
-import org.wildfly.clustering.marshalling.protostream.ProtoStreamMarshaller;
-import org.wildfly.clustering.marshalling.protostream.SerializationContextBuilder;
-import org.wildfly.clustering.marshalling.protostream.modules.ModuleClassLoaderMarshaller;
+import org.wildfly.clustering.marshalling.protostream.ProtoStreamConfiguration;
+import org.wildfly.clustering.marshalling.protostream.modules.ModuleClassResolver;
 import org.wildfly.clustering.server.dispatcher.Command;
 import org.wildfly.clustering.server.jgroups.dispatcher.ChannelCommandDispatcherFactory;
 import org.wildfly.clustering.server.jgroups.dispatcher.JChannelCommandDispatcherFactory;
@@ -53,15 +50,8 @@ public enum ChannelCommandDispatcherFactoryServiceInstallerFactory implements Fu
             @Override
             public ByteBufferMarshaller apply(ClassLoader loader) {
                 // Use protostream if any Command marshallers exist
-                AtomicBoolean supportsProtoStream = new AtomicBoolean(false);
-                ImmutableSerializationContext context = SerializationContextBuilder.newInstance(new ModuleClassLoaderMarshaller(moduleLoader.get()), ctx -> new DefaultSerializationContext(ctx) {
-                    @Override
-                    public void registerMarshaller(ProtoStreamMarshaller<?> marshaller) {
-                        supportsProtoStream.compareAndSet(false, Command.class.isAssignableFrom(marshaller.getJavaClass()));
-                        super.registerMarshaller(marshaller);
-                    }
-                }).load(loader).build();
-                if (supportsProtoStream.get()) {
+                ImmutableSerializationContext context = ImmutableSerializationContext.Builder.with(ProtoStreamConfiguration.Builder.with(new ModuleClassResolver(moduleLoader.get())).build()).load(loader).build();
+                if (context.stream().anyMatch(Command.class::isAssignableFrom)) {
                     return new ProtoStreamByteBufferMarshaller(context);
                 }
                 MarshallingConfigurationBuilder builder = MarshallingConfigurationBuilder.newInstance(ModularClassResolver.getInstance(moduleLoader.get())).load(loader);
@@ -79,7 +69,7 @@ public enum ChannelCommandDispatcherFactoryServiceInstallerFactory implements Fu
             @Override
             public ByteBufferMarshaller getMarshaller() {
                 ClassLoader loader = channelFactory.get().getConfiguration().getChannelConfiguration().getModule().getClassLoader();
-                return new ProtoStreamByteBufferMarshaller(SerializationContextBuilder.newInstance(new ModuleClassLoaderMarshaller(moduleLoader.get())).load(loader).build());
+                return new ProtoStreamByteBufferMarshaller(ImmutableSerializationContext.Builder.with(ProtoStreamConfiguration.Builder.with(new ModuleClassResolver(moduleLoader.get())).build()).load(loader).build());
             }
 
             @Override
