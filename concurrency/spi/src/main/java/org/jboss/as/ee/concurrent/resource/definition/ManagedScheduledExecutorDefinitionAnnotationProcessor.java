@@ -9,6 +9,7 @@ import org.jboss.as.ee.resource.definition.ResourceDefinitionAnnotationProcessor
 import org.jboss.as.ee.resource.definition.ResourceDefinitionInjectionSource;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.jandex.AnnotationInstance;
+import org.jboss.jandex.AnnotationValue;
 import org.jboss.jandex.DotName;
 import org.jboss.metadata.property.PropertyReplacer;
 
@@ -42,6 +43,10 @@ public class ManagedScheduledExecutorDefinitionAnnotationProcessor extends Resou
         injectionSource.setContextServiceRef(context);
         injectionSource.setHungTaskThreshold(hungTaskThreshold);
         injectionSource.setMaxAsync(maxAsync);
+        final AnnotationValue virtualAnnotationValue = annotationInstance.value(ManagedScheduledExecutorDefinitionInjectionSource.VIRTUAL_PROP);
+        if (virtualAnnotationValue != null) {
+            injectionSource.setVirtual(virtualAnnotationValue.asBoolean());
+        }
         return injectionSource;
     }
 }

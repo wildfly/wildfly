@@ -28,6 +28,11 @@ class ConcurroManagedExecutorRuntimeStatsImpl implements ManagedExecutorRuntimeS
         this.threadPoolExecutor = executorService.getThreadPoolExecutor();
     }
 
+    ConcurroManagedExecutorRuntimeStatsImpl(ConcurroVirtualThreadsManagedScheduledExecutorServiceImpl executorService) {
+        this.abstractManagedExecutorService = executorService;
+        this.threadPoolExecutor = executorService.getThreadPoolExecutor();
+    }
+
     @Override
     public int getThreadsCount() {
         return threadPoolExecutor.getPoolSize();

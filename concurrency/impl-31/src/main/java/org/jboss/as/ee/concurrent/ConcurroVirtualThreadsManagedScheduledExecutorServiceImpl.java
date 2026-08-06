@@ -6,9 +6,8 @@ package org.jboss.as.ee.concurrent;
 
 import jakarta.enterprise.concurrent.LastExecution;
 import jakarta.enterprise.concurrent.Trigger;
-import org.glassfish.concurro.AbstractManagedThread;
 import org.glassfish.concurro.ContextServiceImpl;
-import org.glassfish.concurro.ManagedThreadFactoryImpl;
+import org.glassfish.concurro.virtualthreads.VirtualThreadsManagedThreadFactory;
 import org.jboss.as.controller.ProcessStateNotifier;
 import org.jboss.as.ee.logging.EeLogger;
 import org.wildfly.extension.requestcontroller.ControlPoint;
@@ -22,17 +21,17 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 /**
- * WildFly's extension of {@link org.glassfish.concurro.ManagedScheduledExecutorServiceImpl}.
+ * WildFly's extension of {@link org.glassfish.concurro.virtualthreads.VirtualThreadsManagedScheduledExecutorService}.
  * @author Eduardo Martins
  */
-public class ConcurroManagedScheduledExecutorServiceImpl extends org.glassfish.concurro.ManagedScheduledExecutorServiceImpl implements WildFlyManagedScheduledExecutorService {
+public class ConcurroVirtualThreadsManagedScheduledExecutorServiceImpl extends org.glassfish.concurro.virtualthreads.VirtualThreadsManagedScheduledExecutorService implements WildFlyManagedScheduledExecutorService {
 
     private final ControlPoint controlPoint;
     private final ProcessStateNotifier processStateNotifier;
     private final ManagedExecutorRuntimeStats runtimeStats;
 
-    public ConcurroManagedScheduledExecutorServiceImpl(String name, WildFlyManagedThreadFactory managedThreadFactory, long hungTaskThreshold, boolean longRunningTasks, int corePoolSize, long keepAliveTime, TimeUnit keepAliveTimeUnit, long threadLifeTime, WildFlyContextService contextService, WildFlyManagedExecutorService.RejectPolicy rejectPolicy, ControlPoint controlPoint, ProcessStateNotifier processStateNotifier) {
-        super(name, (ManagedThreadFactoryImpl) managedThreadFactory, hungTaskThreshold, longRunningTasks, corePoolSize, keepAliveTime, keepAliveTimeUnit, threadLifeTime, (ContextServiceImpl) contextService, ConcurroManagedExecutorServiceImpl.convertRejectPolicy(rejectPolicy));
+    public ConcurroVirtualThreadsManagedScheduledExecutorServiceImpl(String name, WildFlyManagedThreadFactory managedThreadFactory, long hungTaskThreshold, boolean longRunningTasks, int corePoolSize, long keepAliveTime, TimeUnit keepAliveTimeUnit, long threadLifeTime, WildFlyContextService contextService, WildFlyManagedExecutorService.RejectPolicy rejectPolicy, ControlPoint controlPoint, ProcessStateNotifier processStateNotifier) {
+        super(name, (VirtualThreadsManagedThreadFactory) managedThreadFactory, hungTaskThreshold, longRunningTasks, corePoolSize, 0, (ContextServiceImpl) contextService, ConcurroManagedExecutorServiceImpl.convertRejectPolicy(rejectPolicy));
         this.controlPoint = controlPoint;
         this.processStateNotifier = processStateNotifier;
         this.runtimeStats = new ConcurroManagedExecutorRuntimeStatsImpl(this);
@@ -111,7 +110,7 @@ public class ConcurroManagedScheduledExecutorServiceImpl extends org.glassfish.c
     }
 
     /**
-     * A {@link jakarta.enterprise.concurrent.Trigger} wrapper that stops scheduling if the related {@link java.util.concurrent.ScheduledFuture} is cancelled.
+     * A {@link Trigger} wrapper that stops scheduling if the related {@link ScheduledFuture} is cancelled.
      */
     private static class CancellableTrigger implements Trigger {
         private final Trigger trigger;
@@ -144,15 +143,10 @@ public class ConcurroManagedScheduledExecutorServiceImpl extends org.glassfish.c
         final Collection<Thread> hungThreads = getHungThreads();
         if (hungThreads != null) {
             for (Thread t : hungThreads) {
-                final String taskIdentityName = ((AbstractManagedThread)t).getTaskIdentityName();
+                final String taskIdentityName = t.toString();
                 try {
-                    if (t instanceof ConcurroManagedThreadFactoryImpl.ManagedThread) {
-                        if (((ConcurroManagedThreadFactoryImpl.ManagedThread)t).cancelTask()) {
-                            EeLogger.ROOT_LOGGER.hungTaskCancelled(executorName, taskIdentityName);
-                        } else {
-                            EeLogger.ROOT_LOGGER.hungTaskNotCancelled(executorName, taskIdentityName);
-                        }
-                    }
+                    t.interrupt();
+                    EeLogger.ROOT_LOGGER.hungTaskCancelled(executorName, taskIdentityName);
                 } catch (Throwable throwable) {
                     EeLogger.ROOT_LOGGER.huntTaskTerminationFailure(throwable, executorName, taskIdentityName);
                 }

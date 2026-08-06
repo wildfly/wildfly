@@ -36,6 +36,7 @@ public class ManagedThreadFactoryAdd extends AbstractAddStepHandler {
 
         final String jndiName = ManagedExecutorServiceResourceDefinition.JNDI_NAME_AD.resolveModelAttribute(context, model).asString();
         final int priority = ManagedThreadFactoryResourceDefinition.PRIORITY_AD.resolveModelAttribute(context, model).asInt();
+        final boolean virtual = ManagedThreadFactoryResourceDefinition.VIRTUAL_AD.resolveModelAttribute(context, model).asBoolean();
 
         final CapabilityServiceBuilder serviceBuilder = context.getCapabilityServiceTarget().addCapability(ManagedThreadFactoryResourceDefinition.CAPABILITY);
         String contextService = null;
@@ -44,7 +45,7 @@ public class ManagedThreadFactoryAdd extends AbstractAddStepHandler {
         }
         final Consumer<WildFlyManagedThreadFactory> consumer = serviceBuilder.provides(ManagedThreadFactoryResourceDefinition.CAPABILITY);
         final Supplier<WildFlyContextService> ctxServiceSupplier = contextService != null ? serviceBuilder.requiresCapability(ContextServiceResourceDefinition.CAPABILITY.getName(), ContextService.class, contextService) : null;
-        final ManagedThreadFactoryService service = new ManagedThreadFactoryService(consumer, ctxServiceSupplier, name, jndiName, priority);
+        final ManagedThreadFactoryService service = new ManagedThreadFactoryService(consumer, ctxServiceSupplier, name, jndiName, priority, virtual);
         serviceBuilder.setInstance(service);
         serviceBuilder.install();
     }
