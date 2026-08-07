@@ -9,13 +9,18 @@
          xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee http://xmlns.jcp.org/xml/ns/javaee/web-app_4_0.xsd">
 
     <context-param>
-        <param-name>jakarta.faces.DEFAULT_SUFFIX</param-name>
+        <param-name>jakarta.faces.FACELETS_SUFFIX</param-name>
         <param-value>.jsf</param-value>
     </context-param>
-    <context-param>
-        <param-name>jakarta.faces.FACELETS_VIEW_MAPPINGS</param-name>
-        <param-value>*.jsf</param-value>
-    </context-param>
+
+    <servlet>
+        <servlet-name>FacesServlet</servlet-name>
+        <servlet-class>jakarta.faces.webapp.FacesServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>FacesServlet</servlet-name>
+        <url-pattern>*.jsf</url-pattern>
+    </servlet-mapping>
 
     <welcome-file-list>
         <welcome-file>hello.jsf</welcome-file>

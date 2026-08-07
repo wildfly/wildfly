@@ -7,10 +7,6 @@ package org.jboss.as.test.integration.jsf.unsupportedwar;
 
 import jakarta.faces.annotation.FacesConfig;
 
-/**
- *
- * @author Ranabir Chakraborty <rchakrab@redhat.com>
- */
-@FacesConfig(version = FacesConfig.Version.JSF_2_3)
+@FacesConfig
 public class ConfigurationBean {
 }

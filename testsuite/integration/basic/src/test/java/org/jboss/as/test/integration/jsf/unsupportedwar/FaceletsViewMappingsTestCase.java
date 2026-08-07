@@ -24,22 +24,16 @@ import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 /**
- * <p>Tests the Jakarta Server Faces deployment failure due to UnsupportedOperationException when
- * <em>jakarta.faces.FACELETS_VIEW_MAPPINGS</em> is defined with something that
- * does not include <em>*.xhtml</em>.</p>
- * <p>
- * For details check https://issues.redhat.com/browse/WFLY-13792
- *
- * @author Ranabir Chakraborty <rchakrab@redhat.com>
+ * <p>Tests that Jakarta Faces can serve Facelets views using a non-default file
+ * extension ({@code .jsf} instead of {@code .xhtml}) when configured via
+ * {@code jakarta.faces.FACELETS_SUFFIX}.</p>
  */
 @RunWith(Arquillian.class)
 @RunAsClient
-@Ignore("WFLY-16521")
 public class FaceletsViewMappingsTestCase {
 
     public static final String FACELETS_VIEW_MAPPINGS_TEST_CASE = "FaceletsViewMappingsTestCase";
@@ -72,16 +66,15 @@ public class FaceletsViewMappingsTestCase {
         deployer.undeploy(FACELETS_VIEW_MAPPINGS_TEST_CASE);
     }
 
-    @SuppressWarnings("deprecation")
     @Test
     public void testHelloWorld() throws Exception {
         try (CloseableHttpClient httpclient = HttpClients.createDefault()) {
-            HttpGet httpget = new HttpGet(managementClient.getWebUri() + "/" + DEPLOYMENT);
+            HttpGet httpget = new HttpGet(managementClient.getWebUri() + "/" + DEPLOYMENT + "/hello.jsf");
 
             HttpResponse response = httpclient.execute(httpget);
             String result = EntityUtils.toString(response.getEntity());
 
-            Assert.assertEquals("Jakarta Server Faces deployment failed due to UnsupportedOperationException when jakarta.faces.FACELETS_VIEW_MAPPINGS valued wrong",
+            Assert.assertEquals("Facelets view with .jsf extension should be served successfully",
                     HttpStatus.SC_OK, response.getStatusLine().getStatusCode());
             MatcherAssert.assertThat("Hello World is in place", result, CoreMatchers.containsString("Hello World!"));
         }
