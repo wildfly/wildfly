@@ -472,4 +472,6 @@ public interface IIOPLogger extends BasicLogger {
     @Message(id = 140, value = "Name length %d exceeds maximum %d")
     void nameLengthExceedsMaximum(int nameLength, int maxSize);
 
+    @Message(id = 141, value = "Identity assertion without client authentication is not allowed")
+    NO_PERMISSION identityAssertionRequiresAuthentication();
 }
