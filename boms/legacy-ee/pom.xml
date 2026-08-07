@@ -58,7 +58,7 @@
         <version.org.glassfish.jakarta.enterprise.concurrent>3.0.2</version.org.glassfish.jakarta.enterprise.concurrent>
         <version.org.glassfish.jakarta.faces>4.0.22</version.org.glassfish.jakarta.faces>
         <version.org.glassfish.soteria>3.0.3</version.org.glassfish.soteria>
-        <version.org.jboss.resteasy>6.2.16.Final</version.org.jboss.resteasy>
+        <version.org.jboss.resteasy>6.2.17.Final</version.org.jboss.resteasy>
         <version.org.jboss.spec.jakarta.el.jboss-el-api_5.0_spec>4.0.2.Final</version.org.jboss.spec.jakarta.el.jboss-el-api_5.0_spec>
         <version.org.jboss.weld.weld>5.1.7.Final</version.org.jboss.weld.weld>
         <version.org.jboss.weld.weld-api>5.0.SP3</version.org.jboss.weld.weld-api>
