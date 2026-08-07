@@ -63,7 +63,7 @@
         <version.org.hibernate.validator>9.1.1.Final</version.org.hibernate.validator>
         <!-- The ORM version is controlled in the root pom because we need to use its value in contexts not controlled by this bom -->
         <version.org.hibernate>${standard.version.org.hibernate}</version.org.hibernate>
-        <version.org.jboss.resteasy>7.0.2.Final</version.org.jboss.resteasy>
+        <version.org.jboss.resteasy>6.2.17.Final</version.org.jboss.resteasy>
         <version.org.jboss.weld.weld>6.0.4.Final</version.org.jboss.weld.weld>
         <version.org.jboss.weld.weld-api>6.0.Final</version.org.jboss.weld.weld-api>
         <version.org.wildfly.security.jakarta.elytron-ee>4.0.0.Final</version.org.wildfly.security.jakarta.elytron-ee>
