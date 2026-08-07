@@ -96,7 +96,7 @@ public class HttpInvokerDefinition extends PersistentResourceDefinition {
             final PathAddress address = context.getCurrentAddress();
             final PathAddress hostAddress = address.getParent();
             final PathAddress serverAddress = hostAddress.getParent();
-            String path = PATH.resolveModelAttribute(context, model).asString();
+            String path = UndertowUtils.normalizePath(PATH.resolveModelAttribute(context, model).asString());
             String httpAuthenticationFactory = null;
             final ModelNode authFactory = HTTP_AUTHENTICATION_FACTORY.resolveModelAttribute(context, model);
             final ModelNode securityRealm = SECURITY_REALM.resolveModelAttribute(context, model);
