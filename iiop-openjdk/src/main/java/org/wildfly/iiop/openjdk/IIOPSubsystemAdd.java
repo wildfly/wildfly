@@ -54,6 +54,7 @@ import org.omg.PortableServer.POA;
 import org.wildfly.common.function.Functions;
 import org.wildfly.iiop.openjdk.csiv2.CSIV2IORToSocketInfo;
 import org.wildfly.iiop.openjdk.csiv2.ElytronSASClientInterceptor;
+import org.wildfly.iiop.openjdk.csiv2.SASTargetInterceptor;
 import org.wildfly.iiop.openjdk.deployment.IIOPClearCachesProcessor;
 import org.wildfly.iiop.openjdk.deployment.IIOPDependencyProcessor;
 import org.wildfly.iiop.openjdk.deployment.IIOPMarkerProcessor;
@@ -362,6 +363,11 @@ public class IIOPSubsystemAdd extends AbstractBoottimeAddStepHandler {
             final String authContext = props.getProperty(Constants.ORB_INIT_AUTH_CONTEXT);
             ElytronSASClientInterceptor.setAuthenticationContextName(authContext);
             orbInitializers.addAll(Arrays.asList(IIOPInitializer.SECURITY_ELYTRON.getInitializerClasses()));
+
+            String requireAuth = (String) props.remove(Constants.IOR_SAS_CONTEXT_CALLER_PROPAGATION_REQUIRE_AUTH);
+            if (requireAuth != null) {
+                SASTargetInterceptor.setCallerPropagationRequireAuth(Boolean.parseBoolean(requireAuth));
+            }
         }
 
         String installTransaction = (String) props.remove(Constants.ORB_INIT_TRANSACTIONS);

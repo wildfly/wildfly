@@ -5,6 +5,14 @@
 
 package org.wildfly.iiop.openjdk.csiv2;
 
+import java.net.Socket;
+import java.security.cert.Certificate;
+
+import javax.net.ssl.SSLPeerUnverifiedException;
+import javax.net.ssl.SSLSocket;
+
+import com.sun.corba.se.spi.legacy.interceptor.RequestInfoExt;
+
 import org.omg.CORBA.Any;
 import org.omg.CORBA.BAD_PARAM;
 import org.omg.CORBA.LocalObject;
@@ -13,6 +21,8 @@ import org.omg.CSI.CompleteEstablishContext;
 import org.omg.CSI.ContextError;
 import org.omg.CSI.EstablishContext;
 import org.omg.CSI.GSS_NT_ExportedNameHelper;
+import org.omg.CSI.ITTAbsent;
+import org.omg.CSI.ITTAnonymous;
 import org.omg.CSI.ITTPrincipalName;
 import org.omg.CSI.IdentityToken;
 import org.omg.CSI.MTEstablishContext;
@@ -46,6 +56,12 @@ import org.wildfly.iiop.openjdk.service.CorbaORBService;
 public class SASTargetInterceptor extends LocalObject implements ServerRequestInterceptor {
 
     private static final long serialVersionUID = -4809929027984284871L;
+
+    private static volatile boolean callerPropagationRequireAuth = true;
+
+    public static void setCallerPropagationRequireAuth(boolean require) {
+        callerPropagationRequireAuth = require;
+    }
 
     private static final int sasContextId = org.omg.IOP.SecurityAttributeService.value;
 
@@ -127,6 +143,10 @@ public class SASTargetInterceptor extends LocalObject implements ServerRequestIn
         IdentityToken incomingIdentity;
 
         byte[] incomingPrincipalName;
+
+        boolean tlsClientAuthenticated;
+
+        Certificate[] incomingPeerCertificates;
 
         long contextId;
 
@@ -276,6 +296,16 @@ public class SASTargetInterceptor extends LocalObject implements ServerRequestIn
         return threadLocal.incomingPrincipalName;
     }
 
+    boolean isTlsClientAuthenticated() {
+        CurrentRequestInfo threadLocal = threadLocalData.get();
+        return threadLocal.tlsClientAuthenticated;
+    }
+
+    Certificate[] getIncomingPeerCertificates() {
+        CurrentRequestInfo threadLocal = threadLocalData.get();
+        return threadLocal.incomingPeerCertificates;
+    }
+
     /**
      * <p>
      * Sets the outgoing SAS reply to <code>ContextError</code>, with major status "invalid evidence".
@@ -312,13 +342,27 @@ public class SASTargetInterceptor extends LocalObject implements ServerRequestIn
 
         threadLocal.sasContextReceived = false;
         threadLocal.authenticationTokenReceived = false;
+        threadLocal.tlsClientAuthenticated = false;
         threadLocal.incomingUsername = empty;
         threadLocal.incomingPassword = empty;
         threadLocal.incomingTargetName = empty;
         threadLocal.incomingIdentity = absent;
         threadLocal.incomingPrincipalName = empty;
+        threadLocal.incomingPeerCertificates = null;
         threadLocal.sasReply = null;
         threadLocal.sasReplyIsAccept = false;
+
+        if (ri instanceof RequestInfoExt && ((RequestInfoExt) ri).connection() != null) {
+            Socket socket = ((RequestInfoExt) ri).connection().getSocket();
+            if (socket instanceof SSLSocket) {
+                try {
+                    threadLocal.incomingPeerCertificates = ((SSLSocket) socket).getSession().getPeerCertificates();
+                    threadLocal.tlsClientAuthenticated = true;
+                } catch (SSLPeerUnverifiedException e) {
+                    // client didn't present a certificate — not an error
+                }
+            }
+        }
 
         try {
 
@@ -374,6 +418,15 @@ public class SASTargetInterceptor extends LocalObject implements ServerRequestIn
                                 threadLocal.sasReply = createMsgCtxError(message.client_context_id, 2 /* major status: invalid mechanism */);
                                 throw IIOPLogger.ROOT_LOGGER.errorDecodingPrincipalName();
                             }
+                        }
+
+                        if (callerPropagationRequireAuth
+                                && message.identity_token.discriminator() != ITTAbsent.value
+                                && message.identity_token.discriminator() != ITTAnonymous.value
+                                && !threadLocal.authenticationTokenReceived
+                                && !threadLocal.tlsClientAuthenticated) {
+                            threadLocal.sasReply = createMsgCtxError(message.client_context_id, 1 /* major status: invalid evidence */);
+                            throw IIOPLogger.ROOT_LOGGER.identityAssertionRequiresAuthentication();
                         }
                     }
                     threadLocal.sasReply = (threadLocal.contextId == 0) ? msgCtx0Accepted :
