@@ -271,6 +271,16 @@
         </dependency>
         <dependency>
             <groupId>io.smallrye.config</groupId>
+            <artifactId>smallrye-config-microprofile</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>io.smallrye.config</groupId>
             <artifactId>smallrye-config-source-file-system</artifactId>
             <exclusions>
                 <exclusion>
