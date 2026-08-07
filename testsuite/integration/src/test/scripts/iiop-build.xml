@@ -32,6 +32,7 @@
             mcast="${mcast}"
         />
         <ts.config-as.iiop.add-auth-context name="jbossas-iiop-server"/>
+        <ts.config-as.iiop.allow-unauth-caller-propagation name="jbossas-iiop-server"/>
         <!-- Build configs for SSL tests -->
 
         <!-- SSL Client w Sec Domain -->

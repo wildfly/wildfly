@@ -3255,4 +3255,7 @@ public interface EjbLogger extends BasicLogger {
 
     @Message(id = 536, value = "Unsupported EJB receiver protocol %s")
     IllegalArgumentException unsupportedEJBReceiverProtocol(String uriScheme);
+
+    @Message(id = 537, value = "Authorization failed")
+    SecurityException authorizationFailed();
 }
