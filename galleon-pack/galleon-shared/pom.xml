@@ -520,6 +520,7 @@
 
         <dependency><groupId>${full.maven.groupId}</groupId><artifactId>wildfly-micrometer</artifactId></dependency>
         <dependency><groupId>${full.maven.groupId}</groupId><artifactId>wildfly-micrometer-deployment</artifactId></dependency>
+        <dependency><groupId>${full.maven.groupId}</groupId><artifactId>wildfly-observability-shared</artifactId></dependency>
 
         <dependency>
             <groupId>${full.maven.groupId}</groupId>

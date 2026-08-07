@@ -16,6 +16,7 @@ public final class MicrometerConfigurationConstants {
     static final String OTLP_REGISTRY = "otlp-registry";
     public static final String ENDPOINT = "endpoint";
     public static final String STEP = "step";
+    public static final String SYSTEM_METRICS = "system-metrics";
 
     static final String PROMETHEUS_REGISTRY = "prometheus-registry";
     public static final String CONTEXT = "context";
