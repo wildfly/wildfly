@@ -21,6 +21,7 @@ import org.jboss.as.server.ServerEnvironment;
 import org.jboss.as.server.Services;
 import org.jboss.dmr.ModelNode;
 import org.jboss.modules.ModuleLoader;
+import org.jboss.msc.service.ServiceController;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
@@ -58,6 +59,7 @@ public class DatabaseDataStoreAdd extends AbstractAddStepHandler {
         final Supplier<Timer> timerSupplier = builder.requires(TimerServiceResourceDefinition.TIMER_SERVICE_DESCRIPTOR);
         final DatabaseTimerPersistence databaseTimerPersistence = new DatabaseTimerPersistence(consumer, dataSourceSupplier, moduleLoaderSupplier, timerSupplier, database, partition, nodeName, refreshInterval, allowExecution);
         builder.setInstance(databaseTimerPersistence);
+        builder.setInitialMode(ServiceController.Mode.ON_DEMAND);
         builder.install();
     }
 

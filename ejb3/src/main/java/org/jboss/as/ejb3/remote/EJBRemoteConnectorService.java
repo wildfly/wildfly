@@ -9,6 +9,7 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 import org.jboss.ejb.protocol.remote.RemoteEJBService;
+import org.jboss.logging.Logger;
 import org.jboss.msc.Service;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
@@ -22,11 +23,14 @@ import org.wildfly.transaction.client.provider.remoting.RemotingTransactionServi
 import org.xnio.OptionMap;
 
 /**
- * A connector to allow remote EJB clients to connect via EJB/Remoting.
+ * A connector service to allow remote EJB clients to connect via EJB/Remoting.
  *
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
+ * @author <a href="mailto:rachmato@ibm.com">Richard Achmatowicz</a>
  */
 public class EJBRemoteConnectorService implements Service {
+
+    private static Logger logger = Logger.getLogger("org.jboss.as.ejb3.remote.EJBRemoteConnectorService");
 
     // TODO: Should this be exposed via the management APIs?
     private static final String EJB_CHANNEL_NAME = "jboss.ejb";
@@ -57,6 +61,8 @@ public class EJBRemoteConnectorService implements Service {
 
     @Override
     public void start(StartContext context) throws StartException {
+        logger.trace("Starting");
+
         final AssociationService associationService = associationServiceSupplier.get();
         final Endpoint endpoint = endpointSupplier.get();
         Executor executor = executorSupplier.get();
@@ -64,10 +70,12 @@ public class EJBRemoteConnectorService implements Service {
             associationService.setExecutor(executor);
         }
         RemoteEJBService remoteEJBService = RemoteEJBService.create(
-            associationService.getAssociation(),
+            associationService.getDelegator(),
             remotingTransactionServiceSupplier.get(),
             classResolverFilter
         );
+
+        logger.trace("Calling serverUp");
         remoteEJBService.serverUp();
 
         // Register an EJB channel open listener
@@ -85,6 +93,7 @@ public class EJBRemoteConnectorService implements Service {
         associationService.sendTopologyUpdateIfLastNodeToLeave();
         associationService.setExecutor(null);
         registration.close();
+        logger.trace("Stopped");
     }
 
 }
