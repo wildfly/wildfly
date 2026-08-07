@@ -10,6 +10,8 @@ import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.test.integration.management.util.CLIWrapper;
 import org.jboss.as.test.integration.security.common.servlets.SimpleServlet;
+import org.jboss.as.test.shared.ServerReload;
+import org.jboss.as.test.shared.TestSuiteEnvironment;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.exporter.ZipExporter;
@@ -66,16 +68,17 @@ public class SetRequestInformationCallbackMechanismFactoryTestCase {
                 .addClass(CustomRealm.class);
         File jarFile = new File(tmpDir.getRoot(), "testJaas.jar");
         jar.as(ZipExporter.class).exportTo(jarFile, true);
-        CLIWrapper cli = new CLIWrapper(true);
-
-        cli.sendLine("module add --name=customRealmModule "
-                + " --resources=" + jarFile.getAbsolutePath()
-                + " --dependencies=org.wildfly.security.elytron", true);
-        cli.sendLine("/subsystem=elytron/custom-realm=customRealm:add(module=customRealmModule,class-name=org.wildfly.test.integration.elytron.http.CustomRealm, configuration={pathToLogFile=" + asAbsolutePath(EXCEPTION_OCCURED_IN_CUSTOM_REALM_FILE) + "})");
-        cli.sendLine("/subsystem=elytron/security-domain=RequestInfoApplicationDomain:add(realms=[{realm=customRealm}],default-realm=customRealm,permission-mapper=default-permission-mapper)");
-        cli.sendLine("/subsystem=elytron/http-authentication-factory=example-fs-http-auth:add(http-server-mechanism-factory=global,security-domain=RequestInfoApplicationDomain,mechanism-configurations=[{mechanism-name=BASIC,mechanism-realm-configurations=[{realm-name=RequestInfoApplicationDomain}]}])");
-        cli.sendLine("/subsystem=undertow/application-security-domain=RequestInfoDomain:add(http-authentication-factory=example-fs-http-auth)");
-        cli.sendLine("reload");
+        try (CLIWrapper cli = new CLIWrapper(true)) {
+            cli.sendLine("module add --name=customRealmModule "
+                    + " --resources=" + jarFile.getAbsolutePath()
+                    + " --dependencies=org.wildfly.security.elytron", true);
+            cli.sendLine("/subsystem=elytron/custom-realm=customRealm:add(module=customRealmModule,class-name=org.wildfly.test.integration.elytron.http.CustomRealm, configuration={pathToLogFile=" + asAbsolutePath(EXCEPTION_OCCURED_IN_CUSTOM_REALM_FILE) + "})");
+            cli.sendLine("/subsystem=elytron/security-domain=RequestInfoApplicationDomain:add(realms=[{realm=customRealm}],default-realm=customRealm,permission-mapper=default-permission-mapper)");
+            cli.sendLine("/subsystem=elytron/http-authentication-factory=example-fs-http-auth:add(http-server-mechanism-factory=global,security-domain=RequestInfoApplicationDomain,mechanism-configurations=[{mechanism-name=BASIC,mechanism-realm-configurations=[{realm-name=RequestInfoApplicationDomain}]}])");
+            cli.sendLine("/subsystem=undertow/application-security-domain=RequestInfoDomain:add(http-authentication-factory=example-fs-http-auth)");
+        } finally {
+            ServerReload.executeReloadAndWaitForCompletion(TestSuiteEnvironment.getModelControllerClient());
+        }
     }
 
     @Test
@@ -114,19 +117,21 @@ public class SetRequestInformationCallbackMechanismFactoryTestCase {
 
     @AfterClass
     public static void cleanUp() throws Exception {
-        CLIWrapper cli = new CLIWrapper(true);
-        cli.sendLine("/subsystem=undertow/application-security-domain=RequestInfoDomain:remove");
-        cli.sendLine("/subsystem=elytron/http-authentication-factory=example-fs-http-auth:remove");
-        cli.sendLine("/subsystem=elytron/security-domain=RequestInfoApplicationDomain:remove");
-        cli.sendLine("/subsystem=elytron/custom-realm=customRealm:remove");
-        try {
-            cli.sendLine("module remove --name=" + "customRealmModule");
-        } catch (AssertionError e) {
-            // ignore failure on Windows, cannot remove module on running server due to file locks
-            if (!Util.isWindows())
-                throw e;
+        try (CLIWrapper cli = new CLIWrapper(true)) {
+            cli.sendLine("/subsystem=undertow/application-security-domain=RequestInfoDomain:remove");
+            cli.sendLine("/subsystem=elytron/http-authentication-factory=example-fs-http-auth:remove");
+            cli.sendLine("/subsystem=elytron/security-domain=RequestInfoApplicationDomain:remove");
+            cli.sendLine("/subsystem=elytron/custom-realm=customRealm:remove");
+            try {
+                cli.sendLine("module remove --name=" + "customRealmModule");
+            } catch (AssertionError e) {
+                // ignore failure on Windows, cannot remove module on running server due to file locks
+                if (!Util.isWindows())
+                    throw e;
+            }
+        } finally {
+            ServerReload.executeReloadAndWaitForCompletion(TestSuiteEnvironment.getModelControllerClient());
         }
-        cli.sendLine("reload");
 
         File jarFile = new File(tmpDir.getRoot(), "testJaas.jar");
         if (jarFile.exists()) {
