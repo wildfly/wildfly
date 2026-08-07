@@ -16,6 +16,7 @@ import org.jboss.dmr.ModelNode;
  * @author Paul Ferraro
  * @author Radoslav Husar
  */
+@Deprecated(forRemoval = true)
 public interface OperationExecutor<C> {
 
     /**

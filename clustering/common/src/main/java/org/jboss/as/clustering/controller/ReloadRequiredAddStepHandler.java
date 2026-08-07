@@ -12,6 +12,7 @@ import org.jboss.dmr.ModelNode;
 /**
  * @author Paul Ferraro
  */
+@Deprecated(forRemoval = true)
 public class ReloadRequiredAddStepHandler extends AddStepHandler {
 
     public ReloadRequiredAddStepHandler(AddStepHandlerDescriptor descriptor) {

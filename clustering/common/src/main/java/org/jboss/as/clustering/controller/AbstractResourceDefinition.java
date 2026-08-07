@@ -15,6 +15,7 @@ import org.jboss.as.controller.registry.ManagementResourceRegistration;
  * All other registerXXX(...) methods have been made final - to prevent misuse.
  * @author Paul Ferraro
  */
+@Deprecated(forRemoval = true)
 public abstract class AbstractResourceDefinition extends SimpleResourceDefinition {
 
     protected AbstractResourceDefinition(PathElement path, ResourceDescriptionResolver resolver) {

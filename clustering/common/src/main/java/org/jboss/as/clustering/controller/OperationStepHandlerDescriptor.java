@@ -15,6 +15,7 @@ import org.jboss.dmr.ModelNode;
 /**
  * @author Paul Ferraro
  */
+@Deprecated(forRemoval = true)
 public interface OperationStepHandlerDescriptor {
 
     /**

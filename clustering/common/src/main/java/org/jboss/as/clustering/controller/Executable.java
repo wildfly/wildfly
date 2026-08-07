@@ -13,6 +13,7 @@ import org.jboss.dmr.ModelNode;
  * @author Paul Ferraro
  * @param <C> the execution context
  */
+@Deprecated(forRemoval = true)
 public interface Executable<C> {
     /**
      * Execute against the specified context.

@@ -15,6 +15,7 @@ import org.jboss.dmr.ModelNode;
  * @param <E> the contextual executable
  * @author Paul Ferraro
  */
+@Deprecated(forRemoval = true)
 public interface Executor<C, E extends Executable<C>> {
     /**
      * Executes the specified executable against the specified operation context.

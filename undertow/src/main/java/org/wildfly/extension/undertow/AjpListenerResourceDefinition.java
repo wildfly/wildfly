@@ -58,7 +58,7 @@ public class AjpListenerResourceDefinition extends ListenerResourceDefinition {
 
     AjpListenerResourceDefinition() {
         super(new SimpleResourceDefinition.Parameters(PATH_ELEMENT, UndertowExtension.getResolver(Constants.LISTENER))
-                        .setDeprecationData(new DeprecationData(UndertowSubsystemModel.VERSION_15_0_0.getVersion())),
+                        .setDeprecationData(new DeprecationData(UndertowSubsystemModel.VERSION_15_0_0.getVersion(), true)),
                 new AjpListenerAdd(),
                 Map.of()
         );

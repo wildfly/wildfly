@@ -12,6 +12,7 @@ import org.jboss.as.controller.OperationFailedException;
  * Encapsulates logic for runtime resource registration.
  * @author Paul Ferraro
  */
+@Deprecated(forRemoval = true)
 public interface RuntimeResourceRegistration {
     /**
      * Registers runtime resources as part of an add operation.

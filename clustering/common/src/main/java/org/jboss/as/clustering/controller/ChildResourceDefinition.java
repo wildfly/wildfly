@@ -13,6 +13,7 @@ import org.jboss.as.controller.registry.ManagementResourceRegistration;
  * Resource definition for child resources that performs all registration via {@link ManagementRegistrar#register(Object)}.
  * @author Paul Ferraro
  */
+@Deprecated(forRemoval = true)
 public abstract class ChildResourceDefinition<R extends ManagementResourceRegistration> extends AbstractResourceDefinition implements ChildResourceRegistrar<R> {
 
     protected ChildResourceDefinition(PathElement path, ResourceDescriptionResolver resolver) {

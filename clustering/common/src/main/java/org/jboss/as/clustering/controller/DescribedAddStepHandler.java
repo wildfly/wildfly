@@ -11,6 +11,7 @@ import org.jboss.as.controller.OperationStepHandler;
  * A described add operation handler.
  * @author Paul Ferraro
  */
+@Deprecated(forRemoval = true)
 public interface DescribedAddStepHandler extends OperationStepHandler, Described<AddStepHandlerDescriptor> {
 
 }
