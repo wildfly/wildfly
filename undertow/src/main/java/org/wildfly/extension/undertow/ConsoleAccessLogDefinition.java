@@ -23,6 +23,7 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.PersistentResourceDefinition;
 import org.jboss.as.controller.PropertiesAttributeDefinition;
+import org.jboss.as.controller.ResourceRegistration;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
@@ -40,7 +41,7 @@ import org.xnio.XnioWorker;
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
 class ConsoleAccessLogDefinition extends PersistentResourceDefinition {
-    static final PathElement PATH_ELEMENT = PathElement.pathElement(Constants.SETTING, Constants.CONSOLE_ACCESS_LOG);
+    static final ResourceRegistration REGISTRATION = ResourceRegistration.of(PathElement.pathElement(Constants.SETTING, Constants.CONSOLE_ACCESS_LOG));
     private static final RuntimeCapability<Void> CONSOLE_ACCESS_LOG_CAPABILITY = RuntimeCapability.Builder.of(Capabilities.CAPABILITY_CONSOLE_ACCESS_LOG, true, Void.class)
             .setDynamicNameMapper(BinaryCapabilityNameResolver.GRANDPARENT_PARENT)
             .build();
@@ -65,7 +66,7 @@ class ConsoleAccessLogDefinition extends PersistentResourceDefinition {
     );
 
     ConsoleAccessLogDefinition() {
-        super(new SimpleResourceDefinition.Parameters(PATH_ELEMENT, UndertowExtension.getResolver(PATH_ELEMENT.getValue()))
+        super(new SimpleResourceDefinition.Parameters(REGISTRATION, UndertowRootDefinition.RESOLVER.createChildResolver(REGISTRATION.getPathElement().getValue()))
                 .setAddHandler(AddHandler.INSTANCE)
                 .setRemoveHandler(RemoveHandler.INSTANCE)
                 .addCapabilities(CONSOLE_ACCESS_LOG_CAPABILITY)

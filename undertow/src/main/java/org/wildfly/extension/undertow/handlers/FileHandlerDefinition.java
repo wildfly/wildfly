@@ -18,6 +18,7 @@ import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.ResourceRegistration;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.StringListAttributeDefinition;
 import org.jboss.as.controller.registry.AttributeAccess;
@@ -30,7 +31,7 @@ import org.wildfly.extension.undertow.logging.UndertowLogger;
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a> (c) 2013 Red Hat Inc.
  */
 public class FileHandlerDefinition extends HandlerDefinition {
-    public static final PathElement PATH_ELEMENT = PathElement.pathElement(Constants.FILE);
+    public static final ResourceRegistration REGISTRATION = ResourceRegistration.of(PathElement.pathElement(Constants.FILE));
 
     /*<file path="/opt/data" cache-buffer-size="1024" cache-buffers="1024"/>*/
     public static final AttributeDefinition PATH = new SimpleAttributeDefinitionBuilder(Constants.PATH, ModelType.STRING)
@@ -80,7 +81,7 @@ public class FileHandlerDefinition extends HandlerDefinition {
     public static final Collection<AttributeDefinition> ATTRIBUTES = List.of(PATH, CACHE_BUFFER_SIZE, CACHE_BUFFERS, DIRECTORY_LISTING, FOLLOW_SYMLINK, CASE_SENSITIVE, SAFE_SYMLINK_PATHS);
 
     FileHandlerDefinition() {
-        super(PATH_ELEMENT, FileHandlerDefinition::createHandler);
+        super(REGISTRATION, FileHandlerDefinition::createHandler);
     }
 
     @Override
