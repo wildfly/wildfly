@@ -35,7 +35,8 @@ public class ModClusterTransformersTestCase extends AbstractSubsystemTest {
         return EnumSet.of(
                 ModelTestControllerVersion.EAP_7_4_0,
                 ModelTestControllerVersion.EAP_8_0_0,
-                ModelTestControllerVersion.EAP_8_1_0
+                ModelTestControllerVersion.EAP_8_1_0,
+                ModelTestControllerVersion.WILDFLY_41_0_0
         );
     }
 
@@ -50,6 +51,7 @@ public class ModClusterTransformersTestCase extends AbstractSubsystemTest {
         return switch (controllerVersion) {
             case EAP_7_4_0 -> ModClusterSubsystemModel.VERSION_7_0_0;
             case EAP_8_0_0, EAP_8_1_0 -> ModClusterSubsystemModel.VERSION_8_0_0;
+            case WILDFLY_41_0_0 -> ModClusterSubsystemModel.VERSION_9_0_0;
             default -> throw new IllegalArgumentException();
         };
     }
@@ -71,6 +73,12 @@ public class ModClusterTransformersTestCase extends AbstractSubsystemTest {
                     "org.jboss.mod_cluster:mod_cluster-core:2.1.0.Final",
                     this.controllerVersion.createGAV("wildfly-clustering-common"),
                     this.controllerVersion.createGAV("wildfly-mod_cluster-extension"),
+            };
+            case WILDFLY_41_0_0 -> new String[] {
+                    "org.jboss.mod_cluster:mod_cluster-core:2.1.0.Final",
+                    this.controllerVersion.createGAV("wildfly-clustering-common"),
+                    this.controllerVersion.createGAV("wildfly-mod_cluster-extension"),
+                    this.controllerVersion.createCoreGAV("wildfly-subsystem"),
             };
             default -> throw new IllegalArgumentException();
         };
