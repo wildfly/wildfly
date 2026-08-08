@@ -30,7 +30,6 @@ import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
-import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.test.integration.security.common.servlets.SimpleServlet;
 import org.jboss.as.test.integration.security.common.servlets.SimpleSecuredServlet;
 import org.jboss.as.test.http.util.TestHttpClientUtils;
@@ -41,7 +40,6 @@ import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 
 import org.wildfly.test.integration.elytron.oidc.client.KeycloakConfiguration;
-import org.wildfly.test.stabilitylevel.StabilityServerSetupSnapshotRestoreTasks;
 
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -53,9 +51,7 @@ import org.junit.runner.RunWith;
  */
 @RunWith(Arquillian.class)
 @RunAsClient
-@ServerSetup({ ServerConfigLogoutNoCallbackTest.PreviewStabilitySetupTask.class,
-        EnvSetupUtils.KeycloakAndSubsystemSetup.class,
-        EnvSetupUtils.WildFlyServerSetupTask.class})
+@ServerSetup({ EnvSetupUtils.KeycloakAndSubsystemSetup.class, EnvSetupUtils.WildFlyServerSetupTask.class})
 public class ServerConfigLogoutNoCallbackTest extends LoginLogoutBasics {
 
     @ArquillianResource
@@ -202,17 +198,6 @@ public class ServerConfigLogoutNoCallbackTest extends LoginLogoutBasics {
         } finally {
             deployer.undeploy(BACK_CHANNEL_LOGOUT_APP_TWO);
             deployer.undeploy(BACK_CHANNEL_LOGOUT_APP);
-        }
-    }
-
-
-    //-------------- Server Setup -------------------------
-    public static class PreviewStabilitySetupTask extends StabilityServerSetupSnapshotRestoreTasks.Preview {
-        @Override
-        protected void doSetup(ManagementClient managementClient) throws Exception {
-            // Write a system property so the model gets stored with a lower stability level.
-            // This is to make sure we can reload back to the higher level from the snapshot
-            LoginLogoutBasics.addSystemProperty(managementClient, ServerConfigLogoutNoCallbackTest.class);
         }
     }
 }
