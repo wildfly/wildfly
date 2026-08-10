@@ -94,9 +94,14 @@ public class PassivationCapableSerializableMarshaller<SC extends SerializableCon
             writer.writeAny(CONTEXTUAL_INDEX, instance);
         } else {
             BeanIdentifier identifier = contextual.getIdentifier();
-            Container container = Container.instance(contextId);
-            BeanIdentifierIndex index = container.services().get(BeanIdentifierIndex.class);
-            Integer beanIndex = (index != null) && index.isBuilt() ? index.getIndex(identifier) : null;
+            Integer beanIndex = null;
+            try {
+                Container container = Container.instance(contextId);
+                BeanIdentifierIndex index = container.services().get(BeanIdentifierIndex.class);
+                beanIndex = (index != null) && index.isBuilt() ? index.getIndex(identifier) : null;
+            } catch (IllegalStateException e) {
+                // Container may not be available if TCCL is not the deployment's classloader
+            }
             if (beanIndex != null) {
                 int value = beanIndex.intValue();
                 if (value != 0) {
