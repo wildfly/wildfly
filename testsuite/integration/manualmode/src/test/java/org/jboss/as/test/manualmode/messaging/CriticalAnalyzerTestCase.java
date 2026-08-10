@@ -141,6 +141,7 @@ public class CriticalAnalyzerTestCase {
             container.start(DEFAULT_FULL_JBOSSAS);
         }
         InitialContext remoteContext = createJNDIContext();
+        managementClient.close();
         managementClient = createManagementClient();
         ConnectionFactory cf = (ConnectionFactory) remoteContext.lookup("jms/RemoteConnectionFactory");
         Queue queue = (Queue) remoteContext.lookup("queue/critical");

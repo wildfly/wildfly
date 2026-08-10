@@ -82,10 +82,10 @@ public class WildFlyElytronClientDefaultSSLContextProviderTestCase {
             serverController.start(CONTAINER);
         }
         try {
-            ModelControllerClient modelControllerClient = TestSuiteEnvironment.getModelControllerClient();
-            ManagementClient managementClient = new ManagementClient(modelControllerClient, SERVER_ADDRESS, getManagementPort(), "remote+http");
-            configureSSLContextOnServer(managementClient, KEYSTORES_DIR, SERVER_KEYSTORE1_FILENAME, SERVER_KEY_STORE1, SERVER_KEY_MANAGER1, SERVER_TRUSTSTORE1_FILENAME, SERVER_TRUST_STORE1, SERVER_TRUST_MANAGER1, SERVER_SSL_CONTEXT1);
-            reloadServer(modelControllerClient);
+            try (ManagementClient managementClient = new ManagementClient(TestSuiteEnvironment.getModelControllerClient(), SERVER_ADDRESS, getManagementPort(), "remote+http")) {
+                configureSSLContextOnServer(managementClient, KEYSTORES_DIR, SERVER_KEYSTORE1_FILENAME, SERVER_KEY_STORE1, SERVER_KEY_MANAGER1, SERVER_TRUSTSTORE1_FILENAME, SERVER_TRUST_STORE1, SERVER_TRUST_MANAGER1, SERVER_SSL_CONTEXT1);
+                reloadServer(managementClient.getControllerClient());
+            }
         } catch (Exception e) {
             Assert.fail();
         }
@@ -113,8 +113,9 @@ public class WildFlyElytronClientDefaultSSLContextProviderTestCase {
     @InSequence(3)
     public void restoreConfigAndStopContainer() throws IOException {
         try {
-            ManagementClient managementClient = new ManagementClient(TestSuiteEnvironment.getModelControllerClient(), SERVER_ADDRESS, getManagementPort(), "remote+http");
-            restoreConfiguration(managementClient);
+            try (ManagementClient managementClient = new ManagementClient(TestSuiteEnvironment.getModelControllerClient(), SERVER_ADDRESS, getManagementPort(), "remote+http")) {
+                restoreConfiguration(managementClient);
+            }
         } catch (Exception e) {
             Assert.fail();
         } finally {

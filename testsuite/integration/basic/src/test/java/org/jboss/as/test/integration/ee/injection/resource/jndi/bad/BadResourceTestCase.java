@@ -20,6 +20,7 @@ import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.exporter.ZipExporter;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.After;
+import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -35,6 +36,11 @@ import static org.hamcrest.CoreMatchers.containsString;
 public class BadResourceTestCase {
 
     private static ModelControllerClient controllerClient = TestSuiteEnvironment.getModelControllerClient();
+
+    @AfterClass
+    public static void closeControllerClient() throws Exception {
+        controllerClient.close();
+    }
 
     public static Archive<?> getTestedArchive() throws Exception {
         JavaArchive jar = ShrinkWrap.create(JavaArchive.class, Constants.TESTED_ARCHIVE_NAME);

@@ -73,12 +73,16 @@ public class StatelessEJBRuntimeNameTestCase extends AbstractRuntimeTestCase {
 
     @AfterClass
     public static void tearDown() throws Exception {
-        ModelNode result = controllerClient.execute(composite(
-                undeploy(DEPLOYMENT_NAME),
-                remove(DEPLOYMENT_NAME)
-        ));
-        // just to blow up
-        Assert.assertTrue("Failed to undeploy: " + result, Operations.isSuccessfulOutcome(result));
+        try {
+            ModelNode result = controllerClient.execute(composite(
+                    undeploy(DEPLOYMENT_NAME),
+                    remove(DEPLOYMENT_NAME)
+            ));
+            // just to blow up
+            Assert.assertTrue("Failed to undeploy: " + result, Operations.isSuccessfulOutcome(result));
+        } finally {
+            controllerClient.close();
+        }
     }
 
     @Test

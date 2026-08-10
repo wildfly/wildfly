@@ -93,13 +93,17 @@ public class StatefulEJBRemoteHomeRuntimeNameTestCase extends AbstractRuntimeTes
     @AfterClass
     public static void tearDown() throws Exception {
         safeClose(context);
-        ModelNode result = controllerClient.execute(composite(
-                undeploy(DEPLOYMENT_NAME),
-                remove(DEPLOYMENT_NAME)
-        ));
+        try {
+            ModelNode result = controllerClient.execute(composite(
+                    undeploy(DEPLOYMENT_NAME),
+                    remove(DEPLOYMENT_NAME)
+            ));
 
-        // just to blow up
-        Assert.assertTrue("Failed to undeploy: " + result, Operations.isSuccessfulOutcome(result));
+            // just to blow up
+            Assert.assertTrue("Failed to undeploy: " + result, Operations.isSuccessfulOutcome(result));
+        } finally {
+            controllerClient.close();
+        }
     }
 
     private static InitialContext getInitialContext() throws NamingException {

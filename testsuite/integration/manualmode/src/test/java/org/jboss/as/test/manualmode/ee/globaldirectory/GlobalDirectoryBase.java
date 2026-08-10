@@ -171,7 +171,10 @@ public class GlobalDirectoryBase extends AbstractCliTestBase {
     }
 
     protected void disconnect() {
-        clientHolder = null;
+        if (clientHolder != null) {
+            clientHolder.close();
+            clientHolder = null;
+        }
     }
 
     protected void reloadServer() {
@@ -322,6 +325,10 @@ public class GlobalDirectoryBase extends AbstractCliTestBase {
         protected ModelNode execute(final ModelNode operation) throws
                 IOException {
             return mgmtClient.getControllerClient().execute(operation);
+        }
+
+        protected void close() {
+            mgmtClient.close();
         }
 
     }

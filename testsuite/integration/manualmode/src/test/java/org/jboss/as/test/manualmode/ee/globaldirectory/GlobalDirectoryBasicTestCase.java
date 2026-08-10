@@ -111,12 +111,16 @@ public class GlobalDirectoryBasicTestCase {
 
     @After
     public void tearDown() throws Exception {
-        deployer.undeploy(DEPLOYMENT_WAR);
-        deployer.undeploy(DEPLOYMENT_EAR);
+        try {
+            deployer.undeploy(DEPLOYMENT_WAR);
+            deployer.undeploy(DEPLOYMENT_EAR);
 
-        tearDown(managementClient);
-        controller.stop(DEFAULT_JBOSSAS);
-        FileUtils.deleteDirectory(globalDirectoryPath.toFile());
+            tearDown(managementClient);
+        } finally {
+            managementClient.close();
+            controller.stop(DEFAULT_JBOSSAS);
+            FileUtils.deleteDirectory(globalDirectoryPath.toFile());
+        }
     }
 
     @Test

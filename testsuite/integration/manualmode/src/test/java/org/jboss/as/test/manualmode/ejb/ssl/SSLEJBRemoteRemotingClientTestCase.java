@@ -132,15 +132,16 @@ public class SSLEJBRemoteRemotingClientTestCase {
     }
 
     @Before
-    public void prepareServerOnce() {
+    public void prepareServerOnce() throws IOException {
         if (!serverConfigDone) {
             // prepare server config and then restart
             log.trace("*** preparing server configuration");
             log.trace("*** starting server");
             container.start(DEFAULT_JBOSSAS);
-            final ModelControllerClient client = TestSuiteEnvironment.getModelControllerClient();
-            log.trace("*** will configure server now");
-            configureServerSideForInboundSSLRemoting(client);
+            try (ModelControllerClient client = TestSuiteEnvironment.getModelControllerClient()) {
+                log.trace("*** will configure server now");
+                configureServerSideForInboundSSLRemoting(client);
+            }
             log.trace("*** restarting server");
             container.stop(DEFAULT_JBOSSAS);
             container.start(DEFAULT_JBOSSAS);

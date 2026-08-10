@@ -9,7 +9,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.util.Arrays;
+import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 import java.util.UUID;
@@ -72,11 +72,13 @@ public class ClusteredMessagingTestCase extends AbstractClusteringTestCase {
         super.beforeTestMethod();
 
         // Create JMS Queue and Topic (the ServerSetupTask won't do the trick since there is no deployment in this test case...)
-        Arrays.stream(new ModelControllerClient[] { createClient1(), createClient2() }).forEach(client -> {
-            JMSOperations jmsOperations = JMSOperationsProvider.getInstance(client);
-            jmsOperations.createJmsQueue(jmsQueueName, "java:jboss/exported/" + jmsQueueLookup);
-            jmsOperations.createJmsTopic(jmsTopicName, "java:jboss/exported/" + jmsTopicLookup);
-        });
+        try (ModelControllerClient client1 = createClient1(); ModelControllerClient client2 = createClient2()) {
+            for (ModelControllerClient client : List.of(client1, client2)) {
+                JMSOperations jmsOperations = JMSOperationsProvider.getInstance(client);
+                jmsOperations.createJmsQueue(jmsQueueName, "java:jboss/exported/" + jmsQueueLookup);
+                jmsOperations.createJmsTopic(jmsTopicName, "java:jboss/exported/" + jmsTopicLookup);
+            }
+        }
     }
 
     @AfterEach
@@ -85,11 +87,13 @@ public class ClusteredMessagingTestCase extends AbstractClusteringTestCase {
         super.afterTestMethod();
 
         // Remove JMS Queue and Topic
-        Arrays.stream(new ModelControllerClient[] { createClient1(), createClient2() }).forEach(client -> {
-            JMSOperations jmsOperations = JMSOperationsProvider.getInstance(client);
-            jmsOperations.removeJmsQueue(jmsQueueName);
-            jmsOperations.removeJmsTopic(jmsTopicName);
-        });
+        try (ModelControllerClient client1 = createClient1(); ModelControllerClient client2 = createClient2()) {
+            for (ModelControllerClient client : List.of(client1, client2)) {
+                JMSOperations jmsOperations = JMSOperationsProvider.getInstance(client);
+                jmsOperations.removeJmsQueue(jmsQueueName);
+                jmsOperations.removeJmsTopic(jmsTopicName);
+            }
+        }
     }
 
     @Test

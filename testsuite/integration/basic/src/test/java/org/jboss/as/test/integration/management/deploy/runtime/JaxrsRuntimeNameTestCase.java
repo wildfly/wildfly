@@ -27,6 +27,7 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.junit.AfterClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -56,6 +57,11 @@ public class JaxrsRuntimeNameTestCase extends AbstractRuntimeTestCase {
     private static final String SUB_RESOURCE_LOCATORS = "sub-resource-locators";
     private static final String SUBSYSTEM_NAME = "jaxrs";
     private static final ModelControllerClient controllerClient = TestSuiteEnvironment.getModelControllerClient();
+
+    @AfterClass
+    public static void closeControllerClient() throws Exception {
+        controllerClient.close();
+    }
 
     @ArquillianResource
     private URL url;

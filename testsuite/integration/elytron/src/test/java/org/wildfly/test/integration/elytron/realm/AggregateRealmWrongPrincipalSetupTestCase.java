@@ -66,7 +66,11 @@ public class AggregateRealmWrongPrincipalSetupTestCase {
      */
     @AfterClass
     public static void cleanup() throws Exception {
-        initSetupTask.tearDown(mClient, null);
+        try {
+            initSetupTask.tearDown(mClient, null);
+        } finally {
+            mClient.close();
+        }
     }
 
     /**

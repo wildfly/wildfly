@@ -5,6 +5,9 @@
 
 package org.jboss.as.test.integration.management.api.expression;
 
+import java.io.IOException;
+import java.io.UncheckedIOException;
+
 import jakarta.ejb.Stateless;
 
 import org.jboss.as.controller.client.ModelControllerClient;
@@ -15,16 +18,14 @@ import org.jboss.logging.Logger;
 public class StatelessBean {
     private static final Logger log = Logger.getLogger(StatelessBean.class);
 
-    private ModelControllerClient getClient() {
-        return TestSuiteEnvironment.getModelControllerClient();
-    }
-
-
     public String getJBossProperty(String name) {
-        ModelControllerClient client = getClient();
-        String result = Utils.getProperty(name, client);
-        log.debug("JBoss system property " + name + " was resolved to be " + result);
-        return result;
+        try (ModelControllerClient client = TestSuiteEnvironment.getModelControllerClient()) {
+            String result = Utils.getProperty(name, client);
+            log.debug("JBoss system property " + name + " was resolved to be " + result);
+            return result;
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
     }
 
     public void addSystemProperty(String name, String value) {

@@ -46,20 +46,21 @@ public class RuntimeJournalTypeManagementTestCase {
         if (!container.isStarted(DEFAULT_FULL_JBOSSAS)) {
             container.start(DEFAULT_FULL_JBOSSAS);
         }
-        ManagementClient managementClient = createManagementClient();
-        assertEquals("ASYNCIO", readJournalType(managementClient));
-        assertNotNull(readRuntimeJournalType(managementClient));
-        ModelNode op = Operations.createAddOperation(AIO_DISABLED_ADDRESS);
-        op.get(VALUE).set(true);
-        execute(managementClient, op, true);
-        managementClient.close();
+        try (ManagementClient managementClient = createManagementClient()) {
+            assertEquals("ASYNCIO", readJournalType(managementClient));
+            assertNotNull(readRuntimeJournalType(managementClient));
+            ModelNode op = Operations.createAddOperation(AIO_DISABLED_ADDRESS);
+            op.get(VALUE).set(true);
+            execute(managementClient, op, true);
+        }
         container.stop(DEFAULT_FULL_JBOSSAS);
         container.start(DEFAULT_FULL_JBOSSAS);
-        managementClient = createManagementClient();
-        assertEquals("ASYNCIO", readJournalType(managementClient));
-        assertEquals("NIO", readRuntimeJournalType(managementClient));
-        op = Operations.createRemoveOperation(AIO_DISABLED_ADDRESS);
-        execute(managementClient, op, true);
+        try (ManagementClient managementClient = createManagementClient()) {
+            assertEquals("ASYNCIO", readJournalType(managementClient));
+            assertEquals("NIO", readRuntimeJournalType(managementClient));
+            ModelNode op = Operations.createRemoveOperation(AIO_DISABLED_ADDRESS);
+            execute(managementClient, op, true);
+        }
         container.stop(DEFAULT_FULL_JBOSSAS);
     }
 
@@ -68,20 +69,20 @@ public class RuntimeJournalTypeManagementTestCase {
         if (!container.isStarted(DEFAULT_FULL_JBOSSAS)) {
             container.start(DEFAULT_FULL_JBOSSAS);
         }
-        ManagementClient managementClient = createManagementClient();
-        assertEquals("ASYNCIO", readJournalType(managementClient));
-        assertNotNull(readRuntimeJournalType(managementClient));
-        ModelNode op = Operations.createWriteAttributeOperation(SERVER_ADDRESS, "journal-datasource", "ExampleDS");
-        execute(managementClient, op, true);
-        managementClient.close();
+        try (ManagementClient managementClient = createManagementClient()) {
+            assertEquals("ASYNCIO", readJournalType(managementClient));
+            assertNotNull(readRuntimeJournalType(managementClient));
+            ModelNode op = Operations.createWriteAttributeOperation(SERVER_ADDRESS, "journal-datasource", "ExampleDS");
+            execute(managementClient, op, true);
+        }
         container.stop(DEFAULT_FULL_JBOSSAS);
         container.start(DEFAULT_FULL_JBOSSAS);
-        managementClient = createManagementClient();
-        assertEquals("ASYNCIO", readJournalType(managementClient));
-        assertEquals("DATABASE", readRuntimeJournalType(managementClient));
-        op = Operations.createUndefineAttributeOperation(SERVER_ADDRESS, "journal-datasource");
-        execute(managementClient, op, true);
-        managementClient.close();
+        try (ManagementClient managementClient = createManagementClient()) {
+            assertEquals("ASYNCIO", readJournalType(managementClient));
+            assertEquals("DATABASE", readRuntimeJournalType(managementClient));
+            ModelNode op = Operations.createUndefineAttributeOperation(SERVER_ADDRESS, "journal-datasource");
+            execute(managementClient, op, true);
+        }
         container.stop(DEFAULT_FULL_JBOSSAS);
     }
 
@@ -90,20 +91,20 @@ public class RuntimeJournalTypeManagementTestCase {
         if (!container.isStarted(DEFAULT_FULL_JBOSSAS)) {
             container.start(DEFAULT_FULL_JBOSSAS);
         }
-        ManagementClient managementClient = createManagementClient();
-        assertEquals("ASYNCIO", readJournalType(managementClient));
-        assertNotNull(readRuntimeJournalType(managementClient));
-        ModelNode op = Operations.createWriteAttributeOperation(SERVER_ADDRESS, "persistence-enabled", false);
-        execute(managementClient, op, true);
-        managementClient.close();
+        try (ManagementClient managementClient = createManagementClient()) {
+            assertEquals("ASYNCIO", readJournalType(managementClient));
+            assertNotNull(readRuntimeJournalType(managementClient));
+            ModelNode op = Operations.createWriteAttributeOperation(SERVER_ADDRESS, "persistence-enabled", false);
+            execute(managementClient, op, true);
+        }
         container.stop(DEFAULT_FULL_JBOSSAS);
         container.start(DEFAULT_FULL_JBOSSAS);
-        managementClient = createManagementClient();
-        assertEquals("ASYNCIO", readJournalType(managementClient));
-        assertEquals("NONE", readRuntimeJournalType(managementClient));
-        op = Operations.createWriteAttributeOperation(SERVER_ADDRESS, "persistence-enabled", true);
-        execute(managementClient, op, true);
-        managementClient.close();
+        try (ManagementClient managementClient = createManagementClient()) {
+            assertEquals("ASYNCIO", readJournalType(managementClient));
+            assertEquals("NONE", readRuntimeJournalType(managementClient));
+            ModelNode op = Operations.createWriteAttributeOperation(SERVER_ADDRESS, "persistence-enabled", true);
+            execute(managementClient, op, true);
+        }
         container.stop(DEFAULT_FULL_JBOSSAS);
     }
 
@@ -112,21 +113,21 @@ public class RuntimeJournalTypeManagementTestCase {
         if (!container.isStarted(DEFAULT_FULL_JBOSSAS)) {
             container.start(DEFAULT_FULL_JBOSSAS);
         }
-        ManagementClient managementClient = createManagementClient();
-        assertEquals("ASYNCIO", readJournalType(managementClient));
-        assertNotNull(readRuntimeJournalType(managementClient));
-        ModelNode op = Operations.createWriteAttributeOperation(SERVER_ADDRESS, "journal-type", "NIO");
-        execute(managementClient, op, true);
-        assertEquals("NIO", readJournalType(managementClient));
-        managementClient.close();
+        try (ManagementClient managementClient = createManagementClient()) {
+            assertEquals("ASYNCIO", readJournalType(managementClient));
+            assertNotNull(readRuntimeJournalType(managementClient));
+            ModelNode op = Operations.createWriteAttributeOperation(SERVER_ADDRESS, "journal-type", "NIO");
+            execute(managementClient, op, true);
+            assertEquals("NIO", readJournalType(managementClient));
+        }
         container.stop(DEFAULT_FULL_JBOSSAS);
         container.start(DEFAULT_FULL_JBOSSAS);
-        managementClient = createManagementClient();
-        assertEquals("NIO", readJournalType(managementClient));
-        assertEquals("NIO", readRuntimeJournalType(managementClient));
-        op = Operations.createWriteAttributeOperation(SERVER_ADDRESS, "journal-type", "ASYNCIO");
-        execute(managementClient, op, true);
-        managementClient.close();
+        try (ManagementClient managementClient = createManagementClient()) {
+            assertEquals("NIO", readJournalType(managementClient));
+            assertEquals("NIO", readRuntimeJournalType(managementClient));
+            ModelNode op = Operations.createWriteAttributeOperation(SERVER_ADDRESS, "journal-type", "ASYNCIO");
+            execute(managementClient, op, true);
+        }
         container.stop(DEFAULT_FULL_JBOSSAS);
     }
 

@@ -153,12 +153,11 @@ public class HTTPSWebConnectorTestCase {
 
         LOGGER.trace("*** starting server");
         containerController.start(CONTAINER);
-        ModelControllerClient client = TestSuiteEnvironment.getModelControllerClient();
-        ManagementClient managementClient = new ManagementClient(client, TestSuiteEnvironment.getServerAddress(),
-                TestSuiteEnvironment.getServerPort(), "remote+http");
-
-        LOGGER.trace("*** will configure server now");
-        serverSetup(managementClient);
+        try (ManagementClient managementClient = new ManagementClient(TestSuiteEnvironment.getModelControllerClient(),
+                TestSuiteEnvironment.getServerAddress(), TestSuiteEnvironment.getServerPort(), "remote+http")) {
+            LOGGER.trace("*** will configure server now");
+            serverSetup(managementClient);
+        }
 
         deployer.deploy(APP_CONTEXT);
     }
@@ -326,11 +325,11 @@ public class HTTPSWebConnectorTestCase {
     @InSequence(3)
     public void stopContainer() throws Exception {
         deployer.undeploy(APP_CONTEXT);
-        final ModelControllerClient client = TestSuiteEnvironment.getModelControllerClient();
-        final ManagementClient managementClient = new ManagementClient(client, TestSuiteEnvironment.getServerAddress(),
-                TestSuiteEnvironment.getServerPort(), "remote+http");
-        LOGGER.trace("*** reseting test configuration");
-        serverTearDown(managementClient);
+        try (ManagementClient managementClient = new ManagementClient(TestSuiteEnvironment.getModelControllerClient(),
+                TestSuiteEnvironment.getServerAddress(), TestSuiteEnvironment.getServerPort(), "remote+http")) {
+            LOGGER.trace("*** reseting test configuration");
+            serverTearDown(managementClient);
+        }
 
         LOGGER.trace("*** stopping container");
         containerController.stop(CONTAINER);

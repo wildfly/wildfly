@@ -90,11 +90,15 @@ public abstract class AbstractFailedDeploymentRuntimeTestCase extends AbstractRu
     }
 
     static void tearDown(String deploymentName) throws Exception {
-        ModelNode result = controllerClient.execute(composite(
-                undeploy(deploymentName),
-                remove(deploymentName)
-        ));
-        Assert.assertTrue("Failed to undeploy: " + result, Operations.isSuccessfulOutcome(result));
+        try {
+            ModelNode result = controllerClient.execute(composite(
+                    undeploy(deploymentName),
+                    remove(deploymentName)
+            ));
+            Assert.assertTrue("Failed to undeploy: " + result, Operations.isSuccessfulOutcome(result));
+        } finally {
+            controllerClient.close();
+        }
     }
 
     /**

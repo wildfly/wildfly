@@ -91,7 +91,9 @@ public class ModClusterLifecycleTestCase extends AbstractClusteringTestCase {
             assertContextStatus(ModClusterContextStatus.ENABLED);
 
             // n.b. startSuspended=true
-            ServerReload.executeReloadAndWaitForCompletion(TestSuiteEnvironment.getModelControllerClient(), ServerReload.TIMEOUT, false, true, null, -1, null);
+            try (ModelControllerClient mcc = TestSuiteEnvironment.getModelControllerClient()) {
+                ServerReload.executeReloadAndWaitForCompletion(mcc, ServerReload.TIMEOUT, false, true, null, -1, null);
+            }
 
             assertContextStatus(ModClusterContextStatus.STOPPED);
         } finally {

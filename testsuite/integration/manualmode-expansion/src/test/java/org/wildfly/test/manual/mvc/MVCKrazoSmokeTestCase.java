@@ -29,7 +29,6 @@ import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetupTask;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.test.integration.common.HttpRequest;
 import org.jboss.as.test.shared.ServerReload;
@@ -95,13 +94,11 @@ public class MVCKrazoSmokeTestCase {
 
         log.trace("*** starting server");
         containerController.start(CONTAINER);
-        ModelControllerClient client = TestSuiteEnvironment.getModelControllerClient();
-        ManagementClient managementClient = new ManagementClient(client, TestSuiteEnvironment.getServerAddress(),
-                TestSuiteEnvironment.getServerPort(), "remote+http");
-
-        log.trace("*** will configure server now");
-        SETUP_TASK.setup(managementClient, CONTAINER);
-
+        try (ManagementClient managementClient = new ManagementClient(TestSuiteEnvironment.getModelControllerClient(),
+                TestSuiteEnvironment.getServerAddress(), TestSuiteEnvironment.getServerPort(), "remote+http")) {
+            log.trace("*** will configure server now");
+            SETUP_TASK.setup(managementClient, CONTAINER);
+        }
         deployer.deploy(DEPLOYMENT_NAME);
     }
 
@@ -121,12 +118,11 @@ public class MVCKrazoSmokeTestCase {
     @InSequence(10)
     public void stopContainer() throws Exception {
         deployer.undeploy(DEPLOYMENT_NAME);
-        final ModelControllerClient client = TestSuiteEnvironment.getModelControllerClient();
-        final ManagementClient managementClient = new ManagementClient(client, TestSuiteEnvironment.getServerAddress(),
-                TestSuiteEnvironment.getServerPort(), "remote+http");
-        log.trace("*** resetting test configuration");
-        SETUP_TASK.tearDown(managementClient, CONTAINER);
-
+        try (ManagementClient managementClient = new ManagementClient(TestSuiteEnvironment.getModelControllerClient(),
+                TestSuiteEnvironment.getServerAddress(), TestSuiteEnvironment.getServerPort(), "remote+http")) {
+            log.trace("*** resetting test configuration");
+            SETUP_TASK.tearDown(managementClient, CONTAINER);
+        }
         log.trace("*** stopping container");
         containerController.stop(CONTAINER);
     }

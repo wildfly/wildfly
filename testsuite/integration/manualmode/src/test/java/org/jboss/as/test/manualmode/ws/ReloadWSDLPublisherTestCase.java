@@ -76,19 +76,21 @@ public class ReloadWSDLPublisherTestCase {
     @OperateOnDeployment(DEPLOYMENT)
     public void testHelloStringAfterReload() throws Exception {
         Assert.assertTrue(containerController.isStarted(DEFAULT_JBOSSAS));
-        ManagementClient managementClient = new ManagementClient(TestSuiteEnvironment.getModelControllerClient(),
-                TestSuiteEnvironment.getServerAddress(), TestSuiteEnvironment.getServerPort(), "remote+http");
-        QName serviceName = new QName("http://jbossws.org/basic", "POJOService");
-        URL wsdlURL = new URL(managementClient.getWebUri().toURL(), '/' + DEPLOYMENT + "/POJOService?wsdl");
+        URL wsdlURL;
+        try (ManagementClient managementClient = new ManagementClient(TestSuiteEnvironment.getModelControllerClient(),
+                TestSuiteEnvironment.getServerAddress(), TestSuiteEnvironment.getServerPort(), "remote+http")) {
+            QName serviceName = new QName("http://jbossws.org/basic", "POJOService");
+            wsdlURL = new URL(managementClient.getWebUri().toURL(), '/' + DEPLOYMENT + "/POJOService?wsdl");
+            checkWsdl(wsdlURL);
+            Service service = Service.create(wsdlURL, serviceName);
+            EndpointIface proxy = service.getPort(EndpointIface.class);
+            Assert.assertEquals("Hello World!", proxy.helloString("World"));
+            executeReloadAndWaitForCompletion(managementClient);
+        }
         checkWsdl(wsdlURL);
+        QName serviceName = new QName("http://jbossws.org/basic", "POJOService");
         Service service = Service.create(wsdlURL, serviceName);
         EndpointIface proxy = service.getPort(EndpointIface.class);
-        Assert.assertEquals("Hello World!", proxy.helloString("World"));
-        executeReloadAndWaitForCompletion(managementClient);
-        checkWsdl(wsdlURL);
-        serviceName = new QName("http://jbossws.org/basic", "POJOService");
-        service = Service.create(wsdlURL, serviceName);
-        proxy = service.getPort(EndpointIface.class);
         Assert.assertEquals("Hello World!", proxy.helloString("World"));
         Assert.assertTrue(containerController.isStarted(DEFAULT_JBOSSAS));
     }

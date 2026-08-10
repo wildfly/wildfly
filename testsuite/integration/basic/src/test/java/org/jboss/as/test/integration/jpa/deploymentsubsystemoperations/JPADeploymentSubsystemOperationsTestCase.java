@@ -17,6 +17,7 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -45,6 +46,11 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRI
 public class JPADeploymentSubsystemOperationsTestCase {
 
     private static ModelControllerClient controllerClient = TestSuiteEnvironment.getModelControllerClient();
+
+    @AfterClass
+    public static void closeControllerClient() throws Exception {
+        controllerClient.close();
+    }
 
     private static final PathAddress DEPLOYMENT_PATH = PathAddress.pathAddress(PathElement.pathElement(DEPLOYMENT, JPADeploymentSubsystemOperationsTestCase.class.getSimpleName() + ".war"));
     private static final PathAddress SUBSYSTEM_PATH = PathAddress.pathAddress(PathElement.pathElement(SUBSYSTEM, "jpa"));
