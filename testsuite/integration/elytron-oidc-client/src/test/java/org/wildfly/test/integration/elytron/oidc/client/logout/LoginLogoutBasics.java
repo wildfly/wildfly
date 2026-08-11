@@ -30,8 +30,8 @@ import java.nio.charset.MalformedInputException;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
-import org.apache.http.client.HttpClient;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
+import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.utils.HttpClientUtils;
@@ -164,7 +164,7 @@ public class LoginLogoutBasics extends EnvSetupUtils {
 
         HttpGet getMethod = new HttpGet(requestUri);
         HttpContext context = new BasicHttpContext();
-        HttpResponse response = null;
+        CloseableHttpResponse response = null;
         Form keycloakLoginForm = null;
 
         int retryMax = 10;
@@ -180,7 +180,8 @@ public class LoginLogoutBasics extends EnvSetupUtils {
                     keycloakLoginForm = new Form(response);
                     retryAgain = false;
                 } catch (IOException ee) {
-                    // contiune retries
+                    HttpClientUtils.closeQuietly(response);
+                    // continue retries
                 }
             }
             retry++;
@@ -191,15 +192,16 @@ public class LoginLogoutBasics extends EnvSetupUtils {
             if (loginToKeycloak) {
                 assertTrue("Expected code == OK but got " + statusCode
                         + " for request=" + requestUri, statusCode == HttpURLConnection.HTTP_OK);
-                HttpResponse afterLoginClickResponse = simulateClickingOnButton(httpClient,
-                        keycloakLoginForm, username, password, "Sign In");
+                try (CloseableHttpResponse afterLoginClickResponse = simulateClickingOnButton(httpClient,
+                        keycloakLoginForm, username, password, "Sign In")) {
 
-                afterLoginClickResponse.getEntity().getContent();
-                assertEquals(expectedStatusCode, afterLoginClickResponse.getStatusLine().getStatusCode());
+                    afterLoginClickResponse.getEntity().getContent();
+                    assertEquals(expectedStatusCode, afterLoginClickResponse.getStatusLine().getStatusCode());
 
-                if (expectedText != null) {
-                    String responseString = new BasicResponseHandler().handleResponse(afterLoginClickResponse);
-                    assertTrue("Unexpected result " + responseString, responseString.contains(expectedText));
+                    if (expectedText != null) {
+                        String responseString = new BasicResponseHandler().handleResponse(afterLoginClickResponse);
+                        assertTrue("Unexpected result " + responseString, responseString.contains(expectedText));
+                    }
                 }
             }
             else {
@@ -227,7 +229,7 @@ public class LoginLogoutBasics extends EnvSetupUtils {
         // allow for slow system response with limited retries
         do {
             Thread.sleep(500);
-            HttpClientUtils.closeQuietly(response);
+            HttpClientUtils.closeQuietly(response);  // if we are looping close the previous unwanted response
             response = httpClient.execute(getMethod, context);
             retry++;
         } while((response.getStatusLine().getStatusCode() != expectedStatusCode)
@@ -271,6 +273,7 @@ public class LoginLogoutBasics extends EnvSetupUtils {
         // allow for slow system response with limited retries
         do {
             Thread.sleep(500);
+            HttpClientUtils.closeQuietly(response); // if we are looping close the previous unwanted response
             response = httpClient.execute(getMethod, context);
             response.getEntity();
             responseString = new BasicResponseHandler().handleResponse(response);
@@ -324,7 +327,7 @@ public class LoginLogoutBasics extends EnvSetupUtils {
         return new ArrayList<>();
     }
 
-    public HttpResponse simulateClickingOnButton(HttpClient client, Form form, String username, String password, String buttonValue) throws IOException {
+    public CloseableHttpResponse simulateClickingOnButton(CloseableHttpClient client, Form form, String username, String password, String buttonValue) throws IOException {
         final URL url = new URL(form.getAction());
         final HttpPost request = new HttpPost(url.toString());
         final List<NameValuePair> params = new LinkedList<>();
