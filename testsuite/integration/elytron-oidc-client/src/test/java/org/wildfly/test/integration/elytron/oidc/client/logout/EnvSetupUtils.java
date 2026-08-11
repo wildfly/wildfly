@@ -60,8 +60,6 @@ public class EnvSetupUtils {
     private static final String OIDC_REQUEST_OBJECT_SIGNING_KEYSTORE_FILE = "oidc.request.object.signing.keystore.file";
     private static final String SECURE_DEPLOYMENT_ADDRESS = "subsystem="
             + ElytronOidcExtension.SUBSYSTEM_NAME + "/secure-deployment=";
-    private static final String PROVIDER_ADDRESS = "subsystem="
-            + ElytronOidcExtension.SUBSYSTEM_NAME + "/provider=";
 
 
     public static class KeycloakAndSubsystemSetup extends KeycloakSetup {
@@ -69,7 +67,8 @@ public class EnvSetupUtils {
         private static Map<String, KeycloakConfiguration.ClientAppType> APP_NAMES;
         private static Map<String, LogoutChannelPaths> APP_LOGOUT;
         private static boolean isOidcServerConfig = false;
-        private static String providerJwtClaimsTyp;
+        // TODO prune this previously unused code if its non-use didn't indicate something dropped
+        // private static String providerJwtClaimsTyp;
 
         public static void setKeycloakClients(Map<String, KeycloakConfiguration.ClientAppType> appNames) {
             APP_NAMES = appNames;
@@ -83,12 +82,13 @@ public class EnvSetupUtils {
             isOidcServerConfig = flag;
         }
 
-        /**
-         * @param value        The name of the logout claim typ for elytron to use
-         */
-        public static void setProviderJwtClaimsTyp(String value) {
-            providerJwtClaimsTyp = value;
-        }
+        // TODO prune this previously unused code if its non-use didn't indicate something dropped
+        // /**
+        // * @param value        The name of the logout claim typ for elytron to use
+        // */
+        // public static void setProviderJwtClaimsTyp(String value) {
+        //     providerJwtClaimsTyp = value;
+        // }
 
         public static ManagementClient mgtClient = null;
 
@@ -174,18 +174,20 @@ public class EnvSetupUtils {
          */
         public static void setOidcLogoutUrls(RealmRepresentation realm,
                                              Map<String, KeycloakConfiguration.ClientAppType> clientApps,
-                                             Map<String, LogoutChannelPaths> appLogout) throws Exception {
+                                             Map<String, LogoutChannelPaths> appLogout) {
 
             for (ClientRepresentation client : realm.getClients()) {
                 KeycloakConfiguration.ClientAppType value = clientApps.get(client.getClientId());
                 if (value == KeycloakConfiguration.ClientAppType.OIDC_CLIENT) {
                     List<String> redirectUris = new ArrayList<>(client.getRedirectUris());
-                    String redirectUri = redirectUris.get(0);
+                    // TODO prune this previously unused code if its non-use didn't indicate something dropped
+                    // String redirectUri = redirectUris.get(0);
                     redirectUris.add("*");
                     client.setRedirectUris(redirectUris);
 
-                    int indx = redirectUri.lastIndexOf("/*");
-                    String tmpRedirectUri = redirectUri.substring(0, indx);
+                    // TODO prune this previously unused code if its non-use didn't indicate something dropped
+                    // int indx = redirectUri.lastIndexOf("/*");
+                    // String tmpRedirectUri = redirectUri.substring(0, indx);
 
                     LogoutChannelPaths logoutChannelUrls = appLogout.get(client.getClientId());
                     if (logoutChannelUrls != null) {
@@ -275,9 +277,10 @@ public class EnvSetupUtils {
                     operation.get(Oidc.POST_LOGOUT_REDIRECT_URI).set(appLogout.postLogoutRedirectPaths.get(0));
                 }
 
-                if (providerJwtClaimsTyp != null) {
-                    operation.get("provider-jwt-claims-typ").set(providerJwtClaimsTyp);
-                }
+                // TODO prune this previously unused code if its non-use didn't indicate something dropped
+                // if (providerJwtClaimsTyp != null) {
+                //     operation.get("provider-jwt-claims-typ").set(providerJwtClaimsTyp);
+                // }
 
                 Utils.applyUpdate(operation, client);
 

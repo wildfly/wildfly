@@ -6,9 +6,8 @@
 package org.wildfly.test.integration.elytron.oidc.client.logout;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
-
 import static org.wildfly.test.integration.elytron.oidc.client.KeycloakConfiguration.ALICE;
 import static org.wildfly.test.integration.elytron.oidc.client.KeycloakConfiguration.ALICE_PASSWORD;
 
@@ -20,11 +19,6 @@ import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.ArrayList;
-import java.io.File;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.nio.charset.MalformedInputException;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
@@ -47,7 +41,6 @@ import org.htmlunit.html.HtmlSubmitInput;
 import org.jboss.as.test.integration.security.common.servlets.SimpleSecuredServlet;
 import org.jboss.as.test.integration.security.common.servlets.SimpleServlet;
 import org.jboss.as.test.shared.TestSuiteEnvironment;
-import org.jboss.as.version.Stability;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -64,12 +57,7 @@ public class LoginLogoutBasics extends EnvSetupUtils {
     private final String KEYCLOAK_USERNAME = "username";
     private final String KEYCLOAK_PASSWORD = "password";
 
-    private Stability desiredStability = null;
-
     public LoginLogoutBasics() {}
-    public LoginLogoutBasics(Stability desiredStability) {
-        this.desiredStability = desiredStability;
-    }
 
     private URL generateURL(String appName, String servletPath) {
         try {
@@ -77,9 +65,8 @@ public class LoginLogoutBasics extends EnvSetupUtils {
                     TestSuiteEnvironment.getHttpPort(),
                     "/" + appName + servletPath);
         } catch (MalformedURLException e) {
-            assertFalse(e.getMessage(), false);
+            throw new AssertionError(e.getMessage());
         }
-        return null;
     }
 
     public void setHttpClient(CloseableHttpClient httpClient) {
@@ -101,13 +88,13 @@ public class LoginLogoutBasics extends EnvSetupUtils {
     }
     public void browserLoginToApp(WebClient webClient, String username, String password,
                            String expectedText, URL requestUrl) throws Exception {
-        HtmlPage page = (HtmlPage)webClient.getPage(requestUrl);
+        HtmlPage page = webClient.getPage(requestUrl);
         HtmlForm form = (HtmlForm)page.getElementById("kc-form-login");
-        HtmlInput userName = (HtmlInput)form.getInputByName("username");
+        HtmlInput userName = form.getInputByName("username");
         userName.setValue(username);
-        HtmlInput passwd = (HtmlInput)form.getInputByName("password");
+        HtmlInput passwd = form.getInputByName("password");
         passwd.setValue(password);
-        HtmlSubmitInput login = (HtmlSubmitInput)form.getInputByName("login");
+        HtmlSubmitInput login = form.getInputByName("login");
         HtmlPage rtnPage = login.click();
         String rtnText = rtnPage.asXml();
         assertTrue("Expected result [ " + expectedText + " ] but was ["
@@ -120,7 +107,7 @@ public class LoginLogoutBasics extends EnvSetupUtils {
     }
 
     public void browserLogoutOfKeycloak(WebClient webClient, URL requestUrL) throws Exception {
-        HtmlPage pagelogout = (HtmlPage)webClient.getPage(requestUrL);
+        webClient.getPage(requestUrL);
         Thread.sleep(3500); // give time for logout to complete
     }
 
@@ -133,7 +120,7 @@ public class LoginLogoutBasics extends EnvSetupUtils {
     }
 
     public void browserAccessPage(WebClient webClient, URL requestUrl, String expectedText) throws Exception {
-        HtmlPage assertPage = (HtmlPage)webClient.getPage(requestUrl);
+        HtmlPage assertPage = webClient.getPage(requestUrl);
         String apStr = assertPage.asXml();
         assertTrue("Expected result [ " + expectedText + " ] but was ["
                 + apStr + "]", apStr.contains(expectedText));
@@ -182,8 +169,9 @@ public class LoginLogoutBasics extends EnvSetupUtils {
         try {
             int statusCode = response.getStatusLine().getStatusCode();
             if (loginToKeycloak) {
-                assertTrue("Expected code == OK but got " + statusCode
-                        + " for request=" + requestUri, statusCode == HttpURLConnection.HTTP_OK);
+                assertEquals("Expected code == OK but got " + statusCode
+                        + " for request=" + requestUri, HttpURLConnection.HTTP_OK, statusCode);
+                assertNotNull("GET of " + requestUri + " did not produce a usable response", keycloakLoginForm);
                 try (CloseableHttpResponse afterLoginClickResponse = simulateClickingOnButton(httpClient,
                         keycloakLoginForm, username, password, "Sign In")) {
 
@@ -197,7 +185,7 @@ public class LoginLogoutBasics extends EnvSetupUtils {
                 }
             }
             else {
-                assertTrue("Expected code == FORBIDDEN but got " + statusCode + " for request=" + requestUri, statusCode == HttpURLConnection.HTTP_FORBIDDEN);
+                assertEquals("Expected code == FORBIDDEN but got " + statusCode + " for request=" + requestUri, HttpURLConnection.HTTP_FORBIDDEN, statusCode);
             }
         } finally {
             HttpClientUtils.closeQuietly(response);
@@ -230,14 +218,14 @@ public class LoginLogoutBasics extends EnvSetupUtils {
         try {
             int statusCode = response.getStatusLine().getStatusCode();
             if (logoutFromKeycloak) {
-                assertTrue("Expected code == OK but got " + statusCode + " for request=" + requestUri, statusCode == HttpURLConnection.HTTP_OK);
+                assertEquals("Expected code == OK but got " + statusCode + " for request=" + requestUri, HttpURLConnection.HTTP_OK, statusCode);
                 response.getEntity();
                 String responseString = new BasicResponseHandler().handleResponse(response);
                 assertTrue("Unexpected result " + expectedText + " but result was [ "
                         + responseString +" ]", responseString.contains(expectedText));
             }
             else {
-                assertTrue("Expected code == FORBIDDEN but got " + statusCode + " for request=" + requestUri, statusCode == HttpURLConnection.HTTP_FORBIDDEN);
+                assertEquals("Expected code == FORBIDDEN but got " + statusCode + " for request=" + requestUri, HttpURLConnection.HTTP_FORBIDDEN, statusCode);
             }
         } finally {
             HttpClientUtils.closeQuietly(response);
@@ -259,7 +247,7 @@ public class LoginLogoutBasics extends EnvSetupUtils {
         HttpResponse response = null;
         HttpGet getMethod = new HttpGet(requestUri);
 
-        String responseString = null;
+        String responseString;
         int retryMax = 10;
         int retry = 0;
         // allow for slow system response with limited retries
@@ -274,9 +262,8 @@ public class LoginLogoutBasics extends EnvSetupUtils {
 
         try {
             int statusCode = response.getStatusLine().getStatusCode();
-            assertTrue("Expected code == " + expectedStatusCode + " but got "
-                            + statusCode + " for request=" + requestUri,
-                    statusCode == expectedStatusCode);
+            assertEquals("Expected code == " + expectedStatusCode + " but got "
+                    + statusCode + " for request=" + requestUri, statusCode, expectedStatusCode);
             assertTrue("Expected result [ " + expectedText + "] but was ["
                             + responseString + "]",
                     responseString.contains(expectedText));
@@ -285,41 +272,43 @@ public class LoginLogoutBasics extends EnvSetupUtils {
         }
     }
 
-    /**
-     * Check that the proper warning message is logged.
-     */
-    public boolean isWarningReported(String findString) {
-        List<String> lines = readServerLogLines();
-        for (String line : lines) {
-            if (line.contains(findString)) {
-                return true;
-            }
-        }
-        return false;
-    }
+    // TODO prune this previously unused code if its non-use didn't indicate something dropped
+//    /**
+//     * Check that the proper warning message is logged.
+//     */
+//    public boolean isWarningReported(String findString) {
+//        List<String> lines = readServerLogLines();
+//        for (String line : lines) {
+//            if (line.contains(findString)) {
+//                return true;
+//            }
+//        }
+//        return false;
+//    }
 
-    public List<String> readServerLogLines() {
-        String jbossHome = System.getProperty("jboss.install.dir");
-        String logPath = String.format("%s%sstandalone%slog%sserver.log", jbossHome,
-                (jbossHome.endsWith(File.separator) || jbossHome.endsWith("/")) ? "" : File.separator,
-                File.separator, File.separator);
-        logPath = logPath.replace('/', File.separatorChar);
-        try {
-            return Files.readAllLines(Paths.get(logPath)); // UTF8 is used by default
-        } catch (MalformedInputException e1) {
-            // some windows machines could accept only StandardCharsets.ISO_8859_1 encoding
-            try {
-                return Files.readAllLines(Paths.get(logPath), StandardCharsets.ISO_8859_1);
-            } catch (IOException e4) {
-                throw new RuntimeException("Server logs has not standard Charsets (UTF8 or ISO_8859_1)");
-            }
-        } catch (IOException e) {
-            // server.log file is not created, it is the same as server.log is empty
-        }
-        return new ArrayList<>();
-    }
+    // TODO prune this previously unused code if its non-use didn't indicate something dropped
+//    public List<String> readServerLogLines() {
+//        String jbossHome = System.getProperty("jboss.install.dir");
+//        String logPath = String.format("%s%sstandalone%slog%sserver.log", jbossHome,
+//                (jbossHome.endsWith(File.separator) || jbossHome.endsWith("/")) ? "" : File.separator,
+//                File.separator, File.separator);
+//        logPath = logPath.replace('/', File.separatorChar);
+//        try {
+//            return Files.readAllLines(Paths.get(logPath)); // UTF8 is used by default
+//        } catch (MalformedInputException e1) {
+//            // some windows machines could accept only StandardCharsets.ISO_8859_1 encoding
+//            try {
+//                return Files.readAllLines(Paths.get(logPath), StandardCharsets.ISO_8859_1);
+//            } catch (IOException e4) {
+//                throw new RuntimeException("Server logs has not standard Charsets (UTF8 or ISO_8859_1)");
+//            }
+//        } catch (IOException e) {
+//            // server.log file is not created, it is the same as server.log is empty
+//        }
+//        return new ArrayList<>();
+//    }
 
-    public CloseableHttpResponse simulateClickingOnButton(CloseableHttpClient client, Form form, String username, String password, String buttonValue) throws IOException {
+    private CloseableHttpResponse simulateClickingOnButton(CloseableHttpClient client, Form form, String username, String password, String buttonValue) throws IOException {
         final URL url = new URL(form.getAction());
         final HttpPost request = new HttpPost(url.toString());
         final List<NameValuePair> params = new LinkedList<>();
@@ -337,7 +326,7 @@ public class LoginLogoutBasics extends EnvSetupUtils {
         return client.execute(request);
     }
 
-    public final class Form {
+    private static final class Form {
 
         static final String
                 NAME = "name",
@@ -383,7 +372,7 @@ public class LoginLogoutBasics extends EnvSetupUtils {
         }
     }
 
-    private final class Input {
+    private static final class Input {
 
         final String name, value;
         final Input.Type type;
@@ -411,9 +400,9 @@ public class LoginLogoutBasics extends EnvSetupUtils {
        for logout support.
     */
     public static class LogoutChannelPaths {
-        public String backChannelPath = null;
-        public String frontChannelPath = null;
-        public List<String> postLogoutRedirectPaths = null;
+        public String backChannelPath;
+        public String frontChannelPath;
+        public List<String> postLogoutRedirectPaths;
 
         public LogoutChannelPaths(final String backChannelPath,
                                  final String frontChannelPath,
