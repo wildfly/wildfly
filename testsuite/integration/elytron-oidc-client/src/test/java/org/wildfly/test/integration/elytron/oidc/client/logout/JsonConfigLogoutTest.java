@@ -18,8 +18,8 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.http.client.CookieStore;
-import org.apache.http.client.HttpClient;
 import org.apache.http.impl.client.BasicCookieStore;
+import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.LaxRedirectStrategy;
 
 import org.htmlunit.BrowserVersion;
@@ -66,7 +66,7 @@ public class JsonConfigLogoutTest extends LoginLogoutBasics {
     @Before
     public void createHttpClient() {
         CookieStore store = new BasicCookieStore();
-        HttpClient httpClient = TestHttpClientUtils.promiscuousCookieHttpClientBuilder()
+        CloseableHttpClient httpClient = TestHttpClientUtils.promiscuousCookieHttpClientBuilder()
                 .setDefaultCookieStore(store)
                 .setRedirectStrategy(new LaxRedirectStrategy())
                 .build();
