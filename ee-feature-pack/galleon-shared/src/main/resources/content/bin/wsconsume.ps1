@@ -8,6 +8,9 @@ $scripts = (Get-ChildItem $MyInvocation.MyCommand.Path).Directory.FullName;
 
 $JAVA_OPTS = @()
 
+# initialize JAVA_OPTS from the environment
+$JAVA_OPTS = String-To-Array -value $env:JAVA_OPTS
+
 # Sample JPDA settings for remote socket debugging
 #$JAVA_OPTS+="-agentlib:jdwp=transport=dt_socket,address=8787,server=y,suspend=y"
 
