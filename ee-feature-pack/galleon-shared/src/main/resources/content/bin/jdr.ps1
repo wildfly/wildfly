@@ -8,6 +8,14 @@ $scripts = (Get-ChildItem $MyInvocation.MyCommand.Path).Directory.FullName;
 
 $JAVA_OPTS = @()
 
+# initialize JAVA_OPTS from the environment
+if (Test-Path env:JAVA_OPTS) {
+    $opts = $env:JAVA_OPTS
+    ForEach ($opt in $opts.split()) {
+        $JAVA_OPTS += $opt
+    }
+}
+
 $PROG_ARGS = Get-Java-Arguments -entryModule "org.jboss.as.jdr" -serverOpts $ARGS -logFileProperties $null
 
 try{
