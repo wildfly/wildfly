@@ -126,7 +126,12 @@ public class WildFlyJobXmlResolver implements JobXmlResolver {
             return null;
         }
         for (JobXmlResolver resolver : jobXmlResolvers) {
-            final InputStream in = resolver.resolveJobXml(jobXml, classLoader);
+            InputStream in = resolver.resolveJobXml(jobXml, classLoader);
+            if (in == null) {
+                // Fallback: the resolver's resources may be in a module jar
+                // not visible through the deployment classloader
+                in = resolver.resolveJobXml(jobXml, resolver.getClass().getClassLoader());
+            }
             if (in != null) {
                 return in;
             }
