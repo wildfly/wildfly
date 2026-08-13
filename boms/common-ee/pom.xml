@@ -1025,12 +1025,6 @@
             </dependency>
 
             <dependency>
-                <groupId>com.ibm.async</groupId>
-                <artifactId>asyncutil</artifactId>
-                <version>${version.com.ibm.async.asyncutil}</version>
-            </dependency>
-
-            <dependency>
                 <groupId>com.microsoft.azure</groupId>
                 <artifactId>azure-storage</artifactId>
                 <version>${version.com.microsoft.azure}</version>
