@@ -85,8 +85,6 @@ public class EnvSetupUtils {
 
         /**
          * @param value        The name of the logout claim typ for elytron to use
-         * @param providerFlag flags that a "provider" server config xml should be
-         *                     created and not a "secure-deployment" config xml
          */
         public static void setProviderJwtClaimsTyp(String value) {
             providerJwtClaimsTyp = value;
@@ -167,6 +165,8 @@ public class EnvSetupUtils {
 
                 operation = createOpNode("system-property=" + Constants.CLIENT_SECRET_PROP, ModelDescriptionConstants.REMOVE);
                 Utils.applyUpdate(operation, client);
+            } else {
+                removeOidcServerDeploymentConfig(managementClient);
             }
         }
 
@@ -283,6 +283,22 @@ public class EnvSetupUtils {
 
                 operation = createOpNode(SECURE_DEPLOYMENT_ADDRESS + app + ".war/credential=secret", ModelDescriptionConstants.ADD);
                 operation.get("secret").set(CLIENT_SECRET);
+                Utils.applyUpdate(operation, client);
+            }
+
+            ServerReload.executeReloadAndWaitForCompletion(managementClient);
+        }
+
+        private static void removeOidcServerDeploymentConfig(ManagementClient managementClient) throws Exception {
+            ModelControllerClient client = managementClient.getControllerClient();
+
+            for (String app : APP_NAMES.keySet()) {
+
+                ModelNode operation = createOpNode(SECURE_DEPLOYMENT_ADDRESS + app + ".war/credential=secret", ModelDescriptionConstants.REMOVE);
+                Utils.applyUpdate(operation, client);
+
+                operation = createOpNode(
+                        SECURE_DEPLOYMENT_ADDRESS + app + ".war", ModelDescriptionConstants.REMOVE);
                 Utils.applyUpdate(operation, client);
             }
 
