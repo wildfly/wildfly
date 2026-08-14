@@ -24,6 +24,7 @@ import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Assert;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -38,9 +39,13 @@ public class IIOPNamingTestCase {
     @ContainerResource
     private ManagementClient managementClient;
 
+    @BeforeClass
+    public static void setupDynamicStub() {
+        System.setProperty("com.sun.CORBA.ORBUseDynamicStub", "true");
+    }
+
     @Deployment(testable = false)
     public static Archive<?> deploy() {
-        System.setProperty("com.sun.CORBA.ORBUseDynamicStub", "true");
         return ShrinkWrap.create(JavaArchive.class, "test.jar")
                 .addPackage(IIOPNamingTestCase.class.getPackage())
                 .addAsManifestResource(IIOPNamingTestCase.class.getPackage(), "jboss-ejb3.xml", "jboss-ejb3.xml");

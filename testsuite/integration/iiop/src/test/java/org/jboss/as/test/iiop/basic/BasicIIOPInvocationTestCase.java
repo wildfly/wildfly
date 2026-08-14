@@ -27,6 +27,7 @@ import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.wildfly.security.permission.ElytronPermission;
+import org.jboss.as.test.shared.integration.ejb.security.Util;
 
 /**
  * A simple IIOP invocation for one AS7 server to another
@@ -68,11 +69,14 @@ public class BasicIIOPInvocationTestCase {
         final JavaArchive jar = ShrinkWrap.create(JavaArchive.class, "client.jar");
         jar.addClasses(ClientEjb.class, IIOPBasicHome.class, IIOPBasicRemote.class,
                 BasicIIOPInvocationTestCase.class, IIOPBasicStatefulHome.class,
-                IIOPBasicStatefulRemote.class, HandleWrapper.class)
+                IIOPBasicStatefulRemote.class, HandleWrapper.class, Util.class)
                 .addAsManifestResource(BasicIIOPInvocationTestCase.class.getPackage(), "jboss-ejb3.xml", "jboss-ejb3.xml")
                 .addAsManifestResource(new StringAsset(PropertiesValueResolver.replaceProperties(ejbJar, properties)), "ejb-jar.xml")
                 .addAsManifestResource(
-                        PermissionUtils.createPermissionsXmlAsset(new ElytronPermission("getPrivateCredentials")),
+                        PermissionUtils.createPermissionsXmlAsset(
+                                new ElytronPermission("getPrivateCredentials"),
+                                new ElytronPermission("getSecurityDomain"),
+                                new ElytronPermission("authenticate")),
                         "permissions.xml");
         return jar;
     }
@@ -82,6 +86,25 @@ public class BasicIIOPInvocationTestCase {
     public void testRemoteIIOPInvocation() throws IOException, NamingException {
         final ClientEjb ejb = client();
         Assert.assertEquals("hello", ejb.getRemoteMessage());
+    }
+
+    @Test
+    @OperateOnDeployment("client")
+    public void testRemoteIIOPInvocationWithWrongPassword() throws IOException, NamingException {
+        try {
+            Util.switchIdentity("user1", "wrongpassword", () -> {
+                final ClientEjb ejb = client();
+                ejb.getRemoteMessage();
+                return null;
+            });
+            Assert.fail("Expected invocation with wrong password to fail");
+        } catch (Exception e) {
+            // Expected - authentication should fail with wrong password
+            Assert.assertTrue("Expected authentication failure, got: " + e.getMessage(),
+                    e.getMessage() != null && (e.getMessage().contains("NO_PERMISSION") ||
+                    e.getMessage().contains("authentication") || e.getMessage().contains("Authentication") ||
+                    e.getMessage().contains("Evidence Verification Failed")));
+        }
     }
 
     @Test

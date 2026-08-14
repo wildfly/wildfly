@@ -449,8 +449,7 @@ public class CNCtx implements javax.naming.Context {
      * @throws org.omg.CosNaming.NamingContextPackage.CannotProceed Unable to obtain a continuation context
      * @throws org.omg.CosNaming.NamingContextPackage.InvalidName   Name not understood.
      */
-    Object callResolve(NameComponent[] path)
-            throws NamingException {
+    Object callResolve(NameComponent[] path) throws NamingException {
         try {
             org.omg.CORBA.Object obj = _nc.resolve(path);
             try {
