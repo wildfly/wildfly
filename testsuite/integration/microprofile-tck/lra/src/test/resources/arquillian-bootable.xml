@@ -15,7 +15,10 @@
             <property name="allowConnectingToRunningServer">true</property>
             <property name="installDir">${install.dir}</property>
             <property name="jarFile">${bootable.jar}</property>
-            <property name="javaVmArguments">${microprofile.jvm.args}</property>
+            <!-- Disable the enhanced CDI support in RESTEasy which allows CDI beans to inject the @Context resources
+                 as CDI beans. This is required for LRA because of https://github.com/microprofile/microprofile-lra/issues/377.
+            -->
+            <property name="javaVmArguments">${microprofile.jvm.args} -Ddev.resteasy.cdi.enhanced.enabled=false</property>
             <property name="jbossArguments">${jboss.args}</property>
             <property name="managementAddress">127.0.0.1</property>
             <property name="managementPort">9990</property>
