@@ -58,6 +58,21 @@
             <artifactId>jakarta.json</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>org.jboss.logging</groupId>
+            <artifactId>jboss-logging</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.logmanager</groupId>
+            <artifactId>jboss-logmanager</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.slf4j</groupId>
+            <artifactId>slf4j-jboss-logmanager</artifactId>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
     <build>
@@ -113,6 +128,7 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
+                    <argLine>${surefire.system.args} -Djava.util.logging.manager=org.jboss.logmanager.LogManager</argLine>
                     <failIfNoTests>false</failIfNoTests>
                     <reuseForks>true</reuseForks>
 
@@ -130,7 +146,6 @@
     </build>
 
     <profiles>
-
         <!-- Test against WildFly Preview dist -->
         <profile>
             <id>preview.profile</id>
