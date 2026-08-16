@@ -402,7 +402,7 @@
             Properties for dependencies that solely relate to maven plugins go in the plugin section above.
             Properties for dependencies that solely relate to tests go in the test code section above.
          -->
-        <version.at.yawk.lz4.lz4-java>1.11.1</version.at.yawk.lz4.lz4-java>
+        <version.at.yawk.lz4.lz4-java>1.11.2</version.at.yawk.lz4.lz4-java>
         <version.com.carrotsearch.hppc>0.10.0</version.com.carrotsearch.hppc>
         <version.com.fasterxml.jackson>2.21.5</version.com.fasterxml.jackson>
         <version.com.github.ben-manes.caffeine>3.2.4</version.com.github.ben-manes.caffeine>
