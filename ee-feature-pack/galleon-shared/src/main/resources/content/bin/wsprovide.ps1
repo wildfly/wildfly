@@ -4,9 +4,12 @@
 #                                                               ##
 ##################################################################
 $scripts = (Get-ChildItem $MyInvocation.MyCommand.Path).Directory.FullName;
-. $scripts'\common.ps1'
+. "$scripts\common.ps1"
 
-$JAVA_OPTS = @()
+# initialize JAVA_OPTS from the environment
+# @(...) keeps the result an array; PowerShell unrolls the value returned by String-To-Array,
+# so an empty or single valued JAVA_OPTS would otherwise be assigned as $null or a String
+$JAVA_OPTS = @(String-To-Array -value $env:JAVA_OPTS)
 
 # Sample JPDA settings for remote socket debugging
 #$JAVA_OPTS+="-agentlib:jdwp=transport=dt_socket,address=8787,server=y,suspend=y"
