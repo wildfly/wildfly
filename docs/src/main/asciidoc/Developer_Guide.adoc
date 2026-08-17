@@ -61,6 +61,8 @@ include::_developer-guide/Web_(Undertow)_Reference_Guide.adoc[]
 
 include::_developer-guide/Embedded_API.adoc[]
 
+include::_developer-guide/gRPC_Reference_Guide.adoc[]
+
 include::_developer-guide/H2_Web_Console_Integration.adoc[]
 
 include::_developer-guide/Migrated_to_WildFly_Example_Applications.adoc[]
