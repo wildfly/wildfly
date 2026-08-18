@@ -44,6 +44,7 @@ import org.jboss.metadata.ejb.jboss.IORASContextMetaData;
 import org.jboss.metadata.ejb.jboss.IORSASContextMetaData;
 import org.jboss.metadata.ejb.jboss.IORSecurityConfigMetaData;
 import org.jboss.metadata.ejb.jboss.IORTransportConfigMetaData;
+import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.omg.CORBA.ORB;
@@ -61,11 +62,14 @@ import org.wildfly.iiop.openjdk.naming.jndi.JBossCNCtxFactory;
 import org.wildfly.iiop.openjdk.rmi.DelegatingStubFactoryFactory;
 import org.wildfly.iiop.openjdk.security.NoSSLSocketFactory;
 import org.wildfly.iiop.openjdk.security.SSLSocketFactory;
+import org.wildfly.iiop.openjdk.naming.CorbaNamingContext;
+import org.wildfly.iiop.openjdk.service.CorbaNamingContextService;
 import org.wildfly.iiop.openjdk.service.CorbaNamingService;
 import org.wildfly.iiop.openjdk.service.CorbaORBService;
 import org.wildfly.iiop.openjdk.service.CorbaPOAService;
 import org.wildfly.iiop.openjdk.service.IORSecConfigMetaDataService;
 import org.wildfly.security.auth.client.AuthenticationContext;
+import org.wildfly.security.auth.server.SecurityDomain;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
@@ -132,6 +136,8 @@ public class IIOPSubsystemAdd extends AbstractBoottimeAddStepHandler {
 
         // set the ORBUseDynamicStub system property.
         WildFlySecurityManager.setPropertyPrivileged("org.jboss.com.sun.CORBA.ORBUseDynamicStub", "true");
+        // set useCodebaseOnly to true for security - prevents remote codebase loading
+        WildFlySecurityManager.setPropertyPrivileged("com.sun.CORBA.ORBUseCodebaseOnly", "true");
         // we set the same stub factory to both the static and dynamic stub factory. As there is no way to dynamically change
         // the userDynamicStubs's property at runtime it is possible for the ORB class's <clinit> method to be
         // called before this property is set.
@@ -261,6 +267,26 @@ public class IIOPSubsystemAdd extends AbstractBoottimeAddStepHandler {
                 .addDependency(CorbaPOAService.ROOT_SERVICE_NAME, POA.class, namingPOAService.getParentPOAInjector())
                 .setInitialMode(ServiceController.Mode.ACTIVE).install();
 
+        // create the CORBA naming context service.
+        final CorbaNamingContextService namingContextService = new CorbaNamingContextService();
+        final ServiceBuilder<?> namingContextBuilder = context.getServiceTarget()
+                .addService(CorbaNamingContextService.SERVICE_NAME, namingContextService)
+                .addDependency(CorbaORBService.SERVICE_NAME, ORB.class, namingContextService.getORBInjector())
+                .addDependency(CorbaPOAService.ROOT_SERVICE_NAME, POA.class, namingContextService.getRootPOAInjector())
+                .addDependency(CorbaPOAService.SERVICE_NAME.append("namingpoa"), POA.class,
+                        namingContextService.getNamingPOAInjector());
+
+        // Add dependency on security domain for naming service authentication if configured via system property
+        final String namingSecurityDomain = WildFlySecurityManager.getPropertyPrivileged("jboss.iiop.naming.security-domain", null);
+        if (namingSecurityDomain != null) {
+            namingContextBuilder.addDependency(
+                    context.getCapabilityServiceName(Capabilities.ELYTRON_SECURITY_DOMAIN_CAPABILITY, namingSecurityDomain, SecurityDomain.class),
+                    SecurityDomain.class,
+                    namingContextService.getSecurityDomainInjector());
+        }
+
+        namingContextBuilder.setInitialMode(ServiceController.Mode.ACTIVE).install();
+
         // create the CORBA naming service.
         final CorbaNamingService namingService = new CorbaNamingService(props);
         serviceTarget
@@ -269,6 +295,8 @@ public class IIOPSubsystemAdd extends AbstractBoottimeAddStepHandler {
                 .addDependency(CorbaPOAService.ROOT_SERVICE_NAME, POA.class, namingService.getRootPOAInjector())
                 .addDependency(CorbaPOAService.SERVICE_NAME.append("namingpoa"), POA.class,
                         namingService.getNamingPOAInjector())
+                .addDependency(CorbaNamingContextService.SERVICE_NAME, CorbaNamingContext.class,
+                        namingService.getNamingContextInjector())
                 .setInitialMode(ServiceController.Mode.ACTIVE).install();
 
         configureClientSecurity(props);
