@@ -13,8 +13,10 @@ $APPCLIENT_CONF_FILE = "$scripts\appclient.conf.ps1"
 $APPCLIENT_CONF_FILE = Get-Env RUN_CONF $APPCLIENT_CONF_FILE
 . $APPCLIENT_CONF_FILE
 
-$JAVA_OPTS = Get-Java-Opts
-$MODULE_OPTS = String-To-Array -value $env:MODULE_OPTS
+
+# @(...) keeps the results arrays; PowerShell unrolls the values returned by these functions,
+# so empty or single valued options would otherwise be assigned as $null or a String
+$MODULE_OPTS = @(String-To-Array -value $env:MODULE_OPTS)
 if ($global:SECMGR) {
     $MODULE_OPTS +="-secmgr";
 }

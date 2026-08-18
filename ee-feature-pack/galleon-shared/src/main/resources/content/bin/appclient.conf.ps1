@@ -1,6 +1,6 @@
 ### -*- Power Shell file -*- ################################################
 #                                                                          ##
-#  Applicent bootstrap Script Configuration                                    ##
+#  AppClient bootstrap Script Configuration                                ##
 #                                                                          ##
 #############################################################################
 
@@ -35,34 +35,39 @@ if (-Not(test-path env:JBOSS_MODULES_SYSTEM_PKGS )) {
   $JBOSS_MODULES_SYSTEM_PKGS="org.jboss.byteman"
 }
 
+# initialize JAVA_OPTS from the environment
+# @(...) keeps the result an array; PowerShell unrolls the value returned by String-To-Array,
+# so an empty or single valued JAVA_OPTS would otherwise be assigned as $null or a String
+$JAVA_OPTS = @(String-To-Array -value $env:JAVA_OPTS)
 
-$JAVA_OPTS = @()
+if (!$JAVA_OPTS) {
+    # JVM memory allocation pool parameters - modify as appropriate.
+    $JAVA_OPTS += '-Xms64M'
+    $JAVA_OPTS += '-Xmx512M'
 
-# JVM memory allocation pool parameters - modify as appropriate.
-$JAVA_OPTS += '-Xms64M'
-$JAVA_OPTS += '-Xmx512M'
+    # Reduce the RMI GCs to once per hour for Sun JVMs.
+    $JAVA_OPTS += '-Dsun.rmi.dgc.client.gcInterval=3600000'
+    $JAVA_OPTS += '-Dsun.rmi.dgc.server.gcInterval=3600000'
+    $JAVA_OPTS += '-Djava.net.preferIPv4Stack=true'
 
-# Reduce the RMI GCs to once per hour for Sun JVMs.
-$JAVA_OPTS += '-Dsun.rmi.dgc.client.gcInterval=3600000'
-$JAVA_OPTS += '-Dsun.rmi.dgc.server.gcInterval=3600000'
-$JAVA_OPTS += '-Djava.net.preferIPv4Stack=true'
+    # Warn when resolving remote XML DTDs or schemas.
+    $JAVA_OPTS += '-Dorg.jboss.resolver.warning=true'
 
-# Warn when resolving remote XML DTDs or schemas.
-$JAVA_OPTS += '-Dorg.jboss.resolver.warning=true'
+    # Make Byteman classes visible in all module loaders
+    # This is necessary to inject Byteman rules into AS7 deployments
+    $JAVA_OPTS += "-Djboss.modules.system.pkgs=$JBOSS_MODULES_SYSTEM_PKGS"
 
-# Make Byteman classes visible in all module loaders
-# This is necessary to inject Byteman rules into AS7 deployments
-$JAVA_OPTS += "-Djboss.modules.system.pkgs=$JBOSS_MODULES_SYSTEM_PKGS"
+    # Sample JPDA settings for remote socket debugging
+    # $JAVA_OPTS += '-Xrunjdwp:transport=dt_socket,address=8787,server=y,suspend=n'
 
-# Sample JPDA settings for remote socket debugging
-# $JAVA_OPTS += '-Xrunjdwp:transport=dt_socket,address=8787,server=y,suspend=n'
+    # Sample JPDA settings for shared memory debugging
+    # $JAVA_OPTS += '-Xrunjdwp:transport=dt_shmem,address=jboss,server=y,suspend=n'
 
-# Sample JPDA settings for shared memory debugging
-# $JAVA_OPTS += '-Xrunjdwp:transport=dt_shmem,address=jboss,server=y,suspend=n'
-
-# Use JBoss Modules lockless mode
-# $JAVA_OPTS += '-Djboss.modules.lockless=true'
+    # Use JBoss Modules lockless mode
+    # $JAVA_OPTS += '-Djboss.modules.lockless=true'
+}
 
 # Uncomment this to run with a security manager enabled
 # $SECMGR=$true
+
 
