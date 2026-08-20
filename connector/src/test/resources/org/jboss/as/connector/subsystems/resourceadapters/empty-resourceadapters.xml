@@ -3,4 +3,4 @@
   ~ SPDX-License-Identifier: Apache-2.0
   -->
 
-<subsystem xmlns="urn:jboss:domain:resource-adapters:7.0" />
+<subsystem xmlns="urn:jboss:domain:resource-adapters:7.2" />
