@@ -43,7 +43,7 @@ public class CustomSecurityEventListenerTestCase extends AbstractAuditLogTestCas
      * Tests whether successful authentication was logged.
      */
     @Test
-    @OperateOnDeployment(SD_DEFAULT)
+    @OperateOnDeployment(SD_DEFAULT_BASIC)
     public void testSuccessfulAuth() throws Exception {
         final URL servletUrl = new URL(url.toExternalForm() + "role1");
 
@@ -57,7 +57,7 @@ public class CustomSecurityEventListenerTestCase extends AbstractAuditLogTestCas
      * Tests whether failed authentication with wrong user was logged.
      */
     @Test
-    @OperateOnDeployment(SD_DEFAULT)
+    @OperateOnDeployment(SD_DEFAULT_BASIC)
     public void testFailedAuthWrongUser() throws Exception {
         final URL servletUrl = new URL(url.toExternalForm() + "role1");
 
