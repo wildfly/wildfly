@@ -26,24 +26,26 @@ public class ManagedThreadFactoryService extends EEConcurrentAbstractService<Wil
     private final String name;
     private final DelegatingSupplier<WildFlyContextService> contextServiceSupplier = new DelegatingSupplier<>();
     private final int priority;
+    private final boolean virtual;
 
     /**
      * @param name
      * @param jndiName
      * @param priority
      */
-    public ManagedThreadFactoryService(final Consumer<WildFlyManagedThreadFactory> consumer, final Supplier<WildFlyContextService> ctxServiceSupplier, String name, String jndiName, int priority) {
+    public ManagedThreadFactoryService(final Consumer<WildFlyManagedThreadFactory> consumer, final Supplier<WildFlyContextService> ctxServiceSupplier, String name, String jndiName, int priority, boolean virtual) {
         super(jndiName);
         this.consumer = consumer;
         this.name = name;
         this.contextServiceSupplier.set(ctxServiceSupplier);
         this.priority = priority;
+        this.virtual = virtual;
     }
 
     @Override
     void startValue(StartContext context) throws StartException {
         final String threadFactoryName = "EE-ManagedThreadFactory-"+name;
-        consumer.accept(managedThreadFactory = ConcurrencyImplementation.INSTANCE.newManagedThreadFactory(threadFactoryName, contextServiceSupplier.get(), priority));
+        consumer.accept(managedThreadFactory = ConcurrencyImplementation.INSTANCE.newManagedThreadFactory(threadFactoryName, contextServiceSupplier.get(), priority, virtual));
     }
 
     @Override

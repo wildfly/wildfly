@@ -97,6 +97,8 @@ public class ManagedExecutorServiceAdd extends AbstractAddStepHandler {
             threadPriority = null;
         }
 
+        final boolean virtual = ManagedExecutorServiceResourceDefinition.VIRTUAL_AD.resolveModelAttribute(context, model).asBoolean();
+
         final CapabilityServiceBuilder<?> serviceBuilder = context.getCapabilityServiceTarget().addCapability(ManagedExecutorServiceResourceDefinition.CAPABILITY);
         final Consumer<ManagedExecutorServiceAdapter> consumer = serviceBuilder.provides(ManagedExecutorServiceResourceDefinition.CAPABILITY);
         final Supplier<ManagedExecutorHungTasksPeriodicTerminationService> hungTasksPeriodicTerminationService = serviceBuilder.requires(ConcurrentServiceNames.HUNG_TASK_PERIODIC_TERMINATION_SERVICE_NAME);
@@ -116,7 +118,7 @@ public class ManagedExecutorServiceAdd extends AbstractAddStepHandler {
         if (context.hasOptionalCapability(REQUEST_CONTROLLER_CAPABILITY_NAME, ManagedExecutorServiceResourceDefinition.CAPABILITY.getDynamicName(context.getCurrentAddress()), null)) {
             requestControllerSupplier = serviceBuilder.requiresCapability(REQUEST_CONTROLLER_CAPABILITY_NAME, RequestController.class);
         }
-        final ManagedExecutorServiceService service = new ManagedExecutorServiceService(consumer, contextServiceSupplier, threadFactorySupplier, processStateNotifierSupplier, requestControllerSupplier, name, jndiName, hungTaskThreshold, hungTaskTerminationPeriod, longRunningTasks, coreThreads, maxThreads, keepAliveTime, keepAliveTimeUnit, threadLifeTime, queueLength, rejectPolicy, threadPriority, hungTasksPeriodicTerminationService);
+        final ManagedExecutorServiceService service = new ManagedExecutorServiceService(consumer, contextServiceSupplier, threadFactorySupplier, processStateNotifierSupplier, requestControllerSupplier, name, jndiName, hungTaskThreshold, hungTaskTerminationPeriod, longRunningTasks, coreThreads, maxThreads, keepAliveTime, keepAliveTimeUnit, threadLifeTime, queueLength, rejectPolicy, threadPriority, hungTasksPeriodicTerminationService, virtual);
         serviceBuilder.setInstance(service);
         serviceBuilder.install();
     }
