@@ -23,6 +23,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicBoolean;
+
 import jakarta.ejb.EJBException;
 
 import org.jboss.as.ee.component.Component;
@@ -61,6 +62,7 @@ import org.jboss.ejb.server.ModuleAvailabilityListener;
 import org.jboss.ejb.server.Request;
 import org.jboss.ejb.server.SessionOpenRequest;
 import org.jboss.invocation.InterceptorContext;
+import org.jboss.logging.Logger;
 import org.wildfly.clustering.server.Group;
 import org.wildfly.clustering.server.GroupMember;
 import org.wildfly.clustering.server.Registration;
@@ -73,8 +75,11 @@ import org.wildfly.security.manager.WildFlySecurityManager;
 /**
  * @author <a href="mailto:tadamski@redhat.com">Tomasz Adamski</a>
  * @author <a href="mailto:jbaesner@redhat.com">Joerg Baesner</a>
+ * @author <a href="mailto:rachmato@ibm.com">Richard Achmatowicz</a>
  */
-final class AssociationImpl implements Association, AutoCloseable {
+final class DeploymentsAssociationImpl implements Association, AutoCloseable {
+
+    public static Logger logger = Logger.getLogger("org.jboss.as.ejb3.remote.DeploymentsAssociationImpl");
 
     private static final String RETURNED_CONTEXT_DATA_KEY = "jboss.returned.keys";
     private static final ListenerHandle NOOP_LISTENER_HANDLE = new ListenerHandle() {
@@ -85,14 +90,17 @@ final class AssociationImpl implements Association, AutoCloseable {
     };
     private final DeploymentRepository deploymentRepository;
     private final Map<Integer, ClusterTopologyRegistrar> clusterTopologyRegistrars;
-    private volatile Executor executor;
+    private final Executor executor;
 
-    AssociationImpl(final DeploymentRepository deploymentRepository, final List<Map.Entry<ProtocolSocketBinding, Registry<GroupMember, String, List<ClientMapping>>>> clientMappingRegistries) {
+    DeploymentsAssociationImpl(final DeploymentRepository deploymentRepository, final Executor executor, final List<Map.Entry<ProtocolSocketBinding, Registry<GroupMember, String, List<ClientMapping>>>> clientMappingRegistries) {
+        logger.trace("Starting Init<>");
         this.deploymentRepository = deploymentRepository;
+        this.executor = executor;
         this.clusterTopologyRegistrars = clientMappingRegistries.isEmpty() ? Collections.emptyMap() : new HashMap<>(clientMappingRegistries.size());
         for (Map.Entry<ProtocolSocketBinding, Registry<GroupMember, String, List<ClientMapping>>> entry : clientMappingRegistries) {
             this.clusterTopologyRegistrars.put(entry.getKey().getSocketBinding().getSocketAddress().getPort(), new ClusterTopologyRegistrar(entry.getValue()));
         }
+        logger.trace("Started Init<>");
     }
 
     @Override
@@ -683,14 +691,6 @@ final class AssociationImpl implements Association, AutoCloseable {
 
     private ClusterTopologyRegistrar findClusterTopologyRegistrar(SocketAddress localAddress) {
         return (localAddress instanceof InetSocketAddress) ? this.clusterTopologyRegistrars.get(((InetSocketAddress) localAddress).getPort()) : null;
-    }
-
-    Executor getExecutor() {
-        return executor;
-    }
-
-    void setExecutor(Executor executor) {
-        this.executor = executor;
     }
 
     /**

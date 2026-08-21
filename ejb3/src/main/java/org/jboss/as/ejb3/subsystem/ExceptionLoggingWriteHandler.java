@@ -58,7 +58,9 @@ class ExceptionLoggingWriteHandler extends AbstractWriteAttributeHandler<Void> {
         } else {
             // create and install the service
             final ServiceBuilder<?> sb = context.getCapabilityServiceTarget().addService(serviceName);
-            sb.setInstance(new ValueService(new AtomicBoolean(enabled))).install();
+            sb.setInstance(new ValueService(new AtomicBoolean(enabled)));
+            sb.setInitialMode(ServiceController.Mode.ON_DEMAND);
+            sb.install();
         }
     }
 

@@ -11,21 +11,25 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.dmr.ModelNode;
-import org.jboss.msc.service.ServiceController;
-import org.jboss.msc.service.ServiceRegistry;
+
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
- * @author Stuart Douglas
+ * A write handler for adjusting the subsystem default for allowing regular expressions to be used
+ * in EJB names used in deployment descriptors.
+ *
+ * @author Stuart
+ * @author Richard Achmatowicz
  */
 class EJBNameRegexWriteHandler extends AbstractWriteAttributeHandler<Void> {
 
-    public static final EJBNameRegexWriteHandler INSTANCE = new EJBNameRegexWriteHandler(EJB3SubsystemRootResourceDefinition.ALLOW_EJB_NAME_REGEX);
-
     private final AttributeDefinition attributeDefinition;
+    private final AtomicBoolean defaultAllowEjbRegex;
 
-    private EJBNameRegexWriteHandler(final AttributeDefinition attributeDefinition) {
+    public EJBNameRegexWriteHandler(final AttributeDefinition attributeDefinition, final AtomicBoolean defaultAllowEjbRegex) {
         super(attributeDefinition);
         this.attributeDefinition = attributeDefinition;
+        this.defaultAllowEjbRegex = defaultAllowEjbRegex;
     }
 
     @Override
@@ -46,17 +50,7 @@ class EJBNameRegexWriteHandler extends AbstractWriteAttributeHandler<Void> {
     }
 
     void updateRegexAllowed(final OperationContext context, final ModelNode model) throws OperationFailedException {
-
-        final ModelNode allowRegex = this.attributeDefinition.resolveModelAttribute(context, model);
-        final ServiceRegistry registry = context.getServiceRegistry(true);
-
-        final ServiceController<?> ejbNameServiceController = registry.getService(EjbNameRegexService.SERVICE_NAME);
-        EjbNameRegexService service = (EjbNameRegexService) ejbNameServiceController.getValue();
-        if (!allowRegex.isDefined()) {
-            service.setEjbNameRegexAllowed(false);
-        } else {
-            service.setEjbNameRegexAllowed(allowRegex.asBoolean());
-        }
+        boolean defaultAllowEjbRegex = this.attributeDefinition.resolveModelAttribute(context, model).asBoolean();
+        this.defaultAllowEjbRegex.set(defaultAllowEjbRegex);
     }
-
 }
