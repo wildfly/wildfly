@@ -23,6 +23,7 @@ import org.jboss.as.test.integration.security.common.Utils;
 import org.jboss.as.test.shared.PermissionUtils;
 import org.jboss.as.test.shared.ServerReload;
 import org.jboss.as.test.shared.SnapshotRestoreSetupTask;
+import org.jboss.as.test.shared.TimeoutUtil;
 import org.jboss.dmr.ModelNode;
 import org.jboss.remoting3.security.RemotingPermission;
 import org.jboss.shrinkwrap.api.Archive;
@@ -50,11 +51,14 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.IDE
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INCLUDE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROVIDER;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ROLE_MAPPING;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TYPE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.USE_IDENTITY_ROLES;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.USERNAME;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
@@ -104,9 +108,8 @@ public abstract class AbstractJmxAccessFromDeploymentWithRbacTest {
             HttpGet httpget = new HttpGet(url.toExternalForm() + urlPattern);
             HttpResponse response = httpclient.execute(httpget);
             assertNotNull("Response is 'null', we expected non-null response!", response);
-            final String text = Utils.getContent(response);
-            assertEquals(text, 200, response.getStatusLine().getStatusCode());
-            return text;
+            assertEquals(200, response.getStatusLine().getStatusCode());
+            return Utils.getContent(response);
         }
     }
 
@@ -124,19 +127,30 @@ public abstract class AbstractJmxAccessFromDeploymentWithRbacTest {
     @Test
     public void testJmxCallWithPlatformMBeanServer() throws Exception {
         String result = performCall("platform");
-        assertEquals("ok", result);
+        checkResult(result, securedApplication ? "kabir" : "anonymous");
     }
 
     @Test
     public void testJmxCallWithFoundMBeanServer() throws Exception {
         String result = performCall("found");
-        assertEquals("ok", result);
+        checkResult(result, securedApplication ? "kabir" : "anonymous");
     }
 
     @Test
     public void testJmxCallWithRemoteMBeanServer() throws Exception {
         String result = performCall("remote");
         assertEquals("ok", result);
+    }
+
+    private void checkResult(String result, String userName) {
+        ModelNode resultNode = ModelNode.fromString(result);
+        Assert.assertEquals(userName, resultNode.get(IDENTITY, USERNAME).asString());
+        checkSuperUserInList(resultNode.get("mapped-roles"));
+    }
+
+    private void checkSuperUserInList(ModelNode modelNode) {
+        Assert.assertEquals(1, modelNode.asList().size());
+        Assert.assertEquals("SuperUser", modelNode.asList().get(0).asString());
     }
 
     static class EnableRbacSetupTask extends SnapshotRestoreSetupTask {
@@ -211,8 +225,10 @@ public abstract class AbstractJmxAccessFromDeploymentWithRbacTest {
             operations.add(Util.getWriteAttributeOperation(addr, "trusted-security-domains", trustedDomains));
 
 
-            executeOperation(managementClient, Util.createCompositeOperation(operations));
-            ServerReload.reloadIfRequired(managementClient);
+            ModelNode response = managementClient.getControllerClient().execute(Util.createCompositeOperation(operations));
+            Assert.assertEquals(SUCCESS, response.get(OUTCOME).asString());
+
+            ServerReload.executeReloadAndWaitForCompletion(managementClient, TimeoutUtil.adjust(10000));
         }
 
         private ModelNode createSuperUserRoleMapping(String userName) {
