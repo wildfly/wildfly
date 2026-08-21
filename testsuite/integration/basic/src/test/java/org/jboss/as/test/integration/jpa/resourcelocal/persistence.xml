@@ -11,10 +11,9 @@
         <properties>
             <property name="hibernate.hbm2ddl.auto" value="create-drop"/>
             <property name="hibernate.show_sql" value="false"/>
-            <!-- @DataSourceDefinition need to be started from the install phase, set wildfly.jpa.twophasebootstrap=false,
+            <!-- @DataSourceDefinition need to be started from the install phase, 
                  to delay starting the persistence unit service until the install phase.
              -->
-            <property name="wildfly.jpa.twophasebootstrap" value="false"/>
             <property name="wildfly.jpa.applicationdatasource" value="true"/>
         </properties>
     </persistence-unit>
