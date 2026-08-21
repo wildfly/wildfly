@@ -18,8 +18,8 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.http.client.CookieStore;
-import org.apache.http.client.HttpClient;
 import org.apache.http.impl.client.BasicCookieStore;
+import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.LaxRedirectStrategy;
 
 import org.htmlunit.BrowserVersion;
@@ -35,7 +35,6 @@ import org.jboss.as.test.integration.security.common.servlets.SimpleServlet;
 import org.jboss.as.test.integration.security.common.servlets.SimpleSecuredServlet;
 import org.jboss.as.test.http.util.TestHttpClientUtils;
 import org.jboss.as.test.shared.util.AssumeTestGroupUtil;
-import org.jboss.as.version.Stability;
 
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
@@ -66,15 +65,11 @@ public class JsonConfigLogoutTest extends LoginLogoutBasics {
     @Before
     public void createHttpClient() {
         CookieStore store = new BasicCookieStore();
-        HttpClient httpClient = TestHttpClientUtils.promiscuousCookieHttpClientBuilder()
+        CloseableHttpClient httpClient = TestHttpClientUtils.promiscuousCookieHttpClientBuilder()
                 .setDefaultCookieStore(store)
                 .setRedirectStrategy(new LaxRedirectStrategy())
                 .build();
         super.setHttpClient(httpClient);
-    }
-
-    public JsonConfigLogoutTest() {
-        super(Stability.DEFAULT);
     }
 
     //-------------- test configuration data ---------------
@@ -100,9 +95,9 @@ public class JsonConfigLogoutTest extends LoginLogoutBasics {
 
     // These are the oidc logout URL paths that are registered with Keycloak.
     // The path of the URL must be the same as the system properties registered above.
-    private static Map<String, LoginLogoutBasics.LogoutChannelPaths> APP_LOGOUT;
+    private static final Map<String, LoginLogoutBasics.LogoutChannelPaths> APP_LOGOUT;
     static {
-        APP_LOGOUT= new HashMap<String, LoginLogoutBasics.LogoutChannelPaths>();
+        APP_LOGOUT= new HashMap<>();
         APP_LOGOUT.put(RP_INITIATED_LOGOUT_APP, new LoginLogoutBasics.LogoutChannelPaths(
                 null,null, List.of(POST_LOGOUT_PATH_VALUE)) );
         APP_LOGOUT.put(BACK_CHANNEL_LOGOUT_APP, new LoginLogoutBasics.LogoutChannelPaths(
@@ -118,7 +113,7 @@ public class JsonConfigLogoutTest extends LoginLogoutBasics {
     // These are the application names registered as Keycloak clients.
     // The name corresponds to each WAR file declared and deployed in
     // OidcLogoutSystemPropertiesAppsSetUp
-    private static Map<String, KeycloakConfiguration.ClientAppType> APP_NAMES;
+    private static final Map<String, KeycloakConfiguration.ClientAppType> APP_NAMES;
     static {
         APP_NAMES = new HashMap<>();
         APP_NAMES.put(RP_INITIATED_LOGOUT_APP, KeycloakConfiguration.ClientAppType.OIDC_CLIENT);
@@ -146,26 +141,24 @@ public class JsonConfigLogoutTest extends LoginLogoutBasics {
 
     @Deployment(name = BACK_CHANNEL_LOGOUT_APP, managed = false, testable = false)
     public static WebArchive createBackChannelAuthServerUrlDeployment() {
-        WebArchive war =  ShrinkWrap.create(WebArchive.class, BACK_CHANNEL_LOGOUT_APP + ".war")
+        return ShrinkWrap.create(WebArchive.class, BACK_CHANNEL_LOGOUT_APP + ".war")
                 .addClasses(SimpleServlet.class)
                 .addClasses(SimpleSecuredServlet.class)
                 .addAsWebInfResource(packageName, WEB_XML, "web.xml")
                 .addAsWebInfResource(packageName,
                         BACK_CHANNEL_LOGOUT_APP+"-oidc.json", "oidc.json")
                 ;
-        return war;
     }
 
     @Deployment(name = BACK_CHANNEL_LOGOUT_APP_TWO, managed = false, testable = false)
     public static WebArchive createBackChannelAuthServerUrlDeploymentTwo() {
-        WebArchive war =  ShrinkWrap.create(WebArchive.class, BACK_CHANNEL_LOGOUT_APP_TWO + ".war")
+        return ShrinkWrap.create(WebArchive.class, BACK_CHANNEL_LOGOUT_APP_TWO + ".war")
                 .addClasses(SimpleServlet.class)
                 .addClasses(SimpleSecuredServlet.class)
                 .addAsWebInfResource(packageName, WEB_XML, "web.xml")
                 .addAsWebInfResource(packageName,
                         BACK_CHANNEL_LOGOUT_APP_TWO+"-oidc.json", "oidc.json")
                 ;
-        return war;
     }
 
     @Deployment(name = FRONT_CHANNEL_LOGOUT_APP, managed = false, testable = false)
@@ -226,8 +219,6 @@ public class JsonConfigLogoutTest extends LoginLogoutBasics {
             browserLogoutOfKeycloak(webClient, FRONT_CHANNEL_LOGOUT_APP);
             browserAssertUserLoggedOut(webClient, FRONT_CHANNEL_LOGOUT_APP,
                     SIGN_IN_TO_YOUR_ACCOUNT);
-
-            webClient.close();
         } finally {
             deployer.undeploy(FRONT_CHANNEL_LOGOUT_APP);
         }
