@@ -53,9 +53,12 @@
         <version.jakarta.websocket.jakarta-websocket-api>2.2.0</version.jakarta.websocket.jakarta-websocket-api>
         <version.jakarta.ws.rs.jakarta-ws-rs-api>4.0.0</version.jakarta.ws.rs.jakarta-ws-rs-api>
         <version.org.antlr>4.13.2</version.org.antlr>
+        <version.org.apache.httpcomponents.client5>5.6</version.org.apache.httpcomponents.client5>
+        <version.org.apache.httpcomponents.core5>5.4</version.org.apache.httpcomponents.core5>
         <version.org.apache.lucene>9.12.3</version.org.apache.lucene>
         <version.org.bytebuddy>1.18.8</version.org.bytebuddy>
         <version.org.elasticsearch.client.rest-client>9.3.1</version.org.elasticsearch.client.rest-client>
+        <version.co.elastic.clients.elasticsearch-rest5-client>9.3.1</version.co.elastic.clients.elasticsearch-rest5-client>
         <version.org.glassfish.expressly>6.0.0</version.org.glassfish.expressly>
         <version.org.glassfish.jakarta.faces>4.1.13</version.org.glassfish.jakarta.faces>
         <version.org.glassfish.soteria>4.0.2</version.org.glassfish.soteria>
@@ -383,6 +386,40 @@
             </dependency>
 
             <dependency>
+                <groupId>org.apache.httpcomponents.client5</groupId>
+                <artifactId>httpclient5</artifactId>
+                <version>${version.org.apache.httpcomponents.client5}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.httpcomponents.core5</groupId>
+                <artifactId>httpcore5</artifactId>
+                <version>${version.org.apache.httpcomponents.core5}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.httpcomponents.core5</groupId>
+                <artifactId>httpcore5-h2</artifactId>
+                <version>${version.org.apache.httpcomponents.core5}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
                 <groupId>org.apache.lucene</groupId>
                 <artifactId>lucene-analysis-common</artifactId>
                 <version>${version.org.apache.lucene}</version>
@@ -475,6 +512,17 @@
                 <groupId>org.elasticsearch.client</groupId>
                 <artifactId>elasticsearch-rest-client-sniffer</artifactId>
                 <version>${version.org.elasticsearch.client.rest-client}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>co.elastic.clients</groupId>
+                <artifactId>elasticsearch-rest5-client</artifactId>
+                <version>${version.co.elastic.clients.elasticsearch-rest5-client}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>
@@ -614,6 +662,17 @@
             <dependency>
                 <groupId>org.hibernate.search</groupId>
                 <artifactId>hibernate-search-backend-elasticsearch-client-rest4</artifactId>
+                <version>${version.org.hibernate.search}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>org.hibernate.search</groupId>
+                <artifactId>hibernate-search-backend-elasticsearch-client-rest5</artifactId>
                 <version>${version.org.hibernate.search}</version>
                 <exclusions>
                     <exclusion>
