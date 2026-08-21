@@ -8,7 +8,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
 import java.util.List;
-import java.util.Locale;
 import java.util.Set;
 import jakarta.resource.spi.ActivationSpec;
 
@@ -67,10 +66,6 @@ public class InflowJarTestCase extends AbstractModuleDeploymentTestCase {
 
         }
 
-        @Override
-        protected String getSlot() {
-            return InflowJarTestCase.class.getSimpleName().toLowerCase(Locale.ENGLISH);
-        }
     }
 
     /**
