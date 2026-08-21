@@ -45,6 +45,13 @@ public class WeldBeanValidationDependencyProcessor implements DeploymentUnitProc
             return; // Skip if there are no beans.xml files in the deployment
         }
 
+        // Don't add the CDI bean validation module to top-level EAR deployments.
+        // Let sub-deployments discover ValidationExtension with their own classloader
+        // as the TCCL, so that validation.xml within WARs/EJB-JARs is found.
+        if (!deploymentUnit.getAttachmentList(Attachments.SUB_DEPLOYMENTS).isEmpty()) {
+            return;
+        }
+
         ModuleDependency cdiBeanValidationDep = ModuleDependency.Builder.of(moduleLoader, CDI_BEAN_VALIDATION_ID).setImportServices(true).build();
         moduleSpecification.addSystemDependency(cdiBeanValidationDep);
     }
