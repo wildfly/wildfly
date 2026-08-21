@@ -175,6 +175,11 @@ class ServerProbes {
         public String getName() {
             return "boot-errors";
         }
+
+        @Override
+        public boolean isLivenessProbe() {
+            return true;
+        }
     }
 
 
