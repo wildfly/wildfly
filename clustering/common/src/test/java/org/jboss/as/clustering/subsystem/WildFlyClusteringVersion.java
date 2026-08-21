@@ -13,6 +13,7 @@ import org.jboss.as.model.test.ModelTestControllerVersion;
  */
 public enum WildFlyClusteringVersion {
     EAP_8_1("5.0.11.Final"),
+    WILDFLY_41("10.0.9.Final"),
     ;
 
     private final String version;
@@ -28,6 +29,7 @@ public enum WildFlyClusteringVersion {
     public static WildFlyClusteringVersion forVersion(ModelTestControllerVersion version) {
         return switch (version) {
             case EAP_8_1_0 -> WildFlyClusteringVersion.EAP_8_1;
+            case WILDFLY_41_0_0 -> WildFlyClusteringVersion.WILDFLY_41;
             default -> throw new IllegalArgumentException(version.getMavenGavVersion());
         };
     }
