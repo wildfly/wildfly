@@ -152,9 +152,9 @@ public interface JpaLogger extends BasicLogger {
      * @param phase       is the phase number (1 or 2)
      * @param name        an additional name for the service.
      */
-    @LogMessage(level = INFO)
-    @Message(id = 11, value = "Stopping Persistence Unit (phase %d of 2) Service '%s'")
-    void stoppingPersistenceUnitService(int phase, String name);
+    // @LogMessage(level = INFO)
+    // @Message(id = 11, value = "Stopping Persistence Unit (phase %d of 2) Service '%s'")
+    // void stoppingPersistenceUnitService(int phase, String name);
 
     /**
      * Logs warning about unexpected problem gathering statistics.

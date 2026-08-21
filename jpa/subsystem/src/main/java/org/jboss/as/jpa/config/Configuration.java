@@ -125,12 +125,6 @@ public class Configuration {
      */
     public static final String JPA_CONTAINER_CLASS_TRANSFORMER = "jboss.as.jpa.classtransformer";
 
-    /**
-     * set to false to force a single phase persistence unit bootstrap to be used (default is true
-     * which uses two phases to start the persistence unit).
-     */
-    public static final String JPA_ALLOW_TWO_PHASE_BOOTSTRAP = "wildfly.jpa.twophasebootstrap";
-
     private static final String JPA_ALLOW_APPLICATION_DEFINED_DATASOURCE = "wildfly.jpa.applicationdatasource";
 
     /**
@@ -315,24 +309,6 @@ public class Configuration {
 
     public static String getDefaultProviderModuleName() {
         return PROVIDER_MODULE_DEFAULT;
-    }
-
-    /**
-     * Determine if two phase persistence unit start is allowed
-     *
-     * @param pu
-     * @return
-     */
-    public static boolean allowTwoPhaseBootstrap(PersistenceUnitMetadata pu) {
-        boolean result = true;
-
-        if (EE_DEFAULT_DATASOURCE.equals(pu.getJtaDataSourceName())) {
-            result = false;
-        }
-        if (pu.getProperties().containsKey(Configuration.JPA_ALLOW_TWO_PHASE_BOOTSTRAP)) {
-            result = Boolean.parseBoolean(pu.getProperties().getProperty(Configuration.JPA_ALLOW_TWO_PHASE_BOOTSTRAP));
-        }
-        return result;
     }
 
     /**
