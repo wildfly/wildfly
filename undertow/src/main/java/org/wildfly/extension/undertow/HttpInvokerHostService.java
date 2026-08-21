@@ -64,7 +64,8 @@ final class HttpInvokerHostService implements Service {
         }
 
         SessionCookieConfig sessionConfig = new SessionCookieConfig();
-        sessionConfig.setPath(UndertowUtils.normalizePath(this.path));
+        assert this.path.startsWith("/") : "path must be normalized before constructing HttpInvokerHostService";
+        sessionConfig.setPath(this.path);
         Server server = this.host.get().getServer();
         ServletContainerService container = server.getServletContainer();
         CookieConfig affinityCookeConfig = container.getAffinityCookieConfig();
