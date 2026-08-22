@@ -388,7 +388,12 @@ public class DatabaseTimerPersistence implements TimerPersistence, Service {
                     }
                     statement.executeBatch();
                 } catch (SQLException e1) {
-                    EjbLogger.EJB3_TIMER_LOGGER.couldNotCreateTable(e1);
+                    // table creation failed — table may already exist but be missing the EXTERNAL_ID column
+                    try {
+                        addExternalIdColumn(connection);
+                    } catch (SQLException e2) {
+                        EjbLogger.EJB3_TIMER_LOGGER.couldNotCreateTable(e1);
+                    }
                 }
             } else {
                 EjbLogger.EJB3_TIMER_LOGGER.couldNotCreateTable(e);
@@ -398,6 +403,15 @@ public class DatabaseTimerPersistence implements TimerPersistence, Service {
             safeClose(preparedStatement);
             safeClose(statement);
             safeClose(connection);
+        }
+    }
+
+    private void addExternalIdColumn(final Connection connection) throws SQLException {
+        try (Statement stmt = connection.createStatement()) {
+            stmt.executeUpdate("ALTER TABLE JBOSS_EJB_TIMER ADD COLUMN EXTERNAL_ID VARCHAR(255)");
+        }
+        try (Statement stmt = connection.createStatement()) {
+            stmt.executeUpdate("CREATE INDEX JBOSS_EJB_TIMER_EXTERNAL_ID_INDEX ON JBOSS_EJB_TIMER (EXTERNAL_ID)");
         }
     }
 

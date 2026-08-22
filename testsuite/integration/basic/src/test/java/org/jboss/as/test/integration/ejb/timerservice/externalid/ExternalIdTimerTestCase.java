@@ -39,7 +39,7 @@ public class ExternalIdTimerTestCase {
                 .addClasses(ExternalIdTimerTestCase.class, ExternalIdTimerBean.class, DatabaseTimerStoreSetupTask.class)
                 .addAsManifestResource(EmptyAsset.INSTANCE, "beans.xml")
                 // Require access to internal WildFly EJB classes for WildFlyTimerConfig and WildFlyTimerService
-                .addAsManifestResource(new StringAsset("Dependencies: org.jboss.as.ejb3, org.jboss.ejb3\n"), "MANIFEST.MF");
+                .addAsManifestResource(new StringAsset("Dependencies: org.jboss.as.ejb3\n"), "MANIFEST.MF");
     }
 
     @EJB
