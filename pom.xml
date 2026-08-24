@@ -455,7 +455,7 @@
         <version.io.vertx.vertx-kafka-client>4.4.9</version.io.vertx.vertx-kafka-client>
         <version.jakarta.activation.jakarta.activation-api>2.1.4</version.jakarta.activation.jakarta.activation-api>
         <version.jakarta.batch.jakarta.batch-api>2.1.1</version.jakarta.batch.jakarta.batch-api>
-        <version.jakarta.data.jakarta-data-api>1.0.1</version.jakarta.data.jakarta-data-api>
+        <version.jakarta.data.jakarta-data-api>1.0.2</version.jakarta.data.jakarta-data-api>
         <version.jakarta.ejb.jakarta-ejb-api>4.0.1</version.jakarta.ejb.jakarta-ejb-api>
         <version.jakarta.inject.jakarta.inject-api>2.0.1</version.jakarta.inject.jakarta.inject-api>
         <version.jakarta.jms.jakarta-jms-api>3.1.0</version.jakarta.jms.jakarta-jms-api>
