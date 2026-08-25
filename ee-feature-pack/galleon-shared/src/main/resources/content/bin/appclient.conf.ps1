@@ -5,22 +5,22 @@
 #############################################################################
 
 #
-# This script file is executed by standalone.ps1 to initialize the environment
-# variables that standalone.ps1 uses. It is recommended to use this file to
-# configure these variables, rather than modifying standalone.ps1 itself.
+# This script file is executed by appclient.ps1 to initialize the environment
+# variables that appclient.ps1 uses. It is recommended to use this file to
+# configure these variables, rather than modifying appclient.ps1 itself.
 #
 #
 # Specify the location of the Java home directory (it is recommended that
 # this always be set). If set, then "%JAVA_HOME%\bin\java" will be used as
 # the Java VM executable; otherwise, "%JAVA%" will be used (see below).
 #
-# $JAVA_HOME="C:\opt\jdk11"
+# $JAVA_HOME="C:\opt\jdk"
 
 #
 # Specify the exact Java VM executable to use - only used if JAVA_HOME is
 # not set. Default is "java".
 #
-# $JAVA="C:\opt\jdk11\bin\java"
+# $JAVA="C:\opt\jdk\bin\java"
 
 #
 # Specify options to pass to the Java VM. Note, there are some additional
@@ -54,7 +54,7 @@ if (!$JAVA_OPTS) {
     $JAVA_OPTS += '-Dorg.jboss.resolver.warning=true'
 
     # Make Byteman classes visible in all module loaders
-    # This is necessary to inject Byteman rules into AS7 deployments
+    # This is necessary to inject Byteman rules into WildFly deployments
     $JAVA_OPTS += "-Djboss.modules.system.pkgs=$JBOSS_MODULES_SYSTEM_PKGS"
 
     # Sample JPDA settings for remote socket debugging
@@ -69,5 +69,4 @@ if (!$JAVA_OPTS) {
 
 # Uncomment this to run with a security manager enabled
 # $SECMGR=$true
-
 
