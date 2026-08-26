@@ -15,6 +15,7 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceRegistry;
+import org.wildfly.extension.messaging.activemq.jms.WildFlyRecoveryRegistry;
 
 /**
  * Removes a Jakarta Messaging Bridge.
@@ -31,6 +32,7 @@ class JMSBridgeRemove extends AbstractRemoveStepHandler {
     @Override
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) {
         context.removeService(MessagingServices.getJMSBridgeServiceName(context.getCurrentAddressValue()));
+        WildFlyRecoveryRegistry.clearSupplier();
     }
 
     @Override
