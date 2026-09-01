@@ -56,7 +56,7 @@ import org.junit.Test;
  * <p>
  * It also maintains the configuration of the current release, see ExtensionConf.CURRENT. When an extension is added or
  * removed on the current release, that extension must be tracked down on the ExtensionConf.CURRENT object. Once the
- * current release moves to the next mayor, if the ExtensionConf.CURRENT has extensions added or removed during the
+ * current release moves to the next major, if the ExtensionConf.CURRENT has extensions added or removed during the
  * current development cycle, the test will fail, forcing us to create new ExtensionConf objects for each previous
  * releases not defined in the test and point out ExtensionConf.CURRENT to the new current release without any
  * additional / removed extensions.
@@ -72,7 +72,7 @@ public class HostExcludesTestCase extends BuildConfigurationTestBase {
     private final boolean isFullDistribution = AssumeTestGroupUtil.isFullDistribution();
     private final boolean isPreviewGalleonPack = AssumeTestGroupUtil.isWildFlyPreview();
 
-    private static final String MAJOR = "37.";
+    private static final String MAJOR = "41.";
 
     /**
      * Maintains the list of expected extensions for each host-exclude name for previous releases.
@@ -206,14 +206,18 @@ public class HostExcludesTestCase extends BuildConfigurationTestBase {
         WILDFLY_34_0("WildFly34.0", WILDFLY_33_0, List.of(), List.of(), true),
         WILDFLY_35_0("WildFly35.0", WILDFLY_34_0, List.of("org.wildfly.extension.jakarta.data"), List.of(), true),
         WILDFLY_36_0("WildFly36.0", WILDFLY_35_0, List.of(), List.of(), true),
-        CURRENT(MAJOR, WILDFLY_36_0, getCurrentAddedExtensions(), getCurrentRemovedExtensions(), true);
+        WILDFLY_37_0("WildFly36.0", WILDFLY_36_0, List.of(), List.of(), true),
+        WILDFLY_38_0("WildFly36.0", WILDFLY_37_0, List.of(), List.of(), true),
+        WILDFLY_39_0("WildFly36.0", WILDFLY_38_0, List.of(), List.of(), true),
+        WILDFLY_40_0("WildFly36.0", WILDFLY_39_0, List.of(), List.of(), true),
+        CURRENT(MAJOR, WILDFLY_40_0, getCurrentAddedExtensions(), getCurrentRemovedExtensions(), true);
 
         private static List<String> getCurrentAddedExtensions() {
             // If an extension is added to this list, also check if it is supplied only by wildfly-galleon-pack. If so, add it also
             // to the internal mpExtensions Set defined on this class.
             // Don't add here extensions supplied only by the wildfly-preview-feature-pack because we are not tracking different releases
             // of wildfly preview. In such a case, add them to previewExtensions set defined below.
-            return List.of();
+            return List.of("org.wildfly.extension.hashicorp-vault");
         }
 
         private static List<String> getCurrentRemovedExtensions() {
