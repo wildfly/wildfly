@@ -38,6 +38,7 @@ import org.jboss.metadata.parser.util.NoopXMLResolver;
 import org.jboss.metadata.web.spec.WebMetaData;
 import org.jboss.modules.Module;
 import org.jboss.vfs.VirtualFile;
+import org.wildfly.common.xml.XMLInputFactoryUtil;
 
 /**
  * Sets up Jakarta Server Faces managed beans as components using information in the annotations and
@@ -227,9 +228,7 @@ public class JSFComponentProcessor implements DeploymentUnitProcessor {
 
         for (final VirtualFile facesConfig : getConfigurationFiles(deploymentUnit)) {
             try (InputStream is = facesConfig.openStream()) {
-                final XMLInputFactory inputFactory = XMLInputFactory.newInstance();
-                setIfSupported(inputFactory, XMLInputFactory.SUPPORT_DTD, Boolean.FALSE);
-                setIfSupported(inputFactory, XMLInputFactory.IS_SUPPORTING_EXTERNAL_ENTITIES, false);
+                final XMLInputFactory inputFactory = XMLInputFactoryUtil.create();
                 inputFactory.setXMLResolver(NoopXMLResolver.create());
                 XMLStreamReader parser = inputFactory.createXMLStreamReader(is);
                 boolean finished = false;
@@ -348,11 +347,5 @@ public class JSFComponentProcessor implements DeploymentUnitProcessor {
                 className, moduleDescription, deploymentUnit.getServiceName(), applicationClassesDescription);
         moduleDescription.addComponent(componentDescription);
         deploymentUnit.addToAttachmentList(WebComponentDescription.WEB_COMPONENTS, componentDescription.getStartServiceName());
-    }
-
-    private void setIfSupported(final XMLInputFactory inputFactory, final String property, final Object value) {
-        if (inputFactory.isPropertySupported(property)) {
-            inputFactory.setProperty(property, value);
-        }
     }
 }
