@@ -72,12 +72,13 @@ public class UndertowEventHandlerAdapterService implements UndertowEventListener
         this.serverName = this.configuration.getServer().getName();
         this.server = new UndertowServer(this.serverName, service, this.connector);
 
-        // Register ourselves as a listener to the container events
-        service.registerListener(this);
-
         // Initialize mod_cluster and start it now
         eventHandler.init(this.server);
         eventHandler.start(this.server);
+
+        // Register listener after init/start so that deployment events cannot fire before CONFIG has been sent to the proxy (WFLY-22198)
+        service.registerListener(this);
+
         for (Engine engine : this.server.getEngines()) {
             for (org.jboss.modcluster.container.Host host : engine.getHosts()) {
                 host.getContexts().forEach(contexts::add);
