@@ -37,7 +37,7 @@ public abstract class AbstractUndertowSubsystemTestCase extends AbstractSubsyste
     protected final UndertowSubsystemSchema schema;
 
     AbstractUndertowSubsystemTestCase(UndertowSubsystemSchema schema) {
-        super(UndertowExtension.SUBSYSTEM_NAME, new UndertowExtension(), schema, UndertowSubsystemSchema.CURRENT);
+        super(UndertowRootDefinition.REGISTRATION.getName(), new UndertowExtension(), schema, UndertowSubsystemSchema.CURRENT);
         this.schema = schema;
     }
 
@@ -120,7 +120,7 @@ public abstract class AbstractUndertowSubsystemTestCase extends AbstractSubsyste
         Assert.assertEquals(1, host.getFilters().size());
 
         ModelNode op = Util.createOperation("write-attribute",
-                PathAddress.pathAddress(UndertowRootDefinition.PATH_ELEMENT)
+                PathAddress.pathAddress(UndertowRootDefinition.REGISTRATION.getPathElement())
                         .append("servlet-container", "myContainer")
                         .append("setting", "websockets")
         );
@@ -132,7 +132,7 @@ public abstract class AbstractUndertowSubsystemTestCase extends AbstractSubsyste
 
         // WFLY-14648 Check expression in enabled attribute is resolved.
         op = Util.createOperation("write-attribute",
-                PathAddress.pathAddress(UndertowRootDefinition.PATH_ELEMENT)
+                PathAddress.pathAddress(UndertowRootDefinition.REGISTRATION.getPathElement())
                         .append("server", "some-server")
                         .append("http-listener", "default")
         );
@@ -153,7 +153,7 @@ public abstract class AbstractUndertowSubsystemTestCase extends AbstractSubsyste
         Assert.assertFalse(accessLogService.isRotate());
 
         if (this.schema.since(UndertowSubsystemSchema.VERSION_13_0)) {
-            PathAddress address = PathAddress.pathAddress(UndertowRootDefinition.PATH_ELEMENT, PathElement.pathElement(Constants.APPLICATION_SECURITY_DOMAIN, "other"), SingleSignOnDefinition.PATH_ELEMENT);
+            PathAddress address = PathAddress.pathAddress(UndertowRootDefinition.REGISTRATION.getPathElement(), PathElement.pathElement(Constants.APPLICATION_SECURITY_DOMAIN, "other"), SingleSignOnDefinition.REGISTRATION.getPathElement());
             ModelNode result = mainServices.executeOperation(Util.getWriteAttributeOperation(address, SingleSignOnDefinition.Attribute.PATH.getName(), new ModelNode("/modified-path")));
             assertEquals(ModelDescriptionConstants.SUCCESS, result.get(ModelDescriptionConstants.OUTCOME).asString());
             assertTrue("It is expected that reload is required after the operation.", result.get(ModelDescriptionConstants.RESPONSE_HEADERS).get(ModelDescriptionConstants.OPERATION_REQUIRES_RELOAD).asBoolean());
