@@ -292,15 +292,15 @@ public class Host implements Service<Host>, FilterLocation, SuspendableActivity 
     }
 
     void registerLocation(String path) {
-        String realPath = UndertowUtils.normalizePath(path);
-        locations.put(realPath, null);
-        server.get().getUndertowService().fireEvent(listener -> listener.onDeploymentStart(realPath, Host.this));
+        assert path.startsWith("/") : "path must be normalized before calling registerLocation";
+        locations.put(path, null);
+        server.get().getUndertowService().fireEvent(listener -> listener.onDeploymentStart(path, Host.this));
     }
 
     void unregisterLocation(String path) {
-        String realPath = UndertowUtils.normalizePath(path);
-        locations.remove(realPath);
-        server.get().getUndertowService().fireEvent(listener -> listener.onDeploymentStop(realPath, Host.this));
+        assert path.startsWith("/") : "path must be normalized before calling unregisterLocation";
+        locations.remove(path);
+        server.get().getUndertowService().fireEvent(listener -> listener.onDeploymentStop(path, Host.this));
     }
 
     public void registerHandler(String path, HttpHandler handler) {
