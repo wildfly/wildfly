@@ -26,11 +26,13 @@ import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.module.ResourceRoot;
+import org.jboss.metadata.parser.util.NoopXMLResolver;
 import org.jboss.staxmapper.XMLMapper;
 import org.jboss.vfs.VFSUtils;
 import org.jboss.vfs.VirtualFile;
 import org.jboss.vfs.VirtualFileFilter;
 import org.jboss.vfs.util.SuffixMatchFilter;
+import org.wildfly.common.xml.XMLInputFactoryUtil;
 
 /**
  * DeploymentUnitProcessor responsible for parsing a jboss-beans.xml
@@ -41,18 +43,10 @@ import org.jboss.vfs.util.SuffixMatchFilter;
 public class KernelDeploymentParsingProcessor implements DeploymentUnitProcessor {
 
     private final XMLMapper xmlMapper = XMLElementSchema.createXMLMapper(EnumSet.allOf(BeanDeploymentSchema.class));
-    private final XMLInputFactory inputFactory = XMLInputFactory.newInstance();
+    private final XMLInputFactory inputFactory = XMLInputFactoryUtil.create();
 
     public KernelDeploymentParsingProcessor() {
-        setIfSupported(inputFactory, XMLInputFactory.SUPPORT_DTD, Boolean.FALSE);
-        setIfSupported(inputFactory, XMLInputFactory.IS_SUPPORTING_EXTERNAL_ENTITIES, false);
-        //NoopXMLResolver resolver not in deps, neither XMLInputFactoryUtil
-    }
-
-    private void setIfSupported(final XMLInputFactory inputFactory, final String property, final Object value) {
-        if (inputFactory.isPropertySupported(property)) {
-            inputFactory.setProperty(property, value);
-        }
+        inputFactory.setXMLResolver(NoopXMLResolver.create());
     }
 
     /**
