@@ -2,7 +2,6 @@
  * Copyright The WildFly Authors
  * SPDX-License-Identifier: Apache-2.0
  */
-
 package org.wildfly.extension.messaging.activemq;
 
 import static org.jboss.as.controller.SimpleAttributeDefinitionBuilder.create;
@@ -40,7 +39,8 @@ import org.jboss.msc.service.ServiceName;
 import org.wildfly.extension.messaging.activemq._private.MessagingLogger;
 
 /**
- * Handles operations and attribute reads supported by a ActiveMQ {@link org.apache.activemq.api.core.management.ActiveMQServerControl}.
+ * Handles operations and attribute reads supported by a ActiveMQ
+ * {@link org.apache.activemq.api.core.management.ActiveMQServerControl}.
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
@@ -49,7 +49,6 @@ public class ActiveMQServerControlHandler extends AbstractRuntimeOnlyHandler {
     private static final String[] ALLOWED_RUNTIME_JOURNAL_TYPE = {"ASYNCIO", "NIO", "DATABASE", "NONE"};
 
     static final ActiveMQServerControlHandler INSTANCE = new ActiveMQServerControlHandler();
-
 
     public static final AttributeDefinition ACTIVE = create("active", BOOLEAN)
             .setStorageRuntime()
@@ -66,7 +65,7 @@ public class ActiveMQServerControlHandler extends AbstractRuntimeOnlyHandler {
     public static final AttributeDefinition VERSION = new SimpleAttributeDefinitionBuilder(CommonAttributes.VERSION, ModelType.STRING,
             true).setStorageRuntime().build();
 
-    private static final AttributeDefinition[] ATTRIBUTES = { STARTED, VERSION, ACTIVE, RUNTIME_JOURNAL_TYPE};
+    private static final AttributeDefinition[] ATTRIBUTES = {STARTED, VERSION, ACTIVE, RUNTIME_JOURNAL_TYPE};
     public static final String GET_CONNECTORS_AS_JSON = "get-connectors-as-json";
 //    public static final String ENABLE_MESSAGE_COUNTERS = "enable-message-counters";
 //    public static final String DISABLE_MESSAGE_COUNTERS = "disable-message-counters";
@@ -82,8 +81,8 @@ public class ActiveMQServerControlHandler extends AbstractRuntimeOnlyHandler {
     public static final String LIST_REMOTE_ADDRESSES = "list-remote-addresses";
     public static final String CLOSE_CONNECTIONS_FOR_ADDRESS = "close-connections-for-address";
     public static final String CLOSE_CONNECTIONS_FOR_USER = "close-connections-for-user";
-    public static final String CLOSE_CONSUMER_CONNECTIONS_FOR_ADDRESS= "close-consumer-connections-for-address";
-    public static final String LIST_CONNECTION_IDS= "list-connection-ids";
+    public static final String CLOSE_CONSUMER_CONNECTIONS_FOR_ADDRESS = "close-consumer-connections-for-address";
+    public static final String LIST_CONNECTION_IDS = "list-connection-ids";
     public static final String LIST_PRODUCERS_INFO_AS_JSON = "list-producers-info-as-json";
     public static final String LIST_SESSIONS = "list-sessions";
     public static final String GET_ROLES = "get-roles";
@@ -138,82 +137,126 @@ public class ActiveMQServerControlHandler extends AbstractRuntimeOnlyHandler {
         final ActiveMQServerControl serverControl = getServerControl(context, operation);
 
         try {
-            if (GET_CONNECTORS_AS_JSON.equals(operationName)) {
-                String json = serverControl.getConnectorsAsJSON();
-                context.getResult().set(json);
-            } else if (RESET_ALL_MESSAGE_COUNTERS.equals(operationName)) {
-                serverControl.resetAllMessageCounters();
-                context.getResult();
-            } else if (RESET_ALL_MESSAGE_COUNTER_HISTORIES.equals(operationName)) {
-                serverControl.resetAllMessageCounterHistories();
-                context.getResult();
-            } else if (LIST_PREPARED_TRANSACTIONS.equals(operationName)) {
-                String[] list = serverControl.listPreparedTransactions();
-                reportListOfStrings(context, list);
-            } else if (LIST_PREPARED_TRANSACTION_DETAILS_AS_JSON.equals(operationName)) {
-                String json = serverControl.listPreparedTransactionDetailsAsJSON();
-                context.getResult().set(json);
-            } else if (LIST_PREPARED_TRANSACTION_DETAILS_AS_HTML.equals(operationName)) {
-                String html = serverControl.listPreparedTransactionDetailsAsHTML();
-                context.getResult().set(html);
-            } else if (LIST_HEURISTIC_COMMITTED_TRANSACTIONS.equals(operationName)) {
-                String[] list = serverControl.listHeuristicCommittedTransactions();
-                reportListOfStrings(context, list);
-            } else if (LIST_HEURISTIC_ROLLED_BACK_TRANSACTIONS.equals(operationName)) {
-                String[] list = serverControl.listHeuristicRolledBackTransactions();
-                reportListOfStrings(context, list);
-            } else if (COMMIT_PREPARED_TRANSACTION.equals(operationName)) {
-                String txId = TRANSACTION_AS_BASE_64.resolveModelAttribute(context, operation).asString();
-                boolean committed = serverControl.commitPreparedTransaction(txId);
-                context.getResult().set(committed);
-            } else if (ROLLBACK_PREPARED_TRANSACTION.equals(operationName)) {
-                String txId = TRANSACTION_AS_BASE_64.resolveModelAttribute(context, operation).asString();
-                boolean committed = serverControl.rollbackPreparedTransaction(txId);
-                context.getResult().set(committed);
-            } else if (LIST_REMOTE_ADDRESSES.equals(operationName)) {
-                ModelNode address = OPTIONAL_IP_ADDRESS.resolveModelAttribute(context, operation);
-                String[] list = address.isDefined() ? serverControl.listRemoteAddresses(address.asString()) : serverControl.listRemoteAddresses();
-                reportListOfStrings(context, list);
-            } else if (CLOSE_CONNECTIONS_FOR_ADDRESS.equals(operationName)) {
-                String address = REQUIRED_IP_ADDRESS.resolveModelAttribute(context, operation).asString();
-                boolean closed = serverControl.closeConnectionsForAddress(address);
-                context.getResult().set(closed);
-            } else if (CLOSE_CONNECTIONS_FOR_USER.equals(operationName)) {
-                String user = USER.resolveModelAttribute(context, operation).asString();
-                boolean closed = serverControl.closeConnectionsForUser(user);
-                context.getResult().set(closed);
-            } else if (CLOSE_CONSUMER_CONNECTIONS_FOR_ADDRESS.equals(operationName)) {
-                String address = ADDRESS_MATCH.resolveModelAttribute(context, operation).asString();
-                boolean closed = serverControl.closeConsumerConnectionsForAddress(address);
-                context.getResult().set(closed);
-            } else if (LIST_CONNECTION_IDS.equals(operationName)) {
-                String[] list = serverControl.listConnectionIDs();
-                reportListOfStrings(context, list);
-            } else if (LIST_PRODUCERS_INFO_AS_JSON.equals(operationName)) {
-                String json = serverControl.listProducersInfoAsJSON();
-                json = json.replace("lastProducedMessageID", "lastUUIDSent");
-                context.getResult().set(json);
-            } else if (LIST_SESSIONS.equals(operationName)) {
-                String connectionID = CONNECTION_ID.resolveModelAttribute(context, operation).asString();
-                String[] list = serverControl.listSessions(connectionID);
-                reportListOfStrings(context, list);
-            } else if (GET_ROLES.equals(operationName)) {
-                String addressMatch = ADDRESS_MATCH.resolveModelAttribute(context, operation).asString();
-                reportRoles(context, serverControl.getRoles(addressMatch));
-            } else if (GET_ROLES_AS_JSON.equals(operationName)) {
-                String addressMatch = ADDRESS_MATCH.resolveModelAttribute(context, operation).asString();
-                String json = serverControl.getRolesAsJSON(addressMatch);
-                reportRolesAsJSON(context, json);
-            } else if (GET_ADDRESS_SETTINGS_AS_JSON.equals(operationName)) {
-                String addressMatch = ADDRESS_MATCH.resolveModelAttribute(context, operation).asString();
-                String json = serverControl.getAddressSettingsAsJSON(addressMatch);
-                context.getResult().set(ManagementUtil.convertAddressSettingInfosAsJSON(json));
-            } else if (FORCE_FAILOVER.equals(operationName)) {
-                serverControl.forceFailover();
-                context.getResult();
-            } else {
+            if (null == operationName) {
                 // Bug
                 throw MessagingLogger.ROOT_LOGGER.unsupportedOperation(operationName);
+            } else {
+                switch (operationName) {
+                    case GET_CONNECTORS_AS_JSON: {
+                        String json = serverControl.getConnectorsAsJSON();
+                        context.getResult().set(json);
+                        break;
+                    }
+                    case RESET_ALL_MESSAGE_COUNTERS:
+                        serverControl.resetAllMessageCounters();
+                        context.getResult();
+                        break;
+                    case RESET_ALL_MESSAGE_COUNTER_HISTORIES:
+                        serverControl.resetAllMessageCounterHistories();
+                        context.getResult();
+                        break;
+                    case LIST_PREPARED_TRANSACTIONS: {
+                        String[] list = serverControl.listPreparedTransactions();
+                        reportListOfStrings(context, list);
+                        break;
+                    }
+                    case LIST_PREPARED_TRANSACTION_DETAILS_AS_JSON: {
+                        String json = serverControl.listPreparedTransactionDetailsAsJSON();
+                        context.getResult().set(json);
+                        break;
+                    }
+                    case LIST_PREPARED_TRANSACTION_DETAILS_AS_HTML:
+                        String html = serverControl.listPreparedTransactionDetailsAsHTML();
+                        context.getResult().set(html);
+                        break;
+                    case LIST_HEURISTIC_COMMITTED_TRANSACTIONS: {
+                        String[] list = serverControl.listHeuristicCommittedTransactions();
+                        reportListOfStrings(context, list);
+                        break;
+                    }
+                    case LIST_HEURISTIC_ROLLED_BACK_TRANSACTIONS: {
+                        String[] list = serverControl.listHeuristicRolledBackTransactions();
+                        reportListOfStrings(context, list);
+                        break;
+                    }
+                    case COMMIT_PREPARED_TRANSACTION: {
+                        String txId = TRANSACTION_AS_BASE_64.resolveModelAttribute(context, operation).asString();
+                        boolean committed = serverControl.commitPreparedTransaction(txId);
+                        context.getResult().set(committed);
+                        break;
+                    }
+                    case ROLLBACK_PREPARED_TRANSACTION: {
+                        String txId = TRANSACTION_AS_BASE_64.resolveModelAttribute(context, operation).asString();
+                        boolean committed = serverControl.rollbackPreparedTransaction(txId);
+                        context.getResult().set(committed);
+                        break;
+                    }
+                    case LIST_REMOTE_ADDRESSES: {
+                        ModelNode address = OPTIONAL_IP_ADDRESS.resolveModelAttribute(context, operation);
+                        String[] list = address.isDefined() ? serverControl.listRemoteAddresses(address.asString()) : serverControl.listRemoteAddresses();
+                        reportListOfStrings(context, list);
+                        break;
+                    }
+                    case CLOSE_CONNECTIONS_FOR_ADDRESS: {
+                        String address = REQUIRED_IP_ADDRESS.resolveModelAttribute(context, operation).asString();
+                        boolean closed = serverControl.closeConnectionsForAddress(address);
+                        context.getResult().set(closed);
+                        break;
+                    }
+                    case CLOSE_CONNECTIONS_FOR_USER: {
+                        String user = USER.resolveModelAttribute(context, operation).asString();
+                        boolean closed = serverControl.closeConnectionsForUser(user);
+                        context.getResult().set(closed);
+                        break;
+                    }
+                    case CLOSE_CONSUMER_CONNECTIONS_FOR_ADDRESS: {
+                        String address = ADDRESS_MATCH.resolveModelAttribute(context, operation).asString();
+                        boolean closed = serverControl.closeConsumerConnectionsForAddress(address);
+                        context.getResult().set(closed);
+                        break;
+                    }
+                    case LIST_CONNECTION_IDS: {
+                        String[] list = serverControl.listConnectionIDs();
+                        reportListOfStrings(context, list);
+                        break;
+                    }
+                    case LIST_PRODUCERS_INFO_AS_JSON: {
+                        String json = serverControl.listProducersInfoAsJSON();
+                        json = json.replace("lastProducedMessageID", "lastUUIDSent");
+                        context.getResult().set(json);
+                        break;
+                    }
+                    case LIST_SESSIONS: {
+                        String connectionID = CONNECTION_ID.resolveModelAttribute(context, operation).asString();
+                        String[] list = serverControl.listSessions(connectionID);
+                        reportListOfStrings(context, list);
+                        break;
+                    }
+                    case GET_ROLES: {
+                        String addressMatch = ADDRESS_MATCH.resolveModelAttribute(context, operation).asString();
+                        reportRoles(context, serverControl.getRoles(addressMatch));
+                        break;
+                    }
+                    case GET_ROLES_AS_JSON: {
+                        String addressMatch = ADDRESS_MATCH.resolveModelAttribute(context, operation).asString();
+                        String json = serverControl.getRolesAsJSON(addressMatch);
+                        reportRolesAsJSON(context, json);
+                        break;
+                    }
+                    case GET_ADDRESS_SETTINGS_AS_JSON: {
+                        String addressMatch = ADDRESS_MATCH.resolveModelAttribute(context, operation).asString();
+                        String json = serverControl.getAddressSettingsAsJSON(addressMatch);
+                        context.getResult().set(ManagementUtil.convertAddressSettingInfosAsJSON(json));
+                        break;
+                    }
+                    case FORCE_FAILOVER:
+                        serverControl.forceFailover();
+                        context.getResult();
+                        break;
+                    default:
+                        // Bug
+                        throw MessagingLogger.ROOT_LOGGER.unsupportedOperation(operationName);
+                }
             }
         } catch (RuntimeException e) {
             throw e;
