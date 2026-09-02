@@ -52,6 +52,10 @@
             <artifactId>wildfly-opentelemetry-api</artifactId>
         </dependency>
         <dependency>
+            <groupId>${full.maven.groupId}</groupId>
+            <artifactId>wildfly-observability-shared</artifactId>
+        </dependency>
+        <dependency>
             <groupId>org.kohsuke.metainf-services</groupId>
             <artifactId>metainf-services</artifactId>
             <scope>provided</scope>
