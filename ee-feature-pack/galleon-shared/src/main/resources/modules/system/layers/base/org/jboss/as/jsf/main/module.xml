@@ -38,6 +38,7 @@
         <module name="org.jboss.metadata.web"/>
         <module name="org.jboss.vfs"/>
         <module name="org.jboss.weld.spi"/>
+        <module name="org.wildfly.common"/>
 
         <module name="java.xml"/>
     </dependencies>
