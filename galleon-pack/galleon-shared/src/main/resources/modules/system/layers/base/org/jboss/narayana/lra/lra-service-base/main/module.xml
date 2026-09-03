@@ -15,8 +15,10 @@
   </resources>
 
   <dependencies>
-    <module name="org.eclipse.microprofile.lra.api" />
     <module name="jakarta.ws.rs.api" />
+    <module name="jakarta.enterprise.api" optional="true"/>
+    <module name="org.eclipse.microprofile.jwt.auth.api" optional="true"/>
+    <module name="org.eclipse.microprofile.lra.api" />
     <module name="org.jboss.logging" />
   </dependencies>
 </module>
