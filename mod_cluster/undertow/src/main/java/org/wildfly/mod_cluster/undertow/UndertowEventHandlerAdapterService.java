@@ -76,6 +76,9 @@ public class UndertowEventHandlerAdapterService implements UndertowEventListener
         eventHandler.init(this.server);
         eventHandler.start(this.server);
 
+        // Workaround for MODCLUSTER-876: establish the proxy connection and send CONFIG synchronously by calling ContainerEventHandler#status
+        this.run();
+
         // Register listener after init/start so that deployment events cannot fire before CONFIG has been sent to the proxy (WFLY-22198)
         service.registerListener(this);
 
@@ -86,7 +89,9 @@ public class UndertowEventHandlerAdapterService implements UndertowEventListener
         }
 
         // Start the periodic STATUS thread
-        this.executor.scheduleWithFixedDelay(this, 0, this.configuration.getStatusInterval().toMillis(), TimeUnit.MILLISECONDS);
+        // Workaround for MODCLUSTER-876: set initialDelay since we already called ContainerEventHandler#status above
+        long statusInterval = this.configuration.getStatusInterval().toMillis();
+        this.executor.scheduleWithFixedDelay(this, statusInterval, statusInterval, TimeUnit.MILLISECONDS);
     }
 
     @Override
