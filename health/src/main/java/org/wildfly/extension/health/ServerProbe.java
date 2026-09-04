@@ -11,6 +11,10 @@ public interface ServerProbe {
 
     String getName();
 
+    default boolean isLivenessProbe() {
+        return false;
+    }
+
     static class Outcome {
         final ModelNode data;
         final boolean success;
