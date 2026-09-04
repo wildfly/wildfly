@@ -46,6 +46,10 @@ public class ManagedScheduledExecutorDefinitionDescriptorProcessor extends Resou
         if (maxAsync != null) {
             resourceDefinitionInjectionSource.setMaxAsync(maxAsync);
         }
+        final Boolean virtual = metaData.getVirtual();
+        if (virtual != null) {
+            resourceDefinitionInjectionSource.setVirtual(virtual);
+        }
         // TODO *FOLLOW UP* XML properties are unused, perhaps we should consider those to configure other managed scheduled exec properties we have on server config?
         return resourceDefinitionInjectionSource;
     }

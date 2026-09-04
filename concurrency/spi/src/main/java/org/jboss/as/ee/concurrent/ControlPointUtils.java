@@ -254,7 +254,7 @@ public class ControlPointUtils {
 
         ControlledManagedTask(ManagedTask managedTask) {
             this.managedTask = managedTask;
-            this.managedTaskListenerWrapper = managedTask.getManagedTaskListener() != null ? new ControlledManagedTaskListener(managedTask.getManagedTaskListener()) : null;
+            this.managedTaskListenerWrapper = managedTask.getManagedTaskListener() != null ? new ControlledManagedTaskListener(managedTask) : null;
         }
 
         @Override
@@ -311,30 +311,30 @@ public class ControlPointUtils {
      */
     static class ControlledManagedTaskListener implements ManagedTaskListener {
 
-        private final ManagedTaskListener managedTaskListener;
+        private final ManagedTask managedTask;
 
-        ControlledManagedTaskListener(ManagedTaskListener managedTaskListener) {
-            this.managedTaskListener = managedTaskListener;
+        ControlledManagedTaskListener(ManagedTask managedTask) {
+            this.managedTask = managedTask;
         }
 
         @Override
         public void taskAborted(Future<?> future, ManagedExecutorService executor, Object task, Throwable exception) {
-            managedTaskListener.taskAborted(future, executor, ((ControlledManagedTask)task).managedTask, exception);
+            managedTask.getManagedTaskListener().taskAborted(future, executor, managedTask, exception);
         }
 
         @Override
         public void taskDone(Future<?> future, ManagedExecutorService executor, Object task, Throwable exception) {
-            managedTaskListener.taskDone(future, executor, ((ControlledManagedTask) task).managedTask, exception);
+            managedTask.getManagedTaskListener().taskDone(future, executor, managedTask, exception);
         }
 
         @Override
         public void taskStarting(Future<?> future, ManagedExecutorService executor, Object task) {
-            managedTaskListener.taskStarting(future, executor, ((ControlledManagedTask) task).managedTask);
+            managedTask.getManagedTaskListener().taskStarting(future, executor, managedTask);
         }
 
         @Override
         public void taskSubmitted(Future<?> future, ManagedExecutorService executor, Object task) {
-            managedTaskListener.taskSubmitted(future, executor, ((ControlledManagedTask) task).managedTask);
+            managedTask.getManagedTaskListener().taskSubmitted(future, executor, managedTask);
         }
     }
 }

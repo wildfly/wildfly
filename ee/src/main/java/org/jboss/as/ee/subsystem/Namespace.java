@@ -10,7 +10,7 @@ import java.util.Map;
 /**
  * @author Stuart Douglas
  */
-enum Namespace {
+public enum Namespace {
     // must be first
     UNKNOWN(null, false),
 
@@ -21,12 +21,13 @@ enum Namespace {
     EE_3_0("urn:jboss:domain:ee:3.0", false),
     EE_4_0("urn:jboss:domain:ee:4.0", false),
     EE_5_0("urn:jboss:domain:ee:5.0", false),
-    EE_6_0("urn:jboss:domain:ee:6.0", false)
+    EE_6_0("urn:jboss:domain:ee:6.0", false),
+    EE_7_0("urn:jboss:domain:ee:7.0", false)
     ;
     /**
      * The current namespace version.
      */
-    public static final Namespace CURRENT = EE_6_0;
+    public static final Namespace CURRENT = EE_7_0;
 
     private final String name;
     private final boolean beanValidationIncluded;

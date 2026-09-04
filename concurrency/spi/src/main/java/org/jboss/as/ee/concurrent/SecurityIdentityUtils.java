@@ -72,7 +72,7 @@ class SecurityIdentityUtils {
 
         SecuredManagedTask(ManagedTask managedTask) {
             this.managedTask = managedTask;
-            this.managedTaskListenerWrapper = managedTask.getManagedTaskListener() != null ? new SecurityIdentityUtils.SecuredManagedTaskListener(managedTask.getManagedTaskListener()) : null;
+            this.managedTaskListenerWrapper = managedTask.getManagedTaskListener() != null ? new SecurityIdentityUtils.SecuredManagedTaskListener(managedTask) : null;
         }
 
         @Override
@@ -129,30 +129,30 @@ class SecurityIdentityUtils {
      */
     static class SecuredManagedTaskListener implements ManagedTaskListener {
 
-        private final ManagedTaskListener managedTaskListener;
+        private final ManagedTask managedTask;
 
-        SecuredManagedTaskListener(ManagedTaskListener managedTaskListener) {
-            this.managedTaskListener = managedTaskListener;
+        SecuredManagedTaskListener(ManagedTask managedTask) {
+            this.managedTask = managedTask;
         }
 
         @Override
         public void taskAborted(Future<?> future, ManagedExecutorService executor, Object task, Throwable exception) {
-            managedTaskListener.taskAborted(future, executor, ((SecurityIdentityUtils.SecuredManagedTask)task).managedTask, exception);
+            managedTask.getManagedTaskListener().taskAborted(future, executor, managedTask, exception);
         }
 
         @Override
         public void taskDone(Future<?> future, ManagedExecutorService executor, Object task, Throwable exception) {
-            managedTaskListener.taskDone(future, executor, ((SecurityIdentityUtils.SecuredManagedTask) task).managedTask, exception);
+            managedTask.getManagedTaskListener().taskDone(future, executor, managedTask, exception);
         }
 
         @Override
         public void taskStarting(Future<?> future, ManagedExecutorService executor, Object task) {
-            managedTaskListener.taskStarting(future, executor, ((SecurityIdentityUtils.SecuredManagedTask) task).managedTask);
+            managedTask.getManagedTaskListener().taskStarting(future, executor, managedTask);
         }
 
         @Override
         public void taskSubmitted(Future<?> future, ManagedExecutorService executor, Object task) {
-            managedTaskListener.taskSubmitted(future, executor, ((SecurityIdentityUtils.SecuredManagedTask) task).managedTask);
+            managedTask.getManagedTaskListener().taskSubmitted(future, executor, managedTask);
         }
     }
 }
