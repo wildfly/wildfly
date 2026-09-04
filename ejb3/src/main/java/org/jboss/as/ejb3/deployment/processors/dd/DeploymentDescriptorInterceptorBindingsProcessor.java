@@ -14,6 +14,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Pattern;
 
 import org.jboss.as.ee.component.Attachments;
@@ -23,7 +24,6 @@ import org.jboss.as.ee.component.InterceptorDescription;
 import org.jboss.as.ejb3.component.EJBComponentDescription;
 import org.jboss.as.ejb3.deployment.EjbDeploymentAttachmentKeys;
 import org.jboss.as.ejb3.logging.EjbLogger;
-import org.jboss.as.ejb3.subsystem.EjbNameRegexService;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
@@ -41,13 +41,14 @@ import org.jboss.modules.Module;
  * Processor that handles interceptor bindings that are defined in the deployment descriptor.
  *
  * @author Stuart Douglas
+ * @author Richard Achmatowicz
  */
 public class DeploymentDescriptorInterceptorBindingsProcessor implements DeploymentUnitProcessor {
 
-    private final EjbNameRegexService ejbNameRegexService;
+    private final AtomicBoolean defaultAllowEjbRegex;
 
-    public DeploymentDescriptorInterceptorBindingsProcessor(EjbNameRegexService ejbNameRegexService) {
-        this.ejbNameRegexService = ejbNameRegexService;
+    public DeploymentDescriptorInterceptorBindingsProcessor(AtomicBoolean defaultAllowEjbRegex) {
+        this.defaultAllowEjbRegex = defaultAllowEjbRegex;
     }
 
 
@@ -92,7 +93,7 @@ public class DeploymentDescriptorInterceptorBindingsProcessor implements Deploym
                     throw EjbLogger.ROOT_LOGGER.defaultInterceptorsNotSpecifyOrder();
                 }
                 defaultInterceptorBindings.add(binding);
-            } else if(ejbNameRegexService.isEjbNameRegexAllowed()) {
+            } else if(this.defaultAllowEjbRegex.get()) {
                 Pattern pattern = Pattern.compile(binding.getEjbName());
                 for (final ComponentDescription componentDescription : eeModuleDescription.getComponentDescriptions()) {
                     if(componentDescription instanceof EJBComponentDescription) {
