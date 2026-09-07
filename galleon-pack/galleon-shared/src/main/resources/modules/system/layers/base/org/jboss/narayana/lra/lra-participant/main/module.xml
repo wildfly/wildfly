@@ -36,6 +36,7 @@
     <module name="io.smallrye.jandex"/>
     <!-- narayana-lra -->
     <module name="org.eclipse.microprofile.config.api"/>
+    <module name="org.eclipse.microprofile.jwt.auth.api" optional="true"/>
     <module name="io.smallrye.config"/>
     <module name="io.smallrye.stork"/>
 
