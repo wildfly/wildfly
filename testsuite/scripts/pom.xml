@@ -55,6 +55,11 @@
         </dependency>
         <dependency>
             <groupId>org.wildfly.core</groupId>
+            <artifactId>wildfly-controller</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.wildfly.core</groupId>
             <artifactId>wildfly-core-testsuite-shared</artifactId>
             <scope>test</scope>
         </dependency>
@@ -110,7 +115,6 @@
                             <log-provisioning-time>${galleon.log.time}</log-provisioning-time>
                             <offline-provisioning>${galleon.offline}</offline-provisioning>
                             <galleon-options>
-                                <jboss-maven-dist/>
                                 <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
                             </galleon-options>
                             <feature-packs>
