@@ -4,6 +4,10 @@
  */
 package org.jboss.as.clustering.infinispan.subsystem;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESOURCE_ADDED_NOTIFICATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESOURCE_REMOVED_NOTIFICATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
+
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
@@ -29,9 +33,13 @@ import org.jboss.as.clustering.naming.BinderServiceInstaller;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ServiceNameFactory;
 import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.management.Capabilities;
+import org.jboss.as.controller.notification.Notification;
+import org.jboss.as.controller.notification.NotificationHandlerRegistry;
+import org.jboss.as.controller.registry.NotificationHandlerRegistration;
 import org.jboss.as.server.Services;
 import org.jboss.dmr.ModelNode;
 import org.jboss.modules.ModuleLoader;
@@ -71,7 +79,8 @@ public class CacheContainerServiceConfigurator implements ResourceServiceConfigu
         String name = context.getCurrentAddressValue();
         List<String> aliases = CacheContainerResourceDefinitionRegistrar.ALIASES.resolveModelAttribute(context, model).asListOrEmpty().stream().map(ModelNode::asString).toList();
 
-        Object listener = new CacheLifecycleListener(this.cacheRegistry, (CacheContainerResource) context.readResource(PathAddress.EMPTY_ADDRESS));
+        ServiceDependency<NotificationHandlerRegistry> notificationRegistry = ServiceDependency.on(NotificationHandlerRegistry.SERVICE_DESCRIPTOR);
+        Object listener = new CacheLifecycleListener(this.cacheRegistry, (CacheContainerResource) context.readResource(PathAddress.EMPTY_ADDRESS), notificationRegistry);
 
         ServiceDependency<GlobalConfiguration> configuration = ServiceDependency.on(InfinispanServiceDescriptor.CACHE_CONTAINER_CONFIGURATION, name);
         Supplier<EmbeddedCacheManager> container = new Supplier<>() {
@@ -134,7 +143,7 @@ public class CacheContainerServiceConfigurator implements ResourceServiceConfigu
             binderInstaller.withAlias(InfinispanCacheContainerBindingFactory.EMBEDDED.apply(alias));
         }
         CapabilityServiceInstaller installer = builder.map(wrapper)
-                .requires(List.of(configuration, loader))
+                .requires(List.of(configuration, loader, notificationRegistry))
                 .withLifecycle(lifecycle)
                 .startWhen(StartWhen.AVAILABLE)
                 .build();
@@ -146,11 +155,13 @@ public class CacheContainerServiceConfigurator implements ResourceServiceConfigu
     static class CacheLifecycleListener {
         private final ServiceValueRegistry<Cache<?, ?>> registry;
         private final Registrar<String> registrar;
+        private final java.util.function.Supplier<NotificationHandlerRegistry> notificationRegistry;
         private final Map<String, Registration> registrations = new ConcurrentHashMap<>();
 
-        CacheLifecycleListener(ServiceValueRegistry<Cache<?, ?>> registry, Registrar<String> registrar) {
+        CacheLifecycleListener(ServiceValueRegistry<Cache<?, ?>> registry, Registrar<String> registrar, java.util.function.Supplier<NotificationHandlerRegistry> notificationRegistry) {
             this.registry = registry;
             this.registrar = registrar;
+            this.notificationRegistry = notificationRegistry;
         }
 
         @CacheStarted
@@ -162,6 +173,7 @@ public class CacheContainerServiceConfigurator implements ResourceServiceConfigu
             InfinispanLogger.ROOT_LOGGER.started(configuration);
             this.registrations.put(cacheName, this.registrar.register(cacheName));
             this.registry.add(configuration.getServiceDependency(InfinispanServiceDescriptor.CACHE)).accept(new LazyCache<>(container, cacheName));
+            this.emitNotification(RESOURCE_ADDED_NOTIFICATION, containerName, cacheName);
             return CompletableFuture.completedStage(null);
         }
 
@@ -175,7 +187,20 @@ public class CacheContainerServiceConfigurator implements ResourceServiceConfigu
             try (Registration registration = this.registrations.remove(cacheName)) {
                 InfinispanLogger.ROOT_LOGGER.stopped(configuration);
             }
+            this.emitNotification(RESOURCE_REMOVED_NOTIFICATION, containerName, cacheName);
             return CompletableFuture.completedStage(null);
+        }
+
+        private void emitNotification(String type, String containerName, String cacheName) {
+            NotificationHandlerRegistry registry = this.notificationRegistry.get();
+            if (registry instanceof NotificationHandlerRegistration registration) {
+                PathAddress address = PathAddress.pathAddress(PathElement.pathElement(SUBSYSTEM, "infinispan"),
+                        PathElement.pathElement("cache-container", containerName),
+                        PathElement.pathElement("cache", cacheName));
+                Notification notification = new Notification(type, address, "");
+                registration.findMatchingNotificationHandlers(notification)
+                        .forEach(handler -> handler.handleNotification(notification));
+            }
         }
     }
 }
