@@ -81,7 +81,7 @@ public class GreeterBean implements Greeter {
 [[security]]
 == Security
 
-WildFly {wildflyVersion} is secure by default. What this means is that no communication
+WildFly is secure by default. What this means is that no communication
 can happen with an WildFly instance from a remote client (irrespective
 of whether it is a standalone client or another server instance) without
 passing the appropriate credentials. Remember that in this example, our

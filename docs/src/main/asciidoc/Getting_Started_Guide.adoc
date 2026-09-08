@@ -27,7 +27,7 @@ ifdef::basebackend-html[toc::[]]
 == Getting Started with WildFly {wildflyVersion}
 
 This document provides a quick overview on how to download and get
-started using WildFly {wildflyVersion}.
+started using WildFly.
 For in-depth
 content on administrative features, refer to the link:Admin_Guide{outfilesuffix}[Admin Guide].
 The link:Application_Development_Guide{outfilesuffix}[Application Development Guide] shows you how to build WildFly
@@ -49,7 +49,7 @@ The table below lists the versions of the Jakarta technologies available in Wild
 
 [cols=",,,,",options="header"]
 |=======================================================================
-|Jakarta Specification |Version in Standard WildFly |Version in WildFly EE 10 |WildFly {wildflyVersion} Full Configuration |WildFly {wildflyVersion} Default Configuration
+|Jakarta Specification |Version in Standard WildFly |Version in WildFly EE 10 |WildFly Full Configuration |WildFly Default Configuration
 
 |Jakarta Activation |2.1 |2.1 |X |X
 
@@ -139,11 +139,11 @@ want to use messaging, make sure you
 link:#starting-wildfly-with-an-alternate-configuration[start the server using an alternate configuration]
 that provides the EE Full Platform.
 
-WildFly {wildflyVersion} also provides support for MicroProfile technologies. The same versions of these are provided in both the standard WildFly and WildFly EE 10 variants.
+WildFly also provides support for MicroProfile technologies. The same versions of these are provided in both the standard WildFly and WildFly EE 10 variants.
 
 [cols=",,",options="header"]
 |=======================================================================
-|MicroProfile Technology |WildFly {wildflyVersion} Default Configuration |WildFly {wildflyVersion} MicroProfile Configuration
+|MicroProfile Technology |WildFly Default Configuration |WildFly MicroProfile Configuration
 |MicroProfile Config 3.1 |X |X
 |MicroProfile Fault Tolerance 4.1 |-- |X
 |MicroProfile Health 4.0 |-- |X
@@ -175,21 +175,21 @@ we'll focus on the common approach of installing the download zip of standard Wi
 [[download]]
 === Download
 
-WildFly {wildflyVersion} distributions can be obtained from https://www.wildfly.org/downloads/[wildfly.org/downloads].
+WildFly distributions can be obtained from https://www.wildfly.org/downloads/[wildfly.org/downloads].
 
-Standard WildFly {wildflyVersion} provides a single distribution available in zip or tar file
+Standard WildFly provides a single distribution available in zip or tar file
 formats.
 
 * *wildfly-{wildflyVersion}.0.0.Final.zip*
 * *wildfly-{wildflyVersion}.0.0.Final.tar.gz*
 
-WildFly EE 10 {wildflyVersion} also provides a single distribution available in zip or tar file
+WildFly EE 10 also provides a single distribution available in zip or tar file
 formats.
 
 * *wildfly-ee-10-{wildflyVersion}.0.0.Final.zip*
 * *wildfly-ee-10-{wildflyVersion}.0.0.Final.tar.gz*
 
-WildFly Preview {wildflyVersion} also provides a single distribution available in zip or tar file
+WildFly Preview also provides a single distribution available in zip or tar file
 formats.
 
 * *wildfly-preview-{wildflyVersion}.0.0.Final.zip*
@@ -199,14 +199,14 @@ formats.
 === Installation
 
 Simply extract your chosen download to the directory of your choice. You
-can install WildFly {wildflyVersion} on any operating system that supports the zip or
+can install WildFly on any operating system that supports the zip or
 tar formats. Refer to the Release Notes for additional information
 related to the release.
 
 [[installation_as_a_linux_service]]
 ==== Installation as a Linux Service
 
-Once you have installed WildFly {wildflyVersion} from a Zip archive, you can create a Linux service so it can be started/stopped automatically when your system boots up or is shut down.
+Once you have installed WildFly from a Zip archive, you can create a Linux service so it can be started/stopped automatically when your system boots up or is shut down.
 
 The following steps describe the process to configure WildFly as a systemd service. WildFly is shipped with a default systemd unit file configuration for Standalone and Domain mode. These wildfly-[standalone,domain].service files are located at the `$JBOSS_HOME/bin/systemd` directory and assume that by default WildFly was installed at `/opt/wildfly` directory and would be launched with the `wildfly:wildfly` user:group. These files can be adjusted by you to cover your needs, for example, you can change the user that runs the service, the location of the WildFly installation you want to launch, the locations of the logs, and so on.
 
@@ -252,7 +252,7 @@ If you want to remove the service, revert the above changes in an inverse order.
 [[wildfly---a-quick-tour]]
 == WildFly - A Quick Tour
 
-Now that you've downloaded WildFly {wildflyVersion}, the next thing to discuss is the
+Now that you've downloaded WildFly, the next thing to discuss is the
 layout of the distribution and explore the server directory structure,
 key configuration files, log files, user deployments and so on. It's
 worth familiarizing yourself with the layout so that you'll be able to
@@ -294,7 +294,7 @@ used by the single standalone server run from this installation.
 [[standalone-directory-structure]]
 ==== Standalone Directory Structure
 
-In " *_standalone_* " mode each WildFly {wildflyVersion} server instance is an
+In " *_standalone_* " mode each WildFly server instance is an
 independent process (similar to previous JBoss AS versions; e.g., 3, 4,
 5, or 6). The configuration files, deployment content and writable areas
 used by the single standalone server run from a WildFly installation are
@@ -334,7 +334,7 @@ process.
 [[domain-directory-structure]]
 ==== Domain Directory Structure
 
-A key feature of WildFly {wildflyVersion} is the managing multiple servers from a
+A key feature of WildFly is the managing multiple servers from a
 single control point. A collection of multiple servers are referred to
 as a " *_domain_* ". Domains can span multiple physical (or virtual)
 machines with all WildFly instances on a given host under the control of
@@ -420,9 +420,9 @@ determine how the servers are managed, not what capabilities they
 provide.
 
 [[starting-wildfly-10]]
-== Starting WildFly {wildflyVersion}
+== Starting WildFly
 
-To start WildFly {wildflyVersion} using the default web profile configuration in "
+To start WildFly using the default web profile configuration in "
 _standalone_" mode, change directory to $JBOSS_HOME/bin.
 
 [source,options="nowrap"]
@@ -504,12 +504,12 @@ discussion in the user forum and access the enhanced web-based
 Administration Console. Or, if you uncover a defect while using WildFly,
 report an issue to inform us (attached patches will be reviewed). This
 landing page is recommended for convenient access to information about
-WildFly {wildflyVersion} but can easily be replaced with your own if desired.
+WildFly but can easily be replaced with your own if desired.
 
 [[managing-your-wildfly]]
-== Managing your WildFly {wildflyVersion}
+== Managing your WildFly
 
-WildFly {wildflyVersion} offers two administrative mechanisms for managing your
+WildFly offers two administrative mechanisms for managing your
 running instance:
 
 * a web-based Administration Console
@@ -520,7 +520,7 @@ installation. Here we'll just touch on some of the basics.
 
 === Authentication
 
-By default WildFly {wildflyVersion} is distributed with security enabled for the
+By default WildFly is distributed with security enabled for the
 management interfaces. This means that before you connect using the
 administration console or remotely using the CLI you will need to add a
 new user. This can be achieved simply by using the _add-user.sh_ script

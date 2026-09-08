@@ -423,7 +423,7 @@ Dependencies: org.infinispan,org.hibernate
 http://infinispan.org/docs/9.4.x/user_guide/user_guide.html#integrations_jpa_hibernate[Infinispan
 Hibernate/JPA second level cache provider documentation] contains
 advanced configuration information but you should bear in mind that when
-Hibernate runs within WildFly {wildflyVersion}, some of those configuration options,
+Hibernate runs within WildFly, some of those configuration options,
 such as region factory, are not needed. Moreover, the application server
 providers you with option of selecting a different cache container for
 Infinispan via *hibernate.cache.infinispan.container* persistence

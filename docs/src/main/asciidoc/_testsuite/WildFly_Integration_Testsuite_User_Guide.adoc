@@ -228,7 +228,7 @@ Arquillian).
 [[running-against-a-running-jboss-as-instance]]
 ==== Running against a running JBoss AS instance
 
-Arquillian's WildFly {wildflyVersion} container adapter allows specifying
+Arquillian's WildFly container adapter allows specifying
 `allowConnectingToRunningServer` in `arquillian.xml`, which makes it
 check whether AS is listening at `managementAddress:managementPort`, and
 if so, it uses that server instead of launching a new one, and doesn't
