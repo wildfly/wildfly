@@ -17,28 +17,29 @@
   </resources>
 
   <dependencies>
-    <module name="org.eclipse.microprofile.lra.api" />
-    <module name="org.jboss.modules"/>
-    <module name="org.jboss.logging" />
     <module name="jakarta.ws.rs.api" />
+    <module name="org.eclipse.microprofile.lra.api" />
+    <module name="org.jboss.logging" />
+    <module name="org.jboss.modules"/>
     <module name="org.jboss.narayana.lra.lra-service-base" />
 
     <!-- lra-client -->
-<!--     org.eclipse.microprofile.restclient stands for microprofile-rest-client-api -->
-    <module name="org.eclipse.microprofile.restclient"/>
-    <module name="org.jboss.resteasy.resteasy-client-microprofile"/>
-    <module name="org.jboss.resteasy.resteasy-client"/>
     <module name="jakarta.enterprise.api"/>
     <!-- Setting the cuncurrent.api optional prevents it being provisioned in a slimmed server whose provisioning config doesn't include the actual Jakarta Concurrency integration -->
     <module name="jakarta.enterprise.concurrent.api" optional="true"/>
+    <module name="org.eclipse.microprofile.jwt.auth.api" optional="true"/>
+<!--     org.eclipse.microprofile.restclient stands for microprofile-rest-client-api -->
+    <module name="org.eclipse.microprofile.restclient"/>
+    <module name="org.jboss.resteasy.resteasy-client"/>
+    <module name="org.jboss.resteasy.resteasy-client-microprofile"/>
 
     <!-- lra-proxy-api -->
     <module name="io.smallrye.jandex"/>
+
     <!-- narayana-lra -->
-    <module name="org.eclipse.microprofile.config.api"/>
-    <module name="org.eclipse.microprofile.jwt.auth.api" optional="true"/>
     <module name="io.smallrye.config"/>
     <module name="io.smallrye.stork"/>
+    <module name="org.eclipse.microprofile.config.api"/>
 
     <!-- Required for proper creation of proxies for CDI beans originating from this module -->    
     <module name="org.jboss.weld.api"/>
