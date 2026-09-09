@@ -517,7 +517,7 @@
         <standard.version.org.hibernate>7.4.5.Final</standard.version.org.hibernate>
         <version.org.hibernate.models>1.1.1</version.org.hibernate.models>
         <version.org.hornetq>2.4.11.Final</version.org.hornetq>
-        <version.org.infinispan>16.2.2</version.org.infinispan>
+        <version.org.infinispan>16.2.3</version.org.infinispan>
         <version.org.jasypt>1.9.3</version.org.jasypt>
         <version.org.jberet>3.2.0.Final</version.org.jberet>
         <version.org.jboss.activemq.artemis.integration>2.0.5.Final</version.org.jboss.activemq.artemis.integration>
@@ -552,7 +552,7 @@
         <version.org.jboss.ws.spi>5.1.0.Final</version.org.jboss.ws.spi>
         <version.org.jboss.xnio.netty.netty-xnio-transport>0.1.10.Final</version.org.jboss.xnio.netty.netty-xnio-transport>
         <version.org.jctools.jctools-core>4.0.7</version.org.jctools.jctools-core>
-        <version.org.jgroups>5.5.6.Final</version.org.jgroups>
+        <version.org.jgroups>5.5.7.Final</version.org.jgroups>
         <version.org.jgroups.aws>4.0.1.Final</version.org.jgroups.aws>
         <version.org.jgroups.azure>2.0.2.Final</version.org.jgroups.azure>
         <version.org.jgroups.kubernetes>3.0.0.Final</version.org.jgroups.kubernetes>
@@ -563,7 +563,7 @@
         <version.org.opensaml.opensaml>4.3.2</version.org.opensaml.opensaml>
         <version.org.ow2.asm>9.9.1</version.org.ow2.asm>
         <version.org.reactivestreams>1.0.4</version.org.reactivestreams>
-        <version.org.wildfly.clustering>12.0.0.Beta5</version.org.wildfly.clustering>
+        <version.org.wildfly.clustering>12.0.0.CR2</version.org.wildfly.clustering>
         <!--
             Maintain separation between these two frequently updated artifacts to avoid merge conflicts.
         -->
