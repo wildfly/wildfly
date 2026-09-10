@@ -25,6 +25,7 @@ import org.infinispan.transaction.tm.EmbeddedTransactionManager;
 import org.jboss.msc.service.ServiceName;
 import org.wildfly.clustering.cache.infinispan.embedded.container.DataContainerConfigurationBuilder;
 import org.wildfly.clustering.ejb.cache.timer.TimerMetaDataKey;
+import org.wildfly.clustering.ejb.infinispan.logging.InfinispanEjbLogger;
 import org.wildfly.clustering.ejb.timer.TimerManagementConfiguration;
 import org.wildfly.clustering.ejb.timer.TimerManagementProvider;
 import org.wildfly.clustering.ejb.timer.TimerManagerFactoryConfiguration;
@@ -113,6 +114,7 @@ public class InfinispanTimerManagementProvider implements TimerManagementProvide
         ExpirationConfiguration expiration = builder.expiration().create();
         if ((expiration.lifespan() >= 0) || (expiration.maxIdle() >= 0)) {
             builder.expiration().lifespan(-1).maxIdle(-1);
+            InfinispanEjbLogger.ROOT_LOGGER.timerExpirationDisabled(this.cacheConfiguration.getChildName());
         }
 
         OptionalInt size = this.configuration.getSizeThreshold();

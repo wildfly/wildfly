@@ -64,4 +64,8 @@ public interface InfinispanEjbLogger extends BasicLogger {
     @LogMessage(level = WARN)
     @Message(id = 10, value = "Disabling expiration for '%s'. SFSB expiration should be configured per \u00A74.3.11 of the Jakarta Enterprise Beans specification.")
     void expirationDisabled(String cacheName);
+
+    @LogMessage(level = WARN)
+    @Message(id = 11, value = "Disabling expiration for timer cache '%s'. Timer service lifecycles must be managed by the EJB container per \u00A712 of the Jakarta Enterprise Beans specification.")
+    void timerExpirationDisabled(String cacheName);
 }
