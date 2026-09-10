@@ -17,7 +17,7 @@ you installed.
 [[jdbc-driver-installation]]
 == JDBC Driver Installation
 
-The recommended way to install a JDBC driver into WildFly {wildflyVersion} is to deploy
+The recommended way to install a JDBC driver into WildFly is to deploy
 it as a regular JAR deployment. The reason for this is that when you run
 WildFly in domain mode, deployments are automatically propagated to all
 servers to which the deployment applies; thus distribution of the driver

@@ -25,7 +25,7 @@ https://docs.wildfly.org/quickstart[The WildFly Quickstarts]
 [[using-cdi-beans-from-outside-the-deployment]]
 == Using CDI Beans from outside the deployment
 
-For WildFly {wildflyVersion} onwards, it is now possible to have classes outside the
+For WildFly 8 onwards, it is now possible to have classes outside the
 deployment be picked up as CDI beans. In order for this to work, you must
 add a dependency on the external deployment that your beans are coming
 from, and make sure the META-INF directory of this deployment is

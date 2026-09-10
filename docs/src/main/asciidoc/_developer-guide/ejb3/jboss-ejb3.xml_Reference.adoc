@@ -142,7 +142,7 @@ defined in the server configuration (i.e. `standalone.xml` or
 [[the-clustering-namespace-urnclustering1.0]]
 ==== The clustering namespace urn:clustering:1.0
 
-This namespace is deprecated and as of WildFly {wildflyVersion} its use has no effect.
+This namespace is deprecated and its use has no effect.
 The clustering behavior of Jakarta Enterprise Beans are determined by the profile in use on
 the server.
 

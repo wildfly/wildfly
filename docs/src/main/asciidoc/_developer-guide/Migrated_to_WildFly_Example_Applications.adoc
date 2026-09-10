@@ -50,7 +50,7 @@ about this migration, see <<Migrate_Order_Application_from_EAP5,Order Applicatio
 === Migrate example application
 
 A step by step work through of issues, and their solutions, that might
-crop up when migrating applications to WildFly {wildflyVersion}. See the following
+crop up when migrating applications to WildFly. See the following
 https://github.com/danbev/migrate[github project] for details.
 
 [[example-applications-based-on-ee6]]

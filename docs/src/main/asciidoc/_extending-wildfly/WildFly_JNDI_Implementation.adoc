@@ -17,7 +17,7 @@ new/updated APIs for WildFly subsystem and EE deployment processors
 developers to bind new resources easier.
 
 To support discussion in the community, the content includes a big focus
-on comparing WildFly {wildflyVersion} JNDI implementation with the new proposal, and
+on comparing WildFly JNDI implementation with the new proposal, and
 should later evolve to the prime guide for WildFly developers needing to
 interact with JNDI at subsystem level.
 

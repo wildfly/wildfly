@@ -22,7 +22,7 @@ specific extensions to the security configurations.
 
 The EE Platform specification doesn't mandate a specific way to configure security
 domain for a bean. It leaves it to the vendor implementations to allow
-such configurations, the way they wish. In WildFly {wildflyVersion}, the use of
+such configurations, the way they wish. In WildFly, the use of
 `@org.jboss.ejb3.annotation.SecurityDomain` annotation allows the
 developer to configure the security domain for a bean. Here's an
 example:
@@ -101,13 +101,13 @@ public class FooBean {
 
 As you can see the `doSomething` method is configured to be accessible
 for users with role "bar". However, the bean isn't configured for any
-specific security domain. Prior to WildFly {wildflyVersion}, the absence of an
+specific security domain. Prior to WildFly 8, the absence of an
 explicitly configured security domain on the bean would leave the bean
 unsecured, which meant that even if the `doSomething` method was
 configured with `@RolesAllowed("bar")` anyone even without the "bar"
 role could invoke on the bean.
 
-In WildFly {wildflyVersion}, the presence of any security metadata (like @RolesAllowed,
+In WildFly, the presence of any security metadata (like @RolesAllowed,
 @PermitAll, @DenyAll, @RunAs, @RunAsPrincipal) on the bean or any
 business method of the bean, makes the bean secure, even in the absence
 of an explicitly configured security domain. In such cases, the security
@@ -142,7 +142,7 @@ users with role "bar". That enables security on the bean (with security
 domain defaulted to "other"). However, notice that the method
 `helloWorld` doesn't have any specific security configurations.
 
-In WildFly {wildflyVersion}, such methods which have no explicit security
+In WildFly, such methods which have no explicit security
 configurations, in a secured bean, will be treated similar to a method
 with `@DenyAll` configuration. What that means is, no one is allowed
 access to the `helloWorld` method. This behaviour can be controlled via

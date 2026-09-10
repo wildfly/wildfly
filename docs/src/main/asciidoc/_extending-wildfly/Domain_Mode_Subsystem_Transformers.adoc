@@ -371,7 +371,7 @@ of 1.0.0, and its resource description was as follows:
                 },
 ----
 
-In WildFly {wildflyVersion}, it has a ModelVersion of 2.0.0 and has added two
+In WildFly, it has a ModelVersion of 2.0.0 and has two
 attributes, `require-bean-descriptor` and `non-portable` mode:
 
 [source,options="nowrap"]
@@ -436,7 +436,7 @@ attributes, `require-bean-descriptor` and `non-portable` mode:
 ----
 
 In the rest of this section we will assume that we are running a DC
-running WildFly {wildflyVersion} so it will have ModelVersion 2.0.0 of the weld
+running WildFly so it will have ModelVersion 2.0.0 of the weld
 subsystem, and that we are running a secondary HC using ModelVersion 1.0.0 of
 the weld subsystem.
 
@@ -575,7 +575,7 @@ This removal is fine since they have the values which would result in
 the behavior assumed on the legacy secondary HC.
 
 That way the older secondary HCs will work fine. However, we might also have
-WildFly {wildflyVersion} secondary HCs in our domain, and they are missing out on the new
+WildFly secondary HCs in our domain, and they are missing out on the new
 features introduced by the attributes introduced in ModelVersion 2.0.0.
 If we do
 
@@ -619,9 +619,9 @@ The solution is to put these in two different profiles in `domain.xml`
 </domain>
 ----
 
-Then have the HCs using WildFly {wildflyVersion} make their servers reference the
+Then have the HCs using WildFly make their servers reference the
 `main-server-group` server group, and the HCs using older versions of
-WildFly {wildflyVersion} make their servers reference the `main-server-group-legacy`
+WildFly make their servers reference the `main-server-group-legacy`
 server group.
 
 [[ignoring-resources-on-legacy-hosts]]
@@ -1973,7 +1973,7 @@ transformers>>
 [[the-old-way]]
 === The old way
 
-This is the way that has been used up to WildFly {wildflyVersion}.x. However, in
+This is the old way. However, in
 WildFly 9 and later, it is strongly recommended to migrate to what is
 mentioned in
 <<chained-transformers,#Chained
@@ -2420,7 +2420,7 @@ Missing parameters for operation 'add' in current: []; missing in legacy [protoc
 This difference also affects the `add` operation. Looking at the current
 model the valid values for the `protocol` attribute are `remote`,
 `http-remoting` and `https-remoting`. The last two are new protocols
-introduced in WildFly {wildflyVersion}, meaning that the _implied behaviour_ in JBoss
+introduced in WildFly, meaning that the _implied behaviour_ in JBoss
 7.2.0 and earlier is the `remote` protocol. Since this attribute does
 not exist in the legacy model we want to discard this attribute if it is
 `undefined` or if it has the value `remote`, both of which are in line

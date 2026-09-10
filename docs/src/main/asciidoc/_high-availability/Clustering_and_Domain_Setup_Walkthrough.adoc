@@ -106,7 +106,7 @@ wildfly-{wildflyVersion}.0.0.Final/bin$ ./domain.sh
 =========================================================================
 ...
 
-[Server:server-two] 14:46:12,375 INFO  [org.jboss.as] (Controller Boot Thread) JBAS015874: WildFly {wildflyVersion}.0.0.Final "Kenny" started in 8860ms - Started 210 of 258 services (8{wildflyVersion} services are lazy, passive or on-demand)
+[Server:server-two] 14:46:12,375 INFO  [org.jboss.as] (Controller Boot Thread) JBAS015874: WildFly 8.0.0.Final "Kenny" started in 8860ms - Started 210 of 258 services (48 services are lazy, passive or on-demand)
 ----
 
 Now exit from the primary host and let's repeat the same steps on the secondary host. Finally,

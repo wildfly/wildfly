@@ -329,7 +329,7 @@ script (e.g. 'bin/jboss-admin.bat --connect command=:shutdown').
 
 To avoid "Press any key to continue ..." message you need to specify
 NOPAUSE variable. Call 'set NOPAUSE=true' in command line before running
-any WildFly {wildflyVersion} .bat script or include it in your custom script before
+any WildFly .bat script or include it in your custom script before
 invoking scripts from WildFly.
 
 [[statistics]]
