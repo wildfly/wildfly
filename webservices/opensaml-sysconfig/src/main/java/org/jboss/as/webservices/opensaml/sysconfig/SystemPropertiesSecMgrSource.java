@@ -9,8 +9,11 @@ import java.security.PrivilegedAction;
 import java.util.Properties;
 
 import org.kohsuke.MetaInfServices;
+import org.opensaml.core.config.ConfigurationProperties;
 import org.opensaml.core.config.ConfigurationPropertiesSource;
 import org.opensaml.core.config.ConfigurationService;
+import org.opensaml.core.config.provider.EmptyConfigurationProperties;
+import org.opensaml.core.config.provider.PropertiesAdapter;
 import org.opensaml.core.config.provider.SystemPropertyConfigurationPropertiesSource;
 
 import static java.lang.System.getProperty;
@@ -23,20 +26,19 @@ import static java.security.AccessController.doPrivileged;
 public class SystemPropertiesSecMgrSource implements ConfigurationPropertiesSource {
 
     private SystemPropertyConfigurationPropertiesSource delegate = new SystemPropertyConfigurationPropertiesSource();
-    private Properties empty = new Properties(0);
-    private Properties patritionNameProperties = new Properties(1);
 
-    public Properties getProperties() {
+    public ConfigurationProperties getProperties() {
         try {
             return delegate.getProperties();
         } catch (SecurityException e) {
             String value = doPrivileged((PrivilegedAction<String>) () -> getProperty(ConfigurationService.PROPERTY_PARTITION_NAME));
             if (value == null) {
-                return empty;
+                return new EmptyConfigurationProperties();
             } else {
                 value = System.getProperty(ConfigurationService.PROPERTY_PARTITION_NAME);
-                patritionNameProperties.setProperty(ConfigurationService.PROPERTY_PARTITION_NAME, value);
-                return patritionNameProperties;
+                Properties partitionNameProperties = new Properties(1);
+                partitionNameProperties.setProperty(ConfigurationService.PROPERTY_PARTITION_NAME, value);
+                return new PropertiesAdapter(partitionNameProperties);
             }
         }
     }
