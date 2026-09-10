@@ -114,7 +114,7 @@ public class InfinispanTimerManagementProvider implements TimerManagementProvide
         ExpirationConfiguration expiration = builder.expiration().create();
         if ((expiration.lifespan() >= 0) || (expiration.maxIdle() >= 0)) {
             builder.expiration().lifespan(-1).maxIdle(-1);
-            InfinispanEjbLogger.ROOT_LOGGER.timerExpirationDisabled(this.cacheConfiguration.getChildName());
+            InfinispanEjbLogger.ROOT_LOGGER.timerExpirationDisabled(this.cacheConfiguration.getParentName(), this.cacheConfiguration.getChildName());
         }
 
         OptionalInt size = this.configuration.getSizeThreshold();
