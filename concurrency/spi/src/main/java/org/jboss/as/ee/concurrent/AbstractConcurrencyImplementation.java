@@ -24,12 +24,14 @@ import org.jboss.as.ee.subsystem.ConcurrentEESubsystemParser20;
 import org.jboss.as.ee.subsystem.ConcurrentEESubsystemParser40;
 import org.jboss.as.ee.subsystem.ConcurrentEESubsystemParser50;
 import org.jboss.as.ee.subsystem.ConcurrentEESubsystemParser60;
+import org.jboss.as.ee.subsystem.ConcurrentEESubsystemParser70;
 import org.jboss.as.ee.subsystem.ConcurrentEESubsystemXMLPersister;
 import org.jboss.as.ee.subsystem.ContextServiceResourceDefinition;
 import org.jboss.as.ee.subsystem.EeExtension;
 import org.jboss.as.ee.subsystem.ManagedExecutorServiceResourceDefinition;
 import org.jboss.as.ee.subsystem.ManagedScheduledExecutorServiceResourceDefinition;
 import org.jboss.as.ee.subsystem.ManagedThreadFactoryResourceDefinition;
+import org.jboss.as.ee.subsystem.Namespace;
 import org.jboss.as.server.DeploymentProcessorTarget;
 import org.jboss.as.server.deployment.Phase;
 import org.jboss.dmr.ModelNode;
@@ -76,21 +78,20 @@ public abstract class AbstractConcurrencyImplementation implements ConcurrencyIm
     }
 
     @Override
-    public void parseConcurrentElement20(XMLExtendedStreamReader reader, List<ModelNode> operations, PathAddress subsystemPathAddress) throws XMLStreamException {
-        ConcurrentEESubsystemParser20.parseConcurrent(reader, operations, subsystemPathAddress);
+    public void parseConcurrentElement(Namespace namespace, XMLExtendedStreamReader reader, List<ModelNode> operations, PathAddress subsystemPathAddress) throws XMLStreamException {
+        switch (namespace) {
+            case UNKNOWN -> throw new IllegalArgumentException("Unknown namespace");
+            case EE_1_0, EE_1_1, EE_1_2 ->
+                    throw new IllegalArgumentException("Concurrent element was only introduced with namespace "+Namespace.EE_2_0);
+            case EE_2_0, EE_3_0 ->
+                    ConcurrentEESubsystemParser20.parseConcurrent(reader, operations, subsystemPathAddress);
+            case EE_4_0 -> ConcurrentEESubsystemParser40.parseConcurrent(reader, operations, subsystemPathAddress);
+            case EE_5_0 -> ConcurrentEESubsystemParser50.parseConcurrent(reader, operations, subsystemPathAddress);
+            case EE_6_0 -> ConcurrentEESubsystemParser60.parseConcurrent(reader, operations, subsystemPathAddress);
+            case EE_7_0 -> ConcurrentEESubsystemParser70.parseConcurrent(reader, operations, subsystemPathAddress);
+        }
     }
-    @Override
-    public void parseConcurrentElement40(XMLExtendedStreamReader reader, List<ModelNode> operations, PathAddress subsystemPathAddress) throws XMLStreamException {
-        ConcurrentEESubsystemParser40.parseConcurrent(reader, operations, subsystemPathAddress);
-    }
-    @Override
-    public void parseConcurrentElement50(XMLExtendedStreamReader reader, List<ModelNode> operations, PathAddress subsystemPathAddress) throws XMLStreamException {
-        ConcurrentEESubsystemParser50.parseConcurrent(reader, operations, subsystemPathAddress);
-    }
-    @Override
-    public void parseConcurrentElement60(XMLExtendedStreamReader reader, List<ModelNode> operations, PathAddress subsystemPathAddress) throws XMLStreamException {
-        ConcurrentEESubsystemParser60.parseConcurrent(reader, operations, subsystemPathAddress);
-    }
+
     @Override
     public void writeConcurrentElement(XMLExtendedStreamWriter writer, ModelNode eeSubSystem) throws XMLStreamException {
         ConcurrentEESubsystemXMLPersister.writeConcurrentElement(writer, eeSubSystem);

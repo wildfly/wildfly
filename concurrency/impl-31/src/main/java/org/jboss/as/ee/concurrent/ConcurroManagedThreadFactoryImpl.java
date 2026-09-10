@@ -9,14 +9,10 @@ import org.glassfish.concurro.AbstractManagedThread;
 import org.glassfish.concurro.ContextServiceImpl;
 import org.glassfish.concurro.internal.ManagedFutureTask;
 import org.glassfish.concurro.spi.ContextHandle;
-import org.wildfly.security.auth.server.SecurityIdentity;
-
-import jakarta.enterprise.concurrent.ManagedThreadFactory;
 
 /**
- * {@link ManagedThreadFactory} implementation ensuring {@link SecurityIdentity} propagation into new threads.
- * @author <a href="mailto:jkalina@redhat.com">Jan Kalina</a>
- * @author emmartins
+ * WildFly's extension of {@link org.glassfish.concurro.ManagedThreadFactoryImpl}.
+ * @author Eduardo Martins
  */
 public class ConcurroManagedThreadFactoryImpl extends org.glassfish.concurro.ManagedThreadFactoryImpl implements WildFlyManagedThreadFactory {
 

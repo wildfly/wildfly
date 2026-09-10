@@ -34,9 +34,11 @@ public class ManagedThreadFactoryDefinitionInjectionSource extends ResourceDefin
 
     public static final String CONTEXT_PROP = "context";
     public static final String PRIORITY_PROP = "priority";
+    public static final String VIRTUAL_PROP = "virtual";
 
     private String contextServiceRef;
     private int priority = Thread.NORM_PRIORITY;
+    private boolean virtual;
 
     public ManagedThreadFactoryDefinitionInjectionSource(final String jndiName) {
         super(jndiName);
@@ -50,7 +52,7 @@ public class ManagedThreadFactoryDefinitionInjectionSource extends ResourceDefin
             final ServiceName resourceServiceName = ManagedThreadFactoryResourceDefinition.CAPABILITY.getCapabilityServiceName(resourceName);
             final ServiceBuilder resourceServiceBuilder = phaseContext.getServiceTarget().addService(resourceServiceName);
             final Consumer<WildFlyManagedThreadFactory> consumer = resourceServiceBuilder.provides(resourceServiceName);
-            final ManagedThreadFactoryService resourceService = new ManagedThreadFactoryService(consumer, null, resourceName, resourceJndiName, priority);
+            final ManagedThreadFactoryService resourceService = new ManagedThreadFactoryService(consumer, null, resourceName, resourceJndiName, priority, virtual);
             final Injector<ManagedReferenceFactory> contextServiceLookupInjector = new Injector<>() {
                 @Override
                 public void inject(ManagedReferenceFactory value) throws InjectionException {
@@ -112,5 +114,13 @@ public class ManagedThreadFactoryDefinitionInjectionSource extends ResourceDefin
 
     public void setPriority(int priority) {
         this.priority = priority;
+    }
+
+    public boolean isVirtual() {
+        return virtual;
+    }
+
+    public void setVirtual(boolean virtual) {
+        this.virtual = virtual;
     }
 }
