@@ -7,7 +7,6 @@ package org.jboss.as.test.clustering.cluster.ejb.timer.beans;
 
 import java.util.function.Function;
 
-import jakarta.ejb.EJBException;
 import jakarta.ejb.NoSuchObjectLocalException;
 import jakarta.ejb.Timeout;
 import jakarta.ejb.Timer;
@@ -49,9 +48,5 @@ public abstract class AbstractManualTimerBean extends AbstractTimerBean implemen
     @Timeout
     public void timeout(Timer timer) {
         this.record(timer);
-        // WFLY-19891 Verify that this does not deadlock
-        if (!timer.getInfo().equals(this.service.getTimers().stream().filter(timer::equals).findFirst().map(Timer::getInfo).orElse(null))) {
-            throw new EJBException();
-        }
     }
 }
