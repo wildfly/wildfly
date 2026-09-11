@@ -7,6 +7,7 @@ package org.wildfly.test.integration.microprofile.reactive.messaging.otel.applic
 
 import java.util.List;
 
+import io.opentelemetry.api.trace.Span;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.FormParam;
@@ -30,8 +31,20 @@ public class TestReactiveMessagingOtelEndpoint {
 
     @POST
     @Path("/")
-    public Response publish(@FormParam("value") String value) {
-        testReactiveMessagingOtelBean.send(value);
+    public Response publish(@FormParam("value") String value,
+                           @FormParam("testName") String testName,
+                           @FormParam("iteration") Integer iteration) {
+        // Add custom span attributes for test isolation and tracking
+        Span span = Span.current();
+        if (testName != null) {
+            span.setAttribute("test.name", testName);
+        }
+        if (iteration != null) {
+            span.setAttribute("test.iteration", iteration);
+        }
+
+        // Pass test metadata to send() so it can be propagated through Kafka message
+        testReactiveMessagingOtelBean.send(value, testName, iteration);
         return Response.ok().build();
     }
 
