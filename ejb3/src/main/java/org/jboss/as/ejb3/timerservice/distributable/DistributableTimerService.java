@@ -223,6 +223,12 @@ public class DistributableTimerService<I> extends DecoratedService implements Ma
     }
 
     @Override
+    public Collection<jakarta.ejb.Timer> getTimersByExternalId(String externalId) {
+        this.validateInvocationContext();
+        return this.registry.getTimersByExternalId(externalId);
+    }
+
+    @Override
     public String toString() {
         return String.format("%s(%s)", this.getClass().getSimpleName(), this.invoker.getTimedObjectId());
     }

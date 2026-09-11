@@ -37,6 +37,7 @@ public class EjbDependencyDeploymentUnitProcessor implements DeploymentUnitProce
     private static final String EJB_IIOP_CLIENT = "org.jboss.iiop-client";
     private static final String IIOP_OPENJDK = "org.wildfly.iiop-openjdk";
     private static final String EJB_API = "jakarta.ejb.api";
+    private static final String EJB_EXT_API = "org.jboss.ejb3";
     private static final String HTTP_EJB = "org.wildfly.http-client.ejb";
     private static final String HTTP_TRANSACTION = "org.wildfly.http-client.transaction";
     private static final String HTTP_NAMING = "org.wildfly.http-client.naming";
@@ -61,6 +62,7 @@ public class EjbDependencyDeploymentUnitProcessor implements DeploymentUnitProce
 
         //always add EE API
         moduleSpecification.addSystemDependency(ModuleDependency.Builder.of(moduleLoader, EJB_API).setImportServices(true).build());
+        moduleSpecification.addSystemDependency(ModuleDependency.Builder.of(moduleLoader, EJB_EXT_API).build());
         //we always give them the Jakarta Enterprise Beans client
         moduleSpecification.addSystemDependency(ModuleDependency.Builder.of(moduleLoader, EJB_CLIENT).setImportServices(true).build());
         moduleSpecification.addSystemDependency(ModuleDependency.Builder.of(moduleLoader, EJB_NAMING_CLIENT).setImportServices(true).build());

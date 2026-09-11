@@ -78,6 +78,11 @@ public class TimerImpl extends AbstractManagedTimer {
     private final String timedObjectId;
 
     /**
+     * External identification from app creating timer
+     */
+    private String externalId;
+
+    /**
      * In use lock. This is held by timer invocations and cancellation within the scope of a transaction, all changes
      * to timer state after creation should be done within this lock, to prevent state being overwritten by multiple
      * threads.
@@ -117,6 +122,7 @@ public class TimerImpl extends AbstractManagedTimer {
         }
         this.previousRun = builder.previousRun;
         this.timerState = builder.timerState;
+        this.externalId = builder.externalId;
         this.timerService = service;
         this.timedObjectInvoker = service.getInvoker();
     }
@@ -439,6 +445,14 @@ public class TimerImpl extends AbstractManagedTimer {
         this.executingThread = thread;
     }
 
+    public String getExternalId() {
+        return externalId;
+    }
+
+    public void setExternalId(String externalId) {
+        this.externalId = externalId;
+    }
+
     @Override
     public void activate() {
         this.scheduleTimeout(true);
@@ -527,6 +541,8 @@ public class TimerImpl extends AbstractManagedTimer {
             sb.append(this.initialExpiration);
             sb.append(" intervalDuration(in milli sec)=");
             sb.append(this.intervalDuration);
+            sb.append(" externalId=");
+            sb.append(this.externalId);
             this.toStringTemplate = sb.toString();
         }
         // complete with the dynamic values
@@ -556,6 +572,7 @@ public class TimerImpl extends AbstractManagedTimer {
         protected TimerState timerState;
         protected boolean persistent;
         protected boolean newTimer;
+        protected String externalId;
 
         public Builder setId(final String id) {
             this.id = id;
@@ -604,6 +621,11 @@ public class TimerImpl extends AbstractManagedTimer {
 
         public Builder setNewTimer(final boolean newTimer) {
             this.newTimer = newTimer;
+            return this;
+        }
+
+        public Builder setExternalId(final String externalId) {
+            this.externalId = externalId;
             return this;
         }
 
