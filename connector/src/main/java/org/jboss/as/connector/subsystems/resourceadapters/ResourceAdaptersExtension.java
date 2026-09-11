@@ -84,6 +84,7 @@ public class ResourceAdaptersExtension implements Extension {
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.RESOURCEADAPTERS_6_1.getUriString(), resourceAdapterSubsystemParser);
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.RESOURCEADAPTERS_7_0.getUriString(), resourceAdapterSubsystemParser);
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.RESOURCEADAPTERS_7_1.getUriString(), resourceAdapterSubsystemParser);
+        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.RESOURCEADAPTERS_7_2.getUriString(), resourceAdapterSubsystemParser);
     }
 
 }
