@@ -80,6 +80,7 @@ class EJBRemoteInvocationPassByValueWriteHandler extends AbstractWriteAttributeH
         final Consumer<LocalTransportProvider> transportConsumer = sb.provides(sn);
         final Supplier<LocalTransportProvider> transportSupplier = sb.requires(localTransportProviderServiceName);
         sb.setInstance(new DefaultLocalTransportProviderService(transportConsumer, transportSupplier));
+        sb.setInitialMode(ServiceController.Mode.ON_DEMAND);
         sb.install();
     }
 

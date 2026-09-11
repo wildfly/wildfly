@@ -64,7 +64,9 @@ public class EJB3SubsystemDefaultEntityBeanOptimisticLockingWriteHandler extends
         if (enabled.isDefined()) {
             final ServiceBuilder<?> sb = context.getCapabilityServiceTarget().addService(SERVICE_NAME);
             final Consumer<Boolean> c = sb.provides(SERVICE_NAME);
-            sb.setInstance(Service.newInstance(c, enabled.asBoolean())).install();
+            sb.setInstance(Service.newInstance(c, enabled.asBoolean()))
+                    .setInitialMode(ServiceController.Mode.ON_DEMAND)
+                    .install();
         }
     }
 }
