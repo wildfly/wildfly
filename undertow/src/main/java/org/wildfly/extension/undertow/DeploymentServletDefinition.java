@@ -16,6 +16,7 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.ResourceRegistration;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleListAttributeDefinition;
@@ -34,6 +35,7 @@ import org.wildfly.extension.undertow.deployment.UndertowMetricsCollector;
  * @created 23.2.12 18:35
  */
 public class DeploymentServletDefinition extends SimpleResourceDefinition {
+    static final ResourceRegistration REGISTRATION = ResourceRegistration.of(PathElement.pathElement("servlet"));
 
     static final SimpleAttributeDefinition SERVLET_NAME = new SimpleAttributeDefinitionBuilder("servlet-name", ModelType.STRING, false).setStorageRuntime().build();
     static final SimpleAttributeDefinition SERVLET_CLASS = new SimpleAttributeDefinitionBuilder("servlet-class", ModelType.STRING, false).setStorageRuntime().build();
@@ -65,7 +67,7 @@ public class DeploymentServletDefinition extends SimpleResourceDefinition {
 
 
     DeploymentServletDefinition() {
-        super(PathElement.pathElement("servlet"), UndertowExtension.getResolver("deployment.servlet"));
+        super(new Parameters(REGISTRATION, DeploymentDefinition.DEFAULT_RESOLVER.createChildResolver(REGISTRATION.getPathElement())));
     }
 
     @Override

@@ -10,6 +10,7 @@ import java.util.List;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.PersistentResourceDefinition;
+import org.jboss.as.controller.ResourceRegistration;
 import org.jboss.as.controller.ServiceRemoveStepHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
@@ -28,7 +29,7 @@ import org.jboss.dmr.ValueExpression;
  * @author Tomaz Cerar (c) 2013 Red Hat Inc.
  */
 class AccessLogDefinition extends PersistentResourceDefinition {
-    static final PathElement PATH_ELEMENT = PathElement.pathElement(Constants.SETTING, Constants.ACCESS_LOG);
+    static final ResourceRegistration REGISTRATION = ResourceRegistration.of(PathElement.pathElement(Constants.SETTING, Constants.ACCESS_LOG));
     static final RuntimeCapability<Void> ACCESS_LOG_CAPABILITY = RuntimeCapability.Builder.of(Capabilities.CAPABILITY_ACCESS_LOG, true, AccessLogService.class)
               .setDynamicNameMapper(BinaryCapabilityNameResolver.GRANDPARENT_PARENT)
               .build();
@@ -97,7 +98,6 @@ class AccessLogDefinition extends PersistentResourceDefinition {
             .build();
 
     static final Collection<AttributeDefinition> ATTRIBUTES = List.of(
-            // IMPORTANT -- keep these in xsd order as this order controls marshalling
             WORKER,
             PATTERN,
             PREFIX,
@@ -112,7 +112,7 @@ class AccessLogDefinition extends PersistentResourceDefinition {
     private final List<AccessConstraintDefinition> accessConstraints;
 
     AccessLogDefinition() {
-        super(new SimpleResourceDefinition.Parameters(PATH_ELEMENT, UndertowExtension.getResolver(PATH_ELEMENT.getValue()))
+        super(new SimpleResourceDefinition.Parameters(REGISTRATION, UndertowRootDefinition.RESOLVER.createChildResolver(REGISTRATION.getPathElement().getValue()))
                 .setAddHandler(AccessLogAdd.INSTANCE)
                 .setRemoveHandler(new ServiceRemoveStepHandler(AccessLogAdd.INSTANCE))
                 .setCapabilities(ACCESS_LOG_CAPABILITY)

@@ -18,7 +18,7 @@ import org.jboss.as.controller.CapabilityServiceBuilder;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.ResourceRegistration;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.web.host.CommonWebServer;
@@ -58,9 +58,9 @@ final class ServerAdd extends AbstractAddStepHandler {
             csb.setInstance(new WebServerService(wssConsumer, sSupplier));
             csb.setInitialMode(ServiceController.Mode.PASSIVE);
 
-            addCommonHostListenerDeps(context, csb, HttpListenerResourceDefinition.PATH_ELEMENT);
-            addCommonHostListenerDeps(context, csb, AjpListenerResourceDefinition.PATH_ELEMENT);
-            addCommonHostListenerDeps(context, csb, HttpsListenerResourceDefinition.PATH_ELEMENT);
+            addCommonHostListenerDeps(context, csb, HttpListenerResourceDefinition.REGISTRATION);
+            addCommonHostListenerDeps(context, csb, AjpListenerResourceDefinition.REGISTRATION);
+            addCommonHostListenerDeps(context, csb, HttpsListenerResourceDefinition.REGISTRATION);
             csb.install();
         }
 
@@ -111,8 +111,8 @@ final class ServerAdd extends AbstractAddStepHandler {
         }
     }
 
-    private void addCommonHostListenerDeps(OperationContext context, ServiceBuilder<?> builder, final PathElement listenerPath) {
-        ModelNode listeners = Resource.Tools.readModel(context.readResource(PathAddress.pathAddress(listenerPath)), 1);
+    private void addCommonHostListenerDeps(OperationContext context, ServiceBuilder<?> builder, ResourceRegistration listenerRegistration) {
+        ModelNode listeners = Resource.Tools.readModel(context.readResource(PathAddress.pathAddress(listenerRegistration.getPathElement())), 1);
         if (listeners.isDefined()) {
             for (Property p : listeners.asPropertyList()) {
                 for (Property listener : p.getValue().asPropertyList()) {

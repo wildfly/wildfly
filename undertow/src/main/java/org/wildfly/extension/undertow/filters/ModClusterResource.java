@@ -40,7 +40,7 @@ public class ModClusterResource extends ComplexResource implements Consumer<ModC
 
     @Override
     public void accept(ModCluster service) {
-        this.providers.put(ModClusterBalancerDefinition.PATH_ELEMENT.getKey(), new ModClusterBalancerResourceProvider(service));
+        this.providers.put(ModClusterBalancerDefinition.REGISTRATION.getPathElement().getKey(), new ModClusterBalancerResourceProvider(service));
     }
 
     static class ModClusterBalancerResourceProvider implements ChildResourceProvider {
@@ -54,7 +54,7 @@ public class ModClusterResource extends ComplexResource implements Consumer<ModC
         public Resource getChild(String name) {
             ModClusterStatus status = this.service.getController().getStatus();
             ModClusterStatus.LoadBalancer balancer = status.getLoadBalancer(name);
-            return (balancer != null) ? new ComplexResource(PlaceholderResource.INSTANCE, Map.of(ModClusterNodeDefinition.PATH_ELEMENT.getKey(), new ModClusterNodeResourceProvider(balancer), ModClusterLoadBalancingGroupDefinition.PATH_ELEMENT.getKey(), new SimpleChildResourceProvider(balancer.getNodes().stream().map(ModClusterStatus.Node::getDomain).filter(Predicate.not(Objects::isNull)).distinct().collect(Collectors.toSet())))) : null;
+            return (balancer != null) ? new ComplexResource(PlaceholderResource.INSTANCE, Map.of(ModClusterNodeDefinition.REGISTRATION.getPathElement().getKey(), new ModClusterNodeResourceProvider(balancer), ModClusterLoadBalancingGroupDefinition.REGISTRATION.getPathElement().getKey(), new SimpleChildResourceProvider(balancer.getNodes().stream().map(ModClusterStatus.Node::getDomain).filter(Predicate.not(Objects::isNull)).distinct().collect(Collectors.toSet())))) : null;
         }
 
         @Override
@@ -74,7 +74,7 @@ public class ModClusterResource extends ComplexResource implements Consumer<ModC
         @Override
         public Resource getChild(String name) {
             ModClusterStatus.Node node = this.balancer.getNode(name);
-            return (node != null) ? new ComplexResource(PlaceholderResource.INSTANCE, Map.of(ModClusterContextDefinition.PATH_ELEMENT.getKey(), new SimpleChildResourceProvider(node.getContexts().stream().map(ModClusterStatus.Context::getName).collect(Collectors.toSet())))) : null;
+            return (node != null) ? new ComplexResource(PlaceholderResource.INSTANCE, Map.of(ModClusterContextDefinition.REGISTRATION.getPathElement().getKey(), new SimpleChildResourceProvider(node.getContexts().stream().map(ModClusterStatus.Context::getName).collect(Collectors.toSet())))) : null;
         }
 
         @Override

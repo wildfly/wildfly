@@ -10,12 +10,11 @@ import java.util.Collections;
 import java.util.List;
 
 import org.jboss.as.controller.AttributeDefinition;
-import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.PersistentResourceDefinition;
+import org.jboss.as.controller.ResourceRegistration;
 import org.jboss.as.controller.access.constraint.SensitivityClassification;
 import org.jboss.as.controller.access.management.AccessConstraintDefinition;
 import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraintDefinition;
-import org.wildfly.extension.undertow.Constants;
 import org.wildfly.extension.undertow.UndertowExtension;
 
 /**
@@ -23,8 +22,8 @@ import org.wildfly.extension.undertow.UndertowExtension;
  */
 public abstract class AbstractFilterDefinition extends PersistentResourceDefinition {
 
-    protected AbstractFilterDefinition(PathElement path) {
-        super(path, UndertowExtension.getResolver(Constants.FILTER, path.getKey()));
+    protected AbstractFilterDefinition(ResourceRegistration registration) {
+        super(new Parameters(registration, FilterDefinitions.RESOLVER.createChildResolver(registration.getPathElement())));
     }
 
     @Override

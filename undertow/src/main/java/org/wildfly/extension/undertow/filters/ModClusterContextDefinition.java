@@ -28,6 +28,7 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.ResourceRegistration;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
@@ -36,7 +37,6 @@ import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.wildfly.extension.undertow.Constants;
-import org.wildfly.extension.undertow.UndertowExtension;
 import org.wildfly.service.capture.FunctionExecutor;
 import org.wildfly.subsystem.service.ServiceDependency;
 import org.wildfly.subsystem.service.capture.FunctionExecutorRegistry;
@@ -48,8 +48,8 @@ import org.wildfly.subsystem.service.capture.FunctionExecutorRegistry;
  */
 class ModClusterContextDefinition extends SimpleResourceDefinition {
 
-    static final PathElement PATH_ELEMENT = PathElement.pathElement(Constants.CONTEXT);
-    static final ResourceDescriptionResolver RESOLVER = UndertowExtension.getResolver(Constants.FILTER, ModClusterDefinition.PATH_ELEMENT.getKey(), ModClusterBalancerDefinition.PATH_ELEMENT.getKey(), ModClusterNodeDefinition.PATH_ELEMENT.getKey(), PATH_ELEMENT.getKey());
+    static final ResourceRegistration REGISTRATION = ResourceRegistration.of(PathElement.pathElement(Constants.CONTEXT));
+    static final ResourceDescriptionResolver RESOLVER = ModClusterNodeDefinition.RESOLVER.createChildResolver(REGISTRATION.getPathElement());
 
     enum ContextMetric implements Metric<ModClusterStatus.Context> {
         STATUS(Constants.STATUS, ModelType.STRING) {
@@ -108,7 +108,7 @@ class ModClusterContextDefinition extends SimpleResourceDefinition {
     private final FunctionExecutorRegistry<ModCluster> registry;
 
     ModClusterContextDefinition(FunctionExecutorRegistry<ModCluster> registry) {
-        super(new Parameters(PATH_ELEMENT, RESOLVER).setRuntime());
+        super(new Parameters(REGISTRATION, RESOLVER).setRuntime());
         this.registry = registry;
     }
 
