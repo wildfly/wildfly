@@ -32,7 +32,7 @@ public abstract class AbstractSyslogAuditLogTestCase extends AbstractAuditLogTes
      * Tests whether successful authentication was logged.
      */
     @Test
-    @OperateOnDeployment(SD_DEFAULT)
+    @OperateOnDeployment(SD_DEFAULT_BASIC)
     public void testSuccessfulAuthAndPermissionCheck(@ArquillianResource URL url) throws Exception {
         final URL servletUrl = new URL(url.toExternalForm() + "role1");
         final BlockingQueue<SyslogServerEventIF> queue = BlockedSyslogServerEventHandler.getQueue();
@@ -48,7 +48,7 @@ public abstract class AbstractSyslogAuditLogTestCase extends AbstractAuditLogTes
      * Tests whether failed authentication with wrong user was logged.
      */
     @Test
-    @OperateOnDeployment(SD_DEFAULT)
+    @OperateOnDeployment(SD_DEFAULT_BASIC)
     public void testFailedAuthWrongUser(@ArquillianResource URL url) throws Exception {
         final URL servletUrl = new URL(url.toExternalForm() + "role1");
         final BlockingQueue<SyslogServerEventIF> queue = BlockedSyslogServerEventHandler.getQueue();
@@ -63,7 +63,7 @@ public abstract class AbstractSyslogAuditLogTestCase extends AbstractAuditLogTes
      * Tests whether failed authentication with wrong password was logged.
      */
     @Test
-    @OperateOnDeployment(SD_DEFAULT)
+    @OperateOnDeployment(SD_DEFAULT_BASIC)
     public void testFailedAuthWrongPassword(@ArquillianResource URL url) throws Exception {
         final URL servletUrl = new URL(url.toExternalForm() + "role1");
         final BlockingQueue<SyslogServerEventIF> queue = BlockedSyslogServerEventHandler.getQueue();
@@ -78,7 +78,7 @@ public abstract class AbstractSyslogAuditLogTestCase extends AbstractAuditLogTes
      * Tests whether failed authentication with empty password was logged.
      */
     @Test
-    @OperateOnDeployment(SD_DEFAULT)
+    @OperateOnDeployment(SD_DEFAULT_BASIC)
     public void testFailedAuthEmptyPassword(@ArquillianResource URL url) throws Exception {
         final URL servletUrl = new URL(url.toExternalForm() + "role1");
         final BlockingQueue<SyslogServerEventIF> queue = BlockedSyslogServerEventHandler.getQueue();
@@ -93,7 +93,7 @@ public abstract class AbstractSyslogAuditLogTestCase extends AbstractAuditLogTes
      * Tests whether failed permission check was logged.
      */
     @Test
-    @OperateOnDeployment(SD_WITHOUT_LOGIN_PERMISSION)
+    @OperateOnDeployment(SD_WITHOUT_LOGIN_PERMISSION_BASIC)
     public void testFailedPermissionCheck() throws Exception {
         final URL servletUrl = new URL(url.toExternalForm() + "role1");
         final BlockingQueue<SyslogServerEventIF> queue = BlockedSyslogServerEventHandler.getQueue();
