@@ -20,7 +20,6 @@ import org.infinispan.configuration.cache.StorageType;
 import org.infinispan.configuration.cache.StoreConfiguration;
 import org.infinispan.eviction.EvictionStrategy;
 import org.jboss.as.server.deployment.DeploymentUnit;
-import org.jboss.logging.Logger;
 import org.wildfly.clustering.cache.infinispan.embedded.EmbeddedCacheConfiguration;
 import org.wildfly.clustering.cache.infinispan.embedded.container.DataContainerConfigurationBuilder;
 import org.wildfly.clustering.infinispan.service.CacheConfigurationServiceInstaller;
@@ -37,6 +36,7 @@ import org.wildfly.clustering.web.service.routing.RouteLocatorProvider;
 import org.wildfly.clustering.web.service.session.DistributableSessionManagementConfiguration;
 import org.wildfly.clustering.web.service.session.DistributableSessionManagementProvider;
 import org.wildfly.clustering.web.service.session.SessionManagerFactoryConfiguration;
+import org.wildfly.extension.clustering.web.logging.ClusteringWebLogger;
 import org.wildfly.extension.clustering.web.session.AbstractSessionManagementProvider;
 import org.wildfly.service.BlockingLifecycle;
 import org.wildfly.subsystem.service.DeploymentServiceInstaller;
@@ -50,8 +50,6 @@ import jakarta.servlet.ServletContext;
  * @author Paul Ferraro
  */
 public class InfinispanSessionManagementProvider extends AbstractSessionManagementProvider {
-
-    private static final Logger log = Logger.getLogger(InfinispanSessionManagementProvider.class);
 
     public InfinispanSessionManagementProvider(DistributableSessionManagementConfiguration<DeploymentUnit> configuration, BinaryServiceConfiguration cacheConfiguration, RouteLocatorProvider locatorProvider) {
         super(configuration, cacheConfiguration, locatorProvider);
@@ -69,7 +67,7 @@ public class InfinispanSessionManagementProvider extends AbstractSessionManageme
                 ExpirationConfiguration expiration = builder.expiration().create();
                 if ((expiration.lifespan() >= 0) || (expiration.maxIdle() >= 0)) {
                     builder.expiration().lifespan(-1).maxIdle(-1);
-                    log.warnf("Disabling expiration for web session cache '%s'. Web session expiration must be managed by the servlet container per \u00A77.5 of the Jakarta Servlet specification.", deploymentCacheConfiguration.getChildName());
+                    ClusteringWebLogger.ROOT_LOGGER.expirationDisabled(deploymentCacheConfiguration.getParentName(), deploymentCacheConfiguration.getChildName());
                 }
 
                 OptionalInt size = configuration.getSizeThreshold();
