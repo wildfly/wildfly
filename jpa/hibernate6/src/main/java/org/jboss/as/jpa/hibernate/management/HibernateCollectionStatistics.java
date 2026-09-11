@@ -12,6 +12,7 @@ import jakarta.persistence.EntityManagerFactory;
 
 import org.hibernate.SessionFactory;
 import org.hibernate.stat.CollectionStatistics;
+import org.hibernate.stat.Statistics;
 import org.jipijapa.management.spi.EntityManagerFactoryAccess;
 import org.jipijapa.management.spi.Operation;
 import org.jipijapa.management.spi.PathAddress;
@@ -62,15 +63,11 @@ public class HibernateCollectionStatistics extends HibernateAbstractStatistics {
         return Collections.unmodifiableCollection(Arrays.asList(stats.getCollectionRoleNames()));
     }
 
-    private org.hibernate.stat.Statistics getBaseStatistics(EntityManagerFactory entityManagerFactory) {
-        if (entityManagerFactory == null) {
-            return null;
-        }
-        SessionFactory sessionFactory = entityManagerFactory.unwrap(SessionFactory.class);
-        if (sessionFactory != null) {
-            return sessionFactory.getStatistics();
-        }
-        return null;
+    @Override
+    public boolean hasDynamicChildName(EntityManagerFactoryAccess entityManagerFactoryLookup, PathAddress pathAddress,
+            String childName) {
+        Statistics stats = getBaseStatistics(entityManagerFactoryLookup, pathAddress);
+        return stats == null ? false : existsInDynamicChildren(childName, stats.getCollectionRoleNames());
     }
 
     private CollectionStatistics getStatistics(final EntityManagerFactory entityManagerFactory, PathAddress pathAddress) {
