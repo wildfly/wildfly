@@ -2,16 +2,16 @@
  * Copyright The WildFly Authors
  * SPDX-License-Identifier: Apache-2.0
  */
-package org.wildfly.test.integration.observability.micrometer.addremove;
+package org.jboss.as.test.shared.observability;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
+
 import org.apache.commons.io.input.Tailer;
 import org.apache.commons.io.input.TailerListener;
 
-
-class ServerLogTailerListener implements TailerListener {
-    final List<String> logs = new ArrayList<>();
+public class ServerLogTailerListener implements TailerListener {
+    public final List<String> logs = new CopyOnWriteArrayList<>();
 
     @Override
     public void fileNotFound() {

@@ -2,11 +2,9 @@
  * Copyright The WildFly Authors
  * SPDX-License-Identifier: Apache-2.0
  */
-package org.wildfly.test.integration.observability.micrometer.addremove;
-
+package org.jboss.as.test.shared.observability;
 
 @FunctionalInterface
-interface Check {
+public interface ResourceMetricsCheck {
     void evaluate() throws Exception;
 }
-

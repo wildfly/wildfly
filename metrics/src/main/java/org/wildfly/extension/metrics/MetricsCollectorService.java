@@ -16,6 +16,7 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.ProcessStateNotifier;
 import org.jboss.as.controller.RequirementServiceBuilder;
 import org.jboss.as.controller.management.Capabilities;
+import org.jboss.as.controller.notification.NotificationHandlerRegistry;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StopContext;
@@ -28,27 +29,34 @@ public class MetricsCollectorService implements Service<MetricCollector> {
     private final Supplier<ModelControllerClientFactory> modelControllerClientFactory;
     private final Supplier<Executor> managementExecutor;
     private final Supplier<ProcessStateNotifier> processStateNotifier;
+    private final Supplier<NotificationHandlerRegistry> notificationHandlerRegistry;
     private Consumer<MetricCollector> metricCollectorConsumer;
 
     private MetricCollector metricCollector;
     private LocalModelControllerClient modelControllerClient;
+    private MetricsNotificationHandler notificationHandler;
 
     static void install(OperationContext context) {
         RequirementServiceBuilder<?> serviceBuilder = context.getCapabilityServiceTarget().addService(WILDFLY_COLLECTOR);
         Supplier<ModelControllerClientFactory> modelControllerClientFactory = serviceBuilder.requires(ModelControllerClientFactory.SERVICE_DESCRIPTOR);
         Supplier<Executor> managementExecutor = serviceBuilder.requires(Capabilities.MANAGEMENT_EXECUTOR);
         Supplier<ProcessStateNotifier> processStateNotifier = serviceBuilder.requires(ProcessStateNotifier.SERVICE_DESCRIPTOR);
+        Supplier<NotificationHandlerRegistry> notificationHandlerRegistry = serviceBuilder.requires(NotificationHandlerRegistry.SERVICE_DESCRIPTOR);
         Consumer<MetricCollector> metricCollectorConsumer = serviceBuilder.provides(WILDFLY_COLLECTOR);
-        MetricsCollectorService service = new MetricsCollectorService(modelControllerClientFactory, managementExecutor, processStateNotifier, metricCollectorConsumer);
+        MetricsCollectorService service = new MetricsCollectorService(modelControllerClientFactory, managementExecutor,
+                processStateNotifier, notificationHandlerRegistry, metricCollectorConsumer);
         serviceBuilder.setInstance(service)
                 .install();
     }
 
     MetricsCollectorService(Supplier<ModelControllerClientFactory> modelControllerClientFactory, Supplier<Executor> managementExecutor,
-                            Supplier<ProcessStateNotifier> processStateNotifier, Consumer<MetricCollector> metricCollectorConsumer) {
+                            Supplier<ProcessStateNotifier> processStateNotifier,
+                            Supplier<NotificationHandlerRegistry> notificationHandlerRegistry,
+                            Consumer<MetricCollector> metricCollectorConsumer) {
         this.modelControllerClientFactory = modelControllerClientFactory;
         this.managementExecutor = managementExecutor;
         this.processStateNotifier = processStateNotifier;
+        this.notificationHandlerRegistry = notificationHandlerRegistry;
         this.metricCollectorConsumer = metricCollectorConsumer;
     }
 
@@ -58,12 +66,17 @@ public class MetricsCollectorService implements Service<MetricCollector> {
         modelControllerClient = modelControllerClientFactory.get().createClient(managementExecutor.get());
 
         metricCollector = new MetricCollector(modelControllerClient, processStateNotifier.get());
+        notificationHandler = new MetricsNotificationHandler(notificationHandlerRegistry.get(),
+                metricCollector::resourceAdded, metricCollector::resourceRemoved);
+        notificationHandler.start();
 
         metricCollectorConsumer.accept(metricCollector);
     }
 
     @Override
     public void stop(StopContext context) {
+        notificationHandler.stop();
+        metricCollector.stop();
         metricCollectorConsumer.accept(null);
         metricCollector = null;
 

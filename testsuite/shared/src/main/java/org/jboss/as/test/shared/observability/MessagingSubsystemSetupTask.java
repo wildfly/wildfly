@@ -2,7 +2,7 @@
  * Copyright The WildFly Authors
  * SPDX-License-Identifier: Apache-2.0
  */
-package org.wildfly.test.integration.observability.micrometer;
+package org.jboss.as.test.shared.observability;
 
 import java.util.List;
 
@@ -55,22 +55,19 @@ public class MessagingSubsystemSetupTask implements ServerSetupTask {
         }
         if (!resourceExists(managementClient, IN_VM_CONNECTOR_ADDRESS)) {
             executeCli(managementClient,
-                    "/subsystem=%s/server=default/in-vm-connector=in-vm:add(server-id=0)",
-                    MESSAGING_SUBSYSTEM);
+                    "/subsystem=%s/server=default/in-vm-connector=in-vm:add(server-id=0)", MESSAGING_SUBSYSTEM);
             inVmConnectorAdded = true;
         }
         if (!resourceExists(managementClient, IN_VM_ACCEPTOR_ADDRESS)) {
             executeCli(managementClient,
-                    "/subsystem=%s/server=default/in-vm-acceptor=in-vm:add(server-id=0)",
-                    MESSAGING_SUBSYSTEM);
+                    "/subsystem=%s/server=default/in-vm-acceptor=in-vm:add(server-id=0)", MESSAGING_SUBSYSTEM);
             inVmAcceptorAdded = true;
         }
         if (!resourceExists(managementClient, CONNECTION_FACTORY_ADDRESS)) {
             executeCli(managementClient,
                     "/subsystem=%s/server=default/pooled-connection-factory=activemq-ra:add(" +
                             "entries=[java:/JmsXA,java:jboss/DefaultJMSConnectionFactory]," +
-                            "connectors=[in-vm],transaction=xa)",
-                    MESSAGING_SUBSYSTEM);
+                            "connectors=[in-vm],transaction=xa)", MESSAGING_SUBSYSTEM);
             connectionFactoryAdded = true;
         }
         if (serverAdded || inVmConnectorAdded || inVmAcceptorAdded || connectionFactoryAdded) {
@@ -81,19 +78,13 @@ public class MessagingSubsystemSetupTask implements ServerSetupTask {
     @Override
     public void tearDown(ManagementClient managementClient, String containerId) throws Exception {
         if (connectionFactoryAdded && resourceExists(managementClient, CONNECTION_FACTORY_ADDRESS)) {
-            executeCli(managementClient,
-                    "/subsystem=%s/server=default/pooled-connection-factory=activemq-ra:remove",
-                    MESSAGING_SUBSYSTEM);
+            executeCli(managementClient, "/subsystem=%s/server=default/pooled-connection-factory=activemq-ra:remove", MESSAGING_SUBSYSTEM);
         }
         if (inVmAcceptorAdded && resourceExists(managementClient, IN_VM_ACCEPTOR_ADDRESS)) {
-            executeCli(managementClient,
-                    "/subsystem=%s/server=default/in-vm-acceptor=in-vm:remove",
-                    MESSAGING_SUBSYSTEM);
+            executeCli(managementClient, "/subsystem=%s/server=default/in-vm-acceptor=in-vm:remove", MESSAGING_SUBSYSTEM);
         }
         if (inVmConnectorAdded && resourceExists(managementClient, IN_VM_CONNECTOR_ADDRESS)) {
-            executeCli(managementClient,
-                    "/subsystem=%s/server=default/in-vm-connector=in-vm:remove",
-                    MESSAGING_SUBSYSTEM);
+            executeCli(managementClient, "/subsystem=%s/server=default/in-vm-connector=in-vm:remove", MESSAGING_SUBSYSTEM);
         }
         if (serverAdded && resourceExists(managementClient, SERVER_ADDRESS)) {
             executeCli(managementClient, "/subsystem=%s/server=default:remove", MESSAGING_SUBSYSTEM);
@@ -136,5 +127,4 @@ public class MessagingSubsystemSetupTask implements ServerSetupTask {
             throw new IllegalStateException(Operations.getFailureDescription(result).asString());
         }
     }
-
 }

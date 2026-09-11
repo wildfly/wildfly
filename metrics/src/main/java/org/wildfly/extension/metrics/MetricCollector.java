@@ -23,6 +23,7 @@ import org.jboss.as.controller.LocalModelControllerClient;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ProcessStateNotifier;
+import org.jboss.as.controller.client.helpers.Operations;
 import org.jboss.as.controller.client.helpers.MeasurementUnit;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.registry.AttributeAccess;
@@ -34,10 +35,71 @@ import org.jboss.dmr.ModelType;
 public class MetricCollector {
     private final LocalModelControllerClient modelControllerClient;
     private final ProcessStateNotifier processStateNotifier;
+    private ImmutableManagementResourceRegistration modelRegistration;
+    private MetricRegistration modelMetrics;
+    private boolean exposeAnySubsystem;
+    private List<String> exposedSubsystems;
+    private String prefix;
 
     public MetricCollector(LocalModelControllerClient modelControllerClient, ProcessStateNotifier processStateNotifier) {
         this.modelControllerClient = modelControllerClient;
         this.processStateNotifier = processStateNotifier;
+    }
+
+    public synchronized void collectModelMetrics(Resource resource,
+                                                  ImmutableManagementResourceRegistration registration,
+                                                  boolean exposeAnySubsystem,
+                                                  List<String> exposedSubsystems,
+                                                  String prefix,
+                                                  MetricRegistration metricRegistration) {
+        modelRegistration = registration;
+        modelMetrics = metricRegistration;
+        this.exposeAnySubsystem = exposeAnySubsystem;
+        this.exposedSubsystems = List.copyOf(exposedSubsystems);
+        this.prefix = prefix;
+        collectResourceMetrics(resource, registration, Function.identity(), this.exposeAnySubsystem, this.exposedSubsystems,
+                this.prefix, metricRegistration);
+    }
+
+    public synchronized void resourceAdded(PathAddress address) {
+        if (modelRegistration == null || modelMetrics == null) {
+            return;
+        }
+        for (int attempt = 0; attempt < 10; attempt++) {
+            try {
+                ModelNode result = modelControllerClient.execute(Operations.createReadResourceOperation(address.toModelNode()));
+                if (Operations.isSuccessfulOutcome(result)) {
+                    Resource resource = Resource.Factory.create();
+                    resource.writeModel(result.get("result"));
+                    collectResourceMetrics(resource, modelRegistration, address, Function.identity(), modelMetrics,
+                            exposeAnySubsystem, exposedSubsystems, prefix);
+                    return;
+                }
+            } catch (RuntimeException ignored) {
+                // The resource may not be visible yet, or may have been removed before its notification was delivered.
+            }
+            try {
+                Thread.sleep(100);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                return;
+            }
+        }
+    }
+
+    public synchronized void resourceRemoved(PathAddress address) {
+        if (modelMetrics != null) {
+            modelMetrics.unregister(address);
+        }
+    }
+
+    public synchronized void stop() {
+        if (modelMetrics != null) {
+            modelMetrics.unregister();
+            modelMetrics = null;
+        }
+        modelRegistration = null;
+        exposedSubsystems = null;
     }
 
     // collect metrics from the resources
@@ -79,6 +141,28 @@ public class MetricCollector {
         }
     }
 
+    public synchronized void collectResourceMetrics(final Resource resource,
+                                                     ImmutableManagementResourceRegistration managementResourceRegistration,
+                                                     PathAddress address,
+                                                     Function<PathAddress, PathAddress> resourceAddressResolver,
+                                                     MetricRegistration registration) {
+        collectResourceMetrics(resource, managementResourceRegistration, address, resourceAddressResolver, registration,
+                exposeAnySubsystem, exposedSubsystems, prefix);
+    }
+
+    private synchronized void collectResourceMetrics(final Resource resource,
+                                                      ImmutableManagementResourceRegistration managementResourceRegistration,
+                                                      PathAddress address,
+                                                      Function<PathAddress, PathAddress> resourceAddressResolver,
+                                                      MetricRegistration registration,
+                                                      boolean exposeAnySubsystem,
+                                                      List<String> exposedSubsystems,
+                                                      String prefix) {
+        collectResourceMetrics0(resource, managementResourceRegistration, address, resourceAddressResolver, registration,
+                exposeAnySubsystem, exposedSubsystems, prefix);
+        registration.register();
+    }
+
     private void collectResourceMetrics0(final Resource current,
                                          ImmutableManagementResourceRegistration managementResourceRegistration,
                                          PathAddress address,
@@ -115,7 +199,6 @@ public class MetricCollector {
             WildFlyMetricMetadata metadata = new WildFlyMetricMetadata(attributeName, resourceAddress, prefix, attributeDescription, unit, isCounter ? COUNTER : GAUGE);
 
             registration.addRegistrationTask(() -> registration.registerMetric(metric, metadata));
-            registration.addUnregistrationTask(metadata.getMetricID());
         }
 
         for (String type : current.getChildTypes()) {

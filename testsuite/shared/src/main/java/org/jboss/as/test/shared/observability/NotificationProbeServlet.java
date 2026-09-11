@@ -2,7 +2,7 @@
  * Copyright The WildFly Authors
  * SPDX-License-Identifier: Apache-2.0
  */
-package org.wildfly.test.integration.observability.micrometer.addremove;
+package org.jboss.as.test.shared.observability;
 
 import java.io.IOException;
 import java.util.List;

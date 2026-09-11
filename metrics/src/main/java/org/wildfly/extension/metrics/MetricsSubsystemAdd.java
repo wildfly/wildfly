@@ -17,7 +17,6 @@ import static org.wildfly.extension.metrics._private.MetricsLogger.LOGGER;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.Function;
 
 import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.OperationContext;
@@ -107,10 +106,8 @@ class MetricsSubsystemAdd extends AbstractBoottimeAddStepHandler {
                     Resource rootResource = context.readResourceFromRoot(EMPTY_ADDRESS);
 
                     MetricRegistration registration = new MetricRegistration(metricRegistry);
-
-                    metricCollector.collectResourceMetrics(rootResource, rootResourceRegistration, Function.identity(),
-                            exposeAnySubsystem, exposedSubsystems, prefix,
-                            registration);
+                    metricCollector.collectModelMetrics(rootResource, rootResourceRegistration,
+                            exposeAnySubsystem, exposedSubsystems, prefix, registration);
                 }
             }, VERIFY);
         }
