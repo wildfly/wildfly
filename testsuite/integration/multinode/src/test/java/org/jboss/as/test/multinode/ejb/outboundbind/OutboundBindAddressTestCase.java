@@ -10,6 +10,8 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STEPS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 
+import java.net.Inet4Address;
+import java.net.Inet6Address;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.util.ArrayList;
@@ -60,15 +62,25 @@ public class OutboundBindAddressTestCase {
     private static final String BIND_ADDRESS;
     private static final int BIND_PORT;
     private static final boolean CAN_TEST_SPECIFIC_BIND_ADDRESS;
+    private static final boolean IS_IPV6_MODE;
+    private static final String DEFAULT_IPV4_LOOPBACK = "127.0.0.1";
+    private static final String DEFAULT_IPV6_LOOPBACK = "::1";
 
     static {
+        // Detect IPv4 vs IPv6 mode from system properties
+        boolean preferIPv4Stack = Boolean.getBoolean("java.net.preferIPv4Stack");
+        boolean preferIPv6Addresses = Boolean.getBoolean("java.net.preferIPv6Addresses");
+        IS_IPV6_MODE = !preferIPv4Stack && preferIPv6Addresses;
+
         String configuredAddress = System.getProperty("test.bind.address");
         String configuredPort = System.getProperty("test.bind.port");
 
         if (configuredAddress != null) {
             BIND_ADDRESS = configuredAddress;
             BIND_PORT = configuredPort != null ? Integer.parseInt(configuredPort) : 0;
-            CAN_TEST_SPECIFIC_BIND_ADDRESS = !BIND_ADDRESS.equals("127.0.0.1");
+            // Check if it's not the default loopback for the current mode
+            String defaultLoopback = IS_IPV6_MODE ? DEFAULT_IPV6_LOOPBACK : DEFAULT_IPV4_LOOPBACK;
+            CAN_TEST_SPECIFIC_BIND_ADDRESS = !BIND_ADDRESS.equals(defaultLoopback);
             System.out.println("OutboundBindAddressTestCase: Using system property configuration");
             System.out.println("  test.bind.address = " + BIND_ADDRESS);
             System.out.println("  test.bind.port = " + BIND_PORT);
@@ -82,7 +94,10 @@ public class OutboundBindAddressTestCase {
                         Enumeration<InetAddress> addresses = ni.getInetAddresses();
                         while (addresses.hasMoreElements()) {
                             InetAddress addr = addresses.nextElement();
-                            if (addr.getAddress().length == 4) {
+                            // Filter by address family based on detected mode
+                            if (IS_IPV6_MODE && addr instanceof Inet6Address) {
+                                loopbackAddresses.add(addr.getHostAddress());
+                            } else if (!IS_IPV6_MODE && addr instanceof Inet4Address) {
                                 loopbackAddresses.add(addr.getHostAddress());
                             }
                         }
@@ -92,14 +107,18 @@ public class OutboundBindAddressTestCase {
                 System.err.println("Failed to enumerate network interfaces: " + e.getMessage());
             }
 
+            String addressFamily = IS_IPV6_MODE ? "IPv6" : "IPv4";
             System.out.println("OutboundBindAddressTestCase: Auto-detecting network interfaces");
-            System.out.println("  Available IPv4 loopback addresses: " + loopbackAddresses);
+            System.out.println("  Network mode: " + addressFamily + " (preferIPv4Stack=" + preferIPv4Stack +
+                             ", preferIPv6Addresses=" + preferIPv6Addresses + ")");
+            System.out.println("  Available " + addressFamily + " loopback addresses: " + loopbackAddresses);
 
-            String selectedAddress = "127.0.0.1";
+            String defaultLoopback = IS_IPV6_MODE ? DEFAULT_IPV6_LOOPBACK : DEFAULT_IPV4_LOOPBACK;
+            String selectedAddress = defaultLoopback;
             boolean canTestSpecific = false;
 
             for (String addr : loopbackAddresses) {
-                if (!addr.equals("127.0.0.1")) {
+                if (!addr.equals(defaultLoopback)) {
                     selectedAddress = addr;
                     canTestSpecific = true;
                     break;
@@ -113,7 +132,7 @@ public class OutboundBindAddressTestCase {
             if (canTestSpecific) {
                 System.out.println("  Selected alternative address: " + BIND_ADDRESS);
             } else {
-                System.out.println("  Using default address: " + BIND_ADDRESS);
+                System.out.println("  Using default " + addressFamily + " loopback: " + BIND_ADDRESS);
             }
         }
 
@@ -121,6 +140,7 @@ public class OutboundBindAddressTestCase {
         System.out.println("  BIND_ADDRESS = " + BIND_ADDRESS);
         System.out.println("  BIND_PORT = " + BIND_PORT);
         System.out.println("  CAN_TEST_SPECIFIC_BIND_ADDRESS = " + CAN_TEST_SPECIFIC_BIND_ADDRESS);
+        System.out.println("  IS_IPV6_MODE = " + IS_IPV6_MODE);
     }
 
     static class ServerSetupTask implements org.jboss.as.arquillian.api.ServerSetupTask {
@@ -252,9 +272,14 @@ public class OutboundBindAddressTestCase {
                     sourceAddress.contains(BIND_ADDRESS));
             System.out.println("  SUCCESS: Specific bind address " + BIND_ADDRESS + " is honored");
         } else {
+            String expectedLoopback = IS_IPV6_MODE ? DEFAULT_IPV6_LOOPBACK : DEFAULT_IPV4_LOOPBACK;
             System.out.println("  Running smoke test (loopback validation only)");
-            Assert.assertTrue("Expected loopback address, got: " + sourceAddress,
-                    sourceAddress.contains("127.0.0.1") || sourceAddress.contains("localhost"));
+            System.out.println("  Expected loopback: " + expectedLoopback);
+            boolean isLoopback = sourceAddress.contains(expectedLoopback) ||
+                                 sourceAddress.contains("localhost") ||
+                                 (IS_IPV6_MODE && (sourceAddress.contains("0:0:0:0:0:0:0:1") ||
+                                                   sourceAddress.contains("0000:0000:0000:0000:0000:0000:0000:0001")));
+            Assert.assertTrue("Expected " + expectedLoopback + " loopback address, got: " + sourceAddress, isLoopback);
             System.out.println("  SUCCESS: Connection works with outbound-bind-address configured");
         }
     }
