@@ -8,13 +8,16 @@ package org.jboss.as.txn.service;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
-import java.util.concurrent.atomic.AtomicReference;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 import com.arjuna.ats.arjuna.common.RecoveryEnvironmentBean;
 import com.arjuna.ats.arjuna.common.recoveryPropertyManager;
+import com.arjuna.ats.arjuna.coordinator.TransactionReaper;
 import com.arjuna.ats.internal.arjuna.recovery.AtomicActionRecoveryModule;
 import com.arjuna.ats.internal.arjuna.recovery.ExpiredTransactionStatusManagerScanner;
 import com.arjuna.ats.internal.jta.recovery.arjunacore.CommitMarkableResourceRecordRecoveryModule;
@@ -29,16 +32,10 @@ import com.arjuna.ats.internal.txoj.recovery.TORecoveryModule;
 import com.arjuna.ats.jbossatx.jta.RecoveryManagerService;
 import com.arjuna.orbportability.internal.utils.PostInitLoader;
 
-import org.jboss.as.controller.ProcessStateNotifier;
 import org.jboss.as.network.ManagedBinding;
 import org.jboss.as.network.SocketBinding;
 import org.jboss.as.network.SocketBindingManager;
-import org.jboss.as.server.suspend.SuspendPriority;
-import org.jboss.as.server.suspend.SuspendableActivityRegistrar;
-import org.jboss.as.server.suspend.SuspendableActivityRegistration;
-import org.jboss.as.txn.config.RecoveryGracefulShutdown;
 import org.jboss.as.txn.logging.TransactionLogger;
-import org.jboss.as.txn.suspend.RecoverySuspendController;
 import org.jboss.msc.Service;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
@@ -55,42 +52,37 @@ import org.omg.CORBA.ORB;
 public class ArjunaRecoveryManagerService implements Service {
 
     private final Consumer<RecoveryManagerService> consumer;
+    private final Consumer<ArjunaRecoveryManagerService> selfConsumer;
     private final Supplier<ORB> orbSupplier;
     private final Supplier<SocketBinding> recoveryBindingSupplier;
     private final Supplier<SocketBinding> statusBindingSupplier;
-    private final Supplier<SuspendableActivityRegistrar> suspendableActivityRegistrarSupplier;
-    private final Supplier<ProcessStateNotifier> processStateSupplier;
     private final Supplier<Executor> executorSupplier;
 
     private RecoveryManagerService recoveryManagerService;
-    private RecoverySuspendController recoverySuspendController;
-    private final AtomicReference<SuspendableActivityRegistration> activityRegistration = new AtomicReference<>();
     private boolean recoveryListener;
     private final boolean jts;
-    private final RecoveryGracefulShutdown gracefulRecoveryShutdown;
+    private volatile int gracefulShutdownTimeout;
     private final Supplier<SocketBindingManager> bindingManagerSupplier;
 
     public ArjunaRecoveryManagerService(final Consumer<RecoveryManagerService> consumer,
+                                        final Consumer<ArjunaRecoveryManagerService> selfConsumer,
                                         final Supplier<SocketBinding> recoveryBindingSupplier,
                                         final Supplier<SocketBinding> statusBindingSupplier,
                                         final Supplier<SocketBindingManager> bindingManagerSupplier,
-                                        final Supplier<SuspendableActivityRegistrar> suspendableActivityRegistrarSupplier,
-                                        final Supplier<ProcessStateNotifier> processStateSupplier,
                                         final Supplier<Executor> executorSupplier,
                                         final Supplier<ORB> orbSupplier,
                                         final boolean recoveryListener, final boolean jts,
-                                        final RecoveryGracefulShutdown gracefulRecoveryShutdown) {
+                                        final int gracefulShutdownTimeout) {
         this.consumer = consumer;
+        this.selfConsumer = selfConsumer;
         this.recoveryBindingSupplier = recoveryBindingSupplier;
         this.statusBindingSupplier = statusBindingSupplier;
-        this.suspendableActivityRegistrarSupplier = suspendableActivityRegistrarSupplier;
         this.bindingManagerSupplier = bindingManagerSupplier;
-        this.processStateSupplier = processStateSupplier;
         this.executorSupplier = executorSupplier;
         this.recoveryListener = recoveryListener;
         this.orbSupplier = orbSupplier;
         this.jts = jts;
-        this.gracefulRecoveryShutdown = gracefulRecoveryShutdown;
+        this.gracefulShutdownTimeout = gracefulShutdownTimeout;
     }
 
     public void start(final StartContext context) throws StartException {
@@ -167,24 +159,63 @@ public class ArjunaRecoveryManagerService implements Service {
                 throw TransactionLogger.ROOT_LOGGER.managerStartFailure(e, "Recovery");
             }
         }
-        recoverySuspendController = new RecoverySuspendController(recoveryManagerService, gracefulRecoveryShutdown, executorSupplier.get());
-        processStateSupplier.get().addPropertyChangeListener(recoverySuspendController);
-        activityRegistration.set(suspendableActivityRegistrarSupplier.get().register(recoverySuspendController, SuspendPriority.LAST));
         consumer.accept(recoveryManagerService);
+        selfConsumer.accept(this);
     }
 
     public void stop(final StopContext context) {
+        selfConsumer.accept(null);
         consumer.accept(null);
-        activityRegistration.getAndSet(null).close();
-        processStateSupplier.get().removePropertyChangeListener(recoverySuspendController);
+
+        final int timeout = this.gracefulShutdownTimeout;
+
+        if (timeout == -1) {
+            doStop();
+            return;
+        }
+
+        context.asynchronous();
+
+        final Executor executor = executorSupplier.get();
+
+        CompletableFuture<Void> gracefulStop = CompletableFuture.runAsync(() -> {
+            TransactionLogger.ROOT_LOGGER.waitingForInFlightTransactions();
+            TransactionReaper.transactionReaper().waitForAllTxnsToTerminate();
+            TransactionLogger.ROOT_LOGGER.inFlightTransactionsTerminated();
+
+            TransactionLogger.ROOT_LOGGER.scanSuspensionInitiated();
+            recoveryManagerService.suspend(false, true);
+            TransactionLogger.ROOT_LOGGER.scanSuspensionCompleted();
+        }, executor);
+
+        if (timeout > 0) {
+            gracefulStop = gracefulStop.orTimeout(timeout, TimeUnit.SECONDS);
+        }
+
+        gracefulStop.whenCompleteAsync((result, exception) -> {
+            if (exception != null) {
+                if (exception instanceof TimeoutException) {
+                    TransactionLogger.ROOT_LOGGER.gracefulShutdownTimedOut(exception);
+                } else {
+                    TransactionLogger.ROOT_LOGGER.gracefulShutdownFailed(exception);
+                }
+            }
+            doStop();
+            context.complete();
+        }, executor);
+    }
+
+    private void doStop() {
         try {
             recoveryManagerService.stop();
         } catch (Exception e) {
-            // todo log
+            TransactionLogger.ROOT_LOGGER.shutdownFailed(e);
         }
         recoveryManagerService.destroy();
         recoveryManagerService = null;
-        recoverySuspendController = null;
     }
 
+    public void setGracefulShutdownTimeout(int gracefulShutdownTimeout) {
+        this.gracefulShutdownTimeout = gracefulShutdownTimeout;
+    }
 }

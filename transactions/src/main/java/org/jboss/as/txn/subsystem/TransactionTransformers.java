@@ -6,7 +6,7 @@
 package org.jboss.as.txn.subsystem;
 
 import static org.jboss.as.txn.subsystem.TransactionExtension.CURRENT_MODEL_VERSION;
-import static org.jboss.as.txn.subsystem.TransactionSubsystemRootResourceDefinition.TRANSACTIONS_RECOVERY_GRACEFUL_SHUTDOWN;
+import static org.jboss.as.txn.subsystem.TransactionSubsystemRootResourceDefinition.GRACEFUL_SHUTDOWN_TIMEOUT;
 
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.transform.ExtensionTransformerRegistration;
@@ -33,8 +33,8 @@ public class TransactionTransformers implements ExtensionTransformerRegistration
         // 7.0.0 --> 6.0.0
         ResourceTransformationDescriptionBuilder builder81 = chainedBuilder.createBuilder(CURRENT_MODEL_VERSION, MODEL_VERSION_EAP81);
         builder81.getAttributeBuilder()
-            .setDiscard(DiscardAttributeChecker.DEFAULT_VALUE, TRANSACTIONS_RECOVERY_GRACEFUL_SHUTDOWN)
-            .addRejectCheck(RejectAttributeChecker.DEFINED, TRANSACTIONS_RECOVERY_GRACEFUL_SHUTDOWN)
+            .setDiscard(DiscardAttributeChecker.DEFAULT_VALUE, GRACEFUL_SHUTDOWN_TIMEOUT)
+            .addRejectCheck(RejectAttributeChecker.DEFINED, GRACEFUL_SHUTDOWN_TIMEOUT)
             .end();
 
         chainedBuilder.buildAndRegister(subsystemRegistration, new ModelVersion[]{MODEL_VERSION_EAP81});

@@ -141,6 +141,48 @@ public class TransactionSubsystemTestCase extends AbstractSubsystemBaseTest {
     }
 
     @Test
+    public void testGracefulShutdownTimeoutDefaultValue() throws Exception {
+        final String subsystemXml = getSubsystemXml();
+        final KernelServices kernelServices = super.createKernelServicesBuilder(createAdditionalInitialization())
+            .setSubsystemXml(subsystemXml).build();
+        Assert.assertTrue("Subsystem boot failed!", kernelServices.isSuccessfulBoot());
+
+        ModelNode operation = createReadAttributeOperation(CommonAttributes.GRACEFUL_SHUTDOWN_TIMEOUT);
+        ModelNode result = kernelServices.executeOperation(operation);
+        Assert.assertEquals("success", result.get("outcome").asString());
+        Assert.assertEquals(-1L, result.get(ModelDescriptionConstants.RESULT).asLong());
+    }
+
+    @Test
+    public void testGracefulShutdownTimeoutValidation() throws Exception {
+        final String subsystemXml = getSubsystemXml();
+        final KernelServices kernelServices = super.createKernelServicesBuilder(createAdditionalInitialization())
+            .setSubsystemXml(subsystemXml).build();
+        Assert.assertTrue("Subsystem boot failed!", kernelServices.isSuccessfulBoot());
+
+        // -1 (skip graceful shutdown) — valid
+        ModelNode operation = createWriteAttributeOperation(CommonAttributes.GRACEFUL_SHUTDOWN_TIMEOUT, new ModelNode(-1));
+        ModelNode result = kernelServices.executeOperation(operation);
+        Assert.assertEquals("success", result.get("outcome").asString());
+
+        // 0 (wait forever) — valid
+        operation = createWriteAttributeOperation(CommonAttributes.GRACEFUL_SHUTDOWN_TIMEOUT, new ModelNode(0));
+        result = kernelServices.executeOperation(operation);
+        Assert.assertEquals("success", result.get("outcome").asString());
+
+        // 300 (positive timeout) — valid
+        operation = createWriteAttributeOperation(CommonAttributes.GRACEFUL_SHUTDOWN_TIMEOUT, new ModelNode(300));
+        result = kernelServices.executeOperation(operation);
+        Assert.assertEquals("success", result.get("outcome").asString());
+
+        // -2 (below minimum) — invalid, must be rejected
+        operation = createWriteAttributeOperation(CommonAttributes.GRACEFUL_SHUTDOWN_TIMEOUT, new ModelNode(-2));
+        result = kernelServices.executeOperation(operation);
+        Assert.assertNotEquals("write-attribute(-2) should have been rejected",
+                "success", result.get("outcome").asString());
+    }
+
+    @Test
     public void testAsyncIOExpressions() throws Exception {
         standardSubsystemTest("async-io-expressions.xml");
     }
@@ -156,7 +198,7 @@ public class TransactionSubsystemTestCase extends AbstractSubsystemBaseTest {
             new FailedOperationTransformationConfig().addFailedAttribute(
                 PathAddress.pathAddress(TransactionExtension.SUBSYSTEM_PATH),
                 new FailedOperationTransformationConfig.NewAttributesConfig(
-                    TransactionSubsystemRootResourceDefinition.TRANSACTIONS_RECOVERY_GRACEFUL_SHUTDOWN)));
+                    TransactionSubsystemRootResourceDefinition.GRACEFUL_SHUTDOWN_TIMEOUT)));
     }
 
     private void testTransformersFull(ModelTestControllerVersion controllerVersion, ModelVersion modelVersion) throws Exception {
@@ -206,6 +248,18 @@ public class TransactionSubsystemTestCase extends AbstractSubsystemBaseTest {
         operation.get(ModelDescriptionConstants.OP).set(ModelDescriptionConstants.READ_ATTRIBUTE_OPERATION);
         operation.get(ModelDescriptionConstants.OP_ADDR).set(address);
         operation.get(ModelDescriptionConstants.NAME).set(name);
+        return operation;
+    }
+
+    private ModelNode createWriteAttributeOperation(String name, ModelNode value) {
+        final ModelNode address = new ModelNode();
+        address.add(ModelDescriptionConstants.SUBSYSTEM, getMainSubsystemName());
+
+        final ModelNode operation = new ModelNode();
+        operation.get(ModelDescriptionConstants.OP).set(ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION);
+        operation.get(ModelDescriptionConstants.OP_ADDR).set(address);
+        operation.get(ModelDescriptionConstants.NAME).set(name);
+        operation.get(ModelDescriptionConstants.VALUE).set(value);
         return operation;
     }
 }

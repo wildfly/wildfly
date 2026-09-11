@@ -92,5 +92,5 @@ interface CommonAttributes {
 
     String CLIENT = "client";
     String STALE_TRANSACTION_TIME = "stale-transaction-time";
-    String TRANSACTIONS_RECOVERY_GRACEFUL_SHUTDOWN = "transactions-recovery-graceful-shutdown";
+    String GRACEFUL_SHUTDOWN_TIMEOUT = "graceful-shutdown-timeout";
 }

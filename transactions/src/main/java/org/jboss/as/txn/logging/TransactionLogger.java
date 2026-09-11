@@ -271,4 +271,16 @@ public interface TransactionLogger extends BasicLogger {
     @LogMessage(level = INFO)
     @Message(id = 49, value = "Transactions subsystem: all in-flight transactions terminated")
     void inFlightTransactionsTerminated();
+
+    @LogMessage(level = WARN)
+    @Message(id = 50, value = "Transactions subsystem: graceful shutdown timed out")
+    void gracefulShutdownTimedOut(@Cause Throwable cause);
+
+    @LogMessage(level = WARN)
+    @Message(id = 51, value = "Transactions subsystem: graceful shutdown failed")
+    void gracefulShutdownFailed(@Cause Throwable cause);
+
+    @LogMessage(level = WARN)
+    @Message(id = 52, value = "Transactions subsystem: Failed to stop recovery manager service")
+    void shutdownFailed(@Cause Throwable cause);
 }

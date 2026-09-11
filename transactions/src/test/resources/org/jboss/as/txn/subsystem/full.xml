@@ -11,7 +11,7 @@
     </core-environment>
     <recovery-environment socket-binding="txn-recovery-environment" status-socket-binding="txn-status-manager"
                           recovery-listener="false"
-                          transactions-recovery-graceful-shutdown="ignore"/>
+                          graceful-shutdown-timeout="-1"/>
     <coordinator-environment statistics-enabled="true" enable-tsm-status="true"
                              default-timeout="300" maximum-timeout="86400"/>
     <object-store path="tx-object-store" relative-to="jboss.server.data.dir"/>
