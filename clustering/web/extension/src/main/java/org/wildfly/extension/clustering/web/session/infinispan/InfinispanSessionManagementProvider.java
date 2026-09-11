@@ -36,6 +36,7 @@ import org.wildfly.clustering.web.service.routing.RouteLocatorProvider;
 import org.wildfly.clustering.web.service.session.DistributableSessionManagementConfiguration;
 import org.wildfly.clustering.web.service.session.DistributableSessionManagementProvider;
 import org.wildfly.clustering.web.service.session.SessionManagerFactoryConfiguration;
+import org.wildfly.extension.clustering.web.logging.ClusteringWebLogger;
 import org.wildfly.extension.clustering.web.session.AbstractSessionManagementProvider;
 import org.wildfly.service.BlockingLifecycle;
 import org.wildfly.subsystem.service.DeploymentServiceInstaller;
@@ -66,6 +67,7 @@ public class InfinispanSessionManagementProvider extends AbstractSessionManageme
                 ExpirationConfiguration expiration = builder.expiration().create();
                 if ((expiration.lifespan() >= 0) || (expiration.maxIdle() >= 0)) {
                     builder.expiration().lifespan(-1).maxIdle(-1);
+                    ClusteringWebLogger.ROOT_LOGGER.expirationDisabled(deploymentCacheConfiguration.getParentName(), deploymentCacheConfiguration.getChildName());
                 }
 
                 OptionalInt size = configuration.getSizeThreshold();
