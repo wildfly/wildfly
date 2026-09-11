@@ -71,7 +71,6 @@ public class ExternalJMSQueueService implements Service<Queue> {
                     final ActiveMQRAConnectionFactory raCf = (ActiveMQRAConnectionFactory) cf;
                     final ServerLocator locator = raCf.getDefaultFactory().getServerLocator();
                     final ClientProtocolManagerFactory protocolManagerFactory = locator.getProtocolManagerFactory();
-                    sessionFactory = locator.createSessionFactory();
                     ClusterTopologyListener listener = new ClusterTopologyListener() {
                         @Override
                         public void nodeUP(TopologyMember member, boolean last) {
@@ -103,11 +102,12 @@ public class ExternalJMSQueueService implements Service<Queue> {
                         public void nodeDown(long eventUID, String nodeID) {
                         }
                     };
+                    locator.addClusterTopologyListener(listener);
+                    sessionFactory = locator.createSessionFactory();
                     Collection<TopologyMemberImpl> members = locator.getTopology().getMembers();
-                    if (members == null || members.isEmpty() || members.size() == 1) {
+                    if (members == null || members.isEmpty()) {
                         config.createQueue(cf, managementQueue, queueName);
                     }
-                    locator.addClusterTopologyListener(listener);
                 } else {
                     config.createQueue(cf, managementQueue, queueName);
                 }

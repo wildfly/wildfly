@@ -10,9 +10,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 import javax.net.ssl.SSLContext;
 
+import org.jboss.as.clustering.jgroups.logging.JGroupsLogger;
 import org.jboss.as.network.SocketBinding;
 import org.jboss.as.network.SocketBindingManager;
 import org.jgroups.EmptyMessage;
@@ -51,6 +53,17 @@ public class JChannelFactory implements ChannelFactory {
 
     @Override
     public JChannel createChannel(String id) throws Exception {
+        // Transport always resides at the bottom of the stack
+        // Add RELAY2 to the top of the stack, if defined
+        List<ProtocolConfiguration<? extends Protocol>> configurations = Stream.concat(Stream.concat(Stream.of(this.configuration.getTransport()), this.configuration.getProtocols().stream()), this.configuration.getRelay().map(Stream::of).orElse(Stream.empty())).toList();
+
+        if (configurations.stream().noneMatch(ProtocolConfiguration::providesConfidentiality)) {
+            JGroupsLogger.CONFIG_LOGGER.allowsPublicMessages(id);
+        }
+        if (configurations.stream().noneMatch(ProtocolConfiguration::providesAuthentication)) {
+            JGroupsLogger.CONFIG_LOGGER.allowsUnauthenticatedMembers(id);
+        }
+
         FORK fork = new FORK();
         fork.enableStats(this.configuration.isStatisticsEnabled());
         fork.setUnknownForkHandler(new UnknownForkHandler() {
@@ -85,16 +98,10 @@ public class JChannelFactory implements ChannelFactory {
         });
 
         Map<String, SocketBinding> bindings = new HashMap<>();
-        // Transport always resides at the bottom of the stack
-        List<ProtocolConfiguration<? extends Protocol>> transports = Collections.singletonList(this.configuration.getTransport());
-        // Add RELAY2 to the top of the stack, if defined
-        List<ProtocolConfiguration<? extends Protocol>> relays = this.configuration.getRelay().isPresent() ? Collections.singletonList(this.configuration.getRelay().get()) : Collections.emptyList();
-        List<Protocol> protocols = new ArrayList<>(transports.size() + this.configuration.getProtocols().size() + relays.size() + 1);
-        for (List<ProtocolConfiguration<? extends Protocol>> protocolConfigs : List.of(transports, this.configuration.getProtocols(), relays)) {
-            for (ProtocolConfiguration<? extends Protocol> protocolConfig : protocolConfigs) {
-                protocols.add(protocolConfig.createProtocol(this.configuration));
-                bindings.putAll(protocolConfig.getSocketBindings());
-            }
+        List<Protocol> protocols = new ArrayList<>(configurations.size() + 1);
+        for (ProtocolConfiguration<? extends Protocol> configuration : configurations) {
+            protocols.add(configuration.createProtocol(this.configuration));
+            bindings.putAll(configuration.getSocketBindings());
         }
         // Add implicit FORK to the top of the stack
         protocols.add(fork);

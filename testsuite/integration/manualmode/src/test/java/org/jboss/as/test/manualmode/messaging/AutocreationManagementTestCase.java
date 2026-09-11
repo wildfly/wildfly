@@ -184,12 +184,13 @@ public class AutocreationManagementTestCase {
     public static WebArchive createArchive() {
         return create(WebArchive.class, DEPLOYMENT + ".war")
                 .addClasses(HelloWorldQueueMDB.class, HelloWorldTopicMDB.class, HelloWorldMDBServletClient.class)
-                .addAsWebInfResource(new StringAsset("<beans xmlns=\"https://jakarta.ee/xml/ns/jakartaee\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n"
-                        + "       xsi:schemaLocation=\"\n"
-                        + "         https://jakarta.ee/xml/ns/jakartaee\n"
-                        + "         https://jakarta.ee/xml/ns/jakartaee/beans_4_0.xsd\"\n"
-                        + "       bean-discovery-mode=\"all\">\n"
-                        + "</beans>"), "beans.xml");
+                .addAsWebInfResource(new StringAsset("""
+                                                     <beans xmlns="https://jakarta.ee/xml/ns/jakartaee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                                                            xsi:schemaLocation="
+                                                              https://jakarta.ee/xml/ns/jakartaee
+                                                              https://jakarta.ee/xml/ns/jakartaee/beans_4_0.xsd"
+                                                            bean-discovery-mode="all">
+                                                     </beans>"""), "beans.xml");
     }
 
     class LoggerSetup extends TestLogHandlerSetupTask {
@@ -201,7 +202,7 @@ public class AutocreationManagementTestCase {
 
         @Override
         public String getLevel() {
-            return "INFO";
+            return "DEBUG";
         }
 
         @Override
