@@ -10,12 +10,15 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DES
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 import static org.wildfly.extension.metrics.MetricMetadata.Type.COUNTER;
 import static org.wildfly.extension.metrics.MetricMetadata.Type.GAUGE;
+import static org.wildfly.extension.metrics._private.MetricsLogger.LOGGER;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Executor;
 import java.util.function.Function;
 
 import org.jboss.as.controller.ControlledProcessState;
@@ -24,6 +27,7 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ProcessStateNotifier;
 import org.jboss.as.controller.client.helpers.MeasurementUnit;
+import org.jboss.as.controller.client.helpers.Operations;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
@@ -34,22 +38,152 @@ import org.jboss.dmr.ModelType;
 public class MetricCollector {
     private final LocalModelControllerClient modelControllerClient;
     private final ProcessStateNotifier processStateNotifier;
+    private final ResourceMetricsRetryQueue resourceMetricsRetryQueue;
+    private ImmutableManagementResourceRegistration modelRegistration;
+    private MetricRegistration modelMetrics;
+    private boolean exposeAnySubsystem;
+    private List<String> exposedSubsystems;
+    private String prefix;
+    private final Map<PathAddress, RuntimeException> lastFailures = new ConcurrentHashMap<>();
 
-    public MetricCollector(LocalModelControllerClient modelControllerClient, ProcessStateNotifier processStateNotifier) {
+    public MetricCollector(LocalModelControllerClient modelControllerClient, ProcessStateNotifier processStateNotifier,
+                           Executor executor) {
         this.modelControllerClient = modelControllerClient;
         this.processStateNotifier = processStateNotifier;
+        this.resourceMetricsRetryQueue = new ResourceMetricsRetryQueue(executor, this::collectResourceMetrics,
+                this::unableToCollectMetrics);
+    }
+
+    /**
+     * Queues a newly added management resource for asynchronous metric collection.
+     *
+     * @param address the address of the added resource
+     */
+    public synchronized void resourceAdded(PathAddress address) {
+        if (modelRegistration == null || modelMetrics == null) {
+            return;
+        }
+        resourceMetricsRetryQueue.add(address);
+    }
+
+    /**
+     * Removes metrics and pending collection work for a removed management resource.
+     *
+     * @param address the address of the removed resource
+     */
+    public synchronized void resourceRemoved(PathAddress address) {
+        resourceMetricsRetryQueue.remove(address);
+        lastFailures.remove(address);
+        if (modelMetrics != null) {
+            modelMetrics.unregister(address);
+        }
+    }
+
+    /**
+     * Stops asynchronous collection and unregisters all model metrics.
+     */
+    public synchronized void stop() {
+        resourceMetricsRetryQueue.stop();
+        lastFailures.clear();
+        if (modelMetrics != null) {
+            modelMetrics.unregister();
+            modelMetrics = null;
+        }
+        modelRegistration = null;
+        exposedSubsystems = null;
+    }
+
+    /**
+     * Attempts one read and registration for a queued resource.
+     *
+     * @param pendingResource the queued resource generation
+     * @param attempt the one-based attempt number
+     * @return {@code true} when processing is complete, otherwise retry
+     */
+    private boolean collectResourceMetrics(ResourceMetricsRetryQueue.PendingResource pendingResource, int attempt) {
+        PathAddress address = pendingResource.address();
+        ImmutableManagementResourceRegistration registration;
+        MetricRegistration metrics;
+        boolean exposeAny;
+        List<String> exposed;
+        String metricPrefix;
+        synchronized (this) {
+            registration = modelRegistration;
+            metrics = modelMetrics;
+            exposeAny = exposeAnySubsystem;
+            exposed = exposedSubsystems;
+            metricPrefix = prefix;
+        }
+        if (registration == null || metrics == null) {
+            return true;
+        }
+        ModelNode result = null;
+        try {
+            result = modelControllerClient.execute(Operations.createReadResourceOperation(address.toModelNode(), true));
+        } catch (RuntimeException e) {
+            synchronized (this) {
+                if (resourceMetricsRetryQueue.isPending(pendingResource)) {
+                    lastFailures.put(address, e);
+                }
+            }
+        }
+        if (result != null && Operations.isSuccessfulOutcome(result)) {
+            Resource resource = Resource.Factory.create();
+            resource.writeModel(result.get("result"));
+            synchronized (this) {
+                if (System.nanoTime() < pendingResource.deadline()
+                        && resourceMetricsRetryQueue.isPending(pendingResource)
+                        && modelRegistration == registration && modelMetrics == metrics) {
+                    registerDynamicResource(resource, registration, address, Function.identity(), metrics,
+                                            exposeAny, exposed, metricPrefix);
+                    lastFailures.remove(address);
+                    return true;
+                }
+                if (resourceMetricsRetryQueue.isPending(pendingResource)) {
+                    lastFailures.remove(address);
+                }
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Logs the final failure after an address has exhausted its retry deadline.
+     *
+     * @param address the resource address that could not be read
+     * @param attempts the number of attempts made
+     */
+    private synchronized void unableToCollectMetrics(PathAddress address, int attempts) {
+        RuntimeException lastFailure = lastFailures.remove(address);
+        LOGGER.unableToCollectMetrics(address, attempts,
+                lastFailure == null ? "" : ": " + lastFailure.getMessage());
+    }
+
+    public synchronized void collectRootResourceMetrics(Resource resource,
+                                                        ImmutableManagementResourceRegistration registration,
+                                                        boolean exposeAnySubsystem,
+                                                        List<String> exposedSubsystems,
+                                                        String prefix,
+                                                        MetricRegistration metricRegistration) {
+        modelRegistration = registration;
+        modelMetrics = metricRegistration;
+        this.exposeAnySubsystem = exposeAnySubsystem;
+        this.exposedSubsystems = List.copyOf(exposedSubsystems);
+        this.prefix = prefix;
+        registerResourceMetrics(resource, registration, Function.identity(), this.exposeAnySubsystem,
+                                this.exposedSubsystems, this.prefix, metricRegistration);
     }
 
     // collect metrics from the resources
-    public synchronized void collectResourceMetrics(final Resource resource,
+    public synchronized void registerResourceMetrics(final Resource resource,
                                                      ImmutableManagementResourceRegistration managementResourceRegistration,
                                                      Function<PathAddress, PathAddress> resourceAddressResolver,
                                                      boolean exposeAnySubsystem,
                                                      List<String> exposedSubsystems,
                                                      String prefix,
                                                      MetricRegistration registration) {
-        collectResourceMetrics0(resource, managementResourceRegistration, EMPTY_ADDRESS, resourceAddressResolver, registration,
-                exposeAnySubsystem, exposedSubsystems, prefix);
+        createRegistrationTasks(resource, managementResourceRegistration, EMPTY_ADDRESS, resourceAddressResolver, registration,
+                                exposeAnySubsystem, exposedSubsystems, prefix);
         // Defer the actual registration until the server is running and they can be collected w/o errors
         PropertyChangeListener listener = new PropertyChangeListener() {
             @Override
@@ -79,7 +213,20 @@ public class MetricCollector {
         }
     }
 
-    private void collectResourceMetrics0(final Resource current,
+    private synchronized void registerDynamicResource(final Resource resource,
+                                                      ImmutableManagementResourceRegistration managementResourceRegistration,
+                                                      PathAddress address,
+                                                      Function<PathAddress, PathAddress> resourceAddressResolver,
+                                                      MetricRegistration registration,
+                                                      boolean exposeAnySubsystem,
+                                                      List<String> exposedSubsystems,
+                                                      String prefix) {
+        createRegistrationTasks(resource, managementResourceRegistration, address, resourceAddressResolver, registration,
+                                exposeAnySubsystem, exposedSubsystems, prefix);
+        registration.register();
+    }
+
+    private void createRegistrationTasks(final Resource current,
                                          ImmutableManagementResourceRegistration managementResourceRegistration,
                                          PathAddress address,
                                          Function<PathAddress, PathAddress> resourceAddressResolver,
@@ -115,14 +262,13 @@ public class MetricCollector {
             WildFlyMetricMetadata metadata = new WildFlyMetricMetadata(attributeName, resourceAddress, prefix, attributeDescription, unit, isCounter ? COUNTER : GAUGE);
 
             registration.addRegistrationTask(() -> registration.registerMetric(metric, metadata));
-            registration.addUnregistrationTask(metadata.getMetricID());
         }
 
         for (String type : current.getChildTypes()) {
             for (Resource.ResourceEntry entry : current.getChildren(type)) {
                 final PathElement pathElement = entry.getPathElement();
                 final PathAddress childAddress = address.append(pathElement);
-                collectResourceMetrics0(entry, managementResourceRegistration, childAddress, resourceAddressResolver, registration, exposeAnySubsystem, exposedSubsystems, prefix);
+                createRegistrationTasks(entry, managementResourceRegistration, childAddress, resourceAddressResolver, registration, exposeAnySubsystem, exposedSubsystems, prefix);
             }
         }
     }

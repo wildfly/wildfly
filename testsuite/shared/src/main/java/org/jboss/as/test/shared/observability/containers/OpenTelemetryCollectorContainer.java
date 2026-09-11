@@ -254,4 +254,7 @@ public class OpenTelemetryCollectorContainer extends BaseContainer<OpenTelemetry
         });
     }
 
+    private List<PrometheusMetric> buildPrometheusMetrics(String body) {
+        return PrometheusMetric.buildPrometheusMetrics(body);
+    }
 }

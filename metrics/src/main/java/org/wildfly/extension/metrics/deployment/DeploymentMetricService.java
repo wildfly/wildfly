@@ -76,12 +76,14 @@ public class DeploymentMetricService implements Service {
     @Override
     public void start(StartContext startContext) {
         registration = new MetricRegistration(metricRegistry.get());
-        metricCollector.get().collectResourceMetrics(rootResource,
-                managementResourceRegistration,
-                // prepend the deployment address to the subsystem resource address
-                address -> deploymentAddress.append(address),
-                exposeAnySubsystem, exposedSubsystems, prefix,
-                registration);
+        metricCollector.get().registerResourceMetrics(rootResource,
+                                                      managementResourceRegistration,
+                                                      // prepend the deployment address to the subsystem resource address
+                                                      address -> deploymentAddress.append(
+                                                              address),
+                                                      exposeAnySubsystem, exposedSubsystems,
+                                                      prefix,
+                                                      registration);
     }
 
     @Override
