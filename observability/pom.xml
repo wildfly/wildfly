@@ -25,6 +25,7 @@
     <name>WildFly: Observability modules</name>
 
     <modules>
+        <module>shared</module>
         <module>micrometer-api</module>
         <module>micrometer</module>
         <module>opentelemetry-api</module>

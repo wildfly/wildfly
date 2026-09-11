@@ -26,10 +26,10 @@ import org.wildfly.extension.opentelemetry.api.OpenTelemetryCdiExtension;
 import org.wildfly.extension.opentelemetry.api.WildFlyOpenTelemetryConfig;
 
 class OpenTelemetryDeploymentProcessor implements DeploymentUnitProcessor {
-    private final Supplier<WildFlyOpenTelemetryConfig> openTelemetryConfig;
+    private final Supplier<WildFlyOpenTelemetryConfig> configSupplier;
 
-    public OpenTelemetryDeploymentProcessor(Supplier<WildFlyOpenTelemetryConfig> openTelemetryConfig) {
-        this.openTelemetryConfig = openTelemetryConfig;
+    public OpenTelemetryDeploymentProcessor(Supplier<WildFlyOpenTelemetryConfig> configSupplier) {
+        this.configSupplier = configSupplier;
     }
 
     @Override
@@ -51,13 +51,16 @@ class OpenTelemetryDeploymentProcessor implements DeploymentUnitProcessor {
                 return;
             }
 
-            Map<String, String> config = new HashMap<>(openTelemetryConfig.get().properties());
-            if (!config.containsKey(WildFlyOpenTelemetryConfig.OTEL_SERVICE_NAME)) {
-                config.put(WildFlyOpenTelemetryConfig.OTEL_SERVICE_NAME, getServiceName(deploymentUnit));
+            WildFlyOpenTelemetryConfig serverConfig = configSupplier.get();
+
+            Map<String, String> properties = new HashMap<>(serverConfig.getProperties());
+            if (!properties.containsKey(WildFlyOpenTelemetryConfig.OTEL_SERVICE_NAME)) {
+                properties.put(WildFlyOpenTelemetryConfig.OTEL_SERVICE_NAME, getServiceName(deploymentUnit));
             }
 
-            weldCapability.registerExtensionInstance(
-                    new OpenTelemetryCdiExtension(!openTelemetryConfig.get().isMpTelemetryInstalled(), config), deploymentUnit);
+            weldCapability.registerExtensionInstance(new OpenTelemetryCdiExtension(
+                            serverConfig.withProperties(properties)),
+                    deploymentUnit);
             weldCapability.registerExtensionInstance(new OpenTelemetryExtension(), deploymentUnit);
         } catch (CapabilityServiceSupport.NoSuchCapabilityException e) {
             // We should not be here since the subsystem depends on weld capability. Just in case ...

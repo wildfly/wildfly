@@ -55,12 +55,12 @@ public class MicrometerSetupTask extends AbstractSetupTask {
 
     @Override
     public void tearDown(final ManagementClient managementClient, String containerId) throws Exception {
-        otelCollector.stop();
-
         executeOp(managementClient, clearAttribute("undertow", STATISTICS_ENABLED));
         executeOp(managementClient, Operations.createRemoveOperation(MICROMETER_SUBSYSTEM));
         executeOp(managementClient, Operations.createRemoveOperation(MICROMETER_EXTENSION));
 
         ServerReload.executeReloadAndWaitForCompletion(managementClient);
+
+        otelCollector.stop();
     }
 }

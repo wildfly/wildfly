@@ -7,14 +7,20 @@ package org.wildfly.extension.micrometer;
 import static org.wildfly.extension.micrometer.MicrometerExtensionLogger.MICROMETER_LOGGER;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.function.Function;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
+import io.micrometer.core.instrument.Meter;
+import io.micrometer.core.instrument.Tag;
 import io.micrometer.core.instrument.binder.jvm.ClassLoaderMetrics;
 import io.micrometer.core.instrument.binder.jvm.JvmGcMetrics;
 import io.micrometer.core.instrument.binder.jvm.JvmMemoryMetrics;
 import io.micrometer.core.instrument.binder.jvm.JvmThreadDeadlockMetrics;
 import io.micrometer.core.instrument.binder.jvm.JvmThreadMetrics;
 import io.micrometer.core.instrument.binder.system.ProcessorMetrics;
+import io.micrometer.core.instrument.config.MeterFilter;
 import org.jboss.as.controller.LocalModelControllerClient;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ProcessStateNotifier;
@@ -24,6 +30,7 @@ import org.wildfly.extension.micrometer.jmx.JmxMicrometerCollector;
 import org.wildfly.extension.micrometer.metrics.MetricRegistration;
 import org.wildfly.extension.micrometer.metrics.MicrometerCollector;
 import org.wildfly.extension.micrometer.registry.WildFlyCompositeRegistry;
+import org.wildfly.extension.observability.shared.FilterModel;
 
 public class MicrometerService {
     private final WildFlyMicrometerConfig micrometerConfig;
@@ -44,9 +51,13 @@ public class MicrometerService {
     }
 
     public void start() {
-        registerSystemMetrics();
+        registerMeterFilters();
         registerModelMetrics();
-        registerJmxMetrics();
+
+        if (micrometerConfig.exposeSystemMetrics()) {
+            registerSystemMetrics();
+            registerJmxMetrics();
+        }
     }
 
     public WildFlyCompositeRegistry getMicrometerRegistry() {
@@ -57,6 +68,24 @@ public class MicrometerService {
                                                                   ImmutableManagementResourceRegistration mrr,
                                                                   Function<PathAddress, PathAddress> addressResolver) {
         return micrometerCollector.collectResourceMetrics(resource, mrr, addressResolver);
+    }
+
+    private void registerMeterFilters() {
+        List<FilterModel> filters = micrometerConfig.getFilters();
+        filters.stream().filter(filter -> filter.outcome() == FilterModel.Outcome.ACCEPT)
+                .forEach(filter -> micrometerRegistry.config().meterFilter(toMeterFilter(filter)));
+        filters.stream().filter(filter -> filter.outcome() == FilterModel.Outcome.REJECT)
+                .forEach(filter -> micrometerRegistry.config().meterFilter(toMeterFilter(filter)));
+    }
+
+    private static MeterFilter toMeterFilter(FilterModel filter) {
+        Predicate<Meter.Id> predicate = id ->
+                filter.matches(id.getName(), id.getTags().stream()
+                        .collect(Collectors.toMap(Tag::getKey, Tag::getValue)));
+        return switch (filter.outcome()) {
+            case ACCEPT -> MeterFilter.accept(predicate);
+            case REJECT -> MeterFilter.deny(predicate);
+        };
     }
 
     private void registerSystemMetrics() {

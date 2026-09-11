@@ -110,6 +110,10 @@
         </dependency>
         <dependency>
             <groupId>${full.maven.groupId}</groupId>
+            <artifactId>wildfly-observability-shared</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>${full.maven.groupId}</groupId>
             <artifactId>wildfly-opentelemetry-api</artifactId>
         </dependency>
 

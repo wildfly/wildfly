@@ -7,12 +7,17 @@ package org.wildfly.extension.opentelemetry.api;
 
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
-import io.smallrye.opentelemetry.api.OpenTelemetryConfig;
+import org.wildfly.extension.observability.shared.FilterModel;
 import org.wildfly.service.descriptor.NullaryServiceDescriptor;
 
-public final class WildFlyOpenTelemetryConfig implements OpenTelemetryConfig {
+public final class WildFlyOpenTelemetryConfig {
+    public static final String INSTRUMENTATION_VERSION =
+            Optional.ofNullable(WildFlyOpenTelemetryConfig.class.getPackage().getImplementationVersion())
+                    .orElse("SNAPSHOT");
     public static NullaryServiceDescriptor<WildFlyOpenTelemetryConfig> SERVICE_DESCRIPTOR =
             NullaryServiceDescriptor.of("org.wildfly.extension.opentelemetry.config",
                 WildFlyOpenTelemetryConfig.class);
@@ -34,24 +39,44 @@ public final class WildFlyOpenTelemetryConfig implements OpenTelemetryConfig {
 
     private final Map<String, String> properties;
     private final boolean mpTelemetryInstalled;
+    private final List<FilterModel> filters;
+    private final boolean systemMetrics;
 
-    WildFlyOpenTelemetryConfig(Map<String, String> properties, boolean mpTelemetryInstalled) {
+    public WildFlyOpenTelemetryConfig(Map<String, String> properties,
+                               boolean mpTelemetryInstalled,
+                               List<FilterModel> filters,
+                               boolean systemMetrics) {
         this.properties = Collections.unmodifiableMap(properties);
         this.mpTelemetryInstalled = mpTelemetryInstalled;
+        this.filters = filters;
+        this.systemMetrics = systemMetrics;
     }
 
-    @Override
-    public Map<String, String> properties() {
+    public Map<String, String> getProperties() {
         return properties;
+    }
+
+    public List<FilterModel> getFilters() {
+        return filters;
     }
 
     public boolean isMpTelemetryInstalled() {
         return mpTelemetryInstalled;
     }
 
+    public boolean exposeSystemMetrics() {
+        return systemMetrics;
+    }
+
+    public WildFlyOpenTelemetryConfig withProperties(Map<String, String> properties) {
+        return new WildFlyOpenTelemetryConfig(properties, mpTelemetryInstalled, filters, systemMetrics);
+    }
+
     public static class Builder {
         final Map<String, String> properties = new HashMap<>();
         private boolean mpTelemetryInstalled;
+        private List<FilterModel> filters = List.of();
+        private boolean systemMetrics = true;
 
         public Builder() {
             addValue(OTEL_EXPORTER_OTLP_PROTOCOL, "grpc");
@@ -140,8 +165,18 @@ public final class WildFlyOpenTelemetryConfig implements OpenTelemetryConfig {
             return this;
         }
 
+        public Builder setFilters(List<FilterModel> filters) {
+            this.filters = filters;
+            return this;
+        }
+
+        public Builder setSystemMetrics(boolean systemMetrics) {
+            this.systemMetrics = systemMetrics;
+            return this;
+        }
+
         public WildFlyOpenTelemetryConfig build() {
-            return new WildFlyOpenTelemetryConfig(properties, mpTelemetryInstalled);
+            return new WildFlyOpenTelemetryConfig(properties, mpTelemetryInstalled, filters, systemMetrics);
         }
 
         /**

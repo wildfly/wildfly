@@ -1,0 +1,142 @@
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           targetNamespace="urn:wildfly:micrometer:community:2.1"
+           xmlns="urn:wildfly:micrometer:community:2.1"
+           elementFormDefault="qualified"
+           version="2.1">
+
+    <!-- The subsystem root element -->
+    <xs:element name="subsystem">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="filters" minOccurs="0">
+                    <xs:complexType>
+                        <xs:sequence>
+                            <xs:element name="filter" minOccurs="0" maxOccurs="unbounded">
+                                <xs:complexType>
+                                    <xs:attribute name="outcome" default="reject">
+                                        <xs:annotation>
+                                            <xs:documentation>
+                                                The outcome of the filter: accept or reject.
+                                            </xs:documentation>
+                                        </xs:annotation>
+                                        <xs:simpleType>
+                                            <xs:restriction base="xs:string">
+                                                <xs:enumeration value="accept"/>
+                                                <xs:enumeration value="reject"/>
+                                            </xs:restriction>
+                                        </xs:simpleType>
+                                    </xs:attribute>
+                                    <xs:attribute name="field" use="required">
+                                        <xs:annotation>
+                                            <xs:documentation>
+                                                The meter field to match against (e.g., name, tag, type).
+                                            </xs:documentation>
+                                        </xs:annotation>
+                                        <xs:simpleType>
+                                            <xs:restriction base="xs:string">
+                                                <xs:enumeration value="meter-name"/>
+                                                <xs:enumeration value="tag-name"/>
+                                                <xs:enumeration value="tag-value"/>
+                                            </xs:restriction>
+                                        </xs:simpleType>
+                                    </xs:attribute>
+                                    <xs:attribute name="condition" use="required">
+                                        <xs:annotation>
+                                            <xs:documentation>
+                                                The condition to apply (e.g., equals, contains, matches).
+                                            </xs:documentation>
+                                        </xs:annotation>
+                                        <xs:simpleType>
+                                            <xs:restriction base="xs:string">
+                                                <xs:enumeration value="starts-with"/>
+                                                <xs:enumeration value="ends-with"/>
+                                                <xs:enumeration value="contains"/>
+                                                <xs:enumeration value="equals"/>
+                                            </xs:restriction>
+                                        </xs:simpleType>
+                                    </xs:attribute>
+                                    <xs:attribute name="negate" type="xs:boolean" default="false">
+                                        <xs:annotation>
+                                            <xs:documentation>
+                                                Whether to negate the condition.
+                                            </xs:documentation>
+                                        </xs:annotation>
+                                    </xs:attribute>
+                                    <xs:attribute name="value" type="xs:string" use="required">
+                                        <xs:annotation>
+                                            <xs:documentation>
+                                                The value to match against the field using the condition.
+                                            </xs:documentation>
+                                        </xs:annotation>
+                                    </xs:attribute>
+                                    <xs:attribute name="name" type="xs:string" use="required">
+                                        <xs:annotation>
+                                            <xs:documentation>
+                                                A unique name for this filter.
+                                            </xs:documentation>
+                                        </xs:annotation>
+                                    </xs:attribute>
+                                </xs:complexType>
+                            </xs:element>
+                        </xs:sequence>
+                    </xs:complexType>
+                </xs:element>
+                <xs:element name="otlp-registry" minOccurs="0">
+                    <xs:complexType>
+                        <xs:attribute name="endpoint" type="xs:string">
+                            <xs:annotation>
+                                <xs:documentation>
+                                    The URL of the OTLP collector to which metrics will be published.
+                                </xs:documentation>
+                            </xs:annotation>
+                        </xs:attribute>
+                        <xs:attribute name="step" type="xs:int" default="60">
+                            <xs:annotation>
+                                <xs:documentation>
+                                    The step size (reporting frequency) to use in seconds.
+                                </xs:documentation>
+                            </xs:annotation>
+                        </xs:attribute>
+                    </xs:complexType>
+                </xs:element>
+                <xs:element name="prometheus-registry" minOccurs="0">
+                    <xs:complexType>
+                        <xs:attribute name="context" type="xs:string">
+                            <xs:annotation>
+                                <xs:documentation>
+                                    The context root from which to serve Prometheus metrics (e.g., "/metrics" or "/prometheus")
+                                </xs:documentation>
+                            </xs:annotation>
+                        </xs:attribute>
+                        <xs:attribute name="security-enabled" type="xs:boolean" default="false">
+                            <xs:annotation>
+                                <xs:documentation>
+                                    Whether the context should be secured
+                                </xs:documentation>
+                            </xs:annotation>
+                        </xs:attribute>
+                    </xs:complexType>
+                </xs:element>
+            </xs:sequence>
+
+            <xs:attribute name="exposed-subsystems" type="xs:string" default="[&quot;*&quot;]">
+                <xs:annotation>
+                    <xs:documentation>
+                        The names of the WildFly subsystems that exposes their metrics (or '*' to expose any subsystem metrics).
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:attribute>
+            <xs:attribute type="xs:boolean" name="system-metrics" default="true">
+                <xs:annotation>
+                    <xs:documentation>
+                        Whether system and JVM metrics are registered
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:attribute>
+        </xs:complexType>
+    </xs:element>
+</xs:schema>
