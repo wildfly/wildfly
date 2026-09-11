@@ -54,8 +54,8 @@ public class MicrometerCollector implements AutoCloseable {
                                                     ImmutableManagementResourceRegistration mrr,
                                                     Function<PathAddress, PathAddress> addressResolver) {
         MetricRegistration registration = new MetricRegistration(micrometerRegistry);
-
         queueMetricRegistration(resource, mrr, EMPTY_ADDRESS, addressResolver, registration);
+
         // Defer the actual registration until the server is running, and they can be collected w/o errors
         this.processStateNotifier.addPropertyChangeListener(new PropertyChangeListener() {
             @Override
@@ -78,6 +78,15 @@ public class MicrometerCollector implements AutoCloseable {
         }
 
         return registration;
+    }
+
+    public synchronized void collectResourceMetrics(Resource resource,
+                                                     ImmutableManagementResourceRegistration mrr,
+                                                     PathAddress address,
+                                                     Function<PathAddress, PathAddress> addressResolver,
+                                                     MetricRegistration registration) {
+        queueMetricRegistration(resource, mrr, address, addressResolver, registration);
+        registration.register();
     }
 
     @Override

@@ -43,6 +43,10 @@ public class WildFlyMetric implements Metric {
         this.attributeName = attributeName;
     }
 
+    public PathAddress getAddress() {
+        return address;
+    }
+
     @Override
     public OptionalDouble getValue() {
         ModelNode result = readAttributeValue(address, attributeName);
