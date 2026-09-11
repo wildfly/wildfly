@@ -107,6 +107,11 @@
                                     <artifactId>wildfly-vertx-feature-pack-content</artifactId>
                                     <type>zip</type>
                                 </artifactItem>
+                                <artifactItem>
+                                    <groupId>org.wildfly.security.vault</groupId>
+                                    <artifactId>wildfly-vault-galleon-shared</artifactId>
+                                    <type>zip</type>
+                                </artifactItem>
                             </artifactItems>
                             <!-- The feature-pack build seems to ignore such things anyway, but to be
                                  robust exclude artifact metadata content -->
@@ -262,7 +267,7 @@
                 <configuration>
                     <sortByGroupIdAndArtifactId>true</sortByGroupIdAndArtifactId>
                     <excludedGroups>org.wildfly.galleon-plugins</excludedGroups>
-                    <excludedArtifacts>wildfly-preview-ee-bom|wildfly-standard-preview-ee-bom|wildfly-ee-galleon-pack|wildfly-jar-boot|wildfly-core-feature-pack-common|wildfly-core-feature-pack-galleon-common|wildfly-elytron\z|wildfly-feature-pack-galleon-shared|wildfly-preview-feature-pack-galleon-local</excludedArtifacts>
+                    <excludedArtifacts>wildfly-preview-ee-bom|wildfly-standard-preview-ee-bom|wildfly-ee-galleon-pack|wildfly-jar-boot|wildfly-core-feature-pack-common|wildfly-core-feature-pack-galleon-common|wildfly-elytron\z|wildfly-feature-pack-galleon-shared|wildfly-preview-feature-pack-galleon-local|wildfly-vault-galleon-shared</excludedArtifacts>
                 </configuration>
                 <executions>
                     <execution>
@@ -277,6 +282,7 @@
                                 <licensesConfigFile>${basedir}/target/resources/license/core-feature-pack-ee-10-api-licenses.xml</licensesConfigFile>
                                 <licensesConfigFile>${basedir}/target/resources/license/wildfly-mvc-krazo-licenses.xml</licensesConfigFile>
                                 <licensesConfigFile>${basedir}/target/resources/license/wildfly-vertx-extension-licenses.xml</licensesConfigFile>
+                                <licensesConfigFile>${basedir}/target/resources/license/wildfly-vault-feature-pack-licenses.xml</licensesConfigFile>
                                 <licensesConfigFile>${ee.galleon.shared.resources.directory}/license/licenses.xml</licensesConfigFile>
                                 <licensesConfigFile>${full.galleon.shared.resources.directory}/license/licenses.xml</licensesConfigFile>
                                 <licensesConfigFile>${galleon.local.resources.directory}/license/licenses.xml</licensesConfigFile>
@@ -372,7 +378,7 @@
 
                1) galleon-local
                2) full galleon-shared
-               3) mvc-krazo and vertx
+               3) mvc-krazo, vertx and hashicorp-vault
                4) ee galleon-shared-preview
                5) ee galleon-shared
                6) core
@@ -411,6 +417,12 @@
                     <artifactId>transformer</artifactId>
                 </exclusion>
             </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>org.wildfly.security.vault</groupId>
+            <artifactId>wildfly-vault-galleon-shared</artifactId>
+            <type>pom</type>
+            <scope>provided</scope>
         </dependency>
 
         <dependency>
@@ -575,6 +587,7 @@
                                                 <exclude>${ee.maven.groupId}:wildfly-preview-feature-pack-galleon-local</exclude>
                                                 <exclude>org.wildfly:mvc-krazo-galleon-shared</exclude>
                                                 <exclude>org.wildfly.extras.vertx:wildfly-vertx-feature-pack-content</exclude>
+                                                <exclude>org.wildfly.security.vault:wildfly-vault-galleon-shared</exclude>
                                             </excludes>
                                         </banTransitiveDependencies>
                                     </rules>
