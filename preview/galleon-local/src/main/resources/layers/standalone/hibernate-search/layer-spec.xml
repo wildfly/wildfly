@@ -30,5 +30,6 @@
         <!-- This package is the difference between this WildFly Preview version of the layer
              and the one in standard WildFly. Standard WildFly does not provide this module. -->
         <package name="org.hibernate.search.mapper.orm.outboxpolling" optional="true"/>
+        <package name="org.hibernate.search.jakarta.batch" optional="true"/>
     </packages>
 </layer-spec>

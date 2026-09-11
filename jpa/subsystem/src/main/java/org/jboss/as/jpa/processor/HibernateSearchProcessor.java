@@ -23,6 +23,7 @@ import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.DotName;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleLoader;
+import org.jboss.modules.filter.PathFilters;
 import org.jipijapa.plugin.spi.PersistenceUnitMetadata;
 
 import java.util.List;
@@ -125,5 +126,14 @@ public class HibernateSearchProcessor implements DeploymentUnitProcessor {
                                 setOptional(false).setExport(true).setExport(true).setImportServices(true).setUserSpecified(false).build());
             }
         }
+
+        // Jakarta Batch integration: add as optional so it's available when batch-jberet is provisioned.
+        // META-INF import is needed for CDI bean discovery (there is a beans.xml in the module jar).
+        final ModuleDependency jakartaBatchDep = ModuleDependency.Builder.of(moduleLoader,
+                        Configuration.HIBERNATE_SEARCH_MODULE_MAPPER_BATCH)
+                .setOptional(true).setExport(true).setImportServices(true).setUserSpecified(false).build();
+        jakartaBatchDep.addImportFilter(PathFilters.getMetaInfFilter(), true);
+        jakartaBatchDep.addImportFilter(PathFilters.getMetaInfSubdirectoriesFilter(), true);
+        moduleSpecification.addSystemDependency(jakartaBatchDep);
     }
 }

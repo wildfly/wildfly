@@ -190,6 +190,11 @@ public class Configuration {
     public static final String HIBERNATE_SEARCH_MODULE_MAPPER_ORM_OUTBOXPOLLING = "org.hibernate.search.mapper.orm.outboxpolling";
 
     /**
+     * name of the Hibernate Search module providing the Jakarta Batch integration
+     */
+    public static final String HIBERNATE_SEARCH_MODULE_MAPPER_BATCH = "org.hibernate.search.jakarta.batch";
+
+    /**
      * name of the Hibernate Search module providing the Lucene backend
      */
     public static final String HIBERNATE_SEARCH_MODULE_BACKEND_LUCENE = "org.hibernate.search.backend.lucene";
