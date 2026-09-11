@@ -18,7 +18,6 @@
             <property name="managementPort">9990</property>
             <property name="serverConfig">${jboss.server.config.file.name:standalone-microprofile.xml}</property>
             <property name="waitForPorts">9990</property>
-            <property name="waitForPortsTimeoutInSeconds">10</property>
         </configuration>
     </container>
 </arquillian>
