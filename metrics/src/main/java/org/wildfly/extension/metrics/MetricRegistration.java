@@ -5,12 +5,15 @@
 package org.wildfly.extension.metrics;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
+
+import org.jboss.as.controller.PathAddress;
 
 public class MetricRegistration {
 
     private final List<Runnable> registrationTasks = new ArrayList<>();
-    private final List<MetricID> unregistrationTasks = new ArrayList<>();
+    private final List<RegisteredMetric> metrics = new ArrayList<>();
     private final MetricRegistry registry;
     private final List<Runnable> cleanUpTasks = new ArrayList<>();
 
@@ -31,10 +34,10 @@ public class MetricRegistration {
 
     public void unregister() {
         synchronized (registry) {
-            for (MetricID id : unregistrationTasks) {
-                registry.unregister(id);
+            for (RegisteredMetric metric : metrics) {
+                registry.unregister(metric.id());
             }
-            unregistrationTasks.clear();
+            metrics.clear();
         }
         for (Runnable cleanupTask : cleanUpTasks) {
             cleanupTask.run();
@@ -42,19 +45,34 @@ public class MetricRegistration {
         cleanUpTasks.clear();
     }
 
+    public void unregister(PathAddress address) {
+        synchronized (registry) {
+            for (Iterator<RegisteredMetric> iterator = metrics.iterator(); iterator.hasNext();) {
+                RegisteredMetric metric = iterator.next();
+                if (isDescendant(address, metric.address())) {
+                    registry.unregister(metric.id());
+                    iterator.remove();
+                }
+            }
+        }
+    }
+
     public void registerMetric(WildFlyMetric metric, WildFlyMetricMetadata metadata) {
         registry.registerMetric(metric, metadata);
+        metrics.add(new RegisteredMetric(metadata.getMetricID(), metadata.getAddress()));
     }
 
     public synchronized void addRegistrationTask(Runnable task) {
         registrationTasks.add(task);
     }
 
-    public void addUnregistrationTask(MetricID metricID) {
-        unregistrationTasks.add(metricID);
-    }
-
     void addCleanUpTask(Runnable task) {
         cleanUpTasks.add(task);
     }
+
+    private static boolean isDescendant(PathAddress parent, PathAddress candidate) {
+        return candidate.size() >= parent.size() && parent.equals(candidate.subAddress(0, parent.size()));
+    }
+
+    private record RegisteredMetric(MetricID id, PathAddress address) { }
 }

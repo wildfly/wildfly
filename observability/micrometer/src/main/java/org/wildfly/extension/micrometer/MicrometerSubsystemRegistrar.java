@@ -19,7 +19,6 @@ import java.util.Map;
 import java.util.TreeMap;
 import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
 
@@ -32,6 +31,7 @@ import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ProcessStateNotifier;
+import org.jboss.as.controller.notification.NotificationHandlerRegistry;
 import org.jboss.as.controller.ResourceDefinition;
 import org.jboss.as.controller.ResourceRegistration;
 import org.jboss.as.controller.SimpleAttributeDefinition;
@@ -49,7 +49,6 @@ import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
-import org.wildfly.common.function.Functions;
 import org.wildfly.extension.micrometer.otlp.OtlpRegistryDefinitionRegistrar;
 import org.wildfly.extension.micrometer.prometheus.PrometheusRegistryDefinitionRegistrar;
 import org.wildfly.extension.micrometer.registry.WildFlyCompositeRegistry;
@@ -175,6 +174,7 @@ public class MicrometerSubsystemRegistrar implements SubsystemResourceDefinition
         ServiceDependency<ModelControllerClientFactory> mccf = ServiceDependency.on(ModelControllerClientFactory.SERVICE_DESCRIPTOR);
         ServiceDependency<Executor> executor = ServiceDependency.on(Capabilities.MANAGEMENT_EXECUTOR);
         ServiceDependency<ProcessStateNotifier> processStateNotifier = ServiceDependency.on(ProcessStateNotifier.SERVICE_DESCRIPTOR);
+        ServiceDependency<NotificationHandlerRegistry> notificationRegistry = ServiceDependency.on(NotificationHandlerRegistry.SERVICE_DESCRIPTOR);
 
         Supplier<MicrometerService> serviceSupplier = () -> new MicrometerService.Builder()
                 .micrometerConfig(micrometerConfig)
@@ -190,18 +190,26 @@ public class MicrometerSubsystemRegistrar implements SubsystemResourceDefinition
             // Given that this step runs in the VERIFY stage, and our service was started eagerly, the
             // service reference _should_ be non-null.
             if (service != null) {
-                service.collectResourceMetrics(context.readResourceFromRoot(EMPTY_ADDRESS),
-                    context.getRootResourceRegistration(), Function.identity());
+                service.collectModelMetrics(context.readResourceFromRoot(EMPTY_ADDRESS),
+                    context.getRootResourceRegistration());
             }
         }, OperationContext.Stage.VERIFY);
 
         installers.add(ServiceInstaller.BlockingBuilder.of(serviceSupplier)
             .provides(MICROMETER_SERVICE)
             .requires(List.of(registry, mccf, executor, processStateNotifier))
-            .withLifecycle(BlockingLifecycle.compose(MicrometerService::start, Functions.discardingConsumer()))
+            .withLifecycle(BlockingLifecycle.compose(MicrometerService::start, MicrometerService::stop))
             .withCaptor(captor::set) // capture the provided value
             .startWhen(StartWhen.INSTALLED)
             .build());
+
+        ServiceDependency<MicrometerService> micrometerService = ServiceDependency.on(MICROMETER_SERVICE);
+        installers.add(ServiceInstaller.BlockingBuilder.of(() -> new MicrometerNotificationHandler(notificationRegistry.get(),
+                        micrometerService.get()::resourceAdded, micrometerService.get()::resourceRemoved))
+                .requires(List.of(notificationRegistry, micrometerService))
+                .withLifecycle(BlockingLifecycle.compose(MicrometerNotificationHandler::start, MicrometerNotificationHandler::stop))
+                .startWhen(StartWhen.INSTALLED)
+                .build());
 
         return ResourceServiceInstaller.combine(installers);
     }
