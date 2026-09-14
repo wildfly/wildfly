@@ -268,9 +268,12 @@ public class OutboundBindAddressTestCase {
 
         if (CAN_TEST_SPECIFIC_BIND_ADDRESS) {
             System.out.println("  Validating specific bind address is honored");
-            Assert.assertTrue("Expected configured bind address " + BIND_ADDRESS + " in source address, got: " + sourceAddress,
-                    sourceAddress.contains(BIND_ADDRESS));
-            System.out.println("  SUCCESS: Specific bind address " + BIND_ADDRESS + " is honored");
+            // Strip scope identifier (%) from IPv6 addresses for comparison
+            // IPv6 scope identifiers are included when enumerating interfaces but not in TCP connection reporting
+            String bindAddressWithoutScope = BIND_ADDRESS.replaceFirst("%.*", "");
+            Assert.assertTrue("Expected configured bind address " + bindAddressWithoutScope + " in source address, got: " + sourceAddress,
+                    sourceAddress.contains(bindAddressWithoutScope));
+            System.out.println("  SUCCESS: Specific bind address " + bindAddressWithoutScope + " is honored");
         } else {
             String expectedLoopback = IS_IPV6_MODE ? DEFAULT_IPV6_LOOPBACK : DEFAULT_IPV4_LOOPBACK;
             System.out.println("  Running smoke test (loopback validation only)");
