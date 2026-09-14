@@ -85,7 +85,7 @@ public class OutboundBindAddressTestCase {
             System.out.println("  test.bind.address = " + BIND_ADDRESS);
             System.out.println("  test.bind.port = " + BIND_PORT);
         } else {
-            List<String> loopbackAddresses = new ArrayList<>();
+            List<InetAddress> loopbackAddresses = new ArrayList<>();
             try {
                 Enumeration<NetworkInterface> interfaces = NetworkInterface.getNetworkInterfaces();
                 while (interfaces.hasMoreElements()) {
@@ -96,9 +96,9 @@ public class OutboundBindAddressTestCase {
                             InetAddress addr = addresses.nextElement();
                             // Filter by address family based on detected mode
                             if (IS_IPV6_MODE && addr instanceof Inet6Address) {
-                                loopbackAddresses.add(addr.getHostAddress());
+                                loopbackAddresses.add(addr);
                             } else if (!IS_IPV6_MODE && addr instanceof Inet4Address) {
-                                loopbackAddresses.add(addr.getHostAddress());
+                                loopbackAddresses.add(addr);
                             }
                         }
                     }
@@ -111,17 +111,33 @@ public class OutboundBindAddressTestCase {
             System.out.println("OutboundBindAddressTestCase: Auto-detecting network interfaces");
             System.out.println("  Network mode: " + addressFamily + " (preferIPv4Stack=" + preferIPv4Stack +
                              ", preferIPv6Addresses=" + preferIPv6Addresses + ")");
-            System.out.println("  Available " + addressFamily + " loopback addresses: " + loopbackAddresses);
+
+            // Display addresses without scope identifiers for cleaner output
+            List<String> displayAddresses = new ArrayList<>();
+            for (InetAddress addr : loopbackAddresses) {
+                try {
+                    displayAddresses.add(InetAddress.getByAddress(addr.getAddress()).getHostAddress());
+                } catch (Exception e) {
+                    displayAddresses.add(addr.getHostAddress());
+                }
+            }
+            System.out.println("  Available " + addressFamily + " loopback addresses: " + displayAddresses);
 
             String defaultLoopback = IS_IPV6_MODE ? DEFAULT_IPV6_LOOPBACK : DEFAULT_IPV4_LOOPBACK;
             String selectedAddress = defaultLoopback;
             boolean canTestSpecific = false;
 
-            for (String addr : loopbackAddresses) {
-                if (!addr.equals(defaultLoopback)) {
-                    selectedAddress = addr;
-                    canTestSpecific = true;
-                    break;
+            for (InetAddress addr : loopbackAddresses) {
+                try {
+                    // Get address without scope identifier
+                    String addrStr = InetAddress.getByAddress(addr.getAddress()).getHostAddress();
+                    if (!addrStr.equals(defaultLoopback)) {
+                        selectedAddress = addrStr;
+                        canTestSpecific = true;
+                        break;
+                    }
+                } catch (Exception e) {
+                    // Fallback to original address
                 }
             }
 
@@ -268,12 +284,9 @@ public class OutboundBindAddressTestCase {
 
         if (CAN_TEST_SPECIFIC_BIND_ADDRESS) {
             System.out.println("  Validating specific bind address is honored");
-            // Strip scope identifier (%) from IPv6 addresses for comparison
-            // IPv6 scope identifiers are included when enumerating interfaces but not in TCP connection reporting
-            String bindAddressWithoutScope = BIND_ADDRESS.replaceFirst("%.*", "");
-            Assert.assertTrue("Expected configured bind address " + bindAddressWithoutScope + " in source address, got: " + sourceAddress,
-                    sourceAddress.contains(bindAddressWithoutScope));
-            System.out.println("  SUCCESS: Specific bind address " + bindAddressWithoutScope + " is honored");
+            Assert.assertTrue("Expected configured bind address " + BIND_ADDRESS + " in source address, got: " + sourceAddress,
+                    sourceAddress.contains(BIND_ADDRESS));
+            System.out.println("  SUCCESS: Specific bind address " + BIND_ADDRESS + " is honored");
         } else {
             String expectedLoopback = IS_IPV6_MODE ? DEFAULT_IPV6_LOOPBACK : DEFAULT_IPV4_LOOPBACK;
             System.out.println("  Running smoke test (loopback validation only)");
