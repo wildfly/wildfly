@@ -687,11 +687,6 @@
         </dependency>
 
         <dependency>
-            <groupId>jakarta.json.bind</groupId>
-            <artifactId>jakarta.json.bind-api</artifactId>
-        </dependency>
-
-        <dependency>
             <groupId>jakarta.mail</groupId>
             <artifactId>jakarta.mail-api</artifactId>
         </dependency>
@@ -1327,11 +1322,6 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-        </dependency>
-
-        <dependency>
-            <groupId>org.eclipse.yasson</groupId>
-            <artifactId>yasson</artifactId>
         </dependency>
 
         <dependency>
