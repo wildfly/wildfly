@@ -53,6 +53,16 @@
             <classifier>version</classifier>
             <type>txt</type>
         </dependency>
+
+        <dependency>
+            <groupId>jakarta.json.bind</groupId>
+            <artifactId>jakarta.json.bind-api</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.eclipse.yasson</groupId>
+            <artifactId>yasson</artifactId>
+        </dependency>
     </dependencies>
 
     <build>

@@ -31,7 +31,8 @@
     <name>WildFly Preview: Dependency Management (Base Dependencies)</name>
 
     <properties>
-
+        <version.jakarta.json.bind.api>3.1.0-M1</version.jakarta.json.bind.api>
+        <version.org.eclipse.yasson>3.1.0-M1</version.org.eclipse.yasson>
     </properties>
 
     <dependencyManagement>
@@ -50,6 +51,35 @@
                 <classifier>version</classifier>
                 <type>txt</type>
                 <version>${ee.maven.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>jakarta.json.bind</groupId>
+                <artifactId>jakarta.json.bind-api</artifactId>
+                <version>${version.jakarta.json.bind.api}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.eclipse.yasson</groupId>
+                <artifactId>yasson</artifactId>
+                <version>${version.org.eclipse.yasson}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                    <!-- This seems to require an explicit exclusion for yasson 1.0.4 -->
+                    <exclusion>
+                        <groupId>org.glassfish</groupId>
+                        <artifactId>jakarta.json</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
 
             <dependency>
