@@ -267,18 +267,21 @@ public class EJB3SubsystemRootResourceDefinition extends SimpleResourceDefinitio
 
     private final boolean registerRuntimeOnly;
     private final PathManager pathManager;
+    private final AtomicReference<String> defaultDistinctName;
+    private final AtomicBoolean defaultAllowEjbRegex;
+    private final AtomicReference<String> defaultResourceAdapterName;
     private final AtomicReference<String> defaultSecurityDomainName;
     private final Set<ApplicationSecurityDomainConfig> knownApplicationSecurityDomains;
     private final List<String> outflowSecurityDomains;
     private final AtomicBoolean denyAccessByDefault;
 
     EJB3SubsystemRootResourceDefinition(boolean registerRuntimeOnly, PathManager pathManager) {
-        this(registerRuntimeOnly, pathManager, new AtomicReference<>(), new CopyOnWriteArraySet<>(), new CopyOnWriteArrayList<>(), new AtomicBoolean(false));
+        this(registerRuntimeOnly, pathManager, new AtomicReference<>(), new AtomicBoolean(false), new AtomicReference<>(), new AtomicReference<>(), new CopyOnWriteArraySet<>(), new CopyOnWriteArrayList<>(), new AtomicBoolean(false));
     }
 
-    private EJB3SubsystemRootResourceDefinition(boolean registerRuntimeOnly, PathManager pathManager, AtomicReference<String> defaultSecurityDomainName, Set<ApplicationSecurityDomainConfig> knownApplicationSecurityDomains, List<String> outflowSecurityDomains, AtomicBoolean denyAccessByDefault) {
+    private EJB3SubsystemRootResourceDefinition(boolean registerRuntimeOnly, PathManager pathManager, AtomicReference<String> defaultDistinctName, AtomicBoolean defaultAllowEjbRegex, AtomicReference<String> defaultResourceAdapterName, AtomicReference<String> defaultSecurityDomainName, Set<ApplicationSecurityDomainConfig> knownApplicationSecurityDomains, List<String> outflowSecurityDomains, AtomicBoolean denyAccessByDefault) {
         super(new Parameters(PathElement.pathElement(SUBSYSTEM, EJB3Extension.SUBSYSTEM_NAME), EJB3Extension.getResourceDescriptionResolver(EJB3Extension.SUBSYSTEM_NAME))
-                .setAddHandler(new EJB3SubsystemAdd(defaultSecurityDomainName, knownApplicationSecurityDomains, outflowSecurityDomains, denyAccessByDefault))
+                .setAddHandler(new EJB3SubsystemAdd(defaultDistinctName, defaultAllowEjbRegex, defaultResourceAdapterName, defaultSecurityDomainName, knownApplicationSecurityDomains, outflowSecurityDomains, denyAccessByDefault))
                 .setRemoveHandler(EJB3SubsystemRemove.INSTANCE)
                 .setAddRestartLevel(OperationEntry.Flag.RESTART_ALL_SERVICES)
                 .setRemoveRestartLevel(OperationEntry.Flag.RESTART_ALL_SERVICES)
@@ -286,6 +289,9 @@ public class EJB3SubsystemRootResourceDefinition extends SimpleResourceDefinitio
         );
         this.registerRuntimeOnly = registerRuntimeOnly;
         this.pathManager = pathManager;
+        this.defaultDistinctName = defaultDistinctName;
+        this.defaultAllowEjbRegex = defaultAllowEjbRegex;
+        this.defaultResourceAdapterName = defaultResourceAdapterName;
         this.defaultSecurityDomainName = defaultSecurityDomainName;
         this.knownApplicationSecurityDomains = knownApplicationSecurityDomains;
         this.outflowSecurityDomains = outflowSecurityDomains;
@@ -326,7 +332,7 @@ public class EJB3SubsystemRootResourceDefinition extends SimpleResourceDefinitio
         resourceRegistration.registerReadWriteAttribute(DEFAULT_MDB_INSTANCE_POOL, null, EJB3SubsystemDefaultPoolWriteHandler.MDB_POOL);
         resourceRegistration.registerReadWriteAttribute(DEFAULT_ENTITY_BEAN_INSTANCE_POOL, null, EJB3SubsystemDefaultPoolWriteHandler.ENTITY_BEAN_POOL);
         resourceRegistration.registerReadWriteAttribute(DEFAULT_ENTITY_BEAN_OPTIMISTIC_LOCKING, null, EJB3SubsystemDefaultEntityBeanOptimisticLockingWriteHandler.INSTANCE);
-        resourceRegistration.registerReadWriteAttribute(DEFAULT_RESOURCE_ADAPTER_NAME, null, DefaultResourceAdapterWriteHandler.INSTANCE);
+        resourceRegistration.registerReadWriteAttribute(DEFAULT_RESOURCE_ADAPTER_NAME, null, new DefaultResourceAdapterWriteHandler(this.defaultResourceAdapterName));
         resourceRegistration.registerReadWriteAttribute(DEFAULT_SINGLETON_BEAN_ACCESS_TIMEOUT, null, DefaultSingletonBeanAccessTimeoutWriteHandler.INSTANCE);
         resourceRegistration.registerReadWriteAttribute(DEFAULT_STATEFUL_BEAN_ACCESS_TIMEOUT, null, DefaultStatefulBeanAccessTimeoutWriteHandler.INSTANCE);
         resourceRegistration.registerReadWriteAttribute(DEFAULT_STATEFUL_BEAN_SESSION_TIMEOUT, null, DefaultStatefulBeanSessionTimeoutWriteHandler.INSTANCE);
@@ -341,9 +347,9 @@ public class EJB3SubsystemRootResourceDefinition extends SimpleResourceDefinitio
         });
         resourceRegistration.registerReadWriteAttribute(STATISTICS_ENABLED, null, StatisticsEnabledWriteHandler.INSTANCE);
         resourceRegistration.registerReadWriteAttribute(PASS_BY_VALUE, null, EJBRemoteInvocationPassByValueWriteHandler.INSTANCE);
-        resourceRegistration.registerReadWriteAttribute(DEFAULT_DISTINCT_NAME, null, EJBDefaultDistinctNameWriteHandler.INSTANCE);
+        resourceRegistration.registerReadWriteAttribute(DEFAULT_DISTINCT_NAME, null, new EJBDefaultDistinctNameWriteHandler(DEFAULT_DISTINCT_NAME, this.defaultDistinctName));
         resourceRegistration.registerReadWriteAttribute(LOG_EJB_EXCEPTIONS, null, ExceptionLoggingWriteHandler.INSTANCE);
-        resourceRegistration.registerReadWriteAttribute(ALLOW_EJB_NAME_REGEX, null, EJBNameRegexWriteHandler.INSTANCE);
+        resourceRegistration.registerReadWriteAttribute(ALLOW_EJB_NAME_REGEX, null, new EJBNameRegexWriteHandler(ALLOW_EJB_NAME_REGEX, this.defaultAllowEjbRegex));
 
         final EJBDefaultSecurityDomainWriteHandler defaultSecurityDomainWriteHandler = new EJBDefaultSecurityDomainWriteHandler(DEFAULT_SECURITY_DOMAIN, this.defaultSecurityDomainName);
         resourceRegistration.registerReadWriteAttribute(DEFAULT_SECURITY_DOMAIN, null, defaultSecurityDomainWriteHandler);

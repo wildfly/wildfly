@@ -12,13 +12,14 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Properties;
 import java.util.Set;
+import java.util.function.Supplier;
+
 import jakarta.ejb.MessageDriven;
 import jakarta.jms.MessageListener;
 
 import org.jboss.as.ee.component.DeploymentDescriptorEnvironment;
 import org.jboss.as.ee.metadata.MetadataCompleteMarker;
 import org.jboss.as.ee.structure.EJBAnnotationPropertyReplacement;
-import org.jboss.as.ejb3.component.messagedriven.DefaultResourceAdapterService;
 import org.jboss.as.ejb3.component.messagedriven.MessageDrivenComponentDescription;
 import org.jboss.as.ejb3.deployment.EjbJarDescription;
 import org.jboss.as.ejb3.logging.EjbLogger;
@@ -39,9 +40,6 @@ import org.jboss.metadata.ejb.spec.ActivationConfigPropertyMetaData;
 import org.jboss.metadata.ejb.spec.EnterpriseBeanMetaData;
 import org.jboss.metadata.ejb.spec.MessageDrivenBeanMetaData;
 import org.jboss.metadata.property.PropertyReplacer;
-import org.jboss.msc.service.ServiceController;
-import org.jboss.msc.service.ServiceName;
-import org.jboss.msc.service.ServiceRegistry;
 
 /**
  * User: jpai
@@ -50,10 +48,12 @@ public class MessageDrivenComponentDescriptionFactory extends EJBComponentDescri
 
     private static final DotName MESSAGE_DRIVEN_ANNOTATION_NAME = DotName.createSimple(MessageDriven.class.getName());
     private final boolean defaultMdbPoolAvailable;
+    private final Supplier<String> defaultResourceAdapterName;
 
-    public MessageDrivenComponentDescriptionFactory(final boolean appclient, final boolean defaultMdbPoolAvailable) {
+    public MessageDrivenComponentDescriptionFactory(final boolean appclient, final boolean defaultMdbPoolAvailable, final Supplier<String> defaultResourceAdapterName) {
         super(appclient);
         this.defaultMdbPoolAvailable = defaultMdbPoolAvailable;
+        this.defaultResourceAdapterName = defaultResourceAdapterName;
     }
 
     @Override
@@ -79,7 +79,6 @@ public class MessageDrivenComponentDescriptionFactory extends EJBComponentDescri
 
         final EjbJarDescription ejbJarDescription = getEjbJarDescription(deploymentUnit);
         final PropertyReplacer propertyReplacer = EJBAnnotationPropertyReplacement.propertyReplacer(deploymentUnit);
-        final ServiceName deploymentUnitServiceName = deploymentUnit.getServiceName();
         DeploymentDescriptorEnvironment deploymentDescriptorEnvironment = null;
 
         for (final AnnotationInstance messageBeanAnnotation : messageBeanAnnotations) {
@@ -108,8 +107,8 @@ public class MessageDrivenComponentDescriptionFactory extends EJBComponentDescri
                 beanClassName = beanClassInfo.name().toString();
                 messageListenerInterfaceName = getMessageListenerInterface(compositeIndex, messageBeanAnnotation, deploymentUnit);
             }
-            final String defaultResourceAdapterName = this.getDefaultResourceAdapterName(deploymentUnit.getServiceRegistry());
-            final MessageDrivenComponentDescription beanDescription = new MessageDrivenComponentDescription(beanName, beanClassName, ejbJarDescription, deploymentUnit, messageListenerInterfaceName, activationConfigProperties, defaultResourceAdapterName, beanMetaData, defaultMdbPoolAvailable);
+            final String defaultRAName = this.getDefaultResourceAdapterName();
+            final MessageDrivenComponentDescription beanDescription = new MessageDrivenComponentDescription(beanName, beanClassName, ejbJarDescription, deploymentUnit, messageListenerInterfaceName, activationConfigProperties, defaultRAName, beanMetaData, defaultMdbPoolAvailable);
             beanDescription.setDeploymentDescriptorEnvironment(deploymentDescriptorEnvironment);
 
             addComponent(deploymentUnit, beanDescription);
@@ -196,8 +195,8 @@ public class MessageDrivenComponentDescriptionFactory extends EJBComponentDescri
             messageListenerInterface = MessageListener.class.getName();
         }
         final Properties activationConfigProps = getActivationConfigProperties(mdb);
-        final String defaultResourceAdapterName = this.getDefaultResourceAdapterName(deploymentUnit.getServiceRegistry());
-        final MessageDrivenComponentDescription mdbComponentDescription = new MessageDrivenComponentDescription(beanName, beanClassName, ejbJarDescription, deploymentUnit, messageListenerInterface, activationConfigProps, defaultResourceAdapterName, mdb, defaultMdbPoolAvailable);
+        final String defaultRAName = this.getDefaultResourceAdapterName();
+        final MessageDrivenComponentDescription mdbComponentDescription = new MessageDrivenComponentDescription(beanName, beanClassName, ejbJarDescription, deploymentUnit, messageListenerInterface, activationConfigProps, defaultRAName, mdb, defaultMdbPoolAvailable);
         mdbComponentDescription.setDeploymentDescriptorEnvironment(new DeploymentDescriptorEnvironment("java:comp/env/", mdb));
         addComponent(deploymentUnit, mdbComponentDescription);
     }
@@ -215,20 +214,11 @@ public class MessageDrivenComponentDescriptionFactory extends EJBComponentDescri
         return props;
     }
 
-    /**
-     * Returns the name of the resource adapter which will be used as the default RA for MDBs (unless overridden by
-     * the MDBs).
-     *
-     * @param serviceRegistry
-     * @return
-     */
-    private String getDefaultResourceAdapterName(final ServiceRegistry serviceRegistry) {
+    private String getDefaultResourceAdapterName() {
         if (appclient) {
-            // we must report the MDB, but we can't use any MDB/Jakarta Connectors facilities
             return "n/a";
         }
-        final ServiceController<DefaultResourceAdapterService> serviceController = (ServiceController<DefaultResourceAdapterService>) serviceRegistry.getRequiredService(DefaultResourceAdapterService.DEFAULT_RA_NAME_SERVICE_NAME);
-        return serviceController.getValue().getDefaultResourceAdapterName();
+        return this.defaultResourceAdapterName.get();
     }
 
 }
