@@ -100,6 +100,7 @@ public abstract class AbstractClusteringTestCase {
     public static final int GRACE_TIME_TO_MEMBERSHIP_CHANGE = TimeoutUtil.adjust(10000);
     public static final int WAIT_FOR_PASSIVATION_MS = TimeoutUtil.adjust(5);
     public static final int HTTP_REQUEST_WAIT_TIME_S = TimeoutUtil.adjust(5);
+    public static final int CONTAINER_STARTUP_TIMEOUT = TimeoutUtil.adjust(60);
 
     // System Properties
     public static final String TESTSUITE_NODE0 = System.getProperty("node0", "127.0.0.1");
@@ -210,11 +211,11 @@ public abstract class AbstractClusteringTestCase {
     }
 
     protected void start(String container) {
-        NodeUtil.start(this.controller, container);
+        NodeUtil.start(this.controller, container, CONTAINER_STARTUP_TIMEOUT);
     }
 
     protected void start(Set<String> containers) {
-        NodeUtil.start(this.controller, containers);
+        NodeUtil.start(this.controller, containers, CONTAINER_STARTUP_TIMEOUT);
     }
 
     // Container.stop(..) methods
