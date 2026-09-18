@@ -6,6 +6,8 @@
 package org.wildfly.test.scripts;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -19,9 +21,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.concurrent.Callable;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -40,7 +40,7 @@ import org.jboss.logging.Logger;
  *
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
-public class ScriptProcess implements AutoCloseable, ProcessHandle {
+public class ScriptProcess extends Process implements AutoCloseable {
     private static final Logger LOGGER = Logger.getLogger(ScriptProcess.class);
 
     private static final Path PROC_DIR;
@@ -130,6 +130,13 @@ public class ScriptProcess implements AutoCloseable, ProcessHandle {
         return Files.readAllLines(stdoutLog, StandardCharsets.UTF_8);
     }
 
+    String getStdoutAsString() throws IOException {
+        if (stdoutLog == null) {
+            return "";
+        }
+        return String.join(System.lineSeparator(), getStdout());
+    }
+
     String getErrorMessage(final String msg) {
         final StringBuilder errorMessage = new StringBuilder(msg)
                 .append(System.lineSeparator())
@@ -201,15 +208,39 @@ public class ScriptProcess implements AutoCloseable, ProcessHandle {
     }
 
     @Override
-    public long pid() {
+    public OutputStream getOutputStream() {
         checkStatus();
-        return handleDelegate.pid();
+        return delegate.getOutputStream();
     }
 
     @Override
-    public Optional<ProcessHandle> parent() {
+    public InputStream getInputStream() {
         checkStatus();
-        return handleDelegate.parent();
+        return delegate.getInputStream();
+    }
+
+    @Override
+    public InputStream getErrorStream() {
+        checkStatus();
+        return delegate.getErrorStream();
+    }
+
+    @Override
+    public int waitFor() throws InterruptedException {
+        checkStatus();
+        return delegate.waitFor();
+    }
+
+    @Override
+    public boolean waitFor(final long timeout, final TimeUnit unit) throws InterruptedException {
+        checkStatus();
+        return delegate.waitFor(timeout, unit);
+    }
+
+    @Override
+    public long pid() {
+        checkStatus();
+        return handleDelegate.pid();
     }
 
     @Override
@@ -225,43 +256,22 @@ public class ScriptProcess implements AutoCloseable, ProcessHandle {
     }
 
     @Override
-    public Info info() {
-        checkStatus();
-        return handleDelegate.info();
-    }
-
-    @Override
-    public CompletableFuture<ProcessHandle> onExit() {
-        checkStatus();
-        return handleDelegate.onExit();
-    }
-
-    @Override
     public boolean supportsNormalTermination() {
         checkStatus();
         return handleDelegate.supportsNormalTermination();
     }
 
     @Override
-    public boolean destroy() {
+    public void destroy() {
         if (handleDelegate != null) {
-            return handleDelegate.destroy();
+            handleDelegate.destroy();
         }
-        return false;
     }
 
     @Override
-    public boolean destroyForcibly() {
-        if (handleDelegate != null) {
-            return handleDelegate.destroyForcibly();
-        }
-        return false;
-    }
-
-    @Override
-    public int compareTo(final ProcessHandle other) {
+    public Process destroyForcibly() {
         checkStatus();
-        return handleDelegate.compareTo(other);
+        return delegate.destroyForcibly();
     }
 
     @Override
@@ -270,16 +280,18 @@ public class ScriptProcess implements AutoCloseable, ProcessHandle {
     }
 
     @Override
+    public ProcessHandle toHandle() {
+        checkStatus();
+        return delegate.toHandle();
+    }
+
+    @Override
     public String toString() {
         return getCommandString(Collections.emptyList());
     }
 
-    boolean waitFor(final long timeout, final TimeUnit unit) throws InterruptedException {
-        checkStatus();
-        return delegate.waitFor(timeout, unit);
-    }
-
-    int exitValue() {
+    @Override
+    public int exitValue() {
         checkStatus();
         return delegate.exitValue();
     }
