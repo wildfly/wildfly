@@ -1,0 +1,13 @@
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+
+<subsystem xmlns="urn:wildfly:opentelemetry:community:2.0" system-metrics="true">
+    <filters>
+        <filter name="accept-app" outcome="accept" field="meter-name" condition="starts-with" value="my_application"/>
+        <filter name="reject-jvm" field="meter-name" condition="starts-with" value="jvm"/>
+        <filter name="tag-match" field="tag-name" condition="equals" value="someValue"/>
+        <filter name="regex-match" field="meter-name" condition="matches" value="my_.*"/>
+    </filters>
+</subsystem>
