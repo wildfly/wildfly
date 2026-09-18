@@ -42,13 +42,15 @@ public class MicroProfileTelemetryDeploymentProcessor implements DeploymentUnitP
                 MPTEL_LOGGER.debug("The deployment does not have Jakarta Contexts and Dependency Injection enabled. " +
                         "Skipping MicroProfile Telemetry integration.");
             } else {
-                WildFlyOpenTelemetryConfig config = deploymentUnit.getAttachment(CONFIG_ATTACHMENT_KEY);
-                Map<String, String> properties = new HashMap<>(config.properties());
-                if (!properties.containsKey("otel.service.name")) {
-                    properties.put("otel.service.name", getServiceName(deploymentUnit));
+                WildFlyOpenTelemetryConfig serverConfig = deploymentUnit.getAttachment(CONFIG_ATTACHMENT_KEY);
+                Map<String, String> properties = new HashMap<>(serverConfig.getProperties());
+                if (!properties.containsKey(WildFlyOpenTelemetryConfig.OTEL_SERVICE_NAME)) {
+                    properties.put(WildFlyOpenTelemetryConfig.OTEL_SERVICE_NAME, getServiceName(deploymentUnit));
                 }
 
-                weldCapability.registerExtensionInstance(new MicroProfileTelemetryCdiExtension(properties),
+                weldCapability.registerExtensionInstance(
+                        new MicroProfileTelemetryCdiExtension(
+                                serverConfig.withProperties(properties)),
                         deploymentUnit);
             }
         } catch (CapabilityServiceSupport.NoSuchCapabilityException e) {

@@ -16,6 +16,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
 import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicReference;
@@ -47,12 +48,15 @@ import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.version.Stability;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.wildfly.common.function.Functions;
 import org.wildfly.extension.micrometer.otlp.OtlpRegistryDefinitionRegistrar;
 import org.wildfly.extension.micrometer.prometheus.PrometheusRegistryDefinitionRegistrar;
 import org.wildfly.extension.micrometer.registry.WildFlyCompositeRegistry;
+import org.wildfly.extension.observability.shared.FilterDefinitionRegistrar;
+import org.wildfly.extension.observability.shared.FilterModel;
 import org.wildfly.service.BlockingLifecycle;
 import org.wildfly.service.Installer.StartWhen;
 import org.wildfly.service.descriptor.NullaryServiceDescriptor;
@@ -106,6 +110,14 @@ public class MicrometerSubsystemRegistrar implements SubsystemResourceDefinition
             .setRestartAllServices()
             .build();
 
+    public static final SimpleAttributeDefinition SYSTEM_METRICS = SimpleAttributeDefinitionBuilder
+            .create(MicrometerConfigurationConstants.SYSTEM_METRICS, ModelType.BOOLEAN, true)
+            .setDefaultValue(ModelNode.TRUE)
+            .setAllowExpression(true)
+            .setRestartAllServices()
+            .setStability(Stability.COMMUNITY)
+            .build();
+
     static final StringListAttributeDefinition EXPOSED_SUBSYSTEMS =
             new StringListAttributeDefinition.Builder("exposed-subsystems")
                     .setDefaultValue(ModelNode.fromJSONString("[\"*\"]"))
@@ -113,15 +125,16 @@ public class MicrometerSubsystemRegistrar implements SubsystemResourceDefinition
                     .setRestartAllServices()
                     .build();
 
-    static final Collection<AttributeDefinition> ATTRIBUTES = List.of(EXPOSED_SUBSYSTEMS);
+    static final Collection<AttributeDefinition> ATTRIBUTES = List.of(EXPOSED_SUBSYSTEMS, SYSTEM_METRICS);
 
     @Override
     public ManagementResourceRegistration register(SubsystemRegistration parent, ManagementResourceRegistrationContext context) {
         ManagementResourceRegistration registration =
             parent.registerSubsystemModel(ResourceDefinition.builder(ResourceRegistration.of(SUBSYSTEM_PATH), RESOLVER).build());
         UnaryOperator<PathAddress> translator = pathElements -> pathElements.append(OtlpRegistryDefinitionRegistrar.PATH);
+        ResourceOperationRuntimeHandler runtimeHandler = ResourceOperationRuntimeHandler.configureService(this);
         ResourceDescriptor descriptor = ResourceDescriptor.builder(RESOLVER)
-            .withRuntimeHandler(ResourceOperationRuntimeHandler.configureService(this))
+            .withRuntimeHandler(runtimeHandler)
             .addAttributes(ATTRIBUTES)
             .translateAttribute(ENDPOINT, new OtlpAttributeTranslation(ENDPOINT, translator))
             .translateAttribute(STEP, new OtlpAttributeTranslation(STEP, translator))
@@ -139,6 +152,7 @@ public class MicrometerSubsystemRegistrar implements SubsystemResourceDefinition
             .build();
 
         ManagementResourceRegistrar.of(descriptor).register(registration);
+        new FilterDefinitionRegistrar(runtimeHandler, RESOLVER).register(registration, context);
         new OtlpRegistryDefinitionRegistrar().register(registration, context);
         new PrometheusRegistryDefinitionRegistrar().register(registration, context);
 
@@ -167,8 +181,19 @@ public class MicrometerSubsystemRegistrar implements SubsystemResourceDefinition
                 .withLifecycle(BlockingLifecycle.autoClose())
                 .build());
 
-        WildFlyMicrometerConfig micrometerConfig = new WildFlyMicrometerConfig.Builder()
-            .exposedSubsystems(MicrometerSubsystemRegistrar.EXPOSED_SUBSYSTEMS.unwrap(context, model))
+        WildFlyMicrometerConfig.Builder builder = new WildFlyMicrometerConfig.Builder()
+                .exposedSubsystems(MicrometerSubsystemRegistrar.EXPOSED_SUBSYSTEMS.unwrap(context, model))
+                .exposeSystemMetrics(MicrometerSubsystemRegistrar.SYSTEM_METRICS.resolveModelAttribute(context, model).asBoolean(true));
+
+        Resource resource = context.readResource(PathAddress.EMPTY_ADDRESS);
+        Set<Resource.ResourceEntry> filterChildren = resource.getChildren("filter");
+        if (!filterChildren.isEmpty()) {
+            builder.addFilters(filterChildren.stream()
+                    .map(child -> FilterModel.of(child.getModel()))
+                    .toList());
+        }
+
+        WildFlyMicrometerConfig micrometerConfig = builder
             .build();
 
         ServiceDependency<WildFlyCompositeRegistry> registry = ServiceDependency.on(WILDFLY_METER_REGISTRY);

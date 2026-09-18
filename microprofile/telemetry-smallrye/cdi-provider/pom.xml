@@ -24,6 +24,11 @@
     <name>WildFly: MicroProfile Telemetry CDI Provider</name>
 
     <dependencies>
+        <dependency>
+            <groupId>${full.maven.groupId}</groupId>
+            <artifactId>wildfly-opentelemetry-api</artifactId>
+        </dependency>
+
         <!-- Jakarata-native Deps -->
         <dependency>
             <groupId>jakarta.ws.rs</groupId>
