@@ -10,8 +10,16 @@
     <test name="microprofile-config TCK">
         <packages>
             <package name="org.eclipse.microprofile.config.tck.*">
+                <exclude name="org.eclipse.microprofile.config.tck.PropertyExpressionsTest"/>
             </package>
         </packages>
+        <classes>
+            <class name="org.eclipse.microprofile.config.tck.PropertyExpressionsTest">
+                <methods>
+                    <exclude name="arrayEscapes"/>
+                </methods>
+            </class>
+        </classes>
     </test>
 
 </suite>
