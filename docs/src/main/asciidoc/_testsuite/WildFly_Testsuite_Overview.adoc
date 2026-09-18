@@ -30,68 +30,243 @@ original server configuration) for post-execution debugging
 main, but also remote and embedded)
 * configuring client and server JVMs separately (e.g., IPv6 testing)
 
+[[prerequisites]]
+== Prerequisites
+
+Before building and running the WildFly testsuite, ensure the following requirements are met.
+
+=== Java Development Kit
+
+* *Minimum:* JDK 17 or later is required to build and run the testsuite.
+* *Recommended:* The latest LTS or current JDK release is recommended. See the `recommended.java.version` property in the root `pom.xml` for the current recommendation.
+
+Make sure `JAVA_HOME` is set to point to your JDK installation.
+
+=== Apache Maven
+
+A recent version of Apache Maven is required. The WildFly source tree includes `mvnw` (and `mvnw.cmd` on Windows) Maven Wrapper scripts that automatically
+download and use the correct Maven version. Using these scripts is recommended over a system-installed Maven.
+
+=== Supported Operating Systems
+
+The testsuite is regularly tested on Linux, macOS, and Windows. Linux is the primary development and CI platform.
+
+=== Docker or Podman
+
+Some integration tests use container images (e.g., Kafka, Keycloak, Elasticsearch). These tests require Docker or Podman to be available on the system.
+
+On Windows, container-based tests are automatically skipped. If you do not have a container runtime available on other platforms,
+these specific tests will fail, but the rest of the testsuite can still be run.
+
+=== System Resources
+
+* *Disk space:* A full build with all tests requires significant disk space for the source tree, Maven local repository, and provisioned server installations.
+* *Memory:* At least 8 GB of RAM is recommended. Some test groups (e.g., clustering) start multiple server instances concurrently.
+* On Linux, you may need to increase the open file descriptor limit (`ulimit -n`) if you encounter "too many open files" errors during the testsuite run.
+
+See <<Changing_the_container_images_used_in_integration_tests>> for details on the container images used and how to override them.
+
 [[test-suite-organization]]
 == Test Suite Organization
 
-The testsuite module has a few submodules:
+=== Testsuite modules
 
-* *benchmark* - holds all benchmark tests intended to assess relative
-performance of specific feature
-* *domain* - holds all domain management tests
-* *integration* - holds all integration tests
-* *stress* - holds all stress tests
+The testsuite has the following maven modules that provide test classes:
 
-It is expected that test contributions fit into one of these categories.
+[cols="1,3", options="header"]
+|===
+| Module | Description
 
-The `pom.xml` file located in the testsuite module is inherited by all
-submodules and is used to do the following:
+| domain | Domain management integration tests (require special framework)
+| galleon | Specialized tests of managing WildFly using the Galleon CLI
+| integration | General integration tests
+| layers | Validation of galleon layers provided by the `wildfly-ee` feature-pack
+| layers-expansion | Validation of galleon layers provided by the `wildfly` and `wildfly-preview` feature-packs
+| mixed-domain | Domain mode tests where the primary host controller is running the version under test while the secondary host controller runs a previous version
+| preview | Integration tests that are specific to WildFly Preview
+| scripts | Test various shell scripts provided by WildFly
+|===
 
-* set defaults for common testsuite system properties (which can then be
-overridden on the command line)
-* define dependencies common to all tests (Arquillian, junit or testng,
-and container type)
-* provide a workaround for `@Resource(lookup=...)` which requires
-libraries in jbossas/endorsed
+It is expected that test contributions fit into one of these test modules.
+
+The testsuite also includes modules that help support testsuite execution but that do not provide tests:
+
+[cols="1,3", options="header"]
+|===
+| Module | Description
+
+| aggregator-base | Controls which test modules are executed when executing the `base-server-tests` profile
+| aggregator-expansion | Controls which test modules are executed when executing the `expansion-server-tests` profile
+| aggregator-preview | Controls which test modules are executed when executing the `preview-server-tests` profile
+| build-demander-base | Ensures the server build required by the `base-server-tests` profile has been built, if the maven build wasn't started with the `-Djboss.home` property used to run the testsuite against an external build
+| build-demander-expansion | Ensures the server build required by the `expansion-server-tests` profile has been built, if the maven build wasn't started with the `-Djboss.home` property used to run the testsuite against an external build
+| build-demander-preview | Ensures the server build required by the `preview-server-tests` profile has been built, if the maven build wasn't started with the `-Djboss.home` property used to run the testsuite against an external build
+| shared | Shared utility classes that test classes can use
+| test-feature-pack | Feature-pack, based on `wildfly-ee`, that test modules can provision
+| test-feature-pack-preview | Feature-pack, based on `wildfly-preview`, that test modules can provision
+| test-product-conf | Produces an artifact used by an integration/manualmode test
+|===
+
+=== Parent poms
+
+* `testsuite/pom.xml` - this has a header describing the purpose of the pom and what should and should not go in it
+* `testsuite/integration/pom.xml` - this has a header describing the purpose of the pom and what should and should not go in it
+
+=== Directory structure within a testsuite module
+
+For each logical grouping of tests X (e.g. basic integration, clustering, smoke, ...), we use the following locations:
+
+* `src/test/java/org/jboss/as/X` - holds all sources and test-specific resources for the X tests. For newer content the `src/test/java/org/wildfly/X` directory is used. _If for a given `X` there is already a `org/jboss/as/X` directory, for new content please do not create a new `src/test/java/org/wildfly/X` directory; use the existing directory._
+* `src/test/resources/X` - holds resources shared by X tests, which include resources for creating deployments as well as Arquillian configuration files
+
+=== Testsuite pom.xml
+
+The `pom.xml` file located in the testsuite module is inherited by all submodules and is used to:
+
+* set defaults for common testsuite system properties (which can then be overridden on the command line)
+* define dependencies common to all tests (Arquillian, junit, and container type)
+* define a default server configuration installed into each submodule
 
 It should not:
 
 * define module-specific server configuration build steps
 * define module-specific surefire executions
 
-These elements should be defined in logical profiles associated with
-each logical grouping of tests; e.g., in the pom for the module which
-contains the tests. The submodule poms contain additional details of
-their function and purpose as well as expanded information as shown in
-this document.
+These elements should be defined in logical profiles associated with each logical grouping of tests; e.g., in the pom for the module which contains the tests.
 
 [[profiles]]
-== Profiles
+== Controlling testsuite execution via profiles
 
-You should not activate the abovementioned profiles by -P, because that
-disables other profiles which are activated by default.
+Maven build profiles are used to control:
 
-Instead, you should always use activating properties, which are in
-parentheses in the lists below.
+* the server variant being tested
+* testsuite modules enabled
+* test cases to be executed within a module
+* behavior of plugins used to control the tests, including how the server being tested is provisioned and launched
 
-Testsuite profiles are used to group tests into logical groups.
+NOTE: You should not activate profiles by `-P`, because that disables other profiles which are activated by default. Instead, use the activating properties described below (e.g., `-DallTests`, `-Dts.basic`).
 
-* all-modules.module.profile (all-modules)
-* integration.module.profile (integration.module)
-* compat.module.profile (compat.module)
-* domain.module.profile (domain.module)
-* benchmark.module.profile (benchmark.module)
-* stress.module.profile (stress.module)
+=== Controlling the server variant being tested
 
-They also prepare WildFly instances and resources for respective
-testsuite submodules.
+The WildFly build produces four different feature-packs that can be used in five different combinations to provision servers. Use `-D` to activate a profile to control what variant is tested and what dependencies are used to build
+test deployments and on the test client side.
 
-* jpda.profile - sets surefire.jpda.args (debug)
+NOTE: If none of the profiles listed below is specifically activated, the testsuite will execute as if the *latest-ee-full-server-tests* profile was activated.
 
-Integration testsuite profiles configure surefire executions.
+Some testsuite modules or execution profiles provision a server using the `wildfly-maven-plugin` before running tests; others use pre-built installations created by the main build. The following table lists the different profiles
+that can be used and the feature-packs each uses for `wildfly-maven-plugin` provisioning and the location of the pre-built server that will be used.
 
-* smoke.integration.tests.profile
-* basic.integration.tests.profile
-* clustering.integration.tests.profile
+[cols="2,1,1", options="header"]
+|===
+| Profile | Feature-packs used | Pre-built server used
+
+| *latest-ee-only-server-tests* | `wildfly-ee` | `ee-build`
+| *latest-ee-full-server-tests* | `wildfly` | `build`
+| *legacy-ee-only-server-tests* AND *legacy-ee-tests* | `wildfly-ee-10` | `legacy/ee-feature-pack/ee-build`
+| *legacy-ee-full-server-tests* AND *legacy-ee-tests* | `wildfly-ee-10` + `wildfly` | `legacy/ee-feature-pack/build`
+| *preview-server-tests* | `wildfly-preview` | `preview/build`
+|===
+
+IMPORTANT: When the `legacy-ee-only-server-tests` profile or the `legacy-ee-full-server-tests` profile is activated, the `legacy-ee-tests` profile must also be activated, at least if the `testsuite/integration/basic` module is
+executed. This is an unfortunate necessity due to the Maven 3 limitation of only allowing a single property to deactivate a profile. The `legacy-ee-tests` profile deactivates behavior that we want enabled by default.
+
+==== Using an externally provisioned server
+
+For testsuite modules/profiles that don't logically require `wildfly-maven-plugin` provisioning, an externally provided pre-built server can be used. Use the *jboss.dist* or *jboss.inst* system property with a value pointing to
+the filesystem location of the pre-built server.
+
+NOTE: Even if an externally provided pre-built server is used, unless the default behavior is wanted one of the profiles in the table above needs to be activated to tell the testsuite what dependencies should be used for test
+deployments and by the test client.
+
+==== Overriding dependency versions with WildFly Channels
+
+If, instead of using servers provisioned using dependency versions defined in the WildFly pom, you wish to use versions defined in external WildFly Channels manifests, use the *external.wildfly.channels* system property to provide
+the locations of the channel manifests.
+
+=== Controlling which modules are enabled
+
+There are three main groupings of tests, each of which is enabled via a profile:
+
+[cols="1,2,2", options="header"]
+|===
+| Profile | Purpose | Notes
+
+| *base-server-tests* | Tests functionality provided by the `wildfly-ee` feature-pack and the `wildfly-ee-10` feature-pack | Enabled by default. Disabled if `-Dpreview-server-tests` is used. Otherwise, to disable use `-P-base-server-tests`
+| *expansion-server-tests* | Tests functionality provided by the `wildfly` feature-pack | Enabled by default. Disabled if `-Dpreview-server-tests` is used. Otherwise, to disable use `-P-expansion-server-tests`
+| *preview-server-tests* | Tests functionality provided by the `wildfly-preview` feature-pack | Disabled by default. Use `-Dpreview-server-tests` to activate.
+|===
+
+==== The base server tests
+
+The base server tests cover functionality provided by the `wildfly-ee` and `wildfly-ee-10` feature-packs.
+
+When the `base-server-tests` profile executes, by default the `testsuite/integration/web` and `testsuite/integration/smoke` modules execute against an unslimmed, traditional (i.e. non-bootable-jar) installation.
+
+There are a number of other profiles that can be activated to control how tests are executed and which modules run. The following table shows the activation of these profiles and what they do.
+
+[cols="1,1,3", options="header"]
+|===
+| Activation | Value | Effect
+
+| `-DallTests` | N/A | Runs _nearly_ all of the modules that test base server functionality. Tests unslimmed traditional installations.
+| `-Dts.basic` | N/A | Runs the `testsuite/integration/basic` and `testsuite/integration/ws` modules.
+| `-Dts.bootable` | N/A | Runs all of the modules that are able to test bootable jars, configured to use the wildfly-maven-plugin to produce bootable jars.
+| `-Dts.layers` | N/A | Runs all of the modules that are able to test slimmed servers, configured to use the wildfly-maven-plugin to produce various slimmed servers and test those, instead of testing unslimmed installations.
+| `-Dts.noSmoke` | N/A | Disables execution of the `testsuite/integration/web` and `testsuite/integration/smoke`
+| `-Djboss.test.mixed.domain.dir` | Path to a directory containing older version zips. | Enables the mixed domain tests.
+|===
+
+See also <<Profiles_for_specific_testsuite_modules>> below for how to activate execution of specific modules.
+
+==== The expansion server tests
+
+The expansion server tests cover functionality provided by the `wildfly` feature-pack.
+
+When the `expansion-server-tests` profile executes, by default no module containing tests executes. Executing test modules requires enabling one or more other profiles.
+
+There are a number of other profiles that can be activated to control how tests are executed and which modules run. The following table shows the activation of these profiles and what they do.
+
+[cols="1,3", options="header"]
+|===
+| Activation | Effect
+
+| `-DallTests` | Runs _nearly_ all of the modules that test base server functionality. Tests unslimmed traditional installations.
+| `-Dts.bootable` | Runs all of the modules that are able to test bootable jars, configured to use the wildfly-maven-plugin to produce bootable jars.
+| `-Dts.layers` | Runs all of the modules that are able to test slimmed servers, configured to use the wildfly-maven-plugin to produce various slimmed servers and test those, instead of testing unslimmed installations.
+| `-Dts.microprofile` | Runs the `testsuite/integration/microprofile` and `testsuite/integration/microprofile-tck` modules
+| `-Dts.standalone.microprofile` | Runs a number of modules, including some that only test base server functionality, but using servers provisioned from the `wildfly` feature-pack and running the `standalone-microprofile[-ha].xml` configuration.
+|===
+
+==== The preview server tests
+
+The preview server tests cover functionality provided by the `wildfly-preview` feature-pack.
+
+When the `preview-server-tests` profile executes, by default the `testsuite/integration/web` and `testsuite/integration/smoke` modules execute against an unslimmed, traditional (i.e. non-bootable-jar) installation.
+
+There are a number of other profiles that can be activated to control how tests are executed and which modules run. The following table shows the activation of these profiles and what they do.
+
+[cols="1,3", options="header"]
+|===
+| Activation | Effect
+
+| `-Dts.preview` | Runs _nearly_ all of the modules that test base server functionality. Tests unslimmed traditional installations.
+| `-Dts.bootable.preview` | Runs all of the modules that are able to test bootable jars, configured to use the wildfly-maven-plugin to produce bootable jars.
+| `-Dts.noSmoke` | Disables execution of the `testsuite/integration/web` and `testsuite/integration/smoke`
+|===
+
+[[Profiles_for_specific_testsuite_modules]]
+==== Profiles for specific testsuite modules
+
+For the `domain` and `integration` modules, there is a profile named `X.module.profile` that can be enabled by `-DX.module`
+
+For example, `integration.module.profile`, enabled by `-Dintegration.module`, enables the integration module.
+
+The integration module includes a number of child modules. For many of these, there is a profile named `X.integration.tests.profile` which is enabled by `-DX.integration.tests`
+
+* e.g., the clustering tests are defined in profile `clustering.integration.tests.profile`, enabled by `-Dclustering.integration.tests`
+
+Many individual modules can also be run by executing a profile by passing a property in the form `-Dts.X` where X is the name of the lowest level maven module that contains the tests. For example, `-Dts.domain` runs the tests in
+`testsuite/domain` while `-Dts.clustering` runs the tests in `testsuite/integration/clustering`.
 
 == Integration tests
 

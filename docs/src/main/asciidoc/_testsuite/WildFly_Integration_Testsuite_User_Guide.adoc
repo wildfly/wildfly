@@ -17,24 +17,24 @@ thereof, with various configuration options.
 [[running-the-testsuite]]
 == Running the testsuite
 
-The tests can be run using:
+The WildFly source code includes scripts to assist with building WildFly and running the testsuite. *Using these scripts is not required.* The scripts simply provide some convenience wrappers around directly calling `mvn`.
+Directly using `mvn` is fine and is commonly done.
 
-* `build.sh` or `build.bat`, as a part of WildFly build.
-** By default, only smoke tests are run. To run all tests, run build.sh
-install -DallTests.
-* `integration-tests.sh` or `integration-tests.bat`, a convenience
-script which uses bundled Maven (currently 3.0.3), and runs all parent
-testsuite modules (which configure the AS server).
-* pure maven run, using `mvn install`.
+Tests are run either when running the `build.sh` and `build.bat` shell scripts, or by using `integration-tests.sh` or `integration-tests.bat`. All of these scripts are found in the root directory of the source tree.
 
-The scripts are wrappers around Maven-based build. Their arguments are
+* `build.sh` or `build.bat`, as a part of the WildFly build.
+** By default, only smoke tests are run. To run all tests, use `./build.sh install -DallTests`.
+* `integration-tests.sh` or `integration-tests.bat`, a convenience script which runs all parent testsuite modules (which configure the server).
+* Direct Maven invocation, using `mvn install`.
+
+The scripts are wrappers around the Maven-based build. Their arguments are
 passed to Maven (with few exceptions described below). This means you
 can use:
 
-* build.sh (defaults to install)
-* build.sh install
-* build.sh clean install
-* integration-tests.sh install
+* `./build.sh` (defaults to install)
+* `./build.sh install`
+* `./build.sh clean install`
+* `./integration-tests.sh install`
 * ...etc.
 
 [[supported-maven-phases]]
@@ -58,19 +58,26 @@ https://redhat.atlassian.net/browse/WFLY-228[WFLY-228].
 [[testsuite-structure]]
 === Testsuite structure
 
-testsuite +
-integration +
-smoke +
-basic +
-clust +
-iiop +
-multinode +
-xts +
-compat +
-domain +
-mixed-domain +
-stress +
-benchmark
+....
+testsuite/
+  domain/
+  galleon/
+  integration/
+    smoke/
+    basic/
+    clustering/
+    iiop/
+    multinode/
+    xts/
+    manualmode/
+    web/
+    ws/
+  layers/
+  layers-expansion/
+  mixed-domain/
+  preview/
+  scripts/
+....
 
 [[test-groups]]
 === Test groups
@@ -83,23 +90,25 @@ To define groups of tests to be run, these properties are available:
 * `-Dts.integ` - Basic integration + clustering tests.
 * `-Dts.clustering` - Clustering tests.
 * `-Dts.iiop` - IIOP tests.
-* `-Dts.multinode `- Tests with many nodes.
+* `-Dts.multinode` - Tests with many nodes.
 * `-Dts.manualmode` - Tests with manual mode Arquillian containers.
-* `-Dts.bench` - Benchmark tests.
-* `-Dts.stress` - Stress tests.
 * `-Dts.domain` - Domain mode tests.
-* `-Dts.compat` - Compatibility tests.
+* `-Dts.bootable` - Bootable jar tests.
+* `-Dts.layers` - Slimmed server / galleon layers tests.
+* `-Dts.microprofile` - MicroProfile tests.
+* `-Dts.standalone.microprofile` - Standalone MicroProfile tests.
+* `-Dts.preview` - Preview server tests.
+* `-Dts.bootable.preview` - Preview bootable jar tests.
 
 [[examples]]
 == Examples
 
-* `integration-tests.sh [install] ` `` `-- Runs smoke tests.`
-* `integration-tests.sh clean install -- Cleans the target directory, then runs smoke tests.`
-* `integration-tests.sh install -Dts.smoke ` `` `-- Same as above.`
-* `integration-tests.sh install -DallTests ` ``
-`-- Runs all testsuite tests.`
-* `integration-tests.sh install -Dts.stress -- Runs smoke tests and stress tests.`
-* `integration-tests.sh install -Dts.stress -Dts.noSmoke -- Runs stress tests only.`
+* `./integration-tests.sh install` -- Runs smoke tests.
+* `./integration-tests.sh clean install` -- Cleans the target directory, then runs smoke tests.
+* `./integration-tests.sh install -Dts.smoke` -- Same as above.
+* `./integration-tests.sh install -DallTests` -- Runs all testsuite tests.
+* `./build.sh clean test` -- Run the default module and its tests.
+* `./build.sh clean test -Ddomain-tests -Dintegration.module -Dbasic.integration.tests` -- Run a selected set of modules and tests.
 
 *Pure maven* - if you prefer not to use scripts, you may achieve the
 same result with:
@@ -109,10 +118,9 @@ same result with:
 The `-rf ...` parameter stands for "resume from" and causes Maven to run
 the specified module _and all successive_.
 
-It's possible to run only a single module (provided the ancestor modules
-were already run to create the AS copies) :
+It's possible to run only a single module (provided the ancestor modules were already run to create the AS copies):
 
-* `mvn ... -pl testsuite/integration/cluster`
+* `mvn ... -pl testsuite/integration/clustering`
 
 The `-pl ...` parameter stands for "project list" and causes Maven to
 run the specified module _only_.
@@ -236,51 +244,6 @@ shut it down at the end.
 
 All arquillian.xml's in the testsuite specify this parameter. Thus, if
 you have a server already running, it will be re-used.
-
-[[running-against-jboss-enterprise-application-platform-eap-6.0]]
-==== Running against JBoss Enterprise Application Platform (EAP) 6.0
-
-To run the testsuite against AS included JBoss Enterprise Application
-Platform 6.x (EAP), special steps are needed.
-
-Assuming you already have the sources available, and the distributed EAP
-maven repository unzipped in e.g. `/opt/jboss/eap6-maven-repo/` :
-
-1) Configure maven in settings.xml to use only the EAP repository. This
-repo contains all artifacts necessary for building EAP, including maven
-plugins. +
-The build (unlike running testsuite) may be done offline. +
-The recommended way of configuring is to use special settings.xml, not
-your local one (typically in .m2/settings.xml).
-
-[source,xml,options="nowrap"]
-----
-   <mirror>
-      <id>eap6-mirror-setting</id>
-      <mirrorOf>
-         *,!central-eap6,!central-eap6-plugins,!jboss-public-eap6,!jboss-public-eap6-plugins
-      </mirrorOf>
-      <name>Mirror Settings for EAP 6 build</name>
-      <url>file:///opt/jboss/eap6-maven-repo</url>
-    </mirror>
-  </mirrors>
-----
-
-\2) Build EAP. You won't use the resulting EAP build, though. The
-purpose is to get the artifacts which the testsuite depends on.
-
-[source,shell,options="nowrap"]
-----
-mvn clean install -s settings.xml -Dmaven.repo.local=local-repo-eap
-----
-
-\3) Run the testsuite. Assuming that EAP is located in `/opt/eap6`, you
-would run:
-
-[source,shell,options="nowrap"]
-----
-./integration-tests.sh -DallTests -Djboss.dist=/opt/eap6
-----
 
 [[running-with-a-debugger]]
 === Running with a debugger
@@ -508,3 +471,96 @@ mvn clean install ... -Dmaven.repo.local=localrepo
 ----
 
 See also https://redhat.atlassian.net/browse/WFLY-628.
+
+[[building-server-configurations]]
+== Building server configurations
+
+Whenever we fire a surefire execution, this causes Arquillian to start a server(s), execute tests and then shutdown
+the server(s). Starting a server in multiple executions kills the test logs of previous executions, and so it's recommended
+to create a new named server configuration for each surefire execution.
+
+When we build a server configuration, we need to carry out several steps:
+
+* Provision the server installation to be tested
+* Perhaps edit some configuration files (e.g. parametrizing the test cases for IP addresses, default databases and the like)
+* Perhaps copy in some modules
+
+Provisioning server installations is achieved in two different ways, depending on requirements:
+
+=== maven-resources-plugin based provisioning
+
+In the root `testsuite/pom.xml` file there is a maven-resources-plugin execution `ts.copy-wildfly` that in the `process-test-resources` phase copies most of the content of a WildFly build to the current project's
+`testsuite/wildfly` directory. The `modules` directory content is not copied, so, when using such an installation, the server's `module.path` must be configured to include the `modules` dir of the original WildFly build.
+
+The original WildFly build is found in either the `build`, `ee-build`, `legacy/ee-feature-pack/build`, `legacy/ee-feature-pack/ee-build` or `preview/build` module, or in an externally provided location, depending on the
+configuration of the maven build.
+
+A module or profile that does not want a server installation to be provisioned this way can disable this provisioning by setting the `phase` of the `ts.copy-wildfly` execution to `none`.
+
+=== Galleon based provisioning with the wildfly-maven-plugin
+
+Here the wildfly-maven-plugin `provision` goal is used to provision a server using Galleon. The feature-packs and layers to use are controlled by the configuration of each plugin execution.
+
+=== Customizing the management configuration of a provisioned server
+
+The general recommendation for customizing the management configuration of a provisioned server is to implement a `ServerSetupTask` and configure the relevant test classes to use it via the `ServerSetup` annotation.
+
+If using `ServerSetupTask` isn't suitable (e.g. if the configuration settings need to be present for all tests against the installation), then JBoss CLI `.cli` scripts can be added to the test module's source and executed before
+the test phase begins using the wildfly-maven-plugin's `execute` goal.
+
+There is some legacy code that does configuration modification via ant and xslt. This is being replaced and no new uses of this technique should be added.
+
+=== Adding JBoss Modules modules to the provisioned server
+
+The general recommendation for adding JBoss Modules modules that a test needs is to use the
+`TestModule` utility class from within the relevant test class.
+
+If this approach isn't suitable, the maven-resources-plugin can be used.
+
+=== Other server installation customization
+
+Addition of other content to the server installation can be done using the `maven-resources-plugin`. The `testsuite/integration/pom.xml` includes an execution that adds properties files to the `standalone/configuration` dir that
+provide users, credentials and groups that integration tests often expect.
+
+[[parameterization-of-testsuite-runs]]
+== Parameterization of testsuite runs
+
+The `testsuite/pom.xml` contains a properties section which should hold all globally defined properties required to run
+the testsuite and their defaults (e.g. IP addresses, IP stack configs, database configs, etc).
+These properties will then be inherited by all of the testsuite modules.
+
+This allows substitution of properties specified on the command line, such as:
+
+[source,shell]
+----
+mvn clean test -Dintegration.module -Dclustering.integration.tests -Dnode0=192.168.0.1 -Dnode1=192.168.0.2
+----
+
+[[Changing_the_container_images_used_in_integration_tests]]
+== Changing the container images used in integration tests
+
+In integration tests, we use the following images:
+
+* `otel/opentelemetry-collector`
+* `docker.elastic.co/elasticsearch/elasticsearch`
+* `apache/james`
+* `apache/kafka-native`
+* `quay.io/arkmq-org/activemq-artemis-broker`
+* `quay.io/keycloak/keycloak`
+
+It is possible to override the default images and versions by using:
+
+* System properties, e.g. `-Dtestsuite.kafka-native.image=apache/kafka-native:3.9.0`
+* Environment variables, e.g. `AS_TS_KAFKA_NATIVE_IMAGE=apache/kafka-native:3.9.0`
+* Properties file specified via `testsuite.config.properties` system property or `TESTSUITE_CONFIG_PROPERTIES` environment variable, e.g. `-Dtestsuite.config.properties=/path/to/testsuite-config.properties` or
+`TESTSUITE_CONFIG_PROPERTIES=/path/to/testsuite-config.properties`; the properties file format has to be the same as for system properties, e.g.:
+
+[source,properties]
+----
+testsuite.opentelemetry-collector.image=otel/opentelemetry-collector:0.115.1
+testsuite.elasticsearch.image=docker.elastic.co/elasticsearch/elasticsearch:8.15.4
+testsuite.mailserver.image=apache/james:demo-3.8.2
+testsuite.kafka-native.image=apache/kafka-native:3.8.0
+testsuite.activemq-artemis-broker.image=quay.io/arkmq-org/activemq-artemis-broker:artemis.2.42.0
+testsuite.keycloak.image=quay.io/keycloak/keycloak:24.0.2
+----

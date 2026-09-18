@@ -51,7 +51,7 @@ TBD: https://redhat.atlassian.net/browse/ARQ-647
 
 [source,xml,options="nowrap"]
 ----
-<surefire.memory.args>-Xmx512m -XX:MaxPermSize=256m</surefire.memory.args>
+<surefire.memory.args>-Xmx512m</surefire.memory.args>
 <surefire.jpda.args></surefire.jpda.args>
 <surefire.system.args>${surefire.memory.args} ${surefire.jpda.args}</surefire.system.args>
 ----
@@ -133,11 +133,10 @@ Which invokes:
 [source,xml,options="nowrap"]
 ----
 <!-- Copy the base distribution. -->
-<!-- We exclude modules and bundles as they are read-only and we locate the via sys props. -->
+<!-- We exclude modules as they are read-only and we locate them via sys props. -->
 <copy todir="@{output.dir}/@{name}">
     <fileset dir="@{jboss.dist}">
         <exclude name="**/modules/**"/>
-        <exclude name="**/bundles/**"/>
     </fileset>
 </copy>
 
