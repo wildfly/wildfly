@@ -14,16 +14,15 @@ import java.util.function.Supplier;
 
 import org.infinispan.AdvancedCache;
 import org.infinispan.Cache;
+import org.infinispan.commons.util.concurrent.CompletionStages;
 import org.infinispan.configuration.ConfigurationManager;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.factories.ComponentRegistry;
 import org.infinispan.factories.GlobalComponentRegistry;
 import org.infinispan.factories.impl.BasicComponentRegistry;
 import org.infinispan.manager.EmbeddedCacheManager;
-import org.infinispan.metadata.Metadata;
 import org.infinispan.notifications.cachelistener.filter.CacheEventConverter;
 import org.infinispan.notifications.cachelistener.filter.CacheEventFilter;
-import org.infinispan.notifications.cachelistener.filter.EventType;
 import org.infinispan.util.concurrent.BlockingManager;
 import org.jboss.as.controller.ControlledProcessState;
 import org.jboss.as.controller.ProcessStateNotifier;
@@ -213,7 +212,7 @@ public class CacheServiceInstaller implements ServiceInstaller {
             // Restore recorded listeners
             synchronized (this.listeners) {
                 for (Map.Entry<Object, CacheEventFilter<? super K, ? super V>> entry : this.listeners.entrySet()) {
-                    this.addListener(entry.getKey(), entry.getValue(), null);
+                    CompletionStages.join(super.addListenerAsync(entry.getKey(), entry.getValue(), null));
                 }
             }
         }
@@ -223,7 +222,7 @@ public class CacheServiceInstaller implements ServiceInstaller {
             // Remove recorded listeners (to be restored following restart)
             synchronized (this.listeners) {
                 for (Object listener : this.listeners.keySet()) {
-                    this.removeListener(listener);
+                    CompletionStages.join(super.removeListenerAsync(listener));
                 }
             }
             if (super.getStatus().allowInvocations()) {
@@ -232,34 +231,9 @@ public class CacheServiceInstaller implements ServiceInstaller {
         }
 
         @Override
-        public void addListener(Object listener) {
-            this.addListenerAsync(listener).toCompletableFuture().join();
-        }
-
-        @Override
-        public <C> void addListener(Object listener, CacheEventFilter<? super K, ? super V> filter, CacheEventConverter<? super K, ? super V, C> converter) {
-            this.addListenerAsync(listener, filter, converter).toCompletableFuture().join();
-        }
-
-        @Override
-        public CompletionStage<Void> addListenerAsync(Object listener) {
-            return this.addListenerAsync(listener, new CacheEventFilter<>() {
-                @Override
-                public boolean accept(K key, V oldValue, Metadata oldMetadata, V newValue, Metadata newMetadata, EventType eventType) {
-                    return true;
-                }
-            }, null);
-        }
-
-        @Override
         public <C> CompletionStage<Void> addListenerAsync(Object listener, CacheEventFilter<? super K, ? super V> filter, CacheEventConverter<? super K, ? super V, C> converter) {
             // Record listener to be be auto-removed/restored on stop/start
             return super.addListenerAsync(listener, filter, converter).thenAccept(ignore -> this.listeners.put(listener, filter));
-        }
-
-        @Override
-        public void removeListener(Object listener) {
-            this.removeListenerAsync(listener).toCompletableFuture().join();
         }
 
         @Override

@@ -13,10 +13,10 @@ import java.util.function.UnaryOperator;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.wildfly.clustering.infinispan.service.CacheConfigurationServiceInstaller;
 import org.wildfly.clustering.infinispan.service.CacheServiceInstaller;
+import org.wildfly.clustering.marshalling.protostream.util.StringKeyMapEntry;
 import org.wildfly.clustering.server.service.BinaryServiceConfiguration;
 import org.wildfly.clustering.server.service.ClusteringServiceDescriptor;
 import org.wildfly.clustering.server.service.FilteredBinaryServiceInstallerProvider;
-import org.wildfly.clustering.session.cache.affinity.SessionAffinityRegistryEntry;
 import org.wildfly.common.iteration.CompositeIterable;
 import org.wildfly.extension.clustering.web.routing.LocalRoutingProvider;
 import org.wildfly.subsystem.service.ServiceDependency;
@@ -41,7 +41,7 @@ public class InfinispanRoutingProvider extends LocalRoutingProvider {
         BinaryServiceConfiguration serverConfiguration = this.configuration.withChildName(serverName);
         List<ServiceInstaller> installers = new LinkedList<>();
 
-        installers.add(ServiceInstaller.BlockingBuilder.of(route.map(SessionAffinityRegistryEntry::new))
+        installers.add(ServiceInstaller.BlockingBuilder.of(route.combine(ServiceDependency.<Void>empty(), StringKeyMapEntry::new))
                 .provides(serverConfiguration.resolveServiceName(ClusteringServiceDescriptor.REGISTRY_ENTRY))
                 .build());
 
