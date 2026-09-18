@@ -145,7 +145,7 @@ public class MicrometerIsolationTestCase {
 
     private void testService(String endpoint) throws MalformedURLException {
         List.of(SERVICE_ONE, SERVICE_TWO).forEach(serviceName -> {
-            var url = getDeploymentUrl(serviceName) + "/" + endpoint;
+            String url = getDeploymentUrl(serviceName) + "/" + endpoint;
             try (Client client = ClientBuilder.newClient()) {
                 WebTarget target = client.target(url);
                 Response response = target.request().get();
