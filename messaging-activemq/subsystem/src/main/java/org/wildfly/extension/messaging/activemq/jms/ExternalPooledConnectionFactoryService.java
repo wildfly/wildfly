@@ -632,6 +632,7 @@ public class ExternalPooledConnectionFactoryService implements Service<ExternalP
 
     @Override
     public void stop(StopContext context) {
+        WildFlyRecoveryRegistry.clearSupplier();
         // Service context takes care of this
     }
     public BroadcastCommandDispatcherFactory getCommandDispatcherFactory(String name) {
