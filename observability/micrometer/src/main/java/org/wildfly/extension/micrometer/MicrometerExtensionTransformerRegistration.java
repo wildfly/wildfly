@@ -29,12 +29,14 @@ import org.jboss.as.controller.transform.ResourceTransformer;
 import org.jboss.as.controller.transform.SubsystemTransformerRegistration;
 import org.jboss.as.controller.transform.TransformationContext;
 import org.jboss.as.controller.transform.description.ChainedTransformationDescriptionBuilder;
+import org.jboss.as.controller.transform.description.DiscardAttributeChecker;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.as.controller.transform.description.TransformationDescriptionBuilder;
 import org.jboss.dmr.ModelNode;
 import org.kohsuke.MetaInfServices;
 import org.wildfly.extension.micrometer.otlp.OtlpRegistryDefinitionRegistrar;
 import org.wildfly.extension.micrometer.prometheus.PrometheusRegistryDefinitionRegistrar;
+import org.wildfly.extension.observability.shared.FilterDefinitionRegistrar;
 
 @MetaInfServices
 public class MicrometerExtensionTransformerRegistration implements ExtensionTransformerRegistration {
@@ -57,6 +59,10 @@ public class MicrometerExtensionTransformerRegistration implements ExtensionTran
 
     private void from2(ResourceTransformationDescriptionBuilder builder) {
         builder.rejectChildResource(PrometheusRegistryDefinitionRegistrar.PATH);
+        builder.discardChildResource(FilterDefinitionRegistrar.PATH);
+        builder.getAttributeBuilder()
+                .setDiscard(DiscardAttributeChecker.ALWAYS, MicrometerSubsystemRegistrar.SYSTEM_METRICS)
+                .end();
 
         ResourceTransformationDescriptionBuilder otlp = builder.addChildResource(OtlpRegistryDefinitionRegistrar.PATH);
         otlp.addOperationTransformationOverride(ADD).setCustomOperationTransformer(OtlpOperationTransformer.INSTANCE);
@@ -73,6 +79,10 @@ public class MicrometerExtensionTransformerRegistration implements ExtensionTran
                     Resource otlp = resource.removeChild(OtlpRegistryDefinitionRegistrar.PATH);
                     resource.getModel().get(STEP.getName()).set(otlp.getModel().get(STEP.getName()));
                     resource.getModel().get(ENDPOINT.getName()).set(otlp.getModel().get(ENDPOINT.getName()));
+                }
+                resource.getModel().remove(MicrometerSubsystemRegistrar.SYSTEM_METRICS.getName());
+                for (Resource.ResourceEntry child : new ArrayList<>(resource.getChildren("filter"))) {
+                    resource.removeChild(child.getPathElement());
                 }
                 context.addTransformedResourceFromRoot(address, resource);
             }

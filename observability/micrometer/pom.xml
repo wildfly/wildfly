@@ -45,6 +45,11 @@
         </dependency>
         <dependency>
             <groupId>${full.maven.groupId}</groupId>
+            <artifactId>wildfly-observability-shared</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>${full.maven.groupId}</groupId>
             <artifactId>wildfly-micrometer-deployment</artifactId>
             <version>${project.version}</version>
         </dependency>

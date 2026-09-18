@@ -18,6 +18,7 @@
         <!-- This is only required if the 'registry=prometheus' resource is configured -->
         <module name="io.prometheus" optional="true"/>
         <module name="io.undertow.core"/>
+        <module name="org.wildfly.extension.observability.shared"/>
         <module name="org.wildfly.micrometer.deployment"/>
 
         <module name="java.logging"/>
