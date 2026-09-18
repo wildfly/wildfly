@@ -30,11 +30,17 @@ import org.jgroups.View;
 @MessageLogger(projectCode = "WFLYCLJG", length = 4)
 public interface JGroupsLogger extends BasicLogger {
     String ROOT_LOGGER_CATEGORY = "org.jboss.as.clustering.jgroups";
+    String CONFIG_LOGGER_CATEGORY = "org.wildfly.clustering.jgroups.config";
 
     /**
      * The root logger.
      */
     JGroupsLogger ROOT_LOGGER = Logger.getMessageLogger(MethodHandles.lookup(), JGroupsLogger.class, ROOT_LOGGER_CATEGORY);
+
+    /**
+     * The logger used for configuration messages.
+     */
+    JGroupsLogger CONFIG_LOGGER = Logger.getMessageLogger(MethodHandles.lookup(), JGroupsLogger.class, CONFIG_LOGGER_CATEGORY);
 
     /**
      * Logs an informational message indicating the JGroups subsystem is being activated.
@@ -182,7 +188,6 @@ public interface JGroupsLogger extends BasicLogger {
     @Message(id = 37, value = "Service '%s' requires a non-blocking socket for which TLS support is not available.  To secure cluster communication for this service, use a blocking socket variant of the associated protocol.")
     void secureSocketChannelNotAvailable(String serviceName);
 
-
     /**
      * Warning for when an unknown service requests a non-blocking NIO channel from TLS-secured ManagedSocketFactory.
      * @see {@link #secureSocketChannelNotAvailable(String)}.
@@ -190,4 +195,12 @@ public interface JGroupsLogger extends BasicLogger {
     @LogMessage(level = WARN)
     @Message(id = 38, value = "Unknown service requires a non-blocking socket for which TLS support is not available.  To secure cluster communication for this service, use a blocking socket variant of the associated protocol.")
     void secureSocketChannelNotAvailable();
+
+    @LogMessage(level = WARN)
+    @Message(id = 39, value = "Configuration of channel %s does not require member authentication. Consider blocking untrusted cluster members by requiring TLS client authentication on the channel transport or by adding the AUTH protocol to the protocol stack.")
+    void allowsUnauthenticatedMembers(String channelName);
+
+    @LogMessage(level = WARN)
+    @Message(id = 40, value = "Configuration of channel %s does not guarantee message confidentiality between cluster members. Consider encrypting intra-cluster communication by configuring the channel transport with TLS or by adding the ASYM_ENCRYPT or SYM_ENCRYPT protocol to the protocol stack.")
+    void allowsPublicMessages(String channelName);
 }

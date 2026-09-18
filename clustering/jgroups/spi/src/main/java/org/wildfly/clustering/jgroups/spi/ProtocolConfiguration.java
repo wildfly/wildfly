@@ -25,4 +25,12 @@ public interface ProtocolConfiguration<P extends Protocol> {
     default Map<String, SocketBinding> getSocketBindings() {
         return Map.of();
     }
+
+    default boolean providesAuthentication() {
+        return false;
+    }
+
+    default boolean providesConfidentiality() {
+        return false;
+    }
 }

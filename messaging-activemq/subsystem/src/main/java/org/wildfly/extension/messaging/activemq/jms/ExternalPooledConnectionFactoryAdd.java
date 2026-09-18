@@ -7,6 +7,7 @@ package org.wildfly.extension.messaging.activemq.jms;
 
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.JGROUPS_CLUSTER;
 import static org.wildfly.extension.messaging.activemq.MessagingServices.isSubsystemResource;
+import static org.wildfly.extension.messaging.activemq._private.MessagingLogger.MESSAGING_DISCOVERY_WARNING_DISABLED_PROPERTY_NAME;
 import static org.wildfly.extension.messaging.activemq.jms.ConnectionFactoryAttribute.getDefinitions;
 import static org.wildfly.extension.messaging.activemq.jms.ConnectionFactoryAttributes.Common.DESERIALIZATION_ALLOWLIST;
 import static org.wildfly.extension.messaging.activemq.jms.ConnectionFactoryAttributes.Common.DESERIALIZATION_BLACKLIST;
@@ -38,6 +39,7 @@ import org.wildfly.extension.messaging.activemq.CommonAttributes;
 import org.wildfly.extension.messaging.activemq.DiscoveryGroupDefinition;
 import org.wildfly.extension.messaging.activemq.MessagingServices;
 import org.wildfly.extension.messaging.activemq.TransportConfigOperationHandlers;
+import org.wildfly.extension.messaging.activemq._private.MessagingLogger;
 import org.wildfly.extension.messaging.activemq.jms.ConnectionFactoryAttributes.Common;
 
 /**
@@ -95,6 +97,11 @@ public class ExternalPooledConnectionFactoryAdd extends AbstractAddStepHandler {
                 PathAddress dgAddress = address.getParent().append(CommonAttributes.SOCKET_DISCOVERY_GROUP, discoveryGroupName);
                 try {
                     dgResource = context.readResourceFromRoot(dgAddress, false);
+                    if (!context.isBooting()) {
+                        if (!Boolean.parseBoolean(org.wildfly.security.manager.WildFlySecurityManager.getPropertyPrivileged(MESSAGING_DISCOVERY_WARNING_DISABLED_PROPERTY_NAME, "false"))) {
+                            MessagingLogger.DISCOVERY_WARNING_LOGGER.udpMulticastWarning(Set.of(discoveryGroupName), Collections.emptySet());
+                        }
+                    }
                 } catch(Resource.NoSuchResourceException ex) {
                     dgAddress = address.getParent().append(CommonAttributes.JGROUPS_DISCOVERY_GROUP, discoveryGroupName);
                     dgResource = context.readResourceFromRoot(dgAddress, false);
@@ -103,6 +110,11 @@ public class ExternalPooledConnectionFactoryAdd extends AbstractAddStepHandler {
                 PathAddress dgAddress = serverAddress.append(CommonAttributes.SOCKET_DISCOVERY_GROUP, discoveryGroupName);
                 try {
                     dgResource = context.readResourceFromRoot(dgAddress, false);
+                    if (!context.isBooting()) {
+                        if (!Boolean.parseBoolean(org.wildfly.security.manager.WildFlySecurityManager.getPropertyPrivileged(MESSAGING_DISCOVERY_WARNING_DISABLED_PROPERTY_NAME, "false"))) {
+                            MessagingLogger.DISCOVERY_WARNING_LOGGER.udpMulticastWarning(Set.of(discoveryGroupName), Collections.emptySet());
+                        }
+                    }
                 } catch(Resource.NoSuchResourceException ex) {
                     dgAddress = address.getParent().append(CommonAttributes.JGROUPS_DISCOVERY_GROUP, discoveryGroupName);
                     dgResource = context.readResourceFromRoot(dgAddress, false);

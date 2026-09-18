@@ -96,6 +96,11 @@ public class AuthProtocolResourceDefinitionRegistrar extends AbstractProtocolRes
                     public AUTH createProtocol(ChannelFactoryConfiguration configuration) {
                         return super.createProtocol(configuration).setAuthToken(token);
                     }
+
+                    @Override
+                    public boolean providesAuthentication() {
+                        return true;
+                    }
                 };
             }
         });

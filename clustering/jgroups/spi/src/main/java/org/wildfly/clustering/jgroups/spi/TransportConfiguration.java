@@ -6,6 +6,9 @@ package org.wildfly.clustering.jgroups.spi;
 
 import java.util.Optional;
 
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLParameters;
+
 import org.jboss.as.network.SocketBinding;
 import org.jgroups.protocols.TP;
 import org.wildfly.service.descriptor.UnaryServiceDescriptor;
@@ -47,5 +50,15 @@ public interface TransportConfiguration<T extends TP> extends ProtocolConfigurat
 
     default Optional<TLSConfiguration> getTLSConfiguration() {
         return Optional.empty();
+    }
+
+    @Override
+    default boolean providesAuthentication() {
+        return this.getTLSConfiguration().map(TLSConfiguration::getServerSSLContext).map(SSLContext::getDefaultSSLParameters).filter(SSLParameters::getNeedClientAuth).isPresent();
+    }
+
+    @Override
+    default boolean providesConfidentiality() {
+        return this.getTLSConfiguration().isPresent();
     }
 }

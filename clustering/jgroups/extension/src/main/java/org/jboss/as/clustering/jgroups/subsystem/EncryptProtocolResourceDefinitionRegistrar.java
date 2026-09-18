@@ -147,6 +147,11 @@ public class EncryptProtocolResourceDefinitionRegistrar<E extends KeyStore.Entry
                         }
                         return protocol;
                     }
+
+                    @Override
+                    public boolean providesConfidentiality() {
+                        return true;
+                    }
                 };
             }
         };
