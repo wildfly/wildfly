@@ -384,9 +384,6 @@ and the following defaults, overridable by respective parameter:
 |-Dmcast |230.0.0.4 |ff01::1 |ff01::1 is IPv6 Node-Local scope mcast
 addr.
 
-|-Dmcast.jgroupsDiag |224.0.75.75 |ff01::2 |JGroups diagnostics
-multicast address.
-
 |-Dmcast.modcluster |224.0.1.105 |ff01::3 |mod_cluster multicast
 address.
 |=======================================================================
