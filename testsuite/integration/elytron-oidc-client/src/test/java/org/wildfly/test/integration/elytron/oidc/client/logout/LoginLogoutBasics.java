@@ -5,37 +5,34 @@
 
 package org.wildfly.test.integration.elytron.oidc.client.logout;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYSTEM_PROPERTY;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
-
 import static org.wildfly.test.integration.elytron.oidc.client.KeycloakConfiguration.ALICE;
 import static org.wildfly.test.integration.elytron.oidc.client.KeycloakConfiguration.ALICE_PASSWORD;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
+import java.nio.charset.MalformedInputException;
 import java.nio.charset.StandardCharsets;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.ArrayList;
-import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.nio.charset.MalformedInputException;
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
 
-import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
-import org.apache.http.client.HttpClient;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
+import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.utils.HttpClientUtils;
 import org.apache.http.impl.client.BasicResponseHandler;
+import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.protocol.BasicHttpContext;
 import org.apache.http.protocol.HttpContext;
@@ -45,36 +42,26 @@ import org.htmlunit.html.HtmlForm;
 import org.htmlunit.html.HtmlInput;
 import org.htmlunit.html.HtmlPage;
 import org.htmlunit.html.HtmlSubmitInput;
-
-import org.jboss.as.arquillian.container.ManagementClient;
-import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.operations.common.Util;
-import org.jboss.as.test.integration.management.ManagementOperations;
 import org.jboss.as.test.integration.security.common.servlets.SimpleSecuredServlet;
 import org.jboss.as.test.integration.security.common.servlets.SimpleServlet;
 import org.jboss.as.test.shared.TestSuiteEnvironment;
-import org.jboss.as.version.Stability;
-import org.jboss.dmr.ModelNode;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
+
+import org.junit.After;
 
 /**
  * Tests for the OpenID Connect logout types.
  */
 public class LoginLogoutBasics extends EnvSetupUtils {
 
-    private HttpClient httpClient;
+    private CloseableHttpClient httpClient;
 
     private final String KEYCLOAK_USERNAME = "username";
     private final String KEYCLOAK_PASSWORD = "password";
 
-    private Stability desiredStability = null;
-
     public LoginLogoutBasics() {}
-    public LoginLogoutBasics(Stability desiredStability) {
-        this.desiredStability = desiredStability;
-    }
 
     private URL generateURL(String appName, String servletPath) {
         try {
@@ -82,13 +69,20 @@ public class LoginLogoutBasics extends EnvSetupUtils {
                     TestSuiteEnvironment.getHttpPort(),
                     "/" + appName + servletPath);
         } catch (MalformedURLException e) {
-            assertFalse(e.getMessage(), false);
+            throw new AssertionError(e.getMessage());
         }
-        return null;
     }
 
-    public void setHttpClient(HttpClient httpClient) {
+    public void setHttpClient(CloseableHttpClient httpClient) {
         this.httpClient = httpClient;
+    }
+
+    @After
+    public void closeHttpClient() throws Exception {
+        if (httpClient != null) {
+            httpClient.close();
+            httpClient = null;
+        }
     }
 
     public void browserLoginToApp(WebClient webClient, String appName) throws Exception {
@@ -98,13 +92,13 @@ public class LoginLogoutBasics extends EnvSetupUtils {
     }
     public void browserLoginToApp(WebClient webClient, String username, String password,
                            String expectedText, URL requestUrl) throws Exception {
-        HtmlPage page = (HtmlPage)webClient.getPage(requestUrl);
+        HtmlPage page = webClient.getPage(requestUrl);
         HtmlForm form = (HtmlForm)page.getElementById("kc-form-login");
-        HtmlInput userName = (HtmlInput)form.getInputByName("username");
+        HtmlInput userName = form.getInputByName("username");
         userName.setValue(username);
-        HtmlInput passwd = (HtmlInput)form.getInputByName("password");
+        HtmlInput passwd = form.getInputByName("password");
         passwd.setValue(password);
-        HtmlSubmitInput login = (HtmlSubmitInput)form.getInputByName("login");
+        HtmlSubmitInput login = form.getInputByName("login");
         HtmlPage rtnPage = login.click();
         String rtnText = rtnPage.asXml();
         assertTrue("Expected result [ " + expectedText + " ] but was ["
@@ -117,7 +111,7 @@ public class LoginLogoutBasics extends EnvSetupUtils {
     }
 
     public void browserLogoutOfKeycloak(WebClient webClient, URL requestUrL) throws Exception {
-        HtmlPage pagelogout = (HtmlPage)webClient.getPage(requestUrL);
+        webClient.getPage(requestUrL);
         Thread.sleep(3500); // give time for logout to complete
     }
 
@@ -130,7 +124,7 @@ public class LoginLogoutBasics extends EnvSetupUtils {
     }
 
     public void browserAccessPage(WebClient webClient, URL requestUrl, String expectedText) throws Exception {
-        HtmlPage assertPage = (HtmlPage)webClient.getPage(requestUrl);
+        HtmlPage assertPage = webClient.getPage(requestUrl);
         String apStr = assertPage.asXml();
         assertTrue("Expected result [ " + expectedText + " ] but was ["
                 + apStr + "]", apStr.contains(expectedText));
@@ -153,45 +147,49 @@ public class LoginLogoutBasics extends EnvSetupUtils {
 
         HttpGet getMethod = new HttpGet(requestUri);
         HttpContext context = new BasicHttpContext();
-        HttpResponse response = null;
+        CloseableHttpResponse response = null;
         Form keycloakLoginForm = null;
 
         int retryMax = 10;
         int retry = 0;
         boolean retryAgain = true;
-        // allow for slow system response with limited retries
-        do {
-            Thread.sleep(500);
-            response = httpClient.execute(getMethod, context);
-            if (response.getStatusLine().getStatusCode() == expectedStatusCode) {
-                try {
-                    keycloakLoginForm = new Form(response);
-                    retryAgain = false;
-                } catch (IOException ee) {
-                    // contiune retries
-                }
-            }
-            retry++;
-        } while(retryAgain &&  retry < retryMax);
-
         try {
+            // allow for slow system response with limited retries
+            do {
+                Thread.sleep(500);
+                HttpClientUtils.closeQuietly(response);
+                response = httpClient.execute(getMethod, context);
+                if (response.getStatusLine().getStatusCode() == expectedStatusCode) {
+                    try {
+                        keycloakLoginForm = new Form(response);
+                        retryAgain = false;
+                    } catch (IOException ee) {
+                        HttpClientUtils.closeQuietly(response);
+                        // continue retries
+                    }
+                }
+                retry++;
+            } while(retryAgain &&  retry < retryMax);
+
             int statusCode = response.getStatusLine().getStatusCode();
             if (loginToKeycloak) {
-                assertTrue("Expected code == OK but got " + statusCode
-                        + " for request=" + requestUri, statusCode == HttpURLConnection.HTTP_OK);
-                HttpResponse afterLoginClickResponse = simulateClickingOnButton(httpClient,
-                        keycloakLoginForm, username, password, "Sign In");
+                assertEquals("Expected code == OK but got " + statusCode
+                        + " for request=" + requestUri, HttpURLConnection.HTTP_OK, statusCode);
+                assertNotNull("GET of " + requestUri + " did not produce a usable response", keycloakLoginForm);
+                try (CloseableHttpResponse afterLoginClickResponse = simulateClickingOnButton(httpClient,
+                        keycloakLoginForm, username, password, "Sign In")) {
 
-                afterLoginClickResponse.getEntity().getContent();
-                assertEquals(expectedStatusCode, afterLoginClickResponse.getStatusLine().getStatusCode());
+                    afterLoginClickResponse.getEntity().getContent();
+                    assertEquals(expectedStatusCode, afterLoginClickResponse.getStatusLine().getStatusCode());
 
-                if (expectedText != null) {
-                    String responseString = new BasicResponseHandler().handleResponse(afterLoginClickResponse);
-                    assertTrue("Unexpected result " + responseString, responseString.contains(expectedText));
+                    if (expectedText != null) {
+                        String responseString = new BasicResponseHandler().handleResponse(afterLoginClickResponse);
+                        assertTrue("Unexpected result " + responseString, responseString.contains(expectedText));
+                    }
                 }
             }
             else {
-                assertTrue("Expected code == FORBIDDEN but got " + statusCode + " for request=" + requestUri, statusCode == HttpURLConnection.HTTP_FORBIDDEN);
+                assertEquals("Expected code == FORBIDDEN but got " + statusCode + " for request=" + requestUri, HttpURLConnection.HTTP_FORBIDDEN, statusCode);
             }
         } finally {
             HttpClientUtils.closeQuietly(response);
@@ -207,7 +205,7 @@ public class LoginLogoutBasics extends EnvSetupUtils {
                                         boolean logoutFromKeycloak) throws Exception {
 
         HttpContext context = new BasicHttpContext();
-        HttpResponse response = null;
+        CloseableHttpResponse response = null;
         HttpGet getMethod = new HttpGet(requestUri);
 
         int retryMax = 10;
@@ -215,6 +213,7 @@ public class LoginLogoutBasics extends EnvSetupUtils {
         // allow for slow system response with limited retries
         do {
             Thread.sleep(500);
+            HttpClientUtils.closeQuietly(response);  // if we are looping close the previous unwanted response
             response = httpClient.execute(getMethod, context);
             retry++;
         } while((response.getStatusLine().getStatusCode() != expectedStatusCode)
@@ -223,14 +222,14 @@ public class LoginLogoutBasics extends EnvSetupUtils {
         try {
             int statusCode = response.getStatusLine().getStatusCode();
             if (logoutFromKeycloak) {
-                assertTrue("Expected code == OK but got " + statusCode + " for request=" + requestUri, statusCode == HttpURLConnection.HTTP_OK);
+                assertEquals("Expected code == OK but got " + statusCode + " for request=" + requestUri, HttpURLConnection.HTTP_OK, statusCode);
                 response.getEntity();
                 String responseString = new BasicResponseHandler().handleResponse(response);
                 assertTrue("Unexpected result " + expectedText + " but result was [ "
                         + responseString +" ]", responseString.contains(expectedText));
             }
             else {
-                assertTrue("Expected code == FORBIDDEN but got " + statusCode + " for request=" + requestUri, statusCode == HttpURLConnection.HTTP_FORBIDDEN);
+                assertEquals("Expected code == FORBIDDEN but got " + statusCode + " for request=" + requestUri, HttpURLConnection.HTTP_FORBIDDEN, statusCode);
             }
         } finally {
             HttpClientUtils.closeQuietly(response);
@@ -249,26 +248,26 @@ public class LoginLogoutBasics extends EnvSetupUtils {
     public void accessPage(URI requestUri, int expectedStatusCode,
                                      String expectedText) throws Exception {
         HttpContext context = new BasicHttpContext();
-        HttpResponse response = null;
+        CloseableHttpResponse response = null;
         HttpGet getMethod = new HttpGet(requestUri);
 
-        String responseString = null;
+        String responseString;
         int retryMax = 10;
         int retry = 0;
-        // allow for slow system response with limited retries
-        do {
-            Thread.sleep(500);
-            response = httpClient.execute(getMethod, context);
-            response.getEntity();
-            responseString = new BasicResponseHandler().handleResponse(response);
-            retry++;
-        } while((!responseString.contains(expectedText)) &&  retry < retryMax);
-
         try {
+        // allow for slow system response with limited retries
+            do {
+                Thread.sleep(500);
+                HttpClientUtils.closeQuietly(response); // if we are looping close the previous unwanted response
+                response = httpClient.execute(getMethod, context);
+                response.getEntity();
+                responseString = new BasicResponseHandler().handleResponse(response);
+                retry++;
+            } while((!responseString.contains(expectedText)) &&  retry < retryMax);
+
             int statusCode = response.getStatusLine().getStatusCode();
-            assertTrue("Expected code == " + expectedStatusCode + " but got "
-                            + statusCode + " for request=" + requestUri,
-                    statusCode == expectedStatusCode);
+            assertEquals("Expected code == " + expectedStatusCode + " but got "
+                    + statusCode + " for request=" + requestUri, expectedStatusCode, statusCode);
             assertTrue("Expected result [ " + expectedText + "] but was ["
                             + responseString + "]",
                     responseString.contains(expectedText));
@@ -277,6 +276,7 @@ public class LoginLogoutBasics extends EnvSetupUtils {
         }
     }
 
+    // TODO prune this unused code if its non-use doesn't indicate something dropped
     /**
      * Check that the proper warning message is logged.
      */
@@ -290,6 +290,7 @@ public class LoginLogoutBasics extends EnvSetupUtils {
         return false;
     }
 
+    // TODO prune this unused code if its non-use doesn't indicate something dropped
     public List<String> readServerLogLines() {
         String jbossHome = System.getProperty("jboss.install.dir");
         String logPath = String.format("%s%sstandalone%slog%sserver.log", jbossHome,
@@ -311,7 +312,7 @@ public class LoginLogoutBasics extends EnvSetupUtils {
         return new ArrayList<>();
     }
 
-    public HttpResponse simulateClickingOnButton(HttpClient client, Form form, String username, String password, String buttonValue) throws IOException {
+    private CloseableHttpResponse simulateClickingOnButton(CloseableHttpClient client, Form form, String username, String password, String buttonValue) throws IOException {
         final URL url = new URL(form.getAction());
         final HttpPost request = new HttpPost(url.toString());
         final List<NameValuePair> params = new LinkedList<>();
@@ -329,7 +330,7 @@ public class LoginLogoutBasics extends EnvSetupUtils {
         return client.execute(request);
     }
 
-    public final class Form {
+    private static final class Form {
 
         static final String
                 NAME = "name",
@@ -339,12 +340,10 @@ public class LoginLogoutBasics extends EnvSetupUtils {
                 ACTION = "action",
                 FORM = "form";
 
-        final HttpResponse response;
         final String action;
         final List<Input> inputFields = new LinkedList<>();
 
-        public Form(HttpResponse response) throws IOException {
-            this.response = response;
+        public Form(CloseableHttpResponse response) throws IOException {
             final String responseString = new BasicResponseHandler().handleResponse(response);
             if (!responseString.startsWith("<!DOCTYPE html>")) {
                 throw new IOException("Form is not the login doc");
@@ -375,7 +374,7 @@ public class LoginLogoutBasics extends EnvSetupUtils {
         }
     }
 
-    private final class Input {
+    private static final class Input {
 
         final String name, value;
         final Input.Type type;
@@ -403,9 +402,9 @@ public class LoginLogoutBasics extends EnvSetupUtils {
        for logout support.
     */
     public static class LogoutChannelPaths {
-        public String backChannelPath = null;
-        public String frontChannelPath = null;
-        public List<String> postLogoutRedirectPaths = null;
+        public String backChannelPath;
+        public String frontChannelPath;
+        public List<String> postLogoutRedirectPaths;
 
         public LogoutChannelPaths(final String backChannelPath,
                                  final String frontChannelPath,
@@ -414,12 +413,6 @@ public class LoginLogoutBasics extends EnvSetupUtils {
             this.frontChannelPath = frontChannelPath;
             this.postLogoutRedirectPaths = postLogoutRedirectPaths;
         }
-    }
-
-    protected static <T extends LoginLogoutBasics> void addSystemProperty(ManagementClient client, Class<T> clazz) throws Exception {
-        ModelNode add = Util.createAddOperation(PathAddress.pathAddress(SYSTEM_PROPERTY, LoginLogoutBasics.class.getName()));
-        add.get(VALUE).set(clazz.getName());
-        ManagementOperations.executeOperation(client.getControllerClient(), add);
     }
 
     /* This method retained for future debugging.  It can be helpful to
