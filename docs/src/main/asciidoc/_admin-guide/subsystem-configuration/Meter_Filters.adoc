@@ -1,0 +1,104 @@
+== Meter Filters
+:author:            Jason Lee
+:email:             jasondlee@ibm.com
+:idprefix:
+:idseparator:       -
+
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
+
+WildFly registers and configures a wide variety of meters out of the box, including JVM,
+system/app server, JMX, and deployment meters. This can, though, lead to issues such as
+resource exhaustion for observability aggregation systems as they receive and manage a
+potentially large amount of data. Meter filters, then, can be used to offer fine-grained
+control over what meters are actually published.
+
+Meter filters can either accept or reject a given meter, based on either its meter, one of
+its tag's names, or a tag value. The support matrix looks like this:
+
+|===
+|Field|Legal values|Default value|Notes
+
+|`outcome`
+a|
+* `accept`
+* `reject`|`reject`|The most common action
+
+
+|`field`
+a|
+* `meter-name`
+* `tag-name`
+* `tag-value`||
+
+|`condition`
+a|
+* `starts-with`
+* `ends-with`
+* `contains`
+* `equals`||
+
+|`negate`
+a|
+* `true`
+* `false`|`false`|Invert the check defined (e.g., "starts with"->"does not start with")
+
+|`value`|`*`||The value to filter for/on
+|===
+
+=== Managing Filters
+
+When adding and removing filters, they are addressed by unique names. For example:
+
+[source,subs="verbatim,attributes"]
+----
+/subsystem={metricsSubsystem}/filter=my-meter-name
+----
+
+To add a meter, the syntax is
+
+[source,subs="verbatim,attributes"]
+----
+/subsystem={metricsSubsystem}/filter=$NAME:add(
+    outcome=(accept|reject),
+    field=(meter-name|tag-name|tag-value),
+    condition=(starts-with|ends-with|contains|equals),
+    value=$VALUE,
+    [negate=(true|false)]
+)
+----
+
+A meter can be removed by issuing:
+
+[source,subs="verbatim,attributes"]
+----
+/subsystem={metricsSubsystem}/filter=$NAME:remove
+----
+
+=== Examples
+
+[source,subs="verbatim,attributes"]
+----
+# Reject all system metrics from undertow
+/subsystem={metricsSubsystem}/filter=reject-undertow:add(outcome=reject, field=meter-name,
+condition=starts-with, value=undertow)
+
+# Accept tagged.alpha by exact meter name
+/subsystem={metricsSubsystem}/filter=accept-alpha:add(outcome=accept, field=meter-name,
+condition=equals, value=tagged.alpha)
+
+# Reject meters with tag value "staging" (TAG_VALUE field)
+/subsystem={metricsSubsystem}/filter=reject-tag-value-staging:add(outcome=reject, field=tag-value, condition=equals, value=staging)
+
+# Reject meters with tag name "priority" (TAG_NAME field)
+/subsystem={metricsSubsystem}/filter=reject-tag-name-priority:add(outcome=reject, field=tag-name, condition=equals, value=priority)
+
+# Reject meters whose tag values do NOT include "prod" (NEGATE with TAG_VALUE)
+/subsystem={metricsSubsystem}/filter=reject-non-prod:add(outcome=reject,
+field=tag-value, condition=equals, negate=true, value=prod)
+----

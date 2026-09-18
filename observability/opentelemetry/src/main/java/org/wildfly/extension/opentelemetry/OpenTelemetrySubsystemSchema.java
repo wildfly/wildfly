@@ -16,6 +16,7 @@ import org.jboss.as.controller.SubsystemSchema;
 import org.jboss.as.controller.xml.VersionedNamespace;
 import org.jboss.as.version.Stability;
 import org.jboss.staxmapper.IntVersion;
+import org.wildfly.extension.observability.shared.FilterDefinitionRegistrar;
 
 public enum OpenTelemetrySubsystemSchema implements PersistentSubsystemSchema<OpenTelemetrySubsystemSchema> {
     VERSION_1_0(1, 0, Stability.DEFAULT), // WildFly 25
@@ -39,9 +40,13 @@ public enum OpenTelemetrySubsystemSchema implements PersistentSubsystemSchema<Op
 
     @Override
     public PersistentResourceXMLDescription getXMLDescription() {
-        return factory(this)
-                .builder(OpenTelemetryConfigurationConstants.SUBSYSTEM_PATH)
+        PersistentResourceXMLDescription.Factory factory = factory(this);
+        return factory.builder(OpenTelemetryConfigurationConstants.SUBSYSTEM_PATH)
                 .addAttributes(OpenTelemetrySubsystemRegistrar.ATTRIBUTES.stream())
+                .addChild(factory.builder(FilterDefinitionRegistrar.RESOURCE_REGISTRATION)
+                        .addAttributes(FilterDefinitionRegistrar.ATTRIBUTES.stream())
+                        .setXmlWrapperElement("filters")
+                        .build())
                 .build();
     }
 }

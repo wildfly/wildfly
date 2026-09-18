@@ -13,6 +13,7 @@ import java.util.List;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.model.test.FailedOperationTransformationConfig;
+import org.jboss.as.model.test.ModelFixer;
 import org.jboss.as.model.test.ModelTestControllerVersion;
 import org.jboss.as.model.test.ModelTestUtils;
 import org.jboss.as.subsystem.test.AbstractSubsystemTest;
@@ -21,9 +22,12 @@ import org.jboss.as.subsystem.test.KernelServices;
 import org.jboss.as.subsystem.test.KernelServicesBuilder;
 import org.jboss.as.version.Stability;
 import org.jboss.dmr.ModelNode;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.wildfly.extension.micrometer.prometheus.PrometheusRegistryDefinitionRegistrar;
+import org.wildfly.extension.observability.shared.FilterDefinitionRegistrar;
 
 /**
  * Mixed domain transformation testing for the Micrometer subsystem
@@ -32,6 +36,26 @@ public class SubsystemTransformersTestCase extends AbstractSubsystemTest {
 
     public SubsystemTransformersTestCase() {
         super(MicrometerConfigurationConstants.NAME, new MicrometerExtension());
+    }
+
+    /**
+     * Initializes the subsystem parser before each Jupiter test because the superclass exposes JUnit 4 lifecycle hooks.
+     *
+     * @throws Exception if parser initialization fails
+     */
+    @BeforeEach
+    public void setUp() throws Exception {
+        initializeParser();
+    }
+
+    /**
+     * Cleans up the subsystem parser after each Jupiter test because the superclass exposes JUnit 4 lifecycle hooks.
+     *
+     * @throws Exception if parser cleanup fails
+     */
+    @AfterEach
+    public void tearDown() throws Exception {
+        cleanup();
     }
 
     @Test
@@ -47,24 +71,29 @@ public class SubsystemTransformersTestCase extends AbstractSubsystemTest {
         builder.createLegacyKernelServicesBuilder(AdditionalInitialization.withCapabilities(capabilityNames),
                 ModelTestControllerVersion.EAP_XP_5, modelVersion)
             .addMavenResourceURL("org.jboss.eap.xp:wildfly-micrometer:" + ModelTestControllerVersion.EAP_XP_5.getMavenGavVersion())
+            .skipReverseControllerCheck()
             .dontPersistXml();
 
         KernelServices mainServices = builder.build();
-        Assert.assertTrue(mainServices.isSuccessfulBoot());
-        Assert.assertTrue(mainServices.getLegacyServices(modelVersion).isSuccessfulBoot());
+        Assertions.assertTrue(mainServices.isSuccessfulBoot());
+        Assertions.assertTrue(mainServices.getLegacyServices(modelVersion).isSuccessfulBoot());
 
-        checkSubsystemModelTransformation(mainServices, modelVersion);
+        ModelFixer fixer = model -> {
+            model.remove(FilterDefinitionRegistrar.PATH.getKey());
+            return model;
+        };
+        checkSubsystemModelTransformation(mainServices, modelVersion, fixer, false);
         ModelNode transformed = mainServices.readTransformedModel(modelVersion);
-        Assert.assertTrue(transformed.toString(), transformed.hasDefined("subsystem", "micrometer"));
-        Assert.assertEquals(transformed.toString(), 20L, transformed.get("subsystem", "micrometer","step").asLong());
-        Assert.assertEquals(transformed.toString(), "http://localhost:4318/v1/metrics",
-                transformed.get("subsystem", "micrometer", "endpoint").asString());
+        Assertions.assertTrue(transformed.hasDefined("subsystem", "micrometer"), transformed.toString());
+        Assertions.assertEquals(20L, transformed.get("subsystem", "micrometer","step").asLong(), transformed.toString());
+        Assertions.assertEquals("http://localhost:4318/v1/metrics",
+                transformed.get("subsystem", "micrometer", "endpoint").asString(), transformed.toString());
         ModelNode main = mainServices.readWholeModel().get("subsystem", "micrometer");
-        Assert.assertEquals(main.toString(), 20L, main.get("registry", "otlp", "step").asLong());
-        Assert.assertEquals(main.toString(), "http://localhost:4318/v1/metrics",
-                main.get("registry", "otlp", "endpoint").asString());
-        Assert.assertFalse(main.toString(), main.hasDefined("endpoint"));
-        Assert.assertFalse(main.toString(), main.hasDefined("step"));
+        Assertions.assertEquals(20L, main.get("registry", "otlp", "step").asLong(), main.toString());
+        Assertions.assertEquals("http://localhost:4318/v1/metrics",
+                main.get("registry", "otlp", "endpoint").asString(), main.toString());
+        Assertions.assertFalse(main.hasDefined("endpoint"), main.toString());
+        Assertions.assertFalse(main.hasDefined("step"), main.toString());
     }
 
     @Test
@@ -84,8 +113,8 @@ public class SubsystemTransformersTestCase extends AbstractSubsystemTest {
             .dontPersistXml();
 
         KernelServices mainServices = builder.build();
-        Assert.assertTrue(mainServices.isSuccessfulBoot());
-        Assert.assertTrue(mainServices.getLegacyServices(modelVersion).isSuccessfulBoot());
+        Assertions.assertTrue(mainServices.isSuccessfulBoot());
+        Assertions.assertTrue(mainServices.getLegacyServices(modelVersion).isSuccessfulBoot());
 
         List<ModelNode> ops = builder.parseXmlResource("micrometer-community-2.0.xml");
 
