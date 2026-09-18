@@ -4,19 +4,24 @@
  */
 package org.wildfly.extension.micrometer;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.wildfly.extension.observability.shared.FilterModel;
+import org.wildfly.extension.observability.shared.FilterModel.Condition;
+import org.wildfly.extension.observability.shared.FilterModel.Field;
+import org.wildfly.extension.observability.shared.FilterModel.Outcome;
 
-/** Verifies subsystem exposure is stable and does not modify caller-owned configuration. */
+/** Verifies Micrometer configuration snapshots caller-owned values correctly. */
 public class WildFlyMicrometerConfigTest {
 
-    /** Verifies immutable lists can configure exposure without requiring a mutable input. */
+    /** Verifies immutable lists can configure subsystem exposure. */
     @Test
     public void acceptsImmutableSubsystemLists() {
         WildFlyMicrometerConfig config = new WildFlyMicrometerConfig.Builder()
@@ -26,7 +31,7 @@ public class WildFlyMicrometerConfigTest {
         assertFalse(config.getSubsystemFilter().test("messaging-activemq"));
     }
 
-    /** Verifies later caller mutations cannot change the configured subsystem exposure. */
+    /** Verifies later caller mutations cannot change subsystem exposure. */
     @Test
     public void ignoresCallerListMutations() {
         List<String> exposedSubsystems = new ArrayList<>(List.of("undertow"));
@@ -40,7 +45,7 @@ public class WildFlyMicrometerConfigTest {
         assertFalse(config.getSubsystemFilter().test("messaging-activemq"));
     }
 
-    /** Verifies wildcard exposure leaves the caller's configuration available for reuse. */
+    /** Verifies wildcard exposure leaves the caller's list unchanged. */
     @Test
     public void preservesWildcardInCallerList() {
         List<String> exposedSubsystems = new ArrayList<>(List.of("*", "undertow"));
@@ -52,7 +57,7 @@ public class WildFlyMicrometerConfigTest {
         assertTrue(config.getSubsystemFilter().test("messaging-activemq"));
     }
 
-    /** Verifies immutable wildcard configuration exposes every subsystem. */
+    /** Verifies wildcard exposure works with an immutable input list. */
     @Test
     public void acceptsImmutableWildcardList() {
         WildFlyMicrometerConfig config = new WildFlyMicrometerConfig.Builder()
@@ -62,12 +67,34 @@ public class WildFlyMicrometerConfigTest {
         assertTrue(config.getSubsystemFilter().test("messaging-activemq"));
     }
 
-    /** Verifies an empty configuration exposes no subsystems. */
+    /** Verifies an empty subsystem list exposes no subsystems. */
     @Test
     public void exposesNoSubsystemsForEmptyList() {
         WildFlyMicrometerConfig config = new WildFlyMicrometerConfig.Builder()
                 .exposedSubsystems(List.of()).build();
 
         assertFalse(config.getSubsystemFilter().test("undertow"));
+    }
+
+    /** Verifies filter inputs are copied and the resulting list is immutable. */
+    @Test
+    public void testBuilderSnapshotsMutableInputs() {
+        List<FilterModel> filters = new ArrayList<>();
+        filters.add(filter());
+
+        WildFlyMicrometerConfig config = new WildFlyMicrometerConfig.Builder()
+                .exposedSubsystems(new ArrayList<>(List.of("*")))
+                .addFilters(filters)
+                .build();
+
+        filters.clear();
+
+        assertEquals(1, config.getFilters().size());
+        assertThrows(UnsupportedOperationException.class, () -> config.getFilters().clear());
+    }
+
+    /** Creates the filter used by the snapshot test. */
+    private static FilterModel filter() {
+        return new FilterModel(Outcome.REJECT, Field.METER_NAME, Condition.EQUALS, false, "test");
     }
 }

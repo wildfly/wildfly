@@ -7,13 +7,18 @@ package org.wildfly.extension.opentelemetry;
 import static org.wildfly.extension.opentelemetry.OpenTelemetrySubsystemModel.VERSION_1_0_0;
 import static org.wildfly.extension.opentelemetry.OpenTelemetrySubsystemModel.VERSION_1_1_0;
 
+import java.util.ArrayList;
+
+import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.transform.ExtensionTransformerRegistration;
 import org.jboss.as.controller.transform.SubsystemTransformerRegistration;
 import org.jboss.as.controller.transform.description.AttributeConverter;
 import org.jboss.as.controller.transform.description.ChainedTransformationDescriptionBuilder;
+import org.jboss.as.controller.transform.description.DiscardAttributeChecker;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.as.controller.transform.description.TransformationDescriptionBuilder;
 import org.kohsuke.MetaInfServices;
+import org.wildfly.extension.observability.shared.FilterDefinitionRegistrar;
 
 @MetaInfServices
 public class OpenTelemetryExtensionTransformerRegistration implements ExtensionTransformerRegistration {
@@ -27,11 +32,25 @@ public class OpenTelemetryExtensionTransformerRegistration implements ExtensionT
         ChainedTransformationDescriptionBuilder builder =
                 TransformationDescriptionBuilder.Factory.createChainedSubystemInstance(registration.getCurrentSubsystemVersion());
 
-        builder.createBuilder(OpenTelemetrySubsystemModel.VERSION_1_2_0.getVersion(), VERSION_1_1_0.getVersion());
+        registerV_1_2_Transformers(builder.createBuilder(OpenTelemetrySubsystemModel.VERSION_1_2_0.getVersion(), VERSION_1_1_0.getVersion()));
         registerV_1_1_Transformers(builder.createBuilder(VERSION_1_1_0.getVersion(), VERSION_1_0_0.getVersion()));
 
         builder.buildAndRegister(registration, new org.jboss.as.controller.ModelVersion[]{
                 VERSION_1_1_0.getVersion(), VERSION_1_0_0.getVersion()});
+    }
+
+    private void registerV_1_2_Transformers(ResourceTransformationDescriptionBuilder builder) {
+        builder.discardChildResource(FilterDefinitionRegistrar.PATH);
+        builder.getAttributeBuilder()
+                .setDiscard(DiscardAttributeChecker.ALWAYS, OpenTelemetrySubsystemRegistrar.SYSTEM_METRICS)
+                .end();
+        builder.setCustomResourceTransformer((context, address, resource) -> {
+            resource.getModel().remove(OpenTelemetrySubsystemRegistrar.SYSTEM_METRICS.getName());
+            for (Resource.ResourceEntry child : new ArrayList<>(resource.getChildren("filter"))) {
+                resource.removeChild(child.getPathElement());
+            }
+            context.addTransformedResourceFromRoot(address, resource);
+        });
     }
 
     private void registerV_1_1_Transformers(ResourceTransformationDescriptionBuilder builder) {

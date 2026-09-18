@@ -20,6 +20,7 @@ import org.jboss.as.version.Stability;
 import org.jboss.staxmapper.IntVersion;
 import org.wildfly.extension.micrometer.otlp.OtlpRegistryDefinitionRegistrar;
 import org.wildfly.extension.micrometer.prometheus.PrometheusRegistryDefinitionRegistrar;
+import org.wildfly.extension.observability.shared.FilterDefinitionRegistrar;
 
 public enum MicrometerSubsystemSchema implements PersistentSubsystemSchema<MicrometerSubsystemSchema> {
     VERSION_1_0(1, 0, Stability.DEFAULT), // WildFly 28
@@ -34,7 +35,7 @@ public enum MicrometerSubsystemSchema implements PersistentSubsystemSchema<Micro
 
     MicrometerSubsystemSchema(int major, int minor, Stability stability) {
         this.namespace = SubsystemSchema.createSubsystemURN(MicrometerConfigurationConstants.NAME, stability,
-            new IntVersion(major, minor));
+                new IntVersion(major, minor));
     }
 
     @Override
@@ -47,17 +48,22 @@ public enum MicrometerSubsystemSchema implements PersistentSubsystemSchema<Micro
     public PersistentResourceXMLDescription getXMLDescription() {
         PersistentResourceXMLDescription.Factory factory = factory(this);
         PersistentResourceXMLDescription.Builder builder =
-            factory.builder(MicrometerSubsystemRegistrar.SUBSYSTEM_PATH)
-                .addChild(factory.builder(OtlpRegistryDefinitionRegistrar.PATH)
-                    .addAttributes(OtlpRegistryDefinitionRegistrar.ATTRIBUTES.stream())
-                    .setXmlElementName(OTLP_REGISTRY)
-                    .build());
+                factory.builder(MicrometerSubsystemRegistrar.SUBSYSTEM_PATH)
+                        .addAttributes(MicrometerSubsystemRegistrar.ATTRIBUTES.stream())
+                        .addChild(factory.builder(FilterDefinitionRegistrar.RESOURCE_REGISTRATION)
+                                .addAttributes(FilterDefinitionRegistrar.ATTRIBUTES.stream())
+                                .setXmlWrapperElement("filters")
+                                .build())
+                        .addChild(factory.builder(OtlpRegistryDefinitionRegistrar.PATH)
+                                .addAttributes(OtlpRegistryDefinitionRegistrar.ATTRIBUTES.stream())
+                                .setXmlElementName(OTLP_REGISTRY)
+                                .build())
+                        .addChild(factory.builder(RESOURCE_REGISTRATION)
+                                .addAttributes(PrometheusRegistryDefinitionRegistrar.ATTRIBUTES.stream())
+                                .setXmlElementName(PROMETHEUS_REGISTRY)
+                                .build());
 
-        builder.addAttributes(MicrometerSubsystemRegistrar.ATTRIBUTES.stream())
-            .addChild(factory.builder(RESOURCE_REGISTRATION)
-                .addAttributes(PrometheusRegistryDefinitionRegistrar.ATTRIBUTES.stream())
-                .setXmlElementName(PROMETHEUS_REGISTRY)
-                .build());
+
 
         return builder.build();
     }

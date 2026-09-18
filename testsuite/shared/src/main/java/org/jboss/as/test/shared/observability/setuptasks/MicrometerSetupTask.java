@@ -60,5 +60,7 @@ public class MicrometerSetupTask extends AbstractSetupTask {
         executeOp(managementClient, Operations.createRemoveOperation(MICROMETER_EXTENSION));
 
         ServerReload.executeReloadAndWaitForCompletion(managementClient);
+
+        otelCollector.stop();
     }
 }
