@@ -33,7 +33,6 @@ import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.client.helpers.MeasurementUnit;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.validation.IntRangeValidator;
-import org.jboss.as.controller.operations.validation.EnumValidator;
 import org.jboss.as.controller.operations.validation.StringBytesLengthValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
@@ -41,11 +40,15 @@ import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.as.controller.registry.Resource;
-import org.jboss.as.txn.config.RecoveryGracefulShutdown;
 import org.jboss.as.txn.logging.TransactionLogger;
+import org.jboss.as.txn.service.ArjunaRecoveryManagerService;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.tm.XAResourceRecoveryRegistry;
+import org.wildfly.service.capture.FunctionExecutor;
+import org.wildfly.subsystem.service.ServiceDependency;
+import org.wildfly.subsystem.service.capture.FunctionExecutorRegistry;
+import org.wildfly.subsystem.service.capture.ServiceValueExecutorRegistry;
 import org.wildfly.transaction.client.ContextTransactionManager;
 
 import com.arjuna.ats.arjuna.common.CoordinatorEnvironmentBean;
@@ -105,11 +108,11 @@ public class TransactionSubsystemRootResourceDefinition extends SimpleResourceDe
             .setXmlName(Attribute.RECOVERY_LISTENER.getLocalName())
             .setAllowExpression(true).build();
 
-    public static final SimpleAttributeDefinition TRANSACTIONS_RECOVERY_GRACEFUL_SHUTDOWN = new SimpleAttributeDefinitionBuilder(CommonAttributes.TRANSACTIONS_RECOVERY_GRACEFUL_SHUTDOWN, ModelType.STRING, true)
-            .setDefaultValue(new ModelNode().set("ignore"))
-            .setValidator(EnumValidator.create(RecoveryGracefulShutdown.class))
-            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-            .setXmlName(Attribute.TRANSACTIONS_RECOVERY_GRACEFUL_SHUTDOWN.getLocalName())
+    public static final SimpleAttributeDefinition GRACEFUL_SHUTDOWN_TIMEOUT = new SimpleAttributeDefinitionBuilder(CommonAttributes.GRACEFUL_SHUTDOWN_TIMEOUT, ModelType.INT, true)
+            .setDefaultValue(new ModelNode().set(-1))
+            .setValidator(new IntRangeValidator(-1))
+            .setFlags(AttributeAccess.Flag.RESTART_NONE)
+            .setXmlName(Attribute.GRACEFUL_SHUTDOWN_TIMEOUT.getLocalName())
             .setAllowExpression(true).build();
 
     //core environment
@@ -282,8 +285,14 @@ public class TransactionSubsystemRootResourceDefinition extends SimpleResourceDe
 
 
     private final boolean registerRuntimeOnly;
+    private final FunctionExecutorRegistry<ArjunaRecoveryManagerService> registry;
 
     TransactionSubsystemRootResourceDefinition(boolean registerRuntimeOnly) {
+        this(registerRuntimeOnly, ServiceValueExecutorRegistry.newInstance());
+    }
+
+    private TransactionSubsystemRootResourceDefinition(boolean registerRuntimeOnly,
+                                                        ServiceValueExecutorRegistry<ArjunaRecoveryManagerService> registry) {
         super(new Parameters(TransactionExtension.SUBSYSTEM_PATH,
                 TransactionExtension.getResourceDescriptionResolver())
                 .setAddHandler(TransactionSubsystemAdd.INSTANCE)
@@ -295,11 +304,13 @@ public class TransactionSubsystemRootResourceDefinition extends SimpleResourceDe
                 //OperationEntry.Flag.RESTART_ALL_SERVICES, OperationEntry.Flag.RESTART_ALL_SERVICES
         );
         this.registerRuntimeOnly = registerRuntimeOnly;
+        this.registry = registry;
+        TransactionSubsystemAdd.INSTANCE.setRegistry(registry);
     }
 
     // all attributes
     static final AttributeDefinition[] add_attributes = new AttributeDefinition[] {
-            BINDING, STATUS_BINDING, RECOVERY_LISTENER, TRANSACTIONS_RECOVERY_GRACEFUL_SHUTDOWN, NODE_IDENTIFIER, PROCESS_ID_UUID, PROCESS_ID_SOCKET_BINDING,
+            BINDING, STATUS_BINDING, RECOVERY_LISTENER, GRACEFUL_SHUTDOWN_TIMEOUT, NODE_IDENTIFIER, PROCESS_ID_UUID, PROCESS_ID_SOCKET_BINDING,
             PROCESS_ID_SOCKET_MAX_PORTS, STATISTICS_ENABLED, ENABLE_TSM_STATUS, DEFAULT_TIMEOUT, MAXIMUM_TIMEOUT,
             OBJECT_STORE_RELATIVE_TO, OBJECT_STORE_PATH, JTS, USE_HORNETQ_STORE_PARAM, USE_JOURNAL_STORE_PARAM, USE_JDBC_STORE, JDBC_STORE_DATASOURCE,
             JDBC_ACTION_STORE_DROP_TABLE, JDBC_ACTION_STORE_TABLE_PREFIX, JDBC_COMMUNICATION_STORE_DROP_TABLE,
@@ -333,6 +344,7 @@ public class TransactionSubsystemRootResourceDefinition extends SimpleResourceDe
         attributesWithoutMutuals.remove(ENABLE_STATISTICS);
         attributesWithoutMutuals.remove(HORNETQ_STORE_ENABLE_ASYNC_IO);
 
+        attributesWithoutMutuals.remove(GRACEFUL_SHUTDOWN_TIMEOUT);
 
         OperationStepHandler writeHandler = new ReloadRequiredWriteAttributeHandler(attributesWithoutMutuals);
         for(final AttributeDefinition def : attributesWithoutMutuals) {
@@ -347,6 +359,8 @@ public class TransactionSubsystemRootResourceDefinition extends SimpleResourceDe
         //Register default-timeout attribute
         resourceRegistration.registerReadWriteAttribute(DEFAULT_TIMEOUT, null, new DefaultTimeoutHandler(DEFAULT_TIMEOUT));
         resourceRegistration.registerReadWriteAttribute(MAXIMUM_TIMEOUT, null, new MaximumTimeoutHandler(MAXIMUM_TIMEOUT));
+
+        resourceRegistration.registerReadWriteAttribute(GRACEFUL_SHUTDOWN_TIMEOUT, null, new GracefulShutdownTimeoutHandler(this.registry, GRACEFUL_SHUTDOWN_TIMEOUT));
 
         // Register jdbc-store-datasource attribute
         resourceRegistration.registerReadWriteAttribute(JDBC_STORE_DATASOURCE, null, new JdbcStoreDatasourceWriteHandler(JDBC_STORE_DATASOURCE));
@@ -603,6 +617,47 @@ public class TransactionSubsystemRootResourceDefinition extends SimpleResourceDe
         @Override
         protected void revertUpdateToRuntime(OperationContext operationContext, ModelNode modelNode, String s, ModelNode modelNode1, ModelNode modelNode2, Void aVoid) throws OperationFailedException {
 
+        }
+    }
+
+    private static class GracefulShutdownTimeoutHandler extends AbstractWriteAttributeHandler<Void> {
+        private final FunctionExecutorRegistry<ArjunaRecoveryManagerService> registry;
+
+        public GracefulShutdownTimeoutHandler(final FunctionExecutorRegistry<ArjunaRecoveryManagerService> registry,
+                                              final AttributeDefinition... definitions) {
+            super(definitions);
+            this.registry = registry;
+        }
+
+        @Override
+        protected boolean applyUpdateToRuntime(final OperationContext context, final ModelNode operation,
+                                               final String attributeName, final ModelNode resolvedValue,
+                                               final ModelNode currentValue, final HandbackHolder<Void> handbackHolder)
+            throws OperationFailedException {
+            FunctionExecutor<ArjunaRecoveryManagerService> executor = this.registry.getExecutor(
+                    ServiceDependency.on(XA_RESOURCE_RECOVERY_REGISTRY_CAPABILITY.getCapabilityServiceName()));
+            if (executor != null) {
+                executor.execute(service -> {
+                    service.setGracefulShutdownTimeout(resolvedValue.asInt());
+                    return null;
+                });
+            }
+            return false;
+        }
+
+        @Override
+        protected void revertUpdateToRuntime(final OperationContext context, final ModelNode operation,
+                                             final String attributeName, final ModelNode valueToRestore,
+                                             final ModelNode valueToRevert, final Void handback)
+            throws OperationFailedException {
+            FunctionExecutor<ArjunaRecoveryManagerService> executor = this.registry.getExecutor(
+                    ServiceDependency.on(XA_RESOURCE_RECOVERY_REGISTRY_CAPABILITY.getCapabilityServiceName()));
+            if (executor != null) {
+                executor.execute(service -> {
+                    service.setGracefulShutdownTimeout(valueToRestore.asInt());
+                    return null;
+                });
+            }
         }
     }
 

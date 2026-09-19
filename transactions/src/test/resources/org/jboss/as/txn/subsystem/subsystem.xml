@@ -10,7 +10,7 @@
         </process-id>
     </core-environment>
     <recovery-environment socket-binding="txn-recovery-environment" status-socket-binding="txn-status-manager"
-                          transactions-recovery-graceful-shutdown="ignore"/>
+                          graceful-shutdown-timeout="-1"/>
     <coordinator-environment default-timeout="300"/>
     <object-store path="tx-object-store" relative-to="jboss.server.data.dir"/>
     <jts/>
