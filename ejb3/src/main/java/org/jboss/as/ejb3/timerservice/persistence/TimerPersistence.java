@@ -68,6 +68,17 @@ public interface TimerPersistence {
     List<TimerImpl> loadActiveTimers(String timedObjectId, final TimerServiceImpl timerService);
 
     /**
+     * Load all active timers for the given externalId. If the object is an entity bean timers for all beans will be returned.
+     *
+     * @param externalId The external id to load timers for
+     * @return A list of all active timers
+     * @throws UnsupportedOperationException if the underlying persistence store does not support querying by external ID.
+     */
+    default List<TimerImpl> loadActiveTimersByExternalId(String externalId, final TimerServiceImpl timerService) {
+        throw new UnsupportedOperationException("Loading active timers by external ID is not supported by this timer persistence implementation.");
+    }
+
+    /**
      *
      * Registers a listener to listed for new timers that are added to the database.
      *
