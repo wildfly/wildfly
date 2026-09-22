@@ -6,6 +6,7 @@ package org.wildfly.test.integration.elytron.oidc.client.logout;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.io.Serial;
 
 import jakarta.annotation.security.DeclareRoles;
 import jakarta.servlet.annotation.HttpConstraint;
@@ -29,13 +30,14 @@ import org.jboss.as.test.integration.security.common.servlets.SimpleServlet;
 public class SecuredFrontChannelServlet extends SimpleServlet {
 
     /** The serialVersionUID */
+    @Serial
     private static final long serialVersionUID = 1L;
     public static final String SERVLET_PATH = "/SecuredFrontChannelServlet";
     public static final String ALLOWED_ROLE = "JBossAdmin";
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        try (PrintWriter writer = resp.getWriter();){
+        try (PrintWriter writer = resp.getWriter()){
             writer.println("<html>");
             writer.println("  <head><title>" + SERVLET_PATH + "</title></head>");
             writer.println("  <body>");

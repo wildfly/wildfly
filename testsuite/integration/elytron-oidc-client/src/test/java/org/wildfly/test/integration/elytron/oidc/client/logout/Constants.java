@@ -10,8 +10,6 @@ public class Constants {
     public static final String FRONT_CHANNEL_LOGOUT_APP = "FrontChannelLogoutApp";
     public static final String BACK_CHANNEL_LOGOUT_APP_TWO = BACK_CHANNEL_LOGOUT_APP+"Two";
     public static final String WEB_XML = "web.xml";
-    public static final String PREFIX = "JsonConfig-";
-    public static final String OTHER_LOGOUT_CLAIM_TYP = "otherLogoutClaimTyp";
 
     public static final String LOGOUT_PATH_VALUE = "/mylogout";
     public static final String LOGOUT_CALLBACK_PATH_VALUE = "/more/myCallback";
@@ -24,6 +22,5 @@ public class Constants {
 
     public static final String SIGN_IN_TO_YOUR_ACCOUNT = "Sign in to your account";
     public static final String YOU_ARE_LOGGED_OUT = "You are logged out";
-    public static final String YOU_ARE_LOGGING_OUT = "You are logging out";
     public static final String NO_CALLBACK = "no-callback";
 }
