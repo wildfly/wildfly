@@ -74,7 +74,7 @@ public class NoRaAnnoTestCase {
             String xml = FileUtils.readFile(NoRaAnnoTestCase.class,
                     "ra16anno.xml");
             List<ModelNode> operations = xmlToModelOperations(xml,
-                    Namespace.RESOURCEADAPTERS_1_0.getUriString(),
+                    Namespace.CURRENT.getUriString(),
                     new ResourceAdapterSubsystemParser());
             address = operations.get(1).get("address");
             executeOperation(operationListToCompositeOperation(operations));
