@@ -5,6 +5,7 @@
 
 package org.jboss.as.naming.logging;
 
+import static org.jboss.logging.Logger.Level.DEBUG;
 import static org.jboss.logging.Logger.Level.ERROR;
 import static org.jboss.logging.Logger.Level.INFO;
 import static org.jboss.logging.Logger.Level.WARN;
@@ -585,4 +586,8 @@ public interface NamingLogger extends BasicLogger {
 
     @Message(id = 67, value = "Failed to stop remote naming service")
     IllegalStateException failedToStopRemoteNamingService(@Cause Throwable cause);
+
+    @LogMessage(level = DEBUG)
+    @Message(id = 68, value = "Failed to lookup %s")
+    void failedToLookup(String name);
 }
