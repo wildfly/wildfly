@@ -11,9 +11,9 @@ import org.jboss.as.clustering.controller.ChildResourceDefinition;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.RestartParentResourceRegistrar;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.ResourceRegistration;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.wildfly.extension.undertow.Constants;
-import org.wildfly.extension.undertow.UndertowExtension;
 
 /**
  * Base class for affinity resources.
@@ -25,12 +25,12 @@ public abstract class AffinityResourceDefinition extends ChildResourceDefinition
     protected static PathElement pathElement(String value) {
         return PathElement.pathElement(Constants.AFFINITY, value);
     }
-    static final PathElement WILDCARD_PATH = pathElement(PathElement.WILDCARD_VALUE);
+    public static final PathElement WILDCARD_PATH = pathElement(PathElement.WILDCARD_VALUE);
 
     private final UnaryOperator<ResourceDescriptor> configurator;
 
-    AffinityResourceDefinition(PathElement path, UnaryOperator<ResourceDescriptor> configurator) {
-        super(path, UndertowExtension.getResolver(Constants.FILTER, ModClusterDefinition.PATH_ELEMENT.getKey(), path.getKey(), path.getValue()));
+    AffinityResourceDefinition(ResourceRegistration registration, UnaryOperator<ResourceDescriptor> configurator) {
+        super(new Parameters(registration, ModClusterDefinition.RESOLVER.createChildResolver(registration.getPathElement())));
         this.configurator = configurator;
     }
 

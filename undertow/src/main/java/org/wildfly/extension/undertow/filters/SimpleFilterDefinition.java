@@ -5,7 +5,7 @@
 
 package org.wildfly.extension.undertow.filters;
 
-import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.ResourceRegistration;
 import org.jboss.as.controller.ServiceRemoveStepHandler;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
@@ -18,8 +18,8 @@ abstract class SimpleFilterDefinition extends AbstractFilterDefinition {
 
     private final PredicateHandlerWrapperFactory factory;
 
-    protected SimpleFilterDefinition(PathElement path, PredicateHandlerWrapperFactory factory) {
-        super(path);
+    protected SimpleFilterDefinition(ResourceRegistration registration, PredicateHandlerWrapperFactory factory) {
+        super(registration);
         this.factory = factory;
     }
 

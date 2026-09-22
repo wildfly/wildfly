@@ -33,7 +33,7 @@ import org.wildfly.subsystem.service.ResourceServiceConfigurator;
  * @author Paul Ferraro
  */
 abstract class SingleSignOnDefinition implements ChildResourceDefinitionRegistrar, ResourceModelResolver<SingleSignOnConfiguration>, ResourceServiceConfigurator {
-    static final PathElement PATH_ELEMENT = PathElement.pathElement(Constants.SETTING, Constants.SINGLE_SIGN_ON);
+    static final ResourceRegistration REGISTRATION = ResourceRegistration.of(PathElement.pathElement(Constants.SETTING, Constants.SINGLE_SIGN_ON));
 
     enum Attribute implements AttributeDefinitionProvider {
         DOMAIN(Constants.DOMAIN, ModelType.STRING, null),
@@ -69,10 +69,10 @@ abstract class SingleSignOnDefinition implements ChildResourceDefinitionRegistra
 
     @Override
     public ManagementResourceRegistration register(ManagementResourceRegistration parent, ManagementResourceRegistrationContext context) {
-        ResourceDescriptor descriptor = this.configurator.apply(ResourceDescriptor.builder(UndertowExtension.getResolver(PATH_ELEMENT.getValue())), this)
+        ResourceDescriptor descriptor = this.configurator.apply(ResourceDescriptor.builder(UndertowRootDefinition.RESOLVER.createChildResolver(REGISTRATION.getPathElement().getValue())), this)
                 .provideAttributes(EnumSet.allOf(Attribute.class))
                 .build();
-        ManagementResourceRegistration registration = parent.registerSubModel(this.builderFactory.apply(ResourceRegistration.of(PATH_ELEMENT), descriptor.getResourceDescriptionResolver()).build());
+        ManagementResourceRegistration registration = parent.registerSubModel(this.builderFactory.apply(REGISTRATION, descriptor.getResourceDescriptionResolver()).build());
         ManagementResourceRegistrar.of(descriptor).register(registration);
         return registration;
     }

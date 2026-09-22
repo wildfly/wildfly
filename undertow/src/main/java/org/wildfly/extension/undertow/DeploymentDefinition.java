@@ -7,7 +7,6 @@ package org.wildfly.extension.undertow;
 
 import static org.jboss.as.controller.client.helpers.MeasurementUnit.SECONDS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 import static org.jboss.as.controller.registry.AttributeAccess.Flag.COUNTER_METRIC;
 
 import java.time.Instant;
@@ -28,12 +27,11 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationDefinition;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
+import org.jboss.as.controller.descriptions.ParentResourceDescriptionResolver;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
@@ -47,8 +45,7 @@ import org.wildfly.extension.undertow.logging.UndertowLogger;
  * @author Tomaz Cerar
  */
 public class DeploymentDefinition extends SimpleResourceDefinition {
-
-    private static final ResourceDescriptionResolver DEFAULT_RESOLVER = UndertowExtension.getResolver("deployment");
+    static final ParentResourceDescriptionResolver DEFAULT_RESOLVER = UndertowRootDefinition.RESOLVER.createChildResolver(ModelDescriptionConstants.DEPLOYMENT);
 
     public static final AttributeDefinition SERVER = new SimpleAttributeDefinitionBuilder("server", ModelType.STRING).setStorageRuntime().build();
     public static final AttributeDefinition CONTEXT_ROOT = new SimpleAttributeDefinitionBuilder("context-root", ModelType.STRING).setStorageRuntime().build();
@@ -125,7 +122,7 @@ public class DeploymentDefinition extends SimpleResourceDefinition {
             .build();
 
     DeploymentDefinition() {
-        super(new Parameters(PathElement.pathElement(SUBSYSTEM, UndertowExtension.SUBSYSTEM_NAME), DEFAULT_RESOLVER)
+        super(new Parameters(UndertowRootDefinition.REGISTRATION, DEFAULT_RESOLVER)
                 .setFeature(false).setRuntime());
     }
 
