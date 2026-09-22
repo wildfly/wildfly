@@ -22,7 +22,7 @@ setlocal EnableDelayedExpansion
 call "!DIRNAME!common.bat" :commonConf
 rem check for the security manager system property
 echo(!SERVER_OPTS! | findstr /r /c:"-Djava.security.manager" > nul
-if not errorlevel == 1 (
+if not errorlevel 1 (
     echo ERROR: The use of -Djava.security.manager has been removed. Please use the -secmgr command line argument or SECMGR=true environment variable.
     GOTO :EOF
 )
@@ -90,7 +90,7 @@ setlocal DisableDelayedExpansion
 
 rem Add -server to the JVM options, if supported
 "%JAVA%" -server -version 2>&1 | findstr /I hotspot > nul
-if not errorlevel == 1 (
+if not errorlevel 1 (
   set "JAVA_OPTS=%JAVA_OPTS% -server"
 )
 
