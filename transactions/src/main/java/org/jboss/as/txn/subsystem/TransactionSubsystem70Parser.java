@@ -53,6 +53,9 @@ class TransactionSubsystem70Parser extends TransactionSubsystem60Parser {
                 case TRANSACTIONS_RECOVERY_GRACEFUL_SHUTDOWN:
                     TransactionSubsystemRootResourceDefinition.TRANSACTIONS_RECOVERY_GRACEFUL_SHUTDOWN.parseAndSetParameter(value, operation, reader);
                     break;
+                case RECOVERY_AUTHENTICATION_CONTEXT:
+                    TransactionSubsystemRootResourceDefinition.RECOVERY_AUTHENTICATION_CONTEXT.parseAndSetParameter(value, operation, reader);
+                    break;
                 default:
                     throw unexpectedAttribute(reader, i);
             }
