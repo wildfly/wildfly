@@ -61,6 +61,9 @@ class OpenTelemetryDeploymentProcessor implements DeploymentUnitProcessor {
             OpenTelemetry serverOtel = service.getOpenTelemetry();
             String deploymentName = getDeploymentName(deploymentUnit);
 
+            // Clean up any existing registration (handles redeploy scenario)
+            service.unregisterDeploymentMetricReader(deploymentName);
+
             // Create deployment-isolated meter provider with DELTA temporality
             DeploymentMetricReader reader = new DeploymentMetricReader(AggregationTemporality.DELTA);
 

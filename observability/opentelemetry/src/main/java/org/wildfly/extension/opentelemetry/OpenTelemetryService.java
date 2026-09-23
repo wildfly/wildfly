@@ -12,6 +12,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import io.opentelemetry.api.OpenTelemetry;
+import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.autoconfigure.AutoConfiguredOpenTelemetrySdk;
 import io.opentelemetry.sdk.autoconfigure.AutoConfiguredOpenTelemetrySdkBuilder;
 import org.wildfly.extension.opentelemetry.api.WildFlyOpenTelemetryConfig;
@@ -64,6 +65,22 @@ public class OpenTelemetryService {
 
     public Map<String, AggregatingMetricExporter.DeploymentMetricReaderHandle> getDeploymentMetricReaders() {
         return Collections.unmodifiableMap(deploymentMetricReaders);
+    }
+
+    /**
+     * Shutdown the OpenTelemetry SDK and clean up all deployment metric readers.
+     * Called when the subsystem is stopped.
+     */
+    public void shutdown() {
+        OTEL_LOGGER.debugf("Shutting down OpenTelemetry service");
+
+        // Clear deployment metric readers
+        deploymentMetricReaders.clear();
+
+        // Shutdown the SDK if possible
+        if (openTelemetry instanceof OpenTelemetrySdk) {
+            ((OpenTelemetrySdk) openTelemetry).close();
+        }
     }
 
     public static class Builder {

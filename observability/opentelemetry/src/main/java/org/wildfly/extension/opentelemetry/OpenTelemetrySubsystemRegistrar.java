@@ -47,6 +47,7 @@ import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.wildfly.extension.opentelemetry.api.WildFlyOpenTelemetryConfig;
+import org.wildfly.service.BlockingLifecycle;
 import org.wildfly.service.Installer.StartWhen;
 import org.wildfly.subsystem.resource.ManagementResourceRegistrar;
 import org.wildfly.subsystem.resource.ManagementResourceRegistrationContext;
@@ -263,6 +264,7 @@ class OpenTelemetrySubsystemRegistrar implements SubsystemResourceDefinitionRegi
                 .build())
             .provides(OPENTELEMETRY_SERVICE)
             .requires(configDep)
+            .withLifecycle(BlockingLifecycle.compose(Functions.discardingConsumer(), OpenTelemetryService::shutdown))
             .startWhen(StartWhen.INSTALLED)
             .withCaptor(openTelemetryService::set)
             .build());
