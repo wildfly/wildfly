@@ -9,7 +9,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 
@@ -90,7 +89,7 @@ public class WeldPortableExtensions {
      * @param extensionCreator a function that can create an instance of the {{@code LiteExtensionTranslator}} from given collection of found BCEs
      * @throws IllegalArgumentException if the deployment unit parameter equals null
      */
-    public synchronized void registerLiteExtensionTranslatorIfNeeded(Function<List<Class<? extends BuildCompatibleExtension>>,
+    public synchronized void registerLiteExtensionTranslatorIfNeeded(Function<Collection<Class<? extends BuildCompatibleExtension>>,
                 Extension> extensionCreator, DeploymentUnit deploymentUnit) throws IllegalArgumentException {
         if (deploymentUnit == null) {
             throw WeldLogger.ROOT_LOGGER.incorrectBceTranslatorSetup();
@@ -106,7 +105,7 @@ public class WeldPortableExtensions {
         return new HashSet<>(extensions.values());
     }
 
-    public List<Class<? extends BuildCompatibleExtension>> getBuildCompatibleExtensions() {
+    public Collection<Class<? extends BuildCompatibleExtension>> getBuildCompatibleExtensions() {
         return new ArrayList<>(buildCompatibleExtensions);
     }
 
