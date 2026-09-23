@@ -5,10 +5,7 @@
 
 package org.wildfly.extension.opentelemetry.api;
 
-import java.util.Map;
-
 import io.opentelemetry.api.OpenTelemetry;
-import io.smallrye.opentelemetry.api.OpenTelemetryConfig;
 import io.smallrye.opentelemetry.implementation.rest.OpenTelemetryClientFilter;
 import io.smallrye.opentelemetry.implementation.rest.OpenTelemetryServerFilter;
 import jakarta.enterprise.event.Observes;
@@ -21,16 +18,10 @@ import jakarta.enterprise.inject.spi.Extension;
 import jakarta.inject.Singleton;
 
 public final class OpenTelemetryCdiExtension implements Extension {
-    private final boolean useServerConfig;
-    private final WildFlyOpenTelemetryConfig config;
+    private final OpenTelemetry openTelemetry;
 
-    public OpenTelemetryCdiExtension(boolean useServerConfig, Map<String, String> config) {
-        this (useServerConfig, new WildFlyOpenTelemetryConfig(config, useServerConfig));
-    }
-
-    public OpenTelemetryCdiExtension(boolean useServerConfig, WildFlyOpenTelemetryConfig config) {
-        this.useServerConfig = useServerConfig;
-        this.config = config;
+    public OpenTelemetryCdiExtension(OpenTelemetry openTelemetry) {
+        this.openTelemetry = openTelemetry;
     }
 
     public void beforeBeanDiscovery(@Observes BeforeBeanDiscovery beforeBeanDiscovery, final BeanManager beanManager) {
@@ -49,12 +40,10 @@ public final class OpenTelemetryCdiExtension implements Extension {
     }
 
     public void registerOpenTelemetryBeans(@Observes AfterBeanDiscovery abd) {
-        if (useServerConfig) {
-            abd.addBean()
-                    .scope(Singleton.class)
-                    .addQualifier(Default.Literal.INSTANCE)
-                    .types(OpenTelemetryConfig.class)
-                    .createWith(e -> config);
-        }
+        abd.addBean()
+                .scope(Singleton.class)
+                .addQualifier(Default.Literal.INSTANCE)
+                .types(OpenTelemetry.class)
+                .createWith(e -> openTelemetry);
     }
 }

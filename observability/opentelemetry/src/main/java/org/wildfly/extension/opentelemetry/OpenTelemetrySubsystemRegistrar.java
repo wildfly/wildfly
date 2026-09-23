@@ -53,8 +53,11 @@ import org.wildfly.subsystem.resource.ManagementResourceRegistrationContext;
 import org.wildfly.subsystem.resource.ResourceDescriptor;
 import org.wildfly.subsystem.resource.SubsystemResourceDefinitionRegistrar;
 import org.wildfly.subsystem.resource.operation.ResourceOperationRuntimeHandler;
+import org.wildfly.service.descriptor.NullaryServiceDescriptor;
 import org.wildfly.subsystem.service.ResourceServiceConfigurator;
 import org.wildfly.subsystem.service.ResourceServiceInstaller;
+import org.wildfly.subsystem.service.ServiceDependency;
+import org.wildfly.subsystem.service.ServiceInstaller;
 import org.wildfly.subsystem.service.capability.CapabilityServiceInstaller;
 
 /*
@@ -64,6 +67,9 @@ import org.wildfly.subsystem.service.capability.CapabilityServiceInstaller;
 class OpenTelemetrySubsystemRegistrar implements SubsystemResourceDefinitionRegistrar, ResourceServiceConfigurator {
     private static final String CAPABILITY_NAME_METRICS = "org.wildfly.extension.metrics.scan";
     private static final String CAPABILITY_NAME_MICROMETER = "org.wildfly.extension.micrometer";
+
+    static final NullaryServiceDescriptor<OpenTelemetryService> OPENTELEMETRY_SERVICE =
+            NullaryServiceDescriptor.of("org.wildfly.extension.opentelemetry.service", OpenTelemetryService.class);
 
     static final RuntimeCapability<Void> OPENTELEMETRY_CAPABILITY =
             RuntimeCapability.Builder.of(OPENTELEMETRY_CAPABILITY_NAME)
@@ -169,7 +175,7 @@ class OpenTelemetrySubsystemRegistrar implements SubsystemResourceDefinitionRegi
             EXPORT_TIMEOUT, SAMPLER, RATIO
     );
 
-    private final AtomicReference<WildFlyOpenTelemetryConfig> openTelemetryConfig = new AtomicReference<>();
+    private final AtomicReference<OpenTelemetryService> openTelemetryService = new AtomicReference<>();
 
     static {
         // We need to disable vertx's DNS resolver as it causes failures under k8s
@@ -198,7 +204,7 @@ class OpenTelemetrySubsystemRegistrar implements SubsystemResourceDefinitionRegi
                     target.addDeploymentProcessor(OpenTelemetryConfigurationConstants.SUBSYSTEM_NAME,
                             POST_MODULE,
                             POST_MODULE_OPENTELEMETRY,
-                            new OpenTelemetryDeploymentProcessor(this.openTelemetryConfig::get));
+                            new OpenTelemetryDeploymentProcessor(this.openTelemetryService::get));
                 })
                 .build();
 
@@ -239,10 +245,29 @@ class OpenTelemetrySubsystemRegistrar implements SubsystemResourceDefinitionRegi
             .setInjectVertx(context.hasOptionalCapability("org.wildfly.extension.vertx", OPENTELEMETRY_CAPABILITY, null))
             .build();
 
-        return CapabilityServiceInstaller.BlockingBuilder.of(OPENTELEMETRY_CONFIG_CAPABILITY, Functions.constantSupplier(config))
-                .startWhen(StartWhen.INSTALLED)
-                .withCaptor(openTelemetryConfig::set)
-                .build();
+        List<ResourceServiceInstaller> installers = new ArrayList<>();
+
+        // Install config service
+        installers.add(CapabilityServiceInstaller.BlockingBuilder
+            .of(OPENTELEMETRY_CONFIG_CAPABILITY, Functions.constantSupplier(config))
+            .startWhen(StartWhen.INSTALLED)
+            .build());
+
+        // Install OpenTelemetry service
+        ServiceDependency<WildFlyOpenTelemetryConfig> configDep =
+            ServiceDependency.on(WildFlyOpenTelemetryConfig.SERVICE_DESCRIPTOR);
+
+        installers.add(ServiceInstaller.BlockingBuilder
+            .of(() -> new OpenTelemetryService.Builder()
+                .config(configDep.get())
+                .build())
+            .provides(OPENTELEMETRY_SERVICE)
+            .requires(configDep)
+            .startWhen(StartWhen.INSTALLED)
+            .withCaptor(openTelemetryService::set)
+            .build());
+
+        return ResourceServiceInstaller.combine(installers);
     }
 
     private void validateExporter(OperationContext context, String exporter) throws OperationFailedException {
