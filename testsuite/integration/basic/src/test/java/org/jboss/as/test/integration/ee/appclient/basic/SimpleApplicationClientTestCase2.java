@@ -10,6 +10,7 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.test.integration.ee.appclient.util.AppClientWrapper;
 import org.jboss.as.test.integration.jpa.packaging.Employee;
 import org.jboss.as.test.integration.jpa.packaging.PersistenceUnitPackagingTestCase;
+import org.jboss.as.test.shared.TimeoutUtil;
 import org.jboss.as.test.shared.integration.ejb.security.CallbackHandler;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -55,7 +56,7 @@ public class SimpleApplicationClientTestCase2 extends AbstractSimpleApplicationC
         ear.addAsLibrary(otherLib);
 
         final JavaArchive ejb = ShrinkWrap.create(JavaArchive.class, MODULE_NAME + ".jar");
-        ejb.addClasses(SimpleApplicationClientTestCase2.class, AppClientStateSingleton.class);
+        ejb.addClasses(SimpleApplicationClientTestCase2.class, AppClientStateSingleton.class, TimeoutUtil.class);
         ear.addAsModule(ejb);
 
         final JavaArchive appClient = ShrinkWrap.create(JavaArchive.class, "client-annotation.jar");
