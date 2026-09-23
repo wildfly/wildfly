@@ -143,7 +143,13 @@ public class EJB3TransformersTestCase extends AbstractSubsystemTest {
         FailedOperationTransformationConfig config = new FailedOperationTransformationConfig();
         PathAddress subsystemAddress = PathAddress.pathAddress(EJB3Extension.SUBSYSTEM_PATH);
 
-        // need to include all changes from current to 9.0.0
+        // Changes introduced in 11.0.0: reject for all legacy versions (10.0.0 and older)
+        if (EJB3Model.VERSION_11_0_0.requiresTransformation(version)) {
+            // Reject /subsystem=ejb3/service=access-log — no equivalent in model 10.0.0 or older
+            config.addFailedAttribute(subsystemAddress.append(EJB3SubsystemModel.ACCESS_LOG_PATH), FailedOperationTransformationConfig.REJECTED_RESOURCE);
+        }
+
+        // Changes introduced in 10.0.0: reject for 9.0.0 and older
         if (EJB3Model.VERSION_10_0_0.requiresTransformation(version)) {
             // Reject /subsystem=ejb3/simple-cache resource
             config.addFailedAttribute(subsystemAddress.append(EJB3SubsystemModel.SIMPLE_CACHE_PATH), FailedOperationTransformationConfig.REJECTED_RESOURCE);

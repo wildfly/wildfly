@@ -3,7 +3,7 @@
   ~ SPDX-License-Identifier: Apache-2.0
   -->
 
-<subsystem xmlns="urn:jboss:domain:ejb3:12.0">
+<subsystem xmlns="urn:jboss:domain:ejb3:11.0">
     <session-bean>
         <stateless>
             <bean-instance-pool-ref pool-name="slsb-strict-max-pool"/>
@@ -90,12 +90,6 @@
     <application-security-domains>
         <application-security-domain name="test" security-domain="test"/>
     </application-security-domains>
-    <access-log destination="file" path="ejb-access.log" relative-to="jboss.server.log.dir" rotate-suffix=".yyyy-MM-dd" worker="default" include-local="false" include-node-name="true" attributes="timestamp app module bean" queue-length="2048">
-        <metadata>
-            <property name="env" value="prod"/>
-            <property name="region" value="us-east-1"/>
-        </metadata>
-    </access-log>
     <default-missing-method-permissions-deny-access value="false" />
     <disable-default-ejb-permissions value="true"/>
     <statistics enabled="${ejb.enable-statistics:true}" />

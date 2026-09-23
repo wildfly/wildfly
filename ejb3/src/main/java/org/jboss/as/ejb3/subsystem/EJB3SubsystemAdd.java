@@ -45,6 +45,7 @@ import org.jboss.as.controller.RunningMode;
 import org.jboss.as.controller.ServiceNameFactory;
 import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.ejb3.component.AccessLogHolder;
 import org.jboss.as.ejb3.component.allowedmethods.AllowedMethodsInformation;
 import org.jboss.as.ejb3.component.allowedmethods.MethodType;
 import org.jboss.as.ejb3.deployment.DeploymentRepository;
@@ -452,6 +453,12 @@ class EJB3SubsystemAdd extends AbstractBoottimeAddStepHandler {
         }
 
         ExceptionLoggingWriteHandler.INSTANCE.updateOrCreateDefaultExceptionLoggingEnabledService(context, model);
+
+        // install the access-log holder service — always present, so deployments can take a
+        // stable MSC dependency on it regardless of whether the access-log resource is added.
+        serviceTarget.addService(AccessLogHolder.ACCESS_LOG_HOLDER_SERVICE_NAME, new AccessLogHolder())
+                .setInitialMode(ServiceController.Mode.ACTIVE)
+                .install();
 
         // install the DeploymentRepositoryService
         serviceTarget.addService(DeploymentRepositoryService.SERVICE_NAME, new DeploymentRepositoryService())
