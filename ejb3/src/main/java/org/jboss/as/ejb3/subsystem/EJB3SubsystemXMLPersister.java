@@ -18,6 +18,7 @@ import javax.xml.stream.XMLStreamException;
 import java.util.EnumSet;
 import java.util.List;
 
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.ACCESS_LOG;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.ALLOW_EJB_NAME_REGEX;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.APPLICATION_SECURITY_DOMAIN;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.ASYNC;
@@ -63,7 +64,7 @@ public class EJB3SubsystemXMLPersister implements XMLElementWriter<SubsystemMars
     @Override
     public void writeContent(final XMLExtendedStreamWriter writer, final SubsystemMarshallingContext context) throws XMLStreamException {
 
-        context.startSubsystemElement(EJB3SubsystemNamespace.EJB3_11_0.getUriString(), false);
+        context.startSubsystemElement(EJB3SubsystemNamespace.EJB3_12_0.getUriString(), false);
         writeElements(writer, context);
         // write the subsystem end element
         writer.writeEndElement();
@@ -256,6 +257,13 @@ public class EJB3SubsystemXMLPersister implements XMLElementWriter<SubsystemMars
             writer.writeEndElement();
         }
 
+        // access-log element
+        if (model.hasDefined(SERVICE) && model.get(SERVICE).hasDefined(ACCESS_LOG)) {
+            writer.writeStartElement(EJB3SubsystemXMLElement.ACCESS_LOG.getLocalName());
+            writeAccessLog(writer, model.get(SERVICE, ACCESS_LOG));
+            writer.writeEndElement();
+        }
+
         // default-missing-method-permissions-deny-access element
         if (model.hasDefined(DEFAULT_MISSING_METHOD_PERMISSIONS_DENY_ACCESS)) {
             writer.writeStartElement(EJB3SubsystemXMLElement.DEFAULT_MISSING_METHOD_PERMISSIONS_DENY_ACCESS.getLocalName());
@@ -335,6 +343,21 @@ public class EJB3SubsystemXMLPersister implements XMLElementWriter<SubsystemMars
     private void writeIIOP(final XMLExtendedStreamWriter writer, final ModelNode model) throws XMLStreamException {
         EJB3IIOPResourceDefinition.ENABLE_BY_DEFAULT.marshallAsAttribute(model, writer);
         EJB3IIOPResourceDefinition.USE_QUALIFIED_NAME.marshallAsAttribute(model, writer);
+    }
+
+    private void writeAccessLog(final XMLExtendedStreamWriter writer, final ModelNode model) throws XMLStreamException {
+        AccessLogResourceDefinition.DESTINATION.marshallAsAttribute(model, writer);
+        AccessLogResourceDefinition.PATH.marshallAsAttribute(model, writer);
+        AccessLogResourceDefinition.RELATIVE_TO.marshallAsAttribute(model, writer);
+        AccessLogResourceDefinition.ROTATE_SUFFIX.marshallAsAttribute(model, writer);
+        AccessLogResourceDefinition.WORKER.marshallAsAttribute(model, writer);
+        AccessLogResourceDefinition.INCLUDE_LOCAL.marshallAsAttribute(model, writer);
+        AccessLogResourceDefinition.INCLUDE_NODE_NAME.marshallAsAttribute(model, writer);
+        AccessLogResourceDefinition.ATTRIBUTES.getMarshaller().marshallAsAttribute(AccessLogResourceDefinition.ATTRIBUTES, model, false, writer);
+        AccessLogResourceDefinition.QUEUE_LENGTH.marshallAsAttribute(model, writer);
+        if (model.hasDefined(EJB3SubsystemModel.METADATA) && !model.get(EJB3SubsystemModel.METADATA).asPropertyList().isEmpty()) {
+            AccessLogResourceDefinition.METADATA.marshallAsElement(model, writer);
+        }
     }
 
     private void writeThreadPools(final XMLExtendedStreamWriter writer, final ModelNode threadPoolsModel) throws XMLStreamException {

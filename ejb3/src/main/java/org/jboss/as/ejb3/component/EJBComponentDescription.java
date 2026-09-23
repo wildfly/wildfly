@@ -353,6 +353,8 @@ public abstract class EJBComponentDescription extends ComponentDescription {
                     if(serverInterceptorCache != null) {
                         configuration.addTimeoutViewInterceptor(weaved(serverInterceptorCache.getServerInterceptorsAroundTimeout()), InterceptorOrder.View.USER_APP_SPECIFIC_CONTAINER_INTERCEPTORS);
                     }
+                    // access-log interceptor on the timeout (timer) view (E3)
+                    configuration.addTimeoutViewInterceptor(EjbAccessLogInterceptor.FACTORY, InterceptorOrder.View.ACCESS_LOG_INTERCEPTOR);
                 }
                 if (!ejbSetupActions.isEmpty()) {
                     configuration.getStartDependencies().add(new DependencyConfigurator<ComponentStartService>() {
@@ -372,6 +374,7 @@ public abstract class EJBComponentDescription extends ComponentDescription {
                     @Override
                     public void configureDependency(ServiceBuilder<?> serviceBuilder, EJBComponentCreateService service) throws DeploymentUnitProcessingException {
                         serviceBuilder.addDependency(LoggingInterceptor.LOGGING_ENABLED_SERVICE_NAME, AtomicBoolean.class, service.getExceptionLoggingEnabledInjector());
+                        serviceBuilder.addDependency(AccessLogHolder.ACCESS_LOG_HOLDER_SERVICE_NAME, AccessLogHolder.class, service.getAccessLogHolderInjector());
                     }
                 });
             }
