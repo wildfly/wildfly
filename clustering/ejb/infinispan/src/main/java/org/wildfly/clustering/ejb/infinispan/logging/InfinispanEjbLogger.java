@@ -14,6 +14,7 @@ import org.jboss.logging.annotations.Cause;
 import org.jboss.logging.annotations.LogMessage;
 import org.jboss.logging.annotations.Message;
 import org.jboss.logging.annotations.MessageLogger;
+import org.wildfly.clustering.server.service.BinaryServiceConfiguration;
 
 /**
  * Logger for this module.
@@ -64,4 +65,20 @@ public interface InfinispanEjbLogger extends BasicLogger {
     @LogMessage(level = WARN)
     @Message(id = 10, value = "Disabling expiration for '%s'. SFSB expiration should be configured per \u00A74.3.11 of the Jakarta Enterprise Beans specification.")
     void expirationDisabled(String cacheName);
+
+    default void timerExpirationDisabled(BinaryServiceConfiguration configuration) {
+        if (configuration.getChildName() != null) {
+            this.timerExpirationDisabled(configuration.getParentName(), configuration.getChildName());
+        } else {
+            this.timerExpirationDisabled(configuration.getParentName());
+        }
+    }
+
+    @LogMessage(level = WARN)
+    @Message(id = 11, value = "Disabling expiration configuration otherwise specified in the '%s' cache '%s'. Timer lifecycle is managed by the EJB container per \u00A712 of the Jakarta Enterprise Beans specification.")
+    void timerExpirationDisabled(String containerName, String cacheName);
+
+    @LogMessage(level = WARN)
+    @Message(id = 12, value = "Disabling expiration configuration otherwise specified in the '%s' default cache. Timer lifecycle is managed by the EJB container per \u00A712 of the Jakarta Enterprise Beans specification.")
+    void timerExpirationDisabled(String containerName);
 }
