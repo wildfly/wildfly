@@ -964,22 +964,6 @@
             </properties>
         </profile>
 
-        <!-- Security manager. -->
-        <profile>
-            <id>ts.security.manager</id>
-            <activation>
-                <property>
-                    <name>security.manager</name>
-                </property>
-            </activation>
-            <properties>
-                <jboss.args>-secmgr</jboss.args>
-                <jboss.domain.server.args>-secmgr</jboss.domain.server.args>
-                <!-- Re-enable the default surefire execution -->
-                <surefire.default-test.phase>test</surefire.default-test.phase>
-            </properties>
-        </profile>
-
         <profile>
             <id>test-reporting</id>
             <build>

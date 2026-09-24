@@ -87,14 +87,9 @@ Standard WildFly supports the EE 11 versions of the Jakarta specifications, and 
 [[standard-wildfly-security-manager-subsystem]]
 ==== The `security-manager` subsystem
 
-The `security-manager` subsystem allows administrators to define in the WildFly configuration Java SecurityManager permissions that are then granted to deployments. This subsystem serves no purpose in a standard WildFly server, since the SecurityManager cannot be enabled. Accordingly, *standard WildFly's out-of-the-box configuration files no longer include the `security-manager` subsystem*.
+Beginning with WildFly 42, the `org.wildfly.extension.security.manager` extension and its `security-manager` subsystem are retained only as a legacy management model; it's completely valid for a standard WildFly {wildflyVersion} domain mode Domain Controller to have the `security-manager` subsystem in its `domain.xml` file, if the profiles that include the subsystem are used in server groups where all the servers are running WildFly 39 or earlier.
 
-The subsystem can still be included in a standard WildFly server configuration, where it will do no harm, other than wasting a small amount of resources.
-
-[NOTE]
-====
-While including the `security-manager` subsystem in the configuration of a standard WildFly {wildflyVersion} server makes no sense, it's completely valid for a standard WildFly {wildflyVersion} domain mode Domain Controller to have the `security-manager` subsystem in its `domain.xml` file, if the profiles that include the subsystem are used in server groups where all the servers are running WildFly 39 or earlier.
-====
+A standalone WildFly {wildflyVersion} server running in normal (non-admin-only) mode cannot use this extension or subsystem; the server will fail to start if the configuration contains it. The subsystem no longer grants or validates deployment permissions. Standard out-of-the-box configurations do not include the extension or subsystem.
 
 
 == WildFly EE 10

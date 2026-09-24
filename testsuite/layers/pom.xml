@@ -2203,7 +2203,6 @@
                                                 <layer>request-controller</layer>
                                                 <layer>resource-adapters</layer>
                                                 <layer>sar</layer>
-                                                <layer>security-manager</layer>
                                                 <layer>singleton-local</layer>
                                                 <layer>transactions</layer>
                                                 <layer>undertow</layer>
@@ -2294,7 +2293,6 @@
                                                 <layer>request-controller</layer>
                                                 <layer>resource-adapters</layer>
                                                 <layer>sar</layer>
-                                                <layer>security-manager</layer>
                                                 <layer>singleton-ha</layer>
                                                 <layer>transactions</layer>
                                                 <layer>undertow</layer>
@@ -2420,7 +2418,6 @@
                                                 <layer>request-controller</layer>
                                                 <layer>resource-adapters</layer>
                                                 <layer>sar</layer>
-                                                <layer>security-manager</layer>
                                                 <layer>singleton-local</layer>
                                                 <layer>transactions</layer>
                                                 <layer>undertow</layer>
@@ -2511,7 +2508,6 @@
                                                 <layer>request-controller</layer>
                                                 <layer>resource-adapters</layer>
                                                 <layer>sar</layer>
-                                                <layer>security-manager</layer>
                                                 <layer>singleton-ha</layer>
                                                 <layer>transactions</layer>
                                                 <layer>undertow</layer>
