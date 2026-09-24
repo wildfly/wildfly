@@ -1,6 +1,9 @@
 [[OpenTelemetry]]
 = OpenTelemetry Subsystem
 
+:metricsSubsystem: opentelemetry
+
+
 ifdef::env-github[]
 :tip-caption: :bulb:
 :note-caption: :information_source:
@@ -102,7 +105,7 @@ The following XML is an example of the full configuration, including default val
 default values, so what you see in the configuration file may look different):
 
 [source,xml,options="nowrap"]
------
+----
 <subsystem xmlns="urn:wildfly:opentelemetry:1.0"
         service-name="example">
     <exporter
@@ -117,7 +120,9 @@ default values, so what you see in the configuration file may look different):
     <sampler
         type="on"/>
 </subsystem>
------
+----
+
+include::Meter_Filters.adoc[]
 
 == Application Usage
 

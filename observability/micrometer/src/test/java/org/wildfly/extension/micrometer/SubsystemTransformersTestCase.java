@@ -13,6 +13,7 @@ import java.util.List;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.model.test.FailedOperationTransformationConfig;
+import org.jboss.as.model.test.ModelFixer;
 import org.jboss.as.model.test.ModelTestControllerVersion;
 import org.jboss.as.model.test.ModelTestUtils;
 import org.jboss.as.subsystem.test.AbstractSubsystemTest;
@@ -24,6 +25,7 @@ import org.jboss.dmr.ModelNode;
 import org.junit.Assert;
 import org.junit.Test;
 import org.wildfly.extension.micrometer.prometheus.PrometheusRegistryDefinitionRegistrar;
+import org.wildfly.extension.observability.shared.FilterDefinitionRegistrar;
 
 /**
  * Mixed domain transformation testing for the Micrometer subsystem
@@ -47,13 +49,18 @@ public class SubsystemTransformersTestCase extends AbstractSubsystemTest {
         builder.createLegacyKernelServicesBuilder(AdditionalInitialization.withCapabilities(capabilityNames),
                 ModelTestControllerVersion.EAP_XP_5, modelVersion)
             .addMavenResourceURL("org.jboss.eap.xp:wildfly-micrometer:" + ModelTestControllerVersion.EAP_XP_5.getMavenGavVersion())
+            .skipReverseControllerCheck()
             .dontPersistXml();
 
         KernelServices mainServices = builder.build();
         Assert.assertTrue(mainServices.isSuccessfulBoot());
         Assert.assertTrue(mainServices.getLegacyServices(modelVersion).isSuccessfulBoot());
 
-        checkSubsystemModelTransformation(mainServices, modelVersion);
+        ModelFixer fixer = model -> {
+            model.remove(FilterDefinitionRegistrar.PATH.getKey());
+            return model;
+        };
+        checkSubsystemModelTransformation(mainServices, modelVersion, fixer, false);
         ModelNode transformed = mainServices.readTransformedModel(modelVersion);
         Assert.assertTrue(transformed.toString(), transformed.hasDefined("subsystem", "micrometer"));
         Assert.assertEquals(transformed.toString(), 20L, transformed.get("subsystem", "micrometer","step").asLong());

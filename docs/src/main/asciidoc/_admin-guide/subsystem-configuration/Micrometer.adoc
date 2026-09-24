@@ -1,5 +1,6 @@
 [[Micrometer_Metrics]]
 = Micrometer Metrics Subsystem
+:metricsSubsystem: micrometer
 
 ifdef::env-github[]
 :tip-caption: :bulb:
@@ -109,7 +110,8 @@ The following types of metrics are gathered and published by Micrometer:
 
 WildFly metrics names are based on the subsystem that provides them, as well as the name of the attribute from the management model.
 
-For example Undertow exposes a metric attribute `request-count` for every `Servlet` in a deployment. This attribute will be exposed with the name `undertow_request_count`. Other information such as the name of the `Servlet` are added to the tags of the metric.
+For example, Undertow exposes a metric attribute `request-count` for every `Servlet` in a
+deployment. This attribute will be exposed with the name `undertow_request_count`. Other information such as the name of the `Servlet` are added to the tags of the metric.
 
 NOTE: Prometheus has its own https://prometheus.io/docs/practices/naming/[metrics naming scheme], so metrics names exposed via that registry will adhere to that and may differ from the description above.
 
@@ -125,6 +127,8 @@ undertow_request_count_total{
 
 [NOTE]
 Some subsystems (such as `undertow` or `messaging-activemq`) do not enable their statistics by default as they have an impact on performance and memory usage. These subsystems provide a `statistics-enabled` attribute that must be set to `true` to enable them. For convenience, WildFly standalone configuration provides expressions to enable the statistics by setting a System property `-Dwildfly.statistics-enabled=true` to enable statistics on the subsystems provided by the configuration.
+
+include::Meter_Filters.adoc[]
 
 == Use in Applications
 
