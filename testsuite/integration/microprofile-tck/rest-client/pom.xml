@@ -259,8 +259,8 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>jakarta.enterprise</groupId>
-            <artifactId>jakarta.enterprise.cdi-api</artifactId>
+            <groupId>${cdi.api.groupId}</groupId>
+            <artifactId>${cdi.api.artifactId}</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
