@@ -12,7 +12,8 @@
     </properties>
 
     <resources>
-        <artifact name="${org.opensaml:opensaml-core}"/>
+        <artifact name="${org.opensaml:opensaml-core-api}"/>
+        <artifact name="${org.opensaml:opensaml-core-impl}"/>
         <artifact name="${org.opensaml:opensaml-profile-api}"/>
         <artifact name="${org.opensaml:opensaml-saml-api}"/>
         <artifact name="${org.opensaml:opensaml-saml-impl}"/>
@@ -26,7 +27,7 @@
         <artifact name="${org.opensaml:opensaml-xmlsec-api}"/>
         <artifact name="${org.opensaml:opensaml-xmlsec-impl}"/>
         <artifact name="${org.cryptacular:cryptacular}"/>
-        <artifact name="${net.shibboleth.utilities:java-support}"/>
+        <artifact name="${net.shibboleth:shib-support}"/>
     </resources>
 
     <dependencies>
