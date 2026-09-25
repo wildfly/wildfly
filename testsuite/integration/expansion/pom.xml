@@ -566,6 +566,7 @@
                     <environmentVariables>
                         <!-- dummy env property for MicroProfile Config testing -->
                         <MPCONFIG_TEST_ENV_VAR>integ-basicmpconfig-test-env-var-value</MPCONFIG_TEST_ENV_VAR>
+                        <OTEL_METRIC_EXPORT_INTERVAL>2000</OTEL_METRIC_EXPORT_INTERVAL>
                         <TC_LOGGING>true</TC_LOGGING>
                     </environmentVariables>
                     <systemPropertyVariables>
