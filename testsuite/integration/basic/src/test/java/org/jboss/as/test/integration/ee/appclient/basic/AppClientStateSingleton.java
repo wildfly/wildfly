@@ -13,6 +13,7 @@ import jakarta.ejb.ConcurrencyManagement;
 import jakarta.ejb.ConcurrencyManagementType;
 import jakarta.ejb.Singleton;
 
+import org.jboss.as.test.shared.TimeoutUtil;
 import org.jboss.logging.Logger;
 
 /**
@@ -46,7 +47,7 @@ public class AppClientStateSingleton implements AppClientSingletonRemote {
     @Override
     public String awaitAppClientCall() {
         try {
-            boolean b = latch.await(30, TimeUnit.SECONDS);
+            boolean b = latch.await(TimeoutUtil.adjust(30), TimeUnit.SECONDS);
             logger.trace("Await returned: " + b + " : " + value);
             if (!b) {
                 ThreadInfo[] threadInfos = ManagementFactory.getThreadMXBean().dumpAllThreads(true, true);
