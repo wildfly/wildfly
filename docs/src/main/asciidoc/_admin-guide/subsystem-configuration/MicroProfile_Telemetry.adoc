@@ -6,17 +6,22 @@ _microprofile-telemetry_ subsystem.
 
 The MicroProfile Telemetry specification describes how OpenTelemetry can be integrated into a MicroProfile application.
 
+[NOTE]
+====
+The `microprofile-telemetry` subsystem relies on the `opentelemetry` subsystem for
+publication of observability signals. To learn more about the `opentelemetry` subsystem,
+including how it compares to other observability solutions WildFly provides, see the
+<<OpenTelemetry,OpenTelemetry Subsystem documentation>>.
+
+Since this subsystem has that dependency, `opentelemetry` must be added prior to adding
+`microprofile-telemetry`. See the documentation linked above for details on how to do that.
+====
+
 [[subsystem-configuration-microprofile-telemetry]]
 == Subsystem
 
 The MicroProfile Telemetry integration is provided by the _microprofle-telemetry_ subsystem, and is included in the default 
 configuration.  If not present, the subsystem can be added using the following CLI commands.
-
-[NOTE]
-====
-The MicroProfile Telemetry subsystem depends on the `opentelemetry` subsystem, so it must be added prior to adding MicroProfile 
-Telemetry.
-====
 
 [source,options="nowrap"]
 ----
