@@ -4,5 +4,10 @@
     <dependencies>
         <package name="org.wildfly.wildfly-client-all.shaded"/>
         <package name="org.wildfly.core.wildfly-cli.shaded"/>
+        <package name="core-tools" optional="true"/>
+        <package name="bin.common"/>
+        <package name="bin.appclient" optional="true"/>
+        <package name="bin.wstools" optional="true"/>
+        <package name="bin.jdrtools" optional="true"/>
     </dependencies>
 </package-spec>

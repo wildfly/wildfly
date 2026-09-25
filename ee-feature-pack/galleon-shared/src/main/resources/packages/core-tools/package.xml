@@ -3,5 +3,6 @@
 <package-spec xmlns="urn:jboss:galleon:package:2.0" name="core-tools">
     <dependencies>
         <package name="org.wildfly.core.wildfly-elytron-tool-wrapper.shaded"/>
+        <package name="bin.common"/>
     </dependencies>
 </package-spec>
