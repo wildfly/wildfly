@@ -41,7 +41,7 @@ A WildFly standalone server runs a single instance.
 
 $JBOSS_HOME/bin/standalone.sh      (Unix / Linux)
 
-$JBOSS_HOME\bin\standalone.bat     (Windows)
+%JBOSS_HOME%\bin\standalone.bat     (Windows)
 
 
 Starting a Managed Domain
@@ -53,7 +53,7 @@ servers (two of which start automatically), all running on the localhost.
 
 $JBOSS_HOME/bin/domain.sh      (Unix / Linux)
 
-$JBOSS_HOME\bin\domain.bat     (Windows)
+%JBOSS_HOME%\bin\domain.bat     (Windows)
  
 
 Accessing the Web Console
@@ -74,5 +74,5 @@ using the JBoss CLI:
 
 $JBOSS_HOME/bin/jboss-cli.sh --connect --command=shutdown      (Unix / Linux)
 
-$JBOSS_HOME\bin\jboss-cli.bat --connect --command=shutdown     (Windows)
+%JBOSS_HOME%\bin\jboss-cli.bat --connect --command=shutdown     (Windows)
 
