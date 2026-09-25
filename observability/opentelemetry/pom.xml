@@ -47,11 +47,6 @@
             <artifactId>jakarta.ws.rs-api</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.eclipse.microprofile.config</groupId>
-            <artifactId>microprofile-config-api</artifactId>
-        </dependency>
-
-        <dependency>
             <groupId>${full.maven.groupId}</groupId>
             <artifactId>wildfly-opentelemetry-api</artifactId>
         </dependency>

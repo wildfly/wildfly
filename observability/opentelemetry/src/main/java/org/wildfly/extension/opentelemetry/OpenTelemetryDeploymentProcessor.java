@@ -7,9 +7,7 @@ package org.wildfly.extension.opentelemetry;
 
 import static org.jboss.as.weld.Capabilities.WELD_CAPABILITY_NAME;
 import static org.wildfly.extension.opentelemetry.OpenTelemetryExtensionLogger.OTEL_LOGGER;
-import static org.wildfly.extension.opentelemetry.api.WildFlyOpenTelemetryConfig.OTEL_SERVICE_NAME;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Supplier;
 
@@ -23,8 +21,6 @@ import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
-import org.eclipse.microprofile.config.Config;
-import org.eclipse.microprofile.config.spi.ConfigProviderResolver;
 import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.as.ee.structure.DeploymentType;
 import org.jboss.as.ee.structure.DeploymentTypeMarker;
@@ -35,16 +31,17 @@ import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.weld.WeldCapability;
-import org.jboss.modules.Module;
 import org.wildfly.extension.opentelemetry.api.DeploymentOpenTelemetry;
 import org.wildfly.extension.opentelemetry.api.OpenTelemetryCdiExtension;
 
 /**
  * Creates deployment-scoped OpenTelemetry providers and releases them when the deployment stops.
  */
-class OpenTelemetryDeploymentProcessor implements DeploymentUnitProcessor {
-    private static final String MICROPROFILE_CONFIG_CAPABILITY = "org.wildfly.microprofile.config";
-    private static final String OTEL_RESOURCE_ATTRIBUTES = "otel.resource.attributes";
+public class OpenTelemetryDeploymentProcessor implements DeploymentUnitProcessor {
+    /** Deployment attachment containing optional OpenTelemetry resource configuration properties. */
+    public static final AttachmentKey<Map<String, String>> CONFIG_PROPERTIES_ATTACHMENT_KEY =
+            AttachmentKey.create(Map.class);
+
     private static final AttachmentKey<DeploymentHandle> HANDLE_KEY =
             AttachmentKey.create(DeploymentHandle.class);
 
@@ -187,40 +184,23 @@ class OpenTelemetryDeploymentProcessor implements DeploymentUnitProcessor {
     }
 
     /**
-     * Reads deployment-scoped OpenTelemetry resource configuration when MicroProfile Config is available.
+     * Creates the resource configured by an earlier deployment processor.
      *
      * @param deploymentUnit the deployment whose configuration is read
      * @return the configured deployment resource, or an empty resource when configuration is unavailable
      */
     private Resource getDeploymentConfigResource(DeploymentUnit deploymentUnit) {
-        CapabilityServiceSupport capabilitySupport =
-                deploymentUnit.getAttachment(Attachments.CAPABILITY_SERVICE_SUPPORT);
-        if (!capabilitySupport.hasCapability(MICROPROFILE_CONFIG_CAPABILITY)) {
-            return Resource.empty();
-        }
-
-        Module module = deploymentUnit.getAttachment(Attachments.MODULE);
-        Config config = ConfigProviderResolver.instance().getConfig(module.getClassLoader());
-        return createDeploymentConfigResource(
-                config.getOptionalValue(OTEL_SERVICE_NAME, String.class).orElse(null),
-                config.getOptionalValue(OTEL_RESOURCE_ATTRIBUTES, String.class).orElse(null));
+        Map<String, String> properties = deploymentUnit.getAttachment(CONFIG_PROPERTIES_ATTACHMENT_KEY);
+        return properties == null ? Resource.empty() : createDeploymentConfigResource(properties);
     }
 
     /**
      * Uses the OpenTelemetry SDK parser so deployment resource attributes follow standard escaping rules.
      *
-     * @param serviceName the optional deployment service name
-     * @param resourceAttributes the optional encoded resource attributes
+     * @param properties the deployment resource configuration properties
      * @return the resource represented by the deployment configuration
      */
-    static Resource createDeploymentConfigResource(String serviceName, String resourceAttributes) {
-        Map<String, String> properties = new HashMap<>();
-        if (serviceName != null) {
-            properties.put(OTEL_SERVICE_NAME, serviceName);
-        }
-        if (resourceAttributes != null) {
-            properties.put(OTEL_RESOURCE_ATTRIBUTES, resourceAttributes);
-        }
+    static Resource createDeploymentConfigResource(Map<String, String> properties) {
         return ResourceConfiguration.createEnvironmentResource(DefaultConfigProperties.createFromMap(properties));
     }
 

@@ -42,7 +42,8 @@ public class MicroProfileTelemetrySubsystemAdd extends AbstractBoottimeAddStepHa
                 processorTarget.addDeploymentProcessor(
                         MicroProfileTelemetryExtension.SUBSYSTEM_NAME,
                         Phase.POST_MODULE,
-                        Phase.POST_MODULE_MICROPROFILE_TELEMETRY,
+                        // Propagate change to WF Core?
+                        Phase.POST_MODULE_OPENTELEMETRY - 1,
                         new MicroProfileTelemetryDeploymentProcessor());
             }
         }, OperationContext.Stage.RUNTIME);

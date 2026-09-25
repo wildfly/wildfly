@@ -139,8 +139,9 @@ public class OpenTelemetryServiceTestCase {
     /** Verifies deployment resource attributes use the standard OpenTelemetry parser. */
     @Test
     public void testDeploymentConfigResourceIncludesCustomAttributes() {
-        Resource resource = OpenTelemetryDeploymentProcessor.createDeploymentConfigResource(
-                "deployment-service", "custom.key=custom%20value");
+        Resource resource = OpenTelemetryDeploymentProcessor.createDeploymentConfigResource(Map.of(
+                "otel.service.name", "deployment-service",
+                "otel.resource.attributes", "custom.key=custom%20value"));
 
         assertEquals("Configured service name should populate the service.name attribute",
                 "deployment-service", resource.getAttribute(AttributeKey.stringKey("service.name")));
