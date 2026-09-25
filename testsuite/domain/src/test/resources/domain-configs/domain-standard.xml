@@ -27,7 +27,6 @@
         <extension module="org.wildfly.extension.elytron"/>
         <extension module="org.wildfly.extension.io"/>
         <extension module="org.wildfly.extension.messaging-activemq"/>
-        <extension module="org.wildfly.extension.security.manager"/>
         <extension module="org.wildfly.extension.undertow"/>
     </extensions>
 
@@ -231,13 +230,6 @@
                 </mail-session>
             </subsystem>
             <subsystem xmlns="urn:jboss:domain:naming:1.0"/>
-            <subsystem xmlns="urn:jboss:domain:security-manager:1.0">
-                <deployment-permissions>
-                    <maximum-set>
-                        <permission class="java.security.AllPermission"/>
-                    </maximum-set>
-                </deployment-permissions>
-            </subsystem>
             <subsystem xmlns="urn:jboss:domain:transactions:1.3">
                 <core-environment>
                     <process-id>
@@ -587,13 +579,6 @@
                 </mail-session>
             </subsystem>
             <subsystem xmlns="urn:jboss:domain:naming:1.0"/>
-            <subsystem xmlns="urn:jboss:domain:security-manager:1.0">
-                <deployment-permissions>
-                    <maximum-set>
-                        <permission class="java.security.AllPermission"/>
-                    </maximum-set>
-                </deployment-permissions>
-            </subsystem>
             <subsystem xmlns="urn:jboss:domain:transactions:1.3">
                 <core-environment>
                     <process-id>

@@ -87,7 +87,6 @@ link:#gal.jmx-remoting[jmx-remoting] (optional) +
 link:#gal.logging[logging] (optional) +
 link:#gal.management[management] (optional) +
 link:#gal.request-controller[request-controller] (optional) +
-link:#gal.security-manager[security-manager] (optional) +
 
 |[[gal.ee-core-profile-server]]ee-core-profile-server
 | An EE Core Profile server.
@@ -536,11 +535,6 @@ link:#gal.transactions[transactions] +
 |
 link:#gal.base-server[base-server] +
 link:#gal.jmx[jmx] +
-
-|[[gal.security-manager]]security-manager
-|Support for applying security manager permissions to applications.
-|
-link:#gal.base-server[base-server] +
 
 |[[gal.servlet]]servlet
 |A servlet container.
