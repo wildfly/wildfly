@@ -82,4 +82,8 @@ public interface MicrometerExtensionLogger extends BasicLogger {
     @LogMessage(level = WARN)
     @Message(id = 15, value = "MeterRegistry.Config is not supported in a WildFly-managed MeterRegistry.")
     void configNotSupported();
+
+    @LogMessage(level = INFO)
+    @Message(id = 16, value = "Unable to collect metrics for resource %s after %d attempts%s.")
+    void unableToCollectMetrics(PathAddress address, int attempts, String failure);
 }
