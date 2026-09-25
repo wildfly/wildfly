@@ -36,7 +36,7 @@ import org.wildfly.test.stabilitylevel.StabilityServerSetupSnapshotRestoreTasks;
 public class MicrometerRbacTestCase extends BaseMicrometerTest {
     private static final String UNDERTOW_MODEL_METRIC = "undertow_bytes_sent";
 
-    @Deployment
+    @Deployment(testable = false)
     public static Archive<?> deploy() {
         return ShrinkWrap.create(WebArchive.class, "micrometer-rbac.war")
                 .addClasses(JaxRsActivator.class, MicrometerResource.class)
