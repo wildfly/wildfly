@@ -45,7 +45,7 @@ public class MicrometerRbacTestCase extends BaseMicrometerTest {
     private static final String QUEUE_NAME = "micrometer-resource-add-remove-rbac";
     private static final String QUEUE_METRIC = "messaging_activemq_message_count";
 
-    @Deployment
+    @Deployment(testable = false)
     public static Archive<?> deploy() {
         return ShrinkWrap.create(WebArchive.class, "micrometer-rbac.war")
                 .addClasses(JaxRsActivator.class, MicrometerResource.class)

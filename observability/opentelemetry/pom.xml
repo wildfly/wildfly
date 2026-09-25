@@ -46,7 +46,6 @@
             <groupId>jakarta.ws.rs</groupId>
             <artifactId>jakarta.ws.rs-api</artifactId>
         </dependency>
-
         <dependency>
             <groupId>${full.maven.groupId}</groupId>
             <artifactId>wildfly-opentelemetry-api</artifactId>
@@ -69,6 +68,10 @@
         </dependency>
         <dependency>
             <groupId>io.opentelemetry</groupId>
+            <artifactId>opentelemetry-common</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.opentelemetry</groupId>
             <artifactId>opentelemetry-sdk</artifactId>
         </dependency>
         <dependency>
@@ -88,8 +91,25 @@
             <artifactId>opentelemetry-sdk-trace</artifactId>
         </dependency>
         <dependency>
+            <groupId>io.opentelemetry</groupId>
+            <artifactId>opentelemetry-sdk-extension-autoconfigure</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.opentelemetry</groupId>
+            <artifactId>opentelemetry-sdk-extension-autoconfigure-spi</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.opentelemetry.instrumentation</groupId>
+            <artifactId>opentelemetry-runtime-telemetry</artifactId>
+        </dependency>
+        <dependency>
             <groupId>io.opentelemetry.semconv</groupId>
             <artifactId>opentelemetry-semconv</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.opentelemetry.semconv</groupId>
+            <artifactId>opentelemetry-semconv-incubating</artifactId>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>io.smallrye.opentelemetry</groupId>
@@ -101,9 +121,28 @@
         </dependency>
         <dependency>
             <groupId>io.smallrye.opentelemetry</groupId>
+            <artifactId>smallrye-opentelemetry-exporters</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.smallrye.opentelemetry</groupId>
+            <artifactId>smallrye-opentelemetry-senders</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.smallrye.opentelemetry</groupId>
             <artifactId>smallrye-opentelemetry-propagation</artifactId>
         </dependency>
 
+        <!-- This is only required for the extension to initialize Vert.x's LoggerFactory -->
+        <dependency>
+            <groupId>io.vertx</groupId>
+            <artifactId>vertx-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.wildfly.extras.vertx</groupId>
+            <artifactId>wildfly-vertx-extension</artifactId>
+            <version>${version.org.wildfly.vertx}</version>
+            <scope>provided</scope>
+        </dependency>
         <!-- ======================================================= -->
 
         <dependency>
@@ -205,6 +244,12 @@
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-core</artifactId>
             <scope>test</scope>
         </dependency>
 
