@@ -88,20 +88,10 @@
                                 <groupId>jakarta.ejb</groupId>
                                 <artifactId>jakarta.ejb-api</artifactId>
                             </dependency>
-                            <!-- already present -->
-                            <dependency>
-                                <groupId>jakarta.enterprise</groupId>
-                                <artifactId>jakarta.enterprise.cdi-api</artifactId>
-                            </dependency>
                             <!-- replaces org.jboss.spec.javax.enterprise.concurrent:jboss-concurrency-api_1.0_spec -->
                             <dependency>
                                 <groupId>jakarta.enterprise.concurrent</groupId>
                                 <artifactId>jakarta.enterprise.concurrent-api</artifactId>
-                            </dependency>
-                            <!-- new in the BOM -->
-                            <dependency>
-                                <groupId>jakarta.enterprise</groupId>
-                                <artifactId>jakarta.enterprise.lang-model</artifactId>
                             </dependency>
                             <!-- replaces org.jboss.spec.javax.faces:jboss-jsf-api_2.3_spec -->
                             <dependency>
