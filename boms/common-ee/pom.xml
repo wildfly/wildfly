@@ -3083,6 +3083,13 @@
                 </exclusions>
             </dependency>
 
+            <!-- Override incorrect org.osgi.service:org.osgi.service.prefs reference from Eclipse dependencies -->
+            <dependency>
+                <groupId>org.osgi</groupId>
+                <artifactId>org.osgi.service.prefs</artifactId>
+                <version>1.1.2</version>
+            </dependency>
+
             <dependency>
                 <groupId>org.keycloak</groupId>
                 <artifactId>keycloak-saml-wildfly-subsystem</artifactId>
