@@ -27,7 +27,7 @@
     <properties>
         <!-- Current module's directory. Will automatically pick up sub-module's basedir. -->
         <jbossas.ts.submodule.dir>${basedir}</jbossas.ts.submodule.dir>
-        <!-- Integration module's directory. To be overriden in sub-modules. -->
+        <!-- Integration module's directory. To be overridden in sub-modules. -->
         <jbossas.ts.integ.dir>${basedir}</jbossas.ts.integ.dir>
         <!-- This project's testsuite dir. To be changed for every submodule (until we figure out how to do it automatically). -->
         <jbossas.ts.dir>${jbossas.ts.integ.dir}/..</jbossas.ts.dir>
