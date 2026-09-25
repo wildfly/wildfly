@@ -65,6 +65,7 @@ public class ManagedScheduledExecutorServiceAdd extends AbstractAddStepHandler {
             // not defined and deprecated thread-factory is defined, use it instead
             threadPriority = null;
         }
+        final boolean virtual = ManagedScheduledExecutorServiceResourceDefinition.VIRTUAL_AD.resolveModelAttribute(context, model).asBoolean();
 
         final CapabilityServiceBuilder<?> serviceBuilder = context.getCapabilityServiceTarget().addCapability(ManagedScheduledExecutorServiceResourceDefinition.CAPABILITY);
         final Consumer<ManagedScheduledExecutorServiceAdapter> consumer = serviceBuilder.provides(ManagedScheduledExecutorServiceResourceDefinition.CAPABILITY);
@@ -85,7 +86,7 @@ public class ManagedScheduledExecutorServiceAdd extends AbstractAddStepHandler {
         if (context.hasOptionalCapability(REQUEST_CONTROLLER_CAPABILITY_NAME, ManagedScheduledExecutorServiceResourceDefinition.CAPABILITY.getDynamicName(context.getCurrentAddress()), null)) {
             requestControllerSupplier = serviceBuilder.requiresCapability(REQUEST_CONTROLLER_CAPABILITY_NAME, RequestController.class);
         }
-        final ManagedScheduledExecutorServiceService service = new ManagedScheduledExecutorServiceService(consumer, contextServiceSupplier, managedThreadFactorySupplier, processStateNotifierSupplier, requestControllerSupplier, name, jndiName, hungTaskThreshold, hungTaskTerminationPeriod, longRunningTasks, coreThreads, keepAliveTime, keepAliveTimeUnit, threadLifeTime, rejectPolicy, threadPriority, hungTasksPeriodicTerminationService);
+        final ManagedScheduledExecutorServiceService service = new ManagedScheduledExecutorServiceService(consumer, contextServiceSupplier, managedThreadFactorySupplier, processStateNotifierSupplier, requestControllerSupplier, name, jndiName, hungTaskThreshold, hungTaskTerminationPeriod, longRunningTasks, coreThreads, keepAliveTime, keepAliveTimeUnit, threadLifeTime, rejectPolicy, threadPriority, hungTasksPeriodicTerminationService, virtual);
         serviceBuilder.setInstance(service);
         serviceBuilder.install();
     }

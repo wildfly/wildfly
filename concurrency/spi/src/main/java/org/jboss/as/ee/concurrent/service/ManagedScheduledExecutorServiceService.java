@@ -52,6 +52,7 @@ public class ManagedScheduledExecutorServiceService extends EEConcurrentAbstract
     private final Supplier<RequestController> requestControllerSupplier;
     private ControlPoint controlPoint;
     private final Supplier<ManagedExecutorHungTasksPeriodicTerminationService> hungTasksPeriodicTerminationService;
+    private final boolean virtual;
 
     private Future hungTasksPeriodicTerminationFuture;
 
@@ -77,7 +78,7 @@ public class ManagedScheduledExecutorServiceService extends EEConcurrentAbstract
                                                   final Supplier<WildFlyManagedThreadFactory> managedThreadFactorySupplier,
                                                   final Supplier<ProcessStateNotifier> processStateNotifierSupplier,
                                                   final Supplier<RequestController> requestControllerSupplier,
-                                                  String name, String jndiName, long hungTaskThreshold, long hungTaskTerminationPeriod, boolean longRunningTasks, int corePoolSize, long keepAliveTime, TimeUnit keepAliveTimeUnit, long threadLifeTime, WildFlyManagedExecutorService.RejectPolicy rejectPolicy, Integer threadPriority, final Supplier<ManagedExecutorHungTasksPeriodicTerminationService> hungTasksPeriodicTerminationService) {
+                                                  String name, String jndiName, long hungTaskThreshold, long hungTaskTerminationPeriod, boolean longRunningTasks, int corePoolSize, long keepAliveTime, TimeUnit keepAliveTimeUnit, long threadLifeTime, WildFlyManagedExecutorService.RejectPolicy rejectPolicy, Integer threadPriority, final Supplier<ManagedExecutorHungTasksPeriodicTerminationService> hungTasksPeriodicTerminationService, boolean virtual) {
         super(jndiName);
         this.consumer = consumer;
         this.contextServiceSupplier.set(contextServiceSupplier);
@@ -95,6 +96,7 @@ public class ManagedScheduledExecutorServiceService extends EEConcurrentAbstract
         this.rejectPolicy = rejectPolicy;
         this.threadPriority = threadPriority;
         this.hungTasksPeriodicTerminationService = hungTasksPeriodicTerminationService;
+        this.virtual = virtual;
     }
 
     @Override
@@ -106,12 +108,12 @@ public class ManagedScheduledExecutorServiceService extends EEConcurrentAbstract
             WildFlyManagedThreadFactory managedThreadFactory = managedThreadFactorySupplier != null ? managedThreadFactorySupplier.get() : null;
             priority = managedThreadFactory != null ? managedThreadFactory.getPriority() : Thread.NORM_PRIORITY;
         }
-        WildFlyManagedThreadFactory managedThreadFactory = ConcurrencyImplementation.INSTANCE.newManagedThreadFactory("EE-ManagedScheduledExecutorService-" + name, null, priority);
+        WildFlyManagedThreadFactory managedThreadFactory = ConcurrencyImplementation.INSTANCE.newManagedThreadFactory("EE-ManagedScheduledExecutorService-" + name, null, priority, virtual);
         if (requestControllerSupplier != null) {
             final RequestController requestController = requestControllerSupplier.get();
             controlPoint = requestController != null ? requestController.getControlPoint(name, "managed-scheduled-executor-service") : null;
         }
-        executorService = new ManagedScheduledExecutorServiceAdapter(ConcurrencyImplementation.INSTANCE.newManagedScheduledExecutorService(name, managedThreadFactory, hungTaskThreshold, longRunningTasks, corePoolSize, keepAliveTime, keepAliveTimeUnit, threadLifeTime, contextServiceSupplier != null ? contextServiceSupplier.get() : null, rejectPolicy, controlPoint, processStateNotifierSupplier.get()));
+        executorService = new ManagedScheduledExecutorServiceAdapter(ConcurrencyImplementation.INSTANCE.newManagedScheduledExecutorService(name, managedThreadFactory, hungTaskThreshold, longRunningTasks, corePoolSize, keepAliveTime, keepAliveTimeUnit, threadLifeTime, contextServiceSupplier != null ? contextServiceSupplier.get() : null, rejectPolicy, controlPoint, processStateNotifierSupplier.get(), virtual));
         if (hungTaskThreshold > 0 && hungTaskTerminationPeriod > 0) {
             hungTasksPeriodicTerminationFuture = hungTasksPeriodicTerminationService.get().startHungTaskPeriodicTermination(executorService, hungTaskTerminationPeriod);
         }

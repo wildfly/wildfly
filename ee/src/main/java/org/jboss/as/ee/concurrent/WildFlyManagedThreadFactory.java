@@ -11,6 +11,15 @@ import jakarta.enterprise.concurrent.ManagedThreadFactory;
  * @author Eduardo Martins
  */
 public interface WildFlyManagedThreadFactory extends ManagedThreadFactory {
+
+    /**
+     *
+     */
     void stop();
+
+    /**
+     *
+     * @return the priority of threads created
+     */
     int getPriority();
 }

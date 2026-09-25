@@ -9,6 +9,7 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ProcessStateNotifier;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.ee.subsystem.Namespace;
 import org.jboss.as.server.DeploymentProcessorTarget;
 import org.jboss.dmr.ModelNode;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
@@ -61,40 +62,14 @@ public interface ConcurrencyImplementation {
     // XML config ops
 
     /**
-     * Parses <concurrent/> XML element for EE subsystem schema 2.0
-     * @param reader the stream reader
-     * @param operations the list to add operations
+     * Parses <concurrent/> XML element for EE subsystem
+     * @param namespace            the namespace of the subsystem
+     * @param reader               the stream reader
+     * @param operations           the list to add operations
      * @param subsystemPathAddress the subsystem path address
      * @throws XMLStreamException if an error occurs
      */
-    void parseConcurrentElement20(XMLExtendedStreamReader reader, List<ModelNode> operations, PathAddress subsystemPathAddress) throws XMLStreamException;
-
-    /**
-     * Parses <concurrent/> XML element for EE subsystem schema 4.0
-     * @param reader the stream reader
-     * @param operations the list to add operations
-     * @param subsystemPathAddress the subsystem path address
-     * @throws XMLStreamException if an error occurs
-     */
-    void parseConcurrentElement40(XMLExtendedStreamReader reader, List<ModelNode> operations, PathAddress subsystemPathAddress) throws XMLStreamException;
-
-    /**
-     * Parses <concurrent/> XML element for EE subsystem schema 5.0
-     * @param reader the stream reader
-     * @param operations the list to add operations
-     * @param subsystemPathAddress the subsystem path address
-     * @throws XMLStreamException if an error occurs
-     */
-    void parseConcurrentElement50(XMLExtendedStreamReader reader, List<ModelNode> operations, PathAddress subsystemPathAddress) throws XMLStreamException;
-
-    /**
-     * Parses <concurrent/> XML element for EE subsystem schema 6.0
-     * @param reader the stream reader
-     * @param operations the list to add operations
-     * @param subsystemPathAddress the subsystem path address
-     * @throws XMLStreamException if an error occurs
-     */
-    void parseConcurrentElement60(XMLExtendedStreamReader reader, List<ModelNode> operations, PathAddress subsystemPathAddress) throws XMLStreamException;
+    void parseConcurrentElement(Namespace namespace, XMLExtendedStreamReader reader, List<ModelNode> operations, PathAddress subsystemPathAddress) throws XMLStreamException;
 
     /**
      * Writes <concurrent/> XML element.
@@ -115,9 +90,10 @@ public interface ConcurrencyImplementation {
      * @param name the instance name
      * @param contextService the context service to use
      * @param priority the thread factory priority
+     * @param virtual if virtual threads should be used. Please note that virtual threads support is optional,  if not supported the implementation will ignore this param value and always use platform threads
      * @return a new WildFlyManagedThreadFactory instance with the specified params.
      */
-    WildFlyManagedThreadFactory newManagedThreadFactory(String name, WildFlyContextService contextService, int priority);
+    WildFlyManagedThreadFactory newManagedThreadFactory(String name, WildFlyContextService contextService, int priority, boolean virtual);
 
     /**
      *
@@ -135,9 +111,10 @@ public interface ConcurrencyImplementation {
      * @param queue the task queue
      * @param controlPoint the control point
      * @param processStateNotifier the process state notifier
+     * @param virtual if virtual threads should be used. Please note that virtual threads support is optional,  if not supported the implementation will ignore this param value and always use platform threads
      * @return a new WildFlyManagedExecutorService instance with the specified params.
      */
-    WildFlyManagedExecutorService newManagedExecutorService(String name, WildFlyManagedThreadFactory managedThreadFactory, long hungTaskThreshold, boolean longRunningTasks, int corePoolSize, int maxPoolSize, long keepAliveTime, TimeUnit keepAliveTimeUnit, long threadLifeTime, WildFlyContextService contextService, WildFlyManagedExecutorService.RejectPolicy rejectPolicy, BlockingQueue<Runnable> queue, ControlPoint controlPoint, ProcessStateNotifier processStateNotifier);
+    WildFlyManagedExecutorService newManagedExecutorService(String name, WildFlyManagedThreadFactory managedThreadFactory, long hungTaskThreshold, boolean longRunningTasks, int corePoolSize, int maxPoolSize, long keepAliveTime, TimeUnit keepAliveTimeUnit, long threadLifeTime, WildFlyContextService contextService, WildFlyManagedExecutorService.RejectPolicy rejectPolicy, BlockingQueue<Runnable> queue, ControlPoint controlPoint, ProcessStateNotifier processStateNotifier, boolean virtual);
 
     /**
      *
@@ -155,9 +132,10 @@ public interface ConcurrencyImplementation {
      * @param rejectPolicy the policy to be applied to aborted tasks.
      * @param controlPoint the control point
      * @param processStateNotifier the process state notifier
+     * @param virtual if virtual threads should be used. Please note that virtual threads support is optional,  if not supported the implementation will ignore this param value and always use platform threads
      * @return a new WildFlyManagedExecutorService instance with the specified params.
      */
-    WildFlyManagedExecutorService newManagedExecutorService(String name, WildFlyManagedThreadFactory managedThreadFactory, long hungTaskThreshold, boolean longRunningTasks, int corePoolSize, int maxPoolSize, long keepAliveTime, TimeUnit keepAliveTimeUnit, long threadLifeTime, int queueCapacity, WildFlyContextService contextService, WildFlyManagedExecutorService.RejectPolicy rejectPolicy, ControlPoint controlPoint, ProcessStateNotifier processStateNotifier);
+    WildFlyManagedExecutorService newManagedExecutorService(String name, WildFlyManagedThreadFactory managedThreadFactory, long hungTaskThreshold, boolean longRunningTasks, int corePoolSize, int maxPoolSize, long keepAliveTime, TimeUnit keepAliveTimeUnit, long threadLifeTime, int queueCapacity, WildFlyContextService contextService, WildFlyManagedExecutorService.RejectPolicy rejectPolicy, ControlPoint controlPoint, ProcessStateNotifier processStateNotifier, boolean virtual);
 
     /**
      *
@@ -173,7 +151,8 @@ public interface ConcurrencyImplementation {
      * @param rejectPolicy the policy to be applied to aborted tasks.
      * @param controlPoint the control point
      * @param processStateNotifier the process state notifier
+     * @param virtual if virtual threads should be used. Please note that virtual threads support is optional,  if not supported the implementation will ignore this param value and always use platform threads
      * @return a new WildFlyManagedScheduledExecutorService instance with the specified params.
      */
-    WildFlyManagedScheduledExecutorService newManagedScheduledExecutorService(String name, WildFlyManagedThreadFactory managedThreadFactory, long hungTaskThreshold, boolean longRunningTasks, int corePoolSize, long keepAliveTime, TimeUnit keepAliveTimeUnit, long threadLifeTime, WildFlyContextService contextService, WildFlyManagedExecutorService.RejectPolicy rejectPolicy, ControlPoint controlPoint, ProcessStateNotifier processStateNotifier);
+    WildFlyManagedScheduledExecutorService newManagedScheduledExecutorService(String name, WildFlyManagedThreadFactory managedThreadFactory, long hungTaskThreshold, boolean longRunningTasks, int corePoolSize, long keepAliveTime, TimeUnit keepAliveTimeUnit, long threadLifeTime, WildFlyContextService contextService, WildFlyManagedExecutorService.RejectPolicy rejectPolicy, ControlPoint controlPoint, ProcessStateNotifier processStateNotifier, boolean virtual);
 }

@@ -31,6 +31,7 @@ enum ConcurrentAttribute {
     KEEPALIVE_TIME(ManagedExecutorServiceResourceDefinition.KEEPALIVE_TIME),
     QUEUE_LENGTH(ManagedExecutorServiceResourceDefinition.QUEUE_LENGTH),
     REJECT_POLICY(ManagedExecutorServiceResourceDefinition.REJECT_POLICY),
+    VIRTUAL(ManagedThreadFactoryResourceDefinition.VIRTUAL),
     ;
 
     private final String name;
