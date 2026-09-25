@@ -4,6 +4,7 @@
  */
 package org.jboss.as.test.clustering;
 
+import java.util.Collections;
 import java.util.Set;
 
 import org.jboss.arquillian.container.test.api.ContainerController;
@@ -56,6 +57,23 @@ public final class NodeUtil {
         if (!controller.isStarted(container)) {
             log.tracef("Starting container %s", container);
             controller.start(container);
+            log.tracef("Started container %s", container);
+        } else {
+            log.tracef("Container %s was already started", container);
+        }
+    }
+
+    public static void start(ContainerController controller, Set<String> containers, int startupTimeout) {
+        // TODO do this in parallel.
+        for (String container : containers) {
+            start(controller, container, startupTimeout);
+        }
+    }
+
+    public static void start(ContainerController controller, String container, int startupTimeout) {
+        if (!controller.isStarted(container)) {
+            log.tracef("Starting container %s", container);
+            controller.start(container, Collections.singletonMap("startupTimeoutInSeconds", String.valueOf(startupTimeout)));
             log.tracef("Started container %s", container);
         } else {
             log.tracef("Container %s was already started", container);
