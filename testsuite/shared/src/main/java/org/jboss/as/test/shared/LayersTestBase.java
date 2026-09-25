@@ -320,6 +320,8 @@ public abstract class LayersTestBase {
             // Extension not included in the default config
             "org.wildfly.extension.microprofile.opentracing-smallrye",
             // Extension not included in the default config
+            "org.wildfly.extension.opentelemetry",
+            // Extension not included in the default config
             "org.wildfly.extension.mvc-krazo",
             "jakarta.mvc.api",
             "org.eclipse.krazo.core",
