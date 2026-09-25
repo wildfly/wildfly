@@ -20,7 +20,7 @@ import org.junit.runner.RunWith;
  * There will be a server log to indicate a Vertx instance is created by smallerye-opentelemetry.
  */
 @RunWith(Arquillian.class)
-@ServerSetup({OpenTelemetryWithCollectorSetupTask.class, LoggingServerSetupTask.class})
+@ServerSetup({LoggingServerSetupTask.class, OpenTelemetryWithCollectorSetupTask.class})
 @RunAsClient
 @TestcontainersRequired
 public class OpenTelemetryIntegrationWithoutVertxTestCase extends AbstractOpenTelemetryIntegrationTest {
