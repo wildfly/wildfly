@@ -5,7 +5,6 @@
 
 package org.wildfly.test.integration.microprofile.reactive.messaging.otel;
 
-import org.arquillian.testcontainers.api.Testcontainer;
 import org.arquillian.testcontainers.api.TestcontainersRequired;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
@@ -24,9 +23,6 @@ import org.wildfly.test.integration.microprofile.reactive.RunArtemisAmqpSetupTas
 @ServerSetup({OpenTelemetryWithCollectorSetupTask.class, EnableReactiveExtensionsSetupTask.class, RunArtemisAmqpSetupTask.class})
 @TestcontainersRequired
 public class AmqpReactiveMessagingAndOtelTestCase extends BaseReactiveMessagingAndOtelTest {
-    @Testcontainer
-    private OpenTelemetryCollectorContainer otelCollector;
-
     public AmqpReactiveMessagingAndOtelTestCase() {
         super("amqp");
     }
@@ -40,6 +36,6 @@ public class AmqpReactiveMessagingAndOtelTestCase extends BaseReactiveMessagingA
 
     @Override
     OpenTelemetryCollectorContainer getCollector() {
-        return otelCollector;
+        return OpenTelemetryWithCollectorSetupTask.getCollector();
     }
 }

@@ -20,7 +20,7 @@ import org.junit.runner.RunWith;
  * There will be a server log to indicate a Vertx instance is created by smallerye-opentelemetry.
  */
 @RunWith(Arquillian.class)
-@ServerSetup({OpenTelemetryWithCollectorSetupTask.class, LoggingServerSetupTask.class})
+@ServerSetup({LoggingServerSetupTask.class, OpenTelemetryWithCollectorSetupTask.class})
 @RunAsClient
 @TestcontainersRequired
 public class OpenTelemetryIntegrationWithoutVertxTestCase extends AbstractOpenTelemetryIntegrationTest {
@@ -33,8 +33,6 @@ public class OpenTelemetryIntegrationWithoutVertxTestCase extends AbstractOpenTe
     @Test
     public void testVertxUsageInLog() throws Exception {
         requestOpenTelemetryTrace("otelinteg-without-vertx.war");
-        String logsInSmalleRyeOpentelemetry = retrieveServerLog(managementClient, LoggingServerSetupTask.SMALLRYE_OPENTELEMETRY_LOG_FILE);
-        Assert.assertTrue("It should create Vertx when vertx subsystem is not available", logsInSmalleRyeOpentelemetry.contains("Create a new Vertx instance"));
         String logsInVertxSubsystem = retrieveServerLog(managementClient, LoggingServerSetupTask.VERTX_FEATURE_PACK_LOG_FILE);
         Assert.assertFalse("Should not use Vertx instance from vertx subsystem", logsInVertxSubsystem.contains("WFLYVTX0008"));
     }

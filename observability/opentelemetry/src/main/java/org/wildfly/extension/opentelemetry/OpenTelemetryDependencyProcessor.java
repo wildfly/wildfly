@@ -5,8 +5,12 @@
 
 package org.wildfly.extension.opentelemetry;
 
+import static org.wildfly.extension.opentelemetry.OpenTelemetryDeploymentProcessor.SERVICE_ATTACHMENT_KEY;
+import static org.wildfly.extension.opentelemetry.OpenTelemetrySubsystemRegistrar.OPENTELEMETRY_SERVICE;
+
 import java.util.List;
 
+import org.jboss.as.controller.ServiceNameFactory;
 import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
@@ -19,6 +23,9 @@ import org.jboss.as.weld.WeldCapability;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleLoader;
 
+/**
+ * Adds OpenTelemetry modules and waits for the server service before deployment telemetry is configured.
+ */
 class OpenTelemetryDependencyProcessor implements DeploymentUnitProcessor {
     private static final String API_MODULE = "org.wildfly.extension.opentelemetry-api";
     private static final List<String> EXPORTED_MODULES = List.of(
@@ -33,9 +40,12 @@ class OpenTelemetryDependencyProcessor implements DeploymentUnitProcessor {
         "io.smallrye.opentelemetry"
     );
 
+    /** Ensures the service used during POST_MODULE is available before that phase runs. */
     @Override
     public void deploy(DeploymentPhaseContext phaseContext) {
         addDependencies(phaseContext.getDeploymentUnit());
+        phaseContext.addDeploymentDependency(
+                ServiceNameFactory.resolveServiceName(OPENTELEMETRY_SERVICE), SERVICE_ATTACHMENT_KEY);
     }
 
     private void addDependencies(DeploymentUnit deploymentUnit) {
