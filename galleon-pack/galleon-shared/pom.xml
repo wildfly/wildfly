@@ -622,10 +622,6 @@
             <groupId>${full.maven.groupId}</groupId>
             <artifactId>wildfly-microprofile-telemetry</artifactId>
         </dependency>
-        <dependency>
-            <groupId>${full.maven.groupId}</groupId>
-            <artifactId>wildfly-microprofile-telemetry-cdi-provider</artifactId>
-        </dependency>
     </dependencies>
 
     <build>

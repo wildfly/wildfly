@@ -5,6 +5,8 @@
 
 package org.wildfly.extension.opentelemetry.api;
 
+import java.util.function.Supplier;
+
 import io.opentelemetry.api.OpenTelemetry;
 import io.smallrye.opentelemetry.implementation.cdi.OpenTelemetryProducer;
 import io.smallrye.opentelemetry.implementation.rest.OpenTelemetryClientFilter;
@@ -12,6 +14,7 @@ import io.smallrye.opentelemetry.implementation.rest.OpenTelemetryServerFilter;
 import jakarta.enterprise.event.Observes;
 import jakarta.enterprise.inject.Default;
 import jakarta.enterprise.inject.spi.AfterBeanDiscovery;
+import jakarta.enterprise.inject.spi.AfterDeploymentValidation;
 import jakarta.enterprise.inject.spi.BeanManager;
 import jakarta.enterprise.inject.spi.BeforeBeanDiscovery;
 import jakarta.enterprise.inject.spi.Extension;
@@ -23,7 +26,7 @@ import jakarta.inject.Singleton;
  * independently configured producer.
  */
 public final class OpenTelemetryCdiExtension implements Extension {
-    private final OpenTelemetry openTelemetry;
+    private final Supplier<OpenTelemetry> openTelemetry;
 
     /**
      * Creates the CDI extension for a deployment-specific OpenTelemetry view.
@@ -31,6 +34,15 @@ public final class OpenTelemetryCdiExtension implements Extension {
      * @param openTelemetry the OpenTelemetry instance exposed to the deployment
      */
     public OpenTelemetryCdiExtension(OpenTelemetry openTelemetry) {
+        this(() -> openTelemetry);
+    }
+
+    /**
+     * Creates the CDI extension with deferred construction of the deployment-specific OpenTelemetry view.
+     *
+     * @param openTelemetry supplies the OpenTelemetry instance after CDI becomes available
+     */
+    public OpenTelemetryCdiExtension(Supplier<OpenTelemetry> openTelemetry) {
         this.openTelemetry = openTelemetry;
     }
 
@@ -71,6 +83,16 @@ public final class OpenTelemetryCdiExtension implements Extension {
                 .scope(Singleton.class)
                 .addQualifier(Default.Literal.INSTANCE)
                 .types(OpenTelemetry.class)
-                .createWith(e -> openTelemetry);
+                .createWith(e -> openTelemetry.get());
+    }
+
+    /**
+     * Initializes OpenTelemetry after CDI deployment validation so application exporters can resolve CDI beans.
+     *
+     * @param event the CDI lifecycle event indicating deployment validation completed
+     * @param beanManager the deployment bean manager
+     */
+    public void initializeOpenTelemetry(@Observes AfterDeploymentValidation event, BeanManager beanManager) {
+        beanManager.createInstance().select(OpenTelemetry.class).get();
     }
 }

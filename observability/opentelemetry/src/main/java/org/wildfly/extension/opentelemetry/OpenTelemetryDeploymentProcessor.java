@@ -8,12 +8,17 @@ package org.wildfly.extension.opentelemetry;
 import static org.jboss.as.weld.Capabilities.WELD_CAPABILITY_NAME;
 import static org.wildfly.extension.opentelemetry.OpenTelemetryExtensionLogger.OTEL_LOGGER;
 
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Supplier;
 
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.logs.LoggerProvider;
+import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.api.trace.TracerProvider;
+import io.opentelemetry.sdk.OpenTelemetrySdk;
+import io.opentelemetry.sdk.autoconfigure.AutoConfiguredOpenTelemetrySdk;
 import io.opentelemetry.sdk.autoconfigure.ResourceConfiguration;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.DefaultConfigProperties;
 import io.opentelemetry.sdk.logs.SdkLoggerProvider;
@@ -31,6 +36,7 @@ import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.weld.WeldCapability;
+import org.wildfly.extension.opentelemetry.DeploymentTelemetryConfig.Signal;
 import org.wildfly.extension.opentelemetry.api.DeploymentOpenTelemetry;
 import org.wildfly.extension.opentelemetry.api.OpenTelemetryCdiExtension;
 
@@ -38,9 +44,9 @@ import org.wildfly.extension.opentelemetry.api.OpenTelemetryCdiExtension;
  * Creates deployment-scoped OpenTelemetry providers and releases them when the deployment stops.
  */
 public class OpenTelemetryDeploymentProcessor implements DeploymentUnitProcessor {
-    /** Deployment attachment containing optional OpenTelemetry resource configuration properties. */
-    public static final AttachmentKey<Map<String, String>> CONFIG_PROPERTIES_ATTACHMENT_KEY =
-            AttachmentKey.create(Map.class);
+    /** Deployment attachment containing effective OpenTelemetry properties and exporter ownership. */
+    public static final AttachmentKey<DeploymentTelemetryConfig> CONFIG_ATTACHMENT_KEY =
+            AttachmentKey.create(DeploymentTelemetryConfig.class);
 
     private static final AttachmentKey<DeploymentHandle> HANDLE_KEY =
             AttachmentKey.create(DeploymentHandle.class);
@@ -74,88 +80,52 @@ public class OpenTelemetryDeploymentProcessor implements DeploymentUnitProcessor
                 return;
             }
 
-            OpenTelemetryService service = openTelemetryService.get();
-            OpenTelemetry serverOtel = service.getOpenTelemetry();
-            String deploymentName = getDeploymentName(deploymentUnit);
-            ClassLoader deploymentClassLoader = deploymentUnit.getAttachment(Attachments.MODULE).getClassLoader();
+            final OpenTelemetryService service = openTelemetryService.get();
+            final OpenTelemetry serverOtel = service.getOpenTelemetry();
+            final String deploymentName = getDeploymentName(deploymentUnit);
+            final String defaultServiceName = getServiceName(deploymentUnit);
+            final ClassLoader deploymentClassLoader = deploymentUnit.getAttachment(Attachments.MODULE).getClassLoader();
+            final DeploymentTelemetryConfig attachedConfig = deploymentUnit.getAttachment(CONFIG_ATTACHMENT_KEY);
+            final DeploymentTelemetryConfig config = attachedConfig == null
+                    ? new DeploymentTelemetryConfig(Collections.emptyMap(), Collections.emptySet())
+                    : attachedConfig;
 
             // Clean up any existing registration (handles redeploy scenario)
             service.unregisterDeploymentMetricReader(deploymentName);
 
-            // Create deployment-isolated meter provider with DELTA temporality
-            DeploymentMetricReader reader = new DeploymentMetricReader(AggregationTemporality.DELTA);
-
-            // Build deployment resource (merges server resource with deployment-specific attributes)
-            Resource deploymentResource = service.createDeploymentResource(deploymentName,
-                    getServiceName(deploymentUnit), getDeploymentConfigResource(deploymentUnit));
-
-            SdkMeterProvider deploymentMeter = service.createDeploymentMeterProvider(deploymentResource, reader);
-
-            // Register with server for aggregation
-            AggregatingMetricExporter.DeploymentMetricReaderHandle handle =
-                    new AggregatingMetricExporter.DeploymentMetricReaderHandle(reader, deploymentName);
-            service.registerDeploymentMetricReader(deploymentName, handle);
-
-            // Reuse the server's configured sampler and span processor so deployments retain all tracing settings.
-            SdkTracerProvider deploymentTracerProvider = service.createDeploymentTracerProvider(deploymentResource);
-            TracerProvider tracerProvider = deploymentTracerProvider != null
-                    ? deploymentTracerProvider
-                    : serverOtel.getTracerProvider();
-
-            // Create a deployment-isolated logger provider so log records carry the same deployment resource as
-            // metrics and traces while sharing the server's exporter.
-            SdkLoggerProvider deploymentLoggerProvider = service.createDeploymentLoggerProvider(deploymentResource);
-            LoggerProvider loggerProvider = deploymentLoggerProvider != null
-                    ? deploymentLoggerProvider
-                    : serverOtel.getLogsBridge();
-
-            // Create wrapped OpenTelemetry for this deployment
-            DeploymentOpenTelemetry deploymentOtel = new DeploymentOpenTelemetry(
-                    tracerProvider,
-                    loggerProvider,
-                    deploymentMeter,
-                    serverOtel.getPropagators()
-            );
-
-            if (deploymentLoggerProvider != null) {
-                service.registerDeploymentLogHandler(deploymentClassLoader, deploymentOtel);
+            final DeploymentHandle handle = new DeploymentHandle(deploymentName, deploymentClassLoader);
+            deploymentUnit.putAttachment(HANDLE_KEY, handle);
+            try {
+                final Supplier<OpenTelemetry> deploymentOpenTelemetry = () -> createDeploymentOpenTelemetry(
+                        config, service, serverOtel, defaultServiceName, handle);
+                final OpenTelemetryCdiExtension extension = config.hasApplicationExporters()
+                        ? new OpenTelemetryCdiExtension(deploymentOpenTelemetry)
+                        : new OpenTelemetryCdiExtension(deploymentOpenTelemetry.get());
+                weldCapability.registerExtensionInstance(extension, deploymentUnit);
+            } catch (RuntimeException cause) {
+                deploymentUnit.removeAttachment(HANDLE_KEY);
+                handle.close(service);
+                throw new DeploymentUnitProcessingException(
+                        "Failed to install OpenTelemetry for " + deploymentUnit.getName(), cause);
             }
-
-            // Store for cleanup on undeploy
-            deploymentUnit.putAttachment(HANDLE_KEY, new DeploymentHandle(deploymentName, deploymentClassLoader,
-                    handle, deploymentMeter, deploymentTracerProvider, deploymentLoggerProvider));
-
-            // Register CDI extension with wrapped instance
-            weldCapability.registerExtensionInstance(
-                    new OpenTelemetryCdiExtension(deploymentOtel), deploymentUnit);
         } catch (CapabilityServiceSupport.NoSuchCapabilityException e) {
             throw OTEL_LOGGER.deploymentRequiresCapability(deploymentPhaseContext.getDeploymentUnit().getName(),
                     WELD_CAPABILITY_NAME);
+        } catch (RuntimeException cause) {
+            throw new DeploymentUnitProcessingException(
+                    "Failed to configure application OpenTelemetry exporters for "
+                            + deploymentUnit.getName(),
+                    cause);
         }
     }
 
     /** {@inheritDoc} */
     @Override
     public void undeploy(DeploymentUnit deploymentUnit) {
-        DeploymentHandle handle = deploymentUnit.getAttachment(HANDLE_KEY);
+        DeploymentHandle handle = deploymentUnit.removeAttachment(HANDLE_KEY);
 
         if (handle != null) {
-            // Unregister from server tracking
-            OpenTelemetryService service = openTelemetryService.get();
-            service.unregisterDeploymentMetricReader(handle.deploymentName, handle.metricReaderHandle);
-            service.unregisterDeploymentLogHandler(handle.deploymentClassLoader);
-
-            // Shutdown the meter provider
-            handle.meterProvider.close();
-
-            // Shutdown the deployment tracer provider. Its wrapper flushes but does not close the shared processor.
-            if (handle.tracerProvider != null) {
-                handle.tracerProvider.close();
-            }
-
-            if (handle.loggerProvider != null) {
-                handle.loggerProvider.close();
-            }
+            handle.close(openTelemetryService.get());
         }
     }
 
@@ -184,14 +154,109 @@ public class OpenTelemetryDeploymentProcessor implements DeploymentUnitProcessor
     }
 
     /**
-     * Creates the resource configured by an earlier deployment processor.
+     * Creates and registers the signal providers exposed to one deployment.
      *
-     * @param deploymentUnit the deployment whose configuration is read
-     * @return the configured deployment resource, or an empty resource when configuration is unavailable
+     * @param config the effective deployment configuration
+     * @param service the server OpenTelemetry service
+     * @param serverOpenTelemetry the server OpenTelemetry instance
+     * @param defaultServiceName the deployment-derived service name
+     * @param handle the deployment lifecycle state populated by this method
+     * @return the deployment-specific OpenTelemetry view
      */
-    private Resource getDeploymentConfigResource(DeploymentUnit deploymentUnit) {
-        Map<String, String> properties = deploymentUnit.getAttachment(CONFIG_PROPERTIES_ATTACHMENT_KEY);
-        return properties == null ? Resource.empty() : createDeploymentConfigResource(properties);
+    private OpenTelemetry createDeploymentOpenTelemetry(DeploymentTelemetryConfig config,
+                                                         OpenTelemetryService service,
+                                                         OpenTelemetry serverOpenTelemetry,
+                                                         String defaultServiceName,
+                                                         DeploymentHandle handle) {
+        final Resource deploymentResource = service.createDeploymentResource(handle.deploymentName,
+                defaultServiceName, createDeploymentConfigResource(config.properties()));
+        handle.applicationOpenTelemetry = config.hasApplicationExporters()
+                ? createApplicationOpenTelemetry(config, handle.deploymentClassLoader, service,
+                        handle.deploymentName, defaultServiceName)
+                : null;
+
+        final DeploymentMetricReader reader = config.usesApplicationExporter(Signal.METRICS)
+                ? null
+                : new DeploymentMetricReader(AggregationTemporality.DELTA);
+        handle.meterProvider = reader == null
+                ? null
+                : service.createDeploymentMeterProvider(deploymentResource, reader);
+        handle.metricReaderHandle = reader == null
+                ? null
+                : new AggregatingMetricExporter.DeploymentMetricReaderHandle(reader, handle.deploymentName);
+        final MeterProvider meterProvider = config.usesApplicationExporter(Signal.METRICS)
+                ? handle.applicationOpenTelemetry.getSdkMeterProvider()
+                : handle.meterProvider;
+
+        // Reuse the server's configured sampler and span processor so deployments retain all tracing settings.
+        handle.tracerProvider = config.usesApplicationExporter(Signal.TRACES)
+                ? null
+                : service.createDeploymentTracerProvider(deploymentResource);
+        final TracerProvider tracerProvider = config.usesApplicationExporter(Signal.TRACES)
+                ? handle.applicationOpenTelemetry.getSdkTracerProvider()
+                : handle.tracerProvider != null
+                        ? handle.tracerProvider
+                        : serverOpenTelemetry.getTracerProvider();
+
+        // Create a deployment-isolated logger provider so log records carry the same deployment resource as
+        // metrics and traces while sharing the server's exporter.
+        handle.loggerProvider = config.usesApplicationExporter(Signal.LOGS)
+                ? null
+                : service.createDeploymentLoggerProvider(deploymentResource);
+        final LoggerProvider loggerProvider = config.usesApplicationExporter(Signal.LOGS)
+                ? handle.applicationOpenTelemetry.getSdkLoggerProvider()
+                : handle.loggerProvider != null
+                        ? handle.loggerProvider
+                        : serverOpenTelemetry.getLogsBridge();
+
+        final DeploymentOpenTelemetry deploymentOpenTelemetry = new DeploymentOpenTelemetry(
+                tracerProvider,
+                loggerProvider,
+                meterProvider,
+                config.usesApplicationExporter(Signal.TRACES)
+                        ? handle.applicationOpenTelemetry.getPropagators()
+                        : serverOpenTelemetry.getPropagators()
+        );
+
+        if (handle.metricReaderHandle != null) {
+            service.registerDeploymentMetricReader(handle.deploymentName, handle.metricReaderHandle);
+        }
+        if (config.usesApplicationExporter(Signal.LOGS) || handle.loggerProvider != null) {
+            service.registerDeploymentLogHandler(handle.deploymentClassLoader, deploymentOpenTelemetry);
+        }
+        return deploymentOpenTelemetry;
+    }
+
+    /**
+     * Builds the auxiliary SDK that owns application-selected signal pipelines.
+     *
+     * @param config the effective deployment configuration
+     * @param deploymentClassLoader the deployment class loader used for provider discovery
+     * @param service the server OpenTelemetry service used to merge deployment resources
+     * @param deploymentName the canonical deployment name
+     * @param defaultServiceName the deployment-derived service name
+     * @return the deployment-owned SDK
+     */
+    private OpenTelemetrySdk createApplicationOpenTelemetry(DeploymentTelemetryConfig config,
+                                                             ClassLoader deploymentClassLoader,
+                                                             OpenTelemetryService service,
+                                                             String deploymentName,
+                                                             String defaultServiceName) {
+        Map<String, String> properties = new HashMap<>(config.properties());
+        for (Signal signal : Signal.values()) {
+            if (!config.usesApplicationExporter(signal)) {
+                properties.put(signal.exporterProperty(), "none");
+            }
+        }
+
+        return AutoConfiguredOpenTelemetrySdk.builder()
+                .setServiceClassLoader(deploymentClassLoader)
+                .addPropertiesCustomizer(ignored -> properties)
+                .addResourceCustomizer((resource, ignored) ->
+                        service.createDeploymentResource(deploymentName, defaultServiceName, resource))
+                .disableShutdownHook()
+                .build()
+                .getOpenTelemetrySdk();
     }
 
     /**
@@ -205,34 +270,48 @@ public class OpenTelemetryDeploymentProcessor implements DeploymentUnitProcessor
     }
 
     /** Holds the deployment-owned providers and registrations required during undeployment. */
-    private static class DeploymentHandle {
+    private static final class DeploymentHandle {
         final String deploymentName;
         final ClassLoader deploymentClassLoader;
-        final AggregatingMetricExporter.DeploymentMetricReaderHandle metricReaderHandle;
-        final SdkMeterProvider meterProvider;
-        final SdkTracerProvider tracerProvider;
-        final SdkLoggerProvider loggerProvider;
+        AggregatingMetricExporter.DeploymentMetricReaderHandle metricReaderHandle;
+        SdkMeterProvider meterProvider;
+        SdkTracerProvider tracerProvider;
+        SdkLoggerProvider loggerProvider;
+        OpenTelemetrySdk applicationOpenTelemetry;
 
         /**
-         * Captures the deployment-owned telemetry state that must be released together.
+         * Starts tracking deployment-owned telemetry state before resource construction begins.
          *
          * @param deploymentName the canonical deployment name
          * @param deploymentClassLoader the deployment class loader used for log routing
-         * @param metricReaderHandle the exact metric-reader registration owned by this deployment
-         * @param meterProvider the deployment meter provider
-         * @param tracerProvider the deployment tracer provider, or {@code null} when tracing is disabled
-         * @param loggerProvider the deployment logger provider, or {@code null} when logging is disabled
          */
-        DeploymentHandle(String deploymentName, ClassLoader deploymentClassLoader,
-                         AggregatingMetricExporter.DeploymentMetricReaderHandle metricReaderHandle,
-                         SdkMeterProvider meterProvider, SdkTracerProvider tracerProvider,
-                         SdkLoggerProvider loggerProvider) {
+        DeploymentHandle(String deploymentName, ClassLoader deploymentClassLoader) {
             this.deploymentName = deploymentName;
             this.deploymentClassLoader = deploymentClassLoader;
-            this.metricReaderHandle = metricReaderHandle;
-            this.meterProvider = meterProvider;
-            this.tracerProvider = tracerProvider;
-            this.loggerProvider = loggerProvider;
+        }
+
+        /**
+         * Removes server registrations and closes every provider owned by this deployment.
+         *
+         * @param service the server OpenTelemetry service holding deployment registrations
+         */
+        void close(OpenTelemetryService service) {
+            service.unregisterDeploymentLogHandler(deploymentClassLoader);
+            if (metricReaderHandle != null) {
+                service.unregisterDeploymentMetricReader(deploymentName, metricReaderHandle);
+            }
+            if (meterProvider != null) {
+                meterProvider.close();
+            }
+            if (tracerProvider != null) {
+                tracerProvider.close();
+            }
+            if (loggerProvider != null) {
+                loggerProvider.close();
+            }
+            if (applicationOpenTelemetry != null) {
+                applicationOpenTelemetry.close();
+            }
         }
     }
 }

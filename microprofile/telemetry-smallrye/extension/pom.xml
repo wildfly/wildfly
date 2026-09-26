@@ -35,10 +35,6 @@
 
     <dependencies>
         <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-microprofile-telemetry-cdi-provider</artifactId>
-        </dependency>
-        <dependency>
             <groupId>io.smallrye.config</groupId>
             <artifactId>smallrye-config</artifactId>
         </dependency>
