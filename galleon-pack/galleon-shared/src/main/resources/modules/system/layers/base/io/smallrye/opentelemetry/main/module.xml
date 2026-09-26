@@ -12,6 +12,7 @@
         <artifact name="${io.smallrye.opentelemetry:smallrye-opentelemetry-exporters}"/>
         <artifact name="${io.smallrye.opentelemetry:smallrye-opentelemetry-propagation}"/>
         <artifact name="${io.smallrye.opentelemetry:smallrye-opentelemetry-rest}"/>
+        <artifact name="${io.smallrye.opentelemetry:smallrye-opentelemetry-senders}"/>
     </resources>
 
     <dependencies>
@@ -43,6 +44,5 @@
         <module name="java.logging"/>
         <!-- Needed to satisfy bean injection in this module -->
         <module name="org.wildfly.extension.opentelemetry-api"/>
-        <module name="org.wildfly.extension.microprofile.telemetry-api" optional="true"/>
     </dependencies>
 </module>

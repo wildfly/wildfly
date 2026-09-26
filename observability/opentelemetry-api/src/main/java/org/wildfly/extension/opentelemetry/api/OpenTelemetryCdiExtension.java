@@ -5,10 +5,10 @@
 
 package org.wildfly.extension.opentelemetry.api;
 
-import java.util.Map;
+import java.util.function.Supplier;
 
 import io.opentelemetry.api.OpenTelemetry;
-import io.smallrye.opentelemetry.api.OpenTelemetryConfig;
+import io.smallrye.opentelemetry.implementation.cdi.OpenTelemetryProducer;
 import io.smallrye.opentelemetry.implementation.rest.OpenTelemetryClientFilter;
 import io.smallrye.opentelemetry.implementation.rest.OpenTelemetryServerFilter;
 import jakarta.enterprise.event.Observes;
@@ -18,43 +18,81 @@ import jakarta.enterprise.inject.spi.AfterDeploymentValidation;
 import jakarta.enterprise.inject.spi.BeanManager;
 import jakarta.enterprise.inject.spi.BeforeBeanDiscovery;
 import jakarta.enterprise.inject.spi.Extension;
+import jakarta.enterprise.inject.spi.ProcessAnnotatedType;
 import jakarta.inject.Singleton;
 
+/**
+ * Installs WildFly's deployment-scoped OpenTelemetry instance and producers into CDI while replacing SmallRye's
+ * independently configured producer.
+ */
 public final class OpenTelemetryCdiExtension implements Extension {
-    private final boolean useServerConfig;
-    private final WildFlyOpenTelemetryConfig config;
+    private final Supplier<OpenTelemetry> openTelemetry;
 
-    public OpenTelemetryCdiExtension(boolean useServerConfig, Map<String, String> config) {
-        this (useServerConfig, new WildFlyOpenTelemetryConfig(config, useServerConfig));
+    /**
+     * Creates the CDI extension for a deployment-specific OpenTelemetry view.
+     *
+     * @param openTelemetry the OpenTelemetry instance exposed to the deployment
+     */
+    public OpenTelemetryCdiExtension(OpenTelemetry openTelemetry) {
+        this(() -> openTelemetry);
     }
 
-    public OpenTelemetryCdiExtension(boolean useServerConfig, WildFlyOpenTelemetryConfig config) {
-        this.useServerConfig = useServerConfig;
-        this.config = config;
+    /**
+     * Creates the CDI extension with deferred construction of the deployment-specific OpenTelemetry view.
+     *
+     * @param openTelemetry supplies the OpenTelemetry instance after CDI becomes available
+     */
+    public OpenTelemetryCdiExtension(Supplier<OpenTelemetry> openTelemetry) {
+        this.openTelemetry = openTelemetry;
     }
 
+    /**
+     * Registers the REST filters and WildFly producer before CDI discovers application beans.
+     *
+     * @param beforeBeanDiscovery the CDI lifecycle event
+     * @param beanManager the deployment bean manager
+     */
     public void beforeBeanDiscovery(@Observes BeforeBeanDiscovery beforeBeanDiscovery, final BeanManager beanManager) {
         beforeBeanDiscovery.addAnnotatedType(beanManager.createAnnotatedType(OpenTelemetryServerFilter.class),
                 OpenTelemetryServerFilter.class.getName());
         beforeBeanDiscovery.addAnnotatedType(beanManager.createAnnotatedType(OpenTelemetryClientFilter.class),
                 OpenTelemetryClientFilter.class.getName());
+        beforeBeanDiscovery.addAnnotatedType(beanManager.createAnnotatedType(WildFlyOpenTelemetryProducer.class),
+                WildFlyOpenTelemetryProducer.class.getName());
     }
 
-    // For the publication of metrics to begin, the OpenTelemetry instance must be created. Unless something like
-    // this is done, that will not happen until the first request to the application (via the OpenTelemetryServerFilter).
-    // Forcing the creation of that instance here causes that publication to begin as soon as the application is
-    // deployed/started. See https://issues.redhat.com/browse/WFLY-20075
-    void forceEagerInstantiationOfOpenTelemetry(@Observes AfterDeploymentValidation event, BeanManager beanManager) {
-        beanManager.createInstance().select(OpenTelemetry.class).get();
+    /**
+     * Vetoes SmallRye's producer so it cannot create a second SDK for the deployment.
+     *
+     * @param event the producer discovery event
+     */
+    public void vetoSmallRyeOpenTelemetryProducer(@Observes
+                                                  ProcessAnnotatedType<OpenTelemetryProducer> event) {
+        event.veto();
     }
 
+    /**
+     * Registers the deployment OpenTelemetry instance after CDI has discovered application beans.
+     *
+     * @param abd the CDI lifecycle event used to add the synthetic bean
+     */
     public void registerOpenTelemetryBeans(@Observes AfterBeanDiscovery abd) {
-        if (useServerConfig) {
-            abd.addBean()
-                    .scope(Singleton.class)
-                    .addQualifier(Default.Literal.INSTANCE)
-                    .types(OpenTelemetryConfig.class)
-                    .createWith(e -> config);
-        }
+        // Register the OpenTelemetry instance - WildFlyOpenTelemetryProducer will use this
+        // to produce Tracer, Meter, Span, and Baggage
+        abd.addBean()
+                .scope(Singleton.class)
+                .addQualifier(Default.Literal.INSTANCE)
+                .types(OpenTelemetry.class)
+                .createWith(e -> openTelemetry.get());
+    }
+
+    /**
+     * Initializes OpenTelemetry after CDI deployment validation so application exporters can resolve CDI beans.
+     *
+     * @param event the CDI lifecycle event indicating deployment validation completed
+     * @param beanManager the deployment bean manager
+     */
+    public void initializeOpenTelemetry(@Observes AfterDeploymentValidation event, BeanManager beanManager) {
+        beanManager.createInstance().select(OpenTelemetry.class).get();
     }
 }

@@ -434,7 +434,7 @@
         <version.io.netty>4.1.138.Final</version.io.netty>
         <version.io.opentelemetry.instrumentation>2.14.0</version.io.opentelemetry.instrumentation>
         <version.io.opentelemetry.opentelemetry-semconv>1.32.0</version.io.opentelemetry.opentelemetry-semconv>
-        <version.io.opentelemetry.opentelemetry>1.48.0</version.io.opentelemetry.opentelemetry>
+        <version.io.opentelemetry.opentelemetry>1.60.1</version.io.opentelemetry.opentelemetry>
         <version.io.opentelemetry.proto>1.5.0-alpha</version.io.opentelemetry.proto>
         <version.io.prometheus>1.7.0</version.io.prometheus>
         <version.io.reactivex.rxjava2>2.2.21</version.io.reactivex.rxjava2>
@@ -448,7 +448,7 @@
         <version.io.smallrye.smallrye-mutiny>3.1.1</version.io.smallrye.smallrye-mutiny>
         <version.io.smallrye.smallrye-mutiny-vertx>3.23.1</version.io.smallrye.smallrye-mutiny-vertx>
         <version.io.smallrye.smallrye-mutiny-zero>1.1.1</version.io.smallrye.smallrye-mutiny-zero>
-        <version.io.smallrye.smallrye-opentelemetry>2.11.2</version.io.smallrye.smallrye-opentelemetry>
+        <version.io.smallrye.smallrye-opentelemetry>2.15.1</version.io.smallrye.smallrye-opentelemetry>
         <version.io.smallrye.smallrye-stork>2.7.11</version.io.smallrye.smallrye-stork>
         <version.io.smallrye.smallrye-reactive-messaging>4.37.0</version.io.smallrye.smallrye-reactive-messaging>
         <version.io.vertx.vertx>4.5.34</version.io.vertx.vertx>
