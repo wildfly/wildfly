@@ -5,6 +5,7 @@
 
 package org.wildfly.extension.messaging.activemq;
 
+import static org.wildfly.extension.messaging.activemq._private.MessagingLogger.MESSAGING_DISCOVERY_WARNING_DISABLED_PROPERTY_NAME;
 import static org.wildfly.extension.messaging.activemq._private.MessagingLogger.ROOT_LOGGER;
 
 import java.net.InetSocketAddress;
@@ -15,6 +16,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
@@ -95,6 +97,8 @@ class ActiveMQServerService implements Service<ActiveMQBroker> {
     private final Optional<Supplier<SecurityDomain>> elytronSecurityDomain;
     // Supplier for Elytron SSLContext
     private final Map<String, Supplier<SSLContext>> sslContexts;
+    private final Set<String> socketDiscoveryGroupNames;
+    private final Set<String> socketBroadcastGroupNames;
 
     // credential source injectors
     private Map<String, InjectedValue<ExceptionSupplier<CredentialSource, Exception>>> bridgeCredentialSource = new HashMap<>();
@@ -113,7 +117,9 @@ class ActiveMQServerService implements Service<ActiveMQBroker> {
                                  Optional<Supplier<SecurityDomain>> elytronSecurityDomain,
                                  Optional<Supplier<MBeanServer>> mbeanServer,
                                  Optional<Supplier<DataSource>> dataSource,
-                                 Map<String, Supplier<SSLContext>> sslContexts) {
+                                 Map<String, Supplier<SSLContext>> sslContexts,
+                                 Set<String> socketDiscoveryGroupNames,
+                                 Set<String> socketBroadcastGroupNames) {
         this.configuration = configuration;
         this.pathConfig = pathConfig;
         this.dataSource = dataSource;
@@ -133,11 +139,20 @@ class ActiveMQServerService implements Service<ActiveMQBroker> {
             }
         }
         this.sslContexts = sslContexts;
+        this.socketDiscoveryGroupNames = socketDiscoveryGroupNames;
+        this.socketBroadcastGroupNames = socketBroadcastGroupNames;
     }
 
     @Override
     public synchronized void start(final StartContext context) throws StartException {
         ClassLoader origTCCL = org.wildfly.security.manager.WildFlySecurityManager.getCurrentContextClassLoaderPrivileged();
+
+        if (!socketDiscoveryGroupNames.isEmpty() || !socketBroadcastGroupNames.isEmpty()) {
+            if (!Boolean.parseBoolean(org.wildfly.security.manager.WildFlySecurityManager.getPropertyPrivileged(MESSAGING_DISCOVERY_WARNING_DISABLED_PROPERTY_NAME, "false"))) {
+                MessagingLogger.DISCOVERY_WARNING_LOGGER.udpMulticastWarning(socketDiscoveryGroupNames, socketBroadcastGroupNames);
+            }
+        }
+
         // Validate whether the AIO native layer can be used
         JournalType jtype = configuration.getJournalType();
         if (jtype == JournalType.ASYNCIO) {
