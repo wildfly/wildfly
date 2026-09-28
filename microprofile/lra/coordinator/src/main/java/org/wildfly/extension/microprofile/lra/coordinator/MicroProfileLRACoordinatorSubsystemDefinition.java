@@ -9,17 +9,16 @@ import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
-import org.jboss.as.controller.SimpleAttributeDefinition;
-import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.descriptions.ParentResourceDescriptionResolver;
 import org.jboss.as.controller.descriptions.SubsystemResourceDescriptionResolver;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.ModelType;
-import org.wildfly.extension.undertow.Constants;
+import org.wildfly.extension.undertow.Host;
+import org.wildfly.extension.undertow.Server;
+import org.wildfly.subsystem.resource.capability.CapabilityReference;
+import org.wildfly.subsystem.resource.capability.CapabilityReferenceAttributeDefinition;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 import static org.wildfly.extension.microprofile.lra.coordinator.MicroProfileLRACoordinatorExtension.SUBSYSTEM_NAME;
@@ -43,21 +42,15 @@ public class MicroProfileLRACoordinatorSubsystemDefinition extends SimpleResourc
         .setServiceType(Void.class)
         .build();
 
-    static final SimpleAttributeDefinition SERVER =
-        new SimpleAttributeDefinitionBuilder(CommonAttributes.SERVER, ModelType.STRING, true)
-            .setAllowExpression(true)
-            .setXmlName(CommonAttributes.SERVER)
-            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-            .setDefaultValue(new ModelNode(Constants.DEFAULT_SERVER))
-            .build();
+    static final CapabilityReferenceAttributeDefinition<Server> SERVER = new CapabilityReferenceAttributeDefinition.Builder<>(CommonAttributes.SERVER, CapabilityReference.builder(LRA_COORDINATOR_CAPABILITY, Server.SERVICE_DESCRIPTOR).build())
+        .setRequired(false)
+        .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+        .build();
 
-    static final SimpleAttributeDefinition HOST =
-        new SimpleAttributeDefinitionBuilder(CommonAttributes.HOST, ModelType.STRING, true)
-            .setAllowExpression(true)
-            .setXmlName(CommonAttributes.HOST)
-            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-            .setDefaultValue(new ModelNode(Constants.DEFAULT_HOST))
-            .build();
+    static final CapabilityReferenceAttributeDefinition<Host> HOST = new CapabilityReferenceAttributeDefinition.Builder<>(CommonAttributes.HOST, CapabilityReference.builder(LRA_COORDINATOR_CAPABILITY, Host.SERVICE_DESCRIPTOR).withParentAttribute(SERVER).build())
+        .setRequired(false)
+        .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+        .build();
 
     static final AttributeDefinition[] ATTRIBUTES = {SERVER, HOST};
 
