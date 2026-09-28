@@ -24,6 +24,11 @@ Elytron WildFly Java Security Manager basic enhancements are
 * Output of debug information to detect missing permissions.
 * Output of trace information to analyse special situations with {oracle-javadoc}/java.base/java/security/ProtectionDomain.html[protection domains], classloaders, and {oracle-javadoc}/java.base/java/security/CodeSource.html[codesources].
 
+[NOTE]
+====
+Beginning with WildFly 42, the `org.wildfly.extension.security.manager` extension and its `security-manager` subsystem are retained only as a legacy management model; starting a WildFly {wildflyVersion} standalone server with the extension in the configuration will result in a boot failure, unless the server is started in admin-only mode. It's completely valid for a standard WildFly {wildflyVersion} domain mode Domain Controller to have the `security-manager` subsystem in its `domain.xml` file, if the profiles that include the subsystem are used in server groups where all the servers are running WildFly 39 or earlier or the WildFly EE 10 variant of WildFly 40 or 41.
+====
+
 ==== Why Run with the Java Security Manager Enabled?
 Running a JSM will not fully protect the server from malicious attackers exploiting security vulnerabilities. It does, however, offer another layer of protection which can help reduce the impact of serious security vulnerabilities, such as deserialization attacks. For example, most of the recent https://www.github.com/mbechler/marshalsec/blob/master/marshalsec.pdf?raw=true[attacks against Jackson Databind] rely on making a Socket connection to an attacker-controlled JNDI Server to load malicious code. https://access.redhat.com/solutions/3279231[This article] provides information on how this issue potentially affects an application written for JBoss EAP, which would be same for WildFly. The Security Manager could block the socket creation, and potentially thwart the attack.
 

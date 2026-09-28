@@ -161,15 +161,6 @@ The EE subsystem configuration includes flags to configure whether
 system property replacement will be done on XML descriptors and Java
 Annotations included in EE deployments.
 
-[NOTE]
-
-System properties etc are resolved in the security context of the
-application server itself, not the deployment that contains the file.
-This means that if you are running with a security manager and enable
-this property, a deployment can potentially access system properties or
-environment entries that the security manager would have otherwise
-prevented.
-
 [[spec-descriptor-property-replacement]]
 === Spec Descriptor Property Replacement
 
@@ -189,7 +180,6 @@ When enabled, properties can be replaced in the following deployment descriptors
 * persistence.xml
 * application.xml
 * web.xml
-* permissions.xml
 
 [[jboss-descriptor-property-replacement]]
 === JBoss Descriptor Property Replacement
@@ -208,7 +198,6 @@ When enabled, properties can be replaced in the following deployment descriptors
 * jboss-ejb3.xml
 * jboss-app.xml
 * jboss-web.xml
-* jboss-permissions.xml
 * *-jms.xml
 * *-ds.xml
 
