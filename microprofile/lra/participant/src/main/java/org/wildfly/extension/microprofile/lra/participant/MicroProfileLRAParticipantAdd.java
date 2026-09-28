@@ -66,9 +66,16 @@ class MicroProfileLRAParticipantAdd extends AbstractBoottimeAddStepHandler {
             .addCapability(MicroProfileLRAParticipantSubsystemDefinition.LRA_PARTICIPANT_CAPABILITY);
 
         builder.requiresCapability(Capabilities.CAPABILITY_UNDERTOW, UndertowService.class);
-        String serverModelValue = MicroProfileLRAParticipantSubsystemDefinition.PROXY_SERVER.resolveModelAttribute(context, model).asString();
-        String hostModelValue = MicroProfileLRAParticipantSubsystemDefinition.PROXY_HOST.resolveModelAttribute(context, model).asString();
-        Supplier<Host> hostSupplier = builder.requiresCapability(Capabilities.CAPABILITY_HOST, Host.class, serverModelValue, hostModelValue);
+
+        ModelNode serverNode = MicroProfileLRAParticipantSubsystemDefinition.PROXY_SERVER.resolveModelAttribute(context, model);
+        ModelNode hostNode = MicroProfileLRAParticipantSubsystemDefinition.PROXY_HOST.resolveModelAttribute(context, model);
+
+        Supplier<Host> hostSupplier;
+        if (serverNode.isDefined() && hostNode.isDefined()) {
+            hostSupplier = builder.requiresCapability(Capabilities.CAPABILITY_HOST, Host.class, serverNode.asString(), hostNode.asString());
+        } else {
+            hostSupplier = builder.requires(UndertowService.DEFAULT_HOST);
+        }
 
         final LRAParticipantService lraParticipantProxyService = new LRAParticipantService(hostSupplier);
 
