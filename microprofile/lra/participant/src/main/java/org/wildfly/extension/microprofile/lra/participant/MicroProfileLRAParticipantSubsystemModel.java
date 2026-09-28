@@ -13,13 +13,14 @@ import org.jboss.as.controller.SubsystemModel;
  * @author Paul Ferraro
  */
 enum MicroProfileLRAParticipantSubsystemModel implements SubsystemModel {
-    VERSION_1_0_0(1),
+    VERSION_1_0_0(1, 0, 0),
+    VERSION_1_1_0(1, 1, 0),
     ;
 
     private final ModelVersion version;
 
-    MicroProfileLRAParticipantSubsystemModel(int major) {
-        this.version = ModelVersion.create(major);
+    MicroProfileLRAParticipantSubsystemModel(int major, int minor, int micro) {
+        this.version = ModelVersion.create(major, minor, micro);
     }
 
     @Override

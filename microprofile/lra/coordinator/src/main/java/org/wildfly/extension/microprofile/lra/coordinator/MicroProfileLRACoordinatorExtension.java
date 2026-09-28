@@ -27,9 +27,9 @@ public class MicroProfileLRACoordinatorExtension implements Extension {
      */
     static final String SUBSYSTEM_NAME = "microprofile-lra-coordinator";
 
-    private static final MicroProfileLRACoordinatorSubsystemModel CURRENT_MODEL = MicroProfileLRACoordinatorSubsystemModel.VERSION_1_0_0;
+    private static final MicroProfileLRACoordinatorSubsystemModel CURRENT_MODEL = MicroProfileLRACoordinatorSubsystemModel.VERSION_1_1_0;
 
-    static final MicroProfileLRACoordinatorSubsystemSchema CURRENT_SCHEMA = MicroProfileLRACoordinatorSubsystemSchema.VERSION_1_0;
+    static final MicroProfileLRACoordinatorSubsystemSchema CURRENT_SCHEMA = MicroProfileLRACoordinatorSubsystemSchema.VERSION_1_1;
 
     private final PersistentResourceXMLDescription currentDescription = CURRENT_SCHEMA.getXMLDescription();
 
