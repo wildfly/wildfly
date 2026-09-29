@@ -55,6 +55,7 @@
         <ts.config-as.copy-mgmt-users.phase>generate-test-resources</ts.config-as.copy-mgmt-users.phase>
         <wildfly.dir>${project.build.directory}/wildfly</wildfly.dir>
         <container.java.home>${java.home}</container.java.home>
+        <arquillian.startupTimeoutInSeconds>60</arquillian.startupTimeoutInSeconds>
     </properties>
 
     <profiles>

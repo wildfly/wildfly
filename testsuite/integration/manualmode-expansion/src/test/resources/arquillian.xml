@@ -27,6 +27,7 @@
                 <property name="waitForPortsTimeoutInSeconds">8</property>
                 <property name="modulePath">${basedir}/target/wildfly/modules</property>
                 <property name="javaHome">${container.java.home}</property>
+                <property name="startupTimeoutInSeconds">${arquillian.startupTimeoutInSeconds}</property>
             </configuration>
         </container>
 
@@ -45,6 +46,7 @@
                 <property name="waitForPortsTimeoutInSeconds">8</property>
                 <property name="modulePath">${basedir}/target/wildfly/modules</property>
                 <property name="javaHome">${container.java.home}</property>
+                <property name="startupTimeoutInSeconds">${arquillian.startupTimeoutInSeconds}</property>
             </configuration>
         </container>
 
@@ -65,6 +67,7 @@
                 <property name="waitForPortsTimeoutInSeconds">8</property>
                 <property name="modulePath">${basedir}/target/wildfly/modules</property>
                 <property name="javaHome">${container.java.home}</property>
+                <property name="startupTimeoutInSeconds">${arquillian.startupTimeoutInSeconds}</property>
             </configuration>
         </container>
     </group>

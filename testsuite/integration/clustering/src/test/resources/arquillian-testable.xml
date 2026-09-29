@@ -24,6 +24,7 @@
             <property name="serverConfig">${jboss.server.config.file.name}</property>
             <property name="waitForPorts">8787 ${as.managementPort:9990}</property>
             <property name="waitForPortsTimeoutInSeconds">8</property>
+            <property name="startupTimeoutInSeconds">${arquillian.startupTimeoutInSeconds}</property>
         </configuration>
     </container>
 

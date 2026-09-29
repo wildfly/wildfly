@@ -23,6 +23,7 @@
 
             <property name="waitForPortsTimeoutInSeconds">8</property>
             <property name="javaHome">${container.java.home}</property>
+            <property name="startupTimeoutInSeconds">${arquillian.startupTimeoutInSeconds}</property>
         </configuration>
     </container>
 
