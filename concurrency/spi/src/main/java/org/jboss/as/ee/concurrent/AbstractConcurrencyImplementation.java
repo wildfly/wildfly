@@ -20,6 +20,7 @@ import org.jboss.as.ee.concurrent.resource.definition.ManagedScheduledExecutorDe
 import org.jboss.as.ee.concurrent.resource.definition.ManagedThreadFactoryDefinitionAnnotationProcessor;
 import org.jboss.as.ee.concurrent.resource.definition.ManagedThreadFactoryDefinitionDescriptorProcessor;
 import org.jboss.as.ee.concurrent.service.ManagedExecutorHungTasksPeriodicTerminationService;
+import org.jboss.as.ee.logging.EeLogger;
 import org.jboss.as.ee.subsystem.ConcurrentEESubsystemParser20;
 import org.jboss.as.ee.subsystem.ConcurrentEESubsystemParser40;
 import org.jboss.as.ee.subsystem.ConcurrentEESubsystemParser50;
@@ -64,7 +65,7 @@ public abstract class AbstractConcurrencyImplementation implements ConcurrencyIm
 
     @Override
     public void installSubsystemServices(OperationContext context) {
-        // installs the service which manages managed executor's hung task periodic termination
+        // installs the service which manages a managed executor's hung task periodic termination
         new ManagedExecutorHungTasksPeriodicTerminationService().install(context);
     }
 
@@ -93,5 +94,36 @@ public abstract class AbstractConcurrencyImplementation implements ConcurrencyIm
     @Override
     public void writeConcurrentElement(XMLExtendedStreamWriter writer, ModelNode eeSubSystem) throws XMLStreamException {
         ConcurrentEESubsystemXMLPersister.writeConcurrentElement(writer, eeSubSystem);
+    }
+
+
+    /**
+     * If virtual threads are requested for a given concurrency service, check if they are available and log if they
+     * are not or if there are any issues with their use.
+     *
+     * @param virtualRequested {@code} whether virtual threads are requested in the config
+     * @param requestorType the type of service that would use virtual threads. Cannot be {@code null}
+     * @param requestor   the name of the service that would use virtual threads. Cannot be {@code null}
+     * @param ee10 whether the caller implements the EE 10 or earlier version of Jakarta Concurrency.
+     * @return {@code true} if {@code virtualRequested} is {@code true} and the runtime environment supports use of virtual threads.
+     */
+    protected static boolean checkVirtualThreads(boolean virtualRequested, String requestorType, String requestor, boolean ee10) {
+        boolean result = false;
+        if (virtualRequested) {
+            if (ee10) {
+                EeLogger.VIRTUAL_THREAD_LOGGER.virtualThreadsNotAvailableInEE10(requestorType, requestor);
+            } else {
+                int major = Runtime.version().feature();
+                if (major < 21) {
+                    EeLogger.VIRTUAL_THREAD_LOGGER.virtualThreadsNotAvailableBeforeSE21(requestorType, requestor, major);
+                } else {
+                    if (major < 25) {
+                        EeLogger.VIRTUAL_THREAD_LOGGER.virtualThreadsPinningBeforeSE25(requestorType, requestor, major);
+                    }
+                    result = true;
+                }
+            }
+        }
+        return result;
     }
 }

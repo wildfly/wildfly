@@ -55,6 +55,9 @@ public interface EeLogger extends BasicLogger {
      */
     EeLogger ROOT_LOGGER = Logger.getMessageLogger(MethodHandles.lookup(), EeLogger.class, "org.jboss.as.ee");
 
+    /** Separate logger category for WARNs about virtual thread use. The separate category allows suppression of the WARNs without losing other messages. */
+    EeLogger VIRTUAL_THREAD_LOGGER = Logger.getMessageLogger(MethodHandles.lookup(), EeLogger.class, "org.jboss.as.ee.concurrency.virtual.thread");
+
 //    /**
 //     * Logs a warning message indicating the transaction datasource, represented by the {@code className} parameter,
 //     * could not be proxied and will not be enlisted in the transactions automatically.
@@ -1237,5 +1240,17 @@ public interface EeLogger extends BasicLogger {
     @LogMessage(level = ERROR)
     @Message(id = 144, value = "Failed to create virtual threads %s, falling back to platform threads alternative...")
     void failedToCreateVirtualThreadsResource(Class<?> c, @Cause Throwable cause);
+
+    @LogMessage(level = WARN)
+    @Message(id = 145, value = "Jakarta Concurrency %s '%s' is configured to use virtual threads, but they are not supported in the EE 10 implementation of Jakarta Concurrency. Platform threads will be used.")
+    void virtualThreadsNotAvailableInEE10(String requestorType, String requestor);
+
+    @LogMessage(level = WARN)
+    @Message(id = 146, value = "Jakarta Concurrency %s '%s' is configured to use virtual threads, but they are not supported in Java SE %d. Platform threads will be used.")
+    void virtualThreadsNotAvailableBeforeSE21(String requestorType, String requestor, int seVersion);
+
+    @LogMessage(level = WARN)
+    @Message(id = 147, value = "Jakarta Concurrency %s '%s' is configured to use virtual threads in a server running Java SE %d. Virtual thread pinning may be an issue; be sure to test your application carefully.")
+    void virtualThreadsPinningBeforeSE25(String requestorType, String requestor, int seVersion);
 
 }

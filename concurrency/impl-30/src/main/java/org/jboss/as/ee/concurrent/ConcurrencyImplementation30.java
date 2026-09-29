@@ -4,6 +4,9 @@
  */
 package org.jboss.as.ee.concurrent;
 
+import jakarta.enterprise.concurrent.ManagedExecutorService;
+import jakarta.enterprise.concurrent.ManagedScheduledExecutorService;
+import jakarta.enterprise.concurrent.ManagedThreadFactory;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.ProcessStateNotifier;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
@@ -38,21 +41,29 @@ public class ConcurrencyImplementation30 extends AbstractConcurrencyImplementati
 
     @Override
     public WildFlyManagedThreadFactory newManagedThreadFactory(String name, WildFlyContextService contextService, int priority, boolean virtual) {
+        // Virtual threads are not available, so emit a log message if they are requested
+        checkVirtualThreads(virtual, ManagedThreadFactory.class.getSimpleName(), name, true);
         return new ManagedThreadFactoryImpl(name, contextService, priority);
     }
 
     @Override
     public WildFlyManagedExecutorService newManagedExecutorService(String name, WildFlyManagedThreadFactory managedThreadFactory, long hungTaskThreshold, boolean longRunningTasks, int corePoolSize, int maxPoolSize, long keepAliveTime, TimeUnit keepAliveTimeUnit, long threadLifeTime, WildFlyContextService contextService, WildFlyManagedExecutorService.RejectPolicy rejectPolicy, BlockingQueue<Runnable> queue, ControlPoint controlPoint, ProcessStateNotifier processStateNotifier, boolean virtual) {
+        // Virtual threads are not available, so emit a log message if they are requested
+        checkVirtualThreads(virtual, ManagedExecutorService.class.getSimpleName(), name, true);
         return new ManagedExecutorServiceImpl(name, managedThreadFactory, hungTaskThreshold, longRunningTasks, corePoolSize, maxPoolSize, keepAliveTime, keepAliveTimeUnit, threadLifeTime, contextService, rejectPolicy, queue, controlPoint, processStateNotifier);
     }
 
     @Override
     public WildFlyManagedExecutorService newManagedExecutorService(String name, WildFlyManagedThreadFactory managedThreadFactory, long hungTaskThreshold, boolean longRunningTasks, int corePoolSize, int maxPoolSize, long keepAliveTime, TimeUnit keepAliveTimeUnit, long threadLifeTime, int queueCapacity, WildFlyContextService contextService, WildFlyManagedExecutorService.RejectPolicy rejectPolicy, ControlPoint controlPoint, ProcessStateNotifier processStateNotifier, boolean virtual) {
+        // Virtual threads are not available, so emit a log message if they are requested
+        checkVirtualThreads(virtual, ManagedExecutorService.class.getSimpleName(), name, true);
         return new ManagedExecutorServiceImpl(name, managedThreadFactory, hungTaskThreshold, longRunningTasks, corePoolSize, maxPoolSize, keepAliveTime, keepAliveTimeUnit, threadLifeTime, queueCapacity, contextService, rejectPolicy, controlPoint, processStateNotifier);
     }
 
     @Override
     public WildFlyManagedScheduledExecutorService newManagedScheduledExecutorService(String name, WildFlyManagedThreadFactory managedThreadFactory, long hungTaskThreshold, boolean longRunningTasks, int corePoolSize, long keepAliveTime, TimeUnit keepAliveTimeUnit, long threadLifeTime, WildFlyContextService contextService, WildFlyManagedExecutorService.RejectPolicy rejectPolicy, ControlPoint controlPoint, ProcessStateNotifier processStateNotifier, boolean virtual) {
+        // Virtual threads are not available, so emit a log message if they are requested
+        checkVirtualThreads(virtual, ManagedScheduledExecutorService.class.getSimpleName(), name, true);
         return new ManagedScheduledExecutorServiceImpl(name, managedThreadFactory, hungTaskThreshold, longRunningTasks, corePoolSize, keepAliveTime, keepAliveTimeUnit, threadLifeTime, contextService, rejectPolicy, controlPoint, processStateNotifier);
     }
 
