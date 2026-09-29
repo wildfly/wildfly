@@ -5,10 +5,12 @@
 package org.jboss.as.ee.concurrent;
 
 import org.jboss.as.controller.ExtensionContext;
+import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ProcessStateNotifier;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.as.ee.subsystem.Namespace;
 import org.jboss.as.server.DeploymentProcessorTarget;
 import org.jboss.dmr.ModelNode;
@@ -53,6 +55,11 @@ public class TestConcurrencyImplementation implements ConcurrencyImplementation 
 
     @Override
     public void writeConcurrentElement(XMLExtendedStreamWriter writer, ModelNode eeSubSystem) throws XMLStreamException {
+
+    }
+
+    @Override
+    public void registerTransformers(ResourceTransformationDescriptionBuilder builder, ModelVersion transformToVersion) {
 
     }
 

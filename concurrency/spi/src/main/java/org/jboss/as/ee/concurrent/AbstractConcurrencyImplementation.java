@@ -5,9 +5,11 @@
 package org.jboss.as.ee.concurrent;
 
 import org.jboss.as.controller.ExtensionContext;
+import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.as.ee.concurrent.deployers.ConcurrencyResourceReferenceRegistryProcessor;
 import org.jboss.as.ee.concurrent.deployers.EEConcurrentContextProcessor;
 import org.jboss.as.ee.concurrent.deployers.EEConcurrentDefaultBindingProcessor;
@@ -26,7 +28,9 @@ import org.jboss.as.ee.subsystem.ConcurrentEESubsystemParser50;
 import org.jboss.as.ee.subsystem.ConcurrentEESubsystemParser60;
 import org.jboss.as.ee.subsystem.ConcurrentEESubsystemParser70;
 import org.jboss.as.ee.subsystem.ConcurrentEESubsystemXMLPersister;
+import org.jboss.as.ee.subsystem.ConcurrentTransformers;
 import org.jboss.as.ee.subsystem.ContextServiceResourceDefinition;
+import org.jboss.as.ee.subsystem.EESubsystemModel;
 import org.jboss.as.ee.subsystem.EeExtension;
 import org.jboss.as.ee.subsystem.ManagedExecutorServiceResourceDefinition;
 import org.jboss.as.ee.subsystem.ManagedScheduledExecutorServiceResourceDefinition;
@@ -93,5 +97,12 @@ public abstract class AbstractConcurrencyImplementation implements ConcurrencyIm
     @Override
     public void writeConcurrentElement(XMLExtendedStreamWriter writer, ModelNode eeSubSystem) throws XMLStreamException {
         ConcurrentEESubsystemXMLPersister.writeConcurrentElement(writer, eeSubSystem);
+    }
+
+    @Override
+    public void registerTransformers(ResourceTransformationDescriptionBuilder builder, ModelVersion transformToVersion) {
+        if (EESubsystemModel.Version.v6_0_0.equals(transformToVersion)) {
+            ConcurrentTransformers.registerTransformersFrom700to600(builder);
+        }
     }
 }

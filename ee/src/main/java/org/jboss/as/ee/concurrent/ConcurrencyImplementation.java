@@ -5,10 +5,14 @@
 package org.jboss.as.ee.concurrent;
 
 import org.jboss.as.controller.ExtensionContext;
+import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ProcessStateNotifier;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.controller.transform.ExtensionTransformerRegistration;
+import org.jboss.as.controller.transform.SubsystemTransformerRegistration;
+import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.as.ee.subsystem.Namespace;
 import org.jboss.as.server.DeploymentProcessorTarget;
 import org.jboss.dmr.ModelNode;
@@ -78,6 +82,16 @@ public interface ConcurrencyImplementation {
      * @throws XMLStreamException if an error occurs
      */
     void writeConcurrentElement(XMLExtendedStreamWriter writer, ModelNode eeSubSystem) throws XMLStreamException;
+
+    /**
+     * Participate in a {@link ExtensionTransformerRegistration#registerTransformers(SubsystemTransformerRegistration)}
+     * call by registering necessary transformers to the given EE subsystem model version. Only one call will be
+     * made per {@code transformToVersion}. The caller is responsible for understanding what version need transformation
+     * and passing in an appropriate builder.
+     * @param builder builder for which transformation descriptions related to concurrency resources can be added. Will not be {@code null}.
+     * @param transformToVersion the model to which transformation should be done (i.e. the older version). Will not be {@code null}.
+     */
+    void registerTransformers(ResourceTransformationDescriptionBuilder builder, ModelVersion transformToVersion);
 
     /**
      * @param name the instance name

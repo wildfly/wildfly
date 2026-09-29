@@ -6,19 +6,18 @@
 package org.jboss.as.ee.subsystem;
 
 import org.jboss.as.controller.ModelVersion;
-import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.transform.ExtensionTransformerRegistration;
 import org.jboss.as.controller.transform.SubsystemTransformerRegistration;
 import org.jboss.as.controller.transform.description.ChainedTransformationDescriptionBuilder;
-import org.jboss.as.controller.transform.description.DiscardAttributeChecker;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.as.controller.transform.description.TransformationDescriptionBuilder;
+import org.jboss.as.ee.concurrent.ConcurrencyImplementation;
 
 /**
  * Transformers for EE Subsystem wrt Jakarta Concurrency resources.
  * @author emartins
  */
-public class ConcurrentTransformers implements ExtensionTransformerRegistration {
+public class EETransformers implements ExtensionTransformerRegistration {
 
     @Override
     public String getSubsystemName() {
@@ -40,14 +39,6 @@ public class ConcurrentTransformers implements ExtensionTransformerRegistration 
      Transformations from 7.0.0 to 6.0.0
      */
     private static void registerTransformersFrom700to600(ResourceTransformationDescriptionBuilder builder) {
-        builder.addChildResource(PathElement.pathElement(EESubsystemModel.MANAGED_EXECUTOR_SERVICE))
-                .getAttributeBuilder()
-                .setDiscard(DiscardAttributeChecker.ALWAYS, "virtual");
-        builder.addChildResource(PathElement.pathElement(EESubsystemModel.MANAGED_SCHEDULED_EXECUTOR_SERVICE))
-                .getAttributeBuilder()
-                .setDiscard(DiscardAttributeChecker.ALWAYS, "virtual");
-        builder.addChildResource(PathElement.pathElement(EESubsystemModel.MANAGED_THREAD_FACTORY))
-                .getAttributeBuilder()
-                .setDiscard(DiscardAttributeChecker.ALWAYS, "virtual");
+        ConcurrencyImplementation.INSTANCE.registerTransformers(builder, EESubsystemModel.Version.v6_0_0);
     }
 }

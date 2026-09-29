@@ -1,0 +1,38 @@
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+
+<subsystem xmlns="urn:jboss:domain:ee:6.0" >
+    <global-modules>
+        <module name="org.jboss.logging" slot="main"/>
+        <module name="org.apache.logging.log4j.api" annotations="${test-exp20:true}" meta-inf="${test-exp21:true}" services="${test-exp22:false}"/>
+    </global-modules>
+    <global-directories>
+        <directory name="my-app-libs" path="${test-exp23:me/app-libs}" relative-to="jboss.server.base.dir" />
+    </global-directories>
+    <ear-subdeployments-isolated>${test-exp:true}</ear-subdeployments-isolated>
+    <spec-descriptor-property-replacement>${test-exp1:false}</spec-descriptor-property-replacement>
+    <jboss-descriptor-property-replacement>${test-exp2:false}</jboss-descriptor-property-replacement>
+    <annotation-property-replacement>${test-exp2:false}</annotation-property-replacement>
+    <concurrent>
+        <context-services>
+            <context-service name="context-service-name" jndi-name="${test-exp4:name}" use-transaction-setup-provider="${test-exp5:true}"/>
+        </context-services>
+        <managed-thread-factories>
+            <managed-thread-factory name="managed-thread-factory-name" jndi-name="${test-exp4:name}" context-service="context-service-name" priority="${test-exp6:1}" />
+        </managed-thread-factories>
+        <managed-executor-services>
+            <managed-executor-service name="managed-executor-service-name" jndi-name="${test-exp4:name}" context-service="context-service-name" thread-priority="${test-exp-mes-threadPriority:5}" hung-task-termination-period="${test-exp-mes-hungTaskTerminationPeriod:10000}" hung-task-threshold="${test-exp7:60000}" core-threads="${test-exp8:5}" max-threads="${test-exp9:25}" keepalive-time="${test-exp10:5000}" queue-length="${test-exp11:1000000}" reject-policy="${test-exp12:RETRY_ABORT}"/>
+        </managed-executor-services>
+        <managed-scheduled-executor-services>
+            <managed-scheduled-executor-service name="managed-scheduled-executor-service-name" jndi-name="${test-exp4:name}" context-service="context-service-name" thread-priority="${test-exp-mses-threadPriority:5}" hung-task-termination-period="${test-exp-mses-hungTaskTerminationPeriod:10000}" hung-task-threshold="${test-exp7:60000}" core-threads="${test-exp8:5}" keepalive-time="${test-exp10:5000}" reject-policy="${test-exp13:RETRY_ABORT}"/>
+        </managed-scheduled-executor-services>
+    </concurrent>
+    <default-bindings context-service="${test-exp14:context-service-name}"
+                      datasource="${test-exp15:name}"
+                      jms-connection-factory="${test-exp16:name}"
+                      managed-executor-service="${test-exp17:managed-executor-service-name}"
+                      managed-scheduled-executor-service="${test-exp18:managed-scheduled-executor-service-name}"
+                      managed-thread-factory="${test-exp19:managed-thread-factory-name}"/>
+</subsystem>
