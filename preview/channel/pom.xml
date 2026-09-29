@@ -28,7 +28,7 @@
     <groupId>org.wildfly.channels</groupId>
     <artifactId>wildfly-preview</artifactId>
 
-    <name>WildFly: Preview Feature-Pack Channel</name>
+    <name>WildFly Preview: Feature-Pack Channel</name>
     <packaging>pom</packaging>
 
     <dependencies>

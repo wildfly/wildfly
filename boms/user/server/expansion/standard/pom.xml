@@ -125,6 +125,11 @@
                                     <type>pom</type>
                                     <transitive>false</transitive>
                                 </dependency>
+                                <!-- The groupId for CDI is different in EE 12 so CDI API declarations are not shared -->
+                                <dependency>
+                                    <groupId>jakarta.enterprise</groupId>
+                                    <artifactId>jakarta.enterprise.cdi-api</artifactId>
+                                </dependency>
                             </includeDependencies>
                         </configuration>
                     </execution>

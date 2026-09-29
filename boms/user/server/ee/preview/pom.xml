@@ -96,9 +96,18 @@
                                     <groupId>org.jboss.spec.jakarta.el</groupId>
                                     <artifactId>jakarta.el-api</artifactId>
                                 </dependency>
+                                <!-- The groupId for CDI is different in EE 12 so CDI API declarations are not shared -->
                                 <dependency>
-                                    <groupId>jakarta.enterprise</groupId>
-                                    <artifactId>jakarta.enterprise.cdi-el-api</artifactId>
+                                    <groupId>jakarta.cdi</groupId>
+                                    <artifactId>jakarta.cdi-api</artifactId>
+                                </dependency>
+                                <dependency>
+                                    <groupId>jakarta.cdi</groupId>
+                                    <artifactId>jakarta.cdi-el-api</artifactId>
+                                </dependency>
+                                <dependency>
+                                    <groupId>jakarta.cdi</groupId>
+                                    <artifactId>jakarta.cdi-lang-model-api</artifactId>
                                 </dependency>
                                 <!-- replaces org.hibernate.orm:hibernate-jpamodelgen -->
                                 <dependency>

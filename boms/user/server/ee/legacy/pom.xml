@@ -107,6 +107,15 @@
                             </channels>
                             <includeDependencies combine.children="append">
                                 <!-- include here any <dependency /> exclusive to this BOM -->
+                                <!-- The groupId for CDI is different in EE 12 so CDI API declarations are not shared -->
+                                <dependency>
+                                    <groupId>jakarta.enterprise</groupId>
+                                    <artifactId>jakarta.enterprise.cdi-api</artifactId>
+                                </dependency>
+                                <dependency>
+                                    <groupId>jakarta.enterprise</groupId>
+                                    <artifactId>jakarta.enterprise.lang-model</artifactId>
+                                </dependency>
                                 <dependency>
                                     <groupId>org.jboss.spec.jakarta.el</groupId>
                                     <artifactId>jboss-el-api_5.0_spec</artifactId>
