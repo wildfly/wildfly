@@ -4,7 +4,11 @@
  */
 package org.jboss.as.ee.concurrent;
 
+import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.ProcessStateNotifier;
+import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
+import org.jboss.as.ee.subsystem.ConcurrentTransformers;
+import org.jboss.as.ee.subsystem.EESubsystemModel;
 import org.wildfly.extension.requestcontroller.ControlPoint;
 
 import java.util.concurrent.BlockingQueue;
@@ -18,6 +22,13 @@ public class ConcurrencyImplementation30 extends AbstractConcurrencyImplementati
     @Override
     public String getJBossModuleName() {
         return "org.glassfish.jakarta.enterprise.concurrent";
+    }
+
+    @Override
+    public void registerTransformers(ResourceTransformationDescriptionBuilder builder, ModelVersion transformToVersion) {
+        if (EESubsystemModel.Version.v6_0_0.equals(transformToVersion)) {
+            ConcurrentTransformers.registerTransformersFrom700to600(builder, false);
+        }
     }
 
     @Override

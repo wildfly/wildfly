@@ -5,6 +5,7 @@
 
 package org.jboss.as.ee.subsystem;
 
+import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.transform.description.DiscardAttributeChecker;
@@ -17,18 +18,30 @@ import org.jboss.as.controller.transform.description.ResourceTransformationDescr
  */
 public final class ConcurrentTransformers {
 
-    public static void registerTransformersFrom700to600(ResourceTransformationDescriptionBuilder builder) {
-        builder.addChildResource(PathElement.pathElement(EESubsystemModel.MANAGED_EXECUTOR_SERVICE))
+    public static void registerTransformersFrom700to600(ResourceTransformationDescriptionBuilder builder, boolean rejectVirtual) {
+        if (rejectVirtual) {
+            addVirtualNonDefaultReject(builder, EESubsystemModel.MANAGED_EXECUTOR_SERVICE, ManagedExecutorServiceResourceDefinition.VIRTUAL_AD);
+            addVirtualNonDefaultReject(builder, EESubsystemModel.MANAGED_SCHEDULED_EXECUTOR_SERVICE, ManagedScheduledExecutorServiceResourceDefinition.VIRTUAL_AD);
+            addVirtualNonDefaultReject(builder, EESubsystemModel.MANAGED_THREAD_FACTORY, ManagedThreadFactoryResourceDefinition.VIRTUAL_AD);
+        } else {
+            addVirtualDiscard(builder, EESubsystemModel.MANAGED_EXECUTOR_SERVICE, ManagedExecutorServiceResourceDefinition.VIRTUAL_AD);
+            addVirtualDiscard(builder, EESubsystemModel.MANAGED_SCHEDULED_EXECUTOR_SERVICE, ManagedScheduledExecutorServiceResourceDefinition.VIRTUAL_AD);
+            addVirtualDiscard(builder, EESubsystemModel.MANAGED_THREAD_FACTORY, ManagedThreadFactoryResourceDefinition.VIRTUAL_AD);
+        }
+    }
+
+    private static void addVirtualNonDefaultReject(ResourceTransformationDescriptionBuilder builder, String resourceType,
+                                              AttributeDefinition virtualAttribute) {
+        builder.addChildResource(PathElement.pathElement(resourceType))
                 .getAttributeBuilder()
-                .setDiscard(DiscardAttributeChecker.DEFAULT_VALUE, ManagedExecutorServiceResourceDefinition.VIRTUAL_AD)
-                .addRejectCheck(RejectAttributeChecker.DEFINED, ManagedExecutorServiceResourceDefinition.VIRTUAL_AD);
-        builder.addChildResource(PathElement.pathElement(EESubsystemModel.MANAGED_SCHEDULED_EXECUTOR_SERVICE))
+                .setDiscard(DiscardAttributeChecker.DEFAULT_VALUE, virtualAttribute)
+                .addRejectCheck(RejectAttributeChecker.DEFINED, virtualAttribute);
+    }
+
+    private static void addVirtualDiscard(ResourceTransformationDescriptionBuilder builder, String resourceType,
+                                              AttributeDefinition virtualAttribute) {
+        builder.addChildResource(PathElement.pathElement(resourceType))
                 .getAttributeBuilder()
-                .setDiscard(DiscardAttributeChecker.DEFAULT_VALUE, ManagedScheduledExecutorServiceResourceDefinition.VIRTUAL_AD)
-                .addRejectCheck(RejectAttributeChecker.DEFINED, ManagedScheduledExecutorServiceResourceDefinition.VIRTUAL_AD);
-        builder.addChildResource(PathElement.pathElement(EESubsystemModel.MANAGED_THREAD_FACTORY))
-                .getAttributeBuilder()
-                .setDiscard(DiscardAttributeChecker.DEFAULT_VALUE, ManagedThreadFactoryResourceDefinition.VIRTUAL_AD)
-                .addRejectCheck(RejectAttributeChecker.DEFINED, ManagedThreadFactoryResourceDefinition.VIRTUAL_AD);
+                .setDiscard(DiscardAttributeChecker.ALWAYS, virtualAttribute);
     }
 }

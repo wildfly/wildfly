@@ -7,10 +7,14 @@ package org.jboss.as.ee.concurrent;
 import jakarta.enterprise.concurrent.ManagedExecutorService;
 import jakarta.enterprise.concurrent.ManagedScheduledExecutorService;
 import jakarta.enterprise.concurrent.ManagedThreadFactory;
+import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.ProcessStateNotifier;
+import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.as.ee.concurrent.deployers.ConcurrencyManagedCDIBeansBindingProcessor;
 import org.jboss.as.ee.concurrent.deployers.ConcurrencyManagedCDIBeansDescriptorProcessor;
 import org.jboss.as.ee.logging.EeLogger;
+import org.jboss.as.ee.subsystem.ConcurrentTransformers;
+import org.jboss.as.ee.subsystem.EESubsystemModel;
 import org.jboss.as.ee.subsystem.EeExtension;
 import org.jboss.as.server.DeploymentProcessorTarget;
 import org.jboss.as.server.deployment.Phase;
@@ -29,6 +33,13 @@ public class ConcurroConcurrencyImplementation extends AbstractConcurrencyImplem
         super.addDeploymentProcessors(processorTarget);
         processorTarget.addDeploymentProcessor(EeExtension.SUBSYSTEM_NAME, Phase.POST_MODULE, Phase.POST_MODULE_CONCURRO_CDI_BEANS_BINDING, new ConcurrencyManagedCDIBeansBindingProcessor());
         processorTarget.addDeploymentProcessor(EeExtension.SUBSYSTEM_NAME, Phase.POST_MODULE, Phase.POST_MODULE_CONCURRO_CDI_BEANS_DESCRIPTOR, new ConcurrencyManagedCDIBeansDescriptorProcessor());
+    }
+
+    @Override
+    public void registerTransformers(ResourceTransformationDescriptionBuilder builder, ModelVersion transformToVersion) {
+        if (EESubsystemModel.Version.v6_0_0.equals(transformToVersion)) {
+            ConcurrentTransformers.registerTransformersFrom700to600(builder, true);
+        }
     }
 
     @Override
