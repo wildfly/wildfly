@@ -22,7 +22,6 @@ import org.jboss.as.ejb3.component.allowedmethods.AllowedMethodsInformation;
 import org.jboss.as.ejb3.component.allowedmethods.MethodType;
 import org.jboss.as.ejb3.component.stateful.CurrentSynchronizationCallback;
 import org.jboss.as.ejb3.context.CurrentInvocationContext;
-import org.jboss.ejb3.timerservice.ExtendedTimerService;
 import org.jboss.invocation.InterceptorContext;
 import org.wildfly.service.BlockingLifecycle;
 import org.wildfly.transaction.client.ContextTransactionManager;
@@ -31,7 +30,7 @@ import org.wildfly.transaction.client.ContextTransactionManager;
  * Interface for managed {@link jakarta.ejb.TimerService} implementations.
  * @author Paul Ferraro
  */
-public interface ManagedTimerService extends ExtendedTimerService, BlockingLifecycle, AutoCloseable {
+public interface ManagedTimerService extends jakarta.ejb.TimerService, BlockingLifecycle, AutoCloseable {
 
     @Override
     void close();

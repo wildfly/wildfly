@@ -41,6 +41,7 @@ import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.EjbDeploymentMarker;
+import org.jboss.as.version.Stability;
 import org.jboss.metadata.ejb.spec.EjbJarMetaData;
 import org.jboss.modules.Module;
 import org.jboss.msc.service.ServiceBuilder;
@@ -62,10 +63,12 @@ public class TimerServiceDeploymentProcessor implements DeploymentUnitProcessor 
 
     private final String threadPoolName;
     private final TimerServiceMetaData defaultMetaData;
+    private final Stability stability;
 
-    public TimerServiceDeploymentProcessor(final String threadPoolName, final TimerServiceMetaData defaultMetaData) {
+    public TimerServiceDeploymentProcessor(final String threadPoolName, final TimerServiceMetaData defaultMetaData, final Stability stability) {
         this.threadPoolName = threadPoolName;
         this.defaultMetaData = defaultMetaData;
+        this.stability = stability;
     }
 
     @Override
@@ -156,7 +159,7 @@ public class TimerServiceDeploymentProcessor implements DeploymentUnitProcessor 
 
                             if ((threadPoolName != null) && (componentMetaData.getDataStoreName() != null)) {
                                 // Install in-memory timer service factory w/persistence support
-                                new TimerServiceFactoryServiceInstaller(serviceName, factoryConfiguration, TimerFilter.ALL, threadPoolName, componentMetaData.getDataStoreName()).install(context);
+                                new TimerServiceFactoryServiceInstaller(serviceName, factoryConfiguration, TimerFilter.ALL, threadPoolName, componentMetaData.getDataStoreName(), stability).install(context);
                             } else {
                                 // Use composite timer service, with separate transient vs persistent implementations.
                                 ServiceName transientServiceName = TimerFilter.TRANSIENT.apply(serviceName);
@@ -166,7 +169,7 @@ public class TimerServiceDeploymentProcessor implements DeploymentUnitProcessor 
                                     installDistributableTimerServiceFactory(phaseContext, transientServiceName, componentMetaData.getTransientTimerManagementProvider(), factoryConfiguration, componentDescription, TimerFilter.TRANSIENT);
                                 } else {
                                     // Install in-memory timer service factory w/out persistence support
-                                    new TimerServiceFactoryServiceInstaller(transientServiceName, factoryConfiguration, TimerFilter.TRANSIENT, threadPoolName, null).install(context);
+                                    new TimerServiceFactoryServiceInstaller(transientServiceName, factoryConfiguration, TimerFilter.TRANSIENT, threadPoolName, null, stability).install(context);
                                 }
 
                                 installDistributableTimerServiceFactory(phaseContext, persistentServiceName, componentMetaData.getPersistentTimerManagementProvider(), factoryConfiguration, componentDescription, TimerFilter.PERSISTENT);

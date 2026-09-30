@@ -90,8 +90,4 @@ public class NonFunctionalTimerService implements ManagedTimerService {
         return this.timerServiceRegistry.getAllTimers();
     }
 
-    @Override
-    public Collection<Timer> getTimersByExternalId(String externalId) {
-        return Collections.emptyList();
-    }
 }

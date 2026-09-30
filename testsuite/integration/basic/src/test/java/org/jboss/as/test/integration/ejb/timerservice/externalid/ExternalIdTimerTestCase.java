@@ -18,28 +18,29 @@ import org.jboss.as.test.shared.ServerReload;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
-import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.wildfly.test.stabilitylevel.StabilityServerSetupSnapshotRestoreTasks;
 
 import jakarta.ejb.EJB;
 
 /**
  * Integration test to verify the creation and persistence of EJB timers
  * utilizing the custom external_id database column and API.
+ * <p>
+ * This feature requires {@link org.jboss.as.version.Stability#COMMUNITY} stability or higher, because
+ * {@code ExtendedTimerService} is only exposed via {@code @Resource} injection at that level.
  */
 @RunWith(Arquillian.class)
-@ServerSetup(ExternalIdTimerTestCase.DatabaseTimerStoreSetupTask.class)
+@ServerSetup({StabilityServerSetupSnapshotRestoreTasks.Community.class, ExternalIdTimerTestCase.DatabaseTimerStoreSetupTask.class})
 public class ExternalIdTimerTestCase {
 
     @Deployment
     public static JavaArchive deploy() {
         return ShrinkWrap.create(JavaArchive.class, "external-id-timer-test.jar")
                 .addClasses(ExternalIdTimerTestCase.class, ExternalIdTimerBean.class, DatabaseTimerStoreSetupTask.class)
-                .addAsManifestResource(EmptyAsset.INSTANCE, "beans.xml")
-                // Require access to internal WildFly EJB classes for WildFlyTimerConfig and WildFlyTimerService
-                .addAsManifestResource(new StringAsset("Dependencies: org.jboss.as.ejb3\n"), "MANIFEST.MF");
+                .addAsManifestResource(EmptyAsset.INSTANCE, "beans.xml");
     }
 
     @EJB

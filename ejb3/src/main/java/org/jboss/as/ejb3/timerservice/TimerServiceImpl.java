@@ -68,7 +68,7 @@ public class TimerServiceImpl implements ManagedTimerService {
     /**
      * All timers which were created by this {@link ManagedTimerService}
      */
-    private final ConcurrentMap<String, TimerImpl> timers = new ConcurrentHashMap<>();
+    final ConcurrentMap<String, TimerImpl> timers = new ConcurrentHashMap<>();
 
     /**
      * Holds the {@link java.util.concurrent.Future} of each of the timer tasks that have been scheduled
@@ -83,7 +83,7 @@ public class TimerServiceImpl implements ManagedTimerService {
     private final Executor executor;
     private final java.util.Timer timer;
     private final TimedObjectInvoker invoker;
-    private final TimerPersistence persistence;
+    final TimerPersistence persistence;
     private final TimerServiceRegistry timerServiceRegistry;
     private final TimerListener timerListener;
     private final Predicate<TimerConfig> timerFilter;
@@ -258,55 +258,6 @@ public class TimerServiceImpl implements ManagedTimerService {
         return activeTimers;
     }
 
-    @Override
-    public List<Timer> getTimersByExternalId(String externalId) {
-        this.validateInvocationContext();
-        final Map<String, Timer> timersById = new HashMap<>();
-
-        // 1. Fetch from in-memory timers
-        for (final TimerImpl timer : this.timers.values()) {
-            if ((timer.isActive() || timer.getState() == TimerState.ACTIVE) && Objects.equals(externalId, timer.getExternalId())) {
-                timersById.put(timer.getId(), timer);
-            }
-        }
-
-        // 2. Fetch from uncommitted transaction timers
-        for (final TimerImpl timer : getWaitingOnTxCompletionTimers().values()) {
-            if (timer.isActive() && Objects.equals(externalId, timer.getExternalId())) {
-                timersById.put(timer.getId(), timer);
-            }
-        }
-
-        // 3. Fetch from the database store
-        if (this.persistence != null) {
-            final ContextTransactionManager transactionManager = ContextTransactionManager.getInstance();
-            try {
-                Transaction clientTX = transactionManager.getTransaction();
-                if(clientTX == null) {
-                    transactionManager.begin();
-                }
-                List<TimerImpl> persistedTimers = this.persistence.loadActiveTimersByExternalId(externalId, this);
-                if (clientTX == null) {
-                    transactionManager.commit();
-                }
-
-                for (TimerImpl timer : persistedTimers) {
-                    if ((timer.isActive() || timer.getState() == TimerState.ACTIVE) && !timersById.containsKey(timer.getId())) {
-                        timersById.put(timer.getId(), timer);
-                    }
-                }
-            } catch (Exception e) {
-                try {
-                    transactionManager.rollback();
-                } catch (Exception ee) {
-                    // omit
-                }
-                throw new EJBException("Failed to fetch timers by external ID from database", e);
-            }
-        }
-
-        return new ArrayList<>(timersById.values());
-    }
 
     /**
      * {@inheritDoc}
@@ -790,7 +741,7 @@ public class TimerServiceImpl implements ManagedTimerService {
      * Returns an unmodifiable view of timers in the current transaction that are waiting for the transaction
      * to finish
      */
-    private Map<String, TimerImpl> getWaitingOnTxCompletionTimers() {
+    Map<String, TimerImpl> getWaitingOnTxCompletionTimers() {
         Map<String, TimerImpl> timers = null;
         if (getTransaction() != null) {
             TransactionSynchronizationRegistry tsr = this.invoker.getComponent().getTransactionSynchronizationRegistry();
