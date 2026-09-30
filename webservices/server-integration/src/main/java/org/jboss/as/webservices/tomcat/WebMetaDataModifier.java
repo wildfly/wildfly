@@ -19,6 +19,7 @@ import org.jboss.ws.common.integration.WSHelper;
 import org.jboss.wsf.spi.deployment.Deployment;
 import org.jboss.wsf.spi.deployment.Endpoint;
 import org.jboss.wsf.spi.deployment.WSFServlet;
+import org.wildfly.extension.undertow.deployment.DefaultDeploymentMappingProvider;
 
 /**
  * The modifier of jboss web meta data. It configures WS transport for every webservice endpoint plus propagates WS stack
@@ -91,6 +92,9 @@ final class WebMetaDataModifier {
      * @param jbossWebMD web meta data
      */
     private void modifyContextRoot(final Deployment dep, final JBossWebMetaData jbossWebMD) {
+        if (DefaultDeploymentMappingProvider.instance().getMapping(dep.getSimpleName()) != null) {
+            return;
+        }
         final String contextRoot = dep.getService().getContextRoot();
         if (WSLogger.ROOT_LOGGER.isTraceEnabled()) {
             WSLogger.ROOT_LOGGER.tracef("Setting context root: %s for deployment: %s", contextRoot, dep.getSimpleName());
