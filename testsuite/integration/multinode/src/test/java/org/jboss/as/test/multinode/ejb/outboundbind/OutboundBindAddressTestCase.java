@@ -37,6 +37,7 @@ import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Assert;
+import org.junit.Assume;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -273,6 +274,16 @@ public class OutboundBindAddressTestCase {
         System.out.println("OutboundBindAddressTestCase: Starting test");
         System.out.println("  Configured bind address: " + BIND_ADDRESS + ":" + BIND_PORT);
 
+        // Skip test if no alternative loopback address is available
+        // This ensures the test explicitly signals when it cannot properly validate the bind address feature
+        String addressFamily = IS_IPV6_MODE ? "IPv6" : "IPv4";
+        String defaultLoopback = IS_IPV6_MODE ? DEFAULT_IPV6_LOOPBACK : DEFAULT_IPV4_LOOPBACK;
+        Assume.assumeTrue(
+            "No alternative " + addressFamily + " loopback address available on this system. " +
+            "Only " + defaultLoopback + " is present. Cannot fully validate outbound-bind-address behavior. " +
+            "To enable this test, configure an additional loopback alias (e.g., 127.0.0.2 for IPv4 or another IPv6 loopback).",
+            CAN_TEST_SPECIFIC_BIND_ADDRESS);
+
         CallerRemote caller = (CallerRemote) ctx.lookup("java:module/" + CallerBean.class.getSimpleName() + "!"
                 + CallerRemote.class.getName());
         Assert.assertNotNull(caller);
@@ -282,21 +293,9 @@ public class OutboundBindAddressTestCase {
 
         Assert.assertNotNull("Should successfully retrieve source address", sourceAddress);
 
-        if (CAN_TEST_SPECIFIC_BIND_ADDRESS) {
-            System.out.println("  Validating specific bind address is honored");
-            Assert.assertTrue("Expected configured bind address " + BIND_ADDRESS + " in source address, got: " + sourceAddress,
-                    sourceAddress.contains(BIND_ADDRESS));
-            System.out.println("  SUCCESS: Specific bind address " + BIND_ADDRESS + " is honored");
-        } else {
-            String expectedLoopback = IS_IPV6_MODE ? DEFAULT_IPV6_LOOPBACK : DEFAULT_IPV4_LOOPBACK;
-            System.out.println("  Running smoke test (loopback validation only)");
-            System.out.println("  Expected loopback: " + expectedLoopback);
-            boolean isLoopback = sourceAddress.contains(expectedLoopback) ||
-                                 sourceAddress.contains("localhost") ||
-                                 (IS_IPV6_MODE && (sourceAddress.contains("0:0:0:0:0:0:0:1") ||
-                                                   sourceAddress.contains("0000:0000:0000:0000:0000:0000:0000:0001")));
-            Assert.assertTrue("Expected " + expectedLoopback + " loopback address, got: " + sourceAddress, isLoopback);
-            System.out.println("  SUCCESS: Connection works with outbound-bind-address configured");
-        }
+        System.out.println("  Validating specific bind address is honored");
+        Assert.assertTrue("Expected configured bind address " + BIND_ADDRESS + " in source address, got: " + sourceAddress,
+                sourceAddress.contains(BIND_ADDRESS));
+        System.out.println("  SUCCESS: Specific bind address " + BIND_ADDRESS + " is honored");
     }
 }
