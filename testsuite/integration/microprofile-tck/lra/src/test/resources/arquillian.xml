@@ -25,6 +25,7 @@
             <property name="serverConfig">${jboss.server.config.file.name:standalone-microprofile.xml}</property>
             <property name="waitForPorts">9990</property>
             <property name="waitForPortsTimeoutInSeconds">10</property>
+            <property name="startupTimeoutInSeconds">${arquillian.startupTimeoutInSeconds}</property>
         </configuration>
     </container>
 </arquillian>

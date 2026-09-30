@@ -25,6 +25,7 @@
                 <property name="waitForPorts">${as.debug.port:8787} ${as.managementPort:9990}</property>
                 <property name="waitForPortsTimeoutInSeconds">8</property>
                 <property name="javaHome">${container.java.home}</property>
+                <property name="startupTimeoutInSeconds">${arquillian.startupTimeoutInSeconds}</property>
             </configuration>
         </container>
 
@@ -42,6 +43,7 @@
                 <property name="waitForPorts">${as.debug.port.node1:10090}</property>
                 <property name="waitForPortsTimeoutInSeconds">8</property>
                 <property name="javaHome">${container.java.home}</property>
+                <property name="startupTimeoutInSeconds">${arquillian.startupTimeoutInSeconds}</property>
             </configuration>
         </container>
     </group>
@@ -61,6 +63,7 @@
                 <property name="waitForPorts">${as.debug.port:8787} ${as.managementPort:9990}</property>
                 <property name="waitForPortsTimeoutInSeconds">8</property>
                 <property name="javaHome">${container.java.home}</property>
+                <property name="startupTimeoutInSeconds">${arquillian.startupTimeoutInSeconds}</property>
             </configuration>
         </container>
 
@@ -76,6 +79,7 @@
                 <property name="waitForPorts">${as.debug.port.node1:10090}</property>
                 <property name="waitForPortsTimeoutInSeconds">8</property>
                 <property name="javaHome">${container.java.home}</property>
+                <property name="startupTimeoutInSeconds">${arquillian.startupTimeoutInSeconds}</property>
             </configuration>
         </container>
     </group>
