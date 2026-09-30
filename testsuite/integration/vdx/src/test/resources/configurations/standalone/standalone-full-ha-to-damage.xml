@@ -28,7 +28,6 @@
     <extension module="org.wildfly.extension.io"/>
     <extension module="org.wildfly.extension.messaging-activemq"/>
     <extension module="org.wildfly.extension.request-controller"/>
-    <extension module="org.wildfly.extension.security.manager"/>
     <extension module="org.wildfly.extension.undertow"/>
     <extension module="org.wildfly.iiop-openjdk"/>
   </extensions>
@@ -413,13 +412,6 @@
     <subsystem xmlns="urn:jboss:domain:resource-adapters:4.0"/>
     <subsystem xmlns="urn:jboss:domain:request-controller:1.0"/>
     <subsystem xmlns="urn:jboss:domain:sar:1.0"/>
-    <subsystem xmlns="urn:jboss:domain:security-manager:1.0">
-      <deployment-permissions>
-        <maximum-set>
-          <permission class="java.security.AllPermission"/>
-        </maximum-set>
-      </deployment-permissions>
-    </subsystem>
     <subsystem xmlns="urn:jboss:domain:security:3.0">
       <security-domains>
         <security-domain name="other" cache-type="default">

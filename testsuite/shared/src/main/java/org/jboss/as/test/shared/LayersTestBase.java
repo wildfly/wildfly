@@ -119,6 +119,11 @@ public abstract class LayersTestBase {
             "org.hornetq.client",
             // TODO we need to add an xts layer
             "org.jboss.as.xts",
+            // Although we provide a galleon layer for security, it is not usable with EE 11+, so we do not provision
+            // it even if the galleon layer is in used. That's just to provide a smooth transition for users who are using
+            // the extension in EE 10 and earlier. This extension is not part of the default config and only provided by
+            // un-slimmed installations that are expected to be used for Domain Mode servers.
+            "org.wildfly.extension.security.manager",
     };
 
     /**
@@ -183,8 +188,6 @@ public abstract class LayersTestBase {
     public static final String[] NO_LAYER_WILDFLY_PREVIEW = {
             // WFP standard config uses Micrometer instead of WF Metrics
             "org.wildfly.extension.metrics",
-            // Not usable with EE 11
-            "org.wildfly.extension.security.manager",
     };
 
     /**
@@ -245,6 +248,8 @@ public abstract class LayersTestBase {
             "org.wildfly.mod_cluster.undertow",
             // Brought by galleon ServerRootResourceDefinition
             "wildflyee.api",
+            // read-only extension that is not part of the default config
+            "org.wildfly.extension.security.manager",
     };
 
 
@@ -354,8 +359,6 @@ public abstract class LayersTestBase {
             "jakarta.mvc.api",
             "org.eclipse.krazo.core",
             "org.eclipse.krazo.resteasy",
-            // Not usable with EE 11
-            "org.wildfly.extension.security.manager",
             // Not needed for WildFly as this module is effectively replaced by org.hibernate.models.hibernate-models
             "org.hibernate.commons-annotations",
             "org.wildfly.extension.vertx"
@@ -417,8 +420,6 @@ public abstract class LayersTestBase {
      * directly from the 'latest' variant of the wildfly-ee feature-pack.
      */
     public static final String[] NO_LAYER_OR_REFERENCE_COMMON_EE_LATEST = {
-            // No security-manager extension in EE 11+ default configs
-            "org.wildfly.extension.security.manager"
     };
 
     /**

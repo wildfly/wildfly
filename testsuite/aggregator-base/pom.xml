@@ -72,7 +72,6 @@
                 <module>../integration/multinode</module>
                 <module>../test-product-conf</module> <!-- needed by manualmode -->
                 <module>../integration/manualmode</module>
-                <module>../integration/secman</module>
                 <module>../integration/hornetq-client</module>
                 <module>../domain</module>
                 <module>../scripts</module>
@@ -105,7 +104,6 @@
                 <module>../integration/multinode</module>
                 <module>../test-product-conf</module> <!-- needed by manualmode -->
                 <module>../integration/manualmode</module>
-                <module>../integration/secman</module>
                 <module>../integration/hornetq-client</module>
                 <module>../integration/elytron</module>
                 <module>../integration/elytron-oidc-client</module>
@@ -216,7 +214,6 @@
                 <module>../integration/multinode</module>
                 <module>../test-product-conf</module> <!-- needed by manualmode -->
                 <module>../integration/manualmode</module>
-                <module>../integration/secman</module>
                 <module>../integration/hornetq-client</module>
                 <module>../integration/elytron</module>
                 <module>../integration/elytron-oidc-client</module>
@@ -248,15 +245,6 @@
             <activation><property><name>ts.rbac</name></property></activation>
             <modules>
                 <module>../integration/rbac</module>
-            </modules>
-        </profile>
-
-        <!-- -Dts.secman -->
-        <profile>
-            <id>ts.integ.group.secman</id>
-            <activation><property><name>ts.secman</name></property></activation>
-            <modules>
-                <module>../integration/secman</module>
             </modules>
         </profile>
 

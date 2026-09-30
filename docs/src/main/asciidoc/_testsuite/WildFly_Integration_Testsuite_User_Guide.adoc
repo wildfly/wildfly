@@ -394,29 +394,6 @@ address.
 Values are set in AS configuration XML, replaced in resources (like
 ejb-jar.xml) and used in tests.
 
-[[running-tests-with-security-manager-custom-security-policy]]
-=== Running tests with security manager / custom security policy
-
-`-Dsecurity.manager` - Run with default policy.
-
-`-Dsecurity.policy=<path>` - Run with the given policy.
-
-`-Dsecurity.manager.other=<set of Java properties>` - Run with the given
-properties. Whole set is included in all server startup parameters.
-
-Example:
-
-[source,options="nowrap"]
-----
-./integration-tests.sh clean install -Dintegration.module -DallTests \
-\"-Dsecurity.manager.other=-Djava.security.manager \
--Djava.security.policy==$(pwd)/testsuite/shared/src/main/resources/secman/permitt_all.policy \
--Djava.security.debug=access:failure \"
-----
-
-Notice the \" quotes delimiting the whole `-Dsecurity.manager.other`
-property.
-
 [[creating-test-reports]]
 === Creating test reports
 
