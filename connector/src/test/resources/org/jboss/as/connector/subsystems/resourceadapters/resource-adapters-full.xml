@@ -3,7 +3,7 @@
   ~ SPDX-License-Identifier: Apache-2.0
   -->
 
-<subsystem xmlns="urn:jboss:domain:resource-adapters:7.1">
+<subsystem xmlns="urn:jboss:domain:resource-adapters:7.2">
     <resource-adapters>
         <resource-adapter id="myRA" statistics-enabled="false">
             <archive>archive</archive>
