@@ -55,6 +55,7 @@ interface:
 * Domain API: http://<host>:9990/management
 * Web Console: http://<host>:9990/console
 
+
 [[accessing-the-web-console]]
 === Accessing the web console
 
@@ -155,6 +156,153 @@ include::Default_HTTP_Interface_Security.adoc[leveloffset=+1]
 
 include::Default_Native_Interface_Security.adoc[leveloffset=+1]
 
+
+[[http-management-endpoint-securing]]
+== Endpoint User Authentication
+
+For in depth explanation of security, please refer to <<WildFly_Elytron_Security.adoc#default-management-authentication-configuration, Elytron default management domain>>.
+
+Management endpoint need way to authenticate and authorize or reject incoming requests. Thus management interface have mandatory requirement to have authentication mechanism configured.
+Server running in domain mode use this mechanism to register as part of domain.
+
+=== Realm and Domain definitions
+
+Example definition of realm can look as follows:
+
+[source,xml,options="nowrap"]
+----
+<security-realms>
+    <identity-realm name="local" identity="$local"/>
+    <properties-realm name="ManagementRealm">
+        <users-properties path="mgmt-users.properties" relative-to="jboss.domain.config.dir" digest-realm-name="ManagementRealm"/>
+        <groups-properties path="mgmt-groups.properties" relative-to="jboss.domain.config.dir"/>
+    </properties-realm>
+</security-realms>
+----
+
+Note, that aside for regular properties backed(DIGEST) realm, there is one additional realm **local**. This is special type of realm(identity-realm) which defines a single pre-configured static identity. 
+This identity is assigned to any action performed within "local" scope - ie, as user connect via CLI to local server.
+Corresponding definition of domain can look as follows:
+
+[[http-management-endpoint-securing-super-user, Example Management Domain]]
+[source,xml,options="nowrap"]
+----
+<security-domains>
+   [...]
+    <security-domain name="ManagementDomain" default-realm="ManagementRealm" permission-mapper="default-permission-mapper">
+        <realm name="ManagementRealm" role-decoder="groups-to-roles"/>
+        <realm name="local" role-mapper="super-user-mapper"/>
+    </security-domain>
+    [...]
+</security-domains>
+----
+
+This particular example create domain which is backed by **ManagementRealm** as source of credentials and fallback to **local** in case those are not found in **ManagementRealm**.
+
+
+=== Role mapping
+
+Additionally, server need mappers to:
+
+* set default permissions
+* create Super User role
+
+
+Corresponding definition of mappers can look as follows:
+
+[source,xml,options="nowrap"]
+----
+[...]
+<mappers>
+    <simple-permission-mapper name="default-permission-mapper" mapping-mode="first">
+        <permission-mapping>
+            <principal name="anonymous"/>
+            <permission-set name="default-permissions"/>
+        </permission-mapping>
+        <permission-mapping match-all="true">
+            <permission-set name="login-permission"/>
+            <permission-set name="default-permissions"/>
+        </permission-mapping>
+    </simple-permission-mapper>
+    <constant-realm-mapper name="local" realm-name="local"/>
+    <simple-role-decoder name="groups-to-roles" attribute="groups"/>
+    <constant-role-mapper name="super-user-mapper">
+        <role name="SuperUser"/>
+    </constant-role-mapper>
+</mappers>
+<permission-sets>
+    <permission-set name="login-permission">
+        <permission class-name="org.wildfly.security.auth.permission.LoginPermission"/>
+    </permission-set>
+    <permission-set name="default-permissions"/>
+</permission-sets>
+[...]
+----
+
+
+=== Authentication factories
+
+To tie domain to specific authentication mechanism, server needs authentication factory. For BASIC, DIGEST, etc - **http-authentication-factory** and for protocols that require SASL - **sasl-authentication-factory**.
+Example configuration of factories can look as follows:
+
+[source,xml,options="nowrap"]
+----
+[...]
+<http>
+    <http-authentication-factory name="management-http-authentication" security-domain="ManagementDomain" http-server-mechanism-factory="global">
+        <mechanism-configuration>
+            <mechanism mechanism-name="DIGEST">
+                <mechanism-realm realm-name="ManagementRealm"/>
+            </mechanism>
+        </mechanism-configuration>
+    </http-authentication-factory>
+    <provider-http-server-mechanism-factory name="global"/>
+</http>
+<sasl>
+    <sasl-authentication-factory name="management-sasl-authentication" sasl-server-factory="configured" security-domain="ManagementDomain">
+        <mechanism-configuration>
+            <mechanism mechanism-name="JBOSS-LOCAL-USER" realm-mapper="local"/>
+            <mechanism mechanism-name="DIGEST-MD5">
+                <mechanism-realm realm-name="ManagementRealm"/>
+            </mechanism>
+        </mechanism-configuration>
+    </sasl-authentication-factory>
+    <configurable-sasl-server-factory name="configured" sasl-server-factory="elytron">
+        <properties>
+            <property name="wildfly.sasl.local-user.default-user" value="$local"/>
+            <property name="wildfly.sasl.local-user.challenge-path" value="${jboss.domain.temp.dir}/auth"/>
+        </properties>
+    </configurable-sasl-server-factory>
+    <mechanism-provider-filtering-sasl-server-factory name="elytron" sasl-server-factory="global">
+        <filters>
+            <filter provider-name="WildFlyElytron"/>
+        </filters>
+    </mechanism-provider-filtering-sasl-server-factory>
+    <provider-sasl-server-factory name="global"/>
+</sasl>
+----
+
+Above example ties factories to **ManagementDomain**. Notice that for **local** realm mapper, SASL factory defines special mechanism **JBOSS-LOCAL-USER**. This mechanism maps local user, into local realm. Which in turn is mapped to SuperUser, given <<http-management-endpoint-securing-super-user>>.
+
+=== Securing Management Interface
+
+To secure management interface, configuration for those has to include reference to authentication factories. For HTTP based both http and SASL and for native, if it is defined - SASL.
+Given previous examples, to secure both interfaces, following declaration could be used:
+
+[source,xml,options="nowrap"]
+----
+<management-interfaces>
+    <native-interface sasl-authentication-factory="management-sasl-authentication">
+        <socket interface="management" port="jboss.management.native.port:9991}"/>
+    </native-interface>
+    <http-interface http-authentication-factory="management-http-authentication">
+        <http-upgrade enabled="true" sasl-authentication-factory="management-sasl-authentication"/>
+        <socket interface="management" port="${jboss.management.http.port:9990}"/>
+    </http-interface>
+</management-interfaces>
+----
+
+Notice, that HTTP interface require both SASL and HTTP authentication.
 
 [[configuration-files]]
 == Configuration Files
