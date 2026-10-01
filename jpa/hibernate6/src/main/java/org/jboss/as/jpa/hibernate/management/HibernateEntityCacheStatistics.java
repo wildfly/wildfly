@@ -8,9 +8,9 @@ package org.jboss.as.jpa.hibernate.management;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import jakarta.persistence.EntityManagerFactory;
 
 import org.hibernate.SessionFactory;
+import org.hibernate.stat.Statistics;
 import org.jipijapa.management.spi.EntityManagerFactoryAccess;
 import org.jipijapa.management.spi.Operation;
 import org.jipijapa.management.spi.PathAddress;
@@ -62,15 +62,11 @@ public class HibernateEntityCacheStatistics extends HibernateAbstractStatistics 
         return Collections.unmodifiableCollection(Arrays.asList(stats.getEntityNames()));
     }
 
-    private org.hibernate.stat.Statistics getBaseStatistics(EntityManagerFactory entityManagerFactory) {
-        if (entityManagerFactory == null) {
-            return null;
-        }
-        SessionFactory sessionFactory = entityManagerFactory.unwrap(SessionFactory.class);
-        if (sessionFactory != null) {
-            return sessionFactory.getStatistics();
-        }
-        return null;
+    @Override
+    public boolean hasDynamicChildName(EntityManagerFactoryAccess entityManagerFactoryLookup, PathAddress pathAddress,
+            String childName) {
+        Statistics stats = getBaseStatistics(entityManagerFactoryLookup, pathAddress);
+        return stats == null ? false : existsInDynamicChildren(childName, stats.getEntityNames());
     }
 
     org.hibernate.stat.CacheRegionStatistics getStatistics(EntityManagerFactoryAccess entityManagerFactoryaccess, PathAddress pathAddress) {
