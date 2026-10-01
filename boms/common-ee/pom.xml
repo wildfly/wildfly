@@ -1153,6 +1153,12 @@
             </dependency>
 
             <dependency>
+                <groupId>org.apache.commons</groupId>
+                <artifactId>commons-secure-xml</artifactId>
+                <version>${version.org.apache.commons.secure-xml}</version>
+            </dependency>
+
+            <dependency>
                 <groupId>de.dentrassi.crypto</groupId>
                 <artifactId>pem-keystore</artifactId>
                 <version>${version.de.dentrassi.crypto}</version>
