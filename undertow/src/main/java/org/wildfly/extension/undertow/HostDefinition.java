@@ -7,10 +7,14 @@ package org.wildfly.extension.undertow;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.function.BiPredicate;
 
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.AttributeMarshaller;
 import org.jboss.as.controller.AttributeParser;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
@@ -22,6 +26,7 @@ import org.jboss.as.controller.operations.validation.IntRangeValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.web.host.WebHost;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -39,6 +44,7 @@ class HostDefinition extends SimpleResourceDefinition {
     public static final String DEFAULT_WEB_MODULE_DEFAULT = "ROOT.war";
 
     static final RuntimeCapability<Void> HOST_CAPABILITY = RuntimeCapability.Builder.of(Host.SERVICE_DESCRIPTOR).build();
+    static final RuntimeCapability<Void> DEFAULT_SERVER_HOST_CAPABILITY = RuntimeCapability.Builder.of(Host.DEFAULT_SERVER_SERVICE_DESCRIPTOR).build();
 
     static final StringListAttributeDefinition ALIAS = new StringListAttributeDefinition.Builder(Constants.ALIAS)
             .setRequired(false)
@@ -77,7 +83,21 @@ class HostDefinition extends SimpleResourceDefinition {
     HostDefinition() {
         this(ResourceDescriptor.builder(UndertowExtension.getResolver(PATH_ELEMENT.getKey()))
                 .addAttributes(ATTRIBUTES)
-                .addCapabilities(List.of(HOST_CAPABILITY, WebHost.CAPABILITY))
+                .addCapability(HOST_CAPABILITY)
+                // Register these capabilities for the default server only
+                .addCapabilities(List.of(DEFAULT_SERVER_HOST_CAPABILITY, WebHost.CAPABILITY), new BiPredicate<OperationContext, Resource>() {
+                    @Override
+                    public boolean test(OperationContext context, Resource resource) {
+                        PathAddress hostAddress = context.getCurrentAddress();
+                        PathAddress serverAddress = hostAddress.getParent();
+                        try {
+                            String defaultServer = UndertowRootDefinition.DEFAULT_SERVER.resolveModelAttribute(context, context.readResourceFromRoot(serverAddress.getParent(), false).getModel()).asStringOrNull();
+                            return serverAddress.getLastElement().getValue().equals(defaultServer);
+                        } catch (OperationFailedException e) {
+                            throw new IllegalStateException(e);
+                        }
+                    }
+                })
                 .withRuntimeHandler(ResourceOperationRuntimeHandler.configureService(HostServiceConfigurator.INSTANCE))
                 .addResourceCapabilityReference(ResourceCapabilityReference.builder(HOST_CAPABILITY, Server.SERVICE_DESCRIPTOR).withRequirementNameResolver(UnaryCapabilityNameResolver.PARENT).build())
                 .build());

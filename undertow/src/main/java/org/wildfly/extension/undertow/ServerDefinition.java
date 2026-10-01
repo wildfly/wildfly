@@ -28,6 +28,7 @@ class ServerDefinition extends SimpleResourceDefinition {
     static final RuntimeCapability<Void> SERVER_CAPABILITY = RuntimeCapability.Builder.of(Server.SERVICE_DESCRIPTOR)
             .addRequirements(Capabilities.CAPABILITY_UNDERTOW)
             .build();
+    static final RuntimeCapability<Void> DEFAULT_HOST_CAPABILITY = RuntimeCapability.Builder.of(Host.DEFAULT_SERVICE_DESCRIPTOR).build();
 
     static final SimpleAttributeDefinition DEFAULT_HOST = new SimpleAttributeDefinitionBuilder(Constants.DEFAULT_HOST, ModelType.STRING)
             .setRequired(false)
@@ -47,7 +48,7 @@ class ServerDefinition extends SimpleResourceDefinition {
         super(new SimpleResourceDefinition.Parameters(PATH_ELEMENT, UndertowExtension.getResolver(PATH_ELEMENT.getKey()))
                 .setAddHandler(new ServerAdd())
                 .setRemoveHandler(ReloadRequiredRemoveStepHandler.INSTANCE)
-                .addCapabilities(SERVER_CAPABILITY)
+                .addCapabilities(SERVER_CAPABILITY, DEFAULT_HOST_CAPABILITY)
         );
     }
 
