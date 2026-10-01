@@ -13,11 +13,12 @@ import java.util.function.UnaryOperator;
 
 import org.infinispan.Cache;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
-import org.jboss.as.clustering.controller.validation.DoubleRangeValidator;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
+import org.jboss.as.controller.operations.validation.Bound;
+import org.jboss.as.controller.operations.validation.BoundedParameterValidator;
 import org.jboss.as.controller.operations.validation.IntRangeValidator;
 import org.jboss.as.controller.operations.validation.ParameterValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
@@ -38,7 +39,7 @@ public class DistributedCacheResourceDefinitionRegistrar extends SharedStateCach
     static final DurationAttributeDefinition L1_LIFESPAN = DurationAttributeDefinition.builder("l1-lifespan", ChronoUnit.MILLIS).setDefaultValue(Duration.ZERO).build();
 
     enum Attribute implements AttributeDefinitionProvider {
-        CAPACITY_FACTOR("capacity-factor", ModelType.DOUBLE, new ModelNode(1.0f), DoubleRangeValidator.NON_NEGATIVE_FLOAT),
+        CAPACITY_FACTOR("capacity-factor", ModelType.DOUBLE, new ModelNode(1.0f), BoundedParameterValidator.doubleBuilder().withLowerBound(Bound.inclusive(0d)).withUpperBound(Bound.inclusive(Double.valueOf(Float.MAX_VALUE))).build()),
         OWNERS("owners", ModelType.INT, new ModelNode(2), new IntRangeValidator(1)),
         ;
         private final AttributeDefinition definition;

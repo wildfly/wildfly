@@ -20,7 +20,7 @@ import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ejb3.deployment.EjbDeploymentAttachmentKeys;
 import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.remote.EJBClientContextService;
-import org.jboss.as.ejb3.remote.RemotingProfileService;
+import org.jboss.as.ejb3.profile.RemotingProfileService;
 import org.jboss.as.network.OutboundConnection;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;

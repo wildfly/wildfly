@@ -4,6 +4,7 @@
  */
 package org.jboss.as.test.clustering.cluster;
 
+import java.time.Duration;
 import java.util.AbstractMap;
 import java.util.Map;
 import java.util.Optional;
@@ -90,6 +91,11 @@ public abstract class AbstractClusteringTestCase {
     // Timeouts
     public static final int GRACE_TIME_TO_REPLICATE = TimeoutUtil.adjust(4000);
     public static final int GRACE_TIME_TOPOLOGY_CHANGE = TimeoutUtil.adjust(3000);
+    /**
+     * Time to wait for the EJB client to receive a cluster topology update from the server.
+     * Accommodate for the fact that a client topology update does not necessarily mean that the beans on the server are available.
+     */
+    public static final Duration EJB_CLIENT_TOPOLOGY_UPDATE_WAIT = Duration.ofMillis(TimeoutUtil.adjust(5000));
     public static final int SUSPEND_TIMEOUT_S = TimeoutUtil.adjust(60);
     public static final int GRACE_TIME_TO_MEMBERSHIP_CHANGE = TimeoutUtil.adjust(10000);
     public static final int WAIT_FOR_PASSIVATION_MS = TimeoutUtil.adjust(5);

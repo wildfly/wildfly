@@ -11,22 +11,22 @@ endif::[]
 
 This document details the main points that need to be considered by
 Spring developers that wish to develop new applications or to migrate
-existing applications to be run into WildFly {wildflyVersion}.
+existing applications to be run into WildFly.
 
 [[dependencies-and-modularity]]
 == Dependencies and Modularity
 
-WildFly {wildflyVersion} has a modular class loading strategy, different from previous
+WildFly has a modular class loading strategy, different from previous
 versions of JBoss AS, which enforces a better class loading isolation
 between deployments and the application server itself. A detailed
 description can be found in the documentation dedicated to
-<<Class_Loading_in_WildFly, class loading in WildFly {wildflyVersion}>>.
+<<Class_Loading_in_WildFly, class loading in WildFly>>.
 
 This reduces significantly the risk of running into a class loading
 conflict and allows applications to package their own dependencies if
 they choose to do so. This makes it easier for Spring applications that
 package their own dependencies - such as logging frameworks or
-persistence providers to run on WildFly {wildflyVersion}.
+persistence providers to run on WildFly.
 
 At the same time, this does not mean that duplications and conflicts
 cannot exist on the classpath. Some module dependencies are implicit,
@@ -115,7 +115,7 @@ JNDI binding via persistence.xml properties is not supported in WildFly
 [[using-spring-managed-persistence-units]]
 === Using Spring-managed persistence units
 
-Spring applications running in WildFly {wildflyVersion} may also create persistence
+Spring applications running in WildFly may also create persistence
 units on their own, using the LocalContainerEntityManagerFactoryBean.
 This is what these applications need to consider:
 

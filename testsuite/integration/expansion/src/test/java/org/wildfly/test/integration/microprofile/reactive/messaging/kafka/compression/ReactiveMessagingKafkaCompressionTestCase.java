@@ -91,7 +91,7 @@ public class ReactiveMessagingKafkaCompressionTestCase {
         bean.sendZstd("Reactive");
 
         boolean wait = bean.getLatch().await(TIMEOUT, TimeUnit.MILLISECONDS);
-        Assert.assertTrue("Timed out", wait);
+        Assert.assertTrue("Timed out waiting for Kafka records; received " + bean.getWords(), wait);
         Set<String> expected = new HashSet<>(Arrays.asList("Hello", "World", "of", "Reactive"));
         Assert.assertEquals(expected.size(), bean.getWords().size());
         Assert.assertTrue("Expected " + bean.getWords() + " to contain all of " + expected, bean.getWords().containsAll(expected));

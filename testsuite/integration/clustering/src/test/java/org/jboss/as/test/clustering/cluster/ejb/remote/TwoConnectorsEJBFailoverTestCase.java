@@ -25,7 +25,6 @@ import org.jboss.as.test.clustering.ejb.RemoteEJBDirectory;
 import org.jboss.as.test.shared.IntermittentFailure;
 import org.jboss.as.test.shared.ManagementServerSetupTask;
 import org.jboss.as.test.shared.PermissionUtils;
-import org.jboss.as.test.shared.TimeoutUtil;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
@@ -49,7 +48,6 @@ public class TwoConnectorsEJBFailoverTestCase extends AbstractClusteringTestCase
     }
 
     private static final int COUNT = 20;
-    private static final long CLIENT_TOPOLOGY_UPDATE_WAIT = TimeoutUtil.adjust(5000);
     private static final String MODULE_NAME = TwoConnectorsEJBFailoverTestCase.class.getSimpleName();
 
     @Deployment(name = DEPLOYMENT_1, managed = false, testable = false)
@@ -123,7 +121,7 @@ public class TwoConnectorsEJBFailoverTestCase extends AbstractClusteringTestCase
     public void test(ExceptionSupplier<EJBDirectory, Exception> directoryProvider) throws Exception {
 
         // give the servers a moment to stabilize before invocation start
-        Thread.sleep(CLIENT_TOPOLOGY_UPDATE_WAIT);
+        Thread.sleep(EJB_CLIENT_TOPOLOGY_UPDATE_WAIT.toMillis());
 
         try (EJBDirectory directory = directoryProvider.get()) {
             Incrementor bean = directory.lookupStateful(StatefulIncrementorBean.class, Incrementor.class);
@@ -143,7 +141,7 @@ public class TwoConnectorsEJBFailoverTestCase extends AbstractClusteringTestCase
 
             undeploy(findDeployment(target));
 
-            Thread.sleep(CLIENT_TOPOLOGY_UPDATE_WAIT);
+            Thread.sleep(EJB_CLIENT_TOPOLOGY_UPDATE_WAIT.toMillis());
 
             result = bean.increment();
             // Bean should failover to other node
@@ -155,7 +153,7 @@ public class TwoConnectorsEJBFailoverTestCase extends AbstractClusteringTestCase
             deploy(findDeployment(target));
 
             // Allow sufficient time for client to receive new topology
-            Thread.sleep(CLIENT_TOPOLOGY_UPDATE_WAIT);
+            Thread.sleep(EJB_CLIENT_TOPOLOGY_UPDATE_WAIT.toMillis());
 
             result = bean.increment();
             String failbackTarget = result.getNode();
@@ -178,7 +176,7 @@ public class TwoConnectorsEJBFailoverTestCase extends AbstractClusteringTestCase
             stop(target);
 
             // Allow sufficient time for client to receive new topology
-            Thread.sleep(CLIENT_TOPOLOGY_UPDATE_WAIT);
+            Thread.sleep(EJB_CLIENT_TOPOLOGY_UPDATE_WAIT.toMillis());
 
             result = bean.increment();
             // Bean should failover to other node
@@ -190,7 +188,7 @@ public class TwoConnectorsEJBFailoverTestCase extends AbstractClusteringTestCase
             start(target);
 
             // Allow sufficient time for client to receive new topology
-            Thread.sleep(CLIENT_TOPOLOGY_UPDATE_WAIT);
+            Thread.sleep(EJB_CLIENT_TOPOLOGY_UPDATE_WAIT.toMillis());
 
             result = bean.increment();
             failbackTarget = result.getNode();

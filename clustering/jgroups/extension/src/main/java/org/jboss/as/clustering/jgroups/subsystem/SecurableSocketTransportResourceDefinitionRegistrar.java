@@ -76,7 +76,18 @@ public class SecurableSocketTransportResourceDefinitionRegistrar<T extends Basic
         ServiceDependency<SSLContext> clientSSLContext = CLIENT_SSL_CONTEXT.resolve(context, model);
         ServiceDependency<SSLContext> serverSSLContext = SERVER_SSL_CONTEXT.resolve(context, model);
 
-        return new ServiceDependency<>() {
+        Optional<TLSConfiguration> tls = clientSSLContext.isPresent() && serverSSLContext.isPresent() ? Optional.of(new TLSConfiguration() {
+            @Override
+            public SSLContext getClientSSLContext() {
+                return clientSSLContext.get();
+            }
+
+            @Override
+            public SSLContext getServerSSLContext() {
+                return serverSSLContext.get();
+            }
+        }) : Optional.empty();
+        return tls.isPresent() ? new ServiceDependency<>() {
             @Override
             public void accept(RequirementServiceBuilder<?> builder) {
                 configuration.accept(builder);
@@ -88,25 +99,11 @@ public class SecurableSocketTransportResourceDefinitionRegistrar<T extends Basic
             public TransportConfiguration<T> get() {
                 return new TransportConfigurationDecorator<>(configuration.get()) {
                     @Override
-                    public Optional<TLSConfiguration> getSSLConfiguration() {
-                        if (serverSSLContext.isPresent() && clientSSLContext.isPresent()) {
-                            return Optional.of(new TLSConfiguration() {
-                                @Override
-                                public SSLContext getClientSSLContext() {
-                                    return clientSSLContext.get();
-                                }
-
-                                @Override
-                                public SSLContext getServerSSLContext() {
-                                    return serverSSLContext.get();
-                                }
-                            });
-                        } else {
-                            return Optional.empty();
-                        }
+                    public Optional<TLSConfiguration> getTLSConfiguration() {
+                        return tls;
                     }
                 };
             }
-        };
+        } : configuration;
     }
 }

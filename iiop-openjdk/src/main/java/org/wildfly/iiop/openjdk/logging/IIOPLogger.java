@@ -434,4 +434,42 @@ public interface IIOPLogger extends BasicLogger {
             "on servers running previous versions either both must be defined or both must be undefined.")
     String inconsistentSSLContextDefinition();
 
+    @Message(id = 130, value = "No username provided - naming service requires authentication")
+    NO_PERMISSION noUsernameProvided();
+
+    @Message(id = 131, value = "SASCurrent not available - naming service requires CSIv2 security configuration")
+    NO_PERMISSION sasCurrentNotAvailable();
+
+    @Message(id = 132, value = "SecurityDomain not available - naming service requires Elytron security domain")
+    NO_PERMISSION securityDomainNotAvailable();
+
+    @Message(id = 133, value = "Authentication failed for user '%s'")
+    NO_PERMISSION authenticationFailed(String username);
+
+    @Message(id = 134, value = "Authorization failed for user '%s'")
+    NO_PERMISSION authorizationFailed(String username);
+
+    @Message(id = 135, value = "Authentication exception")
+    NO_PERMISSION authenticationException(@Cause Exception cause);
+
+    @LogMessage(level = WARN)
+    @Message(id = 136, value = "Token length %d exceeds maximum allowed size %d")
+    void tokenLengthExceedsMaximum(int tokenLength, int maxSize);
+
+    @LogMessage(level = WARN)
+    @Message(id = 137, value = "Computed token length %d is invalid")
+    void invalidComputedTokenLength(int tokenLength);
+
+    @LogMessage(level = WARN)
+    @Message(id = 138, value = "Mechanism OID length %d exceeds maximum %d")
+    void mechanismOidLengthExceedsMaximum(int oidLength, int maxSize);
+
+    @LogMessage(level = WARN)
+    @Message(id = 139, value = "Mechanism OID length mismatch")
+    void mechanismOidLengthMismatch();
+
+    @LogMessage(level = WARN)
+    @Message(id = 140, value = "Name length %d exceeds maximum %d")
+    void nameLengthExceedsMaximum(int nameLength, int maxSize);
+
 }

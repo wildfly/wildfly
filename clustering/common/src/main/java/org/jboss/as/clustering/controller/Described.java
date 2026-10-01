@@ -9,6 +9,7 @@ package org.jboss.as.clustering.controller;
  * Exposes the descriptor of this object.
  * @author Paul Ferraro
  */
+@Deprecated(forRemoval = true)
 public interface Described<D> {
     /**
      * Returns the descriptor of this object

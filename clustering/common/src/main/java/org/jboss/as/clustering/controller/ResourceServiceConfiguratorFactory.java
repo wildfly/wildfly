@@ -11,6 +11,7 @@ import org.jboss.as.controller.PathAddress;
  * Factory for creating a {@link ResourceServiceConfigurator}.
  * @author Paul Ferraro
  */
+@Deprecated(forRemoval = true)
 public interface ResourceServiceConfiguratorFactory {
 
     /**

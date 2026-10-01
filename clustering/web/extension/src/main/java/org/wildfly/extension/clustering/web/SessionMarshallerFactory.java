@@ -28,12 +28,12 @@ import org.wildfly.clustering.context.ThreadContextClassLoaderReference;
 import org.wildfly.clustering.marshalling.ByteBufferMarshaller;
 import org.wildfly.clustering.marshalling.jboss.JBossByteBufferMarshaller;
 import org.wildfly.clustering.marshalling.jboss.MarshallingConfigurationRepository;
-import org.wildfly.clustering.marshalling.protostream.DefaultSerializationContext;
+import org.wildfly.clustering.marshalling.protostream.ImmutableSerializationContext;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamByteBufferMarshaller;
+import org.wildfly.clustering.marshalling.protostream.ProtoStreamConfiguration;
 import org.wildfly.clustering.marshalling.protostream.SerializationContext;
-import org.wildfly.clustering.marshalling.protostream.SerializationContextBuilder;
 import org.wildfly.clustering.marshalling.protostream.SerializationContextInitializer;
-import org.wildfly.clustering.marshalling.protostream.modules.ModuleClassLoaderMarshaller;
+import org.wildfly.clustering.marshalling.protostream.modules.ModuleClassResolver;
 import org.wildfly.clustering.marshalling.protostream.reflect.ProxyMarshaller;
 
 /**
@@ -53,7 +53,8 @@ public enum SessionMarshallerFactory implements Function<DeploymentUnit, ByteBuf
         @Override
         public ByteBufferMarshaller apply(DeploymentUnit unit) {
             Module module = unit.getAttachment(Attachments.MODULE);
-            SerializationContextBuilder<SerializationContextInitializer> builder = SerializationContextBuilder.newInstance(new ModuleClassLoaderMarshaller(module.getModuleLoader()), DefaultSerializationContext::new).load(module.getClassLoader());
+            ProtoStreamConfiguration config = ProtoStreamConfiguration.Builder.with(new ModuleClassResolver(module)).build();
+            ImmutableSerializationContext.Builder builder = ImmutableSerializationContext.Builder.with(config);
 
             EEModuleConfiguration configuration = unit.getAttachment(org.jboss.as.ee.component.Attachments.EE_MODULE_CONFIGURATION);
             // Sort component views by view class

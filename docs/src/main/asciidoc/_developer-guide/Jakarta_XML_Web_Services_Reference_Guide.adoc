@@ -16,7 +16,7 @@ The latest project documentation is available
 https://docs.jboss.org/author/display/JBWS[here].
 
 This section covers the most relevant topics for the JBossWS version
-available on WildFly {wildflyVersion}.
+available on WildFly.
 
 :leveloffset: +1
 

@@ -63,6 +63,18 @@ import org.wildfly.iiop.openjdk.service.CorbaORBService;
 public final class CSIv2Util {
 
     /**
+     * Maximum allowed size for decoded token buffers to prevent memory exhaustion attacks.
+     * Based on actual usage analysis: typical tokens are ~75 bytes, 8KB provides ~100x safety margin.
+     */
+    private static final int MAX_TOKEN_SIZE = 8 * 1024; // 8KB
+
+    /**
+     * Maximum allowed size for principal/target names to prevent memory exhaustion attacks.
+     * Based on actual usage analysis: typical names are ~7 bytes, 1KB provides ~140x safety margin.
+     */
+    private static final int MAX_NAME_SIZE = 1024; // 1KB
+
+    /**
      * DER-encoded ASN.1 representation of the GSSUP mechanism OID.
      */
     private static final byte[] gssUpMechOidArray = createGSSUPMechOID();
@@ -636,16 +648,29 @@ public final class CSIv2Util {
         int encodedLength = 0;
         int n = 0;
 
-        if (encodedToken[1] >= 0)
+        if (encodedToken[1] >= 0) {
             encodedLength = encodedToken[1];
-        else {
+        } else {
             n = encodedToken[1] & 0x7F;
             for (int i = 1; i <= n; i++) {
                 encodedLength += (encodedToken[1 + i] & 0xFF) << (n - i) * 8;
             }
         }
 
+        // Validate encoded length is reasonable to prevent memory exhaustion
+        if (encodedLength < 0 || encodedLength > MAX_TOKEN_SIZE) {
+            IIOPLogger.ROOT_LOGGER.tokenLengthExceedsMaximum(encodedLength, MAX_TOKEN_SIZE);
+            return null;
+        }
+
         int length = encodedLength - gssUpMechOidArray.length;
+
+        // Validate computed length to prevent memory exhaustion
+        if (length < 0 || length > MAX_TOKEN_SIZE) {
+            IIOPLogger.ROOT_LOGGER.invalidComputedTokenLength(length);
+            return null;
+        }
+
         byte[] encodedInitialContextToken = new byte[length];
 
         System.arraycopy(encodedToken, 2 + n + gssUpMechOidArray.length,
@@ -692,6 +717,18 @@ public final class CSIv2Util {
         int mechOidLength = (encodedName[2] & 0xFF) << 8; //MECH_OID_LEN
         mechOidLength += (encodedName[3] & 0xFF);      // MECH_OID_LEN
 
+        // Validate mechOidLength to prevent memory exhaustion
+        if (mechOidLength < 0 || mechOidLength > MAX_NAME_SIZE) {
+            IIOPLogger.ROOT_LOGGER.mechanismOidLengthExceedsMaximum(mechOidLength, MAX_NAME_SIZE);
+            return null;
+        }
+
+        // Validate mechOidLength matches expected GSSUP OID length
+        if (mechOidLength != gssUpMechOidArray.length) {
+            IIOPLogger.ROOT_LOGGER.mechanismOidLengthMismatch();
+            return null;
+        }
+
         byte[] oidArray = new byte[mechOidLength];
         System.arraycopy(encodedName, 4, oidArray, 0, mechOidLength);
 
@@ -702,10 +739,17 @@ public final class CSIv2Util {
         }
 
         int offset = 4 + mechOidLength;
+
         int nameLength = (encodedName[offset] & 0xFF) << 24;
         nameLength += (encodedName[++offset] & 0xFF) << 16;
         nameLength += (encodedName[++offset] & 0xFF) << 8;
         nameLength += (encodedName[++offset] & 0xFF);
+
+        // Validate nameLength to prevent memory exhaustion
+        if (nameLength < 0 || nameLength > MAX_NAME_SIZE) {
+            IIOPLogger.ROOT_LOGGER.nameLengthExceedsMaximum(nameLength, MAX_NAME_SIZE);
+            return null;
+        }
 
         byte[] name = new byte[nameLength];
         System.arraycopy(encodedName, ++offset, name, 0, nameLength);

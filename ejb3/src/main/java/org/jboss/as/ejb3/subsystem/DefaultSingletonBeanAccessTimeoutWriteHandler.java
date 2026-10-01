@@ -54,6 +54,7 @@ class DefaultSingletonBeanAccessTimeoutWriteHandler extends AbstractWriteAttribu
             // create and install the service
             final DefaultAccessTimeoutService defaultAccessTimeoutService = new DefaultAccessTimeoutService(defaultAccessTimeout);
             context.getCapabilityServiceTarget().addService(serviceName, defaultAccessTimeoutService)
+                    .setInitialMode(ServiceController.Mode.ON_DEMAND)
                     .install();
         }
     }

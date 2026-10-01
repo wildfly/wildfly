@@ -9,6 +9,7 @@ import java.util.EnumSet;
 import java.util.List;
 
 import org.jboss.as.clustering.subsystem.AdditionalInitialization;
+import org.jboss.as.clustering.subsystem.WildFlyClusteringVersion;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
@@ -40,7 +41,8 @@ public class DistributableWebTransformerTestCase extends AbstractSubsystemTest {
         return EnumSet.of(
                 ModelTestControllerVersion.EAP_7_4_0,
                 ModelTestControllerVersion.EAP_8_0_0,
-                ModelTestControllerVersion.EAP_8_1_0
+                ModelTestControllerVersion.EAP_8_1_0,
+                ModelTestControllerVersion.WILDFLY_41_0_0
         );
     }
 
@@ -66,6 +68,7 @@ public class DistributableWebTransformerTestCase extends AbstractSubsystemTest {
         return switch (this.controllerVersion) {
             case EAP_7_4_0 -> DistributableWebSubsystemModel.VERSION_2_0_0;
             case EAP_8_0_0, EAP_8_1_0 -> DistributableWebSubsystemModel.VERSION_4_0_0;
+            case WILDFLY_41_0_0 -> DistributableWebSubsystemModel.VERSION_5_0_0;
             default -> throw new IllegalArgumentException();
         };
     }
@@ -80,6 +83,7 @@ public class DistributableWebTransformerTestCase extends AbstractSubsystemTest {
                     this.controllerVersion.createGAV("wildfly-clustering-ee-spi"),
                     this.controllerVersion.createGAV("wildfly-clustering-infinispan-client"),
                     this.controllerVersion.createGAV("wildfly-clustering-infinispan-spi"),
+                    this.controllerVersion.createGAV("wildfly-clustering-marshalling-protostream"),
                     this.controllerVersion.createGAV("wildfly-clustering-marshalling-spi"),
                     this.controllerVersion.createGAV("wildfly-clustering-service"),
                     this.controllerVersion.createGAV("wildfly-clustering-web-container"),
@@ -95,6 +99,7 @@ public class DistributableWebTransformerTestCase extends AbstractSubsystemTest {
                     this.controllerVersion.createGAV("wildfly-clustering-ee-spi"),
                     this.controllerVersion.createGAV("wildfly-clustering-infinispan-client-service"),
                     this.controllerVersion.createGAV("wildfly-clustering-infinispan-embedded-service"),
+                    this.controllerVersion.createGAV("wildfly-clustering-marshalling-protostream"),
                     this.controllerVersion.createGAV("wildfly-clustering-marshalling-spi"),
                     this.controllerVersion.createGAV("wildfly-clustering-service"),
                     this.controllerVersion.createGAV("wildfly-clustering-web-container"),
@@ -108,10 +113,24 @@ public class DistributableWebTransformerTestCase extends AbstractSubsystemTest {
                     this.controllerVersion.createGAV("wildfly-clustering-common"),
                     this.controllerVersion.createGAV("wildfly-clustering-infinispan-client-service"),
                     this.controllerVersion.createGAV("wildfly-clustering-infinispan-embedded-service"),
+                    this.controllerVersion.createGAV("wildfly-clustering-marshalling-protostream"),
                     this.controllerVersion.createGAV("wildfly-clustering-server-service"),
                     this.controllerVersion.createGAV("wildfly-clustering-web-service"),
                     this.controllerVersion.createCoreGAV("wildfly-service"),
                     this.controllerVersion.createCoreGAV("wildfly-subsystem"),
+                    WildFlyClusteringVersion.forVersion(this.controllerVersion).toGAV("wildfly-clustering-marshalling-protostream")
+            };
+            case WILDFLY_41_0_0 -> new String[] {
+                    this.controllerVersion.createGAV("wildfly-clustering-web-extension"),
+                    this.controllerVersion.createGAV("wildfly-clustering-common"),
+                    this.controllerVersion.createGAV("wildfly-clustering-infinispan-client-service"),
+                    this.controllerVersion.createGAV("wildfly-clustering-infinispan-embedded-service"),
+                    this.controllerVersion.createGAV("wildfly-clustering-marshalling-protostream"),
+                    this.controllerVersion.createGAV("wildfly-clustering-server-service"),
+                    this.controllerVersion.createGAV("wildfly-clustering-web-service"),
+                    this.controllerVersion.createCoreGAV("wildfly-service"),
+                    this.controllerVersion.createCoreGAV("wildfly-subsystem"),
+                    WildFlyClusteringVersion.forVersion(this.controllerVersion).toGAV("wildfly-clustering-marshalling-protostream"),
             };
             default -> throw new IllegalArgumentException();
         };

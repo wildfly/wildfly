@@ -16,6 +16,7 @@ import org.wildfly.common.function.Functions;
  * A simple {@link ChildResourceProvider} containing a predefined set of children.
  * @author Paul Ferraro
  */
+@Deprecated(forRemoval = true)
 public class SimpleChildResourceProvider implements ChildResourceProvider {
 
     private final Set<String> children;

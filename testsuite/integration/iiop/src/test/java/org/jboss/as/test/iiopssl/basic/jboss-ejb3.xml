@@ -28,9 +28,6 @@
                     iiop:establish-trust-in-target="supported"
                     iiop:establish-trust-in-client="supported"
                 />
-                <iiop:sas-context
-                    iiop:caller-propagation="supported"
-                />
             </iiop:ior-security-config>
         </iiop:iiop>
     </assembly-descriptor>

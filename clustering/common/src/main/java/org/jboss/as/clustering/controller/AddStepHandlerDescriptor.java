@@ -19,6 +19,7 @@ import org.jboss.as.controller.registry.Resource;
  * Describes the common properties of a remove operation handler.
  * @author Paul Ferraro
  */
+@Deprecated(forRemoval = true)
 public interface AddStepHandlerDescriptor extends WriteAttributeStepHandlerDescriptor, RemoveStepHandlerDescriptor {
 
     /**

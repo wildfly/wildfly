@@ -5,7 +5,7 @@
 
 package org.jboss.as.test.clustering.cluster.web.remote;
 
-import org.infinispan.server.test.junit5.InfinispanServerExtension;
+import org.infinispan.server.test.jupiter.InfinispanServerExtension;
 import org.jboss.as.test.clustering.InfinispanServerUtil;
 import org.jboss.as.test.clustering.cluster.web.AbstractSessionActivationTestCase;
 import org.junit.jupiter.api.extension.RegisterExtension;

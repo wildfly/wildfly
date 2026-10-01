@@ -30,6 +30,7 @@ import org.jboss.metadata.parser.servlet.WebFragmentMetaDataParser;
 import org.jboss.metadata.parser.util.NoopXMLResolver;
 import org.jboss.metadata.web.spec.WebFragmentMetaData;
 import org.jboss.vfs.VirtualFile;
+import org.wildfly.common.xml.XMLInputFactoryUtil;
 import org.wildfly.extension.undertow.logging.UndertowLogger;
 
 /**
@@ -60,7 +61,7 @@ public class WebFragmentParsingDeploymentProcessor implements DeploymentUnitProc
                     InputStream is = null;
                     try {
                         is = webFragment.openStream();
-                        final XMLInputFactory inputFactory = XMLInputFactory.newInstance();
+                        final XMLInputFactory inputFactory = XMLInputFactoryUtil.create();
                         inputFactory.setXMLResolver(NoopXMLResolver.create());
                         XMLStreamReader xmlReader = inputFactory.createXMLStreamReader(is);
 

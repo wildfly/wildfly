@@ -12,6 +12,7 @@ import org.jboss.msc.service.ServiceName;
  * Generates the {@link ServiceName} for a resource service.
  * @author Paul Ferraro
  */
+@Deprecated(forRemoval = true)
 public interface ResourceServiceNameFactory {
     /**
      * Returns {@link ServiceName} for the specified resource address.

@@ -22,7 +22,6 @@ import org.jboss.as.test.clustering.cluster.ejb.remote.bean.Result;
 import org.jboss.as.test.clustering.ejb.EJBDirectory;
 import org.jboss.as.test.clustering.ejb.RemoteEJBDirectory;
 import org.jboss.as.test.shared.PermissionUtils;
-import org.jboss.as.test.shared.TimeoutUtil;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
@@ -40,7 +39,6 @@ import org.wildfly.common.function.ExceptionSupplier;
 @ExtendWith(ArquillianExtension.class)
 public class PassivationDisabledRemoteStatefulEjbFailoverTestCase extends AbstractClusteringTestCase {
     private static final int COUNT = 20;
-    private static final long CLIENT_TOPOLOGY_UPDATE_WAIT = TimeoutUtil.adjust(5000);
     private static final String MODULE_NAME = PassivationDisabledRemoteStatefulEjbFailoverTestCase.class.getSimpleName();
 
     @Deployment(name = DEPLOYMENT_1, managed = false, testable = false)
@@ -87,9 +85,9 @@ public class PassivationDisabledRemoteStatefulEjbFailoverTestCase extends Abstra
                 assertEquals(target, result.getNode(), String.valueOf(i));
             }
 
-            undeploy(this.findDeployment(target));
+            undeploy(findDeployment(target));
 
-            Thread.sleep(CLIENT_TOPOLOGY_UPDATE_WAIT);
+            Thread.sleep(EJB_CLIENT_TOPOLOGY_UPDATE_WAIT.toMillis());
 
             try {
                 result = bean.increment();

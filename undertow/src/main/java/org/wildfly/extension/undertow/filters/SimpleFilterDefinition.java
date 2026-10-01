@@ -29,4 +29,10 @@ abstract class SimpleFilterDefinition extends AbstractFilterDefinition {
         registerAddOperation(resourceRegistration, add, OperationEntry.Flag.RESTART_RESOURCE_SERVICES);
         registerRemoveOperation(resourceRegistration, new ServiceRemoveStepHandler(UndertowService.FILTER, add), OperationEntry.Flag.RESTART_RESOURCE_SERVICES);
     }
+
+    @Override
+    public void registerCapabilities(ManagementResourceRegistration resourceRegistration) {
+        resourceRegistration.registerCapability(FilterCapabilities.FILTER_CAPABILITY.getDefinition());
+    }
+
 }

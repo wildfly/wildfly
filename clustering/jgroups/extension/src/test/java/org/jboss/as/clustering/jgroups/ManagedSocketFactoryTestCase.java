@@ -10,10 +10,12 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.same;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 import java.io.Closeable;
@@ -48,8 +50,25 @@ public class ManagedSocketFactoryTestCase {
 
     private final SocketBindingManager manager = mock(SocketBindingManager.class);
     private final SelectorProvider provider = mock(SelectorProvider.class);
+    private final Map<String, SocketBinding> bindings = Map.of("known-service", new SocketBinding("binding", 0, false, null, 0, null, this.manager, List.of()));
+    private final SocketFactory subject;
 
-    private final SocketFactory subject = new org.jboss.as.clustering.jgroups.ManagedSocketFactory(this.provider, this.manager, Map.of("known-service", new SocketBinding("binding", 0, false, null, 0, null, this.manager, List.of())));
+    public ManagedSocketFactoryTestCase() {
+        org.jboss.as.clustering.jgroups.ManagedSocketFactory.Configuration configuration = mock(org.jboss.as.clustering.jgroups.ManagedSocketFactory.Configuration.class);
+
+        doReturn(this.provider).when(configuration).getSelectorProvider();
+        doReturn(this.manager).when(configuration).getSocketBindingManager();
+        doReturn(this.bindings).when(configuration).getSocketBindings();
+
+        this.subject = new org.jboss.as.clustering.jgroups.ManagedSocketFactory(configuration);
+
+        verify(configuration).getSelectorProvider();
+        verify(configuration).getSocketBindingManager();
+        verify(configuration).getSocketBindings();
+        verify(configuration).getClientSSLContext();
+        verify(configuration).getServerSSLContext();
+        verifyNoMoreInteractions(configuration);
+    }
 
     @Test
     public void createSocket() throws IOException {

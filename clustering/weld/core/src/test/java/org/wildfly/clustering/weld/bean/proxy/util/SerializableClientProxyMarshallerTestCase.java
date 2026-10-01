@@ -5,19 +5,19 @@
 
 package org.wildfly.clustering.weld.bean.proxy.util;
 
-import java.lang.reflect.Field;
-import java.security.PrivilegedAction;
-import java.util.Set;
+import java.lang.invoke.MethodHandles;
+import java.util.Map;
 
+import org.assertj.core.api.Assertions;
 import org.jboss.weld.bean.StringBeanIdentifier;
 import org.jboss.weld.bean.proxy.util.SerializableClientProxy;
-import org.junit.jupiter.api.Assertions;
+import org.jboss.weld.serialization.spi.BeanIdentifier;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.wildfly.clustering.function.Function;
 import org.wildfly.clustering.marshalling.MarshallingTesterFactory;
 import org.wildfly.clustering.marshalling.Tester;
 import org.wildfly.clustering.marshalling.TesterFactory;
 import org.wildfly.clustering.marshalling.junit.TesterFactorySource;
-import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
  * @author Paul Ferraro
@@ -32,23 +32,14 @@ public class SerializableClientProxyMarshallerTestCase {
     }
 
     static void assertEquals(SerializableClientProxy proxy1, SerializableClientProxy proxy2) {
-        for (String field : Set.of("beanId", "contextId")) {
-            Assertions.assertEquals(readField(proxy1, field), readField(proxy2, field));
-        }
-    }
-
-    private static Object readField(Object object, String fieldName) {
-        return WildFlySecurityManager.doUnchecked(new PrivilegedAction<>() {
-            @Override
-            public Object run() {
-                try {
-                    Field field = object.getClass().getDeclaredField(fieldName);
-                    field.setAccessible(true);
-                    return field.get(object);
-                } catch (Exception e) {
-                    throw new IllegalStateException(e);
-                }
+        try {
+            MethodHandles.Lookup lookup = MethodHandles.privateLookupIn(SerializableClientProxy.class, MethodHandles.privateLookupIn(SerializableClientProxy.class, MethodHandles.lookup()));
+            for (Map.Entry<String, Class<?>> entry : Map.<String, Class<?>>of("beanId", BeanIdentifier.class, "contextId", String.class).entrySet()) {
+                Function<SerializableClientProxy, Object> handle = Function.invoke(lookup.findGetter(SerializableClientProxy.class, entry.getKey(), entry.getValue()));
+                Assertions.assertThat(handle.apply(proxy1)).isEqualTo(handle.apply(proxy2));
             }
-        });
+        } catch (IllegalAccessException | NoSuchFieldException e) {
+            throw new IllegalStateException(e);
+        }
     }
 }

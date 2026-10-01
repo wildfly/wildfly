@@ -166,6 +166,16 @@ public abstract class ProtocolConfigurationResourceDefinitionRegistrar<P extends
             return this.configuration.getSocketBindings();
         }
 
+        @Override
+        public boolean providesAuthentication() {
+            return this.configuration.providesAuthentication();
+        }
+
+        @Override
+        public boolean providesConfidentiality() {
+            return this.configuration.providesConfidentiality();
+        }
+
         P setValue(P protocol, String propertyName, Object propertyValue) {
             PrivilegedAction<P> action = new PrivilegedAction<>() {
                 @Override

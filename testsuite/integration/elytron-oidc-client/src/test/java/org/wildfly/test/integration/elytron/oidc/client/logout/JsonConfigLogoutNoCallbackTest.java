@@ -17,8 +17,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.http.client.CookieStore;
-import org.apache.http.client.HttpClient;
 import org.apache.http.impl.client.BasicCookieStore;
+import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.LaxRedirectStrategy;
 
 import org.htmlunit.BrowserVersion;
@@ -30,18 +30,15 @@ import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
-import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.test.integration.security.common.servlets.SimpleServlet;
 import org.jboss.as.test.integration.security.common.servlets.SimpleSecuredServlet;
 import org.jboss.as.test.http.util.TestHttpClientUtils;
 import org.jboss.as.test.shared.util.AssumeTestGroupUtil;
-import org.jboss.as.version.Stability;
 
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 
 import org.wildfly.test.integration.elytron.oidc.client.KeycloakConfiguration;
-import org.wildfly.test.stabilitylevel.StabilityServerSetupSnapshotRestoreTasks;
 
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -53,9 +50,7 @@ import org.junit.runner.RunWith;
  */
 @RunWith(Arquillian.class)
 @RunAsClient
-@ServerSetup({ JsonConfigLogoutNoCallbackTest.PreviewStabilitySetupTask.class,
-        EnvSetupUtils.KeycloakAndSubsystemSetup.class,
-        EnvSetupUtils.WildFlyServerSetupTask.class})
+@ServerSetup({EnvSetupUtils.KeycloakAndSubsystemSetup.class, EnvSetupUtils.WildFlyServerSetupTask.class})
 public class JsonConfigLogoutNoCallbackTest extends LoginLogoutBasics {
 
     @ArquillianResource
@@ -69,24 +64,20 @@ public class JsonConfigLogoutNoCallbackTest extends LoginLogoutBasics {
     @Before
     public void createHttpClient() {
         CookieStore store = new BasicCookieStore();
-        HttpClient httpClient = TestHttpClientUtils.promiscuousCookieHttpClientBuilder()
+        CloseableHttpClient httpClient = TestHttpClientUtils.promiscuousCookieHttpClientBuilder()
                 .setDefaultCookieStore(store)
                 .setRedirectStrategy(new LaxRedirectStrategy())
                 .build();
         super.setHttpClient(httpClient);
     }
 
-    public JsonConfigLogoutNoCallbackTest() {
-        super(Stability.DEFAULT);
-    }
-
     //-------------- test configuration data ---------------
 
     // These are the oidc logout URL paths that are registered with Keycloak.
     // The path of the URL must be the same as the system properties registered above.
-    private static Map<String, LoginLogoutBasics.LogoutChannelPaths> APP_LOGOUT;
+    private static final Map<String, LoginLogoutBasics.LogoutChannelPaths> APP_LOGOUT;
     static {
-        APP_LOGOUT= new HashMap<String, LoginLogoutBasics.LogoutChannelPaths>();
+        APP_LOGOUT= new HashMap<>();
         APP_LOGOUT.put(BACK_CHANNEL_LOGOUT_APP, new LoginLogoutBasics.LogoutChannelPaths(
                 NO_CALLBACK, null, null) );
         APP_LOGOUT.put(BACK_CHANNEL_LOGOUT_APP_TWO, new LoginLogoutBasics.LogoutChannelPaths(
@@ -100,7 +91,7 @@ public class JsonConfigLogoutNoCallbackTest extends LoginLogoutBasics {
     // These are the application names registered as Keycloak clients.
     // The name corresponds to each WAR file declared and deployed in
     // OidcLogoutSystemPropertiesAppsSetUp
-    private static Map<String, KeycloakConfiguration.ClientAppType> APP_NAMES;
+    private static final Map<String, KeycloakConfiguration.ClientAppType> APP_NAMES;
     static {
         APP_NAMES = new HashMap<>();
         APP_NAMES.put(BACK_CHANNEL_LOGOUT_APP, KeycloakConfiguration.ClientAppType.OIDC_CLIENT);
@@ -115,26 +106,24 @@ public class JsonConfigLogoutNoCallbackTest extends LoginLogoutBasics {
 
     @Deployment(name = BACK_CHANNEL_LOGOUT_APP, managed = false, testable = false)
     public static WebArchive createBackChannelAuthServerUrlDeployment() {
-        WebArchive war =  ShrinkWrap.create(WebArchive.class, BACK_CHANNEL_LOGOUT_APP + ".war")
+        return ShrinkWrap.create(WebArchive.class, BACK_CHANNEL_LOGOUT_APP + ".war")
                 .addClasses(SimpleServlet.class)
                 .addClasses(SimpleSecuredServlet.class)
                 .addAsWebInfResource(packageName, WEB_XML, "web.xml")
                 .addAsWebInfResource(packageName,
                         BACK_CHANNEL_LOGOUT_APP+"-oidc.json", "oidc.json")
                 ;
-        return war;
     }
 
     @Deployment(name = BACK_CHANNEL_LOGOUT_APP_TWO, managed = false, testable = false)
     public static WebArchive createBackChannelAuthServerUrlDeploymentTwo() {
-        WebArchive war =  ShrinkWrap.create(WebArchive.class, BACK_CHANNEL_LOGOUT_APP_TWO + ".war")
+        return ShrinkWrap.create(WebArchive.class, BACK_CHANNEL_LOGOUT_APP_TWO + ".war")
                 .addClasses(SimpleServlet.class)
                 .addClasses(SimpleSecuredServlet.class)
                 .addAsWebInfResource(packageName, WEB_XML, "web.xml")
                 .addAsWebInfResource(packageName,
                         BACK_CHANNEL_LOGOUT_APP_TWO+"-oidc.json", "oidc.json")
                 ;
-        return war;
     }
 
     @Deployment(name = FRONT_CHANNEL_LOGOUT_APP, managed = false, testable = false)
@@ -178,8 +167,6 @@ public class JsonConfigLogoutNoCallbackTest extends LoginLogoutBasics {
             browserLogoutOfKeycloak(webClient, FRONT_CHANNEL_LOGOUT_APP);
             browserAssertUserLoggedOut(webClient, FRONT_CHANNEL_LOGOUT_APP,
                     SIGN_IN_TO_YOUR_ACCOUNT);
-
-            webClient.close();
         } finally {
             deployer.undeploy(FRONT_CHANNEL_LOGOUT_APP);
         }
@@ -205,16 +192,6 @@ public class JsonConfigLogoutNoCallbackTest extends LoginLogoutBasics {
         } finally {
             deployer.undeploy(BACK_CHANNEL_LOGOUT_APP_TWO);
             deployer.undeploy(BACK_CHANNEL_LOGOUT_APP);
-        }
-    }
-
-    //-------------- Server Setup -------------------------
-    public static class PreviewStabilitySetupTask extends StabilityServerSetupSnapshotRestoreTasks.Preview {
-        @Override
-        protected void doSetup(ManagementClient managementClient) throws Exception {
-            // Write a system property so the model gets stored with a lower stability level.
-            // This is to make sure we can reload back to the higher level from the snapshot
-            LoginLogoutBasics.addSystemProperty(managementClient, JsonConfigLogoutNoCallbackTest.class);
         }
     }
 }

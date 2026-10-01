@@ -11,6 +11,7 @@ package org.jboss.as.clustering.controller;
  * Neglecting to do this may result in use of the default initial mode (i.e. ACTIVE), which would result in the parent service starting inadvertently.
  * @author Paul Ferraro
  */
+@Deprecated(forRemoval = true)
 public class RestartParentResourceRegistrar extends ResourceRegistrar {
 
     public RestartParentResourceRegistrar(ResourceServiceConfiguratorFactory parentFactory, ResourceDescriptor descriptor) {

@@ -13,7 +13,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>41.0.0.Beta1-SNAPSHOT</version>
+        <version>42.0.0.Beta1-SNAPSHOT</version>
         <relativePath>../../pom.xml</relativePath>
     </parent>
 
@@ -268,7 +268,7 @@
             <dependency>
                 <groupId>org.jboss.resteasy</groupId>
                 <artifactId>resteasy-client-utils</artifactId>
-                <version>${version.org.jboss.resteasy.client-utils}</version>
+                <version>${version.org.jboss.resteasy}</version>
                 <scope>test</scope>
             </dependency>
             <dependency>
@@ -300,14 +300,6 @@
                 </exclusions>
             </dependency>
 
-            <!-- used in the MicroProfile REST Client TCK -->
-            <dependency>
-                <groupId>org.jboss.spec.javax.servlet</groupId>
-                <artifactId>jboss-servlet-api_4.0_spec</artifactId>
-                <version>${version.org.jboss.spec.javax.servlet.jboss-servlet-api_4.0_spec}</version>
-                <scope>test</scope>
-            </dependency>
-
             <dependency>
                 <groupId>org.jsoup</groupId>
                 <artifactId>jsoup</artifactId>
@@ -325,13 +317,13 @@
 
             <dependency>
                 <groupId>org.keycloak</groupId>
-                <artifactId>keycloak-admin-client</artifactId>
+                <artifactId>keycloak-core</artifactId>
                 <version>${version.org.keycloak}</version>
                 <scope>test</scope>
             </dependency>
             <dependency>
                 <groupId>org.keycloak</groupId>
-                <artifactId>keycloak-core</artifactId>
+                <artifactId>keycloak-services</artifactId>
                 <version>${version.org.keycloak}</version>
                 <scope>test</scope>
             </dependency>

@@ -18,12 +18,16 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.CountDownLatch;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * @author <a href="mailto:kabir.khan@jboss.com">Kabir Khan</a>
  */
 @ApplicationScoped
 public class CompressionMessagingBean {
+    private static final Logger LOGGER = Logger.getLogger(CompressionMessagingBean.class.getName());
+
     private final CountDownLatch latch = new CountDownLatch(4);
     private List<String> words = new ArrayList<>();
 
@@ -61,25 +65,41 @@ public class CompressionMessagingBean {
 
     public void sendGzip(String...words) {
         for (String word : words) {
-            gzipEmitter.send(word);
+            send("gzip", gzipEmitter, word);
         }
     }
 
     public void sendSnappy(String...words) {
         for (String word : words) {
-            snappyEmitter.send(word);
+            send("snappy", snappyEmitter, word);
         }
     }
 
     public void sendLz4(String...words) {
         for (String word : words) {
-            lz4Emitter.send(word);
+            send("lz4", lz4Emitter, word);
         }
     }
 
     public void sendZstd(String...words) {
         for (String word : words) {
-            zstdEmitter.send(word);
+            send("zstd", zstdEmitter, word);
+        }
+    }
+
+    private void send(String compression, Emitter<String> emitter, String word) {
+        LOGGER.info(() -> "Submitting " + compression + " Kafka message: " + word);
+        try {
+            emitter.send(word).whenComplete((ignored, failure) -> {
+                if (failure == null) {
+                    LOGGER.info(() -> compression + " Kafka send completed: " + word);
+                } else {
+                    LOGGER.log(Level.SEVERE, compression + " Kafka send failed: " + word, failure);
+                }
+            });
+        } catch (RuntimeException e) {
+            LOGGER.log(Level.SEVERE, compression + " Kafka send threw before returning a completion stage: " + word, e);
+            throw e;
         }
     }
 }

@@ -5,6 +5,8 @@
 
 package org.jboss.as.test.integration.jaxb.unit;
 
+import java.io.FilePermission;
+import java.lang.reflect.ReflectPermission;
 import java.net.URL;
 
 import org.apache.http.HttpEntity;
@@ -23,11 +25,10 @@ import org.jboss.as.test.integration.jaxb.bindings.Items;
 import org.jboss.as.test.integration.jaxb.bindings.ObjectFactory;
 import org.jboss.as.test.integration.jaxb.bindings.PurchaseOrderType;
 import org.jboss.as.test.integration.jaxb.bindings.USAddress;
-import org.jboss.as.test.shared.SecurityManagerFailure;
+import org.jboss.as.test.shared.PermissionUtils;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -54,12 +55,11 @@ public class JAXBUsageTestCase {
     public static WebArchive createDeployment() {
         final WebArchive war = ShrinkWrap.create(WebArchive.class, WEB_APP_CONTEXT + ".war");
         war.addClasses(JAXBUsageServlet.class, Items.class, ObjectFactory.class, PurchaseOrderType.class, USAddress.class);
+        war.add(PermissionUtils.createPermissionsXmlAsset(
+                new RuntimePermission("accessDeclaredMembers"),
+                new ReflectPermission("suppressAccessChecks"),
+                new FilePermission(System.getProperty("jboss.inst") + "/standalone/tmp/-", "read")), "META-INF/permissions.xml");
         return war;
-    }
-
-    @BeforeClass
-    public static void beforeClass() {
-        SecurityManagerFailure.thisTestIsFailingUnderSM("WFLY-6192");
     }
 
     @OperateOnDeployment("app")

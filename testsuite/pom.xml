@@ -61,7 +61,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>41.0.0.Beta1-SNAPSHOT</version>
+        <version>42.0.0.Beta1-SNAPSHOT</version>
     </parent>
 
     <artifactId>wildfly-testsuite</artifactId>
@@ -176,7 +176,8 @@
 
         <!-- Timeout ratios. 100 will leave the timeout as it was coded. -->
         <timeout.factor>100</timeout.factor>
-        <jvm.args.timeouts>-Dts.timeout.factor=${timeout.factor}</jvm.args.timeouts>
+        <!-- WFLY-22076 Bump bootable jar cleanup marker timeout from default 10s to avoid spurious failures on slow CI agents. -->
+        <jvm.args.timeouts>-Dts.timeout.factor=${timeout.factor} -Dorg.wildfly.core.bootable.jar.timeout=60</jvm.args.timeouts>
 
         <!-- Common surefire properties. -->
         <surefire.memory.args>-Xmx512m</surefire.memory.args>
@@ -215,6 +216,10 @@
         <!-- properties to enable plugin executions -->
         <ts.bootable-jar-packaging.phase>none</ts.bootable-jar-packaging.phase>
 
+        <!-- Sigh. CDI 5 changed their maven GAs, so we have more fun with profiles. Grumble, grumble. -->
+        <cdi.api.groupId>jakarta.enterprise</cdi.api.groupId>
+        <cdi.api.artifactId>jakarta.enterprise.cdi-api</cdi.api.artifactId>
+
     </properties>
 
     <dependencyManagement>
@@ -237,26 +242,9 @@
     </dependencyManagement>
 
     <dependencies>
-        <dependency>
-            <groupId>jakarta.inject</groupId>
-            <artifactId>jakarta.inject-api</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>jakarta.enterprise</groupId>
-            <artifactId>jakarta.enterprise.cdi-api</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>jakarta.persistence</groupId>
-            <artifactId>jakarta.persistence-api</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>jakarta.transaction</groupId>
-            <artifactId>jakarta.transaction-api</artifactId>
-            <scope>test</scope>
-        </dependency>
+        <!-- DO NOT add dependencies here unless they are truly required by ALL child modules. -->
+        <!-- Declare dependencies in the specific module that requires them. See WFLY-22034. -->
+        <!-- The <dependencies> section is left empty intentionally so that anyone adding a dependency here will notice this message. -->
     </dependencies>
 
     <build>
@@ -833,6 +821,9 @@
                 <additional.ee.test.source>ee11</additional.ee.test.source>
                 <!-- Use the EE 11+ EL API artifact -->
                 <jakarta.el.api.artifactId>jakarta.el-api</jakarta.el.api.artifactId>
+                <!-- Use the EE 12 CDI artifacts -->
+                <cdi.api.groupId>jakarta.cdi</cdi.api.groupId>
+                <cdi.api.artifactId>jakarta.cdi-api</cdi.api.artifactId>
             </properties>
         </profile>
 
@@ -977,22 +968,6 @@
             </activation>
             <properties>
                 <mcast3>${mcast3}</mcast3>
-            </properties>
-        </profile>
-
-        <!-- Security manager. -->
-        <profile>
-            <id>ts.security.manager</id>
-            <activation>
-                <property>
-                    <name>security.manager</name>
-                </property>
-            </activation>
-            <properties>
-                <jboss.args>-secmgr</jboss.args>
-                <jboss.domain.server.args>-secmgr</jboss.domain.server.args>
-                <!-- Re-enable the default surefire execution -->
-                <surefire.default-test.phase>test</surefire.default-test.phase>
             </properties>
         </profile>
 

@@ -14,6 +14,7 @@ import org.wildfly.clustering.service.ServiceConfigurator;
  * Configures a {@link org.jboss.msc.Service} using the model of a resource.
  * @author Paul Ferraro
  */
+@Deprecated(forRemoval = true)
 public interface ResourceServiceConfigurator extends ServiceConfigurator {
 
     /**

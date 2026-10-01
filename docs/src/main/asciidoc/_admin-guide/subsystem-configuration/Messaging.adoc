@@ -473,7 +473,7 @@ Jakarta Messaging jar since it will be provided by a WildFly module directly.
 To use these resources in a Jakarta Messaging bridge, we must bundle them in a WildFly
 module:
 
-in JBOSS_HOME/modules, we create the layout:
+in $JBOSS_HOME/modules, we create the layout:
 
 [source,options="nowrap"]
 ----

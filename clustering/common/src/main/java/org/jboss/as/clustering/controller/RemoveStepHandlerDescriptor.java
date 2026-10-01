@@ -17,6 +17,7 @@ import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
  * Describes the common properties of a remove operation handler.
  * @author Paul Ferraro
  */
+@Deprecated(forRemoval = true)
 @FunctionalInterface
 public interface RemoveStepHandlerDescriptor extends OperationStepHandlerDescriptor {
     /**

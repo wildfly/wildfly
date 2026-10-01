@@ -15,7 +15,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>41.0.0.Beta1-SNAPSHOT</version>
+        <version>42.0.0.Beta1-SNAPSHOT</version>
     </parent>
 
     <packaging>pom</packaging>
@@ -124,6 +124,11 @@
                                     <artifactId>wildfly-jms-client-bom</artifactId>
                                     <type>pom</type>
                                     <transitive>false</transitive>
+                                </dependency>
+                                <!-- The groupId for CDI is different in EE 12 so CDI API declarations are not shared -->
+                                <dependency>
+                                    <groupId>jakarta.enterprise</groupId>
+                                    <artifactId>jakarta.enterprise.cdi-api</artifactId>
                                 </dependency>
                             </includeDependencies>
                         </configuration>

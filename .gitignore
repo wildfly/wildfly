@@ -61,3 +61,6 @@ client/shade/dependency-reduced-pom.xml
 
 #OS X stuff
 .DS_Store
+
+# Coding Agent files
+.serena/

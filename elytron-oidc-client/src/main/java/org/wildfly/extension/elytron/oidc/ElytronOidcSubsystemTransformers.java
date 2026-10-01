@@ -11,17 +11,37 @@ import static org.wildfly.extension.elytron.oidc.ElytronOidcClientSubsystemModel
 import static org.wildfly.extension.elytron.oidc.ElytronOidcClientSubsystemModel.VERSION_4_0_0;
 import static org.wildfly.extension.elytron.oidc.ElytronOidcClientSubsystemModel.VERSION_5_0_0;
 import static org.wildfly.extension.elytron.oidc.ElytronOidcClientSubsystemModel.VERSION_6_0_0;
+import static org.wildfly.extension.elytron.oidc.ElytronOidcDescriptionConstants.PROVIDER;
+import static org.wildfly.extension.elytron.oidc.ElytronOidcDescriptionConstants.REALM;
+import static org.wildfly.extension.elytron.oidc.ElytronOidcDescriptionConstants.SECURE_DEPLOYMENT;
 import static org.wildfly.extension.elytron.oidc.ElytronOidcDescriptionConstants.SECURE_SERVER;
+import static org.wildfly.extension.elytron.oidc.ProviderAttributeDefinitions.PROVIDER_JWT_CLAIMS_TYP;
+import static org.wildfly.extension.elytron.oidc.SecureDeploymentDefinition.BACK_CHANNEL_LOGOUT_SESSION_INVALIDATION_LIMIT;
+import static org.wildfly.extension.elytron.oidc.SecureDeploymentDefinition.LOGOUT_CALLBACK_PATH;
+import static org.wildfly.extension.elytron.oidc.SecureDeploymentDefinition.LOGOUT_PATH;
+import static org.wildfly.extension.elytron.oidc.SecureDeploymentDefinition.LOGOUT_SESSION_REQUIRED;
+import static org.wildfly.extension.elytron.oidc.SecureDeploymentDefinition.POST_LOGOUT_REDIRECT_URI;
 
+import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.transform.ExtensionTransformerRegistration;
 import org.jboss.as.controller.transform.SubsystemTransformerRegistration;
 import org.jboss.as.controller.transform.description.ChainedTransformationDescriptionBuilder;
+import org.jboss.as.controller.transform.description.DiscardAttributeChecker;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.as.controller.transform.description.TransformationDescriptionBuilder;
 
 public class ElytronOidcSubsystemTransformers implements ExtensionTransformerRegistration {
+
+    private static final AttributeDefinition[] LOGOUT_ATTRIBUTES = {
+            LOGOUT_PATH,
+            LOGOUT_CALLBACK_PATH,
+            POST_LOGOUT_REDIRECT_URI,
+            LOGOUT_SESSION_REQUIRED,
+            BACK_CHANNEL_LOGOUT_SESSION_INVALIDATION_LIMIT,
+            PROVIDER_JWT_CLAIMS_TYP
+    };
 
     @Override
     public String getSubsystemName() {
@@ -68,9 +88,17 @@ public class ElytronOidcSubsystemTransformers implements ExtensionTransformerReg
     }
 
     private static void from6(ChainedTransformationDescriptionBuilder chainedBuilder) {
-        ResourceTransformationDescriptionBuilder builder = chainedBuilder.createBuilder(VERSION_6_0_0.getVersion(), VERSION_5_0_0.getVersion());
+        discardLogoutAttributes(chainedBuilder.createBuilder(VERSION_6_0_0.getVersion(), VERSION_5_0_0.getVersion()));
+    }
 
-        // Transformer rules will be added here when model changes are made
-        // For a pure version bump with no model changes, this can be empty
+    private static void discardLogoutAttributes(ResourceTransformationDescriptionBuilder subsystemBuilder) {
+        discardLogoutAttributesOnResource(subsystemBuilder.addChildResource(PathElement.pathElement(REALM)));
+        discardLogoutAttributesOnResource(subsystemBuilder.addChildResource(PathElement.pathElement(PROVIDER)));
+        discardLogoutAttributesOnResource(subsystemBuilder.addChildResource(PathElement.pathElement(SECURE_DEPLOYMENT)));
+        discardLogoutAttributesOnResource(subsystemBuilder.addChildResource(PathElement.pathElement(SECURE_SERVER)));
+    }
+
+    private static void discardLogoutAttributesOnResource(ResourceTransformationDescriptionBuilder resourceBuilder) {
+        resourceBuilder.getAttributeBuilder().setDiscard(DiscardAttributeChecker.UNDEFINED, LOGOUT_ATTRIBUTES);
     }
 }

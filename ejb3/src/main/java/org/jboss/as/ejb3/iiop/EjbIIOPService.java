@@ -57,9 +57,6 @@ import org.omg.CORBA.ORB;
 import org.omg.CORBA.Policy;
 import org.omg.CORBA.Repository;
 import org.omg.CosNaming.NameComponent;
-import org.omg.CosNaming.NamingContext;
-import org.omg.CosNaming.NamingContextExt;
-import org.omg.CosNaming.NamingContextHelper;
 import org.omg.CosNaming.NamingContextPackage.CannotProceed;
 import org.omg.CosNaming.NamingContextPackage.InvalidName;
 import org.omg.CosNaming.NamingContextPackage.NotFound;
@@ -67,6 +64,7 @@ import org.omg.PortableServer.Current;
 import org.omg.PortableServer.CurrentHelper;
 import org.omg.PortableServer.POA;
 import org.wildfly.iiop.openjdk.csiv2.CSIv2Policy;
+import org.wildfly.iiop.openjdk.naming.CorbaNamingContext;
 import org.wildfly.iiop.openjdk.rmi.ir.InterfaceRepository;
 import org.wildfly.iiop.openjdk.rmi.marshal.strategy.SkeletonStrategy;
 import org.wildfly.security.manager.WildFlySecurityManager;
@@ -115,9 +113,9 @@ public class EjbIIOPService implements Service<EjbIIOPService> {
     private final InjectedValue<POARegistry> poaRegistry = new InjectedValue<POARegistry>();
 
     /**
-     * The corba naming context
+     * The corba naming context implementation
      */
-    private final InjectedValue<NamingContextExt> corbaNamingContext = new InjectedValue<NamingContextExt>();
+    private final InjectedValue<CorbaNamingContext> corbaNamingContextImpl = new InjectedValue<>();
 
     /**
      * A reference for the ORB.
@@ -365,7 +363,7 @@ public class EjbIIOPService implements Service<EjbIIOPService> {
             beanReferenceFactory = beanServantRegistry.bind(beanServantName(name), beanServant, policies);
 
             // Register bean home in local CORBA naming context
-            rebind(corbaNamingContext.getValue(), name, corbaRef);
+            rebind(corbaNamingContextImpl.getValue(), name, corbaRef);
             EjbLogger.ROOT_LOGGER.debugf("Home IOR for %s bound to %s in CORBA naming service", component.getComponentName(), this.name);
 
             //now eagerly force stub creation, so de-serialization of stubs will work correctly
@@ -395,12 +393,12 @@ public class EjbIIOPService implements Service<EjbIIOPService> {
     @Override
     public synchronized void stop(final StopContext context) {
         // Get local (in-VM) CORBA naming context
-        final NamingContextExt corbaContext = corbaNamingContext.getValue();
+        final CorbaNamingContext corbaContext = corbaNamingContextImpl.getValue();
 
         // Unregister bean home from local CORBA naming context
         try {
-            NameComponent[] name = corbaContext.to_name(this.name);
-            corbaContext.unbind(name);
+            NameComponent[] name = corbaContext.doToName(this.name);
+            corbaContext.doUnbind(name);
         } catch (InvalidName invalidName) {
             EjbLogger.ROOT_LOGGER.cannotUnregisterEJBHomeFromCobra(invalidName);
         } catch (NotFound notFound) {
@@ -493,26 +491,23 @@ public class EjbIIOPService implements Service<EjbIIOPService> {
      * This method is synchronized on the class object, if multiple services attempt to bind the
      * same context name at once it will fail
      *
-     * @param ctx     a reference to the COSNaming service.
+     * @param ctxImpl the CorbaNamingContext implementation (for internal calls without authentication).
      * @param strName the name under which the CORBA object is to be bound.
      * @param obj     the CORBA object to be bound.
      * @throws Exception if an error occurs while binding the object.
      */
-    public static synchronized void rebind(final NamingContextExt ctx, final String strName, final org.omg.CORBA.Object obj) throws Exception {
-        final NameComponent[] name = ctx.to_name(strName);
-        NamingContext intermediateCtx = ctx;
-
+    private static synchronized void rebind(final CorbaNamingContext ctxImpl, final String strName, final org.omg.CORBA.Object obj) throws Exception {
+        final NameComponent[] name = ctxImpl.doToName(strName);
 
         for (int i = 0; i < name.length - 1; i++) {
-            final NameComponent[] relativeName = new NameComponent[]{name[i]};
+            NameComponent[] partialPath = java.util.Arrays.copyOfRange(name, 0, i + 1);
             try {
-                intermediateCtx = NamingContextHelper.narrow(
-                        intermediateCtx.resolve(relativeName));
+                ctxImpl.doResolve(partialPath);
             } catch (NotFound e) {
-                intermediateCtx = intermediateCtx.bind_new_context(relativeName);
+                ctxImpl.doBindNewContext(partialPath);
             }
         }
-        intermediateCtx.rebind(new NameComponent[]{name[name.length - 1]}, obj);
+        ctxImpl.doRebind(name, obj);
     }
 
     /**
@@ -552,8 +547,8 @@ public class EjbIIOPService implements Service<EjbIIOPService> {
         return orb;
     }
 
-    public InjectedValue<NamingContextExt> getCorbaNamingContext() {
-        return corbaNamingContext;
+    public InjectedValue<CorbaNamingContext> getCorbaNamingContextImpl() {
+        return corbaNamingContextImpl;
     }
 
     public InjectedValue<POARegistry> getPoaRegistry() {

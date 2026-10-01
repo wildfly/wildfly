@@ -29,6 +29,6 @@ public class BuiltinBeanSerializationContextInitializer extends AbstractSerializ
     @SuppressWarnings("unchecked")
     @Override
     public void registerMarshallers(SerializationContext context) {
-        context.registerMarshaller(new TernaryMethodMarshaller<>(InstanceImpl.class, InjectionPoint.class, CreationalContext.class, BeanManagerImpl.class, (injectionPoint, ctx, manager) -> InstanceImpl.of(injectionPoint, ctx, manager)));
+        context.registerMarshaller(new TernaryMethodMarshaller<>(InstanceImpl.class, InjectionPoint.class, CreationalContext.class, BeanManagerImpl.class, (injectionPoint, ctx, manager) -> (InstanceImpl<?>) InstanceImpl.of(injectionPoint, ctx, manager)));
     }
 }

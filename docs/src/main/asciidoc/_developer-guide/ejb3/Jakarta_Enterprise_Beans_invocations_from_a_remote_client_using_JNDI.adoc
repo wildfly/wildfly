@@ -639,11 +639,11 @@ be
 == Using the jboss-client.jar
 
 A jboss-client jar is shipped in the distribution. It's available at
-WILDFLY_HOME/bin/client/jboss-client.jar. Place this jar in the
+$JBOSS_HOME/bin/client/jboss-client.jar. Place this jar in the
 classpath of your client application.
 
 If you are using Maven to build the client application, then please
-follow the instructions in the WILDFLY_HOME/bin/client/README.txt to add
+follow the instructions in the $JBOSS_HOME/bin/client/README.txt to add
 this jar as a Maven dependency.
 
 [NOTE]

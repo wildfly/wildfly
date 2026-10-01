@@ -12,6 +12,7 @@ import org.jboss.as.controller.descriptions.OverrideDescriptionProvider;
  * Enhanced {@link org.jboss.as.controller.registry.ManagementResourceRegistration} that also exposes the registration context.
  * @author Paul Ferraro
  */
+@Deprecated(forRemoval = true)
 public interface ManagementResourceRegistration extends org.jboss.as.controller.registry.ManagementResourceRegistration, ManagementRegistrationContext {
 
     @Override

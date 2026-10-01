@@ -16,6 +16,7 @@ import org.jboss.dmr.ModelNode;
 /**
  * @author Paul Ferraro
  */
+@Deprecated(forRemoval = true)
 public class DeploymentChainContributingAddStepHandler extends AddStepHandler {
 
     private final Consumer<DeploymentProcessorTarget> deploymentChainContributor;

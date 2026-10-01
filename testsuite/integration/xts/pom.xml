@@ -15,7 +15,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>41.0.0.Beta1-SNAPSHOT</version>
+        <version>42.0.0.Beta1-SNAPSHOT</version>
     </parent>
 
     <!-- ********************************************************************************** -->
@@ -32,6 +32,46 @@
     </properties>
 
     <dependencies>
+        <dependency>
+            <groupId>${ee.maven.groupId}</groupId>
+            <artifactId>wildfly-testsuite-shared</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.assertj</groupId>
+            <artifactId>assertj-core</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.undertow</groupId>
+            <artifactId>undertow-core</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>jakarta.inject</groupId>
+            <artifactId>jakarta.inject-api</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss</groupId>
+            <artifactId>jboss-dmr</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.logging</groupId>
+            <artifactId>jboss-logging</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.wildfly.core</groupId>
+            <artifactId>wildfly-controller</artifactId>
+            <scope>test</scope>
+        </dependency>
+
         <!-- These seem to be required first so that jbossws-cxf-client ends up on the class path first. The clients
              jakarta.xml.ws.spi.Provider needs to be the one used.
         -->
@@ -342,32 +382,7 @@
                             </includes>
                             <systemPropertyVariables combine.children="append">
                                 <arquillian.launch>xts-servers</arquillian.launch>
-                                <!-- Required for the protocol in the arquillian.xml -->
-                                <arquillian.servlet.protocol>${arquillian.servlet.protocol}</arquillian.servlet.protocol>
                             </systemPropertyVariables>
-                            <!--<argLine>${surefire.system.args}</argLine>-->
-                        </configuration>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-        <profile>
-            <id>ts.security.manager</id>
-            <activation>
-                <property>
-                    <name>security.manager</name>
-                </property>
-            </activation>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-surefire-plugin</artifactId>
-                        <configuration>
-                            <excludes>
-                                <!-- This test uses Byteman and requires permission on a random port every time -->
-                                <exclude>**/BAParticipantCompletionTestCase.java</exclude>
-                            </excludes>
                             <!--<argLine>${surefire.system.args}</argLine>-->
                         </configuration>
                     </plugin>

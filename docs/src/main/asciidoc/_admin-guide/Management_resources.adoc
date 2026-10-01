@@ -65,7 +65,7 @@ when invoked via the CLI, the text representation of a `ModelNode`; when
 invoked via the HTTP API, the JSON representation of a `ModelNode`.)
 
 Every resource except the root resource will have an `add` operation and
-should have a `remove` operation ("should" because in WildFly {wildflyVersion} many do
+should have a `remove` operation ("should" because in WildFly many do
 not). The parameters for the `add` operation vary depending on the
 resource. The `remove` operation has no parameters.
 

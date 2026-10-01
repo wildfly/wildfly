@@ -5,7 +5,6 @@
 
 package org.jboss.as.clustering.infinispan.cache;
 
-import java.security.PrivilegedAction;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
@@ -18,23 +17,17 @@ import java.util.function.Supplier;
 import org.infinispan.commons.api.BasicCache;
 import org.infinispan.commons.api.query.ContinuousQuery;
 import org.infinispan.commons.api.query.Query;
-import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
  * A cache that resolves itself from its cache container lazily.
  * @author Paul Ferraro
  */
-public abstract class LazyBasicCache<K, V, C extends BasicCache<K, V>> implements BasicCache<K, V>, Supplier<C>, PrivilegedAction<C> {
+public abstract class LazyBasicCache<K, V, C extends BasicCache<K, V>> implements BasicCache<K, V>, Supplier<C> {
 
     private final String name;
 
     protected LazyBasicCache(String name) {
         this.name = name;
-    }
-
-    @Override
-    public C get() {
-        return WildFlySecurityManager.doUnchecked(this);
     }
 
     @Override

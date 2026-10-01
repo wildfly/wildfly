@@ -16,7 +16,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>41.0.0.Beta1-SNAPSHOT</version>
+        <version>42.0.0.Beta1-SNAPSHOT</version>
     </parent>
 
     <!-- ********************************************************************************** -->
@@ -60,10 +60,38 @@
         <!-- Disable the default surefire test execution. -->
         <surefire.default-test.phase>none</surefire.default-test.phase>
 
+        <!-- Sigh. CDI 5 changed their maven GAs, so we have more fun with profiles. Grumble, grumble. -->
+        <cdi.el.api.artifactId>jakarta.enterprise.cdi-el-api</cdi.el.api.artifactId>
+
         <modular.jdk.testsuite.args>${modular.jdk.args} --add-opens=java.base/javax.crypto=ALL-UNNAMED --add-opens=java.base/sun.security.validator=ALL-UNNAMED --add-opens=java.base/sun.security.x509=ALL-UNNAMED --add-opens=java.base/sun.security.util=ALL-UNNAMED  --add-opens=java.xml/com.sun.org.apache.xalan.internal.xsltc.trax=ALL-UNNAMED</modular.jdk.testsuite.args>
     </properties>
 
     <dependencies>
+        <dependency>
+            <groupId>${ee.maven.groupId}</groupId>
+            <artifactId>wildfly-testsuite-shared</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>jakarta.inject</groupId>
+            <artifactId>jakarta.inject-api</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.logmanager</groupId>
+            <artifactId>commons-logging-jboss-logmanager</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.wildfly.core</groupId>
+            <artifactId>wildfly-core-test-runner</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.wildfly.core</groupId>
+            <artifactId>wildfly-jmx</artifactId>
+            <scope>test</scope>
+        </dependency>
+
         <!-- These seem to be required first so that jbossws-cxf-client ends up on the class path first. Also required for Java 11 -->
         <dependency>
             <groupId>org.jboss.ws.cxf</groupId>
@@ -125,8 +153,8 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>jakarta.enterprise</groupId>
-            <artifactId>jakarta.enterprise.cdi-api</artifactId>
+            <groupId>${cdi.api.groupId}</groupId>
+            <artifactId>${cdi.api.artifactId}</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -329,7 +357,7 @@
         </dependency>
         <!-- A required implementation for the org.jboss.resteasy:resteasy-json-binding-provider -->
         <dependency>
-            <groupId>org.eclipse</groupId>
+            <groupId>org.eclipse.yasson</groupId>
             <artifactId>yasson</artifactId>
             <scope>test</scope>
         </dependency>
@@ -591,6 +619,11 @@
         <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>wildfly-naming</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>wildfly-iiop-openjdk</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -862,6 +895,18 @@
 
     <build>
         <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <annotationProcessorPaths>
+                        <path>
+                            <groupId>org.kohsuke.metainf-services</groupId>
+                            <artifactId>metainf-services</artifactId>
+                        </path>
+                    </annotationProcessorPaths>
+                </configuration>
+            </plugin>
             <plugin>
                 <groupId>${version.org.hibernate.maven.plugin.groupId}</groupId>
                 <artifactId>${version.org.hibernate.maven.plugin.artifactId}</artifactId>
@@ -1485,7 +1530,7 @@
                             <add-layers-for-jndi>
                                 <layer>mail</layer>
                             </add-layers-for-jndi>
-                            <expected-discovery>[ee-integration, mail, naming, sar, transactions]==>ee-core-profile-server,mail,sar,transactions</expected-discovery>
+                            <expected-discovery>[ee-integration, mail, naming, resource-adapters, sar, transactions]==>ee-core-profile-server,mail,resource-adapters,sar</expected-discovery>
                             <surefire-execution-for-included-classes>legacy-sar-layers.surefire</surefire-execution-for-included-classes>
                         </configuration>
                     </execution>
@@ -1770,6 +1815,7 @@
                 </executions>
             </plugin>
 
+            <!-- Configure IIOP authentication for standalone-full.xml -->
         </plugins>
     </build>
 
@@ -1853,6 +1899,7 @@
                                         <include>org/jboss/as/test/integration/ejb/log/*TestCase.java</include>
                                         <include>org/jboss/as/test/integration/ejb/pool/**/*TestCase*.java</include>
                                         <include>org/jboss/as/test/integration/ejb/management/deployments/*TestCase.java</include>
+                                        <include>org/jboss/as/test/integration/ejb/noremote/**/*TestCase.java</include>
                                         <include>org/jboss/as/test/integration/ejb/singleton/dependson/mdb/*TestCase.java</include>
                                         <include>org/jboss/as/test/integration/ejb/transaction/bmt/lazyenlist</include>
                                         <include>org/jboss/as/test/integration/ejb/timerservice/gettimers/*TestCase.java</include>
@@ -1885,6 +1932,8 @@
                                         <com.sun.CORBA.ORBUseDynamicStub>true</com.sun.CORBA.ORBUseDynamicStub>
                                         <!-- EJB client library hack, see WFLY-4973-->
                                         <org.jboss.ejb.client.wildfly-testsuite-hack>true</org.jboss.ejb.client.wildfly-testsuite-hack>
+                                        <!-- IIOP NameService authentication requires SecurityDomain - override server.jvm.args to include it -->
+                                        <server.jvm.args>${surefire.system.args} ${jvm.args.ip.server} ${jvm.args.other} ${jvm.args.timeouts} -Dnode0=${node0} -Dnode1=${node1} -Djboss.iiop.naming.security-domain=ApplicationDomain ${jvm.args.dirs} ${extra.server.jvm.args}</server.jvm.args>
                                     </systemPropertyVariables>
 
                                     <additionalClasspathElements>
@@ -3552,10 +3601,6 @@
             </activation>
             <dependencies>
                 <dependency>
-                    <groupId>jakarta.enterprise</groupId>
-                    <artifactId>jakarta.enterprise.cdi-el-api</artifactId>
-                </dependency>
-                <dependency>
                     <groupId>org.wildfly.arquillian</groupId>
                     <artifactId>wildfly-arquillian-container-bootable</artifactId>
                 </dependency>
@@ -3693,6 +3738,7 @@
         </profile>
 
         <!-- Test against WildFly Preview -->
+
         <profile>
             <id>preview.test.profile</id>
             <activation>
@@ -3704,12 +3750,6 @@
                 <!-- The following is needed by PooledEJBLifecycleTestCase due to AssumeTestGroupUtil inside the test -->
                 <extra.server.jvm.args>-Dts.preview</extra.server.jvm.args>
             </properties>
-            <dependencies>
-                <dependency>
-                    <groupId>jakarta.enterprise</groupId>
-                    <artifactId>jakarta.enterprise.cdi-el-api</artifactId>
-                </dependency>
-            </dependencies>
             <build>
                 <plugins>
                     <plugin>
@@ -3804,6 +3844,18 @@
         </profile>
         <!-- Dependencies only to be used when not testing installations using the legacy EE FP -->
         <profile>
+            <id>ee-12-deps</id>
+            <activation>
+                <property>
+                    <name>preview-server-tests</name>
+                </property>
+            </activation>
+            <properties>
+                <cdi.el.api.artifactId>jakarta.cdi-el-api</cdi.el.api.artifactId>
+            </properties>
+        </profile>
+
+        <profile>
             <id>latest.ee.specific.dependencies</id>
             <activation>
                 <!-- Note: an analogous profile with the same id in some production code modules
@@ -3816,8 +3868,8 @@
             </activation>
             <dependencies>
                 <dependency>
-                    <groupId>jakarta.enterprise</groupId>
-                    <artifactId>jakarta.enterprise.cdi-el-api</artifactId>
+                    <groupId>${cdi.api.groupId}</groupId>
+                    <artifactId>${cdi.el.api.artifactId}</artifactId>
                     <scope>test</scope>
                 </dependency>
             </dependencies>

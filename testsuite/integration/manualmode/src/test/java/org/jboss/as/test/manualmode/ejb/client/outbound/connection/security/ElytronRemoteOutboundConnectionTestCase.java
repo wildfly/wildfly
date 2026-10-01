@@ -166,12 +166,12 @@ public class ElytronRemoteOutboundConnectionTestCase {
     private static final String ROLES_PATH = new File(ElytronRemoteOutboundConnectionTestCase.class.getResource("roles.properties").
             getFile()).getAbsolutePath();
 
-    private static final int BARE_REMOTING_PORT = 54447;
+    private static final int BARE_REMOTING_PORT = 19447;
     private static final String BARE_REMOTING_PROTOCOL = "remote";
-    private static final int SSL_REMOTING_PORT = 54448;
+    private static final int SSL_REMOTING_PORT = 19448;
     private static final String SSL_REMOTING_PROTOCOL = "remote";
 
-    private static final int SSL_REMOTING_TLS_PORT = 54449;
+    private static final int SSL_REMOTING_TLS_PORT = 19449;
     private static final String SSL_REMOTING_TLS_PROTOCOL = "remote+tls";
 
     private static final int HTTP_REMOTING_PORT = 8080;

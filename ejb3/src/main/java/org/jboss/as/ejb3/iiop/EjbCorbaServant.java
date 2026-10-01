@@ -219,7 +219,6 @@ public class EjbCorbaServant extends Servant implements InvokeHandler, LocalIIOP
      */
     public OutputStream _invoke(final String opName, final InputStream in, final ResponseHandler handler) {
         EjbLogger.ROOT_LOGGER.tracef("EJBObject invocation: %s", opName);
-
         SkeletonStrategy op = methodInvokerMap.get(opName);
         if (op == null) {
             EjbLogger.ROOT_LOGGER.debugf("Unable to find opname '%s' valid operations:%s", opName, methodInvokerMap.keySet());
@@ -268,44 +267,47 @@ public class EjbCorbaServant extends Servant implements InvokeHandler, LocalIIOP
                             credential = new String(incomingPassword, StandardCharsets.UTF_8).toCharArray();
                         }
                     }
-                    final Object[] params = op.readParams((org.omg.CORBA_2_3.portable.InputStream) in);
 
-                    if (!this.home && opName.equals("isIdentical") && params.length == 1) {
-                        //handle isIdentical specially
-                        Object val = params[0];
-                        retVal = val instanceof org.omg.CORBA.Object && handleIsIdentical((org.omg.CORBA.Object) val);
-                    } else {
-                        if (this.securityDomain != null) {
-                            // an elytron security domain is available: authenticate and authorize the client before invoking the component.
-                            SecurityIdentity identity = this.securityDomain.getAnonymousSecurityIdentity();
-                            AuthenticationConfiguration authenticationConfiguration = AuthenticationConfiguration.empty();
+                    if (this.securityDomain != null) {
+                        // an elytron security domain is available: authenticate and authorize the client before invoking the component.
+                        SecurityIdentity identity = this.securityDomain.getAnonymousSecurityIdentity();
+                        AuthenticationConfiguration authenticationConfiguration = AuthenticationConfiguration.empty();
 
-                            if (identityPrincipal != null) {
-                                // we have an identity token principal - check if the TLS identity, if available,
-                                // has permission to run as the identity token principal.
-                                // TODO use the TLS identity when that becomes available to us.
+                        if (identityPrincipal != null) {
+                            // we have an identity token principal - check if the TLS identity, if available,
+                            // has permission to run as the identity token principal.
+                            // TODO use the TLS identity when that becomes available to us.
 
-                                // no TLS identity found, check if an initial context token was also sent. If it was,
-                                // authenticate the incoming username/password and check if the resulting identity has
-                                // permission to run as the identity token principal.
-                                if (principal != null) {
-                                    char[] password = (char[]) credential;
-                                    authenticationConfiguration = authenticationConfiguration.useName(principal.getName())
-                                            .usePassword(password);
-                                    SecurityIdentity authenticatedIdentity = this.authenticate(principal, password);
-                                    identity = authenticatedIdentity.createRunAsIdentity(identityPrincipal.getName(), true);
-                                } else {
-                                    // no TLS nor initial context token found - check if the anonymous identity has
-                                    // permission to run as the identity principal.
-                                    identity = this.securityDomain.getAnonymousSecurityIdentity().createRunAsIdentity(identityPrincipal.getName(), true);
-                                }
-                            } else if (principal != null) {
+                            // no TLS identity found, check if an initial context token was also sent. If it was,
+                            // authenticate the incoming username/password and check if the resulting identity has
+                            // permission to run as the identity token principal.
+                            if (principal != null) {
                                 char[] password = (char[]) credential;
-                                // we have an initial context token containing a username/password pair.
                                 authenticationConfiguration = authenticationConfiguration.useName(principal.getName())
                                         .usePassword(password);
-                                identity = this.authenticate(principal, password);
+                                SecurityIdentity authenticatedIdentity = this.authenticate(principal, password);
+                                identity = authenticatedIdentity.createRunAsIdentity(identityPrincipal.getName(), true);
+                            } else {
+                                // no TLS nor initial context token found - check if the anonymous identity has
+                                // permission to run as the identity principal.
+                                identity = this.securityDomain.getAnonymousSecurityIdentity().createRunAsIdentity(identityPrincipal.getName(), true);
                             }
+                        } else if (principal != null) {
+                            char[] password = (char[]) credential;
+                            // we have an initial context token containing a username/password pair.
+                            authenticationConfiguration = authenticationConfiguration.useName(principal.getName())
+                                    .usePassword(password);
+                            identity = this.authenticate(principal, password);
+                        }
+
+                        // Authentication complete - now safe to deserialize method parameters
+                        final Object[] params = op.readParams((org.omg.CORBA_2_3.portable.InputStream) in);
+
+                        if (!this.home && opName.equals("isIdentical") && params.length == 1) {
+                            //handle isIdentical specially
+                            Object val = params[0];
+                            retVal = val instanceof org.omg.CORBA.Object && handleIsIdentical((org.omg.CORBA.Object) val);
+                        } else {
                             final InterceptorContext interceptorContext = new InterceptorContext();
                             this.prepareInterceptorContext(op, params, interceptorContext);
                             try {
@@ -314,10 +316,18 @@ public class EjbCorbaServant extends Servant implements InvokeHandler, LocalIIOP
                             } catch (PrivilegedActionException e) {
                                 throw e.getCause();
                             }
-                        } else {
-                            // legacy security behavior: setup the security context if a SASCurrent is available and invoke the component.
-                            // One of the EJB security interceptors will authenticate and authorize the client.
+                        }
+                    } else {
+                        // legacy security behavior: setup the security context if a SASCurrent is available and invoke the component.
+                        // One of the EJB security interceptors will authenticate and authorize the client.
+                        // Read parameters before authentication for legacy compatibility.
+                        final Object[] params = op.readParams((org.omg.CORBA_2_3.portable.InputStream) in);
 
+                        if (!this.home && opName.equals("isIdentical") && params.length == 1) {
+                            //handle isIdentical specially
+                            Object val = params[0];
+                            retVal = val instanceof org.omg.CORBA.Object && handleIsIdentical((org.omg.CORBA.Object) val);
+                        } else {
                             final InterceptorContext interceptorContext = new InterceptorContext();
                             prepareInterceptorContext(op, params, interceptorContext);
                             retVal = this.componentView.invoke(interceptorContext);

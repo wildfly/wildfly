@@ -39,6 +39,7 @@ import org.jboss.dmr.ModelType;
  * Generic add operation step handler that delegates service installation/rollback to a {@link ResourceServiceHandler}.
  * @author Paul Ferraro
  */
+@Deprecated(forRemoval = true)
 public class AddStepHandler extends AbstractAddStepHandler implements ManagementRegistrar<ManagementResourceRegistration>, DescribedAddStepHandler {
 
     private final AddStepHandlerDescriptor descriptor;

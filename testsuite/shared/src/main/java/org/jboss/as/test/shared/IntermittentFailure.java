@@ -5,7 +5,7 @@
 
 package org.jboss.as.test.shared;
 
-import org.junit.Assume;
+import org.assertj.core.api.Assumptions;
 
 /**
  * Utility class to disable (effectively @Ignore) intermittently failing tests unless explicitly enabled via a System property.
@@ -28,7 +28,7 @@ public final class IntermittentFailure {
      */
     public static void thisTestIsFailingIntermittently(String message) {
         boolean enableTest = System.getProperty("jboss.test.enableIntermittentFailingTests") != null;
-        Assume.assumeTrue(message, enableTest);
+        Assumptions.assumeThat(enableTest).as(message).isTrue();
     }
 
 }

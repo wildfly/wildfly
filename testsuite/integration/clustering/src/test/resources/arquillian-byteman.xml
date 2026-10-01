@@ -8,9 +8,12 @@
 
     <defaultProtocol type="jmx-as7"/>
 
+    <!-- Uncomment to inspect generated deployment archives -->
+    <!--
     <engine>
-        <property name="deploymentExportPath">target/</property>
+        <property name="deploymentExportPath">target/deployments/</property>
     </engine>
+    -->
 
     <container qualifier="single">
         <configuration>

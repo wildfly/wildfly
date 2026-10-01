@@ -19,7 +19,6 @@
         <extension module="org.wildfly.extension.bean-validation"/>
         <extension module="org.wildfly.extension.elytron"/>
         <extension module="org.wildfly.extension.messaging-activemq"/>
-        <extension module="org.wildfly.extension.security.manager"/>
         <extension module="org.wildfly.iiop-openjdk"/>
     </extensions>
 
@@ -130,13 +129,6 @@
         <subsystem xmlns="urn:jboss:domain:mail:4.0"/>
         <subsystem xmlns="urn:jboss:domain:messaging-activemq:15.0"/>
         <subsystem xmlns="urn:jboss:domain:naming:2.0"/>
-        <subsystem xmlns="urn:jboss:domain:security-manager:1.0">
-            <deployment-permissions>
-                <maximum-set>
-                    <permission class="java.security.AllPermission"/>
-                </maximum-set>
-            </deployment-permissions>
-        </subsystem>
         <subsystem xmlns="urn:jboss:domain:transactions:5.0">
             <core-environment>
                 <process-id>

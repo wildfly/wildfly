@@ -15,7 +15,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>41.0.0.Beta1-SNAPSHOT</version>
+        <version>42.0.0.Beta1-SNAPSHOT</version>
     </parent>
 
     <artifactId>wildfly-server-expansion</artifactId>
@@ -91,10 +91,6 @@
                                     <artifactId>jakarta.annotation-api</artifactId>
                                 </dependency>
                                 <dependency>
-                                    <groupId>jakarta.enterprise</groupId>
-                                    <artifactId>jakarta.enterprise.cdi-api</artifactId>
-                                </dependency>
-                                <dependency>
                                     <groupId>jakarta.interceptor</groupId>
                                     <artifactId>jakarta.interceptor-api</artifactId>
                                 </dependency>
@@ -164,7 +160,10 @@
             <id>legacy-ee-build</id>
             <activation>
                 <property>
-                    <name>!no.legacy.ee.build</name>
+                    <!-- This profile is not expected to be used.
+                         We want to keep the code structure for future use,
+                         but there is no current use. -->
+                    <name>disabled.legacy.ee.build</name>
                 </property>
             </activation>
             <modules>

@@ -31,6 +31,7 @@
             node="${node1}"
             mcast="${mcast}"
         />
+        <ts.config-as.iiop.add-auth-context name="jbossas-iiop-server"/>
         <!-- Build configs for SSL tests -->
 
         <!-- SSL Client w Sec Domain -->
@@ -42,6 +43,7 @@
                                         node="${node0}"
                                         mcast="${mcast}"
                     />
+        <ts.config-as.iiop.add-auth-context name="jbossas-iiop-ssl-client"/>
 
         <!-- SSL Server with ior-settings transport config -->
         <echo message="Building config jbossas-iiop-ssl-server"/>
@@ -52,6 +54,7 @@
                                         node="${node1}"
                                         mcast="${mcast}"
         />
+        <ts.config-as.iiop.add-auth-context name="jbossas-iiop-ssl-server"/>
         <ts.config-as.iiop.enable-server-requires-ssl name="jbossas-iiop-ssl-server"/>
     </target>
 </project>

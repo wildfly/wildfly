@@ -107,7 +107,7 @@ public class SimpleServlet extends HttpServlet {
     }
 
     @Override
-    protected void doPost(HttpServletRequest request, HttpServletResponse response) {
+    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
         Function<HttpSession, Mutable> accessor = session -> {
             Mutable mutable = (Mutable) session.getAttribute(ATTRIBUTE);
             if (mutable == null) {
@@ -116,6 +116,8 @@ public class SimpleServlet extends HttpServlet {
             return (mutable == null) ? (Mutable) session.getAttribute(ATTRIBUTE) : mutable;
         };
         this.increment(request, response, accessor);
+        // Validate WFLY-21965, ensure session locks are released on request completion in the event that Undertow triggers exchange completion events prematurely.
+        response.sendError(HttpServletResponse.SC_OK);
     }
 
     private void increment(HttpServletRequest request, HttpServletResponse response, Function<HttpSession, Mutable> accessor) {

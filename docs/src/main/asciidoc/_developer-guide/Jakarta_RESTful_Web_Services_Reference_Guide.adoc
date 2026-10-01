@@ -15,7 +15,7 @@ https://resteasy.dev/docs[RESTEasy {resteasyversion} documentation].
 == Jakarta RESTful Web Services Activation
 
 This section outlines the three options you have for deploying Jakarta RESTful Web Services
-applications in WildFly {wildflyVersion}. These three methods are specified in the
+applications in WildFly. These three methods are specified in the
 Jakarta RESTful Web Services 3.1 specification in section 2.3.2.
 
 [[subclassing-jakarta.ws.rs.core.application-and-using-applicationpath]]

@@ -12,7 +12,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>41.0.0.Beta1-SNAPSHOT</version>
+        <version>42.0.0.Beta1-SNAPSHOT</version>
     </parent>
     <artifactId>wildfly-ts-integ-mp-rest-client</artifactId>
     <name>WildFly Test Suite: Integration - MicroProfile - REST Client TCK</name>
@@ -91,6 +91,12 @@
         <ts.microprofile-tck-glow.expected-discovery>[cdi, ee-integration, jaxrs, jsonb, jsonp, microprofile-config, microprofile-rest-client, servlet]==>ee-core-profile-server,jaxrs,microprofile-rest-client</ts.microprofile-tck-glow.expected-discovery>
     </properties>
     <dependencies>
+        <!-- Required by wiremock server module -->
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <scope>test</scope>
+        </dependency>
         <!-- Required by the RESTEasy Client -->
         <dependency>
             <groupId>org.jboss.resteasy</groupId>
@@ -253,8 +259,8 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>jakarta.enterprise</groupId>
-            <artifactId>jakarta.enterprise.cdi-api</artifactId>
+            <groupId>${cdi.api.groupId}</groupId>
+            <artifactId>${cdi.api.artifactId}</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -421,13 +427,6 @@
                                 <artifactItem>
                                     <groupId>org.wiremock</groupId>
                                     <artifactId>wiremock</artifactId>
-                                </artifactItem>
-                                <!-- This is required for the MicroProfile REST Client 3.0 TCK. This will always copy it,
-                                     but we'll only use it in the 3.0 TCK runner.
-                                 -->
-                                <artifactItem>
-                                    <groupId>org.jboss.spec.javax.servlet</groupId>
-                                    <artifactId>jboss-servlet-api_4.0_spec</artifactId>
                                 </artifactItem>
                             </artifactItems>
                             <stripVersion>true</stripVersion>

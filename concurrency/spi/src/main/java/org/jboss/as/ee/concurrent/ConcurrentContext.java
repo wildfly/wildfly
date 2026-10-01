@@ -86,6 +86,14 @@ public class ConcurrentContext {
 
     /**
      *
+     * @return
+     */
+    public ServiceName getServiceName() {
+        return serviceName;
+    }
+
+    /**
+     *
      * @param serviceName
      */
     public void setServiceName(ServiceName serviceName) {
@@ -166,6 +174,9 @@ public class ConcurrentContext {
 
         @Override
         public ResetContextHandle setup() throws IllegalStateException {
+            if (concurrentContext.getServiceName() == null) {
+                throw EeLogger.ROOT_LOGGER.serviceNotStarted();
+            }
             final LinkedList<ResetContextHandle> resetHandles = new LinkedList<>();
             final ResetContextHandle resetContextHandle = new ChainedResetContextHandle(resetHandles);
             try {

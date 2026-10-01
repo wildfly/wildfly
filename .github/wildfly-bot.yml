@@ -83,7 +83,7 @@ wildfly:
     - id: messaging-activemq
       directories:
         - messaging-activemq
-        - testsuite/integration/legacy
+        - testsuite/integration/hornetq-client
       notify: [ ehsavoie ]
 
     - id: metrics
@@ -245,15 +245,16 @@ wildfly:
       notify: [ mmusgrov ]
 
   emails:
-    - mstefank@redhat.com
+    - mskaceli@redhat.com
     - pberan@redhat.com
     - khermano@redhat.com
     - mjusko@redhat.com
     - brian.stansberry@redhat.com
   
   format:
+    skip: "(?i)no\\s+(?:jira|issue)\\s+(?:required|needed)"
     description:
       regexes:
         - pattern: "https://redhat.atlassian.net/browse/WFLY-\\d+"
-          message: "The description must contain a link to the JIRA issue \n(https://redhat.atlassian.net/browse/WFLY-XYZ)"
+          failMessage: "The description must contain a link to the JIRA issue \n(https://redhat.atlassian.net/browse/WFLY-XYZ)"
 

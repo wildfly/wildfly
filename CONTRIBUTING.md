@@ -34,8 +34,6 @@ For background, see the Linux Foundation’s guidance:
 
 # Issues
 
----
-
 WildFly uses Jira to manage issues.
 All issues can be found [here](https://redhat.atlassian.net/browse/WFLY).
 
@@ -44,8 +42,6 @@ To create a new issue, comment on an existing issue, or assign an issue to yours
 **Important:** After creating your account, you must log in to Red Hat Jira at [https://redhat.atlassian.net/jira/for-you](https://redhat.atlassian.net/jira/for-you) to properly authenticate before you can create issues in the WFLY and WFCORE projects. Simply being logged into your Atlassian account is not sufficient.
 
 # Good First Issues
-
----
 
 Check out our issues with the `good-first-issue` label.
 These are a triaged set of issues that are great for getting started on our project.
@@ -58,8 +54,6 @@ If you're not able to assign it to yourself that way, post a message in the [wil
 
 Lastly, this project is an open source project.
 Please act responsibly, be nice, polite and enjoy!
-
----
 
 # Using Eclipse
 

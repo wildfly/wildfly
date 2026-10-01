@@ -13,6 +13,7 @@ import java.util.Map;
 import org.jboss.as.clustering.controller.CommonServiceDescriptor;
 import org.jboss.as.clustering.infinispan.subsystem.remote.RemoteCacheContainerResourceDefinitionRegistrar;
 import org.jboss.as.clustering.subsystem.AdditionalInitialization;
+import org.jboss.as.clustering.subsystem.WildFlyClusteringVersion;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
@@ -58,6 +59,7 @@ public class InfinispanTransformersTestCase extends AbstractSubsystemTest {
         VERSIONS.put(ModelTestControllerVersion.EAP_7_4_0, InfinispanSubsystemModel.VERSION_14_0_0);
         VERSIONS.put(ModelTestControllerVersion.EAP_8_0_0, InfinispanSubsystemModel.VERSION_17_1_0);
         VERSIONS.put(ModelTestControllerVersion.EAP_8_1_0, InfinispanSubsystemModel.VERSION_19_0_0);
+        VERSIONS.put(ModelTestControllerVersion.WILDFLY_41_0_0, InfinispanSubsystemModel.VERSION_23_0_0);
     }
 
     @Parameters
@@ -65,13 +67,13 @@ public class InfinispanTransformersTestCase extends AbstractSubsystemTest {
         return VERSIONS.keySet();
     }
 
-    private String[] getDependencies(ModelTestControllerVersion version) {
-        return switch (version) {
+    private String[] getDependencies() {
+        return switch (this.controllerVersion) {
             case EAP_7_4_0 -> new String[] {
-                    "org.infinispan:infinispan-cachestore-jdbc:11.0.9.Final-redhat-00001",
-                    "org.infinispan:infinispan-client-hotrod:11.0.9.Final-redhat-00001",
-                    "org.infinispan:infinispan-commons:11.0.9.Final-redhat-00001",
-                    "org.infinispan:infinispan-core:11.0.9.Final-redhat-00001",
+                    this.createInfinispanGAV("infinispan-cachestore-jdbc"),
+                    this.createInfinispanGAV("infinispan-client-hotrod"),
+                    this.createInfinispanGAV("infinispan-commons"),
+                    this.createInfinispanGAV("infinispan-core"),
                     "org.jboss.spec.javax.resource:jboss-connector-api_1.7_spec:2.0.0.Final",
                     "org.jboss.spec.javax.resource:jboss-connector-api_1.7_spec:2.0.0.Final-redhat-00001",
                     "org.jboss.spec.javax.transaction:jboss-transaction-api_1.3_spec:2.0.0.Final",
@@ -90,10 +92,11 @@ public class InfinispanTransformersTestCase extends AbstractSubsystemTest {
                     this.controllerVersion.createGAV("wildfly-connector"),
             };
             case EAP_8_0_0 -> new String[] {
-                    "org.infinispan:infinispan-cachestore-jdbc:14.0.27.Final-redhat-00001",
-                    "org.infinispan:infinispan-client-hotrod:14.0.27.Final-redhat-00001",
-                    "org.infinispan:infinispan-commons:14.0.27.Final-redhat-00001",
-                    "org.infinispan:infinispan-core:14.0.27.Final-redhat-00001",
+                    this.createInfinispanGAV("infinispan-cachestore-jdbc"),
+                    this.createInfinispanGAV("infinispan-cachestore-jdbc-common"),
+                    this.createInfinispanGAV("infinispan-client-hotrod"),
+                    this.createInfinispanGAV("infinispan-commons"),
+                    this.createInfinispanGAV("infinispan-core"),
                     // Following are needed for InfinispanSubsystemInitialization
                     this.controllerVersion.createCoreGAV("wildfly-controller"),
                     this.controllerVersion.createGAV("wildfly-clustering-common"),
@@ -104,6 +107,7 @@ public class InfinispanTransformersTestCase extends AbstractSubsystemTest {
                     this.controllerVersion.createGAV("wildfly-clustering-infinispan-extension"),
                     this.controllerVersion.createGAV("wildfly-clustering-jgroups-extension"),
                     this.controllerVersion.createGAV("wildfly-clustering-jgroups-spi"),
+                    this.controllerVersion.createGAV("wildfly-clustering-marshalling-protostream"),
                     this.controllerVersion.createGAV("wildfly-clustering-server-service"),
                     this.controllerVersion.createGAV("wildfly-clustering-service"),
                     this.controllerVersion.createGAV("wildfly-clustering-singleton-api"),
@@ -111,10 +115,31 @@ public class InfinispanTransformersTestCase extends AbstractSubsystemTest {
             };
             case EAP_8_1_0 -> new String[] {
                     // TODO replace with actual versions once EAP is released
-                    "org.infinispan:infinispan-cachestore-jdbc:15.0.11.Final",
-                    "org.infinispan:infinispan-client-hotrod:15.0.11.Final",
-                    "org.infinispan:infinispan-commons:15.0.11.Final",
-                    "org.infinispan:infinispan-core:15.0.11.Final",
+                    this.createInfinispanGAV("infinispan-cachestore-jdbc"),
+                    this.createInfinispanGAV("infinispan-cachestore-jdbc-common"),
+                    this.createInfinispanGAV("infinispan-client-hotrod"),
+                    this.createInfinispanGAV("infinispan-commons"),
+                    this.createInfinispanGAV("infinispan-core"),
+                    // Following are needed for InfinispanSubsystemInitialization
+                    this.controllerVersion.createCoreGAV("wildfly-subsystem"),
+                    this.controllerVersion.createGAV("wildfly-clustering-common"),
+                    this.controllerVersion.createGAV("wildfly-clustering-infinispan-client-service"),
+                    this.controllerVersion.createGAV("wildfly-clustering-infinispan-embedded-service"),
+                    this.controllerVersion.createGAV("wildfly-clustering-infinispan-extension"),
+                    this.controllerVersion.createGAV("wildfly-clustering-jgroups-extension"),
+                    this.controllerVersion.createGAV("wildfly-clustering-jgroups-spi"),
+                    this.controllerVersion.createGAV("wildfly-clustering-server-service"),
+                    this.controllerVersion.createGAV("wildfly-clustering-service"),
+                    this.controllerVersion.createGAV("wildfly-clustering-singleton-api"),
+                    this.controllerVersion.createGAV("wildfly-connector"),
+                    WildFlyClusteringVersion.forVersion(this.controllerVersion).toGAV("wildfly-clustering-marshalling-protostream"),
+            };
+            case WILDFLY_41_0_0 -> new String[] {
+                    this.createInfinispanGAV("infinispan-cachestore-jdbc"),
+                    this.createInfinispanGAV("infinispan-cachestore-jdbc-common"),
+                    this.createInfinispanGAV("infinispan-client-hotrod"),
+                    this.createInfinispanGAV("infinispan-commons"),
+                    this.createInfinispanGAV("infinispan-core"),
                     // Following are needed for InfinispanSubsystemInitialization
                     this.controllerVersion.createCoreGAV("wildfly-subsystem"),
                     this.controllerVersion.createGAV("wildfly-clustering-common"),
@@ -128,8 +153,18 @@ public class InfinispanTransformersTestCase extends AbstractSubsystemTest {
                     this.controllerVersion.createGAV("wildfly-clustering-singleton-api"),
                     this.controllerVersion.createGAV("wildfly-connector"),
             };
-            default -> throw new IllegalArgumentException();
+            default -> throw new IllegalArgumentException(this.controllerVersion.toString());
         };
+    }
+
+    private String createInfinispanGAV(String artifactId) {
+        return String.format("org.infinispan:%s:%s", artifactId, switch (this.controllerVersion) {
+            case EAP_7_4_0 -> "11.0.9.Final-redhat-00001";
+            case EAP_8_0_0 -> "14.0.27.Final-redhat-00001";
+            case EAP_8_1_0 -> "15.0.16.Final-redhat-00001";
+            case WILDFLY_41_0_0 -> "16.0.13";
+            default -> throw new IllegalArgumentException(this.controllerVersion.toString());
+        });
     }
 
     private final ModelTestControllerVersion controllerVersion;
@@ -162,7 +197,7 @@ public class InfinispanTransformersTestCase extends AbstractSubsystemTest {
     private KernelServices build(KernelServicesBuilder builder) throws Exception {
         // initialize the legacy services and add required jars
         builder.createLegacyKernelServicesBuilder(createAdditionalInitialization(), this.controllerVersion, this.subsystemVersion)
-                .addMavenResourceURL(getDependencies(this.controllerVersion))
+                .addMavenResourceURL(this.getDependencies())
                 .addSingleChildFirstClass(DataSourcesSubsystemInitialization.class)
                 .addSingleChildFirstClass(AdditionalInitialization.class)
                 .addSingleChildFirstClass(ClassConfigurator.class)

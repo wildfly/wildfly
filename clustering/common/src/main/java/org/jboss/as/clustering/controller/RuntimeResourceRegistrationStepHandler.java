@@ -14,6 +14,7 @@ import org.jboss.dmr.ModelNode;
  * {@link OperationStepHandler} that registers runtime resources.
  * @author Paul Ferraro
  */
+@Deprecated(forRemoval = true)
 public class RuntimeResourceRegistrationStepHandler implements OperationStepHandler {
 
     private final RuntimeResourceRegistration registration;

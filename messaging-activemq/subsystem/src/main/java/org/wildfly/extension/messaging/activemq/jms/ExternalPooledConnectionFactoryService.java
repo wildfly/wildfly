@@ -102,6 +102,7 @@ import org.wildfly.extension.messaging.activemq.ExternalBrokerConfigurationServi
 import org.wildfly.extension.messaging.activemq.GroupBindingService;
 import org.wildfly.extension.messaging.activemq.JGroupsDiscoveryGroupAdd;
 import org.wildfly.extension.messaging.activemq.MessagingServices;
+import org.wildfly.extension.messaging.activemq.MessagingSubsystemRootResourceDefinition;
 import org.wildfly.extension.messaging.activemq.SocketDiscoveryGroupAdd;
 import org.wildfly.extension.messaging.activemq.TransportConfigOperationHandlers;
 import org.wildfly.extension.messaging.activemq.broadcast.BroadcastCommandDispatcherFactory;
@@ -234,6 +235,7 @@ public class ExternalPooledConnectionFactoryService implements Service<ExternalP
                 bindInfo, jndiAliases, txSupport, minPoolSize, maxPoolSize, managedConnectionPoolClassName, enlistmentTrace,
                 capabilityServiceSupport, false);
         ServiceBuilder<?> serviceBuilder = serviceTarget.addService(serviceName);
+        serviceBuilder.requires(MessagingSubsystemRootResourceDefinition.CONFIGURATION_CAPABILITY.getCapabilityServiceName());
         installService0(serviceBuilder, configuration, service, groupConfiguration, connectorsSocketBindings, sslContextNames, capabilityServiceSupport);
         return service;
     }
@@ -512,7 +514,7 @@ public class ExternalPooledConnectionFactoryService implements Service<ExternalP
                                     activator.getCcmInjector());
             sb.requires(NamingService.SERVICE_NAME);
             sb.requires(capabilityServiceSupport.getCapabilityServiceName(MessagingServices.LOCAL_TRANSACTION_PROVIDER_CAPABILITY));
-            WildFlyRecoveryRegistry.supplier = sb.requires(capabilityServiceSupport.getCapabilityServiceName(MessagingServices.TRANSACTION_XA_RESOURCE_RECOVERY_REGISTRY_CAPABILITY));
+            WildFlyRecoveryRegistry.setSupplier(sb.requires(capabilityServiceSupport.getCapabilityServiceName(MessagingServices.TRANSACTION_XA_RESOURCE_RECOVERY_REGISTRY_CAPABILITY)));
             sb.requires(ConnectorServices.BOOTSTRAP_CONTEXT_SERVICE.append("default"));
             sb.setInitialMode(ServiceController.Mode.PASSIVE).install();
 

@@ -12,7 +12,7 @@
     </properties>
 
     <resources>
-        <artifact name="${io.prometheus:prometheus-metrics-exposition-formats}"/>
+        <artifact name="${io.prometheus:prometheus-metrics-exposition-textformats}"/>
         <artifact name="${io.prometheus:prometheus-metrics-model}"/>
         <artifact name="${io.prometheus:prometheus-metrics-config}"/>
     </resources>

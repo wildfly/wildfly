@@ -13,8 +13,8 @@ import org.infinispan.commons.dataconversion.MediaType;
 import org.infinispan.commons.marshall.Marshaller;
 import org.infinispan.commons.marshall.ProtoStreamMarshaller;
 import org.infinispan.commons.util.AggregatedClassLoader;
-import org.infinispan.protostream.ImmutableSerializationContext;
 import org.infinispan.protostream.SerializationContext;
+import org.infinispan.protostream.config.Configuration;
 import org.jboss.marshalling.ModularClassResolver;
 import org.jboss.modules.ModuleLoader;
 import org.wildfly.clustering.cache.infinispan.marshalling.MediaTypes;
@@ -23,11 +23,12 @@ import org.wildfly.clustering.marshalling.ByteBufferMarshaller;
 import org.wildfly.clustering.marshalling.MarshallerConfigurationBuilder;
 import org.wildfly.clustering.marshalling.jboss.JBossByteBufferMarshaller;
 import org.wildfly.clustering.marshalling.jboss.MarshallingConfigurationBuilder;
+import org.wildfly.clustering.marshalling.protostream.ImmutableSerializationContext;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamByteBufferMarshaller;
+import org.wildfly.clustering.marshalling.protostream.ProtoStreamConfiguration;
 import org.wildfly.clustering.marshalling.protostream.SerializationContextBuilder;
-import org.wildfly.clustering.marshalling.protostream.SerializationContextInitializer;
 import org.wildfly.clustering.marshalling.protostream.WrappedMessageByteBufferMarshaller;
-import org.wildfly.clustering.marshalling.protostream.modules.ModuleClassLoaderMarshaller;
+import org.wildfly.clustering.marshalling.protostream.modules.ModuleClassResolver;
 
 /**
  * @author Paul Ferraro
@@ -35,17 +36,17 @@ import org.wildfly.clustering.marshalling.protostream.modules.ModuleClassLoaderM
 public enum UserMarshallerFactory implements MarshallerFactory {
 
     DEFAULT(MediaTypes.INFINISPAN_PROTOSTREAM) {
-        private final Supplier<SerializationContextBuilder<org.infinispan.protostream.SerializationContextInitializer>> builderFactory = () -> SerializationContextBuilder.newInstance().register(org.infinispan.query.remote.client.impl.GlobalContextInitializer.INSTANCE);
+        private final Supplier<SerializationContextBuilder> builderFactory = () -> SerializationContextBuilder.with(Configuration.builder().build()).register(org.infinispan.query.remote.client.impl.GlobalContextInitializer.INSTANCE);
 
         @Override
         public ByteBufferMarshaller createByteBufferMarshaller(ModuleLoader moduleLoader, List<ClassLoader> loaders) {
-            ImmutableSerializationContext context = this.build(this.builderFactory, loaders);
+            org.infinispan.protostream.ImmutableSerializationContext context = this.build(this.builderFactory, loaders);
             return new WrappedMessageByteBufferMarshaller(context);
         }
 
         @Override
         public Marshaller createUserMarshaller(ModuleLoader moduleLoader, List<ClassLoader> loaders) {
-            ImmutableSerializationContext context = this.build(this.builderFactory, loaders);
+            org.infinispan.protostream.ImmutableSerializationContext context = this.build(this.builderFactory, loaders);
             // N.B. RemoteQueryFactory requires a ProtoStreamMarshaller instance via casting
             return new ProtoStreamMarshaller((SerializationContext) context);
         }
@@ -62,7 +63,8 @@ public enum UserMarshallerFactory implements MarshallerFactory {
     PROTOSTREAM(MediaTypes.WILDFLY_PROTOSTREAM) {
         @Override
         public ByteBufferMarshaller createByteBufferMarshaller(ModuleLoader moduleLoader, List<ClassLoader> loaders) {
-            SerializationContextBuilder<SerializationContextInitializer> builder = SerializationContextBuilder.newInstance(new ModuleClassLoaderMarshaller(moduleLoader));
+            ProtoStreamConfiguration configuration = ProtoStreamConfiguration.Builder.with(new ModuleClassResolver(moduleLoader)).build();
+            ImmutableSerializationContext.Builder builder = ImmutableSerializationContext.Builder.with(configuration);
             loaders.forEach(builder::load);
             return new ProtoStreamByteBufferMarshaller(builder.build());
         }

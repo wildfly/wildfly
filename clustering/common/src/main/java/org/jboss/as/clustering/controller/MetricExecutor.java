@@ -10,5 +10,6 @@ package org.jboss.as.clustering.controller;
  * @author Paul Ferraro
  * @param <C> the metric execution context.
  */
+@Deprecated(forRemoval = true)
 public interface MetricExecutor<C> extends Executor<C, Metric<C>> {
 }

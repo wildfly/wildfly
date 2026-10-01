@@ -38,7 +38,7 @@ public class LazyCache<K, V> extends LazyBasicCache<K, V, Cache<K, V>> implement
     }
 
     @Override
-    public Cache<K, V> run() {
+    public Cache<K, V> get() {
         return Optional.ofNullable(this.container.<K, V>getCache(this.name, false)).orElseThrow(IllegalLifecycleStateException::new);
     }
 

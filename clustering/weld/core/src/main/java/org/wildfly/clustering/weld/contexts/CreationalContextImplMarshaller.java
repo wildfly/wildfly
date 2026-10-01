@@ -6,18 +6,19 @@
 package org.wildfly.clustering.weld.contexts;
 
 import java.io.IOException;
+import java.lang.invoke.MethodHandle;
+import java.lang.invoke.MethodHandles;
 import java.lang.reflect.Field;
-import java.security.PrivilegedAction;
 import java.util.LinkedList;
 import java.util.List;
 
 import org.infinispan.protostream.descriptors.WireType;
 import org.jboss.weld.context.api.ContextualInstance;
 import org.jboss.weld.contexts.CreationalContextImpl;
+import org.wildfly.clustering.function.BiFunction;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamMarshaller;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamReader;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamWriter;
-import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
  * @author Paul Ferraro
@@ -27,18 +28,22 @@ public class CreationalContextImplMarshaller<T> implements ProtoStreamMarshaller
     private static final int PARENT_INDEX = 1;
     private static final int DEPENDENT_INDEX = 2;
 
-    static final Field PARENT_FIELD = WildFlySecurityManager.doUnchecked(new PrivilegedAction<Field>() {
-        @Override
-        public Field run() {
-            for (Field field : CreationalContextImpl.class.getDeclaredFields()) {
-                if (field.getType() == CreationalContextImpl.class) {
+    private static final BiFunction<CreationalContextImpl<?>, CreationalContextImpl<?>, Void> PARENT_HANDLE = BiFunction.invoke(findHandle(CreationalContextImpl.class, CreationalContextImpl.class));
+
+    static MethodHandle findHandle(Class<?> sourceClass, Class<?> fieldClass) {
+        for (Field field : sourceClass.getDeclaredFields()) {
+            if (field.getType() == fieldClass) {
+                try {
+                    // Necessary, since This field is final
                     field.setAccessible(true);
-                    return field;
+                    return MethodHandles.privateLookupIn(sourceClass, MethodHandles.lookup()).unreflectSetter(field);
+                } catch (IllegalAccessException e) {
+                    throw new IllegalStateException(e);
                 }
             }
-            throw new IllegalStateException();
         }
-    });
+        throw new IllegalArgumentException(fieldClass.getName());
+    }
 
     @SuppressWarnings("unchecked")
     @Override
@@ -55,17 +60,7 @@ public class CreationalContextImplMarshaller<T> implements ProtoStreamMarshaller
             switch (WireType.getTagFieldNumber(tag)) {
                 case PARENT_INDEX:
                     CreationalContextImpl<?> parent = reader.readAny(CreationalContextImpl.class);
-                    WildFlySecurityManager.doUnchecked(new PrivilegedAction<Void>() {
-                        @Override
-                        public Void run() {
-                            try {
-                                PARENT_FIELD.set(result, parent);
-                                return null;
-                            } catch (IllegalAccessException e) {
-                                throw new IllegalStateException(e);
-                            }
-                        }
-                    });
+                    PARENT_HANDLE.apply(result, parent);
                     for (ContextualInstance<?> dependent : parent.getDependentInstances()) {
                         result.addDependentInstance(dependent);
                     }

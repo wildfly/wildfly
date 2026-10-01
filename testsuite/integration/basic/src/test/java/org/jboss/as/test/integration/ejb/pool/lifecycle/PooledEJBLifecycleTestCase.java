@@ -9,6 +9,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
+import java.lang.reflect.ReflectPermission;
 import java.util.PropertyPermission;
 import jakarta.ejb.EJB;
 import jakarta.jms.Connection;
@@ -89,8 +90,12 @@ public class PooledEJBLifecycleTestCase {
                 createPermissionsXmlAsset(new PropertyPermission("ts.timeout.factor", "read"),
                         new PropertyPermission("ts.preview", "read"),
                         new PropertyPermission("ts.bootable.preview", "read"),
-                        new PropertyPermission("preview-server-tests", "read")),
-                "jboss-permissions.xml");
+                        new PropertyPermission("preview-server-tests", "read"),
+                        // testing framework requirements
+                        new RuntimePermission("accessDeclaredMembers"),
+                        new RuntimePermission("getClassLoader"),
+                        new ReflectPermission("suppressAccessChecks")
+                ), "jboss-permissions.xml");
         return archive;
     }
 

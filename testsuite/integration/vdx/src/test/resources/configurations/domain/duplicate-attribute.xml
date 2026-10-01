@@ -28,7 +28,6 @@
         <extension module="org.wildfly.extension.io"/>
         <extension module="org.wildfly.extension.messaging-activemq"/>
         <extension module="org.wildfly.extension.request-controller"/>
-        <extension module="org.wildfly.extension.security.manager"/>
         <extension module="org.wildfly.extension.undertow"/>
         <extension module="org.wildfly.iiop-openjdk"/>
     </extensions>
@@ -269,13 +268,6 @@
             <subsystem xmlns="urn:jboss:domain:resource-adapters:4.0"/>
             <subsystem xmlns="urn:jboss:domain:request-controller:1.0"/>
             <subsystem xmlns="urn:jboss:domain:sar:1.0"/>
-            <subsystem xmlns="urn:jboss:domain:security-manager:1.0">
-                <deployment-permissions>
-                    <maximum-set>
-                        <permission class="java.security.AllPermission"/>
-                    </maximum-set>
-                </deployment-permissions>
-            </subsystem>
             <subsystem xmlns="urn:jboss:domain:transactions:3.1">
                 <core-environment>
                     <process-id>
@@ -576,13 +568,6 @@
             <subsystem xmlns="urn:jboss:domain:resource-adapters:4.0"/>
             <subsystem xmlns="urn:jboss:domain:request-controller:1.0"/>
             <subsystem xmlns="urn:jboss:domain:sar:1.0"/>
-            <subsystem xmlns="urn:jboss:domain:security-manager:1.0">
-                <deployment-permissions>
-                    <maximum-set>
-                        <permission class="java.security.AllPermission"/>
-                    </maximum-set>
-                </deployment-permissions>
-            </subsystem>
             <subsystem xmlns="urn:jboss:domain:singleton:1.0">
                 <singleton-policies default="default">
                     <singleton-policy name="default" cache-container="server">
@@ -887,13 +872,6 @@
             <subsystem xmlns="urn:jboss:domain:resource-adapters:4.0"/>
             <subsystem xmlns="urn:jboss:domain:request-controller:1.0"/>
             <subsystem xmlns="urn:jboss:domain:sar:1.0"/>
-            <subsystem xmlns="urn:jboss:domain:security-manager:1.0">
-                <deployment-permissions>
-                    <maximum-set>
-                        <permission class="java.security.AllPermission"/>
-                    </maximum-set>
-                </deployment-permissions>
-            </subsystem>
             <subsystem xmlns="urn:jboss:domain:transactions:3.1">
                 <core-environment>
                     <process-id>
@@ -1231,13 +1209,6 @@
             <subsystem xmlns="urn:jboss:domain:resource-adapters:4.0"/>
             <subsystem xmlns="urn:jboss:domain:request-controller:1.0"/>
             <subsystem xmlns="urn:jboss:domain:sar:1.0"/>
-            <subsystem xmlns="urn:jboss:domain:security-manager:1.0">
-                <deployment-permissions>
-                    <maximum-set>
-                        <permission class="java.security.AllPermission"/>
-                    </maximum-set>
-                </deployment-permissions>
-            </subsystem>
             <subsystem xmlns="urn:jboss:domain:singleton:1.0">
                 <singleton-policies default="default">
                     <singleton-policy name="default" cache-container="server">

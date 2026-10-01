@@ -4,7 +4,7 @@
  */
 package org.jboss.as.test.shared.integration.ejb.security;
 
-import static org.junit.Assert.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Properties;
 import java.util.concurrent.Callable;
@@ -166,12 +166,13 @@ public class Util {
     private static void validateException(final Exception e, final boolean initialAuthSucceeded) {
         if (SecurityDomain.getCurrent() != null) {
             if (initialAuthSucceeded) {
-                assertTrue("Expected EJBException due to bad password not thrown.", e instanceof EJBException && e.getCause() instanceof SecurityException);
+                assertThat(e).as("Expected EJBException due to bad password not thrown.").isInstanceOf(EJBException.class);
+                assertThat(e.getCause()).as("Expected EJBException due to bad password not thrown.").isInstanceOf(SecurityException.class);
             } else {
-                assertTrue("Expected SecurityException due to bad password not thrown.", e instanceof SecurityException);
+                assertThat(e).as("Expected SecurityException due to bad password not thrown.").isInstanceOf(SecurityException.class);
             }
         } else {
-            assertTrue("Expected EJBAccessException due to bad password not thrown. (EJB 3.1 FR 17.6.9)", e instanceof EJBAccessException);
+            assertThat(e).as("Expected EJBAccessException due to bad password not thrown. (EJB 3.1 FR 17.6.9)").isInstanceOf(EJBAccessException.class);
         }
     }
 

@@ -20,6 +20,7 @@ import org.jboss.dmr.ModelNode;
  * Adds a given child resource if absent.
  * @author Paul Ferraro
  */
+@Deprecated(forRemoval = true)
 public class AddIfAbsentStepHandler implements OperationStepHandler {
 
     private final BiPredicate<Resource, PathElement> present;

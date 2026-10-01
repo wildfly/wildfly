@@ -5,6 +5,8 @@
 
 package org.jboss.as.test.shared;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.fail;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
@@ -13,7 +15,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUT
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_ATTRIBUTE_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
-import static org.junit.Assert.fail;
 
 import java.io.IOException;
 import java.net.UnknownHostException;
@@ -26,7 +27,6 @@ import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.client.helpers.ClientConstants;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
-import org.junit.Assert;
 import org.xnio.IoUtils;
 
 /**
@@ -198,7 +198,7 @@ public class ServerReload {
         }
     }
 
-    private static void waitForLiveServerToReload(int timeout, String serverAddress, int serverPort) {
+    public static void waitForLiveServerToReload(int timeout, String serverAddress, int serverPort) {
         int adjustedTimeout = TimeoutUtil.adjust(timeout);
         long start = System.currentTimeMillis();
         ModelNode operation = new ModelNode();
@@ -277,7 +277,7 @@ public class ServerReload {
             executeReloadAndWaitForCompletion(controllerClient);
         } else {
             log.debugf("Server reload is not required; server-state is %s", runningState);
-            Assert.assertEquals("Server state 'running' is expected", "running", runningState);
+            assertThat(runningState).as("Server state 'running' is expected").isEqualTo("running");
         }
     }
 
@@ -295,7 +295,7 @@ public class ServerReload {
             executeReloadAndWaitForCompletion(managementClient);
         } else {
             log.debugf("Server reload is not required; server-state is %s", runningState);
-            Assert.assertEquals("Server state 'running' is expected", "running", runningState);
+            assertThat(runningState).as("Server state 'running' is expected").isEqualTo("running");
         }
     }
 

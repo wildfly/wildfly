@@ -5,18 +5,23 @@
 
 package org.wildfly.test.stabilitylevel;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CORE_SERVICE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_OPERATION_DESCRIPTION_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_OPERATION_NAMES_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RELOAD_ENHANCED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STABILITY;
-import static org.junit.Assert.fail;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.CancellationException;
+import java.util.concurrent.ExecutionException;
 
+import org.assertj.core.api.Assertions;
+import org.assertj.core.api.Assumptions;
 import org.jboss.as.arquillian.api.ServerSetupTask;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.PathAddress;
@@ -25,11 +30,10 @@ import org.jboss.as.controller.client.helpers.ClientConstants;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.test.integration.management.ManagementOperations;
-import org.jboss.as.test.integration.management.util.ServerReload;
+import org.jboss.as.test.shared.ServerReload;
+import org.jboss.as.test.shared.TestSuiteEnvironment;
 import org.jboss.as.version.Stability;
 import org.jboss.dmr.ModelNode;
-import org.junit.Assert;
-import org.junit.Assume;
 
 /**
  * For tests that need to run under a specific server stability level,
@@ -57,19 +61,21 @@ public class StabilityServerSetupSnapshotRestoreTasks implements ServerSetupTask
     public final void setup(ManagementClient managementClient, String containerId) throws Exception {
         // Make sure the desired stability level is one of the ones supported by the server
         Set<Stability> supportedStabilityLevels = getSupportedStabilityLevels(managementClient);
-        Assume.assumeTrue(
-                String.format("%s is not a supported stability level. Supported levels: %s", desiredStability, supportedStabilityLevels),
-                supportedStabilityLevels.contains(desiredStability));
+        Assumptions.assumeThat(supportedStabilityLevels.contains(desiredStability))
+                .as("%s is not a supported stability level. Supported levels: %s", desiredStability, supportedStabilityLevels)
+                .isTrue();
 
         // Check the reload-enhanced operation exists in the current stability level
-        Assume.assumeTrue(
-                "The reload-enhanced operation is not registered at this stability level",
-                checkReloadEnhancedOperationIsAvailable(managementClient));
+        Assumptions.assumeThat(checkReloadEnhancedOperationIsAvailable(managementClient))
+                .as("The reload-enhanced operation is not registered at this stability level")
+                .isTrue();
 
         // Check the reload-enhanced operation exists in the stability level we want to load to so that
         // we can reload back to the current one
         Stability reloadOpStability = getReloadEnhancedOperationStabilityLevel(managementClient);
-        Assume.assumeTrue(desiredStability.enables(reloadOpStability));
+        Assumptions.assumeThat(desiredStability.enables(reloadOpStability))
+                .as("The reload-enhanced operation is not available at the desired stability level")
+                .isTrue();
 
         originalStability = readCurrentStability(managementClient.getControllerClient());
 
@@ -79,7 +85,7 @@ public class StabilityServerSetupSnapshotRestoreTasks implements ServerSetupTask
         // We only want to reload to lower stability levels if necessary (e.g. when running the ts.preview tests,
         // container that contains any configuration at 'preview' level the reload to 'community' would fail)
         if (!originalStability.enables(desiredStability)) {
-            reloadToDesiredStability(managementClient.getControllerClient(), desiredStability);
+            reloadToDesiredStability(managementClient, desiredStability);
         }
 
         // Do any additional setup from the subclasses
@@ -120,6 +126,7 @@ public class StabilityServerSetupSnapshotRestoreTasks implements ServerSetupTask
         return Stability.fromString(stability);
 
     }
+
     private Set<Stability> getSupportedStabilityLevels(ManagementClient managementClient) throws Exception {
         ModelNode op = Util.getReadAttributeOperation(PathAddress.pathAddress(CORE_SERVICE, SERVER_ENVIRONMENT), "permissible-stability-levels");
         ModelNode result = ManagementOperations.executeOperation(managementClient.getControllerClient(), op);
@@ -130,21 +137,18 @@ public class StabilityServerSetupSnapshotRestoreTasks implements ServerSetupTask
         return set;
     }
 
-    private Stability reloadToDesiredStability(ModelControllerClient client, Stability stability) throws Exception {
+    private Stability reloadToDesiredStability(ManagementClient managementClient, Stability stability) throws Exception {
         // Check the stability
-        Stability currentStability = readCurrentStability(client);
+        Stability currentStability = readCurrentStability(managementClient.getControllerClient());
         if (currentStability == stability) {
             return originalStability;
         }
 
         //Reload the server to the desired stability level
-        ServerReload.Parameters parameters = new ServerReload.Parameters()
-                .setStability(stability);
-        // Execute the reload
-        ServerReload.executeReloadAndWaitForCompletion(client, parameters);
+        reloadEnhancedAndWaitForCompletion(managementClient, stability, null);
 
-        Stability reloadedStability = readCurrentStability(client);
-        Assert.assertEquals(stability, reloadedStability);
+        Stability reloadedStability = readCurrentStability(managementClient.getControllerClient());
+        assertThat(reloadedStability).isEqualTo(stability);
         return originalStability;
     }
 
@@ -197,33 +201,24 @@ public class StabilityServerSetupSnapshotRestoreTasks implements ServerSetupTask
             node.get(ModelDescriptionConstants.OP).set("take-snapshot");
             ModelNode result = client.getControllerClient().execute(node);
             if (!"success".equals(result.get(ClientConstants.OUTCOME).asString())) {
-                fail("take-snapshot operation didn't finish successfully: " + result.asString());
+                Assertions.fail("take-snapshot operation didn't finish successfully: " + result.asString());
             }
             String snapshot = result.get(ModelDescriptionConstants.RESULT).asString();
             final String fileName = snapshot.contains(File.separator) ? snapshot.substring(snapshot.lastIndexOf(File.separator) + 1) : snapshot;
             return new AutoCloseable() {
                 @Override
                 public void close() throws Exception {
-                    ServerReload.Parameters parameters = new ServerReload.Parameters();
-                    parameters.setServerConfig(fileName);
                     if (reloadToStability != null) {
-                        parameters.setStability(reloadToStability);
+                        reloadEnhancedAndWaitForCompletion(client, reloadToStability, fileName);
+                    } else {
+                        ServerReload.executeReloadAndWaitForCompletion(client.getControllerClient(), ServerReload.TIMEOUT, false, client.getMgmtAddress(), client.getMgmtPort(), fileName);
                     }
 
-                    if (client.getMgmtAddress() != null) {
-                        parameters.setServerAddress(client.getMgmtAddress());
-                    }
-                    if (client.getMgmtPort() > 0) {
-                        parameters.setServerPort(client.getMgmtPort());
-                    }
-
-                    ServerReload.executeReloadAndWaitForCompletion(client.getControllerClient(), parameters);
-
-                    ModelNode node = new ModelNode();
-                    node.get(ModelDescriptionConstants.OP).set("write-config");
-                    ModelNode result = client.getControllerClient().execute(node);
-                    if (!"success".equals(result.get(ClientConstants.OUTCOME).asString())) {
-                        fail("Failed to write config after restoring from snapshot " + result.asString());
+                    ModelNode node1 = new ModelNode();
+                    node1.get(ModelDescriptionConstants.OP).set("write-config");
+                    ModelNode result1 = client.getControllerClient().execute(node1);
+                    if (!"success".equals(result1.get(ClientConstants.OUTCOME).asString())) {
+                        Assertions.fail("Failed to write config after restoring from snapshot " + result1.asString());
                     }
                 }
             };
@@ -231,4 +226,30 @@ public class StabilityServerSetupSnapshotRestoreTasks implements ServerSetupTask
             throw new RuntimeException("Failed to take snapshot", e);
         }
     }
+
+    // Temporary duplication until org.jboss.as.test.integration.management.util.ServerReload removed hard dependency on legacy JUnit 4
+    private static void reloadEnhancedAndWaitForCompletion(ManagementClient client, Stability stability, String serverConfig) {
+        ModelNode operation = new ModelNode();
+        operation.get(ModelDescriptionConstants.OP_ADDR).setEmptyList();
+        operation.get(ModelDescriptionConstants.OP).set(RELOAD_ENHANCED);
+        operation.get(STABILITY).set(stability.toString());
+        if (serverConfig != null) {
+            operation.get("server-config").set(serverConfig);
+        }
+        try {
+            ModelNode result = client.getControllerClient().execute(operation);
+            if (!"success".equals(result.get(ClientConstants.OUTCOME).asString())) {
+                Assertions.fail("Reload operation didn't finish successfully: " + result.asString());
+            }
+        } catch (IOException e) {
+            final Throwable cause = e.getCause();
+            if (!(cause instanceof ExecutionException) && !(cause instanceof CancellationException)) {
+                throw new RuntimeException(e);
+            }
+        }
+        ServerReload.waitForLiveServerToReload(ServerReload.TIMEOUT,
+                client.getMgmtAddress() != null ? client.getMgmtAddress() : TestSuiteEnvironment.getServerAddress(),
+                client.getMgmtPort() > 0 ? client.getMgmtPort() : TestSuiteEnvironment.getServerPort());
+    }
+
 }

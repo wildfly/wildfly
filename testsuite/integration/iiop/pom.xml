@@ -15,7 +15,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>41.0.0.Beta1-SNAPSHOT</version>
+        <version>42.0.0.Beta1-SNAPSHOT</version>
     </parent>
 
     <!-- ********************************************************************************** -->
@@ -35,6 +35,21 @@
         <surefire.default-test.phase>none</surefire.default-test.phase>
     </properties>
     <dependencies>
+        <dependency>
+            <groupId>${ee.maven.groupId}</groupId>
+            <artifactId>wildfly-testsuite-shared</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.assertj</groupId>
+            <artifactId>assertj-core</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <scope>test</scope>
+        </dependency>
+
         <dependency>
             <groupId>jakarta.annotation</groupId>
             <artifactId>jakarta.annotation-api</artifactId>
@@ -215,8 +230,8 @@
                                 <jboss.server.config.file.name>standalone-full.xml</jboss.server.config.file.name>
                                 <!-- EJB client library hack, see WFLY-4973-->
                                 <org.jboss.ejb.client.wildfly-testsuite-hack>true</org.jboss.ejb.client.wildfly-testsuite-hack>
-                                <server.jvm.args>${surefire.system.args} ${jvm.args.ip.server} -Dnode1=${node1} ${extra.server.jvm.args}</server.jvm.args>
-                                <server.jvm2.args>${surefire.system.args} ${jvm.args.ip} -Djboss.bind.address=${node1} -Djboss.bind.address.management=${node1} -Djboss.bind.address.unsecure=${node1} ${extra.server.jvm.args}</server.jvm2.args>
+                                <server.jvm.args>${surefire.system.args} ${jvm.args.ip.server} -Dnode1=${node1} -Djboss.iiop.naming.security-domain=ApplicationDomain ${extra.server.jvm.args}</server.jvm.args>
+                                <server.jvm2.args>${surefire.system.args} ${jvm.args.ip} -Djboss.bind.address=${node1} -Djboss.bind.address.management=${node1} -Djboss.bind.address.unsecure=${node1} -Djboss.iiop.naming.security-domain=ApplicationDomain ${extra.server.jvm.args}</server.jvm2.args>
                             </systemPropertyVariables>
                             <argLine>
                                 ${modular.jdk.args}

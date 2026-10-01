@@ -7,7 +7,6 @@ package org.jboss.as.ee.concurrent;
 import org.jboss.as.server.deployment.SetupAction;
 import org.jboss.msc.service.ServiceName;
 
-import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
 
@@ -17,9 +16,11 @@ import java.util.Set;
 public class ConcurrentContextSetupAction implements SetupAction {
 
     private final ConcurrentContext concurrentContext;
+    private final ServiceName serviceName;
 
-    public ConcurrentContextSetupAction(ConcurrentContext concurrentContext) {
+    public ConcurrentContextSetupAction(ConcurrentContext concurrentContext, ServiceName serviceName) {
         this.concurrentContext = concurrentContext;
+        this.serviceName = serviceName;
     }
 
     @Override
@@ -39,7 +40,7 @@ public class ConcurrentContextSetupAction implements SetupAction {
 
     @Override
     public Set<ServiceName> dependencies() {
-        return Collections.emptySet();
+        return Set.of(serviceName);
     }
 
     public ConcurrentContext getConcurrentContext() {

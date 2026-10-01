@@ -33,6 +33,7 @@ import org.jboss.metadata.appclient.spec.ApplicationClientMetaData;
 import org.jboss.metadata.parser.util.NoopXMLResolver;
 import org.jboss.metadata.property.PropertyReplacer;
 import org.jboss.vfs.VirtualFile;
+import org.wildfly.common.xml.XMLInputFactoryUtil;
 
 /**
  * @author Stuart Douglas
@@ -119,7 +120,7 @@ public class ApplicationClientParsingDeploymentProcessor implements DeploymentUn
     }
 
     private XMLStreamReader getXMLStreamReader(InputStream is) throws XMLStreamException {
-        final XMLInputFactory inputFactory = XMLInputFactory.newInstance();
+        final XMLInputFactory inputFactory = XMLInputFactoryUtil.create();
         inputFactory.setXMLResolver(NoopXMLResolver.create());
         return inputFactory.createXMLStreamReader(is);
     }

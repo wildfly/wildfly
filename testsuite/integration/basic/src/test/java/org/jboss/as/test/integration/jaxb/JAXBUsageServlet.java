@@ -29,7 +29,7 @@ public class JAXBUsageServlet extends HttpServlet {
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 
         try {
-            Unmarshaller unmarshaller = JAXBContext.newInstance("org.jboss.as.test.integration.jaxb.bindings").createUnmarshaller();
+            Unmarshaller unmarshaller = JAXBContext.newInstance("org.jboss.as.test.integration.jaxb.bindings", getClass().getClassLoader()).createUnmarshaller();
             String xml = "<?xml version=\"1.0\"?>\n"
 
                     + "<purchaseOrder orderDate=\"1999-10-20\">\n" +

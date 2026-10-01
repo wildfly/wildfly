@@ -18,6 +18,7 @@ import org.jboss.dmr.ModelNode;
  * @author Paul Ferraro
  * @author Radoslav Husar
  */
+@Deprecated(forRemoval = true)
 public interface Operation<C> extends Definable<OperationDefinition> {
 
     final AttributeDefinition[] NO_ATTRIBUTES = new AttributeDefinition[0];

@@ -13,6 +13,7 @@ import org.wildfly.clustering.service.ServiceNameProvider;
  * Service name provider for a capability.
  * @author Paul Ferraro
  */
+@Deprecated(forRemoval = true)
 public class CapabilityServiceNameProvider implements ServiceNameProvider {
 
     private final ServiceName name;

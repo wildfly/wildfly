@@ -42,11 +42,6 @@ public class RecoverySuspendController implements SuspendableActivity, PropertyC
         this.executor = executor;
     }
 
-    @Override
-    public CompletionStage<Void> prepare(ServerSuspendContext context) {
-        return COMPLETED;
-    }
-
     /**
      * {@link RecoveryManagerService#suspend() Suspends} the {@link RecoveryManagerService}.
      */
@@ -59,18 +54,33 @@ public class RecoverySuspendController implements SuspendableActivity, PropertyC
             }
 
             final boolean isGracefulRecoveryShutdownNeeded = this.gracefulRecoveryShutdown == RecoveryGracefulShutdown.WAIT;
-            return CompletableFuture
+            CompletionStage<Void> suspendStage = CompletableFuture
                 .runAsync(() -> {
                     TxControl.disable();
                     TransactionLogger.ROOT_LOGGER.waitingForInFlightTransactions();
                     TransactionReaper.transactionReaper().waitForAllTxnsToTerminate();
                     TransactionLogger.ROOT_LOGGER.inFlightTransactionsTerminated();
-                }, executor)
-                .thenRunAsync(() -> {
+
                     TransactionLogger.ROOT_LOGGER.scanSuspensionInitiated();
                     recoveryManagerService.suspend(!isGracefulRecoveryShutdownNeeded, isGracefulRecoveryShutdownNeeded);
                     TransactionLogger.ROOT_LOGGER.scanSuspensionCompleted();
+
+                    // Re-enable TxControl so EJB @PreDestroy lifecycle callbacks can begin transactions during MSC service stop.
+                    // whenCompleteAsync (not thenRunAsync) ensures re-enable even if the drain or recovery suspension fails.
+                    // See WFLY-22035.
+                    TxControl.enable();
                 }, executor);
+
+            // If the stage above is interrupted and completed exceptionally we still need to ensure TxControl is re-enabled
+            suspendStage.whenCompleteAsync((result, exception) -> {
+                if (exception != null) {
+                    TxControl.enable();
+                }
+            }, executor);
+
+            // We need to return the suspend stage, not the whenCompleteAsync stage, so that if the SuspendController
+            // completes this stage exceptionally, TxControl.enable() still fires as a dependent instead of being bypassed.
+            return suspendStage;
         }
 
         return COMPLETED;

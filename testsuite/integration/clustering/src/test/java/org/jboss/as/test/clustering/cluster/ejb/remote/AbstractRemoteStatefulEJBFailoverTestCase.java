@@ -17,7 +17,6 @@ import org.jboss.as.test.clustering.cluster.ejb.remote.bean.Result;
 import org.jboss.as.test.clustering.cluster.ejb.remote.bean.StatefulIncrementorBean;
 import org.jboss.as.test.clustering.ejb.EJBDirectory;
 import org.jboss.as.test.shared.PermissionUtils;
-import org.jboss.as.test.shared.TimeoutUtil;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
@@ -32,7 +31,6 @@ import org.wildfly.common.function.ExceptionSupplier;
 @ExtendWith(ArquillianExtension.class)
 public abstract class AbstractRemoteStatefulEJBFailoverTestCase extends AbstractClusteringTestCase {
     private static final int COUNT = 20;
-    private static final long CLIENT_TOPOLOGY_UPDATE_WAIT = TimeoutUtil.adjust(5000);
 
     static Archive<?> createDeployment(String moduleName) {
         return ShrinkWrap.create(JavaArchive.class, moduleName + ".jar")
@@ -68,7 +66,7 @@ public abstract class AbstractRemoteStatefulEJBFailoverTestCase extends Abstract
 
             undeploy(this.findDeployment(target));
 
-            Thread.sleep(CLIENT_TOPOLOGY_UPDATE_WAIT);
+            Thread.sleep(EJB_CLIENT_TOPOLOGY_UPDATE_WAIT.toMillis());
 
             result = bean.increment();
             // Bean should failover to other node
@@ -80,7 +78,7 @@ public abstract class AbstractRemoteStatefulEJBFailoverTestCase extends Abstract
             deploy(this.findDeployment(target));
 
             // Allow sufficient time for client to receive new topology
-            Thread.sleep(CLIENT_TOPOLOGY_UPDATE_WAIT);
+            Thread.sleep(EJB_CLIENT_TOPOLOGY_UPDATE_WAIT.toMillis());
 
             result = bean.increment();
             String failbackTarget = result.getNode();
@@ -112,7 +110,7 @@ public abstract class AbstractRemoteStatefulEJBFailoverTestCase extends Abstract
             start(target);
 
             // Allow sufficient time for client to receive new topology
-            Thread.sleep(CLIENT_TOPOLOGY_UPDATE_WAIT);
+            Thread.sleep(EJB_CLIENT_TOPOLOGY_UPDATE_WAIT.toMillis());
 
             result = bean.increment();
             failbackTarget = result.getNode();

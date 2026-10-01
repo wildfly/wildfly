@@ -16,6 +16,8 @@
     </resources>
 
     <dependencies>
+        <module name="jakarta.enterprise.api"/>
+
         <module name="org.infinispan.protostream"/>
         <module name="org.jboss.as.ejb3"/>
         <module name="org.jboss.as.weld.ejb"/>
@@ -23,7 +25,7 @@
         <module name="org.jboss.msc"/>
         <module name="org.jboss.weld.core"/>
         <module name="org.wildfly.clustering.ejb.client"/>
+        <module name="org.wildfly.clustering.function"/>
         <module name="org.wildfly.clustering.marshalling.protostream"/>
-        <module name="org.wildfly.security.elytron-private"/>
     </dependencies>
 </module>

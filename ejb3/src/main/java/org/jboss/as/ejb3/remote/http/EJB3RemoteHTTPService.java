@@ -6,59 +6,51 @@
 package org.jboss.as.ejb3.remote.http;
 
 import java.util.function.Function;
-
+import java.util.function.Supplier;
 import io.undertow.server.handlers.PathHandler;
-import org.jboss.as.ejb3.remote.AssociationService;
-import org.jboss.msc.service.Service;
+import org.jboss.ejb.server.Association;
+import org.jboss.msc.Service;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
-import org.jboss.msc.value.InjectedValue;
 import org.wildfly.httpclient.ejb.HttpRemoteEjbService;
 import org.wildfly.transaction.client.LocalTransactionContext;
 
 /**
+ * A connector service to allow remote EJB clients to connect via EJB/HTTP.
+ *
  * @author Stuart Douglas
+ * @author <a href="mailto:rachmato@ibm.com">Richard Achmatowicz</a>
  */
-public class EJB3RemoteHTTPService implements Service<EJB3RemoteHTTPService> {
+public class EJB3RemoteHTTPService implements Service {
 
     public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("ejb", "remote", "http-invoker");
-    private final InjectedValue<PathHandler> pathHandlerInjectedValue = new InjectedValue<>();
-    private final InjectedValue<AssociationService> associationServiceInjectedValue = new InjectedValue<>();
-    private final InjectedValue<LocalTransactionContext> localTransactionContextInjectedValue = new InjectedValue<>();
+
+    private final Association association;
+    private final Supplier<PathHandler> pathHandlerSupplier;
+    private final Supplier<LocalTransactionContext> transactionContextSupplier;
     private final Function<String, Boolean> classResolverFilter;
 
-    public EJB3RemoteHTTPService(final Function<String, Boolean> classResolverFilter) {
+    public EJB3RemoteHTTPService(final Association association,
+                                 final Supplier<PathHandler> pathHandlerSupplier,
+                                 final Supplier<LocalTransactionContext> transactionContextSupplier,
+                                 final Function<String, Boolean> classResolverFilter) {
+        this.association = association;
+        this.pathHandlerSupplier = pathHandlerSupplier;
+        this.transactionContextSupplier = transactionContextSupplier;
         this.classResolverFilter = classResolverFilter;
     }
 
     @Override
     public void start(StartContext context) throws StartException {
-        HttpRemoteEjbService service = new HttpRemoteEjbService(associationServiceInjectedValue.getValue().getAssociation(),
-                null, localTransactionContextInjectedValue.getValue(), classResolverFilter);
-        pathHandlerInjectedValue.getValue().addPrefixPath("/ejb", service.createHttpHandler());
+        LocalTransactionContext localTransactionContext = transactionContextSupplier.get();
+        HttpRemoteEjbService service = new HttpRemoteEjbService(association, null, localTransactionContext, classResolverFilter);
+        pathHandlerSupplier.get().addPrefixPath("/ejb", service.createHttpHandler());
     }
 
     @Override
     public void stop(StopContext context) {
-        pathHandlerInjectedValue.getValue().removePrefixPath("/ejb");
-    }
-
-    @Override
-    public EJB3RemoteHTTPService getValue() throws IllegalStateException, IllegalArgumentException {
-        return this;
-    }
-
-    public InjectedValue<PathHandler> getPathHandlerInjectedValue() {
-        return pathHandlerInjectedValue;
-    }
-
-    public InjectedValue<AssociationService> getAssociationServiceInjectedValue() {
-        return associationServiceInjectedValue;
-    }
-
-    public InjectedValue<LocalTransactionContext> getLocalTransactionContextInjectedValue() {
-        return localTransactionContextInjectedValue;
+        pathHandlerSupplier.get().removePrefixPath("/ejb");
     }
 }

@@ -9,7 +9,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import java.net.URL;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import jakarta.servlet.http.HttpServletResponse;
@@ -26,6 +26,7 @@ import org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase;
 import org.jboss.as.test.clustering.cluster.web.DistributableTestCase;
 import org.jboss.as.test.clustering.cluster.web.EnableUndertowStatisticsSetupTask;
 import org.jboss.as.test.http.util.TestHttpClientUtils;
+import org.jboss.as.test.shared.TimeoutUtil;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.jupiter.api.Test;
@@ -419,44 +420,74 @@ public abstract class SessionExpirationTestCase extends AbstractClusteringTestCa
         try (CloseableHttpClient client = TestHttpClientUtils.promiscuousCookieHttpClient()) {
 
             boolean destroyed = false;
-            String newSessionId = null;
+            boolean removed = false;
+            boolean unbound = false;
             int maxAttempts = 30;
 
-            // Retry a couple of times since expiration in the remote case expiration depends on timing of the reaper thread
-            for (int attempt = 1; attempt <= maxAttempts && !destroyed; attempt++) {
+            // Once we observe an event on a given node, only poll that node for the remaining events
+            URL eventURL = null;
+
+            // Retry a couple of times since in the remote case expiration depends on timing of the reaper thread
+            for (int attempt = 1; attempt <= maxAttempts && !(destroyed && removed && unbound); attempt++) {
 
                 // Timeout should trigger session destroyed event, attribute removed event, and valueUnbound binding event
-                for (URL baseURL : Arrays.asList(baseURL1, baseURL2)) {
-                    if (!destroyed) {
-                        try (CloseableHttpResponse response = client.execute(new HttpGet(SessionOperationServlet.createGetURI(baseURL, "a", sessionId)))) {
-                            assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
-                            assertFalse(response.containsHeader(SessionOperationServlet.RESULT));
-                            assertTrue(response.containsHeader(SessionOperationServlet.SESSION_ID));
-                            assertEquals(newSessionId == null, response.containsHeader(SessionOperationServlet.CREATED_SESSIONS));
-                            if (newSessionId == null) {
-                                newSessionId = response.getFirstHeader(SessionOperationServlet.SESSION_ID).getValue();
-                            } else {
-                                assertEquals(newSessionId, response.getFirstHeader(SessionOperationServlet.SESSION_ID).getValue());
+                for (URL baseURL : (eventURL != null) ? List.of(eventURL) : List.of(baseURL1, baseURL2)) {
+                    try (CloseableHttpResponse response = client.execute(new HttpGet(SessionOperationServlet.createGetURI(baseURL, "a", sessionId)))) {
+                        assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
+                        assertTrue(response.containsHeader(SessionOperationServlet.SESSION_ID));
+                        assertFalse(response.containsHeader(SessionOperationServlet.RESULT));
+                        assertFalse(response.containsHeader(SessionOperationServlet.ADDED_ATTRIBUTES), "Unexpected attribute added event");
+                        assertFalse(response.containsHeader(SessionOperationServlet.REPLACED_ATTRIBUTES), "Unexpected attribute replaced event");
+                        assertFalse(response.containsHeader(SessionOperationServlet.BOUND_ATTRIBUTES), "Unexpected attribute bound event");
+
+                        boolean hasDestroyed = response.containsHeader(SessionOperationServlet.DESTROYED_SESSIONS);
+                        boolean hasRemoved = response.containsHeader(SessionOperationServlet.REMOVED_ATTRIBUTES);
+                        boolean hasUnbound = response.containsHeader(SessionOperationServlet.UNBOUND_ATTRIBUTES);
+
+                        assertFalse(destroyed && hasDestroyed, "Session destroyed event received more than once");
+                        assertFalse(removed && hasRemoved, "Attribute removed event received more than once");
+                        assertFalse(unbound && hasUnbound, "Attribute unbound event received more than once");
+
+                        if (hasDestroyed) {
+                            assertEquals(sessionId, response.getFirstHeader(SessionOperationServlet.DESTROYED_SESSIONS).getValue());
+                            destroyed = true;
+                        }
+                        if (hasRemoved) {
+                            assertEquals("a", response.getFirstHeader(SessionOperationServlet.REMOVED_ATTRIBUTES).getValue());
+                            removed = true;
+                        }
+                        if (hasUnbound) {
+                            assertEquals("7", response.getFirstHeader(SessionOperationServlet.UNBOUND_ATTRIBUTES).getValue());
+                            unbound = true;
+                        }
+
+                        if (hasDestroyed || hasRemoved || hasUnbound) {
+                            eventURL = baseURL;
+                            if (destroyed && removed && unbound) {
+                                log.infof("Observed destroyed, removed, and unbound events within %d attempts.", attempt);
                             }
-                            destroyed = response.containsHeader(SessionOperationServlet.DESTROYED_SESSIONS);
-                            assertFalse(response.containsHeader(SessionOperationServlet.ADDED_ATTRIBUTES));
-                            assertFalse(response.containsHeader(SessionOperationServlet.REPLACED_ATTRIBUTES));
-                            assertEquals(destroyed, response.containsHeader(SessionOperationServlet.REMOVED_ATTRIBUTES));
-                            assertFalse(response.containsHeader(SessionOperationServlet.BOUND_ATTRIBUTES));
-                            assertEquals(destroyed, response.containsHeader(SessionOperationServlet.UNBOUND_ATTRIBUTES));
-                            if (destroyed) {
-                                assertEquals(sessionId, response.getFirstHeader(SessionOperationServlet.DESTROYED_SESSIONS).getValue());
-                                assertEquals("a", response.getFirstHeader(SessionOperationServlet.REMOVED_ATTRIBUTES).getValue());
-                                assertEquals("7", response.getFirstHeader(SessionOperationServlet.UNBOUND_ATTRIBUTES).getValue());
-                                log.infof("Session destroyed within %d attempts.", attempt);
-                            }
+                            break;
                         }
                     }
                 }
 
-                Thread.sleep(TimeUnit.SECONDS.toMillis(1));
+                Thread.sleep(TimeUnit.SECONDS.toMillis(TimeoutUtil.adjust(1)));
             }
-            assertTrue(destroyed, "Session has not been destroyed following expiration within " + maxAttempts + " attempts.");
+            assertTrue(destroyed, "Session has not been destroyed following expiration within %d attempts.".formatted(maxAttempts));
+            assertTrue(removed, "Session attribute has not been removed following expiration within %d attempts.".formatted(maxAttempts));
+            assertTrue(unbound, "Session attribute has not been unbound following expiration within %d attempts.".formatted(maxAttempts));
+
+            // Verify no expiration events were received on the other node
+            URL otherURL = eventURL.equals(baseURL1) ? baseURL2 : baseURL1;
+            try (CloseableHttpResponse response = client.execute(new HttpGet(SessionOperationServlet.createGetURI(otherURL, "a", sessionId)))) {
+                assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
+                assertFalse(response.containsHeader(SessionOperationServlet.DESTROYED_SESSIONS), "Session destroyed event received on both nodes");
+                assertFalse(response.containsHeader(SessionOperationServlet.REMOVED_ATTRIBUTES), "Attribute removed event received on both nodes");
+                assertFalse(response.containsHeader(SessionOperationServlet.UNBOUND_ATTRIBUTES), "Attribute unbound event received on both nodes");
+                assertFalse(response.containsHeader(SessionOperationServlet.ADDED_ATTRIBUTES), "Unexpected attribute added event on other node");
+                assertFalse(response.containsHeader(SessionOperationServlet.REPLACED_ATTRIBUTES), "Unexpected attribute replaced event on other node");
+                assertFalse(response.containsHeader(SessionOperationServlet.BOUND_ATTRIBUTES), "Unexpected attribute bound event on other node");
+            }
         }
     }
 }

@@ -97,10 +97,10 @@ public class SSLSocketFactory extends SocketFactoryBase {
     }
 
     public ServerSocket createSSLServerSocket(int port, int backlog, InetAddress inetAddress) throws IOException {
-        SSLServerSocketFactory serverSocketFactory = this.serverSSLContext.getServerSocketFactory();
         if (serverSSLContext == null) {
             throw IIOPLogger.ROOT_LOGGER.serverSSLNotConfiguredRuntime();
         }
+        SSLServerSocketFactory serverSocketFactory = this.serverSSLContext.getServerSocketFactory();
         return serverSocketFactory.createServerSocket(port, backlog, inetAddress);
     }
 

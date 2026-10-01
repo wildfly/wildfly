@@ -17,7 +17,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>41.0.0.Beta1-SNAPSHOT</version>
+        <version>42.0.0.Beta1-SNAPSHOT</version>
         <relativePath>../galleon-pack/pom.xml</relativePath>
     </parent>
 
@@ -151,6 +151,11 @@
                 </exclusion>
             </exclusions>
         </dependency>
+        <dependency>
+            <groupId>org.assertj</groupId>
+            <artifactId>assertj-core</artifactId>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
     <build>
@@ -191,9 +196,6 @@
                                     <groupId>${ee.maven.groupId}</groupId>
                                     <artifactId>${latest.ee.feature.pack.artifactId}</artifactId>
                                     <version>${ee.maven.version}</version>
-                                    <included-packages>
-                                        <name>docs.examples.configs</name>
-                                    </included-packages>
                                 </feature-pack>
                                 <feature-pack>
                                     <groupId>${full.maven.groupId}</groupId>
@@ -371,6 +373,36 @@
                                 <goals>
                                     <goal>jar-no-fork</goal>
                                 </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <!-- GPG signing is configured elsewhere. Just redeclare the execution here to help
+                         ensure the wildfly-detach-plugin runs after and can detach the asc files -->
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-gpg-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>gpg-sign</id>
+                                <phase>verify</phase> <!-- the normal phase for the 'sign' mojo -->
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.wildfly.plugins</groupId>
+                        <artifactId>wildfly-detach-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <!-- We built tars for local use, but we don't
+                                     want to install or deploy them. -->
+                                <id>detach-tars</id>
+                                <goals>
+                                    <goal>detach-artifacts</goal>
+                                </goals>
+                                <phase>verify</phase>
+                                <configuration>
+                                    <regex>\S{1,}tar\.gz\S*</regex>
+                                </configuration>
                             </execution>
                         </executions>
                     </plugin>

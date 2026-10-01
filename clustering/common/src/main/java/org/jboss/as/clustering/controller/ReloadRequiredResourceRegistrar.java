@@ -8,6 +8,7 @@ package org.jboss.as.clustering.controller;
 /**
  * @author Paul Ferraro
  */
+@Deprecated(forRemoval = true)
 public class ReloadRequiredResourceRegistrar extends ResourceRegistrar {
 
     public ReloadRequiredResourceRegistrar(AddStepHandlerDescriptor descriptor) {

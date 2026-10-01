@@ -18,6 +18,7 @@ import org.wildfly.common.function.ExceptionFunction;
  * @param <T> the type of value provided by the service on which the given runtime operation operates
  * @param <V> the type of the value of which the given runtime operation operates
  */
+@Deprecated(forRemoval = true)
 public class OperationFunction<T, V> implements ExceptionFunction<T, ModelNode, OperationFailedException> {
 
     private final ExpressionResolver resolver;

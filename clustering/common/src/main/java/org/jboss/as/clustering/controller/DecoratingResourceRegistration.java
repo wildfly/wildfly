@@ -15,6 +15,7 @@ import org.jboss.as.controller.registry.ManagementResourceRegistration;
  * Generic {@link ManagementResourceRegistration} decorator.
  * @author Paul Ferraro
  */
+@Deprecated(forRemoval = true)
 public class DecoratingResourceRegistration<R extends ManagementResourceRegistration> extends org.jboss.as.controller.registry.DelegatingManagementResourceRegistration {
 
     private final Function<ManagementResourceRegistration, R> decorator;

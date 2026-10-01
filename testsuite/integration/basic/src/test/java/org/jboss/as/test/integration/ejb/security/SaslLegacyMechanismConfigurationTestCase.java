@@ -167,12 +167,15 @@ public class SaslLegacyMechanismConfigurationTestCase extends AbstractCliTestBas
 
    private void tryReloadWithSaslMechanism(String mechanismName) throws Exception {
 
-      cli.sendLine("/subsystem=remoting/http-connector=http-remoting-connector/property=SASL_MECHANISMS:write-attribute(name=\"value\", value=\""+mechanismName+"\")");
-      CLIOpResult opResult = cli.readAllAsOpResult();
-      Assert.assertTrue(opResult.isIsOutcomeSuccess());
-
-      cli.sendLine("reload");
-      cli.readAllAsOpResult();
+      try {
+         cli.sendLine("/subsystem=remoting/http-connector=http-remoting-connector/"
+                 + "property=SASL_MECHANISMS:write-attribute(name=\"value\", value=\""
+                 + mechanismName + "\")");
+         CLIOpResult opResult = cli.readAllAsOpResult();
+         Assert.assertTrue(opResult.isIsOutcomeSuccess());
+      } finally {
+         ServerReload.executeReloadAndWaitForCompletion(managementClient);
+      }
    }
 
    // ejb client code

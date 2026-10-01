@@ -465,6 +465,23 @@
                     </xs:documentation>
                 </xs:annotation>
             </xs:element>
+            <xs:element name="provider-jwt-claims-typ" type="xs:string" minOccurs="0" maxOccurs="1">
+                <xs:annotation>
+                    <xs:documentation>
+                        <![CDATA[
+                        The logout specification defines the default (JWT) Logout Token "typ"
+                        string to be "logout+jwt".  If the OpenID Provider uses a different
+                        string, it can be specified with this element.
+
+                        This is an optional parameter.  If defined it can not be the empty string
+                        or null.
+
+                        Elytron checks for Keycloak's "typ", "Logout" in addition to "logout+jwt".
+
+                        ]]>
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
         </xs:all>
         <xs:attribute name="name" type="xs:string" use="required">
             <xs:annotation>
@@ -880,6 +897,23 @@
                     <xs:documentation>
                         <![CDATA[
                         The token signature algorithm used by the OpenID provider.
+                        ]]>
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="provider-jwt-claims-typ" type="xs:string" minOccurs="0" maxOccurs="1">
+                <xs:annotation>
+                    <xs:documentation>
+                        <![CDATA[
+                        The logout specification defines the default (JWT) Logout Token "typ"
+                        string to be "logout+jwt".  If the OpenID Provider uses a different
+                        string, it can be specified with this element.
+
+                        This is an optional parameter.  If defined it can not be the empty string
+                        or null.
+
+                        Elytron checks for Keycloak's "typ", "Logout" in addition to "logout+jwt".
+
                         ]]>
                     </xs:documentation>
                 </xs:annotation>
@@ -1454,6 +1488,101 @@
                     <xs:documentation>
                         <![CDATA[
                         The token signature algorithm used by the OpenID provider.
+                        ]]>
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="logout-path" type="xs:string" minOccurs="0" maxOccurs="1">
+                <xs:annotation>
+                    <xs:documentation>
+                        <![CDATA[
+                        This is an optional property with no default value.
+                        It designates a relative path (starting with "/") for the application
+                        endpoint that starts RP-initiated logout. Configure it only when users
+                        initiate logout from the application; it is not used by front-channel or
+                        back-channel logout. The incoming request path must match exactly.
+                    ]]>
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="logout-callback-path" type="xs:string" minOccurs="0" maxOccurs="1">
+                <xs:annotation>
+                    <xs:documentation>
+                        <![CDATA[
+                        This is an optional property with no default value. It designates where
+                        the OpenID Provider invokes front-channel or back-channel logout. It is
+                        required in practice for front-channel or back-channel logout.
+
+                        The value may be a relative path or an absolute http or https URI.
+                        Only the path component is compared against the incoming request, using
+                        exact path equality. The value must be registered with the OpenId Provider.
+                    ]]>
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+
+            <xs:element name="post-logout-redirect-uri" type="xs:string" minOccurs="0" maxOccurs="1">
+                <xs:annotation>
+                    <xs:documentation>
+                        <![CDATA[
+                        This is an optional property with no default value.
+                        It must be an absolute URI sent to the provider end_session_endpoint
+                        as post_logout_redirect_uri during RP-initiated logout. It must be
+                        registered with the OpenId Provider.
+                    ]]>
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+
+            <xs:element name="logout-session-required"
+                        type="xs:boolean" minOccurs="0" default="true">
+                <xs:annotation>
+                    <xs:documentation>
+                        <![CDATA[
+                        This is an optional property.
+                        A boolean value. The default value is true
+
+                        For Front-Channel Logout, when true, the provider sid query
+                        parameter is validated against the ID token sid claim and the iss
+                        (issuer) parameter is enforced. When false, session validation is
+                        skipped and the local session is invalidated on callback.
+
+                        For Back-Channel Logout the boolean value specifies whether the
+                        request requires the sid (session ID) Claim be included in the
+                        Logout Token to identify the session with the OpenId Provider.
+                        This value must be `true` for back-channel logout to be executed.
+                        If the value is `false` the request is rejected with HTTP 400.
+                    ]]>
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+
+            <xs:element name="back-channel-logout-session-invalidation-limit"
+                        type="xs:int" minOccurs="0" maxOccurs="1">
+                <xs:annotation>
+                    <xs:documentation>
+                        <![CDATA[
+                        The maximum size for a bounded map when marking sessions for
+                        invalidation during back-channel logout. Once this maximum size
+                        has been reached, the eldest entry will be removed.  The initial
+                        size is 16.
+                    ]]>
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="provider-jwt-claims-typ" type="xs:string" minOccurs="0" maxOccurs="1">
+                <xs:annotation>
+                    <xs:documentation>
+                        <![CDATA[
+                        The logout specification defines the default (JWT) Logout Token "typ"
+                        string to be "logout+jwt".  If the OpenID Provider uses a different
+                        string, it can be specified with this element.
+
+                        This is an optional parameter.  If defined it can not be the empty string
+                        or null.
+
+                        Elytron checks for Keycloak's "typ", "Logout" in addition to "logout+jwt".
+
                         ]]>
                     </xs:documentation>
                 </xs:annotation>

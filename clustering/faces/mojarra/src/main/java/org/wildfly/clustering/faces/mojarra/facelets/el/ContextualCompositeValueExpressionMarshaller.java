@@ -5,8 +5,9 @@
 package org.wildfly.clustering.faces.mojarra.facelets.el;
 
 import java.io.IOException;
+import java.lang.invoke.MethodHandle;
+import java.lang.invoke.MethodHandles;
 import java.lang.reflect.Field;
-import java.security.PrivilegedAction;
 
 import jakarta.el.ValueExpression;
 import jakarta.faces.view.Location;
@@ -14,10 +15,10 @@ import jakarta.faces.view.Location;
 import com.sun.faces.facelets.el.ContextualCompositeValueExpression;
 
 import org.infinispan.protostream.descriptors.WireType;
+import org.wildfly.clustering.function.Function;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamMarshaller;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamReader;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamWriter;
-import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
  * @author Paul Ferraro
@@ -27,18 +28,20 @@ public class ContextualCompositeValueExpressionMarshaller implements ProtoStream
     private static final int LOCATION_INDEX = 1;
     private static final int EXPRESSION_INDEX = 2;
 
-    static final Field VALUE_EXPRESSION_FIELD = WildFlySecurityManager.doUnchecked(new PrivilegedAction<>() {
-            @Override
-            public Field run() {
-                for (Field field : ContextualCompositeValueExpression.class.getDeclaredFields()) {
-                    if (field.getType() == ValueExpression.class) {
-                        field.setAccessible(true);
-                        return field;
-                    }
+    static final Function<ContextualCompositeValueExpression, ValueExpression> VALUE_EXPRESSION_HANDLE = Function.invoke(findHandle(ContextualCompositeValueExpression.class, ValueExpression.class));
+
+    private static MethodHandle findHandle(Class<?> sourceClass, Class<?> fieldClass) {
+        for (Field field : sourceClass.getDeclaredFields()) {
+            if (field.getType() == fieldClass) {
+                try {
+                    return MethodHandles.privateLookupIn(sourceClass, MethodHandles.lookup()).findGetter(sourceClass, field.getName(), fieldClass);
+                } catch (NoSuchFieldException | IllegalAccessException e) {
+                    throw new IllegalStateException(e);
                 }
-                throw new IllegalArgumentException(ValueExpression.class.getName());
             }
-        });
+        }
+        throw new IllegalArgumentException(fieldClass.getName());
+    }
 
     @Override
     public Class<? extends ContextualCompositeValueExpression> getJavaClass() {
@@ -71,16 +74,7 @@ public class ContextualCompositeValueExpressionMarshaller implements ProtoStream
         if (location != null) {
             writer.writeObject(LOCATION_INDEX, location);
         }
-        ValueExpression expression = WildFlySecurityManager.doUnchecked(new PrivilegedAction<>() {
-            @Override
-            public ValueExpression run() {
-                try {
-                    return (ValueExpression) VALUE_EXPRESSION_FIELD.get(value);
-                } catch (IllegalAccessException e) {
-                    throw new IllegalStateException(e);
-                }
-            }
-        });
+        ValueExpression expression = VALUE_EXPRESSION_HANDLE.apply(value);
         if (expression != null) {
             writer.writeAny(EXPRESSION_INDEX, expression);
         }

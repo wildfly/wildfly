@@ -57,7 +57,7 @@ wildfly-naming-client project. The other property is the PROVIDER_URL.
 which is `remote+http://` for wildfly-naming-client. The rest
 of the PROVIDER_URL part is the server hostname or IP and the port on
 which the remoting connector is exposed on the server side. By default
-the http-remoting connector port in WildFly {wildflyVersion} is 8080. That's what we
+the http-remoting connector port in WildFly is 8080. That's what we
 have used in our example. The hostname we have used is localhost but
 that should point to the server IP or hostname where the server is
 running.

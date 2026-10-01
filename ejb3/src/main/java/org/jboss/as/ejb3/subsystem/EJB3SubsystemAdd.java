@@ -5,16 +5,15 @@
 
 package org.jboss.as.ejb3.subsystem;
 
-import static org.jboss.as.ejb3.subsystem.EJB3RemoteResourceDefinition.CONNECTOR_CAPABILITY_NAME;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.CLIENT_INTERCEPTORS;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.DEFAULT_ENTITY_BEAN_OPTIMISTIC_LOCKING;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.DEFAULT_MDB_INSTANCE_POOL;
-import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.DEFAULT_RESOURCE_ADAPTER_NAME;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.DEFAULT_SFSB_CACHE;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.DEFAULT_SFSB_PASSIVATION_DISABLED_CACHE;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.DEFAULT_SINGLETON_BEAN_ACCESS_TIMEOUT;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.DEFAULT_SLSB_INSTANCE_POOL;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.DEFAULT_STATEFUL_BEAN_ACCESS_TIMEOUT;
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.REMOTE_SERVICE_PATH;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.SERVER_INTERCEPTORS;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemRootResourceDefinition.CLUSTERED_SINGLETON_BARRIER;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemRootResourceDefinition.CLUSTERED_SINGLETON_CAPABILITY;
@@ -28,10 +27,11 @@ import static org.jboss.as.ejb3.subsystem.StrictMaxPoolResourceDefinition.STRICT
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 import javax.naming.NamingException;
 
@@ -117,14 +117,12 @@ import org.jboss.as.ejb3.iiop.stub.DynamicStubFactoryFactory;
 import org.jboss.as.ejb3.interceptor.server.ClientInterceptorCache;
 import org.jboss.as.ejb3.interceptor.server.ServerInterceptorCache;
 import org.jboss.as.ejb3.interceptor.server.ServerInterceptorMetaData;
+import org.jboss.as.ejb3.local.LocalEJBDiscoveryProviderService;
 import org.jboss.as.ejb3.logging.EjbLogger;
-import org.jboss.as.ejb3.remote.AssociationService;
 import org.jboss.as.ejb3.remote.EJBClientContextService;
-import org.jboss.as.ejb3.remote.LocalTransportProvider;
-import org.jboss.as.ejb3.remote.http.EJB3RemoteHTTPService;
+import org.jboss.as.ejb3.local.LocalTransportProvider;
 import org.jboss.as.ejb3.security.ApplicationSecurityDomainConfig;
 import org.jboss.as.ejb3.suspend.EJBSuspendHandlerService;
-import org.jboss.as.network.ProtocolSocketBinding;
 import org.jboss.as.server.AbstractDeploymentChainStep;
 import org.jboss.as.server.DeploymentProcessorTarget;
 import org.jboss.as.server.ServerEnvironment;
@@ -138,7 +136,6 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.ejb.client.EJBTransportProvider;
 import org.jboss.javax.rmi.RemoteObjectSubstitutionManager;
 import org.jboss.metadata.ejb.spec.EjbJarMetaData;
-import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
@@ -151,14 +148,13 @@ import org.omg.PortableServer.POA;
 import org.wildfly.clustering.server.registry.Registry;
 import org.wildfly.clustering.singleton.service.ServiceTargetFactory;
 import org.wildfly.common.function.Functions;
+import org.wildfly.discovery.spi.DiscoveryProvider;
 import org.wildfly.iiop.openjdk.rmi.DelegatingStubFactoryFactory;
 import org.wildfly.iiop.openjdk.service.CorbaPOAService;
 import org.wildfly.subsystem.service.ServiceDependency;
 import org.wildfly.subsystem.service.ServiceInstaller;
 import org.wildfly.transaction.client.LocalTransactionContext;
 import org.wildfly.transaction.client.naming.txn.TxnNamingContextFactory;
-
-import io.undertow.server.handlers.PathHandler;
 
 /**
  * Add operation handler for the EJB3 subsystem.
@@ -170,16 +166,23 @@ import io.undertow.server.handlers.PathHandler;
  */
 class EJB3SubsystemAdd extends AbstractBoottimeAddStepHandler {
 
-    private static final String UNDERTOW_HTTP_INVOKER_CAPABILITY_NAME = "org.wildfly.undertow.http-invoker";
-
     private static final String REMOTING_ENDPOINT_CAPABILITY = "org.wildfly.remoting.endpoint";
 
+    private final AtomicReference<String> defaultDistinctName;
+    private final AtomicBoolean defaultAllowEjbRegex;
+    private final AtomicReference<String> defaultResourceAdapterName;
     private final AtomicReference<String> defaultSecurityDomainName;
     private final Iterable<ApplicationSecurityDomainConfig> knownApplicationSecurityDomains;
     private final Iterable<String> outflowSecurityDomains;
     private final AtomicBoolean denyAccessByDefault;
 
-    EJB3SubsystemAdd(AtomicReference<String> defaultSecurityDomainName, Iterable<ApplicationSecurityDomainConfig> knownApplicationSecurityDomains, Iterable<String> outflowSecurityDomains, AtomicBoolean denyAccessByDefault) {
+    EJB3SubsystemAdd(AtomicReference<String> defaultDistinctName, AtomicBoolean defaultAllowEjbRegex,
+                     AtomicReference<String> defaultResourceAdapterName, AtomicReference<String> defaultSecurityDomainName,
+                     Iterable<ApplicationSecurityDomainConfig> knownApplicationSecurityDomains,
+                     Iterable<String> outflowSecurityDomains, AtomicBoolean denyAccessByDefault) {
+        this.defaultDistinctName = defaultDistinctName;
+        this.defaultAllowEjbRegex = defaultAllowEjbRegex;
+        this.defaultResourceAdapterName = defaultResourceAdapterName;
         this.defaultSecurityDomainName = defaultSecurityDomainName;
         this.knownApplicationSecurityDomains = knownApplicationSecurityDomains;
         this.outflowSecurityDomains = outflowSecurityDomains;
@@ -263,52 +266,32 @@ class EJB3SubsystemAdd extends AbstractBoottimeAddStepHandler {
     @Override
     protected void performBoottime(OperationContext context, ModelNode operation, Resource resource) throws OperationFailedException {
         final ModelNode model = resource.getModel();
-        // Install the server association service
-        final AssociationService associationService = new AssociationService();
         final ServiceName suspendControllerServiceName = context.getCapabilityServiceName("org.wildfly.server.suspend-controller", SuspendController.class);
         final CapabilityServiceTarget serviceTarget = context.getCapabilityServiceTarget();
-        final ServiceBuilder<AssociationService> associationServiceBuilder = serviceTarget.addService(AssociationService.SERVICE_NAME, associationService);
-        associationServiceBuilder.addDependency(DeploymentRepositoryService.SERVICE_NAME, DeploymentRepository.class, associationService.getDeploymentRepositoryInjector())
-                .addDependency(ServerEnvironmentService.SERVICE_NAME, ServerEnvironment.class, associationService.getServerEnvironmentServiceInjector())
-                .setInitialMode(ServiceController.Mode.LAZY);
 
-        if (resource.hasChild(EJB3SubsystemModel.REMOTE_SERVICE_PATH)) {
-            ModelNode remoteModel = resource.getChild(EJB3SubsystemModel.REMOTE_SERVICE_PATH).getModel();
-
-            // For each connector
-            for (ModelNode connector : EJB3RemoteResourceDefinition.CONNECTORS.resolveModelAttribute(context, remoteModel).asList()) {
-                String connectorName = connector.asString();
-
-                Map.Entry<Injector<ProtocolSocketBinding>, Injector<Registry>> entry = associationService.addConnectorInjectors(connectorName);
-                associationServiceBuilder.addDependency(context.getCapabilityServiceName(CONNECTOR_CAPABILITY_NAME, connectorName, ProtocolSocketBinding.class), ProtocolSocketBinding.class, entry.getKey());
-                associationServiceBuilder.addDependency(ServiceNameFactory.resolveServiceName(EJB3RemoteResourceDefinition.CLIENT_MAPPINGS_REGISTRY, connectorName), Registry.class, entry.getValue());
-            }
-        }
-        associationServiceBuilder.install();
-
-        //setup IIOP related stuff
-        //This goes here rather than in EJB3IIOPAdd as it affects the server when it is acting as an iiop client
-        //setup our dynamic stub factory
+        // set up IIOP related stuff
+        // (This goes here rather than in EJB3IIOPAdd as it affects the server when it is acting as an iiop client)
+        // set up our dynamic stub factory
         DelegatingStubFactoryFactory.setOverriddenDynamicFactory(new DynamicStubFactoryFactory());
 
-        //setup the substitution service, that translates between ejb proxies and IIOP stubs
+        // set up the substitution service, that translates between ejb proxies and IIOP stubs
         final RemoteObjectSubstitutionService substitutionService = new RemoteObjectSubstitutionService();
         serviceTarget.addService(RemoteObjectSubstitutionService.SERVICE_NAME, substitutionService)
                 .addDependency(DeploymentRepositoryService.SERVICE_NAME, DeploymentRepository.class, substitutionService.getDeploymentRepositoryInjectedValue())
+                .setInitialMode(ServiceController.Mode.PASSIVE)
                 .install();
 
-        // register EJB context selector
-
+        // register IIOP service used to substitute IIOP references for Jakarta EE invocation-generated results
         RemoteObjectSubstitutionManager.setRemoteObjectSubstitution(substitutionService);
 
         final boolean appclient = context.getProcessType() == ProcessType.APPLICATION_CLIENT;
 
-        final ModelNode defaultDistinctName = EJB3SubsystemRootResourceDefinition.DEFAULT_DISTINCT_NAME.resolveModelAttribute(context, model);
-        final DefaultDistinctNameService defaultDistinctNameService = new DefaultDistinctNameService(defaultDistinctName.isDefined() ? defaultDistinctName.asString() : null);
-        serviceTarget.addService(DefaultDistinctNameService.SERVICE_NAME, defaultDistinctNameService).install();
-        final ModelNode ejbNameRegex = EJB3SubsystemRootResourceDefinition.ALLOW_EJB_NAME_REGEX.resolveModelAttribute(context, model);
-        final EjbNameRegexService ejbNameRegexService = new EjbNameRegexService(ejbNameRegex.isDefined() ? ejbNameRegex.asBoolean() : false);
-        serviceTarget.addService(EjbNameRegexService.SERVICE_NAME, ejbNameRegexService).install();
+        // set the default distinct name in the deployment unit processor, configured at the subsystem level
+        this.defaultDistinctName.set(EJB3SubsystemRootResourceDefinition.DEFAULT_DISTINCT_NAME.resolveModelAttribute(context, model).asStringOrNull());
+
+        // set the default for allowing regular expressions in EJB names in the deployment unit processor, configured at the subsystem level
+        final boolean defaultEjbNameRegex = EJB3SubsystemRootResourceDefinition.ALLOW_EJB_NAME_REGEX.resolveModelAttribute(context, model).asBoolean();
+        this.defaultAllowEjbRegex.set(defaultEjbNameRegex);
 
         // set the default security domain name in the deployment unit processor, configured at the subsystem level
         final ModelNode defaultSecurityDomainModelNode = EJB3SubsystemRootResourceDefinition.DEFAULT_SECURITY_DOMAIN.resolveModelAttribute(context, model);
@@ -334,10 +317,10 @@ class EJB3SubsystemAdd extends AbstractBoottimeAddStepHandler {
 
                 //DUP's that are used even for app client deployments
                 processorTarget.addDeploymentProcessor(EJB3Extension.SUBSYSTEM_NAME, Phase.STRUCTURE, Phase.STRUCTURE_REGISTER_JBOSS_ALL_EJB, new JBossAllXmlParserRegisteringProcessor<EjbJarMetaData>(EjbJarJBossAllParser.ROOT_ELEMENT, EjbJarJBossAllParser.ATTACHMENT_KEY, new EjbJarJBossAllParser()));
-                processorTarget.addDeploymentProcessor(EJB3Extension.SUBSYSTEM_NAME, Phase.PARSE, Phase.PARSE_EJB_DEFAULT_DISTINCT_NAME, new EjbDefaultDistinctNameProcessor(defaultDistinctNameService));
+                processorTarget.addDeploymentProcessor(EJB3Extension.SUBSYSTEM_NAME, Phase.PARSE, Phase.PARSE_EJB_DEFAULT_DISTINCT_NAME, new EjbDefaultDistinctNameProcessor(EJB3SubsystemAdd.this.defaultDistinctName::get));
                 processorTarget.addDeploymentProcessor(EJB3Extension.SUBSYSTEM_NAME, Phase.PARSE, Phase.PARSE_EJB_CONTEXT_BINDING, new EjbContextJndiBindingProcessor());
                 processorTarget.addDeploymentProcessor(EJB3Extension.SUBSYSTEM_NAME, Phase.PARSE, Phase.PARSE_EJB_DEPLOYMENT, new EjbJarParsingDeploymentUnitProcessor());
-                processorTarget.addDeploymentProcessor(EJB3Extension.SUBSYSTEM_NAME, Phase.PARSE, Phase.PARSE_CREATE_COMPONENT_DESCRIPTIONS, new AnnotatedEJBComponentDescriptionDeploymentUnitProcessor(appclient, defaultMdbPoolAvailable, defaultSlsbPoolAvailable));
+                processorTarget.addDeploymentProcessor(EJB3Extension.SUBSYSTEM_NAME, Phase.PARSE, Phase.PARSE_CREATE_COMPONENT_DESCRIPTIONS, new AnnotatedEJBComponentDescriptionDeploymentUnitProcessor(appclient, defaultMdbPoolAvailable, defaultSlsbPoolAvailable, EJB3SubsystemAdd.this.defaultResourceAdapterName::get));
                 processorTarget.addDeploymentProcessor(EJB3Extension.SUBSYSTEM_NAME, Phase.PARSE, Phase.PARSE_EJB_SESSION_BEAN_DD, new SessionBeanXmlDescriptorProcessor(appclient));
                 processorTarget.addDeploymentProcessor(EJB3Extension.SUBSYSTEM_NAME, Phase.PARSE, Phase.PARSE_ANNOTATION_EJB, new EjbAnnotationProcessor());
                 processorTarget.addDeploymentProcessor(EJB3Extension.SUBSYSTEM_NAME, Phase.PARSE, Phase.PARSE_EJB_INJECTION_ANNOTATION, new EjbResourceInjectionAnnotationProcessor(appclient));
@@ -370,7 +353,7 @@ class EJB3SubsystemAdd extends AbstractBoottimeAddStepHandler {
 
                     processorTarget.addDeploymentProcessor(EJB3Extension.SUBSYSTEM_NAME, Phase.POST_MODULE, Phase.POST_MODULE_EJB_IMPLICIT_NO_INTERFACE_VIEW, new ImplicitLocalViewProcessor());
                     processorTarget.addDeploymentProcessor(EJB3Extension.SUBSYSTEM_NAME, Phase.POST_MODULE, Phase.POST_MODULE_EJB_APPLICATION_EXCEPTIONS, new ApplicationExceptionMergingProcessor());
-                    processorTarget.addDeploymentProcessor(EJB3Extension.SUBSYSTEM_NAME, Phase.POST_MODULE, Phase.POST_MODULE_EJB_DD_INTERCEPTORS, new DeploymentDescriptorInterceptorBindingsProcessor(ejbNameRegexService));
+                    processorTarget.addDeploymentProcessor(EJB3Extension.SUBSYSTEM_NAME, Phase.POST_MODULE, Phase.POST_MODULE_EJB_DD_INTERCEPTORS, new DeploymentDescriptorInterceptorBindingsProcessor(EJB3SubsystemAdd.this.defaultAllowEjbRegex::get));
                     processorTarget.addDeploymentProcessor(EJB3Extension.SUBSYSTEM_NAME, Phase.POST_MODULE, Phase.POST_MODULE_EJB_DD_METHOD_RESOLUTION, new DeploymentDescriptorMethodProcessor());
                     processorTarget.addDeploymentProcessor(EJB3Extension.SUBSYSTEM_NAME, Phase.POST_MODULE, Phase.POST_MODULE_EJB_TRANSACTION_MANAGEMENT, new TransactionManagementMergingProcessor());
                     processorTarget.addDeploymentProcessor(EJB3Extension.SUBSYSTEM_NAME, Phase.POST_MODULE, Phase.POST_MODULE_EJB_CONCURRENCY_MANAGEMENT_MERGE, new ConcurrencyManagementMergingProcessor());
@@ -454,9 +437,7 @@ class EJB3SubsystemAdd extends AbstractBoottimeAddStepHandler {
 
         EJB3SubsystemDefaultCacheWriteHandler.SFSB_PASSIVATION_DISABLED_CACHE.updateCacheService(context, EJB3SubsystemRootResourceDefinition.DEFAULT_SFSB_PASSIVATION_DISABLED_CACHE.resolveModelAttribute(context, model).asStringOrNull());
 
-        if (model.hasDefined(DEFAULT_RESOURCE_ADAPTER_NAME)) {
-            DefaultResourceAdapterWriteHandler.INSTANCE.updateDefaultAdapterService(context, model);
-        }
+        this.defaultResourceAdapterName.set(EJB3SubsystemRootResourceDefinition.DEFAULT_RESOURCE_ADAPTER_NAME.resolveModelAttribute(context, model).asStringOrNull());
 
         if (model.hasDefined(DEFAULT_SINGLETON_BEAN_ACCESS_TIMEOUT)) {
             DefaultSingletonBeanAccessTimeoutWriteHandler.INSTANCE.updateOrCreateDefaultSingletonBeanAccessTimeoutService(context, model);
@@ -472,9 +453,14 @@ class EJB3SubsystemAdd extends AbstractBoottimeAddStepHandler {
 
         ExceptionLoggingWriteHandler.INSTANCE.updateOrCreateDefaultExceptionLoggingEnabledService(context, model);
 
-        serviceTarget.addService(DeploymentRepositoryService.SERVICE_NAME, new DeploymentRepositoryService()).install();
+        // install the DeploymentRepositoryService
+        serviceTarget.addService(DeploymentRepositoryService.SERVICE_NAME, new DeploymentRepositoryService())
+                .setInitialMode(ServiceController.Mode.ON_DEMAND)
+                .install();
 
-        addRemoteInvocationServices(context, model, appclient);
+        // add support for outgoing invocations on remote EJBs
+        addOutgoingRemoteInvocationServices(context, model, resource, appclient);
+
         // add clustering service
         addClusteringServices(context, appclient);
 
@@ -491,6 +477,7 @@ class EJB3SubsystemAdd extends AbstractBoottimeAddStepHandler {
                 .addDependency(suspendControllerServiceName, SuspendController.class, ejbSuspendHandlerService.getSuspendControllerInjectedValue())
                 .addDependency(TxnServices.JBOSS_TXN_LOCAL_TRANSACTION_CONTEXT, LocalTransactionContext.class, ejbSuspendHandlerService.getLocalTransactionContextInjectedValue())
                 .addDependency(DeploymentRepositoryService.SERVICE_NAME, DeploymentRepository.class, ejbSuspendHandlerService.getDeploymentRepositoryInjectedValue())
+                .setInitialMode(ServiceController.Mode.ON_DEMAND)
                 .install();
 
         if (!appclient) {
@@ -502,18 +489,6 @@ class EJB3SubsystemAdd extends AbstractBoottimeAddStepHandler {
                     .install();
 
             StatisticsEnabledWriteHandler.INSTANCE.updateToRuntime(context, model);
-
-
-            if(context.hasOptionalCapability(UNDERTOW_HTTP_INVOKER_CAPABILITY_NAME, EJB3SubsystemRootResourceDefinition.EJB_CAPABILITY.getName(), null)) {
-                EJB3RemoteHTTPService service = new EJB3RemoteHTTPService(FilterSpecClassResolverFilter.getFilterForOperationContext(context));
-
-                serviceTarget.addService(EJB3RemoteHTTPService.SERVICE_NAME, service)
-                        .addDependency(context.getCapabilityServiceName(UNDERTOW_HTTP_INVOKER_CAPABILITY_NAME, PathHandler.class), PathHandler.class, service.getPathHandlerInjectedValue())
-                        .addDependency(TxnServices.JBOSS_TXN_LOCAL_TRANSACTION_CONTEXT, LocalTransactionContext.class, service.getLocalTransactionContextInjectedValue())
-                        .addDependency(AssociationService.SERVICE_NAME, AssociationService.class, service.getAssociationServiceInjectedValue())
-                        .setInitialMode(ServiceController.Mode.PASSIVE)
-                        .install();
-            }
         }
 
         TxnNamingContextFactory.setAccessChecker(new TxnNamingContextFactory.AccessChecker() {
@@ -528,20 +503,42 @@ class EJB3SubsystemAdd extends AbstractBoottimeAddStepHandler {
         });
     }
 
-    private static void addRemoteInvocationServices(final OperationContext context,
-                                             final ModelNode ejbSubsystemModel, final boolean appclient) throws OperationFailedException {
+    private static void addOutgoingRemoteInvocationServices(final OperationContext context,
+                                                            final ModelNode ejbSubsystemModel,
+                                                            final Resource ejbSubsystemResource,
+                                                            final boolean appclient) throws OperationFailedException {
 
         final ServiceTarget serviceTarget = context.getCapabilityServiceTarget();
-        //add the default EjbClientContext
 
+        // add in the local discovery provider
+        final ServiceBuilder<?> localDiscoveryProviderBuilder = serviceTarget.addService();
+        final Consumer<DiscoveryProvider> discoveryProviderConsumer = localDiscoveryProviderBuilder.provides(LocalEJBDiscoveryProviderService.SERVICE_NAME);
+        final Supplier<DeploymentRepository> deploymentRepositorySupplier = localDiscoveryProviderBuilder.requires(DeploymentRepositoryService.SERVICE_NAME);
+        final Supplier<ServerEnvironment> serverEnvironmentSupplier = localDiscoveryProviderBuilder.requires(ServerEnvironmentService.SERVICE_NAME);
+        // if the "remote" resource is present, pass in references to the client mappings registries installed there
+        List<Supplier<Registry>> clientMappingsRegistrySupplierList = new ArrayList<>();
+        if (ejbSubsystemResource.hasChild(EJB3SubsystemModel.REMOTE_SERVICE_PATH)) {
+            final ModelNode remoteModel = ejbSubsystemResource.getChild(REMOTE_SERVICE_PATH).getModel();
+            final List<ModelNode> connectors = EJB3RemoteResourceDefinition.CONNECTORS.resolveModelAttribute(context, remoteModel).asList();
+            for (ModelNode connector : connectors) {
+                String connectorName = connector.asString();
+                final Supplier<Registry> registrySupplier = localDiscoveryProviderBuilder.requires(ServiceNameFactory.resolveServiceName(EJB3RemoteResourceDefinition.CLIENT_MAPPINGS_REGISTRY, connectorName));
+                clientMappingsRegistrySupplierList.add(registrySupplier);
+            }
+        }
+        final LocalEJBDiscoveryProviderService localDiscoveryProviderService = new LocalEJBDiscoveryProviderService(discoveryProviderConsumer, serverEnvironmentSupplier, deploymentRepositorySupplier, clientMappingsRegistrySupplierList);
+        localDiscoveryProviderBuilder.setInstance(localDiscoveryProviderService);
+        localDiscoveryProviderBuilder.setInitialMode(ServiceController.Mode.ON_DEMAND);
+        localDiscoveryProviderBuilder.install();
+
+        //add the default EjbClientContext
         final EJBClientConfiguratorService clientConfiguratorService = new EJBClientConfiguratorService();
         final ServiceBuilder<EJBClientConfiguratorService> configuratorBuilder = serviceTarget.addService(EJBClientConfiguratorService.SERVICE_NAME, clientConfiguratorService);
         if(context.hasOptionalCapability(REMOTING_ENDPOINT_CAPABILITY, EJB3SubsystemRootResourceDefinition.EJB_CLIENT_CONFIGURATOR_CAPABILITY.getName(), null)) {
             ServiceName serviceName = context.getCapabilityServiceName(REMOTING_ENDPOINT_CAPABILITY, Endpoint.class);
             configuratorBuilder.addDependency(serviceName, Endpoint.class, clientConfiguratorService.getEndpointInjector());
         }
-        configuratorBuilder.setInitialMode(ServiceController.Mode.ACTIVE).install();
-
+        configuratorBuilder.setInitialMode(ServiceController.Mode.ON_DEMAND).install();
 
         //TODO: This should be managed
         final EJBClientContextService clientContextService = new EJBClientContextService(true);
@@ -575,7 +572,8 @@ class EJB3SubsystemAdd extends AbstractBoottimeAddStepHandler {
         }
 
         // install the default EJB client context service
-        clientContextServiceBuilder.install();
+        clientContextServiceBuilder.setInitialMode(ServiceController.Mode.ON_DEMAND)
+                .install();
     }
 
     private static void addClusteringServices(final OperationContext context, final boolean appclient) {

@@ -11,6 +11,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectInput;
+import java.io.ObjectInputFilter;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutput;
 import java.io.ObjectOutputStream;
@@ -55,6 +56,12 @@ public class DsTestCase {
 
     @Test
     public void testDatasourceSerialization() throws Exception {
+        // If the serial filter is not null, ignore the test.
+        // We still have null serial filter due to https://github.com/wildfly/wildfly-launcher/issues/93
+        // Note, due to WFARQ-251, we can't use junit Assumptions API, we are just ignoring the test
+        if (ObjectInputFilter.Config.getSerialFilter() != null) {
+            return;
+        }
         InitialContext context = new InitialContext();
         DataSource originalDs = (DataSource) context.lookup(JNDI_NAME);
         //serialize

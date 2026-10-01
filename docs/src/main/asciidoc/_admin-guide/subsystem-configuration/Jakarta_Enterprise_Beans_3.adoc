@@ -358,7 +358,7 @@ following fields:
 * `class` - the class which implements the interceptor
 
 In order to use server interceptors you have to create a module that implements
-them and place it into _${WILDFLY_HOME}/modules_ directory.
+them and place it into the _$JBOSS_HOME/modules_ directory.
 
 Interceptor implementations are POJO classes which use
 _jakarta.interceptor.AroundInvoke_ and _jakarta.interceptor.AroundTimeout_ to
@@ -404,7 +404,7 @@ following fields:
 * `class` - the class which implements the interceptor
 
 In order to use server interceptors you have to create a module that implements
-them and place it into _${WILDFLY_HOME}/modules_ directory.
+them and place it into the _$JBOSS_HOME/modules_ directory.
 
 Interceptor implementations must implement _org.jboss.ejb.client.EJBClientInterceptor_
 interface.

@@ -11,6 +11,7 @@ import static org.wildfly.extension.messaging.activemq.CommonAttributes.CLIENT_I
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.HA;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.JGROUPS_CLUSTER;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.JGROUPS_DISCOVERY_GROUP;
+import static org.wildfly.extension.messaging.activemq._private.MessagingLogger.MESSAGING_DISCOVERY_WARNING_DISABLED_PROPERTY_NAME;
 import static org.wildfly.extension.messaging.activemq.jms.ConnectionFactoryAttributes.Common.DESERIALIZATION_ALLOWLIST;
 import static org.wildfly.extension.messaging.activemq.jms.ConnectionFactoryAttributes.Common.DESERIALIZATION_BLACKLIST;
 import static org.wildfly.extension.messaging.activemq.jms.ConnectionFactoryAttributes.Common.DESERIALIZATION_BLOCKLIST;
@@ -52,8 +53,10 @@ import org.wildfly.extension.messaging.activemq._private.MessagingLogger;
 
 import static org.wildfly.extension.messaging.activemq.jms.ConnectionFactoryAttributes.External.ENABLE_AMQ1_PREFIX;
 
+import java.util.Collections;
 import javax.net.ssl.SSLContext;
 import org.jboss.as.controller.AttributeDefinition;
+import org.wildfly.extension.messaging.activemq.MessagingSubsystemRootResourceDefinition;
 
 /**
  * Update adding a connection factory to the subsystem. The
@@ -84,6 +87,7 @@ public class ExternalConnectionFactoryAdd extends AbstractAddStepHandler {
                 .addAliases(JMSServices.getConnectionFactoryBaseServiceName(MessagingServices.getActiveMQServiceName()).append(name));
         ExternalConnectionFactoryService service;
         if (discoveryGroupName.isDefined()) {
+            builder.requires(MessagingSubsystemRootResourceDefinition.CONFIGURATION_CAPABILITY.getCapabilityServiceName());
             // mapping between the {discovery}-groups and the cluster names they use
             Map<String, String> clusterNames = new HashMap<>();
             Map<String, Supplier<SocketBinding>> groupBindings = new HashMap<>();
@@ -107,6 +111,11 @@ public class ExternalConnectionFactoryAdd extends AbstractAddStepHandler {
             } else {
                 final ServiceName groupBinding = GroupBindingService.getDiscoveryBaseServiceName(MessagingServices.getActiveMQServiceName()).append(dgname);
                 Supplier<SocketBinding> groupBindingSupplier = builder.requires(groupBinding);
+                if (!context.isBooting()) {
+                    if (!Boolean.parseBoolean(org.wildfly.security.manager.WildFlySecurityManager.getPropertyPrivileged(MESSAGING_DISCOVERY_WARNING_DISABLED_PROPERTY_NAME, "false"))) {
+                        MessagingLogger.DISCOVERY_WARNING_LOGGER.udpMulticastWarning(Set.of(dgname), Collections.emptySet());
+                    }
+                }
                 groupBindings.put(key, groupBindingSupplier);
             }
             service = new ExternalConnectionFactoryService(getDiscoveryGroup(context, dgname), commandDispatcherFactories, groupBindings, clusterNames, jmsFactoryType, ha, enable1Prefixes, config);

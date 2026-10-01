@@ -30,6 +30,8 @@ import org.jboss.msc.value.InjectedValue;
 import jakarta.ejb.HomeHandle;
 
 /**
+ * Service used when processing IIOP invocations to replace Jakarta EE return values with IIOP handles or references.
+ *
  * @author Stuart Douglas
  */
 public class RemoteObjectSubstitutionService implements RemoteObjectSubstitution, Service<RemoteObjectSubstitution> {

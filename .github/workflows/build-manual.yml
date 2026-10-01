@@ -55,7 +55,7 @@ jobs:
     steps:
       - uses: actions/checkout@v7
       - name: Set up JDK ${{ inputs.jdk-distribution }} ${{ inputs.jdk-version }}
-        uses: actions/setup-java@v5
+        uses: actions/setup-java@v6
         with:
           distribution: ${{ inputs.jdk-distribution }}
           java-version: ${{ inputs.jdk-version }}

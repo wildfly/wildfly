@@ -10,7 +10,7 @@ ifdef::env-github[]
 endif::[]
 
 This chapter details the extensions that are available when developing
-Jakarta Enterprise Beans ^tm^ on WildFly {wildflyVersion}.
+Jakarta Enterprise Beans ^tm^ on WildFly.
 
 The chapter is divided into three main sections:
 

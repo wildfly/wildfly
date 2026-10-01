@@ -17,7 +17,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>41.0.0.Beta1-SNAPSHOT</version>
+        <version>42.0.0.Beta1-SNAPSHOT</version>
         <relativePath>../../pom.xml</relativePath>
     </parent>
 
@@ -662,7 +662,7 @@
 
             <dependency>
                 <groupId>io.prometheus</groupId>
-                <artifactId>prometheus-metrics-exposition-formats</artifactId>
+                <artifactId>prometheus-metrics-exposition-textformats</artifactId>
                 <version>${version.io.prometheus}</version>
                 <exclusions>
                     <exclusion>
@@ -822,6 +822,11 @@
             <dependency>
                 <groupId>io.smallrye.config</groupId>
                 <artifactId>smallrye-config-core</artifactId>
+                <version>${version.io.smallrye.smallrye-config}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.smallrye.config</groupId>
+                <artifactId>smallrye-config-microprofile</artifactId>
                 <version>${version.io.smallrye.smallrye-config}</version>
             </dependency>
             <dependency>

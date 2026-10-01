@@ -27,7 +27,6 @@ import org.jboss.as.test.clustering.cluster.ejb.remote.bean.HeartbeatBean;
 import org.jboss.as.test.clustering.cluster.ejb.remote.bean.Result;
 import org.jboss.as.test.clustering.ejb.EJBDirectory;
 import org.jboss.as.test.shared.PermissionUtils;
-import org.jboss.as.test.shared.TimeoutUtil;
 import org.jboss.ejb.client.ClusterNodeSelector;
 import org.jboss.ejb.client.EJBClientConnection;
 import org.jboss.ejb.client.EJBClientContext;
@@ -57,7 +56,6 @@ import org.wildfly.naming.client.WildFlyInitialContextFactory;
 public class ClientClusterNodeSelectorTestCase extends AbstractClusteringTestCase {
 
     private static final String MODULE_NAME = ClientClusterNodeSelectorTestCase.class.getSimpleName();
-    private static final long CLIENT_TOPOLOGY_UPDATE_WAIT = TimeoutUtil.adjust(2000);
 
     /**
      * Implementation of {@link ClusterNodeSelector} to be used for custom cluster node selection
@@ -135,7 +133,7 @@ public class ClientClusterNodeSelectorTestCase extends AbstractClusteringTestCas
             // first call goes to connected node regardless of CustomClusterNodeSelector
             // ====================================================================================
             Result<Date> res = bean.pulse();
-            Thread.sleep(CLIENT_TOPOLOGY_UPDATE_WAIT);
+            Thread.sleep(EJB_CLIENT_TOPOLOGY_UPDATE_WAIT.toMillis());
 
             // ====================================================================================
             // subsequent calls must be routed to the node selected by the CustomClusterNodeSelector

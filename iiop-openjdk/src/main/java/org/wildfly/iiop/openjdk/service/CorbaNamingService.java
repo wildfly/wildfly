@@ -44,6 +44,8 @@ public class CorbaNamingService implements Service<NamingContextExt> {
 
     private final InjectedValue<ORB> orbInjector = new InjectedValue<ORB>();
 
+    private final InjectedValue<CorbaNamingContext> namingContextInjector = new InjectedValue<CorbaNamingContext>();
+
     private volatile NamingContextExt namingService;
 
     public CorbaNamingService(Properties props) {
@@ -57,20 +59,12 @@ public class CorbaNamingService implements Service<NamingContextExt> {
         IIOPLogger.ROOT_LOGGER.debugf("Starting service %s", context.getController().getName().getCanonicalName());
 
         ORB orb = orbInjector.getValue();
-        POA rootPOA = rootPOAInjector.getValue();
         POA namingPOA = namingPOAInjector.getValue();
+        CorbaNamingContext ns = namingContextInjector.getValue();
 
         try {
-            // initialize the static naming service variables.
-            CorbaNamingContext.init(orb, rootPOA);
-
-            // create and initialize the root context instance according to the configuration.
-            CorbaNamingContext ns = new CorbaNamingContext();
-            ns.init(namingPOA, false, false);
-
             // create and activate the root context.
             byte[] rootContextId = "root".getBytes(StandardCharsets.UTF_8);
-            namingPOA.activate_object_with_id(rootContextId, ns);
             namingService = NamingContextExtHelper.narrow(namingPOA.create_reference_with_id(rootContextId,
                     "IDL:omg.org/CosNaming/NamingContextExt:1.0"));
 
@@ -145,5 +139,16 @@ public class CorbaNamingService implements Service<NamingContextExt> {
      */
     public Injector<POA> getNamingPOAInjector() {
         return this.namingPOAInjector;
+    }
+
+    /**
+     * <p>
+     * Obtains a reference to the {@code CorbaNamingContext} injector which allows the injection of the naming context.
+     * </p>
+     *
+     * @return the {@code Injector<CorbaNamingContext>} used to inject the naming context.
+     */
+    public Injector<CorbaNamingContext> getNamingContextInjector() {
+        return this.namingContextInjector;
     }
 }

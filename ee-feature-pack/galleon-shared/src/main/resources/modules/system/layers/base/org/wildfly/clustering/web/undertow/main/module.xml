@@ -43,8 +43,7 @@
         <module name="org.wildfly.clustering.web.container"/>
         <module name="org.wildfly.clustering.web.service"/>
         <module name="org.wildfly.extension.undertow"/>
-        <module name="org.wildfly.security.elytron-base"/>
-        <module name="org.wildfly.security.elytron-private"/>
+        <module name="org.wildfly.security.elytron"/>
         <module name="org.wildfly.security.elytron-web.undertow-server"/>
         <module name="org.wildfly.security.elytron-web.undertow-server-servlet"/>
         <module name="org.wildfly.service"/>

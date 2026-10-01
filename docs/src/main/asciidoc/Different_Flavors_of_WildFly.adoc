@@ -82,19 +82,14 @@ For standard WildFly we also provide BOMs for developing applications that act a
 
 Standard WildFly 40 and later *do not support running with the Java SecurityManager enabled*. If you attempt to start a standard WildFly {wildflyVersion} process with the SecurityManager enabled, the process will fail to start, even if you are using a Java SE version that still supports the SecurityManager.
 
-Standard WildFly {wildflyVersion} supports the EE 11 versions of the Jakarta specifications, and the specifications that were updated for EE 11 removed any requirement to support the SecurityManager. The specification API artifacts that WildFly integrates removed the logic that allowed them to work properly with a SecurityManager enabled, and a number of libraries we integrate that implement those APIs removed their SecurityManager logic as well. As a result, standard WildFly can no longer function properly with a SecurityManager enabled, so we ensured that it will fail to start if it is.
+Standard WildFly supports the EE 11 versions of the Jakarta specifications, and the specifications that were updated for EE 11 removed any requirement to support the SecurityManager. The specification API artifacts that WildFly integrates removed the logic that allowed them to work properly with a SecurityManager enabled, and a number of libraries we integrate that implement those APIs removed their SecurityManager logic as well. As a result, standard WildFly can no longer function properly with a SecurityManager enabled, so we ensured that it will fail to start if it is.
 
 [[standard-wildfly-security-manager-subsystem]]
 ==== The `security-manager` subsystem
 
-The `security-manager` subsystem allows administrators to define in the WildFly configuration Java SecurityManager permissions that are then granted to deployments. This subsystem serves no purpose in a standard WildFly server, since the SecurityManager cannot be enabled. Accordingly, *standard WildFly's out-of-the-box configuration files no longer include the `security-manager` subsystem*.
+Beginning with WildFly 42, the `org.wildfly.extension.security.manager` extension and its `security-manager` subsystem are retained only as a legacy management model; it's completely valid for a standard WildFly {wildflyVersion} domain mode Domain Controller to have the `security-manager` subsystem in its `domain.xml` file, if the profiles that include the subsystem are used in server groups where all the servers are running WildFly 39 or earlier.
 
-The subsystem can still be included in a standard WildFly server configuration, where it will do no harm, other than wasting a small amount of resources.
-
-[NOTE]
-====
-While including the `security-manager` subsystem in the configuration of a standard WildFly {wildflyVersion} server makes no sense, it's completely valid for a standard WildFly {wildflyVersion} domain mode Domain Controller to have the `security-manager` subsystem in its `domain.xml` file, if the profiles that include the subsystem are used in server groups where all the servers are running WildFly 39 or earlier.
-====
+A standalone WildFly {wildflyVersion} server running in normal (non-admin-only) mode cannot use this extension or subsystem; the server will fail to start if the configuration contains it. The subsystem no longer grants or validates deployment permissions. Standard out-of-the-box configurations do not include the extension or subsystem.
 
 
 == WildFly EE 10
@@ -171,7 +166,7 @@ If you are using Jakarta Data with WildFly EE 10, be sure to use a version 6.6 r
 
 ==== Security Manager
 
-A WildFly EE 10 {wildflyVersion} process can still run with the Java SecurityManager enabled, xref:#security-manager-removed[unlike a standard WildFly {wildflyVersion} process].
+A WildFly EE 10 process can still run with the Java SecurityManager enabled, xref:#security-manager-removed[unlike a standard WildFly process].
 
 Accordingly, the out-of-the-box configuration files in an unslimmed WildFly EE 10 installation still include the `security-manager` subsystem.
 
@@ -235,7 +230,7 @@ Formally certifying WildFly Preview as a compatible implementation of EE is not 
 for the WildFly project and may not happen at the time of a release, or ever.
 ====
 
-==== EE Support in WildFly Preview {wildflyVersion}
+==== EE Support in WildFly Preview
 
 WildFly Preview 40 provides support for xref:Getting_Started_Guide{outfilesuffix}#standards_support[the same specification versions as standard WildFly 40].
 
@@ -289,7 +284,7 @@ more of a cloud native appserver and having an embedded messaging broker in the 
 A WildFly container in the cloud running an embedded broker is not scalable, as multiple broker instances need separate
 configuration to act as a primary or backup. An embedded messaging broker also has more advanced persistent storage
 requirements than a server primarily dedicated to handling HTTP requests would have. Note however that running an
-embedded broker is still supported. We've added to the $WILDFLY_HOME/docs/examples/configs folder an example
+embedded broker is still supported. We've added to the $JBOSS_HOME/docs/examples/configs folder an example
 ``standalone-activemq-embedded.xml`` configuration showing its use.
 * WildFly Preview provides the link:Admin_Guide{outfilesuffix}#Micrometer_Metrics[`micrometer` subsystem] in its out-of-the-box `standalone.xml`, `standalone-ha.xml`, `standalone-full.xml` and `standalone-full-ha.xml` configuration files, while standard WildFly instead provides the basic link:Admin_Guide{outfilesuffix}#MicroProfile_Metrics_SmallRye[`metrics` subsystem].
 * WildFly Preview includes a new xref:Admin_Guide.adoc#Feature_stability_levels[`preview` stability] `org.wildfly.extension.vertx` extension and its `vertx` subsystem, along with a new `vertx` Galleon layer so you can provision it in a slimmed server. This subsystem can be used to configure the Vert.x instance used by our OpenTelemetry integration.

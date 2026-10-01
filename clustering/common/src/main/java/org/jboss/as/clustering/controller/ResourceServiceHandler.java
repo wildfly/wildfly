@@ -16,6 +16,7 @@ import org.wildfly.subsystem.resource.operation.ResourceOperationRuntimeHandler;
  * Handles service installation and removal for use by {@link AddStepHandler} and {@link RemoveStepHandler}.
  * @author Paul Ferraro
  */
+@Deprecated(forRemoval = true)
 public interface ResourceServiceHandler {
 
     /**

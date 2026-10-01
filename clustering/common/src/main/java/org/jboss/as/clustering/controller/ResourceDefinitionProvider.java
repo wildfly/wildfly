@@ -12,6 +12,7 @@ import org.jboss.as.controller.registry.ManagementResourceRegistration;
  * Provides a {@link ResourceDefinition} and handles its registration.
  * @author Paul Ferraro
  */
+@Deprecated(forRemoval = true)
 public interface ResourceDefinitionProvider extends ManagementRegistrar<ManagementResourceRegistration> {
 
     /**

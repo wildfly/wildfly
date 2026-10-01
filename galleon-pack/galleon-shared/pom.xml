@@ -17,7 +17,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>41.0.0.Beta1-SNAPSHOT</version>
+        <version>42.0.0.Beta1-SNAPSHOT</version>
     </parent>
 
     <artifactId>wildfly-feature-pack-galleon-shared</artifactId>
@@ -56,7 +56,7 @@
         <dependency><groupId>io.micrometer</groupId><artifactId>micrometer-core</artifactId></dependency>
         <dependency><groupId>io.micrometer</groupId><artifactId>micrometer-registry-otlp</artifactId></dependency>
         <dependency><groupId>io.micrometer</groupId><artifactId>micrometer-registry-prometheus</artifactId></dependency>
-        <dependency><groupId>io.prometheus</groupId><artifactId>prometheus-metrics-exposition-formats</artifactId></dependency>
+        <dependency><groupId>io.prometheus</groupId><artifactId>prometheus-metrics-exposition-textformats</artifactId></dependency>
         <dependency><groupId>io.prometheus</groupId><artifactId>prometheus-metrics-config</artifactId></dependency>
         <dependency><groupId>io.prometheus</groupId><artifactId>prometheus-metrics-model</artifactId></dependency>
 
@@ -230,16 +230,6 @@
         </dependency>
         <dependency>
             <groupId>io.smallrye.common</groupId>
-            <artifactId>smallrye-common-expression</artifactId>
-            <exclusions>
-                <exclusion>
-                    <groupId>*</groupId>
-                    <artifactId>*</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-        <dependency>
-            <groupId>io.smallrye.common</groupId>
             <artifactId>smallrye-common-vertx-context</artifactId>
             <exclusions>
                 <exclusion>
@@ -272,6 +262,16 @@
         <dependency>
             <groupId>io.smallrye.config</groupId>
             <artifactId>smallrye-config-core</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>io.smallrye.config</groupId>
+            <artifactId>smallrye-config-microprofile</artifactId>
             <exclusions>
                 <exclusion>
                     <groupId>*</groupId>

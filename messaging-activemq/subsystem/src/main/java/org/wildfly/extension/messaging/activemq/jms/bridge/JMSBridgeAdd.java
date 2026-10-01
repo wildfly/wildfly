@@ -31,6 +31,7 @@ import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.msc.service.ServiceName;
 import org.wildfly.common.function.ExceptionSupplier;
 import org.wildfly.extension.messaging.activemq.MessagingServices;
+import org.wildfly.extension.messaging.activemq.jms.WildFlyRecoveryRegistry;
 import org.wildfly.security.credential.source.CredentialSource;
 
 /**
@@ -68,6 +69,7 @@ public class JMSBridgeAdd extends AbstractAddStepHandler {
 
                 final ServiceBuilder jmsBridgeServiceBuilder = context.getCapabilityServiceTarget().addService(bridgeServiceName);
                 jmsBridgeServiceBuilder.requires(context.getCapabilityServiceName(MessagingServices.LOCAL_TRANSACTION_PROVIDER_CAPABILITY, null));
+                WildFlyRecoveryRegistry.setSupplier(jmsBridgeServiceBuilder.requires(context.getCapabilityServiceName(MessagingServices.TRANSACTION_XA_RESOURCE_RECOVERY_REGISTRY_CAPABILITY, null)));
                 jmsBridgeServiceBuilder.setInitialMode(Mode.ACTIVE);
                 Supplier<ExecutorService> executorSupplier = requireServerExecutor(jmsBridgeServiceBuilder);
                 if (dependsOnLocalResources(context, model, JMSBridgeDefinition.SOURCE_CONTEXT)) {
