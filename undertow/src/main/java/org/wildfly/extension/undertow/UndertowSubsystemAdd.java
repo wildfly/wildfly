@@ -8,6 +8,7 @@ package org.wildfly.extension.undertow;
 import java.util.EnumSet;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
+import java.util.function.Supplier;
 
 import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.CapabilityServiceBuilder;
@@ -20,9 +21,10 @@ import org.jboss.as.server.deployment.Phase;
 import org.jboss.as.server.deployment.jbossallxml.JBossAllSchema;
 import org.jboss.as.server.deployment.jbossallxml.JBossAllXmlParserRegisteringProcessor;
 import org.jboss.as.web.common.SharedTldsMetaDataBuilder;
+import org.jboss.as.web.host.CommonWebServer;
 import org.jboss.as.web.session.SharedSessionManagerConfig;
 import org.jboss.dmr.ModelNode;
-
+import org.jboss.msc.service.ServiceController;
 import org.wildfly.extension.undertow.deployment.DefaultDeploymentMappingProvider;
 import org.wildfly.extension.undertow.deployment.DefaultSecurityDomainProcessor;
 import org.wildfly.extension.undertow.deployment.DeploymentRootExplodedMountProcessor;
@@ -101,6 +103,12 @@ class UndertowSubsystemAdd extends AbstractBoottimeAddStepHandler {
         final Consumer<UndertowService> usConsumer = csb.provides(UndertowRootDefinition.UNDERTOW_CAPABILITY);
         csb.setInstance(new UndertowService(usConsumer.andThen(captor), defaultContainer, defaultServer, defaultVirtualHost, instanceId, obfuscateSessionRoute, stats));
         csb.install();
+
+        // Webservices still requires legacy service installation!
+        CapabilityServiceBuilder<?> webServerBuilder = context.getCapabilityServiceTarget().addCapability(CommonWebServer.CAPABILITY);
+        Consumer<WebServerService> webServer = webServerBuilder.provides(CommonWebServer.CAPABILITY, CommonWebServer.SERVICE_NAME);
+        Supplier<Server> server = webServerBuilder.requires(Server.SERVICE_DESCRIPTOR, defaultServer);
+        webServerBuilder.setInstance(new WebServerService(webServer, server)).setInitialMode(ServiceController.Mode.PASSIVE).install();
 
         context.addStep(new AbstractDeploymentChainStep() {
             @Override
