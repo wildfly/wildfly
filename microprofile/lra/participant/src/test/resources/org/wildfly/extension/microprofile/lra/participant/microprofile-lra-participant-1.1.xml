@@ -1,6 +1,0 @@
-<!--
-  ~ Copyright The WildFly Authors
-  ~ SPDX-License-Identifier: Apache-2.0
-  -->
-
-<subsystem xmlns="urn:wildfly:microprofile-lra-participant:1.1" proxy-server="default-server" proxy-host="default-host"/>

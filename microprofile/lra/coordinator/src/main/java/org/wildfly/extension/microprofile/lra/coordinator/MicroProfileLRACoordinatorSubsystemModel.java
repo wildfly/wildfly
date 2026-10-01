@@ -13,14 +13,14 @@ import org.jboss.as.controller.SubsystemModel;
  * @author Paul Ferraro
  */
 public enum MicroProfileLRACoordinatorSubsystemModel implements SubsystemModel {
-    VERSION_1_0_0(1, 0, 0),
-    VERSION_1_1_0(1, 1, 0),
+    VERSION_1_0_0(1),
+    VERSION_2_0_0(2),
     ;
 
     private final ModelVersion version;
 
-    MicroProfileLRACoordinatorSubsystemModel(int major, int minor, int micro) {
-        this.version = ModelVersion.create(major, minor, micro);
+    MicroProfileLRACoordinatorSubsystemModel(int major) {
+        this.version = ModelVersion.create(major);
     }
 
     @Override

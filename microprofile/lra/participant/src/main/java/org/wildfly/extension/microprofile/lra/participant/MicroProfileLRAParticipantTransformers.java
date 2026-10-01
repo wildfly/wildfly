@@ -29,17 +29,17 @@ public class MicroProfileLRAParticipantTransformers implements ExtensionTransfor
     public void registerTransformers(SubsystemTransformerRegistration registration) {
         ChainedTransformationDescriptionBuilder builder = TransformationDescriptionBuilder.Factory.createChainedSubystemInstance(registration.getCurrentSubsystemVersion());
 
-        registerTransformers_1_0_0(builder.createBuilder(MicroProfileLRAParticipantSubsystemModel.VERSION_1_1_0.getVersion(), MicroProfileLRAParticipantSubsystemModel.VERSION_1_0_0.getVersion()));
+        registerTransformers_1_0_0(builder.createBuilder(MicroProfileLRAParticipantSubsystemModel.VERSION_2_0_0.getVersion(), MicroProfileLRAParticipantSubsystemModel.VERSION_1_0_0.getVersion()));
 
         builder.buildAndRegister(registration, new ModelVersion[]{ MicroProfileLRAParticipantSubsystemModel.VERSION_1_0_0.getVersion() });
     }
 
     @SuppressWarnings("unused")
     private void registerTransformers_1_0_0(ResourceTransformationDescriptionBuilder builder) {
-        // Version 1.1.0 turns the 'proxy-server' and 'proxy-host' attributes into capability references and
+        // Version 2.0.0 turns the 'proxy-server' and 'proxy-host' attributes into capability references and
         // removes their default values and expression support. These are metadata/validation changes
         // only; the management model structure and value space are unchanged, so no attribute
-        // transformation is required. A 1.1.0 model can never hold an expression for these attributes,
+        // transformation is required. A 2.0.0 model can never hold an expression for these attributes,
         // and an undefined value transforms cleanly to a 1.0.0 host (which applies its own default).
     }
 }
