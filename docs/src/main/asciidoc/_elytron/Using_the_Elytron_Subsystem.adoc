@@ -84,12 +84,16 @@ For example, the following properties realm is configured to use ``base64`` enco
 /subsystem=elytron/security-domain=exampleSD:add(realms=[{realm=examplePropRealm,role-decoder=groups-to-roles}],default-realm=examplePropRealm,permission-mapper=default-permission-mapper)
 ----
 
+*NOTE:* This example uses the built-in _groups-to-roles_ role decoder, which
+decodes roles from the _groups_ attribute. If your roles are stored in a
+different attribute name, you will need to create a custom _simple-role-decoder_.
+
 [[configure-an-http-authentication-factory]]
 ==== Configure an http-authentication-factory:
 
 [source,options="nowrap"]
 ----
-/subsystem=elytron/http-authentication-factory=example-http-auth:add(http-server-mechanism-factory=global,security-domain=exampleSD,mechanism-configurations=[{mechanism-name=BASIC,mechanism-realm-configurations=[{realm-name=exampleApplicationDomain}]}])
+/subsystem=elytron/http-authentication-factory=example-http-auth:add(http-server-mechanism-factory=global,security-domain=exampleSD,mechanism-configurations=[{mechanism-name=BASIC,mechanism-realm-configurations=[{realm-name=exampleSD}]}])
 ----
 
 This example shows creating an _http-authentication-factory_ using
@@ -200,20 +204,26 @@ management CLI.
 /subsystem=elytron/filesystem-realm=exampleFsRealm:add-identity-attribute(identity=user1, name=Roles, value=["Admin","Guest"])
 ----
 
-[[add-a-simple-role-decoder]]
-==== Add a simple-role-decoder:
+[[configure-a-security-domain-1]]
+==== Configure a security-domain:
+
+[source,options="nowrap"]
+----
+/subsystem=elytron/security-domain=exampleFsSD:add(realms=[{realm=exampleFsRealm,role-decoder=groups-to-roles}],default-realm=exampleFsRealm,permission-mapper=default-permission-mapper)
+----
+
+*NOTE:* This example uses the built-in _groups-to-roles_ role decoder.
+WildFly provides this decoder by default, which decodes roles from the
+_groups_ attribute. If you added roles using a different attribute name
+(e.g., _Roles_ instead of _groups_), you will need to create a custom
+_simple-role-decoder_:
 
 [source,options="nowrap"]
 ----
 /subsystem=elytron/simple-role-decoder=from-roles-attribute:add(attribute=Roles)
 ----
 
-This _simple-role-decoder_ decodes a principal's roles from the _Roles_
-attribute. You can change this value if your roles are in a different
-attribute.
-
-[[configure-a-security-domain-1]]
-==== Configure a security-domain:
+And then reference it in the security-domain configuration:
 
 [source,options="nowrap"]
 ----
@@ -225,7 +235,7 @@ attribute.
 
 [source,options="nowrap"]
 ----
-/subsystem=elytron/http-authentication-factory=example-fs-http-auth:add(http-server-mechanism-factory=global,security-domain=exampleFsSD,mechanism-configurations=[{mechanism-name=BASIC,mechanism-realm-configurations=[{realm-name=exampleApplicationDomain}]}])
+/subsystem=elytron/http-authentication-factory=example-fs-http-auth:add(http-server-mechanism-factory=global,security-domain=exampleFsSD,mechanism-configurations=[{mechanism-name=BASIC,mechanism-realm-configurations=[{realm-name=exampleFsSD}]}])
 ----
 
 This example shows creating an _http-authentication-factory_ using
@@ -306,6 +316,10 @@ authorization information.
 ----
 /subsystem=elytron/security-domain=exampleDbSD:add(realms=[{realm=exampleDbRealm,role-decoder=groups-to-roles}],default-realm=exampleDbRealm,permission-mapper=default-permission-mapper)
 ----
+
+*NOTE:* This example uses the built-in _groups-to-roles_ role decoder, which
+decodes roles from the _groups_ attribute. If your roles are stored in a
+different attribute name, you will need to create a custom _simple-role-decoder_.
 
 [[configure-an-http-authentication-factory-2]]
 ==== Configure an http-authentication-factory:
@@ -416,16 +430,26 @@ For example, the following LDAP realm is storing hexadecimal encoded strings has
 ----
 
 
-[[add-a-simple-role-decoder-1]]
-==== Add a simple-role-decoder:
+[[configure-a-security-domain-3]]
+==== Configure a security-domain:
+
+[source,options="nowrap"]
+----
+/subsystem=elytron/security-domain=exampleLdapSD:add(realms=[{realm=exampleLR,role-decoder=groups-to-roles}],default-realm=exampleLR,permission-mapper=default-permission-mapper)
+----
+
+*NOTE:* This example uses the built-in _groups-to-roles_ role decoder.
+WildFly provides this decoder by default, which decodes roles from the
+_groups_ attribute. If the LDAP attribute mapping in your _ldap-realm_
+maps roles to a different attribute name (e.g., _Roles_ instead of _groups_),
+you will need to create a custom _simple-role-decoder_:
 
 [source,options="nowrap"]
 ----
 /subsystem=elytron/simple-role-decoder=from-roles-attribute:add(attribute=Roles)
 ----
 
-[[configure-a-security-domain-3]]
-==== Configure a security-domain:
+And then reference it in the security-domain configuration:
 
 [source,options="nowrap"]
 ----
@@ -437,7 +461,7 @@ For example, the following LDAP realm is storing hexadecimal encoded strings has
 
 [source,options="nowrap"]
 ----
-/subsystem=elytron/http-authentication-factory=example-ldap-http-auth:add(http-server-mechanism-factory=global,security-domain=exampleLdapSD,mechanism-configurations=[{mechanism-name=BASIC,mechanism-realm-configurations=[{realm-name=exampleApplicationDomain}]}])
+/subsystem=elytron/http-authentication-factory=example-ldap-http-auth:add(http-server-mechanism-factory=global,security-domain=exampleLdapSD,mechanism-configurations=[{mechanism-name=BASIC,mechanism-realm-configurations=[{realm-name=exampleLdapSD}]}])
 ----
 
 This example shows creating an _http-authentication-factory_ using
@@ -732,20 +756,26 @@ from the Kerberos token, and assigns roles to that user.
 /subsystem=elytron/filesystem-realm=exampleFsRealm:add-identity-attribute(identity=user1@REALM,name=Roles,value=["Admin","Guest"])
 ----
 
-[[add-a-simple-role-decoder.]]
-==== Add a simple-role-decoder.
+[[configure-a-security-domain.-1]]
+==== Configure a security-domain.
+
+[source,options="nowrap"]
+----
+/subsystem=elytron/security-domain=exampleFsSD:add(realms=[{realm=exampleFsRealm,role-decoder=groups-to-roles}],default-realm=exampleFsRealm,permission-mapper=default-permission-mapper)
+----
+
+*NOTE:* This example uses the built-in _groups-to-roles_ role decoder.
+WildFly provides this decoder by default, which decodes roles from the
+_groups_ attribute. If you added identity attributes using a different
+attribute name (e.g., _Roles_ instead of _groups_), you will need to
+create a custom _simple-role-decoder_:
 
 [source,options="nowrap"]
 ----
 /subsystem=elytron/simple-role-decoder=from-roles-attribute:add(attribute=Roles)
 ----
 
-This _simple-role-decoder_ decodes a principal's roles from the _Roles_
-attribute. You can change this value if your roles are in a different
-attribute.
-
-[[configure-a-security-domain.-1]]
-==== Configure a security-domain.
+And then reference it in the security-domain configuration:
 
 [source,options="nowrap"]
 ----
