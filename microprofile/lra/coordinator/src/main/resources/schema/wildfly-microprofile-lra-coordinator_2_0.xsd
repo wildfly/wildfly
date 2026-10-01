@@ -4,11 +4,11 @@
   -->
 
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
-           targetNamespace="urn:wildfly:microprofile-lra-coordinator:1.1"
-           xmlns="urn:wildfly:microprofile-lra-coordinator:1.1"
+           targetNamespace="urn:wildfly:microprofile-lra-coordinator:2.0"
+           xmlns="urn:wildfly:microprofile-lra-coordinator:2.0"
            elementFormDefault="qualified"
            attributeFormDefault="unqualified"
-           version="1.1">
+           version="2.0">
 
   <!-- The lra-coordinator subsystem root element -->
   <xs:element name="subsystem" type="lraCoordinatorSubsystemType"/>

@@ -16,13 +16,13 @@ import org.jboss.staxmapper.IntVersion;
  * @author Paul Ferraro
  */
 enum MicroProfileLRAParticipantSubsystemSchema implements PersistentSubsystemSchema<MicroProfileLRAParticipantSubsystemSchema> {
-    VERSION_1_0(1, 0),
-    VERSION_1_1(1, 1),
+    VERSION_1_0(1),
+    VERSION_2_0(2),
     ;
     private final VersionedNamespace<IntVersion, MicroProfileLRAParticipantSubsystemSchema> namespace;
 
-    MicroProfileLRAParticipantSubsystemSchema(int major, int minor) {
-        this.namespace = SubsystemSchema.createSubsystemURN(MicroProfileLRAParticipantExtension.SUBSYSTEM_NAME, new IntVersion(major, minor));
+    MicroProfileLRAParticipantSubsystemSchema(int major) {
+        this.namespace = SubsystemSchema.createSubsystemURN(MicroProfileLRAParticipantExtension.SUBSYSTEM_NAME, new IntVersion(major));
     }
 
     @Override

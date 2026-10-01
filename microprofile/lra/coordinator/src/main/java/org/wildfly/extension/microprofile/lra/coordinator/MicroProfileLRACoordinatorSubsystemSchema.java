@@ -17,14 +17,14 @@ import org.jboss.staxmapper.IntVersion;
  * @author Paul Ferraro
  */
 public enum MicroProfileLRACoordinatorSubsystemSchema implements PersistentSubsystemSchema<MicroProfileLRACoordinatorSubsystemSchema> {
-    VERSION_1_0(1, 0),
-    VERSION_1_1(1, 1),
+    VERSION_1_0(1),
+    VERSION_2_0(2),
     ;
 
     private final VersionedNamespace<IntVersion, MicroProfileLRACoordinatorSubsystemSchema> namespace;
 
-    MicroProfileLRACoordinatorSubsystemSchema(int major, int minor) {
-        this.namespace = SubsystemSchema.createSubsystemURN(MicroProfileLRACoordinatorExtension.SUBSYSTEM_NAME, new IntVersion(major, minor));
+    MicroProfileLRACoordinatorSubsystemSchema(int major) {
+        this.namespace = SubsystemSchema.createSubsystemURN(MicroProfileLRACoordinatorExtension.SUBSYSTEM_NAME, new IntVersion(major));
     }
 
     @Override
