@@ -22,29 +22,39 @@ public class ServerLog {
     }
 
     /**
-     * Incrementally returns added lines
-     * @return lines added since last read
-     * @throws IOException
+     * Incrementally returns lines added since the last read.
+     *
+     * <p>Waits up to the timeout for the first line to appear, then keeps reading
+     * for one extra poll interval so that async log writes (e.g. from AsyncEventLogger)
+     * that arrive slightly after the triggering log line are also included.
+     *
+     * @return lines added since last read, or null if none arrived within the timeout
      */
     public String[] getNewLines() throws IOException, InterruptedException {
-        System.out.println("# offset BEFORE " + pointer.getFilePointer());
         List<String> lines = new ArrayList<>();
         int timeout = TimeoutUtil.adjust(DFT_TIMEOUT) * 1000;
         final long sleep = 100L;
-        while (timeout > 0) {
+        // Phase 1: wait until at least one line appears.
+        while (timeout > 0 && lines.isEmpty()) {
             long before = System.currentTimeMillis();
             String line;
             while ((line = pointer.readLine()) != null) {
                 lines.add(line);
             }
-            if (lines != null) break;
+            if (!lines.isEmpty()) break;
             timeout -= (System.currentTimeMillis() - before);
-            System.out.println("# offset TIMEOUT " + timeout);
             TimeUnit.MILLISECONDS.sleep(sleep);
             timeout -= sleep;
         }
-        System.out.println("# offset AFTER " + pointer.getFilePointer());
-        return lines.size() > 0 ? lines.toArray(new String[lines.size()]) : null;
+        // Phase 2: keep draining for one more interval to catch async writes.
+        if (!lines.isEmpty()) {
+            TimeUnit.MILLISECONDS.sleep(sleep);
+            String line;
+            while ((line = pointer.readLine()) != null) {
+                lines.add(line);
+            }
+        }
+        return lines.isEmpty() ? null : lines.toArray(new String[0]);
     }
 
     public long getOffset() throws IOException {

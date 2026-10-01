@@ -9,6 +9,7 @@ import org.jboss.as.test.integration.ejb.access.log.util.AccessLogFormat;
 import org.jboss.as.test.integration.ejb.access.log.util.ServerLog;
 import org.jboss.shrinkwrap.api.Archive;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -23,7 +24,7 @@ import java.util.Map;
  * @author tborgato <a href="mailto:tborgato@redhat.com">Tommaso Borgato</a>
  */
 @RunWith(Arquillian.class)
-public class AccessLogNegativeTestCase extends AbstractConsoleAccessLogTestCase {
+public class AccessLogNegativeTestCase extends AbstractAccessLogTestCase {
     private static final AccessLogFormat ACCESS_LOG_FORMAT = AccessLogFormat.LONG;
 
     /* ==============================================
@@ -31,7 +32,7 @@ public class AccessLogNegativeTestCase extends AbstractConsoleAccessLogTestCase 
        ============================================== */
 
     /**
-     * Retrieve the path to server and custom log files and store their location so that it can be used by tests run in container / out of container
+     * Retrieve the path to server log file and store its location so that it can be used by tests run out of container
      */
     @Test
     @InSequence(Integer.MIN_VALUE)
@@ -56,20 +57,7 @@ public class AccessLogNegativeTestCase extends AbstractConsoleAccessLogTestCase 
 
     @Deployment
     public static Archive createDeployment() {
-        return createDeployment(AbstractConsoleAccessLogTestCase.class, AccessLogNegativeTestCase.class);
-    }
-
-    private void checkAccessLogConsole(Class ejbInterface, Class ejbClass, String ejbMethod, String user) {
-        String[] lines = serverStdout.getNewLines();
-        Assert.assertNotNull("No access log messages generated in server console!", lines);
-
-        //TODO: remove this code
-        appendToFile("/tmp/ConsoleAndServerLogAndFileAccessLogNegativeTestCase.txt", lines);
-
-        // get access logs
-        List<AccessLog> accessLogs = getAccessLogs(lines, ACCESS_LOG_FORMAT, ejbInterface.getSimpleName(), ejbClass.getSimpleName(), ejbMethod, user);
-
-        Assert.assertTrue("EJB access log found in console!", accessLogs == null || accessLogs.isEmpty());
+        return createDeployment(AccessLogNegativeTestCase.class);
     }
 
     private void checkAccessLogServerLog(Class ejbInterface, Class ejbClass, String ejbMethod, String user) throws IOException, InterruptedException {
@@ -79,9 +67,6 @@ public class AccessLogNegativeTestCase extends AbstractConsoleAccessLogTestCase 
         ServerLog serverLog = new ServerLog(entry.getKey(), entry.getValue());
         // and read the chunk added since the last read
         String[] lines = serverLog.getNewLines();
-
-        //TODO: remove this code
-        appendToFile("/tmp/ConsoleAndServerLogAndFileAccessLogNegativeTestCase.txt", lines);
 
         Assert.assertNotNull("No access log messages generated in server log file!", lines);
 
@@ -96,8 +81,27 @@ public class AccessLogNegativeTestCase extends AbstractConsoleAccessLogTestCase 
 
     @Override
     protected void checkAccessLog(Class ejbInterface, Class ejbClass, String ejbMethod, String user) throws IOException, InterruptedException {
-        checkAccessLogConsole(ejbInterface, ejbClass, ejbMethod, user);
         checkAccessLogServerLog(ejbInterface, ejbClass, ejbMethod, user);
         Assert.assertFalse(getLogFilePath(EJB_ACCESS_LOG_FILE).toFile().exists());
+    }
+
+    @Override
+    @Ignore("Test is ignored as must run as client to read server log file")
+    public void testSFSB() throws Exception {
+    }
+
+    @Override
+    @Ignore("Test is ignored as must run as client to read server log file")
+    public void testSLSB() throws Exception {
+    }
+
+    @Override
+    @Ignore("Test is ignored as must run as client to read server log file")
+    public void testSLSBSecured() throws Exception {
+    }
+
+    @Override
+    @Ignore("Test is ignored as must run as client to read server log file")
+    public void testSFSBSecured() throws Exception {
     }
 }

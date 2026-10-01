@@ -26,9 +26,9 @@ import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
 import org.junit.Test;
 
-import javax.json.Json;
-import javax.json.JsonObject;
-import javax.json.JsonReader;
+import jakarta.json.Json;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonReader;
 import javax.naming.InitialContext;
 
 import java.io.BufferedWriter;
@@ -144,42 +144,6 @@ public abstract class AbstractAccessLogTestCase {
                 ;
         ear.addAsModule(war);
         return ear;
-    }
-
-    /*
-        TODO: delete this method that is just for developing purposes
-     */
-    @Deprecated
-    protected void appendToFile(String filename, String[] lines) {
-        StringBuilder chunck = new StringBuilder();
-        for (String line : lines) {
-            chunck.append(line);
-            chunck.append("\n");
-        }
-        appendToFile(filename, chunck.toString());
-    }
-
-    /*
-        TODO: delete this method that is just for developing purposes
-     */
-    @Deprecated
-    protected void appendToFile(String filename, String chunck) {
-        //TODO: remove this code
-        BufferedWriter writer = null;
-        try {
-            writer = new BufferedWriter(
-                    new FileWriter(filename, true)  //Set true for append mode
-            );
-            writer.newLine();
-            writer.write("\n\n<SERVER_LOG_CHUNK>\n" + chunck + "\n</SERVER_LOG_CHUNK>\n\n");
-            writer.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-            if (writer != null) try {
-                writer.close();
-            } catch (Exception ignore) {
-            }
-        }
     }
 
     private boolean containsAllStrings(String line, String... specificStrings) {
@@ -447,6 +411,6 @@ public abstract class AbstractAccessLogTestCase {
     public void testSLSBLocalServlet() throws Exception {
         String result = doGetRequest("/slsblocal");
         assertEquals("ECHO[TUTTO A POSTO A FERRAGOSTO]", result);
-        checkAccessLog(SLSBRemote.class, SLSB.class, "echo", null);
+        checkAccessLog(SLSBLocal.class, SLSB.class, "echo", null);
     }
 }
