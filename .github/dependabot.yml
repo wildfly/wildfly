@@ -48,6 +48,7 @@ updates:
       - dependency-name: 'com.sun.xml.bind.external*'
       - dependency-name: 'com.sun.xml.fastinfoset*'
       - dependency-name: 'net.shibboleth:shib-support'
+      - dependency-name: 'org.apache.commons.commons-secure-xml'
       - dependency-name: 'org.apache.cxf*'
       - dependency-name: 'org.apache.neethi*'
       - dependency-name: 'org.apache.santuario*'

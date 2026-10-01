@@ -256,6 +256,11 @@
             <scope>test</scope>
         </dependency>
         <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-secure-xml</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
             <groupId>org.apache.wss4j</groupId>
             <artifactId>wss4j-bindings</artifactId>
             <scope>test</scope>
