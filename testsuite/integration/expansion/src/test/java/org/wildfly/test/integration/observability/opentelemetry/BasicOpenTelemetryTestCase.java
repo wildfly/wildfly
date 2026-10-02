@@ -13,19 +13,19 @@ import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.api.trace.Tracer;
 import org.arquillian.testcontainers.api.TestcontainersRequired;
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.test.shared.CdiUtils;
 import org.jboss.as.test.shared.observability.setuptasks.OpenTelemetrySetupTask;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.wildfly.test.integration.observability.JaxRsActivator;
 import org.wildfly.test.integration.observability.opentelemetry.application.OtelMetricResource;
 
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @ServerSetup(OpenTelemetrySetupTask.class)
 @TestcontainersRequired
 public class BasicOpenTelemetryTestCase {
@@ -53,28 +53,28 @@ public class BasicOpenTelemetryTestCase {
 
     @Test
     public void openTelemetryInjection() {
-        Assert.assertNotNull("Injection of OpenTelemetry instance failed", openTelemetry);
+        Assertions.assertNotNull(openTelemetry, "Injection of OpenTelemetry instance failed");
     }
 
     @Test
     public void traceInjection() {
-        Assert.assertNotNull("Injection of Tracer instance failed", tracer);
+        Assertions.assertNotNull(tracer, "Injection of Tracer instance failed");
     }
 
     @Test
     public void baggageInjection() {
-        Assert.assertNotNull("Injection of Baggage instance failed", baggage);
+        Assertions.assertNotNull(baggage, "Injection of Baggage instance failed");
     }
 
     @Test
     public void meterInjection() {
-        Assert.assertNotNull("Injection of Meter instance failed", meter);
+        Assertions.assertNotNull(meter, "Injection of Meter instance failed");
     }
 
     @Test
     public void restClientHasFilterAdded() throws ClassNotFoundException {
         try (Client client = ClientBuilder.newClient()) {
-            Assert.assertTrue(
+            Assertions.assertTrue(
                     client.getConfiguration()
                             .isRegistered(Class.forName("io.smallrye.opentelemetry.implementation.rest.OpenTelemetryClientFilter"))
             );

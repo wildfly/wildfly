@@ -15,11 +15,11 @@ import org.jboss.as.test.shared.util.AssumeTestGroupUtil;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.exporter.ZipExporter;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.Assume;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Assumptions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 public abstract class AbstractReactiveMessagingKafkaWithNativeCompressionFailsOnWindowsAndMacTestCase extends AbstractCliTestBase {
     @ArquillianResource
@@ -37,12 +37,12 @@ public abstract class AbstractReactiveMessagingKafkaWithNativeCompressionFailsOn
         return AssumeTestGroupUtil.emptyJar(AbstractReactiveMessagingKafkaWithNativeCompressionFailsOnWindowsAndMacTestCase.class.getSimpleName());
     }
 
-    @BeforeClass
+    @BeforeAll
     public static void before() throws Exception {
         AbstractCliTestBase.initCLI();
     }
 
-    @AfterClass
+    @AfterAll
     public static void after() throws Exception {
         AbstractCliTestBase.closeCLI();
     }
@@ -51,7 +51,7 @@ public abstract class AbstractReactiveMessagingKafkaWithNativeCompressionFailsOn
     @Test
     public void testDeploymentFailsOnWindowsAndMac() {
         // Only check the deployment fails on Windows or Mac if the config is to not allow Snappy
-        Assume.assumeFalse(ReactiveMessagingKafkaCompressionTestCase.isNativeCompressionEnabled());
+        Assumptions.assumeFalse(ReactiveMessagingKafkaCompressionTestCase.isNativeCompressionEnabled());
 
         // We need the deployment with Snappy enabled
         WebArchive archive = ReactiveMessagingKafkaCompressionTestCase.getDeploymentWithNativeCompressionEnabled(propertiesFileName);
@@ -62,7 +62,7 @@ public abstract class AbstractReactiveMessagingKafkaWithNativeCompressionFailsOn
             try {
                 cli.sendLine("deploy " + file.getAbsolutePath());
                 deployed = true;
-                Assert.fail("Should not have been able to deploy the jar");
+                Assertions.fail("Should not have been able to deploy the jar");
             } catch (Throwable error) {
                 if (error.getMessage().contains("WFLYRXMKAF0003")) {
                     // This is expected since the deployment contains Snappy compression.

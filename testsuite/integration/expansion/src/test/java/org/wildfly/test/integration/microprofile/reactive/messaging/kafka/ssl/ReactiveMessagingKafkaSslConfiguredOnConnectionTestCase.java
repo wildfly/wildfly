@@ -17,23 +17,23 @@ import jakarta.inject.Inject;
 
 import org.arquillian.testcontainers.api.TestcontainersRequired;
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.api.ServerSetupTask;
 import org.jboss.as.test.shared.TimeoutUtil;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.wildfly.test.integration.microprofile.reactive.EnableReactiveExtensionsSetupTask;
 import org.wildfly.test.integration.microprofile.reactive.ConfigureElytronSslContextSetupTask;
 
 /**
  * @author <a href="mailto:kabir.khan@jboss.com">Kabir Khan</a>
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @ServerSetup({RunKafkaWithSslSetupTask.class, EnableReactiveExtensionsSetupTask.class, ConfigureElytronSslContextSetupTask.class})
 @TestcontainersRequired
 public class ReactiveMessagingKafkaSslConfiguredOnConnectionTestCase {
@@ -61,9 +61,9 @@ public class ReactiveMessagingKafkaSslConfiguredOnConnectionTestCase {
     @Test
     public void test() throws InterruptedException {
         boolean wait = bean.getLatch().await(TIMEOUT, TimeUnit.MILLISECONDS);
-        Assert.assertTrue("Timed out", wait);
+        Assertions.assertTrue(wait, "Timed out");
         Set<String> expected = new HashSet<>(Arrays.asList("hello", "reactive", "messaging", "ssl"));
-        Assert.assertEquals(expected.size(), bean.getWords().size());
-        Assert.assertTrue("Expected " + bean.getWords() + " to contain all of " + expected, bean.getWords().containsAll(expected));
+        Assertions.assertEquals(expected.size(), bean.getWords().size());
+        Assertions.assertTrue(bean.getWords().containsAll(expected), "Expected " + bean.getWords() + " to contain all of " + expected);
     }
 }

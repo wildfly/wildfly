@@ -24,16 +24,16 @@ import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.util.EntityUtils;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.wildfly.test.integration.microprofile.openapi.service.TestApplication;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -44,7 +44,7 @@ import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
  * Validates usage of legacy "mp.openapi.extensions.servers.relative" configuration property.
  * @author Paul Ferraro
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @RunAsClient
 public class OpenAPIAbsoluteServersTestCase {
     private static final String DEPLOYMENT_NAME = OpenAPIAbsoluteServersTestCase.class.getSimpleName() + ".war";
@@ -62,13 +62,13 @@ public class OpenAPIAbsoluteServersTestCase {
     public void test(@ArquillianResource URL baseURL) throws IOException, URISyntaxException {
         try (CloseableHttpClient client = HttpClientBuilder.create().build()) {
             try (CloseableHttpResponse response = client.execute(new HttpGet(baseURL.toURI().resolve("/openapi")))) {
-                Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
+                Assertions.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
                 List<String> urls = validateContent(response);
                 // Ensure absolute urls are valid
                 for (String url : urls) {
                     try (CloseableHttpResponse r = client.execute(new HttpGet(url))) {
-                        Assert.assertEquals(HttpServletResponse.SC_OK, r.getStatusLine().getStatusCode());
-                        Assert.assertEquals("foo", EntityUtils.toString(r.getEntity()));
+                        Assertions.assertEquals(HttpServletResponse.SC_OK, r.getStatusLine().getStatusCode());
+                        Assertions.assertEquals("foo", EntityUtils.toString(r.getEntity()));
                     } catch (SSLHandshakeException ignored) {
                         // Ignore exception due to auto-generated self-signed certificate
                         // javax.net.ssl.SSLHandshakeException: sun.security.validator.ValidatorException: PKIX path building failed: sun.security.provider.certpath.SunCertPathBuilderException: unable to find valid certification path to requested target
@@ -79,14 +79,14 @@ public class OpenAPIAbsoluteServersTestCase {
     }
 
     private static List<String> validateContent(HttpResponse response) throws IOException {
-        Assert.assertEquals("application/yaml", response.getEntity().getContentType().getValue());
+        Assertions.assertEquals("application/yaml", response.getEntity().getContentType().getValue());
 
         JsonNode node = new ObjectMapper(new YAMLFactory()).reader().readTree(response.getEntity().getContent());
         System.out.println(node.toPrettyString());
         JsonNode info = node.required("info");
-        Assert.assertNotNull(info);
-        Assert.assertEquals(DEPLOYMENT_NAME, info.required("title").asText());
-        Assert.assertNull(info.get("description"));
+        Assertions.assertNotNull(info);
+        Assertions.assertEquals(DEPLOYMENT_NAME, info.required("title").asText());
+        Assertions.assertNull(info.get("description"));
 
         JsonNode servers = node.required("servers");
         JsonNode paths = node.required("paths");
@@ -97,7 +97,7 @@ public class OpenAPIAbsoluteServersTestCase {
                 result.add(server.required("url").asText() + pathNames.next().replace("{value}", "foo"));
             }
         }
-        Assert.assertFalse(result.isEmpty());
+        Assertions.assertFalse(result.isEmpty());
         return result;
     }
 }

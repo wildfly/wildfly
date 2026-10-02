@@ -12,12 +12,14 @@ import jakarta.ws.rs.client.Client;
 import jakarta.ws.rs.client.ClientBuilder;
 import jakarta.ws.rs.client.Entity;
 import jakarta.ws.rs.core.Response;
-import org.jboss.arquillian.junit.InSequence;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.MethodOrderer;
+import org.junit.jupiter.api.Order;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestMethodOrder;
 import org.wildfly.test.integration.microprofile.restclient.deployment.model.Message;
 import org.wildfly.test.integration.microprofile.restclient.deployment.resource.MessageClient;
 
@@ -26,6 +28,7 @@ import org.wildfly.test.integration.microprofile.restclient.deployment.resource.
  *
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
+@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 abstract class AbstractMultipleDeploymentsTest extends AbstractDeploymentTest {
     static final String DEPLOYMENT_1 = "deployment1";
     static final String DEPLOYMENT_2 = "deployment2";
@@ -55,7 +58,7 @@ abstract class AbstractMultipleDeploymentsTest extends AbstractDeploymentTest {
      * final receiver of the message.
      */
     @Test
-    @InSequence(1)
+    @Order(1)
     public void sendDeployment1Message() {
         try (Client client = ClientBuilder.newClient()) {
             final Message message = new Message();
@@ -65,10 +68,10 @@ abstract class AbstractMultipleDeploymentsTest extends AbstractDeploymentTest {
                             .request()
                             .post(Entity.json(message))
             ) {
-                Assert.assertEquals(201, response.getStatus());
+                Assertions.assertEquals(201, response.getStatus());
                 final Message foundMessage = readMessage(client, response.getLocation());
-                Assert.assertEquals("Hello World", foundMessage.getText());
-                Assert.assertEquals("Expected the request to be sent to " + DEPLOYMENT_2, DEPLOYMENT_2, foundMessage.getTarget());
+                Assertions.assertEquals("Hello World", foundMessage.getText());
+                Assertions.assertEquals(DEPLOYMENT_2, foundMessage.getTarget(), "Expected the request to be sent to " + DEPLOYMENT_2);
             }
         }
     }
@@ -77,7 +80,7 @@ abstract class AbstractMultipleDeploymentsTest extends AbstractDeploymentTest {
      * Through the client on deployment1, we query the first message on deployment2.
      */
     @Test
-    @InSequence(2)
+    @Order(2)
     public void getDeployment1Message() {
         try (Client client = ClientBuilder.newClient()) {
             try (
@@ -85,10 +88,10 @@ abstract class AbstractMultipleDeploymentsTest extends AbstractDeploymentTest {
                             .request()
                             .get()
             ) {
-                Assert.assertEquals(200, response.getStatus());
+                Assertions.assertEquals(200, response.getStatus());
                 final Message foundMessage = response.readEntity(Message.class);
-                Assert.assertEquals("Hello World", foundMessage.getText());
-                Assert.assertEquals("Expected the request to be sent to " + DEPLOYMENT_2, DEPLOYMENT_2, foundMessage.getTarget());
+                Assertions.assertEquals("Hello World", foundMessage.getText());
+                Assertions.assertEquals(DEPLOYMENT_2, foundMessage.getTarget(), "Expected the request to be sent to " + DEPLOYMENT_2);
             }
         }
     }
@@ -97,7 +100,7 @@ abstract class AbstractMultipleDeploymentsTest extends AbstractDeploymentTest {
      * Through the client on deployment1, we delete the message on deployment2.
      */
     @Test
-    @InSequence(3)
+    @Order(3)
     public void deleteDeployment1Message() {
         try (Client client = ClientBuilder.newClient()) {
             try (
@@ -105,10 +108,10 @@ abstract class AbstractMultipleDeploymentsTest extends AbstractDeploymentTest {
                             .request()
                             .delete()
             ) {
-                Assert.assertEquals(200, response.getStatus());
+                Assertions.assertEquals(200, response.getStatus());
                 final Message foundMessage = response.readEntity(Message.class);
-                Assert.assertEquals("Hello World", foundMessage.getText());
-                Assert.assertEquals("Expected the request to be sent to " + DEPLOYMENT_2, DEPLOYMENT_2, foundMessage.getTarget());
+                Assertions.assertEquals("Hello World", foundMessage.getText());
+                Assertions.assertEquals(DEPLOYMENT_2, foundMessage.getTarget(), "Expected the request to be sent to " + DEPLOYMENT_2);
             }
         }
     }
@@ -119,7 +122,7 @@ abstract class AbstractMultipleDeploymentsTest extends AbstractDeploymentTest {
      * final receiver of the message.
      */
     @Test
-    @InSequence(4)
+    @Order(4)
     public void sendDeployment2Message() {
         try (Client client = ClientBuilder.newClient()) {
             final Message message = new Message();
@@ -129,10 +132,10 @@ abstract class AbstractMultipleDeploymentsTest extends AbstractDeploymentTest {
                             .request()
                             .post(Entity.json(message))
             ) {
-                Assert.assertEquals(201, response.getStatus());
+                Assertions.assertEquals(201, response.getStatus());
                 final Message foundMessage = readMessage(client, response.getLocation());
-                Assert.assertEquals("Hello World", foundMessage.getText());
-                Assert.assertEquals("Expected the request to be sent to " + DEPLOYMENT_1, DEPLOYMENT_1, foundMessage.getTarget());
+                Assertions.assertEquals("Hello World", foundMessage.getText());
+                Assertions.assertEquals(DEPLOYMENT_1, foundMessage.getTarget(), "Expected the request to be sent to " + DEPLOYMENT_1);
             }
         }
     }
@@ -141,7 +144,7 @@ abstract class AbstractMultipleDeploymentsTest extends AbstractDeploymentTest {
      * Through the client on deployment2, we query the first message on deployment1.
      */
     @Test
-    @InSequence(4)
+    @Order(4)
     public void getDeployment2Message() {
         try (Client client = ClientBuilder.newClient()) {
             try (
@@ -149,10 +152,10 @@ abstract class AbstractMultipleDeploymentsTest extends AbstractDeploymentTest {
                             .request()
                             .get()
             ) {
-                Assert.assertEquals(200, response.getStatus());
+                Assertions.assertEquals(200, response.getStatus());
                 final Message foundMessage = response.readEntity(Message.class);
-                Assert.assertEquals("Hello World", foundMessage.getText());
-                Assert.assertEquals("Expected the request to be sent to " + DEPLOYMENT_1, DEPLOYMENT_1, foundMessage.getTarget());
+                Assertions.assertEquals("Hello World", foundMessage.getText());
+                Assertions.assertEquals(DEPLOYMENT_1, foundMessage.getTarget(), "Expected the request to be sent to " + DEPLOYMENT_1);
             }
         }
     }
@@ -161,7 +164,7 @@ abstract class AbstractMultipleDeploymentsTest extends AbstractDeploymentTest {
      * Through the client on deployment2, we delete the message on deployment1.
      */
     @Test
-    @InSequence(5)
+    @Order(5)
     public void deleteDeployment2Message() {
         try (Client client = ClientBuilder.newClient()) {
             try (
@@ -169,10 +172,10 @@ abstract class AbstractMultipleDeploymentsTest extends AbstractDeploymentTest {
                             .request()
                             .delete()
             ) {
-                Assert.assertEquals(200, response.getStatus());
+                Assertions.assertEquals(200, response.getStatus());
                 final Message foundMessage = response.readEntity(Message.class);
-                Assert.assertEquals("Hello World", foundMessage.getText());
-                Assert.assertEquals("Expected the request to be sent to " + DEPLOYMENT_1, DEPLOYMENT_1, foundMessage.getTarget());
+                Assertions.assertEquals("Hello World", foundMessage.getText());
+                Assertions.assertEquals(DEPLOYMENT_1, foundMessage.getTarget(), "Expected the request to be sent to " + DEPLOYMENT_1);
             }
         }
     }
