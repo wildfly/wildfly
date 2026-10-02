@@ -289,3 +289,48 @@ Following is an example of fine-tuning the `RED` protocol's `min_treshold` to in
 ----
 /subsystem=jgroups/stack=udp/protocol=RED:map-put(name=properties, key=min_threshold, value=0.6)
 ----
+
+[[enabling-diagnostics]]
+=== Enabling diagnostics
+
+JGroups ships with a `probe.sh` tool that can query and manipulate running protocol stacks.
+Diagnostics support is disabled by default; to enable it, add a socket binding and reference it from the transport.
+
+[source,options="nowrap"]
+----
+# Create jgroups-diagnostics multicast socket binding
+/socket-binding-group=standard-sockets/socket-binding=jgroups-diagnostics:add(multicast-address=224.0.75.75, multicast-port=7500)
+
+# Enable diagnostics on 'tcp' stack
+/subsystem=jgroups/stack=tcp/transport=TCP:write-attribute(name=diagnostics-socket-binding, value=jgroups-diagnostics)
+
+# Enable diagnostics on 'udp' stack
+/subsystem=jgroups/stack=udp/transport=UDP:write-attribute(name=diagnostics-socket-binding, value=jgroups-diagnostics)
+----
+
+
+[IMPORTANT]
+====
+The configured diagnostics port (typically `7500`) must be open in the firewall on all cluster nodes for `probe.sh` to reach them.
+====
+
+For further information on the `probe.sh` tool see the http://www.jgroups.org/manual5/index.html#Probe[JGroups documentation].
+
+[WARNING]
+====
+The diagnostics endpoint is unauthenticated; restrict access to trusted hosts via firewall rules and disable diagnostics support as soon as it is no longer being actively used.
+====
+
+To disable diagnostics support, simply undefine the `diagnostics-socket-binding` attribute on the transports and remove the socket binding.
+
+[source,options="nowrap"]
+----
+# Disable diagnostics on 'tcp' stack
+/subsystem=jgroups/stack=tcp/transport=TCP:undefine-attribute(name=diagnostics-socket-binding)
+
+# Disable diagnostics on 'udp' stack
+/subsystem=jgroups/stack=udp/transport=UDP:undefine-attribute(name=diagnostics-socket-binding)
+
+# Remove jgroups-diagnostics socket binding
+/socket-binding-group=standard-sockets/socket-binding=jgroups-diagnostics:remove
+----
