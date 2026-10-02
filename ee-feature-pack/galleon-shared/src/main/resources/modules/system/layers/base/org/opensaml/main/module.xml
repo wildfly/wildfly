@@ -35,7 +35,6 @@
       <module name="org.slf4j"/>
       <module name="org.apache.santuario.xmlsec"/>
       <module name="org.apache.ws.security" />
-      <module name="org.joda.time"/>
       <module name="com.google.guava"/>
       <module name="org.bouncycastle.bcmail"/>
       <module name="org.bouncycastle.bcpkix"/>
