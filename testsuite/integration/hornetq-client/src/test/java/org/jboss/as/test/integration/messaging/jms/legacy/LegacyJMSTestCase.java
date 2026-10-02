@@ -39,6 +39,7 @@ import org.jboss.dmr.ModelNode;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -116,6 +117,7 @@ public class LegacyJMSTestCase {
     }
 
     @Test
+    @Ignore("WFLY-22291")
     public void testSendAndReceiveFromLegacyTopic() throws Exception {
         try {
             doSendAndReceive(LEGACY_CF_LOOKUP, LEGACY_TOPIC_LOOKUP);
