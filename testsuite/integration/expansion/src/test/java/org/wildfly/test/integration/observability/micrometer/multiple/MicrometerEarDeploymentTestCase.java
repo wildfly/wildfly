@@ -4,8 +4,9 @@
  */
 package org.wildfly.test.integration.observability.micrometer.multiple;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.List;
 
@@ -16,8 +17,7 @@ import org.jboss.as.test.shared.observability.signals.PrometheusMetric;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.wildfly.test.integration.observability.micrometer.multiple.application.DuplicateMetricResource1;
 import org.wildfly.test.integration.observability.micrometer.multiple.application.DuplicateMetricResource2;
 
@@ -49,8 +49,8 @@ public class MicrometerEarDeploymentTestCase extends BaseMicrometerMultipleTestC
     }
 
     @Test
-    public void dataTest(@ArquillianResource @OperateOnDeployment(ENTERPRISE_APP) URL earUrl)
-            throws URISyntaxException, InterruptedException {
+    void dataTest(@ArquillianResource @OperateOnDeployment(ENTERPRISE_APP) URL earUrl)
+            throws Exception {
         makeRequests(new URI(String.format("%s/%s/%s/%s", earUrl, ENTERPRISE_APP, SERVICE_ONE, DuplicateMetricResource1.TAG)));
         makeRequests(new URI(String.format("%s/%s/%s/%s", earUrl, ENTERPRISE_APP, SERVICE_TWO, DuplicateMetricResource2.TAG)));
 
@@ -59,8 +59,8 @@ public class MicrometerEarDeploymentTestCase extends BaseMicrometerMultipleTestC
             List<PrometheusMetric> results = otelCollector.getMetricsByName(prometheusMetrics,
                     DuplicateMetricResource1.METER_NAME + "_total"); // Adjust for Prometheus naming conventions
 
-            Assert.assertEquals(2, results.size());
-            results.forEach(r -> Assert.assertEquals("" + REQUEST_COUNT, r.getValue()));
+            assertEquals(2, results.size());
+            results.forEach(r -> assertEquals("" + REQUEST_COUNT, r.getValue()));
         });
     }
 }

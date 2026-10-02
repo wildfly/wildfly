@@ -4,17 +4,14 @@
  */
 package org.wildfly.test.integration.microprofile.faulttolerance.multideployment;
 
-import java.io.IOException;
 import java.net.URL;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 
 import org.arquillian.testcontainers.api.TestcontainersRequired;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.api.ServerSetupTask;
@@ -23,8 +20,8 @@ import org.jboss.as.test.shared.observability.setuptasks.MicrometerSetupTask;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.wildfly.test.integration.microprofile.faulttolerance.micrometer.FaultToleranceMicrometerIntegrationTestCase;
 import org.wildfly.test.integration.microprofile.faulttolerance.micrometer.deployment.FaultTolerantApplication;
 
@@ -34,7 +31,7 @@ import org.wildfly.test.integration.microprofile.faulttolerance.micrometer.deplo
  *
  * @author Radoslav Husar
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @RunAsClient
 @ServerSetup(MicrometerSetupTask.class)
 @TestcontainersRequired
@@ -71,7 +68,7 @@ public class MultipleDeploymentMetricsTestCase {
 
     @Test
     @RunAsClient
-    public void makeRequests() throws IOException, ExecutionException, TimeoutException {
+    void makeRequests() throws Exception {
         String requestUrl1 = url1.toString() + "app/timeout";
         String requestUrl2 = url2.toString() + "app/timeout";
 

@@ -6,6 +6,8 @@
 package org.wildfly.test.integration.microprofile.reactive.messaging.kafka.tx;
 
 import static org.jboss.as.test.shared.PermissionUtils.createPermissionsXmlAsset;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -18,23 +20,22 @@ import jakarta.inject.Inject;
 
 import org.arquillian.testcontainers.api.TestcontainersRequired;
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.test.shared.CLIServerSetupTask;
 import org.jboss.as.test.shared.TimeoutUtil;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.wildfly.test.integration.microprofile.reactive.EnableReactiveExtensionsSetupTask;
 import org.wildfly.test.integration.microprofile.reactive.RunKafkaSetupTask;
 
 /**
  * @author <a href="mailto:kabir.khan@jboss.com">Kabir Khan</a>
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @ServerSetup({RunKafkaSetupTask.class, EnableReactiveExtensionsSetupTask.class})
 @TestcontainersRequired
 public class ReactiveMessagingKafkaTestCase {
@@ -64,15 +65,15 @@ public class ReactiveMessagingKafkaTestCase {
     }
 
     @Test
-    public void test() throws InterruptedException {
+    void test() throws Exception {
         boolean wait = bean.getLatch().await(TIMEOUT, TimeUnit.MILLISECONDS);
-        Assert.assertTrue("Timed out", wait);
+        assertTrue(wait, "Timed out");
         // KK: Initially I thought we could do something similar here to in ReactiveMessagingKafkaSerializerTestCase
         // to check that messages are received in order on a partition but it is a bit complicated due to the
         // asynchronous storing of entries to a database
         Set<String> expected = new HashSet<>(Arrays.asList("hello", "reactive", "messaging"));
-        Assert.assertEquals(expected.size(), bean.getWords().size());
-        Assert.assertTrue("Expected " + bean.getWords() + " to contain all of " + expected, bean.getWords().containsAll(expected));
+        assertEquals(expected.size(), bean.getWords().size());
+        assertTrue(bean.getWords().containsAll(expected), "Expected " + bean.getWords() + " to contain all of " + expected);
 
         // Check the data was stored
         txBean.checkValues(Collections.singleton("reactive"));

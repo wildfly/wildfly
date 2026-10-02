@@ -5,6 +5,8 @@
 
 package org.wildfly.test.integration.observability.opentelemetry;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -15,7 +17,7 @@ import jakarta.ws.rs.client.WebTarget;
 import jakarta.ws.rs.core.Response;
 import org.arquillian.testcontainers.api.Testcontainer;
 import org.arquillian.testcontainers.api.TestcontainersRequired;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.as.test.shared.CdiUtils;
 import org.jboss.as.test.shared.TestSuiteEnvironment;
 import org.jboss.as.test.shared.observability.containers.OpenTelemetryCollectorContainer;
@@ -23,13 +25,12 @@ import org.jboss.as.test.shared.observability.signals.jaeger.JaegerResponse;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Assert;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.wildfly.test.integration.observability.JaxRsActivator;
 import org.wildfly.test.integration.observability.opentelemetry.application.OtelMetricResource;
 import org.wildfly.test.integration.observability.opentelemetry.application.OtelService1;
 
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @TestcontainersRequired
 public abstract class BaseOpenTelemetryTest {
     @Testcontainer
@@ -63,7 +64,7 @@ public abstract class BaseOpenTelemetryTest {
             WebTarget target = client.target(url.toURI());
             for (int i = 0; i < count; i++) {
                 Response response = target.request().get();
-                Assert.assertEquals(expectedStatus, response.getStatus());
+                assertEquals(expectedStatus, response.getStatus());
             }
         }
     }

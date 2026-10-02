@@ -4,18 +4,18 @@
  */
 package org.wildfly.test.integration.microprofile.faulttolerance.context.asynchronous;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import java.util.concurrent.ExecutionException;
+import jakarta.inject.Inject;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * Adapted from Thorntail/SmallRye.
@@ -23,7 +23,7 @@ import org.junit.runner.RunWith;
  * @author Martin Kouba
  * @author Radoslav Husar
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class AsynchronousRequestContextTestCase {
 
     @Deployment
@@ -34,8 +34,11 @@ public class AsynchronousRequestContextTestCase {
                 ;
     }
 
+    @Inject
+    AsyncService asyncService;
+
     @Test
-    public void testRequestContextActive(AsyncService asyncService) throws InterruptedException, ExecutionException {
+    void requestContextActive() throws Exception {
         RequestFoo.DESTROYED.set(false);
         assertEquals("ok", asyncService.perform().get());
         assertTrue(RequestFoo.DESTROYED.get());

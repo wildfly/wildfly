@@ -9,6 +9,8 @@ import static org.jboss.as.controller.client.helpers.ClientConstants.EXTENSION;
 import static org.jboss.as.controller.client.helpers.ClientConstants.OUTCOME;
 import static org.jboss.as.controller.client.helpers.ClientConstants.SUBSYSTEM;
 import static org.jboss.as.controller.client.helpers.ClientConstants.SUCCESS;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
 
@@ -26,7 +28,6 @@ import org.jboss.as.test.shared.ServerReload;
 import org.jboss.as.test.shared.TestSuiteEnvironment;
 import org.jboss.as.test.shared.util.AssumeTestGroupUtil;
 import org.jboss.dmr.ModelNode;
-import org.junit.Assert;
 
 public class MVCTestUtil {
 
@@ -40,9 +41,9 @@ public class MVCTestUtil {
             String uri = "http://" + TestSuiteEnvironment.getServerAddress() + ":8080/" + contextPath + appSegment + controllerPath;
             HttpGet get = new HttpGet(uri);
             HttpResponse response = client.execute(get);
-            Assert.assertEquals("Wrong response code from " + uri, 200, response.getStatusLine().getStatusCode());
+            assertEquals(200, response.getStatusLine().getStatusCode(), "Wrong response code from " + uri);
             String result = EntityUtils.toString(response.getEntity());
-            Assert.assertTrue("Wrong response entity from " + uri, result.contains(resultContent));
+            assertTrue(result.contains(resultContent), "Wrong response entity from " + uri);
         }
     }
 
@@ -72,7 +73,7 @@ public class MVCTestUtil {
 
         private void executeForResult(final ModelControllerClient client, final ModelNode operation) throws Exception {
             final ModelNode response = client.execute(operation);
-            Assert.assertEquals(response.toString(), SUCCESS, response.get(OUTCOME).asString());
+            assertEquals(SUCCESS, response.get(OUTCOME).asString(), response.toString());
         }
     }
 }

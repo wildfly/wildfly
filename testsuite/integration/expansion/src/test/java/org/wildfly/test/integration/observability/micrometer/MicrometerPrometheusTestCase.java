@@ -4,6 +4,9 @@
  */
 package org.wildfly.test.integration.observability.micrometer;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.wildfly.test.integration.observability.setuptask.PrometheusSetupTask.PROMETHEUS_CONTEXT;
 import static org.wildfly.test.integration.observability.setuptask.PrometheusSetupTask.PROMETHEUS_REGISTRY_ADDRESS;
 
@@ -29,7 +32,7 @@ import org.arquillian.testcontainers.api.Testcontainer;
 import org.arquillian.testcontainers.api.TestcontainersRequired;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ContainerResource;
 import org.jboss.as.arquillian.api.ServerSetup;
@@ -44,14 +47,13 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.wildfly.test.integration.observability.JaxRsActivator;
 import org.wildfly.test.integration.observability.setuptask.PrometheusSetupTask;
 import org.wildfly.test.stabilitylevel.StabilityServerSetupSnapshotRestoreTasks;
 
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @ServerSetup({StabilityServerSetupSnapshotRestoreTasks.Community.class, PrometheusSetupTask.class})
 @TestcontainersRequired
 @RunAsClient
@@ -75,34 +77,34 @@ public class MicrometerPrometheusTestCase {
     }
 
     @Test
-    public void basicPrometheusTest() throws Exception {
+    void basicPrometheusTest() throws Exception {
         makeRequests();
 
         otelCollector.assertMetrics(prometheusMetrics -> {
             List<PrometheusMetric> results = otelCollector.getMetricsByName(prometheusMetrics, "demo_counter_total"); // Adjust for Prometheus naming conventions
 
-            Assert.assertEquals(1, results.size());
-            results.forEach(r -> Assert.assertEquals("" + REQUEST_COUNT, r.getValue()));
+            assertEquals(1, results.size());
+            results.forEach(r -> assertEquals("" + REQUEST_COUNT, r.getValue()));
 
-            Assert.assertNotEquals(0, otelCollector.getMetricsByName(prometheusMetrics, "demo_timer_milliseconds_count").size());
+            assertNotEquals(0, otelCollector.getMetricsByName(prometheusMetrics, "demo_timer_milliseconds_count").size());
         });
     }
 
     @Test
-    public void securedPrometheusTest() throws Exception {
+    void securedPrometheusTest() throws Exception {
         setPrometheusSecurity(true);
         makeRequests();
 
         String metrics = fetchPrometheusMetrics(false);
-        Assert.assertTrue("'401 - Unauthorized' message is expected", metrics.contains("401 - Unauthorized"));
+        assertTrue(metrics.contains("401 - Unauthorized"), "'401 - Unauthorized' message is expected");
 
         metrics = fetchPrometheusMetrics(true);
-        Assert.assertTrue("'demo_counter_total' is expected", metrics.contains("demo_counter_total"));
+        assertTrue(metrics.contains("demo_counter_total"), "'demo_counter_total' is expected");
 
         setPrometheusSecurity(false);
         makeRequests();
         metrics = fetchPrometheusMetrics(false);
-        Assert.assertTrue("'demo_counter_total' is expected", metrics.contains("demo_counter_total"));
+        assertTrue(metrics.contains("demo_counter_total"), "'demo_counter_total' is expected");
     }
 
     private void setPrometheusSecurity(boolean enabled) throws Exception {

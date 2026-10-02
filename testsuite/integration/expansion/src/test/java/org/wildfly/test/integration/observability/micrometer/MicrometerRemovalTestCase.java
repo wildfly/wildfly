@@ -4,6 +4,8 @@
  */
 package org.wildfly.test.integration.observability.micrometer;
 
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import java.io.File;
 import java.io.IOException;
 import java.time.Duration;
@@ -13,21 +15,20 @@ import java.util.List;
 import org.apache.commons.io.input.Tailer;
 import org.apache.commons.io.input.TailerListener;
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.as.arquillian.api.ContainerResource;
 import org.jboss.as.controller.client.helpers.Operations;
 import org.jboss.as.test.shared.TimeoutUtil;
 import org.jboss.dmr.ModelNode;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.wildfly.plugin.tools.OperationExecutionException;
 import org.wildfly.plugin.tools.server.ServerManager;
 
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @RunAsClient
-public class MicrometerRemovalTestCase {
+class MicrometerRemovalTestCase {
     private static final ModelNode micrometerExtension = Operations.createAddress("extension", "org.wildfly.extension.micrometer");
     private static final ModelNode micrometerSubsystem = Operations.createAddress("subsystem", "micrometer");
     private static final ModelNode ADDRESS_SERVER_LOG_DIR = Operations.createAddress("path", "jboss.server.log.dir");
@@ -37,14 +38,14 @@ public class MicrometerRemovalTestCase {
     private ServerManager serverManager;
     private String logFilePath;
 
-    @Before
-    public void getLogLocation() throws IOException {
+    @BeforeEach
+    void getLogLocation() throws IOException {
         ModelNode op = Operations.createReadAttributeOperation(ADDRESS_SERVER_LOG_DIR, "path");
         logFilePath = serverManager.executeOperation(op).asString();
     }
 
     @Test
-    public void testRemoval() throws Exception {
+    void removal() throws Exception {
         ServerLogTailerListener listener = new ServerLogTailerListener();
         try (Tailer ignored = Tailer.builder()
             .setFile(new File(logFilePath, "server.log"))
@@ -60,8 +61,8 @@ public class MicrometerRemovalTestCase {
             Thread.sleep(TimeoutUtil.adjust(1000));
             listener.logs.clear();
             Thread.sleep(TimeoutUtil.adjust(1000));
-            Assert.assertTrue("Micrometer has been removed, but errors are still being logged.",
-                listener.logs.stream().noneMatch(l -> l.contains(ERROR_MESSAGE)));
+            assertTrue(listener.logs.stream().noneMatch(l -> l.contains(ERROR_MESSAGE)),
+                "Micrometer has been removed, but errors are still being logged.");
         } finally {
             disableMicrometer();
         }

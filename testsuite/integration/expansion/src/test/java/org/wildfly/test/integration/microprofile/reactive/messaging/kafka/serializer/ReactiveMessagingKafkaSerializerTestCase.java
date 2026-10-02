@@ -6,6 +6,9 @@
 package org.wildfly.test.integration.microprofile.reactive.messaging.kafka.serializer;
 
 import static org.jboss.as.test.shared.PermissionUtils.createPermissionsXmlAsset;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -18,23 +21,22 @@ import jakarta.inject.Inject;
 
 import org.arquillian.testcontainers.api.TestcontainersRequired;
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.test.shared.CLIServerSetupTask;
 import org.jboss.as.test.shared.TimeoutUtil;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.wildfly.test.integration.microprofile.reactive.EnableReactiveExtensionsSetupTask;
 import org.wildfly.test.integration.microprofile.reactive.RunKafkaSetupTask;
 
 /**
  * @author <a href="mailto:kabir.khan@jboss.com">Kabir Khan</a>
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @ServerSetup({RunKafkaSetupTask.class, EnableReactiveExtensionsSetupTask.class})
 @TestcontainersRequired
 public class ReactiveMessagingKafkaSerializerTestCase {
@@ -60,12 +62,12 @@ public class ReactiveMessagingKafkaSerializerTestCase {
     }
 
     @Test
-    public void test() throws InterruptedException {
+    void test() throws Exception {
         boolean wait = bean.getLatch().await(TIMEOUT, TimeUnit.MILLISECONDS);
-        Assert.assertTrue("Timed out", wait);
+        assertTrue(wait, "Timed out");
 
         List<Person> list = bean.getReceived();
-        Assert.assertEquals(3, list.size());
+        assertEquals(3, list.size());
         // Kafka messages only have order per partition, so do some massaging of the data
         Map<Integer, List<Person>> map = new HashMap<>();
         for (int i = 0; i < list.size(); i++) {
@@ -80,9 +82,9 @@ public class ReactiveMessagingKafkaSerializerTestCase {
         Person roger = assertPersonNextOnAPartition(map, "Roger");
 
 
-        Assert.assertEquals(101, kabir.getAge());
-        Assert.assertEquals(18, bob.getAge());
-        Assert.assertEquals(21, roger.getAge());
+        assertEquals(101, kabir.getAge());
+        assertEquals(18, bob.getAge());
+        assertEquals(21, roger.getAge());
     }
 
     private Person assertPersonNextOnAPartition(Map<Integer, List<Person>> map, String name) {
@@ -100,7 +102,7 @@ public class ReactiveMessagingKafkaSerializerTestCase {
             }
         }
         map.remove(remove);
-        Assert.assertNotNull("Could not find " + name, found);
+        assertNotNull(found, "Could not find " + name);
         return found;
     }
 

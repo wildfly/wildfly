@@ -6,6 +6,8 @@
 package org.wildfly.test.integration.microprofile.reactive.messaging.kafka.ssl;
 
 import static org.jboss.as.test.shared.PermissionUtils.createPermissionsXmlAsset;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.Arrays;
 import java.util.HashSet;
@@ -17,23 +19,22 @@ import jakarta.inject.Inject;
 
 import org.arquillian.testcontainers.api.TestcontainersRequired;
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.api.ServerSetupTask;
 import org.jboss.as.test.shared.TimeoutUtil;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.wildfly.test.integration.microprofile.reactive.ConfigureElytronSslContextSetupTask;
 import org.wildfly.test.integration.microprofile.reactive.EnableReactiveExtensionsSetupTask;
 
 /**
  * @author <a href="mailto:kabir.khan@jboss.com">Kabir Khan</a>
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @ServerSetup({RunKafkaWithSslSetupTask.class, EnableReactiveExtensionsSetupTask.class, ConfigureElytronSslContextSetupTask.class})
 @TestcontainersRequired
 public class ReactiveMessagingKafkaSslConfiguredGloballyTestCase {
@@ -59,11 +60,11 @@ public class ReactiveMessagingKafkaSslConfiguredGloballyTestCase {
     }
 
     @Test
-    public void test() throws InterruptedException {
+    void test() throws Exception {
         boolean wait = bean.getLatch().await(TIMEOUT, TimeUnit.MILLISECONDS);
-        Assert.assertTrue("Timed out", wait);
+        assertTrue(wait, "Timed out");
         Set<String> expected = new HashSet<>(Arrays.asList("hello", "reactive", "messaging", "ssl"));
-        Assert.assertEquals(expected.size(), bean.getWords().size());
-        Assert.assertTrue("Expected " + bean.getWords() + " to contain all of " + expected, bean.getWords().containsAll(expected));
+        assertEquals(expected.size(), bean.getWords().size());
+        assertTrue(bean.getWords().containsAll(expected), "Expected " + bean.getWords() + " to contain all of " + expected);
     }
 }

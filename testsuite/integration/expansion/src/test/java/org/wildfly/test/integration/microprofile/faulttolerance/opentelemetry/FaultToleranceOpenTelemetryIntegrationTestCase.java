@@ -5,6 +5,9 @@
 
 package org.wildfly.test.integration.microprofile.faulttolerance.opentelemetry;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import java.net.URL;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
@@ -13,7 +16,7 @@ import org.arquillian.testcontainers.api.Testcontainer;
 import org.arquillian.testcontainers.api.TestcontainersRequired;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.test.integration.common.HttpRequest;
@@ -25,9 +28,8 @@ import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.wildfly.test.integration.microprofile.faulttolerance.micrometer.FaultToleranceMicrometerIntegrationTestCase;
 import org.wildfly.test.integration.microprofile.faulttolerance.micrometer.deployment.FaultTolerantApplication;
 
@@ -38,7 +40,7 @@ import org.wildfly.test.integration.microprofile.faulttolerance.micrometer.deplo
  *
  * @author Radoslav Husar
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @RunAsClient
 @TestcontainersRequired
 // This test case does not use Micrometer *but* we enable it to verify CompoundMetricsProvider functionality in WF
@@ -68,7 +70,7 @@ public class FaultToleranceOpenTelemetryIntegrationTestCase {
     private URL url;
 
     @Test
-    public void test() throws Exception {
+    void test() throws Exception {
         // First make requests
         for (int i = 0; i < INVOCATION_COUNT; i++) {
             HttpRequest.get(url.toString() + "app/timeout", 10, TimeUnit.SECONDS);
@@ -79,8 +81,8 @@ public class FaultToleranceOpenTelemetryIntegrationTestCase {
 
             // First verify total invocation count for the method + value returned + fallback applied
             prometheusMetric = metrics.stream().filter(metric -> metric.getKey().equals("ft_invocations_total")).findFirst();
-            Assert.assertTrue(prometheusMetric.isPresent());
-            Assert.assertEquals(INVOCATION_COUNT, Integer.parseInt(prometheusMetric.get().getValue()), 0);
+            assertTrue(prometheusMetric.isPresent());
+            assertEquals(INVOCATION_COUNT, Integer.parseInt(prometheusMetric.get().getValue()));
 
 
             // Verify the number of timeouts being equal to the number of invocations
@@ -88,8 +90,8 @@ public class FaultToleranceOpenTelemetryIntegrationTestCase {
                     .filter(metric -> metric.getKey().equals("ft_timeout_calls_total"))
                     .filter(metric -> Boolean.TRUE.toString().equalsIgnoreCase(metric.getTags().get("timedOut")))
                     .findFirst();
-            Assert.assertTrue(prometheusMetric.isPresent());
-            Assert.assertEquals(INVOCATION_COUNT, Integer.parseInt(prometheusMetric.get().getValue()), 0);
+            assertTrue(prometheusMetric.isPresent());
+            assertEquals(INVOCATION_COUNT, Integer.parseInt(prometheusMetric.get().getValue()));
 
 
             // Verify the number of successful invocations to be none, since it always fails
@@ -97,8 +99,8 @@ public class FaultToleranceOpenTelemetryIntegrationTestCase {
                     .filter(metric -> metric.getKey().equals("ft_timeout_calls_total"))
                     .filter(metric -> Boolean.FALSE.toString().equalsIgnoreCase(metric.getTags().get("timedOut")))
                     .findFirst();
-            Assert.assertTrue(prometheusMetric.isPresent());
-            Assert.assertEquals(0, Integer.parseInt(prometheusMetric.get().getValue()), 0);
+            assertTrue(prometheusMetric.isPresent());
+            assertEquals(0, Integer.parseInt(prometheusMetric.get().getValue()));
         });
     }
 

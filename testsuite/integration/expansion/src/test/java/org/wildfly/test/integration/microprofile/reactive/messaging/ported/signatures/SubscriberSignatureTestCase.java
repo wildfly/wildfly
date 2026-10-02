@@ -6,6 +6,8 @@
 package org.wildfly.test.integration.microprofile.reactive.messaging.ported.signatures;
 
 import static org.jboss.as.test.shared.PermissionUtils.createPermissionsXmlAsset;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.wildfly.test.integration.microprofile.reactive.messaging.ported.utils.ReactiveMessagingTestUtils.await;
 import static org.wildfly.test.integration.microprofile.reactive.messaging.ported.utils.ReactiveMessagingTestUtils.checkList;
 
@@ -27,16 +29,15 @@ import org.eclipse.microprofile.reactive.messaging.Emitter;
 import org.eclipse.microprofile.reactive.messaging.Incoming;
 import org.eclipse.microprofile.reactive.messaging.Message;
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.test.shared.CLIServerSetupTask;
 import org.jboss.as.test.shared.TimeoutUtil;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.reactivestreams.Subscriber;
 import org.reactivestreams.Subscription;
 import org.wildfly.test.integration.microprofile.reactive.EnableReactiveExtensionsSetupTask;
@@ -48,7 +49,7 @@ import org.wildfly.test.integration.microprofile.reactive.messaging.ported.utils
  * @author <a href="mailto:kabir.khan@jboss.com">Kabir Khan</a>
  */
 @ServerSetup(EnableReactiveExtensionsSetupTask.class)
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class SubscriberSignatureTestCase {
 
     @Deployment
@@ -81,7 +82,7 @@ public class SubscriberSignatureTestCase {
     BeanConsumingPayloads beanConsumingPayloads;
 
     @Test
-    public void testMethodReturningASubscriberOfPayload() {
+    void methodReturningASubscriberOfPayload() {
         Emitter<Integer> emitter = beanUsingSubscriberOfPayload.emitter();
         List<Integer> items = beanUsingSubscriberOfPayload.getItems();
 
@@ -89,7 +90,7 @@ public class SubscriberSignatureTestCase {
 
         await(() -> items.size() == 10);
         checkList(items, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9);
-        Assert.assertTrue(beanUsingSubscriberOfPayload.hasCompleted());
+        assertTrue(beanUsingSubscriberOfPayload.hasCompleted());
     }
 
     private void emit(Emitter<Integer> emitter) {
@@ -112,7 +113,7 @@ public class SubscriberSignatureTestCase {
     }
 
     @Test
-    public void testMethodReturningASubscriberOfMessage() {
+    void methodReturningASubscriberOfMessage() {
         Emitter<Integer> emitter = beanUsingSubscriberOfMessage.emitter();
         List<Integer> items = beanUsingSubscriberOfMessage.getItems();
 
@@ -120,12 +121,12 @@ public class SubscriberSignatureTestCase {
 
         await(() -> items.size() == 10);
         checkList(items, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9);
-        Assert.assertEquals(10, beanUsingSubscriberOfMessage.getMessages().size());
-        Assert.assertTrue(beanUsingSubscriberOfPayload.hasCompleted());
+        assertEquals(10, beanUsingSubscriberOfMessage.getMessages().size());
+        assertTrue(beanUsingSubscriberOfPayload.hasCompleted());
     }
 
     @Test
-    public void testMethodConsumingPayloadSynchronously() {
+    void methodConsumingPayloadSynchronously() {
         Emitter<Integer> emitter = beanUsingConsumerMethod.emitter();
         List<Integer> items = beanUsingConsumerMethod.getItems();
 
@@ -136,7 +137,7 @@ public class SubscriberSignatureTestCase {
     }
 
     @Test
-    public void testMethodConsumingPayloadAsynchronously() {
+    void methodConsumingPayloadAsynchronously() {
         Emitter<Integer> emitter = beanConsumingPayloads.emitter();
         List<Integer> items = beanConsumingPayloads.getItems();
 
@@ -147,7 +148,7 @@ public class SubscriberSignatureTestCase {
     }
 
     @Test
-    public void testMethodConsumingMessages() {
+    void methodConsumingMessages() {
         Emitter<Integer> emitter = beanConsumingMessages.emitter();
         List<Integer> items = beanConsumingMessages.getItems();
 
@@ -155,7 +156,7 @@ public class SubscriberSignatureTestCase {
 
         await(() -> items.size() == 10);
         checkList(items, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9);
-        Assert.assertEquals(10, beanConsumingMessages.getMessages().size());
+        assertEquals(10, beanConsumingMessages.getMessages().size());
     }
 
     @ApplicationScoped

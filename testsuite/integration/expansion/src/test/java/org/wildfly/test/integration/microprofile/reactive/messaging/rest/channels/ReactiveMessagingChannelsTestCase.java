@@ -6,7 +6,9 @@
 package org.wildfly.test.integration.microprofile.reactive.messaging.rest.channels;
 
 import static org.jboss.as.test.shared.PermissionUtils.createPermissionsXmlAsset;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -29,7 +31,7 @@ import org.apache.http.message.BasicNameValuePair;
 import org.arquillian.testcontainers.api.TestcontainersRequired;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.test.shared.TimeoutUtil;
@@ -37,16 +39,15 @@ import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.wildfly.test.integration.microprofile.reactive.EnableReactiveExtensionsSetupTask;
 import org.wildfly.test.integration.microprofile.reactive.RunKafkaSetupTask;
 
 /**
  * @author <a href="mailto:kabir.khan@jboss.com">Kabir Khan</a>
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @RunAsClient
 @ServerSetup({RunKafkaSetupTask.class, EnableReactiveExtensionsSetupTask.class})
 @TestcontainersRequired
@@ -83,14 +84,14 @@ public class ReactiveMessagingChannelsTestCase {
     }
 
     @Test
-    public void testPublisherToChannelPublisher() throws Exception {
+    void publisherToChannelPublisher() throws Exception {
         try (CloseableHttpClient client = HttpClientBuilder.create().build()){
             checkData(client, "publisher-to-channel-publisher/poll", "One", "Zwei", "Tres");
         }
     }
 
     @Test
-    public void testEmitterToSubscriber() throws Exception {
+    void emitterToSubscriber() throws Exception {
         try (CloseableHttpClient client = HttpClientBuilder.create().build()){
             postData(client,"emitter-to-subscriber/publish", "Hello");
             postData(client,"emitter-to-subscriber/publish", "world");
@@ -99,7 +100,7 @@ public class ReactiveMessagingChannelsTestCase {
     }
 
     @Test
-    public void testEmitterToSubscribedPublisherBuilder() throws Exception {
+    void emitterToSubscribedPublisherBuilder() throws Exception {
         try (CloseableHttpClient client = HttpClientBuilder.create().build()){
             postData(client,"emitter-to-subscribed-channel-publisher-builder/publish", "Hola");
             postData(client,"emitter-to-subscribed-channel-publisher-builder/publish", "mundo");
@@ -109,7 +110,7 @@ public class ReactiveMessagingChannelsTestCase {
     }
 
     @Test
-    public void testEmitterToChannelPublisherViaKafka() throws Exception {
+    void emitterToChannelPublisherViaKafka() throws Exception {
         try (CloseableHttpClient client = HttpClientBuilder.create().build()){
             postData(client,"emitter-to-subscribed-channel-publisher-via-kafka/publish", "Welcome");
             postData(client,"emitter-to-subscribed-channel-publisher-via-kafka/publish", "to");
@@ -125,7 +126,7 @@ public class ReactiveMessagingChannelsTestCase {
                 error = null;
                 try {
                     list = getData(client, "emitter-to-subscribed-channel-publisher-via-kafka/poll");
-                    Assert.assertEquals(expected.size(), list.size());
+                    assertEquals(expected.size(), list.size());
                     break;
                 } catch (AssertionError e) {
                     error = e;
@@ -141,7 +142,7 @@ public class ReactiveMessagingChannelsTestCase {
             // The data may come on different Kafka partitions and ordering is only per partition so do some extra
             // massaging of the data
 
-            Assert.assertEquals(expected.size(), list.size());
+            assertEquals(expected.size(), list.size());
             // Kafka messages only have order per partition, so do some massaging of the data
             Map<Integer, List<String>> map = new HashMap<>();
             for (int i = 0; i < list.size(); i++) {
@@ -171,7 +172,7 @@ public class ReactiveMessagingChannelsTestCase {
             }
         }
         map.remove(remove);
-        Assert.assertNotNull("Could not find " + value, found);
+        assertNotNull(found, "Could not find " + value);
     }
 
     private List<Integer> getPartitions(CloseableHttpClient client) throws Exception {
@@ -200,9 +201,9 @@ public class ReactiveMessagingChannelsTestCase {
 
     private void checkData(CloseableHttpClient client, String path, String... expected) throws Exception {
         List<String> lines = getData(client, path);
-        Assert.assertEquals(expected.length, lines.size());
+        assertEquals(expected.length, lines.size());
         for (int i = 0; i < expected.length; i++) {
-            Assert.assertTrue(lines.get(i).contains(expected[i]));
+            assertTrue(lines.get(i).contains(expected[i]));
         }
     }
 

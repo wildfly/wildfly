@@ -23,7 +23,6 @@ import org.jboss.as.model.test.ModelTestUtils;
 import org.jboss.as.test.config.ContainerConfig;
 import org.jboss.as.test.shared.IntermittentFailure;
 import org.jboss.dmr.ModelNode;
-import org.junit.AssumptionViolatedException;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.MountableFile;
@@ -91,7 +90,7 @@ public class RunArtemisAmqpSetupTask implements ServerSetupTask {
             try {
                 container.start();
             } catch (Exception e) {
-                // Either throw AssumptionViolatedException because we are ignoring intermittent failures,
+                // Either throw an assumption exception because we are ignoring intermittent failures,
                 // or propagate the exception and fail
                 IntermittentFailure.thisTestIsFailingIntermittently("https://issues.redhat.com/browse/WFLY-20945");
                 throw e;
@@ -108,8 +107,9 @@ public class RunArtemisAmqpSetupTask implements ServerSetupTask {
             } catch (Exception ex) {
                 e.printStackTrace();
             }
-            if (e instanceof AssumptionViolatedException ave) {
-                throw ave;
+            if (e instanceof RuntimeException re) {
+                // Propagate unchecked exceptions as-is, e.g. a failed assumption from IntermittentFailure
+                throw re;
             }
             throw new RuntimeException(e);
         }

@@ -5,14 +5,14 @@
 package org.wildfly.test.integration.observability;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.io.IOException;
 import java.nio.file.Files;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.arquillian.junit.InSequence;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.as.arquillian.api.ContainerResource;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.container.ManagementClient;
@@ -26,18 +26,21 @@ import org.jboss.as.test.shared.logging.LoggingUtil;
 import org.jboss.dmr.ModelNode;
 import org.jboss.as.test.shared.util.AssumeTestGroupUtil;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.MethodOrderer;
+import org.junit.jupiter.api.Order;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestMethodOrder;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * This test examines the logging produced when multiple metrics systems are enabled. The first subsystem will log nothing,
  * but each subsequent system should log an INFO message alerting the user of the duplication. The number of messages logged
  * is the number of metrics subsystems enabled minus 1.
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @RunAsClient
 @ServerSetup(SnapshotServerSetupTask.class)
+@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class MultipleMetricsTestCase {
     private static final String MESSAGE_PREAMBLE = "Additional metrics systems discovered";
 
@@ -67,14 +70,14 @@ public class MultipleMetricsTestCase {
     private static boolean wildflyMetricsAvailable = true;
 
     @Test
-    @InSequence
-    public void setup() throws Exception {
+    @Order(0)
+    void setup() throws Exception {
         wildflyMetricsAvailable = Operations.isSuccessfulOutcome(executeRead(managementClient, ADDRESS_METRICS_EXTENSION));
     }
 
     @Test
-    @InSequence(1)
-    public void testWildFlyMetrics() throws Exception {
+    @Order(1)
+    void wildFlyMetrics() throws Exception {
         String loggerName = "wildfly-metrics";
         try {
             disableMicrometer();
@@ -89,8 +92,8 @@ public class MultipleMetricsTestCase {
     }
 
     @Test
-    @InSequence(2)
-    public void testMicrometer() throws Exception {
+    @Order(2)
+    void micrometer() throws Exception {
         String loggerName = "micrometer";
         try {
             disableOpenTelemetry();
@@ -105,8 +108,8 @@ public class MultipleMetricsTestCase {
     }
 
     @Test
-    @InSequence(3)
-    public void testOpenTelemetry() throws Exception {
+    @Order(3)
+    void openTelemetry() throws Exception {
         String loggerName = "opentelemetry";
         try {
             addLogHandler(loggerName);
@@ -121,8 +124,8 @@ public class MultipleMetricsTestCase {
     }
 
     @Test
-    @InSequence(4)
-    public void testAll() throws Exception {
+    @Order(4)
+    void all() throws Exception {
         String loggerName = "all-metrics";
         try {
             addLogHandler(loggerName);
@@ -140,8 +143,8 @@ public class MultipleMetricsTestCase {
         try (var lines = Files.lines(LoggingUtil.getLogPath(managementClient.getControllerClient(),
                 "file-handler", loggerName))) {
 
-            Assert.assertEquals("The list was expected not to be empty", expected,
-                    lines.filter(line -> line.contains(MESSAGE_PREAMBLE)).count());
+            assertEquals(expected, lines.filter(line -> line.contains(MESSAGE_PREAMBLE)).count(),
+                    "The list was expected not to be empty");
         }
     }
 

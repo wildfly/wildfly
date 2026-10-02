@@ -5,6 +5,7 @@
 package org.wildfly.test.integration.microprofile.jwt;
 
 import static jakarta.ws.rs.core.MediaType.TEXT_PLAIN;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -26,14 +27,13 @@ import jakarta.ws.rs.core.HttpHeaders;
 import jakarta.ws.rs.core.Response;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.wildfly.common.iteration.CodePointIterator;
 import org.wildfly.security.pem.Pem;
 import org.wildfly.test.integration.microprofile.jwt.norealm.App;
@@ -42,7 +42,7 @@ import org.wildfly.test.integration.microprofile.jwt.norealm.App;
  * Tests for mp.jwt.verify.clock.skew property introduced in MP JWT 2.1
  */
 @RunAsClient
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class ClockSkewTest {
 
     @ArquillianResource
@@ -59,14 +59,14 @@ public class ClockSkewTest {
     }
 
     @Test
-    public void testClockSkewTokenNotExpired() throws Exception {
+    void clockSkewTokenNotExpired() throws Exception {
         String token = createJwt();
         Thread.sleep(3000); // exp is 3 seconds but request will be accepted because the clock skew is set to 2 seconds
         callEchoAndExpectStatus(token, HttpURLConnection.HTTP_OK);
     }
 
     @Test
-    public void testClockSkewExpired() throws Exception {
+    void clockSkewExpired() throws Exception {
         String token = createJwt();
         Thread.sleep(5000); // exp + clock skew is 5 seconds, so wait 5 seconds and test that request will be unauthorized
         callEchoAndExpectStatus(token, HttpURLConnection.HTTP_UNAUTHORIZED);
@@ -74,7 +74,7 @@ public class ClockSkewTest {
 
     private void callEchoAndExpectStatus(String token, int status) {
         Response response = callEcho(token);
-        Assert.assertEquals(status, response.getStatus());
+        assertEquals(status, response.getStatus());
     }
 
     private Response callEcho(String token) {

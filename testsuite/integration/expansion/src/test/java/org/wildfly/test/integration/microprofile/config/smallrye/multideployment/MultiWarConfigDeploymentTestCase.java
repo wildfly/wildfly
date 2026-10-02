@@ -11,7 +11,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REM
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYSTEM_PROPERTY;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.net.URL;
 
@@ -22,7 +22,7 @@ import jakarta.ws.rs.core.Response;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.api.ServerSetupTask;
@@ -36,10 +36,10 @@ import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @RunAsClient
 @ServerSetup({MultiWarConfigDeploymentTestCase.GlobalConfigSourceSetupTask.class, ReloadServerSetupTask.class})
 public class MultiWarConfigDeploymentTestCase {
@@ -87,7 +87,7 @@ public class MultiWarConfigDeploymentTestCase {
     }
 
     @Test
-    public void testConfigIsolationAndPrecedenceWar1() throws Exception {
+    void configIsolationAndPrecedenceWar1() throws Exception {
         Client client = ClientBuilder.newClient();
         try {
             String d1BaseUrl = url1.toString() + "config/";
@@ -137,7 +137,7 @@ public class MultiWarConfigDeploymentTestCase {
     }
 
     @Test
-    public void testConfigIsolationAndPrecedenceWar2() throws Exception {
+    void configIsolationAndPrecedenceWar2() throws Exception {
         Client client = ClientBuilder.newClient();
         try {
             String d2BaseUrl = url2.toString() + "config/";

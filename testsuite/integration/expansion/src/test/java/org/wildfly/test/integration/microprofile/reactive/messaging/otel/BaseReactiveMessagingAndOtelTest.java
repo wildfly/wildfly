@@ -6,11 +6,14 @@
 package org.wildfly.test.integration.microprofile.reactive.messaging.otel;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
 import static org.wildfly.extension.microprofile.reactive.messaging.MicroProfileReactiveMessagingExtension.SUBSYSTEM_NAME;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
+import java.lang.reflect.Method;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -40,14 +43,12 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TestName;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInfo;
 import org.wildfly.extension.microprofile.reactive.messaging.MicroProfileReactiveMessagingConnectorOpenTelemetryTracingResourceDefinition;
 import org.wildfly.microprofile.reactive.messaging.config.TracingType;
 import org.wildfly.security.manager.WildFlySecurityManager;
@@ -87,27 +88,24 @@ public abstract class BaseReactiveMessagingAndOtelTest {
         this.connectorSuffix = connectorSuffix;
     }
 
-    @BeforeClass
+    @BeforeAll
     public static void beforeClass() throws Exception {
         AbstractCliTestBase.initCLI();
     }
 
-    @AfterClass
+    @AfterAll
     public static void afterClass() throws Exception {
         AbstractCliTestBase.closeCLI();
     }
 
-    @Rule
-    public TestName name = new TestName();
-
-    @Before
-    public void testName() {
+    @BeforeEach
+    public void testName(TestInfo testInfo) {
         System.out.println("=============================");
-        System.out.println("TestName: " + name.getMethodName());
+        System.out.println("TestName: " + testInfo.getTestMethod().map(Method::getName).orElse(null));
         System.out.println("=============================");
     }
 
-    @After
+    @AfterEach
     public void after() throws Exception {
         previousTestsTraceIds.addAll(currentTraceIds);
         currentTraceIds.clear();
@@ -125,7 +123,7 @@ public abstract class BaseReactiveMessagingAndOtelTest {
     abstract OpenTelemetryCollectorContainer getCollector();
 
     @Test
-    public void testNoOpenTelemetryTracing() throws Exception {
+    public void noOpenTelemetryTracing() throws Exception {
         ReactiveMessagingOtelUtils.enableConnectorOpenTelemetryResource(managementClient.getControllerClient(), false);
         ReactiveMessagingOtelUtils.setTracingConfigSystemProperty(managementClient.getControllerClient(), connectorTracingPropertyName, null);
         ReactiveMessagingOtelUtils.reload(managementClient.getControllerClient());
@@ -180,7 +178,7 @@ public abstract class BaseReactiveMessagingAndOtelTest {
     }
 
     @Test
-    public void testOpenTelemetryTracingOffEnabledAtConnectorLevel() throws Exception {
+    public void openTelemetryTracingOffEnabledAtConnectorLevel() throws Exception {
         testOpenTelemetryTraces(
                 Map.of(tracingAttributeName, TracingType.OFF),
                 Map.of(connectorTracingPropertyName, true),
@@ -194,7 +192,7 @@ public abstract class BaseReactiveMessagingAndOtelTest {
     }
 
     @Test
-    public void testOpenTelemetryTracingOffEnabledAtConnectorLevelDisabledAtIncomingChannel() throws Exception {
+    public void openTelemetryTracingOffEnabledAtConnectorLevelDisabledAtIncomingChannel() throws Exception {
         testOpenTelemetryTraces(
                 Map.of(tracingAttributeName, TracingType.OFF),
                 Map.of(connectorTracingPropertyName, true, incomingChannelProperty, false),
@@ -207,7 +205,7 @@ public abstract class BaseReactiveMessagingAndOtelTest {
     }
 
     @Test
-    public void testOpenTelemetryTracingOffEnabledAtConnectorLevelDisabledAtOutgoingChannel() throws Exception {
+    public void openTelemetryTracingOffEnabledAtConnectorLevelDisabledAtOutgoingChannel() throws Exception {
         testOpenTelemetryTraces(
                 Map.of(tracingAttributeName, TracingType.OFF),
                 Map.of(connectorTracingPropertyName, true, outgoingChannelProperty, false),
@@ -226,7 +224,7 @@ public abstract class BaseReactiveMessagingAndOtelTest {
     }
 
     @Test
-    public void testOpenTelemetryTracingOffEnabledAtIncomingChannel() throws Exception {
+    public void openTelemetryTracingOffEnabledAtIncomingChannel() throws Exception {
         testOpenTelemetryTraces(
                 Map.of(tracingAttributeName, TracingType.OFF),
                 Map.of(incomingChannelProperty, true),
@@ -244,7 +242,7 @@ public abstract class BaseReactiveMessagingAndOtelTest {
     }
 
     @Test
-    public void testOpenTelemetryTracingOffEnabledAtOutgoingChannel() throws Exception {
+    public void openTelemetryTracingOffEnabledAtOutgoingChannel() throws Exception {
         testOpenTelemetryTraces(
                 Map.of(tracingAttributeName, TracingType.OFF),
                 Map.of(outgoingChannelProperty, true),
@@ -257,7 +255,7 @@ public abstract class BaseReactiveMessagingAndOtelTest {
     }
 
     @Test
-    public void testOpenTelemetryTracingOnDisabledAtConnectorLevel() throws Exception {
+    public void openTelemetryTracingOnDisabledAtConnectorLevel() throws Exception {
         testOpenTelemetryTraces(
                 Map.of(tracingAttributeName, TracingType.ON),
                 Map.of(connectorTracingPropertyName, false),
@@ -269,7 +267,7 @@ public abstract class BaseReactiveMessagingAndOtelTest {
                         .zeroTracedReceive()));
     }
     @Test
-    public void testOpenTelemetryTracingOnDisabledAtConnectorLevelEnabledAtIncomingChannel() throws Exception {
+    public void openTelemetryTracingOnDisabledAtConnectorLevelEnabledAtIncomingChannel() throws Exception {
         testOpenTelemetryTraces(
                 Map.of(tracingAttributeName, TracingType.ON),
                 Map.of(connectorTracingPropertyName, false, incomingChannelProperty, true),
@@ -287,7 +285,7 @@ public abstract class BaseReactiveMessagingAndOtelTest {
     }
 
     @Test
-    public void testOpenTelemetryTracingOnDisabledAtConnectorLevelEnabledAtOutgoingChannel() throws Exception {
+    public void openTelemetryTracingOnDisabledAtConnectorLevelEnabledAtOutgoingChannel() throws Exception {
         testOpenTelemetryTraces(
                 Map.of(tracingAttributeName, TracingType.ON),
                 Map.of(connectorTracingPropertyName, false, outgoingChannelProperty, true),
@@ -300,7 +298,7 @@ public abstract class BaseReactiveMessagingAndOtelTest {
     }
 
     @Test
-    public void testOpenTelemetryTracingOnDisabledAtIncomingChannel() throws Exception {
+    public void openTelemetryTracingOnDisabledAtIncomingChannel() throws Exception {
         testOpenTelemetryTraces(
                 Map.of(tracingAttributeName, TracingType.ON),
                 Map.of(incomingChannelProperty, false),
@@ -313,7 +311,7 @@ public abstract class BaseReactiveMessagingAndOtelTest {
     }
 
     @Test
-    public void testOpenTelemetryTracingOnDisabledAtOutgoingChannel() throws Exception {
+    public void openTelemetryTracingOnDisabledAtOutgoingChannel() throws Exception {
         testOpenTelemetryTraces(
                 Map.of(tracingAttributeName, TracingType.ON),
                 Map.of(outgoingChannelProperty, false),
@@ -332,7 +330,7 @@ public abstract class BaseReactiveMessagingAndOtelTest {
     }
 
     @Test
-    public void testOpenTelemetryTracingAlwaysDisabledAtConnectorLevel() throws Exception {
+    public void openTelemetryTracingAlwaysDisabledAtConnectorLevel() throws Exception {
         testOpenTelemetryTraces(
                 Map.of(tracingAttributeName, TracingType.ALWAYS),
                 Map.of(connectorTracingPropertyName, false),
@@ -346,7 +344,7 @@ public abstract class BaseReactiveMessagingAndOtelTest {
     }
 
     @Test
-    public void testOpenTelemetryTracingAlwaysDisabledAtChannel() throws Exception {
+    public void openTelemetryTracingAlwaysDisabledAtChannel() throws Exception {
         testOpenTelemetryTraces(
                 Map.of(tracingAttributeName, TracingType.ALWAYS),
                 Map.of(outgoingChannelProperty, false, incomingChannelProperty, false),
@@ -360,7 +358,7 @@ public abstract class BaseReactiveMessagingAndOtelTest {
     }
 
     @Test
-    public void testOpenTelemetryTracingNeverEnabledAtConnectorLevel() throws Exception {
+    public void openTelemetryTracingNeverEnabledAtConnectorLevel() throws Exception {
         testOpenTelemetryTraces(
                 Map.of(tracingAttributeName, TracingType.NEVER),
                 Map.of(connectorTracingPropertyName, true),
@@ -373,7 +371,7 @@ public abstract class BaseReactiveMessagingAndOtelTest {
     }
 
     @Test
-    public void testOpenTelemetryTracingNeverEnabledAtChannel() throws Exception {
+    public void openTelemetryTracingNeverEnabledAtChannel() throws Exception {
         testOpenTelemetryTraces(
                 Map.of(tracingAttributeName, TracingType.NEVER),
                 Map.of(outgoingChannelProperty, true, incomingChannelProperty, true),
@@ -401,12 +399,12 @@ public abstract class BaseReactiveMessagingAndOtelTest {
         while (System.currentTimeMillis() < end) {
             List<String> read = getData(client);
             if (read.size() == expected.length) {
-                Assert.assertArrayEquals(expected, read.toArray(new String[0]));
+                assertArrayEquals(expected, read.toArray(new String[0]));
                 return;
             }
             Thread.sleep(2000);
         }
-        Assert.fail("Could not read data in time");
+        fail("Could not read data in time");
     }
 
     private List<String> getData(CloseableHttpClient client) throws Exception {
@@ -464,10 +462,10 @@ public abstract class BaseReactiveMessagingAndOtelTest {
         });
         if (errMessage != null) {
             // some checker produced false and err message
-            Assert.fail(errMessage);
+            fail(errMessage);
         } else {
             // should not really happen, just to be sure. If everything is good, method returns without getting here
-            Assert.fail();
+            fail();
         }
     }
 }

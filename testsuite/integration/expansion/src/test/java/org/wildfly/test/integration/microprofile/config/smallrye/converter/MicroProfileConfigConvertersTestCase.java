@@ -4,6 +4,8 @@
  */
 package org.wildfly.test.integration.microprofile.config.smallrye.converter;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import java.net.URL;
 
 import org.apache.http.HttpResponse;
@@ -13,7 +15,7 @@ import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.util.EntityUtils;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.test.shared.PermissionUtils;
@@ -21,16 +23,15 @@ import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.wildfly.test.integration.microprofile.config.smallrye.AbstractMicroProfileConfigTestCase;
 import org.wildfly.test.integration.microprofile.config.smallrye.AssertUtils;
 
 /**
  * @author <a href="mailto:mjurc@redhat.com">Michal Jurc</a> (c) 2018 Red Hat, Inc.
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @RunAsClient
 @ServerSetup({SetupTask.class})
 public class MicroProfileConfigConvertersTestCase extends AbstractMicroProfileConfigTestCase {
@@ -52,10 +53,10 @@ public class MicroProfileConfigConvertersTestCase extends AbstractMicroProfileCo
     private URL url;
 
     @Test
-    public void testConverterPriority() throws Exception {
+    void converterPriority() throws Exception {
         try (CloseableHttpClient client = HttpClientBuilder.create().build()) {
             HttpResponse response = client.execute(new HttpGet(url + "custom-converter/test"));
-            Assert.assertEquals(200, response.getStatusLine().getStatusCode());
+            assertEquals(200, response.getStatusLine().getStatusCode());
             String text = EntityUtils.toString(response.getEntity());
             AssertUtils.assertTextContainsProperty(text, "int_converted_to_102_by_priority_of_custom_converter", "102");
             // TODO - enable this when https://issues.jboss.org/browse/WFWIP-60 is resolved

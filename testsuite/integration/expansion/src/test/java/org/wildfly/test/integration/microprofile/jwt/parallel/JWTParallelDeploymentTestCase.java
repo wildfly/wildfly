@@ -22,15 +22,15 @@ import org.apache.kafka.common.errors.IllegalSaslStateException;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.wildfly.common.bytes.ByteStringBuilder;
 import org.wildfly.test.integration.microprofile.jwt.App;
 import org.wildfly.test.integration.microprofile.jwt.BaseJWTCase;
@@ -44,7 +44,7 @@ import org.wildfly.test.integration.microprofile.jwt.SampleEndPoint;
  *
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @RunAsClient
 public class JWTParallelDeploymentTestCase {
 
@@ -122,32 +122,32 @@ public class JWTParallelDeploymentTestCase {
     private URL deploymentTwoURL;
 
     @Test
-    public void testDeploymentOneRequiresAuthorization() throws Exception {
+    void deploymentOneRequiresAuthorization() throws Exception {
         testAuthorizationRequired(deploymentOneURL);
     }
 
     @Test
-    public void testDeploymentTwoRequiresAuthorization() throws Exception {
+    void deploymentTwoRequiresAuthorization() throws Exception {
         testAuthorizationRequired(deploymentTwoURL);
     }
 
     @Test
-    public void testDeploymentOneIdentityOne() throws Exception {
+    void deploymentOneIdentityOne() throws Exception {
         testJWTCall(identity_one::getPrivate, deploymentOneURL, true);
     }
 
     @Test
-    public void testDeploymentOneIdentityTwo() throws Exception {
+    void deploymentOneIdentityTwo() throws Exception {
         testJWTCall(identity_two::getPrivate, deploymentOneURL, false);
     }
 
     @Test
-    public void testDeploymentTwoIdentityOne() throws Exception {
+    void deploymentTwoIdentityOne() throws Exception {
         testJWTCall(identity_one::getPrivate, deploymentTwoURL, false);
     }
 
     @Test
-    public void testDeploymentTwoIdentityTwo() throws Exception {
+    void deploymentTwoIdentityTwo() throws Exception {
         testJWTCall(identity_two::getPrivate, deploymentTwoURL, true);
     }
 

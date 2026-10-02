@@ -5,12 +5,13 @@
 
 package org.wildfly.test.integration.microprofile.reactive.messaging.ported.utils;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import java.util.Arrays;
 import java.util.List;
 import java.util.function.Supplier;
 
 import org.jboss.as.test.shared.TimeoutUtil;
-import org.junit.Assert;
 
 /**
  * Add some utils to make porting of tests from Quarkus easier
@@ -36,7 +37,7 @@ public class ReactiveMessagingTestUtils {
 
     public static <T> void checkList(List<T> list, T... expected) {
         List<T> expectedList = Arrays.asList(expected);
-        Assert.assertEquals(expectedList, list);
+        assertEquals(expectedList, list);
     }
 
 }

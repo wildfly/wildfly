@@ -5,10 +5,10 @@
 
 package org.wildfly.test.integration.microprofile.health;
 
-import static org.junit.Assert.assertEquals;
-
 import java.io.IOException;
 import org.jboss.as.arquillian.container.ManagementClient;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.wildfly.test.integration.microprofile.health.MicroProfileHealthUtils.testHttpEndPoint;
 
 /**
