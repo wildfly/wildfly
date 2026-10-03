@@ -574,6 +574,7 @@ public class PooledConnectionFactoryService implements Service<Void> {
 
 
     public void stop(StopContext context) {
+        WildFlyRecoveryRegistry.clearSupplier();
         // Service context takes care of this
     }
 }
