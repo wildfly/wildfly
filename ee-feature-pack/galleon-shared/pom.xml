@@ -318,6 +318,11 @@
         </dependency>
 
         <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-secure-xml</artifactId>
+        </dependency>
+
+        <dependency>
             <groupId>de.dentrassi.crypto</groupId>
             <artifactId>pem-keystore</artifactId>
             <exclusions>
@@ -727,8 +732,8 @@
         </dependency>
 
         <dependency>
-            <groupId>net.shibboleth.utilities</groupId>
-            <artifactId>java-support</artifactId>
+            <groupId>net.shibboleth</groupId>
+            <artifactId>shib-support</artifactId>
             <exclusions>
                 <exclusion>
                     <groupId>*</groupId>
@@ -2069,7 +2074,17 @@
 
         <dependency>
             <groupId>org.opensaml</groupId>
-            <artifactId>opensaml-core</artifactId>
+            <artifactId>opensaml-core-api</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>org.opensaml</groupId>
+            <artifactId>opensaml-core-impl</artifactId>
             <exclusions>
                 <exclusion>
                     <groupId>*</groupId>
