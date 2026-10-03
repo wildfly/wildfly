@@ -64,3 +64,4 @@ client/shade/dependency-reduced-pom.xml
 
 # Coding Agent files
 .serena/
+graphify-out

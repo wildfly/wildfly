@@ -29,6 +29,7 @@ import org.wildfly.test.integration.observability.JaxRsActivator;
 import org.wildfly.test.integration.observability.opentelemetry.application.OtelMetricResource;
 import org.wildfly.test.integration.observability.opentelemetry.application.OtelService1;
 
+/** Provides the shared deployment and HTTP helpers for OpenTelemetry integration tests. */
 @RunWith(Arquillian.class)
 @TestcontainersRequired
 public abstract class BaseOpenTelemetryTest {
@@ -39,7 +40,27 @@ public abstract class BaseOpenTelemetryTest {
             // Lower the interval from 60 seconds to 2 seconds
             "otel.metric.export.interval=2000";
 
+    /**
+     * Builds a deployment using the shared OpenTelemetry test configuration.
+     *
+     * @param name the deployment name without the {@code .war} suffix
+     * @return the test archive
+     */
     static WebArchive buildBaseArchive(String name) {
+        return buildBaseArchive(name, null);
+    }
+
+    /**
+     * Builds a deployment using the shared configuration and an optional deployment service name.
+     *
+     * @param name the deployment name without the {@code .war} suffix
+     * @param serviceName the deployment service name, or {@code null} to use the subsystem default
+     * @return the test archive
+     */
+    static WebArchive buildBaseArchive(String name, String serviceName) {
+        String deploymentConfig = serviceName == null
+                ? MP_CONFIG
+                : MP_CONFIG + "\notel.service.name=" + serviceName;
         return ShrinkWrap
             .create(WebArchive.class, name + ".war")
             .addClasses(
@@ -49,21 +70,37 @@ public abstract class BaseOpenTelemetryTest {
                 OtelMetricResource.class
             )
             .addPackage(JaegerResponse.class.getPackage())
-            .addAsManifestResource(new StringAsset(MP_CONFIG), "microprofile-config.properties")
+            .addAsManifestResource(new StringAsset(deploymentConfig), "microprofile-config.properties")
             .addAsWebInfResource(CdiUtils.createBeansXml(), "beans.xml")
             ;
     }
 
+    /**
+     * Returns the root URL for a deployment.
+     *
+     * @param deploymentName the deployment name
+     * @return the deployment root URL
+     * @throws MalformedURLException if the configured test URL is invalid
+     */
     protected String getDeploymentUrl(String deploymentName) throws MalformedURLException {
         return TestSuiteEnvironment.getHttpUrl() + "/" + deploymentName + "/";
     }
 
+    /**
+     * Sends requests and verifies every response status while closing each response.
+     *
+     * @param url the request URL
+     * @param count the number of requests to send
+     * @param expectedStatus the expected HTTP status
+     * @throws URISyntaxException if the supplied URL cannot be converted to a URI
+     */
     protected void makeRequests(URL url, int count, int expectedStatus) throws URISyntaxException {
         try (Client client = ClientBuilder.newClient()) {
             WebTarget target = client.target(url.toURI());
             for (int i = 0; i < count; i++) {
-                Response response = target.request().get();
-                Assert.assertEquals(expectedStatus, response.getStatus());
+                try (Response response = target.request().get()) {
+                    Assert.assertEquals(expectedStatus, response.getStatus());
+                }
             }
         }
     }

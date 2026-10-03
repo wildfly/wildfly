@@ -15,14 +15,15 @@
         <artifact name="${io.opentelemetry:opentelemetry-sdk-metrics}"/>
         <artifact name="${io.opentelemetry:opentelemetry-sdk-trace}"/>
         <artifact name="${io.opentelemetry:opentelemetry-sdk-common}"/>
+        <artifact name="${io.opentelemetry:opentelemetry-common}"/>
     </resources>
 
     <dependencies>
         <module name="io.opentelemetry.api"/>
         <module name="io.opentelemetry.context"/>
-        <module name="io.opentelemetry.exporter"/>
+        <module name="io.opentelemetry.exporter" services="import"/>
         <module name="io.opentelemetry.semconv"/>
-        <module name="io.smallrye.opentelemetry" services="export"/>
+        <module name="io.smallrye.opentelemetry" services="import"/>
 
         <module name="java.logging"/>
         <module name="jdk.unsupported"/>
