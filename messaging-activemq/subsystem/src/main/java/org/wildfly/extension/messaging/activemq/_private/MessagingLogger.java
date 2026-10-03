@@ -912,9 +912,12 @@ public interface MessagingLogger extends BasicLogger {
     @Message(id = 119, value = "'%s' wasn't found among existing JMS resources.")
     OperationFormatException jndiWasNotFound(String jndiName);
 
-    @LogMessage(level = WARN)
-    @Message(id = 120, value = "XA resource recovery registry supplier has already been set, skipping duplicate registration")
-    void recoveryRegistrySupplierAlreadySet();
+    // id 120 was the first-writer-wins WARN emitted by the old WildFlyRecoveryRegistry.setSupplier(). Since
+    // WFLY-22283 the registry keeps a collection of suppliers, so duplicate registration is expected and no
+    // longer warned. Kept commented out (rather than deleted) so id 120 is not accidentally reused.
+    // @LogMessage(level = WARN)
+    // @Message(id = 120, value = "XA resource recovery registry supplier has already been set, skipping duplicate registration")
+    // void recoveryRegistrySupplierAlreadySet();
 
     @LogMessage(level = DEBUG)
     @Message(id = 121, value = "System property 'artemis.discovery.enabled' is already set to '%s'.")
