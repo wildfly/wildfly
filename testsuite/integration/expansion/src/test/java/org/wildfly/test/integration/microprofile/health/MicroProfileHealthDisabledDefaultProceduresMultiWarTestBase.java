@@ -2,18 +2,18 @@ package org.wildfly.test.integration.microprofile.health;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.as.arquillian.api.ContainerResource;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import java.io.IOException;
 
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @RunAsClient
 public abstract class MicroProfileHealthDisabledDefaultProceduresMultiWarTestBase {
     static final String SERVICE_ONE = "service-one";
@@ -45,7 +45,7 @@ public abstract class MicroProfileHealthDisabledDefaultProceduresMultiWarTestBas
     ManagementClient managementClient;
 
     @Test
-    public void testDisabledDefaultProcedures() throws IOException {
+    public void disabledDefaultProcedures() throws Exception {
         // 1. ready-service-one.war (automatically added)
         // 2. started-service-one.war (automatically added)
         // 3. MyReadyProbe (added by the service-two deployment)

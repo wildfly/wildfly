@@ -5,11 +5,10 @@
 
 package org.wildfly.test.integration.microprofile.openapi;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.endsWith;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.notNullValue;
-import static org.hamcrest.Matchers.nullValue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
 import java.io.StringWriter;
@@ -29,7 +28,7 @@ import org.jboss.arquillian.container.test.api.Deployer;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.container.ManagementClient;
@@ -39,8 +38,8 @@ import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.wildfly.test.integration.microprofile.openapi.filter.TestModelReader;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -52,7 +51,7 @@ import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
  * @author Paul Ferraro
  */
 @ServerSetup(OpenAPIMultipleDeploymentTestCase.ConfigServerSetupTask.class)
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @RunAsClient
 public class OpenAPIMultipleDeploymentTestCase {
     private static final String DEPLOYMENT1_NAME = "deployment-1";
@@ -115,7 +114,7 @@ public class OpenAPIMultipleDeploymentTestCase {
     private Deployer deployer;
 
     @Test
-    public void test() throws IOException, URISyntaxException, InterruptedException {
+    void test() throws Exception {
         HttpClient client = HttpClient.newHttpClient();
         JsonNode model = this.read(client);
         // OpenAPI model should use singleton properties from host, not deployment
@@ -142,33 +141,33 @@ public class OpenAPIMultipleDeploymentTestCase {
 
     private JsonNode read(HttpClient client) throws IOException, InterruptedException, URISyntaxException {
         HttpResponse<String> response = client.send(HttpRequest.newBuilder(this.baseURL.toURI().resolve("/openapi")).GET().build(), BodyHandlers.ofString(StandardCharsets.UTF_8));
-        assertThat(response.statusCode(), equalTo(HttpURLConnection.HTTP_OK));
-        assertThat(response.headers().firstValue("Content-Type").orElse(null), equalTo("application/yaml"));
+        assertEquals(HttpURLConnection.HTTP_OK, response.statusCode());
+        assertEquals("application/yaml", response.headers().firstValue("Content-Type").orElse(null));
         return new ObjectMapper(new YAMLFactory()).reader().readTree(response.body());
     }
 
     private static void verifySingletonProperties(JsonNode model, String titleSuffix) {
         String suffix = " for host";
-        assertThat(model.required("externalDocs").required("description").asText(), endsWith(suffix));
-        assertThat(model.required("externalDocs").required("url").asText(), endsWith(suffix));
-        assertThat(model.required("info").required("contact").required("email").asText(), endsWith(suffix));
-        assertThat(model.required("info").required("contact").required("name").asText(), endsWith(suffix));
-        assertThat(model.required("info").required("contact").required("url").asText(), endsWith(suffix));
-        assertThat(model.required("info").required("description").asText(), endsWith(suffix));
-        assertThat(model.required("info").required("license").required("identifier").asText(), endsWith(suffix));
-        assertThat(model.required("info").required("license").required("name").asText(), endsWith(suffix));
-        assertThat(model.required("info").required("license").required("url").asText(), endsWith(suffix));
-        assertThat(model.required("info").required("summary").asText(), endsWith(suffix));
-        assertThat(model.required("info").required("termsOfService").asText(), endsWith(suffix));
+        assertTrue(model.required("externalDocs").required("description").asText().endsWith(suffix));
+        assertTrue(model.required("externalDocs").required("url").asText().endsWith(suffix));
+        assertTrue(model.required("info").required("contact").required("email").asText().endsWith(suffix));
+        assertTrue(model.required("info").required("contact").required("name").asText().endsWith(suffix));
+        assertTrue(model.required("info").required("contact").required("url").asText().endsWith(suffix));
+        assertTrue(model.required("info").required("description").asText().endsWith(suffix));
+        assertTrue(model.required("info").required("license").required("identifier").asText().endsWith(suffix));
+        assertTrue(model.required("info").required("license").required("name").asText().endsWith(suffix));
+        assertTrue(model.required("info").required("license").required("url").asText().endsWith(suffix));
+        assertTrue(model.required("info").required("summary").asText().endsWith(suffix));
+        assertTrue(model.required("info").required("termsOfService").asText().endsWith(suffix));
         // Title not defined by host
         if (titleSuffix != null) {
-            assertThat(model.required("info").required("title").asText(), endsWith(titleSuffix));
+            assertTrue(model.required("info").required("title").asText().endsWith(titleSuffix));
         } else {
-            assertThat(model.required("info").get("title"), nullValue());
+            assertNull(model.required("info").get("title"));
         }
-        assertThat(model.required("info").required("version").asText(), endsWith(suffix));
-        assertThat(model.required("jsonSchemaDialect").asText(), endsWith(suffix));
-        assertThat(model.required("openapi").asText(), endsWith(suffix));
+        assertTrue(model.required("info").required("version").asText().endsWith(suffix));
+        assertTrue(model.required("jsonSchemaDialect").asText().endsWith(suffix));
+        assertTrue(model.required("openapi").asText().endsWith(suffix));
     }
 
     private static void verifyMapProperties(JsonNode model, String deploymentName, String deploymentPrefix) {
@@ -192,46 +191,46 @@ public class OpenAPIMultipleDeploymentTestCase {
         String schemaRef = deploymentPrefix + "schemaRef";
         String securityScheme = deploymentPrefix + "securityScheme";
         String securitySchemeRef = deploymentPrefix + "securitySchemeRef";
-        assertThat(model.required("components").required("callbacks").required(callback).required("callback-path").required("description").asText(), endsWith(deploymentName));
-        assertThat(model.required("components").required("callbacks").required(callbackRef).required("$ref").asText(), equalTo("#/components/callbacks/" + callback));
-        assertThat(model.required("components").required("examples").required(example).required("summary").asText(), endsWith(deploymentName));
-        assertThat(model.required("components").required("examples").required(exampleRef).required("$ref").asText(), equalTo("#/components/examples/" + example));
-        assertThat(model.required("components").required("headers").required(header).required("description").asText(), endsWith(deploymentName));
-        assertThat(model.required("components").required("headers").required(headerRef).required("$ref").asText(), equalTo("#/components/headers/" + header));
-        assertThat(model.required("components").required("links").required(link).required("description").asText(), endsWith(deploymentName));
-        assertThat(model.required("components").required("links").required(linkRef).required("$ref").asText(), equalTo("#/components/links/" + link));
-        assertThat(model.required("components").required("parameters").required(parameter).required("description").asText(), endsWith(deploymentName));
-        assertThat(model.required("components").required("parameters").required(parameterRef).required("$ref").asText(), equalTo("#/components/parameters/" + parameter));
-        assertThat(model.required("components").required("pathItems").required(pathItem).required("description").asText(), endsWith(deploymentName));
-        assertThat(model.required("components").required("pathItems").required(pathItemRef).required("$ref").asText(), equalTo("#/components/pathItems/" + pathItem));
-        assertThat(model.required("components").required("requestBodies").required(requestBody).required("description").asText(), endsWith(deploymentName));
-        assertThat(model.required("components").required("requestBodies").required(requestBodyRef).required("$ref").asText(), equalTo("#/components/requestBodies/" + requestBody));
-        assertThat(model.required("components").required("responses").required(response).required("description").asText(), endsWith(deploymentName));
-        assertThat(model.required("components").required("responses").required(responseRef).required("$ref").asText(), equalTo("#/components/responses/" + response));
-        assertThat(model.required("components").required("schemas").required(schema).required("description").asText(), endsWith(deploymentName));
-        assertThat(model.required("components").required("schemas").required(schemaRef).required("$ref").asText(), equalTo("#/components/schemas/" + schema));
-        assertThat(model.required("components").required("securitySchemes").required(securityScheme).required("description").asText(), endsWith(deploymentName));
-        assertThat(model.required("components").required("securitySchemes").required(securitySchemeRef).required("$ref").asText(), equalTo("#/components/securitySchemes/" + securityScheme));
-        assertThat(model.required("paths").required(String.format("/%s/path", deploymentName)).required("get").required("callbacks").required("operation-callback").required("$ref").asText(), equalTo("#/components/callbacks/" + callback));
-        assertThat(model.required("paths").required(String.format("/%s/path", deploymentName)).required("get").required("parameters").required(0).required("$ref").asText(), equalTo("#/components/parameters/" + parameter));
-        assertThat(model.required("paths").required(String.format("/%s/path", deploymentName)).required("get").required("requestBody").required("$ref").asText(), equalTo("#/components/requestBodies/" + requestBody));
-        assertThat(model.required("paths").required(String.format("/%s/path", deploymentName)).required("get").required("responses").required("operation-response-ref").required("$ref").asText(), equalTo("#/components/responses/" + response));
-        assertThat(model.required("paths").required(String.format("/%s/path", deploymentName)).required("get").required("responses").required("operation-response").required("content").required("media-type").required("examples").required("media-type-example").required("$ref").asText(), equalTo("#/components/examples/" + example));
-        assertThat(model.required("paths").required(String.format("/%s/path", deploymentName)).required("get").required("responses").required("operation-response").required("content").required("media-type").required("schema").required("$ref").asText(), equalTo("#/components/schemas/" + schema));
-        assertThat(model.required("paths").required(String.format("/%s/path", deploymentName)).required("get").required("responses").required("operation-response").required("headers").required("response-header").required("$ref").asText(), equalTo("#/components/headers/" + header));
-        assertThat(model.required("paths").required(String.format("/%s/path", deploymentName)).required("get").required("responses").required("operation-response").required("links").required("response-link").required("$ref").asText(), equalTo("#/components/links/" + link));
-        assertThat(model.required("paths").required(String.format("/%s/path", deploymentName)).required("get").required("tags").required(0).asText(), equalTo(deploymentPrefix + "tag"));
-        assertThat(model.required("paths").required(String.format("/%s/path-ref", deploymentName)).required("$ref").asText(), equalTo("#/components/pathItems/" + pathItem));
+        assertTrue(model.required("components").required("callbacks").required(callback).required("callback-path").required("description").asText().endsWith(deploymentName));
+        assertEquals(model.required("components").required("callbacks").required(callbackRef).required("$ref").asText(), "#/components/callbacks/" + callback);
+        assertTrue(model.required("components").required("examples").required(example).required("summary").asText().endsWith(deploymentName));
+        assertEquals(model.required("components").required("examples").required(exampleRef).required("$ref").asText(), "#/components/examples/" + example);
+        assertTrue(model.required("components").required("headers").required(header).required("description").asText().endsWith(deploymentName));
+        assertEquals(model.required("components").required("headers").required(headerRef).required("$ref").asText(), "#/components/headers/" + header);
+        assertTrue(model.required("components").required("links").required(link).required("description").asText().endsWith(deploymentName));
+        assertEquals(model.required("components").required("links").required(linkRef).required("$ref").asText(), "#/components/links/" + link);
+        assertTrue(model.required("components").required("parameters").required(parameter).required("description").asText().endsWith(deploymentName));
+        assertEquals(model.required("components").required("parameters").required(parameterRef).required("$ref").asText(), "#/components/parameters/" + parameter);
+        assertTrue(model.required("components").required("pathItems").required(pathItem).required("description").asText().endsWith(deploymentName));
+        assertEquals(model.required("components").required("pathItems").required(pathItemRef).required("$ref").asText(), "#/components/pathItems/" + pathItem);
+        assertTrue(model.required("components").required("requestBodies").required(requestBody).required("description").asText().endsWith(deploymentName));
+        assertEquals(model.required("components").required("requestBodies").required(requestBodyRef).required("$ref").asText(), "#/components/requestBodies/" + requestBody);
+        assertTrue(model.required("components").required("responses").required(response).required("description").asText().endsWith(deploymentName));
+        assertEquals(model.required("components").required("responses").required(responseRef).required("$ref").asText(), "#/components/responses/" + response);
+        assertTrue(model.required("components").required("schemas").required(schema).required("description").asText().endsWith(deploymentName));
+        assertEquals(model.required("components").required("schemas").required(schemaRef).required("$ref").asText(), "#/components/schemas/" + schema);
+        assertTrue(model.required("components").required("securitySchemes").required(securityScheme).required("description").asText().endsWith(deploymentName));
+        assertEquals(model.required("components").required("securitySchemes").required(securitySchemeRef).required("$ref").asText(), "#/components/securitySchemes/" + securityScheme);
+        assertEquals(model.required("paths").required(String.format("/%s/path", deploymentName)).required("get").required("callbacks").required("operation-callback").required("$ref").asText(), "#/components/callbacks/" + callback);
+        assertEquals(model.required("paths").required(String.format("/%s/path", deploymentName)).required("get").required("parameters").required(0).required("$ref").asText(), "#/components/parameters/" + parameter);
+        assertEquals(model.required("paths").required(String.format("/%s/path", deploymentName)).required("get").required("requestBody").required("$ref").asText(), "#/components/requestBodies/" + requestBody);
+        assertEquals(model.required("paths").required(String.format("/%s/path", deploymentName)).required("get").required("responses").required("operation-response-ref").required("$ref").asText(), "#/components/responses/" + response);
+        assertEquals(model.required("paths").required(String.format("/%s/path", deploymentName)).required("get").required("responses").required("operation-response").required("content").required("media-type").required("examples").required("media-type-example").required("$ref").asText(), "#/components/examples/" + example);
+        assertEquals(model.required("paths").required(String.format("/%s/path", deploymentName)).required("get").required("responses").required("operation-response").required("content").required("media-type").required("schema").required("$ref").asText(), "#/components/schemas/" + schema);
+        assertEquals(model.required("paths").required(String.format("/%s/path", deploymentName)).required("get").required("responses").required("operation-response").required("headers").required("response-header").required("$ref").asText(), "#/components/headers/" + header);
+        assertEquals(model.required("paths").required(String.format("/%s/path", deploymentName)).required("get").required("responses").required("operation-response").required("links").required("response-link").required("$ref").asText(), "#/components/links/" + link);
+        assertEquals(model.required("paths").required(String.format("/%s/path", deploymentName)).required("get").required("tags").required(0).asText(), deploymentPrefix + "tag");
+        assertEquals(model.required("paths").required(String.format("/%s/path-ref", deploymentName)).required("$ref").asText(), "#/components/pathItems/" + pathItem);
     }
 
     private static void verifyListProperties(JsonNode model, List<String> deploymentPrefix) {
-        assertThat(model.required("security").size(), equalTo(deploymentPrefix.size()));
+        assertEquals(model.required("security").size(), deploymentPrefix.size());
         for (int i = 0; i < deploymentPrefix.size(); ++i) {
-            assertThat(model.required("security").required(i).required(deploymentPrefix + "securityScheme"), notNullValue());
+            assertNotNull(model.required("security").required(i).required(deploymentPrefix + "securityScheme"));
         }
-        assertThat(model.required("tags").size(), equalTo(deploymentPrefix.size()));
+        assertEquals(model.required("tags").size(), deploymentPrefix.size());
         for (int i = 0; i < deploymentPrefix.size(); ++i) {
-            assertThat(model.required("tags").required(i).required("name"), equalTo(deploymentPrefix + "tag"));
+            assertEquals(model.required("tags").required(i).required("name"), deploymentPrefix + "tag");
         }
     }
 

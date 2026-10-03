@@ -5,6 +5,9 @@
 
 package org.wildfly.test.integration.microprofile.restclient.deployment;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+
 import java.io.IOException;
 import java.io.StringWriter;
 import java.net.URI;
@@ -17,7 +20,6 @@ import jakarta.ws.rs.core.UriBuilder;
 import org.jboss.as.test.shared.TestSuiteEnvironment;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
-import org.junit.Assert;
 import org.wildfly.test.integration.microprofile.restclient.deployment.model.Message;
 
 /**
@@ -46,9 +48,9 @@ abstract class AbstractDeploymentTest {
      */
     Message readMessage(final Client client, final URI uri) {
         try (Response response = client.target(uri).request().get()) {
-            Assert.assertEquals(200, response.getStatus());
+            assertEquals(200, response.getStatus());
             final Message message = response.readEntity(Message.class);
-            Assert.assertNotNull(message);
+            assertNotNull(message);
             return message;
         }
     }

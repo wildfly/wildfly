@@ -5,8 +5,9 @@
 
 package org.wildfly.test.integration.microprofile.openapi;
 
-import java.io.IOException;
-import java.net.URISyntaxException;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+
 import java.net.URL;
 
 import jakarta.servlet.http.HttpServletResponse;
@@ -20,7 +21,7 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -28,9 +29,8 @@ import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.wildfly.test.integration.microprofile.openapi.service.TestApplication;
 import org.wildfly.test.integration.microprofile.openapi.service.multimodule.TestEjb;
 import org.wildfly.test.integration.microprofile.openapi.service.multimodule.TestRequest;
@@ -43,7 +43,7 @@ import org.wildfly.test.integration.microprofile.openapi.service.multimodule.Tes
  *
  * @author Joachim Grimm
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @RunAsClient
 public class OpenAPIMultiModuleDeploymentIndexTestCase {
 
@@ -71,17 +71,17 @@ public class OpenAPIMultiModuleDeploymentIndexTestCase {
     }
 
     @Test
-    public void test(@ArquillianResource URL baseURL) throws IOException, URISyntaxException {
+    void test(@ArquillianResource URL baseURL) throws Exception {
         try (CloseableHttpClient client = HttpClientBuilder.create().build()) {
             try (CloseableHttpResponse response = client.execute(new HttpGet(baseURL.toURI().resolve("/openapi")))) {
-                Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
-                Assert.assertEquals("application/yaml", response.getEntity().getContentType().getValue());
+                assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
+                assertEquals("application/yaml", response.getEntity().getContentType().getValue());
                 JsonNode node =
                         new ObjectMapper(new YAMLFactory()).reader().readTree(response.getEntity().getContent());
                 JsonNode schemas = node.get("components").get("schemas");
-                Assert.assertNotNull(schemas);
-                Assert.assertNotNull(schemas.get("TestRequest"));
-                Assert.assertNotNull(schemas.get("TestResponse"));
+                assertNotNull(schemas);
+                assertNotNull(schemas.get("TestRequest"));
+                assertNotNull(schemas.get("TestResponse"));
             }
         }
     }

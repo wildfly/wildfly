@@ -6,6 +6,11 @@
 package org.wildfly.test.integration.microprofile.reactive.messaging.kafka.api;
 
 import static org.jboss.as.test.shared.PermissionUtils.createPermissionsXmlAsset;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -26,23 +31,22 @@ import org.apache.kafka.common.header.Headers;
 import org.apache.kafka.common.record.TimestampType;
 import org.eclipse.microprofile.reactive.messaging.Message;
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.test.shared.CLIServerSetupTask;
 import org.jboss.as.test.shared.TimeoutUtil;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.wildfly.test.integration.microprofile.reactive.EnableReactiveExtensionsSetupTask;
 import org.wildfly.test.integration.microprofile.reactive.RunKafkaSetupTask;
 
 /**
  * @author <a href="mailto:kabir.khan@jboss.com">Kabir Khan</a>
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @ServerSetup({ReactiveMessagingKafkaUserApiTestCase.CustomRunKafkaSetupTask.class, EnableReactiveExtensionsSetupTask.class})
 @TestcontainersRequired
 public class ReactiveMessagingKafkaUserApiTestCase {
@@ -85,46 +89,46 @@ public class ReactiveMessagingKafkaUserApiTestCase {
      * - the timestamp and type are set, and that the timestamp matches if we set it ourselves in the outgoing metadata
      */
     @Test
-    public void testOutgoingAndIncomingMetadataExtensively() throws InterruptedException {
+    void outgoingAndIncomingMetadataExtensively() throws Exception {
         inDepthMetadataBean.getLatch().await(TIMEOUT, TimeUnit.MILLISECONDS);
         Map<Integer, IncomingKafkaRecordMetadata<String, Integer>> map = inDepthMetadataBean.getMetadatas();
 
-        Assert.assertEquals(6, map.size());
+        assertEquals(6, map.size());
         Map<Integer, Set<Long>> offsetsByPartition = new HashMap<>();
 
         for (int i = 1; i <= 6; i++) {
             IncomingKafkaRecordMetadata metadata = map.get(i);
-            Assert.assertNotNull(metadata);
+            assertNotNull(metadata);
             if (i != 6) {
-                Assert.assertEquals("KEY-" + i, metadata.getKey());
+                assertEquals("KEY-" + i, metadata.getKey());
             } else {
-                Assert.assertNull(metadata.getKey());
+                assertNull(metadata.getKey());
             }
-            Assert.assertEquals("testing1", metadata.getTopic());
+            assertEquals("testing1", metadata.getTopic());
             Set<Long> offsets = offsetsByPartition.get(metadata.getPartition());
             if (offsets == null) {
                 offsets = new HashSet<>();
                 offsetsByPartition.put(metadata.getPartition(), offsets);
             }
             offsets.add(metadata.getOffset());
-            Assert.assertNotNull(metadata.getTimestamp());
+            assertNotNull(metadata.getTimestamp());
             if (i == 5) {
-                Assert.assertEquals(inDepthMetadataBean.getTimestampEntry5Topic1(), metadata.getTimestamp());
+                assertEquals(inDepthMetadataBean.getTimestampEntry5Topic1(), metadata.getTimestamp());
             }
-            Assert.assertEquals(TimestampType.CREATE_TIME, metadata.getTimestampType());
-            Assert.assertNotNull(metadata.getRecord());
+            assertEquals(TimestampType.CREATE_TIME, metadata.getTimestampType());
+            assertNotNull(metadata.getRecord());
 
             Headers headers = metadata.getHeaders();
             if (i != 5) {
-                Assert.assertEquals(0, headers.toArray().length);
+                assertEquals(0, headers.toArray().length);
             } else {
-                Assert.assertEquals(1, headers.toArray().length);
+                assertEquals(1, headers.toArray().length);
                 Header header = headers.toArray()[0];
-                Assert.assertEquals("simple", header.key());
-                Assert.assertArrayEquals(new byte[]{0, 1, 2}, header.value());
+                assertEquals("simple", header.key());
+                assertArrayEquals(new byte[]{0, 1, 2}, header.value());
             }
         }
-        Assert.assertEquals(6, checkOffsetsByPartitionAndCalculateTotalEntries(offsetsByPartition));
+        assertEquals(6, checkOffsetsByPartitionAndCalculateTotalEntries(offsetsByPartition));
     }
 
     private int checkOffsetsByPartitionAndCalculateTotalEntries(Map<Integer, Set<Long>> offsetsByPartition) {
@@ -134,7 +138,7 @@ public class ReactiveMessagingKafkaUserApiTestCase {
             long size = offsets.size();
             total += size;
             for (long l = 0; l < size; l++) {
-                Assert.assertTrue(offsets.contains(l));
+                assertTrue(offsets.contains(l));
             }
         }
         return total;
@@ -144,26 +148,26 @@ public class ReactiveMessagingKafkaUserApiTestCase {
      * The outgoing method is configured to send to a given topic. We test that we can successfully set this topic via metadata
      */
     @Test
-    public void testOverrideDefaultTopicWhenOneIsSetInTheConfig() throws InterruptedException {
+    void overrideDefaultTopicWhenOneIsSetInTheConfig() throws Exception {
         configuredToSendToTopicAndOverrideTopicForSomeMessagesBean.getLatch().await(TIMEOUT, TimeUnit.MILLISECONDS);
         Map<Integer, IncomingKafkaRecordMetadata<String, Integer>> map2 =
                 configuredToSendToTopicAndOverrideTopicForSomeMessagesBean.getTesting2Metadatas();
         Map<Integer, IncomingKafkaRecordMetadata<String, Integer>> map3 =
                 configuredToSendToTopicAndOverrideTopicForSomeMessagesBean.getTesting3Metadatas();
 
-        Assert.assertEquals(2, map2.size());
-        Assert.assertEquals(2, map3.size());
+        assertEquals(2, map2.size());
+        assertEquals(2, map3.size());
 
         // Do some less in-depth checks here, than in the testIncomingMetadata() method, focussing on what we have set
         for (int i = 1; i <= 2; i++) {
             IncomingKafkaRecordMetadata metadata = map2.get(i);
-            Assert.assertNotNull(metadata);
-            Assert.assertEquals("testing2", metadata.getTopic());
+            assertNotNull(metadata);
+            assertEquals("testing2", metadata.getTopic());
         }
         for (int i = 3; i <= 4; i++) {
             IncomingKafkaRecordMetadata metadata = map3.get(i);
-            Assert.assertNotNull(metadata);
-            Assert.assertEquals("testing3", metadata.getTopic());
+            assertNotNull(metadata);
+            assertEquals("testing3", metadata.getTopic());
         }
     }
 
@@ -171,26 +175,26 @@ public class ReactiveMessagingKafkaUserApiTestCase {
      * The outgoing method doesn't have any topic configured. We test that we can successfully set this topic via metadata
      */
     @Test
-    public void testNoTopicConfiguredOverrideForAllMessages() throws InterruptedException {
+    void noTopicConfiguredOverrideForAllMessages() throws Exception {
         noTopicSetupOverrideForAllMessagesBean.getLatch().await(TIMEOUT, TimeUnit.MILLISECONDS);
         Map<Integer, IncomingKafkaRecordMetadata<String, Integer>> map4 =
                 noTopicSetupOverrideForAllMessagesBean.getTesting4Metadatas();
         Map<Integer, IncomingKafkaRecordMetadata<String, Integer>> map5 =
                 noTopicSetupOverrideForAllMessagesBean.getTesting5Metadatas();
 
-        Assert.assertEquals(3, map4.size());
-        Assert.assertEquals(3, map5.size());
+        assertEquals(3, map4.size());
+        assertEquals(3, map5.size());
 
         // Do some less in-depth checks here, than in the testIncomingMetadata() method, focussing on what we have set
         for (int i = 1; i <= 6; i += 2) {
             IncomingKafkaRecordMetadata metadata = map4.get(i);
-            Assert.assertNotNull(metadata);
-            Assert.assertEquals("testing4", metadata.getTopic());
+            assertNotNull(metadata);
+            assertEquals("testing4", metadata.getTopic());
         }
         for (int i = 2; i <= 5; i += 2) {
             IncomingKafkaRecordMetadata metadata = map5.get(i);
-            Assert.assertNotNull(metadata);
-            Assert.assertEquals("testing5", metadata.getTopic());
+            assertNotNull(metadata);
+            assertEquals("testing5", metadata.getTopic());
         }
     }
 
@@ -199,7 +203,7 @@ public class ReactiveMessagingKafkaUserApiTestCase {
      * There are two sets of each - the first specifies 1 as the partition for the specified ones, the second does 2.
      */
     @Test
-    public void testSpecifyPartition() throws InterruptedException {
+    void specifyPartition() throws Exception {
         specifyPartitionBean.getLatch().await(TIMEOUT, TimeUnit.MILLISECONDS);
 
         checkSpecifiedPartitionMetadatas(
@@ -217,23 +221,23 @@ public class ReactiveMessagingKafkaUserApiTestCase {
             Map<Integer, IncomingKafkaRecordMetadata<String, Integer>> unspecifiedPartitions,
             Map<Integer, IncomingKafkaRecordMetadata<String, Integer>> specifiedPartitions,
             int expectedSpecifiedPartition) {
-        Assert.assertEquals(10, unspecifiedPartitions.size());
-        Assert.assertEquals(10, specifiedPartitions.size());
+        assertEquals(10, unspecifiedPartitions.size());
+        assertEquals(10, specifiedPartitions.size());
         Set<Integer> partitionsSeen6 = new HashSet<>();
         for (int i = 1; i <= 10; i++) {
             IncomingKafkaRecordMetadata metadata = unspecifiedPartitions.get(i);
-            Assert.assertNotNull(metadata);
+            assertNotNull(metadata);
             partitionsSeen6.add(metadata.getPartition());
         }
         // The partitioner spreads these records over the two partitions that seem to be created
         // I am missing the magic to be able to control how many partitions are set up by the embedded server,
         // currently there are two. If this check becomes problematic it can be removed
-        Assert.assertTrue(partitionsSeen6.toString(), partitionsSeen6.size() > 1);
+        assertTrue(partitionsSeen6.size() > 1, partitionsSeen6.toString());
 
         for (int i = 11; i <= 20; i++) {
             IncomingKafkaRecordMetadata metadata = specifiedPartitions.get(i);
-            Assert.assertNotNull(metadata);
-            Assert.assertEquals(expectedSpecifiedPartition, metadata.getPartition());
+            assertNotNull(metadata);
+            assertEquals(expectedSpecifiedPartition, metadata.getPartition());
         }
     }
 

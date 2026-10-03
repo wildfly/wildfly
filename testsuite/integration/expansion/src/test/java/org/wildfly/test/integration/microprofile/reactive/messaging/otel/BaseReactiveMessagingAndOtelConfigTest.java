@@ -1,7 +1,8 @@
 package org.wildfly.test.integration.microprofile.reactive.messaging.otel;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.wildfly.extension.microprofile.reactive.messaging.MicroProfileReactiveMessagingExtension.SUBSYSTEM_NAME;
 
 import java.io.BufferedReader;
@@ -20,10 +21,9 @@ import org.jboss.as.test.integration.management.base.AbstractCliTestBase;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.wildfly.microprofile.reactive.messaging.config.TracingType;
 import org.wildfly.test.integration.microprofile.reactive.messaging.otel.application.ConfigBeanAndEndpoint;
 import org.wildfly.test.integration.microprofile.reactive.messaging.otel.application.TestReactiveMessagingOtelApplication;
@@ -52,12 +52,12 @@ public abstract class BaseReactiveMessagingAndOtelConfigTest {
     private final String tracingAttributeName;
 
 
-    @BeforeClass
+    @BeforeAll
     public static void before() throws Exception {
         AbstractCliTestBase.initCLI();
     }
 
-    @AfterClass
+    @AfterAll
     public static void after() throws Exception {
         AbstractCliTestBase.closeCLI();
     }
@@ -77,78 +77,78 @@ public abstract class BaseReactiveMessagingAndOtelConfigTest {
     }
 
     @Test
-    public void testNoConnectorOtelResourceAndMPConfigTracingUndefined() throws Exception {
+    public void noConnectorOtelResourceAndMPConfigTracingUndefined() throws Exception {
         ensureNoSubsystemConfigResourceAndSetSystemPropertyAndCheck(null, false);
     }
 
     @Test
-    public void testNoConnectorOtelResourceAndMPConfigTracingTrue() throws Exception {
+    public void noConnectorOtelResourceAndMPConfigTracingTrue() throws Exception {
         ensureNoSubsystemConfigResourceAndSetSystemPropertyAndCheck(true, false);
     }
 
     @Test
-    public void testNoConnectorOtelResourceAndMPConfigTracingFalse() throws Exception {
+    public void noConnectorOtelResourceAndMPConfigTracingFalse() throws Exception {
         ensureNoSubsystemConfigResourceAndSetSystemPropertyAndCheck(false, false);
     }
 
     @Test
-    public void testConnectorOtelResourceNeverAndMPConfigTracingUndefined() throws Exception {
+    public void connectorOtelResourceNeverAndMPConfigTracingUndefined() throws Exception {
         adjustSubsystemConfigAndSystemPropertyAndCheck(TracingType.NEVER, null, false);
     }
 
     @Test
-    public void testConnectorOtelResourceNeverAndMPConfigTracingTrue() throws Exception {
+    public void connectorOtelResourceNeverAndMPConfigTracingTrue() throws Exception {
         adjustSubsystemConfigAndSystemPropertyAndCheck(TracingType.NEVER, true, false);
     }
 
     @Test
-    public void testConnectorOtelResourceNeverAndMPConfigTracingFalse() throws Exception {
+    public void connectorOtelResourceNeverAndMPConfigTracingFalse() throws Exception {
         adjustSubsystemConfigAndSystemPropertyAndCheck(TracingType.NEVER, false, false);
     }
 
     @Test
-    public void testConnectorOtelResourceOffAndMPConfigTracingUndefined() throws Exception {
+    public void connectorOtelResourceOffAndMPConfigTracingUndefined() throws Exception {
         adjustSubsystemConfigAndSystemPropertyAndCheck(TracingType.OFF, null, false);
     }
 
     @Test
-    public void testConnectorOtelResourceOffAndMPConfigTracingTrue() throws Exception {
+    public void connectorOtelResourceOffAndMPConfigTracingTrue() throws Exception {
         adjustSubsystemConfigAndSystemPropertyAndCheck(TracingType.OFF, true, true);
     }
 
     @Test
-    public void testConnectorOtelResourceOffAndMPConfigTracingFalse() throws Exception {
+    public void connectorOtelResourceOffAndMPConfigTracingFalse() throws Exception {
         adjustSubsystemConfigAndSystemPropertyAndCheck(TracingType.OFF, false, false);
     }
 
 
     @Test
-    public void testConnectorOtelResourceOnAndMPConfigTracingUndefined() throws Exception {
+    public void connectorOtelResourceOnAndMPConfigTracingUndefined() throws Exception {
         adjustSubsystemConfigAndSystemPropertyAndCheck(TracingType.ON, null, true);
     }
 
     @Test
-    public void testConnectorOtelResourceOnAndMPConfigTracingTrue() throws Exception {
+    public void connectorOtelResourceOnAndMPConfigTracingTrue() throws Exception {
         adjustSubsystemConfigAndSystemPropertyAndCheck(TracingType.ON, true, true);
     }
 
     @Test
-    public void testConnectorOtelResourceOnAndMPConfigTracingFalse() throws Exception {
+    public void connectorOtelResourceOnAndMPConfigTracingFalse() throws Exception {
         adjustSubsystemConfigAndSystemPropertyAndCheck(TracingType.ON, false, false);
     }
 
     @Test
-    public void testConnectorOtelResourceAlwaysAndMPConfigTracingUndefined() throws Exception {
+    public void connectorOtelResourceAlwaysAndMPConfigTracingUndefined() throws Exception {
         adjustSubsystemConfigAndSystemPropertyAndCheck(TracingType.ALWAYS, null, true);
     }
 
     @Test
-    public void testConnectorOtelResourceAlwaysAndMPConfigTracingTrue() throws Exception {
+    public void connectorOtelResourceAlwaysAndMPConfigTracingTrue() throws Exception {
         adjustSubsystemConfigAndSystemPropertyAndCheck(TracingType.ALWAYS, true, true);
     }
 
     @Test
-    public void testConnectorOtelResourceAlwaysAndMPConfigTracingFalse() throws Exception {
+    public void connectorOtelResourceAlwaysAndMPConfigTracingFalse() throws Exception {
         adjustSubsystemConfigAndSystemPropertyAndCheck(TracingType.ALWAYS, false, true);
     }
 
@@ -158,7 +158,7 @@ public abstract class BaseReactiveMessagingAndOtelConfigTest {
         ReactiveMessagingOtelUtils.setTracingConfigSystemProperty(managementClient.getControllerClient(), tracingPropertyName, property);
         ReactiveMessagingOtelUtils.reload(managementClient.getControllerClient());
         boolean calculatedValue = readEffectiveTracingEnabledValueFromConfig();
-        Assert.assertEquals(expectedConfigValue, calculatedValue);
+        assertEquals(expectedConfigValue, calculatedValue);
     }
 
     private void adjustSubsystemConfigAndSystemPropertyAndCheck(TracingType subsystemAttributeValue,
@@ -168,7 +168,7 @@ public abstract class BaseReactiveMessagingAndOtelConfigTest {
         ReactiveMessagingOtelUtils.setConnectorTracingType(managementClient.getControllerClient(), tracingAttributeName, subsystemAttributeValue);
         ReactiveMessagingOtelUtils.reload(managementClient.getControllerClient());
         boolean calculatedValue = readEffectiveTracingEnabledValueFromConfig();
-        Assert.assertEquals(expectedConfigValue, calculatedValue);
+        assertEquals(expectedConfigValue, calculatedValue);
     }
 
     private boolean readEffectiveTracingEnabledValueFromConfig() throws Exception {
@@ -178,7 +178,7 @@ public abstract class BaseReactiveMessagingAndOtelConfigTest {
                 assertEquals(200, response.getStatusLine().getStatusCode());
                 try (BufferedReader reader = new BufferedReader(new InputStreamReader(response.getEntity().getContent()))) {
                     String line = reader.readLine();
-                    Assert.assertNotNull(line);
+                    assertNotNull(line);
                     return Boolean.parseBoolean(line);
                 }
             }

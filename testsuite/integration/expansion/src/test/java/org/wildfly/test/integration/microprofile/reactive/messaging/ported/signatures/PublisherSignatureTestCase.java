@@ -28,16 +28,16 @@ import org.eclipse.microprofile.reactive.messaging.Outgoing;
 import org.eclipse.microprofile.reactive.streams.operators.PublisherBuilder;
 import org.eclipse.microprofile.reactive.streams.operators.ReactiveStreams;
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.test.shared.CLIServerSetupTask;
 import org.jboss.as.test.shared.TimeoutUtil;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.After;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.reactivestreams.Publisher;
 import org.reactivestreams.Subscriber;
 import org.reactivestreams.Subscription;
@@ -50,7 +50,7 @@ import org.wildfly.test.integration.microprofile.reactive.messaging.ported.utils
  * @author <a href="mailto:kabir.khan@jboss.com">Kabir Khan</a>
  */
 @ServerSetup(EnableReactiveExtensionsSetupTask.class)
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class PublisherSignatureTestCase {
 
     @Deployment
@@ -94,8 +94,8 @@ public class PublisherSignatureTestCase {
     @Inject
     BeanProducingMessagesAsynchronously beanProducingMessagesAsynchronously;
 
-    @After
-    public void closing() {
+    @AfterEach
+    void closing() {
         beanProducingAPublisherOfMessage.close();
         beanProducingAPublisherOfPayload.close();
         beanProducingAPublisherBuilderOfMessage.close();
@@ -107,7 +107,7 @@ public class PublisherSignatureTestCase {
     }
 
     @Test
-    public void test() {
+    void test() {
         check(beanProducingAPublisherBuilderOfMessage);
         check(beanProducingAPublisherOfPayload);
         check(beanProducingAPublisherBuilderOfMessage);

@@ -5,7 +5,9 @@
 
 package org.wildfly.test.integration.microprofile.reactive.messaging.multiple.earmodule;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -26,7 +28,7 @@ import org.apache.http.message.BasicNameValuePair;
 import org.arquillian.testcontainers.api.TestcontainersRequired;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.test.shared.TimeoutUtil;
@@ -37,9 +39,8 @@ import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.wildfly.test.integration.microprofile.reactive.EnableReactiveExtensionsSetupTask;
 import org.wildfly.test.integration.microprofile.reactive.RunArtemisAmqpSetupTask;
 import org.wildfly.test.integration.microprofile.reactive.RunKafkaSetupTask;
@@ -52,7 +53,7 @@ import org.wildfly.test.integration.microprofile.reactive.messaging.multiple.ear
  * Within an EAR file the channel names need to be unique. e.g. We can't use the same channel names for the
  * contained Kafka and AMQP subdeployments
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @RunAsClient
 @ServerSetup({RunKafkaSetupTask.class, RunArtemisAmqpSetupTask.class, EnableReactiveExtensionsSetupTask.class})
 @TestcontainersRequired
@@ -95,7 +96,7 @@ public class MultiEarModuleReactiveMessagingTestCase {
     }
 
     @Test
-    public void testMultipleReactiveMessagingModules() throws Exception {
+    void multipleReactiveMessagingModules() throws Exception {
         try (CloseableHttpClient client = HttpClientBuilder.create().build()){
             postData(client, "multi/invm", "VM-1");
             postData(client, "multi/invm", "VM-2");
@@ -138,15 +139,15 @@ public class MultiEarModuleReactiveMessagingTestCase {
             }
 
             for (int i = 0; i < expected.length; i++) {
-                Assert.assertTrue(lines.get(i).contains(expected[i]));
+                assertTrue(lines.get(i).contains(expected[i]));
             }
             ok = true;
             break;
         }
         if (ok) {
-            Assert.assertEquals(expected.length, lines.size());
+            assertEquals(expected.length, lines.size());
         } else {
-            Assert.fail("Timeout reading " + path);
+            fail("Timeout reading " + path);
         }
     }
 

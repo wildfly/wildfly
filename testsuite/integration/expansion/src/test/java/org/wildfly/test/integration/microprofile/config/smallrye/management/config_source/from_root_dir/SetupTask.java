@@ -9,6 +9,8 @@ import static org.wildfly.test.integration.microprofile.config.smallrye.manageme
 import static org.wildfly.test.integration.microprofile.config.smallrye.management.config_source.from_root_dir.TestApplication.NOT_AVAILABLE_ROOT_FILE;
 import static org.wildfly.test.integration.microprofile.config.smallrye.management.config_source.from_root_dir.TestApplication.Y_A_OVERRIDES_B;
 import static org.wildfly.test.integration.microprofile.config.smallrye.management.config_source.from_root_dir.TestApplication.X_D_OVERRIDES_A;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.wildfly.test.integration.microprofile.config.smallrye.management.config_source.from_root_dir.TestApplication.FROM_A1;
 import static org.wildfly.test.integration.microprofile.config.smallrye.management.config_source.from_root_dir.TestApplication.FROM_A2;
 import static org.wildfly.test.integration.microprofile.config.smallrye.management.config_source.from_root_dir.TestApplication.FROM_B;
@@ -25,7 +27,6 @@ import java.util.Collections;
 
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.test.shared.CLIServerSetupTask;
-import org.junit.Assert;
 
 /**
  * Adds config-source-roots in the microprofile-config subsystem.
@@ -61,12 +62,12 @@ public class SetupTask extends CLIServerSetupTask {
         Path target = Paths.get("target").toAbsolutePath().normalize();
         rootDir1 = Files.createTempDirectory(target, "test1");
         rootDir2 = Files.createTempDirectory(target, "test2");
-        Assert.assertTrue(Files.exists(rootDir1));
-        Assert.assertTrue(Files.exists(rootDir2));
+        assertTrue(Files.exists(rootDir1));
+        assertTrue(Files.exists(rootDir2));
 
         nonExistent = Files.createTempDirectory(target, "duff");
         deleteDirectory(nonExistent);
-        Assert.assertFalse(Files.exists(nonExistent));
+        assertFalse(Files.exists(nonExistent));
 
         // Since PROPS_A is alphabetically lower than PROPS_B, Y will come from PROPS_A
         Path dirA = createPropsDir(rootDir1, PROPS_A, FROM_A1, A1, FROM_A2, A2, X_D_OVERRIDES_A, X_FROM_A, Y_A_OVERRIDES_B, Y_FROM_A, Z_C_OVERRIDES_A, Z_FROM_A);
@@ -109,12 +110,12 @@ public class SetupTask extends CLIServerSetupTask {
     private Path createPropsDir(Path rootDir, String sourceName, String... props) throws IOException {
         Path sourceDir = rootDir.resolve(sourceName);
         Files.createDirectory(sourceDir);
-        Assert.assertTrue(Files.exists(sourceDir));
+        assertTrue(Files.exists(sourceDir));
 
         for (int i = 0 ; i < props.length ; i += 2) {
             Path file = sourceDir.resolve(props[i]);
             Files.createFile(file);
-            Assert.assertTrue(Files.exists(file));
+            assertTrue(Files.exists(file));
             Files.write(file, Collections.singletonList(props[i + 1]));
         }
         return sourceDir.toAbsolutePath().normalize();

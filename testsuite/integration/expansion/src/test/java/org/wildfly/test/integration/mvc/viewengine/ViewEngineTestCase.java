@@ -12,7 +12,7 @@ import java.io.IOException;
 import org.jboss.arquillian.container.test.api.Deployer;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.test.shared.CdiUtils;
@@ -20,12 +20,12 @@ import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.wildfly.test.integration.mvc.MVCTestUtil;
 import org.wildfly.test.stabilitylevel.StabilityServerSetupSnapshotRestoreTasks;
 
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @RunAsClient
 @ServerSetup({StabilityServerSetupSnapshotRestoreTasks.Preview.class, MVCTestUtil.ServerSetup.class})
 public class ViewEngineTestCase {
@@ -70,17 +70,17 @@ public class ViewEngineTestCase {
     private Deployer deployer;
 
     @Test
-    public void testWarLib() throws IOException {
+    void warLib() throws Exception {
         test(WAR_WITH_LIB, WAR_WITH_LIB);
     }
 
     @Test
-    public void testEarLib() throws IOException {
+    void earLib() throws Exception {
         test(EAR_WITH_LIB, SIMPLE_WAR);
     }
 
     @Test
-    public void testWarLibInEar() throws IOException {
+    void warLibInEar() throws Exception {
         test(SIMPLE_EAR, WAR_WITH_LIB);
     }
 

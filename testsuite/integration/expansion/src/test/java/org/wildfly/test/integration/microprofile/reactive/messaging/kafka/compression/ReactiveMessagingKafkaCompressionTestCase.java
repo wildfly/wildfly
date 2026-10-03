@@ -5,10 +5,13 @@
 
 package org.wildfly.test.integration.microprofile.reactive.messaging.kafka.compression;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import jakarta.inject.Inject;
 import org.arquillian.testcontainers.api.TestcontainersRequired;
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.test.shared.CLIServerSetupTask;
 import org.jboss.as.test.shared.PermissionUtils;
@@ -16,14 +19,12 @@ import org.jboss.as.test.shared.TimeoutUtil;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.wildfly.microprofile.reactive.messaging.config.kafka.ssl.context.KafkaClientCustomizer;
 import org.wildfly.security.manager.WildFlySecurityManager;
 import org.wildfly.test.integration.microprofile.reactive.EnableReactiveExtensionsSetupTask;
 import org.wildfly.test.integration.microprofile.reactive.RunKafkaSetupTask;
-
 
 import java.util.Arrays;
 import java.util.HashSet;
@@ -35,7 +36,7 @@ import java.util.concurrent.TimeUnit;
 /**
  * @author <a href="mailto:kabir.khan@jboss.com">Kabir Khan</a>
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @ServerSetup({RunKafkaSetupTask.class, EnableReactiveExtensionsSetupTask.class})
 @TestcontainersRequired
 public class ReactiveMessagingKafkaCompressionTestCase {
@@ -84,17 +85,17 @@ public class ReactiveMessagingKafkaCompressionTestCase {
     }
 
     @Test
-    public void test() throws InterruptedException {
+    void test() throws Exception {
         bean.sendGzip("Hello");
         bean.sendSnappy("World");
         bean.sendLz4("of");
         bean.sendZstd("Reactive");
 
         boolean wait = bean.getLatch().await(TIMEOUT, TimeUnit.MILLISECONDS);
-        Assert.assertTrue("Timed out waiting for Kafka records; received " + bean.getWords(), wait);
+        assertTrue(wait, "Timed out waiting for Kafka records; received " + bean.getWords());
         Set<String> expected = new HashSet<>(Arrays.asList("Hello", "World", "of", "Reactive"));
-        Assert.assertEquals(expected.size(), bean.getWords().size());
-        Assert.assertTrue("Expected " + bean.getWords() + " to contain all of " + expected, bean.getWords().containsAll(expected));
+        assertEquals(expected.size(), bean.getWords().size());
+        assertTrue(bean.getWords().containsAll(expected), "Expected " + bean.getWords() + " to contain all of " + expected);
 
     }
 }

@@ -5,6 +5,7 @@
 
 package org.wildfly.test.integration.microprofile.config.smallrye.management.config_source.from_dir;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.wildfly.test.integration.microprofile.config.smallrye.management.config_source.from_dir.SetupTask.A;
 import static org.wildfly.test.integration.microprofile.config.smallrye.management.config_source.from_dir.SetupTask.B;
 import static org.wildfly.test.integration.microprofile.config.smallrye.management.config_source.from_dir.TestApplication.B_OVERRIDES_A;
@@ -23,16 +24,15 @@ import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.util.EntityUtils;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.wildfly.test.integration.microprofile.config.smallrye.AbstractMicroProfileConfigTestCase;
 import org.wildfly.test.integration.microprofile.config.smallrye.AssertUtils;
 
@@ -41,7 +41,7 @@ import org.wildfly.test.integration.microprofile.config.smallrye.AssertUtils;
  *
  * @author <a href="http://jmesnil.net/">Jeff Mesnil</a> (c) 2017 Red Hat inc.
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @RunAsClient
 @ServerSetup({SetupTask.class})
 public class ConfigSourceFromDirTestCase extends AbstractMicroProfileConfigTestCase {
@@ -57,10 +57,10 @@ public class ConfigSourceFromDirTestCase extends AbstractMicroProfileConfigTestC
     private URL url;
 
     @Test
-    public void testGetWithConfigProperties() throws Exception {
+    void getWithConfigProperties() throws Exception {
         try (CloseableHttpClient client = HttpClientBuilder.create().build()) {
             HttpResponse response = client.execute(new HttpGet(url + "custom-config-source/test"));
-            Assert.assertEquals(200, response.getStatusLine().getStatusCode());
+            assertEquals(200, response.getStatusLine().getStatusCode());
             String text = EntityUtils.toString(response.getEntity());
             AssertUtils.assertTextContainsProperty(text, FROM_A, A);
             AssertUtils.assertTextContainsProperty(text, FROM_B, B);

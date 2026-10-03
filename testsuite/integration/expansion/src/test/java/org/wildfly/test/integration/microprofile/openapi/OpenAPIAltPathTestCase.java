@@ -5,8 +5,12 @@
 
 package org.wildfly.test.integration.microprofile.openapi;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+
 import java.io.IOException;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.LinkedList;
 import java.util.List;
@@ -21,16 +25,15 @@ import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.util.EntityUtils;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.wildfly.test.integration.microprofile.openapi.service.TestApplication;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -41,7 +44,7 @@ import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
  * Validates usage of "mp.openapi.extensions.path" configuration property.
  * @author Paul Ferraro
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @RunAsClient
 public class OpenAPIAltPathTestCase {
     private static final String DEPLOYMENT_NAME = OpenAPIAltPathTestCase.class.getSimpleName() + ".war";
@@ -56,19 +59,19 @@ public class OpenAPIAltPathTestCase {
     }
 
     @Test
-    public void test(@ArquillianResource URL baseURL) throws IOException, URISyntaxException {
+    void test(@ArquillianResource URL baseURL) throws Exception {
         try (CloseableHttpClient client = HttpClientBuilder.create().build()) {
             try (CloseableHttpResponse response = client.execute(new HttpGet(baseURL.toURI().resolve("/openapi")))) {
-                Assert.assertEquals(HttpServletResponse.SC_NOT_FOUND, response.getStatusLine().getStatusCode());
+                assertEquals(HttpServletResponse.SC_NOT_FOUND, response.getStatusLine().getStatusCode());
             }
             try (CloseableHttpResponse response = client.execute(new HttpGet(baseURL.toURI().resolve("/swagger")))) {
-                Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
+                assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
                 List<String> urls = validateContent(response);
                 // Ensure relative urls are valid
                 for (String url : urls) {
                     try (CloseableHttpResponse r = client.execute(new HttpGet(baseURL.toURI().resolve(url + "/test/echo/foo")))) {
-                        Assert.assertEquals(HttpServletResponse.SC_OK, r.getStatusLine().getStatusCode());
-                        Assert.assertEquals("foo", EntityUtils.toString(r.getEntity()));
+                        assertEquals(HttpServletResponse.SC_OK, r.getStatusLine().getStatusCode());
+                        assertEquals("foo", EntityUtils.toString(r.getEntity()));
                     }
                 }
             }
@@ -76,13 +79,13 @@ public class OpenAPIAltPathTestCase {
     }
 
     private static List<String> validateContent(HttpResponse response) throws IOException {
-        Assert.assertEquals("application/yaml", response.getEntity().getContentType().getValue());
+        assertEquals("application/yaml", response.getEntity().getContentType().getValue());
 
         JsonNode node = new ObjectMapper(new YAMLFactory()).reader().readTree(response.getEntity().getContent());
         JsonNode info = node.findValue("info");
-        Assert.assertNotNull(info);
-        Assert.assertEquals(DEPLOYMENT_NAME, info.get("title").asText());
-        Assert.assertNull(info.findValue("description"));
+        assertNotNull(info);
+        assertEquals(DEPLOYMENT_NAME, info.get("title").asText());
+        assertNull(info.findValue("description"));
 
         List<String> result = new LinkedList<>();
         JsonNode servers = node.get("servers");
@@ -90,7 +93,7 @@ public class OpenAPIAltPathTestCase {
             for (JsonNode server : servers) {
                 result.add(server.required("url").asText());
             }
-            Assert.assertFalse(result.isEmpty());
+            assertFalse(result.isEmpty());
         }
         return result;
     }

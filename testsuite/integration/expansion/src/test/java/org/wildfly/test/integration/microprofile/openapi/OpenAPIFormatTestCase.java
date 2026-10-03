@@ -5,8 +5,9 @@
 
 package org.wildfly.test.integration.microprofile.openapi;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import java.io.IOException;
-import java.net.URISyntaxException;
 import java.net.URL;
 
 import jakarta.servlet.http.HttpServletResponse;
@@ -19,15 +20,14 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.wildfly.test.integration.microprofile.openapi.service.TestApplication;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -37,7 +37,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  * Validates retrieval of JSON OpenAPI document via format parameter.
  * @author Paul Ferraro
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @RunAsClient
 public class OpenAPIFormatTestCase {
     private static final String DEPLOYMENT_NAME = OpenAPIFormatTestCase.class.getSimpleName() + ".war";
@@ -52,48 +52,48 @@ public class OpenAPIFormatTestCase {
     }
 
     @Test
-    public void test(@ArquillianResource URL baseURL) throws IOException, URISyntaxException {
+    void test(@ArquillianResource URL baseURL) throws Exception {
         try (CloseableHttpClient client = HttpClientBuilder.create().build()) {
             HttpUriRequest request = new HttpGet(baseURL.toURI().resolve("/openapi?format=JSON"));
             try (CloseableHttpResponse response = client.execute(request)) {
-                Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
+                assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
                 validateContent(response);
             }
 
             // Validate return type honors Accept header
             request.setHeader("Accept", "application/json");
             try (CloseableHttpResponse response = client.execute(request)) {
-                Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
+                assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
                 validateContent(response);
             }
 
             // Validate return type honors complex, but unambiguous Accept header
             request.setHeader("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9,application/json;q=0.99, application/yaml;q=0.98");
             try (CloseableHttpResponse response = client.execute(request)) {
-                Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
+                assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
                 validateContent(response);
             }
 
             // Ensure format parameter is still read when Accept header is not sufficiently specific
             request.setHeader("Accept", "*/*, application/*");
             try (CloseableHttpResponse response = client.execute(request)) {
-                Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
+                assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
                 validateContent(response);
             }
             // Test unacceptable accept header
             request.setHeader("Accept", "application/json-patch+json");
             try (CloseableHttpResponse response = client.execute(request)) {
-                Assert.assertEquals(HttpServletResponse.SC_NOT_ACCEPTABLE, response.getStatusLine().getStatusCode());
+                assertEquals(HttpServletResponse.SC_NOT_ACCEPTABLE, response.getStatusLine().getStatusCode());
             }
         }
     }
 
     private static void validateContent(HttpResponse response) throws IOException {
-        Assert.assertEquals("application/json", response.getEntity().getContentType().getValue());
+        assertEquals("application/json", response.getEntity().getContentType().getValue());
 
         JsonNode node = new ObjectMapper().reader().readTree(response.getEntity().getContent());
         JsonNode info = node.get("info");
-        Assert.assertEquals("Test application", info.get("title").asText());
-        Assert.assertEquals("This is my test application description", info.get("description").asText());
+        assertEquals("Test application", info.get("title").asText());
+        assertEquals("This is my test application description", info.get("description").asText());
     }
 }

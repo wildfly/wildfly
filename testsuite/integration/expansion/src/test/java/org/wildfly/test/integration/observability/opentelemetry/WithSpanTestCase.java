@@ -5,6 +5,10 @@
 
 package org.wildfly.test.integration.observability.opentelemetry;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import java.net.URL;
 
 import jakarta.ws.rs.client.Client;
@@ -19,8 +23,7 @@ import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.test.shared.observability.setuptasks.OpenTelemetryWithCollectorSetupTask;
 import org.jboss.as.test.shared.observability.signals.jaeger.JaegerSpan;
 import org.jboss.shrinkwrap.api.Archive;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.wildfly.test.integration.observability.opentelemetry.span.AppScopedBean;
 
 @RunAsClient
@@ -39,16 +42,16 @@ public class WithSpanTestCase extends BaseOpenTelemetryTest {
     }
 
     @Test
-    public void testWithSpan() throws Exception {
+    void withSpan() throws Exception {
         try (Client client = ClientBuilder.newClient()) {
             WebTarget target = client.target(getDeploymentUrl(DEPLOYMENT_NAME) + "/span");
             Response response = target.request().get();
-            Assert.assertEquals(Response.Status.OK.getStatusCode(), response.getStatus());
+            assertEquals(Response.Status.OK.getStatusCode(), response.getStatus());
 
             otelCollector.assertTraces(DEPLOYMENT_NAME + ".war", traces -> {
-                Assert.assertFalse(traces.isEmpty());
+                assertFalse(traces.isEmpty());
 
-                Assert.assertTrue(traces.get(0).getSpans().stream()
+                assertTrue(traces.get(0).getSpans().stream()
                     .map(JaegerSpan::getOperationName)
                     .anyMatch("AppScopedBean.getString"::equals)
                 );

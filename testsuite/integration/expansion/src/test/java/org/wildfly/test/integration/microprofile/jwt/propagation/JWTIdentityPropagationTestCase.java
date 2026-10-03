@@ -5,8 +5,8 @@
 
 package org.wildfly.test.integration.microprofile.jwt.propagation;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.wildfly.test.integration.microprofile.jwt.TokenUtil.createKeySupplier;
 import static org.wildfly.test.integration.microprofile.jwt.TokenUtil.generateJWT;
 
@@ -21,7 +21,7 @@ import org.apache.http.util.EntityUtils;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.api.ServerSetupTask;
@@ -35,8 +35,8 @@ import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.wildfly.test.integration.microprofile.jwt.App;
 import org.wildfly.test.integration.microprofile.jwt.BaseJWTCase;
 
@@ -46,7 +46,7 @@ import org.wildfly.test.integration.microprofile.jwt.BaseJWTCase;
  *
  * @author <a href="fjuma@redhat.com">Farah Juma</a>
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @RunAsClient
 @ServerSetup({ JWTIdentityPropagationTestCase.PropagationSetup.class })
 public class JWTIdentityPropagationTestCase {
@@ -209,7 +209,7 @@ public class JWTIdentityPropagationTestCase {
      */
     @Test
     @OperateOnDeployment(SINGLE_DEPLOYMENT)
-    public void testInvokeEJBWithinSingleDeployment() throws Exception {
+    void invokeEJBWithinSingleDeployment() throws Exception {
        testInvokeEJB(ROOT_PATH, PRINCIPAL_NAME, getExpectedMessage(PRINCIPAL_NAME, true));
     }
 
@@ -224,7 +224,7 @@ public class JWTIdentityPropagationTestCase {
      */
     @Test
     @OperateOnDeployment(SINGLE_DEPLOYMENT)
-    public void testInvokeEJBWithinSingleDeploymentOutflowNotPossibleNonExistentIdentity() throws Exception {
+    void invokeEJBWithinSingleDeploymentOutflowNotPossibleNonExistentIdentity() throws Exception {
         testInvokeEJB(ROOT_PATH, NON_EXISTING_PRINCIPAL_NAME, getExpectedMessage("anonymous", false));
     }
 
@@ -239,7 +239,7 @@ public class JWTIdentityPropagationTestCase {
      */
     @Test
     @OperateOnDeployment(ANOTHER_SINGLE_DEPLOYMENT)
-    public void testInvokeEJBWithinSingleDeploymentOutflowNotPossibleTrustNotConfigured() throws Exception {
+    void invokeEJBWithinSingleDeploymentOutflowNotPossibleTrustNotConfigured() throws Exception {
         testInvokeEJB(ANOTHER_ROOT_PATH, PRINCIPAL_NAME, getExpectedMessage("anonymous", false));
     }
 
@@ -253,7 +253,7 @@ public class JWTIdentityPropagationTestCase {
      */
     @Test
     @OperateOnDeployment(NO_OUTFLOW_CONFIG)
-    public void testInvokeEJBWithinSingleDeploymentOutflowNotConfigured() throws Exception {
+    void invokeEJBWithinSingleDeploymentOutflowNotConfigured() throws Exception {
         testInvokeEJB(ROOT_PATH, PRINCIPAL_NAME, getExpectedMessage("anonymous", false));
     }
 
@@ -267,7 +267,7 @@ public class JWTIdentityPropagationTestCase {
      */
     @Test
     @OperateOnDeployment(OUTFLOW_ANONYMOUS_CONFIG)
-    public void testInvokeEJBWithinSingleDeploymentOutflowAnonymousConfigured() throws Exception {
+    void invokeEJBWithinSingleDeploymentOutflowAnonymousConfigured() throws Exception {
         testInvokeEJB(ROOT_PATH, PRINCIPAL_NAME, getExpectedMessage("anonymous", false));
     }
 
@@ -288,7 +288,7 @@ public class JWTIdentityPropagationTestCase {
      */
     @Test
     @OperateOnDeployment(EAR_DEPLOYMENT_WITH_MP_JWT)
-    public void testInvokeEJBInAnotherEAR() throws Exception {
+    void invokeEJBInAnotherEAR() throws Exception {
         testInvokeEJB(ROOT_PATH, PRINCIPAL_NAME, getExpectedMessage(PRINCIPAL_NAME, true));
     }
 
@@ -305,7 +305,7 @@ public class JWTIdentityPropagationTestCase {
      */
     @Test
     @OperateOnDeployment(EAR_DEPLOYMENT_WITH_MP_JWT_SAME_DOMAIN)
-    public void testInvokeEJBInAnotherEARSameDomain() throws Exception {
+    void invokeEJBInAnotherEARSameDomain() throws Exception {
         testInvokeEJB(ROOT_PATH, PRINCIPAL_NAME, "targetCallerPrincipal: " + PRINCIPAL_NAME + ", hasAdminRole: false, hasSubscriberRole: true");
     }
 
@@ -318,10 +318,10 @@ public class JWTIdentityPropagationTestCase {
 
         try (CloseableHttpClient httpClient = HttpClientBuilder.create().build();
              CloseableHttpResponse httpResponse = httpClient.execute(httpGet)) {
-            assertEquals("Successful call", 200, httpResponse.getStatusLine().getStatusCode());
+            assertEquals(200, httpResponse.getStatusLine().getStatusCode(), "Successful call");
             String body = EntityUtils.toString(httpResponse.getEntity());
-            assertTrue("Call was authenticated: expectedMessage:[" + expectedMessage + "] returned msg:[" + body + "]",
-                    body.contains(expectedMessage));
+            assertTrue(body.contains(expectedMessage),
+                    "Call was authenticated: expectedMessage:[" + expectedMessage + "] returned msg:[" + body + "]");
         }
     }
 

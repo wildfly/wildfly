@@ -5,15 +5,17 @@
 
 package org.wildfly.test.integration.microprofile.faulttolerance.context.timeout;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+import jakarta.inject.Inject;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * Test case for https://issues.redhat.com/browse/WFLY-12982 which used to fail on legacy SR FT with:
@@ -23,7 +25,7 @@ import org.junit.runner.RunWith;
  *
  * @author Radoslav Husar
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class TimeoutContextTestCase {
 
     @Deployment
@@ -34,8 +36,11 @@ public class TimeoutContextTestCase {
                 ;
     }
 
+    @Inject
+    TimeoutBean timeoutBean;
+
     @Test
-    public void testRequestContextActive(TimeoutBean timeoutBean) throws Exception {
+    void requestContextActive() throws Exception {
         assertEquals("Hello bar", timeoutBean.greet());
     }
 
