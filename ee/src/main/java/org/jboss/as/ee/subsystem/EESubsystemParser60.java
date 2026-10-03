@@ -89,7 +89,7 @@ class EESubsystemParser60 implements XMLStreamConstants, XMLElementReader<List<M
                             break;
                         }
                         case CONCURRENT: {
-                            ConcurrencyImplementation.INSTANCE.parseConcurrentElement60(reader, list, subsystemPathAddress);
+                            ConcurrencyImplementation.INSTANCE.parseConcurrentElement(Namespace.EE_6_0, reader, list, subsystemPathAddress);
                             break;
                         }
                         case DEFAULT_BINDINGS: {

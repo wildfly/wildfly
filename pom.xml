@@ -1572,6 +1572,8 @@
                 <module>batch-jberet</module>
                 <module>bean-validation</module>
                 <module>boms/common-ee</module>
+                <!-- TODO remove this once we're done testing changes to it -->
+                <module>boms/legacy-ee</module>
                 <module>boms/standard-legacy-ee</module>
                 <module>boms/standard-preview-ee</module>
                 <module>boms/standard-ee</module>
@@ -1580,6 +1582,8 @@
                 <module>client/properties</module>
                 <module>client/shade</module>
                 <module>clustering</module>
+                <!-- TODO remove this once we're done testing changes to it -->
+                <module>concurrency/impl-30</module>
                 <module>concurrency/impl-31</module>
                 <module>concurrency/spi</module>
                 <module>connector</module>

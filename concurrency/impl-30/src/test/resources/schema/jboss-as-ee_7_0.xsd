@@ -6,11 +6,11 @@
   -->
 
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
-           targetNamespace="urn:jboss:domain:ee:6.0"
-           xmlns="urn:jboss:domain:ee:6.0"
+           targetNamespace="urn:jboss:domain:ee:7.0"
+           xmlns="urn:jboss:domain:ee:7.0"
            elementFormDefault="qualified"
            attributeFormDefault="unqualified"
-           version="6.0">
+           version="7.0">
 
     <!-- The EE subsystem root element -->
     <xs:element name="subsystem" type="subsystem"/>
@@ -189,12 +189,14 @@
                 created thread factory.
                 The optional "context-service" identifies which Context Service should be used by created threads.
                 The optional "priority" attribute may be used to specify the priority of created threads.
+                The optional "virtual" attribute may be used to indicate that virtual threads should be used, if supported by the implementation.
             </xs:documentation>
         </xs:annotation>
         <xs:attribute name="name" type="nameType" use="required"/>
         <xs:attribute name="jndi-name" type="jndiNameType" use="required"/>
         <xs:attribute name="context-service" type="contextServiceNameType"/>
         <xs:attribute name="priority" type="priorityType" default="5"/>
+        <xs:attribute name="virtual" type="xs:boolean" default="false"/>
     </xs:complexType>
 
     <xs:complexType name="managedExecutorServicesType">
@@ -206,7 +208,7 @@
     <xs:complexType name="managedExecutorServiceType">
         <xs:annotation>
             <xs:documentation>
-                A managed executor service (implementing javax.enterprise.concurrent.ManagedExecutorService).
+                A managed executor service (implementing jakarta.enterprise.concurrent.ManagedExecutorService).
             </xs:documentation>
         </xs:annotation>
         <xs:attribute name="name" type="nameType" use="required"/>
@@ -251,6 +253,13 @@
             </xs:annotation>
         </xs:attribute>
         <xs:attribute name="reject-policy" type="rejectPolicyType" default="ABORT"/>
+        <xs:attribute name="virtual" type="xs:boolean" default="false">
+            <xs:annotation>
+                <xs:documentation>
+                    The optional "virtual" attribute may be used to indicate that virtual threads should be used, if supported by the implementation.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
     </xs:complexType>
 
     <xs:complexType name="managedScheduledExecutorServicesType">
@@ -262,7 +271,7 @@
     <xs:complexType name="managedScheduledExecutorServiceType">
         <xs:annotation>
             <xs:documentation>
-                A managed scheduled executor service (implementing javax.enterprise.concurrent.ManagedScheduledExecutorService).
+                A managed scheduled executor service (implementing jakarta.enterprise.concurrent.ManagedScheduledExecutorService).
             </xs:documentation>
         </xs:annotation>
         <xs:attribute name="name" type="nameType" use="required"/>
@@ -280,6 +289,13 @@
         <xs:attribute name="core-threads" type="coreThreadsType"/>
         <xs:attribute name="keepalive-time" type="keepAliveTimeType" default="60000"/>
         <xs:attribute name="reject-policy" type="rejectPolicyType" default="ABORT"/>
+        <xs:attribute name="virtual" type="xs:boolean" default="false">
+            <xs:annotation>
+                <xs:documentation>
+                    The optional "virtual" attribute may be used to indicate that virtual threads should be used, if supported by the implementation.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
     </xs:complexType>
 
     <xs:simpleType name="nonEmptyTokenType">
