@@ -14,6 +14,7 @@ import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.function.Consumer;
 
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.ServiceNameFactory;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
@@ -48,14 +49,15 @@ public class UndertowService implements Service<UndertowService> {
     @Deprecated(forRemoval = true)
     public static final ServiceName SERVER = UNDERTOW.append(Constants.SERVER);
     /**
-     * service name under which default server is bound.
+     * @deprecated Replaced by {@link Server#DEFAULT_SERVICE_DESCRIPTOR}.
      */
-    public static final ServiceName DEFAULT_SERVER = UNDERTOW.append("default-server");
-
+    @Deprecated(forRemoval = true)
+    public static final ServiceName DEFAULT_SERVER = ServiceNameFactory.resolveServiceName(Server.DEFAULT_SERVICE_DESCRIPTOR);
     /**
-     * service name under which default host of default server is bound.
+     * @deprecated Replaced by {@link Host#DEFAULT_SERVER_SERVICE_DESCRIPTOR}.
      */
-    public static final ServiceName DEFAULT_HOST = DEFAULT_SERVER.append("default-host");
+    @Deprecated(forRemoval = true)
+    public static final ServiceName DEFAULT_HOST = ServiceNameFactory.resolveServiceName(Host.DEFAULT_SERVER_DEFAULT_SERVICE_DESCRIPTOR);
 
     public static final ServiceName UNDERTOW_DEPLOYMENT = ServiceName.of("undertow-deployment");
     /**

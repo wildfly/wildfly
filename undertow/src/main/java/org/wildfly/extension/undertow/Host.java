@@ -18,6 +18,7 @@ import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ConcurrentHashMap;
@@ -56,6 +57,8 @@ import org.wildfly.extension.undertow.deployment.GateHandlerWrapper;
 import org.wildfly.extension.undertow.logging.UndertowLogger;
 import org.wildfly.security.manager.WildFlySecurityManager;
 import org.wildfly.service.descriptor.BinaryServiceDescriptor;
+import org.wildfly.service.descriptor.NullaryServiceDescriptor;
+import org.wildfly.service.descriptor.UnaryServiceDescriptor;
 
 /**
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a> (c) 2013 Red Hat Inc.
@@ -65,7 +68,29 @@ import org.wildfly.service.descriptor.BinaryServiceDescriptor;
 public class Host implements Service<Host>, FilterLocation, SuspendableActivity {
     // TODO Extract proper interface from this service implementation
     // TODO Relocate ServiceDescriptor and interface to a separate SPI module.
-    public static final BinaryServiceDescriptor<Host> SERVICE_DESCRIPTOR = BinaryServiceDescriptor.of("org.wildfly.undertow.host", Host.class);
+    /** Identifies the default host of the default server */
+    public static final NullaryServiceDescriptor<Host> DEFAULT_SERVER_DEFAULT_SERVICE_DESCRIPTOR = NullaryServiceDescriptor.of("org.wildfly.undertow.default-server-default-host", Host.class);
+    /** Identifies a host of the default server */
+    public static final UnaryServiceDescriptor<Host> DEFAULT_SERVER_SERVICE_DESCRIPTOR = UnaryServiceDescriptor.of("org.wildfly.undertow.default-server-host", DEFAULT_SERVER_DEFAULT_SERVICE_DESCRIPTOR);
+    /** Identifies the default host of a server */
+    public static final UnaryServiceDescriptor<Host> DEFAULT_SERVICE_DESCRIPTOR = UnaryServiceDescriptor.of("org.wildfly.undertow.server-default-host", DEFAULT_SERVER_DEFAULT_SERVICE_DESCRIPTOR);
+    /** Identifies a host of a server */
+    public static final BinaryServiceDescriptor<Host> SERVICE_DESCRIPTOR = new BinaryServiceDescriptor<Host>() {
+        @Override
+        public String getName() {
+            return "org.wildfly.undertow.host";
+        }
+
+        @Override
+        public Class<Host> getType() {
+            return Host.class;
+        }
+
+        @Override
+        public Map.Entry<String, String[]> resolve(String serverName, String hostName) {
+            return (serverName != null) ? ((hostName != null) ? BinaryServiceDescriptor.super.resolve(serverName, hostName) : DEFAULT_SERVICE_DESCRIPTOR.resolve(serverName)) : ((hostName != null) ? DEFAULT_SERVER_SERVICE_DESCRIPTOR.resolve(hostName) : DEFAULT_SERVER_DEFAULT_SERVICE_DESCRIPTOR.resolve());
+        }
+    };
 
     private final Consumer<Host> serviceConsumer;
     private final Supplier<Server> server;
