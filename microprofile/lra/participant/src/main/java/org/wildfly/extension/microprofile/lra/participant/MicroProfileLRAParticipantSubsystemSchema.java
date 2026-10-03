@@ -11,13 +11,13 @@ import org.jboss.as.controller.SubsystemSchema;
 import org.jboss.as.controller.xml.VersionedNamespace;
 import org.jboss.staxmapper.IntVersion;
 
-import static org.jboss.as.controller.PersistentResourceXMLDescription.builder;
 /**
  * Enumerates the supported schemas of the MicroProfile LRA participant subsystem.
  * @author Paul Ferraro
  */
 enum MicroProfileLRAParticipantSubsystemSchema implements PersistentSubsystemSchema<MicroProfileLRAParticipantSubsystemSchema> {
     VERSION_1_0(1),
+    VERSION_2_0(2),
     ;
     private final VersionedNamespace<IntVersion, MicroProfileLRAParticipantSubsystemSchema> namespace;
 
@@ -32,8 +32,11 @@ enum MicroProfileLRAParticipantSubsystemSchema implements PersistentSubsystemSch
 
     @Override
     public PersistentResourceXMLDescription getXMLDescription() {
-        return builder(MicroProfileLRAParticipantSubsystemDefinition.PATH, this.namespace)
-            .addAttributes(MicroProfileLRAParticipantSubsystemDefinition.ATTRIBUTES)
-            .build();
+        PersistentResourceXMLDescription.Factory factory = PersistentResourceXMLDescription.factory(this);
+        PersistentResourceXMLDescription.Builder builder = factory.builder(MicroProfileLRAParticipantSubsystemDefinition.PATH);
+        builder.addAttribute(MicroProfileLRAParticipantSubsystemDefinition.LRA_COORDINATOR_URL);
+        builder.addAttribute(MicroProfileLRAParticipantSubsystemDefinition.PROXY_SERVER);
+        builder.addAttribute(MicroProfileLRAParticipantSubsystemDefinition.PROXY_HOST);
+        return builder.build();
     }
 }
