@@ -25,6 +25,7 @@
         <module name="jakarta.enterprise.api" />
         <module name="jakarta.annotation.api" />
         <module name="io.smallrye.common.constraint"/>
+        <module name="io.smallrye.common.annotation"/>
         <module name="io.smallrye.common.classloader"/>
         <module name="io.smallrye.common.expression"/>
         <module name="io.smallrye.common.function"/>
