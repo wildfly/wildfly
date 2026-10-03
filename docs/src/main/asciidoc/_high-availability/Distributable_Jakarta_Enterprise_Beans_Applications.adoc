@@ -84,32 +84,40 @@ This attribute uses ISO 8601 duration format (e.g., `PT10M` for 10 minutes, `PT1
 Idle-based passivation can help optimize memory usage by passivating beans that haven't been accessed recently, even if the `max-active-beans` limit hasn't been reached.
 
 
-[[client-mappings-registries]]
-=== Client mappings registries
+[[ejb-client-services]]
+=== EJB client services
 
-A client mappings registry provider provides access to a given implementation of a client mappings registry, used by
-the EJB client invocation mechanism to store information about client mappings for each node in the cluster. Client mappings
-are defined in the socket bindings configuration of a server and required to allow an EJB client application to connect
-to servers which are multi-homed (i.e. clients may access the same server from different networks using a different IP address
-ad port for each interface on the multi-homed server).
+An EJB client services provider provides access to a given implementation of the services required by the EJB client
+invocation mechanism. Chief among these is the client mappings registry, used to store information about client mappings
+for each node in the cluster. Client mappings are defined in the socket bindings configuration of a server and required
+to allow an EJB client application to connect to servers which are multi-homed (i.e. clients may access the same server
+from different networks using a different IP address and port for each interface on the multi-homed server).
 
-The available client mappings registry providers are:
+The available EJB client services providers are:
 
-[[infinispan-client-mappings-registry]]
-==== infinispan-client-mappings-registry
+[[infinispan-ejb-client-services]]
+==== infinispan-ejb-client-services
 
-The infinispan-client-mappings-registry provider is a provider based on an Infinispan cache and suitable for a clustered server.
+The infinispan-ejb-client-services provider is a provider based on an Infinispan cache and suitable for a clustered server.
 
 cache-container::
-Specifies a cache container defined in the Infinispan subsystem used to support the client mappings registry
+Specifies a cache container defined in the Infinispan subsystem used to support the EJB client services
 cache::
-Specifies the cache and its configured properties used to support the client mappings registry
+Specifies the cache and its configured properties used to support the EJB client services
 
 
-[[local-client-mappings-registry]]
-==== local-client-mappings-registry
+[[local-ejb-client-services]]
+==== local-ejb-client-services
 
-The client mappings registry provider suitable for a local, non-clustered server.
+The EJB client services provider suitable for a local, non-clustered server.
+
+[NOTE]
+====
+Prior to version 3.0 of the distributable-ejb subsystem schema, these elements were named
+`infinispan-client-mappings-registry` and `local-client-mappings-registry`, and the corresponding management resources
+were addressed as `+/subsystem=distributable-ejb/client-mappings-registry=*+`. The legacy management address is retained
+as an alias of `+/subsystem=distributable-ejb/ejb-client-services=*+`, so existing management scripts continue to work.
+====
 
 
 [[timer-management]]
