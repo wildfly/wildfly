@@ -13,11 +13,12 @@ import org.jboss.as.controller.ExpressionResolver;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.PersistentResourceDefinition;
+import org.jboss.as.controller.ResourceRegistration;
 import org.jboss.as.controller.RestartParentResourceAddHandler;
 import org.jboss.as.controller.RestartParentResourceRemoveHandler;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
+import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.msc.service.ServiceName;
@@ -60,12 +61,10 @@ abstract class AbstractCookieDefinition extends PersistentResourceDefinition {
 
     Collection<AttributeDefinition> attributes;
 
-    public AbstractCookieDefinition(PathElement path, Collection<AttributeDefinition> attributes) {
-        super(path,
-                UndertowExtension.getResolver(path.getKeyValuePair()),
-                new SessionCookieAdd(attributes),
-                new SessionCookieRemove()
-        );
+    public AbstractCookieDefinition(ResourceRegistration registration, Collection<AttributeDefinition> attributes) {
+        super(new SimpleResourceDefinition.Parameters(registration, UndertowRootDefinition.RESOLVER.createChildResolver(registration.getPathElement()))
+                .setAddHandler(new SessionCookieAdd(attributes))
+                .setRemoveHandler(new SessionCookieRemove()));
         this.attributes = attributes;
     }
 
@@ -98,7 +97,7 @@ abstract class AbstractCookieDefinition extends PersistentResourceDefinition {
         private final Collection<AttributeDefinition> attributes;
 
         protected SessionCookieAdd(Collection<AttributeDefinition> attributes) {
-            super(ServletContainerDefinition.PATH_ELEMENT.getKey());
+            super(ServletContainerDefinition.REGISTRATION.getPathElement().getKey());
 
             this.attributes = attributes;
         }
@@ -124,7 +123,7 @@ abstract class AbstractCookieDefinition extends PersistentResourceDefinition {
     private static class SessionCookieRemove extends RestartParentResourceRemoveHandler {
 
         protected SessionCookieRemove() {
-            super(ServletContainerDefinition.PATH_ELEMENT.getKey());
+            super(ServletContainerDefinition.REGISTRATION.getPathElement().getKey());
         }
 
         @Override

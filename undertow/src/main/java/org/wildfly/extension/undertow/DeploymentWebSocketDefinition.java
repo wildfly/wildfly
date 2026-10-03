@@ -6,6 +6,7 @@
 package org.wildfly.extension.undertow;
 
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.ResourceRegistration;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
@@ -16,13 +17,14 @@ import org.jboss.dmr.ModelType;
  * @author Stuart Douglas
  */
 public class DeploymentWebSocketDefinition extends SimpleResourceDefinition {
+    static final ResourceRegistration REGISTRATION = ResourceRegistration.of(PathElement.pathElement("websocket"));
 
     static final SimpleAttributeDefinition PATH = new SimpleAttributeDefinitionBuilder("path", ModelType.STRING, false).setStorageRuntime().build();
     static final SimpleAttributeDefinition ENDPOINT_CLASS = new SimpleAttributeDefinitionBuilder("endpoint-class", ModelType.STRING, false).setStorageRuntime().build();
 
 
     DeploymentWebSocketDefinition() {
-        super(PathElement.pathElement("websocket"), UndertowExtension.getResolver("deployment.websocket"));
+        super(new Parameters(REGISTRATION, DeploymentDefinition.DEFAULT_RESOLVER.createChildResolver(REGISTRATION.getPathElement())));
     }
 
     @Override
