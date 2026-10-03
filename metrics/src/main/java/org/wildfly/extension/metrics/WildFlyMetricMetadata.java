@@ -109,6 +109,10 @@ public class WildFlyMetricMetadata implements MetricMetadata {
         return metricID;
     }
 
+    PathAddress getAddress() {
+        return address;
+    }
+
     static String getPrometheusMetricName(String name) {
         name =name.replaceAll("[^\\w]+","_");
         name = decamelize(name);

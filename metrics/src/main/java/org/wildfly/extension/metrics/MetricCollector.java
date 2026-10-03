@@ -10,6 +10,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DES
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 import static org.wildfly.extension.metrics.MetricMetadata.Type.COUNTER;
 import static org.wildfly.extension.metrics.MetricMetadata.Type.GAUGE;
+import static org.wildfly.extension.metrics._private.MetricsLogger.LOGGER;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -23,6 +24,7 @@ import org.jboss.as.controller.LocalModelControllerClient;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ProcessStateNotifier;
+import org.jboss.as.controller.client.helpers.Operations;
 import org.jboss.as.controller.client.helpers.MeasurementUnit;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.registry.AttributeAccess;
@@ -34,22 +36,107 @@ import org.jboss.dmr.ModelType;
 public class MetricCollector {
     private final LocalModelControllerClient modelControllerClient;
     private final ProcessStateNotifier processStateNotifier;
+    private ImmutableManagementResourceRegistration modelRegistration;
+    private MetricRegistration modelMetrics;
+    private boolean exposeAnySubsystem;
+    private List<String> exposedSubsystems;
+    private String prefix;
 
     public MetricCollector(LocalModelControllerClient modelControllerClient, ProcessStateNotifier processStateNotifier) {
         this.modelControllerClient = modelControllerClient;
         this.processStateNotifier = processStateNotifier;
     }
 
+    public void resourceAdded(PathAddress address) {
+        ImmutableManagementResourceRegistration registration;
+        MetricRegistration metrics;
+        boolean exposeAny;
+        List<String> exposed;
+        String metricPrefix;
+        synchronized (this) {
+            registration = modelRegistration;
+            metrics = modelMetrics;
+            exposeAny = exposeAnySubsystem;
+            exposed = exposedSubsystems;
+            metricPrefix = prefix;
+        }
+        if (registration == null || metrics == null) {
+            return;
+        }
+        RuntimeException lastFailure = null;
+        for (int attempt = 0; attempt < 10; attempt++) {
+            ModelNode result = null;
+            try {
+                result = modelControllerClient.execute(Operations.createReadResourceOperation(address.toModelNode(), true));
+            } catch (RuntimeException e) {
+                lastFailure = e;
+            }
+            if (result != null && Operations.isSuccessfulOutcome(result)) {
+                Resource resource = Resource.Factory.create();
+                resource.writeModel(result.get("result"));
+                synchronized (this) {
+                    if (modelRegistration == registration && modelMetrics == metrics) {
+                        registerDynamicResource(resource, registration, address, Function.identity(), metrics,
+                                                exposeAny, exposed, metricPrefix);
+                    }
+                }
+                return;
+            }
+            if (attempt == 9) {
+                break;
+            }
+            try {
+                Thread.sleep(100);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                LOGGER.debug("Interrupted while collecting metrics for resource " + address);
+                return;
+            }
+        }
+        LOGGER.unableToCollectMetrics(address, 10,
+              lastFailure == null ? "" : ": " + lastFailure.getMessage());
+    }
+
+    public synchronized void resourceRemoved(PathAddress address) {
+        if (modelMetrics != null) {
+            modelMetrics.unregister(address);
+        }
+    }
+
+    public synchronized void stop() {
+        if (modelMetrics != null) {
+            modelMetrics.unregister();
+            modelMetrics = null;
+        }
+        modelRegistration = null;
+        exposedSubsystems = null;
+    }
+
+    public synchronized void collectRootResourceMetrics(Resource resource,
+                                                        ImmutableManagementResourceRegistration registration,
+                                                        boolean exposeAnySubsystem,
+                                                        List<String> exposedSubsystems,
+                                                        String prefix,
+                                                        MetricRegistration metricRegistration) {
+        modelRegistration = registration;
+        modelMetrics = metricRegistration;
+        this.exposeAnySubsystem = exposeAnySubsystem;
+        this.exposedSubsystems = List.copyOf(exposedSubsystems);
+        this.prefix = prefix;
+        registerResourceMetrics(resource, registration, Function.identity(), this.exposeAnySubsystem,
+                                this.exposedSubsystems, this.prefix, metricRegistration);
+    }
+
     // collect metrics from the resources
-    public synchronized void collectResourceMetrics(final Resource resource,
+    public synchronized void registerResourceMetrics(final Resource resource,
                                                      ImmutableManagementResourceRegistration managementResourceRegistration,
                                                      Function<PathAddress, PathAddress> resourceAddressResolver,
                                                      boolean exposeAnySubsystem,
                                                      List<String> exposedSubsystems,
                                                      String prefix,
                                                      MetricRegistration registration) {
-        collectResourceMetrics0(resource, managementResourceRegistration, EMPTY_ADDRESS, resourceAddressResolver, registration,
-                exposeAnySubsystem, exposedSubsystems, prefix);
+        createRegistrationTasks(resource, managementResourceRegistration, EMPTY_ADDRESS, resourceAddressResolver, registration,
+                                exposeAnySubsystem, exposedSubsystems, prefix);
         // Defer the actual registration until the server is running and they can be collected w/o errors
         PropertyChangeListener listener = new PropertyChangeListener() {
             @Override
@@ -79,7 +166,20 @@ public class MetricCollector {
         }
     }
 
-    private void collectResourceMetrics0(final Resource current,
+    private synchronized void registerDynamicResource(final Resource resource,
+                                                      ImmutableManagementResourceRegistration managementResourceRegistration,
+                                                      PathAddress address,
+                                                      Function<PathAddress, PathAddress> resourceAddressResolver,
+                                                      MetricRegistration registration,
+                                                      boolean exposeAnySubsystem,
+                                                      List<String> exposedSubsystems,
+                                                      String prefix) {
+        createRegistrationTasks(resource, managementResourceRegistration, address, resourceAddressResolver, registration,
+                                exposeAnySubsystem, exposedSubsystems, prefix);
+        registration.register();
+    }
+
+    private void createRegistrationTasks(final Resource current,
                                          ImmutableManagementResourceRegistration managementResourceRegistration,
                                          PathAddress address,
                                          Function<PathAddress, PathAddress> resourceAddressResolver,
@@ -115,14 +215,13 @@ public class MetricCollector {
             WildFlyMetricMetadata metadata = new WildFlyMetricMetadata(attributeName, resourceAddress, prefix, attributeDescription, unit, isCounter ? COUNTER : GAUGE);
 
             registration.addRegistrationTask(() -> registration.registerMetric(metric, metadata));
-            registration.addUnregistrationTask(metadata.getMetricID());
         }
 
         for (String type : current.getChildTypes()) {
             for (Resource.ResourceEntry entry : current.getChildren(type)) {
                 final PathElement pathElement = entry.getPathElement();
                 final PathAddress childAddress = address.append(pathElement);
-                collectResourceMetrics0(entry, managementResourceRegistration, childAddress, resourceAddressResolver, registration, exposeAnySubsystem, exposedSubsystems, prefix);
+                createRegistrationTasks(entry, managementResourceRegistration, childAddress, resourceAddressResolver, registration, exposeAnySubsystem, exposedSubsystems, prefix);
             }
         }
     }
