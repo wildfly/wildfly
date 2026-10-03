@@ -83,6 +83,7 @@ import org.jboss.as.txn.service.UserTransactionBindingService;
 import org.jboss.as.txn.service.UserTransactionRegistryService;
 import org.jboss.as.txn.service.UserTransactionService;
 import org.jboss.dmr.ModelNode;
+import org.wildfly.security.auth.client.AuthenticationContext;
 import org.jboss.msc.Service;
 import org.jboss.msc.inject.InjectionException;
 import org.jboss.msc.inject.Injector;
@@ -209,6 +210,7 @@ class TransactionSubsystemAdd extends AbstractBoottimeAddStepHandler {
         TransactionSubsystemRootResourceDefinition.STATUS_BINDING.validateAndSet(operation, model);
         TransactionSubsystemRootResourceDefinition.RECOVERY_LISTENER.validateAndSet(operation, model);
         TransactionSubsystemRootResourceDefinition.TRANSACTIONS_RECOVERY_GRACEFUL_SHUTDOWN.validateAndSet(operation, model);
+        TransactionSubsystemRootResourceDefinition.RECOVERY_AUTHENTICATION_CONTEXT.validateAndSet(operation, model);
     }
 
     private void validateStoreConfig(ModelNode operation, ModelNode model) throws OperationFailedException {
@@ -432,7 +434,16 @@ class TransactionSubsystemAdd extends AbstractBoottimeAddStepHandler {
         final Supplier<com.arjuna.ats.jbossatx.jta.TransactionManagerService> transactionManagerSupplier = localTxnSB.requires(TxnServices.JBOSS_TXN_ARJUNA_TRANSACTION_MANAGER);
         final Supplier<XAResourceRecoveryRegistry> xaResourceRecoveryRegistrySupplier = localTxnSB.requires(XA_RESOURCE_RECOVERY_REGISTRY_CAPABILITY.getCapabilityServiceName());
         final Supplier<ServerEnvironment> serverEnvironmentSupplier = localTxnSB.requires(ServerEnvironmentService.SERVICE_NAME);
-        final LocalTransactionContextService localTransactionContextService = new LocalTransactionContextService(contextConsumer, extendedJBossXATerminatorSupplier, transactionManagerSupplier, xaResourceRecoveryRegistrySupplier, serverEnvironmentSupplier, staleTransactionTime);
+        final ModelNode recoveryAuthCtxAttr = TransactionSubsystemRootResourceDefinition.RECOVERY_AUTHENTICATION_CONTEXT.resolveModelAttribute(context, model);
+        Supplier<AuthenticationContext> recoveryAuthCtxSupplier = null;
+        if (recoveryAuthCtxAttr.isDefined()) {
+            ServiceName recoveryAuthCtxServiceName = context.getCapabilityServiceName(
+                    TransactionSubsystemRootResourceDefinition.ELYTRON_AUTHENTICATION_CONTEXT_CAPABILITY,
+                    recoveryAuthCtxAttr.asString(),
+                    AuthenticationContext.class);
+            recoveryAuthCtxSupplier = localTxnSB.requires(recoveryAuthCtxServiceName);
+        }
+        final LocalTransactionContextService localTransactionContextService = new LocalTransactionContextService(contextConsumer, extendedJBossXATerminatorSupplier, transactionManagerSupplier, xaResourceRecoveryRegistrySupplier, serverEnvironmentSupplier, staleTransactionTime, recoveryAuthCtxSupplier);
         localTxnSB.setInstance(localTransactionContextService).install();
 
         if (context.hasOptionalCapability(REMOTING_ENDPOINT_CAPABILITY_NAME, TRANSACTION_CAPABILITY.getName(),null)) {
