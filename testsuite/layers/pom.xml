@@ -1383,6 +1383,34 @@
                                 </configuration>
                             </execution>
                             <execution>
+                                <id>hashicorp-vault-provisioning</id>
+                                <goals>
+                                    <goal>provision</goal>
+                                </goals>
+                                <phase>${provisioning.phase}</phase>
+                                <configuration>
+                                    <install-dir>${layers.install.dir}/hashicorp-vault</install-dir>
+                                    <feature-packs>
+                                        <feature-pack>
+                                            <groupId>${ee.maven.groupId}</groupId>
+                                            <artifactId>${ee.feature.pack.artifactId}</artifactId>
+                                            <version>${ee.maven.version}</version>
+                                            <inherit-configs>false</inherit-configs>
+                                            <inherit-packages>false</inherit-packages>
+                                        </feature-pack>
+                                    </feature-packs>
+                                    <configurations>
+                                        <config>
+                                            <model>standalone</model>
+                                            <name>standalone.xml</name>
+                                            <layers>
+                                                <layer>hashicorp-vault</layer>
+                                            </layers>
+                                        </config>
+                                    </configurations>
+                                </configuration>
+                            </execution>
+                            <execution>
                                 <id>hibernate-search-provisioning</id>
                                 <goals>
                                     <goal>provision</goal>
@@ -2173,6 +2201,7 @@
                                                 <layer>elytron</layer>
                                                 <layer>elytron-oidc-client</layer>
                                                 <layer>embedded-activemq</layer>
+                                                <layer>hashicorp-vault</layer>
                                                 <layer>hibernate-search</layer>
                                                 <layer>h2-datasource</layer>
                                                 <layer>h2-default-datasource</layer>
@@ -2263,6 +2292,7 @@
                                                 <layer>ejb-lite</layer>
                                                 <layer>elytron</layer>
                                                 <layer>elytron-oidc-client</layer>
+                                                <layer>hashicorp-vault</layer>
                                                 <layer>hibernate-search</layer>
                                                 <layer>h2-datasource</layer>
                                                 <layer>h2-default-datasource</layer>
@@ -2387,6 +2417,7 @@
                                                 <layer>elytron</layer>
                                                 <layer>elytron-oidc-client</layer>
                                                 <layer>embedded-activemq</layer>
+                                                <layer>hashicorp-vault</layer>
                                                 <layer>hibernate-search</layer>
                                                 <layer>h2-datasource</layer>
                                                 <layer>h2-default-datasource</layer>
@@ -2477,6 +2508,7 @@
                                                 <layer>ejb-http-invoker</layer>
                                                 <layer>ejb-lite</layer>
                                                 <layer>elytron</layer>
+                                                <layer>hashicorp-vault</layer>
                                                 <layer>hibernate-search</layer>
                                                 <layer>h2-datasource</layer>
                                                 <layer>h2-default-datasource</layer>
