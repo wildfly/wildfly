@@ -15,6 +15,7 @@ import io.micrometer.registry.otlp.AggregationTemporality;
 import io.micrometer.registry.otlp.HistogramFlavor;
 import io.micrometer.registry.otlp.OtlpConfig;
 import io.micrometer.registry.otlp.OtlpMeterRegistry;
+import org.jboss.as.controller.access.InVmAccess;
 import org.wildfly.extension.micrometer.WildFlyMicrometerConfig;
 import org.wildfly.extension.micrometer.registry.WildFlyRegistry;
 import org.wildfly.security.manager.WildFlySecurityManager;
@@ -22,6 +23,21 @@ import org.wildfly.security.manager.WildFlySecurityManager;
 public class WildFlyOtlpRegistry extends OtlpMeterRegistry implements WildFlyRegistry {
     public WildFlyOtlpRegistry(WildFlyMicrometerOtlpConfig config) {
         super(config, Clock.SYSTEM);
+    }
+
+    /**
+     * [WFLY-20566] The OTLP export runs on a background scheduler thread that carries no caller identity. The model
+     * metrics are read through the same per-caller client the pull endpoint uses, so here they would resolve to the
+     * anonymous identity and be filtered to 0 under RBAC. Unlike a scrape, a server-initiated push has no caller to
+     * filter by, so the reads are performed as an in-VM call, which the management layer authorizes as SuperUser - the
+     * same mechanism {@code ModelControllerClientFactory} uses for its SuperUser clients. The pull path is unaffected.
+     */
+    @Override
+    protected void publish() {
+        InVmAccess.runInVm((PrivilegedAction<Void>) () -> {
+            super.publish();
+            return null;
+        });
     }
 
     public static class WildFlyMicrometerOtlpConfig extends WildFlyMicrometerConfig implements OtlpConfig {
