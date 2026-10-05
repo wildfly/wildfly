@@ -55,8 +55,12 @@ The testsuite is regularly tested on Linux, macOS, and Windows. Linux is the pri
 
 Some integration tests use container images (e.g., Kafka, Keycloak, Elasticsearch). These tests require Docker or Podman to be available on the system.
 
-On Windows, container-based tests are automatically skipped. If you do not have a container runtime available on other platforms,
-these specific tests will fail, but the rest of the testsuite can still be run.
+If no container runtime is available, the behavior depends on how the test obtains its container:
+
+* Tests guarded by `AssumeTestGroupUtil.assumeDockerAvailable()` are skipped. Set `-Dorg.wildfly.test.require.docker=true` to make them fail instead.
+* Tests using Arquillian Testcontainers fail, except on Windows, where the testsuite configures them to be skipped instead.
+
+The rest of the testsuite can still be run without a container runtime.
 
 === System Resources
 
@@ -98,9 +102,9 @@ The testsuite also includes modules that help support testsuite execution but th
 | aggregator-base | Controls which test modules are executed when executing the `base-server-tests` profile
 | aggregator-expansion | Controls which test modules are executed when executing the `expansion-server-tests` profile
 | aggregator-preview | Controls which test modules are executed when executing the `preview-server-tests` profile
-| build-demander-base | Ensures the server build required by the `base-server-tests` profile has been built, if the maven build wasn't started with the `-Djboss.home` property used to run the testsuite against an external build
-| build-demander-expansion | Ensures the server build required by the `expansion-server-tests` profile has been built, if the maven build wasn't started with the `-Djboss.home` property used to run the testsuite against an external build
-| build-demander-preview | Ensures the server build required by the `preview-server-tests` profile has been built, if the maven build wasn't started with the `-Djboss.home` property used to run the testsuite against an external build
+| build-demander-base | Ensures the server build required by the `base-server-tests` profile has been built, unless the maven build was started with the `-Dtestsuite.only` property (e.g. when running the testsuite against an external build)
+| build-demander-expansion | Ensures the server build required by the `expansion-server-tests` profile has been built, unless the maven build was started with the `-Dtestsuite.only` property (e.g. when running the testsuite against an external build)
+| build-demander-preview | Ensures the server build required by the `preview-server-tests` profile has been built, unless the maven build was started with the `-Dtestsuite.only` property (e.g. when running the testsuite against an external build)
 | shared | Shared utility classes that test classes can use
 | test-feature-pack | Feature-pack, based on `wildfly-ee`, that test modules can provision
 | test-feature-pack-preview | Feature-pack, based on `wildfly-preview`, that test modules can provision
@@ -230,10 +234,10 @@ There are a number of other profiles that can be activated to control how tests 
 |===
 | Activation | Effect
 
-| `-DallTests` | Runs _nearly_ all of the modules that test base server functionality. Tests unslimmed traditional installations.
+| `-DallTests` | Runs _nearly_ all of the modules that test functionality provided by the `wildfly` feature-pack. Tests unslimmed traditional installations.
 | `-Dts.bootable` | Runs all of the modules that are able to test bootable jars, configured to use the wildfly-maven-plugin to produce bootable jars.
 | `-Dts.layers` | Runs all of the modules that are able to test slimmed servers, configured to use the wildfly-maven-plugin to produce various slimmed servers and test those, instead of testing unslimmed installations.
-| `-Dts.microprofile` | Runs the `testsuite/integration/microprofile` and `testsuite/integration/microprofile-tck` modules
+| `-Dts.microprofile` | Runs the `testsuite/integration/expansion` and `testsuite/integration/microprofile-tck` modules
 | `-Dts.standalone.microprofile` | Runs a number of modules, including some that only test base server functionality, but using servers provisioned from the `wildfly` feature-pack and running the `standalone-microprofile[-ha].xml` configuration.
 |===
 
@@ -249,7 +253,7 @@ There are a number of other profiles that can be activated to control how tests 
 |===
 | Activation | Effect
 
-| `-Dts.preview` | Runs _nearly_ all of the modules that test base server functionality. Tests unslimmed traditional installations.
+| `-Dts.preview` | Runs _nearly_ all of the testsuite modules against servers provisioned from the `wildfly-preview` feature-pack. Tests unslimmed traditional installations.
 | `-Dts.bootable.preview` | Runs all of the modules that are able to test bootable jars, configured to use the wildfly-maven-plugin to produce bootable jars.
 | `-Dts.noSmoke` | Disables execution of the `testsuite/integration/web` and `testsuite/integration/smoke`
 |===
@@ -257,13 +261,10 @@ There are a number of other profiles that can be activated to control how tests 
 [[Profiles_for_specific_testsuite_modules]]
 ==== Profiles for specific testsuite modules
 
-For the `domain` and `integration` modules, there is a profile named `X.module.profile` that can be enabled by `-DX.module`
+For several top-level testsuite modules, there is a profile named `X.module.profile` that can be enabled by `-DX.module`;
+e.g. `domain.module.profile` is enabled by `-Ddomain.module` and runs the tests in `testsuite/domain`. This applies to the `domain`, `galleon`, `layers`, `layers-expansion` and `scripts` modules.
 
-For example, `integration.module.profile`, enabled by `-Dintegration.module`, enables the integration module.
-
-The integration module includes a number of child modules. For many of these, there is a profile named `X.integration.tests.profile` which is enabled by `-DX.integration.tests`
-
-* e.g., the clustering tests are defined in profile `clustering.integration.tests.profile`, enabled by `-Dclustering.integration.tests`
+The `-Dinteg.module` property enables all the child modules of `testsuite/integration`.
 
 Many individual modules can also be run by executing a profile by passing a property in the form `-Dts.X` where X is the name of the lowest level maven module that contains the tests. For example, `-Dts.domain` runs the tests in
 `testsuite/domain` while `-Dts.clustering` runs the tests in `testsuite/integration/clustering`.
@@ -392,7 +393,7 @@ To skip execution of all clustering tests use `-Dts.noClustering`.
 NOTE: This section is open for contributions.
 
 [[xts--dts.xts]]
-=== XTS `-Dts.XTS`
+=== XTS `-Dts.xts`
 
 NOTE: This section is open for contributions.
 
