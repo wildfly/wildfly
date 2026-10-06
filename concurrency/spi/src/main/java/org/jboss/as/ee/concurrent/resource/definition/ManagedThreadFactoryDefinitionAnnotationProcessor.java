@@ -9,6 +9,7 @@ import org.jboss.as.ee.resource.definition.ResourceDefinitionAnnotationProcessor
 import org.jboss.as.ee.resource.definition.ResourceDefinitionInjectionSource;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.jandex.AnnotationInstance;
+import org.jboss.jandex.AnnotationValue;
 import org.jboss.jandex.DotName;
 import org.jboss.metadata.property.PropertyReplacer;
 
@@ -35,10 +36,14 @@ public class ManagedThreadFactoryDefinitionAnnotationProcessor extends ResourceD
     protected ResourceDefinitionInjectionSource processAnnotation(AnnotationInstance annotationInstance, PropertyReplacer propertyReplacer) throws DeploymentUnitProcessingException {
         final String jndiName = AnnotationElement.asRequiredString(annotationInstance, AnnotationElement.NAME);
         final String context = AnnotationElement.asOptionalString(annotationInstance, ManagedThreadFactoryDefinitionInjectionSource.CONTEXT_PROP);
-        final int priority = AnnotationElement.asOptionalInt(annotationInstance, ManagedThreadFactoryDefinitionInjectionSource.PRIORITY_PROP);
+        final int priority = AnnotationElement.asOptionalInt(annotationInstance, ManagedThreadFactoryDefinitionInjectionSource.PRIORITY_PROP, Thread.NORM_PRIORITY);
         final ManagedThreadFactoryDefinitionInjectionSource injectionSource = new ManagedThreadFactoryDefinitionInjectionSource(jndiName);
         injectionSource.setContextServiceRef(context);
-        injectionSource.setPriority(priority > 0 ? priority : Thread.NORM_PRIORITY);
+        injectionSource.setPriority(priority);
+        final AnnotationValue virtualAnnotationValue = annotationInstance.value(ManagedThreadFactoryDefinitionInjectionSource.VIRTUAL_PROP);
+        if (virtualAnnotationValue != null) {
+            injectionSource.setVirtual(virtualAnnotationValue.asBoolean());
+        }
         return injectionSource;
     }
 }

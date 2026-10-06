@@ -40,6 +40,8 @@ public interface EESubsystemModel {
         ModelVersion v4_0_0 = ModelVersion.create(4, 0, 0);
         ModelVersion v5_0_0 = ModelVersion.create(5, 0, 0);
         ModelVersion v6_0_0 = ModelVersion.create(6, 0, 0);
+        ModelVersion v7_0_0 = ModelVersion.create(7, 0, 0);
+
     }
 
 }
