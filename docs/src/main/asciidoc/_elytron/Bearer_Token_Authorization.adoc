@@ -214,3 +214,20 @@ A policy that defines how host names should be verified when using HTTPS. Allowe
 # Create the realm
 /subsystem=elytron/token-realm=oauth2-realm:add(principal-claim=preferred_username, oauth2-introspection={client-id=my-client-id, client-secret=keep_it_secret, client-ssl-context=default-client-ssl-context, introspection-url=https://as.example.com/token/introspect})
 ----
+
+Optionally, you can configure a principal transformer to transform the principal obtained from the token.
+For example, to capitalize the obtained principal, first define a `case-principal-transformer`:
+
+[source,bash]
+----
+/subsystem=elytron/case-principal-transformer=to-upper-case:add(upper-case=true)
+----
+
+You can then configure a token realm as follows:
+
+[source,bash]
+----
+/subsystem=elytron/token-realm=jwt-realm-with-transformer:add(principal-claim=sub, jwt={issuer=["as.example.com"], audience=["api.example.com"], key-store=my-keystore, certificate=as.example.com}, principal-transformer=to-upper-case)
+----
+
+For information about principal transformers, see xref:WildFly_Elytron_Security{outfilesuffix}#principal-transformers[Principal Transformers].
