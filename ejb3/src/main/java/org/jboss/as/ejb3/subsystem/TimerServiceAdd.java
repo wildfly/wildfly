@@ -20,6 +20,7 @@ import org.jboss.as.ejb3.timerservice.TimerServiceMetaData;
 import org.jboss.as.server.AbstractDeploymentChainStep;
 import org.jboss.as.server.DeploymentProcessorTarget;
 import org.jboss.as.server.deployment.Phase;
+import org.jboss.as.version.Stability;
 import org.jboss.dmr.ModelNode;
 import org.wildfly.service.BlockingLifecycle;
 import org.wildfly.subsystem.service.capability.CapabilityServiceInstaller;
@@ -41,6 +42,7 @@ public class TimerServiceAdd extends AbstractBoottimeAddStepHandler {
         defaultMetaData.setPersistentTimerManagementProvider(TimerServiceResourceDefinition.DEFAULT_PERSISTENT_TIMER_MANAGEMENT.resolveModelAttribute(context, model).asStringOrNull());
         defaultMetaData.setTransientTimerManagementProvider(TimerServiceResourceDefinition.DEFAULT_TRANSIENT_TIMER_MANAGEMENT.resolveModelAttribute(context, model).asStringOrNull());
 
+        final Stability stability = context.getStability();
         context.addStep(new AbstractDeploymentChainStep() {
             @Override
             protected void execute(DeploymentProcessorTarget processorTarget) {
@@ -49,7 +51,7 @@ public class TimerServiceAdd extends AbstractBoottimeAddStepHandler {
                 processorTarget.addDeploymentProcessor(EJB3Extension.SUBSYSTEM_NAME, Phase.PARSE, Phase.PARSE_TIMEOUT_ANNOTATION, new TimerServiceAnnotationProcessor());
                 processorTarget.addDeploymentProcessor(EJB3Extension.SUBSYSTEM_NAME, Phase.PARSE, Phase.PARSE_AROUNDTIMEOUT_ANNOTATION, new AroundTimeoutAnnotationParsingProcessor());
                 processorTarget.addDeploymentProcessor(EJB3Extension.SUBSYSTEM_NAME, Phase.POST_MODULE, Phase.POST_MODULE_EJB_TIMER_METADATA_MERGE, new TimerMethodMergingProcessor());
-                processorTarget.addDeploymentProcessor(EJB3Extension.SUBSYSTEM_NAME, Phase.POST_MODULE, Phase.POST_MODULE_EJB_TIMER_SERVICE, new TimerServiceDeploymentProcessor(threadPoolName, defaultMetaData));
+                processorTarget.addDeploymentProcessor(EJB3Extension.SUBSYSTEM_NAME, Phase.POST_MODULE, Phase.POST_MODULE_EJB_TIMER_SERVICE, new TimerServiceDeploymentProcessor(threadPoolName, defaultMetaData, stability));
             }
         }, OperationContext.Stage.RUNTIME);
 

@@ -14,7 +14,6 @@ import jakarta.ejb.EJBException;
 import jakarta.ejb.ScheduleExpression;
 import jakarta.ejb.Timer;
 import jakarta.ejb.TimerConfig;
-import jakarta.ejb.TimerService;
 import jakarta.transaction.Status;
 import jakarta.transaction.SystemException;
 import jakarta.transaction.Transaction;
@@ -31,7 +30,10 @@ import org.wildfly.transaction.client.ContextTransactionManager;
  * Interface for managed {@link jakarta.ejb.TimerService} implementations.
  * @author Paul Ferraro
  */
-public interface ManagedTimerService extends TimerService, BlockingLifecycle {
+public interface ManagedTimerService extends jakarta.ejb.TimerService, BlockingLifecycle, AutoCloseable {
+
+    @Override
+    void close();
 
     /**
      * Returns the managed timer associated with the specified identifier
