@@ -171,6 +171,12 @@ public class OutboundBindAddressTestCase {
         @Override
         public void setup(final ManagementClient managementClient, final String containerId) throws Exception {
             if ("multinode-client".equals(containerId)) {
+                // Skip setup if test won't run (no alternative loopback address available)
+                if (!CAN_TEST_SPECIFIC_BIND_ADDRESS) {
+                    System.out.println("Setup: Skipping configuration - test will be skipped (no alternative loopback address)");
+                    return;
+                }
+
                 System.out.println("Setup: Configuring multinode-client for outbound bind address test");
 
                 final ModelNode compositeOp = new ModelNode();
@@ -225,6 +231,12 @@ public class OutboundBindAddressTestCase {
         @Override
         public void tearDown(final ManagementClient managementClient, final String containerId) throws Exception {
             if ("multinode-client".equals(containerId)) {
+                // Skip teardown if setup was skipped (no alternative loopback address available)
+                if (!CAN_TEST_SPECIFIC_BIND_ADDRESS) {
+                    System.out.println("TearDown: Skipping cleanup - setup was skipped");
+                    return;
+                }
+
                 final ModelNode compositeOp = new ModelNode();
                 compositeOp.get(OP).set(COMPOSITE);
                 compositeOp.get(OP_ADDR).setEmptyList();
