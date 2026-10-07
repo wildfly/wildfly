@@ -36,7 +36,7 @@
         <module name="org.apache.santuario.xmlsec" />
         <module name="org.codehaus.woodstox" />
         <module name="org.joda.time" />
-        <module name="org.opensaml" />
+        <module name="org.opensaml" services="import"/>
         <module name="org.apache.cxf.impl" services="import">
           <imports>
             <include path="META-INF/cxf"/>

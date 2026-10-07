@@ -196,6 +196,11 @@
             <scope>test</scope>
         </dependency>
         <dependency>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpclient</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
             <groupId>org.apache.cxf</groupId>
             <artifactId>cxf-core</artifactId>
             <scope>test</scope>
@@ -248,6 +253,11 @@
         <dependency>
             <groupId>org.apache.neethi</groupId>
             <artifactId>neethi</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-secure-xml</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -366,7 +376,7 @@
         <!-- OpenSAML -->
         <dependency>
             <groupId>org.opensaml</groupId>
-            <artifactId>opensaml-core</artifactId>
+            <artifactId>opensaml-core-api</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
