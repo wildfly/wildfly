@@ -7,7 +7,6 @@
 <feature-group-spec name="undertow-default-config" xmlns="urn:jboss:galleon:feature-group:1.0">
     <!-- configuration specific to default config -->
     <feature spec="subsystem.undertow">
-        <param name="default-security-domain" value="other"/>
         <feature spec="subsystem.undertow.configuration.handler">
             <feature spec="subsystem.undertow.configuration.handler.file">
                 <param name="file" value="welcome-content"/>
