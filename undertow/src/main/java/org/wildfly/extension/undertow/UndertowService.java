@@ -54,7 +54,7 @@ public class UndertowService implements Service<UndertowService> {
     @Deprecated(forRemoval = true)
     public static final ServiceName DEFAULT_SERVER = ServiceNameFactory.resolveServiceName(Server.DEFAULT_SERVICE_DESCRIPTOR);
     /**
-     * @deprecated Replaced by {@link Host#DEFAULT_SERVER_SERVICE_DESCRIPTOR}.
+     * @deprecated Superseded by {@link Host#DEFAULT_SERVER_SERVICE_DESCRIPTOR}, since *every* server has a default host.
      */
     @Deprecated(forRemoval = true)
     public static final ServiceName DEFAULT_HOST = ServiceNameFactory.resolveServiceName(Host.DEFAULT_SERVER_DEFAULT_SERVICE_DESCRIPTOR);

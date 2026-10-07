@@ -42,7 +42,15 @@ import org.wildfly.service.descriptor.UnaryServiceDescriptor;
  */
 public class Server implements Service<Server> {
     // TODO Extract interface from this class and relocate it to an SPI module
-    public static final NullaryServiceDescriptor<Server> DEFAULT_SERVICE_DESCRIPTOR = NullaryServiceDescriptor.of("org.wildfly.undertow.default-server", Server.class);
+
+    /**
+     * Describes the service providing the default server.
+     */
+    static final NullaryServiceDescriptor<Server> DEFAULT_SERVICE_DESCRIPTOR = NullaryServiceDescriptor.of("org.wildfly.undertow.default-server", Server.class);
+
+    /**
+     * Describes the service providing a server, identified by server name.
+     */
     public static final UnaryServiceDescriptor<Server> SERVICE_DESCRIPTOR = UnaryServiceDescriptor.of("org.wildfly.undertow.server", DEFAULT_SERVICE_DESCRIPTOR);
 
     private final Consumer<Server> serverConsumer;
