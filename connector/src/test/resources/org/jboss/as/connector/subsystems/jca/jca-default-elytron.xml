@@ -3,10 +3,10 @@
   ~ SPDX-License-Identifier: Apache-2.0
   -->
 
-<subsystem xmlns="urn:jboss:domain:jca:6.0">
+<subsystem xmlns="urn:jboss:domain:jca:6.1">
     <default-workmanager>
         <!-- test empty value -->
-        <elytron-enabled></elytron-enabled>
+        <elytron-enabled/>
         <short-running-threads allow-core-timeout="true">
             <!--Optional:-->
             <core-threads count="3"/>
