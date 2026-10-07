@@ -33,7 +33,7 @@ This resource can be defined with the following attributes.
 
  * `prefix` (Default `ENC`) - The prefix used within the encrypted expressions.
  * `default-resolver` (Optional) - For expressions that do not define a resolver, the default resolver to use.
- * `resolvers` - A lit of one more named resolver definitions.
+ * `resolvers` - A list of one or more named resolver definitions.
 
 An individual resolver is defined with three attributes:
 
@@ -127,4 +127,3 @@ definition of the same profile.
 The runtime management operations are not supported against the `expression=encryption` or `*credential-store` when defined within a domain profile so for these environments the credential store and relevant
 expressions should be created offline before defining in the model.  It is possible to reference a common credential store file shared between the host controller management model and the domain profile but after making
 any updates to the credential store from the host controller the application server processes will need to be restarted to force them to reload the credential store.
-

@@ -189,7 +189,7 @@ JMX subsystem. See JMX for how to configure audit logging for JMX.
 
 |method |The name of the called MBeanServer method
 
-|sig |The signature of the called called MBeanServer method
+|sig |The signature of the called MBeanServer method
 
 |params |The actual parameters passed in to the MBeanServer method, a
 simple Object.toString() is called on each parameter.

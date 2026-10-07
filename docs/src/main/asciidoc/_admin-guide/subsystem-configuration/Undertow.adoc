@@ -132,7 +132,7 @@ a set of connectors and some configured handlers.
 as no Host: header
 
 |servlet-container |the servlet container that will be used by this
-server, unless is is explicitly overriden by the deployment
+server, unless it is explicitly overridden by the deployment
 |=======================================================================
 
 [[connector-configuration]]

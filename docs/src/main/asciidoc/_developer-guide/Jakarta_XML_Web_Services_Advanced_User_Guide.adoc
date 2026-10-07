@@ -205,7 +205,7 @@ webservices deployment.
 
 Elements `<config-name>` and `<config-file>` can be used to associate
 any endpoint provided in the deployment with a given
-<<Predefined_client_and_endpoint_configurations,endpoint configuration>>. Endpoint configuration are
+<<Predefined_client_and_endpoint_configurations,endpoint configuration>>. Endpoint configurations are
 either specified in the referenced config file or in the WildFly domain
 model (webservices subsystem). For further details on the endpoint
 configurations and their management in the domain model, please see the

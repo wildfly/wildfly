@@ -358,7 +358,7 @@ string in the JNDI name, for distinct-name
 
 *bean-name* : This is the name of the bean for which you are doing the
 lookup. The bean name is typically the unqualified classname of the bean
-implementation class, but can be overriden through either ejb-jar.xml or
+implementation class, but can be overridden through either ejb-jar.xml or
 via annotations. The bean name part cannot be an empty string in the
 JNDI name.
 
@@ -390,7 +390,7 @@ ejb:/jboss-as-ejb-remote-app//CalculatorBean!org.jboss.as.quickstarts.ejb.remote
 That's what the lookupRemoteStatelessCalculator() method in the above
 client code uses.
 
-For the stateful EJB named CounterBean which is deployed in hte same
+For the stateful EJB named CounterBean which is deployed in the same
 jboss-as-ejb-remote-app.jar and which exposes the
 org.jboss.as.quickstarts.ejb.remote.stateful.RemoteCounter, the JNDI
 name will be:
@@ -420,7 +420,7 @@ names for lookup. The "org.jboss.ejb.client.naming" has a
 URLContextFactory implementation which will be used by the JNDI APIs to
 parse and return an object for ejb: namespace lookups. You can either
 pass these properties to the constructor of the InitialContext class or
-have a jndi.properites file in the classpath of the client application,
+have a jndi.properties file in the classpath of the client application,
 which (atleast) contains the following property:
 
 [source,java,options="nowrap"]
@@ -516,7 +516,7 @@ First the endpoint.name property. We mentioned earlier that the EJB
 receivers will communicate with the server for EJB invocations.
 Internally, they use JBoss Remoting project to carry out the
 communication. The endpoint.name property represents the name that will
-be used to create the client side of the enpdoint. The endpoint.name
+be used to create the client side of the endpoint. The endpoint.name
 property is optional and if not specified in the
 jboss-ejb-client.properties file, it will default to
 "config-based-ejb-client-endpoint" name.
