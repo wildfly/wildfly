@@ -12,23 +12,13 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PRO
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESPONSE_HEADERS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.net.URL;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.FileVisitResult;
+import java.net.URISyntaxException;
 import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.SimpleFileVisitor;
-import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.List;
-import java.util.regex.Pattern;
 
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.connector.subsystems.resourceadapters.Namespace;
@@ -39,8 +29,8 @@ import org.jboss.as.test.integration.management.base.AbstractMgmtServerSetupTask
 import org.jboss.as.test.integration.management.util.MgmtOperationException;
 import org.jboss.as.test.shared.FileUtils;
 import org.jboss.as.test.shared.ServerReload;
+import org.jboss.as.test.module.util.TestModule;
 import org.jboss.dmr.ModelNode;
-import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.exporter.ExplodedExporter;
 import org.jboss.shrinkwrap.api.exporter.ZipExporter;
@@ -54,156 +44,39 @@ import org.jboss.shrinkwrap.api.spec.ResourceAdapterArchive;
  * @author <a href="istudens@redhat.com">Ivo Studensky</a>
  */
 public abstract class AbstractModuleDeploymentTestCaseSetup extends AbstractMgmtServerSetupTask {
-    private static final Logger log = Logger.getLogger(AbstractModuleDeploymentTestCaseSetup.class);
 
-    private static final String VALID_TARGET_DIR = File.separator + "target" + File.separator;
-    private static final String ILLEGAL_BUILD_DIR = "build" + VALID_TARGET_DIR;
-    private static final String ILLEGAL_DIST_DIR = "dist" + VALID_TARGET_DIR;
-
-    private static final Pattern MODULE_SLOT_PATTERN = Pattern.compile("slot=\"main\"");
-
+    private final List<TestModule> testModuleList = new ArrayList<>();
     protected File testModuleRoot;
     protected File slot;
     public static ModelNode address;
     protected final String defaultPath = "org/jboss/ironjacamar/ra16out";
     private boolean reloadRequired = false;
-    private List<Path> toRemove = new LinkedList<>();
 
     public void addModule(final String moduleName) throws Exception {
         addModule(moduleName, "module.xml");
     }
 
     public void addModule(final String moduleName, String moduleXml) throws Exception {
-        testModuleRoot = new File(getModulePath(), moduleName);
-        removeModule(moduleName);
-        createTestModule(moduleXml);
+        testModuleRoot = new File(TestModule.getModulesDirectory(true), moduleName);
+        createTestModule(moduleName, moduleXml);
     }
 
-    public void removeModule(final String moduleName) throws Exception {
-        removeModule(moduleName, false);
-    }
-
-    public void removeModule(final String moduleName, boolean deleteParent) throws Exception {
-        testModuleRoot = new File(getModulePath(), moduleName);
-        File file = testModuleRoot;
-        if (deleteParent) {
-            while (!getModulePath().equals(file.getParentFile())) { file = file.getParentFile(); }
-        }
-        toRemove.add(file.toPath());
-    }
-
-    private void deleteRecursively(Path file) throws IOException {
-        if (Files.exists(file)) {
-            Files.walkFileTree(file, new SimpleFileVisitor<Path>() {
-                @Override
-                public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
-                    Files.delete(file);
-                    return FileVisitResult.CONTINUE;
-                }
-
-                @Override
-                public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
-                    Files.delete(dir);
-                    return FileVisitResult.CONTINUE;
-                }
-
-            });
+    public void removeModule() throws Exception {
+        for (TestModule testModule : testModuleList) {
+            testModule.remove();
         }
     }
 
-    private void createTestModule(String moduleXml) throws IOException {
-        slot = new File(testModuleRoot, getSlot());
-        if (slot.exists()) {
-            throw new IllegalArgumentException(slot + " already exists");
-        }
-        if (!slot.mkdirs()) {
-            throw new IllegalArgumentException("Could not create " + slot);
-        }
+    private void createTestModule(String moduleName, String moduleXml) throws IOException, URISyntaxException {
         URL url = this.getClass().getResource(moduleXml);
         if (url == null) {
             throw new IllegalStateException("Could not find " + moduleXml);
         }
-        copyModuleXml(slot, url.openStream());
-    }
-
-    protected void copyFile(File target, InputStream src) throws IOException {
-        Files.copy(src, target.toPath());
-    }
-
-    protected void copyModuleXml(File slot, InputStream src) throws IOException {
-        try (BufferedReader in = new BufferedReader(new InputStreamReader(src, StandardCharsets.UTF_8))) {
-            String line;
-            List<String> lines = new ArrayList<>();
-            while ((line = in.readLine()) != null) {
-                // replace slot name in the module xml file
-                line = MODULE_SLOT_PATTERN.matcher(line).replaceAll("slot=\"" + getSlot() + "\"");
-                lines.add(line);
-            }
-            Files.write(slot.toPath().resolve("module.xml"), lines, StandardCharsets.UTF_8);
-        }
-    }
-
-    private File getModulePath() {
-        String modulePath = System.getProperty("module.path", null);
-        if (modulePath == null) {
-            String jbossHome = System.getProperty("jboss.home", null);
-            if (jbossHome == null) {
-                throw new IllegalStateException(
-                        "Neither -Dmodule.path nor -Djboss.home were set");
-            }
-            if (jbossHome.contains(ILLEGAL_BUILD_DIR) || jbossHome.contains(ILLEGAL_DIST_DIR)) {
-                throw new IllegalStateException(String.format("jboss.home %s is not a writable module directory", modulePath));
-            }
-            modulePath = jbossHome + File.separatorChar + "modules";
-        } else {
-
-            String best = null;
-            for (String path : modulePath.split(File.pathSeparator)) {
-                if (!path.contains(ILLEGAL_BUILD_DIR) && !path.contains(ILLEGAL_DIST_DIR)) {
-                    best = path;
-                    break;
-                }
-            }
-            if (best == null) {
-                throw new IllegalStateException(String.format("No writable module directory found in %s", modulePath));
-            }
-            modulePath = best;
-        }
-        File moduleDir = new File(modulePath);
-        if (!moduleDir.exists()) {
-            if (isUnderCurrentProjectBuildDir(moduleDir)) {
-                // Try and create it.
-                if (!moduleDir.mkdirs() && !moduleDir.exists()) {
-                    throw new IllegalStateException("Cannot create module directory " + moduleDir.getAbsolutePath());
-                }
-            } else {
-                throw new IllegalStateException(
-                        "Determined module path does not exist");
-            }
-        }
-        if (!moduleDir.isDirectory()) {
-            throw new IllegalStateException(
-                    "Determined module path is not a dir");
-        }
-        return moduleDir;
-    }
-
-    private static boolean isUnderCurrentProjectBuildDir(File moduleRoot) {
-        String buildDir = System.getProperty("project.build.directory");
-        if (buildDir == null && System.getProperty("basedir") != null) {
-            buildDir = Paths.get(System.getProperty("basedir"), "target").toString();
-        }
-        if (buildDir != null) {
-            File target = new File(buildDir);
-            File parent = moduleRoot.getParentFile();
-            while (parent != null) {
-                if (target.equals(parent)) {
-                    return true;
-                }
-                parent = parent.getParentFile();
-            }
-        }
-        return false;
+        File moduleXmlFile = new File(url.toURI());
+        TestModule testModule = new TestModule(moduleName.replace('/', '.'), moduleXmlFile);
+        testModule.create();
+        testModuleList.add(testModule);
+        this.slot = new File(testModuleRoot, "main");
     }
 
     @Override
@@ -211,15 +84,11 @@ public abstract class AbstractModuleDeploymentTestCaseSetup extends AbstractMgmt
         try {
             remove(address, managementClient);
         } finally {
-            removeModule(defaultPath, true);
+            removeModule();
         }
         if (reloadRequired) {
             ServerReload.executeReloadAndWaitForCompletion(managementClient);
         }
-        for (Path p : toRemove) {
-            deleteRecursively(p);
-        }
-        toRemove.clear();
     }
 
     protected void remove(final ModelNode address, final ManagementClient managementClient) throws IOException, MgmtOperationException {
@@ -244,8 +113,6 @@ public abstract class AbstractModuleDeploymentTestCaseSetup extends AbstractMgmt
 
     protected void setConfiguration(String fileName) throws Exception {
         String xml = FileUtils.readFile(this.getClass(), fileName);
-        // replace slot name in the configuration
-        xml = MODULE_SLOT_PATTERN.matcher(xml).replaceAll("slot=\"" + getSlot() + "\"");
         List<ModelNode> operations = xmlToModelOperations(xml,
                 Namespace.CURRENT.getUriString(),
                 new ResourceAdapterSubsystemParser());
@@ -258,8 +125,6 @@ public abstract class AbstractModuleDeploymentTestCaseSetup extends AbstractMgmt
         operation.get(OP).set("activate");
         operation.get(OP_ADDR).set(address);
         executeOperation(operation);
-
-        //executeOperation(operationListToCompositeOperation(operations));
     }
 
     /**
@@ -275,8 +140,8 @@ public abstract class AbstractModuleDeploymentTestCaseSetup extends AbstractMgmt
         jar.addPackage(MultipleConnectionFactory1.class.getPackage());
         rar.addAsManifestResource(this.getClass().getPackage(), raFile,
                 "ra.xml");
-        rar.as(ExplodedExporter.class).exportExploded(testModuleRoot, getSlot());
-        jar.as(ExplodedExporter.class).exportExploded(testModuleRoot, getSlot());
+        rar.as(ExplodedExporter.class).exportExploded(testModuleRoot, "main");
+        jar.as(ExplodedExporter.class).exportExploded(testModuleRoot, "main");
     }
 
     /**
@@ -292,9 +157,9 @@ public abstract class AbstractModuleDeploymentTestCaseSetup extends AbstractMgmt
         jar.addPackage(MultipleConnectionFactory1.class.getPackage());
         rar.addAsManifestResource(
                 PureJarTestCase.class.getPackage(), raFile, "ra.xml");
-        rar.as(ExplodedExporter.class).exportExploded(testModuleRoot, getSlot());
+        rar.as(ExplodedExporter.class).exportExploded(testModuleRoot, "main");
 
-        copyFile(new File(slot, "ra16out.jar"), jar.as(ZipExporter.class).exportAsInputStream());
+        Files.copy(jar.as(ZipExporter.class).exportAsInputStream(), new File(slot, "ra16out.jar").toPath());
     }
 
     /**
@@ -305,13 +170,5 @@ public abstract class AbstractModuleDeploymentTestCaseSetup extends AbstractMgmt
     public static ModelNode getAddress() {
         return address;
     }
-
-    /**
-     * This should be overridden to return a unique slot name for each test-case class / module.
-     * We need this since custom modules are not supported to be removing at runtime, see WFLY-1560.
-     *
-     * @return a name of the slot of the test module
-     */
-    protected abstract String getSlot();
 
 }
