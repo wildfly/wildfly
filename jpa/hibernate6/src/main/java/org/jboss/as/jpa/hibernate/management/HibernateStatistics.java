@@ -209,9 +209,15 @@ public class HibernateStatistics extends HibernateAbstractStatistics {
     }
 
     @Override
-    public Collection<String> getDynamicChildrenNames(EntityManagerFactoryAccess entityManagerFactoryLookup, PathAddress pathAddress) {
+    public Collection<String> getDynamicChildrenNames(EntityManagerFactoryAccess entityManagerFactoryAccess,
+            PathAddress pathAddress) {
+        return Collections.emptyList();
+    }
 
-        return Collections.EMPTY_LIST;
+    @Override
+    public boolean hasDynamicChildName(EntityManagerFactoryAccess entityManagerFactoryAccess, PathAddress pathAddress,
+            String childName) {
+        return false;
     }
 
     private Operation clear = new Operation() {

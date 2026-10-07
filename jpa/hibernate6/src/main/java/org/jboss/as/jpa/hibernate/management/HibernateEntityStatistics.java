@@ -13,6 +13,7 @@ import java.util.Set;
 import jakarta.persistence.EntityManagerFactory;
 
 import org.hibernate.SessionFactory;
+import org.hibernate.stat.Statistics;
 import org.jipijapa.management.spi.EntityManagerFactoryAccess;
 import org.jipijapa.management.spi.Operation;
 import org.jipijapa.management.spi.PathAddress;
@@ -52,17 +53,6 @@ public class HibernateEntityStatistics extends HibernateAbstractStatistics {
 
         operations.put(OPERATION_OPTIMISTIC_FAILURE_COUNT, optimisticFailureCount);
         types.put(OPERATION_OPTIMISTIC_FAILURE_COUNT, Long.class);
-    }
-
-    private org.hibernate.stat.Statistics getBaseStatistics(EntityManagerFactory entityManagerFactory) {
-        if (entityManagerFactory == null) {
-            return null;
-        }
-        SessionFactory sessionFactory = entityManagerFactory.unwrap(SessionFactory.class);
-        if (sessionFactory != null) {
-            return sessionFactory.getStatistics();
-        }
-        return null;
     }
 
     private org.hibernate.stat.EntityStatistics getStatistics(EntityManagerFactory entityManagerFactory, PathAddress pathAddress) {
@@ -134,8 +124,15 @@ public class HibernateEntityStatistics extends HibernateAbstractStatistics {
     public Collection<String> getDynamicChildrenNames(EntityManagerFactoryAccess entityManagerFactoryLookup, PathAddress pathAddress) {
         org.hibernate.stat.Statistics statistics = getBaseStatistics(entityManagerFactoryLookup.entityManagerFactory(pathAddress.getValue(HibernateStatistics.PROVIDER_LABEL)));
         return statistics != null ?
-            Collections.unmodifiableCollection(Arrays.asList( statistics.getEntityNames())) :
-                Collections.EMPTY_LIST;
+            Collections.unmodifiableCollection(Arrays.asList(statistics.getEntityNames())) :
+                Collections.emptyList();
 
+    }
+
+    @Override
+    public boolean hasDynamicChildName(EntityManagerFactoryAccess entityManagerFactoryLookup, PathAddress pathAddress,
+            String childName) {
+        Statistics stats = getBaseStatistics(entityManagerFactoryLookup, pathAddress);
+        return stats == null ? false : existsInDynamicChildren(childName, stats.getEntityNames());
     }
 }
