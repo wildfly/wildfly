@@ -56,6 +56,8 @@ import org.wildfly.extension.undertow.deployment.GateHandlerWrapper;
 import org.wildfly.extension.undertow.logging.UndertowLogger;
 import org.wildfly.security.manager.WildFlySecurityManager;
 import org.wildfly.service.descriptor.BinaryServiceDescriptor;
+import org.wildfly.service.descriptor.NullaryServiceDescriptor;
+import org.wildfly.service.descriptor.UnaryServiceDescriptor;
 
 /**
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a> (c) 2013 Red Hat Inc.
@@ -65,7 +67,45 @@ import org.wildfly.service.descriptor.BinaryServiceDescriptor;
 public class Host implements Service<Host>, FilterLocation, SuspendableActivity {
     // TODO Extract proper interface from this service implementation
     // TODO Relocate ServiceDescriptor and interface to a separate SPI module.
-    public static final BinaryServiceDescriptor<Host> SERVICE_DESCRIPTOR = BinaryServiceDescriptor.of("org.wildfly.undertow.host", Host.class);
+
+    /**
+     * Describes the sole service providing the default host of the default server.
+     */
+    static final NullaryServiceDescriptor<Host> DEFAULT_SERVER_DEFAULT_SERVICE_DESCRIPTOR = NullaryServiceDescriptor.of("org.wildfly.undertow.default-server-default-host", Host.class);
+    /**
+     * Describes the service providing a host of the default server, and thus identified solely by host name.
+     */
+    static final UnaryServiceDescriptor<Host> DEFAULT_SERVER_SERVICE_DESCRIPTOR = UnaryServiceDescriptor.of("org.wildfly.undertow.default-server-host", DEFAULT_SERVER_DEFAULT_SERVICE_DESCRIPTOR);
+    /**
+     * Describes the service providing the default host of a server, and thus identified by solely by server name.
+     */
+    static final UnaryServiceDescriptor<Host> DEFAULT_SERVICE_DESCRIPTOR = UnaryServiceDescriptor.of("org.wildfly.undertow.server-default-host", DEFAULT_SERVER_DEFAULT_SERVICE_DESCRIPTOR);
+
+    /**
+     * Describes the service providing a host of a server, and thus identified by server name *and* host name.
+     */
+    public static final BinaryServiceDescriptor<Host> SERVICE_DESCRIPTOR = new BinaryServiceDescriptor<Host>() {
+        @Override
+        public String getName() {
+            return "org.wildfly.undertow.host";
+        }
+
+        @Override
+        public Class<Host> getType() {
+            return Host.class;
+        }
+
+        @Override
+        public Map.Entry<String, String[]> resolve(String serverName, String hostName) {
+            // N.B. The non-standard resolution logic is needed by webservices, which wants the ability to identify a host of the default server by just the host name.
+            // The logic below resolves to:
+            // * a host of a server, if both serverName and hostName are non-null
+            // * the default host of a server, if the serverName is non-null, but the hostName is null
+            // * a host of the default server, if the serverName is null, but the hostName is non-null
+            // * the default host of the default server, if both serverName and hostName are null
+            return (serverName != null) ? ((hostName != null) ? BinaryServiceDescriptor.super.resolve(serverName, hostName) : DEFAULT_SERVICE_DESCRIPTOR.resolve(serverName)) : ((hostName != null) ? DEFAULT_SERVER_SERVICE_DESCRIPTOR.resolve(hostName) : DEFAULT_SERVER_DEFAULT_SERVICE_DESCRIPTOR.resolve());
+        }
+    };
 
     private final Consumer<Host> serviceConsumer;
     private final Supplier<Server> server;
