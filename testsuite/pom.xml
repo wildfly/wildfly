@@ -1101,11 +1101,12 @@
                     </plugin>
 
                     <plugin>
+                        <!-- Version comes from the pluginManagement section of the root pom -->
                         <groupId>org.codehaus.mojo</groupId>
                         <artifactId>properties-maven-plugin</artifactId>
-                        <version>1.0.0</version>
                         <executions>
                             <execution>
+                                <id>help.project-properties</id>
                                 <phase>initialize</phase>
                                 <goals>
                                     <goal>write-project-properties</goal>
